@@ -433,9 +433,11 @@ class Expression implements Expressionable, \ArrayAccess
     }
 
     /**
-     * Render expression and return it as string.
+     * Render expression to an array with SQL string and its params.
+     *
+     * @return array{string, array<string, mixed>}
      */
-    public function render(): string
+    public function render(): array
     {
         $keepParams = $this->_paramBase !== null; // for renderWithParams(), TODO, render should always return an array
         if (!$keepParams) {
@@ -452,7 +454,7 @@ class Expression implements Expressionable, \ArrayAccess
             }
         }
 
-        return trim($res);
+        return [trim($res), $this->params];
     }
 
     /**
@@ -463,7 +465,7 @@ class Expression implements Expressionable, \ArrayAccess
         try {
             $this->_paramBase = $this->paramBase; // hack to keep params from render()
 
-            return [$this->render(), $this->params];
+            return [$this->render()[0], $this->params];
         } finally {
             $this->_paramBase = null;
             $this->params = [];

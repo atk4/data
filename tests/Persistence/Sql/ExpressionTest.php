@@ -65,11 +65,10 @@ class ExpressionTest extends TestCase
     }
 
     /**
-     * Test constructor exception - no arguments.
+     * Test constructor exception - no arguments (template is not defined).
      */
     public function testConstructorException0arg(): void
     {
-        // Template is not defined for Expression
         $this->expectException(Exception::class);
         $this->e()->render();
     }
@@ -83,7 +82,7 @@ class ExpressionTest extends TestCase
     {
         $this->assertSame(
             '',
-            $this->e('')->render()
+            $this->e('')->render()[0]
         );
     }
 
@@ -99,27 +98,27 @@ class ExpressionTest extends TestCase
         // pass as string
         $this->assertSame(
             'now()',
-            $this->e('now()')->render()
+            $this->e('now()')->render()[0]
         );
         // pass as array without key
         $this->assertSame(
             'now()',
-            $this->e(['now()'])->render()
+            $this->e(['now()'])->render()[0]
         );
         // pass as array with template key
         $this->assertSame(
             'now()',
-            $this->e(['template' => 'now()'])->render()
+            $this->e(['template' => 'now()'])->render()[0]
         );
         // pass as array without key
         $this->assertSame(
             ':a Name',
-            $this->e(['[] Name'], ['First'])->render()
+            $this->e(['[] Name'], ['First'])->render()[0]
         );
         // pass as array with template key
         $this->assertSame(
             ':a Name',
-            $this->e(['template' => '[] Name'], ['Last'])->render()
+            $this->e(['template' => '[] Name'], ['Last'])->render()[0]
         );
     }
 
@@ -151,7 +150,7 @@ class ExpressionTest extends TestCase
         // argument = Expression
         $this->assertSame(
             'hello, world',
-            $this->e('hello, [who]', ['who' => $this->e('world')])->render()
+            $this->e('hello, [who]', ['who' => $this->e('world')])->render()[0]
         );
 
         // multiple arguments = Expression
@@ -163,7 +162,7 @@ class ExpressionTest extends TestCase
                     'what' => $this->e('hello'),
                     'who' => $this->e('world'),
                 ]
-            )->render()
+            )->render()[0]
         );
 
         // numeric argument = Expression
@@ -180,7 +179,7 @@ class ExpressionTest extends TestCase
                         ]
                     ),
                 ]
-            )->render()
+            )->render()[0]
         );
 
         // pass template as array
@@ -189,7 +188,7 @@ class ExpressionTest extends TestCase
             $this->e(
                 ['template' => 'hello, [who]'],
                 ['who' => $this->e('world')]
-            )->render()
+            )->render()[0]
         );
     }
 
@@ -198,7 +197,7 @@ class ExpressionTest extends TestCase
      */
     public function testNoTemplatingInSqlString(string $expectedStr, string $exprStr, array $exprArgs): void
     {
-        $this->assertSame($expectedStr, $this->e($exprStr, $exprArgs)->render());
+        $this->assertSame($expectedStr, $this->e($exprStr, $exprArgs)->render()[0]);
     }
 
     /**
@@ -252,13 +251,13 @@ class ExpressionTest extends TestCase
             $this->e('--[]', [2]),
         ]);
 
-        $this->assertSame('++:a and --:b', $e1->render());
+        $this->assertSame('++:a and --:b', $e1->render()[0]);
 
         $e2 = $this->e('=== [foo] ===', ['foo' => $e1]);
 
-        $this->assertSame('=== ++:a and --:b ===', $e2->render());
+        $this->assertSame('=== ++:a and --:b ===', $e2->render()[0]);
 
-        $this->assertSame('++:a and --:b', $e1->render());
+        $this->assertSame('++:a and --:b', $e1->render()[0]);
     }
 
     /**
@@ -274,11 +273,11 @@ class ExpressionTest extends TestCase
         $e2 = $this->e('[greeting]! How are you.', ['greeting' => $e1]);
         $e3 = $this->e('It is me again. [greeting]', ['greeting' => $e1]);
 
-        $s2 = $e2->render(); // Hello :a! How are you.
-        $s3 = $e3->render(); // It is me again. Hello :a
+        $s2 = $e2->render()[0]; // Hello :a! How are you.
+        $s3 = $e3->render()[0]; // It is me again. Hello :a
 
         $e4 = $this->e('[] and good night', [$e1]);
-        $s4 = $e4->render(); // Hello :a and good night
+        $s4 = $e4->render()[0]; // Hello :a and good night
 
         $this->assertSame('Hello :a! How are you.', $s2);
         $this->assertSame('It is me again. Hello :a', $s3);
@@ -359,15 +358,15 @@ class ExpressionTest extends TestCase
 
         $this->assertSame(
             '"first_name"',
-            $this->e()->escape('first_name')->render()
+            $this->e()->escape('first_name')->render()[0]
         );
         $this->assertSame(
             '"first""_name"',
-            $this->e()->escape('first"_name')->render()
+            $this->e()->escape('first"_name')->render()[0]
         );
         $this->assertSame(
             '"first""_name {}"',
-            $this->e()->escape('first"_name {}')->render()
+            $this->e()->escape('first"_name {}')->render()[0]
         );
     }
 
@@ -411,7 +410,7 @@ class ExpressionTest extends TestCase
 
         $this->assertSame(
             'hello, "myfield"',
-            $this->e('hello, []', [new MyField()])->render()
+            $this->e('hello, []', [new MyField()])->render()[0]
         );
     }
 
@@ -466,13 +465,13 @@ class ExpressionTest extends TestCase
         $e = $this->e('[], []');
         $e[] = 'Hello';
         $e[] = 'World';
-        $this->assertSame(':a, :b', $e->render());
+        $this->assertSame(':a, :b', $e->render()[0]);
 
         // real-life example
         $age = $this->e('coalesce([age], [default_age])');
         $age['age'] = $this->e('year(now()) - year(birth_date)');
         $age['default_age'] = 18;
-        $this->assertSame('coalesce(year(now()) - year(birth_date), :a)', $age->render());
+        $this->assertSame('coalesce(year(now()) - year(birth_date), :a)', $age->render()[0]);
     }
 
     /**
@@ -496,14 +495,9 @@ class ExpressionTest extends TestCase
     {
         $e = new JsonExpression('hello, [who]', ['who' => 'world']);
 
-        $this->assertSame(
-            'hello, "world"',
-            $e->render()
-        );
-        $this->assertSame(
-            [],
-            $e->params
-        );
+        [$sql, $params] = $e->renderWithParams();
+        $this->assertSame('hello, "world"', $sql);
+        $this->assertSame([], $params);
     }
 
     /**

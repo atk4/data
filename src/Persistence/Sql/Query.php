@@ -1088,7 +1088,7 @@ class Query extends Expression
     /**
      * Renders query template. If the template is not explicitly set will use "select" mode.
      */
-    public function render(): string
+    public function render(): array
     {
         if (!$this->template) {
             $this->mode('select');

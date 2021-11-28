@@ -72,8 +72,8 @@ class ModelTest extends TestCase
 
         $migrator2->mode('create');
 
-        $q1 = preg_replace('/\([0-9,]*\)/i', '', $migrator->render()); // remove parenthesis otherwise we can't differ money from float etc.
-        $q2 = preg_replace('/\([0-9,]*\)/i', '', $migrator2->render());
+        $q1 = preg_replace('/\([0-9,]*\)/i', '', $migrator->render()[0]); // remove parenthesis otherwise we can't differ money from float etc.
+        $q2 = preg_replace('/\([0-9,]*\)/i', '', $migrator2->render()[0]);
         $this->assertSame($q1, $q2);
     }
 

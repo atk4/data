@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests\Persistence\Sql;
 
 use Atk4\Core\Phpunit\TestCase;
+use Atk4\Data\Persistence\Sql\Exception as SqlException;
 use Atk4\Data\Persistence\Sql\Expression;
 
 /**
@@ -17,15 +18,15 @@ class ExceptionTest extends TestCase
      */
     public function testException1(): void
     {
-        $this->expectException(\Atk4\Data\Persistence\Sql\Exception::class);
+        $this->expectException(SqlException::class);
 
-        throw new \Atk4\Data\Persistence\Sql\Exception();
+        throw new SqlException();
     }
 
     public function testException2(): void
     {
-        $this->expectException(\Atk4\Data\Persistence\Sql\Exception::class);
         $e = new Expression('hello, [world]');
+        $this->expectException(SqlException::class);
         $e->render();
     }
 
@@ -34,16 +35,9 @@ class ExceptionTest extends TestCase
         try {
             $e = new Expression('hello, [world]');
             $e->render();
-        } catch (\Atk4\Data\Persistence\Sql\Exception $e) {
-            $this->assertSame(
-                'Expression could not render tag',
-                $e->getMessage()
-            );
-
-            $this->assertSame(
-                'world',
-                $e->getParams()['tag']
-            );
+        } catch (SqlException $e) {
+            $this->assertSame('Expression could not render tag', $e->getMessage());
+            $this->assertSame('world', $e->getParams()['tag']);
         }
     }
 }

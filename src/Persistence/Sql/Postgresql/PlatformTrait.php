@@ -88,7 +88,7 @@ trait PlatformTrait
                 'pk_seq' => $pkSeqName,
                 'trigger_func' => $table->getName() . '_AI_FUNC', // TODO create only one function per schema
             ]
-        )->render();
+        )->render()[0];
 
         $sqls[] = $conn->expr(
             <<<'EOF'
@@ -103,7 +103,7 @@ trait PlatformTrait
                 'trigger' => $table->getName() . '_AI_PK',
                 'trigger_func' => $table->getName() . '_AI_FUNC',
             ]
-        )->render();
+        )->render()[0];
 
         return $sqls;
     }

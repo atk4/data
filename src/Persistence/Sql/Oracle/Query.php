@@ -13,7 +13,7 @@ class Query extends BaseQuery
 {
     protected $paramBase = 'xxaaaa';
 
-    public function render(): string
+    public function render(): array
     {
         if ($this->mode === 'select' && $this->main_table === null) {
             $this->table('DUAL');
