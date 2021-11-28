@@ -78,7 +78,7 @@ class Migrator
 
     public function table(string $tableName): self
     {
-        $this->table = new Table($this->getDatabasePlatform()->quoteSingleIdentifier($tableName));
+        $this->table = new Table($this->getDatabasePlatform()->quoteIdentifier($tableName));
         if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
             $this->table->addOption('charset', 'utf8mb4');
         }
@@ -105,7 +105,7 @@ class Migrator
     public function drop(): self
     {
         $this->createSchemaManager()
-            ->dropTable($this->getDatabasePlatform()->quoteSingleIdentifier($this->table->getName()));
+            ->dropTable($this->getDatabasePlatform()->quoteIdentifier($this->table->getName()));
 
         $this->createdTableNames = array_diff($this->createdTableNames, [$this->table->getName()]);
 
