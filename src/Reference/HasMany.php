@@ -55,9 +55,12 @@ class HasMany extends Reference
      */
     protected function referenceOurValue(): Field
     {
-        $this->getOurModel(null)->persistence_data['use_table_prefixes'] = true;
+        // TODO horrible hack to render the field with a table prefix,
+        // find a solution how to wrap the field inside custom Field (without owner?)
+        $ourModelCloned = clone $this->getOurModel(null);
+        $ourModelCloned->persistence_data['use_table_prefixes'] = true;
 
-        return $this->getOurField();
+        return $ourModelCloned->getRef($this->link)->getOurField();
     }
 
     /**

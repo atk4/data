@@ -35,7 +35,7 @@ class Join extends Model\Join
     {
         parent::init();
 
-        $this->getOwner()->persistence_data['use_table_prefixes'] = true;
+        $this->getOwner()->persistence_data['use_table_prefixes'] = true; // TODO thus mutates the owner model!
 
         // our short name will be unique
         if (!$this->foreign_alias) {
