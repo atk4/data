@@ -223,7 +223,7 @@ class Migrator
 
             $modelSeed = is_array($reference->model)
                 ? $reference->model
-                : [get_class($reference->model)];
+                : clone $reference->model;
             $referenceModel = Model::fromSeed($modelSeed, [new Persistence\Sql($this->connection)]);
 
             return $referenceModel->getField($referenceField);
