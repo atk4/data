@@ -216,10 +216,10 @@ abstract class Connection
     protected static function connectFromDsn(array $dsn): DbalDriverConnection
     {
         $dsn = static::normalizeDsn($dsn);
-
-        $enforceCharset = ['pdo_mysql' => 'utf8mb4', 'pdo_oci' => 'AL32UTF8'][$dsn['driver']] ?? null;
-        if ($enforceCharset !== null) {
-            $dsn['charset'] = $enforceCharset;
+        if ($dsn['driver'] === 'pdo_mysql') {
+            $dsn['charset'] = 'utf8mb4';
+        } elseif ($dsn['driver'] === 'pdo_oci') {
+            $dsn['charset'] = 'AL32UTF8';
         }
 
         $dbalConnection = DriverManager::getConnection(
