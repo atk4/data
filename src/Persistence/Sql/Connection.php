@@ -160,11 +160,14 @@ abstract class Connection
             $dbalDriverConnection = $connectionClass::connectDbalDriverConnection(['pdo' => $dsn]);
             $dbalConnection = $connectionClass::connectDbalConnection($dbalDriverConnection);
         } elseif ($dsn instanceof DbalConnection) {
-            /** @var \PDO */
-            $pdo = self::isComposerDbal2x()
-                ? $dsn->getWrappedConnection()
-                : $dsn->getWrappedConnection()->getWrappedConnection();
-            $connectionClass = self::resolveConnectionClass($pdo->getAttribute(\PDO::ATTR_DRIVER_NAME));
+            if (self::isComposerDbal2x()) {
+                $pdo = $dsn->getWrappedConnection();
+                assert($pdo instanceof \PDO);
+                $connectionClass = self::resolveConnectionClass($pdo->getAttribute(\PDO::ATTR_DRIVER_NAME));
+            } else {
+                $pdoConnection = $dsn->getWrappedConnection();
+                $connectionClass = self::resolveConnectionClass(self::getDriverNameFromDbalDriverConnection($pdoConnection));
+            }
             $dbalConnection = $dsn;
         } else {
             $dsn = static::normalizeDsn($dsn, $user, $password);
@@ -190,6 +193,8 @@ abstract class Connection
                 return $connection->getAttribute(\PDO::ATTR_DRIVER_NAME);
             }
         }
+
+        return null; // @phpstan-ignore-line
     }
 
     protected static function createDbalEventManager(): EventManager
