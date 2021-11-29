@@ -118,6 +118,30 @@ abstract class Connection
     }
 
     /**
+     * Adds connection class to the registry for resolving in Connection::resolve method.
+     *
+     * Can be used as:
+     *   Connection::registerConnection(MySQL\Connection::class, 'mysql')
+     */
+    public static function registerConnectionClass(string $connectionClass, string $driverSchema): void
+    {
+        self::$connectionClassRegistry[$driverSchema] = $connectionClass;
+    }
+
+    /**
+     * Resolves the connection class to use based on driver type.
+     */
+    public static function resolveConnectionClass(string $driverSchema): string
+    {
+        if (!isset(self::$connectionClassRegistry[$driverSchema])) {
+            throw (new Exception('Driver schema is not registered'))
+                ->addMoreInfo('driver_schema', $driverSchema);
+        }
+
+        return self::$connectionClassRegistry[$driverSchema];
+    }
+
+    /**
      * Connect to database and return connection class.
      *
      * @param string|\PDO|DbalConnection $dsn
@@ -149,30 +173,6 @@ abstract class Connection
         return new $connectionClass(array_merge([
             'connection' => $dbalConnection,
         ], $args));
-    }
-
-    /**
-     * Adds connection class to the registry for resolving in Connection::resolve method.
-     *
-     * Can be used as:
-     *   Connection::registerConnection(MySQL\Connection::class, 'mysql')
-     */
-    public static function registerConnectionClass(string $connectionClass, string $driverSchema): void
-    {
-        self::$connectionClassRegistry[$driverSchema] = $connectionClass;
-    }
-
-    /**
-     * Resolves the connection class to use based on driver type.
-     */
-    public static function resolveConnectionClass(string $driverSchema): string
-    {
-        if (!isset(self::$connectionClassRegistry[$driverSchema])) {
-            throw (new Exception('Driver schema is not registered'))
-                ->addMoreInfo('driver_schema', $driverSchema);
-        }
-
-        return self::$connectionClassRegistry[$driverSchema];
     }
 
     final public static function isComposerDbal2x(): bool

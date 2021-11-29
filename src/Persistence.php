@@ -42,7 +42,7 @@ abstract class Persistence
     public static function connect($dsn, string $user = null, string $password = null, array $args = []): self
     {
         // parse DSN string
-        $dsn = \Atk4\Data\Persistence\Sql\Connection::normalizeDsn($dsn, $user, $password);
+        $dsn = Persistence\Sql\Connection::normalizeDsn($dsn, $user, $password);
 
         switch ($dsn['driverSchema']) {
             case 'sqlite':
