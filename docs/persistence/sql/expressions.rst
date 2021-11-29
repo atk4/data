@@ -74,12 +74,6 @@ instead. DSQL can consist of multiple objects and each object may have
 some parameters. During `rendering`_ those parameters are joined together to
 produce one complete query.
 
-.. php:attr:: params
-
-    This public property will contain the actual values of all the parameters.
-    When multiple queries are merged together, their parameters are
-    `interlinked <http://php.net/manual/en/language.references.php>`_.
-
 
 Creating Expression
 ===================
@@ -151,13 +145,12 @@ Rendering
 =========
 
 An expression can be rendered into a valid SQL code by calling render() method.
-The method will return a string, however it will use references for `parameters`_.
+The method will return an array with string and params.
 
 .. php:method:: render()
 
-    Converts :php:class:`Expression` object to a string. Parameters are
-    replaced with :a, :b, etc. Their original values can be found in
-    :php:attr:`params`.
+    Converts :php:class:`Expression` object to an array with string and params.
+    Parameters are replaced with :a, :b, etc.
 
 
 Executing Expressions

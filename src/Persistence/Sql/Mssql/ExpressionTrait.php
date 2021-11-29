@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Mssql;
 
-use Doctrine\DBAL\Result as DbalResult;
-
 trait ExpressionTrait
 {
     protected function escapeIdentifier(string $value): string
@@ -23,84 +21,46 @@ trait ExpressionTrait
         return preg_replace('~(?:\'(?:\'\'|\\\\\'|[^\'])*\')?+\K\]([^\[\]\'"(){}]*?)\]~s', '[$1]', $v);
     }
 
-    private function _render(): string
+    public function render(): array
     {
+        [$sql, $params] = parent::render();
+
         // convert all SQL strings to NVARCHAR, eg 'text' to N'text'
-        return preg_replace_callback('~(^|.)(\'(?:\'\'|\\\\\'|[^\'])*\')~s', function ($matches) {
+        $sql = preg_replace_callback('~(^|.)(\'(?:\'\'|\\\\\'|[^\'])*\')~s', function ($matches) {
             return $matches[1] . (!in_array($matches[1], ['N', '\'', '\\'], true) ? 'N' : '') . $matches[2];
-        }, parent::render());
-    }
+        }, $sql);
 
-    // {{{ MSSQL does not support named parameters, so convert them to numerical inside execute
+        // MSSQL does not support named parameters, so convert them to numerical when called from execute
+        $trace = debug_backtrace(\DEBUG_BACKTRACE_PROVIDE_OBJECT | \DEBUG_BACKTRACE_IGNORE_ARGS, 10);
+        $calledFromExecute = false;
+        foreach ($trace as $frame) {
+            if (($frame['object'] ?? null) === $this) {
+                if (($frame['function'] ?? null) === 'render') {
+                    continue;
+                } elseif (($frame['function'] ?? null) === 'execute') {
+                    $calledFromExecute = true;
+                }
+            }
 
-    /** @var array|null */
-    private $numQueryParamsBackup;
-    /** @var string|null */
-    private $numQueryRender;
-
-    /**
-     * @return DbalResult|\PDOStatement PDOStatement iff for DBAL 2.x
-     */
-    public function execute(object $connection = null): object
-    {
-        if ($this->numQueryParamsBackup !== null) {
-            return parent::execute($connection);
+            break;
         }
 
-        $this->numQueryParamsBackup = $this->params;
-        try {
+        if ($calledFromExecute) {
             $numParams = [];
             $i = 0;
             $j = 0;
-            $this->numQueryRender = preg_replace_callback(
+            $sql = preg_replace_callback(
                 '~(?:\'(?:\'\'|\\\\\'|[^\'])*\')?+\K(?:\?|:\w+)~s',
-                function ($matches) use (&$numParams, &$i, &$j) {
-                    $numParams[++$i] = $this->params[$matches[0] === '?' ? ++$j : $matches[0]];
+                function ($matches) use ($params, &$numParams, &$i, &$j) {
+                    $numParams[++$i] = $params[$matches[0] === '?' ? ++$j : $matches[0]];
 
                     return '?';
                 },
-                $this->_render()
+                $sql
             );
-            $this->params = $numParams;
-
-            return parent::execute($connection);
-        } finally {
-            $this->params = $this->numQueryParamsBackup;
-            $this->numQueryParamsBackup = null;
-            $this->numQueryRender = null;
+            $params = $numParams;
         }
+
+        return [$sql, $params];
     }
-
-    public function render(): string
-    {
-        if ($this->numQueryParamsBackup !== null) {
-            return $this->numQueryRender;
-        }
-
-        return $this->_render();
-    }
-
-    public function getDebugQuery(): string
-    {
-        if ($this->numQueryParamsBackup === null) {
-            return parent::getDebugQuery();
-        }
-
-        $paramsBackup = $this->params;
-        $numQueryRenderBackupBackup = $this->numQueryParamsBackup;
-        $numQueryRenderBackup = $this->numQueryRender;
-        try {
-            $this->params = $this->numQueryParamsBackup;
-            $this->numQueryParamsBackup = null;
-            $this->numQueryRender = null;
-
-            return parent::getDebugQuery();
-        } finally {
-            $this->params = $paramsBackup;
-            $this->numQueryParamsBackup = $numQueryRenderBackupBackup;
-            $this->numQueryRender = $numQueryRenderBackup;
-        }
-    }
-
-    /// }}}
 }

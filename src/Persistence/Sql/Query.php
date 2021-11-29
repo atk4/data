@@ -51,16 +51,6 @@ class Query extends Expression
     /** @var string */
     protected $template_truncate = 'truncate table [table_noalias]';
 
-    /**
-     * Name or alias of base table to use when using default join().
-     *
-     * This is set by table(). If you are using multiple tables,
-     * then $main_table is set to false as it is irrelevant.
-     *
-     * @var false|string|null
-     */
-    protected $main_table;
-
     // {{{ Field specification and rendering
 
     /**
@@ -184,16 +174,35 @@ class Query extends Expression
             $alias = $table;
         }
 
-        // main_table will be set only if table() is called once.
-        // it's used as "default table" when joining with other tables, see join().
-        // on multiple calls, main_table will be false and we won't
-        // be able to join easily anymore.
-        $this->main_table = ($this->main_table === null && $alias !== null ? $alias : false);
-
         // save table in args
         $this->_set_args('table', $alias, $table);
 
         return $this;
+    }
+
+    /**
+     * Name or alias of base table to use when using default join().
+     *
+     * It is set by table(). If you are using multiple tables,
+     * then false is returned as it is irrelevant.
+     *
+     * @return string|false|null
+     */
+    protected function getMainTable()
+    {
+        $c = count($this->args['table'] ?? []);
+        if ($c === 0) {
+            return null;
+        } elseif ($c !== 1) {
+            return false;
+        }
+
+        $alias = array_key_first($this->args['table']);
+        if (!is_int($alias)) {
+            return $alias;
+        }
+
+        return $this->args['table'][$alias];
     }
 
     /**
@@ -330,7 +339,7 @@ class Query extends Expression
     // {{{ join()
 
     /**
-     * Joins your query with another table. Join will use $main_table
+     * Joins your query with another table. Join will use $this->getMainTable()
      * to reference the main table, unless you specify it explicitly.
      *
      * Examples:
@@ -397,7 +406,7 @@ class Query extends Expression
                 $m1 = null;
             }
             if ($m1 === null) {
-                $m1 = $this->main_table;
+                $m1 = $this->getMainTable();
             }
 
             // Identify fields we use for joins
@@ -1065,19 +1074,18 @@ class Query extends Expression
     public function __debugInfo(): array
     {
         $arr = [
-            'R' => false,
-            'mode' => $this->mode,
+            //'mode' => $this->mode,
+            'R' => 'n/a',
+            'R_params' => 'n/a',
             //'template' => $this->template,
-            //'params' => $this->params,
-            //'connection' => $this->connection,
-            //'main_table' => $this->main_table,
-            //'args' => $this->args,
+            //'templateArgs' => $this->args,
         ];
 
         try {
             $arr['R'] = $this->getDebugQuery();
+            $arr['R_params'] = $this->render()[1];
         } catch (\Exception $e) {
-            $arr['R'] = $e->getMessage();
+            $arr['R'] = get_class($e) . ': ' . $e->getMessage();
         }
 
         return $arr;
@@ -1086,12 +1094,21 @@ class Query extends Expression
     // {{{ Miscelanious
 
     /**
-     * Renders query template. If the template is not explicitly set will use "select" mode.
+     * Renders query template. If the template is not explicitly use "select" mode.
      */
-    public function render(): string
+    public function render(): array
     {
-        if (!$this->template) {
-            $this->mode('select');
+        if ($this->template === null) {
+            $modeBackup = $this->mode;
+            $templateBackup = $this->template;
+            try {
+                $this->mode('select');
+
+                return parent::render();
+            } finally {
+                $this->mode = $modeBackup;
+                $this->template = $templateBackup;
+            }
         }
 
         return parent::render();
@@ -1219,7 +1236,7 @@ class Query extends Expression
         $q = $this->dsql(['template' => '[case]']);
 
         if ($operand !== null) {
-            $q->args['case_operand'] = $operand;
+            $q->args['case_operand'] = [$operand];
         }
 
         return $q;
@@ -1249,7 +1266,7 @@ class Query extends Expression
      */
     public function caseElse($else)
     {
-        $this->args['case_else'] = $else;
+        $this->args['case_else'] = [$else];
 
         return $this;
     }
@@ -1264,7 +1281,7 @@ class Query extends Expression
 
         // operand
         if ($short_form = isset($this->args['case_operand'])) {
-            $ret .= ' ' . $this->consume($this->args['case_operand'], self::ESCAPE_IDENTIFIER_SOFT);
+            $ret .= ' ' . $this->consume($this->args['case_operand'][0], self::ESCAPE_IDENTIFIER_SOFT);
         }
 
         // when, then
@@ -1292,7 +1309,7 @@ class Query extends Expression
 
         // else
         if (array_key_exists('case_else', $this->args)) {
-            $ret .= ' else ' . $this->consume($this->args['case_else'], self::ESCAPE_PARAM);
+            $ret .= ' else ' . $this->consume($this->args['case_else'][0], self::ESCAPE_PARAM);
         }
 
         return ' case' . $ret . ' end';

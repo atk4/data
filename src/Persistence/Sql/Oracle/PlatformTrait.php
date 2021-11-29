@@ -80,7 +80,7 @@ trait PlatformTrait
                 'pk' => $nameIdentifier->getName(),
                 'pk_seq' => $pkSeq,
             ]
-        )->render();
+        )->render()[0];
 
         return $sqls;
     }

@@ -13,10 +13,16 @@ class Query extends BaseQuery
 {
     protected $paramBase = 'xxaaaa';
 
-    public function render(): string
+    public function render(): array
     {
-        if ($this->mode === 'select' && $this->main_table === null) {
-            $this->table('DUAL');
+        if ($this->mode === 'select' && count($this->args['table'] ?? []) === 0) {
+            try {
+                $this->table('DUAL');
+
+                return parent::render();
+            } finally {
+                unset($this->args['table']);
+            }
         }
 
         return parent::render();

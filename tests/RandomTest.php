@@ -9,7 +9,13 @@ use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\Sql\Connection;
+use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class Model_Rate extends Model
 {
@@ -500,23 +506,71 @@ class RandomTest extends TestCase
         $m->duplicate(2)->save();
     }
 
-    public function testTableNameDots(): void
+    public function testTableWithSchema(): void
     {
-        $d = new Model($this->db, ['table' => 'db2.doc']);
-        $d->addField('name');
+        if ($this->getDatabasePlatform() instanceof SqlitePlatform || Connection::isComposerDbal2x()) {
+            $userSchema = 'db1';
+            $docSchema = 'db2';
+            $runWithDb = false;
+        } else {
+            $dbSchema = $this->db->connection->dsql()
+                ->field(null ?? new Expression($this->getDatabasePlatform()->getCurrentDatabaseExpression())) // @phpstan-ignore-line for DBAL 2.x
+                ->getOne();
+            $userSchema = $dbSchema;
+            $docSchema = $dbSchema;
+            $runWithDb = true;
 
-        $m = new Model($this->db, ['table' => 'db1.user']);
-        $m->addField('name');
+            if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform
+                || $this->getDatabasePlatform() instanceof SQLServerPlatform
+                || $this->getDatabasePlatform() instanceof OraclePlatform) {
+                $userSchema = 'functional_is_failing_db1';
+                $docSchema = 'functional_is_failing_db2';
+                $runWithDb = false;
+            }
+        }
 
-        $d->hasOne('user_id', ['model' => $m])->addTitle();
-        $m->hasMany('Documents', ['model' => $d]);
+        $user = new Model($this->db, ['table' => $userSchema . '.user']);
+        $user->addField('name');
 
-        $d->addCondition('user', 'Sarah');
+        $doc = new Model($this->db, ['table' => $docSchema . '.doc']);
+        $doc->addField('name');
+        $doc->hasOne('user_id', ['model' => $user])->addTitle();
+        $doc->addCondition('user', 'Sarah');
+        $user->hasMany('Documents', ['model' => $doc]);
+
+        // render twice, render must be stable
+        $selectAction = $doc->action('select');
+        $render = $selectAction->render();
+        $this->assertSame($render, $selectAction->render());
+        $this->assertSame($render, $doc->action('select')->render());
 
         $this->assertSameSql(
-            'select "id", "name", "user_id", (select "name" from "db1"."user" "_u_e8701ad48ba0" where "id" = "db2"."doc"."user_id") "user" from "db2"."doc" where (select "name" from "db1"."user" "_u_e8701ad48ba0" where "id" = "db2"."doc"."user_id") = :a',
-            $d->action('select')->render()
+            'select "id", "name", "user_id", (select "name" from "' . $userSchema . '"."user" "_u_e8701ad48ba0" where "id" = "' . $docSchema . '"."doc"."user_id") "user" from "' . $docSchema . '"."doc" where (select "name" from "' . $userSchema . '"."user" "_u_e8701ad48ba0" where "id" = "' . $docSchema . '"."doc"."user_id") = :a',
+            $render[0]
         );
+
+        if ($runWithDb) {
+            $this->createMigrator($user)->create();
+            $this->createMigrator($doc)->create();
+
+            $user->createEntity()
+                ->set('name', 'Sarah')
+                ->save();
+
+            $doc->createEntity()
+                ->set('name', 'Invoice 7')
+                ->set('user_id', 1)
+                ->save();
+
+            $this->assertSame([
+                [
+                    'id' => 1,
+                    'name' => 'Invoice 7',
+                    'user_id' => 1,
+                    'user' => 'Sarah',
+                ],
+            ], $doc->export());
+        }
     }
 }
 

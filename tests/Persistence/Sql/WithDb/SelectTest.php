@@ -288,7 +288,7 @@ class SelectTest extends TestCase
             )
                 ->where($columnAlias, 'žlutý_😀') // as param
                 ->group($tableAlias . '.' . $columnAlias)
-                ->having($this->e('{}', [$columnAlias])->render() . ' = \'žlutý_😀\'') // as string literal (mapped to N'xxx' with MSSQL platform)
+                ->having($this->e('{}', [$columnAlias])->render()[0] . ' = \'žlutý_😀\'') // as string literal (mapped to N'xxx' with MSSQL platform)
                 ->getRow()
         );
     }
@@ -307,7 +307,7 @@ class SelectTest extends TestCase
             $maxIdExpr = $this->c->dsql()->table($table)->field($this->c->expr('max({})', [$pk]));
             if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
                 $query = $this->c->dsql()->table('INFORMATION_SCHEMA.TABLES')
-                    ->field($this->c->expr('greatest({} - 1, (' . $maxIdExpr->render() . '))', ['AUTO_INCREMENT']))
+                    ->field($this->c->expr('greatest({} - 1, (' . $maxIdExpr->render()[0] . '))', ['AUTO_INCREMENT']))
                     ->where('TABLE_NAME', $table);
             } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
                 $query = $this->c->dsql()->field($this->c->expr('currval(pg_get_serial_sequence([], []))', [$table, $pk]));

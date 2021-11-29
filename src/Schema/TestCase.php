@@ -14,7 +14,7 @@ use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 
-class TestCase extends BaseTestCase
+abstract class TestCase extends BaseTestCase
 {
     /** @var Persistence|Persistence\Sql */
     public $db;

@@ -57,7 +57,7 @@ class ReferenceSqlTest extends TestCase
 
         $this->assertSameSql(
             'select "id", "amount", "user_id" from "order" "_O_7442e29d7d53" where "user_id" in (select "id" from "user" where "id" > :a)',
-            $oo->action('select')->render()
+            $oo->action('select')->render()[0]
         );
     }
 
@@ -73,7 +73,7 @@ class ReferenceSqlTest extends TestCase
 
         $this->assertSameSql(
             'select "id", "amount", "user_id" from "order" "_O_7442e29d7d53" where "user_id" = "user"."id"',
-            $u->refLink('Orders')->action('select')->render()
+            $u->refLink('Orders')->action('select')->render()[0]
         );
     }
 
@@ -114,7 +114,7 @@ class ReferenceSqlTest extends TestCase
 
         $this->assertSameSql(
             'select "id", "code", "name" from "currency" "_c_b5fddf1ef601" where "code" = "user"."currency_code"',
-            $u->refLink('cur')->action('select')->render()
+            $u->refLink('cur')->action('select')->render()[0]
         );
     }
 
@@ -153,7 +153,7 @@ class ReferenceSqlTest extends TestCase
 
         $this->assertSameSql(
             'select "id", "name" from "user" "_u_e8701ad48ba0" where "id" in (select "user_id" from "order" where ("amount" > :a and "amount" < :b))',
-            $o->ref('user_id')->action('select')->render()
+            $o->ref('user_id')->action('select')->render()[0]
         );
     }
 
@@ -224,8 +224,8 @@ class ReferenceSqlTest extends TestCase
         $i->addExpression('total_net', $i->refLink('line')->action('fx', ['sum', 'total_net']));
 
         $this->assertSameSql(
-            'select "invoice"."id", "invoice"."ref_no", (select sum("total_net") from "invoice_line" "_l_6438c669e0d0" where "invoice_id" = "invoice"."id") "total_net" from "invoice"',
-            $i->action('select')->render()
+            'select "id", "ref_no", (select sum("total_net") from "invoice_line" "_l_6438c669e0d0" where "invoice_id" = "invoice"."id") "total_net" from "invoice"',
+            $i->action('select')->render()[0]
         );
     }
 

@@ -142,7 +142,7 @@ class ConnectionTest extends TestCase
 
         $this->assertSame(
             'select (2+2)',
-            $q->render()
+            $q->render()[0]
         );
 
         $this->expectException(\Atk4\Data\Persistence\Sql\Exception::class);
