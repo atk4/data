@@ -145,7 +145,7 @@ abstract class Connection
     /**
      * Connect to database and return connection class.
      *
-     * @param string|\PDO|DbalConnection $dsn
+     * @param string|DbalConnection|\PDO $dsn
      * @param string|null                $user
      * @param string|null                $password
      * @param array                      $args
@@ -154,12 +154,7 @@ abstract class Connection
      */
     public static function connect($dsn, $user = null, $password = null, $args = [])
     {
-        // If it's already PDO or DbalConnection object, then we simply use it
-        if ($dsn instanceof \PDO) {
-            $connectionClass = self::resolveConnectionClass($dsn->getAttribute(\PDO::ATTR_DRIVER_NAME));
-            $dbalDriverConnection = $connectionClass::connectDbalDriverConnection(['pdo' => $dsn]);
-            $dbalConnection = $connectionClass::connectDbalConnection($dbalDriverConnection);
-        } elseif ($dsn instanceof DbalConnection) {
+        if ($dsn instanceof DbalConnection) {
             if (self::isComposerDbal2x()) {
                 $pdo = $dsn->getWrappedConnection();
                 assert($pdo instanceof \PDO);
@@ -169,6 +164,10 @@ abstract class Connection
                 $connectionClass = self::resolveConnectionClass(self::getDriverNameFromDbalDriverConnection($pdoConnection));
             }
             $dbalConnection = $dsn;
+        } elseif ($dsn instanceof \PDO) {
+            $connectionClass = self::resolveConnectionClass($dsn->getAttribute(\PDO::ATTR_DRIVER_NAME));
+            $dbalDriverConnection = $connectionClass::connectDbalDriverConnection(['pdo' => $dsn]);
+            $dbalConnection = $connectionClass::connectDbalConnection($dbalDriverConnection);
         } else {
             $dsn = static::normalizeDsn($dsn, $user, $password);
             $connectionClass = self::resolveConnectionClass($dsn['driverSchema']);
