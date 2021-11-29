@@ -14,6 +14,8 @@ use Atk4\Data\Persistence\Sql\Exception as SqlException;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Query;
+use Doctrine\DBAL\Connection as DbalConnection;
+use Doctrine\DBAL\Driver\Connection as DbalDriverConnection;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
@@ -81,20 +83,20 @@ class Sql extends Persistence
     /**
      * Constructor.
      *
-     * @param Connection|string $connection
-     * @param string            $user
-     * @param string            $password
-     * @param array             $args
+     * @param Connection|string|array|DbalConnection|DbalDriverConnection $connection
+     * @param string                                                      $user
+     * @param string                                                      $password
+     * @param array                                                       $args
      */
     public function __construct($connection, $user = null, $password = null, $args = [])
     {
-        if (is_object($connection)) {
-            $this->connection = Connection::assertInstanceOf($connection);
+        if ($connection instanceof Connection) {
+            $this->connection = $connection;
 
             return;
         }
 
-        // attempt to connect.
+        // attempt to connect
         $this->connection = Connection::connect(
             $connection,
             $user,
