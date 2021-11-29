@@ -7,6 +7,7 @@ namespace Atk4\Data\Persistence\Sql;
 use Atk4\Core\DiContainerTrait;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Connection as DbalConnection;
+use Doctrine\DBAL\Driver\Connection as DbalDriverConnection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Event\ConnectionEventArgs;
 use Doctrine\DBAL\Events;
@@ -156,7 +157,8 @@ abstract class Connection
         // If it's already PDO or DbalConnection object, then we simply use it
         if ($dsn instanceof \PDO) {
             $connectionClass = self::resolveConnectionClass($dsn->getAttribute(\PDO::ATTR_DRIVER_NAME));
-            $dbalConnection = $connectionClass::connectDbalConnection(['pdo' => $dsn]);
+            $dbalDriverConnection = $connectionClass::connectDbalDriverConnection(['pdo' => $dsn]);
+            $dbalConnection = $connectionClass::connectDbalConnection($dbalDriverConnection);
         } elseif ($dsn instanceof DbalConnection) {
             /** @var \PDO */
             $pdo = self::isComposerDbal2x()
@@ -167,7 +169,8 @@ abstract class Connection
         } else {
             $dsn = static::normalizeDsn($dsn, $user, $password);
             $connectionClass = self::resolveConnectionClass($dsn['driverSchema']);
-            $dbalConnection = $connectionClass::connectDbalConnection($dsn);
+            $dbalDriverConnection = $connectionClass::connectDbalDriverConnection($dsn);
+            $dbalConnection = $connectionClass::connectDbalConnection($dbalDriverConnection);
         }
 
         return new $connectionClass(array_merge([
@@ -180,6 +183,15 @@ abstract class Connection
         return !class_exists(DbalResult::class);
     }
 
+    private static function getDriverNameFromDbalDriverConnection(DbalDriverConnection $connection): string
+    {
+        while (self::isComposerDbal2x() ? $connection instanceof \PDO : $connection = $connection->getWrappedConnection()) {
+            if ($connection instanceof \PDO) {
+                return $connection->getAttribute(\PDO::ATTR_DRIVER_NAME);
+            }
+        }
+    }
+
     protected static function createDbalEventManager(): EventManager
     {
         return new EventManager();
@@ -187,10 +199,8 @@ abstract class Connection
 
     /**
      * Establishes connection based on a $dsn.
-     *
-     * @return DbalConnection
      */
-    protected static function connectDbalConnection(array $dsn)
+    protected static function connectDbalDriverConnection(array $dsn): DbalDriverConnection
     {
         if (isset($dsn['pdo'])) {
             $pdo = $dsn['pdo'];
@@ -205,7 +215,13 @@ abstract class Connection
                     . ';charset=' . $enforceCharset;
             }
 
-            $pdo = new \PDO($dsn['dsn'], $dsn['user'], $dsn['pass']);
+            if (self::isComposerDbal2x()) {
+                /** @var string */
+                $pdoClass = '\Doctrine\DBAL\Driver\PDOConnection';
+            } else {
+                $pdoClass = \PDO::class;
+            }
+            $pdo = new $pdoClass($dsn['dsn'], $dsn['user'], $dsn['pass']);
         }
 
         // Doctrine DBAL 3.x does not support to create DBAL Connection with already
@@ -228,7 +244,7 @@ abstract class Connection
             \Closure::bind(function () use ($pdoConnection, $pdo): void {
                 $pdoConnection->connection = $pdo;
             }, null, \Doctrine\DBAL\Driver\PDO\Connection::class)();
-            $pdoAttrDriverName = $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
+            $pdoAttrDriverName = self::getDriverNameFromDbalDriverConnection($pdoConnection);
             if ($pdoAttrDriverName === 'sqlsrv') {
                 $pdoConnection = new \Doctrine\DBAL\Driver\PDO\SQLSrv\Connection($pdoConnection);
             }
@@ -248,6 +264,18 @@ abstract class Connection
                 new ConnectionEventArgs($dbalConnection)
             );
         }
+
+        return $dbalConnection->getWrappedConnection();
+    }
+
+    protected static function connectDbalConnection(DbalDriverConnection $dbalDriverConnection): DbalConnection
+    {
+        $dbalConnection = DriverManager::getConnection([
+            'driver' => 'pdo_' . self::getDriverNameFromDbalDriverConnection($dbalDriverConnection),
+        ], null, (static::class)::createDbalEventManager());
+        \Closure::bind(function () use ($dbalConnection, $dbalDriverConnection): void {
+            $dbalConnection->_conn = $dbalDriverConnection;
+        }, null, \Doctrine\DBAL\Connection::class)();
 
         if ($dbalConnection->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             \Closure::bind(function () use ($dbalConnection) {
