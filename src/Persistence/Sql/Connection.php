@@ -201,7 +201,7 @@ abstract class Connection
     {
         while (self::isComposerDbal2x() ? $connection instanceof \PDO : $connection = $connection->getWrappedConnection()) {
             if ($connection instanceof \PDO) {
-                return $connection->getAttribute(\PDO::ATTR_DRIVER_NAME);
+                return 'pdo_' . $connection->getAttribute(\PDO::ATTR_DRIVER_NAME);
             }
         }
 
@@ -234,7 +234,7 @@ abstract class Connection
     protected static function connectFromDbalDriverConnection(DbalDriverConnection $dbalDriverConnection): DbalConnection
     {
         $dbalConnection = DriverManager::getConnection([
-            'driver' => 'pdo_' . self::getDriverNameFromDbalDriverConnection($dbalDriverConnection),
+            'driver' => self::getDriverNameFromDbalDriverConnection($dbalDriverConnection),
         ], null, (static::class)::createDbalEventManager());
         \Closure::bind(function () use ($dbalConnection, $dbalDriverConnection): void {
             $dbalConnection->_conn = $dbalDriverConnection;
