@@ -24,7 +24,7 @@ connection in a global variable or global class::
     Determine which Connection class should be used for specified $dsn,
     establish connection to DB by creating new object of this connection class and return.
 
-    :param string $dsn: DSN, see http://php.net/manual/en/ref.pdo-mysql.connection.php
+    :param string $dsn: DSN, see https://www.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/configuration.html
     :param string $user: username
     :param string $password: password
     :param array  $args: Other default properties for connection class.
@@ -88,7 +88,7 @@ if you connect to vendor that does not use PDO.
 
 Developers can register custom classes to handle driver types using the `Connecion::registerConnectionClass` method::
 
-   Connection::registerConnectionClass(Custom\MySQL\Connection::class, 'mysql');
+   Connection::registerConnectionClass(Custom\MySQL\Connection::class, 'pdo_mysql');
 
 .. php:method:: connectDbalConnection(array $dsn)
 

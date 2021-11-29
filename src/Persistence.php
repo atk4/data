@@ -42,20 +42,20 @@ abstract class Persistence
     public static function connect($dsn, string $user = null, string $password = null, array $args = []): self
     {
         // parse DSN string
-        $dsn = \Atk4\Data\Persistence\Sql\Connection::normalizeDsn($dsn, $user, $password);
+        $dsn = Persistence\Sql\Connection::normalizeDsn($dsn, $user, $password);
 
-        switch ($dsn['driverSchema']) {
-            case 'sqlite':
-            case 'mysql':
-            case 'pgsql':
-            case 'sqlsrv':
-            case 'oci':
-                $persistence = new Persistence\Sql($dsn['dsn'], $dsn['user'], $dsn['pass'], $args);
+        switch ($dsn['driver']) {
+            case 'pdo_sqlite':
+            case 'pdo_mysql':
+            case 'pdo_pgsql':
+            case 'pdo_sqlsrv':
+            case 'pdo_oci':
+                $persistence = new Persistence\Sql($dsn, $dsn['user'], $dsn['password'], $args);
 
                 return $persistence;
             default:
-                throw (new Exception('Unable to determine persistence driver type from DSN'))
-                    ->addMoreInfo('dsn', $dsn['dsn']);
+                throw (new Exception('Unable to determine persistence driver type'))
+                    ->addMoreInfo('dsn', $dsn);
         }
     }
 
