@@ -145,10 +145,10 @@ abstract class Connection
     /**
      * Connect to database and return connection class.
      *
-     * @param string|DbalConnection|\PDO $dsn
-     * @param string|null                $user
-     * @param string|null                $password
-     * @param array                      $args
+     * @param string|DbalConnection|DbalDriverConnection|\PDO $dsn
+     * @param string|null                                     $user
+     * @param string|null                                     $password
+     * @param array                                           $args
      *
      * @return Connection
      */
@@ -164,6 +164,9 @@ abstract class Connection
                 $connectionClass = self::resolveConnectionClass(self::getDriverNameFromDbalDriverConnection($pdoConnection));
             }
             $dbalConnection = $dsn;
+        } elseif ($dsn instanceof DbalDriverConnection) {
+            $connectionClass = self::resolveConnectionClass(self::getDriverNameFromDbalDriverConnection($dsn));
+            $dbalConnection = $connectionClass::connectDbalConnection($dsn);
         } elseif ($dsn instanceof \PDO) {
             $connectionClass = self::resolveConnectionClass($dsn->getAttribute(\PDO::ATTR_DRIVER_NAME));
             $dbalDriverConnection = $connectionClass::connectDbalDriverConnection(['pdo' => $dsn]);
