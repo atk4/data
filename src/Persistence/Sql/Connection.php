@@ -129,17 +129,14 @@ abstract class Connection
      */
     public static function connect($dsn, $user = null, $password = null, $args = [])
     {
-        // If it's already PDO or DbalConnection object, then we simply use it
         if ($dsn instanceof \PDO) {
             $connectionClass = self::resolveConnectionClass($dsn->getAttribute(\PDO::ATTR_DRIVER_NAME));
-            $dbalConnection = $connectionClass::connectDbalConnection(['pdo' => $dsn]);
-        } elseif ($dsn instanceof DbalConnection) {
-            /** @var \PDO */
-            $pdo = self::isComposerDbal2x()
-                ? $dsn->getWrappedConnection()
-                : $dsn->getWrappedConnection()->getWrappedConnection();
-            $connectionClass = self::resolveConnectionClass($pdo->getAttribute(\PDO::ATTR_DRIVER_NAME));
-            $dbalConnection = $dsn;
+            $dbalConnection = $connectionClass::createDbalConnectionFromPdo($dsn);
+        }
+
+        if ($dsn instanceof DbalConnection) {
+            $connectionClass = self::resolveConnectionClass($this->getDriverNameFromDbalConnection($dbalConnection));
+            $dbalConnection = $connectionClass::connectDbalConnection(['connection' => $dsn]);
         } else {
             $dsn = static::normalizeDsn($dsn, $user, $password);
             $connectionClass = self::resolveConnectionClass($dsn['driverSchema']);
@@ -175,39 +172,9 @@ abstract class Connection
         return self::$connectionClassRegistry[$driverSchema];
     }
 
-    final public static function isComposerDbal2x(): bool
+
+    protected static function createDbalConnectionFromPdo(\PDO $pdo): DbalConnection
     {
-        return !class_exists(DbalResult::class);
-    }
-
-    protected static function createDbalEventManager(): EventManager
-    {
-        return new EventManager();
-    }
-
-    /**
-     * Establishes connection based on a $dsn.
-     *
-     * @return DbalConnection
-     */
-    protected static function connectDbalConnection(array $dsn)
-    {
-        if (isset($dsn['pdo'])) {
-            $pdo = $dsn['pdo'];
-        } else {
-            $enforceCharset = [
-                'mysql' => 'utf8mb4',
-                'oci' => 'AL32UTF8',
-            ][$dsn['driverSchema']] ?? null;
-
-            if ($enforceCharset !== null) {
-                $dsn['dsn'] = preg_replace('~; *charset=[^;]+~i', '', $dsn['dsn'])
-                    . ';charset=' . $enforceCharset;
-            }
-
-            $pdo = new \PDO($dsn['dsn'], $dsn['user'], $dsn['pass']);
-        }
-
         // Doctrine DBAL 3.x does not support to create DBAL Connection with already
         // instanced PDO, so create it without PDO first, see:
         // https://github.com/doctrine/dbal/blob/v2.10.1/lib/Doctrine/DBAL/DriverManager.php#L179
@@ -239,6 +206,52 @@ abstract class Connection
             \Closure::bind(function () use ($dbalConnection, $pdoConnection): void {
                 $dbalConnection->_conn = $pdoConnection;
             }, null, \Doctrine\DBAL\Connection::class)();
+        }
+
+        return $dbalConnection;
+    }
+
+    private function getDriverNameFromDbalConnection(DbalConnection $connection): string
+    {
+        while ($pdo = $connection->getWrappedConnection()) {
+            if ($pdo instanceof \PDO) {
+                return $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
+            }
+        }
+    }
+
+    final public static function isComposerDbal2x(): bool
+    {
+        return !class_exists(DbalResult::class);
+    }
+
+    protected static function createDbalEventManager(): EventManager
+    {
+        return new EventManager();
+    }
+
+    /**
+     * Establishes connection based on a $dsn.
+     *
+     * @return DbalConnection
+     */
+    protected static function connectDbalConnection(array $dsn)
+    {
+        if (isset($dsn['connection'])) {
+            $dbalConnection = $dsn['connection'];
+        } else {
+            $enforceCharset = [
+                'mysql' => 'utf8mb4',
+                'oci' => 'AL32UTF8',
+            ][$dsn['driverSchema']] ?? null;
+
+            if ($enforceCharset !== null) {
+                $dsn['dsn'] = preg_replace('~; *charset=[^;]+~i', '', $dsn['dsn'])
+                    . ';charset=' . $enforceCharset;
+            }
+
+            $pdo = new \PDO($dsn['dsn'], $dsn['user'], $dsn['pass']);
+            $dbalConnection = static::createDbalConnectionFromPdo($pdo);
         }
 
         // postConnect event is not dispatched when PDO is passed, dispatch it manually
