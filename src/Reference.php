@@ -194,17 +194,18 @@ class Reference
         // set table_alias
         $defaults['table_alias'] ??= $this->table_alias;
 
-        if (is_object($this->model)) {
-            if ($this->model instanceof \Closure) {
-                // if model is Closure, then call the closure and whci should return a model
-                $theirModel = ($this->model)($this->getOurModel(null), $this, $defaults);
-            } else {
-                // if model is set, then use clone of this model
-                $theirModel = Factory::factory(clone $this->model, $defaults);
-            }
+        // if model is Closure, then call the closure and it should return a model
+        if ($this->model instanceof \Closure) {
+            $m = ($this->model)($this->getOurModel(null), $this, $defaults);
+        } else {
+            $m = $this->model;
+        }
+
+        if (is_object($m)) {
+            $theirModel = Factory::factory(clone $m, $defaults);
         } else {
             // add model from seed
-            $modelDefaults = $this->model;
+            $modelDefaults = $m;
             $theirModelSeed = [$modelDefaults[0]];
             unset($modelDefaults[0]);
             $defaults = array_merge($modelDefaults, $defaults);
