@@ -1449,10 +1449,10 @@ class Model implements \IteratorAggregate
     {
         $reloadAfterSaveBackup = $this->reload_after_save;
         try {
-            $this->reload_after_save = false;
+            $this->getModel()->reload_after_save = false;
             $this->save($data);
         } finally {
-            $this->reload_after_save = $reloadAfterSaveBackup;
+            $this->getModel()->reload_after_save = $reloadAfterSaveBackup;
         }
 
         $this->unload();
@@ -1700,10 +1700,10 @@ class Model implements \IteratorAggregate
         // save data fields
         $reloadAfterSaveBackup = $this->reload_after_save;
         try {
-            $this->reload_after_save = false;
+            $this->getModel()->reload_after_save = false;
             $this->save($row);
         } finally {
-            $this->reload_after_save = $reloadAfterSaveBackup;
+            $this->getModel()->reload_after_save = $reloadAfterSaveBackup;
         }
 
         // store id value
@@ -2063,9 +2063,7 @@ class Model implements \IteratorAggregate
         }
 
         if ($this->isEntity() && isset($model->getModelOnlyProperties()[$name])) {
-            $model->{$name} = $value;
-
-            return;
+            $this->assertIsModel();
         }
 
         $this->__di_set($name, $value);
@@ -2082,9 +2080,7 @@ class Model implements \IteratorAggregate
         }
 
         if ($this->isEntity() && isset($model->getModelOnlyProperties()[$name])) {
-            unset($model->{$name});
-
-            return;
+            $this->assertIsModel();
         }
 
         $this->__di_unset($name);

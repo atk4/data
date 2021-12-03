@@ -131,7 +131,9 @@ trait ReferencesTrait
      */
     public function getRef(string $link): Reference
     {
-        return $this->getModel(true)->getElement('#ref_' . $link);
+        $this->assertIsModel();
+
+        return $this->getElement('#ref_' . $link);
     }
 
     /**
@@ -141,8 +143,10 @@ trait ReferencesTrait
      */
     public function getRefs(): array
     {
+        $this->assertIsModel();
+
         $refs = [];
-        foreach (array_keys($this->getModel(true)->elements) as $k) {
+        foreach (array_keys($this->elements) as $k) {
             if (str_starts_with($k, '#ref_')) {
                 $link = substr($k, strlen('#ref_'));
                 $refs[$link] = $this->getRef($link);
@@ -157,7 +161,7 @@ trait ReferencesTrait
      */
     public function ref(string $link, array $defaults = []): Model
     {
-        return $this->getRef($link)->ref($this, $defaults);
+        return $this->getModel(true)->getRef($link)->ref($this, $defaults);
     }
 
     /**
@@ -165,7 +169,7 @@ trait ReferencesTrait
      */
     public function refModel(string $link, array $defaults = []): Model
     {
-        return $this->getRef($link)->refModel($this, $defaults);
+        return $this->getModel(true)->getRef($link)->refModel($this, $defaults);
     }
 
     /**
@@ -173,6 +177,6 @@ trait ReferencesTrait
      */
     public function refLink(string $link, array $defaults = []): Model
     {
-        return $this->getRef($link)->refLink($this, $defaults);
+        return $this->getModel(true)->getRef($link)->refLink($this, $defaults);
     }
 }
