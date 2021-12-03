@@ -380,14 +380,10 @@ class Field implements Expressionable
         return $this->getValueForCompare($value) === $this->getValueForCompare($value2);
     }
 
-    public function getReference(Model $entity = null): ?Reference
+    public function getReference(): ?Reference
     {
-        if ($entity !== null) {
-            $entity->assertIsEntity($this->getOwner());
-        }
-
         return $this->referenceLink !== null
-            ? ($entity ?? $this->getOwner())->getRef($this->referenceLink)
+            ? $this->getOwner()->getRef($this->referenceLink)
             : null;
     }
 
