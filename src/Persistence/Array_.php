@@ -187,7 +187,7 @@ class Array_ extends Persistence
 
     private function filterRowDataOnlyModelFields(Model $model, array $rowData): array
     {
-        return array_intersect_key($rowData, array_map(fn (Field $f) => $f->name, $model->getFields()));
+        return array_intersect_key($rowData, array_map(fn (Field $f) => $f->short_name, $model->getFields()));
     }
 
     public function tryLoad(Model $model, $id): ?array
