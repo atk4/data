@@ -36,19 +36,19 @@ class EmailField extends Field
         }
 
         if (strpos($email, '@') === false) {
-            throw new ValidationException([$this->name => 'Email address does not have domain'], $this->getOwner());
+            throw new ValidationException([$this->short_name => 'Email address does not have domain'], $this->getOwner());
         }
 
         [$user, $domain] = explode('@', $email, 2);
         $domain = idn_to_ascii($domain, \IDNA_DEFAULT, \INTL_IDNA_VARIANT_UTS46); // always convert domain to ASCII
 
         if (!filter_var($user . '@' . $domain, \FILTER_VALIDATE_EMAIL)) {
-            throw new ValidationException([$this->name => 'Email address format is invalid'], $this->getOwner());
+            throw new ValidationException([$this->short_name => 'Email address format is invalid'], $this->getOwner());
         }
 
         if ($this->dns_check) {
             if (!$this->hasAnyDnsRecord($domain)) {
-                throw new ValidationException([$this->name => 'Email address domain does not exist'], $this->getOwner());
+                throw new ValidationException([$this->short_name => 'Email address domain does not exist'], $this->getOwner());
             }
         }
 

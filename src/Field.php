@@ -279,7 +279,7 @@ class Field implements Expressionable
                 $messages[] = $e->getMessage();
             } while ($e = $e->getPrevious());
 
-            throw (new ValidationException([$this->name => implode(': ', $messages)], $this->getOwner()))
+            throw (new ValidationException([$this->short_name => implode(': ', $messages)], $this->getOwner()))
                 ->addMoreInfo('field', $this);
         }
     }
