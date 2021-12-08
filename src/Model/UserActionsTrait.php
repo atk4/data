@@ -47,6 +47,16 @@ trait UserActionsTrait
     }
 
     /**
+     * Returns true if user action with a corresponding name exists.
+     *
+     * @param string $name UserAction name
+     */
+    public function hasUserAction(string $name): bool
+    {
+        return $this->_hasInCollection($name, 'userActions');
+    }
+
+    /**
      * Returns list of actions for this model. Can filter actions by records they apply to.
      * It will also skip system user actions (where system === true).
      *
@@ -62,16 +72,6 @@ trait UserActionsTrait
     }
 
     /**
-     * Returns true if user action with a corresponding name exists.
-     *
-     * @param string $name UserAction name
-     */
-    public function hasUserAction(string $name): bool
-    {
-        return $this->_hasInCollection($name, 'userActions');
-    }
-
-    /**
      * Returns one action object of this model. If action not defined, then throws exception.
      *
      * @param string $name Action name
@@ -79,6 +79,20 @@ trait UserActionsTrait
     public function getUserAction(string $name): Model\UserAction
     {
         return $this->_getFromCollection($name, 'userActions');
+    }
+
+    /**
+     * Remove specified action(s).
+     *
+     * @return $this
+     */
+    public function removeUserAction(string $name)
+    {
+        foreach ((array) $name as $action) {
+            $this->_removeFromCollection($action, 'userActions');
+        }
+
+        return $this;
     }
 
     /**
@@ -94,17 +108,39 @@ trait UserActionsTrait
         return $this->getUserAction($name)->execute(...$args);
     }
 
-    /**
-     * Remove specified action(s).
-     *
-     * @return $this
-     */
-    public function removeUserAction(string $name)
+    protected function initUserActions(): void
     {
-        foreach ((array) $name as $action) {
-            $this->_removeFromCollection($action, 'userActions');
-        }
+        // Declare our basic Crud actions for the model.
+        $this->addUserAction('add', [
+            'fields' => true,
+            'modifier' => Model\UserAction::MODIFIER_CREATE,
+            'appliesTo' => Model\UserAction::APPLIES_TO_NO_RECORDS,
+            'callback' => 'save',
+            'description' => 'Add ' . $this->getModelCaption(),
+        ]);
 
-        return $this;
+        $this->addUserAction('edit', [
+            'fields' => true,
+            'modifier' => Model\UserAction::MODIFIER_UPDATE,
+            'appliesTo' => Model\UserAction::APPLIES_TO_SINGLE_RECORD,
+            'callback' => 'save',
+        ]);
+
+        $this->addUserAction('delete', [
+            'appliesTo' => Model\UserAction::APPLIES_TO_SINGLE_RECORD,
+            'modifier' => Model\UserAction::MODIFIER_DELETE,
+            'callback' => function ($model) {
+                return $model->delete();
+            },
+        ]);
+
+        $this->addUserAction('validate', [
+            //'appliesTo' => any!
+            'description' => 'Provided with modified values will validate them but will not save',
+            'modifier' => Model\UserAction::MODIFIER_READ,
+            'fields' => true,
+            'system' => true, // don't show by default
+            'args' => ['intent' => 'string'],
+        ]);
     }
 }
