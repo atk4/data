@@ -437,11 +437,15 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsModel();
 
-        $this->_model = $this;
+        $userActionsBackup = $this->userActions;
         try {
+            $this->_model = $this;
+            $this->userActions = [];
+
             $model = clone $this;
         } finally {
             $this->_model = null;
+            $this->userActions = $userActionsBackup;
         }
         $model->_entityId = null;
 
@@ -458,6 +462,8 @@ class Model implements \IteratorAggregate
      */
     protected function init(): void
     {
+        $this->assertIsModel();
+
         $this->_init();
 
         if ($this->id_field) {

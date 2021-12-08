@@ -80,6 +80,32 @@ class UserAction
     public $atomic = true;
 
     /**
+     * Return model associated with this action.
+     */
+    public function getModel(): Model
+    {
+        return $this->getOwner()->getModel(true); // @phpstan-ignore-line
+    }
+
+    public function getEntity(): Model
+    {
+        if ($this->getOwner()->isEntity()) { // @phpstan-ignore-line
+            return $this->getOwner(); // @phpstan-ignore-line
+        }
+
+        if ($this->entity === null) {
+            $this->setEntity($this->getOwner()->createEntity()); // @phpstan-ignore-line
+        }
+
+        return $this->entity;
+    }
+
+    public function setEntity(Model $entity): void
+    {
+        $this->entity = $entity;
+    }
+
+    /**
      * Attempt to execute callback of the action.
      *
      * @param mixed ...$args
@@ -208,32 +234,6 @@ class UserAction
         }
 
         return $this->confirmation;
-    }
-
-    /**
-     * Return model associated with this action.
-     */
-    public function getModel(): Model
-    {
-        return $this->getOwner()->getModel(true); // @phpstan-ignore-line
-    }
-
-    public function getEntity(): Model
-    {
-        if ($this->getOwner()->isEntity()) { // @phpstan-ignore-line
-            return $this->getOwner(); // @phpstan-ignore-line
-        }
-
-        if ($this->entity === null) {
-            $this->setEntity($this->getOwner()->createEntity()); // @phpstan-ignore-line
-        }
-
-        return $this->entity;
-    }
-
-    public function setEntity(Model $entity): void
-    {
-        $this->entity = $entity;
     }
 
     public function getCaption(): string

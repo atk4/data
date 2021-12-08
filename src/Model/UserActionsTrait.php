@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Model;
 
 use Atk4\Core\Factory;
+use Atk4\Data\Exception;
 
 trait UserActionsTrait
 {
@@ -28,6 +29,10 @@ trait UserActionsTrait
      */
     public function addUserAction(string $name, $defaults = []): UserAction
     {
+        if ($this->isEntity() && $this->getModel()->hasUserAction($name)) {
+            $this->assertIsModel();
+        }
+
         if ($defaults instanceof \Closure) {
             $defaults = ['callback' => $defaults];
         }
@@ -49,7 +54,25 @@ trait UserActionsTrait
      */
     public function hasUserAction(string $name): bool
     {
+        if ($this->isEntity() && $this->getModel()->hasUserAction($name)) {
+            return true;
+        }
+
         return $this->_hasInCollection($name, 'userActions');
+    }
+
+    private function addUserActionFromModel(string $name, UserAction $action): void
+    {
+        $this->assertIsEntity();
+        $action->getOwner()->assertIsModel();
+        if (\Closure::bind(fn () => $action->entity, null, UserAction::class)() !== null) {
+            throw new Exception('Model action entity is expected to be null');
+        }
+
+        // clone action and store it in entity
+        $action = clone $action;
+        $action->unsetOwner();
+        $this->_addIntoCollection($name, $action, 'userActions');
     }
 
     /**
@@ -62,6 +85,12 @@ trait UserActionsTrait
      */
     public function getUserActions(string $appliesTo = null): array
     {
+        if ($this->isEntity()) {
+            foreach (array_diff_key($this->getModel()->getUserActions($appliesTo), $this->userActions) as $name => $action) {
+                $this->addUserActionFromModel($name, $action);
+            }
+        }
+
         return array_filter($this->userActions, function ($action) use ($appliesTo) {
             return !$action->system && ($appliesTo === null || $action->appliesTo === $appliesTo);
         });
@@ -72,6 +101,10 @@ trait UserActionsTrait
      */
     public function getUserAction(string $name): UserAction
     {
+        if ($this->isEntity() && !$this->_hasInCollection($name, 'userActions') && $this->getModel()->hasUserAction($name)) {
+            $this->addUserActionFromModel($name, $this->getModel()->getUserAction($name));
+        }
+
         return $this->_getFromCollection($name, 'userActions');
     }
 
@@ -82,9 +115,11 @@ trait UserActionsTrait
      */
     public function removeUserAction(string $name)
     {
-        foreach ((array) $name as $action) {
-            $this->_removeFromCollection($action, 'userActions');
+        if ($this->isEntity() && $this->getModel()->hasUserAction($name)) {
+            $this->assertIsModel();
         }
+
+        $this->_removeFromCollection($name, 'userActions');
 
         return $this;
     }
