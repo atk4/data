@@ -64,7 +64,7 @@ trait UserActionsTrait
     private function addUserActionFromModel(string $name, UserAction $action): void
     {
         $this->assertIsEntity();
-        $action->getOwner()->assertIsModel();
+        $action->getOwner()->assertIsModel(); // @phpstan-ignore-line
         if (\Closure::bind(fn () => $action->entity, null, UserAction::class)() !== null) {
             throw new Exception('Model action entity is expected to be null');
         }
@@ -127,7 +127,7 @@ trait UserActionsTrait
     /**
      * Execute specified action with specified arguments.
      *
-     * @param mixed  ...$args
+     * @param mixed ...$args
      *
      * @return mixed
      */
