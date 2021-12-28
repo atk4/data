@@ -72,22 +72,6 @@ trait UserActionsTrait
         $this->_addIntoCollection($name, $action, 'userActions');
     }
 
-    private function assertOrSetUserActionEntity(UserAction $action): void
-    {
-        $actionEntity = \Closure::bind(fn () => $action->entity, null, UserAction::class)();
-        if ($actionEntity !== null) {
-            if (!$this->isEntity()) {
-                throw new Exception('Action entity is expected to be null');
-            } elseif ($actionEntity !== $this) {
-                throw new Exception('Action entity is expected to be null or same instance');
-            }
-        } else {
-            if ($this->isEntity()) {
-                $action->setEntity($this);
-            }
-        }
-    }
-
     /**
      * Returns list of actions for this model. Can filter actions by records they apply to.
      * It will also skip system user actions (where system === true).
@@ -104,15 +88,9 @@ trait UserActionsTrait
             }
         }
 
-        $actions = array_filter($this->userActions, function ($action) use ($appliesTo) {
+        return array_filter($this->userActions, function ($action) use ($appliesTo) {
             return !$action->system && ($appliesTo === null || $action->appliesTo === $appliesTo);
         });
-
-        foreach ($actions as $action) {
-            $this->assertOrSetUserActionEntity($action);
-        }
-
-        return $actions;
     }
 
     /**
@@ -124,11 +102,7 @@ trait UserActionsTrait
             $this->addUserActionFromModel($name, $this->getModel()->getUserAction($name));
         }
 
-        $action = $this->_getFromCollection($name, 'userActions');
-
-        $this->assertOrSetUserActionEntity($action);
-
-        return $action;
+        return $this->_getFromCollection($name, 'userActions');
     }
 
     /**

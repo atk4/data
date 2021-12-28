@@ -25,9 +25,6 @@ class UserAction
     use InitializerTrait;
     use TrackableTrait;
 
-    /** @var Model|null */
-    private $entity;
-
     /** Defining records scope of the action */
     public const APPLIES_TO_NO_RECORDS = 'none'; // e.g. add
     public const APPLIES_TO_SINGLE_RECORD = 'single'; // e.g. archive
@@ -84,25 +81,20 @@ class UserAction
      */
     public function getModel(): Model
     {
-        return $this->getOwner()->getModel(true); // @phpstan-ignore-line
+        /** @var Model */
+        $owner = $this->getOwner();
+
+        return $owner->getModel(true);
     }
 
     public function getEntity(): Model
     {
-        if ($this->getOwner()->isEntity()) { // @phpstan-ignore-line
-            return $this->getOwner(); // @phpstan-ignore-line
-        }
+        /** @var Model */
+        $owner = $this->getOwner();
 
-        if ($this->entity === null) {
-            $this->setEntity($this->getOwner()->createEntity()); // @phpstan-ignore-line
-        }
+        $owner->assertIsEntity();
 
-        return $this->entity;
-    }
-
-    public function setEntity(Model $entity): void
-    {
-        $this->entity = $entity;
+        return $owner;
     }
 
     /**
