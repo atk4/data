@@ -65,14 +65,27 @@ trait UserActionsTrait
     {
         $this->assertIsEntity();
         $action->getOwner()->assertIsModel(); // @phpstan-ignore-line
-        if (\Closure::bind(fn () => $action->entity, null, UserAction::class)() !== null) {
-            throw new Exception('Model action entity is expected to be null');
-        }
 
         // clone action and store it in entity
         $action = clone $action;
         $action->unsetOwner();
         $this->_addIntoCollection($name, $action, 'userActions');
+    }
+
+    private function assertOrSetUserActionEntity(UserAction $action): void
+    {
+        $actionEntity = \Closure::bind(fn () => $action->entity, null, UserAction::class)();
+        if ($actionEntity !== null) {
+            if (!$this->isEntity()) {
+                throw new Exception('Action entity is expected to be null');
+            } elseif ($actionEntity !== $this) {
+                throw new Exception('Action entity is expected to be null or same instance');
+            }
+        } else {
+            if ($this->isEntity()) {
+                $action->setEntity($this);
+            }
+        }
     }
 
     /**
@@ -91,9 +104,15 @@ trait UserActionsTrait
             }
         }
 
-        return array_filter($this->userActions, function ($action) use ($appliesTo) {
+        $actions = array_filter($this->userActions, function ($action) use ($appliesTo) {
             return !$action->system && ($appliesTo === null || $action->appliesTo === $appliesTo);
         });
+
+        foreach ($actions as $action) {
+            $this->assertOrSetUserActionEntity($action);
+        }
+
+        return $actions;
     }
 
     /**
@@ -105,7 +124,11 @@ trait UserActionsTrait
             $this->addUserActionFromModel($name, $this->getModel()->getUserAction($name));
         }
 
-        return $this->_getFromCollection($name, 'userActions');
+        $action = $this->_getFromCollection($name, 'userActions');
+
+        $this->assertOrSetUserActionEntity($action);
+
+        return $action;
     }
 
     /**
