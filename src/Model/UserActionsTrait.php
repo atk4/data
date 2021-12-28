@@ -24,7 +24,6 @@ trait UserActionsTrait
      * Register new user action for this model. By default UI will allow users to trigger actions
      * from UI.
      *
-     * @param string         $name     Action name
      * @param array|\Closure $defaults
      */
     public function addUserAction(string $name, $defaults = []): UserAction
@@ -47,8 +46,6 @@ trait UserActionsTrait
 
     /**
      * Returns true if user action with a corresponding name exists.
-     *
-     * @param string $name UserAction name
      */
     public function hasUserAction(string $name): bool
     {
@@ -72,8 +69,6 @@ trait UserActionsTrait
 
     /**
      * Returns one action object of this model. If action not defined, then throws exception.
-     *
-     * @param string $name Action name
      */
     public function getUserAction(string $name): UserAction
     {
@@ -97,7 +92,6 @@ trait UserActionsTrait
     /**
      * Execute specified action with specified arguments.
      *
-     * @param string $name    UserAction name
      * @param mixed  ...$args
      *
      * @return mixed
