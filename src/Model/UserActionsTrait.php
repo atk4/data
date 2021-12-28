@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Atk4\Data\Model;
 
 use Atk4\Core\Factory;
-use Atk4\Data\Model;
 
 trait UserActionsTrait
 {
@@ -14,10 +13,10 @@ trait UserActionsTrait
      *
      * @var string|array
      */
-    public $_default_seed_action = [Model\UserAction::class];
+    public $_default_seed_action = [UserAction::class];
 
     /**
-     * @var array<string, Model\UserAction> Collection of user actions - using key as action system name
+     * @var array<string, UserAction> Collection of user actions - using key as action system name
      */
     protected $userActions = [];
 
@@ -28,7 +27,7 @@ trait UserActionsTrait
      * @param string         $name     Action name
      * @param array|\Closure $defaults
      */
-    public function addUserAction(string $name, $defaults = []): Model\UserAction
+    public function addUserAction(string $name, $defaults = []): UserAction
     {
         if ($defaults instanceof \Closure) {
             $defaults = ['callback' => $defaults];
@@ -38,7 +37,7 @@ trait UserActionsTrait
             $defaults['caption'] = $this->readableCaption($name);
         }
 
-        /** @var Model\UserAction $action */
+        /** @var UserAction $action */
         $action = Factory::factory($this->_default_seed_action, $defaults);
 
         $this->_addIntoCollection($name, $action, 'userActions');
@@ -60,9 +59,9 @@ trait UserActionsTrait
      * Returns list of actions for this model. Can filter actions by records they apply to.
      * It will also skip system user actions (where system === true).
      *
-     * @param string $appliesTo e.g. Model\UserAction::APPLIES_TO_ALL_RECORDS
+     * @param string $appliesTo e.g. UserAction::APPLIES_TO_ALL_RECORDS
      *
-     * @return array<string, Model\UserAction>
+     * @return array<string, UserAction>
      */
     public function getUserActions(string $appliesTo = null): array
     {
@@ -76,7 +75,7 @@ trait UserActionsTrait
      *
      * @param string $name Action name
      */
-    public function getUserAction(string $name): Model\UserAction
+    public function getUserAction(string $name): UserAction
     {
         return $this->_getFromCollection($name, 'userActions');
     }
@@ -113,22 +112,22 @@ trait UserActionsTrait
         // Declare our basic Crud actions for the model.
         $this->addUserAction('add', [
             'fields' => true,
-            'modifier' => Model\UserAction::MODIFIER_CREATE,
-            'appliesTo' => Model\UserAction::APPLIES_TO_NO_RECORDS,
+            'modifier' => UserAction::MODIFIER_CREATE,
+            'appliesTo' => UserAction::APPLIES_TO_NO_RECORDS,
             'callback' => 'save',
             'description' => 'Add ' . $this->getModelCaption(),
         ]);
 
         $this->addUserAction('edit', [
             'fields' => true,
-            'modifier' => Model\UserAction::MODIFIER_UPDATE,
-            'appliesTo' => Model\UserAction::APPLIES_TO_SINGLE_RECORD,
+            'modifier' => UserAction::MODIFIER_UPDATE,
+            'appliesTo' => UserAction::APPLIES_TO_SINGLE_RECORD,
             'callback' => 'save',
         ]);
 
         $this->addUserAction('delete', [
-            'appliesTo' => Model\UserAction::APPLIES_TO_SINGLE_RECORD,
-            'modifier' => Model\UserAction::MODIFIER_DELETE,
+            'appliesTo' => UserAction::APPLIES_TO_SINGLE_RECORD,
+            'modifier' => UserAction::MODIFIER_DELETE,
             'callback' => function ($model) {
                 return $model->delete();
             },
@@ -137,7 +136,7 @@ trait UserActionsTrait
         $this->addUserAction('validate', [
             //'appliesTo' => any!
             'description' => 'Provided with modified values will validate them but will not save',
-            'modifier' => Model\UserAction::MODIFIER_READ,
+            'modifier' => UserAction::MODIFIER_READ,
             'fields' => true,
             'system' => true, // don't show by default
             'args' => ['intent' => 'string'],
