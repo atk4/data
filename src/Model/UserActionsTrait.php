@@ -106,7 +106,7 @@ trait UserActionsTrait
     }
 
     /**
-     * Remove specified action(s).
+     * Remove specified action.
      *
      * @return $this
      */
