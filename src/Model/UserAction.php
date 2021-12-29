@@ -99,6 +99,24 @@ class UserAction
     }
 
     /**
+     * @return static
+     */
+    public function getActionForEntity(Model $entity): self
+    {
+        /** @var Model */
+        $owner = $this->getOwner();
+
+        $entity->assertIsEntity($owner);
+        foreach ($owner->getUserActions() as $name => $action) {
+            if ($action === $this) {
+                return $entity->getUserAction($name);
+            }
+        }
+
+        throw new Exception('Action instance not found in model');
+    }
+
+    /**
      * Attempt to execute callback of the action.
      *
      * @param mixed ...$args
