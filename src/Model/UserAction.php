@@ -117,7 +117,7 @@ class UserAction
         $entity->assertIsEntity($owner);
         foreach ($owner->getUserActions() as $name => $action) {
             if ($action === $this) {
-                return $entity->getUserAction($name);
+                return $entity->getUserAction($name); // @phpstan-ignore-line
             }
         }
 
