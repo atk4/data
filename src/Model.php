@@ -350,6 +350,8 @@ class Model implements \IteratorAggregate
         }
 
         if ($expectedModelInstance !== null && $expectedModelInstance !== $this) {
+            $expectedModelInstance->assertIsModel();
+
             throw new Exception('Unexpected entity model instance');
         }
     }
