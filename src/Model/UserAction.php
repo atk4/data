@@ -77,6 +77,14 @@ class UserAction
     /** @var bool Atomic action will automatically begin transaction before and commit it after completing. */
     public $atomic = true;
 
+    public function isOwnerEntity(): bool
+    {
+        /** @var Model */
+        $owner = $this->getOwner();
+
+        return $owner->isEntity();
+    }
+
     /**
      * Return model associated with this action.
      */
