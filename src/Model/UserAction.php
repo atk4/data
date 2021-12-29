@@ -85,9 +85,6 @@ class UserAction
         return $owner->isEntity();
     }
 
-    /**
-     * Return model associated with this action.
-     */
     public function getModel(): Model
     {
         /** @var Model */
