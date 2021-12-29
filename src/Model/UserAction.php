@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Atk4\Data\Model;
 
 use Atk4\Core\DiContainerTrait;
-use Atk4\Core\Exception;
+use Atk4\Core\Exception as CoreException;
 use Atk4\Core\InitializerTrait;
 use Atk4\Core\TrackableTrait;
+use Atk4\Data\Exception;
 use Atk4\Data\Model;
 
 /**
@@ -128,7 +129,7 @@ class UserAction
             }
 
             return $run();
-        } catch (Exception $e) {
+        } catch (CoreException $e) {
             $e->addMoreInfo('action', $this);
 
             throw $e;
