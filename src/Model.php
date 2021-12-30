@@ -443,7 +443,6 @@ class Model implements \IteratorAggregate
         try {
             $this->_model = $this;
             $this->userActions = [];
-
             $model = clone $this;
         } finally {
             $this->_model = null;
