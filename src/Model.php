@@ -350,6 +350,8 @@ class Model implements \IteratorAggregate
         }
 
         if ($expectedModelInstance !== null && $expectedModelInstance !== $this) {
+            $expectedModelInstance->assertIsModel();
+
             throw new Exception('Unexpected entity model instance');
         }
     }
@@ -437,11 +439,14 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsModel();
 
-        $this->_model = $this;
+        $userActionsBackup = $this->userActions;
         try {
+            $this->_model = $this;
+            $this->userActions = [];
             $model = clone $this;
         } finally {
             $this->_model = null;
+            $this->userActions = $userActionsBackup;
         }
         $model->_entityId = null;
 
@@ -458,6 +463,8 @@ class Model implements \IteratorAggregate
      */
     protected function init(): void
     {
+        $this->assertIsModel();
+
         $this->_init();
 
         if ($this->id_field) {
@@ -469,41 +476,10 @@ class Model implements \IteratorAggregate
         $this->initEntityIdHooks();
 
         if ($this->read_only) {
-            return; // don't declare action for read-only model
+            return; // don't declare user action for read-only model
         }
 
-        // Declare our basic Crud actions for the model.
-        $this->addUserAction('add', [
-            'fields' => true,
-            'modifier' => Model\UserAction::MODIFIER_CREATE,
-            'appliesTo' => Model\UserAction::APPLIES_TO_NO_RECORDS,
-            'callback' => 'save',
-            'description' => 'Add ' . $this->getModelCaption(),
-        ]);
-
-        $this->addUserAction('edit', [
-            'fields' => true,
-            'modifier' => Model\UserAction::MODIFIER_UPDATE,
-            'appliesTo' => Model\UserAction::APPLIES_TO_SINGLE_RECORD,
-            'callback' => 'save',
-        ]);
-
-        $this->addUserAction('delete', [
-            'appliesTo' => Model\UserAction::APPLIES_TO_SINGLE_RECORD,
-            'modifier' => Model\UserAction::MODIFIER_DELETE,
-            'callback' => function ($model) {
-                return $model->delete();
-            },
-        ]);
-
-        $this->addUserAction('validate', [
-            //'appliesTo' => any!
-            'description' => 'Provided with modified values will validate them but will not save',
-            'modifier' => Model\UserAction::MODIFIER_READ,
-            'fields' => true,
-            'system' => true, // don't show by default
-            'args' => ['intent' => 'string'],
-        ]);
+        $this->initUserActions();
     }
 
     private function initEntityIdAndAssertUnchanged(): void

@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Atk4\Data\Model;
 
 use Atk4\Core\DiContainerTrait;
-use Atk4\Core\Exception;
+use Atk4\Core\Exception as CoreException;
 use Atk4\Core\InitializerTrait;
 use Atk4\Core\TrackableTrait;
+use Atk4\Data\Exception;
 use Atk4\Data\Model;
 
 /**
@@ -24,9 +25,6 @@ class UserAction
     use DiContainerTrait;
     use InitializerTrait;
     use TrackableTrait;
-
-    /** @var Model|null */
-    private $entity;
 
     /** Defining records scope of the action */
     public const APPLIES_TO_NO_RECORDS = 'none'; // e.g. add
@@ -79,6 +77,50 @@ class UserAction
     /** @var bool Atomic action will automatically begin transaction before and commit it after completing. */
     public $atomic = true;
 
+    public function isOwnerEntity(): bool
+    {
+        /** @var Model */
+        $owner = $this->getOwner();
+
+        return $owner->isEntity();
+    }
+
+    public function getModel(): Model
+    {
+        /** @var Model */
+        $owner = $this->getOwner();
+
+        return $owner->getModel(true);
+    }
+
+    public function getEntity(): Model
+    {
+        /** @var Model */
+        $owner = $this->getOwner();
+
+        $owner->assertIsEntity();
+
+        return $owner;
+    }
+
+    /**
+     * @return static
+     */
+    public function getActionForEntity(Model $entity): self
+    {
+        /** @var Model */
+        $owner = $this->getOwner();
+
+        $entity->assertIsEntity($owner);
+        foreach ($owner->getUserActions() as $name => $action) {
+            if ($action === $this) {
+                return $entity->getUserAction($name); // @phpstan-ignore-line
+            }
+        }
+
+        throw new Exception('Action instance not found in model');
+    }
+
     /**
      * Attempt to execute callback of the action.
      *
@@ -110,7 +152,7 @@ class UserAction
             }
 
             return $run();
-        } catch (Exception $e) {
+        } catch (CoreException $e) {
             $e->addMoreInfo('action', $this);
 
             throw $e;
@@ -208,32 +250,6 @@ class UserAction
         }
 
         return $this->confirmation;
-    }
-
-    /**
-     * Return model associated with this action.
-     */
-    public function getModel(): Model
-    {
-        return $this->getOwner()->getModel(true); // @phpstan-ignore-line
-    }
-
-    public function getEntity(): Model
-    {
-        if ($this->getOwner()->isEntity()) { // @phpstan-ignore-line
-            return $this->getOwner(); // @phpstan-ignore-line
-        }
-
-        if ($this->entity === null) {
-            $this->setEntity($this->getOwner()->createEntity()); // @phpstan-ignore-line
-        }
-
-        return $this->entity;
-    }
-
-    public function setEntity(Model $entity): void
-    {
-        $this->entity = $entity;
     }
 
     public function getCaption(): string
