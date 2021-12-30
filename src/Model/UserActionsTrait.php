@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Atk4\Data\Model;
 
 use Atk4\Core\Factory;
-use Atk4\Data\Exception;
 
 trait UserActionsTrait
 {
@@ -29,9 +28,7 @@ trait UserActionsTrait
      */
     public function addUserAction(string $name, $defaults = []): UserAction
     {
-        if ($this->isEntity() && $this->getModel()->hasUserAction($name)) {
-            $this->assertIsModel();
-        }
+        $this->assertIsModel();
 
         if ($defaults instanceof \Closure) {
             $defaults = ['callback' => $defaults];
@@ -112,9 +109,7 @@ trait UserActionsTrait
      */
     public function removeUserAction(string $name)
     {
-        if ($this->isEntity() && $this->getModel()->hasUserAction($name)) {
-            $this->assertIsModel();
-        }
+        $this->assertIsModel();
 
         $this->_removeFromCollection($name, 'userActions');
 

@@ -111,7 +111,7 @@ class UserActionTest extends TestCase
         };
         $this->assertSame('will say John', $client->getUserAction('say_name')->preview('x'));
 
-        $client->addUserAction('also_backup', ['callback' => 'backup_clients']);
+        $client->getModel()->addUserAction('also_backup', ['callback' => 'backup_clients']);
         $this->assertSame('backs up all clients', $client->getUserAction('also_backup')->execute());
 
         $client->getUserAction('also_backup')->preview = 'backup_clients';
@@ -245,9 +245,10 @@ class UserActionTest extends TestCase
     public function testConfirmation(): void
     {
         $client = new UaClient($this->pers);
+        $client->addUserAction('test');
         $client = $client->load(1);
-        $action = $client->addUserAction('test');
 
+        $action = $client->getUserAction('test');
         $this->assertFalse($action->getConfirmation());
 
         $action->confirmation = true;
