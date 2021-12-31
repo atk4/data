@@ -65,11 +65,7 @@ class Join
      */
     protected $kind;
 
-    /**
-     * Is our join weak? Weak join will stop you from touching foreign table.
-     *
-     * @var bool
-     */
+    /** @var bool Is our join weak? Weak join will stop you from touching foreign table. */
     protected $weak = false;
 
     /**
@@ -107,11 +103,7 @@ class Join
      */
     protected $foreign_field;
 
-    /**
-     * A short symbolic name that will be used as an alias for the joined table.
-     *
-     * @var string
-     */
+    /** @var string A short symbolic name that will be used as an alias for the joined table. */
     public $foreign_alias;
 
     /**
@@ -122,18 +114,10 @@ class Join
      */
     protected $prefix = '';
 
-    /**
-     * ID indexed by spl_object_id(entity) used by a joined table.
-     *
-     * @var mixed
-     */
+    /** @var mixed ID indexed by spl_object_id(entity) used by a joined table. */
     protected $idByOid;
 
-    /**
-     * Data indexed by spl_object_id(entity) which is populated here as the save/insert progresses.
-     *
-     * @var array<int, array<string, mixed>>
-     */
+    /** @var array<int, array<string, mixed>> Data indexed by spl_object_id(entity) which is populated here as the save/insert progresses. */
     private $saveBufferByOid = [];
 
     public function __construct(string $foreign_table = null)

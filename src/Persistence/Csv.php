@@ -27,25 +27,13 @@ use Atk4\Data\Persistence;
  */
 class Csv extends Persistence
 {
-    /**
-     * Name of the file.
-     *
-     * @var string
-     */
+    /** @var string Name of the file. */
     public $file;
 
-    /**
-     * Line in CSV file.
-     *
-     * @var int
-     */
+    /** @var int Line in CSV file. */
     public $line = 0;
 
-    /**
-     * File handle, when the $file is opened.
-     *
-     * @var resource|null
-     */
+    /** @var resource|null File handle, when the $file is opened. */
     public $handle;
 
     /**
@@ -57,32 +45,16 @@ class Csv extends Persistence
      */
     public $mode;
 
-    /**
-     * Delimiter in CSV file.
-     *
-     * @var string
-     */
+    /** @var string Delimiter in CSV file. */
     public $delimiter = ',';
 
-    /**
-     * Enclosure in CSV file.
-     *
-     * @var string
-     */
+    /** @var string Enclosure in CSV file. */
     public $enclosure = '"';
 
-    /**
-     * Escape character in CSV file.
-     *
-     * @var string
-     */
+    /** @var string Escape character in CSV file. */
     public $escape_char = '\\';
 
-    /**
-     * Array of field names.
-     *
-     * @var array|null
-     */
+    /** @var array|null Array of field names. */
     public $header;
 
     public function __construct(string $file, array $defaults = [])

@@ -16,18 +16,10 @@ use Atk4\Data\Model;
  */
 class Static_ extends Array_
 {
-    /**
-     * This will be the title field for the model.
-     *
-     * @var string
-     */
+    /** @var string This will be the title field for the model. */
     public $titleForModel;
 
-    /**
-     * Populate the following fields for the model.
-     *
-     * @var array<string, array>
-     */
+    /** @var array<string, array> Populate the following fields for the model. */
     public $fieldsForModel = [];
 
     /**

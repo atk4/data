@@ -8,11 +8,7 @@ use Atk4\Core\Factory;
 
 trait UserActionsTrait
 {
-    /**
-     * Default class for addUserAction().
-     *
-     * @var string|array
-     */
+    /** @var string|array Default class for addUserAction(). */
     public $_default_seed_action = [UserAction::class];
 
     /** @var array<string, UserAction> Collection of user actions - using key as action system name */

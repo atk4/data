@@ -11,11 +11,7 @@ use Atk4\Data\Exception;
  */
 trait JoinsTrait
 {
-    /**
-     * The class used by join() method.
-     *
-     * @var array
-     */
+    /** @var array The class used by join() method. */
     public $_default_seed_join = [Join::class];
 
     /**

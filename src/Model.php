@@ -108,18 +108,10 @@ class Model implements \IteratorAggregate
     /** @var array<string, true> */
     private static $_modelOnlyProperties;
 
-    /**
-     * The class used by addField() method.
-     *
-     * @var string|array
-     */
+    /** @var string|array The class used by addField() method. */
     public $_default_seed_addField = [Field::class];
 
-    /**
-     * The class used by addExpression() method.
-     *
-     * @var string|array
-     */
+    /** @var string|array The class used by addExpression() method. */
     public $_default_seed_addExpression = [CallbackField::class];
 
     /** @var array<string, Field> */
@@ -134,11 +126,7 @@ class Model implements \IteratorAggregate
      */
     public $table;
 
-    /**
-     * Use alias for $table.
-     *
-     * @var string|null
-     */
+    /** @var string|null Use alias for $table. */
     public $table_alias;
 
     /** @var Persistence|Persistence\Sql|null */
@@ -155,25 +143,13 @@ class Model implements \IteratorAggregate
     /** @var Model\Scope\RootScope */
     private $scope;
 
-    /**
-     * Array of limit set.
-     *
-     * @var array
-     */
+    /** @var array Array of limit set. */
     public $limit = [];
 
-    /**
-     * Array of set order by.
-     *
-     * @var array
-     */
+    /** @var array Array of set order by. */
     public $order = [];
 
-    /**
-     * Array of WITH cursors set.
-     *
-     * @var array
-     */
+    /** @var array Array of WITH cursors set. */
     public $with = [];
 
     /**

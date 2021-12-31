@@ -20,11 +20,7 @@ class Query extends Expression
      */
     public $mode = 'select';
 
-    /**
-     * If no fields are defined, this field is used.
-     *
-     * @var string|Expression
-     */
+    /** @var string|Expression If no fields are defined, this field is used. */
     public $defaultField = '*';
 
     /** @var string Expression classname */

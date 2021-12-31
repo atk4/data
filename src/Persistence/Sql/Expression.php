@@ -45,11 +45,7 @@ class Expression implements Expressionable, \ArrayAccess
      */
     public $args = ['custom' => []];
 
-    /**
-     * As per PDO, escapeParam() will convert value into :a, :b, :c .. :aa .. etc.
-     *
-     * @var string
-     */
+    /** @var string As per PDO, escapeParam() will convert value into :a, :b, :c .. :aa .. etc. */
     protected $paramBase = 'a';
 
     /**

@@ -6,18 +6,10 @@ namespace Atk4\Data\Model;
 
 trait FieldPropertiesTrait
 {
-    /**
-     * Field type. Name of type registered in \Doctrine\DBAL\Types\Type.
-     *
-     * @var string|null
-     */
+    /** @var string|null Field type. Name of type registered in \Doctrine\DBAL\Types\Type. */
     public $type;
 
-    /**
-     * For several types enum can provide list of available options. ['blue', 'red'].
-     *
-     * @var array|null
-     */
+    /** @var array|null For several types enum can provide list of available options. ['blue', 'red']. */
     public $enum;
 
     /**
@@ -36,11 +28,7 @@ trait FieldPropertiesTrait
      */
     protected $referenceLink;
 
-    /**
-     * Actual field name.
-     *
-     * @var string|null
-     */
+    /** @var string|null Actual field name. */
     public $actual;
 
     /**
@@ -51,11 +39,7 @@ trait FieldPropertiesTrait
      */
     public $system = false;
 
-    /**
-     * Default value of field.
-     *
-     * @var mixed
-     */
+    /** @var mixed Default value of field. */
     public $default;
 
     /**
