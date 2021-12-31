@@ -8,16 +8,10 @@ use Atk4\Core\Factory;
 
 trait UserActionsTrait
 {
-    /**
-     * Default class for addUserAction().
-     *
-     * @var string|array
-     */
+    /** @var string|array Default class for addUserAction(). */
     public $_default_seed_action = [UserAction::class];
 
-    /**
-     * @var array<string, UserAction> Collection of user actions - using key as action system name
-     */
+    /** @var array<string, UserAction> Collection of user actions - using key as action system name */
     protected $userActions = [];
 
     /**
@@ -79,11 +73,7 @@ trait UserActionsTrait
      */
     public function getUserActions(string $appliesTo = null): array
     {
-        if ($this->isEntity()) {
-            foreach (array_diff_key($this->getModel()->getUserActions($appliesTo), $this->userActions) as $name => $action) {
-                $this->addUserActionFromModel($name, $action);
-            }
-        }
+        $this->assertIsModel();
 
         return array_filter($this->userActions, function ($action) use ($appliesTo) {
             return !$action->system && ($appliesTo === null || $action->appliesTo === $appliesTo);

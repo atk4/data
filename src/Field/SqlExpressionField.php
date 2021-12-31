@@ -17,51 +17,24 @@ class SqlExpressionField extends Field
         init as private _init;
     }
 
-    /**
-     * Used expression.
-     *
-     * @var \Closure|string|Expressionable
-     */
+    /** @var \Closure|string|Expressionable Used expression. */
     public $expr;
 
-    /**
-     * Expressions are always read_only.
-     *
-     * @var bool
-     */
+    /** @var bool Expressions are always read_only. */
     public $read_only = true;
 
-    /**
-     * Specifies how to aggregate this.
-     *
-     * @var string
-     */
+    /** @var string Specifies how to aggregate this. */
     public $aggregate;
 
-    /**
-     * Aggregation by concatenation.
-     *
-     * @var string
-     */
+    /** @var string Aggregation by concatenation. */
     public $concat;
 
-    /**
-     * When defining as aggregate, this will point to relation object.
-     *
-     * @var Reference\HasMany|null
-     */
+    /** @var Reference\HasMany|null When defining as aggregate, this will point to relation object. */
     public $aggregate_relation;
 
-    /**
-     * Specifies which field to use.
-     *
-     * @var string
-     */
+    /** @var string Specifies which field to use. */
     public $field;
 
-    /**
-     * Initialization.
-     */
     protected function init(): void
     {
         $this->_init();

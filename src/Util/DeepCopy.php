@@ -26,19 +26,13 @@ class DeepCopy
     /** @const string */
     public const HOOK_AFTER_COPY = self::class . '@afterCopy';
 
-    /**
-     * @var Model from which we want to copy records
-     */
+    /** @var Model from which we want to copy records */
     protected $source;
 
-    /**
-     * @var Model in which we want to copy records into
-     */
+    /** @var Model in which we want to copy records into */
     protected $destination;
 
-    /**
-     * @var array containing references which we need to copy. May contain sub-arrays: ['Invoices' => ['Lines']]
-     */
+    /** @var array containing references which we need to copy. May contain sub-arrays: ['Invoices' => ['Lines']] */
     protected $references = [];
 
     /**
@@ -56,9 +50,7 @@ class DeepCopy
      */
     protected $transforms = [];
 
-    /**
-     * @var array while copying, will record mapped records in format [$table => ['old_id' => 'new_id']]
-     */
+    /** @var array while copying, will record mapped records in format [$table => ['old_id' => 'new_id']] */
     public $mapping = [];
 
     /**

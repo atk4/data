@@ -15,18 +15,10 @@ class ContainsOne extends Reference
 {
     use ContainsSeedHackTrait;
 
-    /**
-     * Field type.
-     *
-     * @var string
-     */
+    /** @var string Field type. */
     public $type = 'json';
 
-    /**
-     * Is it system field?
-     *
-     * @var bool
-     */
+    /** @var bool Is it system field? */
     public $system = true;
 
     /**
@@ -39,11 +31,7 @@ class ContainsOne extends Reference
      */
     public $ui = [];
 
-    /**
-     * Required! We need table alias for internal use only.
-     *
-     * @var string
-     */
+    /** @var string Required! We need table alias for internal use only. */
     protected $table_alias = 'tbl';
 
     /**

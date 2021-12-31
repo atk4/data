@@ -38,51 +38,25 @@ class Sql extends Persistence
     /** @const string */
     public const HOOK_BEFORE_DELETE_QUERY = self::class . '@beforeDeleteQuery';
 
-    /**
-     * Connection object.
-     *
-     * @var Connection
-     */
+    /** @var Connection Connection object. */
     public $connection;
 
-    /**
-     * Default class when adding new field.
-     *
-     * @var array
-     */
+    /** @var array Default class when adding new field. */
     public $_default_seed_addField; // no custom seed needed
 
-    /**
-     * Default class when adding hasOne field.
-     *
-     * @var array
-     */
+    /** @var array Default class when adding hasOne field. */
     public $_default_seed_hasOne = [\Atk4\Data\Reference\HasOneSql::class];
 
-    /**
-     * Default class when adding hasMany field.
-     *
-     * @var array
-     */
+    /** @var array Default class when adding hasMany field. */
     public $_default_seed_hasMany; // no custom seed needed
 
-    /**
-     * Default class when adding Expression field.
-     *
-     * @var array
-     */
+    /** @var array Default class when adding Expression field. */
     public $_default_seed_addExpression = [SqlExpressionField::class];
 
-    /**
-     * Default class when adding join.
-     *
-     * @var array
-     */
+    /** @var array Default class when adding join. */
     public $_default_seed_join = [Sql\Join::class];
 
     /**
-     * Constructor.
-     *
      * @param Connection|string|array|DbalConnection|DbalDriverConnection $connection
      * @param string                                                      $user
      * @param string                                                      $password

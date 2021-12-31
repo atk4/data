@@ -74,7 +74,8 @@ class UserActionTest extends TestCase
         // load record, before executing, because scope is single record
         $client = $client->load(1);
 
-        $act1 = $client->getUserActions()['send_reminder'];
+        $act1 = $client->getModel()->getUserActions()['send_reminder'];
+        $act1 = $act1->getActionForEntity($client);
         $this->assertNotTrue($client->get('reminder_sent'));
         $res = $act1->execute();
         $this->assertTrue($client->get('reminder_sent'));

@@ -17,8 +17,6 @@ use Atk4\Data\Field\SqlExpressionField;
 use Mvorisek\Atk4\Hintable\Data\HintableModelTrait;
 
 /**
- * Data model class.
- *
  * @property int                 $id       @Atk4\Field(visibility="protected_set") Contains ID of the current record.
  *                                         If the value is null then the record is considered to be new.
  * @property Field[]|Reference[] $elements
@@ -99,36 +97,22 @@ class Model implements \IteratorAggregate
 
     // {{{ Properties of the class
 
-    /**
-     * @var static|null not-null if and only if this instance is an entity
-     */
+    /** @var static|null not-null if and only if this instance is an entity */
     private $_model;
 
-    /**
-     * @var mixed once set, loading a different ID will result in an error
-     */
+    /** @var mixed once set, loading a different ID will result in an error */
     private $_entityId;
 
     /** @var array<string, true> */
     private static $_modelOnlyProperties;
 
-    /**
-     * The class used by addField() method.
-     *
-     * @var string|array
-     */
+    /** @var string|array The class used by addField() method. */
     public $_default_seed_addField = [Field::class];
 
-    /**
-     * The class used by addExpression() method.
-     *
-     * @var string|array
-     */
+    /** @var string|array The class used by addExpression() method. */
     public $_default_seed_addExpression = [CallbackField::class];
 
-    /**
-     * @var array<string, Field>
-     */
+    /** @var array<string, Field> */
     protected $fields = [];
 
     /**
@@ -140,16 +124,10 @@ class Model implements \IteratorAggregate
      */
     public $table;
 
-    /**
-     * Use alias for $table.
-     *
-     * @var string|null
-     */
+    /** @var string|null */
     public $table_alias;
 
-    /**
-     * @var Persistence|Persistence\Sql|null
-     */
+    /** @var Persistence|Persistence\Sql|null */
     public $persistence;
 
     /**
@@ -163,25 +141,13 @@ class Model implements \IteratorAggregate
     /** @var Model\Scope\RootScope */
     private $scope;
 
-    /**
-     * Array of limit set.
-     *
-     * @var array
-     */
+    /** @var array Array of limit set. */
     public $limit = [];
 
-    /**
-     * Array of set order by.
-     *
-     * @var array
-     */
+    /** @var array Array of set order by. */
     public $order = [];
 
-    /**
-     * Array of WITH cursors set.
-     *
-     * @var array
-     */
+    /** @var array Array of WITH cursors set. */
     public $with = [];
 
     /**

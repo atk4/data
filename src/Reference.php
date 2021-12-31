@@ -154,9 +154,6 @@ class Reference
         );
     }
 
-    /**
-     * Initialization.
-     */
     protected function init(): void
     {
         $this->_init();
@@ -284,11 +281,7 @@ class Reference
         return $this->createTheirModel($defaults);
     }
 
-    /**
-     * List of properties to show in var_dump.
-     *
-     * @var array<int|string, string>
-     */
+    /** @var array<int|string, string> List of properties to show in var_dump. */
     protected $__debug_fields = ['link', 'model', 'our_field', 'their_field'];
 
     /**
