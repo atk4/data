@@ -17,8 +17,6 @@ use Atk4\Data\Field\SqlExpressionField;
 use Mvorisek\Atk4\Hintable\Data\HintableModelTrait;
 
 /**
- * Data model class.
- *
  * @property int                 $id       @Atk4\Field(visibility="protected_set") Contains ID of the current record.
  *                                         If the value is null then the record is considered to be new.
  * @property Field[]|Reference[] $elements

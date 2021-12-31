@@ -190,9 +190,6 @@ class Join
         return '#join_' . $this->foreign_table;
     }
 
-    /**
-     * Initialization.
-     */
     protected function init(): void
     {
         $this->_init();

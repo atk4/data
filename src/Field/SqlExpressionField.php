@@ -35,9 +35,6 @@ class SqlExpressionField extends Field
     /** @var string Specifies which field to use. */
     public $field;
 
-    /**
-     * Initialization.
-     */
     protected function init(): void
     {
         $this->_init();

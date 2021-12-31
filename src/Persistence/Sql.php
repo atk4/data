@@ -57,8 +57,6 @@ class Sql extends Persistence
     public $_default_seed_join = [Sql\Join::class];
 
     /**
-     * Constructor.
-     *
      * @param Connection|string|array|DbalConnection|DbalDriverConnection $connection
      * @param string                                                      $user
      * @param string                                                      $password

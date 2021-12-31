@@ -154,9 +154,6 @@ class Reference
         );
     }
 
-    /**
-     * Initialization.
-     */
     protected function init(): void
     {
         $this->_init();
