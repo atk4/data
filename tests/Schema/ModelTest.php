@@ -253,7 +253,7 @@ class ModelTest extends TestCase
     }
 }
 
-class TestUser extends \Atk4\Data\Model
+class TestUser extends Model
 {
     public $table = 'user';
 
@@ -270,7 +270,7 @@ class TestUser extends \Atk4\Data\Model
     }
 }
 
-class TestRole extends \Atk4\Data\Model
+class TestRole extends Model
 {
     public $table = 'role';
 
