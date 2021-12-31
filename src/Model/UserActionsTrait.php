@@ -15,9 +15,7 @@ trait UserActionsTrait
      */
     public $_default_seed_action = [UserAction::class];
 
-    /**
-     * @var array<string, UserAction> Collection of user actions - using key as action system name
-     */
+    /** @var array<string, UserAction> Collection of user actions - using key as action system name */
     protected $userActions = [];
 
     /**

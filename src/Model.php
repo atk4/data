@@ -99,14 +99,10 @@ class Model implements \IteratorAggregate
 
     // {{{ Properties of the class
 
-    /**
-     * @var static|null not-null if and only if this instance is an entity
-     */
+    /** @var static|null not-null if and only if this instance is an entity */
     private $_model;
 
-    /**
-     * @var mixed once set, loading a different ID will result in an error
-     */
+    /** @var mixed once set, loading a different ID will result in an error */
     private $_entityId;
 
     /** @var array<string, true> */
@@ -126,9 +122,7 @@ class Model implements \IteratorAggregate
      */
     public $_default_seed_addExpression = [CallbackField::class];
 
-    /**
-     * @var array<string, Field>
-     */
+    /** @var array<string, Field> */
     protected $fields = [];
 
     /**
@@ -147,9 +141,7 @@ class Model implements \IteratorAggregate
      */
     public $table_alias;
 
-    /**
-     * @var Persistence|Persistence\Sql|null
-     */
+    /** @var Persistence|Persistence\Sql|null */
     public $persistence;
 
     /**
