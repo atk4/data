@@ -124,7 +124,7 @@ class Model implements \IteratorAggregate
      */
     public $table;
 
-    /** @var string|null Use alias for $table. */
+    /** @var string|null */
     public $table_alias;
 
     /** @var Persistence|Persistence\Sql|null */

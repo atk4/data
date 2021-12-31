@@ -33,7 +33,7 @@ class Csv extends Persistence
     /** @var int Line in CSV file. */
     public $line = 0;
 
-    /** @var resource|null File handle, when the $file is opened. */
+    /** @var resource|null File handle, when the file is opened. */
     public $handle;
 
     /**
