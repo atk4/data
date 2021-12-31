@@ -79,11 +79,7 @@ trait UserActionsTrait
      */
     public function getUserActions(string $appliesTo = null): array
     {
-        if ($this->isEntity()) {
-            foreach (array_diff_key($this->getModel()->getUserActions($appliesTo), $this->userActions) as $name => $action) {
-                $this->addUserActionFromModel($name, $action);
-            }
-        }
+        $this->assertIsModel();
 
         return array_filter($this->userActions, function ($action) use ($appliesTo) {
             return !$action->system && ($appliesTo === null || $action->appliesTo === $appliesTo);
