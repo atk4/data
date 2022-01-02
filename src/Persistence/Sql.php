@@ -589,7 +589,7 @@ class Sql extends Persistence
 
         // only apply fields that has been modified
         $update->setMulti($this->typecastSaveRow($model, $data));
-        $update->where($model->getField($model->id_field), $id);
+        $update->where($model->getField($model->id_field)->getPersistenceName(), $id);
 
         $st = null;
         try {
@@ -635,7 +635,7 @@ class Sql extends Persistence
 
         $delete = $this->initQuery($model);
         $delete->mode('delete');
-        $delete->where($model->getField($model->id_field), $id);
+        $delete->where($model->getField($model->id_field)->getPersistenceName(), $id);
         $model->hook(self::HOOK_BEFORE_DELETE_QUERY, [$delete]);
 
         try {
