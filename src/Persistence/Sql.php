@@ -387,20 +387,6 @@ class Sql extends Persistence
     {
         $query = $this->initQuery($model);
         switch ($type) {
-            case 'insert':
-                return $query->mode('insert');
-                // cannot apply conditions now
-
-            case 'update':
-                $query->mode('update');
-
-                break;
-            case 'delete':
-                $query->mode('delete');
-                $this->initQueryConditions($model, $query);
-                $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
-
-                return $query;
             case 'select':
                 $this->initQueryFields($model, $query, $args[0] ?? null);
 
@@ -528,7 +514,8 @@ class Sql extends Persistence
      */
     public function insert(Model $model, array $data): string
     {
-        $insert = $model->action('insert');
+        $insert = $this->initQuery($model);
+        $insert->mode('insert');
 
         if ($model->id_field && ($data[$model->id_field] ?? null) === null) {
             unset($data[$model->id_field]);

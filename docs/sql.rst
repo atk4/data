@@ -240,18 +240,6 @@ them yourself)::
     $action = $model->action('select', [false]);
     $action->field('count(*)', 'c);
 
-
-Action: insert
---------------
-
-Will prepare query for performing insert of a new record.
-
-Action: update, delete
-----------------------
-
-Will prepare query for performing update or delete of records.
-Applies conditions set.
-
 Action: count
 -------------
 

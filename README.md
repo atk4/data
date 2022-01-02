@@ -552,7 +552,7 @@ $client->ref('Order')->insert($_POST);
 
 
 
-Regardless of the content of the POST data, the order can only be created for the VIP client. Even if you perform a multi-row operation such as `action('update')` or `action('delete')` it will only apply to records that match all of the conditions.
+Regardless of the content of the POST data, the order can only be created for the VIP client. Even if you perform a multi-row operation such as `action('select')` or `action('fx')` it will only apply to records that match all of the conditions.
 
 Those security measures are there to protect you against human errors. We think that input sanitization is still quite important and you should do that.
 

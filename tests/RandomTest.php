@@ -506,6 +506,27 @@ class RandomTest extends TestCase
         $m->duplicate(2)->save();
     }
 
+    public function testNoWriteActionInsert(): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unsupported action mode');
+        $this->db->action(new Model(), 'insert');
+    }
+
+    public function testNoWriteActionUpdate(): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unsupported action mode');
+        $this->db->action(new Model(), 'update');
+    }
+
+    public function testNoWriteActionDelete(): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unsupported action mode');
+        $this->db->action(new Model(), 'delete');
+    }
+
     public function testTableWithSchema(): void
     {
         if ($this->getDatabasePlatform() instanceof SqlitePlatform || Connection::isComposerDbal2x()) {
