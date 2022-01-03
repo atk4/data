@@ -522,12 +522,9 @@ Next we need to define reference. Inside Model_Invoice add::
     }, 'their_field' => 'invoice_id']);
 
     $this->onHookShort(Model::HOOK_BEFORE_DELETE, function() {
-        $this->ref('InvoicePayment')->action('delete')->execute();
-
-        // If you have important per-row hooks in InvoicePayment
-        // foreach ($this->ref('InvoicePayment') as $payment) {
-        //     $payment->delete();
-        // }
+        foreach ($this->ref('InvoicePayment') as $payment) {
+            $payment->delete();
+        }
     });
 
 You'll have to do a similar change inside Payment model. The code for '$j->'

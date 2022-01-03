@@ -410,14 +410,13 @@ Create copy of existing record
     If you pass the `$id` parameter, then the new record will be saved under
     a new ID::
 
-        // First, lets delete all records except 123
-        (clone $m)->addCondition('id', '!=', 123)->action('delete')->execute();
+        // Assume DB with only one record with ID = 123
 
-        // Next we can duplicate
+        // Load and duplicate that record
         $m->load(123)->duplicate()->save();
 
         // Now you have 2 records:
-        // one with ID=123 and another with ID={next db generated id}
+        // one with ID = 123 and another with ID = {next db generated id}
         echo $m->action('count')->getOne();
 
 Duplicate then save under a new ID
@@ -745,11 +744,6 @@ conditions)
     Prepares a special object representing "action" of a persistence layer based
     around your current model::
 
-        $m = Model_User();
-        $m->addCondition('last_login', '<', date('Y-m-d', strtotime('-2 months')));
-
-        $m->action('delete')->execute();
-
 
 Action Types
 ------------
@@ -801,34 +795,9 @@ The default action type can be set when executing action, for example::
 SQL Actions
 -----------
 
-The following actions are currently supported by `Persistence\\Sql`:
+Currently only read-only actions are supported by `Persistence\\Sql`:
 
- - select - produces query that returns DataSet  (array of hashes)
- - delete - produces query for deleting DataSet (no result)
-
-The following two queries returns un-populated query, which means if you wish
-to use it, you'll have to populate it yourself with some values:
-
- - insert - produces an un-populated insert query (no result).
- - update - produces query for updating DataSet (no result)
-
-Example of using update::
-
-    $m = Model_Invoice($db);
-    $m->addCondition('has_discount', true);
-
-    $m->action('update')
-        ->set('has_dicount', false)
-        ->execute();
-
-You must be aware that set() operates on a DSQL object and will no longer
-work with your model fields. You should use the object like this if you can::
-
-    $m->action('update')
-        ->set($m->getField('has_discount'), false)
-        ->execute();
-
-See $actual for more details.
+ - select - produces query that returns DataSet (array of hashes)
 
 There are ability to execute aggregation functions::
 
