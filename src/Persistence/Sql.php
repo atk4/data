@@ -136,10 +136,7 @@ class Sql extends Persistence
         // When we work without table, we can't have any IDs
         if ($model->table === false) {
             $model->removeField($model->id_field);
-            $model->addExpression($model->id_field, '1');
-            //} else {
-            // SQL databases use ID of int by default
-            //$m->getField($m->id_field)->type = 'integer';
+            $model->addExpression($model->id_field, '-1');
         }
     }
 
@@ -514,14 +511,22 @@ class Sql extends Persistence
      */
     public function insert(Model $model, array $data): string
     {
+        if ($model->id_field) {
+            $dataId = $data[$model->id_field] ?? null;
+            if ($dataId === null) {
+                unset($data[$model->id_field]);
+            }
+        } else {
+            $dataId = null;
+        }
+
+        $dataRaw = $this->typecastSaveRow($model, $data);
+        unset($data);
+
         $insert = $this->initQuery($model);
         $insert->mode('insert');
 
-        if ($model->id_field && ($data[$model->id_field] ?? null) === null) {
-            unset($data[$model->id_field]);
-        }
-
-        $insert->setMulti($this->typecastSaveRow($model, $data));
+        $insert->setMulti($dataRaw);
 
         $st = null;
         try {
@@ -533,10 +538,14 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
         }
 
-        if ($model->id_field && ($data[$model->id_field] ?? null) !== null) {
-            $id = (string) $data[$model->id_field];
+        if ($model->id_field) {
+            if ($dataId !== null) {
+                $id = (string) $dataId;
+            } else {
+                $id = $this->lastInsertId($model);
+            }
         } else {
-            $id = $this->lastInsertId($model);
+            $id = '';
         }
 
         $model->hook(self::HOOK_AFTER_INSERT_QUERY, [$insert, $st]);
@@ -580,38 +589,48 @@ class Sql extends Persistence
      */
     public function update(Model $model, $id, array $data): void
     {
-        if (!$model->id_field) {
+        $idRaw = $model->id_field ? $this->typecastSaveField($model->getField($model->id_field), $id) : null;
+        unset($id);
+
+        $dataId = $data[$model->id_field] ?? null;
+
+        if (!$model->id_field || $idRaw === null || (array_key_exists($model->id_field, $data) && $dataId === null)) {
             throw new Exception('id_field of a model is not set. Unable to update record.');
+        }
+
+        $dataRaw = $this->typecastSaveRow($model, $data);
+        unset($data);
+
+        if (count($dataRaw) === 0) {
+            return;
         }
 
         $update = $this->initQuery($model);
         $update->mode('update');
 
         // only apply fields that has been modified
-        $update->setMulti($this->typecastSaveRow($model, $data));
-        $update->where($model->getField($model->id_field)->getPersistenceName(), $id);
+        $update->setMulti($dataRaw);
+        $update->where($model->getField($model->id_field)->getPersistenceName(), $idRaw);
 
         $st = null;
         try {
             $model->hook(self::HOOK_BEFORE_UPDATE_QUERY, [$update]);
-            if ($data) {
-                $st = $update->execute();
-            }
+            $st = $update->execute();
         } catch (SqlException $e) {
             throw (new Exception('Unable to update due to query error', 0, $e))
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
         }
 
-        if (isset($data[$model->id_field]) && $model->getDirtyRef()[$model->id_field]) {
+        if ($dataId !== null && $model->getDirtyRef()[$model->id_field]) {
             // ID was changed
-            $model->setId($data[$model->id_field]);
+            $model->setId($dataId);
         }
 
         $model->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update, $st]);
 
         // if any rows were updated in database, and we had expressions, reload
-        if ($model->reload_after_save === true && (!$st || $st->rowCount())) {
+        if ($model->reload_after_save === true && $st->rowCount()) {
             $d = $model->getDirtyRef();
             $model->reload();
             \Closure::bind(function () use ($model) {
@@ -629,13 +648,16 @@ class Sql extends Persistence
      */
     public function delete(Model $model, $id): void
     {
-        if (!$model->id_field) {
+        $idRaw = $model->id_field ? $this->typecastSaveField($model->getField($model->id_field), $id) : null;
+        unset($id);
+
+        if (!$model->id_field || $idRaw === null) {
             throw new Exception('id_field of a model is not set. Unable to delete record.');
         }
 
         $delete = $this->initQuery($model);
         $delete->mode('delete');
-        $delete->where($model->getField($model->id_field)->getPersistenceName(), $id);
+        $delete->where($model->getField($model->id_field)->getPersistenceName(), $idRaw);
         $model->hook(self::HOOK_BEFORE_DELETE_QUERY, [$delete]);
 
         try {
