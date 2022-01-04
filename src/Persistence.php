@@ -148,6 +148,89 @@ abstract class Persistence
     }
 
     /**
+     * Inserts record in database and returns new record ID.
+     *
+     * @return mixed
+     */
+    public function insert(Model $model, array $data)
+    {
+        if ($model->id_field && array_key_exists($model->id_field, $data) && $data[$model->id_field] === null) {
+            unset($data[$model->id_field]);
+        }
+
+        $dataRaw = $this->typecastSaveRow($model, $data);
+        unset($data);
+
+        $idRaw = $this->insertRaw($model, $dataRaw);
+        $id = $model->id_field ? $this->typecastLoadField($model->getField($model->id_field), $idRaw) : new \stdClass();
+
+        return $id;
+    }
+
+    /**
+     * @return mixed
+     */
+    protected function insertRaw(Model $model, array $dataRaw)
+    {
+        throw new Exception('Insert is not supported.');
+    }
+
+    /**
+     * Updates record in database.
+     *
+     * @param mixed $id
+     */
+    public function update(Model $model, $id, array $data): void
+    {
+        $idRaw = $model->id_field ? $this->typecastSaveField($model->getField($model->id_field), $id) : null;
+        unset($id);
+        if ($idRaw === null || (array_key_exists($model->id_field, $data) && $data[$model->id_field] === null)) {
+            throw new Exception('Model id_field is not set. Unable to update record.');
+        }
+
+        $dataRaw = $this->typecastSaveRow($model, $data);
+        unset($data);
+
+        if (count($dataRaw) === 0) {
+            return;
+        }
+
+        $this->updateRaw($model, $idRaw, $dataRaw);
+    }
+
+    /**
+     * @param mixed $idRaw
+     */
+    protected function updateRaw(Model $model, $idRaw, array $dataRaw): void
+    {
+        throw new Exception('Update is not supported.');
+    }
+
+    /**
+     * Deletes record from database.
+     *
+     * @param mixed $id
+     */
+    public function delete(Model $model, $id): void
+    {
+        $idRaw = $model->id_field ? $this->typecastSaveField($model->getField($model->id_field), $id) : null;
+        unset($id);
+        if ($idRaw === null) {
+            throw new Exception('Model id_field is not set. Unable to delete record.');
+        }
+
+        $this->deleteRaw($model, $idRaw);
+    }
+
+    /**
+     * @param mixed $idRaw
+     */
+    protected function deleteRaw(Model $model, $idRaw): void
+    {
+        throw new Exception('Delete is not supported.');
+    }
+
+    /**
      * Will convert one row of data from native PHP types into
      * persistence types. This will also take care of the "actual"
      * field keys.

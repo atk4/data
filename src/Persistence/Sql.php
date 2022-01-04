@@ -37,6 +37,8 @@ class Sql extends Persistence
     public const HOOK_AFTER_UPDATE_QUERY = self::class . '@afterUpdateQuery';
     /** @const string */
     public const HOOK_BEFORE_DELETE_QUERY = self::class . '@beforeDeleteQuery';
+    /** @const string */
+    public const HOOK_AFTER_DELETE_QUERY = self::class . '@afterDeleteQuery';
 
     /** @var Connection Connection object. */
     public $connection;
@@ -507,53 +509,6 @@ class Sql extends Persistence
     }
 
     /**
-     * Inserts record in database and returns new record ID.
-     */
-    public function insert(Model $model, array $data): string
-    {
-        if ($model->id_field) {
-            $dataId = $data[$model->id_field] ?? null;
-            if ($dataId === null) {
-                unset($data[$model->id_field]);
-            }
-        } else {
-            $dataId = null;
-        }
-
-        $dataRaw = $this->typecastSaveRow($model, $data);
-        unset($data);
-
-        $insert = $this->initQuery($model);
-        $insert->mode('insert');
-
-        $insert->setMulti($dataRaw);
-
-        $st = null;
-        try {
-            $model->hook(self::HOOK_BEFORE_INSERT_QUERY, [$insert]);
-            $st = $insert->execute();
-        } catch (SqlException $e) {
-            throw (new Exception('Unable to execute insert query', 0, $e))
-                ->addMoreInfo('model', $model)
-                ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
-        }
-
-        if ($model->id_field) {
-            if ($dataId !== null) {
-                $id = (string) $dataId;
-            } else {
-                $id = $this->lastInsertId($model);
-            }
-        } else {
-            $id = '';
-        }
-
-        $model->hook(self::HOOK_AFTER_INSERT_QUERY, [$insert, $st]);
-
-        return $id;
-    }
-
-    /**
      * Export all DataSet.
      */
     public function export(Model $model, array $fields = null, bool $typecast = true): array
@@ -582,29 +537,39 @@ class Sql extends Persistence
         }
     }
 
-    /**
-     * Updates record in database.
-     *
-     * @param mixed $id
-     */
-    public function update(Model $model, $id, array $data): void
+    protected function insertRaw(Model $model, array $dataRaw)
     {
-        $idRaw = $model->id_field ? $this->typecastSaveField($model->getField($model->id_field), $id) : null;
-        unset($id);
+        $insert = $this->initQuery($model);
+        $insert->mode('insert');
 
-        $dataId = $data[$model->id_field] ?? null;
+        $insert->setMulti($dataRaw);
 
-        if (!$model->id_field || $idRaw === null || (array_key_exists($model->id_field, $data) && $dataId === null)) {
-            throw new Exception('id_field of a model is not set. Unable to update record.');
+        $st = null;
+        try {
+            $model->hook(self::HOOK_BEFORE_INSERT_QUERY, [$insert]);
+            $st = $insert->execute();
+        } catch (SqlException $e) {
+            throw (new Exception('Unable to execute insert query', 0, $e))
+                ->addMoreInfo('model', $model)
+                ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
         }
 
-        $dataRaw = $this->typecastSaveRow($model, $data);
-        unset($data);
-
-        if (count($dataRaw) === 0) {
-            return;
+        if ($model->id_field) {
+            $idRaw = $dataRaw[$model->getField($model->id_field)->getPersistenceName()] ?? null;
+            if ($idRaw === null) {
+                $idRaw = $this->lastInsertId($model);
+            }
+        } else {
+            $idRaw = '';
         }
 
+        $model->hook(self::HOOK_AFTER_INSERT_QUERY, [$insert, $st]);
+
+        return $idRaw;
+    }
+
+    protected function updateRaw(Model $model, $idRaw, array $dataRaw): void
+    {
         $update = $this->initQuery($model);
         $update->mode('update');
 
@@ -612,9 +577,10 @@ class Sql extends Persistence
         $update->setMulti($dataRaw);
         $update->where($model->getField($model->id_field)->getPersistenceName(), $idRaw);
 
+        $model->hook(self::HOOK_BEFORE_UPDATE_QUERY, [$update]);
+
         $st = null;
         try {
-            $model->hook(self::HOOK_BEFORE_UPDATE_QUERY, [$update]);
             $st = $update->execute();
         } catch (SqlException $e) {
             throw (new Exception('Unable to update due to query error', 0, $e))
@@ -622,9 +588,13 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
         }
 
-        if ($dataId !== null && $model->getDirtyRef()[$model->id_field]) {
-            // ID was changed
-            $model->setId($dataId);
+        if ($model->id_field) {
+            $newIdRaw = $dataRaw[$model->getField($model->id_field)->getPersistenceName()] ?? null;
+            if ($newIdRaw !== null && $model->getDirtyRef()[$model->id_field]) {
+                // ID was changed
+                // TODO this cannot work with entity
+                $model->setId($this->typecastLoadField($model->getField($model->id_field), $newIdRaw));
+            }
         }
 
         $model->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update, $st]);
@@ -641,32 +611,22 @@ class Sql extends Persistence
         }
     }
 
-    /**
-     * Deletes record from database.
-     *
-     * @param mixed $id
-     */
-    public function delete(Model $model, $id): void
+    protected function deleteRaw(Model $model, $idRaw): void
     {
-        $idRaw = $model->id_field ? $this->typecastSaveField($model->getField($model->id_field), $id) : null;
-        unset($id);
-
-        if (!$model->id_field || $idRaw === null) {
-            throw new Exception('id_field of a model is not set. Unable to delete record.');
-        }
-
         $delete = $this->initQuery($model);
         $delete->mode('delete');
         $delete->where($model->getField($model->id_field)->getPersistenceName(), $idRaw);
         $model->hook(self::HOOK_BEFORE_DELETE_QUERY, [$delete]);
 
         try {
-            $delete->execute();
+            $st = $delete->execute();
         } catch (SqlException $e) {
             throw (new Exception('Unable to delete due to query error', 0, $e))
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
         }
+
+        $model->hook(self::HOOK_AFTER_DELETE_QUERY, [$delete, $st]);
     }
 
     public function getFieldSqlExpression(Field $field, Expression $expression): Expression

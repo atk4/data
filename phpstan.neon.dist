@@ -45,11 +45,8 @@ parameters:
         # for src/Field/SqlExpressionField.php
         - '~^Call to an undefined method Atk4\\Data\\Model::expr\(\)\.$~'
         # for src/Model.php
-        - '~^Call to an undefined method Atk4\\Data\\Persistence::update\(\)\.$~'
-        - '~^Call to an undefined method Atk4\\Data\\Persistence::insert\(\)\.$~'
         - '~^Call to an undefined method Atk4\\Data\\Persistence::export\(\)\.$~'
         - '~^Call to an undefined method Atk4\\Data\\Persistence::prepareIterator\(\)\.$~'
-        - '~^Call to an undefined method Atk4\\Data\\Persistence::delete\(\)\.$~'
         - '~^Call to an undefined method Atk4\\Data\\Persistence::action\(\)\.$~'
         # for src/Model/ReferencesTrait.php (in context of class Atk4\Data\Model)
         - '~^Call to an undefined method Atk4\\Data\\Reference::refLink\(\)\.$~'

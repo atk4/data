@@ -114,11 +114,11 @@ class Join extends Model\Join
 
         $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
+        // @phpstan-ignore-next-line TODO this cannot work, Persistence::update() returns void
         $this->setId($entity, $persistence->update(
             $this->makeFakeModelWithForeignTable(),
             $this->getId($entity),
-            $this->getAndUnsetSaveBuffer($entity),
-            $this->foreign_table
+            $this->getAndUnsetSaveBuffer($entity)
         ));
     }
 
