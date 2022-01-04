@@ -92,7 +92,7 @@ ATK Data prior to 1.5 supports the following types:
 
 In ATK Data the number of supported types has been extended with:
 
- - percent (34.2%) ([':php:class:`Number`', 'format' => function($v){ return $v*100; }, 'postfix' => '%'])
+ - percent (34.2%) ([':php:class:`Number`', 'format' => function($v) { return $v*100; }, 'postfix' => '%'])
  - rating (3 out of 5) ([':php:class:`Number`', 'max' => 5, 'precision' => 0])
  - uuid (xxxxxxxx-xxxx-...) ([':php:class:`Number`', 'base' => 16, 'mask' => '########-##..'])
  - hex (number with base 16) ([':php:class:`Number`', 'base' => 16])

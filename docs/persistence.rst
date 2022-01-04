@@ -474,7 +474,7 @@ this ref, how do you do it?
 
 Start by creating a beforeSave handler for Order::
 
-    $this->onHookShort(Model::HOOK_BEFORE_SAVE, function() {
+    $this->onHookShort(Model::HOOK_BEFORE_SAVE, function () {
         if ($this->isDirty('ref')) {
 
             if (
@@ -589,11 +589,11 @@ application::
             $m = $m->withPersistence($this->mdb)->save();
         }
 
-        $m->onHook(Model::HOOK_BEFORE_SAVE, function($m){
+        $m->onHook(Model::HOOK_BEFORE_SAVE, function($m) {
             $m->withPersistence($this->sql)->save();
         });
 
-        $m->onHook(Model::HOOK_BEFORE_DELETE, function($m){
+        $m->onHook(Model::HOOK_BEFORE_DELETE, function($m) {
             $m->withPersistence($this->sql)->delete();
         });
 
@@ -634,11 +634,11 @@ records.
 The last two hooks are in order to replicate any changes into the SQL database
 also::
 
-    $m->onHook(Model::HOOK_BEFORE_SAVE, function($m){
+    $m->onHook(Model::HOOK_BEFORE_SAVE, function($m) {
         $m->withPersistence($this->sql)->save();
     });
 
-    $m->onHook(Model::HOOK_BEFORE_DELETE, function($m){
+    $m->onHook(Model::HOOK_BEFORE_DELETE, function($m) {
         $m->withPersistence($this->sql)->delete();
     });
 

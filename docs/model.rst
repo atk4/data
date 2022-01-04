@@ -364,7 +364,7 @@ a hook::
 
    $this->addField('name');
 
-   $this->onHookShort(Model::HOOK_VALIDATE, function() {
+   $this->onHookShort(Model::HOOK_VALIDATE, function () {
       if ($this->get('name') === 'C#') {
          return ['name' => 'No sharp objects are allowed'];
       }

@@ -43,7 +43,7 @@ class DeepCopy
 
     /**
      * @var array contains array similar to references but containing list of callback methods to transform fields/values:
-     *            e.g. ['Invoices' => ['Lines' => function($data){
+     *            e.g. ['Invoices' => ['Lines' => function($data) {
      *            $data['exchanged_amount'] = $data['amount'] * getExRate($data['date'], $data['currency']);
      *            return $data;
      *            }]]
@@ -112,15 +112,15 @@ class DeepCopy
      * May also contain arrays for related entries.
      *
      * ->transformData(
-     *      [function($data){ // for Client entity
-     *          $data['name'] => $data['last_name'].' '.$data['first_name'];
+     *      [function($data) { // for Client entity
+     *          $data['name'] => $data['last_name'] . ' ' . $data['first_name'];
      *          unset($data['first_name'], $data['last_name']);
      *          return $data;
      *      }],
-     *      'Invoices' => ['Lines' => function($data){ // for nested Client->Invoices->Lines hasMany entity
-     *              $data['exchanged_amount'] = $data['amount'] * getExRate($data['date'], $data['currency']);
-     *              return $data;
-     *          }]
+     *      'Invoices' => ['Lines' => function($data) { // for nested Client->Invoices->Lines hasMany entity
+     *          $data['exchanged_amount'] = $data['amount'] * getExRate($data['date'], $data['currency']);
+     *          return $data;
+     *      }]
      *  );
      *
      * @return $this

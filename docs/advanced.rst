@@ -151,7 +151,7 @@ which I want to define like this::
     protected function init(): void {
         $this->_init();
 
-        if(isset($this->getOwner()->no_audit)){
+        if(isset($this->getOwner()->no_audit)) {
             return;
         }
 
@@ -223,7 +223,7 @@ Start by creating a class::
         function init(): void {
             $this->_init();
 
-            if(property_exists($this->getOwner(), 'no_soft_delete')){
+            if(property_exists($this->getOwner(), 'no_soft_delete')) {
                 return;
             }
 
@@ -334,7 +334,7 @@ before and just slightly modifying it::
         function init(): void {
             $this->_init();
 
-            if(property_exists($this->getOwner(), 'no_soft_delete')){
+            if(property_exists($this->getOwner(), 'no_soft_delete')) {
                 return;
             }
 
@@ -521,7 +521,7 @@ Next we need to define reference. Inside Model_Invoice add::
         $j->hasOne('invoice_id', 'Model_Invoice');
     }, 'their_field' => 'invoice_id']);
 
-    $this->onHookShort(Model::HOOK_BEFORE_DELETE, function() {
+    $this->onHookShort(Model::HOOK_BEFORE_DELETE, function () {
         foreach ($this->ref('InvoicePayment') as $payment) {
             $payment->delete();
         }
@@ -655,7 +655,7 @@ Here is how to add them. First you need to create fields::
 I have declared those fields with never_persist so they will never be used by
 persistence layer to load or save anything. Next I need a beforeSave handler::
 
-    $this->onHookShort(Model::HOOK_BEFORE_SAVE, function() {
+    $this->onHookShort(Model::HOOK_BEFORE_SAVE, function () {
         if($this->_isset('client_code') && !$this->_isset('client_id')) {
             $cl = $this->refModel('client_id');
             $cl->addCondition('code',$this->get('client_code'));
@@ -744,7 +744,7 @@ section. Add this into your Invoice Model::
 Next both payment and lines need to be added after invoice is actually created,
 so::
 
-    $this->onHookShort(Model::HOOK_AFTER_SAVE, function($is_update){
+    $this->onHookShort(Model::HOOK_AFTER_SAVE, function($is_update) {
         if($this->_isset('payment')) {
             $this->ref('Payment')->insert($this->get('payment'));
         }
@@ -800,7 +800,7 @@ field only to offer payments made by the same client. Inside Model_Invoice add::
 
     $this->hasOne('client_id', 'Client');
 
-    $this->hasOne('payment_invoice_id', ['model' => function($m){
+    $this->hasOne('payment_invoice_id', ['model' => function($m) {
         return $m->ref('client_id')->ref('Payment');
     }]);
 
@@ -826,7 +826,7 @@ Agile Data allow you to define multiple references between same entities, but
 sometimes that can be quite useful. Consider adding this inside your Model_Contact::
 
     $this->hasMany('Invoice', 'Model_Invoice');
-    $this->hasMany('OverdueInvoice', ['model' => function($m){
+    $this->hasMany('OverdueInvoice', ['model' => function($m) {
         return $m->ref('Invoice')->addCondition('due','<',date('Y-m-d'))
     }]);
 
