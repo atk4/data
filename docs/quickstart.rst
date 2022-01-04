@@ -581,28 +581,6 @@ also build manually::
 
     $m->addExpression('country', $m->refLink('country_id')->action('field',['name']));
 
-Multi-record actions
---------------------
-
-Actions also allow you to perform operations on multiple records. This can be
-very handy with some deep traversal to improve query efficiency. Suppose you need
-to change Client/Supplier status to 'suspended' for a specific user. Fire up a
-console once away::
-
-    $m = new Model_User($db);
-    $m = $m->loadBy('username','john');
-    $m->hasMany('System');
-    $c = $m->ref('System')->ref('Client');
-    $s = $m->ref('System')->ref('Supplier');
-
-    $c->action('update')->set('status', 'suspended')->execute();
-    $s->action('update')->set('status', 'suspended')->execute();
-
-Note that I had to perform 2 updates here, because Agile Data considers Client
-and Supplier as separate models. In our implementation they happened to be in
-a same table, but technically that could also be implemented differently by
-persistence layer.
-
 Advanced Use of Actions
 -----------------------
 

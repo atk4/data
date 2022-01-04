@@ -238,7 +238,7 @@ This can be used in various situations.
 
 Save information into auditLog about failure:
 
-    $m->onHook(Model::HOOK_ROLLBACK, function($m){
+    $m->onHook(Model::HOOK_ROLLBACK, function($m) {
         $m->auditLog->registerFailure();
     });
 

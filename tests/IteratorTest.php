@@ -78,7 +78,7 @@ class IteratorTest extends TestCase
     {
         $m = new Model();
         $this->expectException(Exception::class);
-        $m->action('insert');
+        $m->action('count');
     }
 
     public function testBasic(): void

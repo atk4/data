@@ -169,7 +169,7 @@ This method allows you to execute code within a 'START TRANSACTION / COMMIT' blo
 
         function applyPayment(Payment $p) {
 
-            $this->persistence->atomic(function() use ($p) {
+            $this->persistence->atomic(function () use ($p) {
 
                 $this->set('paid', true);
                 $this->save();
@@ -239,18 +239,6 @@ them yourself)::
 
     $action = $model->action('select', [false]);
     $action->field('count(*)', 'c);
-
-
-Action: insert
---------------
-
-Will prepare query for performing insert of a new record.
-
-Action: update, delete
-----------------------
-
-Will prepare query for performing update or delete of records.
-Applies conditions set.
 
 Action: count
 -------------

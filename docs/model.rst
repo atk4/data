@@ -29,14 +29,7 @@ object you can load/unload individual records (See Single record Operations belo
    $m = $m->load(8);
    ....
 
-and even perform operations on multiple records (See `Persistence Actions` below)::
-
-   $m = new User($db);
-   $m->addCondition('expired', true);
-
-   $m->action('delete')->execute(); // performs mass delete, hooks are not executed
-
-   foreach ($m as $entity) { $entity->delete(); } // deletes each record, hooks are executed
+and even perform operations on multiple records (See `Persistence Actions` below).
 
 When data is loaded from associated Persistence, it is automatically converted into
 a native PHP type (such as DateTime object) through a process called Typecasting. Various
@@ -371,7 +364,7 @@ a hook::
 
    $this->addField('name');
 
-   $this->onHookShort(Model::HOOK_VALIDATE, function() {
+   $this->onHookShort(Model::HOOK_VALIDATE, function () {
       if ($this->get('name') === 'C#') {
          return ['name' => 'No sharp objects are allowed'];
       }
