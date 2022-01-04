@@ -742,7 +742,7 @@ conditions)
 .. php:method:: action($action, $args = [])
 
     Prepares a special object representing "action" of a persistence layer based
-    around your current model::
+    around your current model.
 
 
 Action Types
