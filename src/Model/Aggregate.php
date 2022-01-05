@@ -35,7 +35,7 @@ use Atk4\Data\Reference;
  * Union model implements identical grouping rule on its own.
  *
  * You can also pass seed (for example field type) when aggregating:
- * $aggregate->groupBy(['first', 'last'], ['salary' => ['sum([])', 'type' => 'atk4_']];
+ * $aggregate->groupBy(['first', 'last'], ['salary' => ['sum([])', 'type' => 'atk4_money']];
  *
  * @property \Atk4\Data\Persistence\Sql $persistence
  *
