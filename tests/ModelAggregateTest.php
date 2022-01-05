@@ -16,7 +16,8 @@ class ModelAggregateTest extends TestCase
     private $init_db =
         [
             'client' => [
-                ['name' => 'Vinny'],
+                // allow of migrator to create all columns
+                ['name' => 'Vinny', 'surname' => null, 'order' => null],
                 ['name' => 'Zoe'],
             ],
             'invoice' => [
@@ -257,7 +258,7 @@ class ModelAggregateTest extends TestCase
         $aggregate->setOrder('client_id', 'asc');
 
         $this->assertSameSql(
-            'select (select "name" from "client" "_c_2bfe9d72a4aa" where "id" = "invoice"."client_id") "client", "invoice"."client_id", sum("amount") "amount" from "invoice" group by "client_id" order by "invoice"."client_id"',
+            'select (select "name" from "client" "_c_2bfe9d72a4aa" where "id" = "invoice"."client_id") "client", "client_id", sum("amount") "amount" from "invoice" group by "client_id" order by "client_id"',
             $aggregate->action('select')->render()[0]
         );
     }
@@ -319,7 +320,7 @@ class ModelAggregateTest extends TestCase
         ]);
 
         $this->assertSameSql(
-            'select (select "name" from "client" "_c_2bfe9d72a4aa" where "id" = "invoice"."client_id") "client", "invoice"."abc", sum("amount") "xyz" from "invoice" group by abc',
+            'select (select "name" from "client" "_c_2bfe9d72a4aa" where "id" = "invoice"."client_id") "client", "abc", sum("amount") "xyz" from "invoice" group by abc',
             $aggregate->action('select')->render()[0]
         );
     }

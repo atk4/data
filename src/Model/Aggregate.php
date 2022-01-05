@@ -71,9 +71,6 @@ class Aggregate extends Model
         $this->read_only = true;
 
         parent::__construct($baseModel->persistence, $defaults);
-
-        // always use table prefixes for this model
-        $this->persistence_data['use_table_prefixes'] = true;
     }
 
     /**
