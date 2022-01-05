@@ -6,7 +6,7 @@ namespace Atk4\Data\Model;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
-use Atk4\Data\FieldSqlExpression;
+use Atk4\Data\Field\SqlExpressionField;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Expression;
@@ -144,7 +144,7 @@ class Aggregate extends Model
     {
         $seed = is_array($seed) ? $seed : [$seed];
 
-        if (isset($seed[0]) && $seed[0] instanceof FieldSqlExpression) {
+        if (isset($seed[0]) && $seed[0] instanceof SqlExpressionField) {
             return parent::addField($name, $seed[0]);
         }
 
@@ -174,7 +174,7 @@ class Aggregate extends Model
     {
         switch ($mode) {
             case 'select':
-                $fields = $this->only_fields ?: array_keys($this->getFields());
+                $fields = $this->onlyFields ?: array_keys($this->getFields());
 
                 // select but no need your fields
                 $query = $this->baseModel->action($mode, [false]);
