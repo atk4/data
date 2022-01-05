@@ -8,6 +8,7 @@ use Atk4\Data\Model\Aggregate;
 use Atk4\Data\Model\Scope;
 use Atk4\Data\Model\Scope\Condition;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Platforms\SqlitePlatform;
 
 class ModelAggregateTest extends TestCase
 {
@@ -164,7 +165,12 @@ class ModelAggregateTest extends TestCase
         ]);
 
         $aggregate->addExpression('double', ['[s]+[amount]', 'type' => 'atk4_money']);
-        $aggregate->addCondition('double', '>', 10);
+        $aggregate->addCondition(
+            'double',
+            '>',
+            // TODO Sqlite bind param does not work, expr needed, even if casted to float with DBAL type (comparison works only if casted to/bind as int)
+            $this->getDatabasePlatform() instanceof SqlitePlatform ? $aggregate->expr('10') : 10
+        );
 
         $this->assertSame(
             [
@@ -184,7 +190,11 @@ class ModelAggregateTest extends TestCase
         ]);
 
         $aggregate->addExpression('double', ['[s]+[amount]', 'type' => 'atk4_money']);
-        $aggregate->addCondition('double', 38);
+        $aggregate->addCondition(
+            'double',
+            // TODO Sqlite bind param does not work, expr needed, even if casted to float with DBAL type (comparison works only if casted to/bind as int)
+            $this->getDatabasePlatform() instanceof SqlitePlatform ? $aggregate->expr('38') : 38
+        );
 
         $this->assertSame(
             [
@@ -222,7 +232,9 @@ class ModelAggregateTest extends TestCase
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
 
-        $scope = Scope::createAnd(new Condition('client_id', 2), new Condition('amount', 4));
+        // TODO Sqlite bind param does not work, expr needed, even if casted to float with DBAL type (comparison works only if casted to/bind as int)
+        $numExpr = $this->getDatabasePlatform() instanceof SqlitePlatform ? $aggregate->expr('4') : 4;
+        $scope = Scope::createAnd(new Condition('client_id', 2), new Condition('amount', $numExpr));
 
         $aggregate->addCondition($scope);
 
