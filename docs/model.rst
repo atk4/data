@@ -29,14 +29,7 @@ object you can load/unload individual records (See Single record Operations belo
    $m = $m->load(8);
    ....
 
-and even perform operations on multiple records (See `Persistence Actions` below)::
-
-   $m = new User($db);
-   $m->addCondition('expired', true);
-
-   $m->action('delete')->execute(); // performs mass delete, hooks are not executed
-
-   $m->each(function () use ($m) { $m->delete(); }); // deletes each record, hooks are executed
+and even perform operations on multiple records (See `Persistence Actions` below).
 
 When data is loaded from associated Persistence, it is automatically converted into
 a native PHP type (such as DateTime object) through a process called Typecasting. Various
@@ -208,8 +201,7 @@ Each model field is represented by a Field object::
 Other persistence framework will use "properties", because individual objects may impact
 performance. In ATK Data this is not an issue, because "Model" is re-usable::
 
-   foreach(new User($db) as $user) {
-
+   foreach (new User($db) as $user) {
       // will be the same object every time!!
       var_dump($user->getField['name']);
 
@@ -372,7 +364,7 @@ a hook::
 
    $this->addField('name');
 
-   $this->onHookShort(Model::HOOK_VALIDATE, function() {
+   $this->onHookShort(Model::HOOK_VALIDATE, function () {
       if ($this->get('name') === 'C#') {
          return ['name' => 'No sharp objects are allowed'];
       }
@@ -505,18 +497,14 @@ When you normally work with your model then all fields are available and will be
 loaded / saved. You may, however, specify that you wish to load only a sub-set
 of fields.
 
-(In ATK4.3 we call those fields "Actual Fields")
-
-.. php:method:: onlyFields($fields)
+.. php:method:: setOnlyFields($fields)
 
     Specify array of fields. Only those fields will be accessible and will be
     loaded / saved. Attempt to access any other field will result in exception.
 
-.. php:method:: allFields()
+    Null restore to full set of fields. This will also unload active record.
 
-    Restore to full set of fields. This will also unload active record.
-
-.. php:attr:: only_fields
+.. php:attr:: onlyFields
 
     Contains list of fields to be loaded / accessed.
 
@@ -702,7 +690,7 @@ Title Field
     you can specify that in the property. If title_field is not needed, set it
     to false or point towards a non-existent field.
 
-    See: :php:meth::`hasOne::addTitle()` and :php:meth::`hasOne::withTitle()`
+    See: :php:meth::`hasOne::addTitle()`
 
 .. php:method:: public getTitle
 

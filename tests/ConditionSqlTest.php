@@ -6,7 +6,7 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 
 class ConditionSqlTest extends TestCase
@@ -38,7 +38,7 @@ class ConditionSqlTest extends TestCase
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
                 'select "id", "name", "gender" from "user" where "gender" = :a',
-                $mm->action('select')->render()
+                $mm->action('select')->render()[0]
             );
         }
 
@@ -263,12 +263,12 @@ class ConditionSqlTest extends TestCase
         $mm = clone $m;
         $mm->addCondition($mm->expr('[name] = [surname]'));
         $mm2 = $mm->tryLoad(1);
-        $this->assertFalse($mm2->loaded());
+        $this->assertFalse($mm2->isLoaded());
         $mm2 = $mm->tryLoad(2);
         $this->assertSame('Sue', $mm2->get('name'));
         $this->assertSame('+321 sues', $mm2->get('contact_phone'));
         $mm2 = $mm->tryLoad(3);
-        $this->assertFalse($mm2->loaded());
+        $this->assertFalse($mm2->isLoaded());
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('\'+123 smiths\' = [contact_phone]'));
@@ -426,7 +426,7 @@ class ConditionSqlTest extends TestCase
      */
     public function testLikeCondition(): void
     {
-        if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform) {
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             $this->markTestIncomplete('PostgreSQL does not support "column LIKE variable" syntax');
         }
 

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence;
 
-use Atk4\Data\Action\RenameColumnIterator;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Array_\Action;
+use Atk4\Data\Persistence\Array_\Action\RenameColumnIterator;
 use Atk4\Data\Persistence\Array_\Db\Row;
 use Atk4\Data\Persistence\Array_\Db\Table;
 
@@ -43,7 +43,7 @@ class Array_ extends Persistence
         // and put all persistence data in there 1/2
         if (count($this->seedData) > 0 && !isset($this->seedData['data'])) {
             $rowSample = reset($this->seedData);
-            if (is_array($rowSample) && !is_array(reset($rowSample))) {
+            if (is_array($rowSample) && $rowSample !== [] && !is_array(reset($rowSample))) {
                 $this->seedData = ['data' => $this->seedData];
             }
         }
@@ -111,9 +111,9 @@ class Array_ extends Persistence
      * @param int|string|null $idFromRow
      * @param int|string      $id
      */
-    private function assertNoIdMismatch($idFromRow, $id): void
+    private function assertNoIdMismatch(Model $model, $idFromRow, $id): void
     {
-        if ($idFromRow !== null && (is_int($idFromRow) ? (string) $idFromRow : $idFromRow) !== (is_int($id) ? (string) $id : $id)) {
+        if ($idFromRow !== null && !$model->getField($model->id_field)->compare($idFromRow, $id)) {
             throw (new Exception('Row constains ID column, but it does not match the row ID'))
                 ->addMoreInfo('idFromKey', $id)
                 ->addMoreInfo('idFromData', $idFromRow);
@@ -127,9 +127,10 @@ class Array_ extends Persistence
     {
         if ($model->id_field) {
             $idField = $model->getField($model->id_field);
+            $id = $idField->normalize($id);
             $idColumnName = $idField->getPersistenceName();
             if (array_key_exists($idColumnName, $rowData)) {
-                $this->assertNoIdMismatch($rowData[$idColumnName], $id);
+                $this->assertNoIdMismatch($model, $rowData[$idColumnName], $id);
                 unset($rowData[$idColumnName]);
             }
 
@@ -155,10 +156,7 @@ class Array_ extends Persistence
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function add(Model $model, array $defaults = []): Model
+    public function add(Model $model, array $defaults = []): void
     {
         if (isset($defaults[0])) {
             $model->table = $defaults[0];
@@ -169,7 +167,7 @@ class Array_ extends Persistence
             '_default_seed_join' => [Array_\Join::class],
         ], $defaults);
 
-        $model = parent::add($model, $defaults);
+        parent::add($model, $defaults);
 
         // if there is no model table specified, then create fake one named 'data'
         // and put all persistence data in there 2/2
@@ -179,19 +177,17 @@ class Array_ extends Persistence
 
         if ($model->id_field && $model->hasField($model->id_field)) {
             $f = $model->getField($model->id_field);
-            if (!$f->type) {
+            if ($f->type === null) {
                 $f->type = 'integer';
             }
         }
 
         $this->seedData($model);
-
-        return $model;
     }
 
     private function filterRowDataOnlyModelFields(Model $model, array $rowData): array
     {
-        return array_intersect_key($rowData, array_map(fn (Field $f) => $f->name, $model->getFields()));
+        return array_intersect_key($rowData, array_map(fn (Field $f) => $f->short_name, $model->getFields()));
     }
 
     public function tryLoad(Model $model, $id): ?array
@@ -396,12 +392,9 @@ class Array_ extends Persistence
     /**
      * Various actions possible here, mostly for compatibility with SQLs.
      *
-     * @param string $type
-     * @param array  $args
-     *
      * @return mixed
      */
-    public function action(Model $model, $type, $args = [])
+    public function action(Model $model, string $type, array $args = [])
     {
         $args = (array) $args;
 

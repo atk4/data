@@ -6,20 +6,25 @@ namespace Atk4\Data\Persistence;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
-use Atk4\Data\FieldSqlExpression;
+use Atk4\Data\Field\SqlExpressionField;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Connection;
-use Atk4\Data\Persistence\Sql\Exception as DsqlException;
+use Atk4\Data\Persistence\Sql\Exception as SqlException;
 use Atk4\Data\Persistence\Sql\Expression;
+use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Query;
+use Doctrine\DBAL\Connection as DbalConnection;
+use Doctrine\DBAL\Driver\Connection as DbalDriverConnection;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
-use Doctrine\DBAL\Platforms\SQLServer2012Platform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class Sql extends Persistence
 {
+    use Sql\BinaryTypeCompatibilityTypecastTrait;
+
     /** @const string */
     public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelectQuery';
     /** @const string */
@@ -33,71 +38,40 @@ class Sql extends Persistence
     /** @const string */
     public const HOOK_BEFORE_DELETE_QUERY = self::class . '@beforeDeleteQuery';
 
-    /**
-     * Connection object.
-     *
-     * @var \Atk4\Data\Persistence\Sql\Connection
-     */
+    /** @var Connection Connection object. */
     public $connection;
 
-    /**
-     * Default class when adding new field.
-     *
-     * @var array
-     */
-    public $_default_seed_addField = [\Atk4\Data\FieldSql::class];
+    /** @var array Default class when adding new field. */
+    public $_default_seed_addField; // no custom seed needed
 
-    /**
-     * Default class when adding hasOne field.
-     *
-     * @var array
-     */
+    /** @var array Default class when adding hasOne field. */
     public $_default_seed_hasOne = [\Atk4\Data\Reference\HasOneSql::class];
 
-    /**
-     * Default class when adding hasMany field.
-     *
-     * @var array
-     */
-    public $_default_seed_hasMany; // [\Atk4\Data\Reference\HasMany::class];
+    /** @var array Default class when adding hasMany field. */
+    public $_default_seed_hasMany; // no custom seed needed
 
-    /**
-     * Default class when adding Expression field.
-     *
-     * @var array
-     */
-    public $_default_seed_addExpression = [FieldSqlExpression::class];
+    /** @var array Default class when adding Expression field. */
+    public $_default_seed_addExpression = [SqlExpressionField::class];
 
-    /**
-     * Default class when adding join.
-     *
-     * @var array
-     */
+    /** @var array Default class when adding join. */
     public $_default_seed_join = [Sql\Join::class];
 
     /**
-     * Constructor.
-     *
-     * @param Connection|string $connection
-     * @param string            $user
-     * @param string            $password
-     * @param array             $args
+     * @param Connection|string|array|DbalConnection|DbalDriverConnection $connection
+     * @param string                                                      $user
+     * @param string                                                      $password
+     * @param array                                                       $args
      */
     public function __construct($connection, $user = null, $password = null, $args = [])
     {
-        if ($connection instanceof \Atk4\Data\Persistence\Sql\Connection) {
+        if ($connection instanceof Connection) {
             $this->connection = $connection;
 
             return;
         }
 
-        if (is_object($connection)) {
-            throw (new Exception('You can only use Persistance_SQL with Connection class from Atk4\Data\Persistence\Sql'))
-                ->addMoreInfo('connection', $connection);
-        }
-
-        // attempt to connect.
-        $this->connection = \Atk4\Data\Persistence\Sql\Connection::connect(
+        // attempt to connect
+        $this->connection = Connection::connect(
             $connection,
             $user,
             $password,
@@ -140,10 +114,7 @@ class Sql extends Persistence
         return $this->connection->getDatabasePlatform();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function add(Model $model, array $defaults = []): Model
+    public function add(Model $model, array $defaults = []): void
     {
         // Use our own classes for fields, references and expressions unless
         // $defaults specify them otherwise.
@@ -155,7 +126,7 @@ class Sql extends Persistence
             '_default_seed_join' => $this->_default_seed_join,
         ], $defaults);
 
-        $model = parent::add($model, $defaults);
+        parent::add($model, $defaults);
 
         if ($model->table === null) {
             throw (new Exception('Property $table must be specified for a model'))
@@ -170,8 +141,6 @@ class Sql extends Persistence
             // SQL databases use ID of int by default
             //$m->getField($m->id_field)->type = 'integer';
         }
-
-        return $model;
     }
 
     /**
@@ -180,12 +149,18 @@ class Sql extends Persistence
     protected function initPersistence(Model $model): void
     {
         $model->addMethod('expr', static function (Model $m, ...$args) {
+            $m->assertIsModel();
+
             return $m->persistence->expr($m, ...$args);
         });
         $model->addMethod('dsql', static function (Model $m, ...$args) {
+            $m->assertIsModel();
+
             return $m->persistence->dsql($m, ...$args); // @phpstan-ignore-line
         });
         $model->addMethod('exprNow', static function (Model $m, ...$args) {
+            $m->assertIsModel();
+
             return $m->persistence->exprNow($m, ...$args);
         });
     }
@@ -260,7 +235,7 @@ class Sql extends Persistence
 
             // prepare sub-query
             if ($fieldsFrom) {
-                $withModel->onlyFields($fieldsFrom);
+                $withModel->setOnlyFields($fieldsFrom);
             }
             // 2nd parameter here strictly define which fields should be selected
             // as result system fields will not be added if they are not requested
@@ -298,11 +273,11 @@ class Sql extends Persistence
             foreach ($fields as $fieldName) {
                 $this->initField($query, $model->getField($fieldName));
             }
-        } elseif ($model->only_fields) {
+        } elseif ($model->onlyFields !== null) {
             $addedFields = [];
 
             // Add requested fields first
-            foreach ($model->only_fields as $fieldName) {
+            foreach ($model->onlyFields as $fieldName) {
                 $field = $model->getField($fieldName);
                 if ($field->never_persist) {
                     continue;
@@ -348,7 +323,7 @@ class Sql extends Persistence
             foreach ($model->order as $order) {
                 $isDesc = strtolower($order[1]) === 'desc';
 
-                if ($order[0] instanceof Expression) {
+                if ($order[0] instanceof Expressionable) {
                     $query->order($order[0], $isDesc);
                 } elseif (is_string($order[0])) {
                     $query->order($model->getField($order[0]), $isDesc);
@@ -371,7 +346,7 @@ class Sql extends Persistence
         // add entity ID to scope to allow easy traversal
         if ($model->isEntity() && $model->id_field && $model->getId() !== null) {
             $query->group($model->getField($model->id_field));
-            if ($this->getDatabasePlatform() instanceof SQLServer2012Platform
+            if ($this->getDatabasePlatform() instanceof SQLServerPlatform
                 || $this->getDatabasePlatform() instanceof OraclePlatform) {
                 foreach ($query->args['field'] as $alias => $field) {
                     $query->group(is_int($alias) ? $field : $alias);
@@ -406,28 +381,12 @@ class Sql extends Persistence
     }
 
     /**
-     * Executing $model->action('update') will call this method.
-     *
      * @return Query
      */
     public function action(Model $model, string $type, array $args = [])
     {
         $query = $this->initQuery($model);
         switch ($type) {
-            case 'insert':
-                return $query->mode('insert');
-                // cannot apply conditions now
-
-            case 'update':
-                $query->mode('update');
-
-                break;
-            case 'delete':
-                $query->mode('delete');
-                $this->initQueryConditions($model, $query);
-                $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
-
-                return $query;
             case 'select':
                 $this->initQueryFields($model, $query, $args[0] ?? null);
 
@@ -452,7 +411,7 @@ class Sql extends Persistence
                 $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
                 if (isset($args['alias'])) {
                     $query->reset('field')->field($field, $args['alias']);
-                } elseif ($field instanceof FieldSqlExpression) {
+                } elseif ($field instanceof SqlExpressionField) {
                     $query->reset('field')->field($field, $field->short_name);
                 } else {
                     $query->reset('field')->field($field);
@@ -460,7 +419,7 @@ class Sql extends Persistence
                 $this->initQueryConditions($model, $query);
                 $this->setLimitOrder($model, $query);
 
-                if ($model->isEntity() && $model->loaded()) {
+                if ($model->isEntity() && $model->isLoaded()) {
                     $query->where($model->getField($model->id_field), $model->getId());
                 }
 
@@ -487,7 +446,7 @@ class Sql extends Persistence
 
                 if (isset($args['alias'])) {
                     $query->reset('field')->field($query->expr($expr, [$field]), $args['alias']);
-                } elseif ($field instanceof FieldSqlExpression) {
+                } elseif ($field instanceof SqlExpressionField) {
                     $query->reset('field')->field($query->expr($expr, [$field]), $fx . '_' . $field->short_name);
                 } else {
                     $query->reset('field')->field($query->expr($expr, [$field]));
@@ -533,10 +492,8 @@ class Sql extends Persistence
                     ->addMoreInfo('id', $noId ? null : $id);
             }
             $data = $this->typecastLoadRow($model, $rowsRaw[0]);
-        } catch (DsqlException $e) {
+        } catch (SqlException $e) {
             throw (new Exception('Unable to load due to query error', 0, $e))
-                ->addMoreInfo('query', $query->getDebugQuery())
-                ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('scope', $model->scope()->toWords());
         }
@@ -557,22 +514,21 @@ class Sql extends Persistence
      */
     public function insert(Model $model, array $data): string
     {
-        $insert = $model->action('insert');
+        $insert = $this->initQuery($model);
+        $insert->mode('insert');
 
         if ($model->id_field && ($data[$model->id_field] ?? null) === null) {
             unset($data[$model->id_field]);
         }
 
-        $insert->set($this->typecastSaveRow($model, $data));
+        $insert->setMulti($this->typecastSaveRow($model, $data));
 
         $st = null;
         try {
             $model->hook(self::HOOK_BEFORE_INSERT_QUERY, [$insert]);
             $st = $insert->execute();
-        } catch (DsqlException $e) {
+        } catch (SqlException $e) {
             throw (new Exception('Unable to execute insert query', 0, $e))
-                ->addMoreInfo('query', $insert->getDebugQuery())
-                ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
         }
@@ -609,11 +565,9 @@ class Sql extends Persistence
         $export = $model->action('select');
 
         try {
-            return $export->getIterator();
-        } catch (DsqlException $e) {
+            return $export->getRowsIterator();
+        } catch (SqlException $e) {
             throw (new Exception('Unable to execute iteration query', 0, $e))
-                ->addMoreInfo('query', $export->getDebugQuery())
-                ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('scope', $model->scope()->toWords());
         }
@@ -633,10 +587,8 @@ class Sql extends Persistence
         $update = $this->initQuery($model);
         $update->mode('update');
 
-        $data = $this->typecastSaveRow($model, $data);
-
         // only apply fields that has been modified
-        $update->set($data);
+        $update->setMulti($this->typecastSaveRow($model, $data));
         $update->where($model->getField($model->id_field), $id);
 
         $st = null;
@@ -645,10 +597,8 @@ class Sql extends Persistence
             if ($data) {
                 $st = $update->execute();
             }
-        } catch (DsqlException $e) {
+        } catch (SqlException $e) {
             throw (new Exception('Unable to update due to query error', 0, $e))
-                ->addMoreInfo('query', $update->getDebugQuery())
-                ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
         }
@@ -664,7 +614,9 @@ class Sql extends Persistence
         if ($model->reload_after_save === true && (!$st || $st->rowCount())) {
             $d = $model->getDirtyRef();
             $model->reload();
-            $model->_dirty_after_reload = $model->getDirtyRef();
+            \Closure::bind(function () use ($model) {
+                $model->dirtyAfterReload = $model->getDirtyRef();
+            }, null, Model::class)();
             $dirtyRef = &$model->getDirtyRef();
             $dirtyRef = $d;
         }
@@ -688,10 +640,8 @@ class Sql extends Persistence
 
         try {
             $delete->execute();
-        } catch (DsqlException $e) {
+        } catch (SqlException $e) {
             throw (new Exception('Unable to delete due to query error', 0, $e))
-                ->addMoreInfo('query', $delete->getDebugQuery())
-                ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
         }
@@ -729,7 +679,7 @@ class Sql extends Persistence
         // PostgreSQL and Oracle DBAL platforms use sequence internally for PK autoincrement,
         // use default name if not set explicitly
         $sequenceName = null;
-        if ($this->connection->getDatabasePlatform() instanceof PostgreSQL94Platform) {
+        if ($this->connection->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             $sequenceName = $this->connection->getDatabasePlatform()->getIdentitySequenceName(
                 $model->table,
                 $model->getField($model->id_field)->getPersistenceName()

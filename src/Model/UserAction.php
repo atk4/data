@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Atk4\Data\Model;
 
 use Atk4\Core\DiContainerTrait;
-use Atk4\Core\Exception;
+use Atk4\Core\Exception as CoreException;
 use Atk4\Core\InitializerTrait;
 use Atk4\Core\TrackableTrait;
+use Atk4\Data\Exception;
 use Atk4\Data\Model;
 
 /**
@@ -22,13 +23,8 @@ use Atk4\Data\Model;
 class UserAction
 {
     use DiContainerTrait;
-    use InitializerTrait {
-        init as init_;
-    }
+    use InitializerTrait;
     use TrackableTrait;
-
-    /** @var Model|null */
-    private $entity;
 
     /** Defining records scope of the action */
     public const APPLIES_TO_NO_RECORDS = 'none'; // e.g. add
@@ -40,10 +36,10 @@ class UserAction
     public $appliesTo = self::APPLIES_TO_SINGLE_RECORD;
 
     /** Defining action modifier */
-    public const MODIFIER_CREATE = 'create'; // create new record(s).
-    public const MODIFIER_UPDATE = 'update'; // update existing record(s).
-    public const MODIFIER_DELETE = 'delete'; // delete record(s).
-    public const MODIFIER_READ = 'read'; // just read, does not modify record(s).
+    public const MODIFIER_CREATE = 'create'; // create new record(s)
+    public const MODIFIER_UPDATE = 'update'; // update existing record(s)
+    public const MODIFIER_DELETE = 'delete'; // delete record(s)
+    public const MODIFIER_READ = 'read'; // just read, does not modify record(s)
 
     /** @var string How this action interact with record. default = 'read' */
     public $modifier = self::MODIFIER_READ;
@@ -81,9 +77,48 @@ class UserAction
     /** @var bool Atomic action will automatically begin transaction before and commit it after completing. */
     public $atomic = true;
 
-    protected function init(): void
+    public function isOwnerEntity(): bool
     {
-        $this->init_();
+        /** @var Model */
+        $owner = $this->getOwner();
+
+        return $owner->isEntity();
+    }
+
+    public function getModel(): Model
+    {
+        /** @var Model */
+        $owner = $this->getOwner();
+
+        return $owner->getModel(true);
+    }
+
+    public function getEntity(): Model
+    {
+        /** @var Model */
+        $owner = $this->getOwner();
+
+        $owner->assertIsEntity();
+
+        return $owner;
+    }
+
+    /**
+     * @return static
+     */
+    public function getActionForEntity(Model $entity): self
+    {
+        /** @var Model */
+        $owner = $this->getOwner();
+
+        $entity->assertIsEntity($owner);
+        foreach ($owner->getUserActions() as $name => $action) {
+            if ($action === $this) {
+                return $entity->getUserAction($name); // @phpstan-ignore-line
+            }
+        }
+
+        throw new Exception('Action instance not found in model');
     }
 
     /**
@@ -117,7 +152,7 @@ class UserAction
             }
 
             return $run();
-        } catch (Exception $e) {
+        } catch (CoreException $e) {
             $e->addMoreInfo('action', $this);
 
             throw $e;
@@ -148,14 +183,14 @@ class UserAction
         // Verify some records scope cases
         switch ($this->appliesTo) {
             case self::APPLIES_TO_NO_RECORDS:
-                if ($this->getEntity()->loaded()) {
+                if ($this->getEntity()->isLoaded()) {
                     throw (new Exception('This user action can be executed on non-existing record only.'))
                         ->addMoreInfo('id', $this->getEntity()->getId());
                 }
 
                 break;
             case self::APPLIES_TO_SINGLE_RECORD:
-                if (!$this->getEntity()->loaded()) {
+                if (!$this->getEntity()->isLoaded()) {
                     throw new Exception('This user action requires you to load existing record first.');
                 }
 
@@ -215,32 +250,6 @@ class UserAction
         }
 
         return $this->confirmation;
-    }
-
-    /**
-     * Return model associated with this action.
-     */
-    public function getModel(): Model
-    {
-        return $this->getOwner()->getModel(true); // @phpstan-ignore-line
-    }
-
-    public function getEntity(): Model
-    {
-        if ($this->getOwner()->isEntity()) { // @phpstan-ignore-line
-            return $this->getOwner(); // @phpstan-ignore-line
-        }
-
-        if ($this->entity === null) {
-            $this->setEntity($this->getOwner()->createEntity()); // @phpstan-ignore-line
-        }
-
-        return $this->entity;
-    }
-
-    public function setEntity(Model $entity): void
-    {
-        $this->entity = $entity;
     }
 
     public function getCaption(): string

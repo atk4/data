@@ -45,10 +45,10 @@ class ArrayTest extends TestCase
         $this->assertSame('John', $mm->get('name'));
 
         $mm->unload();
-        $this->assertFalse($mm->loaded());
+        $this->assertFalse($mm->isLoaded());
 
         $mm = $m->tryLoadAny();
-        $this->assertTrue($mm->loaded());
+        $this->assertTrue($mm->isLoaded());
 
         $mm = $m->load(2);
         $this->assertSame('Jones', $mm->get('surname'));
@@ -73,14 +73,14 @@ class ArrayTest extends TestCase
         $m = new Male($p, ['table' => 'user']);
 
         $m = $m->load(1);
-        $this->assertTrue($m->loaded());
+        $this->assertTrue($m->isLoaded());
         $m->set('gender', 'F');
         $m->saveAndUnload();
-        $this->assertFalse($m->loaded());
+        $this->assertFalse($m->isLoaded());
 
         $m = new Female($p, ['table' => 'user']);
         $m = $m->load(1);
-        $this->assertTrue($m->loaded());
+        $this->assertTrue($m->isLoaded());
 
         $this->assertSame([
             'user' => [
@@ -700,10 +700,10 @@ class ArrayTest extends TestCase
     {
         // order by one field ascending
         $p = new Persistence\Array_([
-            ['f1' => 'A'],
-            ['f1' => 'D'],
-            ['f1' => 'E'],
-            ['f1' => 'C'],
+            1 => ['f1' => 'A'],
+            2 => ['f1' => 'D'],
+            3 => ['f1' => 'E'],
+            4 => ['f1' => 'C'],
         ]);
         $m = new Model($p);
         $m->addField('f1');
@@ -713,16 +713,16 @@ class ArrayTest extends TestCase
         $m->setLimit(3);
         $this->assertSame(3, $m->action('count')->getOne());
         $this->assertSame([
-            ['id' => 0, 'f1' => 'A'],
-            ['id' => 1, 'f1' => 'D'],
-            ['id' => 2, 'f1' => 'E'],
+            ['id' => 1, 'f1' => 'A'],
+            ['id' => 2, 'f1' => 'D'],
+            ['id' => 3, 'f1' => 'E'],
         ], array_values($m->export()));
 
         $m->setLimit(2, 1);
         $this->assertSame(2, $m->action('count')->getOne());
         $this->assertSame([
-            ['id' => 1, 'f1' => 'D'],
-            ['id' => 2, 'f1' => 'E'],
+            ['id' => 2, 'f1' => 'D'],
+            ['id' => 3, 'f1' => 'E'],
         ], array_values($m->export()));
 
         // well, this is strange, that you can actually change limit on-the-fly and then previous
@@ -882,7 +882,7 @@ class ArrayTest extends TestCase
         $m->addField('name');
         $m->addField('surname');
         $m = $m->tryLoadAny();
-        $this->assertFalse($m->loaded());
+        $this->assertFalse($m->isLoaded());
     }
 
     public function testTryLoadAnyReturnsFirstRecord(): void

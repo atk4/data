@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
-use Atk4\Data\Persistence\Static_ as Persistence_Static;
+use Atk4\Data\Persistence;
 use Atk4\Data\Schema\TestCase;
 
 trait UaReminder
@@ -46,14 +46,14 @@ class UaClient extends Model
 
 class UserActionTest extends TestCase
 {
-    /** @var Persistence_Static */
+    /** @var Persistence\Static_ */
     public $pers;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->pers = new Persistence_Static([
+        $this->pers = new Persistence\Static_([
             1 => ['name' => 'John'],
             2 => ['name' => 'Peter'],
         ]);
@@ -74,7 +74,8 @@ class UserActionTest extends TestCase
         // load record, before executing, because scope is single record
         $client = $client->load(1);
 
-        $act1 = $client->getUserActions()['send_reminder'];
+        $act1 = $client->getModel()->getUserActions()['send_reminder'];
+        $act1 = $act1->getActionForEntity($client);
         $this->assertNotTrue($client->get('reminder_sent'));
         $res = $act1->execute();
         $this->assertTrue($client->get('reminder_sent'));
@@ -111,7 +112,7 @@ class UserActionTest extends TestCase
         };
         $this->assertSame('will say John', $client->getUserAction('say_name')->preview('x'));
 
-        $client->addUserAction('also_backup', ['callback' => 'backup_clients']);
+        $client->getModel()->addUserAction('also_backup', ['callback' => 'backup_clients']);
         $this->assertSame('backs up all clients', $client->getUserAction('also_backup')->execute());
 
         $client->getUserAction('also_backup')->preview = 'backup_clients';
@@ -152,7 +153,7 @@ class UserActionTest extends TestCase
         $client->addUserAction('new_client', ['appliesTo' => Model\UserAction::APPLIES_TO_NO_RECORDS, 'atomic' => false]);
         $client = $client->createEntity();
 
-        $this->expectExceptionMessage('not defined');
+        $this->expectExceptionMessage('undefined method');
         $client->executeUserAction('new_client');
     }
 
@@ -245,9 +246,10 @@ class UserActionTest extends TestCase
     public function testConfirmation(): void
     {
         $client = new UaClient($this->pers);
+        $client->addUserAction('test');
         $client = $client->load(1);
-        $action = $client->addUserAction('test');
 
+        $action = $client->getUserAction('test');
         $this->assertFalse($action->getConfirmation());
 
         $action->confirmation = true;

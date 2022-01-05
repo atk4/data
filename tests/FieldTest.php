@@ -7,7 +7,6 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence;
 use Atk4\Data\Schema\TestCase;
 use Atk4\Data\ValidationException;
 
@@ -91,14 +90,13 @@ class FieldTest extends TestCase
 
     public function testMandatory2(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
             ],
         ]);
 
-        $m = new Model($db, ['table' => 'user']);
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name', ['mandatory' => true]);
         $m->addField('surname');
         $this->expectException(Exception::class);
@@ -107,14 +105,13 @@ class FieldTest extends TestCase
 
     public function testRequired2(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
             ],
         ]);
 
-        $m = new Model($db, ['table' => 'user']);
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name', ['required' => true]);
         $m->addField('surname');
         $this->expectException(Exception::class);
@@ -123,14 +120,13 @@ class FieldTest extends TestCase
 
     public function testMandatory3(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
             ],
         ]);
 
-        $m = new Model($db, ['table' => 'user']);
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name', ['mandatory' => true]);
         $m->addField('surname');
         $m = $m->load(1);
@@ -140,14 +136,13 @@ class FieldTest extends TestCase
 
     public function testMandatory4(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
             ],
         ]);
 
-        $m = new Model($db, ['table' => 'user']);
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name', ['mandatory' => true, 'default' => 'NoName']);
         $m->addField('surname');
         $m->insert(['surname' => 'qq']);
@@ -304,14 +299,13 @@ class FieldTest extends TestCase
 
     public function testNeverPersist(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
         $this->setDb($dbData = [
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
             ],
         ]);
 
-        $m = new Model($db, ['table' => 'item']);
+        $m = new Model($this->db, ['table' => 'item']);
         $m->addField('name', ['never_persist' => true]);
         $m->addField('surname', ['never_save' => true]);
         $m = $m->load(1);
@@ -361,7 +355,6 @@ class FieldTest extends TestCase
 
     public function testTitle(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'category_id' => 2],
@@ -373,10 +366,10 @@ class FieldTest extends TestCase
             ],
         ]);
 
-        $c = new Model($db, ['table' => 'category']);
+        $c = new Model($this->db, ['table' => 'category']);
         $c->addField('name');
 
-        $m = new Model($db, ['table' => 'user']);
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->hasOne('category_id', ['model' => $c])
             ->addTitle();
@@ -412,14 +405,13 @@ class FieldTest extends TestCase
 
     public function testActual(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
             ],
         ]);
 
-        $m = new Model($db, ['table' => 'user']);
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('first_name', ['actual' => 'name']);
         $m->addField('surname');
         $m->insert(['first_name' => 'Peter', 'surname' => 'qq']);
@@ -450,14 +442,13 @@ class FieldTest extends TestCase
 
     public function testCalculatedField(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'invoice' => [
                 1 => ['id' => 1, 'net' => 100, 'vat' => 21],
             ],
         ]);
 
-        $m = new Model($db, ['table' => 'invoice']);
+        $m = new Model($this->db, ['table' => 'invoice']);
         $m->addField('net', ['type' => 'atk4_money']);
         $m->addField('vat', ['type' => 'atk4_money']);
         $m->addCalculatedField('total', function ($m) {
@@ -482,12 +473,16 @@ class FieldTest extends TestCase
         $this->assertFalse($m->getField('foo')->isEditable());
         $this->assertFalse($m->getField('foo')->isVisible());
 
-        $m->onlyFields(['bar']);
+        $m->setOnlyFields(['bar']);
         // TODO: build a query and see if the field is there
     }
 
     public function testNormalize(): void
     {
+        // normalize must work even without model
+        $this->assertSame('test', (new Field(['type' => 'string']))->normalize('test'));
+        $this->assertSame('test', (new Field(['type' => 'string']))->normalize('test '));
+
         $m = new Model();
 
         $m->addField('string', ['type' => 'string']);
@@ -722,12 +717,12 @@ class FieldTest extends TestCase
         $this->assertSame(['editable', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields('visible')));
         $this->assertSame(['editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields(['editable', 'visible'])));
 
-        $model->onlyFields(['system', 'visible', 'not_editable']);
+        $model->getModel()->setOnlyFields(['system', 'visible', 'not_editable']);
 
-        // getFields() is unaffected by only_fields, will always return all fields
+        // getFields() is unaffected by onlyFields, will always return all fields
         $this->assertSame(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));
 
-        // only return subset of only_fields
+        // only return subset of onlyFields
         $this->assertSame(['visible', 'not_editable'], array_keys($model->getFields('visible')));
 
         $this->expectExceptionMessage('not supported');
@@ -742,9 +737,9 @@ class FieldTest extends TestCase
         $model->addField('datetime', ['type' => 'datetime']);
         $model = $model->createEntity();
 
-        $this->assertSame('', $model->getField('date')->toString());
-        $this->assertSame('', $model->getField('time')->toString());
-        $this->assertSame('', $model->getField('datetime')->toString());
+        $this->assertSame('', $model->getField('date')->toString($model->get('date')));
+        $this->assertSame('', $model->getField('time')->toString($model->get('time')));
+        $this->assertSame('', $model->getField('datetime')->toString($model->get('datetime')));
 
         // datetime without microseconds
         $dt = new \DateTime('2020-01-21 21:09:42 UTC');
@@ -752,9 +747,9 @@ class FieldTest extends TestCase
         $model->set('time', $dt);
         $model->set('datetime', $dt);
 
-        $this->assertSame($dt->format('Y-m-d'), $model->getField('date')->toString());
-        $this->assertSame($dt->format('H:i:s.u'), $model->getField('time')->toString());
-        $this->assertSame($dt->format('Y-m-d H:i:s.u'), $model->getField('datetime')->toString());
+        $this->assertSame($dt->format('Y-m-d'), $model->getField('date')->toString($model->get('date')));
+        $this->assertSame($dt->format('H:i:s.u'), $model->getField('time')->toString($model->get('time')));
+        $this->assertSame($dt->format('Y-m-d H:i:s.u'), $model->getField('datetime')->toString($model->get('datetime')));
 
         // datetime with microseconds
         $dt = new \DateTime('2020-01-21 21:09:42.895623 UTC');
@@ -762,9 +757,9 @@ class FieldTest extends TestCase
         $model->set('time', $dt);
         $model->set('datetime', $dt);
 
-        $this->assertSame($dt->format('Y-m-d'), $model->getField('date')->toString());
-        $this->assertSame($dt->format('H:i:s.u'), $model->getField('time')->toString());
-        $this->assertSame($dt->format('Y-m-d H:i:s.u'), $model->getField('datetime')->toString());
+        $this->assertSame($dt->format('Y-m-d'), $model->getField('date')->toString($model->get('date')));
+        $this->assertSame($dt->format('H:i:s.u'), $model->getField('time')->toString($model->get('time')));
+        $this->assertSame($dt->format('Y-m-d H:i:s.u'), $model->getField('datetime')->toString($model->get('datetime')));
     }
 
     public function testSetNull(): void
@@ -792,14 +787,47 @@ class FieldTest extends TestCase
         // null must pass
         $m->setNull('a');
         $m->setNull('b');
-        $m->getField('c')->setNull();
+        $m->getField('c')->setNull($m);
         $this->assertNull($m->get('a'));
         $this->assertNull($m->get('b'));
         $this->assertNull($m->get('c'));
 
         // invalid value for set() - normalization must fail
-        $this->expectException(\Atk4\Data\Exception::class);
-        $m->set('c', null); // @TODO even "b"/mandatory field should fail!
+        $this->expectException(Exception::class);
+        $m->set('c', null);
+    }
+
+    public function testEntityFieldPair(): void
+    {
+        $m = new Model();
+        $m->addField('foo');
+        $m->addField('bar', ['mandatory' => true]);
+
+        $entity = $m->createEntity();
+        $entityFooField = new Model\EntityFieldPair($entity, 'foo');
+        $entityBarField = new Model\EntityFieldPair($entity, 'bar');
+
+        $this->assertSame($m, $entityFooField->getModel());
+        $this->assertSame($m, $entityBarField->getModel());
+        $this->assertSame($entity, $entityFooField->getEntity());
+        $this->assertSame($entity, $entityBarField->getEntity());
+        $this->assertSame('foo', $entityFooField->getFieldName());
+        $this->assertSame('bar', $entityBarField->getFieldName());
+        $this->assertSame($m->getField('foo'), $entityFooField->getField());
+        $this->assertSame($m->getField('bar'), $entityBarField->getField());
+
+        $this->assertNull($entityFooField->get());
+        $this->assertNull($entityBarField->get());
+
+        $entity->set('foo', 'a');
+        $this->assertSame('a', $entityFooField->get());
+        $entityBarField->set('b');
+        $this->assertSame('b', $entityBarField->get());
+        $entityBarField->setNull();
+        $this->assertNull($entityBarField->get());
+
+        $this->expectException(Exception::class);
+        $entityBarField->set(null);
     }
 
     public function testBoolean(): void

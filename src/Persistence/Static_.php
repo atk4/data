@@ -16,18 +16,10 @@ use Atk4\Data\Model;
  */
 class Static_ extends Array_
 {
-    /**
-     * This will be the title field for the model.
-     *
-     * @var string
-     */
+    /** @var string This will be the title field for the model. */
     public $titleForModel;
 
-    /**
-     * Populate the following fields for the model.
-     *
-     * @var array<string, array>
-     */
+    /** @var array<string, array> Populate the following fields for the model. */
     public $fieldsForModel = [];
 
     /**
@@ -40,19 +32,23 @@ class Static_ extends Array_
         // chomp off first row, we will use it to deduct fields
         $row1 = reset($data);
 
-        $this->onHookShort(self::HOOK_AFTER_ADD, function (...$args) {
-            $this->afterAdd(...$args);
-        });
-
         if (!is_array($row1)) {
             // convert array of strings into array of hashes
+            $allKeysInt = true;
             foreach ($data as $k => $str) {
                 $data[$k] = ['name' => $str];
+
+                if (!is_int($k)) {
+                    $allKeysInt = false;
+                }
             }
             unset($str);
 
             $this->titleForModel = 'name';
-            $this->fieldsForModel = ['name' => []];
+            $this->fieldsForModel = [
+                'id' => ['type' => $allKeysInt ? 'integer' : 'string'],
+                'name' => ['type' => 'string'], // TODO type should be guessed as well
+            ];
 
             parent::__construct($data);
 
@@ -89,7 +85,7 @@ class Static_ extends Array_
             } elseif (is_object($value)) {
                 $def_types[] = ['type' => 'object'];
             } else {
-                $def_types[] = [];
+                $def_types[] = ['type' => 'string'];
             }
 
             // if title is not set, use first key
@@ -132,12 +128,39 @@ class Static_ extends Array_
         parent::__construct($data);
     }
 
+    public function add(Model $model, array $defaults = []): void
+    {
+        if ($model->id_field && !$model->hasField($model->id_field)) {
+            // init model, but prevent array persistence data seeding, id field with correct type must be setup first
+            \Closure::bind(function () use ($model, $defaults) {
+                $hadData = true;
+                if (!isset($this->data[$model->table])) {
+                    $hadData = false;
+                    $this->data[$model->table] = true; // @phpstan-ignore-line
+                }
+                try {
+                    parent::add($model, $defaults);
+                } finally {
+                    if (!$hadData) {
+                        unset($this->data[$model->table]);
+                    }
+                }
+            }, $this, Array_::class)();
+            $model->persistence = null;
+
+            if (isset($this->fieldsForModel[$model->id_field])) {
+                $model->getField($model->id_field)->type = $this->fieldsForModel[$model->id_field]['type'];
+            }
+        }
+        $this->addMissingFieldsToModel($model);
+
+        parent::add($model, $defaults);
+    }
+
     /**
      * Automatically adds missing model fields.
-     *
-     * Called by HOOK_AFTER_ADD hook.
      */
-    public function afterAdd(Model $model): void
+    protected function addMissingFieldsToModel(Model $model): void
     {
         if ($this->titleForModel) {
             $model->title_field = $this->titleForModel;
@@ -148,7 +171,6 @@ class Static_ extends Array_
                 continue;
             }
 
-            // add new field
             $model->addField($field, $def);
         }
     }

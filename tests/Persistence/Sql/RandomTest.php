@@ -65,7 +65,7 @@ class RandomTest extends TestCase
         }
         $this->assertSame(
             'insert into  ("' . implode('", "', array_keys($data)) . '") values (:a, :b, :c, :d, :e, :f, :g, :h, :i, :j, :k, :l, :m, :n, :o, :p, :q, :r, :s, :t, :u, :v, :w, :x, :y, :z, :aa, :ab, :ac, :ad)',
-            $q->render()
+            $q->render()[0]
         );
     }
 
@@ -82,7 +82,7 @@ class RandomTest extends TestCase
 
         $q->groupConcat('name', ',');
 
-        $this->assertSame($expected, $q->render());
+        $this->assertSame($expected, $q->render()[0]);
     }
 
     public function testGroupConcat(): void
@@ -103,7 +103,7 @@ class RandomTest extends TestCase
         );
 
         $this->_groupConcatTest(
-            'select "age", listagg("name", :a) within group (order by "name") from "people" group by "age"',
+            'select "age", listagg("name", :xxaaaa) within group (order by "name") from "people" group by "age"',
             new Oracle\Query()
         );
     }

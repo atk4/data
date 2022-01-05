@@ -86,7 +86,7 @@ class Action
 
             break;
             default:
-                throw (new Exception('Persistence\Array_ driver action unsupported format'))
+                throw (new Exception('Array persistence driver action unsupported format'))
                     ->addMoreInfo('action', $fx);
         }
 
@@ -118,7 +118,7 @@ class Action
             }
 
             if (!is_a($field, Field::class)) {
-                throw (new Exception('Persistence\Array_ driver condition unsupported format'))
+                throw (new Exception('Array persistence driver condition unsupported format'))
                     ->addMoreInfo('reason', 'Unsupported object instance ' . get_class($field))
                     ->addMoreInfo('condition', $condition);
             }
@@ -292,16 +292,6 @@ class Action
         $this->generator = new \ArrayIterator([[$this->generator->valid() ? 1 : 0]]);
 
         return $this;
-    }
-
-    /**
-     * @deprecated use "getRows" method instead - TODO remove in v3.1
-     */
-    public function get(): array
-    {
-        'trigger_error'('Method is deprecated. Use getRows instead', \E_USER_DEPRECATED);
-
-        return $this->getRows();
     }
 
     /**

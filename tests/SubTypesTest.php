@@ -129,7 +129,7 @@ class StTransaction_TransferOut extends StGenericTransaction
         parent::init();
         $this->hasOne('link_id', ['model' => [StTransaction_TransferIn::class]]);
 
-        //$this->join('transaction','linked_transaction');
+        //$this->join('transaction', 'linked_transaction');
     }
 }
 
@@ -154,8 +154,8 @@ class SubTypesTest extends TestCase
         parent::setUp();
 
         // populate database for our three models
-        $this->createMigrator(new StAccount($this->db))->dropIfExists()->create();
-        $this->createMigrator(new StTransaction_TransferOut($this->db))->dropIfExists()->create();
+        $this->createMigrator(new StAccount($this->db))->create();
+        $this->createMigrator(new StTransaction_TransferOut($this->db))->create();
     }
 
     public function testBasic(): void

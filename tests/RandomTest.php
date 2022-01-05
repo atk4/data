@@ -4,10 +4,18 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
+use Atk4\Core\Exception as CoreException;
 use Atk4\Data\Exception;
+use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\Sql\Connection;
+use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class Model_Rate extends Model
 {
@@ -60,7 +68,7 @@ class Model_Item3 extends Model
         $this->addField('age');
         $i2 = $this->join('item2.item_id');
         $i2->hasOne('parent_item_id', ['model' => $m, 'table_alias' => 'parent'])
-            ->withTitle();
+            ->addTitle();
 
         $this->hasMany('Child', ['model' => $m, 'their_field' => 'parent_item_id', 'table_alias' => 'child'])
             ->addField('child_age', ['aggregate' => 'sum', 'field' => 'age']);
@@ -78,8 +86,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model_Rate($db);
+        $m = new Model_Rate($this->db);
 
         $this->assertEquals(2, $m->action('count')->getOne());
     }
@@ -92,9 +99,8 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, ['table' => 'user']);
-        $m->addFields(['name', ['salary', 'default' => 10]]);
+        $m = new Model($this->db, ['table' => 'user']);
+        $m->addFields(['name', 'salary' => ['default' => 10]]);
 
         $m->import([['name' => 'Peter'], ['name' => 'Steve', 'salary' => 30]]);
         $m->insert(['name' => 'Sue']);
@@ -118,8 +124,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, ['table' => 'user']);
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addFields(['name', 'login'], ['default' => 'unknown']);
 
         $m->insert(['name' => 'Peter']);
@@ -142,14 +147,13 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, ['table' => 'user']);
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addFields(['name'], ['default' => 'anonymous']);
         $m->addFields([
             'last_name',
             'login' => ['default' => 'unknown'],
-            'salary' => ['type' => 'atk4_money', CustomField::class, 'default' => 100],
-            ['tax', CustomField::class, 'type' => 'atk4_money', 'default' => 20],
+            'salary' => [CustomField::class, 'type' => 'atk4_money', 'default' => 100],
+            'tax' => [CustomField::class, 'type' => 'atk4_money', 'default' => 20],
             'vat' => new CustomField(['type' => 'atk4_money', 'default' => 15]),
         ]);
 
@@ -164,11 +168,11 @@ class RandomTest extends TestCase
         $this->assertTrue(is_float($m->get('salary')));
         $this->assertTrue(is_float($m->get('tax')));
         $this->assertTrue(is_float($m->get('vat')));
+        $this->assertInstanceOf(CustomField::class, $m->getField('salary'));
     }
 
     public function testSameTable(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => 1],
@@ -177,7 +181,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $m = new Model_Item($db, ['table' => 'item']);
+        $m = new Model_Item($this->db, ['table' => 'item']);
 
         $this->assertSame(
             ['id' => 3, 'name' => 'Smith', 'parent_item_id' => 2, 'parent_item' => 'Sue'],
@@ -187,7 +191,6 @@ class RandomTest extends TestCase
 
     public function testSameTable2(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'item' => [
                 1 => ['id' => 1, 'name' => 'John'],
@@ -201,7 +204,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $m = new Model_Item2($db, ['table' => 'item']);
+        $m = new Model_Item2($this->db, ['table' => 'item']);
 
         $this->assertSame(
             ['id' => 3, 'name' => 'Smith', 'parent_item_id' => 2, 'parent_item' => 'Sue'],
@@ -211,7 +214,6 @@ class RandomTest extends TestCase
 
     public function testSameTable3(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'age' => 18],
@@ -225,7 +227,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $m = new Model_Item3($db, ['table' => 'item']);
+        $m = new Model_Item3($this->db, ['table' => 'item']);
 
         $this->assertEquals(
             ['id' => '2', 'name' => 'Sue', 'parent_item_id' => 1, 'parent_item' => 'John', 'age' => '20', 'child_age' => 24],
@@ -236,9 +238,23 @@ class RandomTest extends TestCase
         $this->assertSame('John', $m->load(2)->ref('parent_item_id', ['table_alias' => 'pp'])->get('name'));
     }
 
+    public function testDirty2(): void
+    {
+        $p = new Persistence\Static_([1 => 'hello', 'world']);
+
+        // default title field
+        $m = new Model($p);
+        $m->addExpression('caps', function ($m) {
+            return strtoupper($m->get('name'));
+        });
+
+        $m = $m->load(2);
+        $this->assertSame('world', $m->get('name'));
+        $this->assertSame('WORLD', $m->get('caps'));
+    }
+
     public function testUpdateCondition(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'item' => [
                 ['name' => 'John'],
@@ -247,7 +263,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $m = new Model($db, ['table' => 'item']);
+        $m = new Model($this->db, ['table' => 'item']);
         $m->addField('name');
         $m = $m->load(2);
 
@@ -255,7 +271,7 @@ class RandomTest extends TestCase
             // we can use afterUpdate to make sure that record was updated
 
             if (!$st->rowCount()) {
-                throw (new \Atk4\Core\Exception('Update didn\'t affect any records'))
+                throw (new Exception('Update didn\'t affect any records'))
                     ->addMoreInfo('query', $update->getDebugQuery())
                     ->addMoreInfo('statement', $st)
                     ->addMoreInfo('model', $m);
@@ -285,7 +301,6 @@ class RandomTest extends TestCase
 
     public function testHookBreakers(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'item' => [
                 ['name' => 'John'],
@@ -294,7 +309,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $m = new Model($db, ['table' => 'never_used']);
+        $m = new Model($this->db, ['table' => 'never_used']);
         $m->addField('name');
 
         $m->onHook(Model::HOOK_BEFORE_SAVE, static function (Model $m) {
@@ -307,7 +322,7 @@ class RandomTest extends TestCase
             $m->breakHook(false);
         });
 
-        $m->onHook(Model::HOOK_BEFORE_DELETE, static function (Model $m, int $id) {
+        $m->onHook(Model::HOOK_BEFORE_DELETE, static function (Model $m) {
             $m->unload();
             $m->breakHook(false);
         });
@@ -324,37 +339,16 @@ class RandomTest extends TestCase
 
     public function testIssue220(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model_Item($db);
+        $m = new Model_Item($this->db);
 
-        $this->expectException(Exception::class);
+        $this->expectException(CoreException::class);
         $m->hasOne('foo', ['model' => [Model_Item::class]])
             ->addTitle(); // field foo already exists, so we can't add title with same name
     }
 
-    public function testNonSqlFieldClass(): void
-    {
-        $db = new Persistence\Sql($this->db->connection);
-        $this->setDb([
-            'rate' => [
-                ['dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4, 'x1' => 'y1', 'x2' => 'y2'],
-            ],
-        ]);
-
-        $m = new Model_Rate($db);
-        $m->addField('x1', new \Atk4\Data\FieldSql());
-        $m->addField('x2', new \Atk4\Data\Field());
-        $m = $m->load(1);
-
-        $this->assertEquals(3.4, $m->get('bid'));
-        $this->assertSame('y1', $m->get('x1'));
-        $this->assertSame('y2', $m->get('x2'));
-    }
-
     public function testModelCaption(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, ['table' => 'user']);
+        $m = new Model($this->db, ['table' => 'user']);
 
         // caption is not set, so generate it from class name Model
         $this->assertSame('Atk 4 Data Model', $m->getModelCaption());
@@ -366,7 +360,6 @@ class RandomTest extends TestCase
 
     public function testGetTitle(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => 1],
@@ -374,7 +367,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $m = new Model_Item($db, ['table' => 'item']);
+        $m = new Model_Item($this->db, ['table' => 'item']);
 
         $this->assertSame([1 => 'John', 2 => 'Sue'], $m->getTitles()); // all titles
 
@@ -387,15 +380,15 @@ class RandomTest extends TestCase
         $this->assertSame('Sue', $mm->getTitle()); // loaded returns title_field value
 
         // set custom title_field
-        $mm->title_field = 'parent_item_id';
+        $m->title_field = 'parent_item_id';
         $this->assertEquals(1, $mm->getTitle()); // returns parent_item_id value
 
         // set custom title_field as title_field from linked model
-        $mm->title_field = 'parent_item';
+        $m->title_field = 'parent_item';
         $this->assertSame('John', $mm->getTitle()); // returns parent record title_field
 
         // no title_field set - return id value
-        $mm->title_field = null; // @phpstan-ignore-line
+        $m->title_field = null;
         $this->assertEquals(2, $mm->getTitle()); // loaded returns id value
 
         // expression as title field
@@ -495,8 +488,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model_Rate($db);
+        $m = new Model_Rate($this->db);
 
         $m->load(1)->duplicate()->save();
 
@@ -514,26 +506,95 @@ class RandomTest extends TestCase
         $m->duplicate(2)->save();
     }
 
-    public function testTableNameDots(): void
+    public function testNoWriteActionInsert(): void
     {
-        $d = new Model($this->db, ['table' => 'db2.doc']);
-        $d->addField('name');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unsupported action mode');
+        $this->db->action(new Model(), 'insert');
+    }
 
-        $m = new Model($this->db, ['table' => 'db1.user']);
-        $m->addField('name');
+    public function testNoWriteActionUpdate(): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unsupported action mode');
+        $this->db->action(new Model(), 'update');
+    }
 
-        $d->hasOne('user_id', ['model' => $m])->addTitle();
-        $m->hasMany('Documents', ['model' => $d]);
+    public function testNoWriteActionDelete(): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unsupported action mode');
+        $this->db->action(new Model(), 'delete');
+    }
 
-        $d->addCondition('user', 'Sarah');
+    public function testTableWithSchema(): void
+    {
+        if ($this->getDatabasePlatform() instanceof SqlitePlatform || Connection::isComposerDbal2x()) {
+            $userSchema = 'db1';
+            $docSchema = 'db2';
+            $runWithDb = false;
+        } else {
+            $dbSchema = $this->db->connection->dsql()
+                ->field(null ?? new Expression($this->getDatabasePlatform()->getCurrentDatabaseExpression())) // @phpstan-ignore-line for DBAL 2.x
+                ->getOne();
+            $userSchema = $dbSchema;
+            $docSchema = $dbSchema;
+            $runWithDb = true;
+
+            if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform
+                || $this->getDatabasePlatform() instanceof SQLServerPlatform
+                || $this->getDatabasePlatform() instanceof OraclePlatform) {
+                $userSchema = 'functional_is_failing_db1';
+                $docSchema = 'functional_is_failing_db2';
+                $runWithDb = false;
+            }
+        }
+
+        $user = new Model($this->db, ['table' => $userSchema . '.user']);
+        $user->addField('name');
+
+        $doc = new Model($this->db, ['table' => $docSchema . '.doc']);
+        $doc->addField('name');
+        $doc->hasOne('user_id', ['model' => $user])->addTitle();
+        $doc->addCondition('user', 'Sarah');
+        $user->hasMany('Documents', ['model' => $doc]);
+
+        // render twice, render must be stable
+        $selectAction = $doc->action('select');
+        $render = $selectAction->render();
+        $this->assertSame($render, $selectAction->render());
+        $this->assertSame($render, $doc->action('select')->render());
 
         $this->assertSameSql(
-            'select "id", "name", "user_id", (select "name" from "db1"."user" where "id" = "db2"."doc"."user_id") "user" from "db2"."doc" where (select "name" from "db1"."user" where "id" = "db2"."doc"."user_id") = :a',
-            $d->action('select')->render()
+            'select "id", "name", "user_id", (select "name" from "' . $userSchema . '"."user" "_u_e8701ad48ba0" where "id" = "' . $docSchema . '"."doc"."user_id") "user" from "' . $docSchema . '"."doc" where (select "name" from "' . $userSchema . '"."user" "_u_e8701ad48ba0" where "id" = "' . $docSchema . '"."doc"."user_id") = :a',
+            $render[0]
         );
+
+        if ($runWithDb) {
+            $this->createMigrator($user)->create();
+            $this->createMigrator($doc)->create();
+
+            $user->createEntity()
+                ->set('name', 'Sarah')
+                ->save();
+
+            $doc->createEntity()
+                ->set('name', 'Invoice 7')
+                ->set('user_id', 1)
+                ->save();
+
+            $this->assertSame([
+                [
+                    'id' => 1,
+                    'name' => 'Invoice 7',
+                    'user_id' => 1,
+                    'user' => 'Sarah',
+                ],
+            ], $doc->export());
+        }
     }
 }
 
-class CustomField extends \Atk4\Data\Field
+class CustomField extends Field
 {
 }

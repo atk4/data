@@ -29,8 +29,8 @@ class ContainsOneTest extends TestCase
         parent::setUp();
 
         // populate database for our models
-        $this->createMigrator(new Country($this->db))->dropIfExists()->create();
-        $this->createMigrator(new Invoice($this->db))->dropIfExists()->create();
+        $this->createMigrator(new Country($this->db))->create();
+        $this->createMigrator(new Invoice($this->db))->create();
 
         // fill in some default values
         $m = new Country($this->db);
@@ -83,7 +83,7 @@ class ContainsOneTest extends TestCase
 
         // check do we have address set
         $a = $i->addr;
-        $this->assertFalse($a->loaded());
+        $this->assertFalse($a->isLoaded());
 
         // now store some address
         $a->setMulti($row = [
@@ -153,12 +153,12 @@ class ContainsOneTest extends TestCase
         // so far so good. now let's try to delete door_code
         $i->addr->door_code->delete();
         $this->assertNull($i->addr->get($i->addr->fieldName()->door_code));
-        $this->assertFalse($i->addr->door_code->loaded());
+        $this->assertFalse($i->addr->door_code->isLoaded());
 
         // and now delete address
         $i->addr->delete();
         $this->assertNull($i->get($i->fieldName()->addr));
-        $this->assertFalse($i->addr->loaded());
+        $this->assertFalse($i->addr->isLoaded());
 
         //var_dump($i->export(), $i->export(null, null, false));
     }
@@ -184,7 +184,7 @@ class ContainsOneTest extends TestCase
         $a->save();
 
         // now let's add one more field in address model and save
-        $a->addField('post_index');
+        $a->getModel()->addField('post_index');
         $a->set('post_index', 'LV-1234');
         $a->save();
 

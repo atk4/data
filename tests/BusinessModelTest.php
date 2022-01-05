@@ -140,7 +140,7 @@ class BusinessModelTest extends TestCase
         $m = new Model();
         $m->addField('name');
         $m->addField('surname');
-        $m->onlyFields(['surname']);
+        $m->setOnlyFields(['surname']);
         $m = $m->createEntity();
 
         $this->expectException(Exception::class);
@@ -152,10 +152,10 @@ class BusinessModelTest extends TestCase
         $m = new Model();
         $m->addField('name');
         $m->addField('surname');
-        $m->onlyFields(['surname']);
+        $m->setOnlyFields(['surname']);
         $m = $m->createEntity();
 
-        $m->allFields();
+        $m->getModel()->setOnlyFields(null);
 
         $m->set('name', 5);
         $this->assertSame('5', $m->get('name'));

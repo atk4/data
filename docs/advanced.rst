@@ -70,7 +70,7 @@ would work without a change.
 
 Another scenario which could benefit by type substitution would be::
 
-    foreach($accoutn->ref('Transactions') as $tr) {
+    foreach ($account->ref('Transactions') as $tr) {
         echo get_class($tr)."\n";
     }
 
@@ -107,9 +107,9 @@ of the record. Finally to help with performance, you can implement a switch::
 Now, every time you iterate (or load) you can decide if you want to invoke type
 substitution::
 
-    foreach($account->ref('Transactions', ['typeSubstitution' => true]) as $tr) {
+    foreach ($account->ref('Transactions', ['typeSubstitution' => true]) as $tr) {
 
-        $tr->verify();  // verify() method can be overloaded!
+        $tr->verify(); // verify() method can be overloaded!
     }
 
 
@@ -135,7 +135,7 @@ To implement the above, I'll create a new class::
     class Controller_Audit {
 
         use \Atk4\Core\InitializerTrait {
-            init as _init;
+            init as private _init;
         }
         use \Atk4\Core\TrackableTrait;
         use \Atk4\Core\AppScopeTrait;
@@ -151,14 +151,14 @@ which I want to define like this::
     protected function init(): void {
         $this->_init();
 
-        if(isset($this->getOwner()->no_audit)){
+        if(isset($this->getOwner()->no_audit)) {
             return;
         }
 
         $this->getOwner()->addField('created_dts', ['type' => 'datetime', 'default' => new \DateTime()]);
 
         $this->getOwner()->hasOne('created_by_user_id', 'User');
-        if(isset($this->getApp()->user) && $this->getApp()->user->loaded()) {
+        if(isset($this->getApp()->user) && $this->getApp()->user->isLoaded()) {
             $this->getOwner()->getField('created_by_user_id')->default = $this->getApp()->user->getId();
         }
 
@@ -167,7 +167,7 @@ which I want to define like this::
         $this->getOwner()->addField('updated_dts', ['type' => 'datetime']);
 
         $this->getOwner()->onHook(Model::HOOK_BEFORE_UPDATE, function($m, $data) {
-            if(isset($this->getApp()->user) && $this->getApp()->user->loaded()) {
+            if(isset($this->getApp()->user) && $this->getApp()->user->isLoaded()) {
                 $data['updated_by'] = $this->getApp()->user->getId();
             }
             $data['updated_dts'] = new \DateTime();
@@ -216,20 +216,20 @@ Start by creating a class::
     class Controller_SoftDelete {
 
         use \Atk4\Core\InitializerTrait {
-            init as _init;
+            init as private _init;
         }
         use \Atk4\Core\TrackableTrait;
 
         function init(): void {
             $this->_init();
 
-            if(isset($this->getOwner()->no_soft_delete)){
+            if(property_exists($this->getOwner(), 'no_soft_delete')) {
                 return;
             }
 
             $this->getOwner()->addField('is_deleted', ['type' => 'boolean']);
 
-            if (isset($this->getOwner()->deleted_only)) {
+            if (property_exists($this->getOwner(), 'deleted_only')) {
                 $this->getOwner()->addCondition('is_deleted', true);
                 $this->getOwner()->addMethod('restore', \Closure::fromCallable([$this, 'restore']));
             } else {
@@ -238,39 +238,41 @@ Start by creating a class::
             }
         }
 
-        function softDelete($m) {
-            if (!$m->loaded()) {
-                throw (new \Atk4\Core\Exception('Model must be loaded before soft-deleting'))->addMoreInfo('model', $m);
-            }
+        function softDelete(Model $m) {
+            $m->assertIsLoaded();
 
             $id = $m->getId();
             if ($m->hook('beforeSoftDelete') === false) {
                 return $m;
             }
 
-            $rs = $m->reload_after_save;
-            $m->reload_after_save = false;
-            $m->save(['is_deleted' => true])->unload();
-            $m->reload_after_save = $rs;
+            $reloadAfterSaveBackup = $m->getModel()->reload_after_save;
+            try {
+                $m->getModel()->reload_after_save = false;
+                $m->save(['is_deleted' => true])->unload();
+            } finally {
+                $m->getModel()->reload_after_save = $reloadAfterSaveBackup;
+            }
 
             $m->hook('afterSoftDelete', [$id]);
             return $m;
         }
 
-        function restore($m) {
-            if (!$m->loaded()) {
-                throw (new \Atk4\Core\Exception(['Model must be loaded before restoring'))->addMoreInfo('model', $m);
-            }
+        function restore(Model $m) {
+            $m->assertIsLoaded();
 
             $id = $m->getId();
             if ($m->hook('beforeRestore') === false) {
                 return $m;
             }
 
-            $rs = $m->reload_after_save;
-            $m->reload_after_save = false;
-            $m->save(['is_deleted' => false])->unload();
-            $m->reload_after_save = $rs;
+            $reloadAfterSaveBackup = $m->getModel()->reload_after_save;
+            try {
+                $m->getModel()->reload_after_save = false;
+                $m->save(['is_deleted' => false])->unload();
+            } finally {
+                $m->getModel()->reload_after_save = $reloadAfterSaveBackup;
+            }
 
             $m->hook('afterRestore', [$id]);
             return $m;
@@ -325,14 +327,14 @@ before and just slightly modifying it::
     class Controller_SoftDelete {
 
         use \Atk4\Core\InitializerTrait {
-            init as _init;
+            init as private _init;
         }
         use \Atk4\Core\TrackableTrait;
 
         function init(): void {
             $this->_init();
 
-            if(isset($this->getOwner()->no_soft_delete)){
+            if(property_exists($this->getOwner(), 'no_soft_delete')) {
                 return;
             }
 
@@ -348,36 +350,38 @@ before and just slightly modifying it::
         }
 
         function softDelete(Model $m) {
-            if (!$m->loaded()) {
-                throw (new \Atk4\Core\Exception('Model must be loaded before soft-deleting'))->addMoreInfo('model', $m);
-            }
+            $m->assertIsLoaded();
 
             $id = $m->getId();
 
-            $rs = $m->reload_after_save;
-            $m->reload_after_save = false;
-            $m->save(['is_deleted' => true])->unload();
-            $m->reload_after_save = $rs;
+            $reloadAfterSaveBackup = $m->getModel()->reload_after_save;
+            try {
+                $m->getModel()->reload_after_save = false;
+                $m->save(['is_deleted' => true])->unload();
+            } finally {
+                $m->getModel()->reload_after_save = $reloadAfterSaveBackup;
+            }
 
-            $m->hook(Model::HOOK_AFTER_DELETE, [$id]);
+            $m->hook(Model::HOOK_AFTER_DELETE);
 
             $m->breakHook(false); // this will cancel original delete()
         }
 
-        function restore($m) {
-            if (!$m->loaded()) {
-                throw (new \Atk4\Core\Exception('Model must be loaded before restoring'))->addMoreInfo('model', $m);
-            }
+        function restore(Model $m) {
+            $m->assertIsLoaded();
 
             $id = $m->getId();
             if ($m->hook('beforeRestore') === false) {
                 return $m;
             }
 
-            $rs = $m->reload_after_save;
-            $m->reload_after_save = false;
-            $m->save(['is_deleted' => false])->unload();
-            $m->reload_after_save = $rs;
+            $reloadAfterSaveBackup = $m->getModel()->reload_after_save;
+            try {
+                $m->getModel()->reload_after_save = false;
+                $m->save(['is_deleted' => false])->unload();
+            } finally {
+                $m->getModel()->reload_after_save = $reloadAfterSaveBackup;
+            }
 
             $m->hook('afterRestore', [$id]);
             return $m;
@@ -411,7 +415,7 @@ inside your model are unique::
 
     class Controller_UniqueFields {
         use \Atk4\Core\InitializerTrait {
-            init as _init;
+            init as private _init;
         }
         use \Atk4\Core\TrackableTrait;
 
@@ -436,7 +440,7 @@ inside your model are unique::
                     $mm->addCondition($mm->id_field != $this->id);
                     $mm = $mm->tryLoadBy($field, $m->get($field));
 
-                    if ($mm->loaded()) {
+                    if ($mm->isLoaded()) {
                         throw (new \Atk4\Core\Exception('Duplicate record exists'))
                             ->addMoreInfo('field', $field)
                             ->addMoreInfo('value', $m->get($field));
@@ -517,11 +521,10 @@ Next we need to define reference. Inside Model_Invoice add::
         $j->hasOne('invoice_id', 'Model_Invoice');
     }, 'their_field' => 'invoice_id']);
 
-    $this->onHookShort(Model::HOOK_BEFORE_DELETE, function(){
-        $this->ref('InvoicePayment')->action('delete')->execute();
-
-        // If you have important per-row hooks in InvoicePayment
-        // $payment = $this->ref('InvoicePayment'); $payment->each(function () use ($payment) { $payment->delete(); });
+    $this->onHookShort(Model::HOOK_BEFORE_DELETE, function () {
+        foreach ($this->ref('InvoicePayment') as $payment) {
+            $payment->delete();
+        }
     });
 
 You'll have to do a similar change inside Payment model. The code for '$j->'
@@ -570,12 +573,12 @@ payment towards a most suitable invoice::
             // See if any invoices match by 'reference';
             $invoices = $invoices->tryLoadBy('reference', $this->get('reference'));
 
-            if (!$invoices->loaded()) {
+            if (!$invoices->isLoaded()) {
 
                 // otherwise load any unpaid invoice
                 $invoices = $invoices->tryLoadAny();
 
-                if(!$invoices->loaded()) {
+                if(!$invoices->isLoaded()) {
 
                     // couldn't load any invoice.
                     return;
@@ -652,7 +655,7 @@ Here is how to add them. First you need to create fields::
 I have declared those fields with never_persist so they will never be used by
 persistence layer to load or save anything. Next I need a beforeSave handler::
 
-    $this->onHookShort(Model::HOOK_BEFORE_SAVE, function() {
+    $this->onHookShort(Model::HOOK_BEFORE_SAVE, function () {
         if($this->_isset('client_code') && !$this->_isset('client_id')) {
             $cl = $this->refModel('client_id');
             $cl->addCondition('code',$this->get('client_code'));
@@ -741,7 +744,7 @@ section. Add this into your Invoice Model::
 Next both payment and lines need to be added after invoice is actually created,
 so::
 
-    $this->onHookShort(Model::HOOK_AFTER_SAVE, function($is_update){
+    $this->onHookShort(Model::HOOK_AFTER_SAVE, function($is_update) {
         if($this->_isset('payment')) {
             $this->ref('Payment')->insert($this->get('payment'));
         }
@@ -797,7 +800,7 @@ field only to offer payments made by the same client. Inside Model_Invoice add::
 
     $this->hasOne('client_id', 'Client');
 
-    $this->hasOne('payment_invoice_id', ['model' => function($m){
+    $this->hasOne('payment_invoice_id', ['model' => function($m) {
         return $m->ref('client_id')->ref('Payment');
     }]);
 
@@ -811,12 +814,10 @@ field only to offer payments made by the same client. Inside Model_Invoice add::
 In this case the payment_invoice_id will be set to ID of any payment by client
 123. There also may be some better uses::
 
-    $cl->ref('Invoice')->each(function($m) {
-
+    foreach ($cl->ref('Invoice') as $m) {
         $m->set('payment_invoice_id', $m->ref('payment_invoice_id')->tryLoadOne()->getId());
         $m->save();
-
-    });
+    }
 
 Narrowing Down Existing References
 ==================================
@@ -825,7 +826,7 @@ Agile Data allow you to define multiple references between same entities, but
 sometimes that can be quite useful. Consider adding this inside your Model_Contact::
 
     $this->hasMany('Invoice', 'Model_Invoice');
-    $this->hasMany('OverdueInvoice', ['model' => function($m){
+    $this->hasMany('OverdueInvoice', ['model' => function($m) {
         return $m->ref('Invoice')->addCondition('due','<',date('Y-m-d'))
     }]);
 

@@ -338,7 +338,7 @@ Hooks can help you perform operations when object is being persisted::
             // addField() declaration
             // addExpression('is_password_expired')
 
-            $this->onHookShort(Model::HOOK_BEFORE_SAVE, function() {
+            $this->onHookShort(Model::HOOK_BEFORE_SAVE, function () {
                 if ($this->isDirty('password')) {
                     $this->set('password', encrypt_password($this->get('password')));
                     $this->set('password_change_date', $this->expr('now()'));
@@ -384,7 +384,7 @@ Orders::
 You can iterate over the DataSet::
 
     $sum = 0;
-    foreach($db->add('Model_Order') as $order) {
+    foreach ($db->add('Model_Order') as $order) {
         $sum += $order->get('amount');
     }
 
@@ -417,7 +417,7 @@ The above is a Domain Model code. It will iterate through the DataSet of
 a restriction::
 
     $sum = 0;
-    foreach($db->add('Model_Order')->addCondition('is_paid', true) as $order) {
+    foreach ($db->add('Model_Order')->addCondition('is_paid', true) as $order) {
         $sum += $order->get('amount');
     }
 

@@ -24,7 +24,7 @@ or query::
 When it's time to execute you can specify your PDO manually::
 
     $rows = $expr->getRows($pdo);
-    foreach($rows as $row) {
+    foreach ($rows as $row) {
         echo json_encode($row)."\n";
     }
 
@@ -185,8 +185,8 @@ Manual Query Execution
 If you are not satisfied with :php:meth:`Expression::execute` you can execute
 query yourself.
 
-1. :php:meth:`Expression::render` query, then send it into PDO::prepare();
-2. use new $statement to bindValue with the contents of :php:attr:`Expression::params`;
+1. :php:meth:`Expression::render` query, then send the 1st element into PDO::prepare();
+2. use new $statement to bindValue with the contents of 2nd element;
 3. set result fetch mode and parameters;
 4. execute() your statement
 

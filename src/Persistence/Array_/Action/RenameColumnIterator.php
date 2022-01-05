@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Atk4\Data\Action;
+namespace Atk4\Data\Persistence\Array_\Action;
 
 /**
  * @internal

@@ -6,9 +6,8 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 
 /**
  * Tests cases when model have to work with data that does not have ID field.
@@ -29,8 +28,7 @@ class ModelWithoutIdTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $this->m = new Model($db, ['table' => 'user', 'id_field' => false]);
+        $this->m = new Model($this->db, ['table' => 'user', 'id_field' => false]);
 
         $this->m->addFields(['name', 'gender']);
     }
@@ -81,7 +79,7 @@ class ModelWithoutIdTest extends TestCase
      */
     public function testInsert(): void
     {
-        if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform) {
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             $this->markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
         }
 
@@ -94,7 +92,7 @@ class ModelWithoutIdTest extends TestCase
      */
     public function testSave1(): void
     {
-        if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform) {
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             $this->markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
         }
 
@@ -109,7 +107,7 @@ class ModelWithoutIdTest extends TestCase
      */
     public function testSave2(): void
     {
-        if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform) {
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             $this->markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
         }
 

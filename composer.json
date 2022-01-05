@@ -1,7 +1,8 @@
 {
     "name": "atk4/data",
-    "type": "library",
     "description": "Agile Data - Database access abstraction framework",
+    "license": "MIT",
+    "type": "library",
     "keywords": [
         "framework",
         "orm",
@@ -15,9 +16,7 @@
         "oracle",
         "postgresql"
     ],
-    "homepage": "https://github.com/atk4/data",
     "version": "dev-develop",
-    "license": "MIT",
     "authors": [
         {
             "name": "Romans Malinovskis",
@@ -33,21 +32,22 @@
             "homepage": "https://mvorisek.cz/"
         }
     ],
+    "homepage": "https://github.com/atk4/data",
     "require": {
         "php": ">=7.4 <8.2",
         "ext-intl": "*",
         "ext-pdo": "*",
         "atk4/core": "dev-develop",
-        "doctrine/dbal": "^2.13.3 || ^3.0",
-        "mvorisek/atk4-hintable": "~1.7.0"
+        "doctrine/dbal": "^2.13.5 || ^3.2",
+        "mvorisek/atk4-hintable": "~1.7.1"
     },
     "require-release": {
         "php": ">=7.4 <8.2",
         "ext-intl": "*",
         "ext-pdo": "*",
-        "atk4/core": "~3.1.0",
-        "doctrine/dbal": "^2.13.3 || ^3.0",
-        "mvorisek/atk4-hintable": "~1.7.0"
+        "atk4/core": "~3.2.0",
+        "doctrine/dbal": "^2.13.3 || ^3.2",
+        "mvorisek/atk4-hintable": "~1.7.1"
     },
     "require-dev": {
         "ergebnis/composer-normalize": "^2.13",
@@ -55,14 +55,14 @@
         "johnkary/phpunit-speedtrap": "^3.3",
         "phpstan/extension-installer": "^1.1",
         "phpstan/phpstan": "^1.0",
+        "phpstan/phpstan-deprecation-rules": "^1.0",
         "phpunit/phpunit": "^9.5.5"
     },
     "suggest": {
         "jdorn/sql-formatter": "*"
     },
-    "config": {
-        "sort-packages": true
-    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "autoload": {
         "psr-4": {
             "Atk4\\Data\\": "src/"
@@ -76,6 +76,7 @@
             "Atk4\\Data\\Tests\\": "tests/"
         }
     },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+    "config": {
+        "sort-packages": true
+    }
 }

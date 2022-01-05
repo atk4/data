@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
-use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence;
+use Atk4\Data\Schema\TestCase;
 
 class ReferenceTest extends TestCase
 {
@@ -24,13 +23,13 @@ class ReferenceTest extends TestCase
         $order->addField('amount', ['default' => 20]);
         $order->addField('user_id', ['type' => 'integer']);
 
-        $user->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
+        $user->getModel()->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
         $o = $user->ref('Orders')->createEntity();
 
         $this->assertSame(20, $o->get('amount'));
         $this->assertSame(1, $o->get('user_id'));
 
-        $user->hasMany('BigOrders', ['model' => function () {
+        $user->getModel()->hasMany('BigOrders', ['model' => function () {
             $m = new Model();
             $m->addField('amount', ['default' => 100]);
             $m->addField('user_id');
@@ -57,7 +56,7 @@ class ReferenceTest extends TestCase
         $order->addField('amount', ['default' => 20]);
         $order->addField('user_id');
 
-        $user->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
+        $user->getModel()->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
 
         // test caption of containsOne reference
         $this->assertSame('My Orders', $user->refModel('Orders')->getModelCaption());
@@ -66,11 +65,10 @@ class ReferenceTest extends TestCase
 
     public function testModelProperty(): void
     {
-        $db = new Persistence\Array_();
-        $user = new Model($db, ['table' => 'user']);
+        $user = new Model($this->db, ['table' => 'user']);
         $user = $user->createEntity();
         $user->setId(1);
-        $user->hasOne('order_id', ['model' => [Model::class, 'table' => 'order']]);
+        $user->getModel()->hasOne('order_id', ['model' => [Model::class, 'table' => 'order']]);
         $o = $user->ref('order_id');
         $this->assertSame('order', $o->table);
     }
@@ -98,8 +96,7 @@ class ReferenceTest extends TestCase
 
     public function testRefName3(): void
     {
-        $db = new Persistence\Array_();
-        $order = new Model($db, ['table' => 'order']);
+        $order = new Model($this->db, ['table' => 'order']);
         $order->addRef('archive', ['model' => function ($m) {
             return new $m(null, ['table' => $m->table . '_archive']);
         }]);
@@ -111,9 +108,7 @@ class ReferenceTest extends TestCase
 
     public function testCustomRef(): void
     {
-        $p = new Persistence\Array_();
-
-        $m = new Model($p, ['table' => 'user']);
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addRef('archive', ['model' => function ($m) {
             return new $m(null, ['table' => $m->table . '_archive']);
         }]);

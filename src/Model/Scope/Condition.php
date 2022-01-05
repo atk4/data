@@ -37,9 +37,7 @@ class Condition extends AbstractScope
     public const OPERATOR_REGEXP = 'REGEXP';
     public const OPERATOR_NOT_REGEXP = 'NOT REGEXP';
 
-    /**
-     * @var array<string, array<string, string>>
-     */
+    /** @var array<string, array<string, string>> */
     protected static $operators = [
         self::OPERATOR_EQUALS => [
             'negate' => self::OPERATOR_DOESNOT_EQUAL,
@@ -389,7 +387,7 @@ class Condition extends AbstractScope
             $model->set($field->short_name, $value);
 
             // then take the title
-            $title = $model->getRef($field->getReference()->link)->ref()->getTitle();
+            $title = $model->ref($field->getReference()->link)->getTitle();
             if ($title === $value) {
                 $title = null;
             }

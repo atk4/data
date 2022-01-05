@@ -15,7 +15,7 @@ use Doctrine\DBAL\Platforms;
 abstract class Persistence
 {
     use ContainerTrait {
-        add as _add;
+        add as private _add;
     }
     use DiContainerTrait;
     use DynamicMethodTrait;
@@ -42,29 +42,20 @@ abstract class Persistence
     public static function connect($dsn, string $user = null, string $password = null, array $args = []): self
     {
         // parse DSN string
-        $dsn = \Atk4\Data\Persistence\Sql\Connection::normalizeDsn($dsn, $user, $password);
+        $dsn = Persistence\Sql\Connection::normalizeDsn($dsn, $user, $password);
 
-        switch ($dsn['driverSchema']) {
-            case 'mysql':
-            case 'oci':
-            case 'oci12':
-                // Omitting UTF8 is always a bad problem, so unless it's specified we will do that
-                // to prevent nasty problems. This is un-tested on other databases, so moving it here.
-                // It gives problem with sqlite
-                if (strpos($dsn['dsn'], ';charset=') === false) {
-                    $dsn['dsn'] .= ';charset=utf8mb4';
-                }
+        switch ($dsn['driver']) {
+            case 'pdo_sqlite':
+            case 'pdo_mysql':
+            case 'pdo_pgsql':
+            case 'pdo_sqlsrv':
+            case 'pdo_oci':
+                $persistence = new Persistence\Sql($dsn, $dsn['user'], $dsn['password'], $args);
 
-                // no break
-            case 'pgsql':
-            case 'sqlsrv':
-            case 'sqlite':
-                $db = new \Atk4\Data\Persistence\Sql($dsn['dsn'], $dsn['user'], $dsn['pass'], $args);
-
-                return $db;
+                return $persistence;
             default:
-                throw (new Exception('Unable to determine persistence driver type from DSN'))
-                    ->addMoreInfo('dsn', $dsn['dsn']);
+                throw (new Exception('Unable to determine persistence driver type'))
+                    ->addMoreInfo('dsn', $dsn);
         }
     }
 
@@ -78,29 +69,23 @@ abstract class Persistence
     /**
      * Associate model with the data driver.
      */
-    public function add(Model $m, array $defaults = []): Model
+    public function add(Model $model, array $defaults = []): void
     {
-        $m = Factory::factory($m, $defaults);
+        Factory::factory($model, $defaults);
 
-        if ($m->persistence) {
-            if ($m->persistence === $this) {
-                return $m;
-            }
-
-            throw new Exception('Model is already related to another persistence');
+        if ($model->persistence !== null) {
+            throw new Exception('Persistence already set');
         }
 
-        $m->persistence = $this;
-        $m->persistence_data = [];
-        $this->initPersistence($m);
+        $model->persistence = $this;
+        $model->persistence_data = [];
+        $this->initPersistence($model);
 
         // invokes Model::init()
         // model is not added to elements as it does not implement TrackableTrait trait
-        $m = $this->_add($m);
+        $this->_add($model);
 
-        $this->hook(self::HOOK_AFTER_ADD, [$m]);
-
-        return $m;
+        $this->hook(self::HOOK_AFTER_ADD, [$model]);
     }
 
     /**
@@ -213,17 +198,17 @@ abstract class Persistence
      */
     public function typecastSaveField(Field $field, $value)
     {
+        // SQL Expression cannot be converted
+        if ($value instanceof Persistence\Sql\Expressionable) {
+            return $value;
+        }
+
         if (!$this->typecastSaveSkipNormalize) {
             $value = $field->normalize($value);
         }
 
         if ($value === null) {
             return null;
-        }
-
-        // SQL Expression cannot be converted
-        if ($value instanceof Persistence\Sql\Expressionable) {
-            return $value;
         }
 
         try {

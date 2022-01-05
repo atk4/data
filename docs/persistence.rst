@@ -410,14 +410,13 @@ Create copy of existing record
     If you pass the `$id` parameter, then the new record will be saved under
     a new ID::
 
-        // First, lets delete all records except 123
-        (clone $m)->addCondition('id', '!=', 123)->action('delete')->execute();
+        // Assume DB with only one record with ID = 123
 
-        // Next we can duplicate
+        // Load and duplicate that record
         $m->load(123)->duplicate()->save();
 
         // Now you have 2 records:
-        // one with ID=123 and another with ID={next db generated id}
+        // one with ID = 123 and another with ID = {next db generated id}
         echo $m->action('count')->getOne();
 
 Duplicate then save under a new ID
@@ -475,7 +474,7 @@ this ref, how do you do it?
 
 Start by creating a beforeSave handler for Order::
 
-    $this->onHookShort(Model::HOOK_BEFORE_SAVE, function() {
+    $this->onHookShort(Model::HOOK_BEFORE_SAVE, function () {
         if ($this->isDirty('ref')) {
 
             if (
@@ -483,7 +482,7 @@ Start by creating a beforeSave handler for Order::
                     ->addCondition('client_id', $this->get('client_id'))  // same client
                     ->addCondition($this->id_field, '!=', $this->getId()) // has another order
                     ->tryLoadBy('ref', $this->get('ref'))                 // with same ref
-                    ->loaded()
+                    ->isLoaded()
             ) {
                 throw (new Exception('Order with ref already exists for this client'))
                     ->addMoreInfo('client', $this->get('client_id'))
@@ -581,7 +580,7 @@ application::
         // first, try to load it from MemCache
         $m = $this->mdb->add(clone $class)->tryLoad($id);
 
-        if (!$m->loaded()) {
+        if (!$m->isLoaded()) {
 
             // fall-back to load from SQL
             $m = $this->sql->add(clone $class)->load($id);
@@ -590,11 +589,11 @@ application::
             $m = $m->withPersistence($this->mdb)->save();
         }
 
-        $m->onHook(Model::HOOK_BEFORE_SAVE, function($m){
+        $m->onHook(Model::HOOK_BEFORE_SAVE, function($m) {
             $m->withPersistence($this->sql)->save();
         });
 
-        $m->onHook(Model::HOOK_BEFORE_DELETE, function($m){
+        $m->onHook(Model::HOOK_BEFORE_DELETE, function($m) {
             $m->withPersistence($this->sql)->delete();
         });
 
@@ -619,7 +618,7 @@ use a string). It will first be associated with the MemCache DB persistence and
 we will attempt to load a corresponding ID. Next, if no record is found in the
 cache::
 
-    if (!$m->loaded()) {
+    if (!$m->isLoaded()) {
 
         // fall-back to load from SQL
         $m = $this->sql->add(clone $class)->load($id);
@@ -635,11 +634,11 @@ records.
 The last two hooks are in order to replicate any changes into the SQL database
 also::
 
-    $m->onHook(Model::HOOK_BEFORE_SAVE, function($m){
+    $m->onHook(Model::HOOK_BEFORE_SAVE, function($m) {
         $m->withPersistence($this->sql)->save();
     });
 
-    $m->onHook(Model::HOOK_BEFORE_DELETE, function($m){
+    $m->onHook(Model::HOOK_BEFORE_DELETE, function($m) {
         $m->withPersistence($this->sql)->delete();
     });
 
@@ -743,12 +742,7 @@ conditions)
 .. php:method:: action($action, $args = [])
 
     Prepares a special object representing "action" of a persistence layer based
-    around your current model::
-
-        $m = Model_User();
-        $m->addCondition('last_login', '<', date('Y-m-d', strtotime('-2 months')));
-
-        $m->action('delete')->execute();
+    around your current model.
 
 
 Action Types
@@ -801,34 +795,9 @@ The default action type can be set when executing action, for example::
 SQL Actions
 -----------
 
-The following actions are currently supported by `Persistence\\Sql`:
+Currently only read-only actions are supported by `Persistence\\Sql`:
 
- - select - produces query that returns DataSet  (array of hashes)
- - delete - produces query for deleting DataSet (no result)
-
-The following two queries returns un-populated query, which means if you wish
-to use it, you'll have to populate it yourself with some values:
-
- - insert - produces an un-populated insert query (no result).
- - update - produces query for updating DataSet (no result)
-
-Example of using update::
-
-    $m = Model_Invoice($db);
-    $m->addCondition('has_discount', true);
-
-    $m->action('update')
-        ->set('has_dicount', false)
-        ->execute();
-
-You must be aware that set() operates on a DSQL object and will no longer
-work with your model fields. You should use the object like this if you can::
-
-    $m->action('update')
-        ->set($m->getField('has_discount'), false)
-        ->execute();
-
-See $actual for more details.
+ - select - produces query that returns DataSet (array of hashes)
 
 There are ability to execute aggregation functions::
 
@@ -843,7 +812,7 @@ SQL Actions on Linked Records
 -----------------------------
 
 In conjunction with Model::refLink() you can produce expressions for creating
-sub-selects. The functionality is nicely wrapped inside FieldSql_Many::addField()::
+sub-selects. The functionality is nicely wrapped inside HasMany::addField()::
 
     $client->hasMany('Invoice')
         ->addField('total_gross', ['aggregate' => 'sum', 'field' => 'gross']);

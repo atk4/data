@@ -26,19 +26,13 @@ class DeepCopy
     /** @const string */
     public const HOOK_AFTER_COPY = self::class . '@afterCopy';
 
-    /**
-     * @var Model from which we want to copy records
-     */
+    /** @var Model from which we want to copy records */
     protected $source;
 
-    /**
-     * @var Model in which we want to copy records into
-     */
+    /** @var Model in which we want to copy records into */
     protected $destination;
 
-    /**
-     * @var array containing references which we need to copy. May contain sub-arrays: ['Invoices' => ['Lines']]
-     */
+    /** @var array containing references which we need to copy. May contain sub-arrays: ['Invoices' => ['Lines']] */
     protected $references = [];
 
     /**
@@ -49,16 +43,14 @@ class DeepCopy
 
     /**
      * @var array contains array similar to references but containing list of callback methods to transform fields/values:
-     *            e.g. ['Invoices' => ['Lines' => function($data){
+     *            e.g. ['Invoices' => ['Lines' => function($data) {
      *            $data['exchanged_amount'] = $data['amount'] * getExRate($data['date'], $data['currency']);
      *            return $data;
      *            }]]
      */
     protected $transforms = [];
 
-    /**
-     * @var array while copying, will record mapped records in format [$table => ['old_id' => 'new_id']]
-     */
+    /** @var array while copying, will record mapped records in format [$table => ['old_id' => 'new_id']] */
     public $mapping = [];
 
     /**
@@ -120,15 +112,15 @@ class DeepCopy
      * May also contain arrays for related entries.
      *
      * ->transformData(
-     *      [function($data){ // for Client entity
-     *          $data['name'] => $data['last_name'].' '.$data['first_name'];
+     *      [function($data) { // for Client entity
+     *          $data['name'] => $data['last_name'] . ' ' . $data['first_name'];
      *          unset($data['first_name'], $data['last_name']);
      *          return $data;
      *      }],
-     *      'Invoices' => ['Lines' => function($data){ // for nested Client->Invoices->Lines hasMany entity
-     *              $data['exchanged_amount'] = $data['amount'] * getExRate($data['date'], $data['currency']);
-     *              return $data;
-     *          }]
+     *      'Invoices' => ['Lines' => function($data) { // for nested Client->Invoices->Lines hasMany entity
+     *          $data['exchanged_amount'] = $data['amount'] * getExRate($data['date'], $data['currency']);
+     *          return $data;
+     *      }]
      *  );
      *
      * @return $this
@@ -207,7 +199,7 @@ class DeepCopy
                 }
 
                 // TODO add a way here to look for duplicates based on unique fields
-                // foreach($destination->unique fields) { try load by
+                // foreach ($destination->unique fields) { try load by
 
                 // if we still have id field, then remove it
                 unset($data[$source->id_field]);
@@ -226,11 +218,11 @@ class DeepCopy
             foreach ($this->extractKeys($references) as $ref_key => $ref_val) {
                 $this->debug("Considering {$ref_key}");
 
-                if ($source->hasRef($ref_key) && ($ref = $source->getRef($ref_key)) instanceof HasOne) {
+                if ($source->hasRef($ref_key) && $source->getModel(true)->getRef($ref_key) instanceof HasOne) {
                     $this->debug("Proceeding with {$ref_key}");
 
                     // load destination model through $source
-                    $source_table = $ref->refModel()->table;
+                    $source_table = $source->refModel($ref_key)->table;
 
                     if (
                         isset($this->mapping[$source_table])
@@ -280,7 +272,7 @@ class DeepCopy
             // Next look for hasMany relationships and copy those too
 
             foreach ($this->extractKeys($references) as $ref_key => $ref_val) {
-                if ($source->hasRef($ref_key) && ($ref = $source->getRef($ref_key)) instanceof HasMany) {
+                if ($source->hasRef($ref_key) && $source->getModel(true)->getRef($ref_key) instanceof HasMany) {
                     // No mapping, will always copy
                     foreach ($source->ref($ref_key) as $ref_model) {
                         $this->_copy(

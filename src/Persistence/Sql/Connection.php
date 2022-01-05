@@ -7,13 +7,12 @@ namespace Atk4\Data\Persistence\Sql;
 use Atk4\Core\DiContainerTrait;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Connection as DbalConnection;
+use Doctrine\DBAL\Driver\Connection as DbalDriverConnection;
 use Doctrine\DBAL\DriverManager;
-use Doctrine\DBAL\Event\ConnectionEventArgs;
-use Doctrine\DBAL\Events;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
-use Doctrine\DBAL\Platforms\SQLServer2012Platform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Result as DbalResult;
 
 /**
@@ -32,17 +31,13 @@ abstract class Connection
     /** @var DbalConnection */
     protected $connection;
 
-    /**
-     * Stores the driverSchema => connectionClass array for resolving.
-     *
-     * @var array
-     */
+    /** @var array<string, string> */
     protected static $connectionClassRegistry = [
-        'sqlite' => Sqlite\Connection::class,
-        'mysql' => Mysql\Connection::class,
-        'pgsql' => Postgresql\Connection::class,
-        'oci' => Oracle\Connection::class,
-        'sqlsrv' => Mssql\Connection::class,
+        'pdo_sqlite' => Sqlite\Connection::class,
+        'pdo_mysql' => Mysql\Connection::class,
+        'pdo_pgsql' => Postgresql\Connection::class,
+        'pdo_oci' => Oracle\Connection::class,
+        'pdo_sqlsrv' => Mssql\Connection::class,
     ];
 
     /**
@@ -70,126 +65,131 @@ abstract class Connection
     }
 
     /**
-     * Normalize DSN connection string.
+     * Normalize DSN connection string or DBAL connection params described in:
+     * https://www.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/configuration.html .
      *
-     * Returns normalized DSN as array ['dsn', 'user', 'pass', 'driverSchema', 'rest'].
+     * Returns normalized DSN as array ['driver', 'host', 'user', 'password', 'dbname', 'charset', ...].
      *
-     * @param array|string $dsn  DSN string
-     * @param string       $user Optional username, this takes precedence over dsn string
-     * @param string       $pass Optional password, this takes precedence over dsn string
+     * @param array|string $dsn
+     * @param string       $user     Optional username, this takes precedence over dsn string
+     * @param string       $password Optional password, this takes precedence over dsn string
      *
      * @return array
      */
-    public static function normalizeDsn($dsn, $user = null, $pass = null)
+    public static function normalizeDsn($dsn, $user = null, $password = null)
     {
-        // Try to dissect DSN into parts
-        $parts = is_array($dsn) ? $dsn : parse_url($dsn);
-
-        // If parts are usable, convert DSN format
-        if ($parts !== false && isset($parts['host'], $parts['path'])) {
-            // DSN is using URL-like format, so we need to convert it
-            $dsn = $parts['scheme'] . ':host=' . $parts['host']
-                . (isset($parts['port']) ? ';port=' . $parts['port'] : '')
-                . ';dbname=' . substr($parts['path'], 1);
-            $user ??= $parts['user'] ?? null;
-            $pass ??= $parts['pass'] ?? null;
-        }
-
-        // If it's still array, then simply use it
-        if (is_array($dsn)) {
-            return $dsn;
-        }
-
-        // If it's string, then find driver
+        // BC for 2.4 - 3.0 accepted DSN input
         if (is_string($dsn)) {
-            if (strpos($dsn, ':') === false) {
-                throw (new Exception('Your DSN format is invalid. Must be in "driverSchema:host;options" format'))
-                    ->addMoreInfo('dsn', $dsn);
+            $dsn = ['dsn' => $dsn];
+        }
+        if (isset($dsn['dsn'])) {
+            if (str_contains($dsn['dsn'], '://')) {
+                $parsed = array_filter(parse_url($dsn['dsn']));
+                $dsn['dsn'] = $parsed['scheme'] . ':';
+                unset($parsed['scheme']);
+                foreach ($parsed as $k => $v) {
+                    if ($k === 'pass') { // @phpstan-ignore-line phpstan bug
+                        unset($parsed[$k]);
+                        $k = 'password';
+                    } elseif ($k === 'path') { // @phpstan-ignore-line phpstan bug
+                        unset($parsed[$k]);
+                        $k = 'dbname';
+                        $v = preg_replace('~^/~', '', $v);
+                    }
+                    $parsed[$k] = $k . '=' . $v;
+                }
+                $dsn['dsn'] .= implode(';', $parsed);
             }
-            [$driverSchema, $rest] = explode(':', $dsn, 2);
-            $driverSchema = strtolower($driverSchema);
-        } else {
-            // currently impossible to be like this, but we don't want ugly exceptions here
-            $driverSchema = null;
-            $rest = null;
+
+            $parts = explode(':', $dsn['dsn'], 2);
+            $dsn = ['driver' => strtolower($parts[0])];
+            if ($dsn['driver'] === 'sqlite') {
+                if (trim($parts[1], ':') === 'memory') {
+                    $dsn['memory'] = true;
+                } else {
+                    $dsn['path'] = trim($parts[1], ':');
+                }
+            } else {
+                foreach (explode(';', $parts[1] ?? '') as $part) {
+                    [$k, $v] = str_contains($part, '=') ? explode('=', $part, 2) : [$part, null];
+                    $dsn[$k] = $v;
+                }
+                if (isset($dsn['host']) && str_contains($dsn['host'], ':')) {
+                    [$dsn['host'], $port] = explode(':', $dsn['host'], 2);
+                    $dsn['port'] = $port;
+                }
+            }
         }
 
-        return ['dsn' => $dsn, 'user' => $user ?: null, 'pass' => $pass ?: null, 'driverSchema' => $driverSchema, 'rest' => $rest];
-    }
-
-    /**
-     * Connect to database and return connection class.
-     *
-     * @param string|\PDO|DbalConnection $dsn
-     * @param string|null                $user
-     * @param string|null                $password
-     * @param array                      $args
-     *
-     * @return Connection
-     */
-    public static function connect($dsn, $user = null, $password = null, $args = [])
-    {
-        // If it's already PDO or DbalConnection object, then we simply use it
-        if ($dsn instanceof \PDO) {
-            $connectionClass = self::resolveConnectionClass($dsn->getAttribute(\PDO::ATTR_DRIVER_NAME));
-            $connectionArg = $connectionClass::connectDbalConnection(['pdo' => $dsn]);
-        } elseif ($dsn instanceof DbalConnection) {
-            /** @var \PDO */
-            $pdo = self::isComposerDbal2x()
-                ? $dsn->getWrappedConnection()
-                : $dsn->getWrappedConnection()->getWrappedConnection();
-            $connectionClass = self::resolveConnectionClass($pdo->getAttribute(\PDO::ATTR_DRIVER_NAME));
-            $connectionArg = $dsn;
-        } else {
-            $dsn = static::normalizeDsn($dsn, $user, $password);
-            $connectionClass = self::resolveConnectionClass($dsn['driverSchema']);
-            $connectionArg = $connectionClass::connectDbalConnection($dsn);
+        if ($user !== null) {
+            $dsn['user'] = $user;
         }
 
-        return new $connectionClass(array_merge([
-            'connection' => $connectionArg,
-        ], $args));
+        if ($password !== null) {
+            $dsn['password'] = $password;
+        }
+
+        if (!str_starts_with($dsn['driver'], 'pdo_')) {
+            $dsn['driver'] = 'pdo_' . $dsn['driver'];
+        }
+
+        return $dsn;
     }
 
     /**
      * Adds connection class to the registry for resolving in Connection::resolve method.
      *
      * Can be used as:
-     *
-     * Connection::registerConnection(MySQL\Connection::class, 'mysql'), or
-     * MySQL\Connection::registerConnectionClass()
-     *
-     * CustomDriver\Connection must be descendant of Connection class.
-     *
-     * @param string $connectionClass
-     * @param string $driverSchema
+     *   Connection::registerConnection(MySQL\Connection::class, 'pdo_mysql')
      */
-    public static function registerConnectionClass($connectionClass = null, $driverSchema = null): void
+    public static function registerConnectionClass(string $connectionClass, string $driverName): void
     {
-        if ($connectionClass === null) {
-            $connectionClass = static::class;
-        }
-
-        if ($driverSchema === null) {
-            /** @var static $c */
-            $c = (new \ReflectionClass($connectionClass))->newInstanceWithoutConstructor();
-            $driverSchema = $c->getDatabasePlatform()->getName();
-        }
-
-        self::$connectionClassRegistry[$driverSchema] = $connectionClass;
+        self::$connectionClassRegistry[$driverName] = $connectionClass;
     }
 
     /**
      * Resolves the connection class to use based on driver type.
      */
-    public static function resolveConnectionClass(string $driverSchema): string
+    public static function resolveConnectionClass(string $driverName): string
     {
-        if (!isset(self::$connectionClassRegistry[$driverSchema])) {
+        if (!isset(self::$connectionClassRegistry[$driverName])) {
             throw (new Exception('Driver schema is not registered'))
-                ->addMoreInfo('driver_schema', $driverSchema);
+                ->addMoreInfo('driver_schema', $driverName);
         }
 
-        return self::$connectionClassRegistry[$driverSchema];
+        return self::$connectionClassRegistry[$driverName];
+    }
+
+    /**
+     * Connect to database and return connection class.
+     *
+     * @param string|array|DbalConnection|DbalDriverConnection $dsn
+     * @param string|null                                      $user
+     * @param string|null                                      $password
+     * @param array                                            $args
+     *
+     * @return Connection
+     */
+    public static function connect($dsn, $user = null, $password = null, $args = [])
+    {
+        if ($dsn instanceof DbalConnection) {
+            $driverName = self::getDriverNameFromDbalDriverConnection($dsn->getWrappedConnection());
+            $connectionClass = self::resolveConnectionClass($driverName);
+            $dbalConnection = $dsn;
+        } elseif ($dsn instanceof DbalDriverConnection) {
+            $driverName = self::getDriverNameFromDbalDriverConnection($dsn);
+            $connectionClass = self::resolveConnectionClass($driverName);
+            $dbalConnection = $connectionClass::connectFromDbalDriverConnection($dsn);
+        } else {
+            $dsn = static::normalizeDsn($dsn, $user, $password);
+            $connectionClass = self::resolveConnectionClass($dsn['driver']);
+            $dbalDriverConnection = $connectionClass::connectFromDsn($dsn);
+            $dbalConnection = $connectionClass::connectFromDbalDriverConnection($dbalDriverConnection);
+        }
+
+        return new $connectionClass(array_merge([
+            'connection' => $dbalConnection,
+        ], $args));
     }
 
     final public static function isComposerDbal2x(): bool
@@ -197,93 +197,60 @@ abstract class Connection
         return !class_exists(DbalResult::class);
     }
 
+    private static function getDriverNameFromDbalDriverConnection(DbalDriverConnection $connection): string
+    {
+        while (self::isComposerDbal2x() ? $connection instanceof \PDO : $connection = $connection->getWrappedConnection()) {
+            if ($connection instanceof \PDO) {
+                return 'pdo_' . $connection->getAttribute(\PDO::ATTR_DRIVER_NAME);
+            }
+        }
+
+        return null; // @phpstan-ignore-line
+    }
+
     protected static function createDbalEventManager(): EventManager
     {
         return new EventManager();
     }
 
-    /**
-     * Establishes connection based on a $dsn.
-     *
-     * @return DbalConnection
-     */
-    protected static function connectDbalConnection(array $dsn)
+    protected static function connectFromDsn(array $dsn): DbalDriverConnection
     {
-        if (isset($dsn['pdo'])) {
-            $pdo = $dsn['pdo'];
-        } else {
-            $pdo = new \PDO($dsn['dsn'], $dsn['user'], $dsn['pass']);
+        $dsn = static::normalizeDsn($dsn);
+        if ($dsn['driver'] === 'pdo_mysql') {
+            $dsn['charset'] = 'utf8mb4';
+        } elseif ($dsn['driver'] === 'pdo_oci') {
+            $dsn['charset'] = 'AL32UTF8';
         }
 
-        // Doctrine DBAL 3.x does not support to create DBAL Connection with already
-        // instanced PDO, so create it without PDO first, see:
-        // https://github.com/doctrine/dbal/blob/v2.10.1/lib/Doctrine/DBAL/DriverManager.php#L179
-        // https://github.com/doctrine/dbal/blob/3.0.0/src/DriverManager.php#L142
-        // TODO probably drop support later
-        if (self::isComposerDbal2x()) {
-            $dbalConnection = DriverManager::getConnection([
-                'pdo' => $pdo,
-            ], null, (static::class)::createDbalEventManager());
-        } else {
-            $pdoConnection = (new \ReflectionClass(\Doctrine\DBAL\Driver\PDO\Connection::class))
-                ->newInstanceWithoutConstructor();
-            $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-            \Closure::bind(function () use ($pdoConnection, $pdo): void {
-                $pdoConnection->connection = $pdo;
-            }, null, \Doctrine\DBAL\Driver\PDO\Connection::class)();
-            $dbalConnection = DriverManager::getConnection([
-                'driver' => 'pdo_' . $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME),
-            ], null, (static::class)::createDbalEventManager());
-            \Closure::bind(function () use ($dbalConnection, $pdoConnection): void {
-                $dbalConnection->_conn = $pdoConnection;
-            }, null, \Doctrine\DBAL\Connection::class)();
-        }
+        $dbalConnection = DriverManager::getConnection(
+            $dsn,
+            null,
+            (static::class)::createDbalEventManager()
+        );
 
-        // postConnect event is not dispatched when PDO is passed, dispatch it manually
-        if ($dbalConnection->getEventManager()->hasListeners(Events::postConnect)) {
-            $dbalConnection->getEventManager()->dispatchEvent(
-                Events::postConnect,
-                new ConnectionEventArgs($dbalConnection)
-            );
-        }
+        return $dbalConnection->getWrappedConnection();
+    }
 
-        // DBAL 3.x removed some old platforms, to support instanceof reliably,
-        // make sure that DBAL 2.x platform is always supported in DBAL 3.x, see:
-        // https://github.com/doctrine/dbal/pull/3912
-        // TODO drop once DBAL 2.x support is dropped
-        if (
-            in_array(get_class($dbalConnection->getDatabasePlatform()) . 'ForPhpstan', [
-                'Doctrine\DBAL\Platforms\SQLServerPlatform' . 'ForPhpstan',
-                'Doctrine\DBAL\Platforms\SQLServer2005Platform' . 'ForPhpstan',
-                'Doctrine\DBAL\Platforms\SQLServer2008Platform' . 'ForPhpstan',
-            ], true) && !($dbalConnection->getDatabasePlatform() instanceof SQLServer2012Platform)
-        ) {
+    protected static function connectFromDbalDriverConnection(DbalDriverConnection $dbalDriverConnection): DbalConnection
+    {
+        $dbalConnection = DriverManager::getConnection([
+            'driver' => self::getDriverNameFromDbalDriverConnection($dbalDriverConnection),
+        ], null, (static::class)::createDbalEventManager());
+        \Closure::bind(function () use ($dbalConnection, $dbalDriverConnection): void {
+            $dbalConnection->_conn = $dbalDriverConnection;
+        }, null, \Doctrine\DBAL\Connection::class)();
+
+        if ($dbalConnection->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             \Closure::bind(function () use ($dbalConnection) {
-                $dbalConnection->platform = new SQLServer2012Platform();
-            }, null, DbalConnection::class)();
-        } elseif (
-            in_array(get_class($dbalConnection->getDatabasePlatform()) . 'ForPhpstan', [
-                'Doctrine\DBAL\Platforms\PostgreSqlPlatform' . 'ForPhpstan',
-                'Doctrine\DBAL\Platforms\PostgreSQL91Platform' . 'ForPhpstan',
-                'Doctrine\DBAL\Platforms\PostgreSQL92Platform' . 'ForPhpstan',
-            ], true) && !($dbalConnection->getDatabasePlatform() instanceof PostgreSQL94Platform)
-        ) {
-            \Closure::bind(function () use ($dbalConnection) {
-                $dbalConnection->platform = new PostgreSQL94Platform();
-            }, null, DbalConnection::class)();
-        }
-
-        if ($dbalConnection->getDatabasePlatform() instanceof PostgreSQL94Platform) {
-            \Closure::bind(function () use ($dbalConnection) {
-                $dbalConnection->platform = new class() extends PostgreSQL94Platform {
+                $dbalConnection->platform = new class() extends \Doctrine\DBAL\Platforms\PostgreSQL94Platform {
                     use Postgresql\PlatformTrait;
                 };
             }, null, DbalConnection::class)();
         }
 
-        if ($dbalConnection->getDatabasePlatform() instanceof SQLServer2012Platform) {
+        if ($dbalConnection->getDatabasePlatform() instanceof SQLServerPlatform) {
             \Closure::bind(function () use ($dbalConnection) {
-                $dbalConnection->platform = new class() extends SQLServer2012Platform {
+                $dbalConnection->platform = new class() extends \Doctrine\DBAL\Platforms\SQLServer2012Platform {
                     use Mssql\PlatformTrait;
                 };
             }, null, DbalConnection::class)();

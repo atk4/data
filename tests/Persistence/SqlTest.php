@@ -207,15 +207,12 @@ class SqlTest extends TestCase
         $m2->save();
 
         $m2 = $m->tryLoad($ids[0]);
-        $this->assertFalse($m2->loaded());
+        $this->assertFalse($m2->isLoaded());
 
         $m2 = $m->load($ids[1]);
         $this->assertSame('Smith', $m2->get('surname'));
     }
 
-    /**
-     * Test export.
-     */
     public function testExport(): void
     {
         $this->setDb([

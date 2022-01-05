@@ -7,20 +7,23 @@ namespace Atk4\Data\Schema;
 use Atk4\Core\Phpunit\TestCase as BaseTestCase;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\Sql\Connection;
 use Doctrine\DBAL\Logging\SQLLogger;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
+use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 
-class TestCase extends BaseTestCase
+abstract class TestCase extends BaseTestCase
 {
-    /** @var Persistence|Persistence\Sql Persistence instance */
+    /** @var Persistence|Persistence\Sql */
     public $db;
 
-    /** @var array Array of database table names */
-    public $tables;
-
-    /** @var bool Debug mode enabled/disabled. In debug mode SQL queries are dumped. */
+    /** @var bool If true, SQL queries are dumped. */
     public $debug = false;
+
+    /** @var Migrator[] */
+    private $createdMigrators = [];
 
     /**
      * Setup test database.
@@ -31,32 +34,54 @@ class TestCase extends BaseTestCase
 
         $this->db = Persistence::connect($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD']);
 
-        if ($this->debug) {
-            $this->db->connection->connection()->getConfiguration()->setSQLLogger(
-                new class($this) implements SQLLogger {
-                    /** @var TestCase */
-                    public $testCase;
+        if ($this->db->getDatabasePlatform() instanceof MySQLPlatform) {
+            $this->db->connection->expr(
+                'SET SESSION auto_increment_increment = 1, SESSION auto_increment_offset = 1'
+            )->execute();
+        }
 
-                    public function __construct(TestCase $testCase)
-                    {
-                        $this->testCase = $testCase;
+        $this->db->connection->connection()->getConfiguration()->setSQLLogger(
+            null ?? new class($this) implements SQLLogger { // @phpstan-ignore-line
+                /** @var \WeakReference<TestCase> */
+                private $testCaseWeakRef;
+
+                public function __construct(TestCase $testCase)
+                {
+                    $this->testCaseWeakRef = \WeakReference::create($testCase);
+                }
+
+                public function startQuery($sql, $params = null, $types = null): void
+                {
+                    if (!$this->testCaseWeakRef->get()->debug) {
+                        return;
                     }
 
-                    public function startQuery($sql, $params = null, $types = null): void
-                    {
-                        if (!$this->testCase->debug) {
-                            return;
+                    echo "\n" . $sql . "\n" . (is_array($params) ? print_r(array_map(function ($v) {
+                        if (is_string($v) && strlen($v) > 4096) {
+                            $v = '*long string* (length: ' . strlen($v) . ' bytes, sha256: ' . hash('sha256', $v) . ')';
                         }
 
-                        echo "\n" . $sql . "\n" . print_r($params, true) . "\n\n";
-                    }
-
-                    public function stopQuery(): void
-                    {
-                    }
+                        return $v;
+                    }, $params), true) : '') . "\n\n";
                 }
-            );
+
+                public function stopQuery(): void
+                {
+                }
+            }
+        );
+    }
+
+    protected function tearDown(): void
+    {
+        foreach ($this->createdMigrators as $migrator) {
+            foreach ($migrator->getCreatedTableNames() as $t) {
+                (clone $migrator)->table($t)->dropIfExists();
+            }
         }
+        $this->createdMigrators = [];
+
+        parent::tearDown();
     }
 
     protected function getDatabasePlatform(): AbstractPlatform
@@ -64,22 +89,35 @@ class TestCase extends BaseTestCase
         return $this->db->connection->getDatabasePlatform();
     }
 
-    protected function getSchemaManager(): AbstractSchemaManager
+    /**
+     * @phpstan-return AbstractSchemaManager<AbstractPlatform>
+     */
+    protected function createSchemaManager(): AbstractSchemaManager
     {
-        return $this->db->connection->connection()->getSchemaManager();
+        if (Connection::isComposerDbal2x()) {
+            return $this->db->connection->connection()->getSchemaManager();
+        }
+
+        return $this->db->connection->connection()->createSchemaManager();
     }
 
     private function convertSqlFromSqlite(string $sql): string
     {
+        $platform = $this->getDatabasePlatform();
+
         return preg_replace_callback(
-            '~\'(?:[^\'\\\\]+|\\\\.)*\'|"(?:[^"\\\\]+|\\\\.)*"~s',
-            function ($matches) {
-                $str = substr(preg_replace('~\\\\(.)~s', '$1', $matches[0]), 1, -1);
-                if (substr($matches[0], 0, 1) === '"') {
-                    return $this->getDatabasePlatform()->quoteSingleIdentifier($str);
+            '~\'(?:[^\'\\\\]+|\\\\.)*\'|"(?:[^"\\\\]+|\\\\.)*"|:(\w+)~s',
+            function ($matches) use ($platform) {
+                if (isset($matches[1])) {
+                    return ':' . ($platform instanceof OraclePlatform ? 'xxaaa' : '') . $matches[1];
                 }
 
-                return $this->getDatabasePlatform()->quoteStringLiteral($str);
+                $str = substr(preg_replace('~\\\\(.)~s', '$1', $matches[0]), 1, -1);
+                if (substr($matches[0], 0, 1) === '"') {
+                    return $platform->quoteSingleIdentifier($str);
+                }
+
+                return $platform->quoteStringLiteral($str);
             },
             $sql
         );
@@ -90,20 +128,12 @@ class TestCase extends BaseTestCase
         $this->assertSame($this->convertSqlFromSqlite($expectedSqliteSql), $actualSql, $message);
     }
 
-    public function createMigrator(Model $model = null): Migration
+    public function createMigrator(Model $model = null): Migrator
     {
-        return new Migration($model ?: $this->db);
-    }
+        $migrator = new Migrator($model ?: $this->db);
+        $this->createdMigrators[] = $migrator;
 
-    /**
-     * Use this method to clean up tables after you have created them,
-     * so that your database would be ready for the next test.
-     */
-    public function dropTableIfExists(string $tableName): self
-    {
-        $this->createMigrator()->table($tableName)->dropIfExists();
-
-        return $this;
+        return $migrator;
     }
 
     /**
@@ -111,16 +141,25 @@ class TestCase extends BaseTestCase
      */
     public function setDb(array $dbData, bool $importData = true): void
     {
-        $this->tables = array_keys($dbData);
-
         // create tables
         foreach ($dbData as $tableName => $data) {
-            $this->dropTableIfExists($tableName);
+            $migrator = $this->createMigrator()->table($tableName);
+
+            // drop table if already created but only if it was created during this test
+            foreach ($this->createdMigrators as $migr) {
+                if ($migr->connection === $this->db->connection) {
+                    foreach ($migr->getCreatedTableNames() as $t) {
+                        if ($t === $tableName) {
+                            $migrator->drop();
+
+                            break 2;
+                        }
+                    }
+                }
+            }
 
             $first_row = current($data);
             if ($first_row) {
-                $migrator = $this->createMigrator()->table($tableName);
-
                 $migrator->id('id');
 
                 foreach ($first_row as $field => $row) {
@@ -155,7 +194,7 @@ class TestCase extends BaseTestCase
                     }
 
                     $query->table($tableName);
-                    $query->set($row);
+                    $query->setMulti($row);
 
                     if (!isset($row['id']) && $hasId) {
                         $query->set('id', $id);
@@ -173,7 +212,13 @@ class TestCase extends BaseTestCase
     public function getDb(array $tableNames = null, bool $noId = false): array
     {
         if ($tableNames === null) {
-            $tableNames = $this->tables;
+            $tableNames = [];
+            foreach ($this->createdMigrators as $migrator) {
+                foreach ($migrator->getCreatedTableNames() as $t) {
+                    $tableNames[$t] = $t;
+                }
+            }
+            $tableNames = array_values($tableNames);
         }
 
         $ret = [];

@@ -6,23 +6,51 @@ namespace Atk4\Data\Persistence;
 
 use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\Platforms;
+use Mvorisek\Atk4\Hintable\Phpstan\PhpstanUtil;
 
 class GenericPlatform extends Platforms\AbstractPlatform
 {
-    private function createNotSupportedException(): \Exception // DbalException once DBAL 2.x support is dropped
+    private function createNotSupportedException(): \Exception
     {
         if (\Atk4\Data\Persistence\Sql\Connection::isComposerDbal2x()) {
             // hack for PHPStan, keep ignored error count for DBAL 2.x and DBAL 3.x the same
-            if (\PHP_MAJOR_VERSION === 0) {
-                \Doctrine\DBAL\DBALException::notSupported('SQL');
-                \Doctrine\DBAL\DBALException::notSupported('SQL');
-                \Doctrine\DBAL\DBALException::notSupported('SQL');
-                \Doctrine\DBAL\DBALException::notSupported('SQL');
-                \Doctrine\DBAL\DBALException::notSupported('SQL');
-                \Doctrine\DBAL\DBALException::notSupported('SQL');
+            if (PhpstanUtil::alwaysFalseAnalyseOnly()) {
+                $connection = (new class() extends Sql\Connection {})->connection();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
+                $connection->getSchemaManager();
             }
-
-            return \Doctrine\DBAL\DBALException::notSupported('SQL');
         }
 
         return DbalException::notSupported('SQL');

@@ -227,7 +227,7 @@ You can load / unload records like this::
     $m->set('email', 'test@example.com');
     $m->save();
 
-You can call `$m->loaded()` to see if there is active record and `$m->getId()` will
+You can call `$m->isLoaded()` to see if there is active record and `$m->getId()` will
 store the ID of active record. You can also un-load the record with `$m->unload()`.
 
 By default no records are loaded and if you modify some field and attempt
@@ -254,7 +254,7 @@ some other parameters such as:
 
  - order
  - limit
- - only_fields
+ - onlyFields
 
 You can also define your own parameters like this::
 
@@ -453,7 +453,7 @@ Your Active Record was user john and after traversal you get a model with DataSe
 corresponding to all Systems that belong to user john. You can use the following
 to see number of records in DataSet or export DataSet::
 
-    $s->loaded();
+    $s->isLoaded();
     $s->action('count')->getOne();
     $s->export();
     $s->action('count')->getDebugQuery();
@@ -470,7 +470,7 @@ This will create a Model_Client instance with a DataSet corresponding to all
 the Clients that are contained in all of the Systems that belong to user john.
 You can examine the this model further::
 
-    $c->loaded();
+    $c->isLoaded();
     $c->action('count')->getOne();
     $c->export();
     $c->action('count')->getDebugQuery();
@@ -490,7 +490,7 @@ The third and final reference traversal type is "Active Record to Active Record"
 This results in an instance of Model_Country with Active Record set to the
 country of user john::
 
-    $cc->loaded();
+    $cc->isLoaded();
     $cc->getId();
     $cc->get();
 
@@ -580,28 +580,6 @@ hasMany::addField() again is a short-cut for creating expression, which you can
 also build manually::
 
     $m->addExpression('country', $m->refLink('country_id')->action('field',['name']));
-
-Multi-record actions
---------------------
-
-Actions also allow you to perform operations on multiple records. This can be
-very handy with some deep traversal to improve query efficiency. Suppose you need
-to change Client/Supplier status to 'suspended' for a specific user. Fire up a
-console once away::
-
-    $m = new Model_User($db);
-    $m = $m->loadBy('username','john');
-    $m->hasMany('System');
-    $c = $m->ref('System')->ref('Client');
-    $s = $m->ref('System')->ref('Supplier');
-
-    $c->action('update')->set('status', 'suspended')->execute();
-    $s->action('update')->set('status', 'suspended')->execute();
-
-Note that I had to perform 2 updates here, because Agile Data considers Client
-and Supplier as separate models. In our implementation they happened to be in
-a same table, but technically that could also be implemented differently by
-persistence layer.
 
 Advanced Use of Actions
 -----------------------

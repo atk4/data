@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace Atk4\Data\Persistence\Sql;
 
 use Atk4\Core\WarnDynamicPropertyTrait;
+use Atk4\Data\Persistence;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Exception as DbalException;
-use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
+use Doctrine\DBAL\ParameterType;
+use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Result as DbalResult;
 
 /**
@@ -37,15 +41,11 @@ class Expression implements Expressionable, \ArrayAccess
      * This property is made public to ease customization and make it accessible
      * from Connection class for example.
      *
-     * @var array<int|string, mixed>
+     * @var array<array<mixed>>
      */
     public $args = ['custom' => []];
 
-    /**
-     * As per PDO, escapeParam() will convert value into :a, :b, :c .. :aa .. etc.
-     *
-     * @var string
-     */
+    /** @var string As per PDO, escapeParam() will convert value into :a, :b, :c .. :aa .. etc. */
     protected $paramBase = 'a';
 
     /**
@@ -56,11 +56,10 @@ class Expression implements Expressionable, \ArrayAccess
      */
     protected $escape_char = '"';
 
-    /** @var string|null used for linking */
-    private $_paramBase;
-
-    /** @var array Populated with actual values by escapeParam() */
-    public $params = [];
+    /** @var string|null */
+    private $renderParamBase;
+    /** @var array|null */
+    private $renderParams;
 
     /** @var Connection|null */
     public $connection;
@@ -108,16 +107,6 @@ class Expression implements Expressionable, \ArrayAccess
         foreach ($properties as $key => $val) {
             $this->{$key} = $val;
         }
-    }
-
-    /**
-     * @deprecated will be removed in v2.5
-     */
-    public function __toString()
-    {
-        'trigger_error'('Method is deprecated. Use $this->getOne() instead', \E_USER_DEPRECATED);
-
-        return $this->getOne();
     }
 
     /**
@@ -188,7 +177,7 @@ class Expression implements Expressionable, \ArrayAccess
     public function expr($properties = [], $arguments = null)
     {
         if ($this->connection !== null) {
-            // TODO - condition above always satisfied when connection is set - adjust tests,
+            // TODO condition above always satisfied when connection is set - adjust tests,
             // so connection is always set and remove the code below
             return $this->connection->expr($properties, $arguments);
         }
@@ -232,56 +221,59 @@ class Expression implements Expressionable, \ArrayAccess
     /**
      * Recursively renders sub-query or expression, combining parameters.
      *
-     * @param mixed  $expression Expression
-     * @param string $escapeMode Fall-back escaping mode - using one of the Expression::ESCAPE_* constants
+     * @param string|Expressionable $expr
+     * @param string                $escapeMode Fall-back escaping mode - using one of the Expression::ESCAPE_* constants
      *
      * @return string Quoted expression
      */
-    protected function consume($expression, string $escapeMode = self::ESCAPE_PARAM)
+    protected function consume($expr, string $escapeMode = self::ESCAPE_PARAM)
     {
-        if (!is_object($expression)) {
+        if (!is_object($expr)) {
             switch ($escapeMode) {
                 case self::ESCAPE_PARAM:
-                    return $this->escapeParam($expression);
+                    return $this->escapeParam($expr);
                 case self::ESCAPE_IDENTIFIER:
-                    return $this->escapeIdentifier($expression);
+                    return $this->escapeIdentifier($expr);
                 case self::ESCAPE_IDENTIFIER_SOFT:
-                    return $this->escapeIdentifierSoft($expression);
+                    return $this->escapeIdentifierSoft($expr);
                 case self::ESCAPE_NONE:
-                    return $expression;
+                    return $expr;
             }
 
             throw (new Exception('$escapeMode value is incorrect'))
                 ->addMoreInfo('escapeMode', $escapeMode);
         }
 
-        if ($expression instanceof Expressionable) {
-            $expression = $expression->getDsqlExpression($this);
+        if ($expr instanceof Expressionable) {
+            $expr = $expr->getDsqlExpression($this);
         }
 
-        if (!$expression instanceof self) {
-            throw (new Exception('Only Expressionable object type may be used in Expression'))
-                ->addMoreInfo('object', $expression);
+        if (!$expr instanceof self) {
+            throw (new Exception('Only Expressionable object can be used in Expression'))
+                ->addMoreInfo('object', $expr);
         }
 
-        // at this point $sql_code is instance of Expression
-        $expression->params = $this->params;
-        $expression->_paramBase = $this->_paramBase;
+        // render given expression into params of the current expression
+        $expressionParamBaseBackup = $expr->paramBase;
         try {
-            $ret = $expression->render();
-            $this->params = $expression->params;
-            $this->_paramBase = $expression->_paramBase;
+            $expr->paramBase = $this->renderParamBase;
+            [$sql, $params] = $expr->render();
+            foreach ($params as $k => $v) {
+                $this->renderParams[$k] = $v;
+                do {
+                    ++$this->renderParamBase;
+                } while ($this->renderParamBase === $k);
+            }
         } finally {
-            $expression->params = [];
-            $expression->_paramBase = null;
+            $expr->paramBase = $expressionParamBaseBackup;
         }
 
-        // Wrap in parentheses if expression requires so
-        if ($expression->wrapInParentheses === true) {
-            $ret = '(' . $ret . ')';
+        // wrap in parentheses if expression requires so
+        if ($expr->wrapInParentheses === true) {
+            $sql = '(' . $sql . ')';
         }
 
-        return $ret;
+        return $sql;
     }
 
     /**
@@ -310,9 +302,9 @@ class Expression implements Expressionable, \ArrayAccess
      */
     protected function escapeParam($value): string
     {
-        $name = ':' . $this->_paramBase;
-        ++$this->_paramBase;
-        $this->params[$name] = $value;
+        $name = ':' . $this->renderParamBase;
+        ++$this->renderParamBase;
+        $this->renderParams[$name] = $value;
 
         return $name;
     }
@@ -369,26 +361,12 @@ class Expression implements Expressionable, \ArrayAccess
                 || strpos($value, $this->escape_char) !== false;
     }
 
-    /**
-     * Render expression and return it as string.
-     */
-    public function render(): string
+    private function _render(): array
     {
-        $hadUnderscoreParamBase = $this->_paramBase !== null;
-        if (!$hadUnderscoreParamBase) {
-            $hadUnderscoreParamBase = false;
-            $this->_paramBase = $this->paramBase;
-        }
-
-        if ($this->template === null) {
-            throw new Exception('Template is not defined for Expression');
-        }
-
-        $nameless_count = 0;
-
         // - [xxx] = param
         // - {xxx} = escape
         // - {{xxx}} = escapeSoft
+        $nameless_count = 0;
         $res = preg_replace_callback(
             <<<'EOF'
                 ~
@@ -441,11 +419,29 @@ class Expression implements Expressionable, \ArrayAccess
             $this->template
         );
 
-        if (!$hadUnderscoreParamBase) {
-            $this->_paramBase = null;
+        return [trim($res), $this->renderParams];
+    }
+
+    /**
+     * Render expression to an array with SQL string and its params.
+     *
+     * @return array{string, array<string, mixed>}
+     */
+    public function render(): array
+    {
+        if ($this->template === null) {
+            throw new Exception('Template is not defined for Expression');
         }
 
-        return trim($res);
+        try {
+            $this->renderParamBase = $this->paramBase;
+            $this->renderParams = [];
+
+            return $this->_render();
+        } finally {
+            $this->renderParamBase = null;
+            $this->renderParams = null;
+        }
     }
 
     /**
@@ -453,13 +449,9 @@ class Expression implements Expressionable, \ArrayAccess
      */
     public function getDebugQuery(): string
     {
-        $result = $this->render();
+        [$result, $params] = $this->render();
 
-        foreach (array_reverse($this->params) as $key => $val) {
-            if (is_int($key)) {
-                continue;
-            }
-
+        foreach (array_reverse($params) as $key => $val) {
             if ($val === null) {
                 $replacement = 'NULL';
             } elseif (is_bool($val)) {
@@ -485,17 +477,17 @@ class Expression implements Expressionable, \ArrayAccess
     public function __debugInfo(): array
     {
         $arr = [
-            'R' => false,
+            'R' => 'n/a',
+            'R_params' => 'n/a',
             'template' => $this->template,
-            'params' => $this->params,
-            // 'connection' => $this->connection,
-            'args' => $this->args,
+            'templateArgs' => $this->args,
         ];
 
         try {
             $arr['R'] = $this->getDebugQuery();
+            $arr['R_params'] = $this->render()[1];
         } catch (\Exception $e) {
-            $arr['R'] = $e->getMessage();
+            $arr['R'] = get_class($e) . ': ' . $e->getMessage();
         }
 
         return $arr;
@@ -514,26 +506,38 @@ class Expression implements Expressionable, \ArrayAccess
 
         // If it's a DBAL connection, we're cool
         if ($connection instanceof DbalConnection) {
-            $query = $this->render();
+            [$query, $params] = $this->render();
 
+            $platform = $this->connection->getDatabasePlatform();
             try {
                 $statement = $connection->prepare($query);
 
-                foreach ($this->params as $key => $val) {
+                foreach ($params as $key => $val) {
                     if (is_int($val)) {
-                        $type = \PDO::PARAM_INT;
+                        $type = ParameterType::INTEGER;
                     } elseif (is_bool($val)) {
-                        if ($this->connection->getDatabasePlatform() instanceof PostgreSQL94Platform) {
-                            $type = \PDO::PARAM_STR;
+                        if ($platform instanceof PostgreSQLPlatform) {
+                            $type = ParameterType::STRING;
                             $val = $val ? '1' : '0';
                         } else {
-                            $type = \PDO::PARAM_INT;
+                            $type = ParameterType::INTEGER;
                             $val = $val ? 1 : 0;
                         }
                     } elseif ($val === null) {
-                        $type = \PDO::PARAM_NULL;
-                    } elseif (is_string($val) || is_float($val)) {
-                        $type = \PDO::PARAM_STR;
+                        $type = ParameterType::NULL;
+                    } elseif (is_float($val)) {
+                        $type = ParameterType::STRING;
+                    } elseif (is_string($val)) {
+                        $type = ParameterType::STRING;
+
+                        if ($platform instanceof PostgreSQLPlatform
+                            || $platform instanceof SQLServerPlatform) {
+                            $dummyPersistence = new Persistence\Sql($this->connection);
+                            if (\Closure::bind(fn () => $dummyPersistence->binaryTypeValueIsEncoded($val), null, Persistence\Sql::class)()) {
+                                $val = \Closure::bind(fn () => $dummyPersistence->binaryTypeValueDecode($val), null, Persistence\Sql::class)();
+                                $type = ParameterType::BINARY;
+                            }
+                        }
                     } elseif (is_resource($val)) {
                         throw new Exception('Resource type is not supported, set value as string instead');
                     } else {
@@ -543,7 +547,13 @@ class Expression implements Expressionable, \ArrayAccess
                             ->addMoreInfo('type', gettype($val));
                     }
 
-                    $bind = $statement->bindValue($key, $val, $type);
+                    if (is_string($val) && $platform instanceof OraclePlatform && strlen($val) > 2000) {
+                        $valRef = $val;
+                        $bind = $statement->bindParam($key, $valRef, ParameterType::STRING, strlen($val));
+                        unset($valRef);
+                    } else {
+                        $bind = $statement->bindValue($key, $val, $type);
+                    }
                     if ($bind === false) {
                         throw (new Exception('Unable to bind parameter'))
                             ->addMoreInfo('param', $key)
@@ -552,13 +562,13 @@ class Expression implements Expressionable, \ArrayAccess
                     }
                 }
 
-                $result = $statement->execute();
+                $result = $statement->execute(); // @phpstan-ignore-line
                 if (Connection::isComposerDbal2x()) {
                     return $statement; // @phpstan-ignore-line
                 }
 
                 return $result;
-            } catch (DbalException|\Doctrine\DBAL\DBALException $e) {
+            } catch (DbalException $e) {
                 $firstException = $e;
                 while ($firstException->getPrevious() !== null) {
                     $firstException = $firstException->getPrevious();
@@ -576,26 +586,12 @@ class Expression implements Expressionable, \ArrayAccess
         return $connection->execute($this);
     }
 
-    /**
-     * TODO drop method once we support DBAL 3.x only.
-     *
-     * @return \Traversable<array<mixed>>
-     */
-    public function getIterator(): \Traversable
-    {
-        if (Connection::isComposerDbal2x()) {
-            return $this->execute();
-        }
-
-        return $this->execute()->iterateAssociative();
-    }
-
     // {{{ Result Querying
 
     /**
      * @param string|int|float|bool|null $v
      */
-    private function getCastValue($v): ?string
+    private function castGetValue($v): ?string
     {
         if (is_int($v) || is_float($v)) {
             return (string) $v;
@@ -603,9 +599,11 @@ class Expression implements Expressionable, \ArrayAccess
             return $v ? '1' : '0';
         }
 
-        // for Oracle CLOB/BLOB datatypes and PDO driver
-        if (is_resource($v) && get_resource_type($v) === 'stream'
-                && $this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\OraclePlatform) {
+        // for PostgreSQL/Oracle CLOB/BLOB datatypes and PDO driver
+        if (is_resource($v) && get_resource_type($v) === 'stream' && (
+            $this->connection->getDatabasePlatform() instanceof PostgreSQLPlatform
+            || $this->connection->getDatabasePlatform() instanceof OraclePlatform
+        )) {
             $v = stream_get_contents($v);
         }
 
@@ -613,13 +611,23 @@ class Expression implements Expressionable, \ArrayAccess
     }
 
     /**
-     * @deprecated use "getRows" method instead - will be removed in v2.5
+     * @return \Traversable<array<mixed>>
      */
-    public function get(): array
+    public function getRowsIterator(): \Traversable
     {
-        'trigger_error'('Method is deprecated. Use getRows instead', \E_USER_DEPRECATED);
+        // DbalResult::iterateAssociative() is broken with streams with Oracle database
+        // https://github.com/doctrine/dbal/issues/5002
+        if (Connection::isComposerDbal2x()) {
+            $iterator = $this->execute();
+        } else {
+            $iterator = $this->execute()->iterateAssociative();
+        }
 
-        return $this->getRows();
+        foreach ($iterator as $row) {
+            yield array_map(function ($v) {
+                return $this->castGetValue($v);
+            }, $row);
+        }
     }
 
     /**
@@ -629,17 +637,22 @@ class Expression implements Expressionable, \ArrayAccess
      */
     public function getRows(): array
     {
+        // DbalResult::fetchAllAssociative() is broken with streams with Oracle database
+        // https://github.com/doctrine/dbal/issues/5002
         if (Connection::isComposerDbal2x()) {
-            $rows = $this->execute()->fetchAll();
+            $result = $this->execute();
         } else {
-            $rows = $this->execute()->fetchAllAssociative();
+            $result = $this->execute();
         }
 
-        return array_map(function ($row) {
-            return array_map(function ($v) {
-                return $this->getCastValue($v);
+        $rows = [];
+        while (($row = Connection::isComposerDbal2x() ? $result->fetchAssociative() : $result->fetch()) !== false) {
+            $rows[] = array_map(function ($v) {
+                return $this->castGetValue($v);
             }, $row);
-        }, $rows);
+        }
+
+        return $rows;
     }
 
     /**
@@ -660,7 +673,7 @@ class Expression implements Expressionable, \ArrayAccess
         }
 
         return array_map(function ($v) {
-            return $this->getCastValue($v);
+            return $this->castGetValue($v);
         }, $row);
     }
 

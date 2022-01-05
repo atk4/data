@@ -2,62 +2,39 @@
 
 declare(strict_types=1);
 
-namespace Atk4\Data;
+namespace Atk4\Data\Field;
 
 use Atk4\Core\InitializerTrait;
+use Atk4\Data\Field;
+use Atk4\Data\Model;
 use Atk4\Data\Persistence\Sql\Expression;
+use Atk4\Data\Persistence\Sql\Expressionable;
+use Atk4\Data\Reference;
 
-class FieldSqlExpression extends FieldSql
+class SqlExpressionField extends Field
 {
     use InitializerTrait {
-        init as _init;
+        init as private _init;
     }
 
-    /**
-     * Used expression.
-     *
-     * @var \Closure|string|Expression
-     */
+    /** @var \Closure|string|Expressionable Used expression. */
     public $expr;
 
-    /**
-     * Expressions are always read_only.
-     *
-     * @var bool
-     */
+    /** @var bool Expressions are always read_only. */
     public $read_only = true;
 
-    /**
-     * Specifies how to aggregate this.
-     *
-     * @var string
-     */
+    /** @var string Specifies how to aggregate this. */
     public $aggregate;
 
-    /**
-     * Aggregation by concatenation.
-     *
-     * @var string
-     */
+    /** @var string Aggregation by concatenation. */
     public $concat;
 
-    /**
-     * When defining as aggregate, this will point to relation object.
-     *
-     * @var Reference\HasMany|null
-     */
+    /** @var Reference\HasMany|null When defining as aggregate, this will point to relation object. */
     public $aggregate_relation;
 
-    /**
-     * Specifies which field to use.
-     *
-     * @var string
-     */
+    /** @var string Specifies which field to use. */
     public $field;
 
-    /**
-     * Initialization.
-     */
     protected function init(): void
     {
         $this->_init();
@@ -67,7 +44,7 @@ class FieldSqlExpression extends FieldSql
         }
 
         if ($this->concat) {
-            $this->onHookShortToOwner(Model::HOOK_AFTER_SAVE, \Closure::fromCallable([$this, 'afterSave']));
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_SAVE, \Closure::fromCallable([$this, 'afterSave']));
         }
     }
 
@@ -75,7 +52,7 @@ class FieldSqlExpression extends FieldSql
      * Possibly that user will attempt to insert values here. If that is the case, then
      * we would need to inject it into related hasMany relationship.
      */
-    public function afterSave(): void
+    public function afterSave(Model $entity): void
     {
     }
 
@@ -106,6 +83,8 @@ class FieldSqlExpression extends FieldSql
 
             // Otherwise call it from expression itself
             return $expression->expr('([])', [$expression->expr($expr)]);
+        } elseif ($expr instanceof Expressionable && !$expr instanceof Expression) {
+            return $expression->expr('[]', [$expr]);
         }
 
         return $expr;

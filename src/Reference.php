@@ -22,9 +22,11 @@ class Reference
 {
     use DiContainerTrait;
     use InitializerTrait {
-        init as _init;
+        init as private _init;
     }
-    use TrackableTrait;
+    use TrackableTrait {
+        setOwner as private _setOwner;
+    }
 
     /**
      * Use this alias for related entity by default. This can help you
@@ -83,6 +85,36 @@ class Reference
         $this->link = $link;
     }
 
+    /**
+     * @param Model $owner
+     *
+     * @return $this
+     */
+    public function setOwner(object $owner)
+    {
+        $owner->assertIsModel();
+
+        return $this->_setOwner($owner);
+    }
+
+    protected function getOurFieldName(): string
+    {
+        return $this->our_field ?: $this->getOurModel(null)->id_field;
+    }
+
+    final protected function getOurField(): Field
+    {
+        return $this->getOurModel(null)->getField($this->getOurFieldName());
+    }
+
+    /**
+     * @return mixed
+     */
+    final protected function getOurFieldValue(Model $ourEntity)
+    {
+        return $this->getOurModel($ourEntity)->get($this->getOurFieldName());
+    }
+
     public function getTheirFieldName(): string
     {
         return $this->their_field ?? $this->model->id_field;
@@ -94,8 +126,8 @@ class Reference
 
         return $model->onHookDynamic(
             $spot,
-            static function (Model $model) use ($name) {
-                return $model->getElement($name);
+            static function (Model $model) use ($name): self {
+                return $model->getModel(true)->getElement($name);
             },
             $fx,
             $args,
@@ -122,9 +154,6 @@ class Reference
         );
     }
 
-    /**
-     * Initialization.
-     */
     protected function init(): void
     {
         $this->_init();
@@ -140,9 +169,15 @@ class Reference
         return '#ref_' . $this->link;
     }
 
-    public function getOurModel(): Model
+    public function getOurModel(?Model $ourModel): Model
     {
-        return $this->getOwner();
+        if ($ourModel === null) {
+            $ourModel = $this->getOwner();
+        }
+
+        $this->getOwner()->assertIsModel($ourModel->getModel(true));
+
+        return $ourModel;
     }
 
     /**
@@ -156,17 +191,18 @@ class Reference
         // set table_alias
         $defaults['table_alias'] ??= $this->table_alias;
 
-        if (is_object($this->model)) {
-            if ($this->model instanceof \Closure) {
-                // if model is Closure, then call the closure and whci should return a model
-                $theirModel = ($this->model)($this->getOurModel(), $this, $defaults);
-            } else {
-                // if model is set, then use clone of this model
-                $theirModel = clone $this->model;
-            }
+        // if model is Closure, then call the closure and it should return a model
+        if ($this->model instanceof \Closure) {
+            $m = ($this->model)($this->getOurModel(null), $this, $defaults);
+        } else {
+            $m = $this->model;
+        }
+
+        if (is_object($m)) {
+            $theirModel = Factory::factory(clone $m, $defaults);
         } else {
             // add model from seed
-            $modelDefaults = $this->model;
+            $modelDefaults = $m;
             $theirModelSeed = [$modelDefaults[0]];
             unset($modelDefaults[0]);
             $defaults = array_merge($modelDefaults, $defaults);
@@ -179,28 +215,10 @@ class Reference
         return $theirModel;
     }
 
-    protected function getOurField(): Field
-    {
-        return $this->getOurModel()->getField($this->getOurFieldName());
-    }
-
-    protected function getOurFieldName(): string
-    {
-        return $this->our_field ?: $this->getOurModel()->id_field;
-    }
-
-    /**
-     * @return mixed
-     */
-    protected function getOurFieldValue()
-    {
-        return $this->getOurField()->get();
-    }
-
     protected function initTableAlias(): void
     {
         if (!$this->table_alias) {
-            $ourModel = $this->getOurModel();
+            $ourModel = $this->getOurModel(null);
 
             $aliasFull = $this->link;
             $alias = preg_replace('~_(' . preg_quote($ourModel->id_field, '~') . '|id)$~', '', $aliasFull);
@@ -232,7 +250,7 @@ class Reference
      */
     protected function getDefaultPersistence(Model $theirModel)
     {
-        $ourModel = $this->getOurModel();
+        $ourModel = $this->getOurModel(null);
 
         // this will be useful for containsOne/Many implementation in case when you have
         // SQL_Model->containsOne()->hasOne() structure to get back to SQL persistence
@@ -248,7 +266,7 @@ class Reference
      * Returns referenced model without any extra conditions. However other
      * relationship types may override this to imply conditions.
      */
-    public function ref(array $defaults = []): Model
+    public function ref(Model $ourModel, array $defaults = []): Model
     {
         return $this->createTheirModel($defaults);
     }
@@ -258,18 +276,12 @@ class Reference
      * must always respond with Model that does not look into current record
      * or scope.
      */
-    public function refModel(array $defaults = []): Model
+    public function refModel(Model $ourModel, array $defaults = []): Model
     {
         return $this->createTheirModel($defaults);
     }
 
-    // {{{ Debug Methods
-
-    /**
-     * List of properties to show in var_dump.
-     *
-     * @var array<int|string, string>
-     */
+    /** @var array<int|string, string> List of properties to show in var_dump. */
     protected $__debug_fields = ['link', 'model', 'our_field', 'their_field'];
 
     /**
@@ -287,6 +299,4 @@ class Reference
 
         return $arr;
     }
-
-    // }}}
 }

@@ -4,41 +4,30 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Oracle;
 
-use Atk4\Data\Exception;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Schema\Sequence;
 
 trait PlatformTrait
 {
-    // Oracle CLOB/BLOB has limited SQL support, see:
-    // https://stackoverflow.com/questions/12980038/ora-00932-inconsistent-datatypes-expected-got-clob#12980560
-    // fix this Oracle inconsistency by using VARCHAR/VARBINARY instead (but limited to 4000 bytes)
+    // Oracle database requires explicit conversion when using binary column,
+    // workaround by using a standard non-binary column with custom encoding/typecast
 
-    private function forwardTypeDeclarationSQL(string $targetMethodName, array $column): string
+    protected function getBinaryTypeDeclarationSQLSnippet($length, $fixed)
     {
-        $backtrace = debug_backtrace(\DEBUG_BACKTRACE_PROVIDE_OBJECT | \DEBUG_BACKTRACE_IGNORE_ARGS);
-        foreach ($backtrace as $frame) {
-            if ($this === ($frame['object'] ?? null)
-                && $targetMethodName === ($frame['function'] ?? null)) {
-                throw new Exception('Long CLOB/TEXT (4000+ bytes) is not supported for Oracle');
-            }
-        }
-
-        return $this->{$targetMethodName}($column);
-    }
-
-    public function getClobTypeDeclarationSQL(array $column)
-    {
-        $column['length'] = $this->getVarcharMaxLength();
-
-        return $this->forwardTypeDeclarationSQL('getVarcharTypeDeclarationSQL', $column);
+        return $this->getVarcharTypeDeclarationSQLSnippet($length * 2 + strlen('atk__binary__u5f8mzx4vsm8g2c9__' . hash('crc32b', '')), $fixed);
     }
 
     public function getBlobTypeDeclarationSQL(array $column)
     {
-        $column['length'] = $this->getBinaryMaxLength();
+        return $this->getClobTypeDeclarationSQL($column);
+    }
 
-        return $this->forwardTypeDeclarationSQL('getBinaryTypeDeclarationSQL', $column);
+    protected function initializeCommentedDoctrineTypes()
+    {
+        parent::initializeCommentedDoctrineTypes();
+
+        $this->markDoctrineTypeCommented('binary');
+        $this->markDoctrineTypeCommented('blob');
     }
 
     // Oracle DBAL platform autoincrement implementation does not increment like
@@ -91,7 +80,7 @@ trait PlatformTrait
                 'pk' => $nameIdentifier->getName(),
                 'pk_seq' => $pkSeq,
             ]
-        )->render();
+        )->render()[0];
 
         return $sqls;
     }

@@ -131,13 +131,12 @@ Creating Objects and PDO
 DSQL classes does not need database connection for most of it's work. Once you
 create new instance of :ref:`Expression <expr>` or :ref:`Query <query>` you can
 perform operation and finally call :php:meth:`Expression::render()` to get the
-final query string::
+final query string with params:
 
     use Atk4\Data\Persistence\Sql\Query;
 
     $q = (new Query())->table('user')->where('id', 1)->field('name');
-    $query = $q->render();
-    $params = $q->params;
+    [$query, $params] = $q->render();
 
 When used in application you would typically generate queries with the
 purpose of executing them, which makes it very useful to create a
@@ -153,8 +152,8 @@ automatically do some of the hard work to adopt query building for your
 database vendor.
 There are more ways to create connection, see `Advanced Connections`_ section.
 
-The format of the ``$dsn`` is the same as with
-`PDO class <http://php.net/manual/en/ref.pdo-mysql.connection.php>`_.
+The format of the ``$dsn`` is the same as with for
+`DBAL connection <https://www.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/configuration.html>`_.
 If you need to execute query that is not supported by DSQL, you should always
 use expressions::
 

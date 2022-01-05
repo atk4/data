@@ -23,7 +23,7 @@ inside a Table or Form and can be exported through RestAPI::
 
 We also allow use of custom Field implementation::
 
-    $this->addField('encrypted_password', new \Atk4\Login\Field\Password());
+    $this->addField('encrypted_password', new \Atk4\Data\Field\PasswordField());
 
 A properly implemented type will still be able to offer some means to present
 it in human-readable format, however in some cases, if you plan on using ATK UI,
@@ -92,7 +92,7 @@ ATK Data prior to 1.5 supports the following types:
 
 In ATK Data the number of supported types has been extended with:
 
- - percent (34.2%) ([':php:class:`Number`', 'format' => function($v){ return $v*100; }, 'postfix' => '%'])
+ - percent (34.2%) ([':php:class:`Number`', 'format' => function($v) { return $v*100; }, 'postfix' => '%'])
  - rating (3 out of 5) ([':php:class:`Number`', 'max' => 5, 'precision' => 0])
  - uuid (xxxxxxxx-xxxx-...) ([':php:class:`Number`', 'base' => 16, 'mask' => '########-##..'])
  - hex (number with base 16) ([':php:class:`Number`', 'base' => 16])

@@ -8,7 +8,7 @@ use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 use Atk4\Data\Util\DeepCopy;
 use Atk4\Data\Util\DeepCopyException;
-use Doctrine\DBAL\Platforms\SQLServer2012Platform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class DcClient extends Model
 {
@@ -145,11 +145,11 @@ class DeepCopyTest extends TestCase
         parent::setUp();
 
         // populate database for our three models
-        $this->createMigrator(new DcClient($this->db))->dropIfExists()->create();
-        $this->createMigrator(new DcInvoice($this->db))->dropIfExists()->create();
-        $this->createMigrator(new DcQuote($this->db))->dropIfExists()->create();
-        $this->createMigrator(new DcInvoiceLine($this->db))->dropIfExists()->create();
-        $this->createMigrator(new DcPayment($this->db))->dropIfExists()->create();
+        $this->createMigrator(new DcClient($this->db))->create();
+        $this->createMigrator(new DcInvoice($this->db))->create();
+        $this->createMigrator(new DcQuote($this->db))->create();
+        $this->createMigrator(new DcInvoiceLine($this->db))->create();
+        $this->createMigrator(new DcPayment($this->db))->create();
     }
 
     public function testBasic(): void
@@ -247,8 +247,8 @@ class DeepCopyTest extends TestCase
         $this->assertEquals(1, $client3->ref('Quotes')->action('count')->getOne());
         $this->assertEquals(1, $client3->ref('Payments')->action('count')->getOne());
 
-        if ($this->getDatabasePlatform() instanceof SQLServer2012Platform) {
-            $this->markTestIncomplete('TODO - MSSQL: Cannot perform an aggregate function on an expression containing an aggregate or a subquery.');
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+            $this->markTestIncomplete('TODO MSSQL: Cannot perform an aggregate function on an expression containing an aggregate or a subquery.');
         }
 
         // We created invoice for 90 for client1, so after copying it should still be 90

@@ -10,13 +10,13 @@ use Atk4\Data\Persistence;
 /**
  * @property Persistence\Sql $persistence
  */
-class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionable
+class Join extends Model\Join
 {
     /**
      * By default we create ON expression ourselves, but if you want to specify
      * it, use the 'on' property.
      *
-     * @var \Atk4\Data\Persistence\Sql\Expression|string|null
+     * @var Expressionable|string|null
      */
     protected $on;
 
@@ -25,23 +25,7 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
      */
     public function getDesiredName(): string
     {
-        return '_' . ($this->foreign_alias ?: $this->foreign_table[0]);
-    }
-
-    public function getDsqlExpression(Expression $expr): Expression
-    {
-        /*
-        // If our Model has expr() method (inherited from Persistence\Sql) then use it
-        if ($this->getOwner()->hasMethod('expr')) {
-            return $this->getOwner()->expr('{}.{}', [$this->foreign_alias, $this->foreign_field]);
-        }
-
-        // Otherwise call it from expression itself
-        return $expr->expr('{}.{}', [$this->foreign_alias, $this->foreign_field]);
-        */
-
-        // Romans: Join\Sql shouldn't even be called if expr is undefined. I think we should leave it here to produce error.
-        return $this->getOwner()->expr('{}.{}', [$this->foreign_alias, $this->foreign_field]);
+        return '_' . ($this->foreign_alias ?: $this->foreign_table);
     }
 
     /**
@@ -51,21 +35,21 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
     {
         parent::init();
 
-        $this->getOwner()->persistence_data['use_table_prefixes'] = true;
+        $this->getOwner()->persistence_data['use_table_prefixes'] = true; // TODO thus mutates the owner model!
 
         // our short name will be unique
         if (!$this->foreign_alias) {
             $this->foreign_alias = ($this->getOwner()->table_alias ?: '') . $this->short_name;
         }
 
-        $this->onHookShortToOwner(Persistence\Sql::HOOK_INIT_SELECT_QUERY, \Closure::fromCallable([$this, 'initSelectQuery']));
+        $this->onHookToOwnerBoth(Persistence\Sql::HOOK_INIT_SELECT_QUERY, \Closure::fromCallable([$this, 'initSelectQuery']));
 
         // add necessary hooks
         if ($this->reverse) {
-            $this->onHookShortToOwner(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']));
-            $this->onHookShortToOwner(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
-            $this->onHookShortToOwner(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'doDelete']), [], -5);
-            $this->onHookShortToOwner(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']));
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'doDelete']), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
         } else {
             // Master field indicates ID of the joined item. In the past it had to be
             // defined as a physical field in the main table. Now it is a model field
@@ -80,10 +64,10 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
                 $this->master_field = $field->short_name;
             }
 
-            $this->onHookShortToOwner(Model::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']), [], -5);
-            $this->onHookShortToOwner(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
-            $this->onHookShortToOwner(Model::HOOK_AFTER_DELETE, \Closure::fromCallable([$this, 'doDelete']));
-            $this->onHookShortToOwner(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_DELETE, \Closure::fromCallable([$this, 'doDelete']));
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
         }
     }
 
@@ -100,13 +84,13 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
     /**
      * Before query is executed, this method will be called.
      */
-    public function initSelectQuery(Query $query): void
+    public function initSelectQuery(Model $model, Query $query): void
     {
         // if ON is set, we don't have to worry about anything
         if ($this->on) {
             $query->join(
                 $this->foreign_table,
-                $this->on instanceof \Atk4\Data\Persistence\Sql\Expression ? $this->on : $this->getOwner()->expr($this->on),
+                $this->on instanceof Expressionable ? $this->on : $this->getOwner()->expr($this->on),
                 $this->kind,
                 $this->foreign_alias
             );
@@ -127,35 +111,25 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
 
         /*
         if ($this->reverse) {
-            $query->field([$this->short_name => ($this->join ?:
-                (
-                    ($model->table_alias ?: $model->table)
-                    .'.'.$this->master_field)
+            $query->field([$this->short_name => (
+                $this->join ?: ($model->table_alias ?: $model->table) . '.' . $this->master_field
             )]);
         } else {
-            $query->field([$this->short_name => $this->foreign_alias.'.'.$this->foreign_field]);
+            $query->field([$this->short_name => $this->foreign_alias . '.' . $this->foreign_field]);
         }
-         */
+        */
     }
 
-    /**
-     * Called from afterLoad hook.
-     */
-    public function afterLoad(): void
+    public function afterLoad(Model $entity): void
     {
-        $model = $this->getOwner();
-
         // we need to collect ID
-        if (isset($model->getDataRef()[$this->short_name])) {
-            $this->id = $model->getDataRef()[$this->short_name];
-            unset($model->getDataRef()[$this->short_name]);
+        if (isset($entity->getDataRef()[$this->short_name])) {
+            $this->setId($entity, $entity->getDataRef()[$this->short_name]);
+            unset($entity->getDataRef()[$this->short_name]);
         }
     }
 
-    /**
-     * Called from beforeInsert hook.
-     */
-    public function beforeInsert(array &$data): void
+    public function beforeInsert(Model $entity, array &$data): void
     {
         if ($this->weak) {
             return;
@@ -164,31 +138,25 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
         $model = $this->getOwner();
 
         // The value for the master_field is set, so we are going to use existing record anyway
-        if ($model->hasField($this->master_field) && $model->get($this->master_field)) {
+        if ($model->hasField($this->master_field) && $entity->get($this->master_field)) {
             return;
         }
 
         $query = $this->dsql();
         $query->mode('insert');
-        $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
-        $this->save_buffer = [];
+        $query->setMulti($model->persistence->typecastSaveRow($model, $this->getAndUnsetSaveBuffer($entity)));
         // $query->set($this->foreign_field, null);
         $query->insert();
-        $this->id = $model->persistence->lastInsertId(new Model($model->persistence, ['table' => $this->foreign_table]));
+        $this->setId($entity, $model->persistence->lastInsertId(new Model($model->persistence, ['table' => $this->foreign_table])));
 
         if ($this->hasJoin()) {
-            $this->getJoin()->set($this->master_field, $this->id);
+            $this->getJoin()->setSaveBufferValue($entity, $this->master_field, $this->getId($entity));
         } else {
-            $data[$this->master_field] = $this->id;
+            $data[$this->master_field] = $this->getId($entity);
         }
     }
 
-    /**
-     * Called from afterInsert hook.
-     *
-     * @param mixed $id
-     */
-    public function afterInsert($id): void
+    public function afterInsert(Model $entity): void
     {
         if ($this->weak) {
             return;
@@ -197,50 +165,40 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
         $model = $this->getOwner();
 
         $query = $this->dsql();
-        $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
-        $this->save_buffer = [];
-        $query->set($this->foreign_field, $this->hasJoin() ? $this->getJoin()->id : $id);
+        $query->setMulti($model->persistence->typecastSaveRow($model, $this->getAndUnsetSaveBuffer($entity)));
+        $query->set($this->foreign_field, $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId());
         $query->insert();
-        $this->id = $model->persistence->lastInsertId($model);
+        $this->setId($entity, $model->persistence->lastInsertId($model));
     }
 
-    /**
-     * Called from beforeUpdate hook.
-     */
-    public function beforeUpdate(array &$data): void
+    public function beforeUpdate(Model $entity, array &$data): void
     {
         if ($this->weak) {
             return;
         }
 
-        if (!$this->save_buffer) {
+        if (!$this->issetSaveBuffer($entity)) {
             return;
         }
 
         $model = $this->getOwner();
-        $query = $this->dsql();
-        $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
-        $this->save_buffer = [];
 
-        $id = $this->reverse ? $model->getId() : $model->get($this->master_field);
+        $query = $this->dsql();
+        $query->setMulti($model->persistence->typecastSaveRow($model, $this->getAndUnsetSaveBuffer($entity)));
+
+        $id = $this->reverse ? $entity->getId() : $entity->get($this->master_field);
 
         $query->where($this->foreign_field, $id)->update();
     }
 
-    /**
-     * Called from beforeDelete and afterDelete hooks.
-     *
-     * @param mixed $id
-     */
-    public function doDelete($id): void
+    public function doDelete(Model $entity): void
     {
         if ($this->weak) {
             return;
         }
 
-        $model = $this->getOwner();
         $query = $this->dsql();
-        $id = $this->reverse ? $model->getId() : $model->get($this->master_field);
+        $id = $this->reverse ? $entity->getId() : $entity->get($this->master_field);
 
         $query->where($this->foreign_field, $id)->delete();
     }

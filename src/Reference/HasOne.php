@@ -31,11 +31,10 @@ class HasOne extends Reference
 
         $this->referenceLink = $this->link; // named differently than in Model\FieldPropertiesTrait
 
-        /** @var \ReflectionProperty[] */
         $fieldPropsRefl = (new \ReflectionClass(Model\FieldPropertiesTrait::class))->getProperties();
         $fieldPropsRefl[] = (new \ReflectionClass(Model\JoinLinkTrait::class))->getProperty('joinName');
 
-        $ourModel = $this->getOurModel();
+        $ourModel = $this->getOurModel(null);
         if (!$ourModel->hasField($this->our_field)) {
             $fieldSeed = [];
             foreach ($fieldPropsRefl as $fieldPropRefl) {
@@ -64,9 +63,12 @@ class HasOne extends Reference
      */
     protected function referenceOurValue(): Field
     {
-        $this->getOurModel()->persistence_data['use_table_prefixes'] = true;
+        // TODO horrible hack to render the field with a table prefix,
+        // find a solution how to wrap the field inside custom Field (without owner?)
+        $ourModelCloned = clone $this->getOurModel(null);
+        $ourModelCloned->persistence_data['use_table_prefixes'] = true;
 
-        return $this->getOurField();
+        return $ourModelCloned->getRef($this->link)->getOurField();
     }
 
     /**
@@ -75,17 +77,18 @@ class HasOne extends Reference
      * If our model is not loaded, then return their model with condition set.
      * This can happen in case of deep traversal $model->ref('Many')->ref('one_id'), for example.
      */
-    public function ref(array $defaults = []): Model
+    public function ref(Model $ourModel, array $defaults = []): Model
     {
+        $ourModel = $this->getOurModel($ourModel);
         $theirModel = $this->createTheirModel($defaults);
 
         // add hook to set our_field = null when record of referenced model is deleted
-        $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_DELETE, function (Model $theirModel) {
-            $this->getOurField()->setNull();
+        $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_DELETE, function (Model $theirModel) use ($ourModel) {
+            $ourModel->setNull($this->getOurFieldName());
         });
 
-        if ($this->getOurModel()->isEntity()) {
-            if ($ourValue = $this->getOurFieldValue()) {
+        if ($ourModel->isEntity()) {
+            if ($ourValue = $this->getOurFieldValue($ourModel)) {
                 // if our model is loaded, then try to load referenced model
                 if ($this->their_field) {
                     $theirModel = $theirModel->tryLoadBy($this->their_field, $ourValue);
@@ -98,13 +101,13 @@ class HasOne extends Reference
         }
 
         // their model will be reloaded after saving our model to reflect changes in referenced fields
-        $theirModel->reload_after_save = false;
+        $theirModel->getModel(true)->reload_after_save = false;
 
-        $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function (Model $theirModel) {
+        $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function (Model $theirModel) use ($ourModel) {
             $theirValue = $this->their_field ? $theirModel->get($this->their_field) : $theirModel->getId();
 
-            if ($this->getOurFieldValue() !== $theirValue) {
-                $this->getOurField()->set($theirValue)->getOwner()->save();
+            if (!$this->getOurField()->compare($this->getOurFieldValue($ourModel), $theirValue)) {
+                $ourModel->set($this->getOurFieldName(), $theirValue)->save();
             }
 
             $theirModel->reload();

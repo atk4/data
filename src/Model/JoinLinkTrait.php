@@ -6,21 +6,17 @@ namespace Atk4\Data\Model;
 
 trait JoinLinkTrait
 {
-    /**
-     * The short name of the join link.
-     *
-     * @var string|null
-     */
+    /** @var string|null The short name of the join link. */
     protected $joinName;
-
-    public function getJoin(): Join
-    {
-        return $this->getOwner()->getElement($this->joinName);
-    }
 
     public function hasJoin(): bool
     {
         return $this->joinName !== null;
+    }
+
+    public function getJoin(): Join
+    {
+        return $this->getOwner()->getElement($this->joinName);
     }
 
     public function setJoin(Join $join): self

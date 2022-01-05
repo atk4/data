@@ -6,8 +6,8 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
-use Doctrine\DBAL\Platforms\SQLServer2012Platform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 /**
  * Tests that condition is applied when traversing hasMany
@@ -56,8 +56,8 @@ class ReferenceSqlTest extends TestCase
         $oo = $u->addCondition('id', '>', '1')->ref('Orders');
 
         $this->assertSameSql(
-            'select "id", "amount", "user_id" from "order" where "user_id" in (select "id" from "user" where "id" > :a)',
-            $oo->action('select')->render()
+            'select "id", "amount", "user_id" from "order" "_O_7442e29d7d53" where "user_id" in (select "id" from "user" where "id" > :a)',
+            $oo->action('select')->render()[0]
         );
     }
 
@@ -72,8 +72,8 @@ class ReferenceSqlTest extends TestCase
         $u->hasMany('Orders', ['model' => $o]);
 
         $this->assertSameSql(
-            'select "id", "amount", "user_id" from "order" where "user_id" = "user"."id"',
-            $u->refLink('Orders')->action('select')->render()
+            'select "id", "amount", "user_id" from "order" "_O_7442e29d7d53" where "user_id" = "user"."id"',
+            $u->refLink('Orders')->action('select')->render()[0]
         );
     }
 
@@ -113,8 +113,8 @@ class ReferenceSqlTest extends TestCase
         $u->hasMany('cur', ['model' => $c, 'our_field' => 'currency_code', 'their_field' => 'code']);
 
         $this->assertSameSql(
-            'select "id", "code", "name" from "currency" where "code" = "user"."currency_code"',
-            $u->refLink('cur')->action('select')->render()
+            'select "id", "code", "name" from "currency" "_c_b5fddf1ef601" where "code" = "user"."currency_code"',
+            $u->refLink('cur')->action('select')->render()[0]
         );
     }
 
@@ -152,8 +152,8 @@ class ReferenceSqlTest extends TestCase
         $o->addCondition('amount', '<', 9);
 
         $this->assertSameSql(
-            'select "id", "name" from "user" where "id" in (select "user_id" from "order" where ("amount" > :a and "amount" < :b))',
-            $o->ref('user_id')->action('select')->render()
+            'select "id", "name" from "user" "_u_e8701ad48ba0" where "id" in (select "user_id" from "order" where ("amount" > :a and "amount" < :b))',
+            $o->ref('user_id')->action('select')->render()[0]
         );
     }
 
@@ -176,7 +176,7 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
-        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', ['date', 'type' => 'date']]);
+        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'date' => ['type' => 'date']]);
 
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
         $o->hasOne('user_id', ['model' => $u])->addFields(['username' => 'name', ['date', 'type' => 'date']]);
@@ -224,8 +224,8 @@ class ReferenceSqlTest extends TestCase
         $i->addExpression('total_net', $i->refLink('line')->action('fx', ['sum', 'total_net']));
 
         $this->assertSameSql(
-            'select "invoice"."id", "invoice"."ref_no", (select sum("total_net") from "invoice_line" where "invoice_id" = "invoice"."id") "total_net" from "invoice"',
-            $i->action('select')->render()
+            'select "id", "ref_no", (select sum("total_net") from "invoice_line" "_l_6438c669e0d0" where "invoice_id" = "invoice"."id") "total_net" from "invoice"',
+            $i->action('select')->render()[0]
         );
     }
 
@@ -250,15 +250,15 @@ class ReferenceSqlTest extends TestCase
         $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['ref_no']);
         $l = (new Model($this->db, ['table' => 'invoice_line']))->addFields([
             'invoice_id',
-            ['total_net', 'type' => 'atk4_money'],
-            ['total_vat', 'type' => 'atk4_money'],
-            ['total_gross', 'type' => 'atk4_money'],
+            'total_net' => ['type' => 'atk4_money'],
+            'total_vat' => ['type' => 'atk4_money'],
+            'total_gross' => ['type' => 'atk4_money'],
         ]);
         $i->hasMany('line', ['model' => $l])
             ->addFields([
-                ['total_vat', 'aggregate' => 'sum', 'type' => 'atk4_money'],
-                ['total_net', 'aggregate' => 'sum'],
-                ['total_gross', 'aggregate' => 'sum'],
+                'total_vat' => ['aggregate' => 'sum', 'type' => 'atk4_money'],
+                'total_net' => ['aggregate' => 'sum'],
+                'total_gross' => ['aggregate' => 'sum'],
             ]);
         $i = $i->load('1');
 
@@ -294,12 +294,6 @@ class ReferenceSqlTest extends TestCase
 
     public function testOtherAggregates(): void
     {
-        if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform) {
-            $this->markTestIncomplete('PostgreSQL does not support "SUM(variable)" syntax');
-        } elseif ($this->getDatabasePlatform() instanceof SQLServer2012Platform) {
-            $this->markTestIncomplete('MSSQL does not support "LENGTH(variable)" function');
-        }
-
         $vat = 0.23;
 
         $this->setDb([
@@ -308,26 +302,39 @@ class ReferenceSqlTest extends TestCase
                 2 => ['id' => 2, 'name' => 'Veg'],
                 3 => ['id' => 3, 'name' => 'Fruit'],
             ], 'item' => [
-                ['name' => 'Apple',  'code' => 'ABC', 'list_id' => 3],
+                ['name' => 'Apple', 'code' => 'ABC', 'list_id' => 3],
                 ['name' => 'Banana', 'code' => 'DEF', 'list_id' => 3],
-                ['name' => 'Pork',   'code' => 'GHI', 'list_id' => 1],
-                ['name' => 'Chicken', 'code' => null,  'list_id' => 1],
-                ['name' => 'Pear',   'code' => null,  'list_id' => 3],
+                ['name' => 'Pork', 'code' => 'GHI', 'list_id' => 1],
+                ['name' => 'Chicken', 'code' => null, 'list_id' => 1],
+                ['name' => 'Pear', 'code' => null, 'list_id' => 3],
             ],
         ]);
+
+        $buildLengthSqlFx = function (string $v): string {
+            return ($this->getDatabasePlatform() instanceof SQLServerPlatform ? 'LEN' : 'LENGTH') . '(' . $v . ')';
+        };
+
+        $buildSumWithIntegerCastSqlFx = function (string $v): string {
+            if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform
+                || $this->getDatabasePlatform() instanceof SQLServerPlatform) {
+                $v = 'CAST(' . $v . ' AS INT)';
+            }
+
+            return 'SUM(' . $v . ')';
+        };
 
         $l = (new Model($this->db, ['table' => 'list']))->addFields(['name']);
         $i = (new Model($this->db, ['table' => 'item']))->addFields(['list_id', 'name', 'code']);
         $l->hasMany('Items', ['model' => $i])
             ->addFields([
-                ['items_name', 'aggregate' => 'count', 'field' => 'name'],
-                ['items_code', 'aggregate' => 'count', 'field' => 'code'], // counts only not-null values
-                ['items_star', 'aggregate' => 'count'], // no field set, counts all rows with count(*)
-                ['items_c:',  'concat' => '::', 'field' => 'name'],
-                ['items_c-',  'aggregate' => $i->dsql()->groupConcat($i->expr('[name]'), '-')],
-                ['len',       'aggregate' => $i->expr('sum(length([name]))')],
-                ['len2',      'expr' => 'sum(length([name]))'],
-                ['chicken5',  'expr' => 'sum([])', 'args' => ['5']],
+                'items_name' => ['aggregate' => 'count', 'field' => 'name'],
+                'items_code' => ['aggregate' => 'count', 'field' => 'code'], // counts only not-null values
+                'items_star' => ['aggregate' => 'count'], // no field set, counts all rows with count(*)
+                'items_c:' => ['concat' => '::', 'field' => 'name'],
+                'items_c-' => ['aggregate' => $i->dsql()->groupConcat($i->expr('[name]'), '-')],
+                'len' => ['aggregate' => $i->expr($buildSumWithIntegerCastSqlFx($buildLengthSqlFx('[name]')))], // TODO cast should be implicit when using "aggregate", sandpit http://sqlfiddle.com/#!17/0d2c0/3
+                'len2' => ['expr' => $buildSumWithIntegerCastSqlFx($buildLengthSqlFx('[name]'))],
+                'chicken5' => ['expr' => $buildSumWithIntegerCastSqlFx('[]'), 'args' => ['5']],
             ]);
 
         $ll = $l->load(1);
@@ -684,12 +691,12 @@ class ReferenceSqlTest extends TestCase
         $order = (new Model($this->db, ['table' => 'order']));
         $order_UserRef = $order->hasOne('my_user', ['model' => $user, 'our_field' => 'user_id']);
 
-        //no type set in defaults, should pull type integer from user model
+        // no type set in defaults, should pull type integer from user model
         $order_UserRef->addField('some_number');
         $this->assertSame('integer', $order->getField('some_number')->type);
 
-        //set type in defaults, this should have higher priority than type set in Model
-        $order_UserRef->addField(['some_other_number', 'type' => 'string']);
+        // set type in defaults, this should have higher priority than type set in Model
+        $order_UserRef->addField('some_other_number', null, ['type' => 'string']);
         $this->assertSame('string', $order->getField('some_other_number')->type);
     }
 }

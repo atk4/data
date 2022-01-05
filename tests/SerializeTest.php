@@ -6,28 +6,26 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence;
 use Atk4\Data\Schema\TestCase;
 
 class SerializeTest extends TestCase
 {
     public function testBasicSerialize(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, ['table' => 'job']);
+        $m = new Model($this->db, ['table' => 'job']);
 
         $f = $m->addField('data', ['type' => 'object']);
 
         $this->assertSame(
             ['data' => 'O:8:"stdClass":1:{s:3:"foo";s:3:"bar";}'],
-            $db->typecastSaveRow(
+            $this->db->typecastSaveRow(
                 $m,
                 ['data' => (object) ['foo' => 'bar']]
             )
         );
         $this->assertSame(
             ['data' => ['foo' => 'bar']],
-            $db->typecastLoadRow(
+            $this->db->typecastLoadRow(
                 $m,
                 ['data' => 'a:1:{s:3:"foo";s:3:"bar";}']
             )
@@ -36,14 +34,14 @@ class SerializeTest extends TestCase
         $f->type = 'json';
         $this->assertSame(
             ['data' => '{"foo":"bar"}'],
-            $db->typecastSaveRow(
+            $this->db->typecastSaveRow(
                 $m,
                 ['data' => ['foo' => 'bar']]
             )
         );
         $this->assertSame(
             ['data' => ['foo' => 'bar']],
-            $db->typecastLoadRow(
+            $this->db->typecastLoadRow(
                 $m,
                 ['data' => '{"foo":"bar"}']
             )
@@ -52,19 +50,17 @@ class SerializeTest extends TestCase
 
     public function testSerializeErrorJson(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, ['table' => 'job']);
+        $m = new Model($this->db, ['table' => 'job']);
 
         $f = $m->addField('data', ['type' => 'json']);
 
         $this->expectException(Exception::class);
-        $db->typecastLoadRow($m, ['data' => '{"foo":"bar" OPS']);
+        $this->db->typecastLoadRow($m, ['data' => '{"foo":"bar" OPS']);
     }
 
     public function testSerializeErrorJson2(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, ['table' => 'job']);
+        $m = new Model($this->db, ['table' => 'job']);
 
         $f = $m->addField('data', ['type' => 'json']);
 
@@ -73,19 +69,18 @@ class SerializeTest extends TestCase
         $dbData[] = &$dbData;
 
         $this->expectException(Exception::class);
-        $db->typecastSaveRow($m, ['data' => ['foo' => 'bar', 'recursive' => $dbData]]);
+        $this->db->typecastSaveRow($m, ['data' => ['foo' => 'bar', 'recursive' => $dbData]]);
     }
 
     public function testSerializeErrorSerialize(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, ['table' => 'job']);
+        $m = new Model($this->db, ['table' => 'job']);
 
         $this->expectException(Exception::class);
         $f = $m->addField('data', ['type' => 'object']);
         $this->assertSame(
             ['data' => ['foo' => 'bar']],
-            $db->typecastLoadRow($m, ['data' => 'a:1:{s:3:"foo";s:3:"bar"; OPS'])
+            $this->db->typecastLoadRow($m, ['data' => 'a:1:{s:3:"foo";s:3:"bar"; OPS'])
         );
     }
 }

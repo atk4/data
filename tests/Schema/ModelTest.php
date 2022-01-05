@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests\Schema;
 
+use Atk4\Data\Field\PasswordField;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\SQLServer2012Platform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class ModelTest extends TestCase
 {
@@ -16,7 +17,6 @@ class ModelTest extends TestCase
      */
     public function testSetModelCreate(): void
     {
-        $this->dropTableIfExists('user');
         $user = new TestUser($this->db);
 
         $this->createMigrator($user)->create();
@@ -31,8 +31,6 @@ class ModelTest extends TestCase
 
         return; // TODO enable once import to Model is supported using DBAL
         // @phpstan-ignore-next-line
-        $this->dropTableIfExists('user');
-
         $migrator = $this->createMigrator();
 
         $migrator->table('user')->id()
@@ -74,8 +72,8 @@ class ModelTest extends TestCase
 
         $migrator2->mode('create');
 
-        $q1 = preg_replace('/\([0-9,]*\)/i', '', $migrator->render()); // remove parenthesis otherwise we can't differ money from float etc.
-        $q2 = preg_replace('/\([0-9,]*\)/i', '', $migrator2->render());
+        $q1 = preg_replace('/\([0-9,]*\)/i', '', $migrator->render()[0]); // remove parenthesis otherwise we can't differ money from float etc.
+        $q2 = preg_replace('/\([0-9,]*\)/i', '', $migrator2->render()[0]);
         $this->assertSame($q1, $q2);
     }
 
@@ -84,7 +82,6 @@ class ModelTest extends TestCase
      */
     public function testMigrateTable(): void
     {
-        $this->dropTableIfExists('user');
         $migrator = $this->createMigrator();
         $migrator->table('user')->id()
             ->field('foo')
@@ -92,7 +89,7 @@ class ModelTest extends TestCase
             ->field('baz', ['type' => 'text'])
             ->create();
         $this->db->dsql()->table('user')
-            ->set([
+            ->setMulti([
                 'id' => 1,
                 'foo' => 'foovalue',
                 'bar' => 123,
@@ -106,8 +103,6 @@ class ModelTest extends TestCase
 
         return; // TODO enable once create from Model is supported using DBAL
         // @phpstan-ignore-next-line
-        $this->dropTableIfExists('user');
-
         $this->createMigrator(new TestUser($this->db))->create();
 
         $user_model = $this->createMigrator()->createModel($this->db, 'user');
@@ -132,21 +127,12 @@ class ModelTest extends TestCase
         $model = new Model($this->db, ['table' => 'user']);
         $model->addField('v', ['type' => $type]);
 
-        $this->createMigrator($model)->dropIfExists()->create();
-
-        if ($isBinary) {
-            // TODO insert/update of binary character types must be supported, maybe fix using trigger or store data in hex for MSSQL & Oracle?
-            if ($this->getDatabasePlatform() instanceof SQLServer2012Platform) {
-                $this->markTestIncomplete('TODO MSSQL: Implicit conversion from data type char to varbinary(max) is not allowed. Use the CONVERT function to run this query');
-            } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-                $this->markTestIncomplete('TODO Oracle: ORA-01465: invalid hex number');
-            }
-        }
+        $this->createMigrator($model)->create();
 
         $model->import([['v' => 'mixedcase'], ['v' => 'MIXEDCASE'], ['v' => 'MixedCase']]);
 
         $model->addCondition('v', 'MixedCase');
-        $model->setOrder('v');
+        $model->setOrder($this->getDatabasePlatform() instanceof OraclePlatform && in_array($type, ['text', 'blob'], true) ? 'id' : 'v');
 
         $this->assertSame($isBinary ? [['id' => 3]] : [['id' => 1], ['id' => 2], ['id' => 3]], $model->export(['id']));
     }
@@ -160,6 +146,108 @@ class ModelTest extends TestCase
             ['blob', true],
         ];
     }
+
+    private function makePseudoRandomString(bool $isBinary, int $lengthBytes): string
+    {
+        $baseChars = [];
+        if ($isBinary) {
+            for ($i = 0; $i <= 0xFF; ++$i) {
+                $baseChars[crc32($lengthBytes . '_' . $i)] = chr($i);
+            }
+        } else {
+            for ($i = 0; $i <= 0x10FFFF; $i = $i * 1.001 + 1) {
+                $iInt = (int) $i;
+                if ($iInt < 0xD800 || $iInt > 0xDFFF) {
+                    $baseChars[crc32($lengthBytes . '_' . $i)] = mb_chr($iInt);
+                }
+            }
+        }
+        ksort($baseChars);
+
+        $res = str_repeat(implode('', $baseChars), intdiv($lengthBytes, count($baseChars)) + 1);
+        if ($isBinary) {
+            return substr($res, 0, $lengthBytes);
+        }
+
+        $res = mb_strcut($res, 0, $lengthBytes);
+        $padLength = $lengthBytes - strlen($res);
+        foreach ($baseChars as $ch) {
+            if (strlen($ch) === $padLength) {
+                $res .= $ch;
+
+                break;
+            }
+        }
+
+        return $res;
+    }
+
+    /**
+     * @dataProvider providerCharacterTypeFieldLongData
+     */
+    public function testCharacterTypeFieldLong(string $type, bool $isBinary, int $lengthBytes): void
+    {
+        // remove once long multibyte Oracle CLOB stream read support is fixed in php-src/pdo_oci
+        // https://bugs.php.net/bug.php?id=60994
+        // https://github.com/php/php-src/pull/5233
+        if ($this->getDatabasePlatform() instanceof OraclePlatform && $type === 'text') {
+            $lengthBytes = min($lengthBytes, 8190);
+        }
+
+        if ($lengthBytes === 0) {
+            $str = '';
+
+            // TODO Oracle converts empty string to NULL
+            // https://stackoverflow.com/questions/13278773/null-vs-empty-string-in-oracle
+            if ($this->getDatabasePlatform() instanceof OraclePlatform && in_array($type, ['string', 'text'], true)) {
+                $str = 'x';
+            }
+        } else {
+            $str = $this->makePseudoRandomString($isBinary, $lengthBytes - 1);
+            if (!$isBinary) {
+                $str = preg_replace('~[\x00-\x1f]~', '-', $str);
+            }
+            $this->assertSame($lengthBytes - 1, strlen($str));
+        }
+
+        $model = new Model($this->db, ['table' => 'user']);
+        $model->addField('v', ['type' => $type]);
+
+        $this->createMigrator($model)->create();
+
+        $model->import([['v' => $str . (
+            // MSSQL database ignores trailing \0 characters even with binary comparison
+            // https://dba.stackexchange.com/questions/48660/comparing-binary-0x-and-0x00-turns-out-to-be-equal-on-sql-server
+            $isBinary ? $this->getDatabasePlatform() instanceof SQLServerPlatform ? ' ' : "\0" : '.'
+        )]]);
+        $model->import([['v' => $str]]);
+
+        $model->addCondition('v', $str);
+        $rows = $model->export();
+        $this->assertCount(1, $rows);
+        $row = reset($rows);
+        unset($rows);
+        $this->assertSame(['id', 'v'], array_keys($row));
+        $this->assertSame(2, $row['id']);
+        $this->assertSame(strlen($str), strlen($row['v']));
+        $this->assertTrue($str === $row['v']);
+    }
+
+    public function providerCharacterTypeFieldLongData(): array
+    {
+        return [
+            ['string', false, 0],
+            ['binary', true, 0],
+            ['text', false, 0],
+            ['blob', true, 0],
+            ['string', false, 255],
+            ['binary', true, 255],
+            ['text', false, 255],
+            ['blob', true, 255],
+            ['text', false, 256 * 1024],
+            ['blob', true, 256 * 1024],
+        ];
+    }
 }
 
 class TestUser extends \Atk4\Data\Model
@@ -171,7 +259,7 @@ class TestUser extends \Atk4\Data\Model
         parent::init();
 
         $this->addField('name');
-        $this->addField('password');
+        $this->addField('password', [PasswordField::class]);
         $this->addField('is_admin', ['type' => 'boolean']);
         $this->addField('notes', ['type' => 'text']);
 

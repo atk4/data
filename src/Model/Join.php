@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Model;
 
 use Atk4\Core\DiContainerTrait;
+use Atk4\Core\Factory;
 use Atk4\Core\InitializerTrait;
 use Atk4\Core\TrackableTrait;
 use Atk4\Data\Exception;
@@ -22,10 +23,12 @@ class Join
 {
     use DiContainerTrait;
     use InitializerTrait {
-        init as _init;
+        init as private _init;
     }
     use JoinLinkTrait;
-    use TrackableTrait;
+    use TrackableTrait {
+        setOwner as private _setOwner;
+    }
 
     /**
      * Name of the table (or collection) that can be used to retrieve data from.
@@ -42,13 +45,6 @@ class Join
      * @var Persistence|Persistence\Sql|null
      */
     protected $persistence;
-
-    /**
-     * ID used by a joined table.
-     *
-     * @var mixed
-     */
-    protected $id;
 
     /**
      * Field that is used as native "ID" in the foreign table.
@@ -69,11 +65,7 @@ class Join
      */
     protected $kind;
 
-    /**
-     * Is our join weak? Weak join will stop you from touching foreign table.
-     *
-     * @var bool
-     */
+    /** @var bool Is our join weak? Weak join will stop you from touching foreign table. */
     protected $weak = false;
 
     /**
@@ -111,11 +103,7 @@ class Join
      */
     protected $foreign_field;
 
-    /**
-     * A short symbolic name that will be used as an alias for the joined table.
-     *
-     * @var string
-     */
+    /** @var string A short symbolic name that will be used as an alias for the joined table. */
     public $foreign_alias;
 
     /**
@@ -126,26 +114,67 @@ class Join
      */
     protected $prefix = '';
 
-    /**
-     * Data which is populated here as the save/insert progresses.
-     *
-     * @var array
-     */
-    protected $save_buffer = [];
+    /** @var mixed ID indexed by spl_object_id(entity) used by a joined table. */
+    protected $idByOid;
+
+    /** @var array<int, array<string, mixed>> Data indexed by spl_object_id(entity) which is populated here as the save/insert progresses. */
+    private $saveBufferByOid = [];
 
     public function __construct(string $foreign_table = null)
     {
         $this->foreign_table = $foreign_table;
+
+        // handle foreign table containing a dot - that will be reverse join
+        if (strpos($this->foreign_table, '.') !== false) {
+            // split by LAST dot in foreign_table name
+            [$this->foreign_table, $this->foreign_field] = preg_split('~\.+(?=[^.]+$)~', $this->foreign_table);
+            $this->reverse = true;
+        }
     }
 
-    protected function onHookShortToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    /**
+     * @param Model $owner
+     *
+     * @return $this
+     */
+    public function setOwner(object $owner)
+    {
+        $owner->assertIsModel();
+
+        return $this->_setOwner($owner);
+    }
+
+    protected function onHookToOwnerBoth(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->short_name; // use static function to allow this object to be GCed
 
-        return $this->getOwner()->onHookDynamicShort(
+        return $this->getOwner()->onHookDynamic(
             $spot,
-            static function (Model $owner) use ($name) {
-                return $owner->getElement($name);
+            static function (Model $model) use ($name): self {
+                /** @var self */
+                $obj = $model->getModel(true)->getElement($name);
+                $model->getModel(true)->assertIsModel($obj->getOwner());
+
+                return $obj;
+            },
+            $fx,
+            $args,
+            $priority
+        );
+    }
+
+    protected function onHookToOwnerEntity(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    {
+        $name = $this->short_name; // use static function to allow this object to be GCed
+
+        return $this->getOwner()->onHookDynamic(
+            $spot,
+            static function (Model $entity) use ($name): self {
+                /** @var self */
+                $obj = $entity->getModel()->getElement($name);
+                $entity->assertIsEntity($obj->getOwner());
+
+                return $obj;
             },
             $fx,
             $args,
@@ -161,9 +190,6 @@ class Join
         return '#join_' . $this->foreign_table;
     }
 
-    /**
-     * Initialization.
-     */
     protected function init(): void
     {
         $this->_init();
@@ -173,16 +199,6 @@ class Join
         if (!$id_field) {
             throw (new Exception('Joins owner model should have id_field set'))
                 ->addMoreInfo('model', $this->getOwner());
-        }
-
-        // handle foreign table containing a dot - that will be reverse join
-        if (strpos($this->foreign_table, '.') !== false) {
-            // split by LAST dot in foreign_table name
-            [$this->foreign_table, $this->foreign_field] = preg_split('~\.+(?=[^.]+$)~', $this->foreign_table);
-
-            if ($this->reverse === null) {
-                $this->reverse = true;
-            }
         }
 
         if ($this->reverse === true) {
@@ -210,7 +226,7 @@ class Join
             }
         }
 
-        $this->onHookShortToOwner(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
+        $this->onHookToOwnerEntity(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
 
         // if kind is not specified, figure out join type
         if (!$this->kind) {
@@ -235,16 +251,15 @@ class Join
      *
      * @return $this
      */
-    public function addFields(array $fields = [])
+    public function addFields(array $fields = [], array $defaults = [])
     {
-        foreach ($fields as $field) {
-            if (is_array($field)) {
-                $name = $field[0];
-                unset($field[0]);
-                $this->addField($name, $field);
-            } else {
-                $this->addField($field);
+        foreach ($fields as $name => $seed) {
+            if (is_int($name)) {
+                $name = $seed;
+                $seed = [];
             }
+
+            $this->addField($name, Factory::mergeSeeds($seed, $defaults));
         }
 
         return $this;
@@ -253,9 +268,9 @@ class Join
     /**
      * Another join will be attached to a current join.
      *
-     * @return self
+     * @param array<string, mixed> $defaults
      */
-    public function join(string $foreign_table, array $defaults = [])
+    public function join(string $foreign_table, array $defaults = []): self
     {
         $defaults['joinName'] = $this->short_name;
 
@@ -265,30 +280,14 @@ class Join
     /**
      * Another leftJoin will be attached to a current join.
      *
-     * @return self
+     * @param array<string, mixed> $defaults
      */
-    public function leftJoin(string $foreign_table, array $defaults = [])
+    public function leftJoin(string $foreign_table, array $defaults = []): self
     {
         $defaults['joinName'] = $this->short_name;
 
         return $this->getOwner()->leftJoin($foreign_table, $defaults);
     }
-
-    /**
-     * weakJoin will be attached to a current join.
-     *
-     * @todo NOT IMPLEMENTED! weakJoin method does not exist!
-     *
-     * @return
-     */
-    /*
-    public function weakJoin($defaults = [])
-    {
-        $defaults['joinName'] = $this->short_name;
-
-        return $this->getOwner()->weakJoin($defaults);
-    }
-    */
 
     /**
      * Creates reference based on a field from the join.
@@ -375,46 +374,80 @@ class Join
     */
 
     /**
-     * Joins with the primary table of the model and
-     * then import all of the data into our model.
+     * @return mixed
      *
-     * @todo NOT IMPLEMENTED!
+     * @internal should be not used outside atk4/data
      */
-    /*
-    public function weakJoinModel(Model $model, array $fields = [])
+    protected function getId(Model $entity)
     {
-        if (!is_object($model)) {
-            $model = $this->getOwner()->connection->add($model);
-        }
-        $j = $this->join($model->table);
-
-        $j->importModel($model);
-
-        return $j;
+        return $this->idByOid[spl_object_id($entity)];
     }
-    */
 
     /**
-     * Set value.
+     * @param mixed $id
      *
-     * @param string $field
-     * @param mixed  $value
-     *
-     * @return $this
+     * @internal should be not used outside atk4/data
      */
-    public function set($field, $value)
+    protected function setId(Model $entity, $id): void
     {
-        $this->save_buffer[$field] = $value;
+        $this->idByOid[spl_object_id($entity)] = $id;
+    }
 
-        return $this;
+    /**
+     * @internal should be not used outside atk4/data
+     */
+    protected function unsetId(Model $entity): void
+    {
+        unset($this->idByOid[spl_object_id($entity)]);
+    }
+
+    /**
+     * @internal should be not used outside atk4/data
+     */
+    protected function issetSaveBuffer(Model $entity): bool
+    {
+        return isset($this->saveBufferByOid[spl_object_id($entity)]);
+    }
+
+    /**
+     * @internal should be not used outside atk4/data
+     */
+    protected function getAndUnsetSaveBuffer(Model $entity): array
+    {
+        $res = $this->saveBufferByOid[spl_object_id($entity)];
+        $this->unsetSaveBuffer($entity);
+
+        return $res;
+    }
+
+    /**
+     * @internal should be not used outside atk4/data
+     */
+    protected function unsetSaveBuffer(Model $entity): void
+    {
+        unset($this->saveBufferByOid[spl_object_id($entity)]);
+    }
+
+    /**
+     * @param mixed $value
+     */
+    public function setSaveBufferValue(Model $entity, string $fieldName, $value): void
+    {
+        $entity->assertIsEntity($this->getOwner());
+
+        if (!isset($this->saveBufferByOid[spl_object_id($entity)])) {
+            $this->saveBufferByOid[spl_object_id($entity)] = [];
+        }
+
+        $this->saveBufferByOid[spl_object_id($entity)][$fieldName] = $value;
     }
 
     /**
      * Clears id and save buffer.
      */
-    protected function afterUnload(): void
+    protected function afterUnload(Model $entity): void
     {
-        $this->id = null;
-        $this->save_buffer = [];
+        $this->unsetId($entity);
+        $this->unsetSaveBuffer($entity);
     }
 }

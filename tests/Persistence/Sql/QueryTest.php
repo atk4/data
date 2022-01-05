@@ -75,10 +75,6 @@ class QueryTest extends TestCase
         );
         $this->assertSame(
             '"first_name", "last_name"',
-            $this->callProtected($this->q()->field('first_name,last_name'), '_render_field')
-        );
-        $this->assertSame(
-            '"first_name", "last_name"',
             $this->callProtected($this->q()->field('first_name')->field('last_name'), '_render_field')
         );
         $this->assertSame(
@@ -100,18 +96,6 @@ class QueryTest extends TestCase
         $this->assertSame(
             '"first_name" "name"',
             $this->callProtected($this->q()->field('first_name', 'name'), '_render_field')
-        );
-        $this->assertSame(
-            '"first_name" "name"',
-            $this->callProtected($this->q()->field(['name' => 'first_name']), '_render_field')
-        );
-        $this->assertSame(
-            '"name"',
-            $this->callProtected($this->q()->field(['name' => 'name']), '_render_field')
-        );
-        $this->assertSame(
-            '"employee"."first_name" "name"',
-            $this->callProtected($this->q()->field(['name' => 'employee.first_name']), '_render_field')
         );
         $this->assertSame(
             '*',
@@ -163,36 +147,32 @@ class QueryTest extends TestCase
     {
         $this->assertSame(
             '"name"',
-            $this->q('[field]')->field('name')->render()
+            $this->q('[field]')->field('name')->render()[0]
         );
         $this->assertSame(
             '"first name"',
-            $this->q('[field]')->field('first name')->render()
+            $this->q('[field]')->field('first name')->render()[0]
         );
         $this->assertSame(
             '"first"."name"',
-            $this->q('[field]')->field('first.name')->render()
+            $this->q('[field]')->field('first.name')->render()[0]
         );
         $this->assertSame(
             'now()',
-            $this->q('[field]')->field('now()')->render()
+            $this->q('[field]')->field('now()')->render()[0]
         );
         $this->assertSame(
             'now()',
-            $this->q('[field]')->field(new Expression('now()'))->render()
+            $this->q('[field]')->field(new Expression('now()'))->render()[0]
         );
         // Usage of field aliases
         $this->assertSame(
             'now() "time"',
-            $this->q('[field]')->field('now()', 'time')->render()
+            $this->q('[field]')->field('now()', 'time')->render()[0]
         );
         $this->assertSame(// alias can be passed as 2nd argument
             'now() "time"',
-            $this->q('[field]')->field(new Expression('now()'), 'time')->render()
-        );
-        $this->assertSame(// alias can be passed as 3nd argument
-            'now() "time"',
-            $this->q('[field]')->field(['time' => new Expression('now()')])->render()
+            $this->q('[field]')->field(new Expression('now()'), 'time')->render()[0]
         );
     }
 
@@ -206,39 +186,6 @@ class QueryTest extends TestCase
     {
         $this->expectException(Exception::class);
         $this->q()->field('name', 'a')->field('surname', 'a');
-    }
-
-    /**
-     * There shouldn't be alias when passing fields as array.
-     *
-     * @covers ::field
-     */
-    public function testFieldException2(): void
-    {
-        $this->expectException(Exception::class);
-        $this->q()->field(['name', 'surname'], 'a');
-    }
-
-    /**
-     * There shouldn't be alias when passing multiple tables.
-     *
-     * @covers ::table
-     */
-    public function testTableException1(): void
-    {
-        $this->expectException(Exception::class);
-        $this->q()->table('employee,jobs', 'u');
-    }
-
-    /**
-     * There shouldn't be alias when passing multiple tables.
-     *
-     * @covers ::table
-     */
-    public function testTableException2(): void
-    {
-        $this->expectException(Exception::class);
-        $this->q()->table(['employee', 'jobs'], 'u');
     }
 
     /**
@@ -399,7 +346,7 @@ class QueryTest extends TestCase
             'select now()',
             $this->q()
                 ->field(new Expression('now()'))
-                ->render()
+                ->render()[0]
         );
 
         // one table
@@ -407,45 +354,45 @@ class QueryTest extends TestCase
             'select "name" from "employee"',
             $this->q()
                 ->field('name')->table('employee')
-                ->render()
+                ->render()[0]
         );
 
         $this->assertSame(
             'select "na#me" from "employee"',
             $this->q()
                 ->field('"na#me"')->table('employee')
-                ->render()
+                ->render()[0]
         );
         $this->assertSame(
             'select "na""me" from "employee"',
             $this->q()
                 ->field(new Expression('{}', ['na"me']))->table('employee')
-                ->render()
+                ->render()[0]
         );
         $this->assertSame(
             'select "жук" from "employee"',
             $this->q()
                 ->field(new Expression('{}', ['жук']))->table('employee')
-                ->render()
+                ->render()[0]
         );
         $this->assertSame(
             'select "this is 💩" from "employee"',
             $this->q()
                 ->field(new Expression('{}', ['this is 💩']))->table('employee')
-                ->render()
+                ->render()[0]
         );
 
         $this->assertSame(
             'select "name" from "employee" "e"',
             $this->q()
                 ->field('name')->table('employee', 'e')
-                ->render()
+                ->render()[0]
         );
         $this->assertSame(
             'select * from "employee" "e"',
             $this->q()
                 ->table('employee', 'e')
-                ->render()
+                ->render()[0]
         );
 
         // multiple tables
@@ -453,45 +400,21 @@ class QueryTest extends TestCase
             'select "employee"."name" from "employee", "jobs"',
             $this->q()
                 ->field('employee.name')->table('employee')->table('jobs')
-                ->render()
-        );
-        $this->assertSame(
-            'select "name" from "employee", "jobs"',
-            $this->q()
-                ->field('name')->table('employee,jobs')
-                ->render()
-        );
-        $this->assertSame(
-            'select "name" from "employee", "jobs"',
-            $this->q()
-                ->field('name')->table('  employee ,   jobs  ')
-                ->render()
-        );
-        $this->assertSame(
-            'select "name" from "employee", "jobs"',
-            $this->q()
-                ->field('name')->table(['employee', 'jobs'])
-                ->render()
-        );
-        $this->assertSame(
-            'select "name" from "employee", "jobs"',
-            $this->q()
-                ->field('name')->table(['employee  ', '  jobs'])
-                ->render()
+                ->render()[0]
         );
 
         // multiple tables with aliases
         $this->assertSame(
             'select "name" from "employee", "jobs" "j"',
             $this->q()
-                ->field('name')->table(['employee', 'j' => 'jobs'])
-                ->render()
+                ->field('name')->table('employee')->table('jobs', 'j')
+                ->render()[0]
         );
         $this->assertSame(
             'select "name" from "employee" "e", "jobs" "j"',
             $this->q()
-                ->field('name')->table(['e' => 'employee', 'j' => 'jobs'])
-                ->render()
+                ->field('name')->table('employee', 'e')->table('jobs', 'j')
+                ->render()[0]
         );
         // testing _render_table_noalias, shouldn't render table alias 'emp'
         $this->assertSame(
@@ -499,14 +422,14 @@ class QueryTest extends TestCase
             $this->q()
                 ->field('name')->table('employee', 'emp')->set('name', 1)
                 ->mode('insert')
-                ->render()
+                ->render()[0]
         );
         $this->assertSame(
             'update "employee" set "name"=:a',
             $this->q()
                 ->field('name')->table('employee', 'emp')->set('name', 1)
                 ->mode('update')
-                ->render()
+                ->render()[0]
         );
     }
 
@@ -523,14 +446,14 @@ class QueryTest extends TestCase
             'select "name" from (select * from "employee") "e"',
             $this->q()
                 ->field('name')->table($q, 'e')
-                ->render()
+                ->render()[0]
         );
 
         $this->assertSame(
             'select "name" from "myt""able"',
             $this->q()
                 ->field('name')->table(new Expression('{}', ['myt"able']))
-                ->render()
+                ->render()[0]
         );
 
         // test with multiple sub-queries as tables
@@ -547,7 +470,7 @@ class QueryTest extends TestCase
                 ->table($q1, 'e')
                 ->table($q2, 'c')
                 ->where('e.last_name', $this->q()->expr('c.last_name'))
-                ->render()
+                ->render()[0]
         );
     }
 
@@ -566,7 +489,7 @@ class QueryTest extends TestCase
 
         $this->assertSame(
             'select coalesce(year(now()) - year(birth_date), :a) "calculated_age" from "user"',
-            $q->render()
+            $q->render()[0]
         );
     }
 
@@ -653,7 +576,7 @@ class QueryTest extends TestCase
             ->field($this->q()->expr('0'), 'credit'); // simply 0
         $this->assertSame(
             'select "date", "amount" "debit", 0 "credit" from "sales"',
-            $q1->render()
+            $q1->render()[0]
         );
 
         // 2nd query
@@ -664,23 +587,25 @@ class QueryTest extends TestCase
             ->field('amount', 'credit');
         $this->assertSame(
             'select "date", 0 "debit", "amount" "credit" from "purchases"',
-            $q2->render()
+            $q2->render()[0]
         );
 
         // $q1 union $q2
         $u = new Expression('([] union [])', [$q1, $q2]);
         $this->assertSame(
             '((select "date", "amount" "debit", 0 "credit" from "sales") union (select "date", 0 "debit", "amount" "credit" from "purchases"))',
-            $u->render()
+            $u->render()[0]
         );
 
         // SELECT date, debit, credit FROM ($q1 union $q2)
         $q = $this->q()
-            ->field('date,debit,credit')
+            ->field('date')
+            ->field('debit')
+            ->field('credit')
             ->table($u, 'derrivedTable');
         $this->assertSame(
             'select "date", "debit", "credit" from ((select "date", "amount" "debit", 0 "credit" from "sales") union (select "date", 0 "debit", "amount" "credit" from "purchases")) "derrivedTable"',
-            $q->render()
+            $q->render()[0]
         );
 
         // SQLite do not support (($q1) union ($q2)) syntax. Correct syntax is ($q1 union $q2) without additional braces
@@ -691,16 +616,18 @@ class QueryTest extends TestCase
         $u = new Expression('([] union [])', [$q1, $q2]);
         $this->assertSame(
             '(select "date", "amount" "debit", 0 "credit" from "sales" union select "date", 0 "debit", "amount" "credit" from "purchases")',
-            $u->render()
+            $u->render()[0]
         );
 
         // SELECT date, debit, credit FROM ($q1 union $q2)
         $q = $this->q()
-            ->field('date,debit,credit')
+            ->field('date')
+            ->field('debit')
+            ->field('credit')
             ->table($u, 'derrivedTable');
         $this->assertSame(
             'select "date", "debit", "credit" from (select "date", "amount" "debit", 0 "credit" from "sales" union select "date", 0 "debit", "amount" "credit" from "purchases") "derrivedTable"',
-            $q->render()
+            $q->render()[0]
         );
     }
 
@@ -738,91 +665,77 @@ class QueryTest extends TestCase
         // one parameter as a string - treat as expression
         $this->assertSame(
             'where (now())',
-            $this->q('[where]')->where('now()')->render()
+            $this->q('[where]')->where('now()')->render()[0]
         );
         $this->assertSame(
             'where (foo >=    bar)',
-            $this->q('[where]')->where('foo >=    bar')->render()
+            $this->q('[where]')->where('foo >=    bar')->render()[0]
         );
 
         // two parameters - field, value
         $this->assertSame(
             'where "id" = :a',
-            $this->q('[where]')->where('id', 1)->render()
+            $this->q('[where]')->where('id', 1)->render()[0]
         );
         $this->assertSame(
             'where "user"."id" = :a',
-            $this->q('[where]')->where('user.id', 1)->render()
+            $this->q('[where]')->where('user.id', 1)->render()[0]
         );
         $this->assertSame(
             'where "db"."user"."id" = :a',
-            $this->q('[where]')->where('db.user.id', 1)->render()
+            $this->q('[where]')->where('db.user.id', 1)->render()[0]
         );
         $this->assertSame(
             'where "id" is null',
-            $this->q('[where]')->where('id', null)->render()
+            $this->q('[where]')->where('id', null)->render()[0]
         );
         $this->assertSame(
             'where "id" is not null',
-            $this->q('[where]')->where('id', '!=', null)->render()
+            $this->q('[where]')->where('id', '!=', null)->render()[0]
         );
 
         // three parameters - field, condition, value
         $this->assertSame(
             'where "id" > :a',
-            $this->q('[where]')->where('id', '>', 1)->render()
+            $this->q('[where]')->where('id', '>', 1)->render()[0]
         );
         $this->assertSame(
             'where "id" < :a',
-            $this->q('[where]')->where('id', '<', 1)->render()
+            $this->q('[where]')->where('id', '<', 1)->render()[0]
         );
         $this->assertSame(
             'where "id" = :a',
-            $this->q('[where]')->where('id', '=', 1)->render()
+            $this->q('[where]')->where('id', '=', 1)->render()[0]
         );
         $this->assertSame(
             'where "id" in (:a, :b)',
-            $this->q('[where]')->where('id', '=', [1, 2])->render()
+            $this->q('[where]')->where('id', '=', [1, 2])->render()[0]
         );
         $this->assertSame(
             'where "id" in (:a, :b)',
-            $this->q('[where]')->where('id', [1, 2])->render()
+            $this->q('[where]')->where('id', [1, 2])->render()[0]
         );
         $this->assertSame(
             'where "id" in (select * from "user")',
-            $this->q('[where]')->where('id', $this->q()->table('user'))->render()
-        );
-
-        // two parameters - more_than_just_a_field, value
-        $this->assertSame(
-            'where "id" = :a',
-            $this->q('[where]')->where('id=', 1)->render()
-        );
-        $this->assertSame(
-            'where "id" != :a',
-            $this->q('[where]')->where('id!=', 1)->render()
-        );
-        $this->assertSame(
-            'where "id" <> :a',
-            $this->q('[where]')->where('id<>', 1)->render()
+            $this->q('[where]')->where('id', $this->q()->table('user'))->render()[0]
         );
 
         // field name with special symbols - not escape
         $this->assertSame(
             'where now() = :a',
-            $this->q('[where]')->where('now()', 1)->render()
+            $this->q('[where]')->where('now()', 1)->render()[0]
         );
 
         // field name as expression
         $this->assertSame(
             'where now = :a',
-            $this->q('[where]')->where(new Expression('now'), 1)->render()
+            $this->q('[where]')->where(new Expression('now'), 1)->render()[0]
         );
 
         // more than one where condition - join with AND keyword
         $this->assertSame(
             'where "a" = :a and "b" is null',
-            $this->q('[where]')->where('a', 1)->where('b', null)->render()
+            $this->q('[where]')->where('a', 1)->where('b', null)->render()[0]
         );
     }
 
@@ -830,8 +743,14 @@ class QueryTest extends TestCase
     {
         $this->assertSame(
             'where (a = 5 or b = 6) and (c = 3 or d = 1)',
-            $this->q('[where]')->where('a = 5 or b = 6')->where('c = 3 or d = 1')->render()
+            $this->q('[where]')->where('a = 5 or b = 6')->where('c = 3 or d = 1')->render()[0]
         );
+    }
+
+    public function testWhereIncompatibleFieldWithCondition(): void
+    {
+        $this->expectException(Exception::class);
+        $this->q('[where]')->where('id=', 1)->render();
     }
 
     /**
@@ -879,114 +798,85 @@ class QueryTest extends TestCase
         // in | not in
         $this->assertSame(
             'where "id" in (:a, :b)',
-            $this->q('[where]')->where('id', 'in', [1, 2])->render()
+            $this->q('[where]')->where('id', 'in', [1, 2])->render()[0]
         );
         $this->assertSame(
             'where "id" not in (:a, :b)',
-            $this->q('[where]')->where('id', 'not in', [1, 2])->render()
+            $this->q('[where]')->where('id', 'not in', [1, 2])->render()[0]
         );
         $this->assertSame(
             'where "id" not in (:a, :b)',
-            $this->q('[where]')->where('id', 'not', [1, 2])->render()
+            $this->q('[where]')->where('id', 'not', [1, 2])->render()[0]
         );
         $this->assertSame(
             'where "id" in (:a, :b)',
-            $this->q('[where]')->where('id', '=', [1, 2])->render()
+            $this->q('[where]')->where('id', '=', [1, 2])->render()[0]
         );
         $this->assertSame(
             'where "id" not in (:a, :b)',
-            $this->q('[where]')->where('id', '<>', [1, 2])->render()
+            $this->q('[where]')->where('id', '<>', [1, 2])->render()[0]
         );
         $this->assertSame(
             'where "id" not in (:a, :b)',
-            $this->q('[where]')->where('id', '!=', [1, 2])->render()
+            $this->q('[where]')->where('id', '!=', [1, 2])->render()[0]
         );
         // speacial treatment for empty array values
         $this->assertSame(
             'where 1 = 0',
-            $this->q('[where]')->where('id', '=', [])->render()
+            $this->q('[where]')->where('id', '=', [])->render()[0]
         );
         $this->assertSame(
             'where 1 = 1',
-            $this->q('[where]')->where('id', '<>', [])->render()
+            $this->q('[where]')->where('id', '<>', [])->render()[0]
         );
         // pass array as CSV
         $this->assertSame(
             'where "id" in (:a, :b)',
-            $this->q('[where]')->where('id', 'in', '1,2')->render()
+            $this->q('[where]')->where('id', 'in', '1,2')->render()[0]
         );
         $this->assertSame(
             'where "id" not in (:a, :b)',
-            $this->q('[where]')->where('id', 'not in', '1,    2')->render()
+            $this->q('[where]')->where('id', 'not in', '1,    2')->render()[0]
         );
         $this->assertSame(
             'where "id" not in (:a, :b)',
-            $this->q('[where]')->where('id', 'not', '1,2')->render()
+            $this->q('[where]')->where('id', 'not', '1,2')->render()[0]
         );
 
         // is | is not
         $this->assertSame(
             'where "id" is null',
-            $this->q('[where]')->where('id', 'is', null)->render()
+            $this->q('[where]')->where('id', 'is', null)->render()[0]
         );
         $this->assertSame(
             'where "id" is not null',
-            $this->q('[where]')->where('id', 'is not', null)->render()
+            $this->q('[where]')->where('id', 'is not', null)->render()[0]
         );
         $this->assertSame(
             'where "id" is not null',
-            $this->q('[where]')->where('id', 'not', null)->render()
+            $this->q('[where]')->where('id', 'not', null)->render()[0]
         );
         $this->assertSame(
             'where "id" is null',
-            $this->q('[where]')->where('id', '=', null)->render()
+            $this->q('[where]')->where('id', '=', null)->render()[0]
         );
         $this->assertSame(
             'where "id" is not null',
-            $this->q('[where]')->where('id', '<>', null)->render()
+            $this->q('[where]')->where('id', '<>', null)->render()[0]
         );
         $this->assertSame(
             'where "id" is not null',
-            $this->q('[where]')->where('id', '!=', null)->render()
+            $this->q('[where]')->where('id', '!=', null)->render()[0]
         );
 
         // like | not like
         $this->assertSame(
             'where "name" like :a',
-            $this->q('[where]')->where('name', 'like', 'foo')->render()
+            $this->q('[where]')->where('name', 'like', 'foo')->render()[0]
         );
         $this->assertSame(
             'where "name" not like :a',
-            $this->q('[where]')->where('name', 'not like', 'foo')->render()
-        );
-
-        // two parameters - more_than_just_a_field, value
-        // is | is not
-        $this->assertSame(
-            'where "id" is null',
-            $this->q('[where]')->where('id=', null)->render()
-        );
-        $this->assertSame(
-            'where "id" is not null',
-            $this->q('[where]')->where('id!=', null)->render()
-        );
-        $this->assertSame(
-            'where "id" is not null',
-            $this->q('[where]')->where('id<>', null)->render()
-        );
-
-        // in | not in
-        $this->assertSame(
-            'where "id" in (:a, :b)',
-            $this->q('[where]')->where('id=', [1, 2])->render()
-        );
-        $this->assertSame(
-            'where "id" not in (:a, :b)',
-            $this->q('[where]')->where('id!=', [1, 2])->render()
-        );
-        $this->assertSame(
-            'where "id" not in (:a, :b)',
-            $this->q('[where]')->where('id<>', [1, 2])->render()
+            $this->q('[where]')->where('name', 'not like', 'foo')->render()[0]
         );
     }
 
@@ -1000,15 +890,15 @@ class QueryTest extends TestCase
     {
         $this->assertSame(
             'having "id" = :a',
-            $this->q('[having]')->having('id', 1)->render()
+            $this->q('[having]')->having('id', 1)->render()[0]
         );
         $this->assertSame(
             'having "id" > :a',
-            $this->q('[having]')->having('id', '>', 1)->render()
+            $this->q('[having]')->having('id', '>', 1)->render()[0]
         );
         $this->assertSame(
             'where "id" = :a having "id" > :b',
-            $this->q('[where][having]')->where('id', 1)->having('id>', 1)->render()
+            $this->q('[where][having]')->where('id', 1)->having('id', '>', 1)->render()[0]
         );
     }
 
@@ -1022,11 +912,11 @@ class QueryTest extends TestCase
     {
         $this->assertSame(
             'limit 0, 100',
-            $this->q('[limit]')->limit(100)->render()
+            $this->q('[limit]')->limit(100)->render()[0]
         );
         $this->assertSame(
             'limit 200, 100',
-            $this->q('[limit]')->limit(100, 200)->render()
+            $this->q('[limit]')->limit(100, 200)->render()[0]
         );
     }
 
@@ -1040,78 +930,78 @@ class QueryTest extends TestCase
     {
         $this->assertSame(
             'order by "name"',
-            $this->q('[order]')->order('name')->render()
+            $this->q('[order]')->order('name')->render()[0]
         );
         $this->assertSame(
             'order by "name", "surname"',
-            $this->q('[order]')->order('name,surname')->render()
+            $this->q('[order]')->order('surname')->order('name')->render()[0]
         );
         $this->assertSame(
             'order by "name" desc, "surname" desc',
-            $this->q('[order]')->order('name desc,surname desc')->render()
+            $this->q('[order]')->order('surname desc')->order('name desc')->render()[0]
         );
         $this->assertSame(
             'order by "name" desc, "surname"',
-            $this->q('[order]')->order(['name desc', 'surname'])->render()
+            $this->q('[order]')->order(['name desc', 'surname'])->render()[0]
         );
         $this->assertSame(
             'order by "name" desc, "surname"',
-            $this->q('[order]')->order('surname')->order('name desc')->render()
+            $this->q('[order]')->order('surname')->order('name desc')->render()[0]
         );
         $this->assertSame(
             'order by "name" desc, "surname"',
-            $this->q('[order]')->order('surname', false)->order('name', true)->render()
+            $this->q('[order]')->order('surname', false)->order('name', true)->render()[0]
         );
         // table name|alias included
         $this->assertSame(
             'order by "users"."name"',
-            $this->q('[order]')->order('users.name')->render()
+            $this->q('[order]')->order('users.name')->render()[0]
         );
         // strange field names
         $this->assertSame(
             'order by "my name" desc',
-            $this->q('[order]')->order('"my name" desc')->render()
+            $this->q('[order]')->order('"my name" desc')->render()[0]
         );
         $this->assertSame(
             'order by "жук"',
-            $this->q('[order]')->order('жук asc')->render()
+            $this->q('[order]')->order('жук asc')->render()[0]
         );
         $this->assertSame(
             'order by "this is 💩"',
-            $this->q('[order]')->order('this is 💩')->render()
+            $this->q('[order]')->order('this is 💩')->render()[0]
         );
         $this->assertSame(
             'order by "this is жук" desc',
-            $this->q('[order]')->order('this is жук desc')->render()
+            $this->q('[order]')->order('this is жук desc')->render()[0]
         );
         $this->assertSame(
             'order by * desc',
-            $this->q('[order]')->order(['* desc'])->render()
+            $this->q('[order]')->order(['* desc'])->render()[0]
         );
         $this->assertSame(
             'order by "{}" desc',
-            $this->q('[order]')->order(['{} desc'])->render()
+            $this->q('[order]')->order(['{} desc'])->render()[0]
         );
         $this->assertSame(
             'order by "* desc"',
-            $this->q('[order]')->order(new Expression('"* desc"'))->render()
+            $this->q('[order]')->order(new Expression('"* desc"'))->render()[0]
         );
         $this->assertSame(
             'order by "* desc"',
-            $this->q('[order]')->order($this->q()->escape('* desc'))->render()
+            $this->q('[order]')->order($this->q()->escape('* desc'))->render()[0]
         );
         $this->assertSame(
             'order by "* desc {}"',
-            $this->q('[order]')->order($this->q()->escape('* desc {}'))->render()
+            $this->q('[order]')->order($this->q()->escape('* desc {}'))->render()[0]
         );
         // custom sort order
         $this->assertSame(
             'order by "name" desc nulls last',
-            $this->q('[order]')->order('name', 'desc nulls last')->render()
+            $this->q('[order]')->order('name', 'desc nulls last')->render()[0]
         );
         $this->assertSame(
             'order by "name" nulls last',
-            $this->q('[order]')->order('name', 'nulls last')->render()
+            $this->q('[order]')->order('name', 'nulls last')->render()[0]
         );
     }
 
@@ -1136,49 +1026,41 @@ class QueryTest extends TestCase
     {
         $this->assertSame(
             'group by "gender"',
-            $this->q('[group]')->group('gender')->render()
+            $this->q('[group]')->group('gender')->render()[0]
         );
         $this->assertSame(
             'group by "gender", "age"',
-            $this->q('[group]')->group('gender,age')->render()
-        );
-        $this->assertSame(
-            'group by "gender", "age"',
-            $this->q('[group]')->group(['gender', 'age'])->render()
-        );
-        $this->assertSame(
-            'group by "gender", "age"',
-            $this->q('[group]')->group('gender')->group('age')->render()
+            $this->q('[group]')->group('gender')->group('age')->render()[0]
         );
         // table name|alias included
         $this->assertSame(
             'group by "users"."gender"',
-            $this->q('[group]')->group('users.gender')->render()
+            $this->q('[group]')->group('users.gender')->render()[0]
         );
         // strange field names
         $this->assertSame(
             'group by "my name"',
-            $this->q('[group]')->group('"my name"')->render()
+            $this->q('[group]')->group('"my name"')->render()[0]
         );
         $this->assertSame(
             'group by "жук"',
-            $this->q('[group]')->group('жук')->render()
+            $this->q('[group]')->group('жук')->render()[0]
         );
         $this->assertSame(
             'group by "this is 💩"',
-            $this->q('[group]')->group('this is 💩')->render()
+            $this->q('[group]')->group('this is 💩')->render()[0]
         );
         $this->assertSame(
             'group by "this is жук"',
-            $this->q('[group]')->group('this is жук')->render()
+            $this->q('[group]')->group('this is жук')->render()[0]
         );
         $this->assertSame(
             'group by date_format(dat, "%Y")',
-            $this->q('[group]')->group(new Expression('date_format(dat, "%Y")'))->render()
+            $this->q('[group]')->group(new Expression('date_format(dat, "%Y")'))->render()[0]
         );
         $this->assertSame(
             'group by date_format(dat, "%Y")',
-            $this->q('[group]')->group('date_format(dat, "%Y")')->render()
+            $this->q('[group]')->group('date_format(dat, "%Y")')->render()[0]
         );
     }
 
@@ -1200,16 +1082,16 @@ class QueryTest extends TestCase
     public function testGroupConcat(): void
     {
         $q = new Mysql\Query();
-        $this->assertSame('group_concat(`foo` separator :a)', $q->groupConcat('foo', '-')->render());
+        $this->assertSame('group_concat(`foo` separator :a)', $q->groupConcat('foo', '-')->render()[0]);
 
         $q = new Oracle\Query();
-        $this->assertSame('listagg("foo", :a) within group (order by "foo")', $q->groupConcat('foo', '-')->render());
+        $this->assertSame('listagg("foo", :a) within group (order by "foo")', $q->groupConcat('foo', '-')->render()[0]);
 
         $q = new Postgresql\Query();
-        $this->assertSame('string_agg("foo", :a)', $q->groupConcat('foo', '-')->render());
+        $this->assertSame('string_agg("foo", :a)', $q->groupConcat('foo', '-')->render()[0]);
 
         $q = new Sqlite\Query();
-        $this->assertSame('group_concat("foo", :a)', $q->groupConcat('foo', '-')->render());
+        $this->assertSame('group_concat("foo", :a)', $q->groupConcat('foo', '-')->render()[0]);
     }
 
     /**
@@ -1235,53 +1117,54 @@ class QueryTest extends TestCase
     {
         $this->assertSame(
             'left join "address" on "address"."id" = "address_id"',
-            $this->q('[join]')->join('address')->render()
+            $this->q('[join]')->join('address')->render()[0]
         );
         $this->assertSame(
             'left join "address" "a" on "a"."id" = "address_id"',
-            $this->q('[join]')->join('address a')->render()
+            $this->q('[join]')->join('address a')->render()[0]
         );
         $this->assertSame(
             'left join "address" "a" on "a"."id" = "user"."address_id"',
-            $this->q('[join]')->table('user')->join('address a')->render()
+            $this->q('[join]')->table('user')->join('address a')->render()[0]
         );
         $this->assertSame(
             'left join "address" "a" on "a"."id" = "user"."my_address_id"',
-            $this->q('[join]')->table('user')->join('address a', 'my_address_id')->render()
+            $this->q('[join]')->table('user')->join('address a', 'my_address_id')->render()[0]
         );
         $this->assertSame(
             'left join "address" "a" on "a"."id" = "u"."address_id"',
-            $this->q('[join]')->table('user', 'u')->join('address a')->render()
+            $this->q('[join]')->table('user', 'u')->join('address a')->render()[0]
         );
         $this->assertSame(
             'left join "address" "a" on "a"."user_id" = "u"."id"',
-            $this->q('[join]')->table('user', 'u')->join('address.user_id a')->render()
+            $this->q('[join]')->table('user', 'u')->join('address.user_id a')->render()[0]
         );
         $this->assertSame(
-            'left join "address" "a" on "a"."user_id" = "u"."id" ' .
-            'left join "bank" "b" on "b"."id" = "u"."bank_id"',
+            'left join "address" "a" on "a"."user_id" = "u"."id" '
+            . 'left join "bank" "b" on "b"."id" = "u"."bank_id"',
             $this->q('[join]')->table('user', 'u')
-                ->join(['a' => 'address.user_id', 'b' => 'bank'])->render()
+                ->join('address.user_id', null, null, 'a')->join('bank', null, null, 'b')
+                ->render()[0]
         );
         $this->assertSame(
-            'left join "address" on "address"."user_id" = "u"."id" ' .
-            'left join "bank" on "bank"."id" = "u"."bank_id"',
+            'left join "address" on "address"."user_id" = "u"."id" '
+            . 'left join "bank" on "bank"."id" = "u"."bank_id"',
             $this->q('[join]')->table('user', 'u')
-                ->join(['address.user_id', 'bank'])->render()
+                ->join('address.user_id')->join('bank')->render()[0]
         );
         $this->assertSame(
-            'left join "address" "a" on "a"."user_id" = "u"."id" ' .
-            'left join "bank" "b" on "b"."id" = "u"."bank_id" ' .
-            'left join "bank_details" on "bank_details"."id" = "bank"."details_id"',
+            'left join "address" "a" on "a"."user_id" = "u"."id" '
+            . 'left join "bank" "b" on "b"."id" = "u"."bank_id" '
+            . 'left join "bank_details" on "bank_details"."id" = "bank"."details_id"',
             $this->q('[join]')->table('user', 'u')
-                ->join(['a' => 'address.user_id', 'b' => 'bank'])
-                ->join('bank_details', 'bank.details_id')->render()
+                ->join('address.user_id', null, null, 'a')->join('bank', null, null, 'b')
+                ->join('bank_details', 'bank.details_id')->render()[0]
         );
 
         $this->assertSame(
             'left join "address" "a" on a.name like u.pattern',
             $this->q('[join]')->table('user', 'u')
-                ->join('address a', new Expression('a.name like u.pattern'))->render()
+                ->join('address a', new Expression('a.name like u.pattern'))->render()[0]
         );
     }
 
@@ -1298,14 +1181,14 @@ class QueryTest extends TestCase
             'select "name" from "employee" where "a" = :a',
             $this->q()
                 ->field('name')->table('employee')->where('a', 1)
-                ->render()
+                ->render()[0]
         );
 
         $this->assertSame(
             'select "name" from "employee" where "employee"."a" = :a',
             $this->q()
                 ->field('name')->table('employee')->where('employee.a', 1)
-                ->render()
+                ->render()[0]
         );
 
         /*
@@ -1313,7 +1196,7 @@ class QueryTest extends TestCase
             'select "name" from "db"."employee" where "db"."employee"."a" = :a',
             $this->q()
                 ->field('name')->table('db.employee')->where('db.employee.a',1)
-                ->render()
+                ->render()[0]
         );
          */
 
@@ -1322,7 +1205,7 @@ class QueryTest extends TestCase
             $this->q()
                 ->mode('delete')
                 ->field('name')->table('employee')->where('employee.a', 1)
-                ->render()
+                ->render()[0]
         );
 
         $user_ids = $this->q()->table('expired_users')->field('user_id');
@@ -1334,7 +1217,7 @@ class QueryTest extends TestCase
                 ->where('id', 'in', $user_ids)
                 ->set('active', 0)
                 ->mode('update')
-                ->render()
+                ->render()[0]
         );
     }
 
@@ -1352,12 +1235,12 @@ class QueryTest extends TestCase
     {
         $this->assertSame(
             '',
-            $this->q()->orExpr()->render()
+            $this->q()->orExpr()->render()[0]
         );
 
         $this->assertSame(
             '',
-            $this->q()->andExpr()->render()
+            $this->q()->andExpr()->render()[0]
         );
     }
 
@@ -1379,7 +1262,7 @@ class QueryTest extends TestCase
             $this->q()
                 ->field('name')->table('employee')->where('name', 1)
                 ->mode('delete')
-                ->render()
+                ->render()[0]
         );
 
         // update template
@@ -1388,7 +1271,7 @@ class QueryTest extends TestCase
             $this->q()
                 ->field('name')->table('employee')->set('name', 1)
                 ->mode('update')
-                ->render()
+                ->render()[0]
         );
 
         $this->assertSame(
@@ -1396,7 +1279,7 @@ class QueryTest extends TestCase
             $this->q()
                 ->field('name')->table('employee')->set('name', new Expression('"name"+1'))
                 ->mode('update')
-                ->render()
+                ->render()[0]
         );
 
         // insert template
@@ -1405,7 +1288,7 @@ class QueryTest extends TestCase
             $this->q()
                 ->field('name')->table('employee')->set('name', 1)
                 ->mode('insert')
-                ->render()
+                ->render()[0]
         );
 
         // set multiple fields
@@ -1416,7 +1299,7 @@ class QueryTest extends TestCase
                 ->set('time', new Expression('now()'))
                 ->set('name', 'unknown')
                 ->mode('insert')
-                ->render()
+                ->render()[0]
         );
 
         // set as array
@@ -1424,9 +1307,9 @@ class QueryTest extends TestCase
             'insert into "employee" ("time", "name") values (now(), :a)',
             $this->q()
                 ->field('time')->field('name')->table('employee')
-                ->set(['time' => new Expression('now()'), 'name' => 'unknown'])
+                ->setMulti(['time' => new Expression('now()'), 'name' => 'unknown'])
                 ->mode('insert')
-                ->render()
+                ->render()[0]
         );
     }
 
@@ -1486,7 +1369,7 @@ class QueryTest extends TestCase
         );
         $this->assertSame(
             'select "name" from "employee" where ("a" = :a or "b" = :b)',
-            $q->render()
+            $q->render()[0]
         );
 
         // test 2
@@ -1505,7 +1388,7 @@ class QueryTest extends TestCase
         );
         $this->assertSame(
             'select "name" from "employee" where ("a" = :a or "b" = :b or ((true) and (false)))',
-            $q->render()
+            $q->render()[0]
         );
     }
 
@@ -1521,7 +1404,7 @@ class QueryTest extends TestCase
         );
         $this->assertSame(
             'select sum(:a) "salary" from "employee" group by "type" having ("a" = :b or "b" = :c)',
-            $q->render()
+            $q->render()[0]
         );
     }
 
@@ -1550,7 +1433,7 @@ class QueryTest extends TestCase
         // reset everything
         $q = $this->q()->table('user')->where('name', 'John');
         $q->reset();
-        $this->assertSame('select *', $q->render());
+        $this->assertSame('select *', $q->render()[0]);
 
         // reset particular tag
         $q = $this->q()
@@ -1558,7 +1441,7 @@ class QueryTest extends TestCase
             ->where('name', 'John')
             ->reset('where')
             ->where('surname', 'Doe');
-        $this->assertSame('select * from "user" where "surname" = :a', $q->render());
+        $this->assertSame('select * from "user" where "surname" = :a', $q->render()[0]);
     }
 
     /**
@@ -1572,16 +1455,12 @@ class QueryTest extends TestCase
         // single option
         $this->assertSame(
             'select calc_found_rows * from "test"',
-            $this->q()->table('test')->option('calc_found_rows')->render()
+            $this->q()->table('test')->option('calc_found_rows')->render()[0]
         );
         // multiple options
         $this->assertSame(
             'select calc_found_rows ignore * from "test"',
-            $this->q()->table('test')->option('calc_found_rows,ignore')->render()
-        );
-        $this->assertSame(
-            'select calc_found_rows ignore * from "test"',
-            $this->q()->table('test')->option(['calc_found_rows', 'ignore'])->render()
+            $this->q()->table('test')->option('calc_found_rows')->option('ignore')->render()[0]
         );
         // options for specific modes
         $q = $this->q()
@@ -1593,15 +1472,15 @@ class QueryTest extends TestCase
 
         $this->assertSame(
             'select calc_found_rows "name" from "test"',
-            $q->mode('select')->render()
+            $q->mode('select')->render()[0]
         );
         $this->assertSame(
             'insert ignore into "test" ("name") values (:a)',
-            $q->mode('insert')->render()
+            $q->mode('insert')->render()[0]
         );
         $this->assertSame(
             'update "test" set "name"=:a',
-            $q->mode('update')->render()
+            $q->mode('update')->render()[0]
         );
     }
 
@@ -1609,18 +1488,18 @@ class QueryTest extends TestCase
      * Test caseExpr (normal).
      *
      * @covers ::_render_case
+     * @covers ::caseElse
      * @covers ::caseExpr
-     * @covers ::otherwise
-     * @covers ::when
+     * @covers ::caseWhen
      */
     public function testCaseExprNormal(): void
     {
         // Test normal form
         $s = $this->q()->caseExpr()
-            ->when(['status', 'New'], 't2.expose_new')
-            ->when(['status', 'like', '%Used%'], 't2.expose_used')
-            ->otherwise(null)
-            ->render();
+            ->caseWhen(['status', 'New'], 't2.expose_new')
+            ->caseWhen(['status', 'like', '%Used%'], 't2.expose_used')
+            ->caseElse(null)
+            ->render()[0];
         $this->assertSame('case when "status" = :a then :b when "status" like :c then :d else :e end', $s);
 
         // with subqueries
@@ -1628,9 +1507,9 @@ class QueryTest extends TestCase
         $q = $this->q()->table('user')->field($age, 'calc_age');
 
         $s = $this->q()->caseExpr()
-            ->when(['age', '>', $q], 'Older')
-            ->otherwise('Younger')
-            ->render();
+            ->caseWhen(['age', '>', $q], 'Older')
+            ->caseElse('Younger')
+            ->render()[0];
         $this->assertSame('case when "age" > (select year(now()) - year(birth_date) "calc_age" from "user") then :a else :b end', $s);
     }
 
@@ -1638,17 +1517,17 @@ class QueryTest extends TestCase
      * Test caseExpr (short form).
      *
      * @covers ::_render_case
+     * @covers ::caseElse
      * @covers ::caseExpr
-     * @covers ::otherwise
-     * @covers ::when
+     * @covers ::caseWhen
      */
     public function testCaseExprShortForm(): void
     {
         $s = $this->q()->caseExpr('status')
-            ->when('New', 't2.expose_new')
-            ->when('Used', 't2.expose_used')
-            ->otherwise(null)
-            ->render();
+            ->caseWhen('New', 't2.expose_new')
+            ->caseWhen('Used', 't2.expose_used')
+            ->caseElse(null)
+            ->render()[0];
         $this->assertSame('case "status" when :a then :b when :c then :d else :e end', $s);
 
         // with subqueries
@@ -1656,9 +1535,9 @@ class QueryTest extends TestCase
         $q = $this->q()->table('user')->field($age, 'calc_age');
 
         $s = $this->q()->caseExpr($q)
-            ->when(100, 'Very old')
-            ->otherwise('Younger')
-            ->render();
+            ->caseWhen(100, 'Very old')
+            ->caseElse('Younger')
+            ->render()[0];
         $this->assertSame('case (select year(now()) - year(birth_date) "calc_age" from "user") when :a then :b else :c end', $s);
     }
 
@@ -1671,7 +1550,7 @@ class QueryTest extends TestCase
     {
         //$this->expectException(Exception::class);
         $this->q()->caseExpr()
-            ->when(['status'], 't2.expose_new')
+            ->caseWhen(['status'], 't2.expose_new')
             ->render();
     }
 
@@ -1682,7 +1561,7 @@ class QueryTest extends TestCase
     {
         $this->expectException(Exception::class);
         $this->q()->caseExpr('status')
-            ->when(['status', 'New'], 't2.expose_new')
+            ->caseWhen(['status', 'New'], 't2.expose_new')
             ->render();
     }
 
@@ -1698,7 +1577,7 @@ class QueryTest extends TestCase
             $this->q()
                 ->field('hired')->table('employee')->set('hired', $this->q()->exprNow())
                 ->mode('update')
-                ->render()
+                ->render()[0]
         );
 
         $this->assertSame(
@@ -1706,7 +1585,7 @@ class QueryTest extends TestCase
             $this->q()
                 ->field('hired')->table('employee')->set('hired', $this->q()->exprNow(2))
                 ->mode('update')
-                ->render()
+                ->render()[0]
         );
     }
 
@@ -1731,14 +1610,14 @@ class QueryTest extends TestCase
             'select "name" from "db1"."employee" where "a" = :a',
             $this->q()
                 ->field('name')->table('db1.employee')->where('a', 1)
-                ->render()
+                ->render()[0]
         );
 
         $this->assertSame(
             'select "name" from "db1"."employee" where "db1"."employee"."a" = :a',
             $this->q()
                 ->field('name')->table('db1.employee')->where('db1.employee.a', 1)
-                ->render()
+                ->render()[0]
         );
     }
 
@@ -1752,30 +1631,33 @@ class QueryTest extends TestCase
         $q2 = $this->q()
             ->with($q1, 'q1')
             ->table('q1');
-        $this->assertSame('with "q1" as (select "salary" from "salaries") select * from "q1"', $q2->render());
+        $this->assertSame('with "q1" as (select "salary" from "salaries")' . "\n"
+            . 'select * from "q1"', $q2->render()[0]);
 
         $q2 = $this->q()
             ->with($q1, 'q1', null, true)
             ->table('q1');
-        $this->assertSame('with recursive "q1" as (select "salary" from "salaries") select * from "q1"', $q2->render());
+        $this->assertSame('with recursive "q1" as (select "salary" from "salaries")' . "\n"
+            . 'select * from "q1"', $q2->render()[0]);
 
         $q2 = $this->q()
             ->with($q1, 'q11', ['foo', 'qwe"ry'])
             ->with($q1, 'q12', ['bar', 'baz'], true) // this one is recursive
             ->table('q11')
             ->table('q12');
-        $this->assertSame('with recursive "q11" ("foo", "qwe""ry") as (select "salary" from "salaries"), "q12" ("bar", "baz") as (select "salary" from "salaries") select * from "q11", "q12"', $q2->render());
+        $this->assertSame('with recursive "q11" ("foo", "qwe""ry") as (select "salary" from "salaries"),' . "\n"
+            . '"q12" ("bar", "baz") as (select "salary" from "salaries")' . "\n" . 'select * from "q11", "q12"', $q2->render()[0]);
 
         // now test some more useful reql life query
         $quotes = $this->q()
             ->table('quotes')
             ->field('emp_id')
-            ->field($this->q()->expr('sum([])', ['total_net']))
+            ->field($this->q()->expr('sum({})', ['total_net']))
             ->group('emp_id');
         $invoices = $this->q()
             ->table('invoices')
             ->field('emp_id')
-            ->field($this->q()->expr('sum([])', ['total_net']))
+            ->field($this->q()->expr('sum({})', ['total_net']))
             ->group('emp_id');
         $q = $this->q()
             ->with($quotes, 'q', ['emp', 'quoted'])
@@ -1783,16 +1665,19 @@ class QueryTest extends TestCase
             ->table('employees')
             ->join('q.emp')
             ->join('i.emp')
-            ->field(['name', 'salary', 'q.quoted', 'i.invoiced']);
+            ->field('name')
+            ->field('salary')
+            ->field('q.quoted')
+            ->field('i.invoiced');
         $this->assertSame(
-            'with ' .
-                '"q" ("emp", "quoted") as (select "emp_id", sum(:a) from "quotes" group by "emp_id"), ' .
-                '"i" ("emp", "invoiced") as (select "emp_id", sum(:b) from "invoices" group by "emp_id") ' .
-            'select "name", "salary", "q"."quoted", "i"."invoiced" ' .
-            'from "employees" ' .
-                'left join "q" on "q"."emp" = "employees"."id" ' .
-                'left join "i" on "i"."emp" = "employees"."id"',
-            $q->render()
+            'with '
+                . '"q" ("emp", "quoted") as (select "emp_id", sum("total_net") from "quotes" group by "emp_id"),' . "\n"
+                . '"i" ("emp", "invoiced") as (select "emp_id", sum("total_net") from "invoices" group by "emp_id")' . "\n"
+            . 'select "name", "salary", "q"."quoted", "i"."invoiced" '
+            . 'from "employees" '
+                . 'left join "q" on "q"."emp" = "employees"."id" '
+                . 'left join "i" on "i"."emp" = "employees"."id"',
+            $q->render()[0]
         );
     }
 
@@ -1800,19 +1685,19 @@ class QueryTest extends TestCase
     {
         $this->assertSame(
             'select exists (select * from "contacts" where "first_name" = :a)',
-            $this->q()->table('contacts')->where('first_name', 'John')->exists()->render()
+            $this->q()->table('contacts')->where('first_name', 'John')->exists()->render()[0]
         );
 
         $q = new Oracle\Query();
         $this->assertSame(
-            'select case when exists(select * from "contacts" where "first_name" = :a) then 1 else 0 end from "DUAL"',
-            $q->table('contacts')->where('first_name', 'John')->exists()->render()
+            'select case when exists(select * from "contacts" where "first_name" = :xxaaaa) then 1 else 0 end from "DUAL"',
+            $q->table('contacts')->where('first_name', 'John')->exists()->render()[0]
         );
 
         $q = new Mssql\Query();
         $this->assertSame(
             'select case when exists(select * from [contacts] where [first_name] = :a) then 1 else 0 end',
-            $q->table('contacts')->where('first_name', 'John')->exists()->render()
+            $q->table('contacts')->where('first_name', 'John')->exists()->render()[0]
         );
     }
 }

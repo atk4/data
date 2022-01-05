@@ -67,9 +67,9 @@ class LUser extends Model
         $this->addField('name');
         $this->addField('is_vip', ['type' => 'boolean', 'default' => false]);
 
-        $this->hasOne('country_id', ['model' => [LCountry::class]])
-            ->withTitle()
-            ->addFields(['country_code' => 'code', 'is_eu']);
+        $ref = $this->hasOne('country_id', ['model' => [LCountry::class]])
+            ->addFields(['country_code' => 'code', 'is_eu'])
+            ->addTitle();
 
         $this->hasMany('Friends', ['model' => [LFriend::class]])
             ->addField('friend_names', ['field' => 'friend_name', 'concat' => ',']);
@@ -144,9 +144,9 @@ class LookupSqlTest extends TestCase
         parent::setUp();
 
         // populate database for our three models
-        $this->createMigrator(new LCountry($this->db))->dropIfExists()->create();
-        $this->createMigrator(new LUser($this->db))->dropIfExists()->create();
-        $this->createMigrator(new LFriend($this->db))->dropIfExists()->create();
+        $this->createMigrator(new LCountry($this->db))->create();
+        $this->createMigrator(new LUser($this->db))->create();
+        $this->createMigrator(new LFriend($this->db))->create();
     }
 
     /**
