@@ -245,8 +245,8 @@ class ModelAggregateTest extends TestCase
         $aggregate->setOrder('client_id', 'asc');
 
         $this->assertSameSql(
-            'select (select "name" from "client" "c" where "id" = "invoice"."client_id") "client","invoice"."client_id",sum("invoice"."amount") "amount" from "invoice" group by "invoice"."client_id" order by "invoice"."client_id"',
-            $aggregate->action('select')->render()
+            'select (select "name" from "client" "_c_2bfe9d72a4aa" where "id" = "invoice"."client_id") "client", "invoice"."client_id", sum("amount") "amount" from "invoice" group by "client_id" order by "invoice"."client_id"',
+            $aggregate->action('select')->render()[0]
         );
     }
 
@@ -294,7 +294,7 @@ class ModelAggregateTest extends TestCase
 
         $this->assertSameSql(
             'select count(*) from ((select 1 from "invoice" group by "client_id")) der',
-            $aggregate->action('count')->render()
+            $aggregate->action('count')->render()[0]
         );
     }
 
@@ -307,8 +307,8 @@ class ModelAggregateTest extends TestCase
         ]);
 
         $this->assertSameSql(
-            'select (select "name" from "client" "c" where "id" = "invoice"."client_id") "client","invoice"."abc",sum("invoice"."amount") "xyz" from "invoice" group by abc',
-            $aggregate->action('select')->render()
+            'select (select "name" from "client" "_c_2bfe9d72a4aa" where "id" = "invoice"."client_id") "client", "invoice"."abc", sum("amount") "xyz" from "invoice" group by abc',
+            $aggregate->action('select')->render()[0]
         );
     }
 }
