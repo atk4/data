@@ -8,9 +8,12 @@ use Atk4\Data\Model\Union;
 
 class Transaction extends Union
 {
+    /** @var Invoice */
     public $nestedInvoice;
+    /** @var Payment */
     public $nestedPayment;
 
+    /** @var bool */
     public $subtractInvoice;
 
     protected function init(): void
@@ -18,11 +21,13 @@ class Transaction extends Union
         parent::init();
 
         // first lets define nested models
-        $this->nestedInvoice = $this->addNestedModel(new Invoice(), $this->subtractInvoice ? ['amount' => '-[]'] : []);
-        $this->nestedPayment = $this->addNestedModel(new Payment());
+        $this->nestedInvoice = new Invoice();
+        $this->addNestedModel($this->nestedInvoice, $this->subtractInvoice ? ['amount' => '-[]'] : []);
+        $this->nestedPayment = new Payment();
+        $this->addNestedModel($this->nestedPayment);
 
         // next, define common fields
         $this->addField('name');
-        $this->addField('amount', ['type' => 'money']);
+        $this->addField('amount', ['type' => 'atk4_money']);
     }
 }

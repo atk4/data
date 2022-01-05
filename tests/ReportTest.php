@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model\Aggregate;
+use Atk4\Data\Schema\TestCase;
 
-class ReportTest extends \Atk4\Schema\PhpunitTestCase
+class ReportTest extends TestCase
 {
     /** @var array */
     private $init_db =
@@ -26,23 +27,25 @@ class ReportTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ];
 
-    /** @var Aggregate */
-    protected $invoiceAggregate;
-
     protected function setUp(): void
     {
         parent::setUp();
-        $this->setDB($this->init_db);
-
-        $invoice = new Model\Invoice($this->db);
-        $invoice->getRef('client_id')->addTitle();
-        $this->invoiceAggregate = new Aggregate($invoice);
-        $this->invoiceAggregate->addField('client');
+        $this->setDb($this->init_db);
     }
 
-    public function testAliasGroupSelect()
+    protected function createInvoiceAggregate(): Aggregate
     {
-        $invoiceAggregate = clone $this->invoiceAggregate;
+        $invoice = new Model\Invoice($this->db);
+        $invoice->getRef('client_id')->addTitle();
+        $invoiceAggregate = new Aggregate($invoice);
+        $invoiceAggregate->addField('client');
+
+        return $invoiceAggregate;
+    }
+
+    public function testAliasGroupSelect(): void
+    {
+        $invoiceAggregate = $this->createInvoiceAggregate();
 
         $invoiceAggregate->groupBy(['client_id'], ['c' => ['count(*)', 'type' => 'integer']]);
 
