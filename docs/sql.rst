@@ -13,12 +13,12 @@ In addition to normal operations you can extend and customize various queries.
 Default Model Classes
 =====================
 
-When using Persistence\Sql model building will use different classes for fields,
+When using `Persistence\Sql` model building will use different classes for fields,
 expressions, joins etc:
 
  - addField - :php:class:`FieldSql` (field can be used as part of DSQL Expression)
  - hasOne - :php:class:`Reference\HasOneSql` (allow importing fields)
- - addExpression - :php:class:`FieldSqlExpression` (define expression through DSQL)
+ - addExpression - :php:class:`SqlExpressionField` (define expression through DSQL)
  - join - :php:class:`Join\Sql` (join tables query-time)
 
 
@@ -32,7 +32,7 @@ SQL Field
     :php:class:`Persistence\Sql` supports field name mapping. Your field could
     have different column name in your schema::
 
-        $this->addField('name', ['actual'=>'first_name']);
+        $this->addField('name', ['actual' => 'first_name']);
 
     This will apply to load / save operations as well as query mapping.
 
@@ -40,8 +40,8 @@ SQL Field
 
     SQL Fields can be used inside other SQL expressions::
 
-        $q = new \Atk4\Dsql\Expression('[age] + [birth_year]', [
-                'age'        => $m->getField('age'),
+        $q = new \Atk4\Data\Persistence\Sql\Expression('[age] + [birth_year]', [
+                'age' => $m->getField('age'),
                 'birth_year' => $m->getField('birth_year'),
             ]);
 
@@ -56,13 +56,13 @@ SQL Reference
 
     Allows importing field from a referenced model::
 
-        $model->hasOne('country_id', new Country())
+        $model->hasOne('country_id', ['model' => [Country::class]])
             ->addField('country_name', 'name');
 
     Second argument could be array containing additional settings for the field::
 
-        $model->hasOne('account_id', new Account())
-            ->addField('account_balance', ['balance', 'type'=>'money']);
+        $model->hasOne('account_id', ['model' => [Account::class]])
+            ->addField('account_balance', ['balance', 'type' => 'atk4_money']);
 
     Returns new field object.
 
@@ -70,33 +70,33 @@ SQL Reference
 
     Allows importing multiple fields::
 
-        $model->hasOne('country_id', new Country())
+        $model->hasOne('country_id', ['model' => [Country::class]])
             ->addFields(['country_name', 'country_code']);
 
     You can specify defaults to be applied on all fields::
 
-        $model->hasOne('account_id', new Account())
+        $model->hasOne('account_id', ['model' => [Account::class]])
             ->addFields([
                 'opening_balance',
                 'balance'
-            ], ['type'=>'money']);
+            ], ['type' => 'atk4_money']);
 
     You can also specify aliases::
 
-        $model->hasOne('account_id', new Account())
+        $model->hasOne('account_id', ['model' => [Account::class]])
             ->addFields([
                 'opening_balance',
-                'account_balance'=>'balance'
-            ], ['type'=>'money']);
+                'account_balance' => 'balance'
+            ], ['type' => 'atk4_money']);
 
     If you need to pass more details to individual field, you can also use sub-array::
 
-        $model->hasOne('account_id', new Account())
+        $model->hasOne('account_id', ['model' => [Account::class]])
             ->addFields([
             [
-                ['opening_balance', 'caption'=>'The Opening Balance'],
-                'account_balance'=>'balance'
-            ], ['type'=>'money']);
+                ['opening_balance', 'caption' => 'The Opening Balance'],
+                'account_balance' => 'balance'
+            ], ['type' => 'atk4_money']);
 
     Returns $this.
 
@@ -106,7 +106,7 @@ SQL Reference
     implements deep traversal::
 
         $country_model = $customer_model->addCondition('is_vip', true)
-            ->ref('country_id');           // $model was not loaded!
+            ->ref('country_id'); // $model was not loaded!
 
 .. php:method:: refLink
 
@@ -119,26 +119,22 @@ SQL Reference
     Similar to addField, but will import "title" field and will come up with
     good name for it::
 
-        $model->hasOne('country_id', new Country())
+        $model->hasOne('country_id', ['model' => [Country::class]])
             ->addTitle();
 
         // creates 'country' field as sub-query for country.name
 
     You may pass defaults::
 
-        $model->hasOne('country_id', new Country())
-            ->addTitle(['caption'=>'Country Name']);
+        $model->hasOne('country_id', ['model' => [Country::class]])
+            ->addTitle(['caption' => 'Country Name']);
 
     Returns new field object.
-
-.. php:method:: withTitle
-
-    Similar to addTitle, but returns $this.
 
 Expressions
 -----------
 
-.. php:class:: FieldSqlExpression
+.. php:class:: SqlExpressionField
 
     Extends :php:class:`FieldSql`
 
@@ -155,7 +151,7 @@ Expression will map into the SQL code, but will perform as read-only field other
 
     SQL Expressions can be used inside other SQL expressions::
 
-        $model->addExpression('can_buy_alcohol', ['if([age] > 25, 1, 0)', 'type'=>'boolean']);
+        $model->addExpression('can_buy_alcohol', ['if([age] > 25, 1, 0)', 'type' => 'boolean']);
 
 Adding expressions to model will make it automatically reload itself after save
 as default behavior, see :php:attr:`Model::reload_after_save`.
@@ -173,7 +169,7 @@ This method allows you to execute code within a 'START TRANSACTION / COMMIT' blo
 
         function applyPayment(Payment $p) {
 
-            $this->persistence->atomic(function() use ($p) {
+            $this->persistence->atomic(function () use ($p) {
 
                 $this->set('paid', true);
                 $this->save();
@@ -197,17 +193,17 @@ Custom Expressions
 .. php:method:: expr
 
     This method is also injected into the model, that is associated with
-    Persistence\Sql so the most convenient way to use this method is by calling
+    `Persistence\Sql` so the most convenient way to use this method is by calling
     `$model->expr('foo')`.
 
-This method is quite similar to \Atk4\Dsql\Query::expr() method explained here:
+This method is quite similar to \Atk4\Data\Persistence\Sql\Query::expr() method explained here:
 http://dsql.readthedocs.io/en/stable/expressions.html
 
 There is, however, one difference. Expression class requires all named arguments
 to be specified. Use of Model::expr() allows you to specify field names and those
 field expressions will be automatically substituted. Here is long / short format::
 
-    $q = new \Atk4\Dsql\Expression('[age] + [birth_year]', [
+    $q = new \Atk4\Data\Persistence\Sql\Expression('[age] + [birth_year]', [
             'age' => $m->getField('age'),
             'birth_year' => $m->getField('birth_year')
         ]);
@@ -216,7 +212,7 @@ field expressions will be automatically substituted. Here is long / short format
 
     $q = $m->expr('[age] + [birth_year']);
 
-This method is automatically used by :php:class:`FieldSqlExpression`.
+This method is automatically used by :php:class:`SqlExpressionField`.
 
 
 Actions
@@ -244,18 +240,6 @@ them yourself)::
     $action = $model->action('select', [false]);
     $action->field('count(*)', 'c);
 
-
-Action: insert
---------------
-
-Will prepare query for performing insert of a new record.
-
-Action: update, delete
-----------------------
-
-Will prepare query for performing update or delete of records.
-Applies conditions set.
-
 Action: count
 -------------
 
@@ -266,7 +250,7 @@ Returns query for `count(*)`::
 
 You can also specify alias::
 
-    $action = $model->action('count', ['alias'=>'cc']);
+    $action = $model->action('count', ['alias' => 'cc']);
     $data = $action->getRow();
     $cnt = $data->get('cc');
 
@@ -280,7 +264,7 @@ Get query for a specific field::
 
 You can also specify alias::
 
-    $action = $model->action('field', ['age', 'alias'=>'the_age']]);
+    $action = $model->action('field', ['age', 'alias' => 'the_age']]);
     $age = $action->limit(1)->getRow()['the_age'];
 
 Action: fx
@@ -329,7 +313,7 @@ procedures you will loose portability of your application.
 
 We do have our legacy applications to maintain, so Stored Procedures and SQL
 extensions are here to stay. By making your Model rely on those extensions you
-will loose ability to use the same model with non-sql persistences.
+will loose ability to use the same model with non-sql persistencies.
 
 Sometimes you can fence the code like this::
 
@@ -338,7 +322,7 @@ Sometimes you can fence the code like this::
     }
 
 Or define your pure model, then extend it to add SQL capabilities. Note that
-using single model with cross-persistences should still be possible, so you
+using single model with cross-persistencies should still be possible, so you
 should be able to retrieve model data from stored procedure then cache it.
 
 as a Model method
@@ -356,7 +340,7 @@ In short this should allow you to build and execute any SQL statement::
 Depending on the statement you can also use your statement to retrieve data::
 
     $data = $this->expr("call get_client_report_data([client_id])", [
-        'client_id'=>$client_id
+        'client_id' => $client_id
     ])->getRows();
 
 This can be handy if you wish to create a method for your Model to abstract away
@@ -368,12 +352,10 @@ the data::
         }
 
         function getReportData($arg) {
-            if (!$this->loaded()) {
-                throw new Exception('Client must be loaded');
-            }
+            $this->assertIsLoaded();
 
             return $this->expr("call get_client_report_data([client_id, arg])", [
-                'arg'       => $arg,
+                'arg' => $arg,
                 'client_id' => $client_id,
             ])->getRows();
         }
@@ -387,12 +369,10 @@ Here is another example using PHP generator::
         }
 
         function fetchReportData($arg) {
-            if (!$this->loaded()) {
-                throw new Exception('Client must be loaded');
-            }
+            $this->assertIsLoaded();
 
-            foreach($this->expr("call get_client_report_data([client_id, arg])", [
-                'arg'       => $arg,
+            foreach ($this->expr("call get_client_report_data([client_id, arg])", [
+                'arg' => $arg,
                 'client_id' => $client_id,
             ]) as $row) {
                 yield $row;
@@ -414,7 +394,7 @@ fetching like this::
         function init(): void {
             parent::init();
 
-            $this->hasOne('parent_id', new self());
+            $this->hasOne('parent_id', ['model' => [self::class]]);
             $this->addField('name');
 
             $this->addExpression('path', 'get_path([id])');
@@ -433,7 +413,7 @@ as an Action
 
 .. important:: Not all SQL vendors may support this approach.
 
-Method :php:meth:`Persistence\\Sql::action` and :php:meth:`Model::action`
+Method :php:meth:`Persistence\Sql::action` and :php:meth:`Model::action`
 generates queries for most of model operations.  By re-defining this method,
 you can significantly affect the query building of an SQL model::
 
@@ -491,8 +471,8 @@ procedure inside Model::init() then set $table property to a temporary table::
                 $this->getApp()->system['contractor_id']
             ])->execute();
 
-            $this->addField('date', ['type'=>'date']);
-            $this->addField('items', ['type'=>'integer']);
+            $this->addField('date', ['type' => 'date']);
+            $this->addField('items', ['type' => 'integer']);
             ...
         }
     }
@@ -515,8 +495,8 @@ Technically you can also specify expression as a $table property of your model::
 
             $this->init = $this->expr("call get_report_data()");
 
-            $this->addField('date', ['type'=>'date']);
-            $this->addField('items', ['type'=>'integer']);
+            $this->addField('date', ['type' => 'date']);
+            $this->addField('items', ['type' => 'integer']);
             ...
         }
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
+use Atk4\Data\Schema\TestCase;
 
 /**
  * Country.
@@ -32,7 +33,7 @@ class LCountry extends Model
 
         $this->addField('is_eu', ['type' => 'boolean', 'default' => false]);
 
-        $this->hasMany('Users', new LUser())
+        $this->hasMany('Users', ['model' => [LUser::class]])
             ->addField('user_names', ['field' => 'name', 'concat' => ',']);
     }
 }
@@ -66,11 +67,11 @@ class LUser extends Model
         $this->addField('name');
         $this->addField('is_vip', ['type' => 'boolean', 'default' => false]);
 
-        $this->hasOne('country_id', new LCountry())
-            ->withTitle()
-            ->addFields(['country_code' => 'code', 'is_eu']);
+        $ref = $this->hasOne('country_id', ['model' => [LCountry::class]])
+            ->addFields(['country_code' => 'code', 'is_eu'])
+            ->addTitle();
 
-        $this->hasMany('Friends', new LFriend())
+        $this->hasMany('Friends', ['model' => [LFriend::class]])
             ->addField('friend_names', ['field' => 'friend_name', 'concat' => ',']);
     }
 }
@@ -89,17 +90,19 @@ class LUser extends Model
  */
 class LFriend extends Model
 {
-    public $skip_reverse = false;
     public $table = 'friend';
     public $title_field = 'friend_name';
+
+    /** @var bool */
+    public $skip_reverse = false;
 
     protected function init(): void
     {
         parent::init();
 
-        $this->hasOne('user_id', new LUser())
+        $this->hasOne('user_id', ['model' => [LUser::class]])
             ->addField('my_name', 'name');
-        $this->hasOne('friend_id', new LUser())
+        $this->hasOne('friend_id', ['model' => [LUser::class]])
             ->addField('friend_name', 'name');
 
         // add or remove reverse friendships
@@ -125,7 +128,7 @@ class LFriend extends Model
             $c = clone $this;
             $c->skip_reverse = true;
 
-            $c->loadBy([
+            $c = $c->loadBy([
                 'user_id' => $this->get('friend_id'),
                 'friend_id' => $this->get('user_id'),
             ])->delete();
@@ -134,41 +137,37 @@ class LFriend extends Model
     }
 }
 
-/**
- * @coversDefaultClass \Atk4\Data\Model
- *
- * ATK Data has an option to lookup ID values if their "lookup" values are specified.
- */
-class LookupSqlTest extends \Atk4\Schema\PhpunitTestCase
+class LookupSqlTest extends TestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
 
         // populate database for our three models
-        $this->getMigrator(new LCountry($this->db))->dropIfExists()->create();
-        $this->getMigrator(new LUser($this->db))->dropIfExists()->create();
-        $this->getMigrator(new LFriend($this->db))->dropIfExists()->create();
+        $this->createMigrator(new LCountry($this->db))->create();
+        $this->createMigrator(new LUser($this->db))->create();
+        $this->createMigrator(new LFriend($this->db))->create();
     }
 
     /**
      * test various ways to import countries.
      */
-    public function testImportCountriesBasic()
+    public function testImportCountriesBasic(): void
     {
         $c = new LCountry($this->db);
 
         $results = [];
 
         // should be OK, will set country name, rest of fields will be null
-        (clone $c)->saveAndUnload(['name' => 'Canada']);
+        $c->createEntity()->saveAndUnload(['name' => 'Canada']);
 
         // adds another country, but with more fields
-        (clone $c)->saveAndUnload(['name' => 'Latvia', 'code' => 'LV', 'is_eu' => true]);
+        $c->createEntity()->saveAndUnload(['name' => 'Latvia', 'code' => 'LV', 'is_eu' => true]);
 
         // setting field prior will affect save()
-        $c->set('is_eu', true);
-        $c->save(['name' => 'Estonia', 'code' => 'ES']);
+        $cc = $c->createEntity();
+        $cc->set('is_eu', true);
+        $cc->save(['name' => 'Estonia', 'code' => 'ES']);
 
         // is_eu will NOT BLEED into this record, because insert() does not make use of current model values.
         $c->insert(['name' => 'Korea', 'code' => 'KR']);
@@ -228,7 +227,7 @@ class LookupSqlTest extends \Atk4\Schema\PhpunitTestCase
         ], $this->getDb(['country']));
     }
 
-    public function testImportInternationalUsers()
+    public function testImportInternationalUsers(): void
     {
         $c = new LCountry($this->db);
 
@@ -282,7 +281,7 @@ class LookupSqlTest extends \Atk4\Schema\PhpunitTestCase
         ], $this->getDb(['country', 'user']));
     }
 
-    public function testImportByLookup()
+    public function testImportByLookup(): void
     {
         $c = new LCountry($this->db);
 
@@ -357,7 +356,7 @@ class LookupSqlTest extends \Atk4\Schema\PhpunitTestCase
      *
      * TODO - that's left for hasMTM implementation..., to be coming later
      *
-    public function testImportInternationalFriends()
+    public function testImportInternationalFriends(): void
     {
         $c = new LCountry($this->db);
 
@@ -365,7 +364,7 @@ class LookupSqlTest extends \Atk4\Schema\PhpunitTestCase
         $c->insert(['Canada', 'Users' => ['Alain', ['Duncan', 'is_vip' => true]]]);
 
         // Inserting Users into Latvia can also specify Friends. In this case Friend name will be looked up
-        $c->insert(['Latvia', 'Users' => ['Imants', ['Juris', 'friend_names' => 'Alain,Imants']]]);
+        $c->insert(['Latvia', 'Users' => ['Imants', ['Juris', 'friend_names' => 'Alain, Imants']]]);
 
         // Inserting This time explicitly specify friend attributes
         $c->insert(['UK', 'Users' => [

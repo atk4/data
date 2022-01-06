@@ -7,6 +7,7 @@ namespace Atk4\Data\Model;
 use Atk4\Core\ContainerTrait;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
+use Atk4\Data\Persistence\Sql\Expressionable;
 
 /**
  * @property Scope\AbstractScope[] $elements
@@ -25,7 +26,7 @@ class Scope extends Scope\AbstractScope
     /**
      * Create a Scope from array of condition objects or condition arrays.
      *
-     * @param Scope\AbstractScope[]|array[] $nestedConditions
+     * @param array<int, Scope\AbstractScope|string|Expressionable|array<mixed>> $nestedConditions
      */
     public function __construct(array $nestedConditions = [], string $junction = self::AND)
     {
@@ -67,6 +68,10 @@ class Scope extends Scope\AbstractScope
     }
 
     /**
+     * @param Scope\AbstractScope|array|string|Expressionable $field
+     * @param string|mixed|null                               $operator
+     * @param mixed|null                                      $value
+     *
      * @return $this
      */
     public function addCondition($field, $operator = null, $value = null)
@@ -153,7 +158,6 @@ class Scope extends Scope\AbstractScope
             return $this;
         }
 
-        /** @var Scope\AbstractScope $component */
         $component = reset($this->elements);
 
         return $component->simplify();
@@ -190,6 +194,8 @@ class Scope extends Scope\AbstractScope
     }
 
     /**
+     * @param Scope\AbstractScope|string|Expressionable|array<mixed> ...$conditions
+     *
      * @return static
      */
     public static function createAnd(...$conditions)
@@ -198,6 +204,8 @@ class Scope extends Scope\AbstractScope
     }
 
     /**
+     * @param Scope\AbstractScope|string|Expressionable|array<mixed> ...$conditions
+     *
      * @return static
      */
     public static function createOr(...$conditions)

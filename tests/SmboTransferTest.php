@@ -4,27 +4,24 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
-use Atk4\Data\Persistence;
+use Atk4\Data\Schema\TestCase;
 use Atk4\Data\Tests\Model\Smbo\Account;
 use Atk4\Data\Tests\Model\Smbo\Company;
 use Atk4\Data\Tests\Model\Smbo\Payment;
 use Atk4\Data\Tests\Model\Smbo\Transfer;
 
-/**
- * Practical test contributed by Sortmybooks.com.
- */
-class SmboTransferTest extends \Atk4\Schema\PhpunitTestCase
+class SmboTransferTest extends TestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->getMigrator()->table('account')->dropIfExists()
+        $this->createMigrator()->table('account')
             ->id()
             ->field('name')
             ->create();
 
-        $this->getMigrator()->table('document')->dropIfExists()
+        $this->createMigrator()->table('document')
             ->id()
             ->field('reference')
             ->field('contact_from_id')
@@ -33,7 +30,7 @@ class SmboTransferTest extends \Atk4\Schema\PhpunitTestCase
             ->field('amount', ['type' => 'float'])
             ->create();
 
-        $this->getMigrator()->table('payment')->dropIfExists()
+        $this->createMigrator()->table('payment')
             ->id()
             ->field('document_id', ['type' => 'integer'])
             ->field('account_id', ['type' => 'integer'])
@@ -47,18 +44,18 @@ class SmboTransferTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Testing transfer between two accounts.
      */
-    public function testTransfer()
+    public function testTransfer(): void
     {
-        $aib = (new Account($this->db))->save(['name' => 'AIB']);
-        $boi = (new Account($this->db))->save(['name' => 'BOI']);
+        $aib = (new Account($this->db))->createEntity()->save(['name' => 'AIB']);
+        $boi = (new Account($this->db))->createEntity()->save(['name' => 'BOI']);
 
         $t = $aib->transfer($boi, 100); // create transfer between accounts
-
         $t->save();
 
         $this->assertEquals(-100, $aib->reload()->get('balance'));
         $this->assertEquals(100, $boi->reload()->get('balance'));
 
+        $t = new Transfer($this->db);
         $data = $t->export(['id', 'transfer_document_id']);
         usort($data, function ($e1, $e2) {
             return $e1['id'] < $e2['id'] ? -1 : 1;
@@ -69,25 +66,25 @@ class SmboTransferTest extends \Atk4\Schema\PhpunitTestCase
         ], $data);
     }
 
-    public function testRef()
+    public function testRef(): void
     {
         // create accounts and payments
         $a = new Account($this->db);
 
-        $aa = clone $a;
+        $aa = $a->createEntity();
         $aa->save(['name' => 'AIB']);
-        $aa->ref('Payment')->save(['amount' => 10]);
-        $aa->ref('Payment')->save(['amount' => 20]);
+        $aa->ref('Payment')->createEntity()->save(['amount' => 10]);
+        $aa->ref('Payment')->createEntity()->save(['amount' => 20]);
         $aa->unload();
 
-        $aa = clone $a;
+        $aa = $a->createEntity();
         $aa->save(['name' => 'BOI']);
-        $aa->ref('Payment')->save(['amount' => 30]);
-        $a->unload();
+        $aa->ref('Payment')->createEntity()->save(['amount' => 30]);
+        $aa->unload();
 
         // create payment without link to account
         $p = new Payment($this->db);
-        $p->saveAndUnload(['amount' => 40]);
+        $p->createEntity()->saveAndUnload(['amount' => 40]);
 
         // Account is not loaded, will dump all Payments related to ANY Account
         $data = $a->ref('Payment')->export(['amount']);
@@ -99,7 +96,7 @@ class SmboTransferTest extends \Atk4\Schema\PhpunitTestCase
         ], $data);
 
         // Account is loaded, will dump all Payments related to that particular Account
-        $a->load(1);
+        $a = $a->load(1);
         $data = $a->ref('Payment')->export(['amount']);
         $this->assertEquals([
             ['amount' => 10],
@@ -108,16 +105,14 @@ class SmboTransferTest extends \Atk4\Schema\PhpunitTestCase
     }
 
     /*
-    public function testBasicEntities()
+    public function testBasicEntities(): void
     {
-        $db = Persistence::connect($GLOBALS['DB_DSN'], $GLOBALS['DB_USER'], $GLOBALS['DB_PASSWD']);
-
         // Create a new company
-        $company = new Company($db);
+        $company = new Company($this->db);
         $company->set([
-            'name'           => 'Test Company 1',
-            'director_name'  => 'Tester Little',
-            'type'           => 'Limited Company',
+            'name' => 'Test Company 1',
+            'director_name' => 'Tester Little',
+            'type' => 'Limited Company',
             'vat_registered' => true,
         ]);
         $company->save();
@@ -135,9 +130,9 @@ class SmboTransferTest extends \Atk4\Schema\PhpunitTestCase
         $john = $company->load($john_id);
         $john_invoices = $john->ref('Invoice');
         $john_invoices->insertInvoice([
-            'ref_no'   => 'INV1',
+            'ref_no' => 'INV1',
             'due_date' => (new Date())->add(new DateInterval('2w')), // due in 2 weeks
-            'lines'    => [
+            'lines' => [
                 ['descr' => 'Sold some sweets', 'total_gross' => 100.00],
                 ['descr' => 'Delivery', 'total_gross' => 10.00],
             ],
@@ -150,16 +145,16 @@ class SmboTransferTest extends \Atk4\Schema\PhpunitTestCase
         $company->ref('Client')->load($agile_id)->refSet('Invoice')->insertInvoice([
             'lines' => [
                 [
-                    'item_id'   => $john->ref('Product')->insert('Cat Food'),
-                    'nominal'   => 'Sales:Discounted',
+                    'item_id' => $john->ref('Product')->insert('Cat Food'),
+                    'nominal' => 'Sales:Discounted',
                     'total_net' => 50.00,
-                    'vat_rate'  => 23,
+                    'vat_rate' => 23,
                     // calculates total_gross at 61.50.
                 ],
                 [
-                    'item_id'   => $john->ref('Service')->insert('Delivery'),
+                    'item_id' => $john->ref('Service')->insert('Delivery'),
                     'total_net' => 10.00,
-                    'vat_rate'  => '23%',
+                    'vat_rate' => '23%',
                     // calculates total_gross at 12.30
                 ],
             ],

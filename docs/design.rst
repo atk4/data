@@ -162,7 +162,7 @@ Code::
     class Model_Client extends Model_User {
         public function sendPasswordReminder() {
 
-            mail($this->get('email'), 'Your password is: '.$this->get('password'));
+            mail($this->get('email'), 'Your password is: ' . $this->get('password'));
         }
     }
 
@@ -206,7 +206,7 @@ Code to declare fields::
             parent::init();
 
             $this->addField('description');
-            $this->addField('amount')->type('money');
+            $this->addField('amount')->type('atk4_money');
             $this->addField('is_paid')->type('boolean');
         }
     }
@@ -236,7 +236,7 @@ Code (add inside `init()`)::
         protected function init(): void {
             parent::init();
 
-            $this->hasMany('Order', new Model_Order());
+            $this->hasMany('Order', ['model' => [Model_Order::class]]);
         }
     }
 
@@ -244,7 +244,7 @@ Code (add inside `init()`)::
         protected function init(): void {
             parent::init();
 
-            $this->hasOne('Client', new Model_Client());
+            $this->hasOne('Client', ['model' => [Model_Client::class]]);
 
             // addField declarations
         }
@@ -272,7 +272,7 @@ ID Field
 Each object is stored with some unique identifier, so you can load and store
 object if you know it's ID::
 
-    $order->load(20);
+    $order = $order->load(20);
     $order->set('amount', 1200.20);
     $order->save();
 
@@ -338,7 +338,7 @@ Hooks can help you perform operations when object is being persisted::
             // addField() declaration
             // addExpression('is_password_expired')
 
-            $this->onHookShort(Model::HOOK_BEFORE_SAVE, function() {
+            $this->onHookShort(Model::HOOK_BEFORE_SAVE, function () {
                 if ($this->isDirty('password')) {
                     $this->set('password', encrypt_password($this->get('password')));
                     $this->set('password_change_date', $this->expr('now()'));
@@ -360,7 +360,7 @@ DataSet is an object that represents collection of Domain model records that
 are persisted::
 
     $order = $db->add('Model_Order');
-    $order->load(10);
+    $order = $order->load(10);
 
 In scenario above we loaded a specific record. Agile Data does not create a
 separate object when loading, instead the same object is re-used. This is done
@@ -372,19 +372,19 @@ Orders::
 
     $sum = 0;
     $order = $db->add('Model_Order');
-    $order->load(10);
+    $order = $order->load(10);
     $sum += $order->get('amount');
 
-    $order->load(11);
+    $order = $order->load(11);
     $sum += $order->get('amount');
 
-    $order->load(13);
+    $order = $order->load(13);
     $sum += $order->get('amount');
 
 You can iterate over the DataSet::
 
     $sum = 0;
-    foreach($db->add('Model_Order') as $order) {
+    foreach ($db->add('Model_Order') as $order) {
         $sum += $order->get('amount');
     }
 
@@ -417,7 +417,7 @@ The above is a Domain Model code. It will iterate through the DataSet of
 a restriction::
 
     $sum = 0;
-    foreach($db->add('Model_Order')->addCondition('is_paid', true) as $order) {
+    foreach ($db->add('Model_Order')->addCondition('is_paid', true) as $order) {
         $sum += $order->get('amount');
     }
 
@@ -492,19 +492,19 @@ While with MongoDB, the query could be different::
 Finally the code above will work even if you use a simple Array as a data source::
 
     $db = new \Atk4\Data\Persistence\Array_([
-        'client'=>[
+        'client' => [
             [
-                'name'=>'Joe',
-                'email'=>'joe@yahoo.com',
-                'Orders'=>[
-                    ['amount'=>10],
-                    ['amount'=>20]
+                'name' => 'Joe',
+                'email' => 'joe@yahoo.com',
+                'Orders' => [
+                    ['amount' => 10],
+                    ['amount' => 20]
                 ]
             ],[
-                'name'=>'Bill',
-                'email'=>'bill@yahoo.com',
-                'Orders'=>[
-                    ['amount'=>35]
+                'name' => 'Bill',
+                'email' => 'bill@yahoo.com',
+                'Orders' => [
+                    ['amount' => 35]
                 ]
             ]
         ]
@@ -516,7 +516,7 @@ So getting back to the operation above, lets look at it in more details::
 
 While "vip_orders" is actually a DataSet, executing count() will cross you over
 into persistence layer. However this method is returning a new object, which is then
-executed when you call getOne(). For SQL persistences it returns \Atk4\Dsql\Query
+executed when you call getOne(). For SQL persistencies it returns \Atk4\Data\Persistence\Sql\Query
 object, for example.
 
 Even though for a brief moment you had your hands on a "database-vendor specific"
@@ -534,7 +534,7 @@ will not violate SRP (Single Responsibility Principle)
 
 Unique Features of Persistence Layer
 ------------------------------------
-More often than not, your application is designed and built with a specific
+More often thannot, your application is designed and built with a specific
 persistence layer in mind. If you are using SQL database, you want to
 
 

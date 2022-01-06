@@ -47,7 +47,7 @@ basic functionality is divided into 3 major areas:
 
  - Fields (or Columns)
  - DataSets (or Rows)
- - Databases (or Persistences)
+ - Databases (or Persistencies)
 
 Each of the above corresponds to a PHP class, which may use composition principle
 to hide implementation details.
@@ -61,7 +61,7 @@ Class: Field
 ------------
 
  - Represent logical data column (e.g. "date_of_birth")
- - Stores column meta-information (e.g. "type" => "date", "caption"=>"Birth Date")
+ - Stores column meta-information (e.g. "type" => "date", "caption" => "Birth Date")
  - Handles value normalization
  - Documentation: :php:class:`Field`
 
@@ -133,7 +133,7 @@ using::
 
     $user = new User($db);
 
-    $user->load(20);            // load specific user record into PHP
+    $user = $user->load(20);            // load specific user record into PHP
     echo $user->get('name').': ';    // access field values
 
     $gross = $user->ref('Invoice')
@@ -171,7 +171,7 @@ MongoDB), you would need to define the field differently::
     });
 
 When you use persistence-specific code, you must be aware that it will not map
-into persistences that does not support features you have used.
+into persistencies that does not support features you have used.
 
 In most cases that is OK as if you prefer to stay with same database type, for
 instance, the above expression will still be usable with any SQL vendor, but if
@@ -205,10 +205,10 @@ This code is specific to SQL databases, but can be used with any Model, so in
 order to use grouping with Agile Data, your code would be::
 
     $m = new \Atk4\Report\GroupModel(new Sale($db));
-    $m->groupBy(['contractor_to', 'type'], [      // groups by 2 columns
-        'c'                     => 'count(*)',    // defines aggregate formulas for fields
-        'qty'                   => 'sum([])',     // [] refers back to qty
-        'total'                 => 'sum([amount])', // can specify any field here
+    $m->groupBy(['contractor_to', 'type'], [ // groups by 2 columns
+        'c' => 'count(*)', // defines aggregate formulas for fields
+        'qty' => 'sum([])', // [] refers back to qty
+        'total' => 'sum([amount])', // can specify any field here
     ]);
 
 
@@ -217,7 +217,7 @@ Persistence Scaling
 ===================
 
 Although in most cases you would be executing operation against SQL persistence,
-Agile Data makes it very easy to use models with a simpler persistences.
+Agile Data makes it very easy to use models with a simpler persistencies.
 
 For example, consider you want to output a "table" to the user using HTML by
 using Agile UI::
@@ -229,7 +229,7 @@ using Agile UI::
 
     echo $htmltable->render();
 
-Class `\\Atk4\\Ui\\Table` here is designed to work with persistences and models -
+Class `\\Atk4\\Ui\\Table` here is designed to work with persistencies and models -
 it will populate columns of correct type, fetch data, calculate totals if needed.
 But what if you have your data inside an array?
 You can use :php:class:`Persistence\Static_` for that::
@@ -238,8 +238,8 @@ You can use :php:class:`Persistence\Static_` for that::
     $htmltable->invokeInit();
 
     $htmltable->setModel(new User(new Persistence\Static_([
-        ['name'=>'John', 'is_admin'=>false, 'salary'=>34400.00],
-        ['name'=>'Peter', 'is_admin'=>false, 'salary'=>42720.00],
+        ['name' => 'John', 'is_admin' => false, 'salary' => 34400.00],
+        ['name' => 'Peter', 'is_admin' => false, 'salary' => 42720.00],
     ])));
 
     echo $htmltable->render();
@@ -251,8 +251,8 @@ model class to display VAT breakdown table::
     $htmltable->invokeInit();
 
     $htmltable->setModel(new Model(new Persistence\Static_([
-        ['VAT_rate'=>'12.0%', 'VAT'=>'36.00', 'Net'=>'300.00'],
-        ['VAT_rate'=>'10.0%', 'VAT'=>'52.00', 'Net'=>'520.00'],
+        ['VAT_rate' => '12.0%', 'VAT' => '36.00', 'Net' => '300.00'],
+        ['VAT_rate' => '10.0%', 'VAT' => '52.00', 'Net' => '520.00'],
     ])));
 
     echo $htmltable->render();

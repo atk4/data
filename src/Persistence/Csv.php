@@ -27,25 +27,13 @@ use Atk4\Data\Persistence;
  */
 class Csv extends Persistence
 {
-    /**
-     * Name of the file.
-     *
-     * @var string
-     */
+    /** @var string Name of the file. */
     public $file;
 
-    /**
-     * Line in CSV file.
-     *
-     * @var int
-     */
+    /** @var int Line in CSV file. */
     public $line = 0;
 
-    /**
-     * File handle, when the $file is opened.
-     *
-     * @var resource|null
-     */
+    /** @var resource|null File handle, when the file is opened. */
     public $handle;
 
     /**
@@ -57,32 +45,16 @@ class Csv extends Persistence
      */
     public $mode;
 
-    /**
-     * Delimiter in CSV file.
-     *
-     * @var string
-     */
+    /** @var string Delimiter in CSV file. */
     public $delimiter = ',';
 
-    /**
-     * Enclosure in CSV file.
-     *
-     * @var string
-     */
+    /** @var string Enclosure in CSV file. */
     public $enclosure = '"';
 
-    /**
-     * Escape character in CSV file.
-     *
-     * @var string
-     */
+    /** @var string Escape character in CSV file. */
     public $escape_char = '\\';
 
-    /**
-     * Array of field names.
-     *
-     * @var array|null
-     */
+    /** @var array|null Array of field names. */
     public $header;
 
     public function __construct(string $file, array $defaults = [])
@@ -109,7 +81,7 @@ class Csv extends Persistence
         if (!$this->handle) {
             $this->handle = fopen($this->file, $mode);
             if ($this->handle === false) {
-                throw (new Exception('Can not open CSV file.'))
+                throw (new Exception('Cannot open CSV file.'))
                     ->addMoreInfo('file', $this->file)
                     ->addMoreInfo('mode', $mode);
             }
@@ -134,7 +106,7 @@ class Csv extends Persistence
     public function getLine(): ?array
     {
         $data = fgetcsv($this->handle, 0, $this->delimiter, $this->enclosure, $this->escape_char);
-        if ($data === false || $data === null) {
+        if ($data === false) {
             return null;
         }
 
@@ -150,7 +122,7 @@ class Csv extends Persistence
     {
         $ok = fputcsv($this->handle, $data, $this->delimiter, $this->enclosure, $this->escape_char);
         if ($ok === false) {
-            throw new Exception('Can not write to CSV file.');
+            throw new Exception('Cannot write to CSV file.');
         }
     }
 
@@ -177,7 +149,7 @@ class Csv extends Persistence
         $this->openFile('w');
 
         $header = [];
-        foreach ($model->getFields() as $name => $field) {
+        foreach (array_keys($model->getFields()) as $name) {
             if ($model->id_field && $name === $model->id_field) {
                 continue;
             }
@@ -219,7 +191,7 @@ class Csv extends Persistence
         }
 
         $row = array_combine($this->header, $row);
-        if ($model->id_field && isset($id)) {
+        if ($model->id_field && $id !== null) {
             $row[$model->id_field] = $id;
         }
 
@@ -228,20 +200,18 @@ class Csv extends Persistence
                 continue;
             }
 
-            if ($model->hasField($key)) {
-                $row[$key] = $this->typecastLoadField($model->getField($key), $value);
-            }
+            $row[$key] = $this->typecastLoadField($model->getField($key), $value);
         }
 
         return $row;
     }
 
-    /**
-     * Tries to load model and return data record.
-     * Doesn't throw exception if model can't be loaded.
-     */
-    public function tryLoadAny(Model $model): ?array
+    public function tryLoad(Model $model, $id): ?array
     {
+        if ($id !== self::ID_LOAD_ANY) {
+            throw new Exception('CSV Persistence does not support other than LOAD ANY mode'); // @TODO
+        }
+
         if (!$this->mode) {
             $this->mode = 'r';
         } elseif ($this->mode === 'w') {
@@ -292,21 +262,6 @@ class Csv extends Persistence
     }
 
     /**
-     * Loads any one record.
-     */
-    public function loadAny(Model $model): array
-    {
-        $data = $this->tryLoadAny($model);
-
-        if (!$data) {
-            throw (new Exception('No more records', 404))
-                ->addMoreInfo('model', $model);
-        }
-
-        return $data;
-    }
-
-    /**
      * Inserts record in data array and returns new record ID.
      *
      * @return mixed
@@ -319,8 +274,10 @@ class Csv extends Persistence
             throw new Exception('Currently reading records, so writing is not possible.');
         }
 
+        $data = $this->typecastSaveRow($model, $data);
+
         if (!$this->handle) {
-            $this->saveHeader($model);
+            $this->saveHeader($model->getModel(true));
         }
 
         $line = [];
@@ -331,9 +288,7 @@ class Csv extends Persistence
 
         $this->putLine($line);
 
-        if ($model->id_field) {
-            return $data[$model->id_field];
-        }
+        return $model->id_field ? $data[$model->id_field] : null;
     }
 
     /**
@@ -341,7 +296,7 @@ class Csv extends Persistence
      *
      * @param mixed $id
      */
-    public function update(Model $model, $id, array $data, string $table = null)
+    public function update(Model $model, $id, array $data): void
     {
         throw new Exception('Updating records is not supported in CSV persistence.');
     }
@@ -351,7 +306,7 @@ class Csv extends Persistence
      *
      * @param mixed $id
      */
-    public function delete(Model $model, $id, string $table = null)
+    public function delete(Model $model, $id): void
     {
         throw new Exception('Deleting records is not supported in CSV persistence.');
     }
@@ -361,7 +316,7 @@ class Csv extends Persistence
      *
      * @return string
      */
-    public function generateNewId(Model $model, string $table = null)
+    public function generateNewId(Model $model)
     {
         throw new Exception('Not implemented');
     }

@@ -1,11 +1,8 @@
-includes:
-    - vendor/mahalux/atk4-hintable/phpstan-ext.neon
-
 parameters:
-    level: 5
+    level: 6
     paths:
         - ./
-    excludes_analyse:
+    excludePaths:
         - cache/
         - build/
         - vendor/
@@ -13,52 +10,63 @@ parameters:
     # TODO review once we drop PHP 7.x support
     treatPhpDocTypesAsCertain: false
 
+    # some extra rules
+    checkAlwaysTrueCheckTypeFunctionCall: true
+    checkAlwaysTrueInstanceof: true
+    checkAlwaysTrueStrictComparison: true
+    checkExplicitMixedMissingReturn: true
+    checkFunctionNameCase: true
+    # TODO checkMissingClosureNativeReturnTypehintRule: true
+    reportMaybesInMethodSignatures: true
+    reportStaticMethodSignatures: true
+    checkTooWideReturnTypesInProtectedAndPublicMethods: true
+    checkMissingIterableValueType: false # TODO
+
     ignoreErrors:
         - '~^Unsafe usage of new static\(\)\.$~'
 
-        # TODO remove once https://github.com/atk4/ui/issues/1548 is resolved
-        - '~^Class Atk4\\Ui\\(Button|Icon) not found\.$~'
+        -
+            message: '~^Call to deprecated method getRawDataByTable\(\) of class Atk4\\Data\\Persistence\\Array_:~'
+            path: '*'
+            count: 2
 
-        # TODO do we want to allow to pass an Model instance?
-        - '~^Parameter #2 \$defaults of method Atk4\\Data\\Model::(hasOne|hasMany)\(\) expects array, .+ given\.$~'
-        - '~^Parameter #2 \$defaults of method Atk4\\Data\\Model\\Join::(hasOne|hasMany)\(\) expects array, .+ given\.$~'
+        # for Doctrine DBAL 2.x, remove the support once Doctrine ORM 2.10 is released
+        # see https://github.com/doctrine/orm/issues/8526
+        -
+            message: '~^(Call to an undefined method Doctrine\\DBAL\\Driver\\Connection::getWrappedConnection\(\)\.|Call to an undefined method Doctrine\\DBAL\\Connection::createSchemaManager\(\)\.|Call to an undefined static method Doctrine\\DBAL\\Exception::invalidPdoInstance\(\)\.|Call to method (getCreateTableSQL|getClobTypeDeclarationSQL|initializeCommentedDoctrineTypes)\(\) of deprecated class Doctrine\\DBAL\\Platforms\\\w+Platform:\n.+|Anonymous class extends deprecated class Doctrine\\DBAL\\Platforms\\(PostgreSQL94Platform|SQLServer2012Platform):\n.+|Call to deprecated method fetch(|All)\(\) of class Doctrine\\DBAL\\Result:\n.+|Call to deprecated method getSchemaManager\(\) of class Doctrine\\DBAL\\Connection:\n.+|Access to an undefined property Doctrine\\DBAL\\Driver\\PDO\\Connection::\$connection\.|Parameter #1 \$dsn of class Doctrine\\DBAL\\Driver\\PDO\\SQLSrv\\Connection constructor expects string, Doctrine\\DBAL\\Driver\\PDO\\Connection given\.|Method Atk4\\Data\\Persistence\\Sql\\Expression::execute\(\) should return Doctrine\\DBAL\\Result\|PDOStatement but returns bool\.|PHPDoc tag @return contains generic type Doctrine\\DBAL\\Schema\\AbstractSchemaManager<Doctrine\\DBAL\\Platforms\\AbstractPlatform> but class Doctrine\\DBAL\\Schema\\AbstractSchemaManager is not generic\.|Class Doctrine\\DBAL\\Platforms\\(MySqlPlatform|PostgreSqlPlatform) referenced with incorrect case: Doctrine\\DBAL\\Platforms\\(MySQLPlatform|PostgreSQLPlatform)\.)$~'
+            path: '*'
+            # count for DBAL 3.x matched in "src/Persistence/GenericPlatform.php" file
+            count: 39
 
         # TODO these rules are generated, this ignores should be fixed in the code
-        # for src-schema/PhpunitTestCase.php
-        - '~^Access to an undefined property Atk4\\Data\\Persistence\:\:\$connection\.$~'
-        - '~^Call to an undefined method Atk4\\Data\\Persistence\:\:dsql\(\)\.$~'
-        # for src/FieldSqlExpression.php
-        - '~^Call to an undefined method Atk4\\Data\\Model\:\:expr\(\)\.$~'
+        # for src/Schema/TestCase.php
+        - '~^Access to an undefined property Atk4\\Data\\Persistence::\$connection\.$~'
+        - '~^Call to an undefined method Atk4\\Data\\Persistence::dsql\(\)\.$~'
+        # for src/Field/SqlExpressionField.php
+        - '~^Call to an undefined method Atk4\\Data\\Model::expr\(\)\.$~'
         # for src/Model.php
-        - '~^Call to an undefined method Atk4\\Data\\Persistence\:\:load\(\)\.$~'
-        - '~^Call to an undefined method Atk4\\Data\\Persistence\:\:tryLoad\(\)\.$~'
-        - '~^Call to an undefined method Atk4\\Data\\Persistence\:\:loadAny\(\)\.$~'
-        - '~^Call to an undefined method Atk4\\Data\\Persistence\:\:tryLoadAny\(\)\.$~'
-        - '~^Call to an undefined method Atk4\\Data\\Persistence\:\:update\(\)\.$~'
-        - '~^Call to an undefined method Atk4\\Data\\Persistence\:\:insert\(\)\.$~'
-        - '~^Call to an undefined method Atk4\\Data\\Persistence\:\:export\(\)\.$~'
-        - '~^Call to an undefined method Atk4\\Data\\Persistence\:\:prepareIterator\(\)\.$~'
-        - '~^Call to an undefined method Atk4\\Data\\Persistence\:\:delete\(\)\.$~'
-        - '~^Call to an undefined method Atk4\\Data\\Persistence\:\:action\(\)\.$~'
+        - '~^Call to an undefined method Atk4\\Data\\Persistence::update\(\)\.$~'
+        - '~^Call to an undefined method Atk4\\Data\\Persistence::insert\(\)\.$~'
+        - '~^Call to an undefined method Atk4\\Data\\Persistence::export\(\)\.$~'
+        - '~^Call to an undefined method Atk4\\Data\\Persistence::prepareIterator\(\)\.$~'
+        - '~^Call to an undefined method Atk4\\Data\\Persistence::delete\(\)\.$~'
+        - '~^Call to an undefined method Atk4\\Data\\Persistence::action\(\)\.$~'
         # for src/Model/ReferencesTrait.php (in context of class Atk4\Data\Model)
-        - '~^Call to an undefined method Atk4\\Data\\Reference\:\:refLink\(\)\.$~'
+        - '~^Call to an undefined method Atk4\\Data\\Reference::refLink\(\)\.$~'
         # for src/Persistence/Sql.php
-        - '~^Call to an undefined method Atk4\\Dsql\\Query\:\:sequence\(\)\.$~'
-        - '~^Call to an undefined method Atk4\\Data\\Persistence\:\:expr\(\)\.$~'
-        - '~^Call to an undefined method Atk4\\Data\\Persistence\:\:exprNow\(\)\.$~'
+        - '~^Call to an undefined method Atk4\\Data\\Persistence::expr\(\)\.$~'
+        - '~^Call to an undefined method Atk4\\Data\\Persistence::exprNow\(\)\.$~'
         # for src/Persistence/Sql/Join.php
-        - '~^Call to an undefined method Atk4\\Data\\Persistence\:\:initQuery\(\)\.$~'
-        - '~^Call to an undefined method Atk4\\Data\\Persistence\:\:lastInsertId\(\)\.$~'
+        - '~^Call to an undefined method Atk4\\Data\\Persistence::initQuery\(\)\.$~'
+        - '~^Call to an undefined method Atk4\\Data\\Persistence::lastInsertId\(\)\.$~'
         # for src/Reference/HasMany.php
-        - '~^Call to an undefined method Atk4\\Data\\Model\:\:dsql\(\)\.$~'
+        - '~^Call to an undefined method Atk4\\Data\\Model::dsql\(\)\.$~'
         # for tests/FieldTest.php
-        - '~^Call to an undefined method Atk4\\Data\\Reference\\HasOne\:\:addTitle\(\)\.$~'
+        - '~^Call to an undefined method Atk4\\Data\\Reference\\HasOne::addTitle\(\)\.$~'
         # for tests/JoinSqlTest.php
-        - '~^Call to an undefined method Atk4\\Data\\Reference\\HasOne\:\:addField\(\)\.$~'
-        # for tests/LookupSqlTest.php
-        - '~^Call to an undefined method Atk4\\Data\\Reference\\HasOne\:\:withTitle\(\)\.$~'
-        # for tests/PersistentArrayTest.php
-        - '~^Call to an undefined method Atk4\\Data\\Persistence\:\:applyScope\(\)\.$~'
+        - '~^Call to an undefined method Atk4\\Data\\Reference\\HasOne::addField\(\)\.$~'
         # for tests/ReferenceSqlTest.php
-        - '~^Call to an undefined method Atk4\\Data\\Reference\\HasOne\:\:addFields\(\)\.$~'
-        - '~^Call to an undefined method Atk4\\Data\\Reference\:\:addTitle\(\)\.$~'
+        - '~^Call to an undefined method Atk4\\Data\\Reference\\HasOne::addFields\(\)\.$~'
+        - '~^Call to an undefined method Atk4\\Data\\Reference::addTitle\(\)\.$~'
+        # for tests/ScopeTest.php
+        - '~^Call to an undefined method Atk4\\Data\\Tests\\SUser::expr\(\)\.$~'

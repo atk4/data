@@ -4,16 +4,14 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Model;
 
+use Atk4\Data\Exception;
+
 /**
  * Provides native Model methods for join functionality.
  */
 trait JoinsTrait
 {
-    /**
-     * The class used by join() method.
-     *
-     * @var array
-     */
+    /** @var array The class used by join() method. */
     public $_default_seed_join = [Join::class];
 
     /**
@@ -23,34 +21,36 @@ trait JoinsTrait
      * join will also query $foreignTable in order to find additional fields. When inserting
      * the record will be also added inside $foreignTable and relationship will be maintained.
      *
-     * @param array|string $defaults
+     * @param array<string, mixed> $defaults
      */
-    public function join(string $foreignTable, $defaults = []): Join
+    public function join(string $foreignTable, array $defaults = []): Join
     {
-        if (!is_array($defaults)) {
-            $defaults = ['master_field' => $defaults];
-        } elseif (isset($defaults[0])) {
-            $defaults['master_field'] = $defaults[0];
-            unset($defaults[0]);
-        }
+        $this->assertIsModel();
 
         $defaults[0] = $foreignTable;
 
-        return $this->add(Join::fromSeed($this->_default_seed_join, $defaults));
+        $join = Join::fromSeed($this->_default_seed_join, $defaults);
+
+        if ($this->hasElement($name = $join->getDesiredName())) {
+            throw (new Exception('Join with such name already exists'))
+                ->addMoreInfo('name', $name)
+                ->addMoreInfo('foreignTable', $foreignTable);
+        }
+
+        $this->add($join);
+
+        return $join;
     }
 
     /**
-     * Left Join support.
+     * Add left/weak join.
      *
      * @see join()
      *
-     * @param array|string $defaults
+     * @param array<string, mixed> $defaults
      */
-    public function leftJoin(string $foreignTable, $defaults = []): Join
+    public function leftJoin(string $foreignTable, array $defaults = []): Join
     {
-        if (!is_array($defaults)) {
-            $defaults = ['master_field' => $defaults];
-        }
         $defaults['weak'] = true;
 
         return $this->join($foreignTable, $defaults);

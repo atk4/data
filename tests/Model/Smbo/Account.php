@@ -16,16 +16,17 @@ class Account extends Model
 
         $this->addField('name');
 
-        $this->hasMany('Payment', new Payment())
+        $this->hasMany('Payment', ['model' => [Payment::class]])
             ->addField('balance', ['aggregate' => 'sum', 'field' => 'amount']);
     }
 
     /**
-     * create and return a trasnfer model.
+     * Create and return a transfer model.
      */
-    public function transfer(self $a, $amount)
+    public function transfer(self $a, float $amount): Transfer
     {
         $t = new Transfer($this->persistence, ['detached' => true]);
+        $t = $t->createEntity();
         $t->set('account_id', $this->getId());
 
         $t->set('destination_account_id', $a->getId());

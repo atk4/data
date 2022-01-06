@@ -31,7 +31,7 @@ $vip_clients = (new Client($db))->addCondition('is_vip', true);
 // express total for all VIP client invoices. The value of the variable is an object
 $total_due = $vip_clients->ref('Invoice')->action('fx', ['sum', 'total']);
 
-// Single database query is executed here, but not before!
+// single database query is executed here, but not before!
 echo $total_due->getOne();
 ```
 
@@ -42,7 +42,7 @@ In other ORM the similar implementation would be either [slow, clumsy, limited o
 Agile Toolkit is a low-code framework. Once you have defined your business object, it can be associated with a UI widget:
 
 ``` php
-$app->add(new Crud())->setModel(new Client($db), ['name', 'surname'], ['edit', 'archive']);
+Crud::addTo($app)->setModel(new Client($db), ['name', 'surname'], ['edit', 'archive']);
 ```
 
 or with an API end-point:
@@ -53,7 +53,7 @@ $api->rest('/clients', new Client($db));
 
 ## Extensibility and Add-ons
 
-ATK Data is extensible and offers wide range of add-ons ranging from [Audit](https://github.com/atk4/audit) and [Aggregation/Reporting](https://github.com/atk4/report). Developer may also implement advanced DB concepts like "[disjoint subtypes](https://nearly.guru/blog/data/disjoint-subtypes-in-php)" - allowing to efficiently persist object-oriented data in your database. 
+ATK Data is extensible and offers wide range of add-ons ranging from [Audit](https://github.com/atk4/audit) and [Aggregation/Reporting](https://github.com/atk4/report). Developer may also implement advanced DB concepts like "[disjoint subtypes](https://nearly.guru/blog/data/disjoint-subtypes-in-php)" - allowing to efficiently persist object-oriented data in your database.
 
 Regardless of how your model is constructed and what database backend is used, it can easily be used in conjunction with any 3rd party add-on, like [Charts](https://github.com/atk4/chart).
 
@@ -73,7 +73,7 @@ Since the initial introduction of Agile Data back in [2016](https://www.reddit.c
 
 ### Getting Started
 
-Watch [Quick Start](http://agile-data.readthedocs.io/en/develop/quickstart.html) or [Screencasts](https://www.youtube.com/watch?v=o16xwkFfnuA&t=182s&index=1&list=PLUUKFD-IBZWaaN_CnQuSP0iwWeHJxPXKS). There is also our [Official Udemy Course](https://forum.agiletoolkit.org/t/udemy-com-atk-course-early-access-limited-time-free/413) and [Full Documentation](http://agile-data.readthedocs.io) ([PDF](https://media.readthedocs.org/pdf/agile-data/develop/agile-data.pdf)). 
+Watch [Quick Start](http://agile-data.readthedocs.io/en/develop/quickstart.html) or [Screencasts](https://www.youtube.com/watch?v=o16xwkFfnuA&t=182s&index=1&list=PLUUKFD-IBZWaaN_CnQuSP0iwWeHJxPXKS). There is also our [Official Udemy Course](https://forum.agiletoolkit.org/t/udemy-com-atk-course-early-access-limited-time-free/413) and [Full Documentation](http://agile-data.readthedocs.io) ([PDF](https://media.readthedocs.org/pdf/agile-data/develop/agile-data.pdf)).
 
 ATK Data relies on ATK Core and can be greatly complimented by ATK UI:
 
@@ -126,41 +126,44 @@ This next example builds a complex "Job Profitability Report" by only relying on
 
 ``` php
 class JobReport extends Job {
-  function init(): void {
-    parent::init();
+    function init(): void {
+        parent::init();
 
-    // Invoice contains Lines that may relevant to this job
-    $invoice = new Invoice($this->persistence);
+        // Invoice contains Lines that may relevant to this job
+        $invoice = new Invoice($this->persistence);
 
-    // We need to ignore draft invoices
-    $invoice->addCondition('status', '!=', 'draft');
+        // we need to ignore draft invoices
+        $invoice->addCondition('status', '!=', 'draft');
 
-    // Each invoice may have multiple lines, which is what we want
-    $invoice_lines = $invoice->ref('Lines');
+        // each invoice may have multiple lines, which is what we want
+        $invoice_lines = $invoice->ref('Lines');
 
-    // Build relation between job and invoice line
-    $this->hasMany('InvoiceLines', $invoice_lines)
-      ->addField('invoiced', ['aggregate'=>'sum', 'field'=>'total', 'type'=>'money']);
+        // build relation between job and invoice line
+        $this->hasMany('InvoiceLines', ['model' => $invoice_lines])
+            ->addField('invoiced', ['aggregate' => 'sum', 'field' => 'total', 'type' => 'atk4_money']);
 
-    // Next we need to see how much is reported through timesheets
-    $timesheet = new Timesheet($this->persistence);
+        // next we need to see how much is reported through timesheets
+        $timesheet = new Timesheet($this->persistence);
 
-    // Timesheet relates to client. Import client.hourly_rate as expression.
-    $timesheet->getRef('client_id')->addField('hourly_rate');
+        // timesheet relates to client, import client.hourly_rate as expression
+        $timesheet->getRef('client_id')->addField('hourly_rate');
 
-    // Calculate timesheet cost expression
-    $timesheet->addExpression('cost', '[hours]*[hourly_rate]');
+        // calculate timesheet cost expression
+        $timesheet->addExpression('cost', '[hours]*[hourly_rate]');
 
-    // Build relation between Job and Timesheets
-    $this->hasMany('Timesheets', $timesheet)
-      ->addField('reported', ['aggregate'=>'sum', 'field'=>'cost', 'type'=>'money']);
+        // build relation between Job and Timesheets
+        $this->hasMany('Timesheets', ['model' => $timesheet])
+            ->addField(
+                'reported',
+                ['aggregate' => 'sum', 'field' => 'cost', 'type' => 'atk4_money']
+            );
 
-	// Finally lets calculate profit
-    $this->addExpression('profit', '[invoiced]-[reported]');
+        // finally lets calculate profit
+        $this->addExpression('profit', '[invoiced]-[reported]');
 
-    // Profit margin could be also useful
-    $this->addExpression('profit_margin', 'coalesce([profit] / [invoiced], 0)');
-  }
+        // profit margin could be also useful
+        $this->addExpression('profit_margin', 'coalesce([profit] / [invoiced], 0)');
+    }
 }
 ```
 
@@ -188,9 +191,9 @@ $data = new JobReport($db);
 // BarChart wants aggregated data
 $data->addExpression('month', 'month([date])');
 $aggregate = new \Atk4\Report\GroupModel($data);
-$aggregate->groupBy('month', ['profit_margin'=>'sum']);
+$aggregate->groupBy('month', ['profit_margin' => 'sum']);
 
-// Associate presentation with data
+// associate presentation with data
 $chart->setModel($aggregate, ['month', 'profit_margin']);
 $html = $chart->html();
 ```
@@ -229,7 +232,7 @@ Agile Data has a usage patters that will automatically restrict access by this c
 
 With Agile Data you can move your data from one persistence to another seamlessly. If you rely on some feature that your new persistence does not support (e.g. Expression) you can replace them a callback calculation, that executes on your App server.
 
-As usual - the rest of your application is not affected and you can even use multiple types of different persistences and still navigate through references.
+As usual - the rest of your application is not affected and you can even use multiple types of different persistencies and still navigate through references.
 
 #### Support
 
@@ -253,7 +256,7 @@ You can, however, [import fields through joins too](http://agile-data.readthedoc
 
 #### Q: I don't like the `$book->set('field', 123)`, I prefer properties
 
-Agile Models are not Entities. They don't represent a single record, but rather a set of records. Which is why Model has some important properties: `$model->getId()`, `$model->persistence` and `model->data`.
+Agile Models are not Entities. They don't represent a single record, but rather a set of records. Which is why Model has some important properties: `$model->getId()`, `$model->persistence` and `model->getDataRef()`.
 
 Read more on [working with individual data records](http://agile-data.readthedocs.io/en/develop/persistence.html).
 
@@ -294,16 +297,16 @@ You get to manipulate your objects first before query is invoked. The next code 
 ``` php
 $m = new Client($db);
 echo $m->addCondition('vip', true)
-  ->ref('Order')->ref('Line')->action('fx', ['sum', 'total'])->getOne();
+    ->ref('Order')->ref('Line')->action('fx', ['sum', 'total'])->getOne();
 ```
 
 Resulting Query will always use parametric variables if vendor driver supports them (such as PDO):
 
 ``` sql
 select sum(`price`*`qty`) from `order_line` `O_L` where `order_id` in (
-  select `id` from `order` `O` where `client_id` in (
-    select `id` from `client` where `vip` = :a
-  )
+    select `id` from `order` `O` where `client_id` in (
+        select `id` from `client` where `vip` = :a
+    )
 )
 
 // :a is "Y"
@@ -319,11 +322,11 @@ My next example demonstrates how simple and clean your code looks when you store
 $m = new Client($db);
 $m->loadBy('name', 'Pear Company');
 $m->ref('Order')
-   ->save(['ref'=>'TBL1', 'delivery'=>new DateTime('+1 month')])
-   ->ref('Lines')->import([
-      ['Table', 'category'=>'furniture', 'qty'=>2, 'price'=>10.50],
-      ['Chair', 'category'=>'furniture', 'qty'=>10, 'price'=>3.25],
-]);
+    ->save(['ref' => 'TBL1', 'delivery' => new DateTime('+1 month')])
+    ->ref('Lines')->import([
+        ['Table', 'category' => 'furniture', 'qty' => 2, 'price' => 10.50],
+        ['Chair', 'category' => 'furniture', 'qty' => 10, 'price' => 3.25],
+    ]);
 ```
 
 Resulting queries (I have removed back-ticks and parametric variables for readability) use a consise syntax and demonstrate some of the "behind-the-scenes" logic:
@@ -336,10 +339,10 @@ Resulting queries (I have removed back-ticks and parametric variables for readab
 ```sql
 select id, name from client where name = "Pear Company" and is_deleted = 0;
 insert into order (company_id, ref, delivery_date)
-  values (293, "TBL1", "2015-18-12");
+    values (293, "TBL1", "2015-18-12");
 insert into order_lines (order_id, title, category_id, qty, price) values
-  (201, "Table", (select id from category where name = "furniture"), 2, 10.50),
-  (201, "Chair", (select id from category where name = "furniture"), 19, 3.25);
+    (201, "Table", (select id from category where name = "furniture"), 2, 10.50),
+    (201, "Chair", (select id from category where name = "furniture"), 19, 3.25);
 ```
 
 If you have enjoyed those examples and would like to try them yourself, continue to https://github.com/atk4/data-primer.
@@ -350,14 +353,15 @@ Agile Data uses vendor-independent and lightweight `Model` class to describe you
 
 ``` php
 class Client extends \Atk4\Data\Model {
-  public $table = 'client';
-  function init(): void {
-    parent::init();
+    public $table = 'client';
 
-    $this->addFields(['name','address']);
+    function init(): void {
+        parent::init();
 
-    $this->hasMany('Project', new Project());
-  }
+        $this->addFields(['name', 'address']);
+
+        $this->hasMany('Project', ['model' => [Project::class]]);
+    }
 }
 ```
 
@@ -378,7 +382,7 @@ Each persistence implements actions differently. SQL is probably the most full-f
 
 ### Introducing Expressions
 
-Smart Fields in Agile Toolkit are represented as objects. Because of inheritance, Fields can be quite diverse at what they do. For example `FieldSqlExpression` and `Field_Expression` can define field through custom SQL or PHP code:
+Smart Fields in Agile Toolkit are represented as objects. Because of inheritance, Fields can be quite diverse at what they do. For example `SqlExpressionField` can define field through custom SQL or PHP code:
 
 ![GitHub release](docs/images/expression.gif)
 
@@ -496,12 +500,12 @@ If you wonder how those advanced features may impact performance of loading and 
 
 
 ``` php
-foreach($client->ref('Project') as $project) {
+foreach ($client->ref('Project') as $project) {
     echo $project->get('name')."\n"
 }
 
 // $project refers to same object at all times, but $project's active data
-// is re-populated on each iteration.
+// is re-populated on each iteration
 ```
 
 Nothing unnecessary is pre-fetched. Only requested columns are queried. Rows are streamed and never ever we will try to squeeze a large collection of IDs into a variable or a query.
@@ -548,7 +552,7 @@ $client->ref('Order')->insert($_POST);
 
 
 
-Regardless of the content of the POST data, the order can only be created for the VIP client. Even if you perform a multi-row operation such as `action('update')` or `action('delete')` it will only apply to records that match all of the conditions.
+Regardless of the content of the POST data, the order can only be created for the VIP client. Even if you perform a multi-row operation such as `action('select')` or `action('fx')` it will only apply to records that match all of the conditions.
 
 Those security measures are there to protect you against human errors. We think that input sanitization is still quite important and you should do that.
 
@@ -565,6 +569,7 @@ Define your first model class:
 
 ``` php
 namespace my;
+
 class User extends \Atk4\Data\Model
 {
     public $table = 'user';
@@ -572,8 +577,9 @@ class User extends \Atk4\Data\Model
     {
         parent::init();
 
-        $this->addFields(['email','name','password']);
-        // use your table fields here
+        $this->addFields(['email', 'name', 'password']);
+
+        // add your table fields here
     }
 }
 ```
@@ -582,7 +588,9 @@ Next create `console.php`:
 
 ``` php
 <?php
-include'vendor/autoload.php';
+
+require __DIR__ . '/vendor/autoload.php';
+
 $db = \Atk4\Data\Persistence::connect(PDO_DSN, USER, PASS);
 eval(\Psy\sh());
 ```
@@ -599,17 +607,92 @@ Now you can explore. Try typing:
 > $m = new \my\User($db);
 > $m->loadBy('email', 'example@example.com')
 > $m->get()
-> $m->export(['email','name'])
+> $m->export(['email', 'name'])
 > $m->action('count')
 > $m->action('count')->getOne()
 ```
 
 ## Agile Core and DSQL
 
-Agile Data relies on [DSQL - Query Builder](https://github.com/atk4/dsql) for SQL persistence and multi-record operations though Actions. Various interfaces and PHP patterns are implemented through [Agile Core](https://github.com/atk4/core). For more information use the following links:
+Agile Data relies on DSQL - Query Builder for SQL persistence and multi-record operations though Actions. Various interfaces and PHP patterns are implemented through [Agile Core](https://github.com/atk4/core).
 
--   DSQL Documentation: http://dsql.readthedocs.io
--   Agile Core Documentation: http://agile-core.readthedocs.io
+Hold on! Why yet another query builder? Obviously because existing ones are not good enough. You can write multi-vendor queries in PHP profiting from better security, clean syntax and avoid human errors.
+
+DSQL tries to do things differently:
+
+1. Composability. Unlike other libraries, we render queries recursively allowing many levels of sub-selects.
+2. Small footprint. We don't duplicate query code for all vendors, instead we use clever templating system.
+3. Extensibility. We have 3 different ways to extend DSQL as well as 3rd party vendor driver support.
+4. **Any Query** - any query with any complexity can be expressed through DSQL.
+5. Almost no dependencies. Use DSQL in any PHP application or framework.
+6. NoSQL support. In addition to supporting PDO, DSQL can be extended to deal with SQL-compatible NoSQL servers.
+
+DSQL Is Simple and Powerful
+
+``` php
+$query = new Atk4\Data\Persistence\Sql\Query();
+$query->table('employees')
+    ->where('birth_date','1961-05-02')
+    ->field('count(*)');
+echo 'Employees born on May 2, 1961: ' . $query->getOne();
+```
+
+If the basic query is not fun, how about more complex one?
+
+``` php
+// establish a query looking for a maximum salary
+$salary = new Atk4\Data\Persistence\Sql\Query(['connection' => $pdo]);
+
+// create few expression objects
+$e_ms = $salary->expr('max(salary)');
+$e_df = $salary->expr('TimeStampDiff(month, from_date, to_date)');
+
+// configure our basic query
+$salary
+    ->table('salary')
+    ->field(['emp_no', 'max_salary' => $e_ms, 'months' => $e_df])
+    ->group('emp_no')
+    ->order('-max_salary')
+
+// define sub-query for employee "id" with certain birth-date
+$employees = $salary->dsql()
+    ->table('employees')
+    ->where('birth_date','1961-05-02')
+    ->field('emp_no');
+
+// use sub-select to condition salaries
+$salary->where('emp_no', $employees);
+
+// join with another table for more data
+$salary
+    ->join('employees.emp_id','emp_id')
+    ->field('employees.first_name');
+
+
+// finally, fetch result
+foreach ($salary as $row) {
+    echo "Data: ".json_encode($row)."\n";
+}
+```
+
+This builds and executes a single query that looks like this:
+
+``` sql
+SELECT
+    `emp_no`,
+    max(salary) `max_salary`,
+    TimeStampDiff(month, from_date, to_date) `months`
+FROM
+    `salary`
+JOIN
+    `employees` on `employees`.`emp_id` = `salary`.`emp_id`
+WHERE
+    `salary`.`emp_no` in (select `id` from `employees` where `birth_date` = :a)
+GROUP BY `emp_no`
+ORDER BY max_salary desc
+
+:a = "1961-05-02"
+```
 
 ## UI for Agile Data
 

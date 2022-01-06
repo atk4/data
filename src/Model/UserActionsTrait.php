@@ -5,31 +5,25 @@ declare(strict_types=1);
 namespace Atk4\Data\Model;
 
 use Atk4\Core\Factory;
-use Atk4\Data\Model;
 
 trait UserActionsTrait
 {
-    /**
-     * Default class for addUserAction().
-     *
-     * @var string|array
-     */
-    public $_default_seed_action = [Model\UserAction::class];
+    /** @var string|array Default class for addUserAction(). */
+    public $_default_seed_action = [UserAction::class];
 
-    /**
-     * @var array Collection of user actions - using key as action system name
-     */
+    /** @var array<string, UserAction> Collection of user actions - using key as action system name */
     protected $userActions = [];
 
     /**
      * Register new user action for this model. By default UI will allow users to trigger actions
      * from UI.
      *
-     * @param string         $name     Action name
      * @param array|\Closure $defaults
      */
-    public function addUserAction(string $name, $defaults = []): Model\UserAction
+    public function addUserAction(string $name, $defaults = []): UserAction
     {
+        $this->assertIsModel();
+
         if ($defaults instanceof \Closure) {
             $defaults = ['callback' => $defaults];
         }
@@ -38,7 +32,7 @@ trait UserActionsTrait
             $defaults['caption'] = $this->readableCaption($name);
         }
 
-        /** @var Model\UserAction $action */
+        /** @var UserAction $action */
         $action = Factory::factory($this->_default_seed_action, $defaults);
 
         $this->_addIntoCollection($name, $action, 'userActions');
@@ -47,42 +41,75 @@ trait UserActionsTrait
     }
 
     /**
+     * Returns true if user action with a corresponding name exists.
+     */
+    public function hasUserAction(string $name): bool
+    {
+        if ($this->isEntity() && $this->getModel()->hasUserAction($name)) {
+            return true;
+        }
+
+        return $this->_hasInCollection($name, 'userActions');
+    }
+
+    private function addUserActionFromModel(string $name, UserAction $action): void
+    {
+        $this->assertIsEntity();
+        $action->getOwner()->assertIsModel(); // @phpstan-ignore-line
+
+        // clone action and store it in entity
+        $action = clone $action;
+        $action->unsetOwner();
+        $this->_addIntoCollection($name, $action, 'userActions');
+    }
+
+    /**
      * Returns list of actions for this model. Can filter actions by records they apply to.
      * It will also skip system user actions (where system === true).
      *
-     * @param string $appliesTo e.g. Model\UserAction::APPLIES_TO_ALL_RECORDS
+     * @param string $appliesTo e.g. UserAction::APPLIES_TO_ALL_RECORDS
+     *
+     * @return array<string, UserAction>
      */
     public function getUserActions(string $appliesTo = null): array
     {
+        $this->assertIsModel();
+
         return array_filter($this->userActions, function ($action) use ($appliesTo) {
             return !$action->system && ($appliesTo === null || $action->appliesTo === $appliesTo);
         });
     }
 
     /**
-     * Returns true if user action with a corresponding name exists.
-     *
-     * @param string $name UserAction name
+     * Returns one action object of this model. If action not defined, then throws exception.
      */
-    public function hasUserAction(string $name): bool
+    public function getUserAction(string $name): UserAction
     {
-        return $this->_hasInCollection($name, 'userActions');
+        if ($this->isEntity() && !$this->_hasInCollection($name, 'userActions') && $this->getModel()->hasUserAction($name)) {
+            $this->addUserActionFromModel($name, $this->getModel()->getUserAction($name));
+        }
+
+        return $this->_getFromCollection($name, 'userActions');
     }
 
     /**
-     * Returns one action object of this model. If action not defined, then throws exception.
+     * Remove specified action.
      *
-     * @param string $name Action name
+     * @return $this
      */
-    public function getUserAction(string $name): Model\UserAction
+    public function removeUserAction(string $name)
     {
-        return $this->_getFromCollection($name, 'userActions');
+        $this->assertIsModel();
+
+        $this->_removeFromCollection($name, 'userActions');
+
+        return $this;
     }
 
     /**
      * Execute specified action with specified arguments.
      *
-     * @param string $name UserAction name
+     * @param mixed ...$args
      *
      * @return mixed
      */
@@ -91,17 +118,39 @@ trait UserActionsTrait
         return $this->getUserAction($name)->execute(...$args);
     }
 
-    /**
-     * Remove specified action(s).
-     *
-     * @return $this
-     */
-    public function removeUserAction(string $name)
+    protected function initUserActions(): void
     {
-        foreach ((array) $name as $action) {
-            $this->_removeFromCollection($action, 'userActions');
-        }
+        // Declare our basic Crud actions for the model.
+        $this->addUserAction('add', [
+            'fields' => true,
+            'modifier' => UserAction::MODIFIER_CREATE,
+            'appliesTo' => UserAction::APPLIES_TO_NO_RECORDS,
+            'callback' => 'save',
+            'description' => 'Add ' . $this->getModelCaption(),
+        ]);
 
-        return $this;
+        $this->addUserAction('edit', [
+            'fields' => true,
+            'modifier' => UserAction::MODIFIER_UPDATE,
+            'appliesTo' => UserAction::APPLIES_TO_SINGLE_RECORD,
+            'callback' => 'save',
+        ]);
+
+        $this->addUserAction('delete', [
+            'appliesTo' => UserAction::APPLIES_TO_SINGLE_RECORD,
+            'modifier' => UserAction::MODIFIER_DELETE,
+            'callback' => function ($model) {
+                return $model->delete();
+            },
+        ]);
+
+        $this->addUserAction('validate', [
+            //'appliesTo' => any!
+            'description' => 'Provided with modified values will validate them but will not save',
+            'modifier' => UserAction::MODIFIER_READ,
+            'fields' => true,
+            'system' => true, // don't show by default
+            'args' => ['intent' => 'string'],
+        ]);
     }
 }

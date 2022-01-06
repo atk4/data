@@ -7,7 +7,7 @@ Static Persistence
 
 .. php:class:: Persistence\Static_
 
-Static Persistence extends :php:class:`Persistence\\Array_` to implement
+Static Persistence extends :php:class:`Persistence\Array_` to implement
 a user-friendly way of specifying data through an array.
 
 Usage
@@ -17,8 +17,8 @@ This is most useful when working with "sample" code, where you want to see your
 results quick::
 
     $htmltable->setModel(new Model(new Persistence\Static_([
-        ['VAT_rate'=>'12.0%', 'VAT'=>'36.00', 'Net'=>'300.00'],
-        ['VAT_rate'=>'10.0%', 'VAT'=>'52.00', 'Net'=>'520.00'],
+        ['VAT_rate' => '12.0%', 'VAT' => '36.00', 'Net' => '300.00'],
+        ['VAT_rate' => '10.0%', 'VAT' => '52.00', 'Net' => '520.00'],
     ])));
 
 Lets unwrap the example:

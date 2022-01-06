@@ -45,7 +45,7 @@ There are several ways to link your model up with the persistence::
 
     Load active record from the DataSet::
 
-        $m->load(10);
+        $m = $m->load(10);
         echo $m->get('name');
 
     If record not found, will throw exception.
@@ -55,42 +55,29 @@ There are several ways to link your model up with the persistence::
     Store active record back into DataSet. If record wasn't loaded, store it as
     a new record::
 
-        $m->load(10);
+        $m = $m->load(10);
         $m->set('name', 'John');
         $m->save();
 
     You can pass argument to save() to set() and save()::
 
         $m->unload();
-        $m->save(['name'=>'John']);
+        $m->save(['name' => 'John']);
 
 .. php:method:: tryLoad
 
     Same as load() but will silently fail if record is not found::
 
-        $m->tryLoad(10);
+        $m = $m->tryLoad(10);
         $m->setMulti($data);
 
         $m->save();     // will either create new record or update existing
-
-.. php:method:: loadAny
-
-    Attempt to load any matching record. You can use this in conjunction with
-    setOrder()::
-
-        $m->loadAny();
-        echo $m->get('name');
-
-.. php:method:: tryLoadAny
-
-    Attempt to load any record, but silently fail if there are no records in
-    the DataSet.
 
 .. php:method:: unload
 
     Remove active record and restore model to default state::
 
-        $m->load(10);
+        $m = $m->load(10);
         $m->unload();
 
         $m->set('name', 'New User');
@@ -111,12 +98,12 @@ explicitly::
     $m->set('id', 123);
     $m->save();
 
-    // or $m->insert(['Record with ID=123', 'id'=>123']);
+    // or $m->insert(['Record with ID=123', 'id' => 123']);
 
 However if you change the ID for record that was loaded, then your database
 record will also have its ID changed. Here is example::
 
-    $m->load(123);
+    $m = $m->load(123);
     $m->setId(321);
     $m->save();
 
@@ -132,13 +119,13 @@ more useful types.
 Agile Data ensures that regardless of the selected database, types are converted
 correctly for saving and restored as they were when loading::
 
-    $m->addField('is_admin', ['type'=>'boolean']);
+    $m->addField('is_admin', ['type' => 'boolean']);
     $m->set('is_admin', false);
     $m->save();
 
     // SQL database will actually store `0`
 
-    $m->load();
+    $m = $m->load();
 
     $m->get('is_admin');  // converted back to `false`
 
@@ -171,7 +158,7 @@ It's not only the 'type' property, but 'enum' can also imply restrictions::
 
 There are also non-trivial types in Agile Data::
 
-    $m->addField('salary', ['type' => 'money']);
+    $m->addField('salary', ['type' => 'atk4_money']);
     $m->set('salary', "20");  // converts to 20.00
 
     $m->addField('date', ['type' => 'date']);
@@ -187,14 +174,11 @@ complex logic::
     // 'balance_currency_id' for example.
 
 The process of converting field values as indicated above is called
-"normalization" and it is controlled by two model properties::
+"normalization" and it is controlled by one model property:
 
-    $m->strict_types = true;
     $m->load_normalization = false;
 
-Setting :php:attr:`Model::strict_types` to false, will still disable any
-type-casting and store exact values you specify regardless of type. If you
-switch on :php:attr:`Model::load_normalization` then the values will also be
+If you switch on :php:attr:`Model::load_normalization` then the values will also be
 normalized as they are loaded from the database. Normally you should only
 do that if you're storing values into database by other means and not through
 Agile Data.
@@ -203,7 +187,7 @@ Final field flag that is worth mentioning is called :php:attr:`Field::read_only`
 and if set, then value of a field may not be modified directly::
 
     $m->addField('ref_no', ['read_only' => true]);
-    $m->load(123);
+    $m = $m->load(123);
 
     $m->get('ref_no'); // perfect for reading field that is populated by trigger.
 
@@ -213,8 +197,8 @@ Note that `read_only` can still have a default value::
 
     $m->addField('created', [
         'read_only' => true,
-        'type'      => 'datetime',
-        'default'   => new DateTime()
+        'type' => 'datetime',
+        'default' => new DateTime()
     ]);
 
     $m->save();  // stores creation time just fine and also will loade it.
@@ -289,7 +273,7 @@ Your init() method for a Field_Currency might look like this::
 
         $this->getOwner()->addField(
             $f.'_amount',
-            ['type' => 'money', 'system' => true]
+            ['type' => 'atk4_money', 'system' => true]
         );
 
         $this->getOwner()->hasOne(
@@ -313,48 +297,48 @@ Type Matrix
 
 .. todo:: this section might need cleanup
 
-+----+----+----------------------------------------------------------+------+----+-----+
-| ty | al | description                                              | nati | sq | mon |
-| pe | ia |                                                          | ve   | l  | go  |
-|    | s( |                                                          |      |    |     |
-|    | es |                                                          |      |    |     |
-|    | )  |                                                          |      |    |     |
-+====+====+==========================================================+======+====+=====+
-| st |    | Will be trim() ed.                                       |      |    |     |
-| ri |    |                                                          |      |    |     |
-| ng |    |                                                          |      |    |     |
-+----+----+----------------------------------------------------------+------+----+-----+
-| in | in | will cast to int make sure it's not passed as a string.  | -394 | 49 | 49  |
-| t  | te |                                                          | ,    |    |     |
-|    | ge |                                                          | "49" |    |     |
-|    | r  |                                                          |      |    |     |
-+----+----+----------------------------------------------------------+------+----+-----+
-| fl |    | decimal number with floating point                       | 3.28 |    |     |
-| oa |    |                                                          | 84,  |    |     |
-| t  |    |                                                          |      |    |     |
-+----+----+----------------------------------------------------------+------+----+-----+
-| mo |    | Will convert loosly-specified currency into float or     | "£3, | 38 |     |
-| ne |    | dedicated format for storage. Optionally support 'fmt'   | 294. | 29 |     |
-| y  |    | property.                                                | 48", | 4. |     |
-|    |    |                                                          | 3.99 | 48 |     |
-|    |    |                                                          | 999  | ,  |     |
-|    |    |                                                          |      | 4  |     |
-+----+----+----------------------------------------------------------+------+----+-----+
-| bo | bo | true / false type value. Optionally specify              | true | 1  | tru |
-| ol | ol | 'enum'=>['N','Y'] to store true as 'Y' and false as 'N'. |      |    | e   |
-|    | ea | By default uses [0,1].                                   |      |    |     |
-|    | n  |                                                          |      |    |     |
-+----+----+----------------------------------------------------------+------+----+-----+
-| ar |    | Optionally pass 'fmt' option, which is 'json' by         | [2=> | {2 | sto |
-| ra |    | default. Will json\_encode and json\_decode(..., true)   | "bar | :" | red |
-| y  |    | the value if database does not support array storage.    | "]   | ba | as- |
-|    |    |                                                          |      | r" | is  |
-|    |    |                                                          |      | }  |     |
-+----+----+----------------------------------------------------------+------+----+-----+
-| bi |    | Supports storage of binary data like BLOBs               |      |    |     |
-| na |    |                                                          |      |    |     |
-| ry |    |                                                          |      |    |     |
-+----+----+----------------------------------------------------------+------+----+-----+
++----+----------------------------------------------------------+------+----+-----+
+| ty | description                                              | nati | sq | mon |
+| pe |                                                          | ve   | l  | go  |
+|    |                                                          |      |    |     |
+|    |                                                          |      |    |     |
+|    |                                                          |      |    |     |
++====+==========================================================+======+====+=====+
+| st | Will be trim() ed.                                       |      |    |     |
+| ri |                                                          |      |    |     |
+| ng |                                                          |      |    |     |
++----+----------------------------------------------------------+------+----+-----+
+| in | will cast to int make sure it's not passed as a string.  | -394 | 49 | 49  |
+| te |                                                          | ,    |    |     |
+| ge |                                                          | "49" |    |     |
+| r  |                                                          |      |    |     |
++----+----------------------------------------------------------+------+----+-----+
+| fl | decimal number with floating point                       | 3.28 |    |     |
+| oa |                                                          | 84,  |    |     |
+| t  |                                                          |      |    |     |
++----+----------------------------------------------------------+------+----+-----+
+| at | Will convert loosly-specified currency into float or     | "£3, | 38 |     |
+| k4 | dedicated format for storage. Optionally support 'fmt'   | 294. | 29 |     |
+| _m | property.                                                | 48", | 4. |     |
+| on |                                                          | 3.99 | 48 |     |
+| y  |                                                          | 999  | ,  |     |
+|    |                                                          |      | 4  |     |
++----+----------------------------------------------------------+------+----+-----+
+| bo | true / false type value.                                 | true | 1  | tru |
+| ol |                                                          |      |    | e   |
+| ea |                                                          |      |    |     |
+| n  |                                                          |      |    |     |
++----+----------------------------------------------------------+------+----+-----+
+| js | Optionally pass 'fmt' option, which is 'json' by         | [2 => | {2 | sto |
+| on | default. Will json_encode and json_decode(..., true)     | "bar | :" | red |
+|    | the value if database does not support array storage.    | "]   | ba | as- |
+|    |                                                          |      | r" | is  |
+|    |                                                          |      | }  |     |
++----+----------------------------------------------------------+------+----+-----+
+| bi | Supports storage of binary data like BLOBs               |      |    |     |
+| na |                                                          |      |    |     |
+| ry |                                                          |      |    |     |
++----+----------------------------------------------------------+------+----+-----+
 
 -  Money: http://php.net/manual/en/numberformatter.parsecurrency.php.
 -  money: See also
@@ -426,14 +410,13 @@ Create copy of existing record
     If you pass the `$id` parameter, then the new record will be saved under
     a new ID::
 
-        // First, lets delete all records except 123
-        (clone $m)->addCondition('id', '!=', 123)->action('delete')->execute();
+        // Assume DB with only one record with ID = 123
 
-        // Next we can duplicate
+        // Load and duplicate that record
         $m->load(123)->duplicate()->save();
 
         // Now you have 2 records:
-        // one with ID=123 and another with ID={next db generated id}
+        // one with ID = 123 and another with ID = {next db generated id}
         echo $m->action('count')->getOne();
 
 Duplicate then save under a new ID
@@ -444,7 +427,7 @@ take values of 123 and write it on top of 124?
 
 Here is how::
 
-    $m->load(123)->duplicate(124)->replace();
+    $m->load(123)->duplicate()->setId(124)->save();
 
 Now the record 124 will be replaced with the data taken from record 123.
 For SQL that means calling 'replace into x'.
@@ -484,22 +467,22 @@ We have a model 'Order' with a field 'ref', which must be unique within
 the context of a client. However, orders are also stored in a 'Basket'.
 Consider the following code::
 
-    $basket->ref('Order')->insert(['ref'=>123]);
+    $basket->ref('Order')->insert(['ref' => 123]);
 
 You need to verify that the specific client wouldn't have another order with
 this ref, how do you do it?
 
 Start by creating a beforeSave handler for Order::
 
-    $this->onHookShort(Model::HOOK_BEFORE_SAVE, function() {
+    $this->onHookShort(Model::HOOK_BEFORE_SAVE, function () {
         if ($this->isDirty('ref')) {
 
             if (
-                $this->newInstance()
+                (new static())
                     ->addCondition('client_id', $this->get('client_id'))  // same client
                     ->addCondition($this->id_field, '!=', $this->getId()) // has another order
                     ->tryLoadBy('ref', $this->get('ref'))                 // with same ref
-                    ->loaded()
+                    ->isLoaded()
             ) {
                 throw (new Exception('Order with ref already exists for this client'))
                     ->addMoreInfo('client', $this->get('client_id'))
@@ -520,7 +503,7 @@ option to archive your orders. The method `archive()` is supposed to mark order
 as archived and return that order back. Here is the usage pattern::
 
     $o->addCondition('is_archived', false); // to restrict loading of archived orders
-    $o->load(123);
+    $o = $o->load(123);
     $archive = $o->archive();
     $archive->set('note', $archive->get('note') . "\nArchived on $date.");
     $archive->save();
@@ -550,8 +533,8 @@ The other, more appropriate option is to re-use a vanilla Order record::
     function archive() {
         $this->save(); // just to be sure, no dirty stuff is left over
 
-        $archive = $this->newInstance();
-        $archive->load($this->getId());
+        $archive = (new static());
+        $archive = $archive->load($this->getId());
         $archive->set('is_archived', true);
 
         $this->unload(); // active record is no longer accessible
@@ -559,77 +542,8 @@ The other, more appropriate option is to re-use a vanilla Order record::
         return $archive;
     }
 
-This method may still not work if you extend and use "ActiveOrder" as your
-model. In this case you should pass the class to newInstance()::
 
-    $archive = $this->newInstance('Order');
-    // or
-    $archive = $this->newInstance(new Order());
-    // or with passing some default properties:
-    $archive = $this->newInstance([new Order(), 'audit'=>true]);
-
-
-In this case newInstance() would just associate passed class with the
-persistence pretty much identical to::
-
-    $archive = new Order($this->persistence);
-
-The use of newInstance() however requires you to load the model which is
-an extra database query.
-
-Using Model casting and saveAs
-------------------------------
-
-There is another method that can help with escaping the DataSet that does not
-involve record loading:
-
-.. php:method:: asModel($class = null, $options = [])
-
-    Changes the class of a model, while keeping all the loaded and dirty
-    values.
-
-The above example would then work like this::
-
-    function archive() {
-        $this->save(); // just to be sure, no dirty stuff is left over
-
-        $archive = $o->asModel('Order');
-        $archive->set('is_archived', true);
-
-        $this->unload(); // active record is no longer accessible.
-
-        return $archive;
-    }
-
-Note that after saving 'Order' it may attempt to :ref:`load_after_save` just
-to ensure that stored model is a valid 'Order'.
-
-.. php:method:: saveAs($class = null, $options= [])
-
-    Save record into the database, using a different class for a model.
-
-As in my archiving example, here is how we can eliminate need of archive()
-method altogether::
-
-    $o = new ActiveOrder($db);
-    $o->load(123);
-
-    $o->set('is_arhived', true)->saveAs('Order');
-
-Currently the implementation of saveAs is rather trivial, but in the future
-versions of Agile Data you may be able to do this::
-
-    // MAY NOT WORK YET
-    $o = new ActiveOrder($db);
-    $o->load(123);
-
-    $o->saveAs('ArchivedOrder');
-
-Of course - instead of using 'Order' you can also specify the object
-with `new Order()`.
-
-
-Working with Multiple Persistences
+Working with Multiple Persistencies
 ==================================
 
 Normally when you load the model and save it later, it ends up in the same
@@ -658,7 +572,7 @@ Agile Data, so you will have to create logic yourself, which is actually quite
 simple.
 
 You can use several designs. I will create a method inside my application class
-to load records from two persistences that are stored inside properties of my
+to load records from two persistencies that are stored inside properties of my
 application::
 
     function loadQuick($class, $id) {
@@ -666,20 +580,20 @@ application::
         // first, try to load it from MemCache
         $m = $this->mdb->add(clone $class)->tryLoad($id);
 
-        if (!$m->loaded()) {
+        if (!$m->isLoaded()) {
 
             // fall-back to load from SQL
             $m = $this->sql->add(clone $class)->load($id);
 
             // store into MemCache too
-            $m = $m->withPersistence($this->mdb)->replace();
+            $m = $m->withPersistence($this->mdb)->save();
         }
 
-        $m->onHook(Model::HOOK_BEFORE_SAVE, function($m){
+        $m->onHook(Model::HOOK_BEFORE_SAVE, function($m) {
             $m->withPersistence($this->sql)->save();
         });
 
-        $m->onHook(Model::HOOK_BEFORE_DELETE, function($m){
+        $m->onHook(Model::HOOK_BEFORE_DELETE, function($m) {
             $m->withPersistence($this->sql)->delete();
         });
 
@@ -704,13 +618,13 @@ use a string). It will first be associated with the MemCache DB persistence and
 we will attempt to load a corresponding ID. Next, if no record is found in the
 cache::
 
-    if (!$m->loaded()) {
+    if (!$m->isLoaded()) {
 
         // fall-back to load from SQL
         $m = $this->sql->add(clone $class)->load($id);
 
         // store into MemCache too
-        $m = $m->withPersistence($this->mdb)->replace();
+        $m = $m->withPersistence($this->mdb)->save();
     }
 
 Load the record from the SQL database and store it into $m. Next, save $m into
@@ -720,11 +634,11 @@ records.
 The last two hooks are in order to replicate any changes into the SQL database
 also::
 
-    $m->onHook(Model::HOOK_BEFORE_SAVE, function($m){
+    $m->onHook(Model::HOOK_BEFORE_SAVE, function($m) {
         $m->withPersistence($this->sql)->save();
     });
 
-    $m->onHook(Model::HOOK_BEFORE_DELETE, function($m){
+    $m->onHook(Model::HOOK_BEFORE_DELETE, function($m) {
         $m->withPersistence($this->sql)->delete();
     });
 
@@ -750,7 +664,8 @@ done with a single record::
     $m->set('completed', true);
 
     $m->withPersistence($write_replica)->save();
-    $m->dirty = [];
+    $dirtyRef = &$m->getDirtyRef();
+    $dirtyRef = [];
 
     // Possibly the update is delayed
     // $m->reload();
@@ -763,7 +678,7 @@ replica may not propagate to read replica, you can simply reset the dirty flags.
 If you need further optimization, make sure `reload_after_save` is disabled
 for the write replica::
 
-    $m->withPersistence($write_replica, null, ['reload_after_save'=>false])->save();
+    $m->withPersistence($write_replica, null, ['reload_after_save' => false])->save();
 
 or use::
 
@@ -801,7 +716,7 @@ you can implement it like this::
 
     $sess = new \Atk4\Data\Persistence\Array_($_SESSION['ad']);
     $logged_user = new User($sess);
-    $logged_user->load('active_user');
+    $logged_user = $logged_user->load('active_user');
 
 This would load the user data from Array located inside a local session. There
 is no point storing multiple users, so I'm using id='active_user' for the only
@@ -810,7 +725,7 @@ user record that I'm going to store there.
 How to add record inside session, e.g. log the user in? Here is the code::
 
     $u = new User($db);
-    $u->load(123);
+    $u = $u->load(123);
 
     $u->withPersistence($sess, 'active_user')->save();
 
@@ -827,12 +742,7 @@ conditions)
 .. php:method:: action($action, $args = [])
 
     Prepares a special object representing "action" of a persistence layer based
-    around your current model::
-
-        $m = Model_User();
-        $m->addCondition('last_login', '<', date('Y-m-d', strtotime('-2 months')));
-
-        $m->action('delete')->execute();
+    around your current model.
 
 
 Action Types
@@ -867,7 +777,7 @@ executing::
     $id_query_action = $m->action('getOne',['id']);
 
     $m = Model_Invoice($db);
-    $m->insert(['qty'=>20, 'product_id'=>$id_query_action]);
+    $m->insert(['qty' => 20, 'product_id' => $id_query_action]);
 
 Insert operation will check if you are using same persistence.
 If the persistence object is different, it will execute action and will use
@@ -885,34 +795,9 @@ The default action type can be set when executing action, for example::
 SQL Actions
 -----------
 
-The following actions are currently supported by `Persistence\\Sql`:
+Currently only read-only actions are supported by `Persistence\\Sql`:
 
- - select - produces query that returns DataSet  (array of hashes)
- - delete - produces query for deleting DataSet (no result)
-
-The following two queries returns un-populated query, which means if you wish
-to use it, you'll have to populate it yourself with some values:
-
- - insert - produces an un-populated insert query (no result).
- - update - produces query for updating DataSet (no result)
-
-Example of using update::
-
-    $m = Model_Invoice($db);
-    $m->addCondition('has_discount', true);
-
-    $m->action('update')
-        ->set('has_dicount', false)
-        ->execute();
-
-You must be aware that set() operates on a DSQL object and will no longer
-work with your model fields. You should use the object like this if you can::
-
-    $m->action('update')
-        ->set($m->getField('has_discount'), false)
-        ->execute();
-
-See $actual for more details.
+ - select - produces query that returns DataSet (array of hashes)
 
 There are ability to execute aggregation functions::
 
@@ -927,10 +812,10 @@ SQL Actions on Linked Records
 -----------------------------
 
 In conjunction with Model::refLink() you can produce expressions for creating
-sub-selects. The functionality is nicely wrapped inside FieldSql_Many::addField()::
+sub-selects. The functionality is nicely wrapped inside HasMany::addField()::
 
     $client->hasMany('Invoice')
-        ->addField('total_gross', ['aggregate'=>'sum', 'field'=>'gross']);
+        ->addField('total_gross', ['aggregate' => 'sum', 'field' => 'gross']);
 
 This operation is actually consisting of 3 following operations::
 
