@@ -362,7 +362,7 @@ class Union extends Model
                 if (isset($fieldMap[$group])) {
                     $query->group($nestedModel->expr($fieldMap[$group]));
                 } elseif ($nestedModel->hasField($group)) {
-                    $query->group($nestedModel->getField($group));
+                    $query->group($nestedModel->getField($group)->short_name /* TODO short_name should be used by DSQL automatically when in GROUP BY, HAVING, ... */);
                 }
             }
 

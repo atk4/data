@@ -234,7 +234,7 @@ class Aggregate extends Model
 
         foreach ($this->groupByFields as $field) {
             if ($this->baseModel->hasField($field)) {
-                $expression = $this->baseModel->getField($field);
+                $expression = $this->baseModel->getField($field)->short_name /* TODO short_name should be used by DSQL automatically when in GROUP BY, HAVING, ... */;
             } else {
                 $expression = $this->expr($field);
             }

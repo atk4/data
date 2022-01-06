@@ -291,6 +291,11 @@ class ModelUnionTest extends TestCase
 
         $transaction->groupBy('type', ['amount' => ['sum([amount])', 'type' => 'atk4_money']]);
 
+        $this->assertSameSql(
+            'select "client_id", "name", "type", sum("amount") "amount" from (select (\'invoice\') "type", sum("amount") "amount" from "invoice" group by "type" UNION ALL select (\'payment\') "type", sum("amount") "amount" from "payment" group by "type") "derivedTable" group by "type"',
+            $transaction->action('select')->render()[0]
+        );
+
         $this->assertSame([
             ['type' => 'invoice', 'amount' => 23.0],
             ['type' => 'payment', 'amount' => 14.0],
