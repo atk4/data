@@ -318,6 +318,7 @@ class Union extends Model
                     }
 
                     // if we group we do not select non-aggregate fields
+                    // TODO this breaks composide design - remove this if statement, fields must be manually removed or added to grouping!
                     if (count($this->group) > 0 && !in_array($fieldName, $this->group, true) && !isset($this->aggregate[$fieldName])) {
                         continue;
                     }

@@ -103,7 +103,7 @@ class ModelUnionTest extends TestCase
         $transaction = $this->createTransaction();
 
         $this->assertSameSql(
-            'select "name", "amount" from (select "name" "name", "amount" "amount" from "invoice" UNION ALL select "name" "name", "amount" "amount" from "payment") "derivedTable"',
+            'select "client_id", "name", "amount" from (select "client_id" "client_id", "name" "name", "amount" "amount" from "invoice" UNION ALL select "client_id" "client_id", "name" "name", "amount" "amount" from "payment") "derivedTable"',
             $transaction->action('select')->render()[0]
         );
 
@@ -158,51 +158,47 @@ class ModelUnionTest extends TestCase
         $this->assertSame(2, (int) $client->action('count')->getOne());
 
         // Client with ID=1 has invoices for 19
-        $client->load(1);
-
-        $this->assertSame(19.0, (float) $client->ref('Invoice')->action('fx', ['sum', 'amount'])->getOne());
+        $this->assertSame(19.0, (float) $client->load(1)->ref('Invoice')->action('fx', ['sum', 'amount'])->getOne());
 
         $transaction = $this->createTransaction();
 
         $this->assertSame([
-            ['name' => 'chair purchase', 'amount' => 4.0],
-            ['name' => 'table purchase', 'amount' => 15.0],
-            ['name' => 'chair purchase', 'amount' => 4.0],
-            ['name' => 'prepay', 'amount' => 10.0],
-            ['name' => 'full pay', 'amount' => 4.0],
+            ['client_id' => 1, 'name' => 'chair purchase', 'amount' => 4.0],
+            ['client_id' => 1, 'name' => 'table purchase', 'amount' => 15.0],
+            ['client_id' => 2, 'name' => 'chair purchase', 'amount' => 4.0],
+            ['client_id' => 1, 'name' => 'prepay', 'amount' => 10.0],
+            ['client_id' => 2, 'name' => 'full pay', 'amount' => 4.0],
         ], $transaction->export());
 
         // Transaction is Union Model
         $client->hasMany('Transaction', ['model' => $transaction]);
 
         $this->assertSame([
-            ['name' => 'chair purchase', 'amount' => 4.0],
-            ['name' => 'table purchase', 'amount' => 15.0],
-            ['name' => 'prepay', 'amount' => 10.0],
-        ], $client->ref('Transaction')->export());
+            ['client_id' => 1, 'name' => 'chair purchase', 'amount' => 4.0],
+            ['client_id' => 1, 'name' => 'table purchase', 'amount' => 15.0],
+            ['client_id' => 1, 'name' => 'prepay', 'amount' => 10.0],
+        ], $client->load(1)->ref('Transaction')->export());
 
         $client = $this->createClient();
-
-        $client->load(1);
 
         $transaction = $this->createSubtractInvoiceTransaction();
 
         $this->assertSame([
-            ['name' => 'chair purchase', 'amount' => -4.0],
-            ['name' => 'table purchase', 'amount' => -15.0],
-            ['name' => 'chair purchase', 'amount' => -4.0],
-            ['name' => 'prepay', 'amount' => 10.0],
-            ['name' => 'full pay', 'amount' => 4.0],
+            ['client_id' => 1, 'name' => 'chair purchase', 'amount' => -4.0],
+            ['client_id' => 1, 'name' => 'table purchase', 'amount' => -15.0],
+            ['client_id' => 2, 'name' => 'chair purchase', 'amount' => -4.0],
+            ['client_id' => 1, 'name' => 'prepay', 'amount' => 10.0],
+            ['client_id' => 2, 'name' => 'full pay', 'amount' => 4.0],
         ], $transaction->export());
 
         // Transaction is Union Model
         $client->hasMany('Transaction', ['model' => $transaction]);
 
         $this->assertSame([
-            ['name' => 'chair purchase', 'amount' => -4.0],
-            ['name' => 'table purchase', 'amount' => -15.0],
-            ['name' => 'prepay', 'amount' => 10.0],
-        ], $client->ref('Transaction')->export());
+            ['client_id' => 1, 'name' => 'chair purchase', 'amount' => -4.0],
+            ['client_id' => 1, 'name' => 'table purchase', 'amount' => -15.0],
+            ['client_id' => 1, 'name' => 'prepay', 'amount' => 10.0],
+        ], $client->load(1)->ref('Transaction')->export());
     }
 
     public function testGrouping1(): void
@@ -254,6 +250,7 @@ class ModelUnionTest extends TestCase
     public function testGrouping3(): void
     {
         $transaction = $this->createTransaction();
+        $transaction->removeField('client_id');
         $transaction->groupBy('name', ['amount' => ['sum([amount])', 'type' => 'atk4_money']]);
         $transaction->setOrder('name');
 
@@ -265,6 +262,7 @@ class ModelUnionTest extends TestCase
         ], $transaction->export());
 
         $transaction = $this->createSubtractInvoiceTransaction();
+        $transaction->removeField('client_id');
         $transaction->groupBy('name', ['amount' => ['sum([])', 'type' => 'atk4_money']]);
         $transaction->setOrder('name');
 
@@ -363,9 +361,9 @@ class ModelUnionTest extends TestCase
         $transaction->addCondition('amount', '<', 0);
 
         $this->assertSame([
-            ['name' => 'chair purchase', 'amount' => -4.0],
-            ['name' => 'table purchase', 'amount' => -15.0],
-            ['name' => 'chair purchase', 'amount' => -4.0],
+            ['client_id' => 1, 'name' => 'chair purchase', 'amount' => -4.0],
+            ['client_id' => 1, 'name' => 'table purchase', 'amount' => -15.0],
+            ['client_id' => 2, 'name' => 'chair purchase', 'amount' => -4.0],
         ], $transaction->export());
     }
 
@@ -375,8 +373,8 @@ class ModelUnionTest extends TestCase
         $transaction->addCondition('client_id', '>', 1);
 
         $this->assertSame([
-            ['name' => 'chair purchase', 'amount' => -4.0],
-            ['name' => 'full pay', 'amount' => 4.0],
+            ['client_id' => 2, 'name' => 'chair purchase', 'amount' => -4.0],
+            ['client_id' => 2, 'name' => 'full pay', 'amount' => 4.0],
         ], $transaction->export());
     }
 
@@ -386,7 +384,7 @@ class ModelUnionTest extends TestCase
         $transaction->addCondition('amount', '>', 5, true);
 
         $this->assertSame([
-            ['name' => 'prepay', 'amount' => 10.0],
+            ['client_id' => 1, 'name' => 'prepay', 'amount' => 10.0],
         ], $transaction->export());
     }
 
@@ -396,7 +394,7 @@ class ModelUnionTest extends TestCase
         $transaction->addCondition('amount', '<', -10, true);
 
         $this->assertSame([
-            ['name' => 'table purchase', 'amount' => -15.0],
+            ['client_id' => 1, 'name' => 'table purchase', 'amount' => -15.0],
         ], $transaction->export());
     }
 
@@ -406,7 +404,7 @@ class ModelUnionTest extends TestCase
         $transaction->addCondition($transaction->expr('{} > 5', ['amount']));
 
         $this->assertSame([
-            ['name' => 'prepay', 'amount' => 10.0],
+            ['client_id' => 1, 'name' => 'prepay', 'amount' => 10.0],
         ], $transaction->export());
     }
 
@@ -419,10 +417,10 @@ class ModelUnionTest extends TestCase
         $transaction->nestedInvoice->addCondition('amount', 4);
 
         $this->assertSame([
-            ['name' => 'chair purchase', 'amount' => -4.0],
-            ['name' => 'chair purchase', 'amount' => -4.0],
-            ['name' => 'prepay', 'amount' => 10.0],
-            ['name' => 'full pay', 'amount' => 4.0],
+            ['client_id' => 1, 'name' => 'chair purchase', 'amount' => -4.0],
+            ['client_id' => 2, 'name' => 'chair purchase', 'amount' => -4.0],
+            ['client_id' => 1, 'name' => 'prepay', 'amount' => 10.0],
+            ['client_id' => 2, 'name' => 'full pay', 'amount' => 4.0],
         ], $transaction->export());
     }
 }

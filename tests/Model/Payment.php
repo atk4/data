@@ -13,9 +13,9 @@ class Payment extends Model
     protected function init(): void
     {
         parent::init();
-        $this->addField('name');
 
         $this->hasOne('client_id', ['model' => [Client::class]]);
+        $this->addField('name');
         $this->addField('amount', ['type' => 'atk4_money']);
     }
 }
