@@ -265,9 +265,10 @@ class Union extends Model
 
                 break;
             case 'fx':
+            case 'fx0':
                 $args['alias'] = 'val';
 
-                $subquery = $this->getSubAction('fx', $args);
+                $subquery = $this->getSubAction($mode, $args);
 
                 $args = [$args[0], $this->expr('{}', ['val'])];
 
