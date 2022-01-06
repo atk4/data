@@ -6,12 +6,12 @@ namespace Atk4\Data\Model;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
-use Atk4\Data\FieldSqlExpression;
+use Atk4\Data\Field\SqlExpressionField;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\Sql\Expression;
+use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Reference;
-use Atk4\Dsql\Expression;
-use Atk4\Dsql\Query;
 
 /**
  * Aggregate model allows you to query using "group by" clause on your existing model.
@@ -35,7 +35,7 @@ use Atk4\Dsql\Query;
  * Union model implements identical grouping rule on its own.
  *
  * You can also pass seed (for example field type) when aggregating:
- * $aggregate->groupBy(['first','last'], ['salary' => ['sum([])', 'type'=>'money']];
+ * $aggregate->groupBy(['first', 'last'], ['salary' => ['sum([])', 'type' => 'atk4_money']];
  *
  * @property \Atk4\Data\Persistence\Sql $persistence
  *
@@ -46,40 +46,15 @@ class Aggregate extends Model
     /** @const string */
     public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelectQuery';
 
-    /**
-     * @deprecated use HOOK_INIT_SELECT_QUERY instead - will be removed dec-2020
-     */
-    public const HOOK_AFTER_GROUP_SELECT = self::HOOK_INIT_SELECT_QUERY;
-
-    /** @var array */
-    protected $systemFields = [];
-
     /** @var Model */
     public $baseModel;
 
-    /**
-     * Aggregate model should always be read-only.
-     *
-     * @var bool
-     */
-    public $read_only = true;
+    /** @var string[] */
+    public $groupByFields = [];
 
-    /**
-     * Aggregate does not have ID field.
-     *
-     * @var string
-     */
-    public $id_field;
+    /** @var mixed[] */
+    public $aggregateExpressions = [];
 
-    /** @var array */
-    public $group = [];
-
-    /** @var array */
-    public $aggregate = [];
-
-    /**
-     * Constructor.
-     */
     public function __construct(Model $baseModel, array $defaults = [])
     {
         if (!$baseModel->persistence instanceof Persistence\Sql) {
@@ -89,54 +64,51 @@ class Aggregate extends Model
         $this->baseModel = clone $baseModel;
         $this->table = $baseModel->table;
 
-        parent::__construct($baseModel->persistence, $defaults);
+        // this model does not have ID field
+        $this->id_field = null;
 
-        // always use table prefixes for this model
-        $this->persistence_data['use_table_prefixes'] = true;
+        // this model should always be read-only
+        $this->read_only = true;
+
+        parent::__construct($baseModel->persistence, $defaults);
     }
 
     /**
      * Specify a single field or array of fields on which we will group model.
      *
-     * @param array $fields    Array of field names
-     * @param array $aggregate Array of aggregate mapping
+     * @param mixed[] $aggregateExpressions Array of aggregate expressions with alias as key
      *
      * @return $this
      */
-    public function groupBy(array $fields, array $aggregate = []): Model
+    public function groupBy(array $fields, array $aggregateExpressions = []): Model
     {
-        $this->group = $fields;
-        $this->aggregate = $aggregate;
+        $this->groupByFields = array_unique(array_merge($this->groupByFields, $fields));
 
-        $this->systemFields = array_unique($this->systemFields + $fields);
         foreach ($fields as $fieldName) {
             $this->addField($fieldName);
         }
 
-        foreach ($aggregate as $fieldName => $expr) {
+        foreach ($aggregateExpressions as $name => $expr) {
+            $this->aggregateExpressions[$name] = $expr;
+
             $seed = is_array($expr) ? $expr : [$expr];
 
             $args = [];
             // if field originally defined in the parent model, then it can be used as part of expression
-            if ($this->baseModel->hasField($fieldName)) {
-                $args = [$this->baseModel->getField($fieldName)];
+            if ($this->baseModel->hasField($name)) {
+                $args = [$this->baseModel->getField($name)];
             }
 
             $seed['expr'] = $this->baseModel->expr($seed[0] ?? $seed['expr'], $args);
 
             // now add the expressions here
-            $this->addExpression($fieldName, $seed);
+            $this->addExpression($name, $seed);
         }
 
         return $this;
     }
 
-    /**
-     * Return reference field.
-     *
-     * @param string $link
-     */
-    public function getRef($link): Reference
+    public function getRef(string $link): Reference
     {
         return $this->baseModel->getRef($link);
     }
@@ -150,10 +122,12 @@ class Aggregate extends Model
      * and
      *
      * $model->withAggregateField('xyz')->groupBy(['abc']);
+     *
+     * @return $this
      */
-    public function withAggregateField($name, $seed = []): Model
+    public function withAggregateField(string $name, $seed = []): Model
     {
-        static::addField(...func_get_args());
+        static::addField($name, $seed);
 
         return $this;
     }
@@ -167,7 +141,7 @@ class Aggregate extends Model
     {
         $seed = is_array($seed) ? $seed : [$seed];
 
-        if (isset($seed[0]) && $seed[0] instanceof FieldSqlExpression) {
+        if (isset($seed[0]) && $seed[0] instanceof SqlExpressionField) {
             return parent::addField($name, $seed[0]);
         }
 
@@ -187,16 +161,7 @@ class Aggregate extends Model
             : parent::addField($name, $seed);
     }
 
-    public function setLimit(int $count = null, int $offset = 0)
-    {
-        $this->baseModel->setLimit($count, $offset);
-
-        return $this;
-    }
-
     /**
-     * Execute action.
-     *
      * @param string $mode
      * @param array  $args
      *
@@ -206,15 +171,16 @@ class Aggregate extends Model
     {
         switch ($mode) {
             case 'select':
-                $fields = $this->only_fields ?: array_keys($this->getFields());
+                $fields = $this->onlyFields ?: array_keys($this->getFields());
 
                 // select but no need your fields
                 $query = $this->baseModel->action($mode, [false]);
-                $this->initQueryFields($query, array_unique($fields + $this->systemFields));
 
+                $this->initQueryFields($query, array_unique($fields + $this->groupByFields));
                 $this->initQueryOrder($query);
                 $this->initQueryGrouping($query);
                 $this->initQueryConditions($query);
+                $this->initQueryLimit($query);
 
                 $this->hook(self::HOOK_INIT_SELECT_QUERY, [$query]);
 
@@ -237,14 +203,12 @@ class Aggregate extends Model
         }
     }
 
-    protected function initQueryFields(Query $query, array $fields = []): Query
+    protected function initQueryFields(Query $query, array $fields = []): void
     {
         $this->persistence->initQueryFields($this, $query, $fields);
-
-        return $query;
     }
 
-    protected function initQueryOrder(Query $query)
+    protected function initQueryOrder(Query $query): void
     {
         if ($this->order) {
             foreach ($this->order as $order) {
@@ -263,12 +227,12 @@ class Aggregate extends Model
         }
     }
 
-    protected function initQueryGrouping(Query $query)
+    protected function initQueryGrouping(Query $query): void
     {
         // use table alias of base model
         $this->table_alias = $this->baseModel->table_alias;
 
-        foreach ($this->group as $field) {
+        foreach ($this->groupByFields as $field) {
             if ($this->baseModel->hasField($field)) {
                 $expression = $this->baseModel->getField($field);
             } else {
@@ -281,7 +245,7 @@ class Aggregate extends Model
 
     protected function initQueryConditions(Query $query, Model\Scope\AbstractScope $condition = null): void
     {
-        $condition = $condition ?? $this->scope();
+        $condition ??= $this->scope();
 
         if (!$condition->isEmpty()) {
             // peel off the single nested scopes to convert (((field = value))) to field = value
@@ -305,6 +269,17 @@ class Aggregate extends Model
         }
     }
 
+    protected function initQueryLimit(Query $query): void
+    {
+        if ($this->limit && ($this->limit[0] || $this->limit[1])) {
+            if ($this->limit[0] === null) {
+                $this->limit[0] = \PHP_INT_MAX;
+            }
+
+            $query->limit($this->limit[0], $this->limit[1]);
+        }
+    }
+
     // {{{ Debug Methods
 
     /**
@@ -313,8 +288,8 @@ class Aggregate extends Model
     public function __debugInfo(): array
     {
         return array_merge(parent::__debugInfo(), [
-            'group' => $this->group,
-            'aggregate' => $this->aggregate,
+            'groupByFields' => $this->groupByFields,
+            'aggregateExpressions' => $this->aggregateExpressions,
             'baseModel' => $this->baseModel->__debugInfo(),
         ]);
     }

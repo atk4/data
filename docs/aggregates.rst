@@ -16,36 +16,28 @@ Grouping
 
 Aggregate model can be used for grouping::
 
-   $orders->add(new \Atk4\Data\Model\Aggregate());
+   $aggregate = $orders->groupBy(['country_id']);
 
-   $aggregate = $orders->action('group');
-
-`$aggregate` above will return a new object that is most appropriate for the model persistence and which can be manipulated 
+`$aggregate` above is a new object that is most appropriate for the model's persistence and which can be manipulated 
 in various ways to fine-tune aggregation. Below is one sample use::
 
-   $aggregate = $orders->action(
-     'group',
-     'country_id', 
-     [
-       'country',
-       'count'=>'count',
-       'total_amount'=>['sum', 'amount']
-     ],
+   $aggregate = $orders->withAggregateField('country')->groupBy(['country_id'], [
+         'count' => ['expr' => 'count(*)', 'type' => 'integer'],
+         'total_amount' => ['expr' => 'sum([amount])', 'type' => 'atk4_money']
+      ],
    );
-   
-   foreach ($aggregate as $row) {
-     var_dump(json_encode($row));
-     // ['country'=>'UK', 'count'=>20, 'total_amount'=>123.20];
-     // ..
-   }
 
-Below is how opening balance can be build::
+   // $aggregate will have following rows:
+   // ['country' => 'UK', 'count' => 20, 'total_amount' => 123.20];
+   // ..
+
+Below is how opening balance can be built::
 
    $ledger = new GeneralLedger($db);
    $ledger->addCondition('date', '<', $from);
    
    // we actually need grouping by nominal
-   $ledger->add(new \Atk4\Data\Model\Aggregate());
-   $byNominal = $ledger->action('group', 'nominal_id');
-   $byNominal->addField('opening_balance', ['sum', 'amount']);
-   $byNominal->join();
+   $ledger->groupBy(['nominal_id'], [
+      'opening_balance' => ['expr' => 'sum([amount])', 'type' => 'atk4_money']   
+   ]);
+

@@ -4,16 +4,21 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
+use Atk4\Data\Model\Aggregate;
 use Atk4\Data\Model\Scope;
 use Atk4\Data\Model\Scope\Condition;
+use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
+use Doctrine\DBAL\Platforms\SqlitePlatform;
 
-class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
+class ModelAggregateTest extends TestCase
 {
     /** @var array */
     private $init_db =
         [
             'client' => [
-                ['name' => 'Vinny'],
+                // allow of migrator to create all columns
+                ['name' => 'Vinny', 'surname' => null, 'order' => null],
                 ['name' => 'Zoe'],
             ],
             'invoice' => [
@@ -27,33 +32,28 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ];
 
-    /** @var Model\Invoice|null */
-    protected $invoice;
-    /** @var \Atk4\Data\Model|null */
-    protected $invoiceAggregate;
-
     protected function setUp(): void
     {
         parent::setUp();
-        $this->setDB($this->init_db);
-
-        $this->invoice = new Model\Invoice($this->db);
-        $this->invoice->getRef('client_id')->addTitle();
-
-        $this->invoiceAggregate = $this->invoice->withAggregateField('client');
+        $this->setDb($this->init_db);
     }
 
-    protected function tearDown(): void
+    protected function createInvoice(): Model\Invoice
     {
-        $this->invoice = null;
-        $this->invoiceAggregate = null;
+        $invoice = new Model\Invoice($this->db);
+        $invoice->getRef('client_id')->addTitle();
 
-        parent::tearDown();
+        return $invoice;
     }
 
-    public function testGroupBy()
+    protected function createInvoiceAggregate(): Aggregate
     {
-        $invoiceAggregate = $this->invoice->groupBy(['client_id'], ['c' => ['expr' => 'count(*)', 'type' => 'integer']]);
+        return $this->createInvoice()->withAggregateField('client');
+    }
+
+    public function testGroupBy(): void
+    {
+        $invoiceAggregate = $this->createInvoice()->groupBy(['client_id'], ['c' => ['expr' => 'count(*)', 'type' => 'integer']]);
 
         $this->assertSame(
             [
@@ -64,9 +64,9 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
         );
     }
 
-    public function testGroupSelect()
+    public function testGroupSelect(): void
     {
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], ['c' => ['expr' => 'count(*)', 'type' => 'integer']]);
 
@@ -79,12 +79,12 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
         );
     }
 
-    public function testGroupSelect2()
+    public function testGroupSelect2(): void
     {
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
-            'amount' => ['expr' => 'sum([])', 'type' => 'money'],
+            'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
 
         $this->assertSame(
@@ -96,15 +96,15 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
         );
     }
 
-    public function testGroupSelect3()
+    public function testGroupSelect3(): void
     {
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
-            's' => ['expr' => 'sum([amount])', 'type' => 'money'],
-            'min' => ['expr' => 'min([amount])', 'type' => 'money'],
-            'max' => ['expr' => 'max([amount])', 'type' => 'money'],
-            'amount' => ['expr' => 'sum([])', 'type' => 'money'], // same as `s`, but reuse name `amount`
+            's' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
+            'min' => ['expr' => 'min([amount])', 'type' => 'atk4_money'],
+            'max' => ['expr' => 'max([amount])', 'type' => 'atk4_money'],
+            'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'], // same as `s`, but reuse name `amount`
         ]);
 
         $this->assertSame(
@@ -116,16 +116,16 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
         );
     }
 
-    public function testGroupSelectExpr()
+    public function testGroupSelectExpr(): void
     {
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
-            's' => ['expr' => 'sum([amount])', 'type' => 'money'],
-            'amount' => ['expr' => 'sum([])', 'type' => 'money'],
+            's' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
+            'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
 
-        $aggregate->addExpression('double', ['[s]+[amount]', 'type' => 'money']);
+        $aggregate->addExpression('double', ['[s]+[amount]', 'type' => 'atk4_money']);
 
         $this->assertSame(
             [
@@ -136,18 +136,17 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
         );
     }
 
-    public function testGroupSelectCondition()
+    public function testGroupSelectCondition(): void
     {
-        /** @var \Atk4\Data\Model\Aggregate $aggregate */
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
         $aggregate->baseModel->addCondition('name', 'chair purchase');
 
         $aggregate->groupBy(['client_id'], [
-            's' => ['expr' => 'sum([amount])', 'type' => 'money'],
-            'amount' => ['expr' => 'sum([])', 'type' => 'money'],
+            's' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
+            'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
 
-        $aggregate->addExpression('double', ['[s]+[amount]', 'type' => 'money']);
+        $aggregate->addExpression('double', ['[s]+[amount]', 'type' => 'atk4_money']);
 
         $this->assertSame(
             [
@@ -158,17 +157,22 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
         );
     }
 
-    public function testGroupSelectCondition2()
+    public function testGroupSelectCondition2(): void
     {
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
-            's' => ['expr' => 'sum([amount])', 'type' => 'money'],
-            'amount' => ['expr' => 'sum([])', 'type' => 'money'],
+            's' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
+            'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
 
-        $aggregate->addExpression('double', ['[s]+[amount]', 'type' => 'money']);
-        $aggregate->addCondition('double', '>', 10);
+        $aggregate->addExpression('double', ['[s]+[amount]', 'type' => 'atk4_money']);
+        $aggregate->addCondition(
+            'double',
+            '>',
+            // TODO Sqlite bind param does not work, expr needed, even if casted to float with DBAL type (comparison works only if casted to/bind as int)
+            $this->getDatabasePlatform() instanceof SqlitePlatform ? $aggregate->expr('10') : 10
+        );
 
         $this->assertSame(
             [
@@ -178,17 +182,21 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
         );
     }
 
-    public function testGroupSelectCondition3()
+    public function testGroupSelectCondition3(): void
     {
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
-            's' => ['expr' => 'sum([amount])', 'type' => 'money'],
-            'amount' => ['expr' => 'sum([])', 'type' => 'money'],
+            's' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
+            'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
 
-        $aggregate->addExpression('double', ['[s]+[amount]', 'type' => 'money']);
-        $aggregate->addCondition('double', 38);
+        $aggregate->addExpression('double', ['[s]+[amount]', 'type' => 'atk4_money']);
+        $aggregate->addCondition(
+            'double',
+            // TODO Sqlite bind param does not work, expr needed, even if casted to float with DBAL type (comparison works only if casted to/bind as int)
+            $this->getDatabasePlatform() instanceof SqlitePlatform ? $aggregate->expr('38') : 38
+        );
 
         $this->assertSame(
             [
@@ -198,16 +206,16 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
         );
     }
 
-    public function testGroupSelectCondition4()
+    public function testGroupSelectCondition4(): void
     {
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
-            's' => ['expr' => 'sum([amount])', 'type' => 'money'],
-            'amount' => ['expr' => 'sum([])', 'type' => 'money'],
+            's' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
+            'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
 
-        $aggregate->addExpression('double', ['[s]+[amount]', 'type' => 'money']);
+        $aggregate->addExpression('double', ['[s]+[amount]', 'type' => 'atk4_money']);
         $aggregate->addCondition('client_id', 2);
 
         $this->assertSame(
@@ -218,15 +226,24 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
         );
     }
 
-    public function testGroupSelectScope()
+    public function testGroupSelectScope(): void
     {
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
-            'amount' => ['expr' => 'sum([])', 'type' => 'money'],
+            'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
 
-        $scope = Scope::createAnd(new Condition('client_id', 2), new Condition('amount', 4));
+        // TODO Sqlite bind param does not work, expr needed, even if casted to float with DBAL type (comparison works only if casted to/bind as int)
+        $numExpr = $this->getDatabasePlatform() instanceof SqlitePlatform ? $aggregate->expr('4') : 4;
+        $scope = Scope::createAnd(new Condition('client_id', 2), new Condition('amount', $numExpr));
+
+        // MySQL Server v8.0.27 (and possibly some lower versions) returns a wrong result
+        // see https://bugs.mysql.com/bug.php?id=106063
+        // remove this fix once v8.0.28 is released and Docker image is available
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            array_pop($scope->elements);
+        }
 
         $aggregate->addCondition($scope);
 
@@ -238,28 +255,28 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
         );
     }
 
-    public function testGroupOrder()
+    public function testGroupOrder(): void
     {
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
-            'amount' => ['expr' => 'sum([])', 'type' => 'money'],
+            'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
 
         $aggregate->setOrder('client_id', 'asc');
 
         $this->assertSameSql(
-            'select (select "name" from "client" "c" where "id" = "invoice"."client_id") "client","invoice"."client_id",sum("invoice"."amount") "amount" from "invoice" group by "invoice"."client_id" order by "invoice"."client_id"',
-            $aggregate->action('select')->render()
+            'select (select "name" from "client" "_c_2bfe9d72a4aa" where "id" = "invoice"."client_id") "client", "client_id", sum("amount") "amount" from "invoice" group by "client_id" order by "client_id"',
+            $aggregate->action('select')->render()[0]
         );
     }
 
-    public function testGroupLimit()
+    public function testGroupLimit(): void
     {
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
-            'amount' => ['expr' => 'sum([])', 'type' => 'money'],
+            'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
         $aggregate->setLimit(1);
 
@@ -271,12 +288,12 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
         );
     }
 
-    public function testGroupLimit2()
+    public function testGroupLimit2(): void
     {
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
-            'amount' => ['expr' => 'sum([])', 'type' => 'money'],
+            'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
         $aggregate->setLimit(1, 1);
 
@@ -288,31 +305,31 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
         );
     }
 
-    public function testGroupCount()
+    public function testGroupCount(): void
     {
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
-            'amount' => ['expr' => 'sum([])', 'type' => 'money'],
+            'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
 
         $this->assertSameSql(
             'select count(*) from ((select 1 from "invoice" group by "client_id")) der',
-            $aggregate->action('count')->render()
+            $aggregate->action('count')->render()[0]
         );
     }
 
-    public function testAggregateFieldExpression()
+    public function testAggregateFieldExpression(): void
     {
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['abc'], [
             'xyz' => ['expr' => 'sum([amount])'],
         ]);
 
         $this->assertSameSql(
-            'select (select "name" from "client" "c" where "id" = "invoice"."client_id") "client","invoice"."abc",sum("invoice"."amount") "xyz" from "invoice" group by abc',
-            $aggregate->action('select')->render()
+            'select (select "name" from "client" "_c_2bfe9d72a4aa" where "id" = "invoice"."client_id") "client", "abc", sum("amount") "xyz" from "invoice" group by abc',
+            $aggregate->action('select')->render()[0]
         );
     }
 }

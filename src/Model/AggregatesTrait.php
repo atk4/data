@@ -12,18 +12,24 @@ use Atk4\Data\Model;
 trait AggregatesTrait
 {
     /**
+     * @param array|object $seed
+     *
+     * @return Aggregate
+     *
      * @see Aggregate::withAggregateField.
      */
-    public function withAggregateField($name, $seed = []): Model
+    public function withAggregateField(string $name, $seed = []): Model
     {
-        return (new Aggregate($this))->withAggregateField(...func_get_args());
+        return (new Aggregate($this))->withAggregateField($name, $seed);
     }
 
     /**
+     * @return Aggregate
+     *
      * @see Aggregate::groupBy.
      */
-    public function groupBy(array $group, array $aggregate = []): Model
+    public function groupBy(array $fields, array $aggregateExpressions = []): Model
     {
-        return (new Aggregate($this))->groupBy(...func_get_args());
+        return (new Aggregate($this))->groupBy($fields, $aggregateExpressions);
     }
 }
