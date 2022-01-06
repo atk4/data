@@ -13,7 +13,8 @@ class ReportTest extends TestCase
     private $init_db =
         [
             'client' => [
-                ['name' => 'Vinny'],
+                // allow of migrator to create all columns
+                ['name' => 'Vinny', 'surname' => null, 'order' => null],
                 ['name' => 'Zoe'],
             ],
             'invoice' => [
