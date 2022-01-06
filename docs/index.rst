@@ -28,8 +28,6 @@ Contents:
     extensions
     persistence/csv
 
-
-
 Indices and tables
 ==================
 

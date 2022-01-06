@@ -28,7 +28,7 @@ in various ways to fine-tune aggregation. Below is one sample use::
    );
 
    // $aggregate will have following rows:
-   // ['country'=>'UK', 'count'=>20, 'total_amount'=>123.20];
+   // ['country' => 'UK', 'count' => 20, 'total_amount' => 123.20];
    // ..
 
 Below is how opening balance can be built::
