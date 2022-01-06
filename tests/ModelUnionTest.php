@@ -73,7 +73,7 @@ class ModelUnionTest extends TestCase
         );
 
         $this->assertSameSql(
-            '(select "name" "name","amount" "amount" from "invoice" UNION ALL select "name" "name","amount" "amount" from "payment") "derivedTable"',
+            '(select "name" "name", "amount" "amount" from "invoice" UNION ALL select "name" "name", "amount" "amount" from "payment") "derivedTable"',
             $transaction->getSubQuery(['name', 'amount'])->render()[0]
         );
 
@@ -93,7 +93,7 @@ class ModelUnionTest extends TestCase
         $transaction->addField('type');
 
         $this->assertSameSql(
-            '(select (\'invoice\') "type","amount" "amount" from "invoice" UNION ALL select NULL "type","amount" "amount" from "payment") "derivedTable"',
+            '(select (\'invoice\') "type", "amount" "amount" from "invoice" UNION ALL select NULL "type", "amount" "amount" from "payment") "derivedTable"',
             $transaction->getSubQuery(['type', 'amount'])->render()[0]
         );
     }
@@ -103,7 +103,7 @@ class ModelUnionTest extends TestCase
         $transaction = $this->createTransaction();
 
         $this->assertSameSql(
-            'select "name","amount" from (select "name" "name","amount" "amount" from "invoice" UNION ALL select "name" "name","amount" "amount" from "payment") "derivedTable"',
+            'select "name", "amount" from (select "name" "name", "amount" "amount" from "invoice" UNION ALL select "name" "name", "amount" "amount" from "payment") "derivedTable"',
             $transaction->action('select')->render()[0]
         );
 
@@ -212,7 +212,7 @@ class ModelUnionTest extends TestCase
         $transaction->groupBy('name', ['amount' => ['sum([amount])', 'type' => 'atk4_money']]);
 
         $this->assertSameSql(
-            '(select "name" "name",sum("amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name",sum("amount") "amount" from "payment" group by "name") "derivedTable"',
+            '(select "name" "name", sum("amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name", sum("amount") "amount" from "payment" group by "name") "derivedTable"',
             $transaction->getSubQuery(['name', 'amount'])->render()[0]
         );
 
@@ -221,7 +221,7 @@ class ModelUnionTest extends TestCase
         $transaction->groupBy('name', ['amount' => ['sum([])', 'type' => 'atk4_money']]);
 
         $this->assertSameSql(
-            '(select "name" "name",sum(-"amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name",sum("amount") "amount" from "payment" group by "name") "derivedTable"',
+            '(select "name" "name", sum(-"amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name", sum("amount") "amount" from "payment" group by "name") "derivedTable"',
             $transaction->getSubQuery(['name', 'amount'])->render()[0]
         );
     }
@@ -233,7 +233,7 @@ class ModelUnionTest extends TestCase
         $transaction->groupBy('name', ['amount' => ['sum([amount])', 'type' => 'atk4_money']]);
 
         $this->assertSameSql(
-            'select "name",sum("amount") "amount" from (select "name" "name",sum("amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name",sum("amount") "amount" from "payment" group by "name") "derivedTable" group by "name"',
+            'select "name", sum("amount") "amount" from (select "name" "name", sum("amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name", sum("amount") "amount" from "payment" group by "name") "derivedTable" group by "name"',
             $transaction->action('select', [['name', 'amount']])->render()[0]
         );
 
@@ -242,7 +242,7 @@ class ModelUnionTest extends TestCase
         $transaction->groupBy('name', ['amount' => ['sum([])', 'type' => 'atk4_money']]);
 
         $this->assertSameSql(
-            'select "name",sum("amount") "amount" from (select "name" "name",sum(-"amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name",sum("amount") "amount" from "payment" group by "name") "derivedTable" group by "name"',
+            'select "name", sum("amount") "amount" from (select "name" "name", sum(-"amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name", sum("amount") "amount" from "payment" group by "name") "derivedTable" group by "name"',
             $transaction->action('select', [['name', 'amount']])->render()[0]
         );
     }
@@ -353,8 +353,8 @@ class ModelUnionTest extends TestCase
             ->addField('balance', ['field' => 'amount', 'aggregate' => 'sum']);
 
         $this->assertTrue(true); // fake assert
-        //select "client"."id","client"."name",(select sum("val") from (select sum("amount") "val" from "invoice" where "client_id" = "client"."id" UNION ALL select sum("amount") "val" from "payment" where "client_id" = "client"."id") "derivedTable") "balance" from "client" where "client"."id" = 1 limit 0, 1
-        //$c->load(1);
+        //select "client"."id", "client"."name", (select sum("val") from (select sum("amount") "val" from "invoice" where "client_id" = "client"."id" UNION ALL select sum("amount") "val" from "payment" where "client_id" = "client"."id") "derivedTable") "balance" from "client" where "client"."id" = 1 limit 0, 1
+        //$client->load(1);
     }
 
     public function testConditionOnUnionField(): void
