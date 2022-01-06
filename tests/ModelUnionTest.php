@@ -6,6 +6,7 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class ModelUnionTest extends TestCase
 {
@@ -295,6 +296,10 @@ class ModelUnionTest extends TestCase
             'select "client_id", "name", "type", sum("amount") "amount" from (select (\'invoice\') "type", sum("amount") "amount" from "invoice" group by "type" UNION ALL select (\'payment\') "type", sum("amount") "amount" from "payment" group by "type") "derivedTable" group by "type"',
             $transaction->action('select')->render()[0]
         );
+
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+            $this->markTestIncomplete('TODO MSSQL: Constant value column seem not supported (Invalid column name \'type\')');
+        }
 
         $this->assertSame([
             ['type' => 'invoice', 'amount' => 23.0],

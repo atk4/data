@@ -12,6 +12,7 @@ use Doctrine\DBAL\Logging\SQLLogger;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 
 abstract class TestCase extends BaseTestCase
@@ -117,7 +118,7 @@ abstract class TestCase extends BaseTestCase
                     return $platform->quoteSingleIdentifier($str);
                 }
 
-                return $platform->quoteStringLiteral($str);
+                return ($platform instanceof SQLServerPlatform ? 'N' : '') . $platform->quoteStringLiteral($str);
             },
             $sql
         );
