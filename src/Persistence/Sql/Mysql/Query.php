@@ -18,6 +18,13 @@ class Query extends BaseQuery
 
     public function groupConcat($field, string $delimiter = ',')
     {
+        // TODO fix mysqli, separator from bound param does not work
+        // then reenable both testGroupConcat() tests
+        // https://github.com/php/php-src/issues/7903
+        if (!$this->hasNativeNamedParamSupport()) {
+            return $this->expr('group_concat({} separator \'' . $delimiter . '\')', [$field]);
+        }
+
         return $this->expr('group_concat({} separator [])', [$field, $delimiter]);
     }
 }
