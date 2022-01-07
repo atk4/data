@@ -9,6 +9,7 @@ use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Driver\Connection as DbalDriverConnection;
 use Doctrine\DBAL\Driver\Mysqli\Connection as DbalMysqliConnection;
+use Doctrine\DBAL\Driver\OCI8\Connection as DbalOci8Connection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
@@ -38,8 +39,9 @@ abstract class Connection
         'pdo_mysql' => Mysql\Connection::class,
         'mysqli' => Mysql\Connection::class,
         'pdo_pgsql' => Postgresql\Connection::class,
-        'pdo_oci' => Oracle\Connection::class,
         'pdo_sqlsrv' => Mssql\Connection::class,
+        'pdo_oci' => Oracle\Connection::class,
+        'oci8' => Oracle\Connection::class,
     ];
 
     /**
@@ -131,9 +133,14 @@ abstract class Connection
             $dsn['password'] = $password;
         }
 
-        if (!str_starts_with($dsn['driver'], 'pdo_') && !in_array($dsn['driver'], ['mysqli'], true)) {
-            $dsn['driver'] = 'pdo_' . $dsn['driver'];
-        }
+        // BC for 2.4 - 3.1 accepted schema/driver names
+        $dsn['driver'] = [
+            'sqlite' => 'pdo_sqlite',
+            'mysql' => 'mysqli',
+            'pgsql' => 'pdo_pgsql',
+            'sqlsrv' => 'pdo_sqlsrv',
+            'oci' => 'oci8',
+        ][$dsn['driver']] ?? $dsn['driver'];
 
         return $dsn;
     }
@@ -201,8 +208,10 @@ abstract class Connection
 
     /**
      * @param DbalDriverConnection|DbalConnection $connection
+     *
+     * @return object|resource
      */
-    private static function getDriverFromDbalDriverConnection($connection): object
+    private static function getDriverFromDbalDriverConnection(object $connection)
     {
         // TODO replace this method with Connection::getNativeConnection() once only DBAL 3.3+ is supported
         // https://github.com/doctrine/dbal/pull/5037
@@ -213,11 +222,15 @@ abstract class Connection
             }
         }
 
+        $isDbal2x = self::isComposerDbal2x(); // remove once https://github.com/phpstan/phpstan/issues/6319 is fixed
         $wrappedConnection = $connection instanceof DbalMysqliConnection
             ? $connection->getWrappedResourceHandle()
-            : $connection->getWrappedConnection();
+            : ($connection instanceof DbalOci8Connection
+                ? \Closure::bind(fn () => $isDbal2x ? $connection->dbh : $connection->connection, null, DbalOci8Connection::class)() // @phpstan-ignore-line
+                : $connection->getWrappedConnection());
 
-        if ($wrappedConnection instanceof \PDO || $wrappedConnection instanceof \mysqli) {
+        if ($wrappedConnection instanceof \PDO || $wrappedConnection instanceof \mysqli
+            || (is_resource($wrappedConnection) && get_resource_type($wrappedConnection) === 'oci8 connection')) {
             return $wrappedConnection;
         }
 
@@ -232,6 +245,8 @@ abstract class Connection
             return 'pdo_' . $driver->getAttribute(\PDO::ATTR_DRIVER_NAME);
         } elseif ($driver instanceof \mysqli) {
             return 'mysqli';
+        } elseif (is_resource($driver) && get_resource_type($driver) === 'oci8 connection') {
+            return 'oci8';
         }
 
         return null; // @phpstan-ignore-line
@@ -247,7 +262,7 @@ abstract class Connection
         $dsn = static::normalizeDsn($dsn);
         if ($dsn['driver'] === 'pdo_mysql' || $dsn['driver'] === 'mysqli') {
             $dsn['charset'] = 'utf8mb4';
-        } elseif ($dsn['driver'] === 'pdo_oci') {
+        } elseif ($dsn['driver'] === 'pdo_oci' || $dsn['driver'] === 'oci8') {
             $dsn['charset'] = 'AL32UTF8';
         }
 
