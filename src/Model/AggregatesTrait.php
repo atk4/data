@@ -12,6 +12,15 @@ use Atk4\Data\Model;
 trait AggregatesTrait
 {
     /**
+     * Method to enable commutative usage of methods enabling both of below
+     * Resulting in Aggregate on $model.
+     *
+     * $model->groupBy(['abc'])->withAggregateField('xyz');
+     *
+     * and
+     *
+     * $model->withAggregateField('xyz')->groupBy(['abc']);
+     *
      * @param array|object $seed
      *
      * @return Aggregate
@@ -24,9 +33,13 @@ trait AggregatesTrait
     }
 
     /**
+     * Specify a single field or array of fields on which we will group model.
+     *
+     * @param array<string, array|object> $aggregateExpressions Array of aggregate expressions with alias as key
+     *
      * @return Aggregate
      *
-     * @see Aggregate::groupBy.
+     * @see Aggregate::groupBy
      */
     public function groupBy(array $fields, array $aggregateExpressions = []): Model
     {

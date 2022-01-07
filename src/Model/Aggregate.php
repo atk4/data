@@ -74,10 +74,6 @@ class Aggregate extends Model
     }
 
     /**
-     * Specify a single field or array of fields on which we will group model.
-     *
-     * @param mixed[] $aggregateExpressions Array of aggregate expressions with alias as key
-     *
      * @return $this
      */
     public function groupBy(array $fields, array $aggregateExpressions = []): Model
@@ -88,10 +84,8 @@ class Aggregate extends Model
             $this->addField($fieldName);
         }
 
-        foreach ($aggregateExpressions as $name => $expr) {
-            $this->aggregateExpressions[$name] = $expr;
-
-            $seed = is_array($expr) ? $expr : [$expr];
+        foreach ($aggregateExpressions as $name => $seed) {
+            $this->aggregateExpressions[$name] = $seed;
 
             $args = [];
             // if field originally defined in the parent model, then it can be used as part of expression
@@ -114,15 +108,6 @@ class Aggregate extends Model
     }
 
     /**
-     * Method to enable commutative usage of methods enabling both of below
-     * Resulting in Aggregate on $model.
-     *
-     * $model->groupBy(['abc'])->withAggregateField('xyz');
-     *
-     * and
-     *
-     * $model->withAggregateField('xyz')->groupBy(['abc']);
-     *
      * @return $this
      */
     public function withAggregateField(string $name, $seed = []): Model
@@ -139,10 +124,8 @@ class Aggregate extends Model
      */
     public function addField(string $name, $seed = []): Field
     {
-        $seed = is_array($seed) ? $seed : [$seed];
-
-        if (isset($seed[0]) && $seed[0] instanceof SqlExpressionField) {
-            return parent::addField($name, $seed[0]);
+        if ($seed instanceof SqlExpressionField) {
+            return parent::addField($name, $seed);
         }
 
         if ($seed['never_persist'] ?? false) {
