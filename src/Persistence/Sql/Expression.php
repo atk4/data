@@ -493,6 +493,41 @@ class Expression implements Expressionable, \ArrayAccess
         return $arr;
     }
 
+    protected function hasNativeNamedParamSupport(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @param array{string, array<string, mixed>} $render
+     *
+     * @return array{string, array<string, mixed>}
+     *
+     * @internal
+     */
+    protected function updateRenderBeforeExecute(array $render): array
+    {
+        [$sql, $params] = $render;
+
+        if (!$this->hasNativeNamedParamSupport()) {
+            $numParams = [];
+            $i = 0;
+            $j = 0;
+            $sql = preg_replace_callback(
+                '~(?:\'(?:\'\'|\\\\\'|[^\'])*\')?+\K(?:\?|:\w+)~s',
+                function ($matches) use ($params, &$numParams, &$i, &$j) {
+                    $numParams[++$i] = $params[$matches[0] === '?' ? ++$j : $matches[0]];
+
+                    return '?';
+                },
+                $sql
+            );
+            $params = $numParams;
+        }
+
+        return [$sql, $params];
+    }
+
     /**
      * @param DbalConnection|Connection $connection
      *
@@ -508,7 +543,7 @@ class Expression implements Expressionable, \ArrayAccess
             return $connection->execute($this);
         }
 
-        [$query, $params] = $this->render();
+        [$query, $params] = $this->updateRenderBeforeExecute($this->render());
 
         $platform = $this->connection->getDatabasePlatform();
         try {
@@ -577,11 +612,13 @@ class Expression implements Expressionable, \ArrayAccess
             }
             $errorInfo = $firstException instanceof \PDOException ? $firstException->errorInfo : null;
 
-            $new = (new ExecuteException('Dsql execute error', $errorInfo[1] ?? 0, $e))
-                ->addMoreInfo('error', $errorInfo[2] ?? 'n/a (' . $errorInfo[0] . ')')
-                ->addMoreInfo('query', $this->getDebugQuery());
+            $eNew = (new ExecuteException('Dsql execute error', $errorInfo[1] ?? $e->getCode(), $e));
+            if ($errorInfo !== null && $errorInfo !== []) {
+                $eNew->addMoreInfo('error', $errorInfo[2] ?? 'n/a (' . $errorInfo[0] . ')');
+            }
+            $eNew->addMoreInfo('query', $this->getDebugQuery());
 
-            throw $new;
+            throw $eNew;
         }
     }
 

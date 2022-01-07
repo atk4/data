@@ -8,6 +8,8 @@ use Atk4\Core\DiContainerTrait;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Driver\Connection as DbalDriverConnection;
+use Doctrine\DBAL\Driver\Mysqli\Connection as DbalMysqliConnection;
+use Doctrine\DBAL\Driver\OCI8\Connection as DbalOci8Connection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
@@ -35,9 +37,11 @@ abstract class Connection
     protected static $connectionClassRegistry = [
         'pdo_sqlite' => Sqlite\Connection::class,
         'pdo_mysql' => Mysql\Connection::class,
+        'mysqli' => Mysql\Connection::class,
         'pdo_pgsql' => Postgresql\Connection::class,
-        'pdo_oci' => Oracle\Connection::class,
         'pdo_sqlsrv' => Mssql\Connection::class,
+        'pdo_oci' => Oracle\Connection::class,
+        'oci8' => Oracle\Connection::class,
     ];
 
     /**
@@ -85,7 +89,7 @@ abstract class Connection
         if (isset($dsn['dsn'])) {
             if (str_contains($dsn['dsn'], '://')) {
                 $parsed = array_filter(parse_url($dsn['dsn']));
-                $dsn['dsn'] = $parsed['scheme'] . ':';
+                $dsn['dsn'] = str_replace('-', '_', $parsed['scheme']) . ':';
                 unset($parsed['scheme']);
                 foreach ($parsed as $k => $v) {
                     if ($k === 'pass') { // @phpstan-ignore-line phpstan bug
@@ -129,9 +133,14 @@ abstract class Connection
             $dsn['password'] = $password;
         }
 
-        if (!str_starts_with($dsn['driver'], 'pdo_')) {
-            $dsn['driver'] = 'pdo_' . $dsn['driver'];
-        }
+        // BC for 2.4 - 3.1 accepted schema/driver names
+        $dsn['driver'] = [
+            'sqlite' => 'pdo_sqlite',
+            'mysql' => 'mysqli',
+            'pgsql' => 'pdo_pgsql',
+            'sqlsrv' => 'pdo_sqlsrv',
+            'oci' => 'oci8',
+        ][$dsn['driver']] ?? $dsn['driver'];
 
         return $dsn;
     }
@@ -197,12 +206,47 @@ abstract class Connection
         return !class_exists(DbalResult::class);
     }
 
+    /**
+     * @param DbalDriverConnection|DbalConnection $connection
+     *
+     * @return object|resource
+     */
+    private static function getDriverFromDbalDriverConnection(object $connection)
+    {
+        // TODO replace this method with Connection::getNativeConnection() once only DBAL 3.3+ is supported
+        // https://github.com/doctrine/dbal/pull/5037
+
+        if (self::isComposerDbal2x()) {
+            if ($connection instanceof \PDO || $connection instanceof \mysqli) {
+                return $connection;
+            }
+        }
+
+        $isDbal2x = self::isComposerDbal2x(); // remove once https://github.com/phpstan/phpstan/issues/6319 is fixed
+        $wrappedConnection = $connection instanceof DbalMysqliConnection
+            ? $connection->getWrappedResourceHandle()
+            : ($connection instanceof DbalOci8Connection
+                ? \Closure::bind(fn () => $isDbal2x ? $connection->dbh : $connection->connection, null, DbalOci8Connection::class)() // @phpstan-ignore-line
+                : $connection->getWrappedConnection());
+
+        if ($wrappedConnection instanceof \PDO || $wrappedConnection instanceof \mysqli
+            || (is_resource($wrappedConnection) && get_resource_type($wrappedConnection) === 'oci8 connection')) {
+            return $wrappedConnection;
+        }
+
+        return self::getDriverFromDbalDriverConnection($wrappedConnection);
+    }
+
     private static function getDriverNameFromDbalDriverConnection(DbalDriverConnection $connection): string
     {
-        while (self::isComposerDbal2x() ? $connection instanceof \PDO : $connection = $connection->getWrappedConnection()) {
-            if ($connection instanceof \PDO) {
-                return 'pdo_' . $connection->getAttribute(\PDO::ATTR_DRIVER_NAME);
-            }
+        $driver = self::getDriverFromDbalDriverConnection($connection);
+
+        if ($driver instanceof \PDO) {
+            return 'pdo_' . $driver->getAttribute(\PDO::ATTR_DRIVER_NAME);
+        } elseif ($driver instanceof \mysqli) {
+            return 'mysqli';
+        } elseif (is_resource($driver) && get_resource_type($driver) === 'oci8 connection') {
+            return 'oci8';
         }
 
         return null; // @phpstan-ignore-line
@@ -216,9 +260,9 @@ abstract class Connection
     protected static function connectFromDsn(array $dsn): DbalDriverConnection
     {
         $dsn = static::normalizeDsn($dsn);
-        if ($dsn['driver'] === 'pdo_mysql') {
+        if ($dsn['driver'] === 'pdo_mysql' || $dsn['driver'] === 'mysqli') {
             $dsn['charset'] = 'utf8mb4';
-        } elseif ($dsn['driver'] === 'pdo_oci') {
+        } elseif ($dsn['driver'] === 'pdo_oci' || $dsn['driver'] === 'oci8') {
             $dsn['charset'] = 'AL32UTF8';
         }
 
@@ -413,7 +457,9 @@ abstract class Connection
      */
     public function lastInsertId(string $sequence = null): string
     {
-        return $this->connection()->lastInsertId($sequence);
+        $res = $this->connection()->lastInsertId($sequence);
+
+        return is_int($res) ? (string) $res : $res;
     }
 
     public function getDatabasePlatform(): AbstractPlatform
