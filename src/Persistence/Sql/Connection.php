@@ -8,6 +8,7 @@ use Atk4\Core\DiContainerTrait;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Driver\Connection as DbalDriverConnection;
+use Doctrine\DBAL\Driver\Mysqli\Connection as DbalMysqliConnection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
@@ -35,6 +36,7 @@ abstract class Connection
     protected static $connectionClassRegistry = [
         'pdo_sqlite' => Sqlite\Connection::class,
         'pdo_mysql' => Mysql\Connection::class,
+        'mysqli' => Mysql\Connection::class,
         'pdo_pgsql' => Postgresql\Connection::class,
         'pdo_oci' => Oracle\Connection::class,
         'pdo_sqlsrv' => Mssql\Connection::class,
@@ -129,7 +131,7 @@ abstract class Connection
             $dsn['password'] = $password;
         }
 
-        if (!str_starts_with($dsn['driver'], 'pdo_')) {
+        if (!str_starts_with($dsn['driver'], 'pdo_') && !in_array($dsn['driver'], ['mysqli'], true)) {
             $dsn['driver'] = 'pdo_' . $dsn['driver'];
         }
 
@@ -197,12 +199,33 @@ abstract class Connection
         return !class_exists(DbalResult::class);
     }
 
+    private static function getDriverFromDbalDriverConnection(DbalDriverConnection $connection): object
+    {
+        if (self::isComposerDbal2x()) {
+            if ($connection instanceof \PDO || $connection instanceof \mysqli) {
+                return $connection;
+            }
+        }
+
+        $wrappedConnection = $connection instanceof DbalMysqliConnection
+            ? $connection->getWrappedResourceHandle()
+            : $connection->getWrappedConnection(); // @phpstan-ignore-line
+
+        if ($wrappedConnection instanceof \PDO || $wrappedConnection instanceof \mysqli) {
+            return $wrappedConnection;
+        }
+
+        return self::getDriverFromDbalDriverConnection($wrappedConnection);
+    }
+
     private static function getDriverNameFromDbalDriverConnection(DbalDriverConnection $connection): string
     {
-        while (self::isComposerDbal2x() ? $connection instanceof \PDO : $connection = $connection->getWrappedConnection()) {
-            if ($connection instanceof \PDO) {
-                return 'pdo_' . $connection->getAttribute(\PDO::ATTR_DRIVER_NAME);
-            }
+        $driver = self::getDriverFromDbalDriverConnection($connection);
+
+        if ($driver instanceof \PDO) {
+            return 'pdo_' . $driver->getAttribute(\PDO::ATTR_DRIVER_NAME);
+        } elseif ($driver instanceof \mysqli) {
+            return 'mysqli';
         }
 
         return null; // @phpstan-ignore-line
@@ -216,7 +239,7 @@ abstract class Connection
     protected static function connectFromDsn(array $dsn): DbalDriverConnection
     {
         $dsn = static::normalizeDsn($dsn);
-        if ($dsn['driver'] === 'pdo_mysql') {
+        if ($dsn['driver'] === 'pdo_mysql' || $dsn['driver'] === 'mysqli') {
             $dsn['charset'] = 'utf8mb4';
         } elseif ($dsn['driver'] === 'pdo_oci') {
             $dsn['charset'] = 'AL32UTF8';
@@ -413,7 +436,9 @@ abstract class Connection
      */
     public function lastInsertId(string $sequence = null): string
     {
-        return $this->connection()->lastInsertId($sequence);
+        $res = $this->connection()->lastInsertId($sequence);
+
+        return is_int($res) ? (string) $res : $res;
     }
 
     public function getDatabasePlatform(): AbstractPlatform

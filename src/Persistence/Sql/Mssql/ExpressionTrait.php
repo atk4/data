@@ -30,37 +30,11 @@ trait ExpressionTrait
             return $matches[1] . (!in_array($matches[1], ['N', '\'', '\\'], true) ? 'N' : '') . $matches[2];
         }, $sql);
 
-        // MSSQL does not support named parameters, so convert them to numerical when called from execute
-        $trace = debug_backtrace(\DEBUG_BACKTRACE_PROVIDE_OBJECT | \DEBUG_BACKTRACE_IGNORE_ARGS, 10);
-        $calledFromExecute = false;
-        foreach ($trace as $frame) {
-            if (($frame['object'] ?? null) === $this) {
-                if (($frame['function'] ?? null) === 'render') {
-                    continue;
-                } elseif (($frame['function'] ?? null) === 'execute') {
-                    $calledFromExecute = true;
-                }
-            }
-
-            break;
-        }
-
-        if ($calledFromExecute) {
-            $numParams = [];
-            $i = 0;
-            $j = 0;
-            $sql = preg_replace_callback(
-                '~(?:\'(?:\'\'|\\\\\'|[^\'])*\')?+\K(?:\?|:\w+)~s',
-                function ($matches) use ($params, &$numParams, &$i, &$j) {
-                    $numParams[++$i] = $params[$matches[0] === '?' ? ++$j : $matches[0]];
-
-                    return '?';
-                },
-                $sql
-            );
-            $params = $numParams;
-        }
-
         return [$sql, $params];
+    }
+
+    protected function hasNativeNamedParamSupport(): bool
+    {
+        return false;
     }
 }

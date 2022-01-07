@@ -8,6 +8,8 @@ use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 
 class Query extends BaseQuery
 {
+    use ExpressionTrait;
+
     protected $escape_char = '`';
 
     protected $expression_class = Expression::class;

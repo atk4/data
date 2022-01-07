@@ -249,6 +249,11 @@ class SelectTest extends TestCase
         } catch (ExecuteException $e) {
             if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
                 $expectedErrorCode = 1146; // SQLSTATE[42S02]: Base table or view not found: 1146 Table 'non_existing_table' doesn't exist
+
+                $dummyExpr = $this->c->expr();
+                if (Connection::isComposerDbal2x() && !\Closure::bind(fn () => $dummyExpr->hasNativeNamedParamSupport(), null, \Atk4\Data\Persistence\Sql\Expression::class)()) {
+                    $this->markTestIncomplete('DBAL 2.x with mysqli driver does not set exception code');
+                }
             } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
                 $expectedErrorCode = 7; // SQLSTATE[42P01]: Undefined table: 7 ERROR: relation "non_existing_table" does not exist
             } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {

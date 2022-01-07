@@ -47,6 +47,7 @@ abstract class Persistence
         switch ($dsn['driver']) {
             case 'pdo_sqlite':
             case 'pdo_mysql':
+            case 'mysqli':
             case 'pdo_pgsql':
             case 'pdo_sqlsrv':
             case 'pdo_oci':
