@@ -199,8 +199,16 @@ abstract class Connection
         return !class_exists(DbalResult::class);
     }
 
-    private static function getDriverFromDbalDriverConnection(DbalDriverConnection $connection): object
+    /**
+     * @param DbalDriverConnection|DbalConnection $connection
+     *
+     * @return \PDO|\mysqli
+     */
+    private static function getDriverFromDbalDriverConnection($connection): object
     {
+        // TODO replace this method with Connection::getNativeConnection() once only DBAL 3.3+ is supported
+        // https://github.com/doctrine/dbal/pull/5037
+
         if (self::isComposerDbal2x()) {
             if ($connection instanceof \PDO || $connection instanceof \mysqli) {
                 return $connection;
