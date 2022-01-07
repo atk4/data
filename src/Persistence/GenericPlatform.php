@@ -47,6 +47,7 @@ class GenericPlatform extends Platforms\AbstractPlatform
                 $connection->getSchemaManager();
                 $connection->getSchemaManager();
                 $connection->getSchemaManager();
+                $connection->getSchemaManager();
             }
         }
 
