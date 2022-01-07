@@ -87,12 +87,10 @@ class RandomTest extends TestCase
 
     public function testGroupConcat(): void
     {
-        if (\Mvorisek\Atk4\Hintable\Phpstan\PhpstanUtil::alwaysFalseAnalyseOnly()) {
-            $this->_groupConcatTest(
-                'select `age`, group_concat(`name` separator :a) from `people` group by `age`',
-                new Mysql\Query()
-            );
-        }
+        $this->_groupConcatTest(
+            'select `age`, group_concat(`name` separator :a) from `people` group by `age`',
+            new Mysql\Query()
+        );
 
         $this->_groupConcatTest(
             'select "age", group_concat("name", :a) from "people" group by "age"',

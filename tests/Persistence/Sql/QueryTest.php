@@ -1081,10 +1081,8 @@ class QueryTest extends TestCase
      */
     public function testGroupConcat(): void
     {
-        if (\Mvorisek\Atk4\Hintable\Phpstan\PhpstanUtil::alwaysFalseAnalyseOnly()) {
-            $q = new Mysql\Query();
-            $this->assertSame('group_concat(`foo` separator :a)', $q->groupConcat('foo', '-')->render()[0]);
-        }
+        $q = new Mysql\Query();
+        $this->assertSame('group_concat(`foo` separator :a)', $q->groupConcat('foo', '-')->render()[0]);
 
         $q = new Oracle\Query();
         $this->assertSame('listagg("foo", :a) within group (order by "foo")', $q->groupConcat('foo', '-')->render()[0]);
