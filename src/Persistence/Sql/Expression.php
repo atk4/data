@@ -507,7 +507,7 @@ class Expression implements Expressionable, \ArrayAccess
      */
     protected function updateRenderBeforeExecute(array $render): array
     {
-        [$sql, $params] = $render = $render;
+        [$sql, $params] = $render;
 
         if (!$this->hasNativeNamedParamSupport()) {
             $numParams = [];
