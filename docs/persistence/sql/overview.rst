@@ -32,10 +32,9 @@ DSQL by example
 The simplest way to explain DSQL is by example::
 
     $query = new Atk4\Data\Persistence\Sql\Query();
-    $query  ->table('employees')
-            ->where('birth_date','1961-05-02')
-            ->field('count(*)')
-            ;
+    $query->table('employees')
+          ->where('birth_date','1961-05-02')
+          ->field('count(*)');
     echo "Employees born on May 2, 1961: ".$query->getOne();
 
 The above code will execute the following query:

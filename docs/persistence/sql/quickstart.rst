@@ -157,13 +157,13 @@ The format of the ``$dsn`` is the same as with for
 If you need to execute query that is not supported by DSQL, you should always
 use expressions::
 
-    $tables = $c -> expr('show tables like []', [$like_str])->getRows();
+    $tables = $c->expr('show tables like []', [$like_str])->getRows();
 
 DSQL classes are mindful about your SQL vendor and it's quirks, so when you're
 building sub-queries with :php:meth:`Query::dsql`, you can avoid some nasty
 problems::
 
-    $sqlite_c ->dsql()->table('user')->mode('truncate')->execute();
+    $sqlite_c->dsql()->table('user')->mode('truncate')->execute();
 
 The above code will work even though SQLite does not support truncate. That's
 because DSQL takes care of this.

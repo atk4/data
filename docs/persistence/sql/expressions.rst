@@ -13,7 +13,7 @@ properly.
 
 Quick Example::
 
-    $query -> where('time', $query->expr(
+    $query->where('time', $query->expr(
         'between "[]" and "[]"',
         [$from_time, $to_time]
     ));
@@ -22,7 +22,7 @@ Quick Example::
 
 Another use of expression is to supply field instead of value and vice versa::
 
-    $query -> where($query->expr(
+    $query->where($query->expr(
         '[] between time_from and time_to',
         [$time]
     ));
@@ -33,7 +33,7 @@ Yet another curious use for the DSQL library is if you have certain object in
 your ORM implementing :php:class:`Expressionable` interface. Then you can also
 use it within expressions::
 
-    $query -> where($query->expr(
+    $query->where($query->expr(
         '[] between [] and []',
         [$time, $model->getElement('time_form'), $model->getElement('time_to')]
     ));
@@ -87,7 +87,7 @@ Creating Expression
 You can also use :php:meth:`expr()` method to create expression, in which case
 you do not have to define "use" block::
 
-    $query -> where('time', '>', $query->expr('NOW()'));
+    $query->where('time', '>', $query->expr('NOW()'));
 
     // Produces: .. where `time` > NOW()
 
@@ -133,7 +133,7 @@ Expressions can be nested several times::
     $age['age'] = new Expression("year(now()) - year(birth_date)");
     $age['default_age'] = 18;
 
-    $query -> table('user') -> field($age, 'calculated_age');
+    $query->table('user')->field($age, 'calculated_age');
 
     // select coalesce(year(now()) - year(birth_date), :a) `calculated_age` from `user`
 
@@ -173,7 +173,7 @@ consider using a proper vendor-specific subclass::
 If your expression already exist and you wish to associate it with connection
 you can simply change the value of :php:attr:`$connection` property::
 
-    $expr -> connection = $pdo_dbh;
+    $expr->connection = $pdo_dbh;
 
 Finally, you can pass connection class into :php:meth:`execute` directly.
 
@@ -182,7 +182,7 @@ Finally, you can pass connection class into :php:meth:`execute` directly.
     Executes expression using current database connection or the one you
     specify as the argument::
 
-        $stmt = $expr -> execute($pdo_dbh);
+        $stmt = $expr->execute($pdo_dbh);
 
     returns `Doctrine\DBAL\Result`.
 

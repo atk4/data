@@ -27,10 +27,10 @@ Quick Example::
 
     $query = $c->dsql();
 
-    $query -> field('name');
-    $query -> where('id', 123);
+    $query->field('name');
+    $query->where('id', 123);
 
-    $name = $query -> getOne();
+    $name = $query->getOne();
 
 
 Method invocation principles
@@ -39,8 +39,8 @@ Method invocation principles
 Methods of Query are designed to be flexible and concise. Most methods have a
 variable number of arguments and some arguments can be skipped::
 
-    $query -> where('id', 123);
-    $query -> where('id', '=', 123);  // the same
+    $query->where('id', 123);
+    $query->where('id', '=', 123); // the same
 
 Most methods will accept :php:class:`Expression` or strings. Strings are
 escaped or quoted (depending on type of argument). By using :php:class:`Expression`
@@ -53,14 +53,14 @@ There are 2 types of escaping:
 
 In the next example $a is escaped but $b is parameterized::
 
-    $query -> where('a', 'b');
+    $query->where('a', 'b');
 
     // where `a` = "b"
 
 If you want to switch places and execute *where "b" = `a`*, then you can resort
 to Expressions::
 
-    $query -> where($c->expr('{} = []', ['b', 'a']));
+    $query->where($c->expr('{} = []', ['b', 'a']));
 
 Parameters which you specify into Expression will be preserved and linked into
 the `$query` properly.
@@ -81,10 +81,10 @@ to re-use your query efficiently::
 
     $query = $c->dsql();
     $query
-        -> where('id', 123)
-        -> field('id')
-        -> table('user')
-        -> set($data);
+        ->where('id', 123)
+        ->field('id')
+        ->table('user')
+        ->set($data);
 
     $row = $query->getRow();
 
@@ -222,12 +222,12 @@ Finally, you can also specify a different query instead of table, by simply
 passing another :php:class:`Query` object::
 
     $sub_q = $c->dsql();
-    $sub_q -> table('employee');
-    $sub_q -> where('name', 'John');
+    $sub_q->table('employee');
+    $sub_q->where('name', 'John');
 
     $q = $c->dsql();
-    $q -> field('surname');
-    $q -> table($sub_q, 'sub');
+    $q->field('surname');
+    $q->table($sub_q, 'sub');
 
     // SELECT `surname` FROM (SELECT * FROM `employee` WHERE `name` = :a) `sub`
 
