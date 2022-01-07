@@ -8,6 +8,8 @@ use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 
 class Query extends BaseQuery
 {
+    use ExpressionTrait;
+
     protected $escape_char = '`';
 
     protected $expression_class = Expression::class;
@@ -16,6 +18,6 @@ class Query extends BaseQuery
 
     public function groupConcat($field, string $delimiter = ',')
     {
-        return $this->expr('group_concat({} separator [])', [$field, $delimiter]);
+        return $this->expr('group_concat({} separator \'' . str_replace('\'', '\'\'', $delimiter) . '\')', [$field]);
     }
 }

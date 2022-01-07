@@ -90,6 +90,16 @@ class ConnectionTest extends TestCase
         // with port number as DSN, leave port as :port
         $dsn = Connection::normalizeDsn('mysql:host=localhost:1234;dbname=db');
         $this->assertSame(['driver' => 'pdo_mysql', 'host' => 'localhost', 'dbname' => 'db', 'port' => '1234'], $dsn);
+
+        // full PDO and native driver names
+        $dsn = Connection::normalizeDsn('pdo-mysql://root:pass@localhost/db');
+        $this->assertSame(['driver' => 'pdo_mysql', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
+
+        $dsn = Connection::normalizeDsn('pdo_mysql:host=localhost;dbname=db', 'root', 'pass');
+        $this->assertSame(['driver' => 'pdo_mysql', 'host' => 'localhost', 'dbname' => 'db', 'user' => 'root', 'password' => 'pass'], $dsn);
+
+        $dsn = Connection::normalizeDsn('mysqli://root:pass@localhost/db');
+        $this->assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
     }
 
     public function testConnectionRegistry(): void
