@@ -30,7 +30,7 @@ When it's time to execute you can specify your PDO manually::
 
 With queries you might need to select mode first::
 
-    $stmt = $query->selectMode('delete')->execute($pdo);
+    $stmt = $query->mode('delete')->execute($pdo);
 
 The :php:meth:`Expresssion::execute` is a convenient way to prepare query,
 bind all parameters and get `Doctrine\DBAL\Result`, but if you wish to do it manually,
