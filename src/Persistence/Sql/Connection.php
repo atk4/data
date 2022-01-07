@@ -87,7 +87,7 @@ abstract class Connection
         if (isset($dsn['dsn'])) {
             if (str_contains($dsn['dsn'], '://')) {
                 $parsed = array_filter(parse_url($dsn['dsn']));
-                $dsn['dsn'] = $parsed['scheme'] . ':';
+                $dsn['dsn'] = str_replace('-', '_', $parsed['scheme']) . ':';
                 unset($parsed['scheme']);
                 foreach ($parsed as $k => $v) {
                     if ($k === 'pass') { // @phpstan-ignore-line phpstan bug
