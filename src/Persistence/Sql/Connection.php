@@ -201,8 +201,6 @@ abstract class Connection
 
     /**
      * @param DbalDriverConnection|DbalConnection $connection
-     *
-     * @return \PDO|\mysqli
      */
     private static function getDriverFromDbalDriverConnection($connection): object
     {
@@ -217,7 +215,7 @@ abstract class Connection
 
         $wrappedConnection = $connection instanceof DbalMysqliConnection
             ? $connection->getWrappedResourceHandle()
-            : $connection->getWrappedConnection(); // @phpstan-ignore-line
+            : $connection->getWrappedConnection();
 
         if ($wrappedConnection instanceof \PDO || $wrappedConnection instanceof \mysqli) {
             return $wrappedConnection;
