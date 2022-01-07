@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql;
 
-use Doctrine\DBAL\Result as DbalResult;
-
 /**
  * Perform query operation on SQL server (such as select, insert, delete, etc).
  */
