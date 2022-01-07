@@ -45,8 +45,7 @@ methods::
     $query
         ->table('employees')
         ->where('birth_date', '1961-05-02')
-        ->field('count(*)')
-        ;
+        ->field('count(*)');
 
 Finally you can get the data::
 

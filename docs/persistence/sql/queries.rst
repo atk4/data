@@ -152,8 +152,7 @@ This query will perform `select name from (select * from employee)`::
 
     $q = $c->dsql()
         ->field('date,debit,credit')
-        ->table($u, 'derrivedTable')
-        ;
+        ->table($u, 'derrivedTable');
 
     $q->getRows();
 
@@ -781,8 +780,7 @@ Other Methods
         ->field('name')
         ->set('name', 'John')
         ->option('calc_found_rows') // for default select mode
-        ->option('ignore', 'insert') // for insert mode
-        ;
+        ->option('ignore', 'insert') // for insert mode;
 
     $q->execute(); // select calc_found_rows `name` from `test`
     $q->mode('insert')->execute(); // insert ignore into `test` (`name`) values (`name` = 'John')
