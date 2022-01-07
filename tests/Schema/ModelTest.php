@@ -94,7 +94,7 @@ class ModelTest extends TestCase
                 'foo' => 'foovalue',
                 'bar' => 123,
                 'baz' => 'long text value',
-            ])->insert();
+            ])->mode('insert')->execute();
     }
 
     public function testCreateModel(): void

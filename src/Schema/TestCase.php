@@ -200,7 +200,7 @@ abstract class TestCase extends BaseTestCase
                         $query->set('id', $id);
                     }
 
-                    $query->insert();
+                    $query->mode('insert')->execute();
                 }
             }
         }

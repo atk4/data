@@ -27,10 +27,10 @@ Quick Example::
 
     $query = $c->dsql();
 
-    $query -> field('name');
-    $query -> where('id', 123);
+    $query->field('name');
+    $query->where('id', 123);
 
-    $name = $query -> getOne();
+    $name = $query->getOne();
 
 
 Method invocation principles
@@ -39,8 +39,8 @@ Method invocation principles
 Methods of Query are designed to be flexible and concise. Most methods have a
 variable number of arguments and some arguments can be skipped::
 
-    $query -> where('id', 123);
-    $query -> where('id', '=', 123);  // the same
+    $query->where('id', 123);
+    $query->where('id', '=', 123); // the same
 
 Most methods will accept :php:class:`Expression` or strings. Strings are
 escaped or quoted (depending on type of argument). By using :php:class:`Expression`
@@ -53,14 +53,14 @@ There are 2 types of escaping:
 
 In the next example $a is escaped but $b is parameterized::
 
-    $query -> where('a', 'b');
+    $query->where('a', 'b');
 
     // where `a` = "b"
 
 If you want to switch places and execute *where "b" = `a`*, then you can resort
 to Expressions::
 
-    $query -> where($c->expr('{} = []', ['b', 'a']));
+    $query->where($c->expr('{} = []', ['b', 'a']));
 
 Parameters which you specify into Expression will be preserved and linked into
 the `$query` properly.
@@ -71,46 +71,8 @@ Query Modes
 ===========
 
 When you create new Query it always start in "select" mode. You can switch
-query to a different mode using :php:meth:`mode`. Normally you shouldn't bother
-calling this method and instead use one of the following methods.
-They will switch the query mode for you and execute query:
-
-.. php:method:: select()
-
-    Switch back to "select" mode and execute `select` statement.
-
-    See `Modifying Select Query`_.
-
-.. php:method:: insert()
-
-    Switch to `insert` mode and execute statement.
-
-    See `Insert and Replace query`_.
-
-.. php:method:: update()
-
-    Switch to `update` mode and execute statement.
-
-    See `Update Query`_.
-
-.. php:method:: replace()
-
-    Switch to `replace` mode and execute statement.
-
-    See `Insert and Replace query`_.
-
-.. php:method:: delete()
-
-    Switch to `delete` mode and execute statement.
-
-    See `Delete Query`_.
-
-.. php:method:: truncate()
-
-    Switch to `truncate` mode and execute statement.
-
-If you don't switch the mode, your Query remains in select mode and you can
-fetch results from it anytime.
+query to a different mode using :php:meth:`mode`. f you don't switch the mode,
+your Query remains in select mode and you can fetch results from it anytime.
 
 The pattern of defining arguments for your Query and then executing allow you
 to re-use your query efficiently::
@@ -119,23 +81,21 @@ to re-use your query efficiently::
 
     $query = $c->dsql();
     $query
-        -> where('id', 123)
-        -> field('id')
-        -> table('user')
-        -> set($data)
-        ;
+        ->where('id', 123)
+        ->field('id')
+        ->table('user')
+        ->set($data);
 
     $row = $query->getRow();
 
     if ($row) {
         $query
             ->set('revision', $query->expr('revision + 1'))
-            ->update()
-            ;
+            ->mode('update')->execute();
     } else {
         $query
             ->set('revision', 1)
-            ->insert();
+            ->mode('insert')->execute();
     }
 
 The example above will perform a select query first:
@@ -192,8 +152,7 @@ This query will perform `select name from (select * from employee)`::
 
     $q = $c->dsql()
         ->field('date,debit,credit')
-        ->table($u, 'derrivedTable')
-        ;
+        ->table($u, 'derrivedTable');
 
     $q->getRows();
 
@@ -262,12 +221,12 @@ Finally, you can also specify a different query instead of table, by simply
 passing another :php:class:`Query` object::
 
     $sub_q = $c->dsql();
-    $sub_q -> table('employee');
-    $sub_q -> where('name', 'John');
+    $sub_q->table('employee');
+    $sub_q->where('name', 'John');
 
     $q = $c->dsql();
-    $q -> field('surname');
-    $q -> table($sub_q, 'sub');
+    $q->field('surname');
+    $q->table($sub_q, 'sub');
 
     // SELECT `surname` FROM (SELECT * FROM `employee` WHERE `name` = :a) `sub`
 
@@ -706,10 +665,10 @@ Set value to a field
 
 Example::
 
-    $q->table('user')->set('name', 'john')->insert();
+    $q->table('user')->set('name', 'john')->mode('insert')->execute();
         // insert into user (name) values (john)
 
-    $q->table('log')->set('date', $q->expr('now()'))->insert();
+    $q->table('log')->set('date', $q->expr('now()'))->mode('insert')->execute();
         // insert into log (date) values (now())
 
 Method can be executed several times on the same Query object.
@@ -821,11 +780,10 @@ Other Methods
         ->field('name')
         ->set('name', 'John')
         ->option('calc_found_rows') // for default select mode
-        ->option('ignore', 'insert') // for insert mode
-        ;
+        ->option('ignore', 'insert') // for insert mode;
 
-    $q->select(); // select calc_found_rows `name` from `test`
-    $q->insert(); // insert ignore into `test` (`name`) values (`name` = 'John')
+    $q->execute(); // select calc_found_rows `name` from `test`
+    $q->mode('insert')->execute(); // insert ignore into `test` (`name`) values (`name` = 'John')
 
 .. php:method:: _set_args($what, $alias, $value)
 

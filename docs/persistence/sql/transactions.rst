@@ -20,8 +20,8 @@ It is recommended to always use atomic() in your code.
     exception, whole transaction will be automatically rolled back::
 
         $c->atomic(function () use ($c) {
-            $c->dsql('user')->set('balance=balance+10')->where('id', 10)->update();
-            $c->dsql('user')->set('balance=balance-10')->where('id', 14)->update();
+            $c->dsql('user')->set('balance=balance+10')->where('id', 10)->mode('update')->execute();
+            $c->dsql('user')->set('balance=balance-10')->where('id', 14)->mode('update')->execute();
         });
 
     atomic() can be nested.
