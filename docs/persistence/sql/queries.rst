@@ -71,46 +71,8 @@ Query Modes
 ===========
 
 When you create new Query it always start in "select" mode. You can switch
-query to a different mode using :php:meth:`mode`. Normally you shouldn't bother
-calling this method and instead use one of the following methods.
-They will switch the query mode for you and execute query:
-
-.. php:method:: select()
-
-    Switch back to "select" mode and execute `select` statement.
-
-    See `Modifying Select Query`_.
-
-.. php:method:: insert()
-
-    Switch to `insert` mode and execute statement.
-
-    See `Insert and Replace query`_.
-
-.. php:method:: update()
-
-    Switch to `update` mode and execute statement.
-
-    See `Update Query`_.
-
-.. php:method:: replace()
-
-    Switch to `replace` mode and execute statement.
-
-    See `Insert and Replace query`_.
-
-.. php:method:: delete()
-
-    Switch to `delete` mode and execute statement.
-
-    See `Delete Query`_.
-
-.. php:method:: truncate()
-
-    Switch to `truncate` mode and execute statement.
-
-If you don't switch the mode, your Query remains in select mode and you can
-fetch results from it anytime.
+query to a different mode using :php:meth:`mode`. f you don't switch the mode,
+your Query remains in select mode and you can fetch results from it anytime.
 
 The pattern of defining arguments for your Query and then executing allow you
 to re-use your query efficiently::
@@ -122,20 +84,18 @@ to re-use your query efficiently::
         -> where('id', 123)
         -> field('id')
         -> table('user')
-        -> set($data)
-        ;
+        -> set($data);
 
     $row = $query->getRow();
 
     if ($row) {
         $query
             ->set('revision', $query->expr('revision + 1'))
-            ->update()
-            ;
+            ->mode('update')->execute();
     } else {
         $query
             ->set('revision', 1)
-            ->insert();
+            ->mode('insert')->execute();
     }
 
 The example above will perform a select query first:
@@ -706,10 +666,10 @@ Set value to a field
 
 Example::
 
-    $q->table('user')->set('name', 'john')->insert();
+    $q->table('user')->set('name', 'john')->mode('insert')->execute();
         // insert into user (name) values (john)
 
-    $q->table('log')->set('date', $q->expr('now()'))->insert();
+    $q->table('log')->set('date', $q->expr('now()'))->mode('insert')->execute();
         // insert into log (date) values (now())
 
 Method can be executed several times on the same Query object.
@@ -824,8 +784,8 @@ Other Methods
         ->option('ignore', 'insert') // for insert mode
         ;
 
-    $q->select(); // select calc_found_rows `name` from `test`
-    $q->insert(); // insert ignore into `test` (`name`) values (`name` = 'John')
+    $q->execute(); // select calc_found_rows `name` from `test`
+    $q->mode('insert')->execute(); // insert ignore into `test` (`name`) values (`name` = 'John')
 
 .. php:method:: _set_args($what, $alias, $value)
 

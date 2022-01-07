@@ -163,7 +163,7 @@ DSQL classes are mindful about your SQL vendor and it's quirks, so when you're
 building sub-queries with :php:meth:`Query::dsql`, you can avoid some nasty
 problems::
 
-    $sqlite_c ->dsql()->table('user')->truncate();
+    $sqlite_c ->dsql()->table('user')->mode('truncate')->execute();
 
 The above code will work even though SQLite does not support truncate. That's
 because DSQL takes care of this.
@@ -186,13 +186,13 @@ Query Mode
 
 When you create a new :php:class:`Query` object, it is going to be a *SELECT*
 query by default. If you wish to execute ``update`` operation instead, you
-simply call :php:meth:`Query::update`, for delete - :php:meth:`Query::delete`
-(etc). For more information see :ref:`query-modes`.
+cam simply call :php:meth:`Query::mode` to change it. For more information
+see :ref:`query-modes`.
 You can actually perform multiple operations::
 
     $q = $c->dsql()->table('employee')->where('emp_no', 1234);
     $backup_data = $q->getRows();
-    $q->delete();
+    $q->mode('delete')->execute();
 
 A good practice is to re-use the same query object before you branch out and
 perform the action::
@@ -200,7 +200,7 @@ perform the action::
     $q = $c->dsql()->table('employee')->where('emp_no', 1234);
 
     if ($confirmed) {
-        $q->delete();
+        $q->mode('delete')->execute();
     } else {
         echo "Are you sure you want to delete ".$q->field('count(*)')." employees?";
     }
