@@ -51,6 +51,7 @@ abstract class Persistence
             case 'pdo_pgsql':
             case 'pdo_sqlsrv':
             case 'pdo_oci':
+            case 'oci8':
                 $persistence = new Persistence\Sql($dsn, $dsn['user'], $dsn['password'], $args);
 
                 return $persistence;

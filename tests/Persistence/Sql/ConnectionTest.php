@@ -56,40 +56,40 @@ class ConnectionTest extends TestCase
     {
         // standard
         $dsn = Connection::normalizeDsn('mysql://root:pass@localhost/db');
-        $this->assertSame(['driver' => 'pdo_mysql', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
+        $this->assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
 
         $dsn = Connection::normalizeDsn('mysql:host=localhost;dbname=db');
-        $this->assertSame(['driver' => 'pdo_mysql', 'host' => 'localhost', 'dbname' => 'db'], $dsn);
+        $this->assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'dbname' => 'db'], $dsn);
 
         $dsn = Connection::normalizeDsn('mysql:host=localhost;dbname=db', 'root', 'pass');
-        $this->assertSame(['driver' => 'pdo_mysql', 'host' => 'localhost', 'dbname' => 'db', 'user' => 'root', 'password' => 'pass'], $dsn);
+        $this->assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'dbname' => 'db', 'user' => 'root', 'password' => 'pass'], $dsn);
 
         // username and password should take precedence
         $dsn = Connection::normalizeDsn('mysql://root:pass@localhost/db', 'foo', 'bar');
-        $this->assertSame(['driver' => 'pdo_mysql', 'host' => 'localhost', 'user' => 'foo', 'password' => 'bar', 'dbname' => 'db'], $dsn);
+        $this->assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'user' => 'foo', 'password' => 'bar', 'dbname' => 'db'], $dsn);
 
         // more options
         $dsn = Connection::normalizeDsn('mysql:host=localhost;dbname=db;foo=x;bar=y', 'root', 'pass');
-        $this->assertSame(['driver' => 'pdo_mysql', 'host' => 'localhost', 'dbname' => 'db', 'foo' => 'x', 'bar' => 'y', 'user' => 'root', 'password' => 'pass'], $dsn);
+        $this->assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'dbname' => 'db', 'foo' => 'x', 'bar' => 'y', 'user' => 'root', 'password' => 'pass'], $dsn);
         $dsn = Connection::normalizeDsn('mysql://root:pass@localhost/db;foo=x;bar=y');
-        $this->assertSame(['driver' => 'pdo_mysql', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db', 'foo' => 'x', 'bar' => 'y'], $dsn);
+        $this->assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db', 'foo' => 'x', 'bar' => 'y'], $dsn);
 
         // no password
         $dsn = Connection::normalizeDsn('mysql://root@localhost/db');
-        $this->assertSame(['driver' => 'pdo_mysql', 'host' => 'localhost', 'user' => 'root', 'dbname' => 'db'], $dsn);
+        $this->assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'user' => 'root', 'dbname' => 'db'], $dsn);
         $dsn = Connection::normalizeDsn('mysql://root:@localhost/db'); // see : after root
-        $this->assertSame(['driver' => 'pdo_mysql', 'host' => 'localhost', 'user' => 'root', 'dbname' => 'db'], $dsn);
+        $this->assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'user' => 'root', 'dbname' => 'db'], $dsn);
 
         $dsn = Connection::normalizeDsn('sqlite::memory');
         $this->assertSame(['driver' => 'pdo_sqlite', 'memory' => true], $dsn); // rest is unusable anyway in this context
 
         // with port number as URL, normalize port to ;port=1234
         $dsn = Connection::normalizeDsn('mysql://root:pass@localhost:1234/db');
-        $this->assertSame(['driver' => 'pdo_mysql', 'host' => 'localhost', 'port' => '1234', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
+        $this->assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'port' => '1234', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
 
         // with port number as DSN, leave port as :port
         $dsn = Connection::normalizeDsn('mysql:host=localhost:1234;dbname=db');
-        $this->assertSame(['driver' => 'pdo_mysql', 'host' => 'localhost', 'dbname' => 'db', 'port' => '1234'], $dsn);
+        $this->assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'dbname' => 'db', 'port' => '1234'], $dsn);
 
         // full PDO and native driver names
         $dsn = Connection::normalizeDsn('pdo-mysql://root:pass@localhost/db');
@@ -98,8 +98,29 @@ class ConnectionTest extends TestCase
         $dsn = Connection::normalizeDsn('pdo_mysql:host=localhost;dbname=db', 'root', 'pass');
         $this->assertSame(['driver' => 'pdo_mysql', 'host' => 'localhost', 'dbname' => 'db', 'user' => 'root', 'password' => 'pass'], $dsn);
 
+        $dsn = Connection::normalizeDsn('pdo-pgsql://root:pass@localhost/db');
+        $this->assertSame(['driver' => 'pdo_pgsql', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
+
+        $dsn = Connection::normalizeDsn('pdo-sqlsrv://root:pass@localhost/db');
+        $this->assertSame(['driver' => 'pdo_sqlsrv', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
+
+        $dsn = Connection::normalizeDsn('pdo-oci://root:pass@localhost/db');
+        $this->assertSame(['driver' => 'pdo_oci', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
+
         $dsn = Connection::normalizeDsn('mysqli://root:pass@localhost/db');
         $this->assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
+
+        $dsn = Connection::normalizeDsn('pgsql://root:pass@localhost/db');
+        $this->assertSame(['driver' => 'pdo_pgsql', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
+
+        $dsn = Connection::normalizeDsn('sqlsrv://root:pass@localhost/db');
+        $this->assertSame(['driver' => 'pdo_sqlsrv', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
+
+        $dsn = Connection::normalizeDsn('oci://root:pass@localhost/db');
+        $this->assertSame(['driver' => 'oci8', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
+
+        $dsn = Connection::normalizeDsn('oci8://root:pass@localhost/db');
+        $this->assertSame(['driver' => 'oci8', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
     }
 
     public function testConnectionRegistry(): void
