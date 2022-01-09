@@ -206,7 +206,10 @@ class Sql extends Persistence
         $query = $model->persistence_data['dsql'] = $this->dsql();
 
         if ($model->table) {
-            $query->table($model->table, $model->table_alias ?? null);
+            $query->table(
+                is_object($model->table) ? $model->table->action('select') : $model->table,
+                $model->table_alias ?? (is_object($model->table) ? '__inner__' : null)
+            );
         }
 
         // add With cursors
@@ -636,7 +639,7 @@ class Sql extends Persistence
             $prop = [
                 $field->hasJoin()
                     ? ($field->getJoin()->foreign_alias ?: $field->getJoin()->short_name)
-                    : ($field->getOwner()->table_alias ?: $field->getOwner()->table),
+                    : ($field->getOwner()->table_alias ?: (is_object($field->getOwner()->table) ? '__inner__' : $field->getOwner()->table)),
                 $field->getPersistenceName(),
             ];
         } else {
@@ -658,6 +661,10 @@ class Sql extends Persistence
 
     public function lastInsertId(Model $model): string
     {
+        if (is_object($model->table)) {
+            return $model->table->persistence->lastInsertId($model->table);
+        }
+
         // PostgreSQL and Oracle DBAL platforms use sequence internally for PK autoincrement,
         // use default name if not set explicitly
         $sequenceName = null;
