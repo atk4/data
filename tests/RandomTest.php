@@ -234,7 +234,7 @@ class RandomTest extends TestCase
             $m->load(2)->get()
         );
 
-        $this->assertEquals(1, $m->load(2)->ref('Child', ['table_alias' => 'pp'])->action('count')->getOne());
+        $this->assertSame('1', $m->load(2)->ref('Child', ['table_alias' => 'pp'])->action('count')->getOne());
         $this->assertSame('John', $m->load(2)->ref('parent_item_id', ['table_alias' => 'pp'])->get('name'));
     }
 

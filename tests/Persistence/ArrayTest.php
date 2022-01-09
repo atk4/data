@@ -123,7 +123,7 @@ class ArrayTest extends TestCase
         $m->setMulti(['name' => 'Foo', 'surname' => 'Bar']);
         $m->save();
 
-        $this->assertEquals([
+        $this->assertSame([
             'user' => [
                 1 => ['name' => 'Peter', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'QQ'],
@@ -146,7 +146,7 @@ class ArrayTest extends TestCase
 
         $m->insert(['name' => 'Foo', 'surname' => 'Bar']);
 
-        $this->assertEquals([
+        $this->assertSame([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
@@ -610,13 +610,13 @@ class ArrayTest extends TestCase
         $m->setOrder('f1', 'desc');
         $m->setOrder('f2', 'desc');
         $d = $this->_getRows($m, ['f1', 'f2', 'id']);
-        $this->assertEquals([
-            ['f1' => 'E', 'f2' => 'A', 'id' => 5],
-            ['f1' => 'D', 'f2' => 'C', 'id' => 3],
-            ['f1' => 'D', 'f2' => 'A', 'id' => 2],
-            ['f1' => 'C', 'f2' => 'A', 'id' => 6],
-            ['f1' => 'A', 'f2' => 'C', 'id' => 4],
-            ['f1' => 'A', 'f2' => 'B', 'id' => 1],
+        $this->assertSame([
+            ['id' => 5, 'f1' => 'E', 'f2' => 'A'],
+            ['id' => 3, 'f1' => 'D', 'f2' => 'C'],
+            ['id' => 2, 'f1' => 'D', 'f2' => 'A'],
+            ['id' => 6, 'f1' => 'C', 'f2' => 'A'],
+            ['id' => 4, 'f1' => 'A', 'f2' => 'C'],
+            ['id' => 1, 'f1' => 'A', 'f2' => 'B'],
         ], $d);
         $this->assertSame($d, array_values($m->export(['f1', 'f2', 'id']))); // array_values to get rid of keys
     }

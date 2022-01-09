@@ -85,7 +85,7 @@ class ModelWithoutIdTest extends TestCase
         }
 
         $this->m->insert(['name' => 'Joe']);
-        $this->assertEquals(3, $this->m->action('count')->getOne());
+        $this->assertSame('3', $this->m->action('count')->getOne());
     }
 
     /**
@@ -100,7 +100,7 @@ class ModelWithoutIdTest extends TestCase
         $m = $this->m->tryLoadAny();
         $m->saveAndUnload();
 
-        $this->assertEquals(3, $this->m->action('count')->getOne());
+        $this->assertSame('3', $this->m->action('count')->getOne());
     }
 
     /**
@@ -115,7 +115,7 @@ class ModelWithoutIdTest extends TestCase
         $m = $this->m->tryLoadAny();
         $m->save();
 
-        $this->assertEquals(3, $this->m->action('count')->getOne());
+        $this->assertSame('3', $this->m->action('count')->getOne());
     }
 
     /**

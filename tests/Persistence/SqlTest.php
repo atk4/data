@@ -171,13 +171,13 @@ class SqlTest extends TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $this->assertEquals(0, $m->action('exists')->getOne());
+        $this->assertSame('0', $m->action('exists')->getOne());
 
         $m->import($dbData['user']); // import data
 
-        $this->assertEquals(1, $m->action('exists')->getOne());
+        $this->assertSame('1', $m->action('exists')->getOne());
 
-        $this->assertEquals(2, $m->action('count')->getOne());
+        $this->assertSame('2', $m->action('count')->getOne());
     }
 
     public function testPersistenceDelete(): void

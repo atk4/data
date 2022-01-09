@@ -1192,7 +1192,7 @@ class QueryTest extends TestCase
         );
 
         /*
-        $this->assertEquals(
+        $this->assertSame(
             'select "name" from "db"."employee" where "db"."employee"."a" = :a',
             $this->q()
                 ->field('name')->table('db.employee')->where('db.employee.a',1)
