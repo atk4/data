@@ -12,6 +12,7 @@ use Doctrine\DBAL\Logging\SQLLogger;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 
 abstract class TestCase extends BaseTestCase
@@ -104,6 +105,9 @@ abstract class TestCase extends BaseTestCase
     private function convertSqlFromSqlite(string $sql): string
     {
         $platform = $this->getDatabasePlatform();
+        if ($platform instanceof SqlitePlatform) {
+            return $sql;
+        }
 
         return preg_replace_callback(
             '~\'(?:[^\'\\\\]+|\\\\.)*\'|"(?:[^"\\\\]+|\\\\.)*"|:(\w+)~s',
@@ -126,6 +130,94 @@ abstract class TestCase extends BaseTestCase
     protected function assertSameSql(string $expectedSqliteSql, string $actualSql, string $message = ''): void
     {
         $this->assertSame($this->convertSqlFromSqlite($expectedSqliteSql), $actualSql, $message);
+    }
+
+    /**
+     * @param mixed $a
+     * @param mixed $b
+     */
+    private function compareExportUnorderedValue($a, $b): int
+    {
+        if ($a === $b) {
+            return 0;
+        }
+
+        $cmp = gettype($a) <=> gettype($b);
+        if ($cmp !== 0) {
+            return $cmp;
+        }
+
+        if (is_object($a)) {
+            $cmp = gettype($a) <=> gettype($b);
+            if ($cmp !== 0) {
+                return $cmp;
+            }
+
+            if ($a instanceof \DateTimeInterface) {
+                $format = 'Y-m-d H:i:s.u e I Z';
+
+                return $a->format($format) <=> $b->format($format);
+            }
+        }
+
+        if (is_array($a) && count($a) === count($b)) {
+            $is2d = true;
+            foreach ($a as $v) {
+                if (!is_array($v)) {
+                    $is2d = false;
+
+                    break;
+                }
+            }
+            if ($is2d) {
+                foreach ($b as $v) {
+                    if (!is_array($v)) {
+                        $is2d = false;
+
+                        break;
+                    }
+                }
+            }
+
+            if ($is2d) {
+                if (array_is_list($a) && array_is_list($b)) {
+                    usort($a, fn ($a, $b) => $this->compareExportUnorderedValue($a, $b));
+                    usort($b, fn ($a, $b) => $this->compareExportUnorderedValue($a, $b));
+                } else {
+                    uasort($a, fn ($a, $b) => $this->compareExportUnorderedValue($a, $b));
+                    uasort($b, fn ($a, $b) => $this->compareExportUnorderedValue($a, $b));
+                }
+            }
+
+            if (array_keys($a) === array_keys($b)) {
+                foreach ($a as $k => $v) {
+                    $cmp = $this->compareExportUnorderedValue($v, $b[$k]);
+                    if ($cmp !== 0) {
+                        return $cmp;
+                    }
+                }
+
+                return 0;
+            }
+        }
+
+        return $a <=> $b;
+    }
+
+    /**
+     * Same as self::assertSame() except:
+     * - 2D arrays (rows) are recursively compared without any order
+     * - objects implementing DateTimeInterface are compared by formatted output.
+     */
+    protected function assertSameExportUnordered(array $expected, array $actual, string $message = ''): void
+    {
+        if ($this->compareExportUnorderedValue($expected, $actual) === 0) {
+            $this->assertTrue(true);
+
+            return;
+        }
+
+        $this->assertSame($expected, $actual, $message);
     }
 
     public function createMigrator(Model $model = null): Migrator
