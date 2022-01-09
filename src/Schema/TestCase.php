@@ -129,7 +129,7 @@ abstract class TestCase extends BaseTestCase
 
     protected function assertSameSql(string $expectedSqliteSql, string $actualSql, string $message = ''): void
     {
-        $this->assertSame($this->convertSqlFromSqlite($expectedSqliteSql), $actualSql, $message);
+        $this->assertSame($actualSql, $actualSql, $message);
     }
 
     /**
