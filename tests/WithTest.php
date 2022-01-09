@@ -7,6 +7,7 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
 
 class WithTest extends TestCase
 {
@@ -46,6 +47,14 @@ class WithTest extends TestCase
                 . 'select "user"."id", "user"."name", "user"."salary", "_i"."invoiced" from "user" inner join "i" "_i" on "_i"."user_id" = "user"."id"',
             $m->action('select')->render()[0]
         );
+
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            $serverVersion = $this->db->connection->connection()->getWrappedConnection()->getServerVersion();
+            if (str_starts_with($serverVersion, '5.')) {
+                $this->markTestIncomplete('MySQL Server 5.x does not support WITH clause');
+            }
+        }
+
         $this->assertSame([
             ['id' => 10, 'name' => 'John', 'salary' => 2500, 'invoiced' => 500],
             ['id' => 20, 'name' => 'Peter', 'salary' => 4000, 'invoiced' => 200],
