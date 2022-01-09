@@ -311,7 +311,7 @@ class Sql extends Persistence
     protected function setLimitOrder(Model $model, Query $query): void
     {
         foreach ($model->getFields() as $k => $f) {
-            $query->order($f, false);
+            $query->order($f, true);
         }
 
         // set limit
