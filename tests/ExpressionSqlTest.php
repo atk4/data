@@ -199,24 +199,24 @@ class ExpressionSqlTest extends TestCase
 
         // use alias as array key if it is set
         $q = $m->action('field', ['x', 'alias' => 'foo']);
-        $this->assertEquals([0 => ['foo' => 5]], $q->getRows());
+        $this->assertEquals([['foo' => 5]], $q->getRows());
 
         // if alias is not set, then use field name as key
         $q = $m->action('field', ['x']);
-        $this->assertEquals([0 => ['x' => 5]], $q->getRows());
+        $this->assertEquals([['x' => 5]], $q->getRows());
 
         // FX actions
         $q = $m->action('fx', ['sum', 'x', 'alias' => 'foo']);
-        $this->assertEquals([0 => ['foo' => 5]], $q->getRows());
+        $this->assertEquals([['foo' => 5]], $q->getRows());
 
         $q = $m->action('fx', ['sum', 'x']);
-        $this->assertEquals([0 => ['sum_x' => 5]], $q->getRows());
+        $this->assertEquals([['sum_x' => 5]], $q->getRows());
 
         $q = $m->action('fx0', ['sum', 'x', 'alias' => 'foo']);
-        $this->assertEquals([0 => ['foo' => 5]], $q->getRows());
+        $this->assertEquals([['foo' => 5]], $q->getRows());
 
         $q = $m->action('fx0', ['sum', 'x']);
-        $this->assertEquals([0 => ['sum_x' => 5]], $q->getRows());
+        $this->assertEquals([['sum_x' => 5]], $q->getRows());
     }
 
     public function testNeverSaveNeverPersist(): void

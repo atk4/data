@@ -425,24 +425,24 @@ class RandomTest extends TestCase
 
         // normal export
         $this->assertSameExportUnordered([
-            0 => ['code' => 10, 'name' => 'John'],
-            1 => ['code' => 20, 'name' => 'Sarah'],
+            ['code' => 10, 'name' => 'John'],
+            ['code' => 20, 'name' => 'Sarah'],
         ], $m1->export());
 
         $this->assertSameExportUnordered([
-            0 => ['id' => 2, 'code' => 10, 'name' => 'John'],
-            1 => ['id' => 5, 'code' => 20, 'name' => 'Sarah'],
+            ['id' => 2, 'code' => 10, 'name' => 'John'],
+            ['id' => 5, 'code' => 20, 'name' => 'Sarah'],
         ], $m2->export());
 
         // export fields explicitly set
         $this->assertSameExportUnordered([
-            0 => ['name' => 'John'],
-            1 => ['name' => 'Sarah'],
+            ['name' => 'John'],
+            ['name' => 'Sarah'],
         ], $m1->export(['name']));
 
         $this->assertSameExportUnordered([
-            0 => ['name' => 'John'],
-            1 => ['name' => 'Sarah'],
+            ['name' => 'John'],
+            ['name' => 'Sarah'],
         ], $m2->export(['name']));
 
         // key field explicitly set
