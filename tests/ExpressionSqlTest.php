@@ -6,7 +6,6 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 
@@ -135,31 +134,21 @@ class ExpressionSqlTest extends TestCase
         $m->addFields(['name', 'surname', 'cached_name']);
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
-            $m->addExpression('full_name', '[name] || " " || [surname]');
+            $concatExpr = '[name] || " " || [surname]';
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            $m->addExpression('full_name', '[name] || \' \' || [surname]');
+            $concatExpr = '[name] || \' \' || [surname]';
         } else {
-            $m->addExpression('full_name', 'CONCAT([name], \' \', [surname])');
+            $concatExpr = 'CONCAT([name], \' \', [surname])';
         }
+        $m->addExpression('full_name', $concatExpr);
 
         $m->addCondition($m->expr('[full_name] != [cached_name]'));
 
-        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
-            $this->assertSame(
-                'select "id", "name", "surname", "cached_name", ("name" || " " || "surname") "full_name" from "user" where (("name" || " " || "surname") != "cached_name")',
-                $m->action('select')->render()[0]
-            );
-        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            $this->assertSame(
-                'select "id", "name", "surname", "cached_name", ("name" || \' \' || "surname") "full_name" from "user" where (("name" || \' \' || "surname") != "cached_name")',
-                $m->action('select')->render()[0]
-            );
-        } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-            $this->assertSame(
-                'select `id`, `name`, `surname`, `cached_name`, (CONCAT(`name`, \' \', `surname`)) `full_name` from `user` where ((CONCAT(`name`, \' \', `surname`)) != `cached_name`)',
-                $m->action('select')->render()[0]
-            );
-        }
+        $concatSql = preg_replace('~\[(\w+)\]~', '"$1"', $concatExpr);
+        $this->assertSameSql(
+            'select "id", "name", "surname", "cached_name", (' . $concatSql . ') "full_name" from "user" where ((' . $concatSql . ') != "cached_name")',
+            $m->action('select')->render()[0]
+        );
 
         $mm = $m->tryLoad(1);
         $this->assertNull($mm->get('name'));
