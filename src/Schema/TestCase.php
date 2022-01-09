@@ -105,11 +105,8 @@ abstract class TestCase extends BaseTestCase
     private function convertSqlFromSqlite(string $sql): string
     {
         $platform = $this->getDatabasePlatform();
-        if ($platform instanceof SqlitePlatform) {
-            return $sql;
-        }
 
-        return preg_replace_callback(
+        $convertedSql = preg_replace_callback(
             '~\'(?:[^\'\\\\]+|\\\\.)*\'|"(?:[^"\\\\]+|\\\\.)*"|:(\w+)~s',
             function ($matches) use ($platform) {
                 if (isset($matches[1])) {
@@ -125,6 +122,12 @@ abstract class TestCase extends BaseTestCase
             },
             $sql
         );
+
+        if ($platform instanceof SqlitePlatform && $convertedSql !== $sql) {
+            $this->assertSame($sql, $convertedSql);
+        }
+
+        return $convertedSql;
     }
 
     protected function assertSameSql(string $expectedSqliteSql, string $actualSql, string $message = ''): void
