@@ -496,7 +496,7 @@ class QueryTest extends TestCase
     /**
      * @covers \Atk4\Data\Persistence\Sql\Expression::getDebugQuery
      */
-    public function testTestgetDebugQuery(): void
+    public function testGetDebugQuery(): void
     {
         $age = new Expression('coalesce([age], [default_age], [foo], [bar])');
         $age['age'] = new Expression('year(now()) - year(birth_date)');

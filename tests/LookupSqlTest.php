@@ -179,7 +179,7 @@ class LookupSqlTest extends TestCase
             ['name' => 'Russia', 'code' => 'RU'],
         ]);
 
-        $this->assertSame([
+        $this->assertSameExportUnordered([
             'country' => [
                 1 => [
                     'id' => '1',
@@ -237,7 +237,7 @@ class LookupSqlTest extends TestCase
         // Both lines will work quite similar
         $c->insert(['name' => 'Latvia', 'Users' => [['name' => 'imants'], ['name' => 'juris']]]);
 
-        $this->assertSame([
+        $this->assertSameExportUnordered([
             'country' => [
                 1 => [
                     'id' => '1',
@@ -302,7 +302,7 @@ class LookupSqlTest extends TestCase
             //'name' => 'Romans', 'country_code' => 'UK'],  // does not exist
         ]);
 
-        $this->assertSame([
+        $this->assertSameExportUnordered([
             'country' => [
                 1 => [
                     'id' => '1',

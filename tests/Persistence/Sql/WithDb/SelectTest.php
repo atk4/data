@@ -73,12 +73,12 @@ class SelectTest extends TestCase
 
         $this->assertSame(
             ['name' => 'Oliver', 'surname' => 'Smith'],
-            $this->q('employee')->field('name')->field('surname')->getRow()
+            $this->q('employee')->field('name')->field('surname')->order('id')->getRow()
         );
 
-        $this->assertSame(
-            ['surname' => 'Williams'],
-            $this->q('employee')->field('surname')->where('retired', true)->getRow()
+        $this->assertSameExportUnordered(
+            [['surname' => 'Williams'], ['surname' => 'Taylor']],
+            $this->q('employee')->field('surname')->where('retired', true)->getRows()
         );
 
         $this->assertSame(
@@ -92,12 +92,12 @@ class SelectTest extends TestCase
         );
 
         $names = [];
-        foreach ($this->q('employee')->where('retired', false)->getRowsIterator() as $row) {
+        foreach ($this->q('employee')->order('name')->where('retired', false)->getRowsIterator() as $row) {
             $names[] = $row['name'];
         }
 
         $this->assertSame(
-            ['Oliver', 'Charlie'],
+            ['Charlie', 'Oliver'],
             $names
         );
 
