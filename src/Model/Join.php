@@ -182,6 +182,15 @@ class Join
         );
     }
 
+    private function getModelTableString(Model $model): string
+    {
+        if (is_object($model->table)) {
+            return $this->getModelTableString($model->table);
+        }
+
+        return $model->table;
+    }
+
     /**
      * Will use either foreign_alias or create #join_<table>.
      */
@@ -204,7 +213,8 @@ class Join
         if ($this->reverse === true) {
             if ($this->master_field && $this->master_field !== $id_field) { // TODO not implemented yet, see https://github.com/atk4/data/issues/803
                 throw (new Exception('Joining tables on non-id fields is not implemented yet'))
-                    ->addMoreInfo('condition', $this->getOwner()->table . '.' . $this->master_field . ' = ' . $this->foreign_table . '.' . $this->foreign_field);
+                    ->addMoreInfo('master_field', $this->master_field)
+                    ->addMoreInfo('id_field', $this->id_field);
             }
 
             if (!$this->master_field) {
@@ -212,7 +222,7 @@ class Join
             }
 
             if (!$this->foreign_field) {
-                $this->foreign_field = $this->getOwner()->table . '_' . $id_field;
+                $this->foreign_field = $this->getModelTableString($this->getOwner()) . '_' . $id_field;
             }
         } else {
             $this->reverse = false;
@@ -310,7 +320,7 @@ class Join
     {
         $defaults = array_merge([
             'our_field' => $this->id_field,
-            'their_field' => $this->getOwner()->table . '_' . $this->id_field,
+            'their_field' => $this->getModelTableString($this->getOwner()) . '_' . $this->id_field,
         ], $defaults);
 
         return $this->getOwner()->hasMany($link, $defaults);
