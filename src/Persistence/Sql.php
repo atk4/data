@@ -208,7 +208,7 @@ class Sql extends Persistence
         if ($model->table) {
             $query->table(
                 is_object($model->table) ? $model->table->action('select') : $model->table,
-                $model->table_alias ?? (is_object($model->table) ? '__inner__' : null)
+                $model->table_alias ?? (is_object($model->table) ? '_tm' : null)
             );
         }
 
@@ -639,7 +639,7 @@ class Sql extends Persistence
             $prop = [
                 $field->hasJoin()
                     ? ($field->getJoin()->foreign_alias ?: $field->getJoin()->short_name)
-                    : ($field->getOwner()->table_alias ?: (is_object($field->getOwner()->table) ? '__inner__' : $field->getOwner()->table)),
+                    : ($field->getOwner()->table_alias ?? (is_object($field->getOwner()->table) ? '_tm' : $field->getOwner()->table)),
                 $field->getPersistenceName(),
             ];
         } else {
