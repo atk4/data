@@ -134,7 +134,10 @@ class ModelTest extends TestCase
         $model->addCondition('v', 'MixedCase');
         $model->setOrder($this->getDatabasePlatform() instanceof OraclePlatform && in_array($type, ['text', 'blob'], true) ? 'id' : 'v');
 
-        $this->assertSame($isBinary ? [['id' => 3]] : [['id' => 1], ['id' => 2], ['id' => 3]], $model->export(['id']));
+        $this->assertSameExportUnordered(
+            $isBinary ? [['id' => 3]] : [['id' => 1], ['id' => 2], ['id' => 3]],
+            $model->export(['id'])
+        );
     }
 
     public function providerCharacterTypeFieldCaseSensitivityData(): array

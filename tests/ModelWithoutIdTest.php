@@ -38,6 +38,7 @@ class ModelWithoutIdTest extends TestCase
      */
     public function testBasic(): void
     {
+        $this->m->setOrder('name', 'asc');
         $m = $this->m->tryLoadAny();
         $this->assertSame('John', $m->get('name'));
 
@@ -45,11 +46,11 @@ class ModelWithoutIdTest extends TestCase
         $m = $this->m->tryLoadAny();
         $this->assertSame('Sue', $m->get('name'));
 
-        $n = [];
+        $names = [];
         foreach ($this->m as $row) {
-            $n[] = $row->get('name');
+            $names[] = $row->get('name');
         }
-        $this->assertSame(['Sue', 'John'], $n);
+        $this->assertSame(['Sue', 'John'], $names);
     }
 
     public function testGetIdException(): void

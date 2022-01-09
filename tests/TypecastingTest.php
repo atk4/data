@@ -83,7 +83,7 @@ class TypecastingTest extends TestCase
                     'time' => '12:00:50.000000',
                     'boolean' => 1,
                     'integer' => 2940,
-                    'money' => 8.20,
+                    'money' => 8.2,
                     'float' => 8.202343,
                     'json' => '[1,2,3]',
                 ],

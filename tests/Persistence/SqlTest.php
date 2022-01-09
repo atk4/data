@@ -226,12 +226,12 @@ class SqlTest extends TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $this->assertEquals([
+        $this->assertSameExportUnordered([
             ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
             ['id' => 2, 'name' => 'Sarah', 'surname' => 'Jones'],
         ], $m->export());
 
-        $this->assertSame([
+        $this->assertSameExportUnordered([
             ['surname' => 'Smith'],
             ['surname' => 'Jones'],
         ], $m->export(['surname']));

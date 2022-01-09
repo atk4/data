@@ -88,7 +88,7 @@ class RandomTest extends TestCase
 
         $m = new Model_Rate($this->db);
 
-        $this->assertEquals(2, $m->action('count')->getOne());
+        $this->assertSame('2', $m->action('count')->getOne());
     }
 
     public function testTitleImport(): void
@@ -159,9 +159,9 @@ class RandomTest extends TestCase
 
         $m->insert([]);
 
-        $this->assertEquals([
+        $this->assertSameExportUnordered([
             ['id' => 1, 'name' => 'John', 'last_name' => null, 'login' => null, 'salary' => null, 'tax' => null, 'vat' => null],
-            ['id' => 2, 'name' => 'anonymous', 'last_name' => null, 'login' => 'unknown', 'salary' => 100, 'tax' => 20, 'vat' => 15],
+            ['id' => 2, 'name' => 'anonymous', 'last_name' => null, 'login' => 'unknown', 'salary' => 100.0, 'tax' => 20.0, 'vat' => 15.0],
         ], $m->export());
 
         $m = $m->load(2);
@@ -369,7 +369,7 @@ class RandomTest extends TestCase
 
         $m = new Model_Item($this->db, ['table' => 'item']);
 
-        $this->assertSame([1 => 'John', 2 => 'Sue'], $m->getTitles()); // all titles
+        $this->assertSame([1 => 'John', 2 => 'Sue'], $m->setOrder('id')->getTitles()); // all titles
 
         $mm = $m->createEntity();
 
@@ -415,65 +415,65 @@ class RandomTest extends TestCase
 
         // model without id field
         $m1 = new Model($this->db, ['table' => 'user', 'id_field' => false]);
-        $m1->addField('code');
+        $m1->addField('code', ['type' => 'integer']);
         $m1->addField('name');
 
         // model with id field
         $m2 = new Model($this->db, ['table' => 'user']);
-        $m2->addField('code');
+        $m2->addField('code', ['type' => 'integer']);
         $m2->addField('name');
 
         // normal export
-        $this->assertEquals([
+        $this->assertSameExportUnordered([
             0 => ['code' => 10, 'name' => 'John'],
             1 => ['code' => 20, 'name' => 'Sarah'],
         ], $m1->export());
 
-        $this->assertEquals([
+        $this->assertSameExportUnordered([
             0 => ['id' => 2, 'code' => 10, 'name' => 'John'],
             1 => ['id' => 5, 'code' => 20, 'name' => 'Sarah'],
         ], $m2->export());
 
         // export fields explicitly set
-        $this->assertSame([
+        $this->assertSameExportUnordered([
             0 => ['name' => 'John'],
             1 => ['name' => 'Sarah'],
         ], $m1->export(['name']));
 
-        $this->assertSame([
+        $this->assertSameExportUnordered([
             0 => ['name' => 'John'],
             1 => ['name' => 'Sarah'],
         ], $m2->export(['name']));
 
         // key field explicitly set
-        $this->assertEquals([
+        $this->assertSameExportUnordered([
             10 => ['code' => 10, 'name' => 'John'],
             20 => ['code' => 20, 'name' => 'Sarah'],
         ], $m1->export(null, 'code'));
 
-        $this->assertEquals([
+        $this->assertSameExportUnordered([
             10 => ['id' => 2, 'code' => 10, 'name' => 'John'],
             20 => ['id' => 5, 'code' => 20, 'name' => 'Sarah'],
         ], $m2->export(null, 'code'));
 
         // field names and key field explicitly set
-        $this->assertSame([
+        $this->assertSameExportUnordered([
             10 => ['name' => 'John'],
             20 => ['name' => 'Sarah'],
         ], $m1->export(['name'], 'code'));
 
-        $this->assertSame([
+        $this->assertSameExportUnordered([
             10 => ['name' => 'John'],
             20 => ['name' => 'Sarah'],
         ], $m2->export(['name'], 'code'));
 
         // field names include key field
-        $this->assertEquals([
+        $this->assertSameExportUnordered([
             10 => ['code' => 10, 'name' => 'John'],
             20 => ['code' => 20, 'name' => 'Sarah'],
         ], $m1->export(['code', 'name'], 'code'));
 
-        $this->assertEquals([
+        $this->assertSameExportUnordered([
             10 => ['code' => 10, 'name' => 'John'],
             20 => ['code' => 20, 'name' => 'Sarah'],
         ], $m2->export(['code', 'name'], 'code'));
@@ -492,7 +492,7 @@ class RandomTest extends TestCase
 
         $m->load(1)->duplicate()->save();
 
-        $this->assertSame([
+        $this->assertSameExportUnordered([
             ['id' => 1, 'dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4],
             ['id' => 2, 'dat' => '12/12/12', 'bid' => 8.3, 'ask' => 9.2],
             ['id' => 3, 'dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4],

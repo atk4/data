@@ -541,9 +541,9 @@ class JoinSqlTest extends TestCase
         $ref_many = $j->hasMany('Token', ['model' => $m_t]); // hasMany on JOIN (use default our_field, their_field)
 
         $m_u2 = $m_u->load(1);
-        $this->assertEquals([
-            ['id' => 30, 'user_id' => 1, 'token' => 'ABC'],
-            ['id' => 31, 'user_id' => 1, 'token' => 'DEF'],
+        $this->assertSameExportUnordered([
+            ['id' => 30, 'user_id' => '1', 'token' => 'ABC'],
+            ['id' => 31, 'user_id' => '1', 'token' => 'DEF'],
         ], $m_u2->ref('Token')->export());
 
         // hasMany email model (uses custom our_field, their_field)
@@ -553,9 +553,9 @@ class JoinSqlTest extends TestCase
         $ref_many = $j->hasMany('Email', ['model' => $m_e, 'our_field' => 'contact_id', 'their_field' => 'contact_id']); // hasMany on JOIN (use custom our_field, their_field)
 
         $m_u2 = $m_u->load(1);
-        $this->assertEquals([
-            ['id' => 40, 'contact_id' => 10, 'address' => 'john@foo.net'],
-            ['id' => 41, 'contact_id' => 10, 'address' => 'johnny@foo.net'],
+        $this->assertSameExportUnordered([
+            ['id' => 40, 'contact_id' => '10', 'address' => 'john@foo.net'],
+            ['id' => 41, 'contact_id' => '10', 'address' => 'johnny@foo.net'],
         ], $m_u2->ref('Email')->export());
     }
 

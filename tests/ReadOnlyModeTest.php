@@ -37,6 +37,7 @@ class ReadOnlyModeTest extends TestCase
      */
     public function testBasic(): void
     {
+        $this->m->setOrder('name', 'asc');
         $m = $this->m->tryLoadAny();
         $this->assertSame('John', $m->get('name'));
 
