@@ -42,6 +42,7 @@ class ModelWithoutIdTest extends TestCase
         $m = $this->m->tryLoadAny();
         $this->assertSame('John', $m->get('name'));
 
+        $this->m->order = [];
         $this->m->setOrder('name', 'desc');
         $m = $this->m->tryLoadAny();
         $this->assertSame('Sue', $m->get('name'));
