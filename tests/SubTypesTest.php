@@ -171,11 +171,12 @@ class SubTypesTest extends TestCase
         $this->assertInstanceOf(StTransaction_TransferIn::class, $current->ref('Transactions')->load(3));
         $this->assertInstanceOf(StTransaction_Withdrawal::class, $current->ref('Transactions')->load(4));
 
-        $cl = [];
+        $classes = [];
         foreach ($current->ref('Transactions') as $tr) {
-            $cl[] = get_class($tr);
+            $classes[] = get_class($tr);
         }
+        sort($classes);
 
-        $this->assertSame([StTransaction_TransferIn::class, StTransaction_Withdrawal::class], $cl);
+        $this->assertSame([StTransaction_TransferIn::class, StTransaction_Withdrawal::class], $classes);
     }
 }

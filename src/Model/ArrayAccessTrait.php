@@ -6,9 +6,9 @@ namespace Atk4\Data\Model;
 
 /**
  * Trait to add array like support to Model, example usage:
- * class CustomModel extends \Atk4\Data\Model implements \ArrayAccess
+ * class CustomModel extends Model implements \ArrayAccess
  * {
- *     use \Atk4\Data\Model\ArrayAccessTrait;
+ *     use Model\ArrayAccessTrait;
  * }.
  */
 trait ArrayAccessTrait

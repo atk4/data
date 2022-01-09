@@ -72,8 +72,8 @@ class ModelTest extends TestCase
 
         $migrator2->mode('create');
 
-        $q1 = preg_replace('/\([0-9,]*\)/i', '', $migrator->render()[0]); // remove parenthesis otherwise we can't differ money from float etc.
-        $q2 = preg_replace('/\([0-9,]*\)/i', '', $migrator2->render()[0]);
+        $q1 = preg_replace('~\([0-9,]*\)~', '', $migrator->render()[0]); // remove parenthesis otherwise we can't differ money from float etc.
+        $q2 = preg_replace('~\([0-9,]*\)~', '', $migrator2->render()[0]);
         $this->assertSame($q1, $q2);
     }
 
@@ -134,7 +134,10 @@ class ModelTest extends TestCase
         $model->addCondition('v', 'MixedCase');
         $model->setOrder($this->getDatabasePlatform() instanceof OraclePlatform && in_array($type, ['text', 'blob'], true) ? 'id' : 'v');
 
-        $this->assertSame($isBinary ? [['id' => 3]] : [['id' => 1], ['id' => 2], ['id' => 3]], $model->export(['id']));
+        $this->assertSameExportUnordered(
+            $isBinary ? [['id' => 3]] : [['id' => 1], ['id' => 2], ['id' => 3]],
+            $model->export(['id'])
+        );
     }
 
     public function providerCharacterTypeFieldCaseSensitivityData(): array
@@ -250,7 +253,7 @@ class ModelTest extends TestCase
     }
 }
 
-class TestUser extends \Atk4\Data\Model
+class TestUser extends Model
 {
     public $table = 'user';
 
@@ -267,7 +270,7 @@ class TestUser extends \Atk4\Data\Model
     }
 }
 
-class TestRole extends \Atk4\Data\Model
+class TestRole extends Model
 {
     public $table = 'role';
 

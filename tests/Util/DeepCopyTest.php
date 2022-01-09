@@ -166,7 +166,7 @@ class DeepCopyTest extends TestCase
         $quote = $quote->loadOne();
 
         // total price should match
-        $this->assertEquals(90.00, $quote->get('total'));
+        $this->assertEquals(90.0, $quote->get('total'));
 
         $dc = new DeepCopy();
         $invoice = $dc
@@ -177,7 +177,7 @@ class DeepCopyTest extends TestCase
 
         // price now will be with VAT
         $this->assertSame('q1', $invoice->get('ref'));
-        $this->assertEquals(108.90, $invoice->get('total'));
+        $this->assertEquals(108.9, $invoice->get('total'));
         $this->assertEquals(1, $invoice->getId());
 
         // Note that we did not specify that 'client_id' should be copied, so same value here
@@ -243,9 +243,9 @@ class DeepCopyTest extends TestCase
         $this->assertEquals(3, $client3->getId());
 
         // We should have one of each records for this new client
-        $this->assertEquals(1, $client3->ref('Invoices')->action('count')->getOne());
-        $this->assertEquals(1, $client3->ref('Quotes')->action('count')->getOne());
-        $this->assertEquals(1, $client3->ref('Payments')->action('count')->getOne());
+        $this->assertSame('1', $client3->ref('Invoices')->action('count')->getOne());
+        $this->assertSame('1', $client3->ref('Quotes')->action('count')->getOne());
+        $this->assertSame('1', $client3->ref('Payments')->action('count')->getOne());
 
         if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             $this->markTestIncomplete('TODO MSSQL: Cannot perform an aggregate function on an expression containing an aggregate or a subquery.');
@@ -286,7 +286,7 @@ class DeepCopyTest extends TestCase
         });
 
         // total price should match
-        $this->assertEquals(90.00, $quote->get('total'));
+        $this->assertEquals(90.0, $quote->get('total'));
 
         $dc = new DeepCopy();
 
@@ -327,7 +327,7 @@ class DeepCopyTest extends TestCase
         });
 
         // total price should match
-        $this->assertEquals(90.00, $quote->get('total'));
+        $this->assertEquals(90.0, $quote->get('total'));
 
         $dc = new DeepCopy();
 
