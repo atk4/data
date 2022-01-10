@@ -10,7 +10,6 @@ use Atk4\Data\Field\SqlExpressionField;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Expression;
-use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Reference;
 
@@ -38,7 +37,8 @@ use Atk4\Data\Reference;
  * You can also pass seed (for example field type) when aggregating:
  * $aggregate->groupBy(['first', 'last'], ['salary' => ['sum([])', 'type' => 'atk4_money']];
  *
- * @property \Atk4\Data\Persistence\Sql $persistence
+ * @property Persistence\Sql $persistence
+ * @property Model           $table
  *
  * @method Expression expr($expr, array $args = []) forwards to Persistence\Sql::expr using $this as model
  */
@@ -47,14 +47,8 @@ class Aggregate extends Model
     /** @const string */
     public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelectQuery';
 
-    /** @var Model */
-    public $baseModel;
-
     /** @var array<int, string|Expression> */
     public $groupByFields = [];
-
-    /** @var array<string, array|object> */
-    public $aggregateExpressions = [];
 
     public function __construct(Model $baseModel, array $defaults = [])
     {
@@ -62,8 +56,7 @@ class Aggregate extends Model
             throw new Exception('Base model must have Sql persistence to use grouping');
         }
 
-        $this->baseModel = clone $baseModel;
-        $this->table = $baseModel->table;
+        $this->table = $baseModel;
 
         // this model does not have ID field
         $this->id_field = null;
@@ -90,15 +83,13 @@ class Aggregate extends Model
         }
 
         foreach ($aggregateExpressions as $name => $seed) {
-            $this->aggregateExpressions[$name] = $seed;
-
             $args = [];
             // if field originally defined in the parent model, then it can be used as part of expression
-            if ($this->baseModel->hasField($name)) {
-                $args = [$this->baseModel->getField($name)];
+            if ($this->table->hasField($name)) {
+                $args = [$this->table->getField($name)];
             }
 
-            $seed[0 /* TODO 'expr' was here, 0 fixes tests, but 'expr' in seed might this be defined */] = $this->baseModel->expr($seed[0] ?? $seed['expr'], $args);
+            $seed[0 /* TODO 'expr' was here, 0 fixes tests, but 'expr' in seed might this be defined */] = $this->table->expr($seed[0] ?? $seed['expr'], $args);
 
             // now add the expressions here
             $this->addExpression($name, $seed);
@@ -107,12 +98,21 @@ class Aggregate extends Model
         return $this;
     }
 
+    /**
+     * TODO this should be removed, nasty hack to pass the tests.
+     */
     public function getRef(string $link): Reference
     {
-        return $this->baseModel->getRef($link);
+        $ref = clone $this->table->getRef($link);
+        $ref->unsetOwner();
+        $ref->setOwner($this);
+
+        return $ref;
     }
 
     /**
+     * TODO this method should be removed, we do not offer similar methods for standard Model.
+     *
      * @return $this
      */
     public function withAggregateField(string $name, $seed = []): Model
@@ -137,9 +137,9 @@ class Aggregate extends Model
             return parent::addField($name, $seed);
         }
 
-        if ($this->baseModel->hasField($name)) {
-            $field = clone $this->baseModel->getField($name);
-            $field->unsetOwner(); // will be new owner
+        if ($this->table->hasField($name)) {
+            $field = clone $this->table->getField($name);
+            $field->unsetOwner();
         } else {
             $field = null;
         }
@@ -150,38 +150,40 @@ class Aggregate extends Model
     }
 
     /**
-     * @param string $mode
-     * @param array  $args
-     *
      * @return Query
      */
-    public function action($mode, $args = [])
+    public function action(string $mode, array $args = [])
     {
         switch ($mode) {
             case 'select':
                 $fields = $this->onlyFields ?: array_keys($this->getFields());
 
                 // select but no need your fields
-                $query = $this->baseModel->action($mode, [false]);
+                $query = parent::action($mode, [false]);
+                if (isset($query->args['where'])) {
+                    $query->args['having'] = $query->args['where'];
+                    unset($query->args['where']);
+                }
 
-                $this->initQueryFields($query, array_unique($fields + $this->groupByFields));
-                $this->initQueryOrder($query);
+                $this->persistence->initQueryFields($this, $query, array_unique($fields + $this->groupByFields));
                 $this->initQueryGrouping($query);
-                $this->initQueryConditions($query);
-                $this->initQueryLimit($query);
 
                 $this->hook(self::HOOK_INIT_SELECT_QUERY, [$query]);
 
                 return $query;
             case 'count':
-                $query = $this->baseModel->action($mode, $args);
+                $query = parent::action($mode, $args);
+                if (isset($query->args['where'])) {
+                    $query->args['having'] = $query->args['where'];
+                    unset($query->args['where']);
+                }
 
                 $query->reset('field')->field($this->expr('1'));
                 $this->initQueryGrouping($query);
 
                 $this->hook(self::HOOK_INIT_SELECT_QUERY, [$query]);
 
-                return $query->dsql()->field('count(*)')->table($this->expr('([]) der', [$query]));
+                return $query->dsql()->field('count(*)')->table($this->expr('([]) {}', [$query, '_tc']));
             case 'field':
             case 'fx':
                 return parent::action($mode, $args);
@@ -191,96 +193,23 @@ class Aggregate extends Model
         }
     }
 
-    protected function initQueryFields(Query $query, array $fields = []): void
-    {
-        $this->persistence->initQueryFields($this, $query, $fields);
-    }
-
-    protected function initQueryOrder(Query $query): void
-    {
-        if ($this->order) {
-            foreach ($this->order as $order) {
-                $isDesc = strtolower($order[1]) === 'desc';
-
-                if ($order[0] instanceof Expressionable) {
-                    $query->order($order[0], $isDesc);
-                } elseif (is_string($order[0])) {
-                    $query->order($this->getField($order[0]), $isDesc);
-                } else {
-                    throw (new Exception('Unsupported order parameter'))
-                        ->addMoreInfo('model', $this)
-                        ->addMoreInfo('field', $order[0]);
-                }
-            }
-        }
-    }
-
     protected function initQueryGrouping(Query $query): void
     {
-        // use table alias of base model
-        $this->table_alias = $this->baseModel->table_alias;
-
         foreach ($this->groupByFields as $field) {
             if ($field instanceof Expression) {
                 $expression = $field;
             } else {
-                $expression = $this->baseModel->getField($field)->short_name /* TODO short_name should be used by DSQL automatically when in GROUP BY, HAVING, ... */;
+                $expression = $this->table->getField($field)->short_name /* TODO short_name should be used by DSQL automatically when in GROUP BY, HAVING, ... */;
             }
 
             $query->group($expression);
         }
     }
 
-    protected function initQueryConditions(Query $query, Model\Scope\AbstractScope $condition = null): void
-    {
-        $condition ??= $this->scope();
-
-        if (!$condition->isEmpty()) {
-            // peel off the single nested scopes to convert (((field = value))) to field = value
-            $condition = $condition->simplify();
-
-            // simple condition
-            if ($condition instanceof Model\Scope\Condition) {
-                $query->having(...$condition->toQueryArguments());
-            }
-
-            // nested conditions
-            if ($condition instanceof Model\Scope) {
-                $expression = $condition->isOr() ? $query->orExpr() : $query->andExpr();
-
-                foreach ($condition->getNestedConditions() as $nestedCondition) {
-                    $this->initQueryConditions($expression, $nestedCondition);
-                }
-
-                $query->having($expression);
-            }
-        }
-    }
-
-    protected function initQueryLimit(Query $query): void
-    {
-        if ($this->limit && ($this->limit[0] || $this->limit[1])) {
-            if ($this->limit[0] === null) {
-                $this->limit[0] = \PHP_INT_MAX;
-            }
-
-            $query->limit($this->limit[0], $this->limit[1]);
-        }
-    }
-
-    // {{{ Debug Methods
-
-    /**
-     * Returns array with useful debug info for var_dump.
-     */
     public function __debugInfo(): array
     {
         return array_merge(parent::__debugInfo(), [
             'groupByFields' => $this->groupByFields,
-            'aggregateExpressions' => $this->aggregateExpressions,
-            'baseModel' => $this->baseModel->__debugInfo(),
         ]);
     }
-
-    // }}}
 }
