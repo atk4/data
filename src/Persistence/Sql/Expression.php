@@ -363,6 +363,17 @@ class Expression implements Expressionable, \ArrayAccess
 
     private function _render(): array
     {
+        // DEBUG, remove before merge or rewrite without debug_backtrace() with much higher limit
+        // some tests for PostgreSQL & MSSQL need stack trace depth more than 500
+        $stackTraceLimit = isset($this->connection)
+                && \Closure::bind(fn ($v) => isset($v->connection), null, Connection::class)($this->connection)
+                && $this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\SqlitePlatform
+            ? 200
+            : 1000;
+        if (count(debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, $stackTraceLimit)) === $stackTraceLimit) {
+            throw new Exception('Infinite recursion detected');
+        }
+
         // - [xxx] = param
         // - {xxx} = escape
         // - {{xxx}} = escapeSoft
