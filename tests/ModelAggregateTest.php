@@ -323,12 +323,12 @@ class ModelAggregateTest extends TestCase
     {
         $aggregate = $this->createInvoiceAggregate();
 
-        $aggregate->groupBy(['abc'], [
+        $aggregate->groupBy([$aggregate->expr('{}', ['abc'])], [
             'xyz' => ['expr' => 'sum([amount])'],
         ]);
 
         $this->assertSameSql(
-            'select (select "name" from "client" "_c_2bfe9d72a4aa" where "id" = "invoice"."client_id") "client", "abc", sum("amount") "xyz" from "invoice" group by abc',
+            'select (select "name" from "client" "_c_2bfe9d72a4aa" where "id" = "invoice"."client_id") "client", sum("amount") "xyz" from "invoice" group by "abc"',
             $aggregate->action('select')->render()[0]
         );
     }

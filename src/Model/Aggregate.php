@@ -10,6 +10,7 @@ use Atk4\Data\Field\SqlExpressionField;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Expression;
+use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Reference;
 
@@ -49,10 +50,10 @@ class Aggregate extends Model
     /** @var Model */
     public $baseModel;
 
-    /** @var string[] */
+    /** @var array<int, string|Expression> */
     public $groupByFields = [];
 
-    /** @var mixed[] */
+    /** @var array<string, array|object> */
     public $aggregateExpressions = [];
 
     public function __construct(Model $baseModel, array $defaults = [])
@@ -81,6 +82,10 @@ class Aggregate extends Model
         $this->groupByFields = array_unique(array_merge($this->groupByFields, $fields));
 
         foreach ($fields as $fieldName) {
+            if ($fieldName instanceof Expression) {
+                continue;
+            }
+
             $this->addField($fieldName);
         }
 
@@ -197,7 +202,7 @@ class Aggregate extends Model
             foreach ($this->order as $order) {
                 $isDesc = strtolower($order[1]) === 'desc';
 
-                if ($order[0] instanceof Expression) {
+                if ($order[0] instanceof Expressionable) {
                     $query->order($order[0], $isDesc);
                 } elseif (is_string($order[0])) {
                     $query->order($this->getField($order[0]), $isDesc);
@@ -216,10 +221,10 @@ class Aggregate extends Model
         $this->table_alias = $this->baseModel->table_alias;
 
         foreach ($this->groupByFields as $field) {
-            if ($this->baseModel->hasField($field)) {
-                $expression = $this->baseModel->getField($field);
+            if ($field instanceof Expression) {
+                $expression = $field;
             } else {
-                $expression = $this->expr($field);
+                $expression = $this->baseModel->getField($field);
             }
 
             $query->group($expression);
