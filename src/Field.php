@@ -493,6 +493,7 @@ class Field implements Expressionable
     public function __debugInfo(): array
     {
         $arr = [
+            'owner_class' => get_class($this->getOwner()),
             'short_name' => $this->short_name,
             'type' => $this->type,
         ];

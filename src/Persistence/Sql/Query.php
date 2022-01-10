@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql;
 
-use Doctrine\DBAL\Result as DbalResult;
-
 /**
  * Perform query operation on SQL server (such as select, insert, delete, etc).
  */
@@ -879,70 +877,6 @@ class Query extends Expression
         }
 
         return ' ' . implode(' ', $this->args['option'][$this->mode]);
-    }
-
-    // }}}
-
-    // {{{ Query Modes
-
-    /**
-     * Execute select statement.
-     *
-     * @return DbalResult|\PDOStatement PDOStatement iff for DBAL 2.x
-     */
-    public function select(): object
-    {
-        return $this->mode('select')->execute();
-    }
-
-    /**
-     * Execute insert statement.
-     *
-     * @return DbalResult|\PDOStatement PDOStatement iff for DBAL 2.x
-     */
-    public function insert(): object
-    {
-        return $this->mode('insert')->execute();
-    }
-
-    /**
-     * Execute update statement.
-     *
-     * @return DbalResult|\PDOStatement PDOStatement iff for DBAL 2.x
-     */
-    public function update(): object
-    {
-        return $this->mode('update')->execute();
-    }
-
-    /**
-     * Execute replace statement.
-     *
-     * @return DbalResult|\PDOStatement PDOStatement iff for DBAL 2.x
-     */
-    public function replace(): object
-    {
-        return $this->mode('replace')->execute();
-    }
-
-    /**
-     * Execute delete statement.
-     *
-     * @return DbalResult|\PDOStatement PDOStatement iff for DBAL 2.x
-     */
-    public function delete(): object
-    {
-        return $this->mode('delete')->execute();
-    }
-
-    /**
-     * Execute truncate statement.
-     *
-     * @return DbalResult|\PDOStatement PDOStatement iff for DBAL 2.x
-     */
-    public function truncate(): object
-    {
-        return $this->mode('truncate')->execute();
     }
 
     // }}}

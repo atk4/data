@@ -22,8 +22,8 @@ class TestCaseTest extends TestCase
         $this->setDb($q2);
         $q3 = $this->getDb(['user']);
 
-        $this->assertSame($q2, $q3);
+        $this->assertSameExportUnordered($q2, $q3);
 
-        $this->assertSame($q, $this->getDb(['user'], true));
+        $this->assertSameExportUnordered($q, $this->getDb(['user'], true));
     }
 }

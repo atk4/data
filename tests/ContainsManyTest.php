@@ -117,9 +117,9 @@ class ContainsManyTest extends TestCase
         }
 
         // reload invoice just in case
-        $this->assertEquals($rows, $i->lines->export());
+        $this->assertSameExportUnordered($rows, $i->lines->export());
         $i->reload();
-        $this->assertEquals($rows, $i->lines->export());
+        $this->assertSameExportUnordered($rows, $i->lines->export());
 
         // now let's delete line with id=2 and add one more line
         $i->lines
@@ -157,7 +157,7 @@ class ContainsManyTest extends TestCase
                 $l->fieldName()->add_date => new \DateTime('2019-01-01'),
             ],
         ];
-        $this->assertEquals($rows, $i->lines->export());
+        $this->assertSameExportUnordered($rows, $i->lines->export());
 
         // try hasOne reference
         $v = $i->lines->load(4)->vat_rate_id;
@@ -169,7 +169,7 @@ class ContainsManyTest extends TestCase
 
         // and what about calculated field?
         $i->reload(); // we need to reload invoice for changes in lines to be recalculated
-        $this->assertSame(10 * 2 * (1 + 21 / 100) + 40 * 1 * (1 + 21 / 100) + 50 * 3 * (1 + 15 / 100), $i->total_gross); // =245.10
+        $this->assertSame(10 * 2 * (1 + 21 / 100) + 40 * 1 * (1 + 21 / 100) + 50 * 3 * (1 + 15 / 100), $i->total_gross); // = 245.1
     }
 
     /**
@@ -236,7 +236,7 @@ class ContainsManyTest extends TestCase
         $i->reload();
 
         // ok, so now let's test
-        $this->assertEquals([
+        $this->assertSameExportUnordered([
             1 => [
                 $l->discounts->fieldName()->id => 1,
                 $l->discounts->fieldName()->percent => 5,

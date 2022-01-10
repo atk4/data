@@ -91,7 +91,7 @@ class TransactionTest extends TestCase
     public function testTransactions(): void
     {
         // truncate table, prepare
-        $this->q('employee')->truncate();
+        $this->q('employee')->mode('truncate')->execute();
         $this->assertSame(
             '0',
             $this->q('employee')->field(new Expression('count(*)'))->getOne()
@@ -101,10 +101,10 @@ class TransactionTest extends TestCase
         try {
             $this->q('employee')
                 ->setMulti(['id' => 1, 'name' => 'John', 'surname' => 'Doe', 'retired' => true])
-                ->insert();
+                ->mode('insert')->execute();
             $this->q('employee')
                 ->setMulti(['id' => 2, 'FOO' => 'bar', 'name' => 'Jane', 'surname' => 'Doe', 'retired' => false])
-                ->insert();
+                ->mode('insert')->execute();
         } catch (\Exception $e) {
             // ignore
         }
@@ -118,7 +118,7 @@ class TransactionTest extends TestCase
         $this->c->beginTransaction();
         $this->q('employee')
             ->setMulti(['id' => 3, 'name' => 'John', 'surname' => 'Doe', 'retired' => true])
-            ->insert();
+            ->mode('insert')->execute();
         $this->assertSame(
             '2',
             $this->q('employee')->field(new Expression('count(*)'))->getOne()
@@ -135,10 +135,10 @@ class TransactionTest extends TestCase
             $this->c->atomic(function () {
                 $this->q('employee')
                     ->setMulti(['id' => 3, 'name' => 'John', 'surname' => 'Doe', 'retired' => true])
-                    ->insert();
+                    ->mode('insert')->execute();
                 $this->q('employee')
                     ->setMulti(['id' => 4, 'FOO' => 'bar', 'name' => 'Jane', 'surname' => 'Doe', 'retired' => false])
-                    ->insert();
+                    ->mode('insert')->execute();
             });
         } catch (\Exception $e) {
             // ignore
@@ -154,21 +154,21 @@ class TransactionTest extends TestCase
             $this->c->atomic(function () {
                 $this->q('employee')
                     ->setMulti(['id' => 3, 'name' => 'John', 'surname' => 'Doe', 'retired' => true])
-                    ->insert();
+                    ->mode('insert')->execute();
 
                 // success, in, fail, out, fail
                 $this->c->atomic(function () {
                     $this->q('employee')
                         ->setMulti(['id' => 4, 'name' => 'John', 'surname' => 'Doe', 'retired' => true])
-                        ->insert();
+                        ->mode('insert')->execute();
                     $this->q('employee')
                         ->setMulti(['id' => 5, 'FOO' => 'bar', 'name' => 'Jane', 'surname' => 'Doe', 'retired' => false])
-                        ->insert();
+                        ->mode('insert')->execute();
                 });
 
                 $this->q('employee')
                     ->setMulti(['id' => 6, 'FOO' => 'bar', 'name' => 'Jane', 'surname' => 'Doe', 'retired' => false])
-                    ->insert();
+                    ->mode('insert')->execute();
             });
         } catch (\Exception $e) {
             // ignore
@@ -184,18 +184,18 @@ class TransactionTest extends TestCase
             $this->c->atomic(function () {
                 $this->q('employee')
                     ->setMulti(['id' => 3, 'name' => 'John', 'surname' => 'Doe', 'retired' => true])
-                    ->insert();
+                    ->mode('insert')->execute();
 
                 // success, in, success, out, fail
                 $this->c->atomic(function () {
                     $this->q('employee')
                         ->setMulti(['id' => 4, 'name' => 'John', 'surname' => 'Doe', 'retired' => true])
-                        ->insert();
+                        ->mode('insert')->execute();
                 });
 
                 $this->q('employee')
                     ->setMulti(['id' => 5, 'FOO' => 'bar', 'name' => 'Jane', 'surname' => 'Doe', 'retired' => false])
-                    ->insert();
+                    ->mode('insert')->execute();
             });
         } catch (\Exception $e) {
             // ignore
@@ -211,18 +211,18 @@ class TransactionTest extends TestCase
             $this->c->atomic(function () {
                 $this->q('employee')
                     ->setMulti(['id' => 3, 'name' => 'John', 'surname' => 'Doe', 'retired' => true])
-                    ->insert();
+                    ->mode('insert')->execute();
 
                 // success, in, fail, out, catch exception
                 $this->c->atomic(function () {
                     $this->q('employee')
                         ->setMulti(['id' => 4, 'FOO' => 'bar', 'name' => 'John', 'surname' => 'Doe', 'retired' => true])
-                        ->insert();
+                        ->mode('insert')->execute();
                 });
 
                 $this->q('employee')
                     ->setMulti(['id' => 5, 'name' => 'Jane', 'surname' => 'Doe', 'retired' => false])
-                    ->insert();
+                    ->mode('insert')->execute();
             });
         } catch (\Exception $e) {
             // ignore
@@ -238,7 +238,7 @@ class TransactionTest extends TestCase
             $this->c->atomic(function () {
                 $this->q('employee')
                     ->setMulti(['id' => 3, 'name' => 'John', 'surname' => 'Doe', 'retired' => true])
-                    ->insert();
+                    ->mode('insert')->execute();
             });
         } catch (\Exception $e) {
             // ignore

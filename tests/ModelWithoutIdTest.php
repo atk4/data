@@ -38,18 +38,20 @@ class ModelWithoutIdTest extends TestCase
      */
     public function testBasic(): void
     {
+        $this->m->setOrder('name', 'asc');
         $m = $this->m->tryLoadAny();
         $this->assertSame('John', $m->get('name'));
 
+        $this->m->order = [];
         $this->m->setOrder('name', 'desc');
         $m = $this->m->tryLoadAny();
         $this->assertSame('Sue', $m->get('name'));
 
-        $n = [];
+        $names = [];
         foreach ($this->m as $row) {
-            $n[] = $row->get('name');
+            $names[] = $row->get('name');
         }
-        $this->assertSame(['Sue', 'John'], $n);
+        $this->assertSame(['Sue', 'John'], $names);
     }
 
     public function testGetIdException(): void
@@ -84,7 +86,7 @@ class ModelWithoutIdTest extends TestCase
         }
 
         $this->m->insert(['name' => 'Joe']);
-        $this->assertEquals(3, $this->m->action('count')->getOne());
+        $this->assertSame('3', $this->m->action('count')->getOne());
     }
 
     /**
@@ -99,7 +101,7 @@ class ModelWithoutIdTest extends TestCase
         $m = $this->m->tryLoadAny();
         $m->saveAndUnload();
 
-        $this->assertEquals(3, $this->m->action('count')->getOne());
+        $this->assertSame('3', $this->m->action('count')->getOne());
     }
 
     /**
@@ -114,7 +116,7 @@ class ModelWithoutIdTest extends TestCase
         $m = $this->m->tryLoadAny();
         $m->save();
 
-        $this->assertEquals(3, $this->m->action('count')->getOne());
+        $this->assertSame('3', $this->m->action('count')->getOne());
     }
 
     /**

@@ -1552,7 +1552,7 @@ class Model implements \IteratorAggregate
                 }
 
                 // No save needed, nothing was changed
-                if (!$data && !$dirty_join) {
+                if (count($data) === 0 && !$dirty_join) {
                     return $this;
                 }
 

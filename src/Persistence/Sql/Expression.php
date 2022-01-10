@@ -493,6 +493,41 @@ class Expression implements Expressionable, \ArrayAccess
         return $arr;
     }
 
+    protected function hasNativeNamedParamSupport(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @param array{string, array<string, mixed>} $render
+     *
+     * @return array{string, array<string, mixed>}
+     *
+     * @internal
+     */
+    protected function updateRenderBeforeExecute(array $render): array
+    {
+        [$sql, $params] = $render;
+
+        if (!$this->hasNativeNamedParamSupport()) {
+            $numParams = [];
+            $i = 0;
+            $j = 0;
+            $sql = preg_replace_callback(
+                '~(?:\'(?:\'\'|\\\\\'|[^\'])*\')?+\K(?:\?|:\w+)~s',
+                function ($matches) use ($params, &$numParams, &$i, &$j) {
+                    $numParams[++$i] = $params[$matches[0] === '?' ? ++$j : $matches[0]];
+
+                    return '?';
+                },
+                $sql
+            );
+            $params = $numParams;
+        }
+
+        return [$sql, $params];
+    }
+
     /**
      * @param DbalConnection|Connection $connection
      *
@@ -504,86 +539,87 @@ class Expression implements Expressionable, \ArrayAccess
             $connection = $this->connection;
         }
 
-        // If it's a DBAL connection, we're cool
-        if ($connection instanceof DbalConnection) {
-            [$query, $params] = $this->render();
-
-            $platform = $this->connection->getDatabasePlatform();
-            try {
-                $statement = $connection->prepare($query);
-
-                foreach ($params as $key => $val) {
-                    if (is_int($val)) {
-                        $type = ParameterType::INTEGER;
-                    } elseif (is_bool($val)) {
-                        if ($platform instanceof PostgreSQLPlatform) {
-                            $type = ParameterType::STRING;
-                            $val = $val ? '1' : '0';
-                        } else {
-                            $type = ParameterType::INTEGER;
-                            $val = $val ? 1 : 0;
-                        }
-                    } elseif ($val === null) {
-                        $type = ParameterType::NULL;
-                    } elseif (is_float($val)) {
-                        $type = ParameterType::STRING;
-                    } elseif (is_string($val)) {
-                        $type = ParameterType::STRING;
-
-                        if ($platform instanceof PostgreSQLPlatform
-                            || $platform instanceof SQLServerPlatform) {
-                            $dummyPersistence = new Persistence\Sql($this->connection);
-                            if (\Closure::bind(fn () => $dummyPersistence->binaryTypeValueIsEncoded($val), null, Persistence\Sql::class)()) {
-                                $val = \Closure::bind(fn () => $dummyPersistence->binaryTypeValueDecode($val), null, Persistence\Sql::class)();
-                                $type = ParameterType::BINARY;
-                            }
-                        }
-                    } elseif (is_resource($val)) {
-                        throw new Exception('Resource type is not supported, set value as string instead');
-                    } else {
-                        throw (new Exception('Incorrect param type'))
-                            ->addMoreInfo('key', $key)
-                            ->addMoreInfo('value', $val)
-                            ->addMoreInfo('type', gettype($val));
-                    }
-
-                    if (is_string($val) && $platform instanceof OraclePlatform && strlen($val) > 2000) {
-                        $valRef = $val;
-                        $bind = $statement->bindParam($key, $valRef, ParameterType::STRING, strlen($val));
-                        unset($valRef);
-                    } else {
-                        $bind = $statement->bindValue($key, $val, $type);
-                    }
-                    if ($bind === false) {
-                        throw (new Exception('Unable to bind parameter'))
-                            ->addMoreInfo('param', $key)
-                            ->addMoreInfo('value', $val)
-                            ->addMoreInfo('type', $type);
-                    }
-                }
-
-                $result = $statement->execute(); // @phpstan-ignore-line
-                if (Connection::isComposerDbal2x()) {
-                    return $statement; // @phpstan-ignore-line
-                }
-
-                return $result;
-            } catch (DbalException $e) {
-                $firstException = $e;
-                while ($firstException->getPrevious() !== null) {
-                    $firstException = $firstException->getPrevious();
-                }
-                $errorInfo = $firstException instanceof \PDOException ? $firstException->errorInfo : null;
-
-                $new = (new ExecuteException('Dsql execute error', $errorInfo[1] ?? 0, $e))
-                    ->addMoreInfo('error', $errorInfo[2] ?? 'n/a (' . $errorInfo[0] . ')')
-                    ->addMoreInfo('query', $this->getDebugQuery());
-
-                throw $new;
-            }
+        if (!$connection instanceof DbalConnection) {
+            return $connection->execute($this);
         }
 
-        return $connection->execute($this);
+        [$query, $params] = $this->updateRenderBeforeExecute($this->render());
+
+        $platform = $this->connection->getDatabasePlatform();
+        try {
+            $statement = $connection->prepare($query);
+
+            foreach ($params as $key => $val) {
+                if (is_int($val)) {
+                    $type = ParameterType::INTEGER;
+                } elseif (is_bool($val)) {
+                    if ($platform instanceof PostgreSQLPlatform) {
+                        $type = ParameterType::STRING;
+                        $val = $val ? '1' : '0';
+                    } else {
+                        $type = ParameterType::INTEGER;
+                        $val = $val ? 1 : 0;
+                    }
+                } elseif ($val === null) {
+                    $type = ParameterType::NULL;
+                } elseif (is_float($val)) {
+                    $type = ParameterType::STRING;
+                } elseif (is_string($val)) {
+                    $type = ParameterType::STRING;
+
+                    if ($platform instanceof PostgreSQLPlatform
+                        || $platform instanceof SQLServerPlatform) {
+                        $dummyPersistence = new Persistence\Sql($this->connection);
+                        if (\Closure::bind(fn () => $dummyPersistence->binaryTypeValueIsEncoded($val), null, Persistence\Sql::class)()) {
+                            $val = \Closure::bind(fn () => $dummyPersistence->binaryTypeValueDecode($val), null, Persistence\Sql::class)();
+                            $type = ParameterType::BINARY;
+                        }
+                    }
+                } elseif (is_resource($val)) {
+                    throw new Exception('Resource type is not supported, set value as string instead');
+                } else {
+                    throw (new Exception('Incorrect param type'))
+                        ->addMoreInfo('key', $key)
+                        ->addMoreInfo('value', $val)
+                        ->addMoreInfo('type', gettype($val));
+                }
+
+                if (is_string($val) && $platform instanceof OraclePlatform && strlen($val) > 2000) {
+                    $valRef = $val;
+                    $bind = $statement->bindParam($key, $valRef, ParameterType::STRING, strlen($val));
+                    unset($valRef);
+                } else {
+                    $bind = $statement->bindValue($key, $val, $type);
+                }
+                if ($bind === false) {
+                    throw (new Exception('Unable to bind parameter'))
+                        ->addMoreInfo('param', $key)
+                        ->addMoreInfo('value', $val)
+                        ->addMoreInfo('type', $type);
+                }
+            }
+
+            $result = $statement->execute(); // @phpstan-ignore-line
+            if (Connection::isComposerDbal2x()) {
+                return $statement; // @phpstan-ignore-line
+            }
+
+            return $result;
+        } catch (DbalException $e) {
+            $firstException = $e;
+            while ($firstException->getPrevious() !== null) {
+                $firstException = $firstException->getPrevious();
+            }
+            $errorInfo = $firstException instanceof \PDOException ? $firstException->errorInfo : null;
+
+            $eNew = (new ExecuteException('Dsql execute error', $errorInfo[1] ?? $e->getCode(), $e));
+            if ($errorInfo !== null && $errorInfo !== []) {
+                $eNew->addMoreInfo('error', $errorInfo[2] ?? 'n/a (' . $errorInfo[0] . ')');
+            }
+            $eNew->addMoreInfo('query', $this->getDebugQuery());
+
+            throw $eNew;
+        }
     }
 
     // {{{ Result Querying
