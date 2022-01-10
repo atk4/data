@@ -29,9 +29,6 @@ class Union extends Model
     /** @const string */
     public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelectQuery';
 
-    /** @deprecated use HOOK_INIT_SELECT_QUERY instead - will be removed dec-2020 */
-    public const HOOK_AFTER_UNION_SELECT = self::HOOK_INIT_SELECT_QUERY;
-
     /**
      * Union model should always be read-only.
      *
