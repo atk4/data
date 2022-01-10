@@ -224,7 +224,7 @@ class Aggregate extends Model
             if ($field instanceof Expression) {
                 $expression = $field;
             } else {
-                $expression = $this->baseModel->getField($field);
+                $expression = $this->baseModel->getField($field)->short_name /* TODO short_name should be used by DSQL automatically when in GROUP BY, HAVING, ... */;
             }
 
             $query->group($expression);
