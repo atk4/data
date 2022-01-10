@@ -93,7 +93,7 @@ class Aggregate extends Model
                 $args = [$this->baseModel->getField($name)];
             }
 
-            $seed['expr'] = $this->baseModel->expr($seed[0] ?? $seed['expr'], $args);
+            $seed[0 /* TODO 'expr' was here, 0 fixes tests, but 'expr' in seed might this be defined */] = $this->baseModel->expr($seed[0] ?? $seed['expr'], $args);
 
             // now add the expressions here
             $this->addExpression($name, $seed);
