@@ -117,18 +117,14 @@ class Union extends Model
     }
 
     /**
-     * Specify a single field or array of fields.
-     *
-     * @param string|array $group
-     *
      * @phpstan-return Model
      */
-    public function groupBy($group, array $aggregate = []): Model // @phpstan-ignore-line
+    public function groupBy(array $fields, array $aggregateExpressions = []): Model // @phpstan-ignore-line
     {
-        $this->aggregate = $aggregate;
-        $this->group = is_string($group) ? [$group] : $group;
+        $this->aggregate = $aggregateExpressions;
+        $this->group = $fields;
 
-        foreach ($aggregate as $fieldName => $seed) {
+        foreach ($aggregateExpressions as $fieldName => $seed) {
             $seed = (array) $seed;
 
             $field = $this->hasField($fieldName) ? $this->getField($fieldName) : null;
@@ -147,8 +143,8 @@ class Union extends Model
 
         foreach ($this->union as [$nestedModel, $fieldMap]) {
             if ($nestedModel instanceof self) {
-                $nestedModel->aggregate = $aggregate;
-                $nestedModel->group = is_string($group) ? [$group] : $group;
+                $nestedModel->aggregate = $aggregateExpressions;
+                $nestedModel->group = $fields;
             }
         }
 
@@ -185,8 +181,8 @@ class Union extends Model
                 if (isset($fieldMap[$key])) {
                     // field is included in mapping - use mapping expression
                     $field = $fieldMap[$key] instanceof Expression
-                    ? $fieldMap[$key]
-                    : $this->getFieldExpr($nestedModel, $key, $fieldMap[$key]);
+                        ? $fieldMap[$key]
+                        : $this->getFieldExpr($nestedModel, $key, $fieldMap[$key]);
                 } elseif (is_string($key) && $nestedModel->hasField($key)) {
                     // model has such field - use that field directly
                     $field = $nestedModel->getField($key);

@@ -206,41 +206,20 @@ class ModelUnionTest extends TestCase
     {
         $transaction = $this->createTransaction();
 
-        $transaction->groupBy('name', ['amount' => ['sum([amount])', 'type' => 'atk4_money']]);
-
-        $this->assertSameSql(
-            'select "name" "name", sum("amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name", sum("amount") "amount" from "payment" group by "name"',
-            $transaction->getSubQuery(['name', 'amount'])->render()[0]
-        );
-
-        $transaction = $this->createSubtractInvoiceTransaction();
-
-        $transaction->groupBy('name', ['amount' => ['sum([])', 'type' => 'atk4_money']]);
-
-        $this->assertSameSql(
-            'select "name" "name", sum(-"amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name", sum("amount") "amount" from "payment" group by "name"',
-            $transaction->getSubQuery(['name', 'amount'])->render()[0]
-        );
-    }
-
-    public function testGrouping2(): void
-    {
-        $transaction = $this->createTransaction();
-
-        $transaction->groupBy('name', ['amount' => ['sum([amount])', 'type' => 'atk4_money']]);
+        $transactionAggregate = $transaction->groupBy(['name'], ['amount' => ['sum([amount])', 'type' => 'atk4_money']]);
 
         $this->assertSameSql(
             'select "name", sum("amount") "amount" from (select "name" "name", sum("amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name", sum("amount") "amount" from "payment" group by "name") "derivedTable" group by "name"',
-            $transaction->action('select', [['name', 'amount']])->render()[0]
+            $transactionAggregate->action('select', [['name', 'amount']])->render()[0]
         );
 
         $transaction = $this->createSubtractInvoiceTransaction();
 
-        $transaction->groupBy('name', ['amount' => ['sum([])', 'type' => 'atk4_money']]);
+        $transactionAggregate = $transaction->groupBy(['name'], ['amount' => ['sum([])', 'type' => 'atk4_money']]);
 
         $this->assertSameSql(
             'select "name", sum("amount") "amount" from (select "name" "name", sum(-"amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name", sum("amount") "amount" from "payment" group by "name") "derivedTable" group by "name"',
-            $transaction->action('select', [['name', 'amount']])->render()[0]
+            $transactionAggregate->action('select', [['name', 'amount']])->render()[0]
         );
     }
 
@@ -248,31 +227,33 @@ class ModelUnionTest extends TestCase
      * If all nested models have a physical field to which a grouped column can be mapped into, then we should group all our
      * sub-queries.
      */
-    public function testGrouping3(): void
+    public function testGrouping2(): void
     {
         $transaction = $this->createTransaction();
         $transaction->removeField('client_id');
-        $transaction->groupBy('name', ['amount' => ['sum([amount])', 'type' => 'atk4_money']]);
-        $transaction->setOrder('name');
+        // TODO enable later, test failing with MSSQL $transaction->setOrder('name');
+        $transactionAggregate = $transaction->groupBy(['name'], ['amount' => ['sum([amount])', 'type' => 'atk4_money']]);
+        $transactionAggregate->setOrder('name');
 
         $this->assertSame([
             ['name' => 'chair purchase', 'amount' => 8.0],
             ['name' => 'full pay', 'amount' => 4.0],
             ['name' => 'prepay', 'amount' => 10.0],
             ['name' => 'table purchase', 'amount' => 15.0],
-        ], $transaction->export());
+        ], $transactionAggregate->export());
 
         $transaction = $this->createSubtractInvoiceTransaction();
         $transaction->removeField('client_id');
-        $transaction->groupBy('name', ['amount' => ['sum([])', 'type' => 'atk4_money']]);
-        $transaction->setOrder('name');
+        // TODO enable later, test failing with MSSQL $transaction->setOrder('name');
+        $transactionAggregate = $transaction->groupBy(['name'], ['amount' => ['sum([])', 'type' => 'atk4_money']]);
+        $transactionAggregate->setOrder('name');
 
         $this->assertSame([
             ['name' => 'chair purchase', 'amount' => -8.0],
             ['name' => 'full pay', 'amount' => 4.0],
             ['name' => 'prepay', 'amount' => 10.0],
             ['name' => 'table purchase', 'amount' => -15.0],
-        ], $transaction->export());
+        ], $transactionAggregate->export());
     }
 
     /**
@@ -290,11 +271,11 @@ class ModelUnionTest extends TestCase
         $transaction->nestedPayment->addExpression('type', '\'payment\'');
         $transaction->addField('type');
 
-        $transaction->groupBy('type', ['amount' => ['sum([amount])', 'type' => 'atk4_money']]);
+        $transactionAggregate = $transaction->groupBy(['type'], ['amount' => ['sum([amount])', 'type' => 'atk4_money']]);
 
         $this->assertSameSql(
             'select "client_id", "name", "type", sum("amount") "amount" from (select (\'invoice\') "type", sum("amount") "amount" from "invoice" group by "type" UNION ALL select (\'payment\') "type", sum("amount") "amount" from "payment" group by "type") "derivedTable" group by "type"',
-            $transaction->action('select')->render()[0]
+            $transactionAggregate->action('select')->render()[0]
         );
 
         if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
@@ -304,19 +285,19 @@ class ModelUnionTest extends TestCase
         $this->assertSameExportUnordered([
             ['type' => 'invoice', 'amount' => 23.0],
             ['type' => 'payment', 'amount' => 14.0],
-        ], $transaction->export(['type', 'amount']));
+        ], $transactionAggregate->export(['type', 'amount']));
 
         $transaction = $this->createSubtractInvoiceTransaction();
         $transaction->nestedInvoice->addExpression('type', '\'invoice\'');
         $transaction->nestedPayment->addExpression('type', '\'payment\'');
         $transaction->addField('type');
 
-        $transaction->groupBy('type', ['amount' => ['sum([])', 'type' => 'atk4_money']]);
+        $transactionAggregate = $transaction->groupBy(['type'], ['amount' => ['sum([])', 'type' => 'atk4_money']]);
 
         $this->assertSameExportUnordered([
             ['type' => 'invoice', 'amount' => -23.0],
             ['type' => 'payment', 'amount' => 14.0],
-        ], $transaction->export(['type', 'amount']));
+        ], $transactionAggregate->export(['type', 'amount']));
     }
 
     public function testReference(): void
