@@ -77,7 +77,7 @@ class Union extends Model
     public $aggregate = [];
 
     /** @var string Derived table alias */
-    public $table = 'derivedTable';
+    public $table = '_tu';
 
     /**
      * For a sub-model with a specified mapping, return expression
@@ -227,7 +227,7 @@ class Union extends Model
                     }
                 }
                 $subquery = $this->getSubQuery($fields);
-                $query = parent::action($mode, $args)->reset('table')->table($subquery, $this->table);
+                $query = parent::action($mode, $args)->reset('table')->table($subquery, $this->table_alias ?? $this->table);
 
                 foreach ($this->group as $group) {
                     $query->group($group);
@@ -272,7 +272,7 @@ class Union extends Model
         }
 
         // Substitute FROM table with our subquery expression
-        return parent::action($mode, $args)->reset('table')->table($subquery, $this->table);
+        return parent::action($mode, $args)->reset('table')->table($subquery, $this->table_alias ?? $this->table);
     }
 
     /**
