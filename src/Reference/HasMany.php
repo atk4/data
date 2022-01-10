@@ -11,6 +11,15 @@ use Atk4\Data\Reference;
 
 class HasMany extends Reference
 {
+    private function getModelTableString(Model $model): string
+    {
+        if (is_object($model->table)) {
+            return $this->getModelTableString($model->table);
+        }
+
+        return $model->table;
+    }
+
     public function getTheirFieldName(): string
     {
         if ($this->their_field) {
@@ -20,7 +29,7 @@ class HasMany extends Reference
         // this is pure guess, verify if such field exist, otherwise throw
         // TODO probably remove completely in the future
         $ourModel = $this->getOurModel(null);
-        $theirFieldName = $ourModel->table . '_' . $ourModel->id_field;
+        $theirFieldName = $this->getModelTableString($ourModel) . '_' . $ourModel->id_field;
         if (!$this->createTheirModel()->hasField($theirFieldName)) {
             throw (new Exception('Their model does not contain fallback field'))
                 ->addMoreInfo('their_fallback_field', $theirFieldName);

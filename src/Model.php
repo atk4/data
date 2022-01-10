@@ -121,7 +121,7 @@ class Model implements \IteratorAggregate
      * model normally lives. The interpretation of the table will be decoded
      * by persistence driver.
      *
-     * @var string|false
+     * @var string|self|false
      */
     public $table;
 

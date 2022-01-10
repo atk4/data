@@ -37,6 +37,8 @@ class Sql extends Persistence
     public const HOOK_AFTER_UPDATE_QUERY = self::class . '@afterUpdateQuery';
     /** @const string */
     public const HOOK_BEFORE_DELETE_QUERY = self::class . '@beforeDeleteQuery';
+    /** @const string */
+    public const HOOK_AFTER_DELETE_QUERY = self::class . '@afterDeleteQuery';
 
     /** @var Connection Connection object. */
     public $connection;
@@ -136,10 +138,7 @@ class Sql extends Persistence
         // When we work without table, we can't have any IDs
         if ($model->table === false) {
             $model->removeField($model->id_field);
-            $model->addExpression($model->id_field, '1');
-            //} else {
-            // SQL databases use ID of int by default
-            //$m->getField($m->id_field)->type = 'integer';
+            $model->addExpression($model->id_field, '-1');
         }
     }
 
@@ -207,7 +206,10 @@ class Sql extends Persistence
         $query = $model->persistence_data['dsql'] = $this->dsql();
 
         if ($model->table) {
-            $query->table($model->table, $model->table_alias ?? null);
+            $query->table(
+                is_object($model->table) ? $model->table->action('select') : $model->table,
+                $model->table_alias ?? (is_object($model->table) ? '_tm' : null)
+            );
         }
 
         // add With cursors
@@ -510,41 +512,6 @@ class Sql extends Persistence
     }
 
     /**
-     * Inserts record in database and returns new record ID.
-     */
-    public function insert(Model $model, array $data): string
-    {
-        $insert = $this->initQuery($model);
-        $insert->mode('insert');
-
-        if ($model->id_field && ($data[$model->id_field] ?? null) === null) {
-            unset($data[$model->id_field]);
-        }
-
-        $insert->setMulti($this->typecastSaveRow($model, $data));
-
-        $st = null;
-        try {
-            $model->hook(self::HOOK_BEFORE_INSERT_QUERY, [$insert]);
-            $st = $insert->execute();
-        } catch (SqlException $e) {
-            throw (new Exception('Unable to execute insert query', 0, $e))
-                ->addMoreInfo('model', $model)
-                ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
-        }
-
-        if ($model->id_field && ($data[$model->id_field] ?? null) !== null) {
-            $id = (string) $data[$model->id_field];
-        } else {
-            $id = $this->lastInsertId($model);
-        }
-
-        $model->hook(self::HOOK_AFTER_INSERT_QUERY, [$insert, $st]);
-
-        return $id;
-    }
-
-    /**
      * Export all DataSet.
      */
     public function export(Model $model, array $fields = null, bool $typecast = true): array
@@ -573,45 +540,70 @@ class Sql extends Persistence
         }
     }
 
-    /**
-     * Updates record in database.
-     *
-     * @param mixed $id
-     */
-    public function update(Model $model, $id, array $data): void
+    protected function insertRaw(Model $model, array $dataRaw)
     {
-        if (!$model->id_field) {
-            throw new Exception('id_field of a model is not set. Unable to update record.');
+        $insert = $this->initQuery($model);
+        $insert->mode('insert');
+
+        $insert->setMulti($dataRaw);
+
+        $st = null;
+        try {
+            $model->hook(self::HOOK_BEFORE_INSERT_QUERY, [$insert]);
+            $st = $insert->execute();
+        } catch (SqlException $e) {
+            throw (new Exception('Unable to execute insert query', 0, $e))
+                ->addMoreInfo('model', $model)
+                ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
         }
 
+        if ($model->id_field) {
+            $idRaw = $dataRaw[$model->getField($model->id_field)->getPersistenceName()] ?? null;
+            if ($idRaw === null) {
+                $idRaw = $this->lastInsertId($model);
+            }
+        } else {
+            $idRaw = '';
+        }
+
+        $model->hook(self::HOOK_AFTER_INSERT_QUERY, [$insert, $st]);
+
+        return $idRaw;
+    }
+
+    protected function updateRaw(Model $model, $idRaw, array $dataRaw): void
+    {
         $update = $this->initQuery($model);
         $update->mode('update');
 
         // only apply fields that has been modified
-        $update->setMulti($this->typecastSaveRow($model, $data));
-        $update->where($model->getField($model->id_field), $id);
+        $update->setMulti($dataRaw);
+        $update->where($model->getField($model->id_field)->getPersistenceName(), $idRaw);
+
+        $model->hook(self::HOOK_BEFORE_UPDATE_QUERY, [$update]);
 
         $st = null;
         try {
-            $model->hook(self::HOOK_BEFORE_UPDATE_QUERY, [$update]);
-            if ($data) {
-                $st = $update->execute();
-            }
+            $st = $update->execute();
         } catch (SqlException $e) {
             throw (new Exception('Unable to update due to query error', 0, $e))
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
         }
 
-        if (isset($data[$model->id_field]) && $model->getDirtyRef()[$model->id_field]) {
-            // ID was changed
-            $model->setId($data[$model->id_field]);
+        if ($model->id_field) {
+            $newIdRaw = $dataRaw[$model->getField($model->id_field)->getPersistenceName()] ?? null;
+            if ($newIdRaw !== null && $model->getDirtyRef()[$model->id_field]) {
+                // ID was changed
+                // TODO this cannot work with entity
+                $model->setId($this->typecastLoadField($model->getField($model->id_field), $newIdRaw));
+            }
         }
 
         $model->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update, $st]);
 
         // if any rows were updated in database, and we had expressions, reload
-        if ($model->reload_after_save === true && (!$st || $st->rowCount())) {
+        if ($model->reload_after_save === true && $st->rowCount()) {
             $d = $model->getDirtyRef();
             $model->reload();
             \Closure::bind(function () use ($model) {
@@ -622,29 +614,22 @@ class Sql extends Persistence
         }
     }
 
-    /**
-     * Deletes record from database.
-     *
-     * @param mixed $id
-     */
-    public function delete(Model $model, $id): void
+    protected function deleteRaw(Model $model, $idRaw): void
     {
-        if (!$model->id_field) {
-            throw new Exception('id_field of a model is not set. Unable to delete record.');
-        }
-
         $delete = $this->initQuery($model);
         $delete->mode('delete');
-        $delete->where($model->getField($model->id_field), $id);
+        $delete->where($model->getField($model->id_field)->getPersistenceName(), $idRaw);
         $model->hook(self::HOOK_BEFORE_DELETE_QUERY, [$delete]);
 
         try {
-            $delete->execute();
+            $st = $delete->execute();
         } catch (SqlException $e) {
             throw (new Exception('Unable to delete due to query error', 0, $e))
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
         }
+
+        $model->hook(self::HOOK_AFTER_DELETE_QUERY, [$delete, $st]);
     }
 
     public function getFieldSqlExpression(Field $field, Expression $expression): Expression
@@ -654,7 +639,7 @@ class Sql extends Persistence
             $prop = [
                 $field->hasJoin()
                     ? ($field->getJoin()->foreign_alias ?: $field->getJoin()->short_name)
-                    : ($field->getOwner()->table_alias ?: $field->getOwner()->table),
+                    : ($field->getOwner()->table_alias ?? (is_object($field->getOwner()->table) ? '_tm' : $field->getOwner()->table)),
                 $field->getPersistenceName(),
             ];
         } else {
@@ -676,6 +661,10 @@ class Sql extends Persistence
 
     public function lastInsertId(Model $model): string
     {
+        if (is_object($model->table)) {
+            return $model->table->persistence->lastInsertId($model->table);
+        }
+
         // PostgreSQL and Oracle DBAL platforms use sequence internally for PK autoincrement,
         // use default name if not set explicitly
         $sequenceName = null;
