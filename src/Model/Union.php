@@ -283,13 +283,26 @@ class Union extends Model
     }
 
     /**
+     * @param Query[] $subqueries
+     */
+    private function createUnionQuery(array $subqueries): Query
+    {
+        $unionQuery = $this->persistence->dsql();
+        $unionQuery->mode = 'union_all';
+        \Closure::bind(function () use ($unionQuery, $subqueries) {
+            $unionQuery->template = implode(' UNION ALL ', array_fill(0, count($subqueries), '[]'));
+        }, null, Query::class)();
+        $unionQuery->args['custom'] = $subqueries;
+
+        return $unionQuery;
+    }
+
+    /**
      * Configures nested models to have a specified set of fields available.
      */
-    public function getSubQuery(array $fields): Expression
+    public function getSubQuery(array $fields): Query
     {
-        $cnt = 0;
-        $expr = [];
-        $args = [];
+        $subqueries = [];
 
         foreach ($this->union as [$nestedModel, $fieldMap]) {
             // map fields for related model
@@ -340,7 +353,6 @@ class Union extends Model
             }
 
             // now prepare query
-            $expr[] = '[' . $cnt . ']';
             $query = $this->persistence->action($nestedModel, 'select', [false]);
 
             if ($nestedModel instanceof self) {
@@ -369,25 +381,22 @@ class Union extends Model
             // subquery should not be wrapped in parenthesis, SQLite is especially picky about that
             $query->wrapInParentheses = false;
 
-            $args[$cnt++] = $query;
+            $subqueries[] = $query;
         }
 
-        $unionExpr = $this->persistence->dsql()->expr('(' . implode(' UNION ALL ', $expr) . ')', $args);
+        $unionQuery = $this->createUnionQuery($subqueries);
 
-        return $unionExpr;
+        return $unionQuery;
     }
 
-    public function getSubAction(string $action, array $actionArgs = []): Expression
+    public function getSubAction(string $action, array $actionArgs = []): Query
     {
-        $cnt = 0;
-        $expr = [];
-        $args = [];
+        $subqueries = [];
 
         foreach ($this->union as [$model, $fieldMap]) {
             $modelActionArgs = $actionArgs;
 
             // now prepare query
-            $expr[] = '[' . $cnt . ']';
             if ($fieldName = $actionArgs[1] ?? null) {
                 $modelActionArgs[1] = $this->getFieldExpr(
                     $model,
@@ -401,12 +410,12 @@ class Union extends Model
             // subquery should not be wrapped in parenthesis, SQLite is especially picky about that
             $query->wrapInParentheses = false;
 
-            $args[$cnt++] = $query;
+            $subqueries[] = $query;
         }
 
-        $unionExpr = $this->persistence->dsql()->expr('(' . implode(' UNION ALL ', $expr) . ')', $args);
+        $unionQuery = $this->createUnionQuery($subqueries);
 
-        return $unionExpr;
+        return $unionQuery;
     }
 
     // {{{ Debug Methods
