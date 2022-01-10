@@ -69,17 +69,17 @@ class ModelUnionTest extends TestCase
         $transaction = $this->createTransaction();
 
         $this->assertSameSql(
-            '(select "name" "name" from "invoice" UNION ALL select "name" "name" from "payment") "derivedTable"',
+            '(select "name" "name" from "invoice" UNION ALL select "name" "name" from "payment")',
             $transaction->getSubQuery(['name'])->render()[0]
         );
 
         $this->assertSameSql(
-            '(select "name" "name", "amount" "amount" from "invoice" UNION ALL select "name" "name", "amount" "amount" from "payment") "derivedTable"',
+            '(select "name" "name", "amount" "amount" from "invoice" UNION ALL select "name" "name", "amount" "amount" from "payment")',
             $transaction->getSubQuery(['name', 'amount'])->render()[0]
         );
 
         $this->assertSameSql(
-            '(select "name" "name" from "invoice" UNION ALL select "name" "name" from "payment") "derivedTable"',
+            '(select "name" "name" from "invoice" UNION ALL select "name" "name" from "payment")',
             $transaction->getSubQuery(['name'])->render()[0]
         );
     }
@@ -94,7 +94,7 @@ class ModelUnionTest extends TestCase
         $transaction->addField('type');
 
         $this->assertSameSql(
-            '(select (\'invoice\') "type", "amount" "amount" from "invoice" UNION ALL select NULL "type", "amount" "amount" from "payment") "derivedTable"',
+            '(select (\'invoice\') "type", "amount" "amount" from "invoice" UNION ALL select NULL "type", "amount" "amount" from "payment")',
             $transaction->getSubQuery(['type', 'amount'])->render()[0]
         );
     }
@@ -146,7 +146,7 @@ class ModelUnionTest extends TestCase
         $transaction = $this->createSubtractInvoiceTransaction();
 
         $this->assertSameSql(
-            '(select sum(-"amount") from "invoice" UNION ALL select sum("amount") from "payment") "derivedTable"',
+            '(select sum(-"amount") from "invoice" UNION ALL select sum("amount") from "payment")',
             $transaction->getSubAction('fx', ['sum', 'amount'])->render()[0]
         );
     }
@@ -209,7 +209,7 @@ class ModelUnionTest extends TestCase
         $transaction->groupBy('name', ['amount' => ['sum([amount])', 'type' => 'atk4_money']]);
 
         $this->assertSameSql(
-            '(select "name" "name", sum("amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name", sum("amount") "amount" from "payment" group by "name") "derivedTable"',
+            '(select "name" "name", sum("amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name", sum("amount") "amount" from "payment" group by "name")',
             $transaction->getSubQuery(['name', 'amount'])->render()[0]
         );
 
@@ -218,7 +218,7 @@ class ModelUnionTest extends TestCase
         $transaction->groupBy('name', ['amount' => ['sum([])', 'type' => 'atk4_money']]);
 
         $this->assertSameSql(
-            '(select "name" "name", sum(-"amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name", sum("amount") "amount" from "payment" group by "name") "derivedTable"',
+            '(select "name" "name", sum(-"amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name", sum("amount") "amount" from "payment" group by "name")',
             $transaction->getSubQuery(['name', 'amount'])->render()[0]
         );
     }
@@ -337,8 +337,7 @@ class ModelUnionTest extends TestCase
         $this->assertSame(29.0, (float) $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->getOne());
 
         $this->assertSameSql(
-            'select sum("val") from (select sum("amount") "val" from "invoice" where "client_id" = :a ' .
-            'UNION ALL select sum("amount") "val" from "payment" where "client_id" = :b) "derivedTable"',
+            'select sum("val") from (select sum("amount") "val" from "invoice" where "client_id" = :a UNION ALL select sum("amount") "val" from "payment" where "client_id" = :b)',
             $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->render()[0]
         );
 
@@ -350,8 +349,7 @@ class ModelUnionTest extends TestCase
         $this->assertSame(-9.0, (float) $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->getOne());
 
         $this->assertSameSql(
-            'select sum("val") from (select sum(-"amount") "val" from "invoice" where "client_id" = :a ' .
-                'UNION ALL select sum("amount") "val" from "payment" where "client_id" = :b) "derivedTable"',
+            'select sum("val") from (select sum(-"amount") "val" from "invoice" where "client_id" = :a UNION ALL select sum("amount") "val" from "payment" where "client_id" = :b)',
             $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->render()[0]
         );
     }

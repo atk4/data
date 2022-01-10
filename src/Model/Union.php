@@ -234,7 +234,7 @@ class Union extends Model
                     }
                 }
                 $subquery = $this->getSubQuery($fields);
-                $query = parent::action($mode, $args)->reset('table')->table($subquery);
+                $query = parent::action($mode, $args)->reset('table')->table($subquery, $this->table);
 
                 foreach ($this->group as $group) {
                     $query->group($group);
@@ -279,7 +279,7 @@ class Union extends Model
         }
 
         // Substitute FROM table with our subquery expression
-        return parent::action($mode, $args)->reset('table')->table($subquery);
+        return parent::action($mode, $args)->reset('table')->table($subquery, $this->table);
     }
 
     /**
@@ -372,17 +372,16 @@ class Union extends Model
             $args[$cnt++] = $query;
         }
 
-        // last element is table name itself
-        $args[$cnt] = $this->table;
+        $unionExpr = $this->persistence->dsql()->expr('(' . implode(' UNION ALL ', $expr) . ')', $args);
 
-        return $this->persistence->dsql()->expr('(' . implode(' UNION ALL ', $expr) . ') {' . $cnt . '}', $args);
+        return $unionExpr;
     }
 
     public function getSubAction(string $action, array $actionArgs = []): Expression
     {
         $cnt = 0;
         $expr = [];
-        $exprArgs = [];
+        $args = [];
 
         foreach ($this->union as [$model, $fieldMap]) {
             $modelActionArgs = $actionArgs;
@@ -402,14 +401,12 @@ class Union extends Model
             // subquery should not be wrapped in parenthesis, SQLite is especially picky about that
             $query->wrapInParentheses = false;
 
-            $exprArgs[$cnt++] = $query;
+            $args[$cnt++] = $query;
         }
 
-        $expr = '(' . implode(' UNION ALL ', $expr) . ') {' . $cnt . '}';
-        // last element is table name itself
-        $exprArgs[$cnt] = $this->table;
+        $unionExpr = $this->persistence->dsql()->expr('(' . implode(' UNION ALL ', $expr) . ')', $args);
 
-        return $this->persistence->dsql()->expr($expr, $exprArgs);
+        return $unionExpr;
     }
 
     // {{{ Debug Methods
