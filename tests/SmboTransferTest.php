@@ -88,19 +88,19 @@ class SmboTransferTest extends TestCase
 
         // Account is not loaded, will dump all Payments related to ANY Account
         $data = $a->ref('Payment')->export(['amount']);
-        $this->assertEquals([
-            ['amount' => 10],
-            ['amount' => 20],
-            ['amount' => 30],
-            //['amount' => 40], // will not select this because it is not related to any Account
+        $this->assertSameExportUnordered([
+            ['amount' => 10.0],
+            ['amount' => 20.0],
+            ['amount' => 30.0],
+            // ['amount' => 40.0], // will not select this because it is not related to any Account
         ], $data);
 
         // Account is loaded, will dump all Payments related to that particular Account
         $a = $a->load(1);
         $data = $a->ref('Payment')->export(['amount']);
-        $this->assertEquals([
-            ['amount' => 10],
-            ['amount' => 20],
+        $this->assertSameExportUnordered([
+            ['amount' => 10.0],
+            ['amount' => 20.0],
         ], $data);
     }
 
@@ -121,7 +121,7 @@ class SmboTransferTest extends TestCase
 
         // Create two new clients, one is sole trader, other is limited company
         $client = $company->ref('Client');
-        list($john_id, $agile_id) = $m->insert([
+        [$john_id, $agile_id] = $m->insert([
             ['name' => 'John Smith Consulting', 'vat_registered' => false],
             'Agile Software Limited',
         ]);
@@ -133,8 +133,8 @@ class SmboTransferTest extends TestCase
             'ref_no' => 'INV1',
             'due_date' => (new Date())->add(new DateInterval('2w')), // due in 2 weeks
             'lines' => [
-                ['descr' => 'Sold some sweets', 'total_gross' => 100.00],
-                ['descr' => 'Delivery', 'total_gross' => 10.00],
+                ['descr' => 'Sold some sweets', 'total_gross' => 100.0],
+                ['descr' => 'Delivery', 'total_gross' => 10.0],
             ],
         ]);
 
@@ -147,15 +147,15 @@ class SmboTransferTest extends TestCase
                 [
                     'item_id' => $john->ref('Product')->insert('Cat Food'),
                     'nominal' => 'Sales:Discounted',
-                    'total_net' => 50.00,
+                    'total_net' => 50.0,
                     'vat_rate' => 23,
-                    // calculates total_gross at 61.50.
+                    // calculates total_gross at 61.5.
                 ],
                 [
                     'item_id' => $john->ref('Service')->insert('Delivery'),
-                    'total_net' => 10.00,
+                    'total_net' => 10.0,
                     'vat_rate' => '23%',
-                    // calculates total_gross at 12.30
+                    // calculates total_gross at 12.3
                 ],
             ],
         ]);
@@ -165,15 +165,15 @@ class SmboTransferTest extends TestCase
 
         // And each of our invoices will have one new payment
         foreach ($john_invoices as $invoice) {
-            $invoice->ref('Payment')->insert(['amount' => 10.20, 'bank_account_id' => $hsbc]);
+            $invoice->ref('Payment')->insert(['amount' => 10.2, 'bank_account_id' => $hsbc]);
         }
 
         // Now let's execute report
         $debt = $john->add(new Model_Report_Debtors());
 
         // This should give us total amount owed by all clients:
-        // (100.00+10.00) + (61.50 + 12.30) - 10.20*2
-        $this->assertEquals(163.40, $debt->sum('amount'));
+        // (100.0 + 10.0) + (61.5 + 12.3) - 10.2 * 2
+        $this->assertSame(163.4, $debt->sum('amount'));
     }
      */
 }

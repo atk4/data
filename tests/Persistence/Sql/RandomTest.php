@@ -88,7 +88,7 @@ class RandomTest extends TestCase
     public function testGroupConcat(): void
     {
         $this->_groupConcatTest(
-            'select `age`, group_concat(`name` separator :a) from `people` group by `age`',
+            'select `age`, group_concat(`name` separator \',\') from `people` group by `age`',
             new Mysql\Query()
         );
 

@@ -496,7 +496,7 @@ class QueryTest extends TestCase
     /**
      * @covers \Atk4\Data\Persistence\Sql\Expression::getDebugQuery
      */
-    public function testTestgetDebugQuery(): void
+    public function testGetDebugQuery(): void
     {
         $age = new Expression('coalesce([age], [default_age], [foo], [bar])');
         $age['age'] = new Expression('year(now()) - year(birth_date)');
@@ -518,7 +518,7 @@ class QueryTest extends TestCase
     public function testVarDump(): void
     {
         $this->assertMatchesRegularExpression(
-            '/select\s+\*\s+from\s*"user".*/',
+            '~select\s+\*\s+from\s*"user"~',
             $this->q()->table('user')->__debugInfo()['R']
         );
     }
@@ -528,8 +528,8 @@ class QueryTest extends TestCase
      */
     public function testVarDump2(): void
     {
-        $this->assertMatchesRegularExpression(
-            '/.*Expression could not render tag.*/',
+        $this->assertStringContainsString(
+            'Expression could not render tag',
             (new Expression('Hello [world]'))->__debugInfo()['R']
         );
     }
@@ -539,8 +539,8 @@ class QueryTest extends TestCase
      */
     public function testVarDump3(): void
     {
-        $this->assertMatchesRegularExpression(
-            '/.*Hello \'php\'.*/',
+        $this->assertStringContainsString(
+            'Hello \'php\'',
             (new Expression('Hello [world]', ['world' => 'php']))->__debugInfo()['R']
         );
     }
@@ -551,8 +551,8 @@ class QueryTest extends TestCase
     public function testVarDump4(): void
     {
         // should throw exception "Table cannot be Query in UPDATE, INSERT etc. query modes"
-        $this->assertMatchesRegularExpression(
-            '/.*Table cannot be Query.*/',
+        $this->assertStringContainsString(
+            'Table cannot be Query',
             ($this->q()
                 ->mode('update')
                 ->table($this->q()->table('test'), 'foo'))->__debugInfo()['R']
@@ -1082,7 +1082,7 @@ class QueryTest extends TestCase
     public function testGroupConcat(): void
     {
         $q = new Mysql\Query();
-        $this->assertSame('group_concat(`foo` separator :a)', $q->groupConcat('foo', '-')->render()[0]);
+        $this->assertSame('group_concat(`foo` separator \'-\')', $q->groupConcat('foo', '-')->render()[0]);
 
         $q = new Oracle\Query();
         $this->assertSame('listagg("foo", :a) within group (order by "foo")', $q->groupConcat('foo', '-')->render()[0]);
@@ -1192,7 +1192,7 @@ class QueryTest extends TestCase
         );
 
         /*
-        $this->assertEquals(
+        $this->assertSame(
             'select "name" from "db"."employee" where "db"."employee"."a" = :a',
             $this->q()
                 ->field('name')->table('db.employee')->where('db.employee.a',1)

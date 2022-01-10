@@ -146,7 +146,7 @@ class Join extends Model\Join
         $query->mode('insert');
         $query->setMulti($model->persistence->typecastSaveRow($model, $this->getAndUnsetSaveBuffer($entity)));
         // $query->set($this->foreign_field, null);
-        $query->insert();
+        $query->mode('insert')->execute(); // TODO IMPORTANT migrate to Model insert
         $this->setId($entity, $model->persistence->lastInsertId(new Model($model->persistence, ['table' => $this->foreign_table])));
 
         if ($this->hasJoin()) {
@@ -167,7 +167,7 @@ class Join extends Model\Join
         $query = $this->dsql();
         $query->setMulti($model->persistence->typecastSaveRow($model, $this->getAndUnsetSaveBuffer($entity)));
         $query->set($this->foreign_field, $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId());
-        $query->insert();
+        $query->mode('insert')->execute(); // TODO IMPORTANT migrate to Model insert
         $this->setId($entity, $model->persistence->lastInsertId($model));
     }
 
@@ -188,7 +188,7 @@ class Join extends Model\Join
 
         $id = $this->reverse ? $entity->getId() : $entity->get($this->master_field);
 
-        $query->where($this->foreign_field, $id)->update();
+        $query->where($this->foreign_field, $id)->mode('update')->execute(); // TODO IMPORTANT migrate to Model update
     }
 
     public function doDelete(Model $entity): void
@@ -200,6 +200,6 @@ class Join extends Model\Join
         $query = $this->dsql();
         $id = $this->reverse ? $entity->getId() : $entity->get($this->master_field);
 
-        $query->where($this->foreign_field, $id)->delete();
+        $query->where($this->foreign_field, $id)->mode('delete')->execute(); // TODO IMPORTANT migrate to Model delete
     }
 }

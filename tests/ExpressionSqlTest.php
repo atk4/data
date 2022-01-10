@@ -6,7 +6,6 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 
@@ -135,31 +134,21 @@ class ExpressionSqlTest extends TestCase
         $m->addFields(['name', 'surname', 'cached_name']);
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
-            $m->addExpression('full_name', '[name] || " " || [surname]');
+            $concatExpr = '[name] || " " || [surname]';
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            $m->addExpression('full_name', '[name] || \' \' || [surname]');
+            $concatExpr = '[name] || \' \' || [surname]';
         } else {
-            $m->addExpression('full_name', 'CONCAT([name], \' \', [surname])');
+            $concatExpr = 'CONCAT([name], \' \', [surname])';
         }
+        $m->addExpression('full_name', $concatExpr);
 
         $m->addCondition($m->expr('[full_name] != [cached_name]'));
 
-        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
-            $this->assertSame(
-                'select "id", "name", "surname", "cached_name", ("name" || " " || "surname") "full_name" from "user" where (("name" || " " || "surname") != "cached_name")',
-                $m->action('select')->render()[0]
-            );
-        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            $this->assertSame(
-                'select "id", "name", "surname", "cached_name", ("name" || \' \' || "surname") "full_name" from "user" where (("name" || \' \' || "surname") != "cached_name")',
-                $m->action('select')->render()[0]
-            );
-        } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-            $this->assertSame(
-                'select `id`, `name`, `surname`, `cached_name`, (CONCAT(`name`, \' \', `surname`)) `full_name` from `user` where ((CONCAT(`name`, \' \', `surname`)) != `cached_name`)',
-                $m->action('select')->render()[0]
-            );
-        }
+        $concatSql = preg_replace('~\[(\w+)\]~', '"$1"', $concatExpr);
+        $this->assertSameSql(
+            'select "id", "name", "surname", "cached_name", (' . $concatSql . ') "full_name" from "user" where ((' . $concatSql . ') != "cached_name")',
+            $m->action('select')->render()[0]
+        );
 
         $mm = $m->tryLoad(1);
         $this->assertNull($mm->get('name'));
@@ -210,24 +199,24 @@ class ExpressionSqlTest extends TestCase
 
         // use alias as array key if it is set
         $q = $m->action('field', ['x', 'alias' => 'foo']);
-        $this->assertEquals([0 => ['foo' => 5]], $q->getRows());
+        $this->assertEquals([['foo' => 5]], $q->getRows());
 
         // if alias is not set, then use field name as key
         $q = $m->action('field', ['x']);
-        $this->assertEquals([0 => ['x' => 5]], $q->getRows());
+        $this->assertEquals([['x' => 5]], $q->getRows());
 
         // FX actions
         $q = $m->action('fx', ['sum', 'x', 'alias' => 'foo']);
-        $this->assertEquals([0 => ['foo' => 5]], $q->getRows());
+        $this->assertEquals([['foo' => 5]], $q->getRows());
 
         $q = $m->action('fx', ['sum', 'x']);
-        $this->assertEquals([0 => ['sum_x' => 5]], $q->getRows());
+        $this->assertEquals([['sum_x' => 5]], $q->getRows());
 
         $q = $m->action('fx0', ['sum', 'x', 'alias' => 'foo']);
-        $this->assertEquals([0 => ['foo' => 5]], $q->getRows());
+        $this->assertEquals([['foo' => 5]], $q->getRows());
 
         $q = $m->action('fx0', ['sum', 'x']);
-        $this->assertEquals([0 => ['sum_x' => 5]], $q->getRows());
+        $this->assertEquals([['sum_x' => 5]], $q->getRows());
     }
 
     public function testNeverSaveNeverPersist(): void
