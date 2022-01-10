@@ -222,51 +222,29 @@ class Array_ extends Persistence
         return $this->typecastLoadRow($model, $this->filterRowDataOnlyModelFields($model, $row->getData()));
     }
 
-    /**
-     * Inserts record in data array and returns new record ID.
-     *
-     * @return mixed
-     */
-    public function insert(Model $model, array $data)
+    protected function insertRaw(Model $model, array $dataRaw)
     {
         $this->seedData($model);
 
-        if ($model->id_field && ($data[$model->id_field] ?? null) === null) {
-            unset($data[$model->id_field]);
-        }
-        $data = $this->typecastSaveRow($model, $data);
+        $idRaw = $dataRaw[$model->id_field] ?? $this->generateNewId($model);
 
-        $id = $data[$model->id_field] ?? $this->generateNewId($model);
+        $this->saveRow($model, $dataRaw, $idRaw);
 
-        $this->saveRow($model, $data, $id);
-
-        return $id;
+        return $idRaw;
     }
 
-    /**
-     * Updates record in data array and returns record ID.
-     *
-     * @param mixed $id
-     */
-    public function update(Model $model, $id, array $data): void
+    protected function updateRaw(Model $model, $idRaw, array $dataRaw): void
     {
         $table = $this->seedDataAndGetTable($model);
 
-        $data = $this->typecastSaveRow($model, $data);
-
-        $this->saveRow($model, array_merge($this->filterRowDataOnlyModelFields($model, $table->getRowById($model, $id)->getData()), $data), $id);
+        $this->saveRow($model, array_merge($this->filterRowDataOnlyModelFields($model, $table->getRowById($model, $idRaw)->getData()), $dataRaw), $idRaw);
     }
 
-    /**
-     * Deletes record in data array.
-     *
-     * @param mixed $id
-     */
-    public function delete(Model $model, $id): void
+    protected function deleteRaw(Model $model, $idRaw): void
     {
         $table = $this->seedDataAndGetTable($model);
 
-        $table->deleteRow($table->getRowById($model, $id));
+        $table->deleteRow($table->getRowById($model, $idRaw));
     }
 
     /**
