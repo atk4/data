@@ -422,7 +422,8 @@ class Sql extends Persistence
                 $this->setLimitOrder($model, $query);
 
                 if ($model->isEntity() && $model->isLoaded()) {
-                    $query->where($model->getField($model->id_field), $model->getId());
+                    $idRaw = $this->typecastSaveField($model->getField($model->id_field), $model->getId());
+                    $query->where($model->getField($model->id_field), $idRaw);
                 }
 
                 return $query;
@@ -478,7 +479,9 @@ class Sql extends Persistence
                 throw (new Exception('Unable to load field by "id" when Model->id_field is not defined.'))
                     ->addMoreInfo('id', $id);
             }
-            $query->where($model->getField($model->id_field), $id);
+
+            $idRaw = $this->typecastSaveField($model->getField($model->id_field), $id);
+            $query->where($model->getField($model->id_field), $idRaw);
         }
         $query->limit($id === self::ID_LOAD_ANY ? 1 : 2);
 

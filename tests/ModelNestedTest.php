@@ -20,8 +20,8 @@ class ModelNestedTest extends TestCase
 
         $this->setDb([
             'user' => [
-                ['_id' => 1, 'name' => 'John', '_birthday' => '1980-2-1'],
-                ['_id' => 2, 'name' => 'Sue', '_birthday' => '2005-4-3'],
+                ['_id' => 1, 'name' => 'John', '_birthday' => '1980-02-01'],
+                ['_id' => 2, 'name' => 'Sue', '_birthday' => '2005-04-03'],
             ],
         ]);
     }
@@ -70,8 +70,8 @@ class ModelNestedTest extends TestCase
             'table' => 'user',
         ]);
         $mInner->removeField('id');
-        $mInner->addField('_id', ['type' => 'integer']);
-        $mInner->id_field = '_id';
+        $mInner->id_field = 'uid';
+        $mInner->addField('uid', ['actual' => '_id', 'type' => 'integer']);
         $mInner->addField('name');
         $mInner->addField('y', ['actual' => '_birthday', 'type' => 'date']);
 
@@ -81,8 +81,7 @@ class ModelNestedTest extends TestCase
             'table' => $mInner,
         ]);
         $m->removeField('id');
-        $m->addField('_id', ['type' => 'integer']);
-        $m->id_field = '_id';
+        $m->id_field = 'birthday';
         $m->addField('name');
         $m->addField('birthday', ['actual' => 'y', 'type' => 'date']);
 
@@ -100,7 +99,7 @@ class ModelNestedTest extends TestCase
             ($this->db->connection->dsql())
                 ->table(
                     ($this->db->connection->dsql())
-                        ->field('_id')
+                        ->field('_id', 'uid')
                         ->field('name')
                         ->field('_birthday', 'y')
                         ->table('user')
@@ -108,7 +107,6 @@ class ModelNestedTest extends TestCase
                         ->limit(5),
                     '_tm'
                 )
-                ->field('_id')
                 ->field('name')
                 ->field('y', 'birthday')
                 ->order('y')
@@ -127,8 +125,8 @@ class ModelNestedTest extends TestCase
         $m = $this->createTestModel();
 
         $this->assertSameExportUnordered([
-            ['_id' => 1, 'name' => 'John', 'birthday' => new \DateTime('1980-2-1')],
-            ['_id' => 2, 'name' => 'Sue', 'birthday' => new \DateTime('2005-4-3')],
+            ['name' => 'John', 'birthday' => new \DateTime('1980-2-1')],
+            ['name' => 'Sue', 'birthday' => new \DateTime('2005-4-3')],
         ], $m->export());
 
         $this->assertSame([
@@ -141,18 +139,19 @@ class ModelNestedTest extends TestCase
     {
         $m = $this->createTestModel();
 
-        $m->createEntity()->setMulti([
-            'name' => 'Karl',
-            'birthday' => new \DateTime('2000-6-1'),
-        ])->save();
+        $entity = $m->createEntity()
+            ->setMulti([
+                'name' => 'Karl',
+                'birthday' => new \DateTime('2000-6-1'),
+            ])->save();
 
         $this->assertSame([
             ['main', Model::HOOK_VALIDATE, ['save']],
             ['main', Model::HOOK_BEFORE_SAVE, [false]],
-            ['main', Model::HOOK_BEFORE_INSERT, [['_id' => null, 'name' => 'Karl', 'birthday' => \DateTime::class]]],
+            ['main', Model::HOOK_BEFORE_INSERT, [['name' => 'Karl', 'birthday' => \DateTime::class]]],
             ['inner', Model::HOOK_VALIDATE, ['save']],
             ['inner', Model::HOOK_BEFORE_SAVE, [false]],
-            ['inner', Model::HOOK_BEFORE_INSERT, [['_id' => null, 'name' => 'Karl', 'y' => \DateTime::class]]],
+            ['inner', Model::HOOK_BEFORE_INSERT, [['uid' => null, 'name' => 'Karl', 'y' => \DateTime::class]]],
             ['inner', Persistence\Sql::HOOK_BEFORE_INSERT_QUERY, [Query::class]],
             ['inner', Persistence\Sql::HOOK_AFTER_INSERT_QUERY, [Query::class, DbalResult::class]],
             ['inner', Model::HOOK_AFTER_INSERT, []],
@@ -160,17 +159,20 @@ class ModelNestedTest extends TestCase
             ['main', Model::HOOK_AFTER_INSERT, []],
             ['main', Model::HOOK_BEFORE_UNLOAD, []],
             ['main', Model::HOOK_AFTER_UNLOAD, []],
-            ['main', Model::HOOK_BEFORE_LOAD, [3]],
+            ['main', Model::HOOK_BEFORE_LOAD, [\DateTime::class]],
             ['inner', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['main', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['main', Model::HOOK_AFTER_LOAD, []],
             ['main', Model::HOOK_AFTER_SAVE, [false]],
         ], $this->hookLog);
 
+        $this->assertSame(3, $m->table->loadBy('name', 'Karl')->getId());
+        $this->assertSameExportUnordered([[new \DateTime('2000-6-1')]], [[$entity->getId()]]);
+
         $this->assertSameExportUnordered([
-            ['_id' => 1, 'name' => 'John', 'birthday' => new \DateTime('1980-2-1')],
-            ['_id' => 2, 'name' => 'Sue', 'birthday' => new \DateTime('2005-4-3')],
-            ['_id' => 3, 'name' => 'Karl', 'birthday' => new \DateTime('2000-6-1')],
+            ['name' => 'John', 'birthday' => new \DateTime('1980-2-1')],
+            ['name' => 'Sue', 'birthday' => new \DateTime('2005-4-3')],
+            ['name' => 'Karl', 'birthday' => new \DateTime('2000-6-1')],
         ], $m->export());
     }
 
@@ -178,36 +180,37 @@ class ModelNestedTest extends TestCase
     {
         $m = $this->createTestModel();
 
-        $m->load(2)->setMulti([
-            'name' => 'Susan',
-            'birthday' => new \DateTime('2020-10-10'),
-        ])->save();
+        $m->load(new \DateTime('2005-4-3'))
+            ->setMulti([
+                'name' => 'Susan',
+            ])->save();
 
         $this->assertSame([
-            ['main', Model::HOOK_BEFORE_LOAD, [2]],
+            ['main', Model::HOOK_BEFORE_LOAD, [\DateTime::class]],
             ['inner', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['main', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['main', Model::HOOK_AFTER_LOAD, []],
+
             ['main', Model::HOOK_VALIDATE, ['save']],
             ['main', Model::HOOK_BEFORE_SAVE, [true]],
-            ['main', Model::HOOK_BEFORE_UPDATE, [['name' => 'Susan', 'birthday' => \DateTime::class]]],
-            ['inner', Model::HOOK_BEFORE_LOAD, [2]],
+            ['main', Model::HOOK_BEFORE_UPDATE, [['name' => 'Susan']]],
+            ['inner', Model::HOOK_BEFORE_LOAD, [null]],
             ['inner', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['inner', Model::HOOK_AFTER_LOAD, []],
             ['inner', Model::HOOK_VALIDATE, ['save']],
             ['inner', Model::HOOK_BEFORE_SAVE, [true]],
-            ['inner', Model::HOOK_BEFORE_UPDATE, [['name' => 'Susan', 'y' => \DateTime::class]]],
+            ['inner', Model::HOOK_BEFORE_UPDATE, [['name' => 'Susan']]],
             ['inner', Persistence\Sql::HOOK_BEFORE_UPDATE_QUERY, [Query::class]],
             ['inner', Persistence\Sql::HOOK_AFTER_UPDATE_QUERY, [Query::class, DbalResult::class]],
-            ['inner', Model::HOOK_AFTER_UPDATE, [['name' => 'Susan', 'y' => \DateTime::class]]],
+            ['inner', Model::HOOK_AFTER_UPDATE, [['name' => 'Susan']]],
             ['inner', Model::HOOK_AFTER_SAVE, [true]],
-            ['main', Model::HOOK_AFTER_UPDATE, [['name' => 'Susan', 'birthday' => \DateTime::class]]],
+            ['main', Model::HOOK_AFTER_UPDATE, [['name' => 'Susan']]],
             ['main', Model::HOOK_AFTER_SAVE, [true]],
         ], $this->hookLog);
 
         $this->assertSameExportUnordered([
-            ['_id' => 1, 'name' => 'John', 'birthday' => new \DateTime('1980-2-1')],
-            ['_id' => 2, 'name' => 'Susan', 'birthday' => new \DateTime('2020-10-10')],
+            ['name' => 'John', 'birthday' => new \DateTime('1980-2-1')],
+            ['name' => 'Susan', 'birthday' => new \DateTime('2005-4-3')],
         ], $m->export());
     }
 
@@ -215,15 +218,16 @@ class ModelNestedTest extends TestCase
     {
         $m = $this->createTestModel();
 
-        $m->load(2)->delete();
+        $m->delete(new \DateTime('2005-4-3'));
 
         $this->assertSame([
-            ['main', Model::HOOK_BEFORE_LOAD, [2]],
+            ['main', Model::HOOK_BEFORE_LOAD, [\DateTime::class]],
             ['inner', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['main', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['main', Model::HOOK_AFTER_LOAD, []],
+
             ['main', Model::HOOK_BEFORE_DELETE, []],
-            ['inner', Model::HOOK_BEFORE_LOAD, [2]],
+            ['inner', Model::HOOK_BEFORE_LOAD, [null]],
             ['inner', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['inner', Model::HOOK_AFTER_LOAD, []],
             ['inner', Model::HOOK_BEFORE_DELETE, []],
@@ -238,7 +242,7 @@ class ModelNestedTest extends TestCase
         ], $this->hookLog);
 
         $this->assertSameExportUnordered([
-            ['_id' => 1, 'name' => 'John', 'birthday' => new \DateTime('1980-2-1')],
+            ['name' => 'John', 'birthday' => new \DateTime('1980-2-1')],
         ], $m->export());
     }
 }
