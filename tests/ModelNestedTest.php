@@ -37,30 +37,47 @@ class ModelNestedTest extends TestCase
             /** @var string */
             protected $testModelAlias;
 
+            /**
+             * @param mixed $v
+             *
+             * @return mixed
+             */
+            protected function convertValueToLog($v)
+            {
+                if (is_array($v)) {
+                    return array_map(fn ($v) => $this->convertValueToLog($v), $v);
+                } elseif (is_scalar($v) || $v === null) {
+                    return $v;
+                } elseif ($v instanceof self) {
+                    return $this->testModelAlias;
+                }
+
+                $res = preg_replace('~(?<=^Atk4\\\\Data\\\\Persistence\\\\Sql\\\\)\w+\\\\(?=\w+$)~', '', get_debug_type($v));
+                if (Connection::isComposerDbal2x() && $res === 'Doctrine\DBAL\Statement') {
+                    $res = DbalResult::class;
+                }
+
+                return $res;
+            }
+
             public function hook(string $spot, array $args = [], HookBreaker &$brokenBy = null)
             {
                 if (!str_starts_with($spot, '__atk__method__') && $spot !== Model::HOOK_NORMALIZE) {
-                    $convertValueToLogFx = function ($v) use (&$convertValueToLogFx) {
-                        if (is_array($v)) {
-                            return array_map($convertValueToLogFx, $v);
-                        } elseif (is_scalar($v) || $v === null) {
-                            return $v;
-                        } elseif ($v instanceof self) {
-                            return $this->testModelAlias;
-                        }
-
-                        $res = preg_replace('~(?<=^Atk4\\\\Data\\\\Persistence\\\\Sql\\\\)\w+\\\\(?=\w+$)~', '', get_debug_type($v));
-                        if (Connection::isComposerDbal2x() && $res === 'Doctrine\DBAL\Statement') {
-                            $res = DbalResult::class;
-                        }
-
-                        return $res;
-                    };
-
-                    $this->testCaseWeakRef->get()->hookLog[] = [$convertValueToLogFx($this), $spot, $convertValueToLogFx($args)];
+                    $this->testCaseWeakRef->get()->hookLog[] = [$this->convertValueToLog($this), $spot, $this->convertValueToLog($args)];
                 }
 
                 return parent::hook($spot, $args, $brokenBy);
+            }
+
+            public function atomic(\Closure $fx)
+            {
+                $this->testCaseWeakRef->get()->hookLog[] = [$this->convertValueToLog($this), '>>>'];
+
+                $res = parent::atomic($fx);
+
+                $this->testCaseWeakRef->get()->hookLog[] = [$this->convertValueToLog($this), '<<<'];
+
+                return $res;
             }
         });
 
@@ -146,9 +163,11 @@ class ModelNestedTest extends TestCase
             ])->save();
 
         $this->assertSame([
+            ['main', '>>>'],
             ['main', Model::HOOK_VALIDATE, ['save']],
             ['main', Model::HOOK_BEFORE_SAVE, [false]],
             ['main', Model::HOOK_BEFORE_INSERT, [['name' => 'Karl', 'birthday' => \DateTime::class]]],
+            ['inner', '>>>'],
             ['inner', Model::HOOK_VALIDATE, ['save']],
             ['inner', Model::HOOK_BEFORE_SAVE, [false]],
             ['inner', Model::HOOK_BEFORE_INSERT, [['uid' => null, 'name' => 'Karl', 'y' => \DateTime::class]]],
@@ -156,6 +175,7 @@ class ModelNestedTest extends TestCase
             ['inner', Persistence\Sql::HOOK_AFTER_INSERT_QUERY, [Query::class, DbalResult::class]],
             ['inner', Model::HOOK_AFTER_INSERT, []],
             ['inner', Model::HOOK_AFTER_SAVE, [false]],
+            ['inner', '<<<'],
             ['main', Model::HOOK_AFTER_INSERT, []],
             ['main', Model::HOOK_BEFORE_UNLOAD, []],
             ['main', Model::HOOK_AFTER_UNLOAD, []],
@@ -164,6 +184,7 @@ class ModelNestedTest extends TestCase
             ['main', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['main', Model::HOOK_AFTER_LOAD, []],
             ['main', Model::HOOK_AFTER_SAVE, [false]],
+            ['main', '<<<'],
         ], $this->hookLog);
 
         $this->assertSame(3, $m->table->loadBy('name', 'Karl')->getId());
@@ -191,12 +212,14 @@ class ModelNestedTest extends TestCase
             ['main', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['main', Model::HOOK_AFTER_LOAD, []],
 
+            ['main', '>>>'],
             ['main', Model::HOOK_VALIDATE, ['save']],
             ['main', Model::HOOK_BEFORE_SAVE, [true]],
             ['main', Model::HOOK_BEFORE_UPDATE, [['name' => 'Susan']]],
             ['inner', Model::HOOK_BEFORE_LOAD, [null]],
             ['inner', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['inner', Model::HOOK_AFTER_LOAD, []],
+            ['inner', '>>>'],
             ['inner', Model::HOOK_VALIDATE, ['save']],
             ['inner', Model::HOOK_BEFORE_SAVE, [true]],
             ['inner', Model::HOOK_BEFORE_UPDATE, [['name' => 'Susan']]],
@@ -204,8 +227,10 @@ class ModelNestedTest extends TestCase
             ['inner', Persistence\Sql::HOOK_AFTER_UPDATE_QUERY, [Query::class, DbalResult::class]],
             ['inner', Model::HOOK_AFTER_UPDATE, [['name' => 'Susan']]],
             ['inner', Model::HOOK_AFTER_SAVE, [true]],
+            ['inner', '<<<'],
             ['main', Model::HOOK_AFTER_UPDATE, [['name' => 'Susan']]],
             ['main', Model::HOOK_AFTER_SAVE, [true]],
+            ['main', '<<<'],
         ], $this->hookLog);
 
         $this->assertSameExportUnordered([
@@ -226,17 +251,21 @@ class ModelNestedTest extends TestCase
             ['main', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['main', Model::HOOK_AFTER_LOAD, []],
 
+            ['main', '>>>'],
             ['main', Model::HOOK_BEFORE_DELETE, []],
             ['inner', Model::HOOK_BEFORE_LOAD, [null]],
             ['inner', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['inner', Model::HOOK_AFTER_LOAD, []],
+            ['inner', '>>>'],
             ['inner', Model::HOOK_BEFORE_DELETE, []],
             ['inner', Persistence\Sql::HOOK_BEFORE_DELETE_QUERY, [Query::class]],
             ['inner', Persistence\Sql::HOOK_AFTER_DELETE_QUERY, [Query::class, DbalResult::class]],
             ['inner', Model::HOOK_AFTER_DELETE, []],
+            ['inner', '<<<'],
             ['inner', Model::HOOK_BEFORE_UNLOAD, []],
             ['inner', Model::HOOK_AFTER_UNLOAD, []],
             ['main', Model::HOOK_AFTER_DELETE, []],
+            ['main', '<<<'],
             ['main', Model::HOOK_BEFORE_UNLOAD, []],
             ['main', Model::HOOK_AFTER_UNLOAD, []],
         ], $this->hookLog);
