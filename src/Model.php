@@ -1616,10 +1616,8 @@ class Model implements \IteratorAggregate
      * This is a temporary method to avoid code duplication, but insert / import should
      * be implemented differently.
      */
-    protected function _rawInsert(array $row): void
+    protected function _insert(array $row): void
     {
-        $this->unload();
-
         // Find any row values that do not correspond to fields, and they may correspond to
         // references instead
         $refs = [];
@@ -1668,10 +1666,10 @@ class Model implements \IteratorAggregate
      */
     public function insert(array $row)
     {
-        $model = $this->createEntity();
-        $model->_rawInsert($row);
+        $entity = $this->createEntity();
+        $entity->_insert($row);
 
-        return $this->id_field ? $model->getId() : null;
+        return $this->id_field ? $entity->getId() : null;
     }
 
     /**
