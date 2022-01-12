@@ -606,7 +606,7 @@ class Sql extends Persistence
         $model->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update, $st]);
 
         // if any rows were updated in database, and we had expressions, reload
-        if ($model->reload_after_save === true && $st->rowCount()) {
+        if ($model->reload_after_save && $st->rowCount()) {
             $d = $model->getDirtyRef();
             $model->reload();
             \Closure::bind(function () use ($model) {
