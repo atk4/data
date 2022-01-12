@@ -116,18 +116,6 @@ abstract class Persistence
         return new Persistence\GenericPlatform();
     }
 
-    private function assertSameIdField(Model $model): void
-    {
-        $modelIdFieldName = $model->getField($model->id_field)->getPersistenceName();
-        $tableIdFieldName = $model->table->id_field;
-
-        if ($modelIdFieldName !== $tableIdFieldName) {
-            throw (new Exception('Table model with different ID field persistence name is not supported'))
-                ->addMoreInfo('model_id_field', $modelIdFieldName)
-                ->addMoreInfo('table_id_field', $tableIdFieldName);
-        }
-    }
-
     /**
      * Tries to load data record, but will not fail if record can't be loaded.
      *
@@ -174,13 +162,28 @@ abstract class Persistence
         unset($data);
 
         if (is_object($model->table)) {
-            $this->assertSameIdField($model);
+            $innerInsertId = $model->table->insert($this->typecastLoadRow($model->table, $dataRaw));
+            if (!$model->id_field) {
+                return false;
+            }
 
-            return $model->table->insert($model->table->persistence->typecastLoadRow($model->table, $dataRaw));
+            $idField = $model->getField($model->id_field);
+            $insertId = $this->typecastLoadField(
+                $idField,
+                $idField->getPersistenceName() === $model->table->id_field
+                    ? $this->typecastSaveField($model->table->getField($model->table->id_field), $innerInsertId)
+                    : $dataRaw[$idField->getPersistenceName()]
+            );
+
+            return $insertId;
         }
 
         $idRaw = $this->insertRaw($model, $dataRaw);
-        $id = $model->id_field ? $this->typecastLoadField($model->getField($model->id_field), $idRaw) : new \stdClass();
+        if (!$model->id_field) {
+            return false;
+        }
+
+        $id = $this->typecastLoadField($model->getField($model->id_field), $idRaw);
 
         return $id;
     }
@@ -201,6 +204,7 @@ abstract class Persistence
     public function update(Model $model, $id, array $data): void
     {
         $idRaw = $model->id_field ? $this->typecastSaveField($model->getField($model->id_field), $id) : null;
+        unset($id);
         if ($idRaw === null || (array_key_exists($model->id_field, $data) && $data[$model->id_field] === null)) {
             throw new Exception('Model id_field is not set. Unable to update record.');
         }
@@ -213,14 +217,14 @@ abstract class Persistence
         }
 
         if (is_object($model->table)) {
-            $this->assertSameIdField($model);
+            $idPersistenceName = $model->getField($model->id_field)->getPersistenceName();
+            $innerId = $this->typecastLoadField($model->table->getField($idPersistenceName), $idRaw);
+            $innerModel = $model->table->loadBy($idPersistenceName, $innerId);
 
-            $model->table->load($id)->save($model->table->persistence->typecastLoadRow($model->table, $dataRaw));
+            $innerModel->save($this->typecastLoadRow($model->table, $dataRaw));
 
             return;
         }
-
-        unset($id);
 
         $this->updateRaw($model, $idRaw, $dataRaw);
     }
@@ -241,19 +245,20 @@ abstract class Persistence
     public function delete(Model $model, $id): void
     {
         $idRaw = $model->id_field ? $this->typecastSaveField($model->getField($model->id_field), $id) : null;
+        unset($id);
         if ($idRaw === null) {
             throw new Exception('Model id_field is not set. Unable to delete record.');
         }
 
         if (is_object($model->table)) {
-            $this->assertSameIdField($model);
+            $idPersistenceName = $model->getField($model->id_field)->getPersistenceName();
+            $innerId = $this->typecastLoadField($model->table->getField($idPersistenceName), $idRaw);
+            $innerModel = $model->table->loadBy($idPersistenceName, $innerId);
 
-            $model->table->delete($id);
+            $innerModel->delete();
 
             return;
         }
-
-        unset($id);
 
         $this->deleteRaw($model, $idRaw);
     }
