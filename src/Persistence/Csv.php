@@ -261,20 +261,13 @@ class Csv extends Persistence
         }
     }
 
-    /**
-     * Inserts record in data array and returns new record ID.
-     *
-     * @return mixed
-     */
-    public function insert(Model $model, array $data)
+    protected function insertRaw(Model $model, array $dataRaw)
     {
         if (!$this->mode) {
             $this->mode = 'w';
         } elseif ($this->mode === 'r') {
             throw new Exception('Currently reading records, so writing is not possible.');
         }
-
-        $data = $this->typecastSaveRow($model, $data);
 
         if (!$this->handle) {
             $this->saveHeader($model->getModel(true));
@@ -283,42 +276,12 @@ class Csv extends Persistence
         $line = [];
 
         foreach ($this->header as $name) {
-            $line[] = $data[$name];
+            $line[] = $dataRaw[$name];
         }
 
         $this->putLine($line);
 
-        return $model->id_field ? $data[$model->id_field] : null;
-    }
-
-    /**
-     * Updates record in data array and returns record ID.
-     *
-     * @param mixed $id
-     */
-    public function update(Model $model, $id, array $data): void
-    {
-        throw new Exception('Updating records is not supported in CSV persistence.');
-    }
-
-    /**
-     * Deletes record in data array.
-     *
-     * @param mixed $id
-     */
-    public function delete(Model $model, $id): void
-    {
-        throw new Exception('Deleting records is not supported in CSV persistence.');
-    }
-
-    /**
-     * Generates new record ID.
-     *
-     * @return string
-     */
-    public function generateNewId(Model $model)
-    {
-        throw new Exception('Not implemented');
+        return $model->id_field ? $dataRaw[$model->id_field] : null;
     }
 
     /**

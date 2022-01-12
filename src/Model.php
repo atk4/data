@@ -120,7 +120,7 @@ class Model implements \IteratorAggregate
      * model normally lives. The interpretation of the table will be decoded
      * by persistence driver.
      *
-     * @var string|false
+     * @var string|self|false
      */
     public $table;
 
@@ -1612,14 +1612,8 @@ class Model implements \IteratorAggregate
         });
     }
 
-    /**
-     * This is a temporary method to avoid code duplication, but insert / import should
-     * be implemented differently.
-     */
-    protected function _rawInsert(array $row): void
+    protected function _insert(array $row): void
     {
-        $this->unload();
-
         // Find any row values that do not correspond to fields, and they may correspond to
         // references instead
         $refs = [];
@@ -1660,26 +1654,17 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Faster method to add data, that does not modify active record.
-     *
-     * Will be further optimized in the future.
-     *
      * @return mixed
      */
     public function insert(array $row)
     {
-        $model = $this->createEntity();
-        $model->_rawInsert($row);
+        $entity = $this->createEntity();
+        $entity->_insert($row);
 
-        return $this->id_field ? $model->getId() : null;
+        return $this->id_field ? $entity->getId() : null;
     }
 
     /**
-     * Even more faster method to add data, does not modify your
-     * current record and will not return anything.
-     *
-     * Will be further optimized in the future.
-     *
      * @return $this
      */
     public function import(array $rows)
