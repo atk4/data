@@ -255,11 +255,13 @@ abstract class TestCase extends BaseTestCase
             }
 
             $first_row = current($data);
+            $idColumnName = null;
             if ($first_row) {
-                $migrator->id('id');
+                $idColumnName = isset($first_row['_id']) ? '_id' : 'id';
+                $migrator->id($idColumnName);
 
                 foreach ($first_row as $field => $row) {
-                    if ($field === 'id') {
+                    if ($field === $idColumnName) {
                         continue;
                     }
 
@@ -292,8 +294,8 @@ abstract class TestCase extends BaseTestCase
                     $query->table($tableName);
                     $query->setMulti($row);
 
-                    if (!isset($row['id']) && $hasId) {
-                        $query->set('id', $id);
+                    if (!isset($row[$idColumnName]) && $hasId) {
+                        $query->set($idColumnName, $id);
                     }
 
                     $query->mode('insert')->execute();
