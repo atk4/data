@@ -664,10 +664,6 @@ class Sql extends Persistence
 
     public function lastInsertId(Model $model): string
     {
-        if (is_object($model->table)) {
-            return $model->table->persistence->lastInsertId($model->table);
-        }
-
         // PostgreSQL and Oracle DBAL platforms use sequence internally for PK autoincrement,
         // use default name if not set explicitly
         $sequenceName = null;
