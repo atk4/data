@@ -284,26 +284,6 @@ class Csv extends Persistence
         return $model->id_field ? $dataRaw[$model->id_field] : null;
     }
 
-    protected function updateRaw(Model $model, $idRaw, array $dataRaw): void
-    {
-        throw new Exception('Updating records is not supported in CSV persistence.');
-    }
-
-    protected function deleteRaw(Model $model, $idRaw): void
-    {
-        throw new Exception('Deleting records is not supported in CSV persistence.');
-    }
-
-    /**
-     * Generates new record ID.
-     *
-     * @return string
-     */
-    public function generateNewId(Model $model)
-    {
-        throw new Exception('Not implemented');
-    }
-
     /**
      * Export all DataSet.
      */
