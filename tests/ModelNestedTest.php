@@ -22,6 +22,7 @@ class ModelNestedTest extends TestCase
             'user' => [
                 ['_id' => 1, 'name' => 'John', '_birthday' => '1980-02-01'],
                 ['_id' => 2, 'name' => 'Sue', '_birthday' => '2005-04-03'],
+                ['_id' => 3, 'name' => 'Veronica', '_birthday' => '2005-04-03'],
             ],
         ]);
     }
@@ -91,6 +92,7 @@ class ModelNestedTest extends TestCase
         $mInner->addField('uid', ['actual' => '_id', 'type' => 'integer']);
         $mInner->addField('name');
         $mInner->addField('y', ['actual' => '_birthday', 'type' => 'date']);
+        $mInner->addCondition('uid', '!=', 3);
 
         $m = new $mWithLoggingClass($this->db, [
             'testCaseWeakRef' => \WeakReference::create($this),
@@ -116,10 +118,11 @@ class ModelNestedTest extends TestCase
             ($this->db->connection->dsql())
                 ->table(
                     ($this->db->connection->dsql())
+                        ->table('user')
                         ->field('_id', 'uid')
                         ->field('name')
                         ->field('_birthday', 'y')
-                        ->table('user')
+                        ->where('_id', '!=', 3)
                         ->order('name', true)
                         ->limit(5),
                     '_tm'
@@ -187,7 +190,7 @@ class ModelNestedTest extends TestCase
             ['main', '<<<'],
         ], $this->hookLog);
 
-        $this->assertSame(3, $m->table->loadBy('name', 'Karl')->getId());
+        $this->assertSame(4, $m->table->loadBy('name', 'Karl')->getId());
         $this->assertSameExportUnordered([[new \DateTime('2000-6-1')]], [[$entity->getId()]]);
 
         $this->assertSameExportUnordered([
