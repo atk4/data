@@ -327,7 +327,12 @@ abstract class TestCase extends BaseTestCase
             $s = $this->db->dsql();
             $data = $s->table($table)->getRows();
 
+            $idColumnName = null;
             foreach ($data as &$row) {
+                if ($idColumnName === null) {
+                    $idColumnName = isset($row['_id']) ? '_id' : 'id';
+                }
+
                 foreach ($row as &$val) {
                     if (is_int($val)) {
                         $val = (int) $val;
@@ -335,10 +340,10 @@ abstract class TestCase extends BaseTestCase
                 }
 
                 if ($noId) {
-                    unset($row['id']);
+                    unset($row[$idColumnName]);
                     $data2[] = $row;
                 } else {
-                    $data2[$row['id']] = $row;
+                    $data2[$row[$idColumnName]] = $row;
                 }
             }
 
