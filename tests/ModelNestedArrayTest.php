@@ -19,9 +19,9 @@ class ModelNestedArrayTest extends TestCase
 
         $this->db = new Persistence\Array_([
             'user' => [
-                1 => ['_id' => 1, 'name' => 'John', '_birthday' => '1980-02-01'],
-                ['_id' => 2, 'name' => 'Sue', '_birthday' => '2005-04-03'],
-                ['_id' => 3, 'name' => 'Veronica', '_birthday' => '2005-04-03'],
+                1 => ['name' => 'John', '_birthday' => '1980-02-01'],
+                ['name' => 'Sue', '_birthday' => '2005-04-03'],
+                ['name' => 'Veronica', '_birthday' => '2005-04-03'],
             ],
         ]);
     }
