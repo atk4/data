@@ -374,8 +374,6 @@ class Array_ extends Persistence
      */
     public function action(Model $model, string $type, array $args = [])
     {
-        $args = (array) $args;
-
         switch ($type) {
             case 'select':
                 $action = $this->initAction($model, $args[0] ?? null);
