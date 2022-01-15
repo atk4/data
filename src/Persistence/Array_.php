@@ -199,7 +199,7 @@ class Array_ extends Persistence
         return array_intersect_key($rowDataRaw, $this->getPersistenceNameToNameMap($model));
     }
 
-    public function remapLoadRow(Model $model, array $row): array
+    private function remapLoadRow(Model $model, array $row): array
     {
         $rowRemapped = [];
         $map = $this->getPersistenceNameToNameMap($model);
