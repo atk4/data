@@ -162,12 +162,20 @@ class ModelNestedArrayTest extends TestCase
 
         $m->load(new \DateTime('2005-4-3'))
             ->setMulti([
+                'name' => 'Sue', // no change
+            ])->save()
+            ->setMulti([
                 'name' => 'Susan',
             ])->save();
 
         $this->assertSame([
             ['main', Model::HOOK_BEFORE_LOAD, [\DateTime::class]],
             ['main', Model::HOOK_AFTER_LOAD, []],
+
+            ['main', '>>>'],
+            ['main', Model::HOOK_VALIDATE, ['save']],
+            ['main', Model::HOOK_BEFORE_SAVE, [true]],
+            ['main', '<<<'],
 
             ['main', '>>>'],
             ['main', Model::HOOK_VALIDATE, ['save']],

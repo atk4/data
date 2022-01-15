@@ -206,6 +206,9 @@ class ModelNestedSqlTest extends TestCase
 
         $m->load(new \DateTime('2005-4-3'))
             ->setMulti([
+                'name' => 'Sue', // no change
+            ])->save()
+            ->setMulti([
                 'name' => 'Susan',
             ])->save();
 
@@ -214,6 +217,11 @@ class ModelNestedSqlTest extends TestCase
             ['inner', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['main', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['main', Model::HOOK_AFTER_LOAD, []],
+
+            ['main', '>>>'],
+            ['main', Model::HOOK_VALIDATE, ['save']],
+            ['main', Model::HOOK_BEFORE_SAVE, [true]],
+            ['main', '<<<'],
 
             ['main', '>>>'],
             ['main', Model::HOOK_VALIDATE, ['save']],
