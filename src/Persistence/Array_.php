@@ -236,6 +236,7 @@ class Array_ extends Persistence
             $action = $this->action($model, 'select');
             $condition = new Model\Scope\Condition('', $id);
             $condition->key = $model->getField($model->id_field);
+            $condition->setOwner($model->createEntity()); // TODO needed for typecasting to apply
             $action->filter($condition);
             $action->generator->rewind(); // TODO needed for some reasons!
 
