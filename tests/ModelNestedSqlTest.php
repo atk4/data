@@ -12,7 +12,7 @@ use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Result as DbalResult;
 
-class ModelNestedTest extends TestCase
+class ModelNestedSqlTest extends TestCase
 {
     protected function setUp(): void
     {
