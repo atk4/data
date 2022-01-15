@@ -41,7 +41,7 @@ class HasOne extends Reference
                 $v = $this->{$fieldPropRefl->getName()};
                 $vDefault = \PHP_MAJOR_VERSION < 8
                     ? $fieldPropRefl->getDeclaringClass()->getDefaultProperties()[$fieldPropRefl->getName()]
-                    : $fieldPropRefl->getDefaultValue();
+                    : (null ?? $fieldPropRefl->getDefaultValue()); // @phpstan-ignore-line for PHP 7.x
                 if ($v !== $vDefault) {
                     $fieldSeed[$fieldPropRefl->getName()] = $v;
                 }
