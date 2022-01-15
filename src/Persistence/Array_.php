@@ -185,9 +185,14 @@ class Array_ extends Persistence
         $this->seedData($model);
     }
 
-    private function filterRowDataOnlyModelFields(Model $model, array $rowData): array
+    private function getPersistenceNameToNameMap(Model $model): array
     {
-        return array_intersect_key($rowData, array_map(fn (Field $f) => $f->short_name, $model->getFields()));
+        return array_flip(array_map(fn (Field $f) => $f->getPersistenceName(), $model->getFields()));
+    }
+
+    private function filterRowDataOnlyModelFields(Model $model, array $rowDataRaw): array
+    {
+        return array_intersect_key($rowDataRaw, $this->getPersistenceNameToNameMap($model));
     }
 
     public function tryLoad(Model $model, $id): ?array
@@ -323,7 +328,15 @@ class Array_ extends Persistence
 
         $rows = [];
         foreach ($table->getRows() as $row) {
-            $rows[$row->getValue($model->id_field)] = $this->filterRowDataOnlyModelFields($model, $row->getData());
+            $rows[$row->getValue($model->getField($model->id_field)->getPersistenceName())] = $this->filterRowDataOnlyModelFields($model, $row->getData());
+        }
+
+        $map = $this->getPersistenceNameToNameMap($model);
+        foreach ($rows as $rowIndex => $row) {
+            $rows[$rowIndex] = [];
+            foreach ($row as $k => $v) {
+                $rows[$rowIndex][$map[$k]] = $v;
+            }
         }
 
         if ($fields !== null) {

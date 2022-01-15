@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Array_\Action;
 
+use Atk4\Data\Exception;
+
 /**
  * @internal
  *
@@ -32,7 +34,12 @@ final class RenameColumnIterator extends \IteratorIterator
         $row = parent::current();
 
         $keys = array_keys($row);
-        $keys[array_search($this->origName, $keys, true)] = $this->newName;
+        $index = array_search($this->origName, $keys, true);
+        if ($index === false) {
+            throw (new Exception('Column not found'))
+                ->addMoreInfo('orig_name', $this->origName);
+        }
+        $keys[$index] = $this->newName;
 
         return array_combine($keys, $row);
     }

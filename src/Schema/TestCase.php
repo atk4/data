@@ -331,12 +331,6 @@ abstract class TestCase extends BaseTestCase
                     $idColumnName = isset($row['_id']) ? '_id' : 'id';
                 }
 
-                foreach ($row as &$val) {
-                    if (is_int($val)) {
-                        $val = (int) $val;
-                    }
-                }
-
                 if ($noId) {
                     unset($row[$idColumnName]);
                     $res[] = $row;
