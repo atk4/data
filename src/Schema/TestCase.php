@@ -319,16 +319,14 @@ abstract class TestCase extends BaseTestCase
             $tableNames = array_values($tableNames);
         }
 
-        $ret = [];
-
+        $resAll = [];
         foreach ($tableNames as $table) {
-            $data2 = [];
+            $query = $this->db->dsql();
+            $rows = $query->table($table)->getRows();
 
-            $s = $this->db->dsql();
-            $data = $s->table($table)->getRows();
-
+            $res = [];
             $idColumnName = null;
-            foreach ($data as &$row) {
+            foreach ($rows as $row) {
                 if ($idColumnName === null) {
                     $idColumnName = isset($row['_id']) ? '_id' : 'id';
                 }
@@ -341,15 +339,15 @@ abstract class TestCase extends BaseTestCase
 
                 if ($noId) {
                     unset($row[$idColumnName]);
-                    $data2[] = $row;
+                    $res[] = $row;
                 } else {
-                    $data2[$row[$idColumnName]] = $row;
+                    $res[$row[$idColumnName]] = $row;
                 }
             }
 
-            $ret[$table] = $data2;
+            $resAll[$table] = $res;
         }
 
-        return $ret;
+        return $resAll;
     }
 }
