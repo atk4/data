@@ -97,7 +97,9 @@ class Array_ extends Persistence
      */
     public function getRawDataByTable(Model $model, string $table): array
     {
-        $this->seedData($model);
+        if (!is_object($model->table)) {
+            $this->seedData($model);
+        }
 
         $rows = [];
         foreach ($this->data[$table]->getRows() as $row) {
@@ -182,7 +184,9 @@ class Array_ extends Persistence
             }
         }
 
-        $this->seedData($model);
+        if (!is_object($model->table)) {
+            $this->seedData($model);
+        }
     }
 
     private function getPersistenceNameToNameMap(Model $model): array
@@ -195,10 +199,19 @@ class Array_ extends Persistence
         return array_intersect_key($rowDataRaw, $this->getPersistenceNameToNameMap($model));
     }
 
+    public function remapLoadRow(Model $model, array $row): array
+    {
+        $rowRemapped = [];
+        $map = $this->getPersistenceNameToNameMap($model);
+        foreach ($row as $k => $v) {
+            $rowRemapped[$map[$k]] = $v;
+        }
+
+        return $rowRemapped;
+    }
+
     public function tryLoad(Model $model, $id): ?array
     {
-        $table = $this->seedDataAndGetTable($model);
-
         if ($id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY) {
             $action = $this->action($model, 'select');
             $action->generator->rewind(); // TODO needed for some reasons!
@@ -219,12 +232,29 @@ class Array_ extends Persistence
             return $row;
         }
 
-        $row = $table->getRowById($model, $id);
-        if ($row === null) {
-            return null;
+        if (is_object($model->table)) {
+            $action = $this->action($model, 'select');
+            $condition = new Model\Scope\Condition('', $id);
+            $condition->key = $model->getField($model->id_field);
+            $action->filter($condition);
+            $action->generator->rewind(); // TODO needed for some reasons!
+
+            $rowData = $action->getRow();
+            if ($rowData === null) {
+                return null;
+            }
+        } else {
+            $table = $this->seedDataAndGetTable($model);
+
+            $row = $table->getRowById($model, $id);
+            if ($row === null) {
+                return null;
+            }
+
+            $rowData = $this->remapLoadRow($model, $this->filterRowDataOnlyModelFields($model, $row->getData()));
         }
 
-        return $this->typecastLoadRow($model, $this->filterRowDataOnlyModelFields($model, $row->getData()));
+        return $this->typecastLoadRow($model, $rowData);
     }
 
     protected function insertRaw(Model $model, array $dataRaw)
@@ -324,19 +354,24 @@ class Array_ extends Persistence
      */
     public function initAction(Model $model, array $fields = null): Action
     {
-        $table = $this->seedDataAndGetTable($model);
+        if (is_object($model->table)) {
+            $tableAction = $this->action($model->table, 'select');
 
-        $rows = [];
-        foreach ($table->getRows() as $row) {
-            $rows[$row->getValue($model->getField($model->id_field)->getPersistenceName())] = $this->filterRowDataOnlyModelFields($model, $row->getData());
+            $rows = [];
+            foreach ($tableAction->getRows() as $k => $row) {
+                $rows[$k] = $this->filterRowDataOnlyModelFields($model, $row);
+            }
+        } else {
+            $table = $this->seedDataAndGetTable($model);
+
+            $rows = [];
+            foreach ($table->getRows() as $row) {
+                $rows[$row->getValue($model->getField($model->id_field)->getPersistenceName())] = $this->filterRowDataOnlyModelFields($model, $row->getData());
+            }
         }
 
-        $map = $this->getPersistenceNameToNameMap($model);
         foreach ($rows as $rowIndex => $row) {
-            $rows[$rowIndex] = [];
-            foreach ($row as $k => $v) {
-                $rows[$rowIndex][$map[$k]] = $v;
-            }
+            $rows[$rowIndex] = $this->remapLoadRow($model, $row);
         }
 
         if ($fields !== null) {
