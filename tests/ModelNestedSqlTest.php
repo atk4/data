@@ -14,6 +14,9 @@ use Doctrine\DBAL\Result as DbalResult;
 
 class ModelNestedSqlTest extends TestCase
 {
+    /** @var array */
+    public $hookLog = [];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -26,9 +29,6 @@ class ModelNestedSqlTest extends TestCase
             ],
         ]);
     }
-
-    /** @var array */
-    public $hookLog = [];
 
     protected function createTestModel(): Model
     {

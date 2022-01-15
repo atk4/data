@@ -11,6 +11,9 @@ use Atk4\Data\Schema\TestCase;
 
 class ModelNestedArrayTest extends TestCase
 {
+    /** @var array */
+    public $hookLog = [];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -25,9 +28,6 @@ class ModelNestedArrayTest extends TestCase
             ],
         ]);
     }
-
-    /** @var array */
-    public $hookLog = [];
 
     protected function createTestModel(): Model
     {
