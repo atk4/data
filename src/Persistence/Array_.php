@@ -358,21 +358,18 @@ class Array_ extends Persistence
         if (is_object($model->table)) {
             $tableAction = $this->action($model->table, 'select');
 
-            $rows = [];
-            foreach ($tableAction->getRows() as $k => $row) {
-                $rows[$k] = $this->filterRowDataOnlyModelFields($model, $row);
-            }
+            $rows = $tableAction->getRows();
         } else {
             $table = $this->seedDataAndGetTable($model);
 
             $rows = [];
             foreach ($table->getRows() as $row) {
-                $rows[$row->getValue($model->getField($model->id_field)->getPersistenceName())] = $this->filterRowDataOnlyModelFields($model, $row->getData());
+                $rows[$row->getValue($model->getField($model->id_field)->getPersistenceName())] = $row->getData();
             }
         }
 
         foreach ($rows as $rowIndex => $row) {
-            $rows[$rowIndex] = $this->remapLoadRow($model, $row);
+            $rows[$rowIndex] = $this->remapLoadRow($model, $this->filterRowDataOnlyModelFields($model, $row));
         }
 
         if ($fields !== null) {
