@@ -19,7 +19,7 @@ use Atk4\Data\Reference;
  *
  * @method Model getOwner()
  */
-class Join
+abstract class Join
 {
     use DiContainerTrait;
     use InitializerTrait {
@@ -284,6 +284,18 @@ class Join
     protected function initJoinHooks(): void
     {
         $this->onHookToOwnerEntity(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
+
+        if ($this->reverse) {
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'doDelete']), [], -5);
+        } else {
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_DELETE, \Closure::fromCallable([$this, 'doDelete']));
+
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
+        }
     }
 
     /**
@@ -494,12 +506,19 @@ class Join
         $this->saveBufferByOid[spl_object_id($entity)][$fieldName] = $value;
     }
 
-    /**
-     * Clears id and save buffer.
-     */
     protected function afterUnload(Model $entity): void
     {
         $this->unsetId($entity);
         $this->unsetSaveBuffer($entity);
     }
+
+    abstract public function afterLoad(Model $entity): void;
+
+    abstract public function beforeInsert(Model $entity, array &$data): void;
+
+    abstract public function afterInsert(Model $entity): void;
+
+    abstract public function beforeUpdate(Model $entity, array &$data): void;
+
+    abstract public function doDelete(Model $entity): void;
 }
