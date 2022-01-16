@@ -38,9 +38,17 @@ class Join extends Model\Join
         $this->getOwner()->assertIsModel();
 
         $modelCloned = clone $this->getOwner();
+        foreach ($modelCloned->getFields() as $field) {
+            if ($field->hasJoin() && $field->getJoin()->foreign_table === $this->foreign_table) {
+                \Closure::bind(fn () => $field->joinName = null, null, \Atk4\Data\Field::class)();
+            } else {
+                $modelCloned->removeField($field->short_name);
+            }
+        }
+        $modelCloned->addField($this->id_field, ['type' => 'integer']);
         $modelCloned->table = $this->foreign_table;
 
-        // @TODO hooks will be fixed on a cloned model, Join should be replaced later by supporting unioned table as a table model
+        // @TODO hooks will be fixed on a cloned model, foreign_table string name should be replaced with object model
 
         return $modelCloned;
     }

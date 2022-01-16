@@ -319,32 +319,29 @@ abstract class TestCase extends BaseTestCase
             $tableNames = array_values($tableNames);
         }
 
-        $ret = [];
-
+        $resAll = [];
         foreach ($tableNames as $table) {
-            $data2 = [];
+            $query = $this->db->dsql();
+            $rows = $query->table($table)->getRows();
 
-            $s = $this->db->dsql();
-            $data = $s->table($table)->getRows();
-
-            foreach ($data as &$row) {
-                foreach ($row as &$val) {
-                    if (is_int($val)) {
-                        $val = (int) $val;
-                    }
+            $res = [];
+            $idColumnName = null;
+            foreach ($rows as $row) {
+                if ($idColumnName === null) {
+                    $idColumnName = isset($row['_id']) ? '_id' : 'id';
                 }
 
                 if ($noId) {
-                    unset($row['id']);
-                    $data2[] = $row;
+                    unset($row[$idColumnName]);
+                    $res[] = $row;
                 } else {
-                    $data2[$row['id']] = $row;
+                    $res[$row[$idColumnName]] = $row;
                 }
             }
 
-            $ret[$table] = $data2;
+            $resAll[$table] = $res;
         }
 
-        return $ret;
+        return $resAll;
     }
 }

@@ -168,7 +168,12 @@ class Join extends Model\Join
         $query->setMulti($model->persistence->typecastSaveRow($model, $this->getAndUnsetSaveBuffer($entity)));
         $query->set($this->foreign_field, $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId());
         $query->mode('insert')->execute(); // TODO IMPORTANT migrate to Model insert
-        $this->setId($entity, $model->persistence->lastInsertId($model));
+        $modelForLastInsertId = $model;
+        while (is_object($modelForLastInsertId->table)) {
+            $modelForLastInsertId = $modelForLastInsertId->table;
+        }
+        // assumes same ID field across all nested models (not needed once migrated to Model insert)
+        $this->setId($entity, $model->persistence->lastInsertId($modelForLastInsertId));
     }
 
     public function beforeUpdate(Model $entity, array &$data): void
