@@ -88,10 +88,11 @@ class Join extends Model\Join
         // Figure out where are we going to save data
         $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
-        $this->setId($entity, $persistence->insert(
+        $lastInsertedId = $persistence->insert(
             $this->makeFakeModelWithForeignTable(),
             $this->getAndUnsetSaveBuffer($entity)
-        ));
+        );
+        $this->setId($entity, $lastInsertedId);
 
         $data[$this->master_field] = $this->getId($entity);
 
@@ -108,10 +109,11 @@ class Join extends Model\Join
 
         $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
-        $this->setId($entity, $persistence->insert(
+        $lastInsertedId = $persistence->insert(
             $this->makeFakeModelWithForeignTable(),
             $this->getAndUnsetSaveBuffer($entity)
-        ));
+        );
+        $this->setId($entity, $lastInsertedId);
     }
 
     public function beforeUpdate(Model $entity, array &$data): void
@@ -122,12 +124,12 @@ class Join extends Model\Join
 
         $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
-        // @phpstan-ignore-next-line TODO this cannot work, Persistence::update() returns void
-        $this->setId($entity, $persistence->update(
+        $persistence->update(
             $this->makeFakeModelWithForeignTable(),
             $this->getId($entity),
             $this->getAndUnsetSaveBuffer($entity)
-        ));
+        );
+        // $this->setId($entity, ??);
     }
 
     public function doDelete(Model $entity): void
@@ -142,7 +144,6 @@ class Join extends Model\Join
             $this->makeFakeModelWithForeignTable(),
             $this->getId($entity)
         );
-
         $this->unsetId($entity);
     }
 }
