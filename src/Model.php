@@ -1074,7 +1074,7 @@ class Model implements \IteratorAggregate
      */
     public function addWith(self $model, string $alias, array $mapping = [], bool $recursive = false)
     {
-        if (isset($this->with[$alias])) {
+        if ($alias === $this->table || $alias === $this->table_alias || isset($this->with[$alias])) {
             throw (new Exception('With cursor already set with given alias'))
                 ->addMoreInfo('alias', $alias);
         }

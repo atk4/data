@@ -53,9 +53,6 @@ parameters:
         # for src/Persistence/Sql.php
         - '~^Call to an undefined method Atk4\\Data\\Persistence::expr\(\)\.$~'
         - '~^Call to an undefined method Atk4\\Data\\Persistence::exprNow\(\)\.$~'
-        # for src/Persistence/Sql/Join.php
-        - '~^Call to an undefined method Atk4\\Data\\Persistence::initQuery\(\)\.$~'
-        - '~^Call to an undefined method Atk4\\Data\\Persistence::lastInsertId\(\)\.$~'
         # for src/Reference/HasMany.php
         - '~^Call to an undefined method Atk4\\Data\\Model::dsql\(\)\.$~'
         # for tests/FieldTest.php

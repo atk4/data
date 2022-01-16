@@ -31,8 +31,7 @@ class Join
     }
 
     /**
-     * Name of the table (or collection) that can be used to retrieve data from.
-     * For SQL, This can also be an expression or sub-select.
+     * Foreign model or WITH/CTE alias when used with SQL persistence.
      *
      * @var string
      */
@@ -120,9 +119,9 @@ class Join
     /** @var array<int, array<string, mixed>> Data indexed by spl_object_id(entity) which is populated here as the save/insert progresses. */
     private $saveBufferByOid = [];
 
-    public function __construct(string $foreign_table = null)
+    public function __construct(string $foreignTable = null)
     {
-        $this->foreign_table = $foreign_table;
+        $this->foreign_table = $foreignTable;
 
         // handle foreign table containing a dot - that will be reverse join
         if (strpos($this->foreign_table, '.') !== false) {
@@ -130,6 +129,38 @@ class Join
             [$this->foreign_table, $this->foreign_field] = preg_split('~\.+(?=[^.]+$)~', $this->foreign_table);
             $this->reverse = true;
         }
+    }
+
+    /**
+     * Create fake foreign model, in the future, this method should be removed
+     * in favor of always requiring an object model.
+     */
+    protected function createFakeForeignModel(): Model
+    {
+        $fakeModel = new Model($this->getOwner()->persistence, [
+            'table' => $this->foreign_table,
+            'id_field' => $this->foreign_field,
+        ]);
+        foreach ($this->getOwner()->getFields() as $ownerField) {
+            if ($ownerField->hasJoin() && $ownerField->getJoin()->short_name === $this->short_name) {
+                $fakeModel->addField($ownerField->short_name, [
+                    'actual' => $ownerField->actual,
+                    'type' => $ownerField->type,
+                ]);
+            }
+        }
+
+        return $fakeModel;
+    }
+
+    public function getForeignModel(): Model
+    {
+        // TODO this should be removed in the future
+        if (!isset($this->getOwner()->with[$this->foreign_table])) {
+            return $this->createFakeForeignModel();
+        }
+
+        return $this->getOwner()->with[$this->foreign_table]['model'];
     }
 
     /**
@@ -202,6 +233,8 @@ class Join
     protected function init(): void
     {
         $this->_init();
+
+        $this->getForeignModel(); // assert valid foreign_table
 
         // owner model should have id_field set
         $id_field = $this->getOwner()->id_field;
@@ -280,11 +313,11 @@ class Join
      *
      * @param array<string, mixed> $defaults
      */
-    public function join(string $foreign_table, array $defaults = []): self
+    public function join(string $foreignTable, array $defaults = []): self
     {
         $defaults['joinName'] = $this->short_name;
 
-        return $this->getOwner()->join($foreign_table, $defaults);
+        return $this->getOwner()->join($foreignTable, $defaults);
     }
 
     /**
@@ -292,11 +325,11 @@ class Join
      *
      * @param array<string, mixed> $defaults
      */
-    public function leftJoin(string $foreign_table, array $defaults = []): self
+    public function leftJoin(string $foreignTable, array $defaults = []): self
     {
         $defaults['joinName'] = $this->short_name;
 
-        return $this->getOwner()->leftJoin($foreign_table, $defaults);
+        return $this->getOwner()->leftJoin($foreignTable, $defaults);
     }
 
     /**

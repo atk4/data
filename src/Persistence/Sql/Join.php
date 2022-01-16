@@ -72,16 +72,6 @@ class Join extends Model\Join
     }
 
     /**
-     * Returns DSQL query.
-     */
-    public function dsql(): Query
-    {
-        $dsql = $this->getOwner()->persistence->initQuery($this->getOwner());
-
-        return $dsql->reset('table')->table($this->foreign_table, $this->foreign_alias);
-    }
-
-    /**
      * Before query is executed, this method will be called.
      */
     public function initSelectQuery(Model $model, Query $query): void
@@ -137,17 +127,18 @@ class Join extends Model\Join
 
         $model = $this->getOwner();
 
-        // The value for the master_field is set, so we are going to use existing record anyway
-        if ($model->hasField($this->master_field) && $entity->get($this->master_field)) {
+        // the value for the master_field is set, so we are going to use existing record anyway
+        if ($model->hasField($this->master_field) && $entity->get($this->master_field) !== null) {
             return;
         }
 
-        $query = $this->dsql();
-        $query->mode('insert');
-        $query->setMulti($model->persistence->typecastSaveRow($model, $this->getAndUnsetSaveBuffer($entity)));
-        // $query->set($this->foreign_field, null);
-        $query->mode('insert')->execute(); // TODO IMPORTANT migrate to Model insert
-        $this->setId($entity, $model->persistence->lastInsertId(new Model($model->persistence, ['table' => $this->foreign_table])));
+        $foreignModel = $this->getForeignModel();
+        $foreignEntity = $foreignModel->createEntity()
+            ->setMulti($this->getAndUnsetSaveBuffer($entity))
+            /*->set($this->foreign_field, null)*/;
+        $foreignEntity->save();
+
+        $this->setId($entity, $foreignEntity->getId());
 
         if ($this->hasJoin()) {
             $this->getJoin()->setSaveBufferValue($entity, $this->master_field, $this->getId($entity));
@@ -162,18 +153,13 @@ class Join extends Model\Join
             return;
         }
 
-        $model = $this->getOwner();
+        $foreignModel = $this->getForeignModel();
+        $foreignEntity = $foreignModel->createEntity()
+            ->setMulti($this->getAndUnsetSaveBuffer($entity))
+            ->set($this->foreign_field, $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId());
+        $foreignEntity->save();
 
-        $query = $this->dsql();
-        $query->setMulti($model->persistence->typecastSaveRow($model, $this->getAndUnsetSaveBuffer($entity)));
-        $query->set($this->foreign_field, $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId());
-        $query->mode('insert')->execute(); // TODO IMPORTANT migrate to Model insert
-        $modelForLastInsertId = $model;
-        while (is_object($modelForLastInsertId->table)) {
-            $modelForLastInsertId = $modelForLastInsertId->table;
-        }
-        // assumes same ID field across all nested models (not needed once migrated to Model insert)
-        $this->setId($entity, $model->persistence->lastInsertId($modelForLastInsertId));
+        $this->setId($entity, $entity->getId()); // TODO why is this here? it seems to be not needed
     }
 
     public function beforeUpdate(Model $entity, array &$data): void
@@ -186,14 +172,16 @@ class Join extends Model\Join
             return;
         }
 
-        $model = $this->getOwner();
-
-        $query = $this->dsql();
-        $query->setMulti($model->persistence->typecastSaveRow($model, $this->getAndUnsetSaveBuffer($entity)));
-
-        $id = $this->reverse ? $entity->getId() : $entity->get($this->master_field);
-
-        $query->where($this->foreign_field, $id)->mode('update')->execute(); // TODO IMPORTANT migrate to Model update
+        $foreignModel = $this->getForeignModel();
+        $foreignId = $this->reverse ? $entity->getId() : $entity->get($this->master_field);
+        $saveBuffer = $this->getAndUnsetSaveBuffer($entity);
+        $foreignModel->atomic(function () use ($foreignModel, $foreignId, $saveBuffer) {
+            $foreignModel = (clone $foreignModel)->addCondition($this->foreign_field, $foreignId);
+            foreach ($foreignModel as $foreignEntity) {
+                $foreignEntity->setMulti($saveBuffer);
+                $foreignEntity->save();
+            }
+        });
     }
 
     public function doDelete(Model $entity): void
@@ -202,9 +190,13 @@ class Join extends Model\Join
             return;
         }
 
-        $query = $this->dsql();
-        $id = $this->reverse ? $entity->getId() : $entity->get($this->master_field);
-
-        $query->where($this->foreign_field, $id)->mode('delete')->execute(); // TODO IMPORTANT migrate to Model delete
+        $foreignModel = $this->getForeignModel();
+        $foreignId = $this->reverse ? $entity->getId() : $entity->get($this->master_field);
+        $foreignModel->atomic(function () use ($foreignModel, $foreignId) {
+            $foreignModel = (clone $foreignModel)->addCondition($this->foreign_field, $foreignId);
+            foreach ($foreignModel as $foreignEntity) {
+                $foreignEntity->delete();
+            }
+        });
     }
 }
