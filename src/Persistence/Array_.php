@@ -214,7 +214,6 @@ class Array_ extends Persistence
     {
         if ($id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY) {
             $action = $this->action($model, 'select');
-            $action->generator->rewind(); // TODO needed for some reasons!
 
             $selectRow = $action->getRow();
             if ($selectRow === null) {
@@ -238,7 +237,6 @@ class Array_ extends Persistence
             $condition->key = $model->getField($model->id_field);
             $condition->setOwner($model->createEntity()); // TODO needed for typecasting to apply
             $action->filter($condition);
-            $action->generator->rewind(); // TODO needed for some reasons!
 
             $rowData = $action->getRow();
             if ($rowData === null) {

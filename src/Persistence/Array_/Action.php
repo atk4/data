@@ -45,6 +45,9 @@ class Action
             } else {
                 $this->generator = new \CallbackFilterIterator($this->generator, $filterFx);
             }
+            // initialize filter iterator, it is not rewound by default
+            // https://github.com/php/php-src/issues/7952
+            $this->generator->rewind();
         }
 
         return $this;
