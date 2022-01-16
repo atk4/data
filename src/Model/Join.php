@@ -514,11 +514,92 @@ abstract class Join
 
     abstract public function afterLoad(Model $entity): void;
 
-    abstract public function beforeInsert(Model $entity, array &$data): void;
+    public function beforeInsert(Model $entity, array &$data): void
+    {
+        if ($this->weak) {
+            return;
+        }
 
-    abstract public function afterInsert(Model $entity): void;
+        $model = $this->getOwner();
 
-    abstract public function beforeUpdate(Model $entity, array &$data): void;
+        // the value for the master_field is set, so we are going to use existing record anyway
+        if ($model->hasField($this->master_field) && $entity->get($this->master_field) !== null) {
+            return;
+        }
 
-    abstract public function doDelete(Model $entity): void;
+        $foreignModel = $this->getForeignModel();
+        $foreignEntity = $foreignModel->createEntity()
+            ->setMulti($this->getAndUnsetSaveBuffer($entity))
+            /*->set($this->foreign_field, null)*/;
+        $foreignEntity->save();
+
+        $this->setId($entity, $foreignEntity->getId());
+
+        if ($this->hasJoin()) {
+            $this->getJoin()->setSaveBufferValue($entity, $this->master_field, $this->getId($entity));
+        } else {
+            $data[$this->master_field] = $this->getId($entity);
+        }
+
+        // $entity->set($this->master_field, $this->getId($entity));
+    }
+
+    public function afterInsert(Model $entity): void
+    {
+        if ($this->weak) {
+            return;
+        }
+
+        $this->setSaveBufferValue($entity, $this->foreign_field, $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId()); // from array persistence...
+
+        $foreignModel = $this->getForeignModel();
+        $foreignEntity = $foreignModel->createEntity()
+            ->setMulti($this->getAndUnsetSaveBuffer($entity))
+            ->set($this->foreign_field, $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId());
+        $foreignEntity->save();
+
+        $this->setId($entity, $entity->getId()); // TODO why is this here? it seems to be not needed
+    }
+
+    public function beforeUpdate(Model $entity, array &$data): void
+    {
+        if ($this->weak) {
+            return;
+        }
+
+        if (!$this->issetSaveBuffer($entity)) {
+            return;
+        }
+
+        $foreignModel = $this->getForeignModel();
+        $foreignId = $this->reverse ? $entity->getId() : $entity->get($this->master_field);
+        $saveBuffer = $this->getAndUnsetSaveBuffer($entity);
+        $foreignModel->atomic(function () use ($foreignModel, $foreignId, $saveBuffer) {
+            $foreignModel = (clone $foreignModel)->addCondition($this->foreign_field, $foreignId);
+            foreach ($foreignModel as $foreignEntity) {
+                $foreignEntity->setMulti($saveBuffer);
+                $foreignEntity->save();
+            }
+        });
+
+        // $this->setId($entity, ??); // TODO needed? from array persistence
+    }
+
+    public function doDelete(Model $entity): void
+    {
+        if ($this->weak) {
+            return;
+        }
+
+        $foreignModel = $this->getForeignModel();
+        $foreignId = $this->reverse ? $entity->getId() : $entity->get($this->master_field);
+        $foreignModel->atomic(function () use ($foreignModel, $foreignId) {
+            $foreignModel = (clone $foreignModel)->addCondition($this->foreign_field, $foreignId);
+            foreach ($foreignModel as $foreignEntity) {
+                $foreignEntity->delete();
+            }
+        });
+
+        $this->unsetId($entity); // TODO needed? from array persistence
+    }
 }
