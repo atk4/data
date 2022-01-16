@@ -273,12 +273,17 @@ class Join
             }
         }
 
-        $this->onHookToOwnerEntity(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
-
         // if kind is not specified, figure out join type
         if (!$this->kind) {
             $this->kind = $this->weak ? 'left' : 'inner';
         }
+
+        $this->initJoinHooks();
+    }
+
+    protected function initJoinHooks(): void
+    {
+        $this->onHookToOwnerEntity(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
     }
 
     /**

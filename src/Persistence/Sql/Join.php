@@ -28,9 +28,6 @@ class Join extends Model\Join
         return '_' . ($this->foreign_alias ?: $this->foreign_table);
     }
 
-    /**
-     * This method is to figure out stuff.
-     */
     protected function init(): void
     {
         parent::init();
@@ -42,28 +39,32 @@ class Join extends Model\Join
             $this->foreign_alias = ($this->getOwner()->table_alias ?: '') . $this->short_name;
         }
 
+        // Master field indicates ID of the joined item. In the past it had to be
+        // defined as a physical field in the main table. Now it is a model field
+        // so you can use expressions or fields inside joined entities.
+        // If string specified here does not point to an existing model field
+        // a new basic field is inserted and marked hidden.
+        if (!$this->reverse && !$this->getOwner()->hasField($this->master_field)) {
+            $owner = $this->hasJoin() ? $this->getJoin() : $this->getOwner();
+
+            $field = $owner->addField($this->master_field, ['system' => true, 'read_only' => true]);
+
+            $this->master_field = $field->short_name;
+        }
+    }
+
+    protected function initJoinHooks(): void
+    {
+        parent::initJoinHooks();
+
         $this->onHookToOwnerBoth(Persistence\Sql::HOOK_INIT_SELECT_QUERY, \Closure::fromCallable([$this, 'initSelectQuery']));
 
-        // add necessary hooks
         if ($this->reverse) {
             $this->onHookToOwnerEntity(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']));
             $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
             $this->onHookToOwnerEntity(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'doDelete']), [], -5);
             $this->onHookToOwnerEntity(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
         } else {
-            // Master field indicates ID of the joined item. In the past it had to be
-            // defined as a physical field in the main table. Now it is a model field
-            // so you can use expressions or fields inside joined entities.
-            // If string specified here does not point to an existing model field
-            // a new basic field is inserted and marked hidden.
-            if (!$this->getOwner()->hasField($this->master_field)) {
-                $owner = $this->hasJoin() ? $this->getJoin() : $this->getOwner();
-
-                $field = $owner->addField($this->master_field, ['system' => true, 'read_only' => true]);
-
-                $this->master_field = $field->short_name;
-            }
-
             $this->onHookToOwnerEntity(Model::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']), [], -5);
             $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
             $this->onHookToOwnerEntity(Model::HOOK_AFTER_DELETE, \Closure::fromCallable([$this, 'doDelete']));

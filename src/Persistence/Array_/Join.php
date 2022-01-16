@@ -13,14 +13,10 @@ use Atk4\Data\Persistence;
  */
 class Join extends Model\Join
 {
-    /**
-     * This method is to figure out stuff.
-     */
-    protected function init(): void
+    protected function initJoinHooks(): void
     {
-        parent::init();
+        parent::initJoinHooks();
 
-        // add necessary hooks
         if ($this->reverse) {
             $this->onHookToOwnerEntity(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']), [], -5);
             $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']), [], -5);
