@@ -212,7 +212,6 @@ class Sql extends Persistence
             );
         }
 
-        // add With cursors
         $this->initWithCursors($model, $query);
 
         return $query;
@@ -223,11 +222,12 @@ class Sql extends Persistence
      */
     public function initWithCursors(Model $model, Query $query): void
     {
-        if (!$with = $model->with) {
+        $with = $model->with;
+        if (count($with) === 0) {
             return;
         }
 
-        foreach ($with as $alias => ['model' => $withModel, 'mapping' => $withMapping, 'recursive' => $recursive]) {
+        foreach ($with as $alias => ['model' => $withModel, 'mapping' => $withMapping, 'recursive' => $withRecursive]) {
             // prepare field names
             $fieldsFrom = $fieldsTo = [];
             foreach ($withMapping as $from => $to) {
@@ -237,14 +237,13 @@ class Sql extends Persistence
 
             // prepare sub-query
             if ($fieldsFrom) {
-                $withModel->setOnlyFields($fieldsFrom);
+                $withModel->setOnlyFields($fieldsFrom); // TODO this mutates model state
             }
             // 2nd parameter here strictly define which fields should be selected
             // as result system fields will not be added if they are not requested
             $subQuery = $withModel->action('select', [$fieldsFrom]);
 
-            // add With cursor
-            $query->with($subQuery, $alias, $fieldsTo ?: null, $recursive);
+            $query->with($subQuery, $alias, $fieldsTo ?: null, $withRecursive);
         }
     }
 
