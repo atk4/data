@@ -139,10 +139,14 @@ class Join
     {
         $fakeModel = new Model($this->getOwner()->persistence, [
             'table' => $this->foreign_table,
-            'id_field' => $this->foreign_field,
         ]);
+        if ($fakeModel->id_field !== $this->foreign_field && $this->foreign_field !== null) {
+            $fakeModel->addField($this->foreign_field);
+        }
         foreach ($this->getOwner()->getFields() as $ownerField) {
-            if ($ownerField->hasJoin() && $ownerField->getJoin()->short_name === $this->short_name) {
+            if ($ownerField->hasJoin() && $ownerField->getJoin()->short_name === $this->short_name
+                && $ownerField->short_name !== $fakeModel->id_field
+                && $ownerField->short_name !== $this->foreign_field) {
                 $fakeModel->addField($ownerField->short_name, [
                     'actual' => $ownerField->actual,
                     'type' => $ownerField->type,

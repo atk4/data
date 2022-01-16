@@ -33,26 +33,6 @@ class Join extends Model\Join
         }
     }
 
-    protected function makeFakeModelWithForeignTable(): Model
-    {
-        $this->getOwner()->assertIsModel();
-
-        $modelCloned = clone $this->getOwner();
-        foreach ($modelCloned->getFields() as $field) {
-            if ($field->hasJoin() && $field->getJoin()->foreign_table === $this->foreign_table) {
-                \Closure::bind(fn () => $field->joinName = null, null, \Atk4\Data\Field::class)();
-            } else {
-                $modelCloned->removeField($field->short_name);
-            }
-        }
-        $modelCloned->addField($this->id_field, ['type' => 'integer']);
-        $modelCloned->table = $this->foreign_table;
-
-        // @TODO hooks will be fixed on a cloned model, foreign_table string name should be replaced with object model
-
-        return $modelCloned;
-    }
-
     public function afterLoad(Model $entity): void
     {
         // we need to collect ID
@@ -63,7 +43,7 @@ class Join extends Model\Join
 
         try {
             $data = Persistence\Array_::assertInstanceOf($this->getOwner()->persistence)
-                ->load($this->makeFakeModelWithForeignTable(), $this->getId($entity));
+                ->load($this->createFakeForeignModel(), $this->getId($entity));
         } catch (Exception $e) {
             throw (new Exception('Unable to load joined record', $e->getCode(), $e))
                 ->addMoreInfo('table', $this->foreign_table)
@@ -89,7 +69,7 @@ class Join extends Model\Join
         $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
         $lastInsertedId = $persistence->insert(
-            $this->makeFakeModelWithForeignTable(),
+            $this->createFakeForeignModel(),
             $this->getAndUnsetSaveBuffer($entity)
         );
         $this->setId($entity, $lastInsertedId);
@@ -110,7 +90,7 @@ class Join extends Model\Join
         $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
         $lastInsertedId = $persistence->insert(
-            $this->makeFakeModelWithForeignTable(),
+            $this->createFakeForeignModel(),
             $this->getAndUnsetSaveBuffer($entity)
         );
         $this->setId($entity, $lastInsertedId);
@@ -125,7 +105,7 @@ class Join extends Model\Join
         $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
         $persistence->update(
-            $this->makeFakeModelWithForeignTable(),
+            $this->createFakeForeignModel(),
             $this->getId($entity),
             $this->getAndUnsetSaveBuffer($entity)
         );
@@ -141,7 +121,7 @@ class Join extends Model\Join
         $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
         $persistence->delete(
-            $this->makeFakeModelWithForeignTable(),
+            $this->createFakeForeignModel(),
             $this->getId($entity)
         );
         $this->unsetId($entity);
