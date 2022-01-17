@@ -56,13 +56,9 @@ class Action
     /**
      * Calculates SUM|AVG|MIN|MAX aggregate values for $field.
      *
-     * @param string $fx
-     * @param string $field
-     * @param bool   $coalesce
-     *
      * @return $this
      */
-    public function aggregate($fx, $field, $coalesce = false)
+    public function aggregate(string $fx, string $field, bool $coalesce = false)
     {
         $result = 0;
         $column = array_column($this->getRows(), $field);
@@ -100,15 +96,10 @@ class Action
 
     /**
      * Checks if $row matches $condition.
-     *
-     * @return bool
      */
-    protected function match(array $row, Model\Scope\AbstractScope $condition)
+    protected function match(array $row, Model\Scope\AbstractScope $condition): bool
     {
-        $match = false;
-
-        // simple condition
-        if ($condition instanceof Model\Scope\Condition) {
+        if ($condition instanceof Model\Scope\Condition) { // simple condition
             $args = $condition->toQueryArguments();
 
             $field = $args[0];
@@ -126,11 +117,8 @@ class Action
                     ->addMoreInfo('condition', $condition);
             }
 
-            $match = $this->evaluateIf($row[$field->short_name] ?? null, $operator, $value);
-        }
-
-        // nested conditions
-        if ($condition instanceof Model\Scope) {
+            return $this->evaluateIf($row[$field->short_name] ?? null, $operator, $value);
+        } elseif ($condition instanceof Model\Scope) { // nested conditions
             $matches = [];
 
             foreach ($condition->getNestedConditions() as $nestedCondition) {
@@ -143,10 +131,11 @@ class Action
             }
 
             // any matches && all matches the same (if all required)
-            $match = array_filter($matches) && ($condition->isAnd() ? count(array_unique($matches)) === 1 : true);
+            return array_filter($matches) && ($condition->isAnd() ? count(array_unique($matches)) === 1 : true);
         }
 
-        return $match;
+        throw (new Exception('Unexpected condition type'))
+            ->addMoreInfo('class', get_class($condition));
     }
 
     /**
@@ -160,7 +149,8 @@ class Action
         }
 
         if ($v2 instanceof \Traversable) {
-            throw new \Exception('Unexpected v2 type');
+            throw (new Exception('Unexpected v2 type'))
+                ->addMoreInfo('class', get_class($v2));
         }
 
         switch (strtoupper($operator)) {
@@ -233,11 +223,9 @@ class Action
     /**
      * Applies sorting on Iterator.
      *
-     * @param array $fields
-     *
      * @return $this
      */
-    public function order($fields)
+    public function order(array $fields)
     {
         $data = $this->getRows();
 
@@ -265,10 +253,7 @@ class Action
      */
     public function limit(int $limit = null, int $offset = 0)
     {
-        $data = array_slice($this->getRows(), $offset, $limit, true);
-
-        // put data back in generator
-        $this->generator = new \ArrayIterator($data);
+        $this->generator = new \LimitIterator($this->generator, $offset, $limit ?? -1);
 
         return $this;
     }
