@@ -296,6 +296,7 @@ class Action
      */
     public function getRow(): ?array
     {
+        $this->generator->rewind(); // TODO alternatively allow to fetch only once
         $row = $this->generator->current();
         $this->generator->next();
 

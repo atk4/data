@@ -215,18 +215,20 @@ class Array_ extends Persistence
         if ($id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY) {
             $action = $this->action($model, 'select');
 
-            $selectRow = $action->getRow();
-            if ($selectRow === null) {
+            $action->limit($id === self::ID_LOAD_ANY ? 1 : 2);
+
+            $rowsRaw = $action->getRows();
+            if (count($rowsRaw) === 0) {
                 return null;
-            } elseif ($id === self::ID_LOAD_ONE && $action->getRow() !== null) {
+            } elseif (count($rowsRaw) !== 1) {
                 throw (new Exception('Ambiguous conditions, more than one record can be loaded.'))
                     ->addMoreInfo('model', $model)
                     ->addMoreInfo('id', null);
             }
 
-            $id = $selectRow[$model->id_field];
+            $idRaw = reset($rowsRaw)[$model->id_field];
 
-            $row = $this->tryLoad($model, $id);
+            $row = $this->tryLoad($model, $idRaw);
 
             return $row;
         }
