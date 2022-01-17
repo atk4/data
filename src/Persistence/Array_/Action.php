@@ -277,6 +277,7 @@ class Action
      */
     public function exists()
     {
+        $this->generator->rewind();
         $this->generator = new \ArrayIterator([[$this->generator->valid() ? 1 : 0]]);
 
         return $this;
