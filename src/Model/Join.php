@@ -37,14 +37,6 @@ abstract class Join
     protected $foreign_table;
 
     /**
-     * Field that is used as native "ID" in the foreign table.
-     * When deleting record, this field will be conditioned.
-     *
-     * @var string
-     */
-    protected $id_field = 'id';
-
-    /**
      * By default this will be either "inner" (for strong) or "left" for weak joins.
      * You can specify your own type of join by passing ['kind' => 'right']
      * as second argument to join().
@@ -63,7 +55,7 @@ abstract class Join
      *
      * If you are using the following syntax:
      *
-     * $user->join('contact', 'default_contact_id');
+     * $user->join('contact', 'default_contact_id')
      *
      * Then the ID connecting tables is stored in foreign table and the order
      * of saving and delete needs to be reversed. In this case $reverse
@@ -74,18 +66,16 @@ abstract class Join
     protected $reverse;
 
     /**
-     * Field to be used for matching inside master table. By default
-     * it's $foreign_table.'_id'.
-     * Note that it should be actual field name in master table.
+     * Field to be used for matching inside master table.
+     * By default it's $foreign_table.'_id'.
      *
      * @var string
      */
     protected $master_field;
 
     /**
-     * Field to be used for matching in a foreign table. By default
-     * it's 'id'.
-     * Note that it should be actual field name in foreign table.
+     * Field to be used for matching in a foreign table.
+     * By default it's 'id'.
      *
      * @var string
      */
@@ -240,7 +230,7 @@ abstract class Join
             if ($this->master_field && $this->master_field !== $id_field) { // TODO not implemented yet, see https://github.com/atk4/data/issues/803
                 throw (new Exception('Joining tables on non-id fields is not implemented yet'))
                     ->addMoreInfo('master_field', $this->master_field)
-                    ->addMoreInfo('id_field', $this->id_field);
+                    ->addMoreInfo('id_field', $id_field);
             }
 
             if (!$this->master_field) {
@@ -361,9 +351,10 @@ abstract class Join
      */
     public function hasMany(string $link, array $defaults = [])
     {
+        $id_field = $this->getOwner()->id_field;
         $defaults = array_merge([
-            'our_field' => $this->id_field,
-            'their_field' => $this->getModelTableString($this->getOwner()) . '_' . $this->id_field,
+            'our_field' => $id_field,
+            'their_field' => $this->getModelTableString($this->getOwner()) . '_' . $id_field,
         ], $defaults);
 
         return $this->getOwner()->hasMany($link, $defaults);
