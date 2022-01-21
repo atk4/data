@@ -52,7 +52,7 @@ abstract class TestCase extends BaseTestCase
                     $this->testCaseWeakRef = \WeakReference::create($testCase);
                 }
 
-                public function startQuery($sql, $params = null, $types = null): void
+                public function startQuery($sql, array $params = null, array $types = null): void
                 {
                     if (!$this->testCaseWeakRef->get()->debug) {
                         return;

@@ -147,7 +147,7 @@ class Model implements \IteratorAggregate
     /** @var array Array of set order by. */
     public $order = [];
 
-    /** @var array Array of WITH cursors set. */
+    /** @var array<string, array{'model': Model, 'mapping': array<int|string, string>, 'recursive': bool}> */
     public $with = [];
 
     /**
@@ -1074,8 +1074,8 @@ class Model implements \IteratorAggregate
      */
     public function addWith(self $model, string $alias, array $mapping = [], bool $recursive = false)
     {
-        if (isset($this->with[$alias])) {
-            throw (new Exception('With cursor already set with this alias'))
+        if ($alias === $this->table || $alias === $this->table_alias || isset($this->with[$alias])) {
+            throw (new Exception('With cursor already set with given alias'))
                 ->addMoreInfo('alias', $alias);
         }
 

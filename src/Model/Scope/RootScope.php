@@ -48,12 +48,18 @@ class RootScope extends Model\Scope
         throw new Exception('Model Scope cannot be negated!');
     }
 
-    public static function createAnd(...$conditions)
+    /**
+     * @return Model\Scope
+     */
+    public static function createAnd(...$conditions) // @phpstan-ignore-line
     {
         return (parent::class)::createAnd(...$conditions);
     }
 
-    public static function createOr(...$conditions)
+    /**
+     * @return Model\Scope
+     */
+    public static function createOr(...$conditions) // @phpstan-ignore-line
     {
         return (parent::class)::createOr(...$conditions);
     }
