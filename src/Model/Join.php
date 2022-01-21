@@ -11,7 +11,6 @@ use Atk4\Core\TrackableTrait;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence;
 use Atk4\Data\Reference;
 
 /**
@@ -19,7 +18,7 @@ use Atk4\Data\Reference;
  *
  * @method Model getOwner()
  */
-class Join
+abstract class Join
 {
     use DiContainerTrait;
     use InitializerTrait {
@@ -31,30 +30,11 @@ class Join
     }
 
     /**
-     * Name of the table (or collection) that can be used to retrieve data from.
-     * For SQL, This can also be an expression or sub-select.
+     * Foreign model or WITH/CTE alias when used with SQL persistence.
      *
      * @var string
      */
     protected $foreign_table;
-
-    /**
-     * If $persistence is set, then it's used for loading
-     * and storing the values, instead $owner->persistence.
-     *
-     * @var Persistence|Persistence\Sql|null
-     */
-    protected $persistence;
-
-    /**
-     * Field that is used as native "ID" in the foreign table.
-     * When deleting record, this field will be conditioned.
-     *
-     * ->where($join->id_field, $join->id)->delete();
-     *
-     * @var string
-     */
-    protected $id_field = 'id';
 
     /**
      * By default this will be either "inner" (for strong) or "left" for weak joins.
@@ -65,7 +45,7 @@ class Join
      */
     protected $kind;
 
-    /** @var bool Is our join weak? Weak join will stop you from touching foreign table. */
+    /** @var bool Weak join does not update foreign table. */
     protected $weak = false;
 
     /**
@@ -75,7 +55,7 @@ class Join
      *
      * If you are using the following syntax:
      *
-     * $user->join('contact','default_contact_id');
+     * $user->join('contact', 'default_contact_id')
      *
      * Then the ID connecting tables is stored in foreign table and the order
      * of saving and delete needs to be reversed. In this case $reverse
@@ -86,18 +66,16 @@ class Join
     protected $reverse;
 
     /**
-     * Field to be used for matching inside master table. By default
-     * it's $foreign_table.'_id'.
-     * Note that it should be actual field name in master table.
+     * Field to be used for matching inside master table.
+     * By default it's $foreign_table.'_id'.
      *
      * @var string
      */
     protected $master_field;
 
     /**
-     * Field to be used for matching in a foreign table. By default
-     * it's 'id'.
-     * Note that it should be actual field name in foreign table.
+     * Field to be used for matching in a foreign table.
+     * By default it's 'id'.
      *
      * @var string
      */
@@ -120,9 +98,9 @@ class Join
     /** @var array<int, array<string, mixed>> Data indexed by spl_object_id(entity) which is populated here as the save/insert progresses. */
     private $saveBufferByOid = [];
 
-    public function __construct(string $foreign_table = null)
+    public function __construct(string $foreignTable = null)
     {
-        $this->foreign_table = $foreign_table;
+        $this->foreign_table = $foreignTable;
 
         // handle foreign table containing a dot - that will be reverse join
         if (strpos($this->foreign_table, '.') !== false) {
@@ -130,6 +108,42 @@ class Join
             [$this->foreign_table, $this->foreign_field] = preg_split('~\.+(?=[^.]+$)~', $this->foreign_table);
             $this->reverse = true;
         }
+    }
+
+    /**
+     * Create fake foreign model, in the future, this method should be removed
+     * in favor of always requiring an object model.
+     */
+    protected function createFakeForeignModel(): Model
+    {
+        $fakeModel = new Model($this->getOwner()->persistence, [
+            'table' => $this->foreign_table,
+        ]);
+        foreach ($this->getOwner()->getFields() as $ownerField) {
+            if ($ownerField->hasJoin() && $ownerField->getJoin()->short_name === $this->short_name
+                && $ownerField->short_name !== $fakeModel->id_field
+                && $ownerField->short_name !== $this->foreign_field) {
+                $fakeModel->addField($ownerField->short_name, [
+                    'actual' => $ownerField->actual,
+                    'type' => $ownerField->type,
+                ]);
+            }
+        }
+        if ($fakeModel->id_field !== $this->foreign_field && $this->foreign_field !== null) {
+            $fakeModel->addField($this->foreign_field, ['type' => 'integer']);
+        }
+
+        return $fakeModel;
+    }
+
+    public function getForeignModel(): Model
+    {
+        // TODO this should be removed in the future
+        if (!isset($this->getOwner()->with[$this->foreign_table])) {
+            return $this->createFakeForeignModel();
+        }
+
+        return $this->getOwner()->with[$this->foreign_table]['model'];
     }
 
     /**
@@ -203,6 +217,8 @@ class Join
     {
         $this->_init();
 
+        $this->getForeignModel(); // assert valid foreign_table
+
         // owner model should have id_field set
         $id_field = $this->getOwner()->id_field;
         if (!$id_field) {
@@ -214,7 +230,7 @@ class Join
             if ($this->master_field && $this->master_field !== $id_field) { // TODO not implemented yet, see https://github.com/atk4/data/issues/803
                 throw (new Exception('Joining tables on non-id fields is not implemented yet'))
                     ->addMoreInfo('master_field', $this->master_field)
-                    ->addMoreInfo('id_field', $this->id_field);
+                    ->addMoreInfo('id_field', $id_field);
             }
 
             if (!$this->master_field) {
@@ -236,11 +252,28 @@ class Join
             }
         }
 
-        $this->onHookToOwnerEntity(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
-
         // if kind is not specified, figure out join type
         if (!$this->kind) {
             $this->kind = $this->weak ? 'left' : 'inner';
+        }
+
+        $this->initJoinHooks();
+    }
+
+    protected function initJoinHooks(): void
+    {
+        $this->onHookToOwnerEntity(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
+
+        if ($this->reverse) {
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'doDelete']), [], -5);
+        } else {
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_DELETE, \Closure::fromCallable([$this, 'doDelete']));
+
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
         }
     }
 
@@ -280,11 +313,11 @@ class Join
      *
      * @param array<string, mixed> $defaults
      */
-    public function join(string $foreign_table, array $defaults = []): self
+    public function join(string $foreignTable, array $defaults = []): self
     {
         $defaults['joinName'] = $this->short_name;
 
-        return $this->getOwner()->join($foreign_table, $defaults);
+        return $this->getOwner()->join($foreignTable, $defaults);
     }
 
     /**
@@ -292,11 +325,11 @@ class Join
      *
      * @param array<string, mixed> $defaults
      */
-    public function leftJoin(string $foreign_table, array $defaults = []): self
+    public function leftJoin(string $foreignTable, array $defaults = []): self
     {
         $defaults['joinName'] = $this->short_name;
 
-        return $this->getOwner()->leftJoin($foreign_table, $defaults);
+        return $this->getOwner()->leftJoin($foreignTable, $defaults);
     }
 
     /**
@@ -318,9 +351,10 @@ class Join
      */
     public function hasMany(string $link, array $defaults = [])
     {
+        $id_field = $this->getOwner()->id_field;
         $defaults = array_merge([
-            'our_field' => $this->id_field,
-            'their_field' => $this->getModelTableString($this->getOwner()) . '_' . $this->id_field,
+            'our_field' => $id_field,
+            'their_field' => $this->getModelTableString($this->getOwner()) . '_' . $id_field,
         ], $defaults);
 
         return $this->getOwner()->hasMany($link, $defaults);
@@ -452,12 +486,100 @@ class Join
         $this->saveBufferByOid[spl_object_id($entity)][$fieldName] = $value;
     }
 
-    /**
-     * Clears id and save buffer.
-     */
     protected function afterUnload(Model $entity): void
     {
         $this->unsetId($entity);
         $this->unsetSaveBuffer($entity);
+    }
+
+    abstract public function afterLoad(Model $entity): void;
+
+    public function beforeInsert(Model $entity, array &$data): void
+    {
+        if ($this->weak) {
+            return;
+        }
+
+        $model = $this->getOwner();
+
+        // the value for the master_field is set, so we are going to use existing record anyway
+        if ($model->hasField($this->master_field) && $entity->get($this->master_field) !== null) {
+            return;
+        }
+
+        $foreignModel = $this->getForeignModel();
+        $foreignEntity = $foreignModel->createEntity()
+            ->setMulti($this->getAndUnsetSaveBuffer($entity))
+            /*->set($this->foreign_field, null)*/;
+        $foreignEntity->save();
+
+        $this->setId($entity, $foreignEntity->getId());
+
+        if ($this->hasJoin()) {
+            $this->getJoin()->setSaveBufferValue($entity, $this->master_field, $this->getId($entity));
+        } else {
+            $data[$this->master_field] = $this->getId($entity);
+        }
+
+        // $entity->set($this->master_field, $this->getId($entity)); // TODO needed? from array persistence
+    }
+
+    public function afterInsert(Model $entity): void
+    {
+        if ($this->weak) {
+            return;
+        }
+
+        $this->setSaveBufferValue($entity, $this->foreign_field, $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId()); // TODO needed? from array persistence
+
+        $foreignModel = $this->getForeignModel();
+        $foreignEntity = $foreignModel->createEntity()
+            ->setMulti($this->getAndUnsetSaveBuffer($entity))
+            ->set($this->foreign_field, $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId());
+        $foreignEntity->save();
+
+        $this->setId($entity, $entity->getId()); // TODO why is this here? it seems to be not needed
+    }
+
+    public function beforeUpdate(Model $entity, array &$data): void
+    {
+        if ($this->weak) {
+            return;
+        }
+
+        if (!$this->issetSaveBuffer($entity)) {
+            return;
+        }
+
+        $foreignModel = $this->getForeignModel();
+        $foreignId = $this->reverse ? $entity->getId() : $entity->get($this->master_field);
+        $saveBuffer = $this->getAndUnsetSaveBuffer($entity);
+        $foreignModel->atomic(function () use ($foreignModel, $foreignId, $saveBuffer) {
+            $foreignModel = (clone $foreignModel)->addCondition($this->foreign_field, $foreignId);
+            foreach ($foreignModel as $foreignEntity) {
+                $foreignEntity->setMulti($saveBuffer);
+                $foreignEntity->save();
+            }
+        });
+
+        // $this->setId($entity, ??); // TODO needed? from array persistence
+    }
+
+    public function doDelete(Model $entity): void
+    {
+        if ($this->weak) {
+            return;
+        }
+
+        $foreignModel = $this->getForeignModel();
+        $foreignId = $this->reverse ? $entity->getId() : $entity->get($this->master_field);
+        $foreignModel->atomic(function () use ($foreignModel, $foreignId) {
+            $foreignModel = (clone $foreignModel)->addCondition($this->foreign_field, $foreignId);
+            foreach ($foreignModel as $foreignEntity) {
+                $foreignEntity->delete();
+            }
+        });
+
+        $this->unsetId($entity); // TODO needed? from array persistence
     }
 }

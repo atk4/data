@@ -7,9 +7,6 @@ namespace Atk4\Data\Persistence\Sql;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 
-/**
- * @property Persistence\Sql $persistence
- */
 class Join extends Model\Join
 {
     /**
@@ -28,9 +25,6 @@ class Join extends Model\Join
         return '_' . ($this->foreign_alias ?: $this->foreign_table);
     }
 
-    /**
-     * This method is to figure out stuff.
-     */
     protected function init(): void
     {
         parent::init();
@@ -42,43 +36,25 @@ class Join extends Model\Join
             $this->foreign_alias = ($this->getOwner()->table_alias ?: '') . $this->short_name;
         }
 
-        $this->onHookToOwnerBoth(Persistence\Sql::HOOK_INIT_SELECT_QUERY, \Closure::fromCallable([$this, 'initSelectQuery']));
+        // Master field indicates ID of the joined item. In the past it had to be
+        // defined as a physical field in the main table. Now it is a model field
+        // so you can use expressions or fields inside joined entities.
+        // If string specified here does not point to an existing model field
+        // a new basic field is inserted and marked hidden.
+        if (!$this->reverse && !$this->getOwner()->hasField($this->master_field)) {
+            $owner = $this->hasJoin() ? $this->getJoin() : $this->getOwner();
 
-        // add necessary hooks
-        if ($this->reverse) {
-            $this->onHookToOwnerEntity(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']));
-            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
-            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'doDelete']), [], -5);
-            $this->onHookToOwnerEntity(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
-        } else {
-            // Master field indicates ID of the joined item. In the past it had to be
-            // defined as a physical field in the main table. Now it is a model field
-            // so you can use expressions or fields inside joined entities.
-            // If string specified here does not point to an existing model field
-            // a new basic field is inserted and marked hidden.
-            if (!$this->getOwner()->hasField($this->master_field)) {
-                $owner = $this->hasJoin() ? $this->getJoin() : $this->getOwner();
+            $field = $owner->addField($this->master_field, ['system' => true, 'read_only' => true]);
 
-                $field = $owner->addField($this->master_field, ['system' => true, 'read_only' => true]);
-
-                $this->master_field = $field->short_name;
-            }
-
-            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']), [], -5);
-            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
-            $this->onHookToOwnerEntity(Model::HOOK_AFTER_DELETE, \Closure::fromCallable([$this, 'doDelete']));
-            $this->onHookToOwnerEntity(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
+            $this->master_field = $field->short_name;
         }
     }
 
-    /**
-     * Returns DSQL query.
-     */
-    public function dsql(): Query
+    protected function initJoinHooks(): void
     {
-        $dsql = $this->getOwner()->persistence->initQuery($this->getOwner());
+        parent::initJoinHooks();
 
-        return $dsql->reset('table')->table($this->foreign_table, $this->foreign_alias);
+        $this->onHookToOwnerBoth(Persistence\Sql::HOOK_INIT_SELECT_QUERY, \Closure::fromCallable([$this, 'initSelectQuery']));
     }
 
     /**
@@ -127,79 +103,5 @@ class Join extends Model\Join
             $this->setId($entity, $entity->getDataRef()[$this->short_name]);
             unset($entity->getDataRef()[$this->short_name]);
         }
-    }
-
-    public function beforeInsert(Model $entity, array &$data): void
-    {
-        if ($this->weak) {
-            return;
-        }
-
-        $model = $this->getOwner();
-
-        // The value for the master_field is set, so we are going to use existing record anyway
-        if ($model->hasField($this->master_field) && $entity->get($this->master_field)) {
-            return;
-        }
-
-        $query = $this->dsql();
-        $query->mode('insert');
-        $query->setMulti($model->persistence->typecastSaveRow($model, $this->getAndUnsetSaveBuffer($entity)));
-        // $query->set($this->foreign_field, null);
-        $query->mode('insert')->execute(); // TODO IMPORTANT migrate to Model insert
-        $this->setId($entity, $model->persistence->lastInsertId(new Model($model->persistence, ['table' => $this->foreign_table])));
-
-        if ($this->hasJoin()) {
-            $this->getJoin()->setSaveBufferValue($entity, $this->master_field, $this->getId($entity));
-        } else {
-            $data[$this->master_field] = $this->getId($entity);
-        }
-    }
-
-    public function afterInsert(Model $entity): void
-    {
-        if ($this->weak) {
-            return;
-        }
-
-        $model = $this->getOwner();
-
-        $query = $this->dsql();
-        $query->setMulti($model->persistence->typecastSaveRow($model, $this->getAndUnsetSaveBuffer($entity)));
-        $query->set($this->foreign_field, $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId());
-        $query->mode('insert')->execute(); // TODO IMPORTANT migrate to Model insert
-        $this->setId($entity, $model->persistence->lastInsertId($model));
-    }
-
-    public function beforeUpdate(Model $entity, array &$data): void
-    {
-        if ($this->weak) {
-            return;
-        }
-
-        if (!$this->issetSaveBuffer($entity)) {
-            return;
-        }
-
-        $model = $this->getOwner();
-
-        $query = $this->dsql();
-        $query->setMulti($model->persistence->typecastSaveRow($model, $this->getAndUnsetSaveBuffer($entity)));
-
-        $id = $this->reverse ? $entity->getId() : $entity->get($this->master_field);
-
-        $query->where($this->foreign_field, $id)->mode('update')->execute(); // TODO IMPORTANT migrate to Model update
-    }
-
-    public function doDelete(Model $entity): void
-    {
-        if ($this->weak) {
-            return;
-        }
-
-        $query = $this->dsql();
-        $id = $this->reverse ? $entity->getId() : $entity->get($this->master_field);
-
-        $query->where($this->foreign_field, $id)->mode('delete')->execute(); // TODO IMPORTANT migrate to Model delete
     }
 }
