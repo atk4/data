@@ -473,11 +473,11 @@ and overwrite this simple method to support expressions like this, for example:
 Joining with other tables
 -------------------------
 
-.. php:method:: join($foreign_table, $master_field, $join_kind)
+.. php:method:: join($foreignTable, $master_field, $join_kind)
 
     Join results with additional table using "JOIN" statement in your query.
 
-    :param string|array $foreign_table: table to join (may include field and alias)
+    :param string|array $foreignTable: table to join (may include field and alias)
     :param mixed  $master_field:  main field (and table) to join on or Expression
     :param string $join_kind:     'left' (default), 'inner', 'right' etc - which join type to use
     :returns: $this

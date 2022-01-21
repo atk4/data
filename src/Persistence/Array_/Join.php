@@ -8,43 +8,8 @@ use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 
-/**
- * @property Persistence\Array_|null $persistence
- */
 class Join extends Model\Join
 {
-    /**
-     * This method is to figure out stuff.
-     */
-    protected function init(): void
-    {
-        parent::init();
-
-        // add necessary hooks
-        if ($this->reverse) {
-            $this->onHookToOwnerEntity(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']), [], -5);
-            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']), [], -5);
-            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'doDelete']), [], -5);
-        } else {
-            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']));
-            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
-            $this->onHookToOwnerEntity(Model::HOOK_AFTER_DELETE, \Closure::fromCallable([$this, 'doDelete']));
-            $this->onHookToOwnerEntity(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
-        }
-    }
-
-    protected function makeFakeModelWithForeignTable(): Model
-    {
-        $this->getOwner()->assertIsModel();
-
-        $modelCloned = clone $this->getOwner();
-        $modelCloned->table = $this->foreign_table;
-
-        // @TODO hooks will be fixed on a cloned model, Join should be replaced later by supporting unioned table as a table model
-
-        return $modelCloned;
-    }
-
     public function afterLoad(Model $entity): void
     {
         // we need to collect ID
@@ -55,7 +20,7 @@ class Join extends Model\Join
 
         try {
             $data = Persistence\Array_::assertInstanceOf($this->getOwner()->persistence)
-                ->load($this->makeFakeModelWithForeignTable(), $this->getId($entity));
+                ->load($this->createFakeForeignModel(), $this->getId($entity));
         } catch (Exception $e) {
             throw (new Exception('Unable to load joined record', $e->getCode(), $e))
                 ->addMoreInfo('table', $this->foreign_table)
@@ -63,78 +28,5 @@ class Join extends Model\Join
         }
         $dataRef = &$entity->getDataRef();
         $dataRef = array_merge($data, $entity->getDataRef());
-    }
-
-    public function beforeInsert(Model $entity, array &$data): void
-    {
-        if ($this->weak) {
-            return;
-        }
-
-        if ($entity->hasField($this->master_field) && $entity->get($this->master_field)) {
-            // The value for the master_field is set,
-            // we are going to use existing record.
-            return;
-        }
-
-        // Figure out where are we going to save data
-        $persistence = $this->persistence ?: $this->getOwner()->persistence;
-
-        $this->setId($entity, $persistence->insert(
-            $this->makeFakeModelWithForeignTable(),
-            $this->getAndUnsetSaveBuffer($entity)
-        ));
-
-        $data[$this->master_field] = $this->getId($entity);
-
-        // $entity->set($this->master_field, $this->getId($entity));
-    }
-
-    public function afterInsert(Model $entity): void
-    {
-        if ($this->weak) {
-            return;
-        }
-
-        $this->setSaveBufferValue($entity, $this->foreign_field, $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId());
-
-        $persistence = $this->persistence ?: $this->getOwner()->persistence;
-
-        $this->setId($entity, $persistence->insert(
-            $this->makeFakeModelWithForeignTable(),
-            $this->getAndUnsetSaveBuffer($entity)
-        ));
-    }
-
-    public function beforeUpdate(Model $entity, array &$data): void
-    {
-        if ($this->weak) {
-            return;
-        }
-
-        $persistence = $this->persistence ?: $this->getOwner()->persistence;
-
-        // @phpstan-ignore-next-line TODO this cannot work, Persistence::update() returns void
-        $this->setId($entity, $persistence->update(
-            $this->makeFakeModelWithForeignTable(),
-            $this->getId($entity),
-            $this->getAndUnsetSaveBuffer($entity)
-        ));
-    }
-
-    public function doDelete(Model $entity): void
-    {
-        if ($this->weak) {
-            return;
-        }
-
-        $persistence = $this->persistence ?: $this->getOwner()->persistence;
-
-        $persistence->delete(
-            $this->makeFakeModelWithForeignTable(),
-            $this->getId($entity)
-        );
-
-        $this->unsetId($entity);
     }
 }

@@ -181,12 +181,12 @@ class Table
     /**
      * TODO rewrite with hash index support.
      *
-     * @param mixed $id
+     * @param mixed $idRaw
      */
-    public function getRowById(\Atk4\Data\Model $model, $id): ?Row
+    public function getRowById(\Atk4\Data\Model $model, $idRaw): ?Row
     {
         foreach ($this->getRows() as $row) {
-            if ($row->getValue($model->id_field) === $id) {
+            if ($row->getValue($model->getField($model->id_field)->getPersistenceName()) === $idRaw) {
                 return $row;
             }
         }
