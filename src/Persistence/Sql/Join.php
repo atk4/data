@@ -7,9 +7,6 @@ namespace Atk4\Data\Persistence\Sql;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 
-/**
- * @property Persistence\Sql $persistence
- */
 class Join extends Model\Join
 {
     /**

@@ -8,9 +8,6 @@ use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 
-/**
- * @property Persistence\Array_|null $persistence
- */
 class Join extends Model\Join
 {
     public function afterLoad(Model $entity): void

@@ -11,7 +11,6 @@ use Atk4\Core\TrackableTrait;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence;
 use Atk4\Data\Reference;
 
 /**
@@ -38,18 +37,8 @@ abstract class Join
     protected $foreign_table;
 
     /**
-     * If $persistence is set, then it's used for loading
-     * and storing the values, instead $owner->persistence.
-     *
-     * @var Persistence|Persistence\Sql|null
-     */
-    protected $persistence;
-
-    /**
      * Field that is used as native "ID" in the foreign table.
      * When deleting record, this field will be conditioned.
-     *
-     * ->where($join->id_field, $join->id)->delete();
      *
      * @var string
      */
@@ -64,7 +53,7 @@ abstract class Join
      */
     protected $kind;
 
-    /** @var bool Is our join weak? Weak join will stop you from touching foreign table. */
+    /** @var bool Weak join does not update foreign table. */
     protected $weak = false;
 
     /**
@@ -74,7 +63,7 @@ abstract class Join
      *
      * If you are using the following syntax:
      *
-     * $user->join('contact','default_contact_id');
+     * $user->join('contact', 'default_contact_id');
      *
      * Then the ID connecting tables is stored in foreign table and the order
      * of saving and delete needs to be reversed. In this case $reverse
@@ -541,7 +530,7 @@ abstract class Join
             $data[$this->master_field] = $this->getId($entity);
         }
 
-        // $entity->set($this->master_field, $this->getId($entity));
+        // $entity->set($this->master_field, $this->getId($entity)); // TODO needed? from array persistence
     }
 
     public function afterInsert(Model $entity): void
@@ -550,7 +539,7 @@ abstract class Join
             return;
         }
 
-        $this->setSaveBufferValue($entity, $this->foreign_field, $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId()); // from array persistence...
+        $this->setSaveBufferValue($entity, $this->foreign_field, $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId()); // TODO needed? from array persistence
 
         $foreignModel = $this->getForeignModel();
         $foreignEntity = $foreignModel->createEntity()
