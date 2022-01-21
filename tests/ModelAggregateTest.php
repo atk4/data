@@ -8,7 +8,6 @@ use Atk4\Data\Model\Aggregate;
 use Atk4\Data\Model\Scope;
 use Atk4\Data\Model\Scope\Condition;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 
 class ModelAggregateTest extends TestCase
@@ -250,14 +249,6 @@ class ModelAggregateTest extends TestCase
         // TODO Sqlite bind param does not work, expr needed, even if casted to float with DBAL type (comparison works only if casted to/bind as int)
         $numExpr = $this->getDatabasePlatform() instanceof SqlitePlatform ? $aggregate->expr('4') : 4;
         $scope = Scope::createAnd(new Condition('client_id', 2), new Condition('amount', $numExpr));
-
-        // MySQL Server v8.0.27 (and possibly some lower versions) returns a wrong result
-        // see https://bugs.mysql.com/bug.php?id=106063
-        // remove this fix once v8.0.28 is released and Docker image is available
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-            array_pop($scope->elements);
-        }
-
         $aggregate->addCondition($scope);
 
         $this->assertSame(
