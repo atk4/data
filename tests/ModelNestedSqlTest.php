@@ -9,7 +9,6 @@ use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Result as DbalResult;
 
 class ModelNestedSqlTest extends TestCase
 {
@@ -171,7 +170,7 @@ class ModelNestedSqlTest extends TestCase
             ['inner', Model::HOOK_BEFORE_SAVE, [false]],
             ['inner', Model::HOOK_BEFORE_INSERT, [['uid' => null, 'name' => 'Karl', 'y' => \DateTime::class]]],
             ['inner', Persistence\Sql::HOOK_BEFORE_INSERT_QUERY, [Query::class]],
-            ['inner', Persistence\Sql::HOOK_AFTER_INSERT_QUERY, [Query::class, DbalResult::class]],
+            ['inner', Persistence\Sql::HOOK_AFTER_INSERT_QUERY, [Query::class, 1]],
             ['inner', Model::HOOK_AFTER_INSERT, []],
             ['inner', Model::HOOK_AFTER_SAVE, [false]],
             ['inner', '<<<'],
@@ -231,7 +230,7 @@ class ModelNestedSqlTest extends TestCase
             ['inner', Model::HOOK_BEFORE_SAVE, [true]],
             ['inner', Model::HOOK_BEFORE_UPDATE, [['name' => 'Susan']]],
             ['inner', Persistence\Sql::HOOK_BEFORE_UPDATE_QUERY, [Query::class]],
-            ['inner', Persistence\Sql::HOOK_AFTER_UPDATE_QUERY, [Query::class, DbalResult::class]],
+            ['inner', Persistence\Sql::HOOK_AFTER_UPDATE_QUERY, [Query::class, 1]],
             ['inner', Model::HOOK_AFTER_UPDATE, [['name' => 'Susan']]],
             ['inner', Model::HOOK_AFTER_SAVE, [true]],
             ['inner', '<<<'],
@@ -266,7 +265,7 @@ class ModelNestedSqlTest extends TestCase
             ['inner', '>>>'],
             ['inner', Model::HOOK_BEFORE_DELETE, []],
             ['inner', Persistence\Sql::HOOK_BEFORE_DELETE_QUERY, [Query::class]],
-            ['inner', Persistence\Sql::HOOK_AFTER_DELETE_QUERY, [Query::class, DbalResult::class]],
+            ['inner', Persistence\Sql::HOOK_AFTER_DELETE_QUERY, [Query::class, 1]],
             ['inner', Model::HOOK_AFTER_DELETE, []],
             ['inner', '<<<'],
             ['inner', Model::HOOK_BEFORE_UNLOAD, []],

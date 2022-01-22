@@ -10,6 +10,7 @@ use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Expression;
+use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
@@ -266,13 +267,12 @@ class RandomTest extends TestCase
         $m->addField('name');
         $m = $m->load(2);
 
-        $m->onHook(Persistence\Sql::HOOK_AFTER_UPDATE_QUERY, static function ($m, $update, $st) {
+        $m->onHook(Persistence\Sql::HOOK_AFTER_UPDATE_QUERY, static function (Model $m, Query $update, int $c) {
             // we can use afterUpdate to make sure that record was updated
-
-            if (!$st->rowCount()) {
+            if ($c === 0) {
                 throw (new Exception('Update didn\'t affect any records'))
                     ->addMoreInfo('query', $update->getDebugQuery())
-                    ->addMoreInfo('statement', $st)
+                    ->addMoreInfo('affected_rows', $c)
                     ->addMoreInfo('model', $m);
             }
         });

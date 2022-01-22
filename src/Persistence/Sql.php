@@ -549,10 +549,9 @@ class Sql extends Persistence
 
         $insert->setMulti($dataRaw);
 
-        $st = null;
         try {
             $model->hook(self::HOOK_BEFORE_INSERT_QUERY, [$insert]);
-            $st = $insert->execute();
+            $c = $insert->execute()->rowCount();
         } catch (SqlException $e) {
             throw (new Exception('Unable to execute insert query', 0, $e))
                 ->addMoreInfo('model', $model)
@@ -568,7 +567,7 @@ class Sql extends Persistence
             $idRaw = '';
         }
 
-        $model->hook(self::HOOK_AFTER_INSERT_QUERY, [$insert, $st]);
+        $model->hook(self::HOOK_AFTER_INSERT_QUERY, [$insert, $c]);
 
         return $idRaw;
     }
@@ -584,9 +583,8 @@ class Sql extends Persistence
 
         $model->hook(self::HOOK_BEFORE_UPDATE_QUERY, [$update]);
 
-        $st = null;
         try {
-            $st = $update->execute();
+            $c = $update->execute()->rowCount();
         } catch (SqlException $e) {
             throw (new Exception('Unable to update due to query error', 0, $e))
                 ->addMoreInfo('model', $model)
@@ -602,10 +600,10 @@ class Sql extends Persistence
             }
         }
 
-        $model->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update, $st]);
+        $model->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update, $c]);
 
         // if any rows were updated in database, and we had expressions, reload
-        if ($model->reload_after_save && $st->rowCount()) {
+        if ($model->reload_after_save && $c > 0) {
             $d = $model->getDirtyRef();
             $model->reload();
             \Closure::bind(function () use ($model) {
@@ -624,14 +622,14 @@ class Sql extends Persistence
         $model->hook(self::HOOK_BEFORE_DELETE_QUERY, [$delete]);
 
         try {
-            $st = $delete->execute();
+            $c = $delete->execute()->rowCount();
         } catch (SqlException $e) {
             throw (new Exception('Unable to delete due to query error', 0, $e))
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
         }
 
-        $model->hook(self::HOOK_AFTER_DELETE_QUERY, [$delete, $st]);
+        $model->hook(self::HOOK_AFTER_DELETE_QUERY, [$delete, $c]);
     }
 
     public function getFieldSqlExpression(Field $field, Expression $expression): Expression
