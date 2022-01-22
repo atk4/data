@@ -7,7 +7,6 @@ namespace Atk4\Data\Tests;
 use Atk4\Core\HookBreaker;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
-use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Result as DbalResult;
@@ -54,9 +53,6 @@ class ModelNestedSqlTest extends TestCase
                 }
 
                 $res = preg_replace('~(?<=^Atk4\\\\Data\\\\Persistence\\\\Sql\\\\)\w+\\\\(?=\w+$)~', '', get_debug_type($v));
-                if (Connection::isComposerDbal2x() && $res === 'Doctrine\DBAL\Statement') {
-                    $res = DbalResult::class;
-                }
 
                 return $res;
             }

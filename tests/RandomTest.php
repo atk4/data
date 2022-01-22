@@ -9,7 +9,6 @@ use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
-use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\OraclePlatform;
@@ -529,13 +528,13 @@ class RandomTest extends TestCase
 
     public function testTableWithSchema(): void
     {
-        if ($this->getDatabasePlatform() instanceof SqlitePlatform || Connection::isComposerDbal2x()) {
+        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $userSchema = 'db1';
             $docSchema = 'db2';
             $runWithDb = false;
         } else {
             $dbSchema = $this->db->connection->dsql()
-                ->field(null ?? new Expression($this->getDatabasePlatform()->getCurrentDatabaseExpression())) // @phpstan-ignore-line for DBAL 2.x
+                ->field(new Expression($this->getDatabasePlatform()->getCurrentDatabaseExpression()))
                 ->getOne();
             $userSchema = $dbSchema;
             $docSchema = $dbSchema;

@@ -530,10 +530,8 @@ class Expression implements Expressionable, \ArrayAccess
 
     /**
      * @param DbalConnection|Connection $connection
-     *
-     * @return DbalResult|\PDOStatement PDOStatement iff for DBAL 2.x
      */
-    public function execute(object $connection = null): object
+    public function execute(object $connection = null): DbalResult
     {
         if ($connection === null) {
             $connection = $this->connection;
@@ -600,9 +598,6 @@ class Expression implements Expressionable, \ArrayAccess
             }
 
             $result = $statement->execute(); // @phpstan-ignore-line
-            if (Connection::isComposerDbal2x()) {
-                return $statement; // @phpstan-ignore-line
-            }
 
             return $result;
         } catch (DbalException $e) {
@@ -653,11 +648,7 @@ class Expression implements Expressionable, \ArrayAccess
     {
         // DbalResult::iterateAssociative() is broken with streams with Oracle database
         // https://github.com/doctrine/dbal/issues/5002
-        if (Connection::isComposerDbal2x()) {
-            $iterator = $this->execute();
-        } else {
-            $iterator = $this->execute()->iterateAssociative();
-        }
+        $iterator = $this->execute()->iterateAssociative();
 
         foreach ($iterator as $row) {
             yield array_map(function ($v) {
@@ -675,14 +666,10 @@ class Expression implements Expressionable, \ArrayAccess
     {
         // DbalResult::fetchAllAssociative() is broken with streams with Oracle database
         // https://github.com/doctrine/dbal/issues/5002
-        if (Connection::isComposerDbal2x()) {
-            $result = $this->execute();
-        } else {
-            $result = $this->execute();
-        }
+        $result = $this->execute();
 
         $rows = [];
-        while (($row = Connection::isComposerDbal2x() ? $result->fetchAssociative() : $result->fetch()) !== false) {
+        while (($row = $result->fetchAssociative()) !== false) {
             $rows[] = array_map(function ($v) {
                 return $this->castGetValue($v);
             }, $row);
@@ -698,11 +685,7 @@ class Expression implements Expressionable, \ArrayAccess
      */
     public function getRow(): ?array
     {
-        if (Connection::isComposerDbal2x()) {
-            $row = $this->execute()->fetch();
-        } else {
-            $row = $this->execute()->fetchAssociative();
-        }
+        $row = $this->execute()->fetchAssociative();
 
         if ($row === false) {
             return null;
