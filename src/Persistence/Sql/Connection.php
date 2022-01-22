@@ -8,8 +8,6 @@ use Atk4\Core\DiContainerTrait;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Driver\Connection as DbalDriverConnection;
-use Doctrine\DBAL\Driver\Mysqli\Connection as DbalMysqliConnection;
-use Doctrine\DBAL\Driver\OCI8\Connection as DbalOci8Connection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
@@ -201,33 +199,9 @@ abstract class Connection
         ], $args));
     }
 
-    /**
-     * @param DbalDriverConnection|DbalConnection $connection
-     *
-     * @return object|resource
-     */
-    private static function getDriverFromDbalDriverConnection(object $connection)
-    {
-        // TODO replace this method with Connection::getNativeConnection() once only DBAL 3.3+ is supported
-        // https://github.com/doctrine/dbal/pull/5037
-
-        $wrappedConnection = $connection instanceof DbalMysqliConnection
-            ? $connection->getWrappedResourceHandle()
-            : ($connection instanceof DbalOci8Connection
-                ? \Closure::bind(fn () => $connection->connection, null, DbalOci8Connection::class)()
-                : $connection->getWrappedConnection());
-
-        if ($wrappedConnection instanceof \PDO || $wrappedConnection instanceof \mysqli
-            || (is_resource($wrappedConnection) && get_resource_type($wrappedConnection) === 'oci8 connection')) {
-            return $wrappedConnection;
-        }
-
-        return self::getDriverFromDbalDriverConnection($wrappedConnection);
-    }
-
     private static function getDriverNameFromDbalDriverConnection(DbalDriverConnection $connection): string
     {
-        $driver = self::getDriverFromDbalDriverConnection($connection);
+        $driver = $connection->getNativeConnection();
 
         if ($driver instanceof \PDO) {
             return 'pdo_' . $driver->getAttribute(\PDO::ATTR_DRIVER_NAME);
