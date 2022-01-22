@@ -30,6 +30,12 @@ parameters:
             path: '*'
             count: 2
 
+        # fix https://github.com/phpstan/phpstan-deprecation-rules/issues/52 and https://github.com/phpstan/phpstan/issues/6444
+        -
+            message: '~^Call to method (getClobTypeDeclarationSQL|getCreateTableSQL)\(\) of deprecated class Doctrine\\DBAL\\Platforms\\(SQLServerPlatform|AbstractPlatform):\nUse.+instead\.$~'
+            path: '*'
+            count: 2
+
         # TODO these rules are generated, this ignores should be fixed in the code
         # for src/Schema/TestCase.php
         - '~^Access to an undefined property Atk4\\Data\\Persistence::\$connection\.$~'

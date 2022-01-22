@@ -180,7 +180,7 @@ abstract class Connection
     public static function connect($dsn, $user = null, $password = null, $args = [])
     {
         if ($dsn instanceof DbalConnection) {
-            $driverName = self::getDriverNameFromDbalDriverConnection($dsn->getWrappedConnection());
+            $driverName = self::getDriverNameFromDbalDriverConnection($dsn->getWrappedConnection()); // @phpstan-ignore-line https://github.com/doctrine/dbal/issues/5199
             $connectionClass = self::resolveConnectionClass($driverName);
             $dbalConnection = $dsn;
         } elseif ($dsn instanceof DbalDriverConnection) {
@@ -234,7 +234,7 @@ abstract class Connection
             (static::class)::createDbalEventManager()
         );
 
-        return $dbalConnection->getWrappedConnection();
+        return $dbalConnection->getWrappedConnection(); // @phpstan-ignore-line https://github.com/doctrine/dbal/issues/5199
     }
 
     protected static function connectFromDbalDriverConnection(DbalDriverConnection $dbalDriverConnection): DbalConnection
