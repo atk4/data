@@ -335,7 +335,7 @@ In short this should allow you to build and execute any SQL statement::
     $this->expr("call get_nominal_sheet([], [], '2014-10-01', '2015-09-30', 0)", [
         $this->getApp()->system->getId(),
         $this->getApp()->system['contractor_id'],
-    ])->execute();
+    ])->executeQuery();
 
 Depending on the statement you can also use your statement to retrieve data::
 
@@ -469,7 +469,7 @@ procedure inside Model::init() then set $table property to a temporary table::
             $res = $this->expr("call get_nominal_sheet([], [], '2014-10-01', '2015-09-30', 0)", [
                 $this->getApp()->system->getId(),
                 $this->getApp()->system['contractor_id'],
-            ])->execute();
+            ])->executeQuery();
 
             $this->addField('date', ['type' => 'date']);
             $this->addField('items', ['type' => 'integer']);

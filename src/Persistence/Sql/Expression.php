@@ -532,15 +532,29 @@ class Expression implements Expressionable, \ArrayAccess
 
     /**
      * @param DbalConnection|Connection $connection
+     *
+     * @return DbalResult|int<0, max>
+     *
+     * @deprecated Expression::execute() is deprecated and will be removed in v4.0, use Expression::executeQuery() or Expression::executeStatement() instead
      */
-    public function execute(object $connection = null): DbalResult
+    public function execute(object $connection = null, bool $fromExecuteStatement = null)
     {
         if ($connection === null) {
             $connection = $this->connection;
         }
 
+        if ($fromExecuteStatement === null) {
+            'trigger_error'('Method is deprecated. Use executeQuery() or executeStatement() instead', \E_USER_DEPRECATED);
+
+            $fromExecuteStatement = false;
+        }
+
         if (!$connection instanceof DbalConnection) {
-            return $connection->execute($this);
+            if ($fromExecuteStatement) {
+                return $connection->executeStatement($this);
+            }
+
+            return $connection->executeQuery($this);
         }
 
         [$sql, $params] = $this->updateRenderBeforeExecute($this->render());
@@ -600,7 +614,11 @@ class Expression implements Expressionable, \ArrayAccess
                 }
             }
 
-            $result = $statement->execute(); // @phpstan-ignore-line
+            if ($fromExecuteStatement) {
+                $result = $statement->executeStatement();
+            } else {
+                $result = $statement->executeQuery();
+            }
 
             return $result;
         } catch (DbalException $e) {
@@ -618,6 +636,24 @@ class Expression implements Expressionable, \ArrayAccess
 
             throw $eNew;
         }
+    }
+
+    /**
+     * @param DbalConnection|Connection $connection
+     */
+    public function executeQuery(object $connection = null): DbalResult
+    {
+        return $this->execute($connection, false); // @phpstan-ignore-line
+    }
+
+    /**
+     * @param DbalConnection|Connection $connection
+     *
+     * @phpstan-return int<0, max>
+     */
+    public function executeStatement(object $connection = null): int
+    {
+        return $this->execute($connection, true); // @phpstan-ignore-line
     }
 
     // {{{ Result Querying
@@ -667,7 +703,7 @@ class Expression implements Expressionable, \ArrayAccess
     {
         // DbalResult::iterateAssociative() is broken with streams with Oracle database
         // https://github.com/doctrine/dbal/issues/5002
-        $iterator = $this->execute()->iterateAssociative();
+        $iterator = $this->executeQuery()->iterateAssociative();
 
         foreach ($iterator as $row) {
             yield array_map(function ($v) {
@@ -685,7 +721,7 @@ class Expression implements Expressionable, \ArrayAccess
     {
         // DbalResult::fetchAllAssociative() is broken with streams with Oracle database
         // https://github.com/doctrine/dbal/issues/5002
-        $result = $this->execute();
+        $result = $this->executeQuery();
 
         $rows = [];
         while (($row = $result->fetchAssociative()) !== false) {
@@ -704,7 +740,7 @@ class Expression implements Expressionable, \ArrayAccess
      */
     public function getRow(): ?array
     {
-        $row = $this->execute()->fetchAssociative();
+        $row = $this->executeQuery()->fetchAssociative();
 
         if ($row === false) {
             return null;

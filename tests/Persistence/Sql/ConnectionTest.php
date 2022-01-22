@@ -186,6 +186,6 @@ class ConnectionTest extends TestCase
         );
 
         $this->expectException(\Atk4\Data\Persistence\Sql\Exception::class);
-        $q->execute();
+        $q->executeQuery();
     }
 }

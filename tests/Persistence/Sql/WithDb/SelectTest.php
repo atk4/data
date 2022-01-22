@@ -158,7 +158,7 @@ class SelectTest extends TestCase
     public function testOtherQueries(): void
     {
         // truncate table
-        $this->q('employee')->mode('truncate')->execute();
+        $this->q('employee')->mode('truncate')->executeStatement();
         $this->assertSame(
             '0',
             $this->q('employee')->field(new Expression('count(*)'))->getOne()
@@ -167,10 +167,10 @@ class SelectTest extends TestCase
         // insert
         $this->q('employee')
             ->setMulti(['id' => 1, 'name' => 'John', 'surname' => 'Doe', 'retired' => true])
-            ->mode('insert')->execute();
+            ->mode('insert')->executeStatement();
         $this->q('employee')
             ->setMulti(['id' => 2, 'name' => 'Jane', 'surname' => 'Doe', 'retired' => false])
-            ->mode('insert')->execute();
+            ->mode('insert')->executeStatement();
         $this->assertSame(
             [['id' => '1', 'name' => 'John'], ['id' => '2', 'name' => 'Jane']],
             $this->q('employee')->field('id')->field('name')->order('id')->getRows()
@@ -180,7 +180,7 @@ class SelectTest extends TestCase
         $this->q('employee')
             ->where('name', 'John')
             ->set('name', 'Johnny')
-            ->mode('update')->execute();
+            ->mode('update')->executeStatement();
         $this->assertSame(
             [['id' => '1', 'name' => 'Johnny'], ['id' => '2', 'name' => 'Jane']],
             $this->q('employee')->field('id')->field('name')->order('id')->getRows()
@@ -191,11 +191,11 @@ class SelectTest extends TestCase
             $this->q('employee')
                 ->setMulti(['name' => 'Peter', 'surname' => 'Doe', 'retired' => true])
                 ->where('id', 1)
-                ->mode('update')->execute();
+                ->mode('update')->executeStatement();
         } else {
             $this->q('employee')
                 ->setMulti(['id' => 1, 'name' => 'Peter', 'surname' => 'Doe', 'retired' => true])
-                ->mode('replace')->execute();
+                ->mode('replace')->executeStatement();
         }
 
         // In SQLite replace is just like insert, it just checks if there is
@@ -217,7 +217,7 @@ class SelectTest extends TestCase
         // delete
         $this->q('employee')
             ->where('retired', true)
-            ->mode('delete')->execute();
+            ->mode('delete')->executeStatement();
         $this->assertSame(
             [['id' => '2', 'name' => 'Jane']],
             $this->q('employee')->field('id')->field('name')->getRows()
@@ -227,7 +227,7 @@ class SelectTest extends TestCase
     public function testEmptyGetOne(): void
     {
         // truncate table
-        $this->q('employee')->mode('truncate')->execute();
+        $this->q('employee')->mode('truncate')->executeStatement();
         $this->expectException(Exception::class);
         $this->q('employee')->field('name')->getOne();
     }
