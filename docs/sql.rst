@@ -466,7 +466,7 @@ procedure inside Model::init() then set $table property to a temporary table::
         function init(): void {
             parent::init();
 
-            $q = $this->expr("call get_nominal_sheet([],[],'2014-10-01','2015-09-30',0)", [
+            $res = $this->expr("call get_nominal_sheet([],[],'2014-10-01','2015-09-30',0)", [
                 $this->getApp()->system->getId(),
                 $this->getApp()->system['contractor_id']
             ])->execute();

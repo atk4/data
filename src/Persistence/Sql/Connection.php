@@ -8,8 +8,6 @@ use Atk4\Core\DiContainerTrait;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Driver\Connection as DbalDriverConnection;
-use Doctrine\DBAL\Driver\Mysqli\Connection as DbalMysqliConnection;
-use Doctrine\DBAL\Driver\OCI8\Connection as DbalOci8Connection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
@@ -182,7 +180,7 @@ abstract class Connection
     public static function connect($dsn, $user = null, $password = null, $args = [])
     {
         if ($dsn instanceof DbalConnection) {
-            $driverName = self::getDriverNameFromDbalDriverConnection($dsn->getWrappedConnection());
+            $driverName = self::getDriverNameFromDbalDriverConnection($dsn->getWrappedConnection()); // @phpstan-ignore-line https://github.com/doctrine/dbal/issues/5199
             $connectionClass = self::resolveConnectionClass($driverName);
             $dbalConnection = $dsn;
         } elseif ($dsn instanceof DbalDriverConnection) {
@@ -201,45 +199,9 @@ abstract class Connection
         ], $args));
     }
 
-    final public static function isComposerDbal2x(): bool
-    {
-        return !class_exists(DbalResult::class);
-    }
-
-    /**
-     * @param DbalDriverConnection|DbalConnection $connection
-     *
-     * @return object|resource
-     */
-    private static function getDriverFromDbalDriverConnection(object $connection)
-    {
-        // TODO replace this method with Connection::getNativeConnection() once only DBAL 3.3+ is supported
-        // https://github.com/doctrine/dbal/pull/5037
-
-        if (self::isComposerDbal2x()) {
-            if ($connection instanceof \PDO || $connection instanceof \mysqli) {
-                return $connection;
-            }
-        }
-
-        $isDbal2x = self::isComposerDbal2x(); // remove once https://github.com/phpstan/phpstan/issues/6319 is fixed
-        $wrappedConnection = $connection instanceof DbalMysqliConnection
-            ? $connection->getWrappedResourceHandle()
-            : ($connection instanceof DbalOci8Connection
-                ? \Closure::bind(fn () => $isDbal2x ? $connection->dbh : $connection->connection, null, DbalOci8Connection::class)() // @phpstan-ignore-line
-                : $connection->getWrappedConnection());
-
-        if ($wrappedConnection instanceof \PDO || $wrappedConnection instanceof \mysqli
-            || (is_resource($wrappedConnection) && get_resource_type($wrappedConnection) === 'oci8 connection')) {
-            return $wrappedConnection;
-        }
-
-        return self::getDriverFromDbalDriverConnection($wrappedConnection);
-    }
-
     private static function getDriverNameFromDbalDriverConnection(DbalDriverConnection $connection): string
     {
-        $driver = self::getDriverFromDbalDriverConnection($connection);
+        $driver = $connection->getNativeConnection();
 
         if ($driver instanceof \PDO) {
             return 'pdo_' . $driver->getAttribute(\PDO::ATTR_DRIVER_NAME);
@@ -272,7 +234,7 @@ abstract class Connection
             (static::class)::createDbalEventManager()
         );
 
-        return $dbalConnection->getWrappedConnection();
+        return $dbalConnection->getWrappedConnection(); // @phpstan-ignore-line https://github.com/doctrine/dbal/issues/5199
     }
 
     protected static function connectFromDbalDriverConnection(DbalDriverConnection $dbalDriverConnection): DbalConnection
@@ -286,7 +248,7 @@ abstract class Connection
 
         if ($dbalConnection->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             \Closure::bind(function () use ($dbalConnection) {
-                $dbalConnection->platform = new class() extends \Doctrine\DBAL\Platforms\PostgreSQL94Platform {
+                $dbalConnection->platform = new class() extends \Doctrine\DBAL\Platforms\PostgreSQL94Platform { // @phpstan-ignore-line
                     use Postgresql\PlatformTrait;
                 };
             }, null, DbalConnection::class)();
@@ -294,7 +256,7 @@ abstract class Connection
 
         if ($dbalConnection->getDatabasePlatform() instanceof SQLServerPlatform) {
             \Closure::bind(function () use ($dbalConnection) {
-                $dbalConnection->platform = new class() extends \Doctrine\DBAL\Platforms\SQLServer2012Platform {
+                $dbalConnection->platform = new class() extends \Doctrine\DBAL\Platforms\SQLServer2012Platform { // @phpstan-ignore-line
                     use Mssql\PlatformTrait;
                 };
             }, null, DbalConnection::class)();
@@ -350,10 +312,8 @@ abstract class Connection
 
     /**
      * Execute Expression by using this connection.
-     *
-     * @return DbalResult|\PDOStatement PDOStatement iff for DBAL 2.x
      */
-    public function execute(Expression $expr): object
+    public function execute(Expression $expr): DbalResult
     {
         if ($this->connection === null) {
             throw new Exception('Queries cannot be executed through this connection');

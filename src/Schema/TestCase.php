@@ -7,7 +7,6 @@ namespace Atk4\Data\Schema;
 use Atk4\Core\Phpunit\TestCase as BaseTestCase;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
-use Atk4\Data\Persistence\Sql\Connection;
 use Doctrine\DBAL\Logging\SQLLogger;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
@@ -96,10 +95,6 @@ abstract class TestCase extends BaseTestCase
      */
     protected function createSchemaManager(): AbstractSchemaManager
     {
-        if (Connection::isComposerDbal2x()) {
-            return $this->db->connection->connection()->getSchemaManager();
-        }
-
         return $this->db->connection->connection()->createSchemaManager();
     }
 

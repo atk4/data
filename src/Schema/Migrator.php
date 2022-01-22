@@ -69,10 +69,6 @@ class Migrator
      */
     protected function createSchemaManager(): AbstractSchemaManager
     {
-        if (Connection::isComposerDbal2x()) {
-            return $this->connection->connection()->getSchemaManager();
-        }
-
         return $this->connection->connection()->createSchemaManager();
     }
 
