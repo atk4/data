@@ -16,7 +16,7 @@ Grouping
 
 Aggregate model can be used for grouping::
 
-    $aggregate = $orders->groupBy(['country_id']);
+    $aggregate = new Aggregate($orders)->groupBy(['country_id']);
 
 `$aggregate` above is a new object that is most appropriate for the model's persistence and which can be manipulated
 in various ways to fine-tune aggregation. Below is one sample use::

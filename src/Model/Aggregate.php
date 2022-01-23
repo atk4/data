@@ -68,9 +68,13 @@ class Aggregate extends Model
     }
 
     /**
+     * Specify a single field or array of fields on which we will group model.
+     *
+     * @param array<string, array|object> $aggregateExpressions Array of aggregate expressions with alias as key
+     *
      * @return $this
      */
-    public function groupBy(array $fields, array $aggregateExpressions = []): Model
+    public function groupBy(array $fields, array $aggregateExpressions = [])
     {
         $this->groupByFields = array_unique(array_merge($this->groupByFields, $fields));
 

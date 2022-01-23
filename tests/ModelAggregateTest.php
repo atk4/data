@@ -52,7 +52,7 @@ class ModelAggregateTest extends TestCase
 
     public function testGroupBy(): void
     {
-        $invoiceAggregate = $this->createInvoice()->groupBy(['client_id'], [
+        $invoiceAggregate = (new Aggregate($this->createInvoice()))->groupBy(['client_id'], [
             'c' => ['expr' => 'count(*)', 'type' => 'integer'],
         ]);
 
