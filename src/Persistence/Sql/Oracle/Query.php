@@ -97,69 +97,23 @@ class Query extends BaseQuery
         return parent::_sub_render_condition($row);
     }
 
+    public function _render_limit(): ?string
+    {
+        if (!isset($this->args['limit'])) {
+            return null;
+        }
+
+        $cnt = (int) $this->args['limit']['cnt'];
+        $shift = (int) $this->args['limit']['shift'];
+
+        return ($shift ? ' offset ' . $shift . ' rows' : '')
+            . ($cnt ? ' fetch next ' . $cnt . ' rows only' : '');
+    }
+
     public function groupConcat($field, string $delimiter = ',')
     {
         return $this->expr('listagg({field}, []) within group (order by {field})', ['field' => $field, $delimiter]);
     }
-
-    // {{{ for Oracle 11 and lower to support LIMIT with OFFSET
-
-    protected $template_select = '[with]select[option] [field] [from] [table][join][where][group][having][order]';
-    /** @var string */
-    protected $template_select_limit = 'select * from (select "__t".*, rownum "__dsql_rownum" [from] ([with]select[option] [field] [from] [table][join][where][group][having][order]) "__t") where "__dsql_rownum" > [limit_start][and_limit_end]';
-
-    public function limit($cnt, $shift = null)
-    {
-        $this->template_select = $this->template_select_limit;
-
-        return parent::limit($cnt, $shift);
-    }
-
-    public function _render_limit_start(): string
-    {
-        return (string) ($this->args['limit']['shift'] ?? 0);
-    }
-
-    public function _render_and_limit_end(): ?string
-    {
-        if (!$this->args['limit']['cnt']) {
-            return '';
-        }
-
-        return ' and "__dsql_rownum" <= '
-            . max((int) ($this->args['limit']['cnt'] + $this->args['limit']['shift']), (int) $this->args['limit']['cnt']);
-    }
-
-    public function getRowsIterator(): \Traversable
-    {
-        foreach (parent::getRowsIterator() as $row) {
-            unset($row['__dsql_rownum']);
-
-            yield $row;
-        }
-    }
-
-    public function getRows(): array
-    {
-        return array_map(function ($row) {
-            unset($row['__dsql_rownum']);
-
-            return $row;
-        }, parent::getRows());
-    }
-
-    public function getRow(): ?array
-    {
-        $row = parent::getRow();
-
-        if ($row !== null) {
-            unset($row['__dsql_rownum']);
-        }
-
-        return $row;
-    }
-
-    /// }}}
 
     public function exists()
     {
