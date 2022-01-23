@@ -111,18 +111,6 @@ class Aggregate extends Model
     }
 
     /**
-     * TODO this method should be removed, we do not offer similar methods for standard Model.
-     *
-     * @return $this
-     */
-    public function withAggregateField(string $name, $seed = []): Model
-    {
-        static::addField($name, $seed);
-
-        return $this;
-    }
-
-    /**
      * Adds new field into model.
      *
      * @param array|object $seed
