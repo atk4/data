@@ -316,7 +316,7 @@ abstract class Connection
     public function execute(Expression $expr): DbalResult
     {
         if ($this->connection === null) {
-            throw new Exception('Queries cannot be executed through this connection');
+            throw new Exception('DBAL connection is not set');
         }
 
         return $expr->execute($this->connection);
