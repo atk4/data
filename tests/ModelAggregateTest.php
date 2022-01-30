@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
-use Atk4\Data\Model\Aggregate;
+use Atk4\Data\Model\AggregateModel;
 use Atk4\Data\Model\Scope;
 use Atk4\Data\Model\Scope\Condition;
 use Atk4\Data\Schema\TestCase;
@@ -45,14 +45,14 @@ class ModelAggregateTest extends TestCase
         return $invoice;
     }
 
-    protected function createInvoiceAggregate(): Aggregate
+    protected function createInvoiceAggregate(): AggregateModel
     {
-        return new Aggregate($this->createInvoice());
+        return new AggregateModel($this->createInvoice());
     }
 
     public function testGroupBy(): void
     {
-        $invoiceAggregate = (new Aggregate($this->createInvoice()))->groupBy(['client_id'], [
+        $invoiceAggregate = (new AggregateModel($this->createInvoice()))->groupBy(['client_id'], [
             'c' => ['expr' => 'count(*)', 'type' => 'integer'],
         ]);
 
