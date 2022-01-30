@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
-use Atk4\Data\Model\Aggregate;
+use Atk4\Data\Model\AggregateModel;
 use Atk4\Data\Schema\TestCase;
 
 class ReportTest extends TestCase
@@ -34,11 +34,11 @@ class ReportTest extends TestCase
         $this->setDb($this->init_db);
     }
 
-    protected function createInvoiceAggregate(): Aggregate
+    protected function createInvoiceAggregate(): AggregateModel
     {
         $invoice = new Model\Invoice($this->db);
         $invoice->getRef('client_id')->addTitle();
-        $invoiceAggregate = new Aggregate($invoice);
+        $invoiceAggregate = new AggregateModel($invoice);
         $invoiceAggregate->addField('client');
 
         return $invoiceAggregate;

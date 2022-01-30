@@ -114,9 +114,13 @@ class Union extends Model
     }
 
     /**
-     * @phpstan-return Model
+     * Specify a single field or array of fields on which we will group model.
+     *
+     * @param array<string, array|object> $aggregateExpressions Array of aggregate expressions with alias as key
+     *
+     * @return $this
      */
-    public function groupBy(array $fields, array $aggregateExpressions = []): Model // @phpstan-ignore-line
+    public function groupBy(array $fields, array $aggregateExpressions = []): Model
     {
         $this->aggregate = $aggregateExpressions;
         $this->group = $fields;
