@@ -182,7 +182,7 @@ $grid->setModel($data);
 $html = $grid->render();
 ```
 
-Or if you want to display them as a Chart, using https://github.com/atk4/chart and https://github.com/atk4/report
+Or if you want to display them as a Chart using https://github.com/atk4/chart
 
 ``` php
 $chart = new \Atk4\Chart\BarChart();
@@ -190,8 +190,8 @@ $data = new JobReport($db);
 
 // BarChart wants aggregated data
 $data->addExpression('month', 'month([date])');
-$aggregate = new \Atk4\Report\GroupModel($data);
-$aggregate->groupBy('month', ['profit_margin' => 'sum']);
+$aggregate = new AggregateModel($data);
+$aggregate->setGroupBy('month', ['profit_margin' => 'sum']);
 
 // associate presentation with data
 $chart->setModel($aggregate, ['month', 'profit_margin']);
