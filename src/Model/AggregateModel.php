@@ -14,10 +14,10 @@ use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Reference;
 
 /**
- * Aggregate model allows you to query using "group by" clause on your existing model.
+ * AggregateModel model allows you to query using "group by" clause on your existing model.
  * It's quite simple to set up.
  *
- * $aggregate = new Aggregate($mymodel);
+ * $aggregate = new AggregateModel($mymodel);
  * $aggregate->groupBy(['first','last'], ['salary'=>'sum([])'];
  *
  * your resulting model will have 3 fields:
@@ -31,9 +31,6 @@ use Atk4\Data\Reference;
  * If this field exist in the original model it will be added and you'll get exception otherwise. Finally you are
  * permitted to add expressions.
  *
- * The base model must not be Union model or another Aggregate model, however it's possible to use Aggregate model as nestedModel inside Union model.
- * Union model implements identical grouping rule on its own.
- *
  * You can also pass seed (for example field type) when aggregating:
  * $aggregate->groupBy(['first', 'last'], ['salary' => ['sum([])', 'type' => 'atk4_money']];
  *
@@ -42,7 +39,7 @@ use Atk4\Data\Reference;
  *
  * @method Expression expr($expr, array $args = []) forwards to Persistence\Sql::expr using $this as model
  */
-class Aggregate extends Model
+class AggregateModel extends Model
 {
     /** @const string */
     public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelectQuery';
@@ -68,9 +65,13 @@ class Aggregate extends Model
     }
 
     /**
+     * Specify a single field or array of fields on which we will group model.
+     *
+     * @param array<string, array|object> $aggregateExpressions Array of aggregate expressions with alias as key
+     *
      * @return $this
      */
-    public function groupBy(array $fields, array $aggregateExpressions = []): Model
+    public function groupBy(array $fields, array $aggregateExpressions = [])
     {
         $this->groupByFields = array_unique(array_merge($this->groupByFields, $fields));
 
@@ -108,18 +109,6 @@ class Aggregate extends Model
         $ref->setOwner($this);
 
         return $ref;
-    }
-
-    /**
-     * TODO this method should be removed, we do not offer similar methods for standard Model.
-     *
-     * @return $this
-     */
-    public function withAggregateField(string $name, $seed = []): Model
-    {
-        static::addField($name, $seed);
-
-        return $this;
     }
 
     /**
@@ -188,7 +177,7 @@ class Aggregate extends Model
             case 'fx':
                 return parent::action($mode, $args);
             default:
-                throw (new Exception('Aggregate model does not support this action'))
+                throw (new Exception('AggregateModel model does not support this action'))
                     ->addMoreInfo('mode', $mode);
         }
     }
