@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Model;
 
+use Atk4\Core\Exception as CoreException;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Field\SqlExpressionField;
@@ -50,31 +51,14 @@ class UnionModel extends Model
     /**
      * Contain array of array containing model and mappings.
      *
-     * $union = [ [ $model1, ['amount'=>'total_gross'] ] , [$model2, []] ];
+     * $union = [
+     *     [$model1, ['amount' => 'total_gross'] ],
+     *     [$model2, []]
+     * ];
      *
      * @var array
      */
     public $union = [];
-
-    /**
-     * When aggregation happens, this field will contain list of fields
-     * we use in groupBy. Multiple fields can be in the array. All
-     * the remaining fields will be hidden (marked as system()) and
-     * have their "aggregates" added into the selectQuery (if possible).
-     *
-     * @var array
-     */
-    public $group = [];
-
-    /**
-     * When grouping, the functions will be applied as per aggregate
-     * fields, e.g. 'balance'=>['sum', 'amount'].
-     *
-     * You can also use Expression instead of array.
-     *
-     * @var array
-     */
-    public $aggregate = [];
 
     /** @var string Derived table alias */
     public $table = '_tu';
@@ -114,46 +98,7 @@ class UnionModel extends Model
     }
 
     /**
-     * Specify a single field or array of fields on which we will group model.
-     *
-     * @param array<string, array|object> $aggregateExpressions Array of aggregate expressions with alias as key
-     *
-     * @return $this
-     */
-    public function groupBy(array $fields, array $aggregateExpressions = []): Model
-    {
-        $this->aggregate = $aggregateExpressions;
-        $this->group = $fields;
-
-        foreach ($aggregateExpressions as $fieldName => $seed) {
-            $seed = (array) $seed;
-
-            $field = $this->hasField($fieldName) ? $this->getField($fieldName) : null;
-
-            // first element of seed should be expression itself
-            if (isset($seed[0]) && is_string($seed[0])) {
-                $seed[0] = $this->expr($seed[0], $field ? [$field] : null);
-            }
-
-            if ($field) {
-                $this->removeField($fieldName);
-            }
-
-            $this->addExpression($fieldName, $seed);
-        }
-
-        foreach ($this->union as [$nestedModel, $fieldMap]) {
-            if ($nestedModel instanceof self) {
-                $nestedModel->aggregate = $aggregateExpressions;
-                $nestedModel->group = $fields;
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * If UnionModel has such field, then add condition to it.
+     * If UnionModel model has such field, then add condition to it.
      * Otherwise adds condition to all nested models.
      *
      * @param mixed $key
@@ -202,8 +147,9 @@ class UnionModel extends Model
 
                         break;
                 }
-            } catch (\Atk4\Core\Exception $e) {
-                throw $e->addMoreInfo('nestedModel', get_class($nestedModel));
+            } catch (CoreException $e) {
+                throw $e
+                    ->addMoreInfo('nestedModel', $nestedModel);
             }
         }
 
@@ -211,14 +157,9 @@ class UnionModel extends Model
     }
 
     /**
-     * Execute action.
-     *
-     * @param string $mode
-     * @param array  $args
-     *
      * @return Query
      */
-    public function action($mode, $args = [])
+    public function action(string $mode, array $args = [])
     {
         $subquery = null;
         switch ($mode) {
@@ -232,10 +173,6 @@ class UnionModel extends Model
                 }
                 $subquery = $this->getSubQuery($fields);
                 $query = parent::action($mode, $args)->reset('table')->table($subquery, $this->table_alias ?? $this->table);
-
-                foreach ($this->group as $group) {
-                    $query->group($group);
-                }
 
                 $this->hook(self::HOOK_INIT_SELECT_QUERY, [$query]);
 
@@ -324,55 +261,24 @@ class UnionModel extends Model
                     // UnionModel can have some fields defined as expressions. We don't touch those either.
                     // Imants: I have no idea why this condition was set, but it's limiting our ability
                     // to use expression fields in mapping
-                    if ($field instanceof SqlExpressionField && !isset($this->aggregate[$fieldName])) {
-                        continue;
-                    }
-
-                    // if we group we do not select non-aggregate fields
-                    // TODO this breaks composide design - remove this if statement, fields must be manually removed or added to grouping!
-                    if (count($this->group) > 0 && !in_array($fieldName, $this->group, true) && !isset($this->aggregate[$fieldName])) {
+                    if ($field instanceof SqlExpressionField /*&& !isset($this->aggregate[$fieldName])*/) {
                         continue;
                     }
 
                     $fieldExpression = $this->getFieldExpr($nestedModel, $fieldName, $fieldMap[$fieldName] ?? null);
 
-                    if (isset($this->aggregate[$fieldName])) {
-                        $seed = (array) $this->aggregate[$fieldName];
-
-                        // first element of seed should be expression itself
-                        $fieldExpression = $nestedModel->expr($seed[0], [$fieldExpression]);
-                    }
-
                     $queryFieldExpressions[$fieldName] = $fieldExpression;
-                } catch (\Atk4\Core\Exception $e) {
-                    throw $e->addMoreInfo('nestedModel', get_class($nestedModel));
+                } catch (CoreException $e) {
+                    throw $e
+                        ->addMoreInfo('nestedModel', $nestedModel);
                 }
             }
 
             // now prepare query
             $query = $this->persistence->action($nestedModel, 'select', [false]);
 
-            if ($nestedModel instanceof self) {
-                $subquery = $nestedModel->getSubQuery($fields);
-                //$query = parent::action($mode, $args);
-                $query->reset('table')->table($subquery);
-
-                foreach ($nestedModel->group as $group) {
-                    $query->group($group);
-                }
-            }
-
             foreach ($queryFieldExpressions as $fAlias => $fExpr) {
                 $query->field($fExpr, $fAlias);
-            }
-
-            // also for sub-queries
-            foreach ($this->group as $group) {
-                if (isset($fieldMap[$group])) {
-                    $query->group($nestedModel->expr($fieldMap[$group]));
-                } elseif ($nestedModel->hasField($group)) {
-                    $query->group($nestedModel->getField($group)->short_name /* TODO short_name should be used by DSQL automatically when in GROUP BY, HAVING, ... */);
-                }
             }
 
             // subquery should not be wrapped in parenthesis, SQLite is especially picky about that
@@ -415,30 +321,10 @@ class UnionModel extends Model
         return $unionQuery;
     }
 
-    // {{{ Debug Methods
-
-    /**
-     * Returns array with useful debug info for var_dump.
-     */
     public function __debugInfo(): array
     {
-        $unionModels = [];
-        foreach ($this->union as [$nestedModel, $fieldMap]) {
-            $unionModels[get_class($nestedModel)] = array_merge(
-                ['fieldMap' => $fieldMap],
-                $nestedModel->__debugInfo()
-            );
-        }
-
-        return array_merge(
-            parent::__debugInfo(),
-            [
-                'group' => $this->group,
-                'aggregate' => $this->aggregate,
-                'unionModels' => $unionModels,
-            ]
-        );
+        return array_merge(parent::__debugInfo(), [
+            'unionModels' => $this->union,
+        ]);
     }
-
-    // }}}
 }

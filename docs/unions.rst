@@ -110,13 +110,3 @@ When condition is added on an UnionModel model it will send it down to every nes
 The exception is when field is not mapped to nested model (if it's an Expression or associated with a Join).
 
 In most cases optimization on the query and UnionModel model is not necessary as it will be done automatically.
-
-Grouping Results
-----------------
-
-UnionModel model has also a built-in grouping support::
-
-   $unionPaymentInvoice->groupBy('client_id', ['amount' => 'sum']);
-
-When specifying a grouping field and it is associated with nested models then grouping will be enabled on every nested model.
-

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
+use Atk4\Data\Model\AggregateModel;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class ModelUnionTest extends TestCase
@@ -206,19 +206,21 @@ class ModelUnionTest extends TestCase
     {
         $transaction = $this->createTransaction();
 
-        $transactionAggregate = $transaction->groupBy(['name'], ['amount' => ['sum([amount])', 'type' => 'atk4_money']]);
+        $transactionAggregate = new AggregateModel($transaction);
+        $transactionAggregate->groupBy(['name'], ['amount' => ['sum([amount])', 'type' => 'atk4_money']]);
 
         $this->assertSameSql(
-            'select "name", sum("amount") "amount" from (select "name" "name", sum("amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name", sum("amount") "amount" from "payment" group by "name") "_tu" group by "name"',
+            'select "name", sum("amount") "amount" from (select "client_id", "name", "amount" from (select "client_id" "client_id", "name" "name", "amount" "amount" from "invoice" UNION ALL select "client_id" "client_id", "name" "name", "amount" "amount" from "payment") "_tu") "_tm" group by "name"',
             $transactionAggregate->action('select', [['name', 'amount']])->render()[0]
         );
 
         $transaction = $this->createSubtractInvoiceTransaction();
 
-        $transactionAggregate = $transaction->groupBy(['name'], ['amount' => ['sum([])', 'type' => 'atk4_money']]);
+        $transactionAggregate = new AggregateModel($transaction);
+        $transactionAggregate->groupBy(['name'], ['amount' => ['sum([])', 'type' => 'atk4_money']]);
 
         $this->assertSameSql(
-            'select "name", sum("amount") "amount" from (select "name" "name", sum(-"amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name", sum("amount") "amount" from "payment" group by "name") "_tu" group by "name"',
+            'select "name", sum("amount") "amount" from (select "client_id", "name", "amount" from (select "client_id" "client_id", "name" "name", -"amount" "amount" from "invoice" UNION ALL select "client_id" "client_id", "name" "name", "amount" "amount" from "payment") "_tu") "_tm" group by "name"',
             $transactionAggregate->action('select', [['name', 'amount']])->render()[0]
         );
     }
@@ -232,7 +234,8 @@ class ModelUnionTest extends TestCase
         $transaction = $this->createTransaction();
         $transaction->removeField('client_id');
         // TODO enable later, test failing with MSSQL $transaction->setOrder('name');
-        $transactionAggregate = $transaction->groupBy(['name'], ['amount' => ['sum([amount])', 'type' => 'atk4_money']]);
+        $transactionAggregate = new AggregateModel($transaction);
+        $transactionAggregate->groupBy(['name'], ['amount' => ['sum([amount])', 'type' => 'atk4_money']]);
         $transactionAggregate->setOrder('name');
 
         $this->assertSame([
@@ -245,7 +248,8 @@ class ModelUnionTest extends TestCase
         $transaction = $this->createSubtractInvoiceTransaction();
         $transaction->removeField('client_id');
         // TODO enable later, test failing with MSSQL $transaction->setOrder('name');
-        $transactionAggregate = $transaction->groupBy(['name'], ['amount' => ['sum([])', 'type' => 'atk4_money']]);
+        $transactionAggregate = new AggregateModel($transaction);
+        $transactionAggregate->groupBy(['name'], ['amount' => ['sum([])', 'type' => 'atk4_money']]);
         $transactionAggregate->setOrder('name');
 
         $this->assertSame([
@@ -262,19 +266,17 @@ class ModelUnionTest extends TestCase
      */
     public function testSubGroupingByExpressions(): void
     {
-        if ($this->getDatabasePlatform() instanceof OraclePlatform) { // TODO
-            $this->markTestIncomplete('TODO - for some reasons Oracle does not accept the query');
-        }
-
         $transaction = $this->createTransaction();
         $transaction->nestedInvoice->addExpression('type', '\'invoice\'');
         $transaction->nestedPayment->addExpression('type', '\'payment\'');
         $transaction->addField('type');
 
-        $transactionAggregate = $transaction->groupBy(['type'], ['amount' => ['sum([amount])', 'type' => 'atk4_money']]);
+        $transactionAggregate = new AggregateModel($transaction);
+        $transactionAggregate->groupBy(['type'], ['amount' => ['sum([amount])', 'type' => 'atk4_money']]);
 
+        // TODO subselects should not select "client" and "name" fields
         $this->assertSameSql(
-            'select "client_id", "name", "type", sum("amount") "amount" from (select (\'invoice\') "type", sum("amount") "amount" from "invoice" group by "type" UNION ALL select (\'payment\') "type", sum("amount") "amount" from "payment" group by "type") "_tu" group by "type"',
+            'select "type", sum("amount") "amount" from (select "client_id", "name", "amount", "type" from (select "client_id" "client_id", "name" "name", "amount" "amount", (\'invoice\') "type" from "invoice" UNION ALL select "client_id" "client_id", "name" "name", "amount" "amount", (\'payment\') "type" from "payment") "_tu") "_tm" group by "type"',
             $transactionAggregate->action('select')->render()[0]
         );
 
@@ -292,7 +294,8 @@ class ModelUnionTest extends TestCase
         $transaction->nestedPayment->addExpression('type', '\'payment\'');
         $transaction->addField('type');
 
-        $transactionAggregate = $transaction->groupBy(['type'], ['amount' => ['sum([])', 'type' => 'atk4_money']]);
+        $transactionAggregate = new AggregateModel($transaction);
+        $transactionAggregate->groupBy(['type'], ['amount' => ['sum([])', 'type' => 'atk4_money']]);
 
         $this->assertSameExportUnordered([
             ['type' => 'invoice', 'amount' => -23.0],
