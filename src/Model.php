@@ -1791,9 +1791,9 @@ class Model implements \IteratorAggregate
 
             if (is_object($ret)) {
                 if ($ret->id_field) {
-                    yield $ret->getId() => $ret; // @phpstan-ignore-line
+                    yield $ret->getId() => $ret;
                 } else {
-                    yield $ret; // @phpstan-ignore-line
+                    yield $ret;
                 }
             } else {
                 if ($this->id_field) {

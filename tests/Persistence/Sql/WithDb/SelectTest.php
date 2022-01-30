@@ -259,10 +259,6 @@ class SelectTest extends TestCase
                 $expectedErrorCode = 1; // SQLSTATE[HY000]: General error: 1 no such table: non_existing_table
             }
 
-            if (Connection::isComposerDbal2x() && $e->getCode() === 0) {
-                $this->markTestIncomplete('DBAL 2.x with non-PDO driver does not set exception code');
-            }
-
             $this->assertSame($expectedErrorCode, $e->getCode());
             $this->assertSameSql(
                 preg_replace('~\s+~', '', 'select "non_existing_field" from "non_existing_table"'),
