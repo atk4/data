@@ -16,14 +16,14 @@ Grouping
 
 AggregateModel model can be used for grouping::
 
-    $aggregate = new AggregateModel($orders)->groupBy(['country_id']);
+    $aggregate = new AggregateModel($orders)->setGroupBy(['country_id']);
 
 `$aggregate` above is a new object that is most appropriate for the model's persistence and which can be manipulated
 in various ways to fine-tune aggregation. Below is one sample use::
 
     $aggregate = new AggregateModel($orders);
     $aggregate->addField('country');
-    $aggregate->groupBy(['country_id'], [
+    $aggregate->setGroupBy(['country_id'], [
             'count' => ['expr' => 'count(*)', 'type' => 'integer'],
             'total_amount' => ['expr' => 'sum([amount])', 'type' => 'atk4_money']
         ],
@@ -39,7 +39,7 @@ Below is how opening balance can be built::
     $ledger->addCondition('date', '<', $from);
 
     // we actually need grouping by nominal
-    $ledger->groupBy(['nominal_id'], [
+    $ledger->setGroupBy(['nominal_id'], [
         'opening_balance' => ['expr' => 'sum([amount])', 'type' => 'atk4_money']
     ]);
 

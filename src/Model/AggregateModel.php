@@ -18,7 +18,7 @@ use Atk4\Data\Reference;
  * It's quite simple to set up.
  *
  * $aggregate = new AggregateModel($mymodel);
- * $aggregate->groupBy(['first','last'], ['salary'=>'sum([])'];
+ * $aggregate->setGroupBy(['first','last'], ['salary'=>'sum([])'];
  *
  * your resulting model will have 3 fields:
  *  first, last, salary
@@ -32,7 +32,7 @@ use Atk4\Data\Reference;
  * permitted to add expressions.
  *
  * You can also pass seed (for example field type) when aggregating:
- * $aggregate->groupBy(['first', 'last'], ['salary' => ['sum([])', 'type' => 'atk4_money']];
+ * $aggregate->setGroupBy(['first', 'last'], ['salary' => ['sum([])', 'type' => 'atk4_money']];
  *
  * @property Persistence\Sql $persistence
  * @property Model           $table
@@ -71,7 +71,7 @@ class AggregateModel extends Model
      *
      * @return $this
      */
-    public function groupBy(array $fields, array $aggregateExpressions = [])
+    public function setGroupBy(array $fields, array $aggregateExpressions = [])
     {
         $this->groupByFields = array_unique(array_merge($this->groupByFields, $fields));
 
