@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests\Model;
 
-use Atk4\Data\Model\Union;
+use Atk4\Data\Model\UnionModel;
 
-class Transaction extends Union
+class Transaction extends UnionModel
 {
     /** @var Invoice */
     public $nestedInvoice;

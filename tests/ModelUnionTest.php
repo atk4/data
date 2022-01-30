@@ -171,7 +171,7 @@ class ModelUnionTest extends TestCase
             ['client_id' => 2, 'name' => 'full pay', 'amount' => 4.0],
         ], $transaction->export());
 
-        // Transaction is Union Model
+        // Transaction is UnionModel Model
         $client->hasMany('Transaction', ['model' => $transaction]);
 
         $this->assertSameExportUnordered([
@@ -192,7 +192,7 @@ class ModelUnionTest extends TestCase
             ['client_id' => 2, 'name' => 'full pay', 'amount' => 4.0],
         ], $transaction->export());
 
-        // Transaction is Union Model
+        // Transaction is UnionModel Model
         $client->hasMany('Transaction', ['model' => $transaction]);
 
         $this->assertSameExportUnordered([

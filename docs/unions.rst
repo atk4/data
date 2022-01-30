@@ -7,9 +7,9 @@ Model Unions
 
 .. php:namespace:: Atk4\Data\Model
 
-.. php:class:: Union
+.. php:class:: UnionModel
 
-In some cases data from multiple models need to be combined. In this case the Union model comes very handy.
+In some cases data from multiple models need to be combined. In this case the UnionModel model comes very handy.
 In the case used below Client model schema may have multiple invoices and multiple payments. Payment is not related to the invoice.::
 
    class Client extends \Atk4\Data\Model {
@@ -49,10 +49,10 @@ Then data can be queried::
 
    $unionPaymentInvoice->export();
 
-Union Model Fields
+Define Fields
 ------------------
 
-Below is an example of 3 different ways to define fields for the Union model::
+Below is an example of 3 different ways to define fields for the UnionModel model::
 
    // Will link the "name" field with all the nested models.
    $unionPaymentInvoice->addField('client_id');
@@ -60,7 +60,7 @@ Below is an example of 3 different ways to define fields for the Union model::
    // Expression will not affect nested models in any way
    $unionPaymentInvoice->addExpression('name_capital', 'upper([name])');
 
-   // Union model can be joined with extra tables and define some fields from those joins
+   // UnionModel model can be joined with extra tables and define some fields from those joins
    $unionPaymentInvoice
       ->join('client', 'client_id')
       ->addField('client_name', 'name');
@@ -70,7 +70,7 @@ Below is an example of 3 different ways to define fields for the Union model::
 Field Mapping
 -------------
 
-Sometimes the field that is defined in the Union model may be named differently inside nested models.
+Sometimes the field that is defined in the UnionModel model may be named differently inside nested models.
 E.g. Invoice has field "description" and payment has field "note".
 When defining a nested model a field map array needs to be specified::
 
@@ -78,7 +78,7 @@ When defining a nested model a field map array needs to be specified::
    $nestedInvoice = $unionPaymentInvoice->addNestedModel(new Payment(), ['description' => '[note]']);
    $unionPaymentInvoice->addField('description');
 
-The key of the field map array must match the Union field. The value is an expression. (See :ref:`Model<addExpression>`).
+The key of the field map array must match the UnionModel field. The value is an expression. (See :ref:`Model<addExpression>`).
 This format can also be used to reverse sign on amounts. When we are creating "Transactions", then invoices would be
 subtracted from the amount, while payments will be added::
 
@@ -97,24 +97,24 @@ Should more flexibility be needed, more expressions (or fields) can be added dir
 
 A new field "type" has been added that will be defined as a static constant.
 
-Referencing an Union Model
+Referencing an UnionModel Model
 --------------------------
 
-Like any other model, Union model can be assigned through a reference. In the case here one Client can have multiple transactions.
+Like any other model, UnionModel model can be assigned through a reference. In the case here one Client can have multiple transactions.
 Initially a related union can be defined::
 
    $client->hasMany('Transaction', new Transaction());
 
-When condition is added on an Union model it will send it down to every nested model. This way the resulting SQL query remains optimized.
+When condition is added on an UnionModel model it will send it down to every nested model. This way the resulting SQL query remains optimized.
 
 The exception is when field is not mapped to nested model (if it's an Expression or associated with a Join).
 
-In most cases optimization on the query and Union model is not necessary as it will be done automatically.
+In most cases optimization on the query and UnionModel model is not necessary as it will be done automatically.
 
 Grouping Results
 ----------------
 
-Union model has also a built-in grouping support::
+UnionModel model has also a built-in grouping support::
 
    $unionPaymentInvoice->groupBy('client_id', ['amount' => 'sum']);
 

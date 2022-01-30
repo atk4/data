@@ -12,7 +12,7 @@ use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Query;
 
 /**
- * Union model combines multiple nested models through a UNION in order to retrieve
+ * UnionModel model combines multiple nested models through a UNION in order to retrieve
  * it's value set. The beauty of this class is that it will add fields transparently
  * and will map them appropriately from the nested model if you request
  * those fields from the union model.
@@ -24,20 +24,20 @@ use Atk4\Data\Persistence\Sql\Query;
  *
  * @method Expression expr($expr, array $args = []) forwards to Persistence\Sql::expr using $this as model
  */
-class Union extends Model
+class UnionModel extends Model
 {
     /** @const string */
     public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelectQuery';
 
     /**
-     * Union model should always be read-only.
+     * UnionModel should always be read-only.
      *
      * @var bool
      */
     public $read_only = true;
 
     /**
-     * Union normally does not have ID field. Setting this to null will
+     * UnionModel normally does not have ID field. Setting this to null will
      * disable various per-id operations, such as load().
      *
      * If you can define unique ID field, you can specify it inside your
@@ -153,7 +153,7 @@ class Union extends Model
     }
 
     /**
-     * If Union model has such field, then add condition to it.
+     * If UnionModel has such field, then add condition to it.
      * Otherwise adds condition to all nested models.
      *
      * @param mixed $key
@@ -169,7 +169,7 @@ class Union extends Model
             return parent::addCondition($key);
         }
 
-        // if Union model has such field, then add condition to it
+        // if UnionModel has such field, then add condition to it
         if ($this->hasField($key) && !$forceNested) {
             return parent::addCondition(...func_get_args());
         }
@@ -271,7 +271,7 @@ class Union extends Model
 
                 break;
             default:
-                throw (new Exception('Union model does not support this action'))
+                throw (new Exception('UnionModel model does not support this action'))
                     ->addMoreInfo('mode', $mode);
         }
 
@@ -306,7 +306,7 @@ class Union extends Model
             $queryFieldExpressions = [];
             foreach ($fields as $fieldName) {
                 try {
-                    // Union can be joined with additional table/query
+                    // UnionModel can be joined with additional table/query
                     // We don't touch those fields
 
                     if (!$this->hasField($fieldName)) {
@@ -321,7 +321,7 @@ class Union extends Model
                         continue;
                     }
 
-                    // Union can have some fields defined as expressions. We don't touch those either.
+                    // UnionModel can have some fields defined as expressions. We don't touch those either.
                     // Imants: I have no idea why this condition was set, but it's limiting our ability
                     // to use expression fields in mapping
                     if ($field instanceof SqlExpressionField && !isset($this->aggregate[$fieldName])) {
