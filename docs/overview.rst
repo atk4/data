@@ -204,8 +204,8 @@ https://github.com/atk4/report/blob/develop/src/GroupModel.php
 This code is specific to SQL databases, but can be used with any Model, so in
 order to use grouping with Agile Data, your code would be::
 
-    $m = new \Atk4\Report\GroupModel(new Sale($db));
-    $m->groupBy(['contractor_to', 'type'], [ // groups by 2 columns
+    $aggregate = new AggregateModel(new Sale($db));
+    $aggregate->groupBy(['contractor_to', 'type'], [ // groups by 2 columns
         'c' => 'count(*)', // defines aggregate formulas for fields
         'qty' => 'sum([])', // [] refers back to qty
         'total' => 'sum([amount])', // can specify any field here
