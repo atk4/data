@@ -433,7 +433,7 @@ class ExpressionTest extends TestCase
     public function testConsumeException2(): void
     {
         $this->expectException(Exception::class);
-        $this->callProtected($this->e(), 'consume', new \StdClass());
+        $this->callProtected($this->e(), 'consume', new \stdClass());
     }
 
     /**

@@ -8,8 +8,8 @@ use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
-use Atk4\Data\Tests\Model\Female as Female;
-use Atk4\Data\Tests\Model\Male as Male;
+use Atk4\Data\Tests\Model\Female;
+use Atk4\Data\Tests\Model\Male;
 
 class ArrayTest extends TestCase
 {
