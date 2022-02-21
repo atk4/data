@@ -41,12 +41,11 @@ class Action
                 return $this->match($row, $condition);
             };
             if (\PHP_VERSION_ID < 80104 && count($this->_filterFxs) !== \PHP_INT_MAX) {
-                $this->_filterFxs[] = $filterFx;
+                $this->_filterFxs[] = $filterFx; // prevent filter function to be GCed
                 $filterFxWeakRef = \WeakReference::create($filterFx);
                 $this->generator = new \CallbackFilterIterator($this->generator, static function (array $row) use ($filterFxWeakRef) {
                     return $filterFxWeakRef->get()($row);
                 });
-                $this->generator->filterFx = $filterFx; // @phpstan-ignore-line prevent filter function to be GCed
             } else {
                 $this->generator = new \CallbackFilterIterator($this->generator, $filterFx);
             }
