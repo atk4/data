@@ -40,7 +40,7 @@ class Action
             $filterFx = function (array $row) use ($condition): bool {
                 return $this->match($row, $condition);
             };
-            if (\PHP_VERSION_ID < 80104) {
+            if (\PHP_VERSION_ID < 80104 && count($this->_filterFxs) !== \PHP_INT_MAX) {
                 $this->_filterFxs[] = $filterFx;
                 $filterFxWeakRef = \WeakReference::create($filterFx);
                 $this->generator = new \CallbackFilterIterator($this->generator, static function (array $row) use ($filterFxWeakRef) {
