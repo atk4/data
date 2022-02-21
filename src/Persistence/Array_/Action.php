@@ -17,6 +17,9 @@ class Action
     /** @var \Iterator */
     public $generator;
 
+    /** @var \Closure[] hack for GC for PHP 8.1.3 or older */
+    private $_filterFxs = [];
+
     public function __construct(array $data)
     {
         $this->generator = new \ArrayIterator($data);
@@ -30,13 +33,15 @@ class Action
     public function filter(Model\Scope\AbstractScope $condition)
     {
         if (!$condition->isEmpty()) {
-            // CallbackFilterIterator with circular reference (bound function) is not GCed in PHP 7.4, see
+            // CallbackFilterIterator with circular reference (bound function) is not GCed
             // https://github.com/php/php-src/commit/afab9eb48c883766b7870f76f2e2b0a4bd575786
-            // remove the if below once PHP 7.4 is no longer supported
-            $filterFx = function ($row) use ($condition) {
+            // https://github.com/php/php-src/commit/fb70460d8e7593e32abdaaf8ae8849345d49c8fd
+            // remove the if below once PHP 8.1.3 (or older) is no longer supported
+            $filterFx = function (array $row) use ($condition): bool {
                 return $this->match($row, $condition);
             };
-            if (\PHP_MAJOR_VERSION === 7 && \PHP_MINOR_VERSION === 4) {
+            if (\PHP_VERSION_ID < 80104) {
+                $this->_filterFxs[] = $filterFx;
                 $filterFxWeakRef = \WeakReference::create($filterFx);
                 $this->generator = new \CallbackFilterIterator($this->generator, static function (array $row) use ($filterFxWeakRef) {
                     return $filterFxWeakRef->get()($row);
