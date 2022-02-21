@@ -258,14 +258,7 @@ class Action
      */
     public function limit(?int $limit, int $offset = 0)
     {
-        // LimitIterator with circular reference is not GCed in PHP 7.4 - ???, see
-        // https://github.com/php/php-src/issues/7958
-        if (\PHP_MAJOR_VERSION < 20) { // TODO update condition once fixed in php-src
-            $data = array_slice($this->getRows(), $offset, $limit, true);
-            $this->generator = new \ArrayIterator($data);
-        } else {
-            $this->generator = new \LimitIterator($this->generator, $offset, $limit ?? -1);
-        }
+        $this->generator = new \LimitIterator($this->generator, $offset, $limit ?? -1);
 
         return $this;
     }
