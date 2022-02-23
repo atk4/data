@@ -92,11 +92,11 @@ class ConnectionTest extends TestCase
         $this->assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'dbname' => 'db', 'port' => '1234'], $dsn);
 
         // driverOptions array
-        $dsn = Connection::normalizeDsn('mysql://localhost:1234/db?driverOptions[TrustServerCertificate]=1');
-        $this->assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'port' => '1234', 'driverOptions' => ['TrustServerCertificate' => '1'], 'dbname' => 'db'], $dsn);
+        $dsn = Connection::normalizeDsn('pdo-sqlsrv://localhost:1234/db?driverOptions[TrustServerCertificate]=1');
+        $this->assertSame(['driver' => 'pdo_sqlsrv', 'host' => 'localhost', 'port' => '1234', 'driverOptions' => ['TrustServerCertificate' => '1'], 'dbname' => 'db'], $dsn);
 
-        $dsn = Connection::normalizeDsn('mysql:host=localhost:1234;dbname=db;driverOptions[TrustServerCertificate]=1');
-        $this->assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'dbname' => 'db', 'driverOptions' => ['TrustServerCertificate' => '1'], 'port' => '1234'], $dsn);
+        $dsn = Connection::normalizeDsn('pdo_sqlsrv:host=localhost:1234;dbname=db;driverOptions[TrustServerCertificate]=1');
+        $this->assertSame(['driver' => 'pdo_sqlsrv', 'host' => 'localhost', 'dbname' => 'db', 'driverOptions' => ['TrustServerCertificate' => '1'], 'port' => '1234'], $dsn);
 
         // full PDO and native driver names
         $dsn = Connection::normalizeDsn('pdo-mysql://root:pass@localhost/db');
