@@ -45,7 +45,7 @@ class Invoice extends Model
         $this->addCalculatedField($this->fieldName()->discounts_total_sum, function (self $m) {
             $total = 0;
             foreach ($m->lines as $line) {
-                $total += $line->total_gross * $line->discounts_percent / 100;
+                $total += (float) $line->total_gross * $line->discounts_percent / 100;
             }
 
             return $total;
