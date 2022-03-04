@@ -12,7 +12,7 @@ use Atk4\Data\Model;
  * @property string $ref_no              @Atk4\Field()
  * @property float  $amount              @Atk4\Field()
  * @property Line   $lines               @Atk4\RefMany()
- * @property string $total_gross         @Atk4\Field()
+ * @property float  $total_gross         @Atk4\Field()
  * @property float  $discounts_total_sum @Atk4\Field()
  */
 class Invoice extends Model
@@ -45,7 +45,7 @@ class Invoice extends Model
         $this->addCalculatedField($this->fieldName()->discounts_total_sum, function (self $m) {
             $total = 0;
             foreach ($m->lines as $line) {
-                $total += (float) $line->total_gross * $line->discounts_percent / 100;
+                $total += $line->total_gross * $line->discounts_percent / 100;
             }
 
             return $total;

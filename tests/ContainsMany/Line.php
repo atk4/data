@@ -13,7 +13,7 @@ use Atk4\Data\Model;
  * @property float     $price             @Atk4\Field()
  * @property float     $qty               @Atk4\Field()
  * @property \DateTime $add_date          @Atk4\Field()
- * @property string    $total_gross       @Atk4\Field()
+ * @property float     $total_gross       @Atk4\Field()
  * @property Discount  $discounts         @Atk4\RefMany()
  * @property float     $discounts_percent @Atk4\Field()
  */
