@@ -171,9 +171,9 @@ You may safely rely on `$this->persistence` property to make choices::
    } else {
 
       // Fallback
-      $this->addCalculatedField('total', function($m) {
+      $this->addCalculatedField('total', ['expr' => function ($m) {
          return $m->get('amount') + $m->get('vat');
-      } );
+      }, 'type' => 'float']);
    }
 
 To invoke code from `init()` methods of ALL models (for example soft-delete logic),
@@ -281,9 +281,9 @@ calculated by your callback method right after individual record is loaded by th
    $this->addField('term', ['caption' => 'Repayment term in months', 'default' => 36]);
    $this->addField('rate', ['caption' => 'APR %', 'default' => 5]);
 
-   $this->addCalculatedField('interest', function($m) {
+   $this->addCalculatedField('interest', ['expr' => function ($m) {
       return $m->calculateInterest();
-   });
+   }, 'type' => 'float']);
 
 .. important:: always use argument `$m` instead of `$this` inside your callbacks. If model is to be
    `clone`d, the code relying on `$this` would reference original model, but the code using
@@ -292,14 +292,14 @@ calculated by your callback method right after individual record is loaded by th
 This can also be useful for calculating relative times::
 
    class MyModel extends Model {
-      use HumanTiming; // See https://stackoverflow.com/questions/2915864/php-how-to-find-the-time-elapsed-since-a-date-time
+      use HumanTiming; // see https://stackoverflow.com/questions/2915864/php-how-to-find-the-time-elapsed-since-a-date-time
 
       function init(): void {
          parent::init();
 
-         $this->addCalculatedField('event_ts_human_friendly', function($m) {
+         $this->addCalculatedField('event_ts_human_friendly', ['expr' => function ($m) {
             return $this->humanTiming($m->get('event_ts'));
-         });
+         }]);
 
       }
    }

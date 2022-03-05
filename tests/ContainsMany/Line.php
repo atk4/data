@@ -36,13 +36,13 @@ class Line extends Model
         // each line can have multiple discounts and calculate total of these discounts
         $this->containsMany($this->fieldName()->discounts, ['model' => [Discount::class]]);
 
-        $this->addCalculatedField($this->fieldName()->discounts_percent, function ($m) {
+        $this->addCalculatedField($this->fieldName()->discounts_percent, ['expr' => function ($m) {
             $total = 0;
             foreach ($m->discounts as $d) {
                 $total += $d->percent;
             }
 
             return $total;
-        });
+        }, 'type' => 'float']);
     }
 }

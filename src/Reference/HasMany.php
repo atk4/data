@@ -151,7 +151,7 @@ class HasMany extends Reference
             };
         }
 
-        return $this->getOurModel(null)->addExpression($fieldName, array_merge([$fx], $defaults));
+        return $this->getOurModel(null)->addExpression($fieldName, array_merge(['expr' => $fx], $defaults));
     }
 
     /**

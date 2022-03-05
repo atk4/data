@@ -69,13 +69,13 @@ class ExpressionSqlTest extends TestCase
         ]);
 
         $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
-        $i->addExpression('total_gross', function ($i, $q) {
-            return '[total_net]+[total_vat]';
-        });
+        $i->addExpression('total_gross', ['expr' => function ($i, $q) {
+            return '[total_net] + [total_vat]';
+        }, 'type' => 'float']);
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
-                'select "id", "total_net", "total_vat", ("total_net"+"total_vat") "total_gross" from "invoice"',
+                'select "id", "total_net", "total_vat", ("total_net" + "total_vat") "total_gross" from "invoice"',
                 $i->action('select')->render()[0]
             );
         }
@@ -229,12 +229,12 @@ class ExpressionSqlTest extends TestCase
 
         $i = new Model($this->db, ['table' => 'invoice']);
 
-        $i->addExpression('zero_basic', [$i->expr('0'), 'type' => 'integer', 'system' => true]);
-        $i->addExpression('zero_never_save', [$i->expr('0'), 'type' => 'integer', 'system' => true, 'never_save' => true]);
-        $i->addExpression('zero_never_persist', [$i->expr('0'), 'type' => 'integer', 'system' => true, 'never_persist' => true]);
-        $i->addExpression('one_basic', [$i->expr('1'), 'type' => 'integer', 'system' => true]);
-        $i->addExpression('one_never_save', [$i->expr('1'), 'type' => 'integer', 'system' => true, 'never_save' => true]);
-        $i->addExpression('one_never_persist', [$i->expr('1'), 'type' => 'integer', 'system' => true, 'never_persist' => true]);
+        $i->addExpression('zero_basic', ['expr' => $i->expr('0'), 'type' => 'integer', 'system' => true]);
+        $i->addExpression('zero_never_save', ['expr' => $i->expr('0'), 'type' => 'integer', 'system' => true, 'never_save' => true]);
+        $i->addExpression('zero_never_persist', ['expr' => $i->expr('0'), 'type' => 'integer', 'system' => true, 'never_persist' => true]);
+        $i->addExpression('one_basic', ['expr' => $i->expr('1'), 'type' => 'integer', 'system' => true]);
+        $i->addExpression('one_never_save', ['expr' => $i->expr('1'), 'type' => 'integer', 'system' => true, 'never_save' => true]);
+        $i->addExpression('one_never_persist', ['expr' => $i->expr('1'), 'type' => 'integer', 'system' => true, 'never_persist' => true]);
         $i = $i->loadOne();
 
         // normal fields
