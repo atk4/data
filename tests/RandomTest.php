@@ -391,7 +391,7 @@ class RandomTest extends TestCase
         $this->assertEquals(2, $mm->getTitle()); // loaded returns id value
 
         // expression as title field
-        $m->addExpression('my_name', '[id]');
+        $m->addExpression('my_name', ['expr' => '[id]']);
         $m->title_field = 'my_name';
         $mm = $m->load(2);
         $this->assertEquals(2, $mm->getTitle()); // loaded returns id value

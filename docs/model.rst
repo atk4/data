@@ -167,7 +167,7 @@ You may safely rely on `$this->persistence` property to make choices::
    if ($this->persistence instanceof \Atk4\Data\Persistence\Sql) {
 
       // Calculating on SQL server is more efficient!!
-      $this->addExpression('total', '[amount] + [vat]');
+      $this->addExpression('total', ['expr' => '[amount] + [vat]']);
    } else {
 
       // Fallback
@@ -251,20 +251,20 @@ Although you may make any field read-only::
 
 There are two methods for adding dynamically calculated fields.
 
-.. php:method:: addExpression($name, $definition)
+.. php:method:: addExpression($name, $seed)
 
 Defines a field as server-side expression (e.g. SQL)::
 
-   $this->addExpression('total', '[amount] + [vat]');
+   $this->addExpression('total', ['expr' => '[amount] + [vat]']);
 
 The above code is executed on the server (SQL) and can be very powerful.
 You must make sure that expression is valid for current `$this->persistence`::
 
-   $product->addExpression('discount', $this->refLink('category_id')->fieldQuery('default_discount'));
+   $product->addExpression('discount', ['expr' => $this->refLink('category_id')->fieldQuery('default_discount')]);
    // expression as a sub-select from referenced model (Category) imported as a read-only field
    // of $product model
 
-   $product->addExpression('total', 'if([is_discounted], ([amount]+[vat])*[discount], [amount] + [vat])');
+   $product->addExpression('total', ['expr' => 'if ([is_discounted], ([amount] + [vat])*[discount], [amount] + [vat])']);
    // new "total" field now contains complex logic, which is executed in SQL
 
    $product->addCondition('total', '<', 10);

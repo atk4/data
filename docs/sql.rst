@@ -144,14 +144,14 @@ Expression will map into the SQL code, but will perform as read-only field other
 
     Stores expression that you define through DSQL expression::
 
-        $model->addExpression('age', 'year(now())-[birth_year]');
+        $model->addExpression('age', ['expr' => 'year(now()) - [birth_year]']);
         // tag [birth_year] will be automatically replaced by respective model field
 
 .. php:method:: getDsqlExpression
 
     SQL Expressions can be used inside other SQL expressions::
 
-        $model->addExpression('can_buy_alcohol', ['if([age] > 25, 1, 0)', 'type' => 'boolean']);
+        $model->addExpression('can_buy_alcohol', ['expr' => 'if([age] > 25, 1, 0)', 'type' => 'boolean']);
 
 Adding expressions to model will make it automatically reload itself after save
 as default behavior, see :php:attr:`Model::reload_after_save`.
@@ -397,7 +397,7 @@ fetching like this::
             $this->hasOne('parent_id', ['model' => [self::class]]);
             $this->addField('name');
 
-            $this->addExpression('path', 'get_path([id])');
+            $this->addExpression('path', ['expr' => 'get_path([id])']);
         }
     }
 

@@ -42,7 +42,7 @@ class DcInvoice extends Model
         $this->hasMany('Payments', ['model' => [DcPayment::class]])
             ->addField('paid', ['aggregate' => 'sum', 'field' => 'amount']);
 
-        $this->addExpression('due', '[total]-[paid]');
+        $this->addExpression('due', ['expr' => '[total] - [paid]']);
 
         $this->addField('ref');
 
@@ -93,7 +93,7 @@ class DcInvoiceLine extends Model
         $this->addField('vat', ['type' => 'float', 'default' => 0.21]);
 
         // total is calculated with VAT
-        $this->addExpression('total', '[qty]*[price]*(1+[vat])');
+        $this->addExpression('total', ['expr' => '[qty] * [price] * (1 + [vat])']);
     }
 }
 
@@ -116,7 +116,7 @@ class DcQuoteLine extends Model
         $this->addField('price', ['type' => 'atk4_money']);
 
         // total is calculated WITHOUT VAT
-        $this->addExpression('total', '[qty]*[price]');
+        $this->addExpression('total', ['expr' => '[qty] * [price]']);
     }
 }
 
