@@ -273,7 +273,7 @@ You must make sure that expression is valid for current `$this->persistence`::
 
 For the times when you are not working with SQL persistence, you can calculate field in PHP.
 
-.. php:method:: addCalculatedField($name, $callback)
+.. php:method:: addCalculatedField($name, ['expr' => $callback])
 
 Creates new field object inside your model. Field value will be automatically
 calculated by your callback method right after individual record is loaded by the model::

@@ -1918,16 +1918,12 @@ class Model implements \IteratorAggregate
     /**
      * Add expression field which will calculate its value by using callback.
      *
-     * @param string|array|\Closure $expression
+     * @param array $expression
      *
      * @return CallbackField
      */
     public function addCalculatedField(string $name, $expression)
     {
-        if (!is_array($expression)) {
-            $expression = ['expr' => $expression];
-        }
-
         $field = new CallbackField($expression);
 
         $this->addField($name, $field);
