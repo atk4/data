@@ -457,7 +457,7 @@ class Array_ extends Persistence
                 return $action;
             case 'fx':
             case 'fx0':
-                if (!isset($args[0], $args[1])) {
+                if (!isset($args[0]) || !isset($args[1])) {
                     throw (new Exception('fx action needs 2 arguments, eg: ["sum", "amount"]'))
                         ->addMoreInfo('action', $type);
                 }
