@@ -12,7 +12,7 @@ use Atk4\Data\Model;
  * @property string $ref_no              @Atk4\Field()
  * @property float  $amount              @Atk4\Field()
  * @property Line   $lines               @Atk4\RefMany()
- * @property string $total_gross         @Atk4\Field()
+ * @property float  $total_gross         @Atk4\Field()
  * @property float  $discounts_total_sum @Atk4\Field()
  */
 class Invoice extends Model
@@ -32,14 +32,14 @@ class Invoice extends Model
         $this->containsMany($this->fieldName()->lines, ['model' => [Line::class], 'caption' => 'My Invoice Lines']);
 
         // total_gross - calculated by php callback not by SQL expression
-        $this->addCalculatedField($this->fieldName()->total_gross, function (self $m) {
+        $this->addCalculatedField($this->fieldName()->total_gross, ['expr' => function (self $m) {
             $total = 0;
             foreach ($m->lines as $line) {
                 $total += $line->total_gross;
             }
 
             return $total;
-        });
+        }, 'type' => 'float']);
 
         // discounts_total_sum - calculated by php callback not by SQL expression
         $this->addCalculatedField($this->fieldName()->discounts_total_sum, function (self $m) {
