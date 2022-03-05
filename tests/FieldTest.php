@@ -464,7 +464,7 @@ class FieldTest extends TestCase
         $this->assertEquals(38, $mm->get('total'));
 
         $d = $m->export(); // in export calculated fields are not included
-        $this->assertFalse(isset($d[0]['total']));
+        $this->assertFalse(array_key_exists('total', $d[0]));
     }
 
     public function testSystem1(): void
