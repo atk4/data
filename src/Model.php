@@ -1905,9 +1905,6 @@ class Model implements \IteratorAggregate
     {
         if (!is_array($expression)) {
             $expression = ['expr' => $expression];
-        } elseif (isset($expression[0])) {
-            $expression['expr'] = $expression[0];
-            unset($expression[0]);
         }
 
         /** @var CallbackField|SqlExpressionField */
@@ -1929,9 +1926,6 @@ class Model implements \IteratorAggregate
     {
         if (!is_array($expression)) {
             $expression = ['expr' => $expression];
-        } elseif (isset($expression[0])) {
-            $expression['expr'] = $expression[0];
-            unset($expression[0]);
         }
 
         $field = new CallbackField($expression);
