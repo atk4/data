@@ -167,13 +167,13 @@ You may safely rely on `$this->persistence` property to make choices::
    if ($this->persistence instanceof \Atk4\Data\Persistence\Sql) {
 
       // Calculating on SQL server is more efficient!!
-      $this->addExpression('total', '[amount] + [vat]');
+      $this->addExpression('total', ['expr' => '[amount] + [vat]']);
    } else {
 
       // Fallback
-      $this->addCalculatedField('total', function($m) {
+      $this->addCalculatedField('total', ['expr' => function ($m) {
          return $m->get('amount') + $m->get('vat');
-      } );
+      }, 'type' => 'float']);
    }
 
 To invoke code from `init()` methods of ALL models (for example soft-delete logic),
@@ -251,20 +251,20 @@ Although you may make any field read-only::
 
 There are two methods for adding dynamically calculated fields.
 
-.. php:method:: addExpression($name, $definition)
+.. php:method:: addExpression($name, $seed)
 
 Defines a field as server-side expression (e.g. SQL)::
 
-   $this->addExpression('total', '[amount] + [vat]');
+   $this->addExpression('total', ['expr' => '[amount] + [vat]']);
 
 The above code is executed on the server (SQL) and can be very powerful.
 You must make sure that expression is valid for current `$this->persistence`::
 
-   $product->addExpression('discount', $this->refLink('category_id')->fieldQuery('default_discount'));
+   $product->addExpression('discount', ['expr' => $this->refLink('category_id')->fieldQuery('default_discount')]);
    // expression as a sub-select from referenced model (Category) imported as a read-only field
    // of $product model
 
-   $product->addExpression('total', 'if([is_discounted], ([amount]+[vat])*[discount], [amount] + [vat])');
+   $product->addExpression('total', ['expr' => 'if ([is_discounted], ([amount] + [vat])*[discount], [amount] + [vat])']);
    // new "total" field now contains complex logic, which is executed in SQL
 
    $product->addCondition('total', '<', 10);
@@ -273,7 +273,7 @@ You must make sure that expression is valid for current `$this->persistence`::
 
 For the times when you are not working with SQL persistence, you can calculate field in PHP.
 
-.. php:method:: addCalculatedField($name, $callback)
+.. php:method:: addCalculatedField($name, ['expr' => $callback])
 
 Creates new field object inside your model. Field value will be automatically
 calculated by your callback method right after individual record is loaded by the model::
@@ -281,9 +281,9 @@ calculated by your callback method right after individual record is loaded by th
    $this->addField('term', ['caption' => 'Repayment term in months', 'default' => 36]);
    $this->addField('rate', ['caption' => 'APR %', 'default' => 5]);
 
-   $this->addCalculatedField('interest', function($m) {
+   $this->addCalculatedField('interest', ['expr' => function ($m) {
       return $m->calculateInterest();
-   });
+   }, 'type' => 'float']);
 
 .. important:: always use argument `$m` instead of `$this` inside your callbacks. If model is to be
    `clone`d, the code relying on `$this` would reference original model, but the code using
@@ -292,14 +292,14 @@ calculated by your callback method right after individual record is loaded by th
 This can also be useful for calculating relative times::
 
    class MyModel extends Model {
-      use HumanTiming; // See https://stackoverflow.com/questions/2915864/php-how-to-find-the-time-elapsed-since-a-date-time
+      use HumanTiming; // see https://stackoverflow.com/questions/2915864/php-how-to-find-the-time-elapsed-since-a-date-time
 
       function init(): void {
          parent::init();
 
-         $this->addCalculatedField('event_ts_human_friendly', function($m) {
+         $this->addCalculatedField('event_ts_human_friendly', ['expr' => function ($m) {
             return $this->humanTiming($m->get('event_ts'));
-         });
+         }]);
 
       }
    }

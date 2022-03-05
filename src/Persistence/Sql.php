@@ -138,7 +138,7 @@ class Sql extends Persistence
         // When we work without table, we can't have any IDs
         if ($model->table === false) {
             $model->removeField($model->id_field);
-            $model->addExpression($model->id_field, '-1');
+            $model->addExpression($model->id_field, ['expr' => '-1', 'type' => 'integer']);
         }
     }
 

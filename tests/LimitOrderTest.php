@@ -21,7 +21,7 @@ class LimitOrderTest extends TestCase
         ]);
 
         $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
-        $i->addExpression('total_gross', '[total_net]+[total_vat]');
+        $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]']);
         $i->getField($i->id_field)->system = false;
         $i->id_field = null;
 
@@ -45,7 +45,7 @@ class LimitOrderTest extends TestCase
         ]);
 
         $ii = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
-        $ii->addExpression('total_gross', '[total_net]+[total_vat]');
+        $ii->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]']);
         $ii->getField($ii->id_field)->system = false;
         $ii->id_field = null;
 
@@ -143,7 +143,7 @@ class LimitOrderTest extends TestCase
 
         // order by expression field
         $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['code', 'net', 'vat']);
-        $i->addExpression('gross', '[net]+[vat]');
+        $i->addExpression('gross', ['expr' => '[net] + [vat]']);
         $i->getField($i->id_field)->system = false;
         $i->id_field = null;
 
@@ -224,7 +224,7 @@ class LimitOrderTest extends TestCase
         ]);
 
         $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
-        $i->addExpression('total_gross', '[total_net]+[total_vat]');
+        $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]']);
         $i->getField($i->id_field)->system = false;
         $i->id_field = null;
 

@@ -160,7 +160,7 @@ This is a type of code which may change if you decide to switch from one
 persistence to another. For example, this is how you would define `gross` field
 for SQL::
 
-    $model->addExpression('gross', '[net]+[vat]');
+    $model->addExpression('gross', ['expr' => '[net]+[vat]']);
 
 If your persistence does not support expressions (e.g. you are using Redis or
 MongoDB), you would need to define the field differently::
@@ -180,7 +180,7 @@ you want it to work with NoSQL, then your solution might be::
     if ($model->hasMethod('addExpression')) {
 
         // method is injected by Persistence
-        $model->addExpression('gross', '[net]+[vat]');
+        $model->addExpression('gross', ['expr' => '[net] + [vat]']);
 
     } else {
 

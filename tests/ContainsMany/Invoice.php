@@ -42,13 +42,13 @@ class Invoice extends Model
         }, 'type' => 'float']);
 
         // discounts_total_sum - calculated by php callback not by SQL expression
-        $this->addCalculatedField($this->fieldName()->discounts_total_sum, function (self $m) {
+        $this->addCalculatedField($this->fieldName()->discounts_total_sum, ['expr' => function (self $m) {
             $total = 0;
             foreach ($m->lines as $line) {
                 $total += $line->total_gross * $line->discounts_percent / 100;
             }
 
             return $total;
-        });
+        }, 'type' => 'float']);
     }
 }
