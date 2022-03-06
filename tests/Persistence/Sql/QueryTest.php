@@ -832,7 +832,7 @@ class QueryTest extends TestCase
         // pass array as CSV
         $this->assertSame(
             'where "id" in (:a, :b)',
-            $this->q('[where]')->where('id', 'in', '1,2')->render()[0]
+            $this->q('[where]')->where('id', 'in', '1, 2')->render()[0]
         );
         $this->assertSame(
             'where "id" not in (:a, :b)',

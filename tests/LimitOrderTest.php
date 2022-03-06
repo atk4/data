@@ -157,7 +157,7 @@ class LimitOrderTest extends TestCase
 
         // order by expression not defined as separate expression field in model
         $i->order = []; // reset
-        $i->setOrder($i->expr('[net]*[vat]'));
+        $i->setOrder($i->expr('[net] * [vat]'));
         $i->setOnlyFields(['code']);
         $this->assertSame([
             ['code' => 'B'], // 10 * 4 = 40
@@ -167,7 +167,7 @@ class LimitOrderTest extends TestCase
 
         // "desc" as part of expression string
         $i->order = []; // reset
-        $i->setOrder($i->expr('[net]*[vat] desc'));
+        $i->setOrder($i->expr('[net] * [vat] desc'));
         $i->setOnlyFields(['code']);
         $this->assertSame([
             ['code' => 'C'], // 15 * 4 = 60
@@ -177,7 +177,7 @@ class LimitOrderTest extends TestCase
 
         // "desc" as 2nd parameter
         $i->order = []; // reset
-        $i->setOrder($i->expr('[net]*[vat]'), 'desc');
+        $i->setOrder($i->expr('[net] * [vat]'), 'desc');
         $i->setOnlyFields(['code']);
         $this->assertSame([
             ['code' => 'C'], // 15 * 4 = 60
@@ -187,7 +187,7 @@ class LimitOrderTest extends TestCase
 
         // order by mixed array of expressions and field names
         $i->order = []; // reset
-        $i->setOrder(['vat', $i->expr('[net]*[vat]')]);
+        $i->setOrder(['vat', $i->expr('[net] * [vat]')]);
         $i->setOnlyFields(['code']);
         $this->assertSame([
             ['code' => 'B'], // 4, 10 * 4 = 40

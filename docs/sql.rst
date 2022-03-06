@@ -332,7 +332,7 @@ You should be familiar with http://dsql.readthedocs.io/en/develop/expressions.ht
 
 In short this should allow you to build and execute any SQL statement::
 
-    $this->expr("call get_nominal_sheet([],[],'2014-10-01','2015-09-30',0)", [
+    $this->expr("call get_nominal_sheet([], [], '2014-10-01', '2015-09-30', 0)", [
         $this->getApp()->system->getId(),
         $this->getApp()->system['contractor_id']
     ])->execute();
@@ -466,7 +466,7 @@ procedure inside Model::init() then set $table property to a temporary table::
         function init(): void {
             parent::init();
 
-            $res = $this->expr("call get_nominal_sheet([],[],'2014-10-01','2015-09-30',0)", [
+            $res = $this->expr("call get_nominal_sheet([], [], '2014-10-01', '2015-09-30', 0)", [
                 $this->getApp()->system->getId(),
                 $this->getApp()->system['contractor_id']
             ])->execute();
@@ -501,4 +501,4 @@ Technically you can also specify expression as a $table property of your model::
         }
     }
 
-Technically this will give you `select date,items from (call get_report_data())`.
+Technically this will give you `select date, items from (call get_report_data())`.

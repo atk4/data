@@ -58,7 +58,7 @@ class Query extends Expression
      *  $q->field('user.name')->field('address.line1');
      *
      * You can pass first argument as Expression or Query
-     *  $q->field( $q->expr('2+2'), 'alias');   // must always use alias
+     *  $q->field($q->expr('2 + 2'), 'alias'); // must always use alias
      *
      * You can use $q->dsql() for subqueries. Subqueries will be wrapped in
      * brackets.

@@ -340,12 +340,12 @@ class ExpressionTest extends TestCase
             $this->callProtected($this->e(), 'escapeIdentifier', '*')
         );
         $this->assertSame(
-            '(2+2) age',
-            $this->callProtected($this->e(), 'escapeIdentifierSoft', '(2+2) age')
+            '(2 + 2) age',
+            $this->callProtected($this->e(), 'escapeIdentifierSoft', '(2 + 2) age')
         );
         $this->assertSame(
-            '"(2+2) age"',
-            $this->callProtected($this->e(), 'escapeIdentifier', '(2+2) age')
+            '"(2 + 2) age"',
+            $this->callProtected($this->e(), 'escapeIdentifier', '(2 + 2) age')
         );
         $this->assertSame(
             '"users"."first_name"',

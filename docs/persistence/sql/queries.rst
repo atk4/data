@@ -104,11 +104,11 @@ The example above will perform a select query first:
 
 If a single row can be retrieved, then the update will be performed:
 
- - `update user set name="John", surname="Smith", revision=revision+1 where id=123`
+ - `update user set name="John", surname="Smith", revision=revision + 1 where id=123`
 
 Otherwise an insert operation will be performed:
 
- - `insert into user (name,surname,revision) values ("John", "Smith", 1)`
+ - `insert into user (name, surname, revision) values ("John", "Smith", 1)`
 
 Chaining
 ========
@@ -151,7 +151,7 @@ This query will perform `select name from (select * from employee)`::
     $u = $c->dsql("[] union []", [$q1, $q2]);
 
     $q = $c->dsql()
-        ->field('date,debit,credit')
+        ->field('date, debit, credit')
         ->table($u, 'derrivedTable');
 
     $q->getRows();
@@ -255,8 +255,8 @@ Basic Examples::
     $query->field('first_name');
         // SELECT `first_name` from `user`
 
-    $query->field('first_name,last_name');
-        // SELECT `first_name`,`last_name` from `user`
+    $query->field('first_name, last_name');
+        // SELECT `first_name`, `last_name` from `user`
 
     $query->field('employee.first_name')
         // SELECT `employee`.`first_name` from `user`
@@ -338,9 +338,9 @@ Starting with the basic examples::
     $q->where('id', null);   // same as above
 
     $q->where('now()', 1);   // will not use backticks
-    $q->where($c->expr('now()'),1);  // same as above
+    $q->where($c->expr('now()'), 1); // same as above
 
-    $q->where('id', [1,2]);  // renders as id in (1,2)
+    $q->where('id', [1, 2]);  // renders as id in (1, 2)
 
 You may call where() multiple times, and conditions are always additive (uses AND).
 The easiest way to supply OR condition is to specify multiple conditions
@@ -435,7 +435,7 @@ Few examples::
 
     $q->group('gender');
 
-    $q->group('gender,age');
+    $q->group('gender, age');
 
     $q->group(['gender', 'age']);
 

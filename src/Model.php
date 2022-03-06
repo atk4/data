@@ -1897,7 +1897,7 @@ class Model implements \IteratorAggregate
     /**
      * Add expression field.
      *
-     * @param array $seed
+     * @param array{'expr': mixed} $seed
      *
      * @return CallbackField|SqlExpressionField
      */
@@ -1914,7 +1914,7 @@ class Model implements \IteratorAggregate
     /**
      * Add expression field which will calculate its value by using callback.
      *
-     * @param array $seed
+     * @param array{'expr': \Closure} $seed
      *
      * @return CallbackField
      */

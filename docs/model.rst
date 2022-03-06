@@ -742,6 +742,6 @@ Setting limit and sort order
     You can also use \Atk4\Data\Persistence\Sql\Expression or array of expressions instead of field name here.
     Or even mix them together::
 
-        $m->setOrder($m->expr('[net]*[vat]'));
-        $m->setOrder([$m->expr('[net]*[vat]'), $m->expr('[closing]-[opening]')]);
-        $m->setOrder(['net', $m->expr('[net]*[vat]', 'ref_no')]);
+        $m->setOrder($m->expr('[net] * [vat]'));
+        $m->setOrder([$m->expr('[net] * [vat]'), $m->expr('[closing] - [opening]')]);
+        $m->setOrder(['net', $m->expr('[net] * [vat]', 'ref_no')]);

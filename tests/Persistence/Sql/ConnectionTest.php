@@ -178,10 +178,10 @@ class ConnectionTest extends TestCase
     public function testException4(): void
     {
         $c = new \Atk4\Data\Persistence\Sql\Sqlite\Connection();
-        $q = $c->expr('select (2+2)');
+        $q = $c->expr('select (2 + 2)');
 
         $this->assertSame(
-            'select (2+2)',
+            'select (2 + 2)',
             $q->render()[0]
         );
 
