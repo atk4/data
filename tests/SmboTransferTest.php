@@ -35,7 +35,7 @@ class SmboTransferTest extends TestCase
             ->field('document_id', ['type' => 'integer'])
             ->field('account_id', ['type' => 'integer'])
             ->field('cheque_no')
-            //->field('misc_payment', ['type' => 'enum(\'N\',\'Y\')'])
+            // ->field('misc_payment', ['type' => 'enum(\'N\',\'Y\')'])
             ->field('misc_payment')
             ->field('transfer_document_id')
             ->create();

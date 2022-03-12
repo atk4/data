@@ -197,7 +197,7 @@ class QueryTest extends TestCase
      */
     public function testTableException3(): void
     {
-        //$this->expectException(Exception::class); // no more
+        // $this->expectException(Exception::class); // no more
         $this->q()->table($this->q()->expr('test'));
     }
 
@@ -1548,7 +1548,7 @@ class QueryTest extends TestCase
      */
     public function testCaseExprException1(): void
     {
-        //$this->expectException(Exception::class);
+        // $this->expectException(Exception::class);
         $this->q()->caseExpr()
             ->caseWhen(['status'], 't2.expose_new')
             ->render();
