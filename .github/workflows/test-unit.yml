@@ -77,7 +77,9 @@ jobs:
     name: Unit
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/mvorisek/image-php:${{ matrix.php }}
+      # Alpine support for newer pdo_oci is broken, see https://github.com/mlocati/docker-php-extension-installer/issues/523
+      # remove once config.m4 checks are working on Alpine
+      image: ghcr.io/mvorisek/image-php:${{ matrix.php }}-debian
     strategy:
       fail-fast: false
       matrix:

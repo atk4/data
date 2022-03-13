@@ -6,12 +6,15 @@ namespace Atk4\Data\Persistence\Sql\Oracle;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
-use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 
 class Query extends BaseQuery
 {
+    use ExpressionTrait;
+
     protected $paramBase = 'xxaaaa';
+
+    protected $expression_class = Expression::class;
 
     public function render(): array
     {
@@ -26,39 +29,6 @@ class Query extends BaseQuery
         }
 
         return parent::render();
-    }
-
-    protected function castStringToClobExpr(string $value): Expression
-    {
-        $exprArgs = [];
-        $buildConcatExprFx = function (array $parts) use (&$buildConcatExprFx, &$exprArgs): string {
-            if (count($parts) > 1) {
-                $valueLeft = array_slice($parts, 0, intdiv(count($parts), 2));
-                $valueRight = array_slice($parts, count($valueLeft));
-
-                return 'CONCAT(' . $buildConcatExprFx($valueLeft) . ', ' . $buildConcatExprFx($valueRight) . ')';
-            }
-
-            $exprArgs[] = reset($parts);
-
-            return 'TO_CLOB([])';
-        };
-
-        // Oracle SQL string literal is limited to 1332 bytes
-        $parts = [];
-        foreach (mb_str_split($value, 10_000) as $shorterValue) {
-            $lengthBytes = strlen($shorterValue);
-            $startBytes = 0;
-            do {
-                $part = mb_strcut($shorterValue, $startBytes, 1000);
-                $startBytes += strlen($part);
-                $parts[] = $part;
-            } while ($startBytes < $lengthBytes);
-        }
-
-        $expr = $buildConcatExprFx($parts);
-
-        return $this->expr($expr, $exprArgs);
     }
 
     protected function _sub_render_condition(array $row): string
@@ -78,8 +48,6 @@ class Query extends BaseQuery
 
         if (count($row) >= 2 && $field instanceof Field
             && in_array($field->getTypeObject()->getName(), ['text', 'blob'], true)) {
-            $value = $this->castStringToClobExpr($value);
-
             if ($field->getTypeObject()->getName() === 'text') {
                 $field = $this->expr('LOWER([])', [$field]);
                 $value = $this->expr('LOWER([])', [$value]);
