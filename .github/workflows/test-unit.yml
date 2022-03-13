@@ -77,7 +77,7 @@ jobs:
     name: Unit
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/mvorisek/image-php:${{ matrix.php }}
+      image: ghcr.io/mvorisek/image-php:${{ matrix.php }}-debian
     strategy:
       fail-fast: false
       matrix:
