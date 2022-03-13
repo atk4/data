@@ -144,14 +144,14 @@ Expression will map into the SQL code, but will perform as read-only field other
 
     Stores expression that you define through DSQL expression::
 
-        $model->addExpression('age', 'year(now())-[birth_year]');
+        $model->addExpression('age', ['expr' => 'year(now()) - [birth_year]']);
         // tag [birth_year] will be automatically replaced by respective model field
 
 .. php:method:: getDsqlExpression
 
     SQL Expressions can be used inside other SQL expressions::
 
-        $model->addExpression('can_buy_alcohol', ['if([age] > 25, 1, 0)', 'type' => 'boolean']);
+        $model->addExpression('can_buy_alcohol', ['expr' => 'if([age] > 25, 1, 0)', 'type' => 'boolean']);
 
 Adding expressions to model will make it automatically reload itself after save
 as default behavior, see :php:attr:`Model::reload_after_save`.
@@ -332,7 +332,7 @@ You should be familiar with http://dsql.readthedocs.io/en/develop/expressions.ht
 
 In short this should allow you to build and execute any SQL statement::
 
-    $this->expr("call get_nominal_sheet([],[],'2014-10-01','2015-09-30',0)", [
+    $this->expr("call get_nominal_sheet([], [], '2014-10-01', '2015-09-30', 0)", [
         $this->getApp()->system->getId(),
         $this->getApp()->system['contractor_id']
     ])->execute();
@@ -397,7 +397,7 @@ fetching like this::
             $this->hasOne('parent_id', ['model' => [self::class]]);
             $this->addField('name');
 
-            $this->addExpression('path', 'get_path([id])');
+            $this->addExpression('path', ['expr' => 'get_path([id])']);
         }
     }
 
@@ -466,7 +466,7 @@ procedure inside Model::init() then set $table property to a temporary table::
         function init(): void {
             parent::init();
 
-            $res = $this->expr("call get_nominal_sheet([],[],'2014-10-01','2015-09-30',0)", [
+            $res = $this->expr("call get_nominal_sheet([], [], '2014-10-01', '2015-09-30', 0)", [
                 $this->getApp()->system->getId(),
                 $this->getApp()->system['contractor_id']
             ])->execute();
@@ -501,4 +501,4 @@ Technically you can also specify expression as a $table property of your model::
         }
     }
 
-Technically this will give you `select date,items from (call get_report_data())`.
+Technically this will give you `select date, items from (call get_report_data())`.

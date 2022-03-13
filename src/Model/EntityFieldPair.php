@@ -57,7 +57,7 @@ class EntityFieldPair
     {
         $field = $this->getModel()->getField($this->getFieldName());
 
-        return $field; // @phpstan-ignore-line
+        return $field;
     }
 
     /**

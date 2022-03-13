@@ -340,12 +340,12 @@ class ExpressionTest extends TestCase
             $this->callProtected($this->e(), 'escapeIdentifier', '*')
         );
         $this->assertSame(
-            '(2+2) age',
-            $this->callProtected($this->e(), 'escapeIdentifierSoft', '(2+2) age')
+            '(2 + 2) age',
+            $this->callProtected($this->e(), 'escapeIdentifierSoft', '(2 + 2) age')
         );
         $this->assertSame(
-            '"(2+2) age"',
-            $this->callProtected($this->e(), 'escapeIdentifier', '(2+2) age')
+            '"(2 + 2) age"',
+            $this->callProtected($this->e(), 'escapeIdentifier', '(2 + 2) age')
         );
         $this->assertSame(
             '"users"."first_name"',
@@ -433,7 +433,7 @@ class ExpressionTest extends TestCase
     public function testConsumeException2(): void
     {
         $this->expectException(Exception::class);
-        $this->callProtected($this->e(), 'consume', new \StdClass());
+        $this->callProtected($this->e(), 'consume', new \stdClass());
     }
 
     /**

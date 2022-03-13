@@ -319,7 +319,7 @@ Code::
             $this->addField('password_change_date');
 
             $this->addExpression('is_password_expired', [
-                '[password_change_date] < (NOW() - INTERVAL 1 MONTH)',
+                'expr' => '[password_change_date] < (NOW() - INTERVAL 1 MONTH)',
                 'type' => 'boolean',
             ]);
         }

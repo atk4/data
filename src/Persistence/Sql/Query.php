@@ -58,7 +58,7 @@ class Query extends Expression
      *  $q->field('user.name')->field('address.line1');
      *
      * You can pass first argument as Expression or Query
-     *  $q->field( $q->expr('2+2'), 'alias');   // must always use alias
+     *  $q->field($q->expr('2 + 2'), 'alias'); // must always use alias
      *
      * You can use $q->dsql() for subqueries. Subqueries will be wrapped in
      * brackets.
@@ -254,7 +254,7 @@ class Query extends Expression
         return empty($this->args['table']) ? '' : 'from';
     }
 
-    /// }}}
+    // }}}
 
     // {{{ with()
 
@@ -328,7 +328,7 @@ class Query extends Expression
         return 'with ' . ($isRecursive ? 'recursive ' : '') . implode(',' . "\n", $ret) . "\n";
     }
 
-    /// }}}
+    // }}}
 
     // {{{ join()
 
@@ -820,7 +820,7 @@ class Query extends Expression
         $ret = [];
 
         if ($this->args['set']) {
-            foreach ($this->args['set'] as [$field/*, $value*/ ]) {
+            foreach ($this->args['set'] as [$field/* , $value */ ]) {
                 $field = $this->consume($field, self::ESCAPE_IDENTIFIER);
 
                 $ret[] = $field;
@@ -836,7 +836,7 @@ class Query extends Expression
         $ret = [];
 
         if ($this->args['set']) {
-            foreach ($this->args['set'] as [/*$field*/ , $value]) {
+            foreach ($this->args['set'] as [/* $field */, $value]) {
                 $value = $this->consume($value, self::ESCAPE_PARAM);
 
                 $ret[] = $value;
@@ -1004,11 +1004,11 @@ class Query extends Expression
     public function __debugInfo(): array
     {
         $arr = [
-            //'mode' => $this->mode,
+            // 'mode' => $this->mode,
             'R' => 'n/a',
             'R_params' => 'n/a',
-            //'template' => $this->template,
-            //'templateArgs' => $this->args,
+            // 'template' => $this->template,
+            // 'templateArgs' => $this->args,
         ];
 
         try {
@@ -1269,5 +1269,5 @@ class Query extends Expression
         }
     }
 
-    /// }}}
+    // }}}
 }

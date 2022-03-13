@@ -549,7 +549,7 @@ that shows how much amount is closed and `amount_due`::
     // define field to see closed amount on invoice
     $this->hasMany('InvoicePayment')
         ->addField('total_payments', ['aggregate' => 'sum', 'field' => 'amount_closed']);
-    $this->addExpression('amount_due', '[total]-coalesce([total_payments],0)');
+    $this->addExpression('amount_due', ['expr' => '[total] - coalesce([total_payments], 0)']);
 
 Note that I'm using coalesce because without InvoicePayments the aggregate sum
 will return NULL. Finally let's build allocation method, that allocates new
@@ -699,7 +699,7 @@ If you wish to use a different value instead, you can create an expression::
     if($m->_isset('category') && !$m->_isset('category_id')) {
         $c = $this->refModel('category_id');
         $c->addCondition($c->title_field, 'like', $m->get('category'));
-        $m->set('category_id', $this->expr('coalesce([],[])',[
+        $m->set('category_id', $this->expr('coalesce([], [])',[
             $c->action('field',['id']),
             $m->getField('category_id')->default
         ]));

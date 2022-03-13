@@ -134,7 +134,7 @@ It might be handy to use in-line definition of a model. Try the following
 inside console::
 
     $m = new \Atk4\Data\Model($db, 'contact_info');
-    $m->addFields(['address_1','address_2']);
+    $m->addFields(['address_1', 'address_2']);
     $m->addCondition('address_1', 'not', null);
     $m = $m->loadAny();
     $m->get();
@@ -150,8 +150,8 @@ Next, exit and create file `src/Model_ContactInfo.php`::
         {
             parent::init();
 
-            $this->addFields(['address_1','address_2']);
-            $this->addCondition('address_1','not', null);
+            $this->addFields(['address_1', 'address_2']);
+            $this->addCondition('address_1', 'not', null);
         }
     }
 
@@ -208,7 +208,7 @@ conditions is your way to specify which records to operate on::
     $m = new Model_User($db);
     $m->addCondition('country_id', '2');
 
-    myexport($m, ['id','username','country_id']);
+    myexport($m, ['id', 'username', 'country_id']);
 
 If you want to temporarily add conditions, then you can either clone the model
 or use :php:meth:`Model::tryLoadBy`.
@@ -353,7 +353,7 @@ Lets once again load up the console for some exercises::
 
     $m = new Model_User($db);
 
-    $m = $m->loadBy('username','john');
+    $m = $m->loadBy('username', 'john');
     $m->get();
 
 At this point you'll see that address has also been loaded for the user.
@@ -399,7 +399,7 @@ For some persistence classes, you should use constructor directly::
 There are several Persistence classes that deal with different data sources.
 Lets load up our console and try out a different persistence::
 
-    $a=['user' => [],'contact_info' => []];
+    $a=['user' => [], 'contact_info' => []];
     $ar = new \Atk4\Data\Persistence\Array_($a);
     $m = new Model_User($ar);
     $m->set('username', 'test');
@@ -539,15 +539,15 @@ can be brought into the original model as fields::
     $m = new Model_Client($db);
     $m->getRef('Invoice')->addField('max_delivery', ['aggregate' => 'max', 'field' => 'shipping']);
     $m->getRef('Payment')->addField('total_paid', ['aggregate' => 'sum', 'field' => 'amount']);
-    $m->export(['name','max_delivery','total_paid']);
+    $m->export(['name', 'max_delivery', 'total_paid']);
 
 The above code is more concise and can be used together with reference declaration,
 although this is how it works::
 
     $m = new Model_Client($db);
-    $m->addExpression('max_delivery', $m->refLink('Invoice')->action('fx', ['max', 'shipping']));
-    $m->addExpression('total_paid', $m->refLink('Payment')->action('fx', ['sum', 'amount']));
-    $m->export(['name','max_delivery','total_paid']);
+    $m->addExpression('max_delivery', ['expr' => $m->refLink('Invoice')->action('fx', ['max', 'shipping'])]);
+    $m->addExpression('total_paid', ['expr' => $m->refLink('Payment')->action('fx', ['sum', 'amount'])]);
+    $m->export(['name', 'max_delivery', 'total_paid']);
 
 In this example calling refLink is similar to traversing reference but instead
 of calculating DataSet based on Active Record or DataSet it references the actual
@@ -579,7 +579,7 @@ This is useful with hasMany references::
 hasMany::addField() again is a short-cut for creating expression, which you can
 also build manually::
 
-    $m->addExpression('country', $m->refLink('country_id')->action('field',['name']));
+    $m->addExpression('country', $m->refLink('country_id')->action('field', ['name']));
 
 Advanced Use of Actions
 -----------------------
@@ -600,7 +600,7 @@ you could do this::
     $m = new Model_User($db);
     $m->set('username', 'peter');
     $m->set('address_1', 'street 49');
-    $m->set('country_id', (new Model_Country($db))->addCondition('name','UK')->action('field',['id']));
+    $m->set('country_id', (new Model_Country($db))->addCondition('name', 'UK')->action('field', ['id']));
     $m->save();
 
 This way it will not execute any code, but instead it will provide expression
@@ -617,8 +617,8 @@ however if you're stuck with SQL you can use free-form pattern-based expressions
     $m->getRef('Invoice')->addField('total_purchase', ['aggregate' => 'sum', 'field' => 'total']);
     $m->getRef('Payment')->addField('total_paid', ['aggregate' => 'sum', 'field' => 'amount']);
 
-    $m->addExpression('balance','[total_purchase]+[total_paid]');
-    $m->export(['name','balance']);
+    $m->addExpression('balance', ['expr' => '[total_purchase] + [total_paid]']);
+    $m->export(['name', 'balance']);
 
 
 Conclusion

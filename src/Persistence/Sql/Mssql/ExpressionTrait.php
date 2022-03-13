@@ -6,6 +6,11 @@ namespace Atk4\Data\Persistence\Sql\Mssql;
 
 trait ExpressionTrait
 {
+    private function fixOpenEscapeChar(string $v): string
+    {
+        return preg_replace('~(?:\'(?:\'\'|\\\\\'|[^\'])*\')?+\K\]([^\[\]\'"(){}]*?)\]~s', '[$1]', $v);
+    }
+
     protected function escapeIdentifier(string $value): string
     {
         return $this->fixOpenEscapeChar(parent::escapeIdentifier($value));
@@ -14,11 +19,6 @@ trait ExpressionTrait
     protected function escapeIdentifierSoft(string $value): string
     {
         return $this->fixOpenEscapeChar(parent::escapeIdentifierSoft($value));
-    }
-
-    private function fixOpenEscapeChar(string $v): string
-    {
-        return preg_replace('~(?:\'(?:\'\'|\\\\\'|[^\'])*\')?+\K\]([^\[\]\'"(){}]*?)\]~s', '[$1]', $v);
     }
 
     public function render(): array

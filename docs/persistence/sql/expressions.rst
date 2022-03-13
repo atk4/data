@@ -306,9 +306,9 @@ parts of the query. You must not call them in normal circumstances.
   a nasty back-ticks or commas in the field names. I generally **discourage**
   you from using this method. Example use would be::
 
-      $query->field('foo,bar');  // escapes and adds 2 fields to the query
-      $query->field($query->escape('foo,bar')); // adds field `foo,bar` to the query
-      $query->field(['foo,bar']);  // adds single field `foo,bar`
+      $query->field('foo, bar');  // escapes and adds 2 fields to the query
+      $query->field($query->escape('foo, bar')); // adds field `foo, bar` to the query
+      $query->field(['foo, bar']);  // adds single field `foo, bar`
 
       $query->order('foo desc');  // escapes and add `foo` desc to the query
       $query->field($query->escape('foo desc')); // adds field `foo desc` to the query
@@ -332,7 +332,7 @@ parts of the query. You must not call them in normal circumstances.
 
       $query->escapeIdentifierSoft('first_name');  // `first_name`
       $query->escapeIdentifierSoft('first.name');  // `first`.`name`
-      $query->escapeIdentifierSoft('(2+2)');       // (2+2)
+      $query->escapeIdentifierSoft('(2 + 2)');     // (2 + 2)
       $query->escapeIdentifierSoft('*');           // *
 
 .. php:method:: escapeParam($value)

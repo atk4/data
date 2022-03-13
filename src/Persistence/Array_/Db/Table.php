@@ -131,7 +131,7 @@ class Table
         $row = \Closure::bind(function () use ($that, $rowClass, $columnNames) {
             $row = new $rowClass($that);
             foreach ($columnNames as $columnName) {
-                $row->initValue($columnName); // @phpstan-ignore-line
+                $row->initValue($columnName);
             }
 
             return $row;

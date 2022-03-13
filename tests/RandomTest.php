@@ -244,9 +244,9 @@ class RandomTest extends TestCase
 
         // default title field
         $m = new Model($p);
-        $m->addExpression('caps', function ($m) {
+        $m->addExpression('caps', ['expr' => function ($m) {
             return strtoupper($m->get('name'));
-        });
+        }]);
 
         $m = $m->load(2);
         $this->assertSame('world', $m->get('name'));
@@ -391,7 +391,7 @@ class RandomTest extends TestCase
         $this->assertEquals(2, $mm->getTitle()); // loaded returns id value
 
         // expression as title field
-        $m->addExpression('my_name', '[id]');
+        $m->addExpression('my_name', ['expr' => '[id]']);
         $m->title_field = 'my_name';
         $mm = $m->load(2);
         $this->assertEquals(2, $mm->getTitle()); // loaded returns id value

@@ -63,7 +63,7 @@ trait ReferencesTrait
      *
      * @return Reference\HasOne|Reference\HasOneSql
      */
-    public function hasOne(string $link, array $defaults = []) //: Reference
+    public function hasOne(string $link, array $defaults = []) // : Reference
     {
         return $this->_addRef($this->_default_seed_hasOne, $link, $defaults); // @phpstan-ignore-line
     }
@@ -73,7 +73,7 @@ trait ReferencesTrait
      *
      * @return Reference\HasMany
      */
-    public function hasMany(string $link, array $defaults = []) //: Reference
+    public function hasMany(string $link, array $defaults = []) // : Reference
     {
         return $this->_addRef($this->_default_seed_hasMany, $link, $defaults); // @phpstan-ignore-line
     }
@@ -83,7 +83,7 @@ trait ReferencesTrait
      *
      * @return Reference\ContainsOne
      */
-    public function containsOne(string $link, array $defaults = []) //: Reference
+    public function containsOne(string $link, array $defaults = []) // : Reference
     {
         return $this->_addRef($this->_default_seed_containsOne, $link, $defaults); // @phpstan-ignore-line
     }
@@ -93,7 +93,7 @@ trait ReferencesTrait
      *
      * @return Reference\ContainsMany
      */
-    public function containsMany(string $link, array $defaults = []) //: Reference
+    public function containsMany(string $link, array $defaults = []) // : Reference
     {
         return $this->_addRef($this->_default_seed_containsMany, $link, $defaults); // @phpstan-ignore-line
     }

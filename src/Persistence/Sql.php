@@ -138,7 +138,7 @@ class Sql extends Persistence
         // When we work without table, we can't have any IDs
         if ($model->table === false) {
             $model->removeField($model->id_field);
-            $model->addExpression($model->id_field, '-1');
+            $model->addExpression($model->id_field, ['expr' => '-1', 'type' => 'integer']);
         }
     }
 
@@ -428,7 +428,7 @@ class Sql extends Persistence
                 return $query;
             case 'fx':
             case 'fx0':
-                if (!isset($args[0], $args[1])) {
+                if (!isset($args[0]) || !isset($args[1])) {
                     throw (new Exception('fx action needs 2 arguments, eg: ["sum", "amount"]'))
                         ->addMoreInfo('action', $type);
                 }

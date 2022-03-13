@@ -299,7 +299,7 @@ class LookupSqlTest extends TestCase
         $u->import([
             ['name' => 'Alain', 'country_code' => 'CA'],
             ['name' => 'Imants', 'country_code' => 'LV'],
-            //'name' => 'Romans', 'country_code' => 'UK'],  // does not exist
+            // 'name' => 'Romans', 'country_code' => 'UK'],  // does not exist
         ]);
 
         $this->assertSameExportUnordered([
