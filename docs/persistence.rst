@@ -830,13 +830,13 @@ This operation is actually consisting of 3 following operations::
 Here is a way how to intervene with the process::
 
     $client->hasMany('Invoice');
-    $client->addExpression('last_sale', function($m) {
+    $client->addExpression('last_sale', ['expr' => function ($m) {
         return $m->refLink('Invoice')
             ->setOrder('date desc')
             ->setLimit(1)
             ->action('field', ['total_gross'], 'getOne');
 
-    });
+    }, 'type' => 'float']);
 
 The code above uses refLink and also creates expression, but it tweaks
 the action used.

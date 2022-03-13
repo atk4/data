@@ -20,7 +20,7 @@ class StaticTest extends TestCase
         $this->assertSame('world', $m->get('name'));
 
         // custom title field and try loading from same static twice
-        $m = new Model($p); //, ['title_field' => 'foo']);
+        $m = new Model($p); // , ['title_field' => 'foo']);
         $m = $m->load(2);
         $this->assertSame('world', $m->get('name')); // still 'name' here not 'foo'
     }

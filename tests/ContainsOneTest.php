@@ -159,8 +159,6 @@ class ContainsOneTest extends TestCase
         $i->addr->delete();
         $this->assertNull($i->get($i->fieldName()->addr));
         $this->assertFalse($i->addr->isLoaded());
-
-        //var_dump($i->export(), $i->export(null, null, false));
     }
 
     /**

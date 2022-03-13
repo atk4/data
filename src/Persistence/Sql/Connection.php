@@ -114,7 +114,14 @@ abstract class Connection
             } else {
                 foreach (explode(';', $parts[1] ?? '') as $part) {
                     [$k, $v] = str_contains($part, '=') ? explode('=', $part, 2) : [$part, null];
-                    $dsn[$k] = $v;
+                    if ($k === 'query' || str_contains($part, '[')) {
+                        parse_str($k === 'query' ? $v : $part, $partRes);
+                        foreach ($partRes as $pK => $pV) {
+                            $dsn[$pK] = $pV;
+                        }
+                    } else {
+                        $dsn[$k] = $v;
+                    }
                 }
                 if (isset($dsn['host']) && str_contains($dsn['host'], ':')) {
                     [$dsn['host'], $port] = explode(':', $dsn['host'], 2);

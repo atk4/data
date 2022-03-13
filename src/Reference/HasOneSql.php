@@ -30,7 +30,7 @@ class HasOneSql extends HasOne
 
         $fieldExpression = $ourModel->addExpression($fieldName, array_merge(
             [
-                function (Model $ourModel) use ($theirFieldName) {
+                'expr' => function (Model $ourModel) use ($theirFieldName) {
                     // remove order if we just select one field from hasOne model
                     // that is mandatory for Oracle
                     return $ourModel->refLink($this->link)->action('field', [$theirFieldName])->reset('order');
@@ -154,7 +154,7 @@ class HasOneSql extends HasOne
 
         $fieldExpression = $ourModel->addExpression($fieldName, array_replace_recursive(
             [
-                function (Model $ourModel) {
+                'expr' => function (Model $ourModel) {
                     $theirModel = $ourModel->refLink($this->link);
 
                     return $theirModel->action('field', [$theirModel->title_field])->reset('order');

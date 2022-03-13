@@ -15,14 +15,14 @@ use result as an output.
 Expressions solve this problem by adding a read-only field to your model that
 corresponds to an expression:
 
-.. php:method:: addExpression($link, $model);
+.. php:method:: addExpression($name, $seed);
 
 Example will calculate "total_gross" by adding up values for "net" and "vat"::
 
     $m = new Model_Invoice($db);
     $m->addFields(['total_net', 'total_vat']);
 
-    $m->addExpression('total_gross', '[total_net]+[total_vat]');
+    $m->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]']);
     $m = $m->load(1);
 
     echo $m->get('total_gross');
@@ -45,9 +45,9 @@ values for the other fields including other expressions.
 
 There are other ways how you can specify expression::
 
-    $m->addExpression('total_gross',
-        $m->expr('[total_net]+[total_vat] + [fee]', ['fee' => $fee])
-    );
+    $m->addExpression('total_gross', [
+        'expr' => $m->expr('[total_net] + [total_vat] + [fee]', ['fee' => $fee])
+    ]);
 
 This format allow you to supply additional parameters inside expression.
 You should always use parameters instead of appending values inside your
@@ -64,7 +64,7 @@ unite a few statistical queries. Let's start by looking a at a very basic
 example::
 
     $m = new Model($db, ['table' => false]);
-    $m->addExpression('now', 'now()');
+    $m->addExpression('now', ['expr' => 'now()']);
     $m = $m->loadAny();
     echo $m->get('now');
 
@@ -80,9 +80,9 @@ can be gained when you need to pull various statistical values from your
 database at once::
 
     $m = new Model($db, ['table' => false]);
-    $m->addExpression('total_orders', (new Model_Order($db))->action('count'));
-    $m->addExpression('total_payments', (new Model_Payment($db))->action('count'));
-    $m->addExpression('total_received', (new Model_Payment($db))->action('fx0', ['sum', 'amount']));
+    $m->addExpression('total_orders', ['expr' => (new Model_Order($db))->action('count')]);
+    $m->addExpression('total_payments', ['expr' => (new Model_Payment($db))->action('count')]);
+    $m->addExpression('total_received', ['expr' => (new Model_Payment($db))->action('fx0', ['sum', 'amount'])]);
 
     $data = $m->loadOne()->get();
 
@@ -101,9 +101,9 @@ Expression Callback
 
 You can use a callback method when defining expression::
 
-    $m->addExpression('total_gross', function($m, $q) {
-        return '[total_net]+[total_vat]';
-    });
+    $m->addExpression('total_gross', ['expr' => function ($m, $q) {
+        return '[total_net] + [total_vat]';
+    }, 'type' => 'float']);
 
 Model Reloading after Save
 --------------------------
@@ -123,7 +123,7 @@ the following model::
 
             $this->addFields(['a', 'b']);
 
-            $this->addExpression('sum', '[a]+[b]');
+            $this->addExpression('sum', ['expr' => '[a] + [b]']);
         }
     }
 

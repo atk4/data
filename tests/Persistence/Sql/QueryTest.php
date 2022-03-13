@@ -197,7 +197,7 @@ class QueryTest extends TestCase
      */
     public function testTableException3(): void
     {
-        //$this->expectException(Exception::class); // no more
+        // $this->expectException(Exception::class); // no more
         $this->q()->table($this->q()->expr('test'));
     }
 
@@ -832,7 +832,7 @@ class QueryTest extends TestCase
         // pass array as CSV
         $this->assertSame(
             'where "id" in (:a, :b)',
-            $this->q('[where]')->where('id', 'in', '1,2')->render()[0]
+            $this->q('[where]')->where('id', 'in', '1, 2')->render()[0]
         );
         $this->assertSame(
             'where "id" not in (:a, :b)',
@@ -1548,7 +1548,7 @@ class QueryTest extends TestCase
      */
     public function testCaseExprException1(): void
     {
-        //$this->expectException(Exception::class);
+        // $this->expectException(Exception::class);
         $this->q()->caseExpr()
             ->caseWhen(['status'], 't2.expose_new')
             ->render();

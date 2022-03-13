@@ -149,7 +149,7 @@ class JobReport extends Job {
         $timesheet->getRef('client_id')->addField('hourly_rate');
 
         // calculate timesheet cost expression
-        $timesheet->addExpression('cost', '[hours]*[hourly_rate]');
+        $timesheet->addExpression('cost', ['expr' => '[hours] * [hourly_rate]']);
 
         // build relation between Job and Timesheets
         $this->hasMany('Timesheets', ['model' => $timesheet])
@@ -159,10 +159,10 @@ class JobReport extends Job {
             );
 
         // finally lets calculate profit
-        $this->addExpression('profit', '[invoiced]-[reported]');
+        $this->addExpression('profit', ['expr' => '[invoiced] - [reported]']);
 
         // profit margin could be also useful
-        $this->addExpression('profit_margin', 'coalesce([profit] / [invoiced], 0)');
+        $this->addExpression('profit_margin', ['expr' => 'coalesce([profit] / [invoiced], 0)']);
     }
 }
 ```
@@ -189,7 +189,7 @@ $chart = new \Atk4\Chart\BarChart();
 $data = new JobReport($db);
 
 // BarChart wants aggregated data
-$data->addExpression('month', 'month([date])');
+$data->addExpression('month', ['expr' => 'month([date])']);
 $aggregate = new AggregateModel($data);
 $aggregate->setGroupBy('month', ['profit_margin' => 'sum']);
 

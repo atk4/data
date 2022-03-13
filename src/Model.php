@@ -1897,21 +1897,14 @@ class Model implements \IteratorAggregate
     /**
      * Add expression field.
      *
-     * @param string|array|Persistence\Sql\Expressionable|\Closure $expression
+     * @param array{'expr': mixed} $seed
      *
      * @return CallbackField|SqlExpressionField
      */
-    public function addExpression(string $name, $expression)
+    public function addExpression(string $name, $seed)
     {
-        if (!is_array($expression)) {
-            $expression = ['expr' => $expression];
-        } elseif (isset($expression[0])) {
-            $expression['expr'] = $expression[0];
-            unset($expression[0]);
-        }
-
         /** @var CallbackField|SqlExpressionField */
-        $field = Field::fromSeed($this->_default_seed_addExpression, $expression);
+        $field = Field::fromSeed($this->_default_seed_addExpression, $seed);
 
         $this->addField($name, $field);
 
@@ -1921,20 +1914,13 @@ class Model implements \IteratorAggregate
     /**
      * Add expression field which will calculate its value by using callback.
      *
-     * @param string|array|\Closure $expression
+     * @param array{'expr': \Closure} $seed
      *
      * @return CallbackField
      */
-    public function addCalculatedField(string $name, $expression)
+    public function addCalculatedField(string $name, $seed)
     {
-        if (!is_array($expression)) {
-            $expression = ['expr' => $expression];
-        } elseif (isset($expression[0])) {
-            $expression['expr'] = $expression[0];
-            unset($expression[0]);
-        }
-
-        $field = new CallbackField($expression);
+        $field = new CallbackField($seed);
 
         $this->addField($name, $field);
 

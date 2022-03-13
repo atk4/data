@@ -83,7 +83,7 @@ class SelectTest extends TestCase
 
         $this->assertSame(
             '4',
-            $this->q()->field(new Expression('2+2'))->getOne()
+            $this->q()->field(new Expression('2 + 2'))->getOne()
         );
 
         $this->assertSame(
@@ -103,7 +103,7 @@ class SelectTest extends TestCase
 
         $this->assertSame(
             [['now' => '4']],
-            $this->q()->field(new Expression('2+2'), 'now')->getRows()
+            $this->q()->field(new Expression('2 + 2'), 'now')->getRows()
         );
 
         /*
@@ -114,12 +114,12 @@ class SelectTest extends TestCase
         if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             $this->assertSame(
                 [['now' => '6']],
-                $this->q()->field(new Expression('CAST([] AS int)+CAST([] AS int)', [3, 3]), 'now')->getRows()
+                $this->q()->field(new Expression('CAST([] AS int) + CAST([] AS int)', [3, 3]), 'now')->getRows()
             );
         } else {
             $this->assertSame(
                 [['now' => '6']],
-                $this->q()->field(new Expression('[]+[]', [3, 3]), 'now')->getRows()
+                $this->q()->field(new Expression('[] + []', [3, 3]), 'now')->getRows()
             );
         }
 
