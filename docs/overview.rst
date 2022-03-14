@@ -206,9 +206,9 @@ order to use grouping with Agile Data, your code would be::
 
     $aggregate = new AggregateModel(new Sale($db));
     $aggregate->setGroupBy(['contractor_to', 'type'], [ // groups by 2 columns
-        'c' => 'count(*)', // defines aggregate formulas for fields
-        'qty' => 'sum([])', // [] refers back to qty
-        'total' => 'sum([amount])', // can specify any field here
+        'c' => ['expr' => 'count(*)'], // defines aggregate formulas for fields
+        'qty' => ['expr' => 'sum([])'], // [] refers back to qty
+        'total' => ['expr' => 'sum([amount])'], // can specify any field here
     ]);
 
 
