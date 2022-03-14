@@ -58,7 +58,7 @@ Below is an example of 3 different ways to define fields for the UnionModel mode
    $unionPaymentInvoice->addField('client_id');
 
    // Expression will not affect nested models in any way
-   $unionPaymentInvoice->addExpression('name_capital', 'upper([name])');
+   $unionPaymentInvoice->addExpression('name_capital', ['expr' => 'upper([name])']);
 
    // UnionModel model can be joined with extra tables and define some fields from those joins
    $unionPaymentInvoice
@@ -91,8 +91,8 @@ Should more flexibility be needed, more expressions (or fields) can be added dir
    $nestedPayment = $unionPaymentInvoice->addNestedModel(new Invoice(), ['amount' => '-[amount]']);
    $nestedInvoice = $unionPaymentInvoice->addNestedModel(new Payment(), ['description' => '[note]']);
 
-   $nestedPayment->addExpression('type', '"payment"');
-   $nestedInvoice->addExpression('type', '"invoice"');
+   $nestedPayment->addExpression('type', ['expr' => '\'payment\'']);
+   $nestedInvoice->addExpression('type', ['expr' => '\'invoice\'']);
    $unionPaymentInvoice->addField('type');
 
 A new field "type" has been added that will be defined as a static constant.

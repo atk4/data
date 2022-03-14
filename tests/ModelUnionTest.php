@@ -90,7 +90,7 @@ class ModelUnionTest extends TestCase
     public function testMissingField(): void
     {
         $transaction = $this->createTransaction();
-        $transaction->nestedInvoice->addExpression('type', '\'invoice\'');
+        $transaction->nestedInvoice->addExpression('type', ['expr' => '\'invoice\'']);
         $transaction->addField('type');
 
         $this->assertSameSql(
@@ -207,7 +207,9 @@ class ModelUnionTest extends TestCase
         $transaction = $this->createTransaction();
 
         $transactionAggregate = new AggregateModel($transaction);
-        $transactionAggregate->groupBy(['name'], ['amount' => ['sum([amount])', 'type' => 'atk4_money']]);
+        $transactionAggregate->setGroupBy(['name'], [
+            'amount' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
+        ]);
 
         $this->assertSameSql(
             'select "name", sum("amount") "amount" from (select "client_id", "name", "amount" from (select "client_id" "client_id", "name" "name", "amount" "amount" from "invoice" UNION ALL select "client_id" "client_id", "name" "name", "amount" "amount" from "payment") "_tu") "_tm" group by "name"',
@@ -217,7 +219,9 @@ class ModelUnionTest extends TestCase
         $transaction = $this->createSubtractInvoiceTransaction();
 
         $transactionAggregate = new AggregateModel($transaction);
-        $transactionAggregate->groupBy(['name'], ['amount' => ['sum([])', 'type' => 'atk4_money']]);
+        $transactionAggregate->setGroupBy(['name'], [
+            'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
+        ]);
 
         $this->assertSameSql(
             'select "name", sum("amount") "amount" from (select "client_id", "name", "amount" from (select "client_id" "client_id", "name" "name", -"amount" "amount" from "invoice" UNION ALL select "client_id" "client_id", "name" "name", "amount" "amount" from "payment") "_tu") "_tm" group by "name"',
@@ -235,7 +239,9 @@ class ModelUnionTest extends TestCase
         $transaction->removeField('client_id');
         // TODO enable later, test failing with MSSQL $transaction->setOrder('name');
         $transactionAggregate = new AggregateModel($transaction);
-        $transactionAggregate->groupBy(['name'], ['amount' => ['sum([amount])', 'type' => 'atk4_money']]);
+        $transactionAggregate->setGroupBy(['name'], [
+            'amount' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
+        ]);
         $transactionAggregate->setOrder('name');
 
         $this->assertSame([
@@ -249,7 +255,9 @@ class ModelUnionTest extends TestCase
         $transaction->removeField('client_id');
         // TODO enable later, test failing with MSSQL $transaction->setOrder('name');
         $transactionAggregate = new AggregateModel($transaction);
-        $transactionAggregate->groupBy(['name'], ['amount' => ['sum([])', 'type' => 'atk4_money']]);
+        $transactionAggregate->setGroupBy(['name'], [
+            'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
+        ]);
         $transactionAggregate->setOrder('name');
 
         $this->assertSame([
@@ -267,12 +275,14 @@ class ModelUnionTest extends TestCase
     public function testSubGroupingByExpressions(): void
     {
         $transaction = $this->createTransaction();
-        $transaction->nestedInvoice->addExpression('type', '\'invoice\'');
-        $transaction->nestedPayment->addExpression('type', '\'payment\'');
+        $transaction->nestedInvoice->addExpression('type', ['expr' => '\'invoice\'']);
+        $transaction->nestedPayment->addExpression('type', ['expr' => '\'payment\'']);
         $transaction->addField('type');
 
         $transactionAggregate = new AggregateModel($transaction);
-        $transactionAggregate->groupBy(['type'], ['amount' => ['sum([amount])', 'type' => 'atk4_money']]);
+        $transactionAggregate->setGroupBy(['type'], [
+            'amount' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
+        ]);
 
         // TODO subselects should not select "client" and "name" fields
         $this->assertSameSql(
@@ -290,12 +300,14 @@ class ModelUnionTest extends TestCase
         ], $transactionAggregate->export(['type', 'amount']));
 
         $transaction = $this->createSubtractInvoiceTransaction();
-        $transaction->nestedInvoice->addExpression('type', '\'invoice\'');
-        $transaction->nestedPayment->addExpression('type', '\'payment\'');
+        $transaction->nestedInvoice->addExpression('type', ['expr' => '\'invoice\'']);
+        $transaction->nestedPayment->addExpression('type', ['expr' => '\'payment\'']);
         $transaction->addField('type');
 
         $transactionAggregate = new AggregateModel($transaction);
-        $transactionAggregate->groupBy(['type'], ['amount' => ['sum([])', 'type' => 'atk4_money']]);
+        $transactionAggregate->setGroupBy(['type'], [
+            'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
+        ]);
 
         $this->assertSameExportUnordered([
             ['type' => 'invoice', 'amount' => -23.0],

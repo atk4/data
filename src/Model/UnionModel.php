@@ -261,7 +261,7 @@ class UnionModel extends Model
                     // UnionModel can have some fields defined as expressions. We don't touch those either.
                     // Imants: I have no idea why this condition was set, but it's limiting our ability
                     // to use expression fields in mapping
-                    if ($field instanceof SqlExpressionField /*&& !isset($this->aggregate[$fieldName])*/) {
+                    if ($field instanceof SqlExpressionField /* && !isset($this->aggregate[$fieldName]) */) {
                         continue;
                     }
 

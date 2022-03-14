@@ -48,7 +48,9 @@ class ReportTest extends TestCase
     {
         $invoiceAggregate = $this->createInvoiceAggregate();
 
-        $invoiceAggregate->groupBy(['client_id'], ['c' => ['count(*)', 'type' => 'integer']]);
+        $invoiceAggregate->setGroupBy(['client_id'], [
+            'c' => ['expr' => 'count(*)', 'type' => 'integer'],
+        ]);
 
         $this->assertSame(
             [
