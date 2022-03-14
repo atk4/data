@@ -191,7 +191,9 @@ $data = new JobReport($db);
 // BarChart wants aggregated data
 $data->addExpression('month', ['expr' => 'month([date])']);
 $aggregate = new AggregateModel($data);
-$aggregate->setGroupBy('month', ['profit_margin' => 'sum']);
+$aggregate->setGroupBy(['month'], [
+    'profit_margin' => ['expr' => 'sum'],
+]);
 
 // associate presentation with data
 $chart->setModel($aggregate, ['month', 'profit_margin']);

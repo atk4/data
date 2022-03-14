@@ -132,7 +132,7 @@ class ModelAggregateTest extends TestCase
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
 
-        $aggregate->addExpression('double', ['[s]+[amount]', 'type' => 'atk4_money']);
+        $aggregate->addExpression('double', ['expr' => '[s] + [amount]', 'type' => 'atk4_money']);
 
         $this->assertSameExportUnordered(
             [
@@ -154,7 +154,7 @@ class ModelAggregateTest extends TestCase
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
 
-        $aggregate->addExpression('double', ['[s]+[amount]', 'type' => 'atk4_money']);
+        $aggregate->addExpression('double', ['expr' => '[s] + [amount]', 'type' => 'atk4_money']);
 
         $this->assertSameExportUnordered(
             [
@@ -175,7 +175,7 @@ class ModelAggregateTest extends TestCase
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
 
-        $aggregate->addExpression('double', ['[s]+[amount]', 'type' => 'atk4_money']);
+        $aggregate->addExpression('double', ['expr' => '[s] + [amount]', 'type' => 'atk4_money']);
         $aggregate->addCondition(
             'double',
             '>',
@@ -201,7 +201,7 @@ class ModelAggregateTest extends TestCase
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
 
-        $aggregate->addExpression('double', ['[s]+[amount]', 'type' => 'atk4_money']);
+        $aggregate->addExpression('double', ['expr' => '[s] + [amount]', 'type' => 'atk4_money']);
         $aggregate->addCondition(
             'double',
             // TODO Sqlite bind param does not work, expr needed, even if casted to float with DBAL type (comparison works only if casted to/bind as int)
@@ -226,7 +226,7 @@ class ModelAggregateTest extends TestCase
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
 
-        $aggregate->addExpression('double', ['[s]+[amount]', 'type' => 'atk4_money']);
+        $aggregate->addExpression('double', ['expr' => '[s] + [amount]', 'type' => 'atk4_money']);
         $aggregate->addCondition('client_id', 2);
 
         $this->assertSame(
