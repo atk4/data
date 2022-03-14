@@ -190,10 +190,10 @@ class ModelTest extends TestCase
      */
     public function testCharacterTypeFieldLong(string $type, bool $isBinary, int $lengthBytes): void
     {
-        // remove once long multibyte Oracle CLOB stream read support is fixed in php-src/pdo_oci
-        // https://bugs.php.net/bug.php?id=60994
-        // https://github.com/php/php-src/pull/5233
-        if ($this->getDatabasePlatform() instanceof OraclePlatform && $type === 'text') {
+        // remove once long multibyte Oracle CLOB stream read support is fixed in pdo_oci ext (oci8 is NOT affected)
+        // https://github.com/php/php-src/pull/8018
+        if ($this->getDatabasePlatform() instanceof OraclePlatform
+            && $this->db->connection->connection()->getNativeConnection() instanceof \PDO && $type === 'text') {
             $lengthBytes = min($lengthBytes, 8190);
         }
 
