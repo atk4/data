@@ -153,18 +153,16 @@ class AggregateModel extends Model
 
                 return $query;
             case 'count':
-                $query = parent::action($mode, $args);
-                if (isset($query->args['where'])) {
-                    $query->args['having'] = $query->args['where'];
-                    unset($query->args['where']);
-                }
+                $innerQuery = $this->action('select');
+                $innerQuery->reset('field')->field($this->expr('1'));
 
-                $query->reset('field')->field($this->expr('1'));
-                $this->initQueryGrouping($query);
+                $query = $innerQuery->dsql()
+                    ->field('count(*)', $args['alias'] ?? null)
+                    ->table($this->expr('([]) {}', [$innerQuery, '_tc']));
 
                 $this->hook(self::HOOK_INIT_SELECT_QUERY, [$query]);
 
-                return $query->dsql()->field('count(*)')->table($this->expr('([]) {}', [$query, '_tc']));
+                return $query;
 //            case 'field':
 //            case 'fx':
 //            case 'fx0':
