@@ -135,12 +135,12 @@ class AggregateModel extends Model
     {
         switch ($mode) {
             case 'select':
-                $fields = array_unique(array_merge(
+                $fields = $args[0] ?? array_unique(array_merge(
                     $this->onlyFields ?: array_keys($this->getFields()),
                     array_filter($this->groupByFields, fn ($v) => !$v instanceof Expression)
                 ));
 
-                $query = parent::action($mode, [false]);
+                $query = parent::action($mode, [[]]);
                 if (isset($query->args['where'])) {
                     $query->args['having'] = $query->args['where'];
                     unset($query->args['where']);
@@ -153,7 +153,7 @@ class AggregateModel extends Model
 
                 return $query;
             case 'count':
-                $innerQuery = $this->action('select');
+                $innerQuery = $this->action('select', [[]]);
                 $innerQuery->reset('field')->field($this->expr('1'));
 
                 $query = $innerQuery->dsql()
