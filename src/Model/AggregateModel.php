@@ -11,7 +11,6 @@ use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Query;
-use Atk4\Data\Reference;
 
 /**
  * AggregateModel model allows you to query using "group by" clause on your existing model.
@@ -97,18 +96,6 @@ class AggregateModel extends Model
     }
 
     /**
-     * TODO this should be removed, nasty hack to pass the tests.
-     */
-    public function getRef(string $link): Reference
-    {
-        $ref = clone $this->table->getRef($link);
-        $ref->unsetOwner();
-        $ref->setOwner($this);
-
-        return $ref;
-    }
-
-    /**
      * Adds new field into model.
      *
      * @param array|object $seed
@@ -126,6 +113,12 @@ class AggregateModel extends Model
         if ($this->table->hasField($name)) {
             $field = clone $this->table->getField($name);
             $field->unsetOwner();
+            $refLink = \Closure::bind(fn () => $field->referenceLink, null, Field::class)();
+            if ($refLink !== null && !$this->hasRef($refLink)) {
+                $ref = clone $this->table->getRef($refLink);
+                $ref->unsetOwner();
+                $this->add($ref);
+            }
         } else {
             $field = null;
         }
