@@ -19,7 +19,7 @@ use Atk4\Data\Reference;
  *
  * $aggregate = new AggregateModel($mymodel);
  * $aggregate->setGroupBy(['first', 'last'], [
- *     'salary' => ['expr' => 'sum([])'],
+ *     'salary' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
  * ];
  *
  * your resulting model will have 3 fields:
@@ -32,11 +32,6 @@ use Atk4\Data\Reference;
  *
  * If this field exist in the original model it will be added and you'll get exception otherwise. Finally you are
  * permitted to add expressions.
- *
- * You can also pass seed (for example field type) when aggregating:
- * $aggregate->setGroupBy(['first', 'last'], [
- *     'salary' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
- * ];
  *
  * @property Persistence\Sql $persistence
  * @property Model           $table
@@ -59,11 +54,9 @@ class AggregateModel extends Model
 
         $this->table = $baseModel;
 
-        // this model does not have ID field
-        $this->id_field = null;
-
-        // this model should always be read-only
+        // this model should always be read-only and does not have ID field
         $this->read_only = true;
+        $this->id_field = null;
 
         parent::__construct($baseModel->persistence, $defaults);
     }
@@ -88,13 +81,13 @@ class AggregateModel extends Model
         }
 
         foreach ($aggregateExpressions as $name => $seed) {
-            $args = [];
+            $exprArgs = [];
             // if field originally defined in the parent model, then it can be used as part of expression
             if ($this->table->hasField($name)) {
-                $args = [$this->table->getField($name)];
+                $exprArgs = [$this->table->getField($name)];
             }
 
-            $seed['expr'] = $this->table->expr($seed['expr'], $args);
+            $seed['expr'] = $this->table->expr($seed['expr'], $exprArgs);
 
             // now add the expressions here
             $this->addExpression($name, $seed);
