@@ -106,26 +106,16 @@ class AggregateModel extends Model
             return parent::addField($name, $seed);
         }
 
-        if ($seed['never_persist'] ?? false) {
-            return parent::addField($name, $seed);
-        }
-
         if ($this->table->hasField($name)) {
-            $field = clone $this->table->getField($name);
-            $field->unsetOwner();
-            $refLink = \Closure::bind(fn () => $field->referenceLink, null, Field::class)();
-            if ($refLink !== null && !$this->hasRef($refLink)) {
-                $ref = clone $this->table->getRef($refLink);
-                $ref->unsetOwner();
-                $this->add($ref);
-            }
-        } else {
-            $field = null;
+            $innerField = $this->table->getField($name);
+            $seed['type'] ??= $innerField->type;
+            $seed['enum'] ??= $innerField->enum;
+            $seed['values'] ??= $innerField->values;
+            $seed['caption'] ??= $innerField->caption;
+            $seed['ui'] ??= $innerField->ui;
         }
 
-        return $field
-            ? parent::addField($name, $field)->setDefaults($seed)
-            : parent::addField($name, $seed);
+        return parent::addField($name, $seed);
     }
 
     /**

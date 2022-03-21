@@ -253,7 +253,7 @@ class ModelAggregateTest extends TestCase
         $aggregate->setOrder('client_id', 'asc');
 
         $this->assertSameSql(
-            'select (select "name" from "client" "_c_2bfe9d72a4aa" where "id" = "_tm"."client_id") "client", "client_id", sum("amount") "amount" from (select "id", "client_id", "name", "amount", (select "name" from "client" "_c_2bfe9d72a4aa" where "id" = "invoice"."client_id") "client" from "invoice") "_tm" group by "client_id" order by "client_id"',
+            'select "client", "client_id", sum("amount") "amount" from (select "id", "client_id", "name", "amount", (select "name" from "client" "_c_2bfe9d72a4aa" where "id" = "invoice"."client_id") "client" from "invoice") "_tm" group by "client_id" order by "client_id"',
             $aggregate->action('select')->render()[0]
         );
 
