@@ -135,16 +135,18 @@ class AggregateModel extends Model
     {
         switch ($mode) {
             case 'select':
-                $fields = $this->onlyFields ?: array_keys($this->getFields());
+                $fields = array_unique(array_merge(
+                    $this->onlyFields ?: array_keys($this->getFields()),
+                    array_filter($this->groupByFields, fn ($v) => !$v instanceof Expression)
+                ));
 
-                // select but no need your fields
                 $query = parent::action($mode, [false]);
                 if (isset($query->args['where'])) {
                     $query->args['having'] = $query->args['where'];
                     unset($query->args['where']);
                 }
 
-                $this->persistence->initQueryFields($this, $query, array_unique($fields + $this->groupByFields));
+                $this->persistence->initQueryFields($this, $query, $fields);
                 $this->initQueryGrouping($query);
 
                 $this->hook(self::HOOK_INIT_SELECT_QUERY, [$query]);
@@ -163,9 +165,10 @@ class AggregateModel extends Model
                 $this->hook(self::HOOK_INIT_SELECT_QUERY, [$query]);
 
                 return $query->dsql()->field('count(*)')->table($this->expr('([]) {}', [$query, '_tc']));
-            case 'field':
-            case 'fx':
-                return parent::action($mode, $args);
+//            case 'field':
+//            case 'fx':
+//            case 'fx0':
+//                return parent::action($mode, $args);
             default:
                 throw (new Exception('AggregateModel model does not support this action'))
                     ->addMoreInfo('mode', $mode);
