@@ -240,6 +240,10 @@ class ModelTest extends TestCase
             ['binary', true, 255],
             ['text', false, 255],
             ['blob', true, 255],
+            // expected to fail with pdo_oci driver, multibyte Oracle CLOB stream read support
+            // is broken with long strings, oci8 driver is NOT affected,
+            // CI images ghcr.io/mvorisek/image-php are patched
+            // remove comment once https://github.com/php/php-src/pull/8018 is merged & released
             ['text', false, 256 * 1024],
             ['blob', true, 256 * 1024],
         ];
