@@ -77,9 +77,7 @@ jobs:
     name: Unit
     runs-on: ubuntu-latest
     container:
-      # Alpine support for newer pdo_oci is broken, see https://github.com/mlocati/docker-php-extension-installer/issues/523
-      # remove once config.m4 checks are working on Alpine
-      image: ghcr.io/mvorisek/image-php:${{ matrix.php }}-debian
+      image: ghcr.io/mvorisek/image-php:${{ matrix.php }}
     strategy:
       fail-fast: false
       matrix:
@@ -227,8 +225,7 @@ jobs:
           php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) -v
           if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-oracle-pdo.cov; fi
 
-      - name: "Run tests: Oracle - OCI8 (only for coverage or cron)"
-        if: env.LOG_COVERAGE || github.event_name == 'schedule'
+      - name: "Run tests: Oracle - OCI8"
         env:
           DB_DSN: "oci8:dbname=oracle/xe"
           DB_USER: system
