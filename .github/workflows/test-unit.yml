@@ -214,7 +214,8 @@ jobs:
           php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) -v
           if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-mssql.cov; fi
 
-      - name: "Run tests: Oracle - PDO"
+      - name: "Run tests: Oracle - PDO (only for coverage or cron)"
+        if: env.LOG_COVERAGE || github.event_name == 'schedule'
         env:
           DB_DSN: "pdo_oci:dbname=oracle/xe"
           DB_USER: system
