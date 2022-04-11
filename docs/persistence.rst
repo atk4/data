@@ -198,7 +198,7 @@ Note that `read_only` can still have a default value::
     $m->addField('created', [
         'read_only' => true,
         'type' => 'datetime',
-        'default' => new DateTime()
+        'default' => new DateTime(),
     ]);
 
     $m->save();  // stores creation time just fine and also will loade it.

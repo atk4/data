@@ -208,7 +208,7 @@ of objects as well as actions::
         $m->expr('[age] between [min_age] and [max_age]'),
         [
             'min_age' => $m->action('min', ['age']),
-            'max_age' => $m->expr('(20 + [])', [20])
+            'max_age' => $m->expr('(20 + [])', [20]),
         ]
     );
 
@@ -312,7 +312,7 @@ Creates a Scope object from an array::
    // below will create 2 conditions and nest them in a compound conditions with AND junction
    $scope1 = new Scope([
       ['name', 'like', 'ABC%'],
-      ['country', 'US']
+      ['country', 'US'],
    ]);
 
 .. php:method:: negate();

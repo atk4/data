@@ -111,8 +111,7 @@ class ModelNestedArrayTest extends TestCase
             ['name' => 'Sue', 'birthday' => new \DateTime('2005-4-3')],
         ], $m->export());
 
-        $this->assertSame([
-        ], $this->hookLog);
+        $this->assertSame([], $this->hookLog);
     }
 
     public function testInsert(): void

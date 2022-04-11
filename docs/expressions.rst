@@ -46,7 +46,7 @@ values for the other fields including other expressions.
 There are other ways how you can specify expression::
 
     $m->addExpression('total_gross', [
-        'expr' => $m->expr('[total_net] + [total_vat] + [fee]', ['fee' => $fee])
+        'expr' => $m->expr('[total_net] + [total_vat] + [fee]', ['fee' => $fee]),
     ]);
 
 This format allow you to supply additional parameters inside expression.

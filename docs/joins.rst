@@ -130,7 +130,7 @@ like this: foreign_table.'_id'. Here is usage example::
     $user->addField('username');
     $j_cc = $user->join('credit_card', [
         'prefix' => 'cc_',
-        'master_field' => 'default_credit_card_id'
+        'master_field' => 'default_credit_card_id',
     ]);
     $j_cc->addField('integer');  // creates cc_number
     $j_cc->addField('name');    // creates cc_name
@@ -281,7 +281,7 @@ When you're dealing with SQL drivers, you can specify `\Atk4\Data\Persistence\Sq
 
     $stats = $user->join('stats', [
         'on' => $user->expr('year({}) = _st.year'),
-        'foreign_alias' => '_st'
+        'foreign_alias' => '_st',
     ]);
 
 You can also specify ``'on' => false`` then the ON clause will not be used at all

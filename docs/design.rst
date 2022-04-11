@@ -498,16 +498,16 @@ Finally the code above will work even if you use a simple Array as a data source
                 'email' => 'joe@yahoo.com',
                 'Orders' => [
                     ['amount' => 10],
-                    ['amount' => 20]
-                ]
+                    ['amount' => 20],
+                ],
             ],[
                 'name' => 'Bill',
                 'email' => 'bill@yahoo.com',
                 'Orders' => [
-                    ['amount' => 35]
-                ]
-            ]
-        ]
+                    ['amount' => 35],
+                ],
+            ],
+        ],
     ]);
 
 So getting back to the operation above, lets look at it in more details::
