@@ -122,7 +122,7 @@ class Reference
 
     protected function onHookToOurModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
-        $name = $this->short_name; // use static function to allow this object to be GCed
+        $name = $this->shortName; // use static function to allow this object to be GCed
 
         return $model->onHookDynamic(
             $spot,

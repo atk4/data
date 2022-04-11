@@ -99,7 +99,7 @@ class Condition extends AbstractScope
         if ($key instanceof AbstractScope) {
             throw new Exception('Only Scope can contain another conditions');
         } elseif ($key instanceof Field) { // for BC
-            $key = $key->short_name;
+            $key = $key->shortName;
         } elseif (!is_string($key) && !($key instanceof Expressionable)) {
             throw new Exception('Field must be a string or an instance of Expressionable');
         }
@@ -163,7 +163,7 @@ class Condition extends AbstractScope
                 // TODO Model/field should not be mutated, see:
                 // https://github.com/atk4/data/issues/662
                 // for now, do not set default at least for PK/ID
-                if ($field instanceof Field && $field->short_name !== $field->getOwner()->id_field) {
+                if ($field instanceof Field && $field->shortName !== $field->getOwner()->id_field) {
                     $field->system = true;
                     $field->default = $this->value;
                 }
@@ -384,7 +384,7 @@ class Condition extends AbstractScope
         if ($field instanceof Field && $field->getReference() !== null) {
             // make sure we set the value in the Model
             $model = $model->isEntity() ? clone $model : $model->createEntity();
-            $model->set($field->short_name, $value);
+            $model->set($field->shortName, $value);
 
             // then take the title
             $title = $model->ref($field->getReference()->link)->getTitle();

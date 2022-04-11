@@ -121,7 +121,7 @@ class Action
                     ->addMoreInfo('condition', $condition);
             }
 
-            return $this->evaluateIf($row[$field->short_name] ?? null, $operator, $value);
+            return $this->evaluateIf($row[$field->shortName] ?? null, $operator, $value);
         } elseif ($condition instanceof Model\Scope) { // nested conditions
             $matches = [];
 

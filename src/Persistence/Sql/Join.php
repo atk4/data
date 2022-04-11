@@ -33,7 +33,7 @@ class Join extends Model\Join
 
         // our short name will be unique
         if (!$this->foreign_alias) {
-            $this->foreign_alias = ($this->getOwner()->table_alias ?: '') . $this->short_name;
+            $this->foreign_alias = ($this->getOwner()->table_alias ?: '') . $this->shortName;
         }
 
         // Master field indicates ID of the joined item. In the past it had to be
@@ -46,7 +46,7 @@ class Join extends Model\Join
 
             $field = $owner->addField($this->master_field, ['system' => true, 'read_only' => true]);
 
-            $this->master_field = $field->short_name;
+            $this->master_field = $field->shortName;
         }
     }
 
@@ -87,11 +87,11 @@ class Join extends Model\Join
 
         /*
         if ($this->reverse) {
-            $query->field([$this->short_name => (
+            $query->field([$this->shortName => (
                 $this->join ?: ($model->table_alias ?: $model->table) . '.' . $this->master_field
             )]);
         } else {
-            $query->field([$this->short_name => $this->foreign_alias . '.' . $this->foreign_field]);
+            $query->field([$this->shortName => $this->foreign_alias . '.' . $this->foreign_field]);
         }
         */
     }
@@ -99,9 +99,9 @@ class Join extends Model\Join
     public function afterLoad(Model $entity): void
     {
         // we need to collect ID
-        if (isset($entity->getDataRef()[$this->short_name])) {
-            $this->setId($entity, $entity->getDataRef()[$this->short_name]);
-            unset($entity->getDataRef()[$this->short_name]);
+        if (isset($entity->getDataRef()[$this->shortName])) {
+            $this->setId($entity, $entity->getDataRef()[$this->shortName]);
+            unset($entity->getDataRef()[$this->shortName]);
         }
     }
 }

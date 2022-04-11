@@ -20,11 +20,11 @@ class BusinessModelTest extends TestCase
         $m->addField('name');
 
         $f = $m->getField('name');
-        $this->assertSame('name', $f->short_name);
+        $this->assertSame('name', $f->shortName);
 
         $m->addField('surname', new Field());
         $f = $m->getField('surname');
-        $this->assertSame('surname', $f->short_name);
+        $this->assertSame('surname', $f->shortName);
     }
 
     public function testFieldAccess(): void

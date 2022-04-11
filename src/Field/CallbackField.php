@@ -32,7 +32,7 @@ class CallbackField extends Field
         $this->ui['table']['sortable'] = false;
 
         $this->onHookToOwnerEntity(Model::HOOK_AFTER_LOAD, function (Model $entity) {
-            $entity->getDataRef()[$this->short_name] = ($this->expr)($entity);
+            $entity->getDataRef()[$this->shortName] = ($this->expr)($entity);
         });
     }
 }
