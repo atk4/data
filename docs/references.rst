@@ -231,15 +231,15 @@ You can reference fields by using square brackets here. Also you may pass `args`
 containing your optional arguments::
 
     ->addField('len', [
-        'expr' => 'sum(if([date] = [exp_date], 1, 0))',
-        'args' => ['exp_date' => '2003-03-04]
+            'expr' => 'sum(if([date] = [exp_date], 1, 0))',
+            'args' => ['exp_date' => '2003-03-04],
         ]),
 
 Alternatively you may also specify either 'aggregate'::
 
     $book->hasMany('Pages', ['model' => [Page::class]])
         ->addField('page_list', [
-            'aggregate' => $book->refModel('Pages')->expr('group_concat([number], [])', ['-'])
+            'aggregate' => $book->refModel('Pages')->expr('group_concat([number], [])', ['-']),
         ]);
 
 
@@ -376,7 +376,7 @@ be renamed, just as we did above::
             'address_1',
             'address_2',
             'address_3',
-            'address_notes' => ['notes', 'type' => 'text']
+            'address_notes' => ['notes', 'type' => 'text'],
         ]);
 
 Above, all ``address_`` fields are copied with the same name, however field
