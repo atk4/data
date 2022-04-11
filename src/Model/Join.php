@@ -120,10 +120,10 @@ abstract class Join
             'table' => $this->foreign_table,
         ]);
         foreach ($this->getOwner()->getFields() as $ownerField) {
-            if ($ownerField->hasJoin() && $ownerField->getJoin()->short_name === $this->short_name
-                && $ownerField->short_name !== $fakeModel->id_field
-                && $ownerField->short_name !== $this->foreign_field) {
-                $fakeModel->addField($ownerField->short_name, [
+            if ($ownerField->hasJoin() && $ownerField->getJoin()->shortName === $this->shortName
+                && $ownerField->shortName !== $fakeModel->id_field
+                && $ownerField->shortName !== $this->foreign_field) {
+                $fakeModel->addField($ownerField->shortName, [
                     'actual' => $ownerField->actual,
                     'type' => $ownerField->type,
                 ]);
@@ -160,7 +160,7 @@ abstract class Join
 
     protected function onHookToOwnerBoth(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
-        $name = $this->short_name; // use static function to allow this object to be GCed
+        $name = $this->shortName; // use static function to allow this object to be GCed
 
         return $this->getOwner()->onHookDynamic(
             $spot,
@@ -179,7 +179,7 @@ abstract class Join
 
     protected function onHookToOwnerEntity(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
-        $name = $this->short_name; // use static function to allow this object to be GCed
+        $name = $this->shortName; // use static function to allow this object to be GCed
 
         return $this->getOwner()->onHookDynamic(
             $spot,
@@ -284,7 +284,7 @@ abstract class Join
      */
     public function addField(string $name, array $seed = []): Field
     {
-        $seed['joinName'] = $this->short_name;
+        $seed['joinName'] = $this->shortName;
 
         return $this->getOwner()->addField($this->prefix . $name, $seed);
     }
@@ -315,7 +315,7 @@ abstract class Join
      */
     public function join(string $foreignTable, array $defaults = []): self
     {
-        $defaults['joinName'] = $this->short_name;
+        $defaults['joinName'] = $this->shortName;
 
         return $this->getOwner()->join($foreignTable, $defaults);
     }
@@ -327,7 +327,7 @@ abstract class Join
      */
     public function leftJoin(string $foreignTable, array $defaults = []): self
     {
-        $defaults['joinName'] = $this->short_name;
+        $defaults['joinName'] = $this->shortName;
 
         return $this->getOwner()->leftJoin($foreignTable, $defaults);
     }
@@ -339,7 +339,7 @@ abstract class Join
      */
     public function hasOne(string $link, array $defaults = [])
     {
-        $defaults['joinName'] = $this->short_name;
+        $defaults['joinName'] = $this->shortName;
 
         return $this->getOwner()->hasOne($link, $defaults);
     }

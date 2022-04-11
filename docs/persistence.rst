@@ -269,7 +269,7 @@ Your init() method for a Field_Currency might look like this::
 
         $this->never_persist = true;
 
-        $f = $this->short_name; // balance
+        $f = $this->shortName; // balance
 
         $this->getOwner()->addField(
             $f.'_amount',

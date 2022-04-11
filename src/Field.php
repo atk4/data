@@ -72,7 +72,7 @@ class Field implements Expressionable
 
     protected function onHookToOwnerEntity(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
-        $name = $this->short_name; // use static function to allow this object to be GCed
+        $name = $this->shortName; // use static function to allow this object to be GCed
 
         return $this->getOwner()->onHookDynamic(
             $spot,
@@ -279,7 +279,7 @@ class Field implements Expressionable
                 $messages[] = $e->getMessage();
             } while ($e = $e->getPrevious());
 
-            throw (new ValidationException([$this->short_name => implode(': ', $messages)], $this->getOwner()))
+            throw (new ValidationException([$this->shortName => implode(': ', $messages)], $this->getOwner()))
                 ->addMoreInfo('field', $this);
         }
     }
@@ -303,7 +303,7 @@ class Field implements Expressionable
     {
         $entity->assertIsEntity($this->getOwner());
 
-        return $entity->get($this->short_name);
+        return $entity->get($this->shortName);
     }
 
     /**
@@ -315,7 +315,7 @@ class Field implements Expressionable
     {
         $entity->assertIsEntity($this->getOwner());
 
-        $entity->set($this->short_name, $value);
+        $entity->set($this->shortName, $value);
 
         return $this;
     }
@@ -327,7 +327,7 @@ class Field implements Expressionable
     {
         $entity->assertIsEntity($this->getOwner());
 
-        $entity->setNull($this->short_name);
+        $entity->setNull($this->shortName);
 
         return $this;
     }
@@ -389,7 +389,7 @@ class Field implements Expressionable
 
     public function getPersistenceName(): string
     {
-        return $this->actual ?? $this->short_name;
+        return $this->actual ?? $this->shortName;
     }
 
     /**
@@ -422,7 +422,7 @@ class Field implements Expressionable
         ], true)) {
             $typecastField = new self(['type' => 'string']);
             $typecastField->setOwner(new Model($this->getOwner()->persistence, ['table' => false]));
-            $typecastField->short_name = $this->short_name;
+            $typecastField->shortName = $this->shortName;
             $allowArray = false;
         }
 
@@ -470,7 +470,7 @@ class Field implements Expressionable
      */
     public function getCaption(): string
     {
-        return $this->caption ?? $this->ui['caption'] ?? $this->readableCaption($this->short_name);
+        return $this->caption ?? $this->ui['caption'] ?? $this->readableCaption($this->shortName);
     }
 
     // }}}
@@ -493,8 +493,8 @@ class Field implements Expressionable
     public function __debugInfo(): array
     {
         $arr = [
-            'owner_class' => get_class($this->getOwner()),
-            'short_name' => $this->short_name,
+            'ownerClass' => get_class($this->getOwner()),
+            'shortName' => $this->shortName,
             'type' => $this->type,
         ];
 
