@@ -750,40 +750,73 @@ class QueryTest extends TestCase
     public function testWhereIncompatibleFieldWithCondition(): void
     {
         $this->expectException(Exception::class);
-        $this->q('[where]')->where('id=', 1)->render();
+        $this->q('[where]')->where('id=', 1);
     }
 
-    /**
-     * Verify that passing garbage to where throw exception.
-     *
-     * @covers ::order
-     */
     public function testWhereIncompatibleObject1(): void
-    {
-        $this->expectException(Exception::class);
-        $this->q('[where]')->where('a', new \DateTime())->render();
-    }
-
-    /**
-     * Verify that passing garbage to where throw exception.
-     *
-     * @covers ::order
-     */
-    public function testWhereIncompatibleObject2(): void
     {
         $this->expectException(Exception::class);
         $this->q('[where]')->where('a', new \DateTime());
     }
 
-    /**
-     * Verify that passing garbage to where throw exception.
-     *
-     * @covers ::order
-     */
+    public function testWhereIncompatibleObject2(): void
+    {
+        $this->expectException(Exception::class);
+        $this->q('[where]')->where('a', '=', new \DateTime());
+    }
+
     public function testWhereIncompatibleObject3(): void
     {
         $this->expectException(Exception::class);
-        $this->q('[where]')->where('a', '<>', new \DateTime());
+        $this->q('[where]')->where('a', '!=', new \DateTime());
+    }
+
+    public function testWhereUnsupportedOperator1Exception(): void
+    {
+        $this->expectException(Exception::class);
+        $this->q('[where]')->where('x', '<>', 2)->render();
+    }
+
+    public function testWhereUnsupportedOperator2Exception(): void
+    {
+        $this->expectException(Exception::class);
+        $this->q('[where]')->where('x', 'operator', 2)->render();
+    }
+
+    public function testWhereUnsupportedOperator3Exception(): void
+    {
+        $this->expectException(Exception::class);
+        $this->q('[where]')->where('x', 'is', true)->render();
+    }
+
+    public function testWhereUnsupportedOperator4Exception(): void
+    {
+        $this->expectException(Exception::class);
+        $this->q('[where]')->where('x', 'is', null)->render();
+    }
+
+    public function testWhereUnsupportedOperator5Exception(): void
+    {
+        $this->expectException(Exception::class);
+        $this->q('[where]')->where('x', 'is not', null)->render();
+    }
+
+    public function testWhereUnsupportedOperator6Exception(): void
+    {
+        $this->expectException(Exception::class);
+        $this->q('[where]')->where('x', 'not', null)->render();
+    }
+
+    public function testWhereUnsupportedOperator7Exception(): void
+    {
+        $this->expectException(Exception::class);
+        $this->q('[where]')->where('x', 'not', 2)->render();
+    }
+
+    public function testWhereUnsupportedOperator8Exception(): void
+    {
+        $this->expectException(Exception::class);
+        $this->q('[where]')->where('x', 'not', [1, 2])->render();
     }
 
     /**
@@ -805,16 +838,8 @@ class QueryTest extends TestCase
             $this->q('[where]')->where('id', 'not in', [1, 2])->render()[0]
         );
         $this->assertSame(
-            'where "id" not in (:a, :b)',
-            $this->q('[where]')->where('id', 'not', [1, 2])->render()[0]
-        );
-        $this->assertSame(
             'where "id" in (:a, :b)',
             $this->q('[where]')->where('id', '=', [1, 2])->render()[0]
-        );
-        $this->assertSame(
-            'where "id" not in (:a, :b)',
-            $this->q('[where]')->where('id', '<>', [1, 2])->render()[0]
         );
         $this->assertSame(
             'where "id" not in (:a, :b)',
@@ -827,7 +852,7 @@ class QueryTest extends TestCase
         );
         $this->assertSame(
             'where 1 = 1',
-            $this->q('[where]')->where('id', '<>', [])->render()[0]
+            $this->q('[where]')->where('id', '!=', [])->render()[0]
         );
         // pass array as CSV
         $this->assertSame(
@@ -838,31 +863,11 @@ class QueryTest extends TestCase
             'where "id" not in (:a, :b)',
             $this->q('[where]')->where('id', 'not in', '1,    2')->render()[0]
         );
-        $this->assertSame(
-            'where "id" not in (:a, :b)',
-            $this->q('[where]')->where('id', 'not', '1,2')->render()[0]
-        );
 
-        // is | is not
-        $this->assertSame(
-            'where "id" is null',
-            $this->q('[where]')->where('id', 'is', null)->render()[0]
-        );
-        $this->assertSame(
-            'where "id" is not null',
-            $this->q('[where]')->where('id', 'is not', null)->render()[0]
-        );
-        $this->assertSame(
-            'where "id" is not null',
-            $this->q('[where]')->where('id', 'not', null)->render()[0]
-        );
+        // is null | is not null
         $this->assertSame(
             'where "id" is null',
             $this->q('[where]')->where('id', '=', null)->render()[0]
-        );
-        $this->assertSame(
-            'where "id" is not null',
-            $this->q('[where]')->where('id', '<>', null)->render()[0]
         );
         $this->assertSame(
             'where "id" is not null',

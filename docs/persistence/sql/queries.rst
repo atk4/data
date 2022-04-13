@@ -316,7 +316,7 @@ argument calls.
 
 Pass string (field name), :php:class:`Expression` or even :php:class:`Query` as
 first argument. If you are using string, you may end it with operation, such as
-"age>" or "parent_id is not" DSQL will recognize <, >, =, !=, <>, is, is not.
+"age>" or "parent_id is not" DSQL will recognize <, >, =, !=, is, is not.
 
 If you haven't specified parameter as a part of $field, specify it through a
 second parameter - $operation. If unspecified, will default to '='.

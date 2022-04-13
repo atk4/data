@@ -53,7 +53,7 @@ class Query extends BaseQuery
                 $value = $this->expr('LOWER([])', [$value]);
             }
 
-            if (in_array($cond, ['=', '!=', '<>'], true)) {
+            if (in_array($cond, ['=', '!='], true)) {
                 $row = [$this->expr('dbms_lob.compare([], [])', [$field, $value]), $cond, 0];
             } else {
                 throw (new Exception('Unsupported CLOB/BLOB field operator'))

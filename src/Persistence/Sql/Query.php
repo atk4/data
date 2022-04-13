@@ -27,6 +27,9 @@ class Query extends Expression
     /** @var bool */
     public $wrapInParentheses = true;
 
+    /** @var array<string> */
+    protected $supportedOperators = ['=', '!=', '<', '>', '<=', '>=', 'like', 'not like', 'in', 'not in', 'regexp', 'not regexp'];
+
     /** @var string */
     protected $template_select = '[with]select[option] [field] [from] [table][join][where][group][having][order][limit]';
 
@@ -617,11 +620,16 @@ class Query extends Expression
 
         // below we can be sure that all 3 arguments has been passed
 
+        if (!in_array($cond, $this->supportedOperators, true)) {
+            throw (new Exception('Unsupported operator'))
+                ->addMoreInfo('operator', $cond);
+        }
+
         // special conditions (IS | IS NOT) if value is null
         if ($value === null) { // @phpstan-ignore-line see https://github.com/phpstan/phpstan/issues/4173
             if (in_array($cond, ['=', 'is'], true)) {
                 return $field . ' is null';
-            } elseif (in_array($cond, ['!=', '<>', 'not', 'is not'], true)) {
+            } elseif (in_array($cond, ['!=', 'not', 'is not'], true)) {
                 return $field . ' is not null';
             }
         }
@@ -633,7 +641,7 @@ class Query extends Expression
 
         // special conditions (IN | NOT IN) if value is array
         if (is_array($value)) {
-            $cond = in_array($cond, ['!=', '<>', 'not', 'not in'], true) ? 'not in' : 'in';
+            $cond = in_array($cond, ['!=', 'not', 'not in'], true) ? 'not in' : 'in';
 
             // special treatment of empty array condition
             if (empty($value)) {
