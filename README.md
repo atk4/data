@@ -26,13 +26,13 @@ Yes and no.
 Agile Data is data persistence framework - like ORM it helps you escape raw SQL. Unlike ORM, it maps objects into "data set" and not "data record". Operating with data sets offers higher level of abstraction:
 
 ``` php
-$vip_clients = (new Client($db))->addCondition('is_vip', true);
+$vipClientModel = (new Client($db))->addCondition('is_vip', true);
 
 // express total for all VIP client invoices. The value of the variable is an object
-$total_due = $vip_clients->ref('Invoice')->action('fx', ['sum', 'total']);
+$totalDueModel = $vipClientModel->ref('Invoice')->action('fx', ['sum', 'total']);
 
 // single database query is executed here, but not before!
-echo $total_due->getOne();
+echo $totalDueModel->getOne();
 ```
 
 In other ORM the similar implementation would be either [slow, clumsy, limited or flawed](https://medium.com/@romaninsh/pragmatic-approach-to-reinventing-orm-d9e1bdc336e3).
@@ -53,7 +53,7 @@ $api->rest('/clients', new Client($db));
 
 ## Extensibility and Add-ons
 
-ATK Data is extensible and offers wide range of add-ons ranging from [Audit](https://github.com/atk4/audit) and [Aggregation/Reporting](https://github.com/atk4/report). Developer may also implement advanced DB concepts like "[disjoint subtypes](https://nearly.guru/blog/data/disjoint-subtypes-in-php)" - allowing to efficiently persist object-oriented data in your database.
+ATK Data is extensible and offers wide range of add-ons like [Audit](https://github.com/atk4/audit). Developer may also implement advanced DB concepts like "[disjoint subtypes](https://nearly.guru/blog/data/disjoint-subtypes-in-php)" - allowing to efficiently persist object-oriented data in your database.
 
 Regardless of how your model is constructed and what database backend is used, it can easily be used in conjunction with any 3rd party add-on, like [Charts](https://github.com/atk4/chart).
 
@@ -64,7 +64,7 @@ Designed for medium to large PHP applications and frameworks, ATK Data is a clea
 -   Make your application really database-agnostic. SQL? NoSQL? RestAPI? Cache? Load and store your data with any of these, without refactoring your code.
 -   Execute more on the server. Agile Data converts query logic into server-specific language (e.g. SQL) then delivers you the exact data rows / columns which you need from a single statement, no matter how complex.
 -   Data architecture transparency. As your database structure change, your application code does not need to be refactored. Replace fields with expressions, denormalize/normalize data, join and merge tables. Only update your application in a single place.
--   Extensions. "[Audit](https://github.com/atk4/audit)" - transparently record all edits, updates and deletes with "Undo" support. "[Reports](https://github.com/atk4/report)" - add conditions, group results, union results then group them again, join add limit for a great report design.
+-   Extensions. "[Audit](https://github.com/atk4/audit)" - transparently record all edits, updates and deletes with "Undo" support.
 -   [Out of the box UI](https://github.com/atk4/ui). Who wants to build Admin systems today? Tens of professional components: [Crud](http://ui.agiletoolkit.org/demos/crud.php), [Grid](http://ui.agiletoolkit.org/demos/grid.php), [Form](http://ui.agiletoolkit.org/demos/form3.php) as well as add-ons like [Charts](https://github.com/atk4/chart)  can be added to your PHP app with 3-lines of code.
 -   RestAPI server for Agile Data is currently under development.
 -   Agile Data and all extensions mentioned above are licensed under MIT and are free to use.
@@ -97,7 +97,7 @@ As a result the UI layer cannot simply discover how your Invoice relate to the C
 Agile Data addresses this balance. For the presentation logic you can use tools such as [Agile UI](https://github.com/atk4/ui), that consists of generic Crud, Form implementations or other modules which accept the Model protocol of Agile Data:
 
 ``` php
-$presentation->setModel($business_model);
+$presentation->setModel($businessModel);
 ```
 
 This now re-shifts the balance and makes it possible to implement any generic UI Components, that will work with your custom data model and your custom persistence (database).
@@ -136,10 +136,10 @@ class JobReport extends Job {
         $invoice->addCondition('status', '!=', 'draft');
 
         // each invoice may have multiple lines, which is what we want
-        $invoice_lines = $invoice->ref('Lines');
+        $invoiceLines = $invoice->ref('Lines');
 
         // build relation between job and invoice line
-        $this->hasMany('InvoiceLines', ['model' => $invoice_lines])
+        $this->hasMany('InvoiceLines', ['model' => $invoiceLines])
             ->addField('invoiced', ['aggregate' => 'sum', 'field' => 'total', 'type' => 'atk4_money']);
 
         // next we need to see how much is reported through timesheets
@@ -645,13 +645,13 @@ If the basic query is not fun, how about more complex one?
 $salary = new Atk4\Data\Persistence\Sql\Query(['connection' => $pdo]);
 
 // create few expression objects
-$e_ms = $salary->expr('max(salary)');
-$e_df = $salary->expr('TimeStampDiff(month, from_date, to_date)');
+$eMs = $salary->expr('max(salary)');
+$eDf = $salary->expr('TimeStampDiff(month, from_date, to_date)');
 
 // configure our basic query
 $salary
     ->table('salary')
-    ->field(['emp_no', 'max_salary' => $e_ms, 'months' => $e_df])
+    ->field(['emp_no', 'max_salary' => $eMs, 'months' => $eDf])
     ->group('emp_no')
     ->order('-max_salary')
 
