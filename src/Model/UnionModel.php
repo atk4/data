@@ -28,7 +28,7 @@ use Atk4\Data\Persistence\Sql\Query;
 class UnionModel extends Model
 {
     /** @const string */
-    public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelectQuery';
+    public const HOOK_INIT_UNION_SELECT_QUERY = self::class . '@initUnionSelectQuery';
 
     /**
      * UnionModel should always be read-only.
@@ -174,7 +174,7 @@ class UnionModel extends Model
                 $subquery = $this->getSubQuery($fields);
                 $query = parent::action($mode, $args)->reset('table')->table($subquery, $this->table_alias ?? $this->table);
 
-                $this->hook(self::HOOK_INIT_SELECT_QUERY, [$query]);
+                $this->hook(self::HOOK_INIT_UNION_SELECT_QUERY, [$query]);
 
                 return $query;
             case 'count':
