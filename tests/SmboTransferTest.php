@@ -149,7 +149,7 @@ class SmboTransferTest extends TestCase
                     'nominal' => 'Sales:Discounted',
                     'total_net' => 50.0,
                     'vat_rate' => 23,
-                    // calculates total_gross at 61.5.
+                    // calculates total_gross at 61.5
                 ],
                 [
                     'item_id' => $john->ref('Service')->insert('Delivery'),

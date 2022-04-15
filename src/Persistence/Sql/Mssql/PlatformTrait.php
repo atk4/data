@@ -29,7 +29,7 @@ trait PlatformTrait
 
     protected function getCreateColumnCommentSQL($tableName, $columnName, $comment)
     {
-        if (strpos($tableName, '.') !== false) {
+        if (str_contains($tableName, '.')) {
             [$schemaName, $tableName] = explode('.', $tableName, 2);
         } else {
             $schemaName = $this->getDefaultSchemaName();
@@ -49,7 +49,7 @@ trait PlatformTrait
 
     protected function getAlterColumnCommentSQL($tableName, $columnName, $comment)
     {
-        if (strpos($tableName, '.') !== false) {
+        if (str_contains($tableName, '.')) {
             [$schemaName, $tableName] = explode('.', $tableName, 2);
         } else {
             $schemaName = $this->getDefaultSchemaName();
@@ -69,7 +69,7 @@ trait PlatformTrait
 
     protected function getDropColumnCommentSQL($tableName, $columnName)
     {
-        if (strpos($tableName, '.') !== false) {
+        if (str_contains($tableName, '.')) {
             [$schemaName, $tableName] = explode('.', $tableName, 2);
         } else {
             $schemaName = $this->getDefaultSchemaName();
@@ -164,7 +164,7 @@ trait PlatformTrait
 
     protected function getCommentOnTableSQL(string $tableName, ?string $comment): string
     {
-        if (strpos($tableName, '.') !== false) {
+        if (str_contains($tableName, '.')) {
             [$schemaName, $tableName] = explode('.', $tableName, 2);
         } else {
             $schemaName = $this->getDefaultSchemaName();

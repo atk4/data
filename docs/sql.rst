@@ -78,7 +78,7 @@ SQL Reference
         $model->hasOne('account_id', ['model' => [Account::class]])
             ->addFields([
                 'opening_balance',
-                'balance'
+                'balance',
             ], ['type' => 'atk4_money']);
 
     You can also specify aliases::
@@ -86,7 +86,7 @@ SQL Reference
         $model->hasOne('account_id', ['model' => [Account::class]])
             ->addFields([
                 'opening_balance',
-                'account_balance' => 'balance'
+                'account_balance' => 'balance',
             ], ['type' => 'atk4_money']);
 
     If you need to pass more details to individual field, you can also use sub-array::
@@ -95,7 +95,7 @@ SQL Reference
             ->addFields([
             [
                 ['opening_balance', 'caption' => 'The Opening Balance'],
-                'account_balance' => 'balance'
+                'account_balance' => 'balance',
             ], ['type' => 'atk4_money']);
 
     Returns $this.
@@ -205,7 +205,7 @@ field expressions will be automatically substituted. Here is long / short format
 
     $q = new \Atk4\Data\Persistence\Sql\Expression('[age] + [birth_year]', [
             'age' => $m->getField('age'),
-            'birth_year' => $m->getField('birth_year')
+            'birth_year' => $m->getField('birth_year'),
         ]);
 
     // identical to
@@ -334,13 +334,13 @@ In short this should allow you to build and execute any SQL statement::
 
     $this->expr("call get_nominal_sheet([], [], '2014-10-01', '2015-09-30', 0)", [
         $this->getApp()->system->getId(),
-        $this->getApp()->system['contractor_id']
+        $this->getApp()->system['contractor_id'],
     ])->execute();
 
 Depending on the statement you can also use your statement to retrieve data::
 
     $data = $this->expr("call get_client_report_data([client_id])", [
-        'client_id' => $client_id
+        'client_id' => $client_id,
     ])->getRows();
 
 This can be handy if you wish to create a method for your Model to abstract away
@@ -468,7 +468,7 @@ procedure inside Model::init() then set $table property to a temporary table::
 
             $res = $this->expr("call get_nominal_sheet([], [], '2014-10-01', '2015-09-30', 0)", [
                 $this->getApp()->system->getId(),
-                $this->getApp()->system['contractor_id']
+                $this->getApp()->system['contractor_id'],
             ])->execute();
 
             $this->addField('date', ['type' => 'date']);

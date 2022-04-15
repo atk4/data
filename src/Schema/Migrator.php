@@ -186,7 +186,7 @@ class Migrator
                 continue;
             }
 
-            if ($field->short_name === $model->id_field) {
+            if ($field->shortName === $model->id_field) {
                 $refype = self::REF_TYPE_PRIMARY;
                 $persistField = $field;
             } else {

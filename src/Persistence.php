@@ -346,7 +346,7 @@ abstract class Persistence
             return $v;
         } catch (\Exception $e) {
             throw (new Exception('Typecast save error', 0, $e))
-                ->addMoreInfo('field', $field->short_name);
+                ->addMoreInfo('field', $field->shortName);
         }
     }
 
@@ -370,7 +370,7 @@ abstract class Persistence
             return $this->_typecastLoadField($field, $value);
         } catch (\Exception $e) {
             throw (new Exception('Typecast parse error', 0, $e))
-                ->addMoreInfo('field', $field->short_name);
+                ->addMoreInfo('field', $field->shortName);
         }
     }
 
@@ -441,7 +441,7 @@ abstract class Persistence
                 // ! symbol in date format is essential here to remove time part of DateTime - don't remove, this is not a bug
                 $formats = ['date' => '+!Y-m-d', 'datetime' => '+!Y-m-d H:i:s', 'time' => '+!H:i:s'];
                 $format = $formats[$field->type];
-                if (strpos($value, '.') !== false) { // time possibly with microseconds, otherwise invalid format
+                if (str_contains($value, '.')) { // time possibly with microseconds, otherwise invalid format
                     $format = preg_replace('~(?<=H:i:s)(?![. ]*u)~', '.u', $format);
                 }
             }

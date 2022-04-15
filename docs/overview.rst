@@ -264,7 +264,7 @@ It can be made even simpler::
 
     $htmltable->setModel(new Model(new Persistence\Static_([
         'John',
-        'Peter'
+        'Peter',
     ])));
 
     echo $htmltable->render();

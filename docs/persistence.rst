@@ -198,7 +198,7 @@ Note that `read_only` can still have a default value::
     $m->addField('created', [
         'read_only' => true,
         'type' => 'datetime',
-        'default' => new DateTime()
+        'default' => new DateTime(),
     ]);
 
     $m->save();  // stores creation time just fine and also will loade it.
@@ -269,7 +269,7 @@ Your init() method for a Field_Currency might look like this::
 
         $this->never_persist = true;
 
-        $f = $this->short_name; // balance
+        $f = $this->shortName; // balance
 
         $this->getOwner()->addField(
             $f.'_amount',

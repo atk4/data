@@ -1783,6 +1783,7 @@ class Model implements \IteratorAggregate
             // you can also use breakHook() with specific object which will then be returned
             // as a next iterator value
 
+            /** @var static|false|null */
             $ret = $thisCloned->hook(self::HOOK_AFTER_LOAD);
             if ($ret === false) {
                 continue;

@@ -322,8 +322,8 @@ class ScopeTest extends TestCase
         // TODO once PHP7.3 support is dropped, we should use WeakRef for owner
         // and unset($scope); here
         // now we need a clone
-        // we should fix then also the short_name issue (if it was generated on adding
-        // to an owner but owner is removed, the short_name should be removed as well)
+        // we should fix then also the shortName issue (if it was generated on adding
+        // to an owner but owner is removed, the shortName should be removed as well)
         $scope1 = clone $scope1;
         $scope2 = clone $scope2;
         $scope = Scope::createOr($scope1, $scope2);

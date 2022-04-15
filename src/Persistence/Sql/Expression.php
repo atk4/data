@@ -338,7 +338,7 @@ class Expression implements Expressionable, \ArrayAccess
             return $value;
         }
 
-        if (strpos($value, '.') !== false) {
+        if (str_contains($value, '.')) {
             return implode('.', array_map(__METHOD__, explode('.', $value)));
         }
 
@@ -356,9 +356,9 @@ class Expression implements Expressionable, \ArrayAccess
     protected function isUnescapablePattern($value): bool
     {
         return is_object($value)
-        || $value === '*'
-                || strpos($value, '(') !== false
-                || strpos($value, $this->escape_char) !== false;
+            || $value === '*'
+            || str_contains($value, '(')
+            || str_contains($value, $this->escape_char);
     }
 
     private function _render(): array

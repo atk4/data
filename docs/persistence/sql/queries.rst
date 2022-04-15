@@ -516,7 +516,7 @@ tables so you need a different syntax::
     $q->join([
         'a' => 'address.user_id',
         'c' => 'credit_card.user_id',
-        'preferences.user_id'
+        'preferences.user_id',
     ]);
 
 The second argument to join specifies which existing table/field is
