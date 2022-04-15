@@ -43,14 +43,14 @@ to it::
     $m->addField('registered', [
         'type' => 'date',
         'persist_format' => 'd/m/Y',
-        'persist_timezone' => 'IST'
+        'persist_timezone' => 'IST',
     ]);
 
 Here is another example with booleans::
 
     $m->addField('is_married', [
         'type' => 'boolean',
-        'enum' => ['No', 'Yes']
+        'enum' => ['No', 'Yes'],
     ]);
 
     $m->set('is_married', 'Yes');  // normalizes into true

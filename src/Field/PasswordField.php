@@ -92,7 +92,7 @@ class PasswordField extends Field
         $v = $this->get($entity);
         if ($v === null) {
             throw (new Exception('Password hash is null, verification is impossible'))
-                ->addMoreInfo('field', $this->short_name);
+                ->addMoreInfo('field', $this->shortName);
         }
 
         return $this->hashPasswordVerify($v, $password);

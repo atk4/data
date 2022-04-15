@@ -252,7 +252,7 @@ class Sql extends Persistence
      */
     public function initField(Query $query, Field $field): void
     {
-        $query->field($field, $field->useAlias() ? $field->short_name : null);
+        $query->field($field, $field->useAlias() ? $field->shortName : null);
     }
 
     /**
@@ -413,7 +413,7 @@ class Sql extends Persistence
                 if (isset($args['alias'])) {
                     $query->reset('field')->field($field, $args['alias']);
                 } elseif ($field instanceof SqlExpressionField) {
-                    $query->reset('field')->field($field, $field->short_name);
+                    $query->reset('field')->field($field, $field->shortName);
                 } else {
                     $query->reset('field')->field($field);
                 }
@@ -449,7 +449,7 @@ class Sql extends Persistence
                 if (isset($args['alias'])) {
                     $query->reset('field')->field($query->expr($expr, [$field]), $args['alias']);
                 } elseif ($field instanceof SqlExpressionField) {
-                    $query->reset('field')->field($query->expr($expr, [$field]), $fx . '_' . $field->short_name);
+                    $query->reset('field')->field($query->expr($expr, [$field]), $fx . '_' . $field->shortName);
                 } else {
                     $query->reset('field')->field($query->expr($expr, [$field]));
                 }
@@ -638,7 +638,7 @@ class Sql extends Persistence
             $mask = '{{}}.{}';
             $prop = [
                 $field->hasJoin()
-                    ? ($field->getJoin()->foreign_alias ?: $field->getJoin()->short_name)
+                    ? ($field->getJoin()->foreign_alias ?: $field->getJoin()->shortName)
                     : ($field->getOwner()->table_alias ?? (is_object($field->getOwner()->table) ? '_tm' : $field->getOwner()->table)),
                 $field->getPersistenceName(),
             ];

@@ -540,7 +540,7 @@ we cannot close amount that is bigger than invoice's total::
     $i->ref('Payment')->insert([
         'amount' => $paid,
         'amount_closed' => min($paid, $i->get('total')),
-        'payment_code' => 'XYZ'
+        'payment_code' => 'XYZ',
     ]);
 
 Having some calculated fields for the invoice is handy. I'm adding `total_payments`
@@ -643,7 +643,7 @@ to make things easier::
     $m->insert([
         'total' => 20,
         'client_code' => $client_code,
-        'category' => $category
+        'category' => $category,
     ]);
 
 Here is how to add them. First you need to create fields::
@@ -701,7 +701,7 @@ If you wish to use a different value instead, you can create an expression::
         $c->addCondition($c->title_field, 'like', $m->get('category'));
         $m->set('category_id', $this->expr('coalesce([], [])',[
             $c->action('field',['id']),
-            $m->getField('category_id')->default
+            $m->getField('category_id')->default,
         ]));
     }
 
@@ -729,7 +729,7 @@ information. Here is usage example::
         'lines' => [
             ['descr' => 'Book','qty' => 3, 'price' => 5]
             ['descr' => 'Pencil','qty' => 1, 'price' => 10]
-            ['descr' => 'Eraser','qty' => 2, 'price' => 2.5]
+            ['descr' => 'Eraser','qty' => 2, 'price' => 2.5],
         ],
     ]);
 
