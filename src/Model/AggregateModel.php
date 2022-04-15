@@ -40,7 +40,7 @@ use Atk4\Data\Persistence\Sql\Query;
 class AggregateModel extends Model
 {
     /** @const string */
-    public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelectQuery';
+    public const HOOK_INIT_AGGREGATE_SELECT_QUERY = self::class . '@initAggregateSelectQuery';
 
     /** @var array<int, string|Expression> */
     public $groupByFields = [];
@@ -139,7 +139,7 @@ class AggregateModel extends Model
                 $this->persistence->initQueryFields($this, $query, $fields);
                 $this->initQueryGrouping($query);
 
-                $this->hook(self::HOOK_INIT_SELECT_QUERY, [$query]);
+                $this->hook(self::HOOK_INIT_AGGREGATE_SELECT_QUERY, [$query]);
 
                 return $query;
             case 'count':
@@ -149,8 +149,6 @@ class AggregateModel extends Model
                 $query = $innerQuery->dsql()
                     ->field('count(*)', $args['alias'] ?? null)
                     ->table($this->expr('([]) {}', [$innerQuery, '_tc']));
-
-                $this->hook(self::HOOK_INIT_SELECT_QUERY, [$query]);
 
                 return $query;
 //            case 'field':
