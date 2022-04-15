@@ -258,15 +258,10 @@ class Sql extends Persistence
     /**
      * Adds model fields in Query.
      *
-     * @param array|false|null $fields
+     * @param array|null $fields
      */
     public function initQueryFields(Model $model, Query $query, $fields = null): void
     {
-        // do nothing on purpose
-        if ($fields === false) {
-            return;
-        }
-
         // init fields
         if (is_array($fields)) {
             // Set of fields is strictly defined for purposes of export,
