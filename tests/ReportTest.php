@@ -51,6 +51,9 @@ class ReportTest extends TestCase
         $invoiceAggregate->setGroupBy(['client_id'], [
             'c' => ['expr' => 'count(*)', 'type' => 'integer'],
         ]);
+        \Closure::bind(function () use ($invoiceAggregate) {
+            ModelAggregateTest::fixAllNonAggregatedFieldsInGroupBy($invoiceAggregate);
+        }, null, ModelAggregateTest::class)();
 
         $this->assertSame(
             [
