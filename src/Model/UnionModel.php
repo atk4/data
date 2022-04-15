@@ -30,11 +30,7 @@ class UnionModel extends Model
     /** @const string */
     public const HOOK_INIT_UNION_SELECT_QUERY = self::class . '@initUnionSelectQuery';
 
-    /**
-     * UnionModel should always be read-only.
-     *
-     * @var bool
-     */
+    /** @var bool UnionModel should always be read-only */
     public $read_only = true;
 
     /**
@@ -44,20 +40,11 @@ class UnionModel extends Model
      * If you can define unique ID field, you can specify it inside your
      * union model.
      *
-     * @var string
+     * @var string|null
      */
     public $id_field;
 
-    /**
-     * Contain array of array containing model and mappings.
-     *
-     * $union = [
-     *     [$model1, ['amount' => 'total_gross'] ],
-     *     [$model2, []]
-     * ];
-     *
-     * @var array
-     */
+    /** @var array<array{0: Model, 1: array}> */
     public $union = [];
 
     /** @var string Derived table alias */
@@ -77,7 +64,7 @@ class UnionModel extends Model
             $field = $this->expr('NULL');
         }
 
-        // Some fields are re-mapped for this nested model
+        // some fields are re-mapped for this nested model
         if ($expr !== null) {
             $field = $model->expr($expr, [$field]);
         }
@@ -90,7 +77,7 @@ class UnionModel extends Model
      */
     public function addNestedModel(Model $model, array $fieldMap = []): Model
     {
-        $this->persistence->add($model);
+        $this->persistence->add($model); // TODO this must be removed
 
         $this->union[] = [$model, $fieldMap];
 
@@ -137,15 +124,10 @@ class UnionModel extends Model
                     continue;
                 }
 
-                switch (func_num_args()) {
-                    case 2:
-                        $nestedModel->addCondition($field, $operator);
-
-                        break;
-                    default:
-                        $nestedModel->addCondition($field, $operator, $value);
-
-                        break;
+                if (func_num_args() === 2) {
+                    $nestedModel->addCondition($field, $operator);
+                } else {
+                    $nestedModel->addCondition($field, $operator, $value);
                 }
             } catch (CoreException $e) {
                 throw $e
@@ -190,11 +172,6 @@ class UnionModel extends Model
                         ->addMoreInfo('mode', $mode);
                 }
 
-                if (!is_string($args[0])) {
-                    throw (new Exception('action "field" only support string fields'))
-                        ->addMoreInfo('field', $args[0]);
-                }
-
                 $subquery = $this->getSubQuery([$args[0]]);
 
                 break;
@@ -212,8 +189,10 @@ class UnionModel extends Model
                     ->addMoreInfo('mode', $mode);
         }
 
-        // Substitute FROM table with our subquery expression
-        return parent::action($mode, $args)->reset('table')->table($subquery, $this->table_alias ?? $this->table);
+        $query = parent::action($mode, $args)
+            ->reset('table')->table($subquery, $this->table_alias ?? $this->table);
+
+        return $query;
     }
 
     /**
@@ -243,9 +222,6 @@ class UnionModel extends Model
             $queryFieldExpressions = [];
             foreach ($fields as $fieldName) {
                 try {
-                    // UnionModel can be joined with additional table/query
-                    // We don't touch those fields
-
                     if (!$this->hasField($fieldName)) {
                         $queryFieldExpressions[$fieldName] = $nestedModel->expr('NULL');
 
@@ -274,15 +250,12 @@ class UnionModel extends Model
                 }
             }
 
-            // now prepare query
             $query = $this->persistence->action($nestedModel, 'select', [[]]);
+            $query->wrapInParentheses = false;
 
             foreach ($queryFieldExpressions as $fAlias => $fExpr) {
                 $query->field($fExpr, $fAlias);
             }
-
-            // subquery should not be wrapped in parenthesis, SQLite is especially picky about that
-            $query->wrapInParentheses = false;
 
             $subqueries[] = $query;
         }
@@ -298,9 +271,8 @@ class UnionModel extends Model
 
         foreach ($this->union as [$model, $fieldMap]) {
             $modelActionArgs = $actionArgs;
-
-            // now prepare query
-            if ($fieldName = $actionArgs[1] ?? null) {
+            $fieldName = $actionArgs[1] ?? null;
+            if ($fieldName) {
                 $modelActionArgs[1] = $this->getFieldExpr(
                     $model,
                     $fieldName,
@@ -309,8 +281,6 @@ class UnionModel extends Model
             }
 
             $query = $model->action($action, $modelActionArgs);
-
-            // subquery should not be wrapped in parenthesis, SQLite is especially picky about that
             $query->wrapInParentheses = false;
 
             $subqueries[] = $query;
