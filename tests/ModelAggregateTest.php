@@ -37,6 +37,15 @@ class ModelAggregateTest extends TestCase
         $this->setDb($this->init_db);
     }
 
+    /**
+     * TODO when aggregating on ID field, we can assume uniqueness, and any other model field
+     * should NOT be needed to be added to GROUP BY explicitly.
+     */
+    private static function fixAllNonAggregatedFieldsInGroupBy(AggregateModel $model): void
+    {
+        $model->setGroupBy(['client']);
+    }
+
     protected function createInvoice(): Model\Invoice
     {
         $invoice = new Model\Invoice($this->db);
@@ -52,14 +61,14 @@ class ModelAggregateTest extends TestCase
 
     public function testGroupBy(): void
     {
-        $invoiceAggregate = (new AggregateModel($this->createInvoice()))->setGroupBy(['client_id'], [
+        $aggregate = (new AggregateModel($this->createInvoice()))->setGroupBy(['client_id'], [
             'c' => ['expr' => 'count(*)', 'type' => 'integer'],
         ]);
 
         $this->assertSameExportUnordered([
             ['client_id' => 1, 'c' => 2],
             ['client_id' => 2, 'c' => 1],
-        ], $invoiceAggregate->export());
+        ], $aggregate->export());
     }
 
     public function testGroupSelect(): void
@@ -70,6 +79,7 @@ class ModelAggregateTest extends TestCase
         $aggregate->setGroupBy(['client_id'], [
             'c' => ['expr' => 'count(*)', 'type' => 'integer'],
         ]);
+        self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
         $this->assertSameExportUnordered([
             ['client' => 'Vinny', 'client_id' => 1, 'c' => 2],
@@ -85,6 +95,7 @@ class ModelAggregateTest extends TestCase
         $aggregate->setGroupBy(['client_id'], [
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
+        self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
         $this->assertSameExportUnordered([
             ['client' => 'Vinny', 'client_id' => 1, 'amount' => 19.0],
@@ -103,6 +114,7 @@ class ModelAggregateTest extends TestCase
             'max' => ['expr' => 'max([amount])', 'type' => 'atk4_money'],
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'], // same as `s`, but reuse name `amount`
         ]);
+        self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
         $this->assertSameExportUnordered([
             ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'min' => 4.0, 'max' => 15.0, 'amount' => 19.0],
@@ -119,6 +131,7 @@ class ModelAggregateTest extends TestCase
             's' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
+        self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
         $aggregate->addExpression('double', ['expr' => '[s] + [amount]', 'type' => 'atk4_money']);
 
@@ -138,6 +151,7 @@ class ModelAggregateTest extends TestCase
             's' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
+        self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
         $aggregate->addExpression('double', ['expr' => '[s] + [amount]', 'type' => 'atk4_money']);
 
@@ -156,6 +170,7 @@ class ModelAggregateTest extends TestCase
             's' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
+        self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
         $aggregate->addExpression('double', ['expr' => '[s] + [amount]', 'type' => 'atk4_money']);
         $aggregate->addCondition(
@@ -182,6 +197,7 @@ class ModelAggregateTest extends TestCase
             's' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
+        self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
         $aggregate->addExpression('double', ['expr' => '[s] + [amount]', 'type' => 'atk4_money']);
         $aggregate->addCondition(
@@ -207,6 +223,7 @@ class ModelAggregateTest extends TestCase
             's' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
+        self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
         $aggregate->addExpression('double', ['expr' => '[s] + [amount]', 'type' => 'atk4_money']);
         $aggregate->addCondition('client_id', 2);
@@ -227,6 +244,7 @@ class ModelAggregateTest extends TestCase
         $aggregate->setGroupBy(['client_id'], [
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
+        self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
         // TODO Sqlite bind param does not work, expr needed, even if casted to float with DBAL type (comparison works only if casted to/bind as int)
         $numExpr = $this->getDatabasePlatform() instanceof SqlitePlatform ? $aggregate->expr('4') : 4;
@@ -249,16 +267,18 @@ class ModelAggregateTest extends TestCase
         $aggregate->setGroupBy(['client_id'], [
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
+        self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
         $aggregate->setOrder('client_id', 'asc');
 
         $this->assertSameSql(
-            'select (select "name" from "client" "_c_2bfe9d72a4aa" where "id" = "_tm"."client_id") "client", "client_id", sum("amount") "amount" from (select "id", "client_id", "name", "amount", (select "name" from "client" "_c_2bfe9d72a4aa" where "id" = "invoice"."client_id") "client" from "invoice") "_tm" group by "client_id" order by "client_id"',
+            'select "client", "client_id", sum("amount") "amount" from (select "id", "client_id", "name", "amount", (select "name" from "client" "_c_2bfe9d72a4aa" where "id" = "invoice"."client_id") "client" from "invoice") "_tm" group by "client_id", "client" order by "client_id"',
             $aggregate->action('select')->render()[0]
         );
 
         // TODO subselect should not select "client" field
         $aggregate->removeField('client');
+        $aggregate->groupByFields = array_diff($aggregate->groupByFields, ['client']);
         $this->assertSameSql(
             'select "client_id", sum("amount") "amount" from (select "id", "client_id", "name", "amount", (select "name" from "client" "_c_2bfe9d72a4aa" where "id" = "invoice"."client_id") "client" from "invoice") "_tm" group by "client_id" order by "client_id"',
             $aggregate->action('select')->render()[0]
@@ -273,6 +293,7 @@ class ModelAggregateTest extends TestCase
         $aggregate->setGroupBy(['client_id'], [
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
+        self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
         $aggregate->setLimit(1);
 
         $this->assertSame(
@@ -291,6 +312,7 @@ class ModelAggregateTest extends TestCase
         $aggregate->setGroupBy(['client_id'], [
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
+        self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
         $aggregate->setLimit(2, 1);
 
         $this->assertSame(
@@ -309,9 +331,10 @@ class ModelAggregateTest extends TestCase
         $aggregate->setGroupBy(['client_id'], [
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
+        self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
         $this->assertSameSql(
-            'select count(*) from ((select 1 from (select "id", "client_id", "name", "amount", (select "name" from "client" "_c_2bfe9d72a4aa" where "id" = "invoice"."client_id") "client" from "invoice") "_tm" group by "client_id")) "_tc"',
+            'select count(*) from ((select 1 from (select "id", "client_id", "name", "amount", (select "name" from "client" "_c_2bfe9d72a4aa" where "id" = "invoice"."client_id") "client" from "invoice") "_tm" group by "client_id", "client")) "_tc"',
             $aggregate->action('count')->render()[0]
         );
     }
