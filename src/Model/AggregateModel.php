@@ -40,7 +40,7 @@ use Atk4\Data\Persistence\Sql\Query;
 class AggregateModel extends Model
 {
     /** @const string */
-    public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelectQuery';
+    public const HOOK_INIT_AGGREGATE_SELECT_QUERY = self::class . '@initAggregateSelectQuery';
 
     /** @var array<int, string|Expression> */
     public $groupByFields = [];
@@ -81,25 +81,19 @@ class AggregateModel extends Model
 
         foreach ($aggregateExpressions as $name => $seed) {
             $exprArgs = [];
-            // if field originally defined in the parent model, then it can be used as part of expression
+            // if field is defined in the parent model then it can be used in expression
             if ($this->table->hasField($name)) {
                 $exprArgs = [$this->table->getField($name)];
             }
 
             $seed['expr'] = $this->table->expr($seed['expr'], $exprArgs);
 
-            // now add the expressions here
             $this->addExpression($name, $seed);
         }
 
         return $this;
     }
 
-    /**
-     * Adds new field into model.
-     *
-     * @param array|object $seed
-     */
     public function addField(string $name, $seed = []): Field
     {
         if ($seed instanceof SqlExpressionField) {
@@ -139,7 +133,7 @@ class AggregateModel extends Model
                 $this->persistence->initQueryFields($this, $query, $fields);
                 $this->initQueryGrouping($query);
 
-                $this->hook(self::HOOK_INIT_SELECT_QUERY, [$query]);
+                $this->hook(self::HOOK_INIT_AGGREGATE_SELECT_QUERY, [$query]);
 
                 return $query;
             case 'count':
@@ -149,8 +143,6 @@ class AggregateModel extends Model
                 $query = $innerQuery->dsql()
                     ->field('count(*)', $args['alias'] ?? null)
                     ->table($this->expr('([]) {}', [$innerQuery, '_tc']));
-
-                $this->hook(self::HOOK_INIT_SELECT_QUERY, [$query]);
 
                 return $query;
 //            case 'field':
