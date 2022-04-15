@@ -56,13 +56,10 @@ class ModelAggregateTest extends TestCase
             'c' => ['expr' => 'count(*)', 'type' => 'integer'],
         ]);
 
-        $this->assertSameExportUnordered(
-            [
-                ['client_id' => 1, 'c' => 2],
-                ['client_id' => 2, 'c' => 1],
-            ],
-            $invoiceAggregate->export()
-        );
+        $this->assertSameExportUnordered([
+            ['client_id' => 1, 'c' => 2],
+            ['client_id' => 2, 'c' => 1],
+        ], $invoiceAggregate->export());
     }
 
     public function testGroupSelect(): void
@@ -74,13 +71,10 @@ class ModelAggregateTest extends TestCase
             'c' => ['expr' => 'count(*)', 'type' => 'integer'],
         ]);
 
-        $this->assertSameExportUnordered(
-            [
-                ['client' => 'Vinny', 'client_id' => 1, 'c' => 2],
-                ['client' => 'Zoe', 'client_id' => 2, 'c' => 1],
-            ],
-            $aggregate->export()
-        );
+        $this->assertSameExportUnordered([
+            ['client' => 'Vinny', 'client_id' => 1, 'c' => 2],
+            ['client' => 'Zoe', 'client_id' => 2, 'c' => 1],
+        ], $aggregate->export());
     }
 
     public function testGroupSelect2(): void
@@ -92,13 +86,10 @@ class ModelAggregateTest extends TestCase
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
 
-        $this->assertSameExportUnordered(
-            [
-                ['client' => 'Vinny', 'client_id' => 1, 'amount' => 19.0],
-                ['client' => 'Zoe', 'client_id' => 2, 'amount' => 4.0],
-            ],
-            $aggregate->export()
-        );
+        $this->assertSameExportUnordered([
+            ['client' => 'Vinny', 'client_id' => 1, 'amount' => 19.0],
+            ['client' => 'Zoe', 'client_id' => 2, 'amount' => 4.0],
+        ], $aggregate->export());
     }
 
     public function testGroupSelect3(): void
@@ -113,13 +104,10 @@ class ModelAggregateTest extends TestCase
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'], // same as `s`, but reuse name `amount`
         ]);
 
-        $this->assertSameExportUnordered(
-            [
-                ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'min' => 4.0, 'max' => 15.0, 'amount' => 19.0],
-                ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'min' => 4.0, 'max' => 4.0, 'amount' => 4.0],
-            ],
-            $aggregate->export()
-        );
+        $this->assertSameExportUnordered([
+            ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'min' => 4.0, 'max' => 15.0, 'amount' => 19.0],
+            ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'min' => 4.0, 'max' => 4.0, 'amount' => 4.0],
+        ], $aggregate->export());
     }
 
     public function testGroupSelectExpr(): void
@@ -134,13 +122,10 @@ class ModelAggregateTest extends TestCase
 
         $aggregate->addExpression('double', ['expr' => '[s] + [amount]', 'type' => 'atk4_money']);
 
-        $this->assertSameExportUnordered(
-            [
-                ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'amount' => 19.0, 'double' => 38.0],
-                ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
-            ],
-            $aggregate->export()
-        );
+        $this->assertSameExportUnordered([
+            ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'amount' => 19.0, 'double' => 38.0],
+            ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
+        ], $aggregate->export());
     }
 
     public function testGroupSelectCondition(): void
@@ -156,13 +141,10 @@ class ModelAggregateTest extends TestCase
 
         $aggregate->addExpression('double', ['expr' => '[s] + [amount]', 'type' => 'atk4_money']);
 
-        $this->assertSameExportUnordered(
-            [
-                ['client' => 'Vinny', 'client_id' => 1, 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
-                ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
-            ],
-            $aggregate->export()
-        );
+        $this->assertSameExportUnordered([
+            ['client' => 'Vinny', 'client_id' => 1, 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
+            ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
+        ], $aggregate->export());
     }
 
     public function testGroupSelectCondition2(): void
