@@ -72,7 +72,7 @@ class AggregateModel extends Model
         $this->groupByFields = array_unique(array_merge($this->groupByFields, $fields));
 
         foreach ($fields as $fieldName) {
-            if ($fieldName instanceof Expression) {
+            if ($fieldName instanceof Expression || $this->hasField($fieldName)) {
                 continue;
             }
 
