@@ -107,16 +107,13 @@ class ModelTest extends TestCase
 
         $user_model = $this->createMigrator()->createModel($this->db, 'user');
 
-        $this->assertSame(
-            [
-                'name',
-                'password',
-                'is_admin',
-                'notes',
-                'main_role_id', // our_field here not role_id (reference name)
-            ],
-            array_keys($user_model->getFields())
-        );
+        $this->assertSame([
+            'name',
+            'password',
+            'is_admin',
+            'notes',
+            'main_role_id', // our_field here not role_id (reference name)
+        ], array_keys($user_model->getFields()));
     }
 
     /**
