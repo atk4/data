@@ -1089,7 +1089,7 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Set order for model records. Multiple calls.
+     * Set order for model records. Multiple calls are allowed.
      *
      * @param string|array $field
      * @param string       $direction "asc" or "desc"
