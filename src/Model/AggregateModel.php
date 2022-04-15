@@ -11,7 +11,6 @@ use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Query;
-use Atk4\Data\Reference;
 
 /**
  * AggregateModel model allows you to query using "group by" clause on your existing model.
@@ -19,7 +18,7 @@ use Atk4\Data\Reference;
  *
  * $aggregate = new AggregateModel($mymodel);
  * $aggregate->setGroupBy(['first', 'last'], [
- *     'salary' => ['expr' => 'sum([])'],
+ *     'salary' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
  * ];
  *
  * your resulting model will have 3 fields:
@@ -32,11 +31,6 @@ use Atk4\Data\Reference;
  *
  * If this field exist in the original model it will be added and you'll get exception otherwise. Finally you are
  * permitted to add expressions.
- *
- * You can also pass seed (for example field type) when aggregating:
- * $aggregate->setGroupBy(['first', 'last'], [
- *     'salary' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
- * ];
  *
  * @property Persistence\Sql $persistence
  * @property Model           $table
@@ -59,11 +53,9 @@ class AggregateModel extends Model
 
         $this->table = $baseModel;
 
-        // this model does not have ID field
-        $this->id_field = null;
-
-        // this model should always be read-only
+        // this model should always be read-only and does not have ID field
         $this->read_only = true;
+        $this->id_field = null;
 
         parent::__construct($baseModel->persistence, $defaults);
     }
@@ -88,31 +80,19 @@ class AggregateModel extends Model
         }
 
         foreach ($aggregateExpressions as $name => $seed) {
-            $args = [];
+            $exprArgs = [];
             // if field originally defined in the parent model, then it can be used as part of expression
             if ($this->table->hasField($name)) {
-                $args = [$this->table->getField($name)];
+                $exprArgs = [$this->table->getField($name)];
             }
 
-            $seed['expr'] = $this->table->expr($seed['expr'], $args);
+            $seed['expr'] = $this->table->expr($seed['expr'], $exprArgs);
 
             // now add the expressions here
             $this->addExpression($name, $seed);
         }
 
         return $this;
-    }
-
-    /**
-     * TODO this should be removed, nasty hack to pass the tests.
-     */
-    public function getRef(string $link): Reference
-    {
-        $ref = clone $this->table->getRef($link);
-        $ref->unsetOwner();
-        $ref->setOwner($this);
-
-        return $ref;
     }
 
     /**
@@ -133,6 +113,12 @@ class AggregateModel extends Model
         if ($this->table->hasField($name)) {
             $field = clone $this->table->getField($name);
             $field->unsetOwner();
+            $refLink = \Closure::bind(fn () => $field->referenceLink, null, Field::class)();
+            if ($refLink !== null && !$this->hasRef($refLink)) {
+                $ref = clone $this->table->getRef($refLink);
+                $ref->unsetOwner();
+                $this->add($ref);
+            }
         } else {
             $field = null;
         }
@@ -149,37 +135,38 @@ class AggregateModel extends Model
     {
         switch ($mode) {
             case 'select':
-                $fields = $this->onlyFields ?: array_keys($this->getFields());
+                $fields = array_unique(array_merge(
+                    $this->onlyFields ?: array_keys($this->getFields()),
+                    array_filter($this->groupByFields, fn ($v) => !$v instanceof Expression)
+                ));
 
-                // select but no need your fields
                 $query = parent::action($mode, [false]);
                 if (isset($query->args['where'])) {
                     $query->args['having'] = $query->args['where'];
                     unset($query->args['where']);
                 }
 
-                $this->persistence->initQueryFields($this, $query, array_unique($fields + $this->groupByFields));
+                $this->persistence->initQueryFields($this, $query, $fields);
                 $this->initQueryGrouping($query);
 
                 $this->hook(self::HOOK_INIT_SELECT_QUERY, [$query]);
 
                 return $query;
             case 'count':
-                $query = parent::action($mode, $args);
-                if (isset($query->args['where'])) {
-                    $query->args['having'] = $query->args['where'];
-                    unset($query->args['where']);
-                }
+                $innerQuery = $this->action('select');
+                $innerQuery->reset('field')->field($this->expr('1'));
 
-                $query->reset('field')->field($this->expr('1'));
-                $this->initQueryGrouping($query);
+                $query = $innerQuery->dsql()
+                    ->field('count(*)', $args['alias'] ?? null)
+                    ->table($this->expr('([]) {}', [$innerQuery, '_tc']));
 
                 $this->hook(self::HOOK_INIT_SELECT_QUERY, [$query]);
 
-                return $query->dsql()->field('count(*)')->table($this->expr('([]) {}', [$query, '_tc']));
-            case 'field':
-            case 'fx':
-                return parent::action($mode, $args);
+                return $query;
+//            case 'field':
+//            case 'fx':
+//            case 'fx0':
+//                return parent::action($mode, $args);
             default:
                 throw (new Exception('AggregateModel model does not support this action'))
                     ->addMoreInfo('mode', $mode);
@@ -192,7 +179,7 @@ class AggregateModel extends Model
             if ($field instanceof Expression) {
                 $expression = $field;
             } else {
-                $expression = $this->table->getField($field)->short_name /* TODO short_name should be used by DSQL automatically when in GROUP BY, HAVING, ... */;
+                $expression = $this->table->getField($field)->shortName /* TODO shortName should be used by DSQL automatically when in GROUP BY, HAVING, ... */;
             }
 
             $query->group($expression);
