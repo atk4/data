@@ -192,7 +192,7 @@ class AggregateModel extends Model
             if ($field instanceof Expression) {
                 $expression = $field;
             } else {
-                $expression = $this->table->getField($field)->short_name /* TODO short_name should be used by DSQL automatically when in GROUP BY, HAVING, ... */;
+                $expression = $this->table->getField($field)->shortName /* TODO shortName should be used by DSQL automatically when in GROUP BY, HAVING, ... */;
             }
 
             $query->group($expression);
