@@ -275,7 +275,7 @@ class UnionModel extends Model
             }
 
             // now prepare query
-            $query = $this->persistence->action($nestedModel, 'select', [false]);
+            $query = $this->persistence->action($nestedModel, 'select', [[]]);
 
             foreach ($queryFieldExpressions as $fAlias => $fExpr) {
                 $query->field($fExpr, $fAlias);
