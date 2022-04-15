@@ -10,9 +10,11 @@ use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class ModelUnionTest extends TestCase
 {
-    /** @var array */
-    private $init_db =
-        [
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->setDb([
             'client' => [
                 // allow of migrator to create all columns
                 ['name' => 'Vinny', 'surname' => null, 'order' => null],
@@ -27,12 +29,7 @@ class ModelUnionTest extends TestCase
                 ['client_id' => 1, 'name' => 'prepay', 'amount' => 10.0],
                 ['client_id' => 2, 'name' => 'full pay', 'amount' => 4.0],
             ],
-        ];
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->setDb($this->init_db);
+        ]);
     }
 
     protected function createTransaction(): Model\Transaction
@@ -356,7 +353,7 @@ class ModelUnionTest extends TestCase
      *
      * See also: http://stackoverflow.com/questions/8326815/mysql-field-from-union-subselect#comment10267696_8326815
      */
-    public function testFieldAggregate(): void
+    public function testFieldAggregateUnion(): void
     {
         $client = $this->createClient();
         $client->hasMany('tr', ['model' => $this->createTransaction()])
@@ -396,7 +393,7 @@ class ModelUnionTest extends TestCase
         ], $transaction->export());
     }
 
-    public function testConditionForcedOnNestedModels1(): void
+    public function testConditionForcedOnNestedModel1(): void
     {
         $transaction = $this->createSubtractInvoiceTransaction();
         $transaction->addCondition('amount', '>', 5, true);
@@ -406,7 +403,7 @@ class ModelUnionTest extends TestCase
         ], $transaction->export());
     }
 
-    public function testConditionForcedOnNestedModels2(): void
+    public function testConditionForcedOnNestedModel2(): void
     {
         $transaction = $this->createSubtractInvoiceTransaction();
         $transaction->addCondition('amount', '<', -10, true);

@@ -9,9 +9,11 @@ use Atk4\Data\Schema\TestCase;
 
 class ReportTest extends TestCase
 {
-    /** @var array */
-    private $init_db =
-        [
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->setDb([
             'client' => [
                 // allow of migrator to create all columns
                 ['name' => 'Vinny', 'surname' => null, 'order' => null],
@@ -26,12 +28,7 @@ class ReportTest extends TestCase
                 ['client_id' => 1, 'name' => 'prepay', 'amount' => 10.0],
                 ['client_id' => 2, 'name' => 'full pay', 'amount' => 4.0],
             ],
-        ];
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->setDb($this->init_db);
+        ]);
     }
 
     protected function createInvoiceAggregate(): AggregateModel
