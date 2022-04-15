@@ -12,9 +12,11 @@ use Doctrine\DBAL\Platforms\SqlitePlatform;
 
 class ModelAggregateTest extends TestCase
 {
-    /** @var array */
-    private $init_db =
-        [
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->setDb([
             'client' => [
                 // allow of migrator to create all columns
                 ['name' => 'Vinny', 'surname' => null, 'order' => null],
@@ -29,12 +31,7 @@ class ModelAggregateTest extends TestCase
                 ['client_id' => 1, 'name' => 'prepay', 'amount' => 10.0],
                 ['client_id' => 2, 'name' => 'full pay', 'amount' => 4.0],
             ],
-        ];
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->setDb($this->init_db);
+        ]);
     }
 
     /**
@@ -61,7 +58,9 @@ class ModelAggregateTest extends TestCase
 
     public function testGroupBy(): void
     {
-        $aggregate = (new AggregateModel($this->createInvoice()))->setGroupBy(['client_id'], [
+        $aggregate = $this->createInvoiceAggregate();
+
+        $aggregate->setGroupBy(['client_id'], [
             'c' => ['expr' => 'count(*)', 'type' => 'integer'],
         ]);
 
@@ -180,12 +179,9 @@ class ModelAggregateTest extends TestCase
             $this->getDatabasePlatform() instanceof SqlitePlatform ? $aggregate->expr('10') : 10
         );
 
-        $this->assertSame(
-            [
-                ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'amount' => 19.0, 'double' => 38.0],
-            ],
-            $aggregate->export()
-        );
+        $this->assertSame([
+            ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'amount' => 19.0, 'double' => 38.0],
+        ], $aggregate->export());
     }
 
     public function testGroupSelectCondition3(): void
@@ -206,12 +202,9 @@ class ModelAggregateTest extends TestCase
             $this->getDatabasePlatform() instanceof SqlitePlatform ? $aggregate->expr('38') : 38
         );
 
-        $this->assertSame(
-            [
-                ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'amount' => 19.0, 'double' => 38.0],
-            ],
-            $aggregate->export()
-        );
+        $this->assertSame([
+            ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'amount' => 19.0, 'double' => 38.0],
+        ], $aggregate->export());
     }
 
     public function testGroupSelectCondition4(): void
@@ -228,12 +221,9 @@ class ModelAggregateTest extends TestCase
         $aggregate->addExpression('double', ['expr' => '[s] + [amount]', 'type' => 'atk4_money']);
         $aggregate->addCondition('client_id', 2);
 
-        $this->assertSame(
-            [
-                ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
-            ],
-            $aggregate->export()
-        );
+        $this->assertSame([
+            ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
+        ], $aggregate->export());
     }
 
     public function testGroupSelectScope(): void
@@ -251,15 +241,12 @@ class ModelAggregateTest extends TestCase
         $scope = Scope::createAnd(new Condition('client_id', 2), new Condition('amount', $numExpr));
         $aggregate->addCondition($scope);
 
-        $this->assertSame(
-            [
-                ['client' => 'Zoe', 'client_id' => 2, 'amount' => 4.0],
-            ],
-            $aggregate->export()
-        );
+        $this->assertSame([
+            ['client' => 'Zoe', 'client_id' => 2, 'amount' => 4.0],
+        ], $aggregate->export());
     }
 
-    public function testGroupOrder(): void
+    public function testGroupOrderSql(): void
     {
         $aggregate = $this->createInvoiceAggregate();
         $aggregate->addField('client');
@@ -295,13 +282,11 @@ class ModelAggregateTest extends TestCase
         ]);
         self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
         $aggregate->setLimit(1);
+        $aggregate->setOrder('client_id', 'asc');
 
-        $this->assertSame(
-            [
-                ['client' => 'Vinny', 'client_id' => 1, 'amount' => 19.0],
-            ],
-            $aggregate->setOrder('client_id', 'asc')->export()
-        );
+        $this->assertSame([
+            ['client' => 'Vinny', 'client_id' => 1, 'amount' => 19.0],
+        ], $aggregate->export());
     }
 
     public function testGroupLimit2(): void
@@ -314,16 +299,14 @@ class ModelAggregateTest extends TestCase
         ]);
         self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
         $aggregate->setLimit(2, 1);
+        $aggregate->setOrder('client_id', 'asc');
 
-        $this->assertSame(
-            [
-                ['client' => 'Zoe', 'client_id' => 2, 'amount' => 4.0],
-            ],
-            $aggregate->setOrder('client_id', 'asc')->export()
-        );
+        $this->assertSame([
+            ['client' => 'Zoe', 'client_id' => 2, 'amount' => 4.0],
+        ], $aggregate->export());
     }
 
-    public function testGroupCount(): void
+    public function testGroupCountSql(): void
     {
         $aggregate = $this->createInvoiceAggregate();
         $aggregate->addField('client');
@@ -339,7 +322,7 @@ class ModelAggregateTest extends TestCase
         );
     }
 
-    public function testAggregateFieldExpression(): void
+    public function testAggregateFieldExpressionSql(): void
     {
         $aggregate = $this->createInvoiceAggregate();
 
