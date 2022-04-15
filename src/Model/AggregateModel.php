@@ -81,25 +81,19 @@ class AggregateModel extends Model
 
         foreach ($aggregateExpressions as $name => $seed) {
             $exprArgs = [];
-            // if field originally defined in the parent model, then it can be used as part of expression
+            // if field is defined in the parent model then it can be used in expression
             if ($this->table->hasField($name)) {
                 $exprArgs = [$this->table->getField($name)];
             }
 
             $seed['expr'] = $this->table->expr($seed['expr'], $exprArgs);
 
-            // now add the expressions here
             $this->addExpression($name, $seed);
         }
 
         return $this;
     }
 
-    /**
-     * Adds new field into model.
-     *
-     * @param array|object $seed
-     */
     public function addField(string $name, $seed = []): Field
     {
         if ($seed instanceof SqlExpressionField) {
