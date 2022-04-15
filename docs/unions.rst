@@ -104,9 +104,3 @@ Like any other model, UnionModel model can be assigned through a reference. In t
 Initially a related union can be defined::
 
    $client->hasMany('Transaction', new Transaction());
-
-When condition is added on an UnionModel model it will send it down to every nested model. This way the resulting SQL query remains optimized.
-
-The exception is when field is not mapped to nested model (if it's an Expression or associated with a Join).
-
-In most cases optimization on the query and UnionModel model is not necessary as it will be done automatically.
