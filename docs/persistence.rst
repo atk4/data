@@ -272,12 +272,12 @@ Your init() method for a Field_Currency might look like this::
         $f = $this->shortName; // balance
 
         $this->getOwner()->addField(
-            $f.'_amount',
+            $f . '_amount',
             ['type' => 'atk4_money', 'system' => true]
         );
 
         $this->getOwner()->hasOne(
-            $f.'_currency_id',
+            $f . '_currency_id',
             [
                 $this->currency_model ?: new Currency(),
                 'system' => true,

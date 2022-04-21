@@ -221,7 +221,7 @@ class Array_ extends Persistence
             if (count($rowsRaw) === 0) {
                 return null;
             } elseif (count($rowsRaw) !== 1) {
-                throw (new Exception('Ambiguous conditions, more than one record can be loaded.'))
+                throw (new Exception('Ambiguous conditions, more than one record can be loaded'))
                     ->addMoreInfo('model', $model)
                     ->addMoreInfo('id', null);
             }

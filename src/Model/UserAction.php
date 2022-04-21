@@ -170,13 +170,13 @@ class UserAction
             $tooDirty = array_diff(array_keys($this->getEntity()->getDirtyRef()), $this->fields);
 
             if ($tooDirty) {
-                throw (new Exception('Calling user action on a Model with dirty fields that are not allowed by this action.'))
+                throw (new Exception('Calling user action on a Model with dirty fields that are not allowed by this action'))
                     ->addMoreInfo('too_dirty', $tooDirty)
                     ->addMoreInfo('dirty', array_keys($this->getEntity()->getDirtyRef()))
                     ->addMoreInfo('permitted', $this->fields);
             }
         } elseif (!is_bool($this->fields)) {
-            throw (new Exception('Argument `fields` for the user action must be either array or boolean.'))
+            throw (new Exception('Argument `fields` for the user action must be either array or boolean'))
                 ->addMoreInfo('fields', $this->fields);
         }
 
@@ -184,14 +184,14 @@ class UserAction
         switch ($this->appliesTo) {
             case self::APPLIES_TO_NO_RECORDS:
                 if ($this->getEntity()->isLoaded()) {
-                    throw (new Exception('This user action can be executed on non-existing record only.'))
+                    throw (new Exception('This user action can be executed on non-existing record only'))
                         ->addMoreInfo('id', $this->getEntity()->getId());
                 }
 
                 break;
             case self::APPLIES_TO_SINGLE_RECORD:
                 if (!$this->getEntity()->isLoaded()) {
-                    throw new Exception('This user action requires you to load existing record first.');
+                    throw new Exception('This user action requires you to load existing record first');
                 }
 
                 break;

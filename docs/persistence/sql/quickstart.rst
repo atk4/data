@@ -99,7 +99,7 @@ try to understand what each section does to your base query::
 
     // Finally, fetch result
     foreach ($salary as $row) {
-        echo "Data: ".json_encode($row)."\n";
+        echo "Data: " . json_encode($row) . "\n";
     }
 
 The above query resulting code will look like this:
@@ -201,7 +201,7 @@ perform the action::
     if ($confirmed) {
         $q->mode('delete')->execute();
     } else {
-        echo "Are you sure you want to delete ".$q->field('count(*)')." employees?";
+        echo "Are you sure you want to delete " . $q->field('count(*)') . " employees?";
     }
 
 
@@ -215,7 +215,7 @@ statement for you. Depending on the connection, there may be some magic
 involved, but once the query is executed, you can start streaming your data::
 
     foreach ($query->table('employee')->where('dep_no',123) as $employee) {
-        echo $employee['first_name']."\n";
+        echo $employee['first_name'] . "\n";
     }
 
 When iterating you'll have `Doctrine\DBAL\Result`. Remember that DQSL can support vendors,

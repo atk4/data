@@ -125,7 +125,7 @@ Reverse joins are saved in the opposite order - primary table will be saved
 first and when id of a primary table is known, foreign table record is stored
 and ID is supplied. You can pass option 'master_field' to the join() which will
 specify which field to be used for matching. By default the field is calculated
-like this: foreign_table.'_id'. Here is usage example::
+like this: foreign_table . '_id'. Here is usage example::
 
     $user->addField('username');
     $j_cc = $user->join('credit_card', [
@@ -173,7 +173,7 @@ with a foreign table.
 
     same as :php:meth:`Model::hasMany` but condition for related model will be
     based on foreign table field and :php:attr:`Reference::their_field` will be
-    set to $foreign_table.'_id'.
+    set to $foreign_table . '_id'.
 
 .. php:method:: containsOne
 
@@ -288,9 +288,9 @@ You can also specify ``'on' => false`` then the ON clause will not be used at al
 and you'll have to add additional where() condition yourself.
 
 ``foreign_alias`` can be specified and will be used as table alias and prefix
-for all fields. It will default to ``"_".$foreign_table->get(0)``. Agile Data will
+for all fields. It will default to ``'_' . $foreign_table->get(0)``. Agile Data will
 also resolve situations when multiple tables have same first character so the
-prefixes will be named '_c' ,'_c_2', '_c_3' etc.
+prefixes will be named '_c', '_c_2', '_c_3' etc.
 
 
 Additional arguments accepted by SQL joins are:

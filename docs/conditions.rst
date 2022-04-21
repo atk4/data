@@ -22,7 +22,7 @@ Following this line, you can load ANY record from the table. It's possible to
 narrow down set of "loadable" records by introducing a condition::
 
     $m = new Model_User($db, 'user');
-    $m->addCondition('gender','F');
+    $m->addCondition('gender', 'F');
     $m = $m->load(1);    // exception, user with ID=1 is M
 
 Conditions serve important role and must be used to intelligently restrict
@@ -43,7 +43,7 @@ Once you add a condition, you can't get rid of it, so if you want
 to preserve the state of your model, you need to use clone::
 
     $m = new Model_User($db, 'user');
-    $girls = (clone $m)->addCondition('gender','F');
+    $girls = (clone $m)->addCondition('gender', 'F');
 
     $m = $m->load(1);        // success
     $girls = $girls->load(1);    // exception
