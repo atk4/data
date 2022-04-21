@@ -67,7 +67,7 @@ abstract class Join
 
     /**
      * Field to be used for matching inside master table.
-     * By default it's $foreign_table.'_id'.
+     * By default it's $foreign_table . '_id'.
      *
      * @var string
      */

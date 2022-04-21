@@ -71,7 +71,7 @@ would work without a change.
 Another scenario which could benefit by type substitution would be::
 
     foreach ($account->ref('Transactions') as $tr) {
-        echo get_class($tr)."\n";
+        echo get_class($tr) . "\n";
     }
 
 ATK Data allow class substitution during load and iteration by breaking "afterLoad"
@@ -658,20 +658,20 @@ persistence layer to load or save anything. Next I need a beforeSave handler::
     $this->onHookShort(Model::HOOK_BEFORE_SAVE, function () {
         if($this->_isset('client_code') && !$this->_isset('client_id')) {
             $cl = $this->refModel('client_id');
-            $cl->addCondition('code',$this->get('client_code'));
-            $this->set('client_id', $cl->action('field',['id']));
+            $cl->addCondition('code', $this->get('client_code'));
+            $this->set('client_id', $cl->action('field', ['id']));
         }
 
         if($this->_isset('client_name') && !$this->_isset('client_id')) {
             $cl = $this->refModel('client_id');
             $cl->addCondition('name', 'like', $this->get('client_name'));
-            $this->set('client_id', $cl->action('field',['id']));
+            $this->set('client_id', $cl->action('field', ['id']));
         }
 
         if($this->_isset('category') && !$this->_isset('category_id')) {
             $c = $this->refModel('category_id');
             $c->addCondition($c->title_field, 'like', $this->get('category'));
-            $this->set('category_id', $c->action('field',['id']));
+            $this->set('category_id', $c->action('field', ['id']));
         }
     });
 
@@ -690,7 +690,7 @@ What if the user-specified entry is not found? Lets look at the code::
     if($m->_isset('category') && !$m->_isset('category_id')) {
         $c = $this->refModel('category_id');
         $c->addCondition($c->title_field, 'like', $m->get('category'));
-        $m->set('category_id', $c->action('field',['id']));
+        $m->set('category_id', $c->action('field', ['id']));
     }
 
 So if category with a name is not found, then sub-query will return "NULL".
@@ -699,8 +699,8 @@ If you wish to use a different value instead, you can create an expression::
     if($m->_isset('category') && !$m->_isset('category_id')) {
         $c = $this->refModel('category_id');
         $c->addCondition($c->title_field, 'like', $m->get('category'));
-        $m->set('category_id', $this->expr('coalesce([], [])',[
-            $c->action('field',['id']),
+        $m->set('category_id', $this->expr('coalesce([], [])', [
+            $c->action('field', ['id']),
             $m->getField('category_id')->default,
         ]));
     }
@@ -708,10 +708,10 @@ If you wish to use a different value instead, you can create an expression::
 The beautiful thing about this approach is that default can also be defined
 as a lookup query::
 
-    $this->hasOne('category_id','Model_Category');
+    $this->hasOne('category_id', 'Model_Category');
     $this->getField('category_id')->default =
-        $this->refModel('category_id')->addCondition('name','Other')
-            ->action('field',['id']);
+        $this->refModel('category_id')->addCondition('name', 'Other')
+            ->action('field', ['id']);
 
 
 Inserting Hierarchical Data
@@ -727,9 +727,9 @@ information. Here is usage example::
             'ref' => 'half upfront',
         ],
         'lines' => [
-            ['descr' => 'Book','qty' => 3, 'price' => 5]
-            ['descr' => 'Pencil','qty' => 1, 'price' => 10]
-            ['descr' => 'Eraser','qty' => 2, 'price' => 2.5],
+            ['descr' => 'Book', 'qty' => 3, 'price' => 5]
+            ['descr' => 'Pencil', 'qty' => 1, 'price' => 10]
+            ['descr' => 'Eraser', 'qty' => 2, 'price' => 2.5],
         ],
     ]);
 
@@ -738,8 +738,8 @@ Not only 'insert' but 'set' and 'save' should be able to use those fields for
 If you curious about client lookup by-name, I have explained it in the previous
 section. Add this into your Invoice Model::
 
-    $this->addField('payment',['never_persist' => true]);
-    $this->addField('lines',['never_persist' => true]);
+    $this->addField('payment', ['never_persist' => true]);
+    $this->addField('lines', ['never_persist' => true]);
 
 Next both payment and lines need to be added after invoice is actually created,
 so::
@@ -827,7 +827,7 @@ sometimes that can be quite useful. Consider adding this inside your Model_Conta
 
     $this->hasMany('Invoice', 'Model_Invoice');
     $this->hasMany('OverdueInvoice', ['model' => function($m) {
-        return $m->ref('Invoice')->addCondition('due','<',date('Y-m-d'))
+        return $m->ref('Invoice')->addCondition('due', '<', date('Y-m-d'))
     }]);
 
 This way if you extend your class into 'Model_Client' and modify the 'Invoice'

@@ -578,8 +578,8 @@ When you modify active record, it keeps the original value in the $dirty array:
 
     Return true if one or multiple fields contain unsaved changes (dirty)::
 
-        if ($m->isDirty(['name','surname'])) {
-           $m->set('full_name', $m->get('name').' '.$m->get('surname'));
+        if ($m->isDirty(['name', 'surname'])) {
+           $m->set('full_name', $m->get('name') . ' ' . $m->get('surname'));
         }
 
     When the code above is placed in beforeSave hook, it will only be executed
@@ -732,7 +732,7 @@ Setting limit and sort order
         $m->setOrder(['name', 'salary desc']);
         $m->setOrder(['name', 'salary' => true]);
         $m->setOrder(['name' => false, 'salary' => true]);
-        $m->setOrder([ ['name'], ['salary','desc'] ]);
+        $m->setOrder([ ['name'], ['salary', 'desc'] ]);
         $m->setOrder([ ['name'], ['salary',true] ]);
         $m->setOrder([ ['name'], ['salary desc'] ]);
         // and there can be many more similar combinations how to call this

@@ -123,7 +123,7 @@ It is possible to perform reference through an 3rd party table::
 
     $p
         ->join('invoice_payment.payment_id')
-        ->addFields(['amount_allocated','invoice_id']);
+        ->addFields(['amount_allocated', 'invoice_id']);
 
     $i->hasMany('Payments', ['model' => $p]);
 
@@ -405,7 +405,7 @@ This would create 'currency' field containing name of the currency::
 
     $i = $i->load(20);
 
-    echo "Currency for invoice 20 is ".$i->get('currency');   // EUR
+    echo "Currency for invoice 20 is " . $i->get('currency');   // EUR
 
 Unlike addField() which creates fields read-only, title field can in fact be
 modified::
@@ -434,7 +434,7 @@ Sometimes you would want to have a different type of relation between models,
 so with `addRef` you can define whatever reference you want::
 
     $m->addRef('Archive', ['model' => function($m) {
-        return $m->newInstance(null, ['table' => $m->table.'_archive']);
+        return $m->newInstance(null, ['table' => $m->table . '_archive']);
     }]);
 
 The above example will work for a table structure where a main table `user` is
@@ -448,7 +448,7 @@ custom logic.
 No condition will be applied by default so it's all up to you::
 
     $m->addRef('Archive', ['model' => function($m) {
-        $archive = $m->newInstance(null, ['table' => $m->table.'_archive']);
+        $archive = $m->newInstance(null, ['table' => $m->table . '_archive']);
 
         $m->addField('original_id', ['type' => 'integer']);
 

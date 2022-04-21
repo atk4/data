@@ -123,7 +123,7 @@ abstract class Persistence
      */
     public function tryLoad(Model $model, $id): ?array
     {
-        throw new Exception('Load is not supported.');
+        throw new Exception('Load is not supported');
     }
 
     /**
@@ -193,7 +193,7 @@ abstract class Persistence
      */
     protected function insertRaw(Model $model, array $dataRaw)
     {
-        throw new Exception('Insert is not supported.');
+        throw new Exception('Insert is not supported');
     }
 
     /**
@@ -206,7 +206,7 @@ abstract class Persistence
         $idRaw = $model->id_field ? $this->typecastSaveField($model->getField($model->id_field), $id) : null;
         unset($id);
         if ($idRaw === null || (array_key_exists($model->id_field, $data) && $data[$model->id_field] === null)) {
-            throw new Exception('Model id_field is not set. Unable to update record.');
+            throw new Exception('Unable to update record: Model id_field is not set');
         }
 
         $dataRaw = $this->typecastSaveRow($model, $data);
@@ -234,7 +234,7 @@ abstract class Persistence
      */
     protected function updateRaw(Model $model, $idRaw, array $dataRaw): void
     {
-        throw new Exception('Update is not supported.');
+        throw new Exception('Update is not supported');
     }
 
     /**
@@ -247,7 +247,7 @@ abstract class Persistence
         $idRaw = $model->id_field ? $this->typecastSaveField($model->getField($model->id_field), $id) : null;
         unset($id);
         if ($idRaw === null) {
-            throw new Exception('Model id_field is not set. Unable to delete record.');
+            throw new Exception('Unable to delete record: Model id_field is not set');
         }
 
         if (is_object($model->table)) {
@@ -268,7 +268,7 @@ abstract class Persistence
      */
     protected function deleteRaw(Model $model, $idRaw): void
     {
-        throw new Exception('Delete is not supported.');
+        throw new Exception('Delete is not supported');
     }
 
     /**
