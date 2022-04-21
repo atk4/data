@@ -81,7 +81,7 @@ class Csv extends Persistence
         if (!$this->handle) {
             $this->handle = fopen($this->file, $mode);
             if ($this->handle === false) {
-                throw (new Exception('Cannot open CSV file.'))
+                throw (new Exception('Cannot open CSV file'))
                     ->addMoreInfo('file', $this->file)
                     ->addMoreInfo('mode', $mode);
             }
@@ -122,7 +122,7 @@ class Csv extends Persistence
     {
         $ok = fputcsv($this->handle, $data, $this->delimiter, $this->enclosure, $this->escape_char);
         if ($ok === false) {
-            throw new Exception('Cannot write to CSV file.');
+            throw new Exception('Cannot write to CSV file');
         }
     }
 
@@ -215,7 +215,7 @@ class Csv extends Persistence
         if (!$this->mode) {
             $this->mode = 'r';
         } elseif ($this->mode === 'w') {
-            throw new Exception('Currently writing records, so loading is not possible.');
+            throw new Exception('Currently writing records, so loading is not possible');
         }
 
         if (!$this->handle) {
@@ -240,7 +240,7 @@ class Csv extends Persistence
         if (!$this->mode) {
             $this->mode = 'r';
         } elseif ($this->mode === 'w') {
-            throw new Exception('Currently writing records, so loading is not possible.');
+            throw new Exception('Currently writing records, so loading is not possible');
         }
 
         if (!$this->handle) {
@@ -266,7 +266,7 @@ class Csv extends Persistence
         if (!$this->mode) {
             $this->mode = 'w';
         } elseif ($this->mode === 'r') {
-            throw new Exception('Currently reading records, so writing is not possible.');
+            throw new Exception('Currently reading records, so writing is not possible');
         }
 
         if (!$this->handle) {

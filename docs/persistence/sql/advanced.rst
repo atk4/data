@@ -25,7 +25,7 @@ When it's time to execute you can specify your PDO manually::
 
     $rows = $expr->getRows($pdo);
     foreach ($rows as $row) {
-        echo json_encode($row)."\n";
+        echo json_encode($row) . "\n";
     }
 
 With queries you might need to select mode first::

@@ -145,10 +145,10 @@ class AggregateModel extends Model
                     ->table($this->expr('([]) {}', [$innerQuery, '_tc']));
 
                 return $query;
-//            case 'field':
-//            case 'fx':
-//            case 'fx0':
-//                return parent::action($mode, $args);
+            case 'field':
+            case 'fx':
+            case 'fx0':
+                return parent::action($mode, $args);
             default:
                 throw (new Exception('AggregateModel model does not support this action'))
                     ->addMoreInfo('mode', $mode);

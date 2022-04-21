@@ -246,6 +246,24 @@ class ModelAggregateTest extends TestCase
         ], $aggregate->export());
     }
 
+    public function testGroupSelectRef(): void
+    {
+        $aggregate = $this->createInvoiceAggregate();
+        $aggregate->addField('client');
+
+        $aggregate->setGroupBy(['client_id'], [
+            'c' => ['expr' => 'count(*)', 'type' => 'integer'],
+        ]);
+        self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
+
+        $aggregate->hasOne('client_id', ['model' => [Model\Invoice::class]]);
+
+        $this->assertSame(1, $aggregate->loadBy('client', 'Vinny')->ref('client_id')->id);
+        $this->assertSame(2, $aggregate->loadBy('client', 'Zoe')->ref('client_id')->id);
+        $aggregate->table->addCondition('client', 'Zoe');
+        $this->assertSame(2, $aggregate->ref('client_id')->loadOne()->id);
+    }
+
     public function testGroupOrderSql(): void
     {
         $aggregate = $this->createInvoiceAggregate();

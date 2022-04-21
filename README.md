@@ -502,7 +502,7 @@ If you wonder how those advanced features may impact performance of loading and 
 
 ``` php
 foreach ($client->ref('Project') as $project) {
-    echo $project->get('name')."\n"
+    echo $project->get('name') . "\n"
 }
 
 // $project refers to same object at all times, but $project's active data
@@ -633,7 +633,7 @@ DSQL Is Simple and Powerful
 ``` php
 $query = new Atk4\Data\Persistence\Sql\Query();
 $query->table('employees')
-    ->where('birth_date','1961-05-02')
+    ->where('birth_date', '1961-05-02')
     ->field('count(*)');
 echo 'Employees born on May 2, 1961: ' . $query->getOne();
 ```
@@ -658,7 +658,7 @@ $salary
 // define sub-query for employee "id" with certain birth-date
 $employees = $salary->dsql()
     ->table('employees')
-    ->where('birth_date','1961-05-02')
+    ->where('birth_date', '1961-05-02')
     ->field('emp_no');
 
 // use sub-select to condition salaries
@@ -666,13 +666,13 @@ $salary->where('emp_no', $employees);
 
 // join with another table for more data
 $salary
-    ->join('employees.emp_id','emp_id')
+    ->join('employees.emp_id', 'emp_id')
     ->field('employees.first_name');
 
 
 // finally, fetch result
 foreach ($salary as $row) {
-    echo "Data: ".json_encode($row)."\n";
+    echo "Data: " . json_encode($row) . "\n";
 }
 ```
 

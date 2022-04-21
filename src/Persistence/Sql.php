@@ -342,13 +342,21 @@ class Sql extends Persistence
         // add entity ID to scope to allow easy traversal
         if ($model->isEntity() && $model->id_field && $model->getId() !== null) {
             $query->group($model->getField($model->id_field));
-            if ($this->getDatabasePlatform() instanceof SQLServerPlatform
-                || $this->getDatabasePlatform() instanceof OraclePlatform) {
-                foreach ($query->args['field'] as $alias => $field) {
-                    $query->group(is_int($alias) ? $field : $alias);
+            $this->fixMssqlOracleMissingFieldsInGroup($query);
+            $query->having($model->getField($model->id_field), $model->getId());
+        }
+    }
+
+    private function fixMssqlOracleMissingFieldsInGroup(Query $query): void
+    {
+        if (($this->getDatabasePlatform() instanceof SQLServerPlatform
+                || $this->getDatabasePlatform() instanceof OraclePlatform)
+            && count($query->args['group'] ?? []) > 0) {
+            foreach ($query->args['field'] ?? [] as $field) {
+                if ($field instanceof Field) {
+                    $query->group($field);
                 }
             }
-            $query->having($model->getField($model->id_field), $model->getId());
         }
     }
 
@@ -381,18 +389,23 @@ class Sql extends Persistence
      */
     public function action(Model $model, string $type, array $args = [])
     {
-        $query = $this->initQuery($model);
         switch ($type) {
             case 'select':
+                $query = $this->initQuery($model);
                 $this->initQueryFields($model, $query, $args[0] ?? null);
+                $this->initQueryConditions($model, $query);
+                $this->setLimitOrder($model, $query);
+                $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
 
-                break;
+                return $query;
             case 'count':
+                $query = $this->initQuery($model);
                 $this->initQueryConditions($model, $query);
                 $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
 
                 return $query->reset('field')->field('count(*)', $args['alias'] ?? null);
             case 'exists':
+                $query = $this->initQuery($model);
                 $this->initQueryConditions($model, $query);
                 $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
 
@@ -402,9 +415,10 @@ class Sql extends Persistence
                     throw (new Exception('This action requires one argument with field name'))
                         ->addMoreInfo('action', $type);
                 }
-
                 $field = is_string($args[0]) ? $model->getField($args[0]) : $args[0];
-                $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
+
+                $query = $this->action($model, 'select', [[]]);
+
                 if (isset($args['alias'])) {
                     $query->reset('field')->field($field, $args['alias']);
                 } elseif ($field instanceof SqlExpressionField) {
@@ -412,8 +426,7 @@ class Sql extends Persistence
                 } else {
                     $query->reset('field')->field($field);
                 }
-                $this->initQueryConditions($model, $query);
-                $this->setLimitOrder($model, $query);
+                $this->fixMssqlOracleMissingFieldsInGroup($query);
 
                 if ($model->isEntity() && $model->isLoaded()) {
                     $idRaw = $this->typecastSaveField($model->getField($model->id_field), $model->getId());
@@ -427,19 +440,16 @@ class Sql extends Persistence
                     throw (new Exception('fx action needs 2 arguments, eg: ["sum", "amount"]'))
                         ->addMoreInfo('action', $type);
                 }
-
                 [$fx, $field] = $args;
-
                 $field = is_string($field) ? $model->getField($field) : $field;
-
-                $this->initQueryConditions($model, $query);
-                $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
 
                 if ($type === 'fx') {
                     $expr = "{$fx}([])";
                 } else {
                     $expr = "coalesce({$fx}([]), 0)";
                 }
+
+                $query = $this->action($model, 'select', [[]]);
 
                 if (isset($args['alias'])) {
                     $query->reset('field')->field($query->expr($expr, [$field]), $args['alias']);
@@ -448,18 +458,13 @@ class Sql extends Persistence
                 } else {
                     $query->reset('field')->field($query->expr($expr, [$field]));
                 }
+                $this->fixMssqlOracleMissingFieldsInGroup($query);
 
                 return $query;
             default:
                 throw (new Exception('Unsupported action mode'))
                     ->addMoreInfo('type', $type);
         }
-
-        $this->initQueryConditions($model, $query);
-        $this->setLimitOrder($model, $query);
-        $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
-
-        return $query;
     }
 
     public function tryLoad(Model $model, $id): ?array
@@ -470,7 +475,7 @@ class Sql extends Persistence
 
         if (!$noId) {
             if (!$model->id_field) {
-                throw (new Exception('Unable to load field by "id" when Model->id_field is not defined.'))
+                throw (new Exception('Unable to load field by "id" when Model->id_field is not defined'))
                     ->addMoreInfo('id', $id);
             }
 
@@ -485,7 +490,7 @@ class Sql extends Persistence
             if (count($rowsRaw) === 0) {
                 return null;
             } elseif (count($rowsRaw) !== 1) {
-                throw (new Exception('Ambiguous conditions, more than one record can be loaded.'))
+                throw (new Exception('Ambiguous conditions, more than one record can be loaded'))
                     ->addMoreInfo('model', $model)
                     ->addMoreInfo('id_field', $model->id_field)
                     ->addMoreInfo('id', $noId ? null : $id);
