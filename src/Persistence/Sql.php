@@ -342,19 +342,29 @@ class Sql extends Persistence
         // add entity ID to scope to allow easy traversal
         if ($model->isEntity() && $model->id_field && $model->getId() !== null) {
             $query->group($model->getField($model->id_field));
-            $this->fixMssqlOracleMissingFieldsInGroup($query);
+            $this->fixMssqlOracleMissingFieldsInGroup($model, $query);
             $query->having($model->getField($model->id_field), $model->getId());
         }
     }
 
-    private function fixMssqlOracleMissingFieldsInGroup(Query $query): void
+    private function fixMssqlOracleMissingFieldsInGroup(Model $model, Query $query): void
     {
         if (($this->getDatabasePlatform() instanceof SQLServerPlatform
-                || $this->getDatabasePlatform() instanceof OraclePlatform)
-            && count($query->args['group'] ?? []) > 0) {
-            foreach ($query->args['field'] ?? [] as $field) {
-                if ($field instanceof Field) {
-                    $query->group($field);
+                || $this->getDatabasePlatform() instanceof OraclePlatform)) {
+            $isIdFieldInGroup = false;
+            foreach ($query->args['group'] ?? [] as $v) {
+                if ($model->id_field && $v === $model->getField($model->id_field)) {
+                    $isIdFieldInGroup = true;
+
+                    break;
+                }
+            }
+
+            if ($isIdFieldInGroup) {
+                foreach ($query->args['field'] ?? [] as $field) {
+                    if ($field instanceof Field) {
+                        $query->group($field);
+                    }
                 }
             }
         }
@@ -426,7 +436,7 @@ class Sql extends Persistence
                 } else {
                     $query->reset('field')->field($field);
                 }
-                $this->fixMssqlOracleMissingFieldsInGroup($query);
+                $this->fixMssqlOracleMissingFieldsInGroup($model, $query);
 
                 if ($model->isEntity() && $model->isLoaded()) {
                     $idRaw = $this->typecastSaveField($model->getField($model->id_field), $model->getId());
@@ -458,7 +468,7 @@ class Sql extends Persistence
                 } else {
                     $query->reset('field')->field($query->expr($expr, [$field]));
                 }
-                $this->fixMssqlOracleMissingFieldsInGroup($query);
+                $this->fixMssqlOracleMissingFieldsInGroup($model, $query);
 
                 return $query;
             default:
