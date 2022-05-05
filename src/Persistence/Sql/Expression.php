@@ -385,15 +385,15 @@ class Expression implements Expressionable, \ArrayAccess
 
                 $identifier = substr($matches[0], 1, -1);
 
-                $escaping = null;
+                $escapeMode = null;
                 if (substr($matches[0], 0, 1) === '[') {
-                    $escaping = self::ESCAPE_PARAM;
+                    $escapeMode = self::ESCAPE_PARAM;
                 } elseif (substr($matches[0], 0, 1) === '{') {
                     if (substr($matches[0], 1, 1) === '{') {
-                        $escaping = self::ESCAPE_IDENTIFIER_SOFT;
+                        $escapeMode = self::ESCAPE_IDENTIFIER_SOFT;
                         $identifier = substr($identifier, 1, -1);
                     } else {
-                        $escaping = self::ESCAPE_IDENTIFIER;
+                        $escapeMode = self::ESCAPE_IDENTIFIER;
                     }
                 }
 
@@ -406,7 +406,7 @@ class Expression implements Expressionable, \ArrayAccess
                 $fx = '_render_' . $identifier;
 
                 if (array_key_exists($identifier, $this->args['custom'])) {
-                    $value = $this->consume($this->args['custom'][$identifier], $escaping);
+                    $value = $this->consume($this->args['custom'][$identifier], $escapeMode);
                 } elseif (method_exists($this, $fx)) {
                     $value = $this->{$fx}();
                 } else {
@@ -541,11 +541,11 @@ class Expression implements Expressionable, \ArrayAccess
             return $connection->execute($this);
         }
 
-        [$query, $params] = $this->updateRenderBeforeExecute($this->render());
+        [$sql, $params] = $this->updateRenderBeforeExecute($this->render());
 
         $platform = $this->connection->getDatabasePlatform();
         try {
-            $statement = $connection->prepare($query);
+            $statement = $connection->prepare($sql);
 
             foreach ($params as $key => $val) {
                 if (is_int($val)) {
