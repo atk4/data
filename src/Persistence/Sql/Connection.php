@@ -31,7 +31,7 @@ abstract class Connection
     /** @var DbalConnection */
     protected $connection;
 
-    /** @var array<string, string> */
+    /** @var array<string, class-string<self>> */
     protected static $connectionClassRegistry = [
         'pdo_sqlite' => Sqlite\Connection::class,
         'pdo_mysql' => Mysql\Connection::class,
@@ -155,6 +155,8 @@ abstract class Connection
      *
      * Can be used as:
      *   Connection::registerConnection(MySQL\Connection::class, 'pdo_mysql')
+     *
+     * @param class-string<self> $connectionClass
      */
     public static function registerConnectionClass(string $connectionClass, string $driverName): void
     {
@@ -163,6 +165,8 @@ abstract class Connection
 
     /**
      * Resolves the connection class to use based on driver type.
+     *
+     * @return class-string<self>
      */
     public static function resolveConnectionClass(string $driverName): string
     {
@@ -206,12 +210,15 @@ abstract class Connection
         ], $args));
     }
 
+    /**
+     * @return 'pdo_sqlite'|'pdo_mysql'|'pdo_pgsql'|'pdo_sqlsrv'|'pdo_oci'|'mysqli'|'oci8'
+     */
     private static function getDriverNameFromDbalDriverConnection(DbalDriverConnection $connection): string
     {
         $driver = $connection->getNativeConnection();
 
         if ($driver instanceof \PDO) {
-            return 'pdo_' . $driver->getAttribute(\PDO::ATTR_DRIVER_NAME);
+            return 'pdo_' . $driver->getAttribute(\PDO::ATTR_DRIVER_NAME); // @phpstan-ignore-line
         } elseif ($driver instanceof \mysqli) {
             return 'mysqli';
         } elseif (is_resource($driver) && get_resource_type($driver) === 'oci8 connection') {
