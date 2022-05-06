@@ -14,13 +14,24 @@ class Query extends BaseQuery
 
     protected $expression_class = Expression::class;
 
-    protected $template_insert = 'begin try'
-        . "\n" . 'insert[option] into [table_noalias] ([set_fields]) values ([set_values])'
-        . "\n" . 'end try begin catch if ERROR_NUMBER() = 544 begin'
-        . "\n" . 'set IDENTITY_INSERT [table_noalias] on'
-        . "\n" . 'insert[option] into [table_noalias] ([set_fields]) values ([set_values])'
-        . "\n" . 'set IDENTITY_INSERT [table_noalias] off'
-        . "\n" . 'end end catch';
+    protected $template_insert = <<<'EOF'
+        begin try
+          insert[option] into [table_noalias] ([set_fields]) values ([set_values]);
+        end try begin catch
+          if ERROR_NUMBER() = 544 begin
+            set IDENTITY_INSERT [table_noalias] on;
+            begin try
+              insert[option] into [table_noalias] ([set_fields]) values ([set_values]);
+              set IDENTITY_INSERT [table_noalias] off;
+            end try begin catch
+              set IDENTITY_INSERT [table_noalias] off;
+              throw;
+            end catch
+          end else begin
+            throw;
+          end
+        end catch
+        EOF;
 
     public function _render_limit(): ?string
     {
