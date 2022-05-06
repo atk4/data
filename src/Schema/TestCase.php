@@ -249,13 +249,13 @@ abstract class TestCase extends BaseTestCase
                 }
             }
 
-            $first_row = current($data);
+            $firstRow = current($data);
             $idColumnName = null;
-            if ($first_row) {
-                $idColumnName = isset($first_row['_id']) ? '_id' : 'id';
+            if ($firstRow) {
+                $idColumnName = isset($firstRow['_id']) ? '_id' : 'id';
                 $migrator->id($idColumnName);
 
-                foreach ($first_row as $field => $row) {
+                foreach ($firstRow as $field => $row) {
                     if ($field === $idColumnName) {
                         continue;
                     }
@@ -278,23 +278,25 @@ abstract class TestCase extends BaseTestCase
 
             // import data
             if ($importData) {
-                $hasId = (bool) key($data);
+                $this->db->atomic(function () use ($tableName, $data, $idColumnName) {
+                    $hasId = array_key_first($data) !== 0;
 
-                foreach ($data as $id => $row) {
-                    $query = $this->db->dsql();
-                    if ($id === '_') {
-                        continue;
+                    foreach ($data as $id => $row) {
+                        $query = $this->db->dsql();
+                        if ($id === '_') {
+                            continue;
+                        }
+
+                        $query->table($tableName);
+                        $query->setMulti($row);
+
+                        if (!isset($row[$idColumnName]) && $hasId) {
+                            $query->set($idColumnName, $id);
+                        }
+
+                        $query->mode('insert')->execute();
                     }
-
-                    $query->table($tableName);
-                    $query->setMulti($row);
-
-                    if (!isset($row[$idColumnName]) && $hasId) {
-                        $query->set($idColumnName, $id);
-                    }
-
-                    $query->mode('insert')->execute();
-                }
+                });
             }
         }
     }
