@@ -241,7 +241,7 @@ class ModelTest extends TestCase
             // is broken with long strings, oci8 driver is NOT affected,
             // CI images ghcr.io/mvorisek/image-php are patched
             // remove comment once https://github.com/php/php-src/pull/8018 is merged & released
-            ['text', false, 256 * 1024],
+            ['text', false, str_starts_with($_ENV['DB_DSN'], 'pdo_oci') && !isset($_ENV['CI']) ? 16 * 1024 : 256 * 1024],
             ['blob', true, 256 * 1024],
         ];
     }
