@@ -38,7 +38,7 @@ class TypecastingTest extends TestCase
                     'date' => '2013-02-20',
                     'datetime' => '2013-02-20 20:00:12.000000',
                     'time' => '12:00:50.000000',
-                    'boolean' => 1,
+                    'boolean' => true,
                     'integer' => '2940',
                     'money' => '8.20',
                     'float' => 8.20234376757473,
@@ -251,8 +251,8 @@ class TypecastingTest extends TestCase
                     'date' => '2013-02-20',
                     'datetime' => '2013-02-20 20:00:12.235689',
                     'time' => '12:00:50.235689',
-                    'b1' => '1',
-                    'b2' => '0',
+                    'b1' => true,
+                    'b2' => false,
                     'integer' => '2940',
                     'money' => '8.20',
                     'float' => 8.20234376757473,
@@ -289,6 +289,7 @@ class TypecastingTest extends TestCase
         $m->delete(1);
 
         unset($dbData['types'][0]);
+        $row['b2'] = '0'; // fix false == '0', see https://github.com/sebastianbergmann/phpunit/issues/4967, remove once fixed
         $row['money'] = '8.2'; // here it will loose last zero and that's as expected
         $dbData['types'][2] = array_merge(['id' => '2'], $row);
 

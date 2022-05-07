@@ -260,7 +260,9 @@ abstract class TestCase extends BaseTestCase
                         continue;
                     }
 
-                    if (is_int($row)) {
+                    if (is_bool($row)) {
+                        $fieldType = 'boolean';
+                    } elseif (is_int($row)) {
                         $fieldType = 'integer';
                     } elseif (is_float($row)) {
                         $fieldType = 'float';
