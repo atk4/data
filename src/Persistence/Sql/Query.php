@@ -651,7 +651,7 @@ class Query extends Expression
                 return '1 = 1'; // always true
             }
 
-            $value = '(' . implode(', ', array_map(function ($v) { return $this->escapeParam($v); }, $value)) . ')';
+            $value = '(' . implode(', ', array_map(function ($v) { return $this->consume($v); }, $value)) . ')';
 
             return $field . ' ' . $cond . ' ' . $value;
         }

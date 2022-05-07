@@ -6,7 +6,7 @@ namespace Atk4\Data\Persistence\Sql\Oracle;
 
 trait ExpressionTrait
 {
-    protected function castLongStringToClobExpr(string $value): Expression
+    protected function convertLongStringToClobExpr(string $value): Expression
     {
         $exprArgs = [];
         $buildConcatExprFx = function (array $parts) use (&$buildConcatExprFx, &$exprArgs): string {
@@ -50,7 +50,7 @@ trait ExpressionTrait
             function ($matches) use ($params, &$newParams, &$newParamBase) {
                 $value = $params[$matches[0]];
                 if (is_string($value) && strlen($value) > 4000) {
-                    $expr = $this->castLongStringToClobExpr($value);
+                    $expr = $this->convertLongStringToClobExpr($value);
                     unset($value);
                     [$exprSql, $exprParams] = $expr->render();
                     $sql = preg_replace_callback(

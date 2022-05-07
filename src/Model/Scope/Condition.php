@@ -395,8 +395,10 @@ class Condition extends AbstractScope
 
         if (is_bool($value)) {
             $valueStr = $value ? 'true' : 'false';
-        } elseif (is_int($value) || is_float($value)) {
-            $valueStr = $value;
+        } elseif (is_int($value)) {
+            $valueStr = (string) $value;
+        } elseif (is_float($value)) {
+            $valueStr = Expression::castFloatToString($value);
         } else {
             $valueStr = '\'' . (string) $value . '\'';
         }

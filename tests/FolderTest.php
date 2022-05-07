@@ -33,27 +33,27 @@ class FolderTest extends TestCase
     {
         $this->setDb([
             'folder' => [
-                ['parent_id' => 1, 'is_deleted' => 0, 'name' => 'Desktop'],
-                ['parent_id' => 1, 'is_deleted' => 0, 'name' => 'My Documents'],
-                ['parent_id' => 1, 'is_deleted' => 0, 'name' => 'My Videos'],
-                ['parent_id' => 1, 'is_deleted' => 0, 'name' => 'My Projects'],
-                ['parent_id' => 4, 'is_deleted' => 0, 'name' => 'Agile Data'],
-                ['parent_id' => 4, 'is_deleted' => 0, 'name' => 'DSQL'],
-                ['parent_id' => 4, 'is_deleted' => 0, 'name' => 'Agile Toolkit'],
-                ['parent_id' => 4, 'is_deleted' => 1, 'name' => 'test-project'],
+                ['parent_id' => 1, 'is_deleted' => false, 'name' => 'Desktop'],
+                ['parent_id' => 1, 'is_deleted' => false, 'name' => 'My Documents'],
+                ['parent_id' => 1, 'is_deleted' => false, 'name' => 'My Videos'],
+                ['parent_id' => 1, 'is_deleted' => false, 'name' => 'My Projects'],
+                ['parent_id' => 4, 'is_deleted' => false, 'name' => 'Agile Data'],
+                ['parent_id' => 4, 'is_deleted' => false, 'name' => 'DSQL'],
+                ['parent_id' => 4, 'is_deleted' => false, 'name' => 'Agile Toolkit'],
+                ['parent_id' => 4, 'is_deleted' => true, 'name' => 'test-project'],
             ],
         ]);
 
         $f = new Folder($this->db);
         $f = $f->load(4);
 
-        $this->assertEquals([
+        $this->assertSame([
             'id' => 4,
             'name' => 'My Projects',
-            'count' => 3,
+            'count' => '3',
             'parent_id' => 1,
             'parent' => 'Desktop',
-            'is_deleted' => 0,
+            'is_deleted' => false,
         ], $f->get());
     }
 }
