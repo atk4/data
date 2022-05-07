@@ -40,7 +40,7 @@ class TypecastingTest extends TestCase
                     'boolean' => 1,
                     'integer' => '2940',
                     'money' => '8.20',
-                    'float' => '8.202343',
+                    'float' => 8.20234376757473,
                     'json' => '[1,2,3]',
                 ],
             ],
@@ -69,7 +69,7 @@ class TypecastingTest extends TestCase
         $this->assertEquals(new \DateTime('1970-01-01 12:00:50'), $mm->get('time'));
         $this->assertSame(2940, $mm->get('integer'));
         $this->assertSame([1, 2, 3], $mm->get('json'));
-        $this->assertSame(8.202343, $mm->get('float'));
+        $this->assertSame(8.20234376757473, $mm->get('float'));
 
         $m->createEntity()->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
 
@@ -84,7 +84,7 @@ class TypecastingTest extends TestCase
                     'boolean' => 1,
                     'integer' => 2940,
                     'money' => 8.2,
-                    'float' => 8.202343,
+                    'float' => 8.20234376757473,
                     'json' => '[1,2,3]',
                 ],
                 2 => [
@@ -96,7 +96,7 @@ class TypecastingTest extends TestCase
                     'boolean' => '1',
                     'integer' => '2940',
                     'money' => '8.2',
-                    'float' => '8.202343',
+                    'float' => 8.20234376757473,
                     'json' => '[1,2,3]',
                 ],
             ],
@@ -243,7 +243,7 @@ class TypecastingTest extends TestCase
                     'b2' => '0',
                     'integer' => '2940',
                     'money' => '8.20',
-                    'float' => '8.202343',
+                    'float' => 8.20234376757473,
                 ],
             ],
         ];
