@@ -628,19 +628,9 @@ class Expression implements Expressionable, \ArrayAccess
     final public static function castFloatToString(float $value): string
     {
         $precisionBackup = ini_get('precision');
+        ini_set('precision', '-1');
         try {
-            // loop needed, see https://github.com/php/php-src/issues/8509
-            // fixed precision of 17 for conversion can render unneeded decimal digits like
-            // 0.40000000000000002 although 0.4 is enough to represent such float number exactly
-            for ($i = 1; $i <= 17; ++$i) {
-                ini_set('precision', (string) $i);
-                $res = (string) $value;
-                if ((float) $res === $value) {
-                    return $res;
-                }
-            }
-
-            return $res;
+            return (string) $value;
         } finally {
             ini_set('precision', $precisionBackup);
         }
