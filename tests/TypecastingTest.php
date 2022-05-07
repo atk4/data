@@ -112,14 +112,12 @@ class TypecastingTest extends TestCase
         $this->assertEquals($first, $duplicate);
 
         $m->load(2)->set('float', 8.20234376757474)->save();
-        // pack is needed to compare float numbers exactly, see https://github.com/sebastianbergmann/phpunit/issues/4966
-        // remove bin2hex/pack once phpunit is fixed officially
-        $this->assertSame(bin2hex(pack('e', 8.20234376757474)), bin2hex(pack('e', $m->load(2)->get('float'))));
+        $this->assertSame(8.20234376757474, $m->load(2)->get('float'));
         $m->load(2)->set('float', 8.202343767574732)->save();
-        // pdo_sqlite in truncating float when converted to string, see https://github.com/php/php-src/issues/8510
+        // pdo_sqlite in truncating float, see https://github.com/php/php-src/issues/8510
         // fixed since PHP 8.1, but if converted in SQL to string explicitly, the result is still wrong
-        if (!$this->getDatabasePlatform() instanceof SqlitePlatform || \PHP_VERSION_ID >= 81000) {
-            $this->assertSame(bin2hex(pack('e', 8.202343767574732)), bin2hex(pack('e', $m->load(2)->get('float'))));
+        if (!$this->getDatabasePlatform() instanceof SqlitePlatform || \PHP_VERSION_ID >= 80100) {
+            $this->assertSame(8.202343767574732, $m->load(2)->get('float'));
         }
     }
 
