@@ -456,8 +456,10 @@ class Expression implements Expressionable, \ArrayAccess
                 $replacement = 'NULL';
             } elseif (is_bool($val)) {
                 $replacement = $val ? '1' : '0';
-            } elseif (is_int($val) || is_float($val)) {
+            } elseif (is_int($val)) {
                 $replacement = (string) $val;
+            } elseif (is_float($val)) {
+                $replacement = self::castFloatToString($val);
             } elseif (is_string($val)) {
                 $replacement = '\'' . addslashes($val) . '\'';
             } else {
@@ -548,8 +550,8 @@ class Expression implements Expressionable, \ArrayAccess
             $statement = $connection->prepare($sql);
 
             foreach ($params as $key => $val) {
-                if (is_int($val)) {
-                    $type = ParameterType::INTEGER;
+                if ($val === null) {
+                    $type = ParameterType::NULL;
                 } elseif (is_bool($val)) {
                     if ($platform instanceof PostgreSQLPlatform) {
                         $type = ParameterType::STRING;
@@ -558,9 +560,10 @@ class Expression implements Expressionable, \ArrayAccess
                         $type = ParameterType::INTEGER;
                         $val = $val ? 1 : 0;
                     }
-                } elseif ($val === null) {
-                    $type = ParameterType::NULL;
+                } elseif (is_int($val)) {
+                    $type = ParameterType::INTEGER;
                 } elseif (is_float($val)) {
+                    $val = self::castFloatToString($val);
                     $type = ParameterType::STRING;
                 } elseif (is_string($val)) {
                     $type = ParameterType::STRING;
@@ -620,14 +623,38 @@ class Expression implements Expressionable, \ArrayAccess
     // {{{ Result Querying
 
     /**
+     * Cast float to string with lossless precision.
+     */
+    final public static function castFloatToString(float $value): string
+    {
+        $precisionBackup = ini_get('precision');
+        try {
+            // loop needed, see https://github.com/php/php-src/issues/8509
+            for ($i = 1; $i <= 17; ++$i) {
+                ini_set('precision', (string) $i);
+                $res = (string) $value;
+                if ((float) $res === $value) {
+                    return $res;
+                }
+            }
+
+            return $res;
+        } finally {
+            ini_set('precision', $precisionBackup);
+        }
+    }
+
+    /**
      * @param string|int|float|bool|null $v
      */
     private function castGetValue($v): ?string
     {
-        if (is_int($v) || is_float($v)) {
-            return (string) $v;
-        } elseif (is_bool($v)) {
+        if (is_bool($v)) {
             return $v ? '1' : '0';
+        } elseif (is_int($v)) {
+            return (string) $v;
+        } elseif (is_float($v)) {
+            return self::castFloatToString($v);
         }
 
         // for PostgreSQL/Oracle CLOB/BLOB datatypes and PDO driver
