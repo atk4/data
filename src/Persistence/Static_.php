@@ -78,7 +78,7 @@ class Static_ extends Array_
                 $def_types[] = ['type' => 'integer'];
             } elseif (is_float($value)) {
                 $def_types[] = ['type' => 'float'];
-            } elseif ($value instanceof \DateTime) {
+            } elseif ($value instanceof \DateTimeInterface) {
                 $def_types[] = ['type' => 'datetime'];
             } elseif (is_array($value)) {
                 $def_types[] = ['type' => 'json'];
