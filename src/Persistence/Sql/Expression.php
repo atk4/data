@@ -630,6 +630,8 @@ class Expression implements Expressionable, \ArrayAccess
         $precisionBackup = ini_get('precision');
         try {
             // loop needed, see https://github.com/php/php-src/issues/8509
+            // fixed precision of 17 for conversion can render unneeded decimal digits like
+            // 0.40000000000000002 although 0.4 is enough to represent such float number exactly
             for ($i = 1; $i <= 17; ++$i) {
                 ini_set('precision', (string) $i);
                 $res = (string) $value;

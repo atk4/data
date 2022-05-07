@@ -187,8 +187,10 @@ class Field implements Expressionable
                             } else {
                                 throw new Exception('Must not be boolean type');
                             }
-                        } elseif (is_scalar($value)) {
+                        } elseif (is_int($value)) {
                             $value = (string) $value;
+                        } elseif (is_float($value)) {
+                            $value = Expression::castFloatToString($value);
                         } else {
                             throw new Exception('Must be scalar');
                         }
@@ -364,7 +366,12 @@ class Field implements Expressionable
             return null;
         }
 
-        return (string) $this->typecastSaveField($value, true);
+        $res = $this->typecastSaveField($value, true);
+        if (is_float($res)) {
+            return Expression::castFloatToString($res);
+        }
+
+        return (string) $res;
     }
 
     /**

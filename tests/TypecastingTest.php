@@ -109,6 +109,11 @@ class TypecastingTest extends TestCase
         unset($duplicate['id']);
 
         $this->assertEquals($first, $duplicate);
+
+        $m->load(2)->set('float', 8.202343767574731)->save();
+        // pack is needed to compare float numbers exactly, see https://github.com/sebastianbergmann/phpunit/issues/4966
+        // remove bin2hex/pack once fixed in phpunit officially
+        $this->assertSame(bin2hex(pack('e', 8.202343767574731)), bin2hex(pack('e', $m->load(2)->get('float'))));
     }
 
     public function testEmptyValues(): void
