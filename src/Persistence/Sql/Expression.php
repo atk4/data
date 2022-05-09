@@ -385,15 +385,15 @@ class Expression implements Expressionable, \ArrayAccess
 
                 $identifier = substr($matches[0], 1, -1);
 
-                $escaping = null;
+                $escapeMode = null;
                 if (substr($matches[0], 0, 1) === '[') {
-                    $escaping = self::ESCAPE_PARAM;
+                    $escapeMode = self::ESCAPE_PARAM;
                 } elseif (substr($matches[0], 0, 1) === '{') {
                     if (substr($matches[0], 1, 1) === '{') {
-                        $escaping = self::ESCAPE_IDENTIFIER_SOFT;
+                        $escapeMode = self::ESCAPE_IDENTIFIER_SOFT;
                         $identifier = substr($identifier, 1, -1);
                     } else {
-                        $escaping = self::ESCAPE_IDENTIFIER;
+                        $escapeMode = self::ESCAPE_IDENTIFIER;
                     }
                 }
 
@@ -406,7 +406,7 @@ class Expression implements Expressionable, \ArrayAccess
                 $fx = '_render_' . $identifier;
 
                 if (array_key_exists($identifier, $this->args['custom'])) {
-                    $value = $this->consume($this->args['custom'][$identifier], $escaping);
+                    $value = $this->consume($this->args['custom'][$identifier], $escapeMode);
                 } elseif (method_exists($this, $fx)) {
                     $value = $this->{$fx}();
                 } else {
@@ -456,8 +456,10 @@ class Expression implements Expressionable, \ArrayAccess
                 $replacement = 'NULL';
             } elseif (is_bool($val)) {
                 $replacement = $val ? '1' : '0';
-            } elseif (is_int($val) || is_float($val)) {
+            } elseif (is_int($val)) {
                 $replacement = (string) $val;
+            } elseif (is_float($val)) {
+                $replacement = self::castFloatToString($val);
             } elseif (is_string($val)) {
                 $replacement = '\'' . addslashes($val) . '\'';
             } else {
@@ -541,15 +543,15 @@ class Expression implements Expressionable, \ArrayAccess
             return $connection->execute($this);
         }
 
-        [$query, $params] = $this->updateRenderBeforeExecute($this->render());
+        [$sql, $params] = $this->updateRenderBeforeExecute($this->render());
 
         $platform = $this->connection->getDatabasePlatform();
         try {
-            $statement = $connection->prepare($query);
+            $statement = $connection->prepare($sql);
 
             foreach ($params as $key => $val) {
-                if (is_int($val)) {
-                    $type = ParameterType::INTEGER;
+                if ($val === null) {
+                    $type = ParameterType::NULL;
                 } elseif (is_bool($val)) {
                     if ($platform instanceof PostgreSQLPlatform) {
                         $type = ParameterType::STRING;
@@ -558,9 +560,10 @@ class Expression implements Expressionable, \ArrayAccess
                         $type = ParameterType::INTEGER;
                         $val = $val ? 1 : 0;
                     }
-                } elseif ($val === null) {
-                    $type = ParameterType::NULL;
+                } elseif (is_int($val)) {
+                    $type = ParameterType::INTEGER;
                 } elseif (is_float($val)) {
+                    $val = self::castFloatToString($val);
                     $type = ParameterType::STRING;
                 } elseif (is_string($val)) {
                     $type = ParameterType::STRING;
@@ -620,14 +623,30 @@ class Expression implements Expressionable, \ArrayAccess
     // {{{ Result Querying
 
     /**
+     * Cast float to string with lossless precision.
+     */
+    final public static function castFloatToString(float $value): string
+    {
+        $precisionBackup = ini_get('precision');
+        ini_set('precision', '-1');
+        try {
+            return (string) $value;
+        } finally {
+            ini_set('precision', $precisionBackup);
+        }
+    }
+
+    /**
      * @param string|int|float|bool|null $v
      */
     private function castGetValue($v): ?string
     {
-        if (is_int($v) || is_float($v)) {
-            return (string) $v;
-        } elseif (is_bool($v)) {
+        if (is_bool($v)) {
             return $v ? '1' : '0';
+        } elseif (is_int($v)) {
+            return (string) $v;
+        } elseif (is_float($v)) {
+            return self::castFloatToString($v);
         }
 
         // for PostgreSQL/Oracle CLOB/BLOB datatypes and PDO driver
