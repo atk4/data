@@ -527,7 +527,7 @@ class Model implements \IteratorAggregate
     /**
      * Checkpoints are the current model values of anything dirty, saved for later comparison.  They are reset whenever
      * $dirty is reset.
-     * 
+     *
      * @var array
      */
     private $checkpoints = [];
@@ -551,8 +551,8 @@ class Model implements \IteratorAggregate
         $diffs = $this->checkpoints[$point];
         foreach ($this->dirty as $k => $dVal) {
             if (isset($diffs[$k])) {
-                if ($diffs[$k] == $this->get($k)) {
-                    unset ($diffs[$k]);
+                if ($diffs[$k] === $this->get($k)) {
+                    unset($diffs[$k]);
                 }
             } else {
                 $diffs[$k] = $dVal;
