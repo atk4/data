@@ -523,21 +523,22 @@ class Model implements \IteratorAggregate
 
         return $this->dirty;
     }
-    
+
     /**
      * Checkpoints are the current model values of anything dirty, saved for later comparison.  They are reset whenever
      * $dirty is reset.
+     * 
      * @var array
      */
     private $checkpoints = [];
-    
+
     public function checkpoint(int $point = 0): void
     {
         foreach (array_keys($this->dirty) as $k) {
             $this->checkpoints[$point][$k] = $this->get($k);
         }
     }
-    
+
     /**
      * Returns what the $dirty array would be if the provided checkpoint were the loaded record.
      */
@@ -546,12 +547,10 @@ class Model implements \IteratorAggregate
         if (!isset($this->checkpoints[$point])) {
             return $this->dirty;
         }
-        
+
         $diffs = $this->checkpoints[$point];
-        foreach ($this->dirty as $k => $dVal)
-        {
-            if (isset($diffs[$k]))
-            {
+        foreach ($this->dirty as $k => $dVal) {
+            if (isset($diffs[$k])) {
                 if ($diffs[$k] == $this->get($k)) {
                     unset ($diffs[$k]);
                 }
@@ -559,7 +558,7 @@ class Model implements \IteratorAggregate
                 $diffs[$k] = $dVal;
             }
         }
-        
+
         return $diffs;
     }
 
@@ -1305,7 +1304,7 @@ class Model implements \IteratorAggregate
                 $this->unload();
             } elseif (is_object($ret)) {
                 $this->checkpoint();
-                
+
                 return $ret; // @phpstan-ignore-line
             } else {
                 $this->checkpoint();
