@@ -167,7 +167,7 @@ class UserAction
 
         // Verify that model fields wouldn't be too dirty
         if (is_array($this->fields)) {
-            $tooDirty = array_diff(array_keys($this->getEntity()->getDirtyRef()), $this->fields);
+            $tooDirty = array_diff(array_keys($this->getEntity()->getDirtyVsCheckpoint()), $this->fields);
 
             if ($tooDirty) {
                 throw (new Exception('Calling user action on a Model with dirty fields that are not allowed by this action'))
