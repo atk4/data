@@ -37,7 +37,7 @@ class ModelCheckpointTest extends TestCase
         $this->assertEquals([],$m->getDirtyVsCheckpoint(1));
         $this->assertEquals(['changing' => 'basevalue'], $m->getDirtyVsCheckpoint());
         $m->set('changing', 'basevalue');
-        $this->assertEqauals([], $m->getDirtyVsCheckpoint());
+        $this->assertEquals([], $m->getDirtyVsCheckpoint());
         $this->assertEquals(['changing' => 'newvalue'], $m->getDirtyVsCheckpoint(1));
     }
 }
