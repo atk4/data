@@ -105,8 +105,11 @@ class UserAction
         return $owner;
     }
 
-    private $checkpoint = null;
+    private array $checkpoint = [];
 
+    /**
+     * @return $this
+     */
     public function setOwner(object $owner)
     {
         $ret = $this->_setOwner($owner);
@@ -127,7 +130,7 @@ class UserAction
         $o = $this->getEntity();
         $dirty = $o->getDirtyRef();
 
-        if ($this->checkpoint === null) {
+        if ($this->checkpoint === []) {
             return $dirty;
         }
 
@@ -144,7 +147,6 @@ class UserAction
 
         return $diffs;
     }
-    
 
     /**
      * @return static
@@ -210,13 +212,14 @@ class UserAction
 
         // Verify that model fields wouldn't be too dirty
         if (is_array($this->fields)) {
-            $dirty = $this->getDirtyVsCheckpoint();
-            $tooDirty = array_diff(array_keys($dirty), $this->fields);
+            $dirty = array_keys($this->getDirtyVsCheckpoint());
+            $tooDirty = array_diff($dirty, $this->fields);
+            var_dump ($dirty);
 
             if ($tooDirty) {
                 throw (new Exception('Calling user action on a Model with dirty fields that are not allowed by this action'))
                     ->addMoreInfo('too_dirty', $tooDirty)
-                    ->addMoreInfo('dirty', array_keys($dirty))
+                    ->addMoreInfo('dirty', $dirty)
                     ->addMoreInfo('permitted', $this->fields);
             }
         } elseif (!is_bool($this->fields)) {
