@@ -24,7 +24,9 @@ class UserAction
 {
     use DiContainerTrait;
     use InitializerTrait;
-    use TrackableTrait;
+    use TrackableTrait {
+        setOwner as private _setOwner;
+    }
 
     /** Defining records scope of the action */
     public const APPLIES_TO_NO_RECORDS = 'none'; // e.g. add
@@ -102,6 +104,47 @@ class UserAction
 
         return $owner;
     }
+    
+    private $checkpoint = null;
+    
+    public function setOwner(object $owner)
+    {
+        $ret = $this->_setOwner($owner);
+        if ($owner->isEntity()) {
+            foreach (array_keys($owner->getDirtyRef()) as $k) {
+                $this->checkpoint[$k] = $owner->get($k);
+            }
+        }
+        
+        return ($ret);
+    }
+
+    /**
+     * Returns what the owner's $dirty array would be if the provided checkpoint were the loaded record.
+     */
+    public function getDirtyVsCheckpoint(): array
+    {
+        $o = $this->getEntity();
+        $dirty = $o->getDirtyRef();
+        
+        if ($this->checkpoint == null) {
+            return $dirty;
+        }
+        
+        $diffs = $this->checkpoint;
+        foreach ($dirty as $k => $dVal) {
+            if (isset($diffs[$k])) {
+                if ($diffs[$k] === $o->get($k)) {
+                    unset($diffs[$k]);
+                }
+            } else {
+                $diffs[$k] = $dVal;
+            }
+        }
+        
+        return $diffs;
+    }
+    
 
     /**
      * @return static
@@ -167,12 +210,13 @@ class UserAction
 
         // Verify that model fields wouldn't be too dirty
         if (is_array($this->fields)) {
-            $tooDirty = array_diff(array_keys($this->getEntity()->getDirtyVsCheckpoint()), $this->fields);
+            $dirty = $this->getDirtyVsCheckpoint();
+            $tooDirty = array_diff(array_keys($dirty), $this->fields);
 
             if ($tooDirty) {
                 throw (new Exception('Calling user action on a Model with dirty fields that are not allowed by this action'))
                     ->addMoreInfo('too_dirty', $tooDirty)
-                    ->addMoreInfo('dirty', array_keys($this->getEntity()->getDirtyRef()))
+                    ->addMoreInfo('dirty', array_keys($dirty))
                     ->addMoreInfo('permitted', $this->fields);
             }
         } elseif (!is_bool($this->fields)) {

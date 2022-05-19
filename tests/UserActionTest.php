@@ -227,6 +227,19 @@ class UserActionTest extends TestCase
         $this->expectExceptionMessage('dirty fields');
         $client->getUserAction('change_details')->execute();
         $this->assertSame('Peter', $client->get('name'));
+
+        $client = new UaClient($this->pers);
+        $client->addField('npField', ['never_persist' => true]);
+        $client->onHook(Model::HOOK_AFTER_LOAD, function($m) {
+            $m->set('npField', 'exception');
+        });
+        $client->addUserAction('npOK', ['callback' => 'save']);
+            
+        $client = $client->load(1);
+
+        $client->set('name', 'Peter');
+        $client->getUserAction('change_details')->execute();
+        $this->assertSame('Peter', $client->get('name'));
     }
 
     public function testFieldsIncorrect(): void
