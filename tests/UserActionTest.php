@@ -230,11 +230,11 @@ class UserActionTest extends TestCase
 
         $client = new UaClient($this->pers);
         $client->addField('npField', ['never_persist' => true]);
-        $client->onHook(Model::HOOK_AFTER_LOAD, function ($m) {
+        $client->onHook(Model::HOOK_AFTER_LOAD, function($m) {
             $m->set('npField', 'exception');
         });
         $client->addUserAction('npOK', ['callback' => 'save']);
-
+            
         $client = $client->load(1);
 
         $client->set('name', 'Peter');
