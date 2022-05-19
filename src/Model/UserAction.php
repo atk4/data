@@ -104,9 +104,9 @@ class UserAction
 
         return $owner;
     }
-    
+
     private $checkpoint = null;
-    
+
     public function setOwner(object $owner)
     {
         $ret = $this->_setOwner($owner);
@@ -115,8 +115,8 @@ class UserAction
                 $this->checkpoint[$k] = $owner->get($k);
             }
         }
-        
-        return ($ret);
+
+        return $ret;
     }
 
     /**
@@ -126,11 +126,11 @@ class UserAction
     {
         $o = $this->getEntity();
         $dirty = $o->getDirtyRef();
-        
-        if ($this->checkpoint == null) {
+
+        if ($this->checkpoint === null) {
             return $dirty;
         }
-        
+
         $diffs = $this->checkpoint;
         foreach ($dirty as $k => $dVal) {
             if (isset($diffs[$k])) {
@@ -141,7 +141,7 @@ class UserAction
                 $diffs[$k] = $dVal;
             }
         }
-        
+
         return $diffs;
     }
     
