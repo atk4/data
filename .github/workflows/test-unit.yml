@@ -221,7 +221,7 @@ jobs:
           if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-mssql.cov; fi
 
       - name: "Run tests: Oracle - PDO (only for coverage or cron)"
-        if: (success() || failure()) && env.LOG_COVERAGE || github.event_name == 'schedule'
+        if: (success() || failure()) && (env.LOG_COVERAGE || github.event_name == 'schedule')
         env:
           DB_DSN: "pdo_oci:dbname=oracle/xe"
           DB_USER: system
