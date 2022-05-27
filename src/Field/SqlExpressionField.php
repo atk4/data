@@ -17,7 +17,7 @@ class SqlExpressionField extends Field
         init as private _init;
     }
 
-    /** @var \Closure|string|Expressionable Used expression. */
+    /** @var \Closure(Model, Expression): (string|Expressionable)|string|Expressionable Used expression. */
     public $expr;
 
     /** @var bool Expressions are always read_only. */
