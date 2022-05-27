@@ -83,7 +83,7 @@ class SqlExpressionField extends Field
 
             // Otherwise call it from expression itself
             return $expression->expr('([])', [$expression->expr($expr)]);
-        } elseif ($expr instanceof Expressionable && !$expr instanceof Expression) {
+        } elseif ($expr instanceof Expressionable && !$expr instanceof Expression) { // @phpstan-ignore-line
             return $expression->expr('[]', [$expr]);
         }
 
