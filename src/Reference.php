@@ -117,7 +117,7 @@ class Reference
 
     public function getTheirFieldName(): string
     {
-        return $this->their_field ?? $this->model->id_field;
+        return $this->their_field ?? Model::assertInstanceOf($this->model)->id_field;
     }
 
     protected function onHookToOurModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
