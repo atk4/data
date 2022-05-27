@@ -239,7 +239,8 @@ class ConditionSqlTest extends TestCase
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'gender' => 'M', 'contact_id' => 1],
                 2 => ['id' => 2, 'name' => 'Sue', 'surname' => 'Sue', 'gender' => 'F', 'contact_id' => 2],
                 3 => ['id' => 3, 'name' => 'Peter', 'surname' => 'Smith', 'gender' => 'M', 'contact_id' => 1],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+123 smiths'],
                 2 => ['id' => 2, 'contact_phone' => '+321 sues'],
             ],

@@ -23,7 +23,8 @@ class ReferenceSqlTest extends TestCase
                 1 => ['id' => 1, 'name' => 'John'],
                 2 => ['id' => 2, 'name' => 'Peter'],
                 3 => ['id' => 3, 'name' => 'Joe'],
-            ], 'order' => [
+            ],
+            'order' => [
                 ['amount' => '20', 'user_id' => 1],
                 ['amount' => '15', 'user_id' => 2],
                 ['amount' => '5', 'user_id' => 1],
@@ -84,7 +85,8 @@ class ReferenceSqlTest extends TestCase
                 ['name' => 'John', 'currency' => 'EUR'],
                 ['name' => 'Peter', 'currency' => 'GBP'],
                 ['name' => 'Joe', 'currency' => 'EUR'],
-            ], 'currency' => [
+            ],
+            'currency' => [
                 ['currency' => 'EUR', 'name' => 'Euro'],
                 ['currency' => 'USD', 'name' => 'Dollar'],
                 ['currency' => 'GBP', 'name' => 'Pound'],
@@ -129,7 +131,8 @@ class ReferenceSqlTest extends TestCase
                 1 => ['id' => 1, 'name' => 'John'],
                 2 => ['id' => 2, 'name' => 'Peter'],
                 3 => ['id' => 3, 'name' => 'Joe'],
-            ], 'order' => [
+            ],
+            'order' => [
                 ['amount' => '20', 'user_id' => 1],
                 ['amount' => '15', 'user_id' => 2],
                 ['amount' => '5', 'user_id' => 1],
@@ -167,7 +170,8 @@ class ReferenceSqlTest extends TestCase
                 1 => ['id' => 1, 'name' => 'John', 'date' => '2001-01-02'],
                 2 => ['id' => 2, 'name' => 'Peter', 'date' => '2004-08-20'],
                 3 => ['id' => 3, 'name' => 'Joe', 'date' => '2005-08-20'],
-            ], 'order' => [
+            ],
+            'order' => [
                 ['amount' => '20', 'user_id' => 1],
                 ['amount' => '15', 'user_id' => 2],
                 ['amount' => '5', 'user_id' => 1],
@@ -208,7 +212,8 @@ class ReferenceSqlTest extends TestCase
                 1 => ['id' => 1, 'ref_no' => 'INV203'],
                 2 => ['id' => 2, 'ref_no' => 'INV204'],
                 3 => ['id' => 3, 'ref_no' => 'INV205'],
-            ], 'invoice_line' => [
+            ],
+            'invoice_line' => [
                 ['total_net' => ($n = 10), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 1],
                 ['total_net' => ($n = 30), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 1],
                 ['total_net' => ($n = 100), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 2],
@@ -238,7 +243,8 @@ class ReferenceSqlTest extends TestCase
                 1 => ['id' => 1, 'ref_no' => 'INV203'],
                 2 => ['id' => 2, 'ref_no' => 'INV204'],
                 3 => ['id' => 3, 'ref_no' => 'INV205'],
-            ], 'invoice_line' => [
+            ],
+            'invoice_line' => [
                 ['total_net' => ($n = 10), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 1],
                 ['total_net' => ($n = 30), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 1],
                 ['total_net' => ($n = 100), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 2],
@@ -301,7 +307,8 @@ class ReferenceSqlTest extends TestCase
                 1 => ['id' => 1, 'name' => 'Meat'],
                 2 => ['id' => 2, 'name' => 'Veg'],
                 3 => ['id' => 3, 'name' => 'Fruit'],
-            ], 'item' => [
+            ],
+            'item' => [
                 ['name' => 'Apple', 'code' => 'ABC', 'list_id' => 3],
                 ['name' => 'Banana', 'code' => 'DEF', 'list_id' => 3],
                 ['name' => 'Pork', 'code' => 'GHI', 'list_id' => 1],
@@ -420,7 +427,8 @@ class ReferenceSqlTest extends TestCase
                 ['name' => 'John', 'contact_id' => 2],
                 ['name' => 'Peter', 'contact_id' => null],
                 ['name' => 'Joe', 'contact_id' => 3],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 ['address' => 'Sue contact'],
                 ['address' => 'John contact'],
                 ['address' => 'Joe contact'],
@@ -504,7 +512,8 @@ class ReferenceSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
-            ], 'order' => [
+            ],
+            'order' => [
                 ['amount' => '20', 'user_id' => 1],
                 ['amount' => '15', 'user_id' => 2],
             ],
@@ -542,7 +551,8 @@ class ReferenceSqlTest extends TestCase
                 1 => ['id' => 1, 'name' => 'John', 'last_name' => 'Doe'],
                 2 => ['id' => 2, 'name' => 'Peter', 'last_name' => 'Foo'],
                 3 => ['id' => 3, 'name' => 'Goofy', 'last_name' => 'Goo'],
-            ], 'order' => [
+            ],
+            'order' => [
                 1 => ['id' => 1, 'user_id' => 1],
                 2 => ['id' => 2, 'user_id' => 2],
                 3 => ['id' => 3, 'user_id' => 1],
@@ -667,25 +677,22 @@ class ReferenceSqlTest extends TestCase
     public function testHasOneReferenceType(): void
     {
         // restore DB
-        $this->setDb(
-            [
-                'user' => [
-                    1 => [
-                        'id' => 1,
-                        'name' => 'John',
-                        'last_name' => 'Doe',
-                        'some_number' => 3,
-                        'some_other_number' => 4,
-                    ],
+        $this->setDb([
+            'user' => [
+                1 => [
+                    'id' => 1,
+                    'name' => 'John',
+                    'last_name' => 'Doe',
+                    'some_number' => 3,
+                    'some_other_number' => 4,
                 ],
-                'order' => [
-                    1 => ['id' => 1, 'user_id' => 1],
-                ],
-            ]
-        );
-        $user = (new Model($this->db, ['table' => 'user']))->addFields(
-            ['name', 'last_name', 'some_number', 'some_other_number']
-        );
+            ],
+            'order' => [
+                1 => ['id' => 1, 'user_id' => 1],
+            ],
+        ]);
+        $user = (new Model($this->db, ['table' => 'user']))
+            ->addFields(['name', 'last_name', 'some_number', 'some_other_number']);
         $user->getField('some_number')->type = 'integer';
         $user->getField('some_other_number')->type = 'integer';
         $order = (new Model($this->db, ['table' => 'order']));
