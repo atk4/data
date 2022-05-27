@@ -513,7 +513,7 @@ class ReferenceSqlTest extends TestCase
         $p->hasOne('Stadium', ['model' => $s, 'our_field' => 'id', 'their_field' => 'player_id']);
 
         $p = $p->load(2);
-        $p->ref('Stadium')->import([['name' => 'Nou camp nou']]);
+        $p->ref('Stadium')->getModel()->import([['name' => 'Nou camp nou']]);
         $this->assertSame('Nou camp nou', $p->ref('Stadium')->get('name'));
         $this->assertSame(2, $p->ref('Stadium')->get('player_id'));
     }
