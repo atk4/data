@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
+use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
@@ -365,7 +366,7 @@ class ReferenceSqlTest extends TestCase
         $this->assertNull($ll->get('chicken5'));
     }
 
-    public function testReferenceHasOneTraversing(): void
+    protected function setupDbForTraversing(): Model
     {
         $this->setDb([
             'user' => [
@@ -396,9 +397,15 @@ class ReferenceSqlTest extends TestCase
 
         $company->hasMany('Orders', ['model' => $order]);
 
-        $user = $user->load(1);
+        return $user;
+    }
 
-        $firstUserOrders = $user->ref('Company')->ref('Orders');
+    public function testReferenceHasOneTraversing(): void
+    {
+        $user = $this->setupDbForTraversing();
+        $userEntity = $user->load(1);
+
+        $firstUserOrders = $userEntity->ref('Company')->ref('Orders');
         $firstUserOrders->setOrder('id');
 
         $this->assertSameExportUnordered([
@@ -406,13 +413,33 @@ class ReferenceSqlTest extends TestCase
             ['id' => 3, 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
         ], $firstUserOrders->export());
 
-        $user->unload();
+        $userEntity->unload();
 
         $this->assertSameExportUnordered([
             ['id' => 1, 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
             ['id' => 2, 'company_id' => '2', 'description' => 'Zoe Company Order', 'amount' => 10.0],
             ['id' => 3, 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
-        ], $user->ref('Company')->ref('Orders')->setOrder('id')->export());
+        ], $userEntity->getModel()->ref('Company')->ref('Orders')->setOrder('id')->export());
+    }
+
+    public function testUnloadedEntityTraversingHasOnedEx(): void
+    {
+        $user = $this->setupDbForTraversing();
+        $userEntity = $user->createEntity();
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Reference ID is expected to be NOT null');
+        $userEntity->ref('Company');
+    }
+
+    public function testUnloadedEntityTraversingHasManyEx(): void
+    {
+        $user = $this->setupDbForTraversing();
+        $companyEntity = $user->ref('Company')->createEntity();
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Reference ID is expected to be NOT null');
+        $companyEntity->ref('Orders');
     }
 
     public function testReferenceHook(): void
@@ -443,14 +470,14 @@ class ReferenceSqlTest extends TestCase
         $uu = $u->load(2);
         $this->assertNull($uu->get('address'));
         $this->assertNull($uu->get('contact_id'));
-        $this->assertNull($uu->ref('contact_id')->get('address'));
 
         $uu = $u->load(3);
         $this->assertSame('Joe contact', $uu->get('address'));
         $this->assertSame('Joe contact', $uu->ref('contact_id')->get('address'));
 
         $uu = $u->load(2);
-        $uu->ref('contact_id')->save(['address' => 'Peters new contact']);
+        $cc = $uu->getModel()->ref('contact_id')->createEntity()->save(['address' => 'Peters new contact']);
+        $uu->set('contact_id', $cc->getId());
 
         $this->assertNotNull($uu->get('contact_id'));
         $this->assertSame('Peters new contact', $uu->ref('contact_id')->get('address'));

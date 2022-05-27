@@ -88,30 +88,30 @@ class HasOne extends Reference
         });
 
         if ($ourModel->isEntity()) {
-            if ($ourValue = $this->getOurFieldValue($ourModel)) {
-                // if our model is loaded, then try to load referenced model
-                if ($this->their_field) {
-                    $theirModel = $theirModel->tryLoadBy($this->their_field, $ourValue);
-                } else {
-                    $theirModel = $theirModel->tryLoad($ourValue);
-                }
+            $ourValue = $this->getOurFieldValue($ourModel);
+            $this->assertReferenceIdNotNull($ourValue);
+
+            if ($this->their_field) {
+                $theirModel = $theirModel->tryLoadBy($this->their_field, $ourValue);
             } else {
-                $theirModel = $theirModel->createEntity();
+                $theirModel = $theirModel->tryLoad($ourValue);
             }
         }
 
         // their model will be reloaded after saving our model to reflect changes in referenced fields
         $theirModel->getModel(true)->reload_after_save = false;
 
-        $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function (Model $theirModel) use ($ourModel) {
-            $theirValue = $this->their_field ? $theirModel->get($this->their_field) : $theirModel->getId();
+        if ($ourModel->isEntity()) {
+            $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function (Model $theirModel) use ($ourModel) {
+                $theirValue = $this->their_field ? $theirModel->get($this->their_field) : $theirModel->getId();
 
-            if (!$this->getOurField()->compare($this->getOurFieldValue($ourModel), $theirValue)) {
-                $ourModel->set($this->getOurFieldName(), $theirValue)->save();
-            }
+                if (!$this->getOurField()->compare($this->getOurFieldValue($ourModel), $theirValue)) {
+                    $ourModel->set($this->getOurFieldName(), $theirValue)->save();
+                }
 
-            $theirModel->reload();
-        });
+                $theirModel->reload();
+            });
+        }
 
         return $theirModel;
     }
