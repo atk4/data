@@ -51,7 +51,7 @@ class HasMany extends Reference
             $res = $this->our_field
                 ? $ourModel->get($this->our_field)
                 : $ourModel->getId();
-            $this->assertReferenceIdNotNull($res);
+            $this->assertReferenceValueNotNull($res);
 
             return $res;
         }

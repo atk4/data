@@ -100,10 +100,10 @@ class Reference
     /**
      * @param mixed $value
      */
-    protected function assertReferenceIdNotNull($value): void
+    protected function assertReferenceValueNotNull($value): void
     {
         if ($value === null) {
-            throw (new Exception('Reference ID is expected to be NOT null'))
+            throw (new Exception('Unable to traverse on null value'))
                 ->addMoreInfo('value', $value);
         }
     }

@@ -428,7 +428,7 @@ class ReferenceSqlTest extends TestCase
         $userEntity = $user->createEntity();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Reference ID is expected to be NOT null');
+        $this->expectExceptionMessage('Unable to traverse on null value');
         $userEntity->ref('Company');
     }
 
@@ -438,7 +438,7 @@ class ReferenceSqlTest extends TestCase
         $companyEntity = $user->ref('Company')->createEntity();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Reference ID is expected to be NOT null');
+        $this->expectExceptionMessage('Unable to traverse on null value');
         $companyEntity->ref('Orders');
     }
 

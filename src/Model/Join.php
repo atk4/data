@@ -423,7 +423,7 @@ abstract class Join
     protected function assertReferenceIdNotNull($value): void
     {
         if ($value === null) {
-            throw (new Exception('Reference ID is expected to be NOT null'))
+            throw (new Exception('Unable to join on null value'))
                 ->addMoreInfo('value', $value);
         }
     }
