@@ -87,8 +87,8 @@ trait ExpressionTrait
                     $eDriver = $e->getPrevious();
                     if ($eDriver !== null && $eDriver instanceof DriverException && $eDriver->getCode() === 544) {
                         try {
-                            return $executeFx('set IDENTITY_INSERT [table_noalias] on;'
-                                . "\n" . 'insert[option] into [table_noalias] ([set_fields]) values ([set_values]);');
+                            return $executeFx('set IDENTITY_INSERT [table_noalias] on;' . "\n"
+                                . 'insert[option] into [table_noalias] ([set_fields]) values ([set_values]);');
                         } finally {
                             $executeFx('set IDENTITY_INSERT [table_noalias] off;');
                         }

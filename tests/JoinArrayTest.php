@@ -92,7 +92,8 @@ class JoinArrayTest extends TestCase
             'user' => [
                 1 => ['name' => 'John', 'contact_id' => 1],
                 2 => ['name' => 'Peter', 'contact_id' => 1],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['contact_phone' => '+123'],
             ],
         ], $this->getInternalPersistenceData($db));
@@ -108,7 +109,8 @@ class JoinArrayTest extends TestCase
                 1 => ['name' => 'John', 'contact_id' => 1],
                 2 => ['name' => 'Peter', 'contact_id' => 1],
                 3 => ['name' => 'Joe', 'contact_id' => 2],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['contact_phone' => '+123'],
                 2 => ['contact_phone' => '+321'],
             ],
@@ -142,7 +144,8 @@ class JoinArrayTest extends TestCase
             'user' => [
                 1 => ['name' => 'John'],
                 2 => ['name' => 'Peter'],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['test_id' => 1, 'contact_phone' => '+123'],
                 2 => ['test_id' => 2, 'contact_phone' => null],
             ],
@@ -162,7 +165,8 @@ class JoinArrayTest extends TestCase
                 1 => ['name' => 'John'],
                 2 => ['name' => 'Peter'],
                 3 => ['name' => 'Sue'],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['test_id' => 1, 'contact_phone' => '+123'],
                 3 => ['test_id' => 3, 'contact_phone' => '+444'],
             ],
@@ -219,7 +223,8 @@ class JoinArrayTest extends TestCase
                 1 => ['name' => 'John', 'contact_id' => 1],
                 2 => ['name' => 'Peter', 'contact_id' => 1],
                 3 => ['name' => 'Joe', 'contact_id' => 2],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['contact_phone' => '+123'],
                 2 => ['contact_phone' => '+321'],
             ],
@@ -253,7 +258,8 @@ class JoinArrayTest extends TestCase
                 1 => ['name' => 'John', 'contact_id' => 1],
                 2 => ['name' => 'Peter', 'contact_id' => 1],
                 3 => ['name' => 'Joe', 'contact_id' => 2],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['contact_phone' => '+123'],
                 2 => ['contact_phone' => '+321'],
             ],
@@ -274,7 +280,8 @@ class JoinArrayTest extends TestCase
                 1 => ['name' => 'John 2', 'contact_id' => 1],
                 2 => ['name' => 'Peter', 'contact_id' => 1],
                 3 => ['name' => 'Joe', 'contact_id' => 2],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['contact_phone' => '+555'],
                 2 => ['contact_phone' => '+321'],
             ],
@@ -290,7 +297,8 @@ class JoinArrayTest extends TestCase
                 1 => ['name' => 'John 2', 'contact_id' => 1],
                 2 => ['name' => 'Peter', 'contact_id' => 1],
                 3 => ['name' => 'XX', 'contact_id' => 2],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['contact_phone' => '+555'],
                 2 => ['contact_phone' => '+999'],
             ],
@@ -307,7 +315,8 @@ class JoinArrayTest extends TestCase
                 2 => ['name' => 'Peter', 'contact_id' => 1],
                 3 => ['name' => 'XX', 'contact_id' => 2],
                 4 => ['name' => 'YYY', 'contact_id' => 3],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['contact_phone' => '+555'],
                 2 => ['contact_phone' => '+999'],
                 3 => ['contact_phone' => '+777'],
@@ -323,7 +332,8 @@ class JoinArrayTest extends TestCase
                 2 => ['name' => 'Peter', 'contact_id' => 1],
                 3 => ['name' => 'XX', 'contact_id' => 2],
                 4 => ['name' => 'YYY', 'contact_id' => 3],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['contact_phone' => '+555'],
                 2 => ['contact_phone' => '+999'],
                 3 => ['contact_phone' => '+777'],
@@ -343,7 +353,8 @@ class JoinArrayTest extends TestCase
                 2 => ['name' => 'Peter', 'contact_id' => 1],
                 3 => ['name' => 'XX', 'contact_id' => 2],
                 4 => ['name' => 'YYY', 'contact_id' => 3],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 2 => ['contact_phone' => '+999'],
                 3 => ['contact_phone' => '+777'],
             ],
@@ -357,7 +368,8 @@ class JoinArrayTest extends TestCase
                 2 => ['name' => 'Peter', 'contact_id' => 1],
                 3 => ['name' => 'XX', 'contact_id' => 2],
                 4 => ['name' => 'YYY', 'contact_id' => 3],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 2 => ['contact_phone' => '+999'],
                 3 => ['contact_phone' => '+777'],
             ],
