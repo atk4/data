@@ -57,6 +57,9 @@
     "suggest": {
         "jdorn/sql-formatter": "*"
     },
+    "conflict": {
+        "jdorn/sql-formatter": "<1.2.9"
+    },
     "minimum-stability": "dev",
     "prefer-stable": true,
     "autoload": {
