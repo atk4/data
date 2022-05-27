@@ -48,7 +48,7 @@ trait ExpressionTrait
      */
     public function execute(object $connection = null): DbalResult
     {
-        $templateStr = preg_replace('~^\s*begin\s+(.+)\s+end\s*$~is', '$1', $this->template ?? 'select...'); // @phpstan-ignore-line
+        $templateStr = preg_replace('~^\s*begin\s+(.+?)\s+end\s*$~is', '$1', $this->template ?? 'select...'); // @phpstan-ignore-line
         if (preg_match('~^(.*?)begin\s+try(.+?)end\s+try\s+begin\s+catch(.+)end\s+catch(.*?)$~is', $templateStr, $matches)) {
             $executeFx = function (string $template) use ($connection): DbalResult {
                 $thisCloned = clone $this;
@@ -63,17 +63,34 @@ trait ExpressionTrait
             $templateTry = trim($matches[2]);
             $templateAfter = trim($matches[4]);
 
-            if ($templateBefore === '' && $templateAfter === '' && preg_match('~^\s+if ERROR_NUMBER\(\)\s*=\s*544\s+begin\s*(.+?)\s*end\s+else\s+begin\s+throw;\s*end\s+$~is', $matches[3], $matches2)) {
-                $templateCatch = 'set IDENTITY_INSERT [table_noalias] on;'
-                    . "\n" . 'insert[option] into [table_noalias] ([set_fields]) values ([set_values]);';
-                $templateCatchFinally = 'set IDENTITY_INSERT [table_noalias] off;';
-                $executeCatchFx = function (\Exception $e) use ($executeFx, $templateCatch, $templateCatchFinally): DbalResult {
+            $expectedInsertTemplate = <<<'EOF'
+                begin try
+                  insert[option] into [table_noalias] ([set_fields]) values ([set_values]);
+                end try begin catch
+                  if ERROR_NUMBER() = 544 begin
+                    set IDENTITY_INSERT [table_noalias] on;
+                    begin try
+                      insert[option] into [table_noalias] ([set_fields]) values ([set_values]);
+                      set IDENTITY_INSERT [table_noalias] off;
+                    end try begin catch
+                      set IDENTITY_INSERT [table_noalias] off;
+                      throw;
+                    end catch
+                  end else begin
+                    throw;
+                  end
+                end catch
+                EOF;
+
+            if ($templateBefore === '' && $templateAfter === '' && $templateStr === $expectedInsertTemplate) {
+                $executeCatchFx = function (\Exception $e) use ($executeFx): DbalResult {
                     $eDriver = $e->getPrevious();
                     if ($eDriver !== null && $eDriver instanceof DriverException && $eDriver->getCode() === 544) {
                         try {
-                            return $executeFx($templateCatch);
+                            return $executeFx('set IDENTITY_INSERT [table_noalias] on;'
+                                . "\n" . 'insert[option] into [table_noalias] ([set_fields]) values ([set_values]);');
                         } finally {
-                            $executeFx($templateCatchFinally);
+                            $executeFx('set IDENTITY_INSERT [table_noalias] off;');
                         }
                     }
 
@@ -84,9 +101,7 @@ trait ExpressionTrait
             }
 
             try {
-                $res = $executeFx($templateTry);
-
-                return $res;
+                return $executeFx($templateTry);
             } catch (\Exception $e) {
                 return $executeCatchFx($e);
             }
