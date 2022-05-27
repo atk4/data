@@ -418,6 +418,17 @@ abstract class Join
     */
 
     /**
+     * @param mixed $value
+     */
+    protected function assertReferenceIdNotNull($value): void
+    {
+        if ($value === null) {
+            throw (new Exception('Unable to join on null value'))
+                ->addMoreInfo('value', $value);
+        }
+    }
+
+    /**
      * @return mixed
      *
      * @internal should be not used outside atk4/data
@@ -434,6 +445,8 @@ abstract class Join
      */
     protected function setId(Model $entity, $id): void
     {
+        $this->assertReferenceIdNotNull($id);
+
         $this->idByOid[spl_object_id($entity)] = $id;
     }
 
@@ -530,12 +543,14 @@ abstract class Join
             return;
         }
 
-        $this->setSaveBufferValue($entity, $this->foreign_field, $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId()); // TODO needed? from array persistence
+        $id = $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId();
+        $this->assertReferenceIdNotNull($id);
+        $this->setSaveBufferValue($entity, $this->foreign_field, $id); // TODO needed? from array persistence
 
         $foreignModel = $this->getForeignModel();
         $foreignEntity = $foreignModel->createEntity()
             ->setMulti($this->getAndUnsetSaveBuffer($entity))
-            ->set($this->foreign_field, $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId());
+            ->set($this->foreign_field, $id);
         $foreignEntity->save();
 
         $this->setId($entity, $entity->getId()); // TODO why is this here? it seems to be not needed
@@ -553,6 +568,7 @@ abstract class Join
 
         $foreignModel = $this->getForeignModel();
         $foreignId = $this->reverse ? $entity->getId() : $entity->get($this->master_field);
+        $this->assertReferenceIdNotNull($foreignId);
         $saveBuffer = $this->getAndUnsetSaveBuffer($entity);
         $foreignModel->atomic(function () use ($foreignModel, $foreignId, $saveBuffer) {
             $foreignModel = (clone $foreignModel)->addCondition($this->foreign_field, $foreignId);
@@ -573,6 +589,7 @@ abstract class Join
 
         $foreignModel = $this->getForeignModel();
         $foreignId = $this->reverse ? $entity->getId() : $entity->get($this->master_field);
+        $this->assertReferenceIdNotNull($foreignId);
         $foreignModel->atomic(function () use ($foreignModel, $foreignId) {
             $foreignModel = (clone $foreignModel)->addCondition($this->foreign_field, $foreignId);
             foreach ($foreignModel as $foreignEntity) {

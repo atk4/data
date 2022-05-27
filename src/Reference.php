@@ -97,6 +97,17 @@ class Reference
         return $this->_setOwner($owner);
     }
 
+    /**
+     * @param mixed $value
+     */
+    protected function assertReferenceValueNotNull($value): void
+    {
+        if ($value === null) {
+            throw (new Exception('Unable to traverse on null value'))
+                ->addMoreInfo('value', $value);
+        }
+    }
+
     protected function getOurFieldName(): string
     {
         return $this->our_field ?: $this->getOurModel(null)->id_field;
