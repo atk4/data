@@ -6,6 +6,7 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Schema\TestCase;
 use Atk4\Data\Tests\ContainsMany\Invoice;
+use Atk4\Data\Tests\ContainsMany\Line;
 use Atk4\Data\Tests\ContainsMany\VatRate;
 
 /**
@@ -74,16 +75,16 @@ class ContainsManyTest extends TestCase
         $this->assertSame('My Invoice Lines', $i->lines->getModelCaption());
     }
 
-    /**
-     * Test containsMany.
-     */
     public function testContainsMany(): void
     {
         $i = new Invoice($this->db);
         $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
 
+        $this->assertSame(Line::class, get_class($i->getModel()->lines));
+
         // now let's add some lines
         $l = $i->lines;
+        $this->assertNotNull($l);
         $rows = [
             1 => [
                 $l->fieldName()->id => 1,

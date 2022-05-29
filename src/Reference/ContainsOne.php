@@ -94,11 +94,13 @@ class ContainsOne extends Reference
             });
         }
 
-        $theirModelOrig = $theirModel;
-        $theirModel = $theirModel->tryLoadOne();
+        if ($ourModel->isEntity()) {
+            $theirModelOrig = $theirModel;
+            $theirModel = $theirModel->tryLoadOne();
 
-        if ($theirModel === null) { // TODO or implement tryRef?
-            $theirModel = $theirModelOrig->createEntity();
+            if ($theirModel === null) { // TODO or implement tryRef?
+                $theirModel = $theirModelOrig->createEntity();
+            }
         }
 
         return $theirModel;

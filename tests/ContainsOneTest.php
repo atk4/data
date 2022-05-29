@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests;
 
 use Atk4\Data\Schema\TestCase;
+use Atk4\Data\Tests\ContainsOne\Address;
 use Atk4\Data\Tests\ContainsOne\Country;
 use Atk4\Data\Tests\ContainsOne\Invoice;
 
@@ -64,8 +65,8 @@ class ContainsOneTest extends TestCase
      */
     public function testModelCaption(): void
     {
-        $this->markTestSkipped('ContainsOne need to be fixed, non-entity must be returned when traversing non-entity');
-        $a = (new Invoice($this->db))->addr;
+        $i = new Invoice($this->db);
+        $a = $i->ref($i->fieldName()->addr);
 
         // test caption of containsOne reference
         $this->assertSame('Secret Code', $a->getField($a->fieldName()->door_code)->getCaption());
@@ -73,18 +74,16 @@ class ContainsOneTest extends TestCase
         $this->assertSame('Secret Code', $a->door_code->getModelCaption());
     }
 
-    /**
-     * Test containsOne.
-     */
     public function testContainsOne(): void
     {
         $i = new Invoice($this->db);
         $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
 
+        $this->assertSame(Address::class, get_class($i->getModel()->addr));
+
         // check do we have address set
-        $this->markTestSkipped('ContainsOne need to be fixed, non-entity must be returned when traversing non-entity');
         $this->assertNull($i->addr);
-        $a = $i->getModel()->addr->createEntity();
+        $a = $i->ref($i->fieldName()->addr);
 
         // now store some address
         $a->setMulti($row = [
@@ -107,7 +106,7 @@ class ContainsOneTest extends TestCase
         $this->assertSame('bar', $i->addr->address);
 
         // now add nested containsOne - DoorCode
-        $c = $i->addr->door_code;
+        $c = $i->addr->ref($i->addr->fieldName()->door_code);
         $c->setMulti($row = [
             $c->fieldName()->id => 1,
             $c->fieldName()->code => 'ABC',
@@ -154,12 +153,12 @@ class ContainsOneTest extends TestCase
         // so far so good. now let's try to delete door_code
         $i->addr->door_code->delete();
         $this->assertNull($i->addr->get($i->addr->fieldName()->door_code));
-        $this->assertFalse($i->addr->door_code->isLoaded());
+        $this->assertNull($i->addr->door_code);
 
         // and now delete address
         $i->addr->delete();
         $this->assertNull($i->get($i->fieldName()->addr));
-        $this->assertFalse($i->addr->isLoaded());
+        $this->assertNull($i->addr);
     }
 
     /**
@@ -171,9 +170,8 @@ class ContainsOneTest extends TestCase
         $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
 
         // with address
-        $this->markTestSkipped('ContainsOne need to be fixed, non-entity must be returned when traversing non-entity');
         $this->assertNull($i->addr);
-        $a = $i->getModel()->addr->createEntity();
+        $a = $i->ref($i->fieldName()->addr);
         $a->setMulti($row = [
             $a->fieldName()->id => 1,
             $a->fieldName()->country_id => 1,
