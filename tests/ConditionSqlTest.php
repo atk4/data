@@ -33,7 +33,7 @@ class ConditionSqlTest extends TestCase
         $mm2 = $mm->tryLoad(1);
         $this->assertSame('John', $mm2->get('name'));
         $mm2 = $mm->tryLoad(2);
-        $this->assertNull($mm2->get('name'));
+        $this->assertNull($mm2);
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
@@ -43,9 +43,9 @@ class ConditionSqlTest extends TestCase
         }
 
         $mm = clone $m;
-        $mm->withId(2); // = addCondition(id, 2)
+        $mm->withId(2); // = addCondition('id', 2)
         $mm2 = $mm->tryLoad(1);
-        $this->assertNull($mm2->get('name'));
+        $this->assertNull($mm2);
         $mm2 = $mm->tryLoad(2);
         $this->assertSame('Sue', $mm2->get('name'));
     }
