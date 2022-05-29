@@ -7,6 +7,7 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Schema\TestCase;
 use Atk4\Data\Tests\ContainsOne\Address;
 use Atk4\Data\Tests\ContainsOne\Country;
+use Atk4\Data\Tests\ContainsOne\DoorCode;
 use Atk4\Data\Tests\ContainsOne\Invoice;
 
 /**
@@ -108,6 +109,7 @@ class ContainsOneTest extends TestCase
         $this->assertSame('bar', $i->addr->address);
 
         // now add nested containsOne - DoorCode
+        /** @var DoorCode */
         $c = $i->addr->ref($i->addr->fieldName()->door_code);
         $c->setMulti($row = [
             $c->fieldName()->id => 1,
