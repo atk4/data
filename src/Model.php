@@ -91,9 +91,9 @@ class Model implements \IteratorAggregate
     public const HOOK_ONLY_FIELDS = self::class . '@onlyFields';
 
     /** @const string */
-    protected const ID_LOAD_ONE = self::class . '@idLoadOne';
+    protected const ID_LOAD_ONE = self::class . '@idLoadOne-h7axmDNBB3qVXjVv';
     /** @const string */
-    protected const ID_LOAD_ANY = self::class . '@idLoadAny';
+    protected const ID_LOAD_ANY = self::class . '@idLoadAny-h7axmDNBB3qVXjVv';
 
     // {{{ Properties of the class
 
