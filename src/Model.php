@@ -91,9 +91,9 @@ class Model implements \IteratorAggregate
     public const HOOK_ONLY_FIELDS = self::class . '@onlyFields';
 
     /** @const string */
-    protected const ID_LOAD_ONE = self::class . '@idLoadOne';
+    protected const ID_LOAD_ONE = self::class . '@idLoadOne-h7axmDNBB3qVXjVv';
     /** @const string */
-    protected const ID_LOAD_ANY = self::class . '@idLoadAny';
+    protected const ID_LOAD_ANY = self::class . '@idLoadAny-h7axmDNBB3qVXjVv';
 
     // {{{ Properties of the class
 
@@ -1234,9 +1234,9 @@ class Model implements \IteratorAggregate
     /**
      * @param mixed $id
      *
-     * @return $this
+     * @return ($fromTryLoad is true ? $this|null : $this)
      */
-    private function _loadThis(bool $isTryLoad, $id)
+    private function _loadThis(bool $fromTryLoad, $id)
     {
         $this->assertIsEntity();
         if ($this->isLoaded()) {
@@ -1250,21 +1250,27 @@ class Model implements \IteratorAggregate
             return $this;
         }
         $dataRef = &$this->getDataRef();
-        $dataRef = $this->persistence->{$isTryLoad ? 'tryLoad' : 'load'}($this->getModel(), $this->remapIdLoadToPersistence($id));
-        if ($isTryLoad && $dataRef === null) {
-            $dataRef = [];
-            $this->unload();
-        } else {
-            if ($this->id_field) {
-                $this->setId($this->getId());
+        $dataRef = $this->persistence->{$fromTryLoad ? 'tryLoad' : 'load'}($this->getModel(), $this->remapIdLoadToPersistence($id));
+
+        if ($dataRef === null) {
+            // $fromTryLoad is always true here
+
+            return null;
+        }
+
+        if ($this->id_field) {
+            $this->setId($this->getId());
+        }
+
+        $ret = $this->hook(self::HOOK_AFTER_LOAD);
+        if ($ret === false) {
+            if ($fromTryLoad) {
+                return null;
             }
 
-            $ret = $this->hook(self::HOOK_AFTER_LOAD);
-            if ($ret === false) {
-                $this->unload();
-            } elseif (is_object($ret)) {
-                return $ret; // @phpstan-ignore-line
-            }
+            $this->unload();
+        } elseif (is_object($ret)) {
+            return $ret; // @phpstan-ignore-line
         }
 
         return $this;

@@ -885,7 +885,7 @@ class ArrayTest extends TestCase
         $m->addField('name');
         $m->addField('surname');
         $m = $m->tryLoadAny();
-        $this->assertFalse($m->isLoaded());
+        $this->assertNull($m);
     }
 
     public function testTryLoadAnyReturnsFirstRecord(): void

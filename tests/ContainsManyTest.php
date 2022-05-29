@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
-use Atk4\Data\Exception;
 use Atk4\Data\Schema\TestCase;
 use Atk4\Data\Tests\ContainsMany\Invoice;
+use Atk4\Data\Tests\ContainsMany\Line;
 use Atk4\Data\Tests\ContainsMany\VatRate;
 
 /**
@@ -75,16 +75,16 @@ class ContainsManyTest extends TestCase
         $this->assertSame('My Invoice Lines', $i->lines->getModelCaption());
     }
 
-    /**
-     * Test containsMany.
-     */
     public function testContainsMany(): void
     {
         $i = new Invoice($this->db);
         $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
 
+        $this->assertSame(Line::class, get_class($i->getModel()->lines));
+
         // now let's add some lines
         $l = $i->lines;
+        $this->assertNotNull($l);
         $rows = [
             1 => [
                 $l->fieldName()->id => 1,
@@ -171,18 +171,6 @@ class ContainsManyTest extends TestCase
         $i->reload(); // we need to reload invoice for changes in lines to be recalculated
         $this->assertSame(10 * 2 * (1 + 21 / 100) + 40 * 1 * (1 + 21 / 100) + 50 * 3 * (1 + 15 / 100), $i->total_gross); // = 245.1
     }
-
-    /**
-     * Model should be loaded before traversing to containsMany relation.
-     */
-    /* Imants: it looks that this is not actually required - disabling
-    public function testEx1(): void
-    {
-        $i = new Invoice($this->db);
-        $this->expectException(Exception::class);
-        $i->lines;
-    }
-    */
 
     /**
      * Nested containsMany tests.

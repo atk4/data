@@ -66,7 +66,7 @@ There are several ways to link your model up with the persistence::
 
 .. php:method:: tryLoad
 
-    Same as load() but will silently fail if record is not found::
+    Same as load() but will return null if record is not found::
 
         $m = $m->tryLoad(10);
         $m->setMulti($data);
@@ -482,7 +482,7 @@ Start by creating a beforeSave handler for Order::
                     ->addCondition('client_id', $this->get('client_id'))  // same client
                     ->addCondition($this->id_field, '!=', $this->getId()) // has another order
                     ->tryLoadBy('ref', $this->get('ref'))                 // with same ref
-                    ->isLoaded()
+                    !== null
             ) {
                 throw (new Exception('Order with ref already exists for this client'))
                     ->addMoreInfo('client', $this->get('client_id'))
@@ -580,8 +580,7 @@ application::
         // first, try to load it from MemCache
         $m = $this->mdb->add(clone $class)->tryLoad($id);
 
-        if (!$m->isLoaded()) {
-
+        if ($m === null) {
             // fall-back to load from SQL
             $m = $this->sql->add(clone $class)->load($id);
 
@@ -589,11 +588,11 @@ application::
             $m = $m->withPersistence($this->mdb)->save();
         }
 
-        $m->onHook(Model::HOOK_BEFORE_SAVE, function($m) {
+        $m->onHook(Model::HOOK_BEFORE_SAVE, function ($m) {
             $m->withPersistence($this->sql)->save();
         });
 
-        $m->onHook(Model::HOOK_BEFORE_DELETE, function($m) {
+        $m->onHook(Model::HOOK_BEFORE_DELETE, function ($m) {
             $m->withPersistence($this->sql)->delete();
         });
 
@@ -618,8 +617,7 @@ use a string). It will first be associated with the MemCache DB persistence and
 we will attempt to load a corresponding ID. Next, if no record is found in the
 cache::
 
-    if (!$m->isLoaded()) {
-
+    if ($m === null) {
         // fall-back to load from SQL
         $m = $this->sql->add(clone $class)->load($id);
 
@@ -634,11 +632,11 @@ records.
 The last two hooks are in order to replicate any changes into the SQL database
 also::
 
-    $m->onHook(Model::HOOK_BEFORE_SAVE, function($m) {
+    $m->onHook(Model::HOOK_BEFORE_SAVE, function ($m) {
         $m->withPersistence($this->sql)->save();
     });
 
-    $m->onHook(Model::HOOK_BEFORE_DELETE, function($m) {
+    $m->onHook(Model::HOOK_BEFORE_DELETE, function ($m) {
         $m->withPersistence($this->sql)->delete();
     });
 
@@ -690,7 +688,7 @@ Archive Copies into different persistence
 If you wish that every time you save your model the copy is also stored inside
 some other database (for archive purposes) you can implement it like this::
 
-    $m->onHook(Model::HOOK_BEFORE_SAVE, function($m) {
+    $m->onHook(Model::HOOK_BEFORE_SAVE, function ($m) {
         $arc = $this->withPersistence($m->getApp()->archive_db, false);
 
         // add some audit fields

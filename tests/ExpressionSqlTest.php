@@ -151,7 +151,7 @@ class ExpressionSqlTest extends TestCase
         );
 
         $mm = $m->tryLoad(1);
-        $this->assertNull($mm->get('name'));
+        $this->assertNull($mm);
         $mm = $m->tryLoad(2);
         $this->assertSame('Sue', $mm->get('name'));
     }

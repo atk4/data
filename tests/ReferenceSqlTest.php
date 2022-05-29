@@ -43,17 +43,17 @@ class ReferenceSqlTest extends TestCase
         $ooo = $oo->tryLoad(1);
         $this->assertEquals(20, $ooo->get('amount'));
         $ooo = $oo->tryLoad(2);
-        $this->assertNull($ooo->get('amount'));
+        $this->assertNull($ooo);
         $ooo = $oo->tryLoad(3);
         $this->assertEquals(5, $ooo->get('amount'));
 
         $oo = $u->load(2)->ref('Orders');
         $ooo = $oo->tryLoad(1);
-        $this->assertNull($ooo->get('amount'));
+        $this->assertNull($ooo);
         $ooo = $oo->tryLoad(2);
         $this->assertEquals(15, $ooo->get('amount'));
         $ooo = $oo->tryLoad(3);
-        $this->assertNull($ooo->get('amount'));
+        $this->assertNull($ooo);
 
         $oo = $u->addCondition('id', '>', '1')->ref('Orders');
 
