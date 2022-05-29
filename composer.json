@@ -50,7 +50,7 @@
         "friendsofphp/php-cs-fixer": "^3.0",
         "johnkary/phpunit-speedtrap": "^3.3",
         "phpstan/extension-installer": "^1.1",
-        "phpstan/phpstan": "^1.0",
+        "phpstan/phpstan": "^1.6",
         "phpstan/phpstan-deprecation-rules": "^1.0",
         "phpunit/phpunit": "^9.5.5"
     },
