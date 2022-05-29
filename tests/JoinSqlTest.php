@@ -206,10 +206,12 @@ class JoinSqlTest extends TestCase
             'id' => 3, 'name' => 'Joe', 'contact_id' => '2', 'contact_phone' => '+321',
         ], $m_u2->get());
 
-        $m_u2 = $m_u->tryLoad(4);
+        $m_u2 = $m_u2->unload();
         $this->assertSame([
             'id' => null, 'name' => null, 'contact_id' => null, 'contact_phone' => null,
         ], $m_u2->get());
+
+        $this->assertNull($m_u->tryLoad(4));
     }
 
     public function testJoinUpdate(): void
@@ -283,7 +285,7 @@ class JoinSqlTest extends TestCase
             ],
         ], $this->getDb());
 
-        $m_u2 = $m_u->tryLoad(4);
+        $m_u2 = $m_u->createEntity();
         $m_u2->set('name', 'YYY');
         $m_u2->set('contact_phone', '+777');
         $m_u2->save();
@@ -409,7 +411,7 @@ class JoinSqlTest extends TestCase
         $m_u2->set('country_name', 'USA');
         $m_u2->save();
 
-        $m_u2 = $m_u->tryLoad(40);
+        $m_u2 = $m_u2->unload();
         $this->assertFalse($m_u2->isLoaded());
 
         $this->assertSame($m_u2->getModel()->getField('country_id')->getJoin(), $m_u2->getModel()->getField('contact_phone')->getJoin());

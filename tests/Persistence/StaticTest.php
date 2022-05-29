@@ -99,8 +99,7 @@ class StaticTest extends TestCase
         $m = new Model($p);
 
         $m = $m->tryLoadAny();
-
-        $this->assertFalse($m->isLoaded());
+        $this->assertNull($m);
     }
 
     public function testCustomField(): void

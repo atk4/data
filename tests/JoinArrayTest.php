@@ -245,10 +245,12 @@ class JoinArrayTest extends TestCase
             'id' => 3, 'contact_id' => 2, 'name' => 'Joe', 'contact_phone' => '+321',
         ], $m_u2->get());
 
-        $m_u2 = $m_u->tryLoad(4);
+        $m_u2 = $m_u2->unload();
         $this->assertSame([
             'id' => null, 'contact_id' => null, 'name' => null, 'contact_phone' => null,
         ], $m_u2->get());
+
+        $this->assertNull($m_u->tryLoad(4));
     }
 
     public function testJoinUpdate(): void
@@ -304,7 +306,7 @@ class JoinArrayTest extends TestCase
             ],
         ], $this->getInternalPersistenceData($db));
 
-        $m_u2 = $m_u->tryLoad(4);
+        $m_u2 = $m_u->createEntity();
         $m_u2->set('name', 'YYY');
         $m_u2->set('contact_phone', '+777');
         $m_u2->save();
