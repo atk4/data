@@ -66,6 +66,7 @@ class ContainsOneTest extends TestCase
     public function testModelCaption(): void
     {
         $i = new Invoice($this->db);
+        /** @var Address */
         $a = $i->ref($i->fieldName()->addr);
 
         // test caption of containsOne reference
@@ -83,6 +84,7 @@ class ContainsOneTest extends TestCase
 
         // check do we have address set
         $this->assertNull($i->addr);
+        /** @var Address */
         $a = $i->ref($i->fieldName()->addr);
 
         // now store some address
@@ -171,6 +173,7 @@ class ContainsOneTest extends TestCase
 
         // with address
         $this->assertNull($i->addr);
+        /** @var Address */
         $a = $i->ref($i->fieldName()->addr);
         $a->setMulti($row = [
             $a->fieldName()->id => 1,
