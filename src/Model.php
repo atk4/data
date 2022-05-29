@@ -1253,7 +1253,7 @@ class Model implements \IteratorAggregate
         $dataRef = $this->persistence->{$fromTryLoad ? 'tryLoad' : 'load'}($this->getModel(), $this->remapIdLoadToPersistence($id));
 
         if ($dataRef === null) {
-            // $fromTryLoad is true here
+            // $fromTryLoad is always true here
 
             return null;
         }
