@@ -124,5 +124,6 @@ class ReferenceTest extends TestCase
 
         $user->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
         $user->ref('Orders');
+        $this->assertSame('noexception', 'noexception');
     }
 }
