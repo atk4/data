@@ -120,6 +120,8 @@ class ContainsManyTest extends TestCase
         $this->assertSameExportUnordered($rows, $i->lines->export());
         $i->reload();
         $this->assertSameExportUnordered($rows, $i->lines->export());
+        $i = $i->getModel()->load($i->getId());
+        $this->assertSameExportUnordered($rows, $i->lines->export());
 
         // now let's delete line with id=2 and add one more line
         $i->lines

@@ -80,17 +80,20 @@ class ContainsOne extends Reference
         $ourModel = $this->getOurModel($ourModel);
 
         $theirModel = $this->createTheirModel(array_merge($defaults, [
-            'contained_in_root_model' => $ourModel->contained_in_root_model ?: $ourModel,
+            'containedInEntity' => $ourModel->isEntity() ? $ourModel : null,
             'table' => $this->table_alias,
         ]));
 
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
-            $this->onHookToTheirModel($theirModel, $spot, function (Model $theirModel) use ($ourModel) {
+            $this->onHookToTheirModel($theirModel, $spot, function (Model $theirModel) {
+                $ourModel = $this->getOurModel($theirModel->containedInEntity);
+                $ourModel->assertIsEntity();
+
                 /** @var Persistence\Array_ */
                 $persistence = $theirModel->persistence;
                 $row = $persistence->getRawDataByTable($theirModel, $this->table_alias);
                 $row = $row ? array_shift($row) : null; // get first and only one record from array persistence
-                $this->getOurModel($ourModel)->save([$this->getOurFieldName() => $row]);
+                $ourModel->save([$this->getOurFieldName() => $row]);
             });
         }
 

@@ -185,9 +185,6 @@ class Model implements \IteratorAggregate
      * updating the model. This property is intended for UI and other code
      * detecting read-only models and acting accordingly.
      *
-     * SECURITY WARNING: If you are looking for a RELIABLE way to restrict access
-     * to model data, please check Secure Enclave extension.
-     *
      * @var bool
      */
     public $read_only = false;
@@ -259,13 +256,13 @@ class Model implements \IteratorAggregate
     public $reload_after_save;
 
     /**
-     * If this model is "contained into" another model by using containsOne
-     * or containsMany reference, then this property will contain reference
-     * to top most parent model.
+     * If this model is "contained into" another entity by using ContainsOne
+     * or ContainsMany reference, then this property will contain reference
+     * to owning entity.
      *
      * @var Model|null
      */
-    public $contained_in_root_model;
+    public $containedInEntity;
 
     /** @var Reference Only for Reference class */
     public $ownerReference;
@@ -318,7 +315,7 @@ class Model implements \IteratorAggregate
         if ($expectedModelInstance !== null && $expectedModelInstance !== $this) {
             $expectedModelInstance->assertIsModel();
 
-            throw new Exception('Unexpected entity model instance');
+            throw new Exception('Model instance does not match');
         }
     }
 
@@ -388,6 +385,8 @@ class Model implements \IteratorAggregate
 
                 'ownerReference', // should be removed once references/joins are non-entity
                 'userActions', // should be removed once user actions are non-entity
+
+                'containedInEntity',
             ] as $name) {
                 unset($modelOnlyProperties[$name]);
             }

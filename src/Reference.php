@@ -263,11 +263,11 @@ class Reference
     {
         $ourModel = $this->getOurModel(null);
 
-        // this will be useful for containsOne/Many implementation in case when you have
+        // this is useful for ContainsOne/Many implementation in case when you have
         // SQL_Model->containsOne()->hasOne() structure to get back to SQL persistence
-        // from Array persistence used in containsOne model
-        if ($ourModel->contained_in_root_model && $ourModel->contained_in_root_model->persistence) {
-            return $ourModel->contained_in_root_model->persistence;
+        // from Array persistence used in ContainsOne model
+        if ($ourModel->containedInEntity && $ourModel->containedInEntity->persistence) {
+            return $ourModel->containedInEntity->persistence;
         }
 
         return $ourModel->persistence ?: false;
