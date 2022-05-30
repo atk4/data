@@ -7,7 +7,6 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Schema\TestCase;
 use Atk4\Data\Tests\ContainsOne\Address;
 use Atk4\Data\Tests\ContainsOne\Country;
-use Atk4\Data\Tests\ContainsOne\DoorCode;
 use Atk4\Data\Tests\ContainsOne\Invoice;
 
 /**
@@ -67,8 +66,7 @@ class ContainsOneTest extends TestCase
     public function testModelCaption(): void
     {
         $i = new Invoice($this->db);
-        /** @var Address */
-        $a = $i->ref($i->fieldName()->addr);
+        $a = $i->addr;
 
         // test caption of containsOne reference
         $this->assertSame('Secret Code', $a->getField($a->fieldName()->door_code)->getCaption());
@@ -85,8 +83,8 @@ class ContainsOneTest extends TestCase
 
         // check do we have address set
         $this->assertNull($i->addr);
-        /** @var Address */
-        $a = $i->ref($i->fieldName()->addr);
+        $a = $i->getModel()->addr->createEntity();
+        $a->containedInEntity = $i;
 
         // now store some address
         $a->setMulti($row = [
@@ -103,14 +101,17 @@ class ContainsOneTest extends TestCase
         $this->assertEquals($row, $i->addr->get());
         $i->reload();
         $this->assertEquals($row, $i->addr->get());
+        $i = $i->getModel()->load($i->getId());
+        $this->assertEquals($row, $i->addr->get());
 
         // now try to change some field in address
         $i->addr->set($i->addr->fieldName()->address, 'bar')->save();
         $this->assertSame('bar', $i->addr->address);
 
         // now add nested containsOne - DoorCode
-        /** @var DoorCode */
-        $c = $i->addr->ref($i->addr->fieldName()->door_code);
+        $iEntity = $i->addr;
+        $c = $iEntity->getModel()->door_code->createEntity();
+        $c->containedInEntity = $iEntity;
         $c->setMulti($row = [
             $c->fieldName()->id => 1,
             $c->fieldName()->code => 'ABC',
@@ -175,8 +176,8 @@ class ContainsOneTest extends TestCase
 
         // with address
         $this->assertNull($i->addr);
-        /** @var Address */
-        $a = $i->ref($i->fieldName()->addr);
+        $a = $i->getModel()->addr->createEntity();
+        $a->containedInEntity = $i;
         $a->setMulti($row = [
             $a->fieldName()->id => 1,
             $a->fieldName()->country_id => 1,
