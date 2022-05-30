@@ -265,7 +265,7 @@ class Model implements \IteratorAggregate
      *
      * @var Model|null
      */
-    public $contained_in_root_model;
+    public $containedInEntity;
 
     /** @var Reference Only for Reference class */
     public $ownerReference;

@@ -32,7 +32,7 @@ class ContainsMany extends ContainsOne
 
         // get model
         $theirModel = $this->createTheirModel(array_merge($defaults, [
-            'contained_in_root_model' => $ourModel->contained_in_root_model ?: $ourModel,
+            'containedInEntity' => $ourModel->containedInEntity ?: $ourModel,
             'table' => $this->table_alias,
         ]));
 
