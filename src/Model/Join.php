@@ -351,12 +351,6 @@ abstract class Join
      */
     public function hasMany(string $link, array $defaults = [])
     {
-        $id_field = $this->getOwner()->id_field;
-        $defaults = array_merge([
-            'our_field' => $id_field,
-            'their_field' => $this->getModelTableString($this->getOwner()) . '_' . $id_field,
-        ], $defaults);
-
         return $this->getOwner()->hasMany($link, $defaults);
     }
 
