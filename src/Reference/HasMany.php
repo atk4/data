@@ -20,7 +20,7 @@ class HasMany extends Reference
         return $model->table;
     }
 
-    public function getTheirFieldName(): string
+    public function getTheirFieldName(Model $theirModel = null): string
     {
         if ($this->their_field) {
             return $this->their_field;

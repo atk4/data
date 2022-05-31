@@ -417,9 +417,19 @@ class ReferenceSqlTest extends TestCase
         ], $userEntity->getModel()->ref('Company')->ref('Orders')->export());
     }
 
-    public function testUnloadedEntityTraversingHasOnedEx(): void
+    public function testUnloadedEntityTraversingHasOne(): void
     {
         $user = $this->setupDbForTraversing();
+        $userEntity = $user->createEntity();
+
+        $companyEntity = $userEntity->ref('Company');
+        $this->assertFalse($companyEntity->isLoaded());
+    }
+
+    public function testUnloadedEntityTraversingHasOneEx(): void
+    {
+        $user = $this->setupDbForTraversing();
+        $user->getRef('Company')->setDefaults(['our_field' => 'id']);
         $userEntity = $user->createEntity();
 
         $this->expectException(Exception::class);
@@ -465,14 +475,14 @@ class ReferenceSqlTest extends TestCase
         $uu = $u->load(2);
         $this->assertNull($uu->get('address'));
         $this->assertNull($uu->get('contact_id'));
+        $this->assertNull($uu->ref('contact_id')->get('address'));
 
         $uu = $u->load(3);
         $this->assertSame('Joe contact', $uu->get('address'));
         $this->assertSame('Joe contact', $uu->ref('contact_id')->get('address'));
 
         $uu = $u->load(2);
-        $cc = $uu->getModel()->ref('contact_id')->createEntity()->save(['address' => 'Peters new contact']);
-        $uu->set('contact_id', $cc->getId());
+        $uu->ref('contact_id')->save(['address' => 'Peters new contact']);
 
         $this->assertNotNull($uu->get('contact_id'));
         $this->assertSame('Peters new contact', $uu->ref('contact_id')->get('address'));

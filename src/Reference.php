@@ -126,9 +126,9 @@ class Reference
         return $this->getOurModel($ourEntity)->get($this->getOurFieldName());
     }
 
-    public function getTheirFieldName(): string
+    public function getTheirFieldName(Model $theirModel = null): string
     {
-        return $this->their_field ?? Model::assertInstanceOf($this->model)->id_field;
+        return $this->their_field ?? ($theirModel ?? Model::assertInstanceOf($this->model))->id_field;
     }
 
     protected function onHookToOurModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int

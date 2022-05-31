@@ -1463,11 +1463,15 @@ class Model implements \IteratorAggregate
     /**
      * @param mixed $value
      *
-     * @return static|null
+     * @return ($fromTryLoad is true ? static|null : static)
      */
-    private function _loadBy(bool $isTryLoad, string $fieldName, $value)
+    private function _loadBy(bool $fromTryLoad, string $fieldName, $value)
     {
         $this->assertIsModel();
+
+        if ($fieldName === $this->id_field) { // optimization only
+            return $this->{$fromTryLoad ? 'tryLoad' : 'load'}($value);
+        }
 
         $field = $this->getField($fieldName);
 
@@ -1478,7 +1482,7 @@ class Model implements \IteratorAggregate
             $this->scope = clone $this->scope;
             $this->addCondition($field, $value);
 
-            return $this->{$isTryLoad ? 'tryLoadOne' : 'loadOne'}();
+            return $this->{$fromTryLoad ? 'tryLoadOne' : 'loadOne'}();
         } finally {
             $this->scope = $scopeBak;
             $field->system = $systemBak;

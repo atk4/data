@@ -89,16 +89,26 @@ class HasOne extends Reference
 
         if ($ourModel->isEntity()) {
             $ourValue = $this->getOurFieldValue($ourModel);
-            $this->assertReferenceValueNotNull($ourValue);
 
-            $theirModelOrig = $theirModel;
-            if ($this->their_field) {
-                $theirModel = $theirModel->tryLoadBy($this->their_field, $ourValue);
+            if ($this->getOurFieldName() === $ourModel->id_field) {
+                $this->assertReferenceValueNotNull($ourValue);
+                $tryLoad = true;
             } else {
-                $theirModel = $theirModel->tryLoad($ourValue);
+                $tryLoad = false;
             }
 
-            if ($theirModel === null) { // TODO or implement tryRef?
+            $theirModelOrig = $theirModel;
+            if ($ourValue === null) {
+                $theirModel = null;
+            } else {
+                $theirModel->addCondition($this->getTheirFieldName($theirModel), $ourValue);
+
+                $theirModel = $tryLoad
+                    ? $theirModel->tryLoadOne()
+                    : $theirModel->loadOne();
+            }
+
+            if ($theirModel === null) {
                 $theirModel = $theirModelOrig->createEntity();
             }
         }
