@@ -123,7 +123,6 @@ class ReferenceTest extends TestCase
         $order->addField('user_id');
 
         $user->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
-        $user->ref('Orders');
-        $this->assertSame('noexception', 'noexception');
+        $this->assertSame($user->getRef('Orders')->getTheirFieldName(), 'user_id');
     }
 }
