@@ -115,4 +115,14 @@ class ReferenceTest extends TestCase
 
         $this->assertSame('user_archive', $m->ref('archive')->table);
     }
+
+    public function testOtherDbFieldRef(): void
+    {
+        $user = new Model($this->db, ['table' => 'thisdb.user']);
+        $order = new Model($this->db, ['table' => 'otherdb.orders']);
+        $order->addField('user_id');
+
+        $user->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
+        $this->assertSame($user->getRef('Orders')->getTheirFieldName(), 'user_id');
+    }
 }
