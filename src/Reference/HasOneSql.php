@@ -99,10 +99,7 @@ class HasOneSql extends HasOne
     {
         $theirModel = $this->createTheirModel($defaults);
 
-        $theirModel->addCondition(
-            $this->their_field ?: $theirModel->id_field,
-            $this->referenceOurValue()
-        );
+        $theirModel->addCondition($this->getTheirFieldName($theirModel), $this->referenceOurValue());
 
         return $theirModel;
     }
@@ -115,17 +112,14 @@ class HasOneSql extends HasOne
         $theirModel = parent::ref($ourModel, $defaults);
         $ourModel = $this->getOurModel($ourModel);
 
-        $theirFieldName = $this->their_field ?? $theirModel->id_field; // TODO why not $this->getTheirFieldName() ?
-
-        if ($ourModel->isEntity()) {
-            $theirModel->getModel()
-                ->addCondition($theirFieldName, $this->getOurFieldValue($ourModel));
+        if ($ourModel->isEntity() && $this->getOurFieldValue($ourModel) !== null) {
+            // materialized condition already added in parent/HasOne class
         } else {
-            // handles the deep traversal using an expression
+            // handle deep traversal using an expression
             $ourFieldExpression = $ourModel->action('field', [$this->getOurField()]);
 
             $theirModel->getModel(true)
-                ->addCondition($theirFieldName, $ourFieldExpression);
+                ->addCondition($this->getTheirFieldName($theirModel), $ourFieldExpression);
         }
 
         return $theirModel;
