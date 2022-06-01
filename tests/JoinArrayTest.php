@@ -385,16 +385,19 @@ class JoinArrayTest extends TestCase
         $m_u = $m_u->load(2);
     }
 
-    /*
-    public function testTrickyCases(): void
+    public function testForeignFieldNameGuessTableWithSchema(): void
     {
         $db = new Persistence\Array_();
-        $m = new Model($db);
 
-        // tricky cases to testt
-        //
-        //$m->join('foo.bar', ['master_field' => 'baz']);
-        // foreign_table = 'foo.bar'
+        $m = new Model($db, ['table' => 'db.user']);
+        $j = $m->join('contact');
+        $this->assertFalse($this->getProtected($j, 'reverse'));
+        $this->assertSame('contact_id', $this->getProtected($j, 'master_field'));
+        $this->assertSame('id', $this->getProtected($j, 'foreign_field'));
+
+        $j = $m->join('contact2', ['reverse' => true]);
+        $this->assertTrue($this->getProtected($j, 'reverse'));
+        $this->assertSame('id', $this->getProtected($j, 'master_field'));
+        $this->assertSame('user_id', $this->getProtected($j, 'foreign_field'));
     }
-    */
 }

@@ -103,6 +103,8 @@ abstract class Join
         $this->foreign_table = $foreignTable;
 
         // handle foreign table containing a dot - that will be reverse join
+        // TODO this table split condition makes JoinArrayTest::testForeignFieldNameGuessTableWithSchema test
+        // quite unconsistent - drop it?
         if (str_contains($this->foreign_table, '.')) {
             // split by LAST dot in foreign_table name
             [$this->foreign_table, $this->foreign_field] = preg_split('~\.+(?=[^.]+$)~', $this->foreign_table);
@@ -238,7 +240,7 @@ abstract class Join
             }
 
             if (!$this->foreign_field) {
-                $this->foreign_field = $this->getModelTableString($this->getOwner()) . '_' . $id_field;
+                $this->foreign_field = preg_replace('~^.+?\.~', '', $this->getModelTableString($this->getOwner())) . '_' . $id_field;
             }
         } else {
             $this->reverse = false;
