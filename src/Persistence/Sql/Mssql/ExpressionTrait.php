@@ -46,17 +46,17 @@ trait ExpressionTrait
      *
      * Remove once https://github.com/microsoft/msphpsql/issues/1387 is fixed and released.
      */
-    public function execute(object $connection = null): DbalResult
+    public function execute(object $connection = null, bool $fromExecuteStatement = null)
     {
         $templateStr = preg_replace('~^\s*begin\s+(.+?)\s+end\s*$~is', '$1', $this->template ?? 'select...'); // @phpstan-ignore-line
         if (preg_match('~^(.*?)begin\s+try(.+?)end\s+try\s+begin\s+catch(.+)end\s+catch(.*?)$~is', $templateStr, $matches)) {
-            $executeFx = function (string $template) use ($connection): DbalResult {
+            $executeFx = function (string $template) use ($connection, $fromExecuteStatement): DbalResult {
                 $thisCloned = clone $this;
                 $thisCloned->template = !str_contains(trim(trim($template), ';'), ';')
                     ? $template
                     : 'BEGIN' . "\n" . $template . "\n" . 'END';
 
-                return $thisCloned->execute($connection);
+                return $thisCloned->execute($connection, $fromExecuteStatement);
             };
 
             $templateBefore = trim($matches[1]);
@@ -107,6 +107,6 @@ trait ExpressionTrait
             }
         }
 
-        return parent::execute($connection);
+        return parent::execute($connection, $fromExecuteStatement);
     }
 }
