@@ -11,7 +11,7 @@ trait PlatformTrait
 {
     public function getVarcharTypeDeclarationSQL(array $column)
     {
-        $column['length'] = ($column['length'] ?? $this->getVarcharDefaultLength()) * 4;
+        $column['length'] = ($column['length'] ?? 255) * 4;
 
         return parent::getVarcharTypeDeclarationSQL($column);
     }
@@ -21,8 +21,7 @@ trait PlatformTrait
 
     public function getBinaryTypeDeclarationSQL(array $column)
     {
-        $lengthEncodedAscii = ($column['length'] ?? $this->getBinaryDefaultLength()) * 2
-            + strlen('atk__binary__u5f8mzx4vsm8g2c9__' . hash('crc32b', ''));
+        $lengthEncodedAscii = ($column['length'] ?? 255) * 2 + strlen('atk__binary__u5f8mzx4vsm8g2c9__' . hash('crc32b', ''));
         $column['length'] = intdiv($lengthEncodedAscii + 3, 4);
 
         return $this->getVarcharTypeDeclarationSQL($column);

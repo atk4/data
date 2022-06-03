@@ -8,7 +8,7 @@ trait PlatformTrait
 {
     public function getVarcharTypeDeclarationSQL(array $column)
     {
-        $column['length'] = ($column['length'] ?? $this->getVarcharDefaultLength()) * 4;
+        $column['length'] = ($column['length'] ?? 255) * 4;
 
         return parent::getVarcharTypeDeclarationSQL($column);
     }
