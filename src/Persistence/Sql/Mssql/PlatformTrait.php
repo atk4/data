@@ -6,6 +6,13 @@ namespace Atk4\Data\Persistence\Sql\Mssql;
 
 trait PlatformTrait
 {
+    public function getVarcharTypeDeclarationSQL(array $column)
+    {
+        $column['length'] = ($column['length'] ?? $this->getVarcharDefaultLength()) * 4;
+
+        return parent::getVarcharTypeDeclarationSQL($column);
+    }
+
     // remove once https://github.com/doctrine/dbal/pull/4987 is fixed
     // and also $this->markDoctrineTypeCommented('text') below
     public function getClobTypeDeclarationSQL(array $column)

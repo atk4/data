@@ -9,17 +9,23 @@ use Doctrine\DBAL\Schema\Sequence;
 
 trait PlatformTrait
 {
-    protected function getVarcharTypeDeclarationSQLSnippet($length, $fixed)
+    public function getVarcharTypeDeclarationSQL(array $column)
     {
-        return parent::getVarcharTypeDeclarationSQLSnippet($length * 4, $fixed);
+        $column['length'] = ($column['length'] ?? $this->getVarcharDefaultLength()) * 4;
+
+        return parent::getVarcharTypeDeclarationSQL($column);
     }
 
     // Oracle database requires explicit conversion when using binary column,
     // workaround by using a standard non-binary column with custom encoding/typecast
 
-    protected function getBinaryTypeDeclarationSQLSnippet($length, $fixed)
+    public function getBinaryTypeDeclarationSQL(array $column)
     {
-        return $this->getVarcharTypeDeclarationSQLSnippet($length * 2 + strlen('atk__binary__u5f8mzx4vsm8g2c9__' . hash('crc32b', '')), $fixed);
+        $lengthEncodedAscii = ($column['length'] ?? $this->getBinaryDefaultLength()) * 2
+            + strlen('atk__binary__u5f8mzx4vsm8g2c9__' . hash('crc32b', ''));
+        $column['length'] = intdiv($lengthEncodedAscii + 3, 4);
+
+        return $this->getVarcharTypeDeclarationSQL($column);
     }
 
     public function getBlobTypeDeclarationSQL(array $column)

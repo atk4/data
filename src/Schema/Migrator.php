@@ -154,10 +154,6 @@ class Migrator
             if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
                 $column->setPlatformOption('collation', 'NOCASE');
             }
-
-            if ($this->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\SQLServerPlatform) {
-                $column->setLength(4 * ($column->getLength() ?? 255));
-            }
         }
 
         if ($refType === self::REF_TYPE_PRIMARY) {
