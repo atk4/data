@@ -170,6 +170,13 @@ class RemoveVirtualInterfacesFromStaticReturnTypeDmrtExtension implements Dynami
         return $this->getTypeFromMethodCall($methodReflection, $methodCall, $scope);
     }
 
+    /*
+     * Implement https://github.com/phpstan/phpstan/issues/7385 until supported officially.
+     *
+     * Then remove TypeSpecifierAwareExtension, MethodTypeSpecifyingExtension, StaticMethodTypeSpecifyingExtension
+     * and remove optional parameters from isMethodSupported/isStaticMethodSupported prototypes.
+     */
+
     protected TypeSpecifier $typeSpecifier;
 
     public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void
@@ -178,8 +185,6 @@ class RemoveVirtualInterfacesFromStaticReturnTypeDmrtExtension implements Dynami
     }
 
     /**
-     * Implement https://github.com/phpstan/phpstan/issues/7385 until supported officially.
-     *
      * @param MethodCall|StaticCall $methodCall
      */
     public function specifyTypes(MethodReflection $methodReflection, CallLike $methodCall, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
@@ -194,7 +199,39 @@ class RemoveVirtualInterfacesFromStaticReturnTypeDmrtExtension implements Dynami
                 return $this->typeSpecifier->create($expr, $type, TypeSpecifierContext::createTruthy());
             }
         } else {
-            // $methodCall->class var
+            if ($methodReflection->getName() === 'assertIsModel') {
+                $expr = $methodCall->var;
+                $type = $this->removeVirtualInterfacesFromType($scope->getType($expr));
+
+                return $this->typeSpecifier->create($expr, $type, TypeSpecifierContext::createTruthy());
+            } elseif ($methodReflection->getName() === 'assertIsEntity') {
+                $expr = $methodCall->var;
+                $type = TypeCombinator::intersect(
+                    $scope->getType($expr),
+                    new ObjectType(IsEntity::class)
+                );
+
+                return $this->typeSpecifier->create($expr, $type, TypeSpecifierContext::createTruthy());
+            } elseif ($methodReflection->getName() === 'assertIsLoaded') {
+                $expr = $methodCall->var;
+                $type = TypeCombinator::intersect(
+                    $this->removeVirtualInterfacesFromType($scope->getType($expr)),
+                    new ObjectType(IsLoaded::class)
+                );
+
+                return $this->typeSpecifier->create($expr, $type, TypeSpecifierContext::createTruthy());
+            } elseif ($methodReflection->getName() === 'unload') {
+                $expr = $methodCall->var;
+                $type = TypeCombinator::remove(
+                    TypeCombinator::intersect(
+                        $this->removeVirtualInterfacesFromType($scope->getType($expr)),
+                        new ObjectType(IsEntity::class)
+                    ),
+                    new ObjectType(IsLoaded::class)
+                );
+
+                return $this->typeSpecifier->create($expr, $type, TypeSpecifierContext::createTruthy());
+            }
         }
 
         return new SpecifiedTypes();
