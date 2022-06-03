@@ -644,7 +644,7 @@ class Expression implements Expressionable, \ArrayAccess
      */
     public function executeQuery(object $connection = null): DbalResult
     {
-        return $this->execute($connection, false);
+        return $this->execute($connection, false); // @phpstan-ignore-line
     }
 
     /**
@@ -654,7 +654,7 @@ class Expression implements Expressionable, \ArrayAccess
      */
     public function executeStatement(object $connection = null): int
     {
-        return $this->execute($connection, true);
+        return $this->execute($connection, true); // @phpstan-ignore-line
     }
 
     // {{{ Result Querying
