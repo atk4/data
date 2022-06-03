@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Atk4\Data\Persistence\Sql\Mssql;
 
 use Doctrine\DBAL\Exception\DriverException;
-use Doctrine\DBAL\Result as DbalResult;
 
 trait ExpressionTrait
 {
@@ -50,7 +49,7 @@ trait ExpressionTrait
     {
         $templateStr = preg_replace('~^\s*begin\s+(.+?)\s+end\s*$~is', '$1', $this->template ?? 'select...'); // @phpstan-ignore-line
         if (preg_match('~^(.*?)begin\s+try(.+?)end\s+try\s+begin\s+catch(.+)end\s+catch(.*?)$~is', $templateStr, $matches)) {
-            $executeFx = function (string $template) use ($connection, $fromExecuteStatement): DbalResult {
+            $executeFx = function (string $template) use ($connection, $fromExecuteStatement) {
                 $thisCloned = clone $this;
                 $thisCloned->template = !str_contains(trim(trim($template), ';'), ';')
                     ? $template
@@ -83,7 +82,7 @@ trait ExpressionTrait
                 EOF;
 
             if ($templateBefore === '' && $templateAfter === '' && $templateStr === $expectedInsertTemplate) {
-                $executeCatchFx = function (\Exception $e) use ($executeFx): DbalResult {
+                $executeCatchFx = function (\Exception $e) use ($executeFx) {
                     $eDriver = $e->getPrevious();
                     if ($eDriver !== null && $eDriver instanceof DriverException && $eDriver->getCode() === 544) {
                         try {
