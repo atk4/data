@@ -318,11 +318,13 @@ class RandomTest extends TestCase
         $m->onHook(Model::HOOK_BEFORE_LOAD, static function (Model $m, int $id) {
             $m->setId($id);
             $m->set('name', 'rec #' . $id);
-            $m->breakHook(false);
+
+            $m->breakHook($m);
         });
 
         $m->onHook(Model::HOOK_BEFORE_DELETE, static function (Model $m) {
             $m->unload();
+
             $m->breakHook(false);
         });
 
