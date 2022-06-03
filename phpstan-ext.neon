@@ -10,7 +10,7 @@ services:
     -
         factory: Atk4\Data\Model\Phpstan\RemoveVirtualInterfacesFromStaticReturnTypeDmrtExtension(Atk4\Data\Model, Atk4\Data\Model\Phpstan\PhpdocTypeInterface)
         tags:
-            - phpstan.typeSpecifier.MethodTypeSpecifyingExtension
+            - phpstan.typeSpecifier.methodTypeSpecifyingExtension
     -
         factory: Atk4\Data\Model\Phpstan\RemoveVirtualInterfacesFromStaticReturnTypeDmrtExtension(Atk4\Data\Model, Atk4\Data\Model\Phpstan\PhpdocTypeInterface)
         tags:
