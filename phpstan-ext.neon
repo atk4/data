@@ -1,0 +1,9 @@
+services:
+    -
+        factory: Atk4\Data\Model\Phpstan\RemoveVirtualInterfacesFromStaticReturnTypeDmrtExtension(Atk4\Data\Model, Atk4\Data\Model\Phpstan\PhpdocTypeInterface)
+        tags:
+            - phpstan.broker.dynamicMethodReturnTypeExtension
+    -
+        factory: Atk4\Data\Model\Phpstan\RemoveVirtualInterfacesFromStaticReturnTypeDmrtExtension(Atk4\Data\Model, Atk4\Data\Model\Phpstan\PhpdocTypeInterface)
+        tags:
+            - phpstan.broker.dynamicStaticMethodReturnTypeExtension
