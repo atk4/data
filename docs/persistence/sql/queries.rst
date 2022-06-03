@@ -91,11 +91,11 @@ to re-use your query efficiently::
     if ($row) {
         $query
             ->set('revision', $query->expr('revision + 1'))
-            ->mode('update')->execute();
+            ->mode('update')->executeStatement();
     } else {
         $query
             ->set('revision', 1)
-            ->mode('insert')->execute();
+            ->mode('insert')->executeStatement();
     }
 
 The example above will perform a select query first:
@@ -665,10 +665,10 @@ Set value to a field
 
 Example::
 
-    $q->table('user')->set('name', 'john')->mode('insert')->execute();
+    $q->table('user')->set('name', 'john')->mode('insert')->executeStatement();
         // insert into user (name) values (john)
 
-    $q->table('log')->set('date', $q->expr('now()'))->mode('insert')->execute();
+    $q->table('log')->set('date', $q->expr('now()'))->mode('insert')->executeStatement();
         // insert into log (date) values (now())
 
 Method can be executed several times on the same Query object.
@@ -782,8 +782,8 @@ Other Methods
         ->option('calc_found_rows') // for default select mode
         ->option('ignore', 'insert') // for insert mode;
 
-    $q->execute(); // select calc_found_rows `name` from `test`
-    $q->mode('insert')->execute(); // insert ignore into `test` (`name`) values (`name` = 'John')
+    $q->executeQuery(); // select calc_found_rows `name` from `test`
+    $q->mode('insert')->executeStatement(); // insert ignore into `test` (`name`) values (`name` = 'John')
 
 .. php:method:: _set_args($what, $alias, $value)
 

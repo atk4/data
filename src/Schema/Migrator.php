@@ -123,7 +123,7 @@ class Migrator
         if ($this->getDatabasePlatform() instanceof OraclePlatform) {
             $dropTriggerSql = $this->getDatabasePlatform()->getDropAutoincrementSql($this->table->getName())[1];
             try {
-                $this->connection->expr($dropTriggerSql)->execute();
+                $this->connection->expr($dropTriggerSql)->executeStatement();
             } catch (Exception $e) {
             }
         }

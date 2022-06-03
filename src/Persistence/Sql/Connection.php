@@ -325,15 +325,29 @@ abstract class Connection
     }
 
     /**
-     * Execute Expression by using this connection.
+     * Execute Expression by using this connection and return result.
      */
-    public function execute(Expression $expr): DbalResult
+    public function executeQuery(Expression $expr): DbalResult
     {
         if ($this->connection === null) {
             throw new Exception('DBAL connection is not set');
         }
 
-        return $expr->execute($this->connection);
+        return $expr->executeQuery($this->connection);
+    }
+
+    /**
+     * Execute Expression by using this connection and return affected rows.
+     *
+     * @phpstan-return int<0, max>
+     */
+    public function executeStatement(Expression $expr): int
+    {
+        if ($this->connection === null) {
+            throw new Exception('DBAL connection is not set');
+        }
+
+        return $expr->executeStatement($this->connection);
     }
 
     /**

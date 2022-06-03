@@ -38,7 +38,7 @@ abstract class TestCase extends BaseTestCase
         if ($this->db->getDatabasePlatform() instanceof MySQLPlatform) {
             $this->db->connection->expr(
                 'SET SESSION auto_increment_increment = 1, SESSION auto_increment_offset = 1'
-            )->execute();
+            )->executeStatement();
         }
 
         $this->db->connection->connection()->getConfiguration()->setSQLLogger(
@@ -296,7 +296,7 @@ abstract class TestCase extends BaseTestCase
                             $query->set($idColumnName, $id);
                         }
 
-                        $query->mode('insert')->execute();
+                        $query->mode('insert')->executeStatement();
                     }
                 });
             }
