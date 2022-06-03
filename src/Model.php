@@ -1256,7 +1256,7 @@ class Model implements \IteratorAggregate
 
             return null;
         } elseif (is_object($res)) {
-            (static::class)::assertInstanceOf($res);
+            $res = (static::class)::assertInstanceOf($res);
             $res->assertIsEntity();
 
             return $res;
@@ -1282,7 +1282,7 @@ class Model implements \IteratorAggregate
 
             return null;
         } elseif (is_object($res)) {
-            (static::class)::assertInstanceOf($res);
+            $res = (static::class)::assertInstanceOf($res);
             $res->assertIsEntity();
 
             return $res;
@@ -1818,7 +1818,7 @@ class Model implements \IteratorAggregate
             if ($res === false) {
                 continue;
             } elseif (is_object($res)) {
-                (static::class)::assertInstanceOf($this);
+                $res = (static::class)::assertInstanceOf($res);
                 $res->assertIsEntity();
             } else {
                 $res = $thisCloned;
