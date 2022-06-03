@@ -27,12 +27,19 @@ class ModelPhpstanTest extends TestCase
         $this->assertSamePhpstanType(Model::class, $entity->getModel());
 
         if (PhpstanUtil::alwaysFalseAnalyseOnly()) {
+            $model->assertIsEntity();
+            $this->assertSamePhpstanType(Model::class . '&' . IsEntity::class, $model);
+            $model->assertIsModel();
+            $this->assertSamePhpstanType(Model::class, $model);
+
             $entity = $model->load(1);
             $this->assertSamePhpstanType(Model::class . '&' . IsLoaded::class, $entity);
-
             $entity->unload();
-            // TODO must implement custom phpstan ext
-//            $this->assertSamePhpstanType(Model::class . '&' . IsEntity::class, $entity);
+            $this->assertSamePhpstanType(Model::class . '&' . IsEntity::class, $entity);
+            $entity->assertIsLoaded();
+            $this->assertSamePhpstanType(Model::class . '&' . IsLoaded::class, $entity);
+            $entity->assertIsEntity();
+            $this->assertSamePhpstanType(Model::class . '&' . IsLoaded::class, $entity);
         }
 
         // model and entity is mutually exclusive
@@ -50,12 +57,19 @@ class ModelPhpstanTest extends TestCase
         $this->assertSamePhpstanType(Female::class . '|' . Male::class, $entity->getModel());
 
         if (PhpstanUtil::alwaysFalseAnalyseOnly()) {
+            $model->assertIsEntity();
+            $this->assertSamePhpstanType('(' . IsEntity::class . '&' . Female::class . ')|(' . IsEntity::class . '&' . Male::class . ')', $model);
+            $model->assertIsModel();
+            $this->assertSamePhpstanType(Female::class . '|' . Male::class, $model);
+
             $entity = $model->load(1);
             $this->assertSamePhpstanType('(' . IsLoaded::class . '&' . Female::class . ')|(' . IsLoaded::class . '&' . Male::class . ')', $entity);
-
             $entity->unload();
-            // TODO must implement custom phpstan ext
-//            $this->assertSamePhpstanType('(' . IsEntity::class . '&' . Female::class . ')|(' . IsEntity::class . '&' . Male::class . ')', $entity);
+            $this->assertSamePhpstanType('(' . IsEntity::class . '&' . Female::class . ')|(' . IsEntity::class . '&' . Male::class . ')', $entity);
+            $entity->assertIsLoaded();
+            $this->assertSamePhpstanType('(' . IsLoaded::class . '&' . Female::class . ')|(' . IsLoaded::class . '&' . Male::class . ')', $entity);
+            $entity->assertIsEntity();
+            $this->assertSamePhpstanType('(' . IsLoaded::class . '&' . Female::class . ')|(' . IsLoaded::class . '&' . Male::class . ')', $entity);
         }
     }
 }
