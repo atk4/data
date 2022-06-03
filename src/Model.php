@@ -1234,9 +1234,9 @@ class Model implements \IteratorAggregate
      * @param ($fromTryLoad is true ? false : bool) $fromReload
      * @param mixed $id
      *
-     * @return ($fromTryLoad is true ? $this|null : $this)
+     * @return ($fromTryLoad is true ? static|null : static)
      */
-    private function _loadThis(bool $fromReload, bool $fromTryLoad, $id)
+    private function _load(bool $fromReload, bool $fromTryLoad, $id)
     {
         $this->assertIsEntity();
         if ($this->isLoaded()) {
@@ -1302,7 +1302,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsModel();
 
-        return $this->createEntity()->_loadThis(false, true, $id);
+        return $this->createEntity()->_load(false, true, $id);
     }
 
     /**
@@ -1316,7 +1316,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsModel();
 
-        return $this->createEntity()->_loadThis(false, false, $id);
+        return $this->createEntity()->_load(false, false, $id);
     }
 
     /**
@@ -1373,7 +1373,7 @@ class Model implements \IteratorAggregate
         $id = $this->getId();
         $this->unload();
 
-        $res = $this->_loadThis(true, false, $id);
+        $res = $this->_load(true, false, $id);
         if ($res !== $this) {
             throw new Exception('Entity instance does not match');
         }
