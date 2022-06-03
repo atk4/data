@@ -94,7 +94,6 @@ class UserAction
     {
         /** @var Model */
         $owner = $this->getOwner();
-
         $owner->assertIsEntity();
 
         return $owner;

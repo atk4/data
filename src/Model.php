@@ -1231,11 +1231,12 @@ class Model implements \IteratorAggregate
     }
 
     /**
+     * @param ($fromTryLoad is true ? false : bool) $fromReload
      * @param mixed $id
      *
      * @return ($fromTryLoad is true ? $this|null : $this)
      */
-    private function _loadThis(bool $fromTryLoad, $id)
+    private function _loadThis(bool $fromReload, bool $fromTryLoad, $id)
     {
         $this->assertIsEntity();
         if ($this->isLoaded()) {
@@ -1245,31 +1246,46 @@ class Model implements \IteratorAggregate
         $this->assertHasPersistence();
 
         $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
-        if ($this->hook(self::HOOK_BEFORE_LOAD, [$noId ? null : $id]) === false) {
-            return $this;
-        }
-        $dataRef = &$this->getDataRef();
-        $dataRef = $this->persistence->{$fromTryLoad ? 'tryLoad' : 'load'}($this->getModel(), $this->remapIdLoadToPersistence($id));
+        $res = $this->hook(self::HOOK_BEFORE_LOAD, [$noId ? null : $id]);
+        if ($res === false) {
+            if ($fromReload) {
+                $this->unload();
 
-        if ($dataRef === null) {
-            // $fromTryLoad is always true here
+                return $this;
+            }
 
             return null;
+        } elseif (is_object($res)) {
+            (static::class)::assertInstanceOf($res);
+            $res->assertIsEntity();
+
+            return $res;
+        }
+
+        $dataRef = &$this->getDataRef();
+        $dataRef = $this->persistence->{$fromTryLoad ? 'tryLoad' : 'load'}($this->getModel(), $this->remapIdLoadToPersistence($id));
+        if ($dataRef === null) {
+            return null; // $fromTryLoad is always true here
         }
 
         if ($this->id_field) {
             $this->setId($this->getId());
         }
 
-        $ret = $this->hook(self::HOOK_AFTER_LOAD);
-        if ($ret === false) {
-            if ($fromTryLoad) {
-                return null;
+        $res = $this->hook(self::HOOK_AFTER_LOAD);
+        if ($res === false) {
+            if ($fromReload) {
+                $this->unload();
+
+                return $this;
             }
 
-            $this->unload();
-        } elseif (is_object($ret)) {
-            return $ret; // @phpstan-ignore-line
+            return null;
+        } elseif (is_object($res)) {
+            (static::class)::assertInstanceOf($res);
+            $res->assertIsEntity();
+
+            return $res;
         }
 
         return $this;
@@ -1286,7 +1302,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsModel();
 
-        return $this->createEntity()->_loadThis(true, $id);
+        return $this->createEntity()->_loadThis(false, true, $id);
     }
 
     /**
@@ -1300,7 +1316,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsModel();
 
-        return $this->createEntity()->_loadThis(false, $id);
+        return $this->createEntity()->_loadThis(false, false, $id);
     }
 
     /**
@@ -1357,7 +1373,12 @@ class Model implements \IteratorAggregate
         $id = $this->getId();
         $this->unload();
 
-        return $this->_loadThis(false, $id);
+        $res = $this->_loadThis(true, false, $id);
+        if ($res !== $this) {
+            throw new Exception('Entity instance does not match');
+        }
+
+        return $this;
     }
 
     /**
@@ -1373,6 +1394,8 @@ class Model implements \IteratorAggregate
         if (func_num_args() > 0) {
             throw new Exception('Duplicating using existing ID is no longer supported');
         }
+
+        $this->assertIsEntity();
 
         $duplicate = clone $this;
         $duplicate->_entityId = null;
@@ -1793,23 +1816,20 @@ class Model implements \IteratorAggregate
             // as a next iterator value
 
             /** @var static|false|null */
-            $ret = $thisCloned->hook(self::HOOK_AFTER_LOAD);
-            if ($ret === false) {
+            $res = $thisCloned->hook(self::HOOK_AFTER_LOAD);
+            if ($res === false) {
                 continue;
+            } elseif (is_object($res)) {
+                (static::class)::assertInstanceOf($this);
+                $res->assertIsEntity();
+            } else {
+                $res = $thisCloned;
             }
 
-            if (is_object($ret)) {
-                if ($ret->id_field) {
-                    yield $ret->getId() => $ret;
-                } else {
-                    yield $ret;
-                }
+            if ($res->id_field) {
+                yield $res->getId() => $res;
             } else {
-                if ($this->id_field) {
-                    yield $thisCloned->getId() => $thisCloned;
-                } else {
-                    yield $thisCloned;
-                }
+                yield $res;
             }
         }
     }
