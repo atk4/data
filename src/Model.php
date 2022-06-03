@@ -1451,7 +1451,6 @@ class Model implements \IteratorAggregate
     {
         $class ??= static::class;
 
-        /** @var self $model */
         $model = new $class($persistence, ['table' => $this->table]);
         if ($this->isEntity()) { // TODO should this method work with entity at all?
             $model = $model->createEntity();
@@ -1815,7 +1814,6 @@ class Model implements \IteratorAggregate
             // you can also use breakHook() with specific object which will then be returned
             // as a next iterator value
 
-            /** @var static|false|null */
             $res = $thisCloned->hook(self::HOOK_AFTER_LOAD);
             if ($res === false) {
                 continue;
