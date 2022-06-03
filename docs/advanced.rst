@@ -79,11 +79,11 @@ hook. Place the following inside Transaction::init()::
 
     $this->onHookShort(Model::HOOK_AFTER_LOAD, function () {
         if (get_class($this) != $this->getClassName()) {
-            $cl = '\\'.$this->getClassName();
-            $cl = new $cl($this->persistence);
-            $cl = $cl->load($this->getId());
+            $cl = $this->getClassName();
+            $m = new $cl($this->persistence);
+            $m = $m->load($this->getId());
 
-            $this->breakHook($cl);
+            $this->breakHook($m);
         }
     });
 

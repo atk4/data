@@ -216,7 +216,7 @@ the database. Here is how you can implement this functionality::
             $dataRef = &$m->getDataRef();
             $dataRef = $data;
             $m->setId($id);
-            $m->breakHook(false);
+            $m->breakHook($m);
         }
     });
 
