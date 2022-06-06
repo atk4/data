@@ -39,6 +39,7 @@ class Model implements \IteratorAggregate
     }
     use DynamicMethodTrait;
     use HintableModelTrait {
+        HintableModelTrait::assertIsInitialized as private __hintable_assertIsInitialized;
         HintableModelTrait::__isset as private __hintable_isset;
         HintableModelTrait::__get as private __hintable_get;
         HintableModelTrait::__set as private __hintable_set;
@@ -47,6 +48,7 @@ class Model implements \IteratorAggregate
     use HookTrait;
     use InitializerTrait {
         init as private _init;
+        InitializerTrait::assertIsInitialized as private _assertIsInitialized;
     }
     use Model\JoinsTrait;
     use Model\ReferencesTrait;
@@ -445,6 +447,12 @@ class Model implements \IteratorAggregate
         }
 
         $this->initUserActions();
+    }
+
+    public function assertIsInitialized(): void
+    {
+        $this->_assertIsInitialized();
+        $this->__hintable_assertIsInitialized();
     }
 
     private function initEntityIdAndAssertUnchanged(): void
