@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
+use Atk4\Data\Exception;
 use Atk4\Data\Schema\TestCase;
 use Atk4\Data\Tests\ContainsMany\Invoice;
 use Atk4\Data\Tests\ContainsMany\Line;
@@ -292,65 +293,13 @@ class ContainsManyTest extends TestCase
         );
     }
 
-    public function testContainsManyPr881(): void
+    public function testUnmanagedDataModificationException(): void
     {
         $i = new Invoice($this->db);
         $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
 
-        $this->assertSame(Line::class, get_class($i->getModel()->lines));
-
-        // now let's add some lines
-        $l = $i->lines;
-        $this->assertNotNull($l);
-        $rows = [
-            1 => [
-                $l->fieldName()->id => 1,
-                $l->fieldName()->vat_rate_id => 1,
-                $l->fieldName()->price => 10,
-                $l->fieldName()->qty => 2,
-                $l->fieldName()->discounts => null,
-                $l->fieldName()->add_date => new \DateTime('2019-01-01'),
-            ],
-            2 => [
-                $l->fieldName()->id => 2,
-                $l->fieldName()->vat_rate_id => 2,
-                $l->fieldName()->price => 15,
-                $l->fieldName()->qty => 5,
-                $l->fieldName()->discounts => null,
-                $l->fieldName()->add_date => new \DateTime('2019-01-01'),
-            ],
-        ];
-
-        foreach ($rows as $row) {
-            $l->insert($row);
-        }
-
-        // reload invoice just in case
-        $this->assertSameExportUnordered($rows, $i->lines->export());
-        $i->reload();
-        $this->assertSameExportUnordered($rows, $i->lines->export());
-
-        // test https://github.com/atk4/data/issues/881
-        // $i aka "Client"
-        $ac = $i->lines; // aka "Account"
-
-        $dumpBtFx = static function ($m) {
-            var_dump($m->table);
-            debug_print_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS);
-            echo "\n";
-        };
-
-        $i->onHook(\Atk4\Data\Model::HOOK_BEFORE_SAVE, $dumpBtFx);
-        $ac->onHook(\Atk4\Data\Model::HOOK_BEFORE_SAVE, $dumpBtFx);
-        $i->onHook(\Atk4\Data\Model::HOOK_BEFORE_DELETE, $dumpBtFx);
-        $ac->onHook(\Atk4\Data\Model::HOOK_BEFORE_DELETE, $dumpBtFx);
-
-        // array_pop($ac) - type error, $ac is not an array, hasMany traversal result is an conditioned Model
-        $ac->loadAny()->delete();
-        $i->save();
-
-        $i->set('lines', $ac); // why this does not fail?
-
-        $i->delete(); // this should delete the contained models first and trigger all delete hooks on them, a bug
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('ContainsXxx does not support unmanaged data modification');
+        $i->set($i->fieldName()->lines, [0]);
     }
 }

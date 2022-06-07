@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
+use Atk4\Data\Exception;
 use Atk4\Data\Schema\TestCase;
 use Atk4\Data\Tests\ContainsOne\Address;
 use Atk4\Data\Tests\ContainsOne\Country;
@@ -205,5 +206,15 @@ class ContainsOneTest extends TestCase
         // and it references to same old Address model without post_index field - no errors
         $a = $i->addr;
         $this->assertEquals($row, $a->get());
+    }
+
+    public function testUnmanagedDataModificationException(): void
+    {
+        $i = new Invoice($this->db);
+        $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('ContainsXxx does not support unmanaged data modification');
+        $i->set($i->fieldName()->addr, [0]);
     }
 }
