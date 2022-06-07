@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
+use Atk4\Data\Exception;
 use Atk4\Data\Schema\TestCase;
 use Atk4\Data\Tests\ContainsMany\Invoice;
 use Atk4\Data\Tests\ContainsMany\Line;
@@ -290,5 +291,15 @@ class ContainsManyTest extends TestCase
             ]),
             $exp_lines
         );
+    }
+
+    public function testUnmanagedDataModificationException(): void
+    {
+        $i = new Invoice($this->db);
+        $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('ContainsXxx does not support unmanaged data modification');
+        $i->set($i->fieldName()->lines, [0]);
     }
 }

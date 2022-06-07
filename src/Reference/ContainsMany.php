@@ -30,13 +30,11 @@ class ContainsMany extends ContainsOne
     {
         $ourModel = $this->getOurModel($ourModel);
 
-        // get model
         $theirModel = $this->createTheirModel(array_merge($defaults, [
             'containedInEntity' => $ourModel->isEntity() ? $ourModel : null,
             'table' => $this->table_alias,
         ]));
 
-        // set some hooks for ref_model
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
             $this->onHookToTheirModel($theirModel, $spot, function (Model $theirModel) {
                 $ourModel = $this->getOurModel($theirModel->containedInEntity);
