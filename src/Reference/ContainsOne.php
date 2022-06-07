@@ -76,7 +76,7 @@ class ContainsOne extends Reference
 
             foreach (array_slice(debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS), 1) as $frame) {
                 if (($frame['class'] ?? null) === static::class) {
-                    return null; // allow load/save from ContainsOne hooks
+                    return; // allow load/save from ContainsOne hooks
                 }
             }
 
