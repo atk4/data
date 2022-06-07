@@ -69,6 +69,8 @@ class ContainsOne extends Reference
         $this->onHookToOurModel($ourModel, Model::HOOK_NORMALIZE, function (Model $ourModel, Field $field, $value) {
             $ourRef = $field->getReference();
             if ($ourRef === null || $field->shortName !== $this->getOurFieldName() || $value === null) {
+                // this code relies on Field::$referenceLink set
+                // also, allowing null value to be set will not fire any HOOK_BEFORE_DELETE/HOOK_AFTER_DELETE hook
                 return;
             }
 
