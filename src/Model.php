@@ -1926,6 +1926,13 @@ class Model implements \IteratorAggregate
         return $this->persistence->action($this, $mode, $args);
     }
 
+    public function executeCountQuery(): int
+    {
+        $this->assertIsModel();
+
+        return (int) $this->action('count')->getOne();
+    }
+
     // }}}
 
     // {{{ Expressions

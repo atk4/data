@@ -247,6 +247,8 @@ Returns query for `count(*)`::
 
     $action = $model->action('count');
     $cnt = $action->getOne();
+    // for materialized count use:
+    $cnt = $model->executeCountQuery();
 
 You can also specify alias::
 

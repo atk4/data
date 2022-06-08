@@ -177,7 +177,7 @@ class SqlTest extends TestCase
 
         $this->assertSame('1', $m->action('exists')->getOne());
 
-        $this->assertSame('2', $m->action('count')->getOne());
+        $this->assertSame(2, $m->executeCountQuery());
     }
 
     public function testPersistenceDelete(): void

@@ -244,6 +244,7 @@ class ArrayTest extends TestCase
         $m->addField('surname');
 
         $this->assertSame(2, $m->action('count')->getOne());
+        $this->assertSame(2, $m->executeCountQuery());
     }
 
     /**

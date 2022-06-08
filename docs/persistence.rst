@@ -417,7 +417,7 @@ Create copy of existing record
 
         // Now you have 2 records:
         // one with ID = 123 and another with ID = {next db generated id}
-        echo $m->action('count')->getOne();
+        echo $m->executeCountQuery();
 
 Duplicate then save under a new ID
 ----------------------------------
@@ -759,7 +759,7 @@ rows of data.
 Action can be executed at any time and that will return an expected result::
 
     $m = Model_Invoice();
-    $val = $m->action('count')->getOne();
+    $val = (int) $m->action('count')->getOne(); // same as $val = $m->executeCountQuery()
 
 Most actions are sufficiently smart to understand what type of result you are
 expecting, so you can have the following code::
@@ -803,7 +803,7 @@ There are ability to execute aggregation functions::
 
 and finally you can also use count::
 
-    echo $m->action('count')->getOne();
+    echo $m->executeCountQuery(); // same as echo $m->action('count')->getOne()
 
 
 SQL Actions on Linked Records
