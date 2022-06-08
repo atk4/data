@@ -158,7 +158,7 @@ class ModelTest extends TestCase
             for ($i = 0; $i <= 0x10FFFF; $i = $i * 1.001 + 1) {
                 $iInt = (int) $i;
                 if ($iInt < 0xD800 || $iInt > 0xDFFF) {
-                    $baseChars[crc32($length . '_' . $i)] = mb_chr($iInt);
+                    $baseChars[crc32($length . '_' . $iInt)] = mb_chr($iInt);
                 }
             }
         }
