@@ -1931,7 +1931,7 @@ class Model implements \IteratorAggregate
         $this->assertIsModel();
 
         $res = $this->action('count')->getOne();
-        if (is_string($res)) {
+        if (is_string($res) && $res === (string) (int) $res) {
             $res = (int) $res;
         }
 
