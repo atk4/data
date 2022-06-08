@@ -260,8 +260,6 @@ class ArrayTest extends TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $this->assertSame(2, $m->action('count')->getOne());
-
         // use alias as array key if it is set
         $q = $m->action('field', ['name', 'alias' => 'first_name']);
         $this->assertSame([
@@ -644,40 +642,40 @@ class ArrayTest extends TestCase
             ['id' => 1, 'f1' => 'A'],
             ['id' => 2, 'f1' => 'B'],
         ]);
-        $this->assertSame(2, $m->action('count')->getOne());
+        $this->assertSame(2, $m->executeCountQuery());
 
         $m->import([
             ['f1' => 'C'],
             ['f1' => 'D'],
         ]);
-        $this->assertSame(4, $m->action('count')->getOne());
+        $this->assertSame(4, $m->executeCountQuery());
 
         $m->import([
             ['id' => 6, 'f1' => 'E'],
             ['id' => 7, 'f1' => 'F'],
         ]);
-        $this->assertSame(6, $m->action('count')->getOne());
+        $this->assertSame(6, $m->executeCountQuery());
 
         $m->delete(6);
-        $this->assertSame(5, $m->action('count')->getOne());
+        $this->assertSame(5, $m->executeCountQuery());
 
         $m->import([
             ['f1' => 'G'],
             ['f1' => 'H'],
         ]);
-        $this->assertSame(7, $m->action('count')->getOne());
+        $this->assertSame(7, $m->executeCountQuery());
 
         $m->import([
             ['id' => 99, 'f1' => 'I'],
             ['id' => 20, 'f1' => 'J'],
         ]);
-        $this->assertSame(9, $m->action('count')->getOne());
+        $this->assertSame(9, $m->executeCountQuery());
 
         $m->import([
             ['f1' => 'K'],
             ['f1' => 'L'],
         ]);
-        $this->assertSame(11, $m->action('count')->getOne());
+        $this->assertSame(11, $m->executeCountQuery());
 
         $m->delete(100);
         $m->createEntity()->set('f1', 'M')->save();
@@ -712,10 +710,10 @@ class ArrayTest extends TestCase
         $m = new Model($p);
         $m->addField('f1');
 
-        $this->assertSame(4, $m->action('count')->getOne());
+        $this->assertSame(4, $m->executeCountQuery());
 
         $m->setLimit(3);
-        $this->assertSame(3, $m->action('count')->getOne());
+        $this->assertSame(3, $m->executeCountQuery());
         $this->assertSame([
             ['id' => 1, 'f1' => 'A'],
             ['id' => 2, 'f1' => 'D'],
@@ -723,7 +721,7 @@ class ArrayTest extends TestCase
         ], array_values($m->export()));
 
         $m->setLimit(2, 1);
-        $this->assertSame(2, $m->action('count')->getOne());
+        $this->assertSame(2, $m->executeCountQuery());
         $this->assertSame([
             ['id' => 2, 'f1' => 'D'],
             ['id' => 3, 'f1' => 'E'],
@@ -732,7 +730,7 @@ class ArrayTest extends TestCase
         // well, this is strange, that you can actually change limit on-the-fly and then previous
         // limit is not taken into account, but most likely you will never set it multiple times
         $m->setLimit(3);
-        $this->assertSame(3, $m->action('count')->getOne());
+        $this->assertSame(3, $m->executeCountQuery());
     }
 
     /**
@@ -750,19 +748,19 @@ class ArrayTest extends TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $this->assertSame(4, $m->action('count')->getOne());
+        $this->assertSame(4, $m->executeCountQuery());
         $this->assertSame(['data' => $dbData], $this->getInternalPersistenceData($p));
 
         $m->addCondition('name', 'Sarah');
-        $this->assertSame(3, $m->action('count')->getOne());
+        $this->assertSame(3, $m->executeCountQuery());
 
         $m->addCondition('surname', 'Smith');
-        $this->assertSame(1, $m->action('count')->getOne());
+        $this->assertSame(1, $m->executeCountQuery());
         $this->assertSame([4 => ['id' => 4, 'name' => 'Sarah', 'surname' => 'Smith']], $m->export());
         $this->assertSame([4 => ['id' => 4, 'name' => 'Sarah', 'surname' => 'Smith']], $m->action('select')->getRows());
 
         $m->addCondition('surname', 'Siiiith');
-        $this->assertSame(0, $m->action('count')->getOne());
+        $this->assertSame(0, $m->executeCountQuery());
     }
 
     public function testUnsupportedAction(): void
@@ -864,10 +862,10 @@ class ArrayTest extends TestCase
         $user->hasOne('country_id', ['model' => $country]);
 
         $cc = $country->load(1);
-        $this->assertSame(2, $cc->ref('Users')->action('count')->getOne());
+        $this->assertSame(2, $cc->ref('Users')->executeCountQuery());
 
         $cc = $country->load(2);
-        $this->assertSame(1, $cc->ref('Users')->action('count')->getOne());
+        $this->assertSame(1, $cc->ref('Users')->executeCountQuery());
     }
 
     public function testLoadAnyThrowsExceptionOnRecordNotFound(): void
