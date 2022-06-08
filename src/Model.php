@@ -1930,7 +1930,12 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsModel();
 
-        return (int) $this->action('count')->getOne();
+        $res = $this->action('count')->getOne();
+        if (is_string($res)) {
+            $res = (int) $res;
+        }
+
+        return $res;
     }
 
     // }}}
