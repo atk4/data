@@ -439,7 +439,7 @@ abstract class Persistence
                 $format = $field->persist_format;
             } else {
                 // ! symbol in date format is essential here to remove time part of DateTime - don't remove, this is not a bug
-                $formats = ['date' => '+!Y-m-d', 'datetime' => '+!Y-m-d H:i:s', 'time' => '+!H:i:s'];
+                $formats = ['date' => '!Y-m-d', 'datetime' => '!Y-m-d H:i:s', 'time' => '!H:i:s'];
                 $format = $formats[$field->type];
                 if (str_contains($value, '.')) { // time possibly with microseconds, otherwise invalid format
                     $format = preg_replace('~(?<=H:i:s)(?![. ]*u)~', '.u', $format);
