@@ -441,17 +441,15 @@ abstract class Persistence
 
             $valueOrig = $value;
             $value = \DateTime::createFromFormat('!' . $format, $value, new \DateTimeZone('UTC'));
-            if ($value !== false) {
-                if ($field->type === 'datetime') {
-                    $value->setTimezone(new \DateTimeZone(date_default_timezone_get()));
-                }
-            }
-
             if ($value === false) {
-                throw (new Exception('Incorrectly formatted date/time'))
+                throw (new Exception('Incorrectly formatted datetime'))
                     ->addMoreInfo('format', $format)
                     ->addMoreInfo('value', $valueOrig)
                     ->addMoreInfo('field', $field);
+            }
+
+            if ($field->type === 'datetime') {
+                $value->setTimezone(new \DateTimeZone(date_default_timezone_get()));
             }
 
             return $value;
