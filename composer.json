@@ -54,11 +54,11 @@
         "phpstan/phpstan-deprecation-rules": "^1.0",
         "phpunit/phpunit": "^9.5.5"
     },
-    "suggest": {
-        "jdorn/sql-formatter": "*"
-    },
     "conflict": {
         "jdorn/sql-formatter": "<1.2.9"
+    },
+    "suggest": {
+        "jdorn/sql-formatter": "*"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
