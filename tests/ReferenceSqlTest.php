@@ -187,7 +187,7 @@ class ReferenceSqlTest extends TestCase
         $o->hasOne('user_id', ['model' => $u])->addFields(['username' => 'name', ['date', 'type' => 'date']]);
 
         $this->assertSame('John', $o->load(1)->get('username'));
-        $this->assertEquals(new \DateTime('2001-01-02'), $o->load(1)->get('date'));
+        $this->assertEquals(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('date'));
 
         $this->assertSame('Peter', $o->load(2)->get('username'));
         $this->assertSame('John', $o->load(3)->get('username'));
@@ -197,11 +197,11 @@ class ReferenceSqlTest extends TestCase
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
         $o->hasOne('user_id', ['model' => $u])->addFields(['username' => 'name', 'thedate' => ['date', 'type' => 'date']]);
         $this->assertSame('John', $o->load(1)->get('username'));
-        $this->assertEquals(new \DateTime('2001-01-02'), $o->load(1)->get('thedate'));
+        $this->assertEquals(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('thedate'));
 
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
         $o->hasOne('user_id', ['model' => $u])->addFields(['date'], ['type' => 'date']);
-        $this->assertEquals(new \DateTime('2001-01-02'), $o->load(1)->get('date'));
+        $this->assertEquals(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('date'));
     }
 
     public function testRelatedExpression(): void

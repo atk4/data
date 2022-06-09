@@ -65,9 +65,9 @@ class TypecastingTest extends TestCase
         $this->assertSame('foo', $mm->get('string'));
         $this->assertTrue($mm->get('boolean'));
         $this->assertSame(8.20, $mm->get('money'));
-        $this->assertEquals(new \DateTime('2013-02-20'), $mm->get('date'));
+        $this->assertEquals(new \DateTime('2013-02-20 UTC'), $mm->get('date'));
         $this->assertEquals(new \DateTime('2013-02-20 20:00:12 UTC'), $mm->get('datetime'));
-        $this->assertEquals(new \DateTime('1970-01-01 12:00:50'), $mm->get('time'));
+        $this->assertEquals(new \DateTime('1970-01-01 12:00:50 UTC'), $mm->get('time'));
         $this->assertSame(2940, $mm->get('integer'));
         $this->assertSame([1, 2, 3], $mm->get('json'));
         $this->assertSame(8.20234376757473, $mm->get('float'));

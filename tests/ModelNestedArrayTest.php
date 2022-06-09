@@ -107,8 +107,8 @@ class ModelNestedArrayTest extends TestCase
         $m = $this->createTestModel();
 
         $this->assertSameExportUnordered([
-            1 => ['name' => 'John', 'birthday' => new \DateTime('1980-2-1')],
-            ['name' => 'Sue', 'birthday' => new \DateTime('2005-4-3')],
+            1 => ['name' => 'John', 'birthday' => new \DateTime('1980-2-1 UTC')],
+            ['name' => 'Sue', 'birthday' => new \DateTime('2005-4-3 UTC')],
         ], $m->export());
 
         $this->assertSame([], $this->hookLog);
@@ -146,12 +146,12 @@ class ModelNestedArrayTest extends TestCase
         ], $this->hookLog);
 
         $this->assertSame(4, $m->table->loadBy('name', 'Karl')->getId());
-        $this->assertSameExportUnordered([[new \DateTime('2000-6-1')]], [[$entity->getId()]]);
+        $this->assertSameExportUnordered([[new \DateTime('2000-6-1 UTC')]], [[$entity->getId()]]);
 
         $this->assertSameExportUnordered([
-            1 => ['name' => 'John', 'birthday' => new \DateTime('1980-2-1')],
-            ['name' => 'Sue', 'birthday' => new \DateTime('2005-4-3')],
-            4 => ['name' => 'Karl', 'birthday' => new \DateTime('2000-6-1')],
+            1 => ['name' => 'John', 'birthday' => new \DateTime('1980-2-1 UTC')],
+            ['name' => 'Sue', 'birthday' => new \DateTime('2005-4-3 UTC')],
+            4 => ['name' => 'Karl', 'birthday' => new \DateTime('2000-6-1 UTC')],
         ], $m->export());
     }
 
@@ -195,8 +195,8 @@ class ModelNestedArrayTest extends TestCase
         ], $this->hookLog);
 
         $this->assertSameExportUnordered([
-            1 => ['name' => 'John', 'birthday' => new \DateTime('1980-2-1')],
-            ['name' => 'Susan', 'birthday' => new \DateTime('2005-4-3')],
+            1 => ['name' => 'John', 'birthday' => new \DateTime('1980-2-1 UTC')],
+            ['name' => 'Susan', 'birthday' => new \DateTime('2005-4-3 UTC')],
         ], $m->export());
     }
 
@@ -227,7 +227,7 @@ class ModelNestedArrayTest extends TestCase
         ], $this->hookLog);
 
         $this->assertSameExportUnordered([
-            1 => ['name' => 'John', 'birthday' => new \DateTime('1980-2-1')],
+            1 => ['name' => 'John', 'birthday' => new \DateTime('1980-2-1 UTC')],
         ], $m->export());
     }
 }

@@ -439,19 +439,18 @@ abstract class Persistence
                 $format = preg_replace('~(?<=H:i:s)(?![. ]*u)~', '.u', $format);
             }
 
-            if ($field->type === 'datetime') {
-                $value = \DateTime::createFromFormat('!' . $format, $value, new \DateTimeZone('UTC'));
-                if ($value !== false) {
+            $valueOrig = $value;
+            $value = \DateTime::createFromFormat('!' . $format, $value, new \DateTimeZone('UTC'));
+            if ($value !== false) {
+                if ($field->type === 'datetime') {
                     $value->setTimezone(new \DateTimeZone(date_default_timezone_get()));
                 }
-            } else {
-                $value = \DateTime::createFromFormat('!' . $format, $value);
             }
 
             if ($value === false) {
                 throw (new Exception('Incorrectly formatted date/time'))
                     ->addMoreInfo('format', $format)
-                    ->addMoreInfo('value', $value)
+                    ->addMoreInfo('value', $valueOrig)
                     ->addMoreInfo('field', $field);
             }
 
