@@ -399,11 +399,10 @@ abstract class Persistence
 
             if ($field->type === 'datetime') {
                 $value = new \DateTime($value->format('Y-m-d H:i:s.u'), $value->getTimezone());
-                $value->setTimezone(new \DateTimeZone($field->persist_timezone));
+                $value->setTimezone(new \DateTimeZone('UTC'));
             }
 
-            $formats = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s.u', 'time' => 'H:i:s.u'];
-            $format = $field->persist_format ?: $formats[$field->type];
+            $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s.u', 'time' => 'H:i:s.u'][$field->type];
             $value = $value->format($format);
 
             return $value;
@@ -435,24 +434,18 @@ abstract class Persistence
         // native DBAL DT types have no microseconds support
         if (in_array($field->type, ['datetime', 'date', 'time'], true)
             && str_starts_with(get_class($field->getTypeObject()), 'Doctrine\DBAL\Types\\')) {
-            if ($field->persist_format) {
-                $format = $field->persist_format;
-            } else {
-                // ! symbol in date format is essential here to remove time part of DateTime - don't remove, this is not a bug
-                $formats = ['date' => '!Y-m-d', 'datetime' => '!Y-m-d H:i:s', 'time' => '!H:i:s'];
-                $format = $formats[$field->type];
-                if (str_contains($value, '.')) { // time possibly with microseconds, otherwise invalid format
-                    $format = preg_replace('~(?<=H:i:s)(?![. ]*u)~', '.u', $format);
-                }
+            $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'][$field->type];
+            if (str_contains($value, '.')) { // time possibly with microseconds, otherwise invalid format
+                $format = preg_replace('~(?<=H:i:s)(?![. ]*u)~', '.u', $format);
             }
 
             if ($field->type === 'datetime') {
-                $value = \DateTime::createFromFormat($format, $value, new \DateTimeZone($field->persist_timezone));
+                $value = \DateTime::createFromFormat('!' . $format, $value, new \DateTimeZone('UTC'));
                 if ($value !== false) {
                     $value->setTimezone(new \DateTimeZone(date_default_timezone_get()));
                 }
             } else {
-                $value = \DateTime::createFromFormat($format, $value);
+                $value = \DateTime::createFromFormat('!' . $format, $value);
             }
 
             if ($value === false) {

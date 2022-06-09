@@ -377,43 +377,6 @@ class TypecastingTest extends TestCase
         $this->assertTrue($m2->isLoaded());
     }
 
-    public function testTypecastTimezone(): void
-    {
-        $m = new Model($this->db, ['table' => 'event']);
-        $dt = $m->addField('dt', ['type' => 'datetime', 'persist_timezone' => 'EEST']);
-        $d = $m->addField('d', ['type' => 'date', 'persist_timezone' => 'EEST']);
-        $t = $m->addField('t', ['type' => 'time', 'persist_timezone' => 'EEST']);
-
-        date_default_timezone_set('UTC');
-        $s = new \DateTime('Monday, 15-Aug-05 22:52:01 UTC');
-        $this->assertSame('2005-08-16 00:52:01.000000', $this->db->typecastSaveField($dt, $s));
-        $this->assertSame('2005-08-15', $this->db->typecastSaveField($d, $s));
-        $this->assertSame('22:52:01.000000', $this->db->typecastSaveField($t, $s));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $this->db->typecastLoadField($dt, '2005-08-16 00:52:01'));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $this->db->typecastLoadField($d, '2005-08-15'));
-        $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $this->db->typecastLoadField($t, '22:52:01'));
-
-        date_default_timezone_set('Asia/Tokyo');
-
-        $s = new \DateTime('Monday, 15-Aug-05 22:52:01 UTC');
-        $this->assertSame('2005-08-16 00:52:01.000000', $this->db->typecastSaveField($dt, $s));
-        $this->assertSame('2005-08-15', $this->db->typecastSaveField($d, $s));
-        $this->assertSame('22:52:01.000000', $this->db->typecastSaveField($t, $s));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $this->db->typecastLoadField($dt, '2005-08-16 00:52:01'));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $this->db->typecastLoadField($d, '2005-08-15'));
-        $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $this->db->typecastLoadField($t, '22:52:01'));
-
-        date_default_timezone_set('America/Los_Angeles');
-
-        $s = new \DateTime('Monday, 15-Aug-05 22:52:01'); // uses servers default timezone
-        $this->assertSame('2005-08-16 07:52:01.000000', $this->db->typecastSaveField($dt, $s));
-        $this->assertSame('2005-08-15', $this->db->typecastSaveField($d, $s));
-        $this->assertSame('22:52:01.000000', $this->db->typecastSaveField($t, $s));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 America/Los_Angeles'), $this->db->typecastLoadField($dt, '2005-08-16 07:52:01'));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $this->db->typecastLoadField($d, '2005-08-15'));
-        $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $this->db->typecastLoadField($t, '22:52:01'));
-    }
-
     public function testTimestamp(): void
     {
         $sql_time = '2016-10-25 11:44:08';

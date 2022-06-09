@@ -349,10 +349,8 @@ Dates and Time
 
 .. todo:: this section might need cleanup
 
-There are 4 date formats supported:
+There are 3 datetime formats supported:
 
--  ts (or timestamp): Stores in database using UTC. Defaults into unix
-   timestamp (int) in PHP.
 -  date: Converts into YYYY-MM-DD using UTC timezone for SQL. Defaults
    to DateTime() class in PHP, but supports string input (parsed as date
    in a current timezone) or unix timestamp.
