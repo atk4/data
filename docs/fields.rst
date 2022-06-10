@@ -67,7 +67,7 @@ Agile Data defines some basic types to make sure that values:
 A good example would be a `date` type::
 
     $model->addField('birth', ['type' => 'date']);
-    $model->set('birth', DateTime::createFromFormat('m/d/Y', '1/10/2014'));
+    $model->set('birth', new DateTime('2014-01-10'));
 
     $model->save();
 

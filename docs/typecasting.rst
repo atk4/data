@@ -37,16 +37,7 @@ You must remember that type-casting is a two-way operation. If you are
 introducing your own types, you will need to make sure they can be saved and
 loaded correctly.
 
-Some formats such as `date`, `time` and `datetime` may have additional options
-to it::
-
-    $m->addField('registered', [
-        'type' => 'date',
-        'persist_format' => 'd/m/Y',
-        'persist_timezone' => 'IST',
-    ]);
-
-Here is another example with booleans::
+Some types such as `boolean` may support additional options like::
 
     $m->addField('is_married', [
         'type' => 'boolean',

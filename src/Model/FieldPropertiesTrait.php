@@ -106,22 +106,4 @@ trait FieldPropertiesTrait
      * @var bool|string
      */
     public $required = false;
-
-    /**
-     * Persisting format for type = 'date', 'datetime', 'time' fields.
-     *
-     * For example, for date it can be 'Y-m-d', for datetime - 'Y-m-d H:i:s.u' etc.
-     *
-     * @var string
-     */
-    public $persist_format;
-
-    /**
-     * Persisting timezone for type = 'date', 'datetime', 'time' fields.
-     *
-     * For example, 'IST', 'UTC', 'Europe/Riga' etc.
-     *
-     * @var string
-     */
-    public $persist_timezone = 'UTC';
 }
