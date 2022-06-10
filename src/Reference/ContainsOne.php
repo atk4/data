@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Reference;
 
+use Atk4\Data\Exception;
+use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Reference;
@@ -61,6 +63,25 @@ class ContainsOne extends Reference
                 ], $this->ui),
             ]);
         }
+
+        // TODO https://github.com/atk4/data/issues/881
+        // prevent unmanaged ContainsXxx data modification (/wo proper normalize, hooks, ...)
+        $this->onHookToOurModel($ourModel, Model::HOOK_NORMALIZE, function (Model $ourModel, Field $field, $value) {
+            $ourRef = $field->getReference();
+            if ($ourRef === null || $field->shortName !== $this->getOurFieldName() || $value === null) {
+                // this code relies on Field::$referenceLink set
+                // also, allowing null value to be set will not fire any HOOK_BEFORE_DELETE/HOOK_AFTER_DELETE hook
+                return;
+            }
+
+            foreach (array_slice(debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS), 1) as $frame) {
+                if (($frame['class'] ?? null) === static::class) {
+                    return; // allow load/save from ContainsOne hooks
+                }
+            }
+
+            throw new Exception('ContainsXxx does not support unmanaged data modification');
+        });
     }
 
     protected function getDefaultPersistence(Model $theirModel): Persistence
@@ -80,21 +101,31 @@ class ContainsOne extends Reference
         $ourModel = $this->getOurModel($ourModel);
 
         $theirModel = $this->createTheirModel(array_merge($defaults, [
-            'contained_in_root_model' => $ourModel->contained_in_root_model ?: $ourModel,
+            'containedInEntity' => $ourModel->isEntity() ? $ourModel : null,
             'table' => $this->table_alias,
         ]));
 
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
-            $this->onHookToTheirModel($theirModel, $spot, function (Model $theirModel) use ($ourModel) {
+            $this->onHookToTheirModel($theirModel, $spot, function (Model $theirModel) {
+                $ourModel = $this->getOurModel($theirModel->containedInEntity);
+                $ourModel->assertIsEntity();
+
                 /** @var Persistence\Array_ */
                 $persistence = $theirModel->persistence;
                 $row = $persistence->getRawDataByTable($theirModel, $this->table_alias);
                 $row = $row ? array_shift($row) : null; // get first and only one record from array persistence
-                $this->getOurModel($ourModel)->save([$this->getOurFieldName() => $row]);
+                $ourModel->save([$this->getOurFieldName() => $row]);
             });
         }
 
-        $theirModel = $theirModel->tryLoadOne();
+        if ($ourModel->isEntity()) {
+            $theirModelOrig = $theirModel;
+            $theirModel = $theirModel->tryLoadOne();
+
+            if ($theirModel === null) {
+                $theirModel = $theirModelOrig->createEntity();
+            }
+        }
 
         return $theirModel;
     }

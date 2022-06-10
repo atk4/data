@@ -53,7 +53,7 @@ class SqlTest extends TestCase
 
         $mm = (clone $m)->addCondition($m->id_field, 1);
         $this->assertSame('John', $mm->load(1)->get('name'));
-        $this->assertNull($mm->tryLoad(2)->get('name'));
+        $this->assertNull($mm->tryLoad(2));
         $this->assertSame('John', $mm->tryLoadOne()->get('name'));
         $this->assertSame('John', $mm->loadOne()->get('name'));
         $this->assertSame('John', $mm->tryLoadAny()->get('name'));
@@ -61,7 +61,7 @@ class SqlTest extends TestCase
 
         $mm = (clone $m)->addCondition('surname', 'Jones');
         $this->assertSame('Sarah', $mm->load(2)->get('name'));
-        $this->assertNull($mm->tryLoad(1)->get('name'));
+        $this->assertNull($mm->tryLoad(1));
         $this->assertSame('Sarah', $mm->tryLoadOne()->get('name'));
         $this->assertSame('Sarah', $mm->loadOne()->get('name'));
         $this->assertSame('Sarah', $mm->tryLoadAny()->get('name'));
@@ -70,7 +70,7 @@ class SqlTest extends TestCase
         $m->loadAny();
         $m->tryLoadAny();
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Ambiguous conditions, more than one record can be loaded.');
+        $this->expectExceptionMessage('Ambiguous conditions, more than one record can be loaded');
         $m->tryLoadOne();
     }
 
@@ -207,7 +207,7 @@ class SqlTest extends TestCase
         $m2->save();
 
         $m2 = $m->tryLoad($ids[0]);
-        $this->assertFalse($m2->isLoaded());
+        $this->assertNull($m2);
 
         $m2 = $m->load($ids[1]);
         $this->assertSame('Smith', $m2->get('surname'));

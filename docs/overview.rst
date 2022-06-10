@@ -134,7 +134,7 @@ using::
     $user = new User($db);
 
     $user = $user->load(20);            // load specific user record into PHP
-    echo $user->get('name').': ';    // access field values
+    echo $user->get('name') . ': ';    // access field values
 
     $gross = $user->ref('Invoice')
         ->addCondition('status', 'due')
@@ -166,7 +166,7 @@ If your persistence does not support expressions (e.g. you are using Redis or
 MongoDB), you would need to define the field differently::
 
     $model->addField('gross');
-    $model->onHook(Model::HOOK_BEFORE_SAVE, function($m) {
+    $model->onHook(Model::HOOK_BEFORE_SAVE, function ($m) {
         $m->set('gross', $m->get('net') + $m->get('vat'));
     });
 
@@ -186,7 +186,7 @@ you want it to work with NoSQL, then your solution might be::
 
         // persistence does not support expressions
         $model->addField('gross');
-        $model->onHook(Model::HOOK_BEFORE_SAVE, function($m) {
+        $model->onHook(Model::HOOK_BEFORE_SAVE, function ($m) {
             $m->set('gross', $m->get('net') + $m->get('vat'));
         });
 
@@ -204,11 +204,11 @@ https://github.com/atk4/report/blob/develop/src/GroupModel.php
 This code is specific to SQL databases, but can be used with any Model, so in
 order to use grouping with Agile Data, your code would be::
 
-    $m = new \Atk4\Report\GroupModel(new Sale($db));
-    $m->groupBy(['contractor_to', 'type'], [ // groups by 2 columns
-        'c' => 'count(*)', // defines aggregate formulas for fields
-        'qty' => 'sum([])', // [] refers back to qty
-        'total' => 'sum([amount])', // can specify any field here
+    $aggregate = new AggregateModel(new Sale($db));
+    $aggregate->setGroupBy(['contractor_to', 'type'], [ // groups by 2 columns
+        'c' => ['expr' => 'count(*)'], // defines aggregate formulas for fields
+        'qty' => ['expr' => 'sum([])'], // [] refers back to qty
+        'total' => ['expr' => 'sum([amount])'], // can specify any field here
     ]);
 
 

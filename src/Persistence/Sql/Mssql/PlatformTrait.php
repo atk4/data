@@ -6,6 +6,13 @@ namespace Atk4\Data\Persistence\Sql\Mssql;
 
 trait PlatformTrait
 {
+    public function getVarcharTypeDeclarationSQL(array $column)
+    {
+        $column['length'] = ($column['length'] ?? 255) * 4;
+
+        return parent::getVarcharTypeDeclarationSQL($column);
+    }
+
     // remove once https://github.com/doctrine/dbal/pull/4987 is fixed
     // and also $this->markDoctrineTypeCommented('text') below
     public function getClobTypeDeclarationSQL(array $column)
@@ -29,7 +36,7 @@ trait PlatformTrait
 
     protected function getCreateColumnCommentSQL($tableName, $columnName, $comment)
     {
-        if (strpos($tableName, '.') !== false) {
+        if (str_contains($tableName, '.')) {
             [$schemaName, $tableName] = explode('.', $tableName, 2);
         } else {
             $schemaName = $this->getDefaultSchemaName();
@@ -49,7 +56,7 @@ trait PlatformTrait
 
     protected function getAlterColumnCommentSQL($tableName, $columnName, $comment)
     {
-        if (strpos($tableName, '.') !== false) {
+        if (str_contains($tableName, '.')) {
             [$schemaName, $tableName] = explode('.', $tableName, 2);
         } else {
             $schemaName = $this->getDefaultSchemaName();
@@ -69,7 +76,7 @@ trait PlatformTrait
 
     protected function getDropColumnCommentSQL($tableName, $columnName)
     {
-        if (strpos($tableName, '.') !== false) {
+        if (str_contains($tableName, '.')) {
             [$schemaName, $tableName] = explode('.', $tableName, 2);
         } else {
             $schemaName = $this->getDefaultSchemaName();
@@ -164,7 +171,7 @@ trait PlatformTrait
 
     protected function getCommentOnTableSQL(string $tableName, ?string $comment): string
     {
-        if (strpos($tableName, '.') !== false) {
+        if (str_contains($tableName, '.')) {
             [$schemaName, $tableName] = explode('.', $tableName, 2);
         } else {
             $schemaName = $this->getDefaultSchemaName();

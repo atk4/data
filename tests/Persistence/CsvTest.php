@@ -144,7 +144,7 @@ class CsvTest extends TestCase
         $this->assertSame('Jones', $mm->get('surname'));
 
         $mm = $m->tryLoadAny();
-        $this->assertFalse($mm->isLoaded());
+        $this->assertNull($mm);
     }
 
     public function testLoadByIdNotSupportedException(): void

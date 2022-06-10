@@ -175,14 +175,14 @@ you can simply change the value of :php:attr:`$connection` property::
 
     $expr->connection = $pdo_dbh;
 
-Finally, you can pass connection class into :php:meth:`execute` directly.
+Finally, you can pass connection class into :php:meth:`executeQuery` directly.
 
-.. php:method:: execute($connection = null)
+.. php:method:: executeQuery($connection = null)
 
     Executes expression using current database connection or the one you
     specify as the argument::
 
-        $stmt = $expr->execute($pdo_dbh);
+        $stmt = $expr->executeQuery($pdo_dbh);
 
     returns `Doctrine\DBAL\Result`.
 

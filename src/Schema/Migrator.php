@@ -123,7 +123,7 @@ class Migrator
         if ($this->getDatabasePlatform() instanceof OraclePlatform) {
             $dropTriggerSql = $this->getDatabasePlatform()->getDropAutoincrementSql($this->table->getName())[1];
             try {
-                $this->connection->expr($dropTriggerSql)->execute();
+                $this->connection->expr($dropTriggerSql)->executeStatement();
             } catch (Exception $e) {
             }
         }
@@ -211,11 +211,7 @@ class Migrator
     {
         $reference = $field->getReference();
         if ($reference instanceof HasOne) {
-            $referenceTheirField = \Closure::bind(function () use ($reference) {
-                return $reference->their_field;
-            }, null, \Atk4\Data\Reference::class)();
-
-            $referenceField = $referenceTheirField ?? $reference->getOwner()->id_field; // TODO migrate to $reference->getTheirFieldName()
+            $referenceField = $reference->getTheirFieldName($reference->createTheirModel());
 
             $modelSeed = is_array($reference->model)
                 ? $reference->model

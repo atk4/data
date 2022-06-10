@@ -156,14 +156,14 @@ class IteratorTest extends TestCase
             $data[] = $row;
         }
 
-        $this->assertEquals([
-            ['total_net' => 10, 'id' => 1],
+        $this->assertSame([
+            ['total_net' => '10', 'id' => '1'],
 
-            ['total_net' => 10, 'id' => 1],
-            ['total_net' => 15, 'id' => 3],
-            ['total_net' => 20, 'id' => 2],
+            ['total_net' => '10', 'id' => '1'],
+            ['total_net' => '15', 'id' => '3'],
+            ['total_net' => '20', 'id' => '2'],
 
-            ['total_net' => 10, 'id' => 1], // affected by limit now
+            ['total_net' => '10', 'id' => '1'], // affected by limit now
         ], $data);
     }
 

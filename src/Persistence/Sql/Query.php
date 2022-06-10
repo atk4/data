@@ -435,17 +435,10 @@ class Query extends Expression
         }
         $joins = [];
         foreach ($this->args['join'] as $j) {
-            $jj = '';
-
-            $jj .= $j['t'] . ' join ';
-
-            $jj .= $this->escapeIdentifierSoft($j['f1']);
-
-            if ($j['fa'] !== null) {
-                $jj .= ' ' . $this->escapeIdentifier($j['fa']);
-            }
-
-            $jj .= ' on ';
+            $jj = $j['t'] . ' join '
+                . $this->escapeIdentifierSoft($j['f1'])
+                . ($j['fa'] !== null ? ' ' . $this->escapeIdentifier($j['fa']) : '')
+                . ' on ';
 
             if (isset($j['expr'])) {
                 $jj .= $this->consume($j['expr']);
@@ -651,7 +644,7 @@ class Query extends Expression
                 return '1 = 1'; // always true
             }
 
-            $value = '(' . implode(', ', array_map(function ($v) { return $this->escapeParam($v); }, $value)) . ')';
+            $value = '(' . implode(', ', array_map(function ($v) { return $this->consume($v); }, $value)) . ')';
 
             return $field . ' ' . $cond . ' ' . $value;
         }

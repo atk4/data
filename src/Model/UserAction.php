@@ -32,7 +32,7 @@ class UserAction
     public const APPLIES_TO_MULTIPLE_RECORDS = 'multiple'; // e.g. delete
     public const APPLIES_TO_ALL_RECORDS = 'all'; // e.g. truncate
 
-    /** @var string by default - action is for a single-record */
+    /** @var string by default action is for a single record */
     public $appliesTo = self::APPLIES_TO_SINGLE_RECORD;
 
     /** Defining action modifier */
@@ -41,28 +41,25 @@ class UserAction
     public const MODIFIER_DELETE = 'delete'; // delete record(s)
     public const MODIFIER_READ = 'read'; // just read, does not modify record(s)
 
-    /** @var string How this action interact with record. default = 'read' */
-    public $modifier = self::MODIFIER_READ;
+    /** @var string How this action interact with record */
+    public $modifier;
 
-    /** @var \Closure|string code to execute. By default will call method with same name */
+    /** @var \Closure(object, mixed ...$args): mixed|string code to execute. By default will call entity method with same name */
     public $callback;
 
-    /** @var \Closure|string code, identical to callback, but would generate preview of action without permanent effect */
+    /** @var \Closure(object, mixed ...$args): mixed|string identical to callback, but would generate preview of action without permanent effect */
     public $preview;
 
     /** @var string|null caption to put on the button */
     public $caption;
 
-    /** @var string|\Closure|null a longer description of this action. Closure must return string. */
+    /** @var string|\Closure(static): string|null a longer description of this action. */
     public $description;
 
-    /** @var bool Specifies that the action is dangerous. Should be displayed in red. */
-    public $dangerous = false;
-
-    /** @var bool|string|\Closure Set this to "true", string or return the value from the callback. Will ask user to confirm. */
+    /** @var bool|string|\Closure(static): string Will ask user to confirm. */
     public $confirmation = false;
 
-    /** @var bool|\Closure setting this to false will disable action. Callback will be executed with ($m) and must return bool */
+    /** @var bool|\Closure(object): bool setting this to false will disable action. */
     public $enabled = true;
 
     /** @var bool system action will be hidden from UI, but can still be explicitly triggered */
@@ -97,7 +94,6 @@ class UserAction
     {
         /** @var Model */
         $owner = $this->getOwner();
-
         $owner->assertIsEntity();
 
         return $owner;
@@ -130,28 +126,23 @@ class UserAction
      */
     public function execute(...$args)
     {
+        if ($this->callback === null) {
+            $fx = \Closure::fromCallable([$this->getEntity(), $this->shortName]);
+        } elseif (is_string($this->callback)) {
+            $fx = \Closure::fromCallable([$this->getEntity(), $this->callback]);
+        } else {
+            array_unshift($args, $this->getEntity());
+            $fx = $this->callback;
+        }
+
         // todo - ACL tests must allow
+
         try {
             $this->validateBeforeExecute();
 
-            $run = function () use ($args) {
-                if ($this->callback === null) {
-                    $fx = [$this->getEntity(), $this->shortName];
-                } elseif (is_string($this->callback)) {
-                    $fx = [$this->getEntity(), $this->callback];
-                } else {
-                    array_unshift($args, $this->getEntity());
-                    $fx = $this->callback;
-                }
-
-                return $fx(...$args);
-            };
-
-            if ($this->atomic) {
-                return $this->getModel()->atomic($run);
-            }
-
-            return $run();
+            return $this->atomic === false
+                ? $fx(...$args)
+                : $this->getModel()->atomic(static fn () => $fx(...$args));
         } catch (CoreException $e) {
             $e->addMoreInfo('action', $this);
 
@@ -170,13 +161,13 @@ class UserAction
             $tooDirty = array_diff(array_keys($this->getEntity()->getDirtyRef()), $this->fields);
 
             if ($tooDirty) {
-                throw (new Exception('Calling user action on a Model with dirty fields that are not allowed by this action.'))
+                throw (new Exception('Calling user action on a Model with dirty fields that are not allowed by this action'))
                     ->addMoreInfo('too_dirty', $tooDirty)
                     ->addMoreInfo('dirty', array_keys($this->getEntity()->getDirtyRef()))
                     ->addMoreInfo('permitted', $this->fields);
             }
         } elseif (!is_bool($this->fields)) {
-            throw (new Exception('Argument `fields` for the user action must be either array or boolean.'))
+            throw (new Exception('Argument `fields` for the user action must be either array or boolean'))
                 ->addMoreInfo('fields', $this->fields);
         }
 
@@ -184,14 +175,14 @@ class UserAction
         switch ($this->appliesTo) {
             case self::APPLIES_TO_NO_RECORDS:
                 if ($this->getEntity()->isLoaded()) {
-                    throw (new Exception('This user action can be executed on non-existing record only.'))
+                    throw (new Exception('This user action can be executed on non-existing record only'))
                         ->addMoreInfo('id', $this->getEntity()->getId());
                 }
 
                 break;
             case self::APPLIES_TO_SINGLE_RECORD:
                 if (!$this->getEntity()->isLoaded()) {
-                    throw new Exception('This user action requires you to load existing record first.');
+                    throw new Exception('This user action requires you to load existing record first');
                 }
 
                 break;
@@ -241,10 +232,10 @@ class UserAction
         if ($this->confirmation instanceof \Closure) {
             return ($this->confirmation)($this);
         } elseif ($this->confirmation === true) {
-            $confirmation = 'Are you sure you wish to execute ';
-            $confirmation .= $this->getCaption();
-            $confirmation .= $this->getEntity()->getTitle() ? ' using ' . $this->getEntity()->getTitle() : '';
-            $confirmation .= '?';
+            $confirmation = 'Are you sure you wish to execute '
+                . $this->getCaption()
+                . ($this->getEntity()->getTitle() ? ' using ' . $this->getEntity()->getTitle() : '')
+                . '?';
 
             return $confirmation;
         }

@@ -40,7 +40,7 @@ class MoneyType extends DbalTypes\Type
         return $v === null ? null : (float) $v;
     }
 
-    public function requiresSQLCommentHint(AbstractPlatform $platform)
+    public function requiresSQLCommentHint(AbstractPlatform $platform): bool
     {
         return true;
     }

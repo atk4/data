@@ -67,7 +67,7 @@ abstract class Join
 
     /**
      * Field to be used for matching inside master table.
-     * By default it's $foreign_table.'_id'.
+     * By default it's $foreign_table . '_id'.
      *
      * @var string
      */
@@ -103,7 +103,9 @@ abstract class Join
         $this->foreign_table = $foreignTable;
 
         // handle foreign table containing a dot - that will be reverse join
-        if (strpos($this->foreign_table, '.') !== false) {
+        // TODO this table split condition makes JoinArrayTest::testForeignFieldNameGuessTableWithSchema test
+        // quite unconsistent - drop it?
+        if (str_contains($this->foreign_table, '.')) {
             // split by LAST dot in foreign_table name
             [$this->foreign_table, $this->foreign_field] = preg_split('~\.+(?=[^.]+$)~', $this->foreign_table);
             $this->reverse = true;
@@ -238,7 +240,7 @@ abstract class Join
             }
 
             if (!$this->foreign_field) {
-                $this->foreign_field = $this->getModelTableString($this->getOwner()) . '_' . $id_field;
+                $this->foreign_field = preg_replace('~^.+?\.~', '', $this->getModelTableString($this->getOwner())) . '_' . $id_field;
             }
         } else {
             $this->reverse = false;
@@ -351,12 +353,6 @@ abstract class Join
      */
     public function hasMany(string $link, array $defaults = [])
     {
-        $id_field = $this->getOwner()->id_field;
-        $defaults = array_merge([
-            'our_field' => $id_field,
-            'their_field' => $this->getModelTableString($this->getOwner()) . '_' . $id_field,
-        ], $defaults);
-
         return $this->getOwner()->hasMany($link, $defaults);
     }
 
@@ -418,6 +414,17 @@ abstract class Join
     */
 
     /**
+     * @param mixed $value
+     */
+    protected function assertReferenceIdNotNull($value): void
+    {
+        if ($value === null) {
+            throw (new Exception('Unable to join on null value'))
+                ->addMoreInfo('value', $value);
+        }
+    }
+
+    /**
      * @return mixed
      *
      * @internal should be not used outside atk4/data
@@ -434,6 +441,8 @@ abstract class Join
      */
     protected function setId(Model $entity, $id): void
     {
+        $this->assertReferenceIdNotNull($id);
+
         $this->idByOid[spl_object_id($entity)] = $id;
     }
 
@@ -530,12 +539,14 @@ abstract class Join
             return;
         }
 
-        $this->setSaveBufferValue($entity, $this->foreign_field, $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId()); // TODO needed? from array persistence
+        $id = $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId();
+        $this->assertReferenceIdNotNull($id);
+        $this->setSaveBufferValue($entity, $this->foreign_field, $id); // TODO needed? from array persistence
 
         $foreignModel = $this->getForeignModel();
         $foreignEntity = $foreignModel->createEntity()
             ->setMulti($this->getAndUnsetSaveBuffer($entity))
-            ->set($this->foreign_field, $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId());
+            ->set($this->foreign_field, $id);
         $foreignEntity->save();
 
         $this->setId($entity, $entity->getId()); // TODO why is this here? it seems to be not needed
@@ -553,6 +564,7 @@ abstract class Join
 
         $foreignModel = $this->getForeignModel();
         $foreignId = $this->reverse ? $entity->getId() : $entity->get($this->master_field);
+        $this->assertReferenceIdNotNull($foreignId);
         $saveBuffer = $this->getAndUnsetSaveBuffer($entity);
         $foreignModel->atomic(function () use ($foreignModel, $foreignId, $saveBuffer) {
             $foreignModel = (clone $foreignModel)->addCondition($this->foreign_field, $foreignId);
@@ -573,6 +585,7 @@ abstract class Join
 
         $foreignModel = $this->getForeignModel();
         $foreignId = $this->reverse ? $entity->getId() : $entity->get($this->master_field);
+        $this->assertReferenceIdNotNull($foreignId);
         $foreignModel->atomic(function () use ($foreignModel, $foreignId) {
             $foreignModel = (clone $foreignModel)->addCondition($this->foreign_field, $foreignId);
             foreach ($foreignModel as $foreignEntity) {

@@ -35,7 +35,7 @@ class EmailField extends Field
             $email = preg_replace('/^[^<]*<([^>]*)>/', '\1', $email);
         }
 
-        if (strpos($email, '@') === false) {
+        if (!str_contains($email, '@')) {
             throw new ValidationException([$this->shortName => 'Email address does not have domain'], $this->getOwner());
         }
 

@@ -24,7 +24,7 @@ jobs:
             type: 'StaticAnalysis'
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Configure PHP
         run: |
@@ -66,6 +66,8 @@ jobs:
         if: matrix.type == 'CodingStyle'
         run: |
           vendor/bin/php-cs-fixer fix --dry-run --using-cache=no --diff --verbose
+          composer config --unset version && composer config --unset require-release
+          composer validate --strict --no-check-lock && composer normalize --dry-run --no-check-lock
 
       - name: Run Static Analysis (only for StaticAnalysis)
         if: matrix.type == 'StaticAnalysis'
@@ -116,7 +118,7 @@ jobs:
           ORACLE_PASSWORD: atk4_pass
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Configure PHP
         run: |
@@ -162,6 +164,7 @@ jobs:
           if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-sqlite.cov; fi
 
       - name: "Run tests: MySQL - PDO"
+        if: success() || failure()
         env:
           DB_DSN: "pdo_mysql:host=mysql;dbname=atk4_test"
           DB_USER: atk4_test_user
@@ -171,6 +174,7 @@ jobs:
           if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-mysql-pdo.cov; fi
 
       - name: "Run tests: MySQL - mysqli"
+        if: success() || failure()
         env:
           DB_DSN: "mysqli:host=mysql;dbname=atk4_test"
           DB_USER: atk4_test_user
@@ -180,6 +184,7 @@ jobs:
           if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-mysql-mysqli.cov; fi
 
       - name: "Run tests: MySQL 5.6"
+        if: success() || failure()
         env:
           DB_DSN: "mysql:host=mysql56;dbname=atk4_test"
           DB_USER: atk4_test_user
@@ -189,6 +194,7 @@ jobs:
           if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-mysql56.cov; fi
 
       - name: "Run tests: MariaDB"
+        if: success() || failure()
         env:
           DB_DSN: "mysql:host=mariadb;dbname=atk4_test"
           DB_USER: atk4_test_user
@@ -198,6 +204,7 @@ jobs:
           if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-mariadb.cov; fi
 
       - name: "Run tests: PostgreSQL"
+        if: success() || failure()
         env:
           DB_DSN: "pgsql:host=postgres;dbname=atk4_test"
           DB_USER: atk4_test_user
@@ -207,6 +214,7 @@ jobs:
           if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-postgres.cov; fi
 
       - name: "Run tests: MSSQL"
+        if: success() || failure()
         env:
           DB_DSN: "sqlsrv:host=mssql;dbname=master;driverOptions[TrustServerCertificate]=1"
           DB_USER: sa
@@ -216,7 +224,7 @@ jobs:
           if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-mssql.cov; fi
 
       - name: "Run tests: Oracle - PDO (only for coverage or cron)"
-        if: env.LOG_COVERAGE || github.event_name == 'schedule'
+        if: (success() || failure()) && (env.LOG_COVERAGE || github.event_name == 'schedule')
         env:
           DB_DSN: "pdo_oci:dbname=oracle/xe"
           DB_USER: system
@@ -227,6 +235,7 @@ jobs:
           if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-oracle-pdo.cov; fi
 
       - name: "Run tests: Oracle - OCI8"
+        if: success() || failure()
         env:
           DB_DSN: "oci8:dbname=oracle/xe"
           DB_USER: system

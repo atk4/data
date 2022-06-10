@@ -20,7 +20,7 @@ class HasMany extends Reference
         return $model->table;
     }
 
-    public function getTheirFieldName(): string
+    public function getTheirFieldName(Model $theirModel = null): string
     {
         if ($this->their_field) {
             return $this->their_field;
@@ -29,7 +29,7 @@ class HasMany extends Reference
         // this is pure guess, verify if such field exist, otherwise throw
         // TODO probably remove completely in the future
         $ourModel = $this->getOurModel(null);
-        $theirFieldName = $this->getModelTableString($ourModel) . '_' . $ourModel->id_field;
+        $theirFieldName = preg_replace('~^.+?\.~', '', $this->getModelTableString($ourModel)) . '_' . $ourModel->id_field;
         if (!$this->createTheirModel()->hasField($theirFieldName)) {
             throw (new Exception('Their model does not contain fallback field'))
                 ->addMoreInfo('their_fallback_field', $theirFieldName);
@@ -47,10 +47,13 @@ class HasMany extends Reference
     {
         $ourModel = $this->getOurModel($ourModel);
 
-        if ($ourModel->isEntity() && $ourModel->isLoaded()) {
-            return $this->our_field
+        if ($ourModel->isEntity()) {
+            $res = $this->our_field
                 ? $ourModel->get($this->our_field)
                 : $ourModel->getId();
+            $this->assertReferenceValueNotNull($res);
+
+            return $res;
         }
 
         // create expression based on existing conditions

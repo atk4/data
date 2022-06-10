@@ -72,14 +72,14 @@ class Static_ extends Array_
             }
 
             // try to detect type of field by its value
-            if (is_int($value)) {
-                $def_types[] = ['type' => 'integer'];
-            } elseif ($value instanceof \DateTime) {
-                $def_types[] = ['type' => 'datetime'];
-            } elseif (is_bool($value)) {
+            if (is_bool($value)) {
                 $def_types[] = ['type' => 'boolean'];
+            } elseif (is_int($value)) {
+                $def_types[] = ['type' => 'integer'];
             } elseif (is_float($value)) {
                 $def_types[] = ['type' => 'float'];
+            } elseif ($value instanceof \DateTimeInterface) {
+                $def_types[] = ['type' => 'datetime'];
             } elseif (is_array($value)) {
                 $def_types[] = ['type' => 'json'];
             } elseif (is_object($value)) {

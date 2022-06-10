@@ -91,11 +91,11 @@ to re-use your query efficiently::
     if ($row) {
         $query
             ->set('revision', $query->expr('revision + 1'))
-            ->mode('update')->execute();
+            ->mode('update')->executeStatement();
     } else {
         $query
             ->set('revision', 1)
-            ->mode('insert')->execute();
+            ->mode('insert')->executeStatement();
     }
 
 The example above will perform a select query first:
@@ -191,7 +191,7 @@ Basic Examples::
     $c->dsql()->table('user');
         // SELECT * from `user`
 
-    $c->dsql()->table('user','u');
+    $c->dsql()->table('user', 'u');
         // aliases table with "u"
         // SELECT * from `user` `u`
 
@@ -199,11 +199,11 @@ Basic Examples::
         // specify multiple tables. Don't forget to link them by using "where"
         // SELECT * from `user`, `salary`
 
-    $c->dsql()->table(['user','salary']);
+    $c->dsql()->table(['user', 'salary']);
         // identical to previous example
         // SELECT * from `user`, `salary`
 
-    $c->dsql()->table(['u' => 'user','s' => 'salary']);
+    $c->dsql()->table(['u' => 'user', 's' => 'salary']);
         // specify aliases for multiple tables
         // SELECT * from `user` `u`, `salary` `s`
 
@@ -261,7 +261,7 @@ Basic Examples::
     $query->field('employee.first_name')
         // SELECT `employee`.`first_name` from `user`
 
-    $query->field('first_name','name')
+    $query->field('first_name', 'name')
         // SELECT `first_name` `name` from `user`
 
     $query->field(['name' => 'first_name'])
@@ -526,7 +526,7 @@ used in `on` condition::
     $q->join('user boss', 'u.boss_user_id');
         // JOIN `user` `boss` ON `boss`.`id`=`u`.`boss_user_id`
 
-By default the "on" field is defined as `$table."_id"`, as you have seen in the
+By default the "on" field is defined as `$table . "_id"`, as you have seen in the
 previous examples where join was done on "address_id", and "credit_card_id".
 If you have specified field explicitly in the foreign field, then the "on" field
 is set to "id", like in the example above.
@@ -590,8 +590,8 @@ Use WITH cursors
         ->field($q->expr('sum([])', ['total_net']))
         ->group('emp_id');
     $employees = $q
-        ->with($quotes, 'q', ['emp','quoted'])
-        ->with($invoices, 'i', ['emp','invoiced'])
+        ->with($quotes, 'q', ['emp', 'quoted'])
+        ->with($invoices, 'i', ['emp', 'invoiced'])
         ->table('employees')
         ->join('q.emp')
         ->join('i.emp')
@@ -665,10 +665,10 @@ Set value to a field
 
 Example::
 
-    $q->table('user')->set('name', 'john')->mode('insert')->execute();
+    $q->table('user')->set('name', 'john')->mode('insert')->executeStatement();
         // insert into user (name) values (john)
 
-    $q->table('log')->set('date', $q->expr('now()'))->mode('insert')->execute();
+    $q->table('log')->set('date', $q->expr('now()'))->mode('insert')->executeStatement();
         // insert into log (date) values (now())
 
 Method can be executed several times on the same Query object.
@@ -782,8 +782,8 @@ Other Methods
         ->option('calc_found_rows') // for default select mode
         ->option('ignore', 'insert') // for insert mode;
 
-    $q->execute(); // select calc_found_rows `name` from `test`
-    $q->mode('insert')->execute(); // insert ignore into `test` (`name`) values (`name` = 'John')
+    $q->executeQuery(); // select calc_found_rows `name` from `test`
+    $q->mode('insert')->executeStatement(); // insert ignore into `test` (`name`) values (`name` = 'John')
 
 .. php:method:: _set_args($what, $alias, $value)
 
@@ -809,7 +809,7 @@ Other Methods
 
     .. code-block:: php
     $s = $this->q()->caseExpr()
-            ->caseWhen(['status','New'], 't2.expose_new')
+            ->caseWhen(['status', 'New'], 't2.expose_new')
             ->caseWhen(['status', 'like', '%Used%'], 't2.expose_used')
             ->caseElse(null);
 

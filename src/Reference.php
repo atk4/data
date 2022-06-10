@@ -52,7 +52,7 @@ class Reference
      * then used inside getModel() to fully populate and associate with
      * persistence.
      *
-     * @var Model|\Closure|array
+     * @var Model|\Closure(object, static, array): Model|array
      */
     public $model;
 
@@ -97,6 +97,17 @@ class Reference
         return $this->_setOwner($owner);
     }
 
+    /**
+     * @param mixed $value
+     */
+    protected function assertReferenceValueNotNull($value): void
+    {
+        if ($value === null) {
+            throw (new Exception('Unable to traverse on null value'))
+                ->addMoreInfo('value', $value);
+        }
+    }
+
     protected function getOurFieldName(): string
     {
         return $this->our_field ?: $this->getOurModel(null)->id_field;
@@ -115,9 +126,9 @@ class Reference
         return $this->getOurModel($ourEntity)->get($this->getOurFieldName());
     }
 
-    public function getTheirFieldName(): string
+    public function getTheirFieldName(Model $theirModel = null): string
     {
-        return $this->their_field ?? $this->model->id_field;
+        return $this->their_field ?? ($theirModel ?? Model::assertInstanceOf($this->model))->id_field;
     }
 
     protected function onHookToOurModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
@@ -221,7 +232,7 @@ class Reference
             $ourModel = $this->getOurModel(null);
 
             $aliasFull = $this->link;
-            $alias = preg_replace('~_(' . preg_quote($ourModel->id_field, '~') . '|id)$~', '', $aliasFull);
+            $alias = preg_replace('~_(' . preg_quote($ourModel->id_field ?? '', '~') . '|id)$~', '', $aliasFull);
             $alias = preg_replace('~([0-9a-z]?)[0-9a-z]*[^0-9a-z]*~i', '$1', $alias);
             if ($ourModel->table_alias !== null) {
                 $aliasFull = $ourModel->table_alias . '_' . $aliasFull;
@@ -252,11 +263,11 @@ class Reference
     {
         $ourModel = $this->getOurModel(null);
 
-        // this will be useful for containsOne/Many implementation in case when you have
+        // this is useful for ContainsOne/Many implementation in case when you have
         // SQL_Model->containsOne()->hasOne() structure to get back to SQL persistence
-        // from Array persistence used in containsOne model
-        if ($ourModel->contained_in_root_model && $ourModel->contained_in_root_model->persistence) {
-            return $ourModel->contained_in_root_model->persistence;
+        // from Array persistence used in ContainsOne model
+        if ($ourModel->containedInEntity && $ourModel->containedInEntity->persistence) {
+            return $ourModel->containedInEntity->persistence;
         }
 
         return $ourModel->persistence ?: false;

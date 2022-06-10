@@ -123,7 +123,7 @@ abstract class Persistence
      */
     public function tryLoad(Model $model, $id): ?array
     {
-        throw new Exception('Load is not supported.');
+        throw new Exception('Load is not supported');
     }
 
     /**
@@ -193,7 +193,7 @@ abstract class Persistence
      */
     protected function insertRaw(Model $model, array $dataRaw)
     {
-        throw new Exception('Insert is not supported.');
+        throw new Exception('Insert is not supported');
     }
 
     /**
@@ -206,7 +206,7 @@ abstract class Persistence
         $idRaw = $model->id_field ? $this->typecastSaveField($model->getField($model->id_field), $id) : null;
         unset($id);
         if ($idRaw === null || (array_key_exists($model->id_field, $data) && $data[$model->id_field] === null)) {
-            throw new Exception('Model id_field is not set. Unable to update record.');
+            throw new Exception('Unable to update record: Model id_field is not set');
         }
 
         $dataRaw = $this->typecastSaveRow($model, $data);
@@ -234,7 +234,7 @@ abstract class Persistence
      */
     protected function updateRaw(Model $model, $idRaw, array $dataRaw): void
     {
-        throw new Exception('Update is not supported.');
+        throw new Exception('Update is not supported');
     }
 
     /**
@@ -247,7 +247,7 @@ abstract class Persistence
         $idRaw = $model->id_field ? $this->typecastSaveField($model->getField($model->id_field), $id) : null;
         unset($id);
         if ($idRaw === null) {
-            throw new Exception('Model id_field is not set. Unable to delete record.');
+            throw new Exception('Unable to delete record: Model id_field is not set');
         }
 
         if (is_object($model->table)) {
@@ -268,7 +268,7 @@ abstract class Persistence
      */
     protected function deleteRaw(Model $model, $idRaw): void
     {
-        throw new Exception('Delete is not supported.');
+        throw new Exception('Delete is not supported');
     }
 
     /**
@@ -399,11 +399,10 @@ abstract class Persistence
 
             if ($field->type === 'datetime') {
                 $value = new \DateTime($value->format('Y-m-d H:i:s.u'), $value->getTimezone());
-                $value->setTimezone(new \DateTimeZone($field->persist_timezone));
+                $value->setTimezone(new \DateTimeZone('UTC'));
             }
 
-            $formats = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s.u', 'time' => 'H:i:s.u'];
-            $format = $field->persist_format ?: $formats[$field->type];
+            $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s.u', 'time' => 'H:i:s.u'][$field->type];
             $value = $value->format($format);
 
             return $value;
@@ -435,31 +434,22 @@ abstract class Persistence
         // native DBAL DT types have no microseconds support
         if (in_array($field->type, ['datetime', 'date', 'time'], true)
             && str_starts_with(get_class($field->getTypeObject()), 'Doctrine\DBAL\Types\\')) {
-            if ($field->persist_format) {
-                $format = $field->persist_format;
-            } else {
-                // ! symbol in date format is essential here to remove time part of DateTime - don't remove, this is not a bug
-                $formats = ['date' => '+!Y-m-d', 'datetime' => '+!Y-m-d H:i:s', 'time' => '+!H:i:s'];
-                $format = $formats[$field->type];
-                if (strpos($value, '.') !== false) { // time possibly with microseconds, otherwise invalid format
-                    $format = preg_replace('~(?<=H:i:s)(?![. ]*u)~', '.u', $format);
-                }
+            $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'][$field->type];
+            if (str_contains($value, '.')) { // time possibly with microseconds, otherwise invalid format
+                $format = preg_replace('~(?<=H:i:s)(?![. ]*u)~', '.u', $format);
+            }
+
+            $valueOrig = $value;
+            $value = \DateTime::createFromFormat('!' . $format, $value, new \DateTimeZone('UTC'));
+            if ($value === false) {
+                throw (new Exception('Incorrectly formatted datetime'))
+                    ->addMoreInfo('format', $format)
+                    ->addMoreInfo('value', $valueOrig)
+                    ->addMoreInfo('field', $field);
             }
 
             if ($field->type === 'datetime') {
-                $value = \DateTime::createFromFormat($format, $value, new \DateTimeZone($field->persist_timezone));
-                if ($value !== false) {
-                    $value->setTimezone(new \DateTimeZone(date_default_timezone_get()));
-                }
-            } else {
-                $value = \DateTime::createFromFormat($format, $value);
-            }
-
-            if ($value === false) {
-                throw (new Exception('Incorrectly formatted date/time'))
-                    ->addMoreInfo('format', $format)
-                    ->addMoreInfo('value', $value)
-                    ->addMoreInfo('field', $field);
+                $value->setTimezone(new \DateTimeZone(date_default_timezone_get()));
             }
 
             return $value;

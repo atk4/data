@@ -94,7 +94,7 @@ class ModelTest extends TestCase
                 'foo' => 'foovalue',
                 'bar' => 123,
                 'baz' => 'long text value',
-            ])->mode('insert')->execute();
+            ])->mode('insert')->executeStatement();
     }
 
     public function testCreateModel(): void
@@ -107,16 +107,13 @@ class ModelTest extends TestCase
 
         $user_model = $this->createMigrator()->createModel($this->db, 'user');
 
-        $this->assertSame(
-            [
-                'name',
-                'password',
-                'is_admin',
-                'notes',
-                'main_role_id', // our_field here not role_id (reference name)
-            ],
-            array_keys($user_model->getFields())
-        );
+        $this->assertSame([
+            'name',
+            'password',
+            'is_admin',
+            'notes',
+            'main_role_id', // our_field here not role_id (reference name)
+        ], array_keys($user_model->getFields()));
     }
 
     /**
@@ -150,47 +147,37 @@ class ModelTest extends TestCase
         ];
     }
 
-    private function makePseudoRandomString(bool $isBinary, int $lengthBytes): string
+    private function makePseudoRandomString(bool $isBinary, int $length): string
     {
         $baseChars = [];
         if ($isBinary) {
             for ($i = 0; $i <= 0xFF; ++$i) {
-                $baseChars[crc32($lengthBytes . '_' . $i)] = chr($i);
+                $baseChars[crc32($length . '_' . $i)] = chr($i);
             }
         } else {
             for ($i = 0; $i <= 0x10FFFF; $i = $i * 1.001 + 1) {
                 $iInt = (int) $i;
                 if ($iInt < 0xD800 || $iInt > 0xDFFF) {
-                    $baseChars[crc32($lengthBytes . '_' . $i)] = mb_chr($iInt);
+                    $baseChars[crc32($length . '_' . $i)] = mb_chr($iInt);
                 }
             }
         }
         ksort($baseChars);
 
-        $res = str_repeat(implode('', $baseChars), intdiv($lengthBytes, count($baseChars)) + 1);
+        $res = str_repeat(implode('', $baseChars), intdiv($length, count($baseChars)) + 1);
         if ($isBinary) {
-            return substr($res, 0, $lengthBytes);
+            return substr($res, 0, $length);
         }
 
-        $res = mb_strcut($res, 0, $lengthBytes);
-        $padLength = $lengthBytes - strlen($res);
-        foreach ($baseChars as $ch) {
-            if (strlen($ch) === $padLength) {
-                $res .= $ch;
-
-                break;
-            }
-        }
-
-        return $res;
+        return mb_substr($res, 0, $length);
     }
 
     /**
      * @dataProvider providerCharacterTypeFieldLongData
      */
-    public function testCharacterTypeFieldLong(string $type, bool $isBinary, int $lengthBytes): void
+    public function testCharacterTypeFieldLong(string $type, bool $isBinary, int $length): void
     {
-        if ($lengthBytes === 0) {
+        if ($length === 0) {
             $str = '';
 
             // TODO Oracle converts empty string to NULL
@@ -199,11 +186,11 @@ class ModelTest extends TestCase
                 $str = 'x';
             }
         } else {
-            $str = $this->makePseudoRandomString($isBinary, $lengthBytes - 1);
+            $str = $this->makePseudoRandomString($isBinary, $length - 1);
             if (!$isBinary) {
                 $str = preg_replace('~[\x00-\x1f]~', '-', $str);
             }
-            $this->assertSame($lengthBytes - 1, strlen($str));
+            $this->assertSame($length - 1, $isBinary ? strlen($str) : mb_strlen($str));
         }
 
         $model = new Model($this->db, ['table' => 'user']);
@@ -244,7 +231,7 @@ class ModelTest extends TestCase
             // is broken with long strings, oci8 driver is NOT affected,
             // CI images ghcr.io/mvorisek/image-php are patched
             // remove comment once https://github.com/php/php-src/pull/8018 is merged & released
-            ['text', false, 256 * 1024],
+            ['text', false, str_starts_with($_ENV['DB_DSN'], 'pdo_oci') && !isset($_ENV['CI']) ? 16 * 1024 : 256 * 1024],
             ['blob', true, 256 * 1024],
         ];
     }

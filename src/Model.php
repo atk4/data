@@ -17,7 +17,7 @@ use Atk4\Data\Field\SqlExpressionField;
 use Mvorisek\Atk4\Hintable\Data\HintableModelTrait;
 
 /**
- * @property int                 $id       @Atk4\Field(visibility="protected_set") Contains ID of the current record.
+ * @property int                 $id       @Atk4\Field() Contains ID of the current record.
  *                                         If the value is null then the record is considered to be new.
  * @property Field[]|Reference[] $elements
  *
@@ -39,6 +39,7 @@ class Model implements \IteratorAggregate
     }
     use DynamicMethodTrait;
     use HintableModelTrait {
+        HintableModelTrait::assertIsInitialized as private __hintable_assertIsInitialized;
         HintableModelTrait::__isset as private __hintable_isset;
         HintableModelTrait::__get as private __hintable_get;
         HintableModelTrait::__set as private __hintable_set;
@@ -47,6 +48,7 @@ class Model implements \IteratorAggregate
     use HookTrait;
     use InitializerTrait {
         init as private _init;
+        InitializerTrait::assertIsInitialized as private _assertIsInitialized;
     }
     use Model\JoinsTrait;
     use Model\ReferencesTrait;
@@ -91,9 +93,9 @@ class Model implements \IteratorAggregate
     public const HOOK_ONLY_FIELDS = self::class . '@onlyFields';
 
     /** @const string */
-    protected const ID_LOAD_ONE = self::class . '@idLoadOne';
+    protected const ID_LOAD_ONE = self::class . '@idLoadOne-h7axmDNBB3qVXjVv';
     /** @const string */
-    protected const ID_LOAD_ANY = self::class . '@idLoadAny';
+    protected const ID_LOAD_ANY = self::class . '@idLoadAny-h7axmDNBB3qVXjVv';
 
     // {{{ Properties of the class
 
@@ -185,9 +187,6 @@ class Model implements \IteratorAggregate
      * updating the model. This property is intended for UI and other code
      * detecting read-only models and acting accordingly.
      *
-     * SECURITY WARNING: If you are looking for a RELIABLE way to restrict access
-     * to model data, please check Secure Enclave extension.
-     *
      * @var bool
      */
     public $read_only = false;
@@ -259,13 +258,13 @@ class Model implements \IteratorAggregate
     public $reload_after_save;
 
     /**
-     * If this model is "contained into" another model by using containsOne
-     * or containsMany reference, then this property will contain reference
-     * to top most parent model.
+     * If this model is "contained into" another entity by using ContainsOne
+     * or ContainsMany reference, then this property will contain reference
+     * to owning entity.
      *
      * @var Model|null
      */
-    public $contained_in_root_model;
+    public $containedInEntity;
 
     /** @var Reference Only for Reference class */
     public $ownerReference;
@@ -318,7 +317,7 @@ class Model implements \IteratorAggregate
         if ($expectedModelInstance !== null && $expectedModelInstance !== $this) {
             $expectedModelInstance->assertIsModel();
 
-            throw new Exception('Unexpected entity model instance');
+            throw new Exception('Model instance does not match');
         }
     }
 
@@ -388,6 +387,8 @@ class Model implements \IteratorAggregate
 
                 'ownerReference', // should be removed once references/joins are non-entity
                 'userActions', // should be removed once user actions are non-entity
+
+                'containedInEntity',
             ] as $name) {
                 unset($modelOnlyProperties[$name]);
             }
@@ -446,6 +447,12 @@ class Model implements \IteratorAggregate
         }
 
         $this->initUserActions();
+    }
+
+    public function assertIsInitialized(): void
+    {
+        $this->_assertIsInitialized();
+        $this->__hintable_assertIsInitialized();
     }
 
     private function initEntityIdAndAssertUnchanged(): void
@@ -1089,7 +1096,7 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Set order for model records. Multiple calls.
+     * Set order for model records. Multiple calls are allowed.
      *
      * @param string|array $field
      * @param string       $direction "asc" or "desc"
@@ -1232,11 +1239,12 @@ class Model implements \IteratorAggregate
     }
 
     /**
+     * @param ($fromTryLoad is true ? false : bool) $fromReload
      * @param mixed $id
      *
-     * @return $this
+     * @return ($fromTryLoad is true ? static|null : static)
      */
-    private function _loadThis(bool $isTryLoad, $id)
+    private function _load(bool $fromReload, bool $fromTryLoad, $id)
     {
         $this->assertIsEntity();
         if ($this->isLoaded()) {
@@ -1246,25 +1254,46 @@ class Model implements \IteratorAggregate
         $this->assertHasPersistence();
 
         $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
-        if ($this->hook(self::HOOK_BEFORE_LOAD, [$noId ? null : $id]) === false) {
-            return $this;
-        }
-        $dataRef = &$this->getDataRef();
-        $dataRef = $this->persistence->{$isTryLoad ? 'tryLoad' : 'load'}($this->getModel(), $this->remapIdLoadToPersistence($id));
-        if ($isTryLoad && $dataRef === null) {
-            $dataRef = [];
-            $this->unload();
-        } else {
-            if ($this->id_field) {
-                $this->setId($this->getId());
+        $res = $this->hook(self::HOOK_BEFORE_LOAD, [$noId ? null : $id]);
+        if ($res === false) {
+            if ($fromReload) {
+                $this->unload();
+
+                return $this;
             }
 
-            $ret = $this->hook(self::HOOK_AFTER_LOAD);
-            if ($ret === false) {
+            return null;
+        } elseif (is_object($res)) {
+            $res = (static::class)::assertInstanceOf($res);
+            $res->assertIsEntity();
+
+            return $res;
+        }
+
+        $dataRef = &$this->getDataRef();
+        $dataRef = $this->persistence->{$fromTryLoad ? 'tryLoad' : 'load'}($this->getModel(), $this->remapIdLoadToPersistence($id));
+        if ($dataRef === null) {
+            return null; // $fromTryLoad is always true here
+        }
+
+        if ($this->id_field) {
+            $this->setId($this->getId());
+        }
+
+        $res = $this->hook(self::HOOK_AFTER_LOAD);
+        if ($res === false) {
+            if ($fromReload) {
                 $this->unload();
-            } elseif (is_object($ret)) {
-                return $ret; // @phpstan-ignore-line
+
+                return $this;
             }
+
+            return null;
+        } elseif (is_object($res)) {
+            $res = (static::class)::assertInstanceOf($res);
+            $res->assertIsEntity();
+
+            return $res;
         }
 
         return $this;
@@ -1281,7 +1310,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsModel();
 
-        return $this->createEntity()->_loadThis(true, $id);
+        return $this->createEntity()->_load(false, true, $id);
     }
 
     /**
@@ -1295,7 +1324,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsModel();
 
-        return $this->createEntity()->_loadThis(false, $id);
+        return $this->createEntity()->_load(false, false, $id);
     }
 
     /**
@@ -1352,7 +1381,12 @@ class Model implements \IteratorAggregate
         $id = $this->getId();
         $this->unload();
 
-        return $this->_loadThis(false, $id);
+        $res = $this->_load(true, false, $id);
+        if ($res !== $this) {
+            throw new Exception('Entity instance does not match');
+        }
+
+        return $this;
     }
 
     /**
@@ -1368,6 +1402,8 @@ class Model implements \IteratorAggregate
         if (func_num_args() > 0) {
             throw new Exception('Duplicating using existing ID is no longer supported');
         }
+
+        $this->assertIsEntity();
 
         $duplicate = clone $this;
         $duplicate->_entityId = null;
@@ -1423,7 +1459,6 @@ class Model implements \IteratorAggregate
     {
         $class ??= static::class;
 
-        /** @var self $model */
         $model = new $class($persistence, ['table' => $this->table]);
         if ($this->isEntity()) { // TODO should this method work with entity at all?
             $model = $model->createEntity();
@@ -1458,11 +1493,15 @@ class Model implements \IteratorAggregate
     /**
      * @param mixed $value
      *
-     * @return static|null
+     * @return ($fromTryLoad is true ? static|null : static)
      */
-    private function _loadBy(bool $isTryLoad, string $fieldName, $value)
+    private function _loadBy(bool $fromTryLoad, string $fieldName, $value)
     {
         $this->assertIsModel();
+
+        if ($fieldName === $this->id_field) { // optimization only
+            return $this->{$fromTryLoad ? 'tryLoad' : 'load'}($value);
+        }
 
         $field = $this->getField($fieldName);
 
@@ -1473,7 +1512,7 @@ class Model implements \IteratorAggregate
             $this->scope = clone $this->scope;
             $this->addCondition($field, $value);
 
-            return $this->{$isTryLoad ? 'tryLoadOne' : 'loadOne'}();
+            return $this->{$fromTryLoad ? 'tryLoadOne' : 'loadOne'}();
         } finally {
             $this->scope = $scopeBak;
             $field->system = $systemBak;
@@ -1783,24 +1822,20 @@ class Model implements \IteratorAggregate
             // you can also use breakHook() with specific object which will then be returned
             // as a next iterator value
 
-            /** @var static|false|null */
-            $ret = $thisCloned->hook(self::HOOK_AFTER_LOAD);
-            if ($ret === false) {
+            $res = $thisCloned->hook(self::HOOK_AFTER_LOAD);
+            if ($res === false) {
                 continue;
+            } elseif (is_object($res)) {
+                $res = (static::class)::assertInstanceOf($res);
+                $res->assertIsEntity();
+            } else {
+                $res = $thisCloned;
             }
 
-            if (is_object($ret)) {
-                if ($ret->id_field) {
-                    yield $ret->getId() => $ret;
-                } else {
-                    yield $ret;
-                }
+            if ($res->id_field) {
+                yield $res->getId() => $res;
             } else {
-                if ($this->id_field) {
-                    yield $thisCloned->getId() => $thisCloned;
-                } else {
-                    yield $thisCloned;
-                }
+                yield $res;
             }
         }
     }

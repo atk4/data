@@ -393,7 +393,7 @@ iterating it will simply make it load different values.
 
 At this point, I'll jump ahead a bit and will show you an alternative code::
 
-    $sum = $db->add('Model_Order')->fx0(['sum','amount'])->getOne();
+    $sum = $db->add('Model_Order')->fx0(['sum', 'amount'])->getOne();
 
 It will have same effect as the code above, but will perform operation of
 adding up all order amounts inside the database and save you a lot of CPU cycles.
@@ -409,7 +409,7 @@ worrying that you will introduce unnecessary bindings into persistence and break
 single-purpose principle of your objects::
 
     foreach ($clients as $client) {
-        // echo $client->get('name')."\n";
+        // echo $client->get('name') . "\n";
     }
 
 The above is a Domain Model code. It will iterate through the DataSet of
@@ -426,7 +426,7 @@ And again it's much more effective to do this on database side::
 
     $sum = $db->add('Model_Order')
                 ->addCondition('is_paid', true)
-                ->fx0(['sum','amount'])
+                ->fx0(['sum', 'amount'])
                 ->getOne();
 
 
@@ -452,7 +452,7 @@ into another::
     $user_dataset->addCondition('is_vip', true);
     $vip_orders = $user_dataset->ref('Order');
 
-    $sum = $vip_orders->fx0(['sum','amount'])->getOne();
+    $sum = $vip_orders->fx0(['sum', 'amount'])->getOne();
 
 The implementation of `ref()` is pretty powerful - $user_dataset can address 3
 users in the database and only 2 of those users are VIP. Typical ORM would

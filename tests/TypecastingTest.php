@@ -8,6 +8,7 @@ use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Platforms\SqlitePlatform;
 
 class TypecastingTest extends TestCase
 {
@@ -37,10 +38,10 @@ class TypecastingTest extends TestCase
                     'date' => '2013-02-20',
                     'datetime' => '2013-02-20 20:00:12.000000',
                     'time' => '12:00:50.000000',
-                    'boolean' => 1,
+                    'boolean' => true,
                     'integer' => '2940',
                     'money' => '8.20',
-                    'float' => '8.202343',
+                    'float' => 8.20234376757473,
                     'json' => '[1,2,3]',
                 ],
             ],
@@ -64,12 +65,12 @@ class TypecastingTest extends TestCase
         $this->assertSame('foo', $mm->get('string'));
         $this->assertTrue($mm->get('boolean'));
         $this->assertSame(8.20, $mm->get('money'));
-        $this->assertEquals(new \DateTime('2013-02-20'), $mm->get('date'));
+        $this->assertEquals(new \DateTime('2013-02-20 UTC'), $mm->get('date'));
         $this->assertEquals(new \DateTime('2013-02-20 20:00:12 UTC'), $mm->get('datetime'));
-        $this->assertEquals(new \DateTime('1970-01-01 12:00:50'), $mm->get('time'));
+        $this->assertEquals(new \DateTime('1970-01-01 12:00:50 UTC'), $mm->get('time'));
         $this->assertSame(2940, $mm->get('integer'));
         $this->assertSame([1, 2, 3], $mm->get('json'));
-        $this->assertSame(8.202343, $mm->get('float'));
+        $this->assertSame(8.20234376757473, $mm->get('float'));
 
         $m->createEntity()->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
 
@@ -84,7 +85,7 @@ class TypecastingTest extends TestCase
                     'boolean' => 1,
                     'integer' => 2940,
                     'money' => 8.2,
-                    'float' => 8.202343,
+                    'float' => 8.20234376757473,
                     'json' => '[1,2,3]',
                 ],
                 2 => [
@@ -96,7 +97,7 @@ class TypecastingTest extends TestCase
                     'boolean' => '1',
                     'integer' => '2940',
                     'money' => '8.2',
-                    'float' => '8.202343',
+                    'float' => 8.20234376757473,
                     'json' => '[1,2,3]',
                 ],
             ],
@@ -109,6 +110,15 @@ class TypecastingTest extends TestCase
         unset($duplicate['id']);
 
         $this->assertEquals($first, $duplicate);
+
+        $m->load(2)->set('float', 8.20234376757474)->save();
+        $this->assertSame(8.20234376757474, $m->load(2)->get('float'));
+        $m->load(2)->set('float', 8.202343767574732)->save();
+        // pdo_sqlite in truncating float, see https://github.com/php/php-src/issues/8510
+        // fixed since PHP 8.1, but if converted in SQL to string explicitly, the result is still wrong
+        if (!$this->getDatabasePlatform() instanceof SqlitePlatform || \PHP_VERSION_ID >= 80100) {
+            $this->assertSame(8.202343767574732, $m->load(2)->get('float'));
+        }
     }
 
     public function testEmptyValues(): void
@@ -239,11 +249,11 @@ class TypecastingTest extends TestCase
                     'date' => '2013-02-20',
                     'datetime' => '2013-02-20 20:00:12.235689',
                     'time' => '12:00:50.235689',
-                    'b1' => '1',
-                    'b2' => '0',
+                    'b1' => true,
+                    'b2' => false,
                     'integer' => '2940',
                     'money' => '8.20',
-                    'float' => '8.202343',
+                    'float' => 8.20234376757473,
                 ],
             ],
         ];
@@ -277,6 +287,7 @@ class TypecastingTest extends TestCase
         $m->delete(1);
 
         unset($dbData['types'][0]);
+        $row['b2'] = '0'; // fix false == '0', see https://github.com/sebastianbergmann/phpunit/issues/4967, remove once fixed
         $row['money'] = '8.2'; // here it will loose last zero and that's as expected
         $dbData['types'][2] = array_merge(['id' => '2'], $row);
 
@@ -364,43 +375,6 @@ class TypecastingTest extends TestCase
 
         $m2 = $m->addCondition('date', $d)->loadOne();
         $this->assertTrue($m2->isLoaded());
-    }
-
-    public function testTypecastTimezone(): void
-    {
-        $m = new Model($this->db, ['table' => 'event']);
-        $dt = $m->addField('dt', ['type' => 'datetime', 'persist_timezone' => 'EEST']);
-        $d = $m->addField('d', ['type' => 'date', 'persist_timezone' => 'EEST']);
-        $t = $m->addField('t', ['type' => 'time', 'persist_timezone' => 'EEST']);
-
-        date_default_timezone_set('UTC');
-        $s = new \DateTime('Monday, 15-Aug-05 22:52:01 UTC');
-        $this->assertSame('2005-08-16 00:52:01.000000', $this->db->typecastSaveField($dt, $s));
-        $this->assertSame('2005-08-15', $this->db->typecastSaveField($d, $s));
-        $this->assertSame('22:52:01.000000', $this->db->typecastSaveField($t, $s));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $this->db->typecastLoadField($dt, '2005-08-16 00:52:01'));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $this->db->typecastLoadField($d, '2005-08-15'));
-        $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $this->db->typecastLoadField($t, '22:52:01'));
-
-        date_default_timezone_set('Asia/Tokyo');
-
-        $s = new \DateTime('Monday, 15-Aug-05 22:52:01 UTC');
-        $this->assertSame('2005-08-16 00:52:01.000000', $this->db->typecastSaveField($dt, $s));
-        $this->assertSame('2005-08-15', $this->db->typecastSaveField($d, $s));
-        $this->assertSame('22:52:01.000000', $this->db->typecastSaveField($t, $s));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $this->db->typecastLoadField($dt, '2005-08-16 00:52:01'));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $this->db->typecastLoadField($d, '2005-08-15'));
-        $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $this->db->typecastLoadField($t, '22:52:01'));
-
-        date_default_timezone_set('America/Los_Angeles');
-
-        $s = new \DateTime('Monday, 15-Aug-05 22:52:01'); // uses servers default timezone
-        $this->assertSame('2005-08-16 07:52:01.000000', $this->db->typecastSaveField($dt, $s));
-        $this->assertSame('2005-08-15', $this->db->typecastSaveField($d, $s));
-        $this->assertSame('22:52:01.000000', $this->db->typecastSaveField($t, $s));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 America/Los_Angeles'), $this->db->typecastLoadField($dt, '2005-08-16 07:52:01'));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $this->db->typecastLoadField($d, '2005-08-15'));
-        $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $this->db->typecastLoadField($t, '22:52:01'));
     }
 
     public function testTimestamp(): void

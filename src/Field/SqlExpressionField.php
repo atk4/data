@@ -17,7 +17,7 @@ class SqlExpressionField extends Field
         init as private _init;
     }
 
-    /** @var \Closure|string|Expressionable Used expression. */
+    /** @var \Closure(object, Expression): (string|Expressionable)|string|Expressionable Used expression. */
     public $expr;
 
     /** @var bool Expressions are always read_only. */
@@ -83,7 +83,7 @@ class SqlExpressionField extends Field
 
             // Otherwise call it from expression itself
             return $expression->expr('([])', [$expression->expr($expr)]);
-        } elseif ($expr instanceof Expressionable && !$expr instanceof Expression) {
+        } elseif ($expr instanceof Expressionable && !$expr instanceof Expression) { // @phpstan-ignore-line
             return $expression->expr('[]', [$expr]);
         }
 

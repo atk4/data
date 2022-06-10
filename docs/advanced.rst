@@ -71,7 +71,7 @@ would work without a change.
 Another scenario which could benefit by type substitution would be::
 
     foreach ($account->ref('Transactions') as $tr) {
-        echo get_class($tr)."\n";
+        echo get_class($tr) . "\n";
     }
 
 ATK Data allow class substitution during load and iteration by breaking "afterLoad"
@@ -79,11 +79,11 @@ hook. Place the following inside Transaction::init()::
 
     $this->onHookShort(Model::HOOK_AFTER_LOAD, function () {
         if (get_class($this) != $this->getClassName()) {
-            $cl = '\\'.$this->getClassName();
-            $cl = new $cl($this->persistence);
-            $cl = $cl->load($this->getId());
+            $cl = $this->getClassName();
+            $m = new $cl($this->persistence);
+            $m = $m->load($this->getId());
 
-            $this->breakHook($cl);
+            $this->breakHook($m);
         }
     });
 
@@ -166,7 +166,7 @@ which I want to define like this::
 
         $this->getOwner()->addField('updated_dts', ['type' => 'datetime']);
 
-        $this->getOwner()->onHook(Model::HOOK_BEFORE_UPDATE, function($m, $data) {
+        $this->getOwner()->onHook(Model::HOOK_BEFORE_UPDATE, function ($m, $data) {
             if(isset($this->getApp()->user) && $this->getApp()->user->isLoaded()) {
                 $data['updated_by'] = $this->getApp()->user->getId();
             }
@@ -440,7 +440,7 @@ inside your model are unique::
                     $mm->addCondition($mm->id_field != $this->id);
                     $mm = $mm->tryLoadBy($field, $m->get($field));
 
-                    if ($mm->isLoaded()) {
+                    if ($mm !== null) {
                         throw (new \Atk4\Core\Exception('Duplicate record exists'))
                             ->addMoreInfo('field', $field)
                             ->addMoreInfo('value', $m->get($field));
@@ -514,7 +514,7 @@ Next we need to define reference. Inside Model_Invoice add::
 
     $this->hasMany('InvoicePayment');
 
-    $this->hasMany('Payment', ['model' => function($m) {
+    $this->hasMany('Payment', ['model' => function ($m) {
         $p = new Model_Payment($m->persistence);
         $j = $p->join('invoice_payment.payment_id');
         $j->addField('amount_closed');
@@ -570,24 +570,23 @@ payment towards a most suitable invoice::
 
         while($this->get('amount_due') > 0) {
 
-            // See if any invoices match by 'reference';
-            $invoices = $invoices->tryLoadBy('reference', $this->get('reference'));
+            // see if any invoices match by 'reference'
+            $invoice = $invoices->tryLoadBy('reference', $this->get('reference'));
 
-            if (!$invoices->isLoaded()) {
+            if ($invoice === null) {
 
                 // otherwise load any unpaid invoice
-                $invoices = $invoices->tryLoadAny();
+                $invoice = $invoices->tryLoadAny();
 
-                if(!$invoices->isLoaded()) {
-
-                    // couldn't load any invoice.
+                if ($invoice === null) {
+                    // couldn't load any invoice
                     return;
                 }
             }
 
             // How much we can allocate to this invoice
-            $alloc = min($this->get('amount_due'), $invoices->get('amount_due'))
-            $this->ref('InvoicePayment')->insert(['amount_closed' => $alloc, 'invoice_id' => $invoices->getId()]);
+            $alloc = min($this->get('amount_due'), $invoice->get('amount_due'))
+            $this->ref('InvoicePayment')->insert(['amount_closed' => $alloc, 'invoice_id' => $invoice->getId()]);
 
             // Reload ourselves to refresh amount_due
             $this->reload();
@@ -658,20 +657,20 @@ persistence layer to load or save anything. Next I need a beforeSave handler::
     $this->onHookShort(Model::HOOK_BEFORE_SAVE, function () {
         if($this->_isset('client_code') && !$this->_isset('client_id')) {
             $cl = $this->refModel('client_id');
-            $cl->addCondition('code',$this->get('client_code'));
-            $this->set('client_id', $cl->action('field',['id']));
+            $cl->addCondition('code', $this->get('client_code'));
+            $this->set('client_id', $cl->action('field', ['id']));
         }
 
         if($this->_isset('client_name') && !$this->_isset('client_id')) {
             $cl = $this->refModel('client_id');
             $cl->addCondition('name', 'like', $this->get('client_name'));
-            $this->set('client_id', $cl->action('field',['id']));
+            $this->set('client_id', $cl->action('field', ['id']));
         }
 
         if($this->_isset('category') && !$this->_isset('category_id')) {
             $c = $this->refModel('category_id');
             $c->addCondition($c->title_field, 'like', $this->get('category'));
-            $this->set('category_id', $c->action('field',['id']));
+            $this->set('category_id', $c->action('field', ['id']));
         }
     });
 
@@ -690,7 +689,7 @@ What if the user-specified entry is not found? Lets look at the code::
     if($m->_isset('category') && !$m->_isset('category_id')) {
         $c = $this->refModel('category_id');
         $c->addCondition($c->title_field, 'like', $m->get('category'));
-        $m->set('category_id', $c->action('field',['id']));
+        $m->set('category_id', $c->action('field', ['id']));
     }
 
 So if category with a name is not found, then sub-query will return "NULL".
@@ -699,8 +698,8 @@ If you wish to use a different value instead, you can create an expression::
     if($m->_isset('category') && !$m->_isset('category_id')) {
         $c = $this->refModel('category_id');
         $c->addCondition($c->title_field, 'like', $m->get('category'));
-        $m->set('category_id', $this->expr('coalesce([], [])',[
-            $c->action('field',['id']),
+        $m->set('category_id', $this->expr('coalesce([], [])', [
+            $c->action('field', ['id']),
             $m->getField('category_id')->default,
         ]));
     }
@@ -708,10 +707,10 @@ If you wish to use a different value instead, you can create an expression::
 The beautiful thing about this approach is that default can also be defined
 as a lookup query::
 
-    $this->hasOne('category_id','Model_Category');
+    $this->hasOne('category_id', 'Model_Category');
     $this->getField('category_id')->default =
-        $this->refModel('category_id')->addCondition('name','Other')
-            ->action('field',['id']);
+        $this->refModel('category_id')->addCondition('name', 'Other')
+            ->action('field', ['id']);
 
 
 Inserting Hierarchical Data
@@ -727,9 +726,9 @@ information. Here is usage example::
             'ref' => 'half upfront',
         ],
         'lines' => [
-            ['descr' => 'Book','qty' => 3, 'price' => 5]
-            ['descr' => 'Pencil','qty' => 1, 'price' => 10]
-            ['descr' => 'Eraser','qty' => 2, 'price' => 2.5],
+            ['descr' => 'Book', 'qty' => 3, 'price' => 5]
+            ['descr' => 'Pencil', 'qty' => 1, 'price' => 10]
+            ['descr' => 'Eraser', 'qty' => 2, 'price' => 2.5],
         ],
     ]);
 
@@ -738,13 +737,13 @@ Not only 'insert' but 'set' and 'save' should be able to use those fields for
 If you curious about client lookup by-name, I have explained it in the previous
 section. Add this into your Invoice Model::
 
-    $this->addField('payment',['never_persist' => true]);
-    $this->addField('lines',['never_persist' => true]);
+    $this->addField('payment', ['never_persist' => true]);
+    $this->addField('lines', ['never_persist' => true]);
 
 Next both payment and lines need to be added after invoice is actually created,
 so::
 
-    $this->onHookShort(Model::HOOK_AFTER_SAVE, function($is_update) {
+    $this->onHookShort(Model::HOOK_AFTER_SAVE, function ($is_update) {
         if($this->_isset('payment')) {
             $this->ref('Payment')->insert($this->get('payment'));
         }
@@ -800,7 +799,7 @@ field only to offer payments made by the same client. Inside Model_Invoice add::
 
     $this->hasOne('client_id', 'Client');
 
-    $this->hasOne('payment_invoice_id', ['model' => function($m) {
+    $this->hasOne('payment_invoice_id', ['model' => function ($m) {
         return $m->ref('client_id')->ref('Payment');
     }]);
 
@@ -809,13 +808,13 @@ field only to offer payments made by the same client. Inside Model_Invoice add::
     $m = new Model_Invoice($db);
     $m->set('client_id', 123);
 
-    $m->set('payment_invoice_id', $m->ref('payment_invoice_id')->tryLoadOne()->getId());
+    $m->set('payment_invoice_id', $m->ref('payment_invoice_id')->loadOne()->getId());
 
 In this case the payment_invoice_id will be set to ID of any payment by client
 123. There also may be some better uses::
 
     foreach ($cl->ref('Invoice') as $m) {
-        $m->set('payment_invoice_id', $m->ref('payment_invoice_id')->tryLoadOne()->getId());
+        $m->set('payment_invoice_id', $m->ref('payment_invoice_id')->loadOne()->getId());
         $m->save();
     }
 
@@ -826,8 +825,8 @@ Agile Data allow you to define multiple references between same entities, but
 sometimes that can be quite useful. Consider adding this inside your Model_Contact::
 
     $this->hasMany('Invoice', 'Model_Invoice');
-    $this->hasMany('OverdueInvoice', ['model' => function($m) {
-        return $m->ref('Invoice')->addCondition('due','<',date('Y-m-d'))
+    $this->hasMany('OverdueInvoice', ['model' => function ($m) {
+        return $m->ref('Invoice')->addCondition('due', '<', date('Y-m-d'))
     }]);
 
 This way if you extend your class into 'Model_Client' and modify the 'Invoice'
