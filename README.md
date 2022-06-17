@@ -609,8 +609,7 @@ Now you can explore. Try typing:
 > $m->loadBy('email', 'example@example.com')
 > $m->get()
 > $m->export(['email', 'name'])
-> $m->action('count')
-> $m->action('count')->getOne()
+> $m->executeCountQuery()
 ```
 
 ## Agile Core and DSQL

@@ -116,7 +116,7 @@ class Query extends Expression
             if (
                 $add_alias === false
                 || (is_string($field) && $alias === $field)
-                || is_numeric($alias)
+                || is_int($alias)
             ) {
                 $alias = null;
             }
@@ -225,7 +225,7 @@ class Query extends Expression
             if (
                 $add_alias === false
                 || (is_string($table) && $alias === $table)
-                || is_numeric($alias)
+                || is_int($alias)
             ) {
                 $alias = null;
             }

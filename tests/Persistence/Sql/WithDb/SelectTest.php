@@ -326,46 +326,46 @@ class SelectTest extends TestCase
             ['id' => 1, 'f1' => 'A'],
             ['id' => 2, 'f1' => 'B'],
         ]);
-        $this->assertSame('2', $m->action('count')->getOne());
+        $this->assertSame(2, $m->executeCountQuery());
         $this->assertSame(2, $getLastAiFx());
 
         $m->import([
             ['f1' => 'C'],
             ['f1' => 'D'],
         ]);
-        $this->assertSame('4', $m->action('count')->getOne());
+        $this->assertSame(4, $m->executeCountQuery());
         $this->assertSame(4, $getLastAiFx());
 
         $m->import([
             ['id' => 6, 'f1' => 'E'],
             ['id' => 7, 'f1' => 'F'],
         ]);
-        $this->assertSame('6', $m->action('count')->getOne());
+        $this->assertSame(6, $m->executeCountQuery());
         $this->assertSame(7, $getLastAiFx());
 
         $m->delete(6);
-        $this->assertSame('5', $m->action('count')->getOne());
+        $this->assertSame(5, $m->executeCountQuery());
         $this->assertSame(7, $getLastAiFx());
 
         $m->import([
             ['f1' => 'G'],
             ['f1' => 'H'],
         ]);
-        $this->assertSame('7', $m->action('count')->getOne());
+        $this->assertSame(7, $m->executeCountQuery());
         $this->assertSame(9, $getLastAiFx());
 
         $m->import([
             ['id' => 99, 'f1' => 'I'],
             ['id' => 20, 'f1' => 'J'],
         ]);
-        $this->assertSame('9', $m->action('count')->getOne());
+        $this->assertSame(9, $m->executeCountQuery());
         $this->assertSame(99, $getLastAiFx());
 
         $m->import([
             ['f1' => 'K'],
             ['f1' => 'L'],
         ]);
-        $this->assertSame('11', $m->action('count')->getOne());
+        $this->assertSame(11, $m->executeCountQuery());
         $this->assertSame(101, $getLastAiFx());
 
         $m->delete(100);

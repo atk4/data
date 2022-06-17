@@ -138,7 +138,7 @@ inside console::
     $m->addCondition('address_1', 'not', null);
     $m = $m->loadAny();
     $m->get();
-    $m->action('count')->getOne();
+    $m->executeCountQuery(); // same as ((int) $m->action('count')->getOne())
 
 Next, exit and create file `src/Model_ContactInfo.php`::
 
@@ -454,7 +454,7 @@ corresponding to all Systems that belong to user john. You can use the following
 to see number of records in DataSet or export DataSet::
 
     $s->isLoaded();
-    $s->action('count')->getOne();
+    $s->executeCountQuery();
     $s->export();
     $s->action('count')->getDebugQuery();
 
@@ -471,7 +471,7 @@ the Clients that are contained in all of the Systems that belong to user john.
 You can examine the this model further::
 
     $c->isLoaded();
-    $c->action('count')->getOne();
+    $c->executeCountQuery();
     $c->export();
     $c->action('count')->getDebugQuery();
 
@@ -529,7 +529,7 @@ basic aggregation without grouping. This type of aggregation provides some
 specific value from a data-set. SQL persistence implements some of the operations::
 
     $m = new Model_Invoice($db);
-    $m->action('count')->getOne();
+    $m->executeCountQuery();
     $m->action('fx', ['sum', 'total'])->getOne();
     $m->action('fx', ['max', 'shipping'])->getOne();
 
