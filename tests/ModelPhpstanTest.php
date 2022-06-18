@@ -21,6 +21,7 @@ class ModelPhpstanTest extends TestCase
     {
         $model = new Model();
         $this->assertSamePhpstanType(Model::class, $model);
+        $this->assertSamePhpstanType(Model::class, get_class($model)::assertInstanceOf($model));
 
         $entity = $model->createEntity();
         $this->assertSamePhpstanType(Model::class . '&' . IsEntity::class, $entity);
@@ -51,6 +52,7 @@ class ModelPhpstanTest extends TestCase
         $modelClass = random_int(0, 1) === 0 ? Female::class : Male::class;
         $model = new $modelClass();
         $this->assertSamePhpstanType(Female::class . '|' . Male::class, $model);
+        $this->assertSamePhpstanType(Female::class . '|' . Male::class, get_class($model)::assertInstanceOf($model));
 
         $entity = $model->createEntity();
         $this->assertSamePhpstanType('(' . IsEntity::class . '&' . Female::class . ')|(' . IsEntity::class . '&' . Male::class . ')', $entity);

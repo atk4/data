@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace Atk4\Data\Model\Phpstan;
 
 use PhpParser\Node\Expr\CallLike;
-use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Expr\StaticCall;
-use PhpParser\Node\Identifier;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
@@ -20,10 +19,8 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ResolvedMethodReflection;
 use PHPStan\Reflection\Type\CalledOnTypeUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnionTypeMethodReflection;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
-use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MethodTypeSpecifyingExtension;
 use PHPStan\Type\NeverType;
@@ -108,22 +105,10 @@ class RemoveVirtualInterfacesFromStaticReturnTypeDmrtExtension implements Dynami
     /**
      * @param MethodCall|StaticCall $methodCall
      */
-    protected function getMethodCallScopeType(CallLike $methodCall, Scope $scope): Type
+    protected function getObjectTypeFromMethodCallClass(CallLike $methodCall, Scope $scope): Type
     {
         if ($methodCall instanceof StaticCall) {
-            // while loop needed to fix https://github.com/phpstan/phpstan/issues/7391
-            $clExpr = $methodCall->class;
-            while ($clExpr instanceof ClassConstFetch && $clExpr->name instanceof Identifier && strtolower($clExpr->name->name) === 'class') {
-                $clExpr = $clExpr->class;
-            }
-            $classNameType = $scope->getType(new ClassConstFetch($clExpr, 'class'));
-            if ($classNameType instanceof ConstantStringType) {
-                return new ObjectType($classNameType->getValue());
-            } elseif ($classNameType instanceof GenericClassStringType) {
-                return $classNameType->getGenericType();
-            }
-
-            throw new \Exception('Unexpected scope class name class: ' . get_class($classNameType));
+            return $scope->getType(new New_($methodCall->class));
         }
 
         return $scope->getType($methodCall->var);
@@ -156,7 +141,7 @@ class RemoveVirtualInterfacesFromStaticReturnTypeDmrtExtension implements Dynami
     public function getTypeFromMethodCall(MethodReflection $methodReflection, CallLike $methodCall, Scope $scope): Type
     {
         // resolve static type and remove all virtual interfaces from it
-        $calledOnOrigType = $this->getMethodCallScopeType($methodCall, $scope);
+        $calledOnOrigType = $this->getObjectTypeFromMethodCallClass($methodCall, $scope);
         $calledOnType = $this->removeVirtualInterfacesFromType($calledOnOrigType);
         $methodReflectionReresolved = $this->reresolveMethodReflection($methodReflection, $calledOnType);
 
@@ -191,7 +176,7 @@ class RemoveVirtualInterfacesFromStaticReturnTypeDmrtExtension implements Dynami
      */
     public function specifyTypes(MethodReflection $methodReflection, CallLike $methodCall, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
     {
-        $calledOnType = $this->getMethodCallScopeType($methodCall, $scope);
+        $calledOnType = $this->getObjectTypeFromMethodCallClass($methodCall, $scope);
 
         if ($methodCall instanceof StaticCall) {
             if ($methodReflection->getName() === 'assertInstanceOf' && isset($methodCall->getArgs()[0])) {
