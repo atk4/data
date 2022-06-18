@@ -183,14 +183,14 @@ class RemoveVirtualInterfacesFromStaticReturnTypeDmrtExtension implements Dynami
                 $expr = $methodCall->getArgs()[0]->value;
                 $type = TypeCombinator::intersect($scope->getType($expr), $calledOnType);
 
-                return $this->typeSpecifier->create($expr, $type, TypeSpecifierContext::createNull(), true);
+                return $this->typeSpecifier->create($expr, $type, TypeSpecifierContext::createTruthy(), true);
             }
         } else {
             if ($methodReflection->getName() === 'assertIsModel') {
                 $expr = $methodCall->var;
                 $type = $this->removeVirtualInterfacesFromType($scope->getType($expr));
 
-                return $this->typeSpecifier->create($expr, $type, TypeSpecifierContext::createNull(), true);
+                return $this->typeSpecifier->create($expr, $type, TypeSpecifierContext::createTruthy(), true);
             } elseif ($methodReflection->getName() === 'assertIsEntity') {
                 $expr = $methodCall->var;
                 $type = TypeCombinator::intersect(
@@ -198,7 +198,7 @@ class RemoveVirtualInterfacesFromStaticReturnTypeDmrtExtension implements Dynami
                     new ObjectType(IsEntity::class)
                 );
 
-                return $this->typeSpecifier->create($expr, $type, TypeSpecifierContext::createNull(), true);
+                return $this->typeSpecifier->create($expr, $type, TypeSpecifierContext::createTruthy(), true);
             } elseif ($methodReflection->getName() === 'assertIsLoaded') {
                 $expr = $methodCall->var;
                 $type = TypeCombinator::intersect(
@@ -206,7 +206,7 @@ class RemoveVirtualInterfacesFromStaticReturnTypeDmrtExtension implements Dynami
                     new ObjectType(IsLoaded::class)
                 );
 
-                return $this->typeSpecifier->create($expr, $type, TypeSpecifierContext::createNull(), true);
+                return $this->typeSpecifier->create($expr, $type, TypeSpecifierContext::createTruthy(), true);
             } elseif ($methodReflection->getName() === 'unload') {
                 $expr = $methodCall->var;
                 $type = TypeCombinator::remove(
@@ -217,7 +217,7 @@ class RemoveVirtualInterfacesFromStaticReturnTypeDmrtExtension implements Dynami
                     new ObjectType(IsLoaded::class)
                 );
 
-                return $this->typeSpecifier->create($expr, $type, TypeSpecifierContext::createNull(), true);
+                return $this->typeSpecifier->create($expr, $type, TypeSpecifierContext::createTruthy(), true);
             }
         }
 
