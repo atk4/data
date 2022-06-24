@@ -7,7 +7,6 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class LimitOrderTest extends TestCase
 {
