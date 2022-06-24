@@ -143,10 +143,10 @@ class Model implements \IteratorAggregate
     /** @var Model\Scope\RootScope */
     private $scope;
 
-    /** @var array Array of limit set. */
-    public $limit = [];
+    /** @var array */
+    public $limit = [null, 0];
 
-    /** @var array Array of set order by. */
+    /** @var array */
     public $order = [];
 
     /** @var array<string, array{'model': Model, 'mapping': array<int|string, string>, 'recursive': bool}> */
