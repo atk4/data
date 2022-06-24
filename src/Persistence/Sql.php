@@ -308,10 +308,7 @@ class Sql extends Persistence
     {
         // set limit
         if ($model->limit[0] !== null || $model->limit[1] !== 0) {
-            if ($model->limit[0] === null) {
-                $model->limit[0] = \PHP_INT_MAX;
-            }
-            $query->limit($model->limit[0], $model->limit[1]);
+            $query->limit($model->limit[0] ?? \PHP_INT_MAX, $model->limit[1]);
         }
 
         // set order
