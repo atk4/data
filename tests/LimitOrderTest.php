@@ -7,6 +7,7 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class LimitOrderTest extends TestCase
 {
@@ -272,23 +273,29 @@ class LimitOrderTest extends TestCase
         $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net']);
         $i->setOrder('total_net');
 
+        $this->assertEquals(10, $i->loadAny()->get('total_net'));
         $i->setLimit(2);
         $this->assertEquals(10, $i->loadAny()->get('total_net'));
+
         $i->setLimit(2, 2);
         $this->assertEquals(20, $i->loadAny()->get('total_net'));
-        $i->setLimit(2, 2);
         $this->assertEquals(20, $i->loadOne()->get('total_net'));
 
         $i->setLimit(1);
+        $this->assertEquals(10, $i->loadAny()->get('total_net'));
         $this->assertEquals(10, $i->loadOne()->get('total_net'));
         $i->setLimit(1, 1);
+        $this->assertEquals(15, $i->loadAny()->get('total_net'));
         $this->assertEquals(15, $i->loadOne()->get('total_net'));
         $i->setLimit(1, 2);
+        $this->assertEquals(20, $i->loadAny()->get('total_net'));
         $this->assertEquals(20, $i->loadOne()->get('total_net'));
         $i->setLimit(1, 3);
+        $this->assertNull($i->tryLoadAny());
         $this->assertNull($i->tryLoadOne());
 
         $i->setLimit(0);
+        $this->assertNull($i->tryLoadAny());
         $this->assertNull($i->tryLoadOne());
     }
 }

@@ -42,6 +42,11 @@ class Query extends BaseQuery
         $cnt = (int) $this->args['limit']['cnt'];
         $shift = (int) $this->args['limit']['shift'];
 
+        if ($cnt === 0) {
+            $cnt = 1;
+            $shift = \PHP_INT_MAX;
+        }
+
         return (!isset($this->args['order']) ? ' order by (select null)' : '')
             . ' offset ' . $shift . ' rows'
             . ' fetch next ' . $cnt . ' rows only';
