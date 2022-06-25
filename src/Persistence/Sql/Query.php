@@ -486,7 +486,7 @@ class Query extends Expression
      *  $q->where($q->orExpr()->where('a', 1)->where('b', 1));
      *
      * @param string|Expressionable $field   Field or Expression
-     * @param mixed                 $cond    Condition such as '=', '>' or 'is not'
+     * @param mixed                 $cond    Condition such as '=', '>' or 'not like'
      * @param mixed                 $value   Value. Will be quoted unless you pass expression
      * @param string                $kind    Do not use directly. Use having()
      * @param int                   $numArgs when $kind is passed, we can't determine number of
@@ -547,7 +547,7 @@ class Query extends Expression
      * Same syntax as where().
      *
      * @param string|Expressionable $field Field or Expression
-     * @param mixed                 $cond  Condition such as '=', '>' or 'is not'
+     * @param mixed                 $cond  Condition such as '=', '>' or 'not like'
      * @param mixed                 $value Value. Will be quoted unless you pass expression
      *
      * @return $this
@@ -627,34 +627,38 @@ class Query extends Expression
 
         // special conditions (IS | IS NOT) if value is null
         if ($value === null) { // @phpstan-ignore-line see https://github.com/phpstan/phpstan/issues/4173
-            if (in_array($cond, ['=', 'is'], true)) {
+            if ($cond === '=') {
                 return $field . ' is null';
-            } elseif (in_array($cond, ['!=', 'not', 'is not'], true)) {
+            } elseif ($cond === '!=') {
                 return $field . ' is not null';
+            } else {
+                throw (new Exception('Unsupported operator for null value'))
+                    ->addMoreInfo('operator', $cond);
             }
-        }
-
-        // value should be array for such conditions
-        if (in_array($cond, ['in', 'not in', 'not'], true) && is_string($value)) {
-            $value = array_map('trim', explode(',', $value));
         }
 
         // special conditions (IN | NOT IN) if value is array
         if (is_array($value)) {
-            $cond = in_array($cond, ['!=', 'not', 'not in'], true) ? 'not in' : 'in';
+            if (in_array($cond, ['in', 'not in'], true)) {
+                // special treatment of empty array condition
+                if (empty($value)) {
+                    if ($cond === 'in') {
+                        return '1 = 0'; // never true
+                    }
 
-            // special treatment of empty array condition
-            if (empty($value)) {
-                if ($cond === 'in') {
-                    return '1 = 0'; // never true
+                    return '1 = 1'; // always true
                 }
 
-                return '1 = 1'; // always true
+                $value = '(' . implode(', ', array_map(function ($v) { return $this->consume($v); }, $value)) . ')';
+
+                return $field . ' ' . $cond . ' ' . $value;
+            } else {
+                throw (new Exception('Unsupported operator for array value'))
+                    ->addMoreInfo('operator', $cond);
             }
-
-            $value = '(' . implode(', ', array_map(function ($v) { return $this->consume($v); }, $value)) . ')';
-
-            return $field . ' ' . $cond . ' ' . $value;
+        } elseif (!$value instanceof Expressionable && in_array($cond, ['in', 'not in'], true)) {
+            throw (new Exception('Unsupported operator for non-array value'))
+                ->addMoreInfo('operator', $cond);
         }
 
         // if value is object, then it should be Expression or Query itself

@@ -56,7 +56,7 @@ abstract class AbstractScope
 
     /**
      * Negate the scope object
-     * e.g from 'is' to 'is not'.
+     * e.g from '=' to '!='.
      *
      * @return static
      */

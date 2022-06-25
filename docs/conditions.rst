@@ -369,7 +369,7 @@ If $value is omitted as argument then $operator is considered as $value and '=' 
 
 Negates the condition, e.g::
 
-	// results in 'name is not John'
+	// results in "name != 'John'"
 	$condition = (new Condition('name', 'John'))->negate();
 
 .. php:method:: toWords(Model $model = null);

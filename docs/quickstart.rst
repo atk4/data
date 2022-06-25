@@ -135,7 +135,7 @@ inside console::
 
     $m = new \Atk4\Data\Model($db, 'contact_info');
     $m->addFields(['address_1', 'address_2']);
-    $m->addCondition('address_1', 'not', null);
+    $m->addCondition('address_1', '!=', null);
     $m = $m->loadAny();
     $m->get();
     $m->executeCountQuery(); // same as ((int) $m->action('count')->getOne())
@@ -151,7 +151,7 @@ Next, exit and create file `src/Model_ContactInfo.php`::
             parent::init();
 
             $this->addFields(['address_1', 'address_2']);
-            $this->addCondition('address_1', 'not', null);
+            $this->addCondition('address_1', '!=', null);
         }
     }
 

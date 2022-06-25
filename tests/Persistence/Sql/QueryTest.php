@@ -709,11 +709,7 @@ class QueryTest extends TestCase
         );
         $this->assertSame(
             'where "id" in (:a, :b)',
-            $this->q('[where]')->where('id', '=', [1, 2])->render()[0]
-        );
-        $this->assertSame(
-            'where "id" in (:a, :b)',
-            $this->q('[where]')->where('id', [1, 2])->render()[0]
+            $this->q('[where]')->where('id', 'in', [1, 2])->render()[0]
         );
         $this->assertSame(
             'where "id" in (select * from "user")',
@@ -771,52 +767,47 @@ class QueryTest extends TestCase
         $this->q('[where]')->where('a', '!=', new \DateTime());
     }
 
-    public function testWhereUnsupportedOperator1Exception(): void
+    /**
+     * @param mixed $operator
+     * @param mixed $value
+     *
+     * @dataProvider provideWhereUnsupportedOperatorData
+     */
+    public function testWhereUnsupportedOperator($operator, $value): void
     {
         $this->expectException(Exception::class);
-        $this->q('[where]')->where('x', '<>', 2)->render();
+        $this->expectExceptionMessage('Unsupported operator');
+        $this->q('[where]')->where('x', $operator, $value)->render();
     }
 
-    public function testWhereUnsupportedOperator2Exception(): void
+    /**
+     * @return iterable<array>
+     */
+    public function provideWhereUnsupportedOperatorData(): iterable
     {
-        $this->expectException(Exception::class);
-        $this->q('[where]')->where('x', 'operator', 2)->render();
-    }
+        // unsupported operators
+        yield ['<>', 2];
+        yield ['op', 2];
 
-    public function testWhereUnsupportedOperator3Exception(): void
-    {
-        $this->expectException(Exception::class);
-        $this->q('[where]')->where('x', 'is', true)->render();
-    }
+        yield ['is', null];
+        yield ['is not', null];
+        yield ['is', true];
 
-    public function testWhereUnsupportedOperator4Exception(): void
-    {
-        $this->expectException(Exception::class);
-        $this->q('[where]')->where('x', 'is', null)->render();
-    }
+        yield ['not', null];
+        yield ['not', 2];
+        yield ['not', [1, 2]];
 
-    public function testWhereUnsupportedOperator5Exception(): void
-    {
-        $this->expectException(Exception::class);
-        $this->q('[where]')->where('x', 'is not', null)->render();
-    }
-
-    public function testWhereUnsupportedOperator6Exception(): void
-    {
-        $this->expectException(Exception::class);
-        $this->q('[where]')->where('x', 'not', null)->render();
-    }
-
-    public function testWhereUnsupportedOperator7Exception(): void
-    {
-        $this->expectException(Exception::class);
-        $this->q('[where]')->where('x', 'not', 2)->render();
-    }
-
-    public function testWhereUnsupportedOperator8Exception(): void
-    {
-        $this->expectException(Exception::class);
-        $this->q('[where]')->where('x', 'not', [1, 2])->render();
+        // unsupported operators with specific value type
+        yield ['>', null];
+        yield ['=', [1, 2]];
+        yield ['!=', [1, 2]];
+        yield ['=', []];
+        yield ['!=', []];
+        yield ['in', '1'];
+        yield ['in', '1,2'];
+        yield ['in', '1, 2'];
+        yield ['not in', '1;2'];
+        yield ['in', null];
     }
 
     /**
@@ -837,31 +828,14 @@ class QueryTest extends TestCase
             'where "id" not in (:a, :b)',
             $this->q('[where]')->where('id', 'not in', [1, 2])->render()[0]
         );
-        $this->assertSame(
-            'where "id" in (:a, :b)',
-            $this->q('[where]')->where('id', '=', [1, 2])->render()[0]
-        );
-        $this->assertSame(
-            'where "id" not in (:a, :b)',
-            $this->q('[where]')->where('id', '!=', [1, 2])->render()[0]
-        );
         // speacial treatment for empty array values
         $this->assertSame(
             'where 1 = 0',
-            $this->q('[where]')->where('id', '=', [])->render()[0]
+            $this->q('[where]')->where('id', 'in', [])->render()[0]
         );
         $this->assertSame(
             'where 1 = 1',
-            $this->q('[where]')->where('id', '!=', [])->render()[0]
-        );
-        // pass array as CSV
-        $this->assertSame(
-            'where "id" in (:a, :b)',
-            $this->q('[where]')->where('id', 'in', '1, 2')->render()[0]
-        );
-        $this->assertSame(
-            'where "id" not in (:a, :b)',
-            $this->q('[where]')->where('id', 'not in', '1,    2')->render()[0]
+            $this->q('[where]')->where('id', 'not in', [])->render()[0]
         );
 
         // is null | is not null
