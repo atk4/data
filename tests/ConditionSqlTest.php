@@ -6,7 +6,6 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 
 class ConditionSqlTest extends TestCase
@@ -426,10 +425,6 @@ class ConditionSqlTest extends TestCase
      */
     public function testLikeCondition(): void
     {
-        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            $this->markTestIncomplete('PostgreSQL does not support "column LIKE variable" syntax');
-        }
-
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'active' => 1, 'created' => '2020-01-01 15:00:30'],
