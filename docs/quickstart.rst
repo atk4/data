@@ -135,7 +135,7 @@ inside console::
 
     $m = new \Atk4\Data\Model($db, 'contact_info');
     $m->addFields(['address_1', 'address_2']);
-    $m->addCondition('address_1', 'not', null);
+    $m->addCondition('address_1', '!=', null);
     $m = $m->loadAny();
     $m->get();
     $m->executeCountQuery(); // same as ((int) $m->action('count')->getOne())
@@ -151,7 +151,7 @@ Next, exit and create file `src/Model_ContactInfo.php`::
             parent::init();
 
             $this->addFields(['address_1', 'address_2']);
-            $this->addCondition('address_1', 'not', null);
+            $this->addCondition('address_1', '!=', null);
         }
     }
 
@@ -399,7 +399,7 @@ For some persistence classes, you should use constructor directly::
 There are several Persistence classes that deal with different data sources.
 Lets load up our console and try out a different persistence::
 
-    $a=['user' => [], 'contact_info' => []];
+    $a = ['user' => [], 'contact_info' => []];
     $ar = new \Atk4\Data\Persistence\Array_($a);
     $m = new Model_User($ar);
     $m->set('username', 'test');

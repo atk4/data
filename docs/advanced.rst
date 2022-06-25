@@ -497,7 +497,8 @@ Here is what I need to do:
 Create new Model::
 
     class Model_InvoicePayment extends \Atk4\Data\Model {
-        public $table='invoice_payment';
+        public $table = 'invoice_payment';
+
         function init(): void
         {
             parent::init();

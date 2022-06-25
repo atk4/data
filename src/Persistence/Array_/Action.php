@@ -179,7 +179,6 @@ class Action
 
             break;
             case '!=':
-            case '<>':
                 $result = !$this->evaluateIf($v1, '=', $v2);
 
             break;

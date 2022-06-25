@@ -315,11 +315,10 @@ Both methods use identical call interface. They support one, two or three
 argument calls.
 
 Pass string (field name), :php:class:`Expression` or even :php:class:`Query` as
-first argument. If you are using string, you may end it with operation, such as
-"age>" or "parent_id is not" DSQL will recognize <, >, =, !=, <>, is, is not.
+first argument.
 
-If you haven't specified parameter as a part of $field, specify it through a
-second parameter - $operation. If unspecified, will default to '='.
+Operator can be specified through a second parameter - $operation. If unspecified,
+will default to '='.
 
 Last argument is value. You can specify number, string, array, expression or
 even null (specifying null is not the same as omitting this argument).
@@ -331,10 +330,9 @@ Starting with the basic examples::
     $q->where('id', 1);
     $q->where('id', '=', 1); // same as above
 
-    $q->where('id>', 1);
-    $q->where('id', '>', 1); // same as above
+    $q->where('id', '>', 1);
 
-    $q->where('id', 'is', null);
+    $q->where('id', '=', null); // will render to "IS NULL" SQL
     $q->where('id', null);   // same as above
 
     $q->where('now()', 1);   // will not use backticks
