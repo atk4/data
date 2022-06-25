@@ -630,17 +630,17 @@ class Query extends Expression
                 return $field . ' is null';
             } elseif ($cond === '!=') {
                 return $field . ' is not null';
-            } else {
-                throw (new Exception('Unsupported operator for null value'))
-                    ->addMoreInfo('operator', $cond);
             }
+
+            throw (new Exception('Unsupported operator for null value'))
+                ->addMoreInfo('operator', $cond);
         }
 
         // special conditions (IN | NOT IN) if value is array
         if (is_array($value)) {
             if (in_array($cond, ['in', 'not in'], true)) {
                 // special treatment of empty array condition
-                if (empty($value)) {
+                if (count($value) === 0) {
                     if ($cond === 'in') {
                         return '1 = 0'; // never true
                     }
@@ -651,10 +651,10 @@ class Query extends Expression
                 $value = '(' . implode(', ', array_map(function ($v) { return $this->consume($v); }, $value)) . ')';
 
                 return $field . ' ' . $cond . ' ' . $value;
-            } else {
-                throw (new Exception('Unsupported operator for array value'))
-                    ->addMoreInfo('operator', $cond);
             }
+
+            throw (new Exception('Unsupported operator for array value'))
+                ->addMoreInfo('operator', $cond);
         } elseif (!$value instanceof Expressionable && in_array($cond, ['in', 'not in'], true)) {
             throw (new Exception('Unsupported operator for non-array value'))
                 ->addMoreInfo('operator', $cond);
