@@ -1059,20 +1059,6 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Shortcut for using addCondition(id_field, $id).
-     *
-     * @param mixed $id
-     *
-     * @return $this
-     */
-    public function withId($id)
-    {
-        // TODO this should wrap the current model instead of mutating it
-
-        return $this->addCondition($this->id_field, $id);
-    }
-
-    /**
      * Adds WITH cursor.
      *
      * @param Model $model

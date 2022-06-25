@@ -497,9 +497,9 @@ The above example will actually perform 3 load operations, because as I have
 explained above, :php:meth:`Model::ref()` loads related model when called on
 a loaded model. To perform a single query instead, you can use::
 
-    echo $o->withId(1)->ref('user_id')->ref('address_id')->loadAny()['address_1'];
+    echo $o->addCondition('id', 1)->ref('user_id')->ref('address_id')->loadAny()['address_1'];
 
-Here ``withId()`` will only set a condition without actually loading the record
+Here ``addCondition('id', 1)`` will only set a condition without actually loading the record
 and traversal will encapsulate sub-queries resulting in a query like this:
 
 .. code-block:: sql

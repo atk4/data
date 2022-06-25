@@ -43,7 +43,7 @@ class ConditionSqlTest extends TestCase
         }
 
         $mm = clone $m;
-        $mm->withId(2); // = addCondition('id', 2)
+        $mm->addCondition('id', 2);
         $mm2 = $mm->tryLoad(1);
         $this->assertNull($mm2);
         $mm2 = $mm->tryLoad(2);
