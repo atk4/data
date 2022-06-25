@@ -75,7 +75,7 @@ class Query extends BaseQuery
         $shift = (int) $this->args['limit']['shift'];
 
         return ($shift ? ' offset ' . $shift . ' rows' : '')
-            . ($cnt ? ' fetch next ' . $cnt . ' rows only' : '');
+            . ' fetch next ' . $cnt . ' rows only';
     }
 
     public function groupConcat($field, string $delimiter = ',')

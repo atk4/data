@@ -307,15 +307,12 @@ class Sql extends Persistence
     protected function setLimitOrder(Model $model, Query $query): void
     {
         // set limit
-        if ($model->limit && ($model->limit[0] || $model->limit[1])) {
-            if ($model->limit[0] === null) {
-                $model->limit[0] = \PHP_INT_MAX;
-            }
-            $query->limit($model->limit[0], $model->limit[1]);
+        if ($model->limit[0] !== null || $model->limit[1] !== 0) {
+            $query->limit($model->limit[0] ?? \PHP_INT_MAX, $model->limit[1]);
         }
 
         // set order
-        if ($model->order) {
+        if (count($model->order) > 0) {
             foreach ($model->order as $order) {
                 $isDesc = strtolower($order[1]) === 'desc';
 
@@ -492,7 +489,10 @@ class Sql extends Persistence
             $idRaw = $this->typecastSaveField($model->getField($model->id_field), $id);
             $query->where($model->getField($model->id_field), $idRaw);
         }
-        $query->limit($id === self::ID_LOAD_ANY ? 1 : 2);
+        $query->limit(
+            min($id === self::ID_LOAD_ANY ? 1 : 2, $query->args['limit']['cnt'] ?? \PHP_INT_MAX),
+            $query->args['limit']['shift'] ?? null
+        );
 
         // execute action
         try {
@@ -561,7 +561,7 @@ class Sql extends Persistence
 
         try {
             $model->hook(self::HOOK_BEFORE_INSERT_QUERY, [$insert]);
-            $c = $insert->execute()->rowCount();
+            $c = $insert->executeStatement();
         } catch (SqlException $e) {
             throw (new Exception('Unable to execute insert query', 0, $e))
                 ->addMoreInfo('model', $model)
@@ -594,7 +594,7 @@ class Sql extends Persistence
         $model->hook(self::HOOK_BEFORE_UPDATE_QUERY, [$update]);
 
         try {
-            $c = $update->execute()->rowCount();
+            $c = $update->executeStatement();
         } catch (SqlException $e) {
             throw (new Exception('Unable to update due to query error', 0, $e))
                 ->addMoreInfo('model', $model)
@@ -632,7 +632,7 @@ class Sql extends Persistence
         $model->hook(self::HOOK_BEFORE_DELETE_QUERY, [$delete]);
 
         try {
-            $c = $delete->execute()->rowCount();
+            $c = $delete->executeStatement();
         } catch (SqlException $e) {
             throw (new Exception('Unable to delete due to query error', 0, $e))
                 ->addMoreInfo('model', $model)

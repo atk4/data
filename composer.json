@@ -34,25 +34,28 @@
     ],
     "homepage": "https://github.com/atk4/data",
     "require": {
-        "php": ">=7.4 <8.2",
+        "php": ">=7.4 <8.3",
         "atk4/core": "dev-develop",
         "doctrine/dbal": "^3.3",
-        "mvorisek/atk4-hintable": "~1.7.1"
+        "mvorisek/atk4-hintable": "~1.9.0"
     },
     "require-release": {
-        "php": ">=7.4 <8.2",
+        "php": ">=7.4 <8.3",
         "atk4/core": "~3.2.0",
         "doctrine/dbal": "^3.3",
-        "mvorisek/atk4-hintable": "~1.7.1"
+        "mvorisek/atk4-hintable": "~1.9.0"
     },
     "require-dev": {
         "ergebnis/composer-normalize": "^2.13",
         "friendsofphp/php-cs-fixer": "^3.0",
         "johnkary/phpunit-speedtrap": "^3.3",
         "phpstan/extension-installer": "^1.1",
-        "phpstan/phpstan": "^1.0",
+        "phpstan/phpstan": "^1.6",
         "phpstan/phpstan-deprecation-rules": "^1.0",
         "phpunit/phpunit": "^9.5.5"
+    },
+    "conflict": {
+        "jdorn/sql-formatter": "<1.2.9"
     },
     "suggest": {
         "jdorn/sql-formatter": "*"

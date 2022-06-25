@@ -162,7 +162,7 @@ DSQL classes are mindful about your SQL vendor and it's quirks, so when you're
 building sub-queries with :php:meth:`Query::dsql`, you can avoid some nasty
 problems::
 
-    $sqlite_c->dsql()->table('user')->mode('truncate')->execute();
+    $sqlite_c->dsql()->table('user')->mode('truncate')->executeStatement();
 
 The above code will work even though SQLite does not support truncate. That's
 because DSQL takes care of this.
@@ -191,7 +191,7 @@ You can actually perform multiple operations::
 
     $q = $c->dsql()->table('employee')->where('emp_no', 1234);
     $backup_data = $q->getRows();
-    $q->mode('delete')->execute();
+    $q->mode('delete')->executeStatement();
 
 A good practice is to re-use the same query object before you branch out and
 perform the action::
@@ -199,7 +199,7 @@ perform the action::
     $q = $c->dsql()->table('employee')->where('emp_no', 1234);
 
     if ($confirmed) {
-        $q->mode('delete')->execute();
+        $q->mode('delete')->executeStatement();
     } else {
         echo "Are you sure you want to delete " . $q->field('count(*)') . " employees?";
     }

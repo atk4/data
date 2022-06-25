@@ -92,7 +92,8 @@ class JoinArrayTest extends TestCase
             'user' => [
                 1 => ['name' => 'John', 'contact_id' => 1],
                 2 => ['name' => 'Peter', 'contact_id' => 1],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['contact_phone' => '+123'],
             ],
         ], $this->getInternalPersistenceData($db));
@@ -108,7 +109,8 @@ class JoinArrayTest extends TestCase
                 1 => ['name' => 'John', 'contact_id' => 1],
                 2 => ['name' => 'Peter', 'contact_id' => 1],
                 3 => ['name' => 'Joe', 'contact_id' => 2],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['contact_phone' => '+123'],
                 2 => ['contact_phone' => '+321'],
             ],
@@ -142,7 +144,8 @@ class JoinArrayTest extends TestCase
             'user' => [
                 1 => ['name' => 'John'],
                 2 => ['name' => 'Peter'],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['test_id' => 1, 'contact_phone' => '+123'],
                 2 => ['test_id' => 2, 'contact_phone' => null],
             ],
@@ -162,7 +165,8 @@ class JoinArrayTest extends TestCase
                 1 => ['name' => 'John'],
                 2 => ['name' => 'Peter'],
                 3 => ['name' => 'Sue'],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['test_id' => 1, 'contact_phone' => '+123'],
                 3 => ['test_id' => 3, 'contact_phone' => '+444'],
             ],
@@ -219,7 +223,8 @@ class JoinArrayTest extends TestCase
                 1 => ['name' => 'John', 'contact_id' => 1],
                 2 => ['name' => 'Peter', 'contact_id' => 1],
                 3 => ['name' => 'Joe', 'contact_id' => 2],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['contact_phone' => '+123'],
                 2 => ['contact_phone' => '+321'],
             ],
@@ -231,19 +236,21 @@ class JoinArrayTest extends TestCase
         $j->addField('contact_phone');
 
         $m_u2 = $m_u->load(1);
-        $this->assertEquals([
-            'name' => 'John', 'contact_id' => 1, 'contact_phone' => '+123', 'id' => 1,
+        $this->assertSame([
+            'id' => 1, 'contact_id' => 1, 'name' => 'John', 'contact_phone' => '+123',
         ], $m_u2->get());
 
         $m_u2 = $m_u->load(3);
-        $this->assertEquals([
-            'name' => 'Joe', 'contact_id' => 2, 'contact_phone' => '+321', 'id' => 3,
+        $this->assertSame([
+            'id' => 3, 'contact_id' => 2, 'name' => 'Joe', 'contact_phone' => '+321',
         ], $m_u2->get());
 
-        $m_u2 = $m_u->tryLoad(4);
-        $this->assertEquals([
-            'name' => null, 'contact_id' => null, 'contact_phone' => null, 'id' => null,
+        $m_u2 = $m_u2->unload();
+        $this->assertSame([
+            'id' => null, 'contact_id' => null, 'name' => null, 'contact_phone' => null,
         ], $m_u2->get());
+
+        $this->assertNull($m_u->tryLoad(4));
     }
 
     public function testJoinUpdate(): void
@@ -253,7 +260,8 @@ class JoinArrayTest extends TestCase
                 1 => ['name' => 'John', 'contact_id' => 1],
                 2 => ['name' => 'Peter', 'contact_id' => 1],
                 3 => ['name' => 'Joe', 'contact_id' => 2],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['contact_phone' => '+123'],
                 2 => ['contact_phone' => '+321'],
             ],
@@ -274,7 +282,8 @@ class JoinArrayTest extends TestCase
                 1 => ['name' => 'John 2', 'contact_id' => 1],
                 2 => ['name' => 'Peter', 'contact_id' => 1],
                 3 => ['name' => 'Joe', 'contact_id' => 2],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['contact_phone' => '+555'],
                 2 => ['contact_phone' => '+321'],
             ],
@@ -290,13 +299,14 @@ class JoinArrayTest extends TestCase
                 1 => ['name' => 'John 2', 'contact_id' => 1],
                 2 => ['name' => 'Peter', 'contact_id' => 1],
                 3 => ['name' => 'XX', 'contact_id' => 2],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['contact_phone' => '+555'],
                 2 => ['contact_phone' => '+999'],
             ],
         ], $this->getInternalPersistenceData($db));
 
-        $m_u2 = $m_u->tryLoad(4);
+        $m_u2 = $m_u->createEntity();
         $m_u2->set('name', 'YYY');
         $m_u2->set('contact_phone', '+777');
         $m_u2->save();
@@ -307,7 +317,8 @@ class JoinArrayTest extends TestCase
                 2 => ['name' => 'Peter', 'contact_id' => 1],
                 3 => ['name' => 'XX', 'contact_id' => 2],
                 4 => ['name' => 'YYY', 'contact_id' => 3],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['contact_phone' => '+555'],
                 2 => ['contact_phone' => '+999'],
                 3 => ['contact_phone' => '+777'],
@@ -323,7 +334,8 @@ class JoinArrayTest extends TestCase
                 2 => ['name' => 'Peter', 'contact_id' => 1],
                 3 => ['name' => 'XX', 'contact_id' => 2],
                 4 => ['name' => 'YYY', 'contact_id' => 3],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['contact_phone' => '+555'],
                 2 => ['contact_phone' => '+999'],
                 3 => ['contact_phone' => '+777'],
@@ -343,7 +355,8 @@ class JoinArrayTest extends TestCase
                 2 => ['name' => 'Peter', 'contact_id' => 1],
                 3 => ['name' => 'XX', 'contact_id' => 2],
                 4 => ['name' => 'YYY', 'contact_id' => 3],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 2 => ['contact_phone' => '+999'],
                 3 => ['contact_phone' => '+777'],
             ],
@@ -357,7 +370,8 @@ class JoinArrayTest extends TestCase
                 2 => ['name' => 'Peter', 'contact_id' => 1],
                 3 => ['name' => 'XX', 'contact_id' => 2],
                 4 => ['name' => 'YYY', 'contact_id' => 3],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 2 => ['contact_phone' => '+999'],
                 3 => ['contact_phone' => '+777'],
             ],
@@ -371,16 +385,19 @@ class JoinArrayTest extends TestCase
         $m_u = $m_u->load(2);
     }
 
-    /*
-    public function testTrickyCases(): void
+    public function testForeignFieldNameGuessTableWithSchema(): void
     {
         $db = new Persistence\Array_();
-        $m = new Model($db);
 
-        // tricky cases to testt
-        //
-        //$m->join('foo.bar', ['master_field' => 'baz']);
-        // foreign_table = 'foo.bar'
+        $m = new Model($db, ['table' => 'db.user']);
+        $j = $m->join('contact');
+        $this->assertFalse($this->getProtected($j, 'reverse'));
+        $this->assertSame('contact_id', $this->getProtected($j, 'master_field'));
+        $this->assertSame('id', $this->getProtected($j, 'foreign_field'));
+
+        $j = $m->join('contact2', ['reverse' => true]);
+        $this->assertTrue($this->getProtected($j, 'reverse'));
+        $this->assertSame('id', $this->getProtected($j, 'master_field'));
+        $this->assertSame('user_id', $this->getProtected($j, 'foreign_field'));
     }
-    */
 }

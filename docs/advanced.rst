@@ -79,11 +79,11 @@ hook. Place the following inside Transaction::init()::
 
     $this->onHookShort(Model::HOOK_AFTER_LOAD, function () {
         if (get_class($this) != $this->getClassName()) {
-            $cl = '\\'.$this->getClassName();
-            $cl = new $cl($this->persistence);
-            $cl = $cl->load($this->getId());
+            $cl = $this->getClassName();
+            $m = new $cl($this->persistence);
+            $m = $m->load($this->getId());
 
-            $this->breakHook($cl);
+            $this->breakHook($m);
         }
     });
 
@@ -166,7 +166,7 @@ which I want to define like this::
 
         $this->getOwner()->addField('updated_dts', ['type' => 'datetime']);
 
-        $this->getOwner()->onHook(Model::HOOK_BEFORE_UPDATE, function($m, $data) {
+        $this->getOwner()->onHook(Model::HOOK_BEFORE_UPDATE, function ($m, $data) {
             if(isset($this->getApp()->user) && $this->getApp()->user->isLoaded()) {
                 $data['updated_by'] = $this->getApp()->user->getId();
             }
@@ -440,7 +440,7 @@ inside your model are unique::
                     $mm->addCondition($mm->id_field != $this->id);
                     $mm = $mm->tryLoadBy($field, $m->get($field));
 
-                    if ($mm->isLoaded()) {
+                    if ($mm !== null) {
                         throw (new \Atk4\Core\Exception('Duplicate record exists'))
                             ->addMoreInfo('field', $field)
                             ->addMoreInfo('value', $m->get($field));
@@ -514,7 +514,7 @@ Next we need to define reference. Inside Model_Invoice add::
 
     $this->hasMany('InvoicePayment');
 
-    $this->hasMany('Payment', ['model' => function($m) {
+    $this->hasMany('Payment', ['model' => function ($m) {
         $p = new Model_Payment($m->persistence);
         $j = $p->join('invoice_payment.payment_id');
         $j->addField('amount_closed');
@@ -570,24 +570,23 @@ payment towards a most suitable invoice::
 
         while($this->get('amount_due') > 0) {
 
-            // See if any invoices match by 'reference';
-            $invoices = $invoices->tryLoadBy('reference', $this->get('reference'));
+            // see if any invoices match by 'reference'
+            $invoice = $invoices->tryLoadBy('reference', $this->get('reference'));
 
-            if (!$invoices->isLoaded()) {
+            if ($invoice === null) {
 
                 // otherwise load any unpaid invoice
-                $invoices = $invoices->tryLoadAny();
+                $invoice = $invoices->tryLoadAny();
 
-                if(!$invoices->isLoaded()) {
-
-                    // couldn't load any invoice.
+                if ($invoice === null) {
+                    // couldn't load any invoice
                     return;
                 }
             }
 
             // How much we can allocate to this invoice
-            $alloc = min($this->get('amount_due'), $invoices->get('amount_due'))
-            $this->ref('InvoicePayment')->insert(['amount_closed' => $alloc, 'invoice_id' => $invoices->getId()]);
+            $alloc = min($this->get('amount_due'), $invoice->get('amount_due'))
+            $this->ref('InvoicePayment')->insert(['amount_closed' => $alloc, 'invoice_id' => $invoice->getId()]);
 
             // Reload ourselves to refresh amount_due
             $this->reload();
@@ -744,7 +743,7 @@ section. Add this into your Invoice Model::
 Next both payment and lines need to be added after invoice is actually created,
 so::
 
-    $this->onHookShort(Model::HOOK_AFTER_SAVE, function($is_update) {
+    $this->onHookShort(Model::HOOK_AFTER_SAVE, function ($is_update) {
         if($this->_isset('payment')) {
             $this->ref('Payment')->insert($this->get('payment'));
         }
@@ -800,7 +799,7 @@ field only to offer payments made by the same client. Inside Model_Invoice add::
 
     $this->hasOne('client_id', 'Client');
 
-    $this->hasOne('payment_invoice_id', ['model' => function($m) {
+    $this->hasOne('payment_invoice_id', ['model' => function ($m) {
         return $m->ref('client_id')->ref('Payment');
     }]);
 
@@ -809,13 +808,13 @@ field only to offer payments made by the same client. Inside Model_Invoice add::
     $m = new Model_Invoice($db);
     $m->set('client_id', 123);
 
-    $m->set('payment_invoice_id', $m->ref('payment_invoice_id')->tryLoadOne()->getId());
+    $m->set('payment_invoice_id', $m->ref('payment_invoice_id')->loadOne()->getId());
 
 In this case the payment_invoice_id will be set to ID of any payment by client
 123. There also may be some better uses::
 
     foreach ($cl->ref('Invoice') as $m) {
-        $m->set('payment_invoice_id', $m->ref('payment_invoice_id')->tryLoadOne()->getId());
+        $m->set('payment_invoice_id', $m->ref('payment_invoice_id')->loadOne()->getId());
         $m->save();
     }
 
@@ -826,7 +825,7 @@ Agile Data allow you to define multiple references between same entities, but
 sometimes that can be quite useful. Consider adding this inside your Model_Contact::
 
     $this->hasMany('Invoice', 'Model_Invoice');
-    $this->hasMany('OverdueInvoice', ['model' => function($m) {
+    $this->hasMany('OverdueInvoice', ['model' => function ($m) {
         return $m->ref('Invoice')->addCondition('due', '<', date('Y-m-d'))
     }]);
 

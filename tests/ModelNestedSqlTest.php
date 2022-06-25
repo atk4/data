@@ -140,8 +140,8 @@ class ModelNestedSqlTest extends TestCase
         $m = $this->createTestModel();
 
         $this->assertSameExportUnordered([
-            ['name' => 'John', 'birthday' => new \DateTime('1980-2-1')],
-            ['name' => 'Sue', 'birthday' => new \DateTime('2005-4-3')],
+            ['name' => 'John', 'birthday' => new \DateTime('1980-2-1 UTC')],
+            ['name' => 'Sue', 'birthday' => new \DateTime('2005-4-3 UTC')],
         ], $m->export());
 
         $this->assertSame([
@@ -186,12 +186,12 @@ class ModelNestedSqlTest extends TestCase
         ], $this->hookLog);
 
         $this->assertSame(4, $m->table->loadBy('name', 'Karl')->getId());
-        $this->assertSameExportUnordered([[new \DateTime('2000-6-1')]], [[$entity->getId()]]);
+        $this->assertSameExportUnordered([[new \DateTime('2000-6-1 UTC')]], [[$entity->getId()]]);
 
         $this->assertSameExportUnordered([
-            ['name' => 'John', 'birthday' => new \DateTime('1980-2-1')],
-            ['name' => 'Sue', 'birthday' => new \DateTime('2005-4-3')],
-            ['name' => 'Karl', 'birthday' => new \DateTime('2000-6-1')],
+            ['name' => 'John', 'birthday' => new \DateTime('1980-2-1 UTC')],
+            ['name' => 'Sue', 'birthday' => new \DateTime('2005-4-3 UTC')],
+            ['name' => 'Karl', 'birthday' => new \DateTime('2000-6-1 UTC')],
         ], $m->export());
     }
 
@@ -240,8 +240,8 @@ class ModelNestedSqlTest extends TestCase
         ], $this->hookLog);
 
         $this->assertSameExportUnordered([
-            ['name' => 'John', 'birthday' => new \DateTime('1980-2-1')],
-            ['name' => 'Susan', 'birthday' => new \DateTime('2005-4-3')],
+            ['name' => 'John', 'birthday' => new \DateTime('1980-2-1 UTC')],
+            ['name' => 'Susan', 'birthday' => new \DateTime('2005-4-3 UTC')],
         ], $m->export());
     }
 
@@ -277,7 +277,7 @@ class ModelNestedSqlTest extends TestCase
         ], $this->hookLog);
 
         $this->assertSameExportUnordered([
-            ['name' => 'John', 'birthday' => new \DateTime('1980-2-1')],
+            ['name' => 'John', 'birthday' => new \DateTime('1980-2-1 UTC')],
         ], $m->export());
     }
 }

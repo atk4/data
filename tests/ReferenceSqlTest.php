@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
+use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
@@ -23,7 +24,8 @@ class ReferenceSqlTest extends TestCase
                 1 => ['id' => 1, 'name' => 'John'],
                 2 => ['id' => 2, 'name' => 'Peter'],
                 3 => ['id' => 3, 'name' => 'Joe'],
-            ], 'order' => [
+            ],
+            'order' => [
                 ['amount' => '20', 'user_id' => 1],
                 ['amount' => '15', 'user_id' => 2],
                 ['amount' => '5', 'user_id' => 1],
@@ -41,17 +43,17 @@ class ReferenceSqlTest extends TestCase
         $ooo = $oo->tryLoad(1);
         $this->assertEquals(20, $ooo->get('amount'));
         $ooo = $oo->tryLoad(2);
-        $this->assertNull($ooo->get('amount'));
+        $this->assertNull($ooo);
         $ooo = $oo->tryLoad(3);
         $this->assertEquals(5, $ooo->get('amount'));
 
         $oo = $u->load(2)->ref('Orders');
         $ooo = $oo->tryLoad(1);
-        $this->assertNull($ooo->get('amount'));
+        $this->assertNull($ooo);
         $ooo = $oo->tryLoad(2);
         $this->assertEquals(15, $ooo->get('amount'));
         $ooo = $oo->tryLoad(3);
-        $this->assertNull($ooo->get('amount'));
+        $this->assertNull($ooo);
 
         $oo = $u->addCondition('id', '>', '1')->ref('Orders');
 
@@ -84,7 +86,8 @@ class ReferenceSqlTest extends TestCase
                 ['name' => 'John', 'currency' => 'EUR'],
                 ['name' => 'Peter', 'currency' => 'GBP'],
                 ['name' => 'Joe', 'currency' => 'EUR'],
-            ], 'currency' => [
+            ],
+            'currency' => [
                 ['currency' => 'EUR', 'name' => 'Euro'],
                 ['currency' => 'USD', 'name' => 'Dollar'],
                 ['currency' => 'GBP', 'name' => 'Pound'],
@@ -129,7 +132,8 @@ class ReferenceSqlTest extends TestCase
                 1 => ['id' => 1, 'name' => 'John'],
                 2 => ['id' => 2, 'name' => 'Peter'],
                 3 => ['id' => 3, 'name' => 'Joe'],
-            ], 'order' => [
+            ],
+            'order' => [
                 ['amount' => '20', 'user_id' => 1],
                 ['amount' => '15', 'user_id' => 2],
                 ['amount' => '5', 'user_id' => 1],
@@ -167,7 +171,8 @@ class ReferenceSqlTest extends TestCase
                 1 => ['id' => 1, 'name' => 'John', 'date' => '2001-01-02'],
                 2 => ['id' => 2, 'name' => 'Peter', 'date' => '2004-08-20'],
                 3 => ['id' => 3, 'name' => 'Joe', 'date' => '2005-08-20'],
-            ], 'order' => [
+            ],
+            'order' => [
                 ['amount' => '20', 'user_id' => 1],
                 ['amount' => '15', 'user_id' => 2],
                 ['amount' => '5', 'user_id' => 1],
@@ -182,7 +187,7 @@ class ReferenceSqlTest extends TestCase
         $o->hasOne('user_id', ['model' => $u])->addFields(['username' => 'name', ['date', 'type' => 'date']]);
 
         $this->assertSame('John', $o->load(1)->get('username'));
-        $this->assertEquals(new \DateTime('2001-01-02'), $o->load(1)->get('date'));
+        $this->assertEquals(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('date'));
 
         $this->assertSame('Peter', $o->load(2)->get('username'));
         $this->assertSame('John', $o->load(3)->get('username'));
@@ -192,11 +197,11 @@ class ReferenceSqlTest extends TestCase
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
         $o->hasOne('user_id', ['model' => $u])->addFields(['username' => 'name', 'thedate' => ['date', 'type' => 'date']]);
         $this->assertSame('John', $o->load(1)->get('username'));
-        $this->assertEquals(new \DateTime('2001-01-02'), $o->load(1)->get('thedate'));
+        $this->assertEquals(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('thedate'));
 
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
         $o->hasOne('user_id', ['model' => $u])->addFields(['date'], ['type' => 'date']);
-        $this->assertEquals(new \DateTime('2001-01-02'), $o->load(1)->get('date'));
+        $this->assertEquals(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('date'));
     }
 
     public function testRelatedExpression(): void
@@ -208,7 +213,8 @@ class ReferenceSqlTest extends TestCase
                 1 => ['id' => 1, 'ref_no' => 'INV203'],
                 2 => ['id' => 2, 'ref_no' => 'INV204'],
                 3 => ['id' => 3, 'ref_no' => 'INV205'],
-            ], 'invoice_line' => [
+            ],
+            'invoice_line' => [
                 ['total_net' => ($n = 10), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 1],
                 ['total_net' => ($n = 30), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 1],
                 ['total_net' => ($n = 100), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 2],
@@ -238,7 +244,8 @@ class ReferenceSqlTest extends TestCase
                 1 => ['id' => 1, 'ref_no' => 'INV203'],
                 2 => ['id' => 2, 'ref_no' => 'INV204'],
                 3 => ['id' => 3, 'ref_no' => 'INV205'],
-            ], 'invoice_line' => [
+            ],
+            'invoice_line' => [
                 ['total_net' => ($n = 10), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 1],
                 ['total_net' => ($n = 30), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 1],
                 ['total_net' => ($n = 100), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 2],
@@ -301,7 +308,8 @@ class ReferenceSqlTest extends TestCase
                 1 => ['id' => 1, 'name' => 'Meat'],
                 2 => ['id' => 2, 'name' => 'Veg'],
                 3 => ['id' => 3, 'name' => 'Fruit'],
-            ], 'item' => [
+            ],
+            'item' => [
                 ['name' => 'Apple', 'code' => 'ABC', 'list_id' => 3],
                 ['name' => 'Banana', 'code' => 'DEF', 'list_id' => 3],
                 ['name' => 'Pork', 'code' => 'GHI', 'list_id' => 1],
@@ -358,7 +366,7 @@ class ReferenceSqlTest extends TestCase
         $this->assertNull($ll->get('chicken5'));
     }
 
-    public function testReferenceHasOneTraversing(): void
+    protected function setupDbForTraversing(): Model
     {
         $this->setDb([
             'user' => [
@@ -389,28 +397,54 @@ class ReferenceSqlTest extends TestCase
 
         $company->hasMany('Orders', ['model' => $order]);
 
-        $user = $user->load(1);
+        return $user;
+    }
 
-        $firstUserOrders = $user->ref('Company')->ref('Orders');
-        $firstUserOrders->setOrder('id');
+    public function testReferenceHasOneTraversing(): void
+    {
+        $user = $this->setupDbForTraversing();
+        $userEntity = $user->load(1);
 
-        $this->assertEquals([
-            ['id' => '1', 'company_id' => 1, 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
-            ['id' => '3', 'company_id' => 1, 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
-        ], $firstUserOrders->export());
+        $this->assertSameExportUnordered([
+            ['id' => 1, 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
+            ['id' => 3, 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
+        ], $userEntity->ref('Company')->ref('Orders')->export());
 
-        $user->unload();
+        $this->assertSameExportUnordered([
+            ['id' => 1, 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
+            ['id' => 2, 'company_id' => '2', 'description' => 'Zoe Company Order', 'amount' => 10.0],
+            ['id' => 3, 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
+        ], $userEntity->getModel()->ref('Company')->ref('Orders')->export());
+    }
 
-        $this->assertEquals([
-            ['id' => '1', 'company_id' => 1, 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
-            ['id' => '3', 'company_id' => 1, 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
-        ], $firstUserOrders->export());
+    public function testUnloadedEntityTraversingHasOne(): void
+    {
+        $user = $this->setupDbForTraversing();
+        $userEntity = $user->createEntity();
 
-        $this->assertEquals([
-            ['id' => '1', 'company_id' => 1, 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
-            ['id' => '2', 'company_id' => 2, 'description' => 'Zoe Company Order', 'amount' => 10.0],
-            ['id' => '3', 'company_id' => 1, 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
-        ], $user->ref('Company')->ref('Orders')->setOrder('id')->export());
+        $companyEntity = $userEntity->ref('Company');
+        $this->assertFalse($companyEntity->isLoaded());
+    }
+
+    public function testUnloadedEntityTraversingHasOneEx(): void
+    {
+        $user = $this->setupDbForTraversing();
+        $user->getRef('Company')->setDefaults(['our_field' => 'id']);
+        $userEntity = $user->createEntity();
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unable to traverse on null value');
+        $userEntity->ref('Company');
+    }
+
+    public function testUnloadedEntityTraversingHasManyEx(): void
+    {
+        $user = $this->setupDbForTraversing();
+        $companyEntity = $user->ref('Company')->createEntity();
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unable to traverse on null value');
+        $companyEntity->ref('Orders');
     }
 
     public function testReferenceHook(): void
@@ -420,7 +454,8 @@ class ReferenceSqlTest extends TestCase
                 ['name' => 'John', 'contact_id' => 2],
                 ['name' => 'Peter', 'contact_id' => null],
                 ['name' => 'Joe', 'contact_id' => 3],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 ['address' => 'Sue contact'],
                 ['address' => 'John contact'],
                 ['address' => 'Joe contact'],
@@ -483,7 +518,7 @@ class ReferenceSqlTest extends TestCase
         $p->hasOne('Stadium', ['model' => $s, 'our_field' => 'id', 'their_field' => 'player_id']);
 
         $p = $p->load(2);
-        $p->ref('Stadium')->import([['name' => 'Nou camp nou']]);
+        $p->ref('Stadium')->getModel()->import([['name' => 'Nou camp nou']]);
         $this->assertSame('Nou camp nou', $p->ref('Stadium')->get('name'));
         $this->assertSame(2, $p->ref('Stadium')->get('player_id'));
     }
@@ -504,7 +539,8 @@ class ReferenceSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
-            ], 'order' => [
+            ],
+            'order' => [
                 ['amount' => '20', 'user_id' => 1],
                 ['amount' => '15', 'user_id' => 2],
             ],
@@ -542,7 +578,8 @@ class ReferenceSqlTest extends TestCase
                 1 => ['id' => 1, 'name' => 'John', 'last_name' => 'Doe'],
                 2 => ['id' => 2, 'name' => 'Peter', 'last_name' => 'Foo'],
                 3 => ['id' => 3, 'name' => 'Goofy', 'last_name' => 'Goo'],
-            ], 'order' => [
+            ],
+            'order' => [
                 1 => ['id' => 1, 'user_id' => 1],
                 2 => ['id' => 2, 'user_id' => 2],
                 3 => ['id' => 3, 'user_id' => 1],
@@ -667,25 +704,22 @@ class ReferenceSqlTest extends TestCase
     public function testHasOneReferenceType(): void
     {
         // restore DB
-        $this->setDb(
-            [
-                'user' => [
-                    1 => [
-                        'id' => 1,
-                        'name' => 'John',
-                        'last_name' => 'Doe',
-                        'some_number' => 3,
-                        'some_other_number' => 4,
-                    ],
+        $this->setDb([
+            'user' => [
+                1 => [
+                    'id' => 1,
+                    'name' => 'John',
+                    'last_name' => 'Doe',
+                    'some_number' => 3,
+                    'some_other_number' => 4,
                 ],
-                'order' => [
-                    1 => ['id' => 1, 'user_id' => 1],
-                ],
-            ]
-        );
-        $user = (new Model($this->db, ['table' => 'user']))->addFields(
-            ['name', 'last_name', 'some_number', 'some_other_number']
-        );
+            ],
+            'order' => [
+                1 => ['id' => 1, 'user_id' => 1],
+            ],
+        ]);
+        $user = (new Model($this->db, ['table' => 'user']))
+            ->addFields(['name', 'last_name', 'some_number', 'some_other_number']);
         $user->getField('some_number')->type = 'integer';
         $user->getField('some_other_number')->type = 'integer';
         $order = (new Model($this->db, ['table' => 'order']));

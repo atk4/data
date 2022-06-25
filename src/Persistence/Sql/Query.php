@@ -116,7 +116,7 @@ class Query extends Expression
             if (
                 $add_alias === false
                 || (is_string($field) && $alias === $field)
-                || is_numeric($alias)
+                || is_int($alias)
             ) {
                 $alias = null;
             }
@@ -225,7 +225,7 @@ class Query extends Expression
             if (
                 $add_alias === false
                 || (is_string($table) && $alias === $table)
-                || is_numeric($alias)
+                || is_int($alias)
             ) {
                 $alias = null;
             }
@@ -435,17 +435,10 @@ class Query extends Expression
         }
         $joins = [];
         foreach ($this->args['join'] as $j) {
-            $jj = '';
-
-            $jj .= $j['t'] . ' join ';
-
-            $jj .= $this->escapeIdentifierSoft($j['f1']);
-
-            if ($j['fa'] !== null) {
-                $jj .= ' ' . $this->escapeIdentifier($j['fa']);
-            }
-
-            $jj .= ' on ';
+            $jj = $j['t'] . ' join '
+                . $this->escapeIdentifierSoft($j['f1'])
+                . ($j['fa'] !== null ? ' ' . $this->escapeIdentifier($j['fa']) : '')
+                . ' on ';
 
             if (isset($j['expr'])) {
                 $jj .= $this->consume($j['expr']);
@@ -1140,10 +1133,6 @@ class Query extends Expression
     /**
      * Returns a query for a function, which can be used as part of the GROUP
      * query which would concatenate all matching fields.
-     *
-     * MySQL, SQLite - group_concat
-     * PostgreSQL - string_agg
-     * Oracle - listagg
      *
      * @param string|Expressionable $field
      *

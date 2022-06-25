@@ -50,7 +50,8 @@ class JoinSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 '_' => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 '_' => ['id' => 1, 'contact_phone' => '+123'],
             ],
         ]);
@@ -80,7 +81,8 @@ class JoinSqlTest extends TestCase
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
                 2 => ['id' => 2, 'name' => 'Joe', 'contact_id' => 2],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+123'],
                 2 => ['id' => 2, 'contact_phone' => '+321'],
             ],
@@ -93,7 +95,8 @@ class JoinSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 '_' => ['id' => 1, 'name' => 'John'],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 '_' => ['id' => 1, 'contact_phone' => '+123', 'test_id' => 0],
             ],
         ]);
@@ -119,13 +122,14 @@ class JoinSqlTest extends TestCase
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
                 2 => ['id' => 2, 'name' => 'Peter'],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['id' => 1, 'test_id' => 1, 'contact_phone' => '+123'],
                 2 => ['id' => 2, 'test_id' => 2, 'contact_phone' => null],
             ],
         ], $this->getDb(['user', 'contact']));
 
-        $this->db->connection->dsql()->table('contact')->where('id', 2)->mode('delete')->execute();
+        $this->db->connection->dsql()->table('contact')->where('id', 2)->mode('delete')->executeStatement();
 
         $m_u2->unload();
         $m_u2 = $m_u->createEntity();
@@ -137,7 +141,8 @@ class JoinSqlTest extends TestCase
                 1 => ['id' => 1, 'name' => 'John'],
                 2 => ['id' => 2, 'name' => 'Peter'],
                 3 => ['id' => 3, 'name' => 'Sue'],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['id' => 1, 'test_id' => 1, 'contact_phone' => '+123'],
                 3 => ['id' => 3, 'test_id' => 3, 'contact_phone' => '+444'],
             ],
@@ -150,7 +155,8 @@ class JoinSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 '_' => ['id' => 1, 'name' => 'John', 'test_id' => 0],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 '_' => ['id' => 1, 'contact_phone' => '+123'],
             ],
         ]);
@@ -178,7 +184,8 @@ class JoinSqlTest extends TestCase
                 1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
                 2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
                 3 => ['id' => 3, 'name' => 'Joe', 'contact_id' => 2],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+123'],
                 2 => ['id' => 2, 'contact_phone' => '+321'],
             ],
@@ -190,19 +197,21 @@ class JoinSqlTest extends TestCase
         $j->addField('contact_phone');
 
         $m_u2 = $m_u->load(1);
-        $this->assertEquals([
-            'name' => 'John', 'contact_id' => 1, 'contact_phone' => '+123', 'id' => 1,
+        $this->assertSame([
+            'id' => 1, 'name' => 'John', 'contact_id' => '1', 'contact_phone' => '+123',
         ], $m_u2->get());
 
         $m_u2 = $m_u->load(3);
-        $this->assertEquals([
-            'name' => 'Joe', 'contact_id' => 2, 'contact_phone' => '+321', 'id' => 3,
+        $this->assertSame([
+            'id' => 3, 'name' => 'Joe', 'contact_id' => '2', 'contact_phone' => '+321',
         ], $m_u2->get());
 
-        $m_u2 = $m_u->tryLoad(4);
-        $this->assertEquals([
-            'name' => null, 'contact_id' => null, 'contact_phone' => null, 'id' => null,
+        $m_u2 = $m_u2->unload();
+        $this->assertSame([
+            'id' => null, 'name' => null, 'contact_id' => null, 'contact_phone' => null,
         ], $m_u2->get());
+
+        $this->assertNull($m_u->tryLoad(4));
     }
 
     public function testJoinUpdate(): void
@@ -212,7 +221,8 @@ class JoinSqlTest extends TestCase
                 1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
                 2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
                 3 => ['id' => 3, 'name' => 'Joe', 'contact_id' => 2],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+123'],
                 2 => ['id' => 2, 'contact_phone' => '+321'],
             ],
@@ -229,19 +239,17 @@ class JoinSqlTest extends TestCase
         $m_u2->set('contact_phone', '+555');
         $m_u2->save();
 
-        $this->assertEquals(
-            [
-                'user' => [
-                    1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
-                    2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                    3 => ['id' => 3, 'name' => 'Joe', 'contact_id' => 2],
-                ], 'contact' => [
-                    1 => ['id' => 1, 'contact_phone' => '+555'],
-                    2 => ['id' => 2, 'contact_phone' => '+321'],
-                ],
+        $this->assertEquals([
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
+                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
+                3 => ['id' => 3, 'name' => 'Joe', 'contact_id' => 2],
             ],
-            $this->getDb()
-        );
+            'contact' => [
+                1 => ['id' => 1, 'contact_phone' => '+555'],
+                2 => ['id' => 2, 'contact_phone' => '+321'],
+            ],
+        ], $this->getDb());
 
         $m_u2 = $m_u->load(1);
         $m_u2->set('name', 'XX');
@@ -250,57 +258,51 @@ class JoinSqlTest extends TestCase
         $m_u2->set('name', 'XX');
         $m_u2->save();
 
-        $this->assertEquals(
-            [
-                'user' => [
-                    1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
-                    2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                    3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
-                ], 'contact' => [
-                    1 => ['id' => 1, 'contact_phone' => '+555'],
-                    2 => ['id' => 2, 'contact_phone' => '+321'],
-                ],
+        $this->assertEquals([
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
+                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
+                3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
             ],
-            $this->getDb()
-        );
+            'contact' => [
+                1 => ['id' => 1, 'contact_phone' => '+555'],
+                2 => ['id' => 2, 'contact_phone' => '+321'],
+            ],
+        ], $this->getDb());
 
         $m_u2->set('contact_phone', '+999');
         $m_u2->save();
 
-        $this->assertEquals(
-            [
-                'user' => [
-                    1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
-                    2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                    3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
-                ], 'contact' => [
-                    1 => ['id' => 1, 'contact_phone' => '+555'],
-                    2 => ['id' => 2, 'contact_phone' => '+999'],
-                ],
+        $this->assertEquals([
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
+                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
+                3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
             ],
-            $this->getDb()
-        );
+            'contact' => [
+                1 => ['id' => 1, 'contact_phone' => '+555'],
+                2 => ['id' => 2, 'contact_phone' => '+999'],
+            ],
+        ], $this->getDb());
 
-        $m_u2 = $m_u->tryLoad(4);
+        $m_u2 = $m_u->createEntity();
         $m_u2->set('name', 'YYY');
         $m_u2->set('contact_phone', '+777');
         $m_u2->save();
 
-        $this->assertEquals(
-            [
-                'user' => [
-                    1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
-                    2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                    3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
-                    4 => ['id' => 4, 'name' => 'YYY', 'contact_id' => 3],
-                ], 'contact' => [
-                    1 => ['id' => 1, 'contact_phone' => '+555'],
-                    2 => ['id' => 2, 'contact_phone' => '+999'],
-                    3 => ['id' => 3, 'contact_phone' => '+777'],
-                ],
+        $this->assertEquals([
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
+                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
+                3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
+                4 => ['id' => 4, 'name' => 'YYY', 'contact_id' => 3],
             ],
-            $this->getDb()
-        );
+            'contact' => [
+                1 => ['id' => 1, 'contact_phone' => '+555'],
+                2 => ['id' => 2, 'contact_phone' => '+999'],
+                3 => ['id' => 3, 'contact_phone' => '+777'],
+            ],
+        ], $this->getDb());
     }
 
     public function testJoinDelete(): void
@@ -311,7 +313,8 @@ class JoinSqlTest extends TestCase
                 2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
                 3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
                 4 => ['id' => 4, 'name' => 'YYY', 'contact_id' => 3],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+555'],
                 2 => ['id' => 2, 'contact_phone' => '+999'],
                 3 => ['id' => 3, 'contact_phone' => '+777'],
@@ -327,19 +330,17 @@ class JoinSqlTest extends TestCase
         $m_u = $m_u->load(1);
         $m_u->delete();
 
-        $this->assertEquals(
-            [
-                'user' => [
-                    2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                    3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
-                    4 => ['id' => 4, 'name' => 'YYY', 'contact_id' => 3],
-                ], 'contact' => [
-                    2 => ['id' => 2, 'contact_phone' => '+999'],
-                    3 => ['id' => 3, 'contact_phone' => '+777'],
-                ],
+        $this->assertEquals([
+            'user' => [
+                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
+                3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
+                4 => ['id' => 4, 'name' => 'YYY', 'contact_id' => 3],
             ],
-            $this->getDb()
-        );
+            'contact' => [
+                2 => ['id' => 2, 'contact_phone' => '+999'],
+                3 => ['id' => 3, 'contact_phone' => '+777'],
+            ],
+        ], $this->getDb());
     }
 
     public function testDoubleSaveHook(): void
@@ -348,7 +349,8 @@ class JoinSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 '_' => ['id' => 1, 'name' => 'John'],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 '_' => ['id' => 1, 'contact_phone' => '+123', 'test_id' => 0],
             ],
         ]);
@@ -380,11 +382,13 @@ class JoinSqlTest extends TestCase
                 20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
                 30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
                 40 => ['id' => 40, 'name' => 'YYY', 'contact_id' => 300],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 100 => ['id' => 100, 'contact_phone' => '+555', 'country_id' => 1],
                 200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
                 300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
-            ], 'country' => [
+            ],
+            'country' => [
                 1 => ['id' => 1, 'name' => 'UK'],
                 2 => ['id' => 2, 'name' => 'US'],
                 3 => ['id' => 3, 'name' => 'India'],
@@ -407,32 +411,31 @@ class JoinSqlTest extends TestCase
         $m_u2->set('country_name', 'USA');
         $m_u2->save();
 
-        $m_u2 = $m_u->tryLoad(40);
+        $m_u2 = $m_u2->unload();
         $this->assertFalse($m_u2->isLoaded());
 
         $this->assertSame($m_u2->getModel()->getField('country_id')->getJoin(), $m_u2->getModel()->getField('contact_phone')->getJoin());
 
         $m_u->createEntity()->save(['name' => 'new', 'contact_phone' => '+000', 'country_name' => 'LV']);
 
-        $this->assertEquals(
-            [
-                'user' => [
-                    20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
-                    30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
-                    40 => ['id' => 40, 'name' => 'YYY', 'contact_id' => 300],
-                    41 => ['id' => 41, 'name' => 'new', 'contact_id' => 301],
-                ], 'contact' => [
-                    200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
-                    300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
-                    301 => ['id' => 301, 'contact_phone' => '+000', 'country_id' => 4],
-                ], 'country' => [
-                    2 => ['id' => 2, 'name' => 'USA'],
-                    3 => ['id' => 3, 'name' => 'India'],
-                    4 => ['id' => 4, 'name' => 'LV'],
-                ],
+        $this->assertEquals([
+            'user' => [
+                20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
+                30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
+                40 => ['id' => 40, 'name' => 'YYY', 'contact_id' => 300],
+                41 => ['id' => 41, 'name' => 'new', 'contact_id' => 301],
             ],
-            $this->getDb()
-        );
+            'contact' => [
+                200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
+                300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
+                301 => ['id' => 301, 'contact_phone' => '+000', 'country_id' => 4],
+            ],
+            'country' => [
+                2 => ['id' => 2, 'name' => 'USA'],
+                3 => ['id' => 3, 'name' => 'India'],
+                4 => ['id' => 4, 'name' => 'LV'],
+            ],
+        ], $this->getDb());
     }
 
     public function testDoubleReverseJoin(): void
@@ -443,11 +446,13 @@ class JoinSqlTest extends TestCase
                 20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
                 30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
                 40 => ['id' => 40, 'name' => 'YYY', 'contact_id' => 300],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 100 => ['id' => 100, 'contact_phone' => '+555', 'country_id' => 1],
                 200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
                 300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
-            ], 'country' => [
+            ],
+            'country' => [
                 1 => ['id' => 1, 'name' => 'UK'],
                 2 => ['id' => 2, 'name' => 'US'],
                 3 => ['id' => 3, 'name' => 'India'],
@@ -468,22 +473,21 @@ class JoinSqlTest extends TestCase
         $m_u = $m_u->loadBy('country_name', 'US');
         $this->assertEquals(30, $m_u->getId());
 
-        $this->assertEquals(
-            [
-                'user' => [
-                    20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
-                    30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
-                    40 => ['id' => 40, 'name' => 'YYY', 'contact_id' => 300],
-                ], 'contact' => [
-                    200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
-                    300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
-                ], 'country' => [
-                    2 => ['id' => 2, 'name' => 'US'],
-                    3 => ['id' => 3, 'name' => 'India'],
-                ],
+        $this->assertEquals([
+            'user' => [
+                20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
+                30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
+                40 => ['id' => 40, 'name' => 'YYY', 'contact_id' => 300],
             ],
-            $this->getDb()
-        );
+            'contact' => [
+                200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
+                300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
+            ],
+            'country' => [
+                2 => ['id' => 2, 'name' => 'US'],
+                3 => ['id' => 3, 'name' => 'India'],
+            ],
+        ], $this->getDb());
     }
 
     /**
@@ -565,7 +569,8 @@ class JoinSqlTest extends TestCase
             'user' => [
                 10 => ['id' => 10, 'name' => 'John'],
                 20 => ['id' => 20, 'name' => 'Peter'],
-            ], 'detail' => [
+            ],
+            'detail' => [
                 100 => ['id' => 100, 'my_user_id' => 10, 'notes' => 'first note'],
                 200 => ['id' => 200, 'my_user_id' => 20, 'notes' => 'second note'],
             ],
@@ -637,10 +642,12 @@ class JoinSqlTest extends TestCase
                 1 => ['id' => 1, 'first_name' => 'John', 'cid' => 1],
                 2 => ['id' => 2, 'first_name' => 'Peter', 'cid' => 1],
                 3 => ['id' => 3, 'first_name' => 'Joe', 'cid' => 2],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+123'],
                 2 => ['id' => 2, 'contact_phone' => '+321'],
-            ], 'salaries' => [
+            ],
+            'salaries' => [
                 1 => ['id' => 1, 'amount' => 123, 'uid' => 1],
                 2 => ['id' => 2, 'amount' => 456, 'uid' => 2],
             ],
@@ -663,22 +670,21 @@ class JoinSqlTest extends TestCase
         $m_u2->set('j2_salary', 111);
         $m_u2->save();
 
-        $this->assertEquals(
-            [
-                'user' => [
-                    1 => ['id' => 1, 'first_name' => 'John 2', 'cid' => 1],
-                    2 => ['id' => 2, 'first_name' => 'Peter', 'cid' => 1],
-                    3 => ['id' => 3, 'first_name' => 'Joe', 'cid' => 2],
-                ], 'contact' => [
-                    1 => ['id' => 1, 'contact_phone' => '+555'],
-                    2 => ['id' => 2, 'contact_phone' => '+321'],
-                ], 'salaries' => [
-                    1 => ['id' => 1, 'amount' => 111, 'uid' => 1],
-                    2 => ['id' => 2, 'amount' => 456, 'uid' => 2],
-                ],
+        $this->assertEquals([
+            'user' => [
+                1 => ['id' => 1, 'first_name' => 'John 2', 'cid' => 1],
+                2 => ['id' => 2, 'first_name' => 'Peter', 'cid' => 1],
+                3 => ['id' => 3, 'first_name' => 'Joe', 'cid' => 2],
             ],
-            $this->getDb()
-        );
+            'contact' => [
+                1 => ['id' => 1, 'contact_phone' => '+555'],
+                2 => ['id' => 2, 'contact_phone' => '+321'],
+            ],
+            'salaries' => [
+                1 => ['id' => 1, 'amount' => 111, 'uid' => 1],
+                2 => ['id' => 2, 'amount' => 456, 'uid' => 2],
+            ],
+        ], $this->getDb());
 
         // insert
         $m_u3 = $m_u->createEntity()->unload();
@@ -687,24 +693,23 @@ class JoinSqlTest extends TestCase
         $m_u3->set('j2_salary', 222);
         $m_u3->save();
 
-        $this->assertEquals(
-            [
-                'user' => [
-                    1 => ['id' => 1, 'first_name' => 'John 2', 'cid' => 1],
-                    2 => ['id' => 2, 'first_name' => 'Peter', 'cid' => 1],
-                    3 => ['id' => 3, 'first_name' => 'Joe', 'cid' => 2],
-                    4 => ['id' => 4, 'first_name' => 'Marvin', 'cid' => 3],
-                ], 'contact' => [
-                    1 => ['id' => 1, 'contact_phone' => '+555'],
-                    2 => ['id' => 2, 'contact_phone' => '+321'],
-                    3 => ['id' => 3, 'contact_phone' => '+999'],
-                ], 'salaries' => [
-                    1 => ['id' => 1, 'amount' => 111, 'uid' => 1],
-                    2 => ['id' => 2, 'amount' => 456, 'uid' => 2],
-                    3 => ['id' => 3, 'amount' => 222, 'uid' => 4],
-                ],
+        $this->assertEquals([
+            'user' => [
+                1 => ['id' => 1, 'first_name' => 'John 2', 'cid' => 1],
+                2 => ['id' => 2, 'first_name' => 'Peter', 'cid' => 1],
+                3 => ['id' => 3, 'first_name' => 'Joe', 'cid' => 2],
+                4 => ['id' => 4, 'first_name' => 'Marvin', 'cid' => 3],
             ],
-            $this->getDb()
-        );
+            'contact' => [
+                1 => ['id' => 1, 'contact_phone' => '+555'],
+                2 => ['id' => 2, 'contact_phone' => '+321'],
+                3 => ['id' => 3, 'contact_phone' => '+999'],
+            ],
+            'salaries' => [
+                1 => ['id' => 1, 'amount' => 111, 'uid' => 1],
+                2 => ['id' => 2, 'amount' => 456, 'uid' => 2],
+                3 => ['id' => 3, 'amount' => 222, 'uid' => 4],
+            ],
+        ], $this->getDb());
     }
 }

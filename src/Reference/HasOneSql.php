@@ -99,10 +99,7 @@ class HasOneSql extends HasOne
     {
         $theirModel = $this->createTheirModel($defaults);
 
-        $theirModel->addCondition(
-            $this->their_field ?: $theirModel->id_field,
-            $this->referenceOurValue()
-        );
+        $theirModel->addCondition($this->getTheirFieldName($theirModel), $this->referenceOurValue());
 
         return $theirModel;
     }
@@ -115,24 +112,15 @@ class HasOneSql extends HasOne
         $theirModel = parent::ref($ourModel, $defaults);
         $ourModel = $this->getOurModel($ourModel);
 
-        $theirFieldName = $this->their_field ?? $theirModel->id_field; // TODO why not $this->getTheirFieldName() ?
+        if ($ourModel->isEntity() && $this->getOurFieldValue($ourModel) !== null) {
+            // materialized condition already added in parent/HasOne class
+        } else {
+            // handle deep traversal using an expression
+            $ourFieldExpression = $ourModel->action('field', [$this->getOurField()]);
 
-        // At this point the reference
-        // if our_field is the id_field and is being used in the reference
-        // we should persist the relation in condtition
-        // example - $model->load(1)->ref('refLink')->import($rows);
-        if ($ourModel->isEntity() && $ourModel->isLoaded() && !$theirModel->isLoaded()) {
-            if ($ourModel->id_field === $this->getOurFieldName()) {
-                return $theirModel->getModel()
-                    ->addCondition($theirFieldName, $this->getOurFieldValue($ourModel));
-            }
+            $theirModel->getModel(true)
+                ->addCondition($this->getTheirFieldName($theirModel), $ourFieldExpression);
         }
-
-        // handles the deep traversal using an expression
-        $ourFieldExpression = $ourModel->action('field', [$this->getOurField()]);
-
-        $theirModel->getModel(true)
-            ->addCondition($theirFieldName, $ourFieldExpression);
 
         return $theirModel;
     }

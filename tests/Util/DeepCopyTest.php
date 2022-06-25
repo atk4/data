@@ -243,9 +243,9 @@ class DeepCopyTest extends TestCase
         $this->assertEquals(3, $client3->getId());
 
         // We should have one of each records for this new client
-        $this->assertSame('1', $client3->ref('Invoices')->action('count')->getOne());
-        $this->assertSame('1', $client3->ref('Quotes')->action('count')->getOne());
-        $this->assertSame('1', $client3->ref('Payments')->action('count')->getOne());
+        $this->assertSame(1, $client3->ref('Invoices')->executeCountQuery());
+        $this->assertSame(1, $client3->ref('Quotes')->executeCountQuery());
+        $this->assertSame(1, $client3->ref('Payments')->executeCountQuery());
 
         if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             $this->markTestIncomplete('TODO MSSQL: Cannot perform an aggregate function on an expression containing an aggregate or a subquery');
