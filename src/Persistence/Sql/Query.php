@@ -468,14 +468,13 @@ class Query extends Expression
      *  $q->where('id', 1);
      *
      * By default condition implies equality. You can specify a different comparison
-     * operator by either including it along with the field or using 3-argument
+     * operator by using 3-argument
      * format:
-     *  $q->where('id>', '1');
      *  $q->where('id', '>', 1);
      *
      * You may use Expression as any part of the query.
-     *  $q->where($q->expr('a=b'));
-     *  $q->where('date>', $q->expr('now()'));
+     *  $q->where($q->expr('a = b'));
+     *  $q->where('date', '>', $q->expr('now()'));
      *  $q->where($q->expr('length(password)'), '>', 5);
      *
      * If you specify Query as an argument, it will be automatically

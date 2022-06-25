@@ -23,7 +23,7 @@ narrow down set of "loadable" records by introducing a condition::
 
     $m = new Model_User($db, 'user');
     $m->addCondition('gender', 'F');
-    $m = $m->load(1);    // exception, user with ID=1 is M
+    $m = $m->load(1); // exception, user with ID=1 is M
 
 Conditions serve important role and must be used to intelligently restrict
 logically accessible data for a model before you attempt the loading.

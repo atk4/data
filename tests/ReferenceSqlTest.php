@@ -647,8 +647,8 @@ class ReferenceSqlTest extends TestCase
 
         // change order user by changing ref field value
         $o = $o->load(1);
-        $o->set('my_user', 'Foo'); // user_id=2
-        $o->set('user_id', 3);     // user_id=3 (this will take precedence)
+        $o->set('my_user', 'Foo'); // user_id = 2
+        $o->set('user_id', 3);     // user_id = 3 (this will take precedence)
         $this->assertEquals(3, $o->get('user_id'));
         $o->save();
         $this->assertEquals(3, $o->get('user_id')); // user_id changed to Goofy ID

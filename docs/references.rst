@@ -537,7 +537,8 @@ or :php:meth:`Model::refLink()`. This can help you in creating a recursive model
 that relate to itself. Here is example::
 
     class Model_Item3 extends \Atk4\Data\Model {
-        public $table='item';
+        public $table = 'item';
+
         function init(): void {
             parent::init();
 

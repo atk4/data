@@ -399,7 +399,7 @@ For some persistence classes, you should use constructor directly::
 There are several Persistence classes that deal with different data sources.
 Lets load up our console and try out a different persistence::
 
-    $a=['user' => [], 'contact_info' => []];
+    $a = ['user' => [], 'contact_info' => []];
     $ar = new \Atk4\Data\Persistence\Array_($a);
     $m = new Model_User($ar);
     $m->set('username', 'test');
