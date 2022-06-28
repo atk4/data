@@ -203,7 +203,7 @@ class Sql extends Persistence
      */
     public function initQuery(Model $model): Query
     {
-        $query = $model->persistence_data['dsql'] = $this->dsql();
+        $query = $this->dsql();
 
         if ($model->table) {
             $query->table(
