@@ -238,7 +238,7 @@ abstract class TestCase extends BaseTestCase
 
             // drop table if already created but only if it was created during this test
             foreach ($this->createdMigrators as $migr) {
-                if ($migr->connection === $this->db->getConnection()) {
+                if ($migr->getConnection() === $this->db->getConnection()) {
                     foreach ($migr->getCreatedTableNames() as $t) {
                         if ($t === $tableName) {
                             $migrator->drop();
