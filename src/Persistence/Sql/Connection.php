@@ -29,7 +29,7 @@ abstract class Connection
     protected $expression_class = Expression::class;
 
     /** @var DbalConnection */
-    protected $connection;
+    private $_connection;
 
     /** @var array<string, class-string<self>> */
     protected static $connectionClassRegistry = [
@@ -56,9 +56,17 @@ abstract class Connection
     public function __destruct()
     {
         // needed for DBAL connection to be released immeditelly
-        if ($this->connection !== null) {
-            $this->connection->close();
+        if ($this->_connection !== null) {
+            $this->getConnection()->close();
         }
+    }
+
+    /**
+     * @return DbalConnection
+     */
+    public function getConnection()
+    {
+        return $this->_connection;
     }
 
     /**
@@ -200,9 +208,10 @@ abstract class Connection
             $dbalConnection = $connectionClass::connectFromDbalDriverConnection($dbalDriverConnection);
         }
 
-        return new $connectionClass(array_merge([
-            'connection' => $dbalConnection,
-        ], $args));
+        $connection = new $connectionClass($args);
+        $connection->_connection = $dbalConnection;
+
+        return $connection;
     }
 
     /**
@@ -312,23 +321,15 @@ abstract class Connection
     }
 
     /**
-     * @return DbalConnection
-     */
-    public function connection()
-    {
-        return $this->connection;
-    }
-
-    /**
      * Execute Expression by using this connection and return result.
      */
     public function executeQuery(Expression $expr): DbalResult
     {
-        if ($this->connection === null) {
+        if ($this->_connection === null) {
             throw new Exception('DBAL connection is not set');
         }
 
-        return $expr->executeQuery($this->connection);
+        return $expr->executeQuery($this->getConnection());
     }
 
     /**
@@ -338,11 +339,11 @@ abstract class Connection
      */
     public function executeStatement(Expression $expr): int
     {
-        if ($this->connection === null) {
+        if ($this->_connection === null) {
             throw new Exception('DBAL connection is not set');
         }
 
-        return $expr->executeStatement($this->connection);
+        return $expr->executeStatement($this->getConnection());
     }
 
     /**
@@ -388,7 +389,7 @@ abstract class Connection
     public function beginTransaction(): void
     {
         try {
-            $this->connection->beginTransaction();
+            $this->getConnection()->beginTransaction();
         } catch (\Doctrine\DBAL\ConnectionException $e) {
             throw new Exception('Begin transaction failed', 0, $e);
         }
@@ -402,7 +403,7 @@ abstract class Connection
      */
     public function inTransaction(): bool
     {
-        return $this->connection->isTransactionActive();
+        return $this->getConnection()->isTransactionActive();
     }
 
     /**
@@ -415,7 +416,7 @@ abstract class Connection
     public function commit(): void
     {
         try {
-            $this->connection->commit();
+            $this->getConnection()->commit();
         } catch (\Doctrine\DBAL\ConnectionException $e) {
             throw new Exception('Commit failed', 0, $e);
         }
@@ -427,7 +428,7 @@ abstract class Connection
     public function rollBack(): void
     {
         try {
-            $this->connection->rollBack();
+            $this->getConnection()->rollBack();
         } catch (\Doctrine\DBAL\ConnectionException $e) {
             throw new Exception('Rollback failed', 0, $e);
         }
@@ -440,13 +441,13 @@ abstract class Connection
      */
     public function lastInsertId(string $sequence = null): string
     {
-        $res = $this->connection()->lastInsertId($sequence);
+        $res = $this->getConnection()->lastInsertId($sequence);
 
         return is_int($res) ? (string) $res : $res;
     }
 
     public function getDatabasePlatform(): AbstractPlatform
     {
-        return $this->connection->getDatabasePlatform();
+        return $this->getConnection()->getDatabasePlatform();
     }
 }

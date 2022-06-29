@@ -8,7 +8,7 @@ trait ExpressionTrait
 {
     protected function hasNativeNamedParamSupport(): bool
     {
-        $dbalConnection = $this->connection->connection();
+        $dbalConnection = $this->connection->getConnection();
 
         return !$dbalConnection->getNativeConnection() instanceof \mysqli;
     }

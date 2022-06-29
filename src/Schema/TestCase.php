@@ -41,7 +41,7 @@ abstract class TestCase extends BaseTestCase
             )->executeStatement();
         }
 
-        $this->db->getConnection()->connection()->getConfiguration()->setSQLLogger(
+        $this->db->getConnection()->getConnection()->getConfiguration()->setSQLLogger(
             null ?? new class($this) implements SQLLogger { // @phpstan-ignore-line
                 /** @var \WeakReference<TestCase> */
                 private $testCaseWeakRef;
@@ -95,7 +95,7 @@ abstract class TestCase extends BaseTestCase
      */
     protected function createSchemaManager(): AbstractSchemaManager
     {
-        return $this->db->getConnection()->connection()->createSchemaManager();
+        return $this->db->getConnection()->getConnection()->createSchemaManager();
     }
 
     private function convertSqlFromSqlite(string $sql): string

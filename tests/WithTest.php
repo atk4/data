@@ -50,7 +50,7 @@ class WithTest extends TestCase
         );
 
         if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-            $serverVersion = $this->db->getConnection()->connection()->getWrappedConnection()->getServerVersion();
+            $serverVersion = $this->db->getConnection()->getConnection()->getWrappedConnection()->getServerVersion();
             if (preg_match('~^5\.(?!5\.5-.+?-MariaDB)~', $serverVersion)) {
                 $this->markTestIncomplete('MySQL Server 5.x does not support WITH clause');
             }
