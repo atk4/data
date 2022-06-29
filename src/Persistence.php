@@ -75,12 +75,10 @@ abstract class Persistence
     {
         Factory::factory($model, $defaults);
 
-        if ($model->persistence !== null) {
-            throw new Exception('Persistence already set');
+        if (!$model->issetPersistence()) {
+            $model->persistence_data = [];
         }
-
-        $model->persistence = $this;
-        $model->persistence_data = [];
+        $model->setPersistence($this);
         $this->initPersistence($model);
 
         // invokes Model::init()

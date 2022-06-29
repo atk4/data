@@ -41,7 +41,7 @@ class ContainsMany extends ContainsOne
                 $ourModel->assertIsEntity();
 
                 /** @var Persistence\Array_ */
-                $persistence = $theirModel->persistence;
+                $persistence = $theirModel->getPersistence();
                 $rows = $persistence->getRawDataByTable($theirModel, $this->table_alias);
                 $ourModel->save([$this->getOurFieldName() => $rows ?: null]);
             });

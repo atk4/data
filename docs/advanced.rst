@@ -80,7 +80,7 @@ hook. Place the following inside Transaction::init()::
     $this->onHookShort(Model::HOOK_AFTER_LOAD, function () {
         if (get_class($this) != $this->getClassName()) {
             $cl = $this->getClassName();
-            $m = new $cl($this->persistence);
+            $m = new $cl($this->getPersistence());
             $m = $m->load($this->getId());
 
             $this->breakHook($m);
@@ -516,7 +516,7 @@ Next we need to define reference. Inside Model_Invoice add::
     $this->hasMany('InvoicePayment');
 
     $this->hasMany('Payment', ['model' => function ($m) {
-        $p = new Model_Payment($m->persistence);
+        $p = new Model_Payment($m->getPersistence());
         $j = $p->join('invoice_payment.payment_id');
         $j->addField('amount_closed');
         $j->hasOne('invoice_id', 'Model_Invoice');

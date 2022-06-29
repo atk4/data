@@ -150,17 +150,17 @@ class Sql extends Persistence
         $model->addMethod('expr', static function (Model $m, ...$args) {
             $m->assertIsModel();
 
-            return $m->persistence->expr($m, ...$args);
+            return $m->getPersistence()->expr($m, ...$args);
         });
         $model->addMethod('dsql', static function (Model $m, ...$args) {
             $m->assertIsModel();
 
-            return $m->persistence->dsql($m, ...$args); // @phpstan-ignore-line
+            return $m->getPersistence()->dsql($m, ...$args); // @phpstan-ignore-line
         });
         $model->addMethod('exprNow', static function (Model $m, ...$args) {
             $m->assertIsModel();
 
-            return $m->persistence->exprNow($m, ...$args);
+            return $m->getPersistence()->exprNow($m, ...$args);
         });
     }
 

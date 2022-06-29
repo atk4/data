@@ -12,6 +12,17 @@ use Atk4\Data\ValidationException;
 
 class FieldTest extends TestCase
 {
+    public function testDefaultValue(): void
+    {
+        $m = new Model();
+        $m->addField('nodefault');
+        $m->addField('withdefault', ['default' => 'abc']);
+        $m = $m->createEntity();
+
+        $this->assertNull($m->get('nodefault'));
+        $this->assertSame('abc', $m->get('withdefault'));
+    }
+
     public function testDirty1(): void
     {
         $m = new Model();

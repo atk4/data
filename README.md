@@ -130,7 +130,7 @@ class JobReport extends Job {
         parent::init();
 
         // Invoice contains Lines that may relevant to this job
-        $invoice = new Invoice($this->persistence);
+        $invoice = new Invoice($this->getPersistence());
 
         // we need to ignore draft invoices
         $invoice->addCondition('status', '!=', 'draft');
@@ -143,7 +143,7 @@ class JobReport extends Job {
             ->addField('invoiced', ['aggregate' => 'sum', 'field' => 'total', 'type' => 'atk4_money']);
 
         // next we need to see how much is reported through timesheets
-        $timesheet = new Timesheet($this->persistence);
+        $timesheet = new Timesheet($this->getPersistence());
 
         // timesheet relates to client, import client.hourly_rate as expression
         $timesheet->getRef('client_id')->addField('hourly_rate');
@@ -258,7 +258,7 @@ You can, however, [import fields through joins too](http://agile-data.readthedoc
 
 #### Q: I don't like the `$book->set('field', 123)`, I prefer properties
 
-Agile Models are not Entities. They don't represent a single record, but rather a set of records. Which is why Model has some important properties: `$model->getId()`, `$model->persistence` and `model->getDataRef()`.
+Agile Models are not Entities. They don't represent a single record, but rather a set of records. Which is why Model has some important properties: `$model->getId()`, `$model->getPersistence()` and `model->getDataRef()`.
 
 Read more on [working with individual data records](http://agile-data.readthedocs.io/en/develop/persistence.html).
 

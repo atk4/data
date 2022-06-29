@@ -32,10 +32,10 @@ use Atk4\Data\Persistence\Sql\Query;
  * If this field exist in the original model it will be added and you'll get exception otherwise. Finally you are
  * permitted to add expressions.
  *
- * @property Persistence\Sql $persistence
- * @property Model           $table
+ * @property Model $table
  *
- * @method Expression expr($expr, array $args = []) forwards to Persistence\Sql::expr using $this as model
+ * @method Persistence\Sql getPersistence()
+ * @method Expression      expr($expr, array $args = []) forwards to Persistence\Sql::expr using $this as model
  */
 class AggregateModel extends Model
 {
@@ -47,7 +47,7 @@ class AggregateModel extends Model
 
     public function __construct(Model $baseModel, array $defaults = [])
     {
-        if (!$baseModel->persistence instanceof Persistence\Sql) {
+        if (!$baseModel->issetPersistence() && !$baseModel->getPersistence() instanceof Persistence\Sql) {
             throw new Exception('Base model must have Sql persistence to use grouping');
         }
 
@@ -57,7 +57,7 @@ class AggregateModel extends Model
         $this->read_only = true;
         $this->id_field = null;
 
-        parent::__construct($baseModel->persistence, $defaults);
+        parent::__construct($baseModel->getPersistence(), $defaults);
     }
 
     /**
@@ -130,7 +130,7 @@ class AggregateModel extends Model
                     unset($query->args['where']);
                 }
 
-                $this->persistence->initQueryFields($this, $query, $fields);
+                $this->getPersistence()->initQueryFields($this, $query, $fields);
                 $this->initQueryGrouping($query);
 
                 $this->hook(self::HOOK_INIT_AGGREGATE_SELECT_QUERY, [$query]);

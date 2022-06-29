@@ -169,7 +169,7 @@ This method allows you to execute code within a 'START TRANSACTION / COMMIT' blo
 
         function applyPayment(Payment $p) {
 
-            $this->persistence->atomic(function () use ($p) {
+            $this->getPersistence()->atomic(function () use ($p) {
 
                 $this->set('paid', true);
                 $this->save();
@@ -319,7 +319,7 @@ will loose ability to use the same model with non-sql persistencies.
 
 Sometimes you can fence the code like this::
 
-    if ($this->persistence instanceof \Atk4\Data\Persistence\Sql) {
+    if ($this->getPersistence() instanceof \Atk4\Data\Persistence\Sql) {
         .. sql code ..
     }
 

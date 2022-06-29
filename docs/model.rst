@@ -162,9 +162,9 @@ Persistence object. It is commonly used to declare fields, conditions, relations
         }
     }
 
-You may safely rely on `$this->persistence` property to make choices::
+You may safely rely on `$this->getPersistence()` result to make choices::
 
-   if ($this->persistence instanceof \Atk4\Data\Persistence\Sql) {
+   if ($this->getPersistence() instanceof \Atk4\Data\Persistence\Sql) {
 
       // Calculating on SQL server is more efficient!!
       $this->addExpression('total', ['expr' => '[amount] + [vat]']);
@@ -258,7 +258,7 @@ Defines a field as server-side expression (e.g. SQL)::
    $this->addExpression('total', ['expr' => '[amount] + [vat]']);
 
 The above code is executed on the server (SQL) and can be very powerful.
-You must make sure that expression is valid for current `$this->persistence`::
+You must make sure that expression is valid for current `$this->getPersistence()`::
 
    $product->addExpression('discount', ['expr' => $this->refLink('category_id')->fieldQuery('default_discount')]);
    // expression as a sub-select from referenced model (Category) imported as a read-only field

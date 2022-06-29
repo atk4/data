@@ -244,8 +244,11 @@ class Reference
 
     protected function addToPersistence(Model $theirModel, array $defaults = []): void
     {
-        if (!$theirModel->persistence && $persistence = $this->getDefaultPersistence($theirModel)) {
-            $persistence->add($theirModel, $defaults);
+        if (!$theirModel->issetPersistence()) {
+            $persistence = $this->getDefaultPersistence($theirModel);
+            if ($persistence !== false) {
+                $persistence->add($theirModel, $defaults);
+            }
         }
 
         // set model caption
@@ -266,11 +269,11 @@ class Reference
         // this is useful for ContainsOne/Many implementation in case when you have
         // SQL_Model->containsOne()->hasOne() structure to get back to SQL persistence
         // from Array persistence used in ContainsOne model
-        if ($ourModel->containedInEntity && $ourModel->containedInEntity->persistence) {
-            return $ourModel->containedInEntity->persistence;
+        if ($ourModel->containedInEntity && $ourModel->containedInEntity->issetPersistence()) {
+            return $ourModel->containedInEntity->getPersistence();
         }
 
-        return $ourModel->persistence ?: false;
+        return $ourModel->issetPersistence() ? $ourModel->getPersistence() : false;
     }
 
     /**

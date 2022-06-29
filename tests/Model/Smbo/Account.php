@@ -25,7 +25,7 @@ class Account extends Model
      */
     public function transfer(self $a, float $amount): Transfer
     {
-        $t = new Transfer($this->persistence, ['detached' => true]);
+        $t = new Transfer($this->getPersistence(), ['detached' => true]);
         $t = $t->createEntity();
         $t->set('account_id', $this->getId());
 

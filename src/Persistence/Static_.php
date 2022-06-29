@@ -146,7 +146,9 @@ class Static_ extends Array_
                     }
                 }
             }, $this, Array_::class)();
-            $model->persistence = null;
+            \Closure::bind(function () use ($model) {
+                $model->_persistence = null;
+            }, null, Model::class)();
 
             if (isset($this->fieldsForModel[$model->id_field])) {
                 $model->getField($model->id_field)->type = $this->fieldsForModel[$model->id_field]['type'];
