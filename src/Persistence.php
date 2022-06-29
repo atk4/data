@@ -77,9 +77,9 @@ abstract class Persistence
 
         if (!$model->issetPersistence()) {
             $model->persistence_data = [];
+            $this->initPersistence($model);
         }
         $model->setPersistence($this);
-        $this->initPersistence($model);
 
         // invokes Model::init()
         // model is not added to elements as it does not implement TrackableTrait trait

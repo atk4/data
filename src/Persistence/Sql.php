@@ -142,9 +142,6 @@ class Sql extends Persistence
         }
     }
 
-    /**
-     * Initialize persistence.
-     */
     protected function initPersistence(Model $model): void
     {
         $model->addMethod('expr', static function (Model $m, ...$args) {

@@ -1170,8 +1170,9 @@ class Model implements \IteratorAggregate
             $this->_persistence = $persistence;
         } else {
             $persistence->add($this);
-            $this->getPersistence(); // assert persistence is set
         }
+
+        $this->getPersistence(); // assert persistence is set
 
         return $this;
     }
