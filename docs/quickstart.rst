@@ -311,13 +311,13 @@ later::
 
     $m = new Model_User();
 
-    $db->add($m); // calls $m->invokeInit()
+    $m->setPersistence($db); // calls $m->invokeInit()
 
 You cannot add conditions just yet, although you can pass in some of the defaults::
 
     $m = new Model_User(null, ['table' => 'user2']);
 
-    $db->add($m); // will use table user2
+    $m->setPersistence($db); // will use table user2
 
 Adding Fields
 -------------

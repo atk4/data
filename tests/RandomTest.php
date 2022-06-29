@@ -171,13 +171,9 @@ class RandomTest extends TestCase
         $this->assertInstanceOf(CustomField::class, $m->getField('salary'));
     }
 
-    public function testSetPersistenceAddCalled(): void
+    public function testSetPersistence(): void
     {
         $m = new Model($this->db, ['table' => 'user']);
-        $this->assertTrue($m->hasField('id'));
-
-        $m = new Model(null, ['table' => 'user']);
-        $this->db->add($m);
         $this->assertTrue($m->hasField('id'));
 
         $m = new Model(null, ['table' => 'user']);
@@ -197,6 +193,15 @@ class RandomTest extends TestCase
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Persistence already set');
         $m->setPersistence($p);
+    }
+
+    public function testPersistenceAddException(): void
+    {
+        $m = new Model(null, ['table' => 'user']);
+
+        $this->expectException(\Error::class);
+        $this->expectExceptionMessage('Persistence::add() cannot be called directly');
+        $this->db->add($m);
     }
 
     public function testSameTable(): void

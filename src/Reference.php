@@ -247,8 +247,11 @@ class Reference
         if (!$theirModel->issetPersistence()) {
             $persistence = $this->getDefaultPersistence($theirModel);
             if ($persistence !== false) {
-                $persistence->add($theirModel, $defaults);
+                $theirModel->setDefaults($defaults);
+                $theirModel->setPersistence($persistence);
             }
+        } elseif ($defaults !== []) {
+            // TODO this seems dangerous
         }
 
         // set model caption

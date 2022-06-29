@@ -33,13 +33,12 @@ Create your persistence object first::
 
     $db = \Atk4\Data\Persistence::connect($dsn);
 
-There are several ways to link your model up with the persistence::
+There are two ways to link your model up with the persistence::
 
     $m = new Model_Invoice($db);
 
-    $m = $db->add(new Model_Invoice());
-
-    $m = $db->add('Invoice');
+    $m = new Model_Invoice();
+    $m->setPersistence($db);
 
 .. php:method:: load
 
@@ -576,7 +575,7 @@ application::
     function loadQuick($class, $id) {
 
         // first, try to load it from MemCache
-        $m = $this->mdb->add(clone $class)->tryLoad($id);
+        $m = (clone $class)->setPersistence($this->mdb)->tryLoad($id);
 
         if ($m === null) {
             // fall-back to load from SQL
@@ -608,7 +607,7 @@ To use it with any model::
 To look in more details into the actual method, I have broken it down into chunks::
 
     // first, try to load it from MemCache:
-    $m = $this->mdb->add(clone $class)->tryLoad($id);
+    $m = (clone $class)->setPersistence($this->mdb)->tryLoad($id);
 
 The $class will be an uninitialized instance of a model (although you can also
 use a string). It will first be associated with the MemCache DB persistence and

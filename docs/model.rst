@@ -423,7 +423,7 @@ explicitly associate model with persistence like this::
 
    // ....
 
-   $db->add($m);  // links with persistence
+   $m->setPersistence($db);  // links with persistence
 
 Multiple models can be associated with the same persistence. Here are also some examples
 of static persistence::

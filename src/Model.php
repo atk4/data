@@ -271,11 +271,10 @@ class Model implements \IteratorAggregate
     /**
      * Creation of the new model can be done in two ways:.
      *
-     * $m = $db->add(new Model());
-     *
-     * or
-     *
      * $m = new Model($db);
+     *   or
+     * $m = new Model();
+     * $m->setPersistence($db);
      *
      * The second use actually calls add() but is preferred usage because:
      *  - it's shorter
@@ -1169,6 +1168,7 @@ class Model implements \IteratorAggregate
         if ($this->persistence_data === []) {
             $this->_persistence = $persistence;
         } else {
+            $this->persistence_data = [];
             $persistence->add($this);
         }
 
@@ -1466,7 +1466,7 @@ class Model implements \IteratorAggregate
      * @param mixed                $id
      * @param class-string<static> $class
      *
-     * @return self
+     * @return static
      */
     public function withPersistence(Persistence $persistence, $id = null, string $class = null)
     {
