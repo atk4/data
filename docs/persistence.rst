@@ -557,7 +557,7 @@ pretty much anything including 'RestAPI', 'File', 'Memcache' or 'MongoDB'.
     with a new persistence.
 
 
-.. php:method:: withPersistence($persistence, $id = null, $class = null)
+.. php:method:: withPersistence($persistence)
 
 
 Creating Cache with Memcache
@@ -673,7 +673,7 @@ replica may not propagate to read replica, you can simply reset the dirty flags.
 If you need further optimization, make sure `reload_after_save` is disabled
 for the write replica::
 
-    $m->withPersistence($write_replica, null, ['reload_after_save' => false])->save();
+    $m->withPersistence($write_replica)->setDefaults(['reload_after_save' => false])->save();
 
 or use::
 
@@ -686,7 +686,7 @@ If you wish that every time you save your model the copy is also stored inside
 some other database (for archive purposes) you can implement it like this::
 
     $m->onHook(Model::HOOK_BEFORE_SAVE, function ($m) {
-        $arc = $this->withPersistence($m->getApp()->archive_db, false);
+        $arc = $this->withPersistence($m->getApp()->archive_db);
 
         // add some audit fields
         $arc->addField('original_id')->set($this->getId());
@@ -694,9 +694,6 @@ some other database (for archive purposes) you can implement it like this::
 
         $arc->saveAndUnload();
     });
-
-When passing 2nd argument of `false` to the withPersistence() method, it will
-not re-use current ID instead creating new records every time.
 
 Store a specific record
 -----------------------
@@ -722,7 +719,7 @@ How to add record inside session, e.g. log the user in? Here is the code::
     $u = new User($db);
     $u = $u->load(123);
 
-    $u->withPersistence($sess, 'active_user')->save();
+    $u->withPersistence($sess)->save();
 
 .. _Action:
 

@@ -454,7 +454,7 @@ it when associating model with database::
 
 This also overrides current table value.
 
-.. php:method:: withPersistence($persistence, $id = null, $class = null)
+.. php:method:: withPersistence($persistence)
 
 Creates a duplicate of a current model and associate new copy with a specified
 persistence. This method is useful for moving model data from one persistence

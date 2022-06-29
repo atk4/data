@@ -1452,34 +1452,17 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Create new model from the same base class
-     * as $this. If you omit $id then when saving
-     * a new record will be created with default ID.
-     * If you specify $id then it will be used
-     * to save/update your record. If set $id
-     * to `true` then model will assume that there
-     * is already record like that in the destination
-     * persistence.
+     * Create new model from the same base class as $this.
      *
      * See https://github.com/atk4/data/issues/111 for use-case examples.
      *
-     * @param mixed                $id
-     * @param class-string<static> $class
-     *
      * @return static
      */
-    public function withPersistence(Persistence $persistence, $id = null, string $class = null)
+    public function withPersistence(Persistence $persistence)
     {
-        $class ??= static::class;
+        $this->assertIsModel();
 
-        $model = new $class($persistence, ['table' => $this->table]);
-        if ($this->isEntity()) { // TODO should this method work with entity at all?
-            $model = $model->createEntity();
-        }
-
-        if ($this->id_field && $id !== null) {
-            $model->setId($id === true ? $this->getId() : $id);
-        }
+        $model = new static($persistence, ['table' => $this->table]);
 
         // include any fields defined inline
         foreach ($this->fields as $fieldName => $field) {
@@ -1488,17 +1471,9 @@ class Model implements \IteratorAggregate
             }
         }
 
-        if ($this->isEntity()) {
-            $modelDataRef = &$model->getDataRef();
-            $modelDirtyRef = &$model->getDirtyRef();
-            $modelDataRef = &$this->getDataRef();
-            $modelDirtyRef = &$this->getDirtyRef();
-        }
         $model->limit = $this->limit;
         $model->order = $this->order;
-        if (!$this->isEntity()) {
-            $model->scope = (clone $this->scope)->setModel($model);
-        }
+        $model->scope = (clone $this->scope)->setModel($model);
 
         return $model;
     }
