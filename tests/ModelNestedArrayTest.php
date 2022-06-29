@@ -18,7 +18,7 @@ class ModelNestedArrayTest extends TestCase
     {
         parent::setUp();
 
-        $this->db->connection->connection()->close();
+        $this->db->getConnection()->getConnection()->close();
 
         $this->db = new Persistence\Array_([
             'user' => [

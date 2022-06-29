@@ -36,12 +36,12 @@ abstract class TestCase extends BaseTestCase
         $this->db = Persistence::connect($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD']);
 
         if ($this->db->getDatabasePlatform() instanceof MySQLPlatform) {
-            $this->db->connection->expr(
+            $this->db->getConnection()->expr(
                 'SET SESSION auto_increment_increment = 1, SESSION auto_increment_offset = 1'
             )->executeStatement();
         }
 
-        $this->db->connection->connection()->getConfiguration()->setSQLLogger(
+        $this->db->getConnection()->getConnection()->getConfiguration()->setSQLLogger(
             null ?? new class($this) implements SQLLogger { // @phpstan-ignore-line
                 /** @var \WeakReference<TestCase> */
                 private $testCaseWeakRef;
@@ -87,7 +87,7 @@ abstract class TestCase extends BaseTestCase
 
     protected function getDatabasePlatform(): AbstractPlatform
     {
-        return $this->db->connection->getDatabasePlatform();
+        return $this->db->getConnection()->getDatabasePlatform();
     }
 
     /**
@@ -95,7 +95,7 @@ abstract class TestCase extends BaseTestCase
      */
     protected function createSchemaManager(): AbstractSchemaManager
     {
-        return $this->db->connection->connection()->createSchemaManager();
+        return $this->db->getConnection()->getConnection()->createSchemaManager();
     }
 
     private function convertSqlFromSqlite(string $sql): string
@@ -238,7 +238,7 @@ abstract class TestCase extends BaseTestCase
 
             // drop table if already created but only if it was created during this test
             foreach ($this->createdMigrators as $migr) {
-                if ($migr->connection === $this->db->connection) {
+                if ($migr->getConnection() === $this->db->getConnection()) {
                     foreach ($migr->getCreatedTableNames() as $t) {
                         if ($t === $tableName) {
                             $migrator->drop();

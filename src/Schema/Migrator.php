@@ -26,7 +26,7 @@ class Migrator
     public const REF_TYPE_PRIMARY = 2;
 
     /** @var Connection */
-    public $connection;
+    private $_connection;
 
     /** @var Table */
     public $table;
@@ -35,7 +35,7 @@ class Migrator
     private $createdTableNames = [];
 
     /**
-     * @param Connection|Persistence|Model $source
+     * @param Connection|Persistence\Sql|Model $source
      */
     public function __construct($source)
     {
@@ -44,13 +44,13 @@ class Migrator
         }
 
         if ($source instanceof Connection) {
-            $this->connection = $source;
+            $this->_connection = $source;
         } elseif ($source instanceof Persistence\Sql) {
-            $this->connection = $source->connection;
+            $this->_connection = $source->getConnection();
         } elseif ($source instanceof Model && $source->getPersistence() instanceof Persistence\Sql) {
-            $this->connection = $source->getPersistence()->connection;
+            $this->_connection = $source->getPersistence()->getConnection();
         } else {
-            throw (new Exception('Source is specified incorrectly. Must be Connection, Persistence or initialized Model'))
+            throw (new Exception('Source is specified incorrectly. Must be SQL connection, persistence or initialized model'))
                 ->addMoreInfo('source', $source);
         }
 
@@ -59,9 +59,14 @@ class Migrator
         }
     }
 
+    public function getConnection(): Connection
+    {
+        return $this->_connection;
+    }
+
     protected function getDatabasePlatform(): AbstractPlatform
     {
-        return $this->connection->getDatabasePlatform();
+        return $this->getConnection()->getDatabasePlatform();
     }
 
     /**
@@ -69,7 +74,7 @@ class Migrator
      */
     protected function createSchemaManager(): AbstractSchemaManager
     {
-        return $this->connection->connection()->createSchemaManager();
+        return $this->getConnection()->getConnection()->createSchemaManager();
     }
 
     public function table(string $tableName): self
@@ -123,7 +128,7 @@ class Migrator
         if ($this->getDatabasePlatform() instanceof OraclePlatform) {
             $dropTriggerSql = $this->getDatabasePlatform()->getDropAutoincrementSql($this->table->getName())[1];
             try {
-                $this->connection->expr($dropTriggerSql)->executeStatement();
+                $this->getConnection()->expr($dropTriggerSql)->executeStatement();
             } catch (Exception $e) {
             }
         }
@@ -216,7 +221,7 @@ class Migrator
             $modelSeed = is_array($reference->model)
                 ? $reference->model
                 : clone $reference->model;
-            $referenceModel = Model::fromSeed($modelSeed, [new Persistence\Sql($this->connection)]);
+            $referenceModel = Model::fromSeed($modelSeed, [new Persistence\Sql($this->getConnection())]);
 
             return $referenceModel->getField($referenceField);
         }

@@ -20,7 +20,7 @@ class TransactionTest extends TestCase
     {
         parent::setUp();
 
-        $this->c = $this->db->connection;
+        $this->c = $this->db->getConnection();
 
         $model = new Model($this->db, ['table' => 'employee']);
         $model->addField('name');
