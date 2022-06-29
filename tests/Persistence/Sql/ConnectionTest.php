@@ -171,7 +171,7 @@ class ConnectionTest extends TestCase
 
     public function testException3(): void
     {
-        $this->expectException(\Atk4\Data\Persistence\Sql\Exception::class);
+        $this->expectException(\TypeError::class);
         $c = new \Atk4\Data\Persistence\Sql\Sqlite\Connection('sqlite::memory'); // @phpstan-ignore-line
     }
 

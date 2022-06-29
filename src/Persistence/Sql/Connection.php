@@ -46,16 +46,11 @@ abstract class Connection
      * Specifying $properties to constructors will override default
      * property values of this class.
      *
-     * @param array $properties
+     * @param array $defaults
      */
-    public function __construct($properties = [])
+    public function __construct(array $defaults = [])
     {
-        if (!is_array($properties)) {
-            throw (new Exception('Invalid properties for "new Connection()". Did you mean to call Connection::connect()?'))
-                ->addMoreInfo('properties', $properties);
-        }
-
-        $this->setDefaults($properties);
+        $this->setDefaults($defaults);
     }
 
     public function __destruct()

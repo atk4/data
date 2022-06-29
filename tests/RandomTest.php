@@ -568,7 +568,7 @@ class RandomTest extends TestCase
             $docSchema = 'db2';
             $runWithDb = false;
         } else {
-            $dbSchema = $this->db->connection->dsql()
+            $dbSchema = $this->db->getConnection()->dsql()
                 ->field(new Expression($this->getDatabasePlatform()->getCurrentDatabaseExpression()))
                 ->getOne();
             $userSchema = $dbSchema;

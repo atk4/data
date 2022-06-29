@@ -40,8 +40,8 @@ class Sql extends Persistence
     /** @const string */
     public const HOOK_AFTER_DELETE_QUERY = self::class . '@afterDeleteQuery';
 
-    /** @var Connection Connection object. */
-    public $connection;
+    /** @var Connection */
+    public $_connection;
 
     /** @var array Default class when adding new field. */
     public $_default_seed_addField; // no custom seed needed
@@ -67,18 +67,23 @@ class Sql extends Persistence
     public function __construct($connection, $user = null, $password = null, $args = [])
     {
         if ($connection instanceof Connection) {
-            $this->connection = $connection;
+            $this->_connection = $connection;
 
             return;
         }
 
         // attempt to connect
-        $this->connection = Connection::connect(
+        $this->_connection = Connection::connect(
             $connection,
             $user,
             $password,
             $args
         );
+    }
+
+    public function getConnection(): Connection
+    {
+        return $this->_connection;
     }
 
     /**
@@ -88,7 +93,7 @@ class Sql extends Persistence
     {
         parent::disconnect();
 
-        $this->connection = null; // @phpstan-ignore-line
+        $this->_connection = null; // @phpstan-ignore-line
     }
 
     /**
@@ -96,7 +101,7 @@ class Sql extends Persistence
      */
     public function dsql(): Query
     {
-        return $this->connection->dsql();
+        return $this->getConnection()->dsql();
     }
 
     /**
@@ -108,12 +113,12 @@ class Sql extends Persistence
      */
     public function atomic(\Closure $fx)
     {
-        return $this->connection->atomic($fx);
+        return $this->getConnection()->atomic($fx);
     }
 
     public function getDatabasePlatform(): AbstractPlatform
     {
-        return $this->connection->getDatabasePlatform();
+        return $this->getConnection()->getDatabasePlatform();
     }
 
     public function add(Model $model, array $defaults = []): void
@@ -169,7 +174,7 @@ class Sql extends Persistence
     public function expr(Model $model, $expr, array $args = []): Expression
     {
         if (!is_string($expr)) {
-            return $this->connection->expr($expr, $args);
+            return $this->getConnection()->expr($expr, $args);
         }
         preg_replace_callback(
             '/\[[a-z0-9_]*\]|{[a-z0-9_]*}/i',
@@ -184,7 +189,7 @@ class Sql extends Persistence
             $expr
         );
 
-        return $this->connection->expr($expr, $args);
+        return $this->getConnection()->expr($expr, $args);
     }
 
     /**
@@ -192,7 +197,7 @@ class Sql extends Persistence
      */
     public function exprNow(int $precision = null): Expression
     {
-        return $this->connection->dsql()->exprNow($precision);
+        return $this->getConnection()->dsql()->exprNow($precision);
     }
 
     /**
@@ -675,15 +680,15 @@ class Sql extends Persistence
         // PostgreSQL and Oracle DBAL platforms use sequence internally for PK autoincrement,
         // use default name if not set explicitly
         $sequenceName = null;
-        if ($this->connection->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            $sequenceName = $this->connection->getDatabasePlatform()->getIdentitySequenceName(
+        if ($this->getConnection()->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            $sequenceName = $this->getConnection()->getDatabasePlatform()->getIdentitySequenceName(
                 $model->table,
                 $model->getField($model->id_field)->getPersistenceName()
             );
-        } elseif ($this->connection->getDatabasePlatform() instanceof OraclePlatform) {
+        } elseif ($this->getConnection()->getDatabasePlatform() instanceof OraclePlatform) {
             $sequenceName = $model->table . '_SEQ';
         }
 
-        return $this->connection->lastInsertId($sequenceName);
+        return $this->getConnection()->lastInsertId($sequenceName);
     }
 }

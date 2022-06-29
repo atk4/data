@@ -35,7 +35,7 @@ class Migrator
     private $createdTableNames = [];
 
     /**
-     * @param Connection|Persistence|Model $source
+     * @param Connection|Persistence\Sql|Model $source
      */
     public function __construct($source)
     {
@@ -46,11 +46,11 @@ class Migrator
         if ($source instanceof Connection) {
             $this->connection = $source;
         } elseif ($source instanceof Persistence\Sql) {
-            $this->connection = $source->connection;
+            $this->connection = $source->getConnection();
         } elseif ($source instanceof Model && $source->getPersistence() instanceof Persistence\Sql) {
-            $this->connection = $source->getPersistence()->connection;
+            $this->connection = $source->getPersistence()->getConnection();
         } else {
-            throw (new Exception('Source is specified incorrectly. Must be Connection, Persistence or initialized Model'))
+            throw (new Exception('Source is specified incorrectly. Must be SQL connection, persistence or initialized model'))
                 ->addMoreInfo('source', $source);
         }
 
