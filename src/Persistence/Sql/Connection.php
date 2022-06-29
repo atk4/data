@@ -42,12 +42,6 @@ abstract class Connection
         'oci8' => Oracle\Connection::class,
     ];
 
-    /**
-     * Specifying $properties to constructors will override default
-     * property values of this class.
-     *
-     * @param array $defaults
-     */
     public function __construct(array $defaults = [])
     {
         $this->setDefaults($defaults);
@@ -61,10 +55,7 @@ abstract class Connection
         }
     }
 
-    /**
-     * @return DbalConnection
-     */
-    public function getConnection()
+    public function getConnection(): DbalConnection
     {
         return $this->_connection;
     }
@@ -188,10 +179,8 @@ abstract class Connection
      * @param string|null                                      $user
      * @param string|null                                      $password
      * @param array                                            $args
-     *
-     * @return Connection
      */
-    public static function connect($dsn, $user = null, $password = null, $args = [])
+    public static function connect($dsn, $user = null, $password = null, $args = []): self
     {
         if ($dsn instanceof DbalConnection) {
             $driverName = self::getDriverNameFromDbalDriverConnection($dsn->getWrappedConnection()); // @phpstan-ignore-line https://github.com/doctrine/dbal/issues/5199
