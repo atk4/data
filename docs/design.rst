@@ -263,8 +263,9 @@ Here is the code::
     // $order is not linked with persistence
 
 
-    $real_order = $db->add('Model_Order');
-    // $real_order is associated with specific persistence layer $db
+    $order = new Model_Order();
+    $order->setPersistence($db); // same as $order = new Model_Order($db)
+    // $order is associated with specific persistence layer $db
 
 
 ID Field
@@ -359,7 +360,7 @@ practice our application must operate with multiple records.
 DataSet is an object that represents collection of Domain model records that
 are persisted::
 
-    $order = $db->add('Model_Order');
+    $order = new Model_Order($db);
     $order = $order->load(10);
 
 In scenario above we loaded a specific record. Agile Data does not create a
@@ -371,7 +372,7 @@ any record from the DataSet. Think of it as a "window" into a large table of
 Orders::
 
     $sum = 0;
-    $order = $db->add('Model_Order');
+    $order = new Model_Order($db);
     $order = $order->load(10);
     $sum += $order->get('amount');
 
@@ -384,7 +385,7 @@ Orders::
 You can iterate over the DataSet::
 
     $sum = 0;
-    foreach ($db->add('Model_Order') as $order) {
+    foreach (new Model_Order($db) as $order) {
         $sum += $order->get('amount');
     }
 
@@ -393,7 +394,7 @@ iterating it will simply make it load different values.
 
 At this point, I'll jump ahead a bit and will show you an alternative code::
 
-    $sum = $db->add('Model_Order')->fx0(['sum', 'amount'])->getOne();
+    $sum = (new Model_Order($db))->fx0(['sum', 'amount'])->getOne();
 
 It will have same effect as the code above, but will perform operation of
 adding up all order amounts inside the database and save you a lot of CPU cycles.
@@ -417,14 +418,14 @@ The above is a Domain Model code. It will iterate through the DataSet of
 a restriction::
 
     $sum = 0;
-    foreach ($db->add('Model_Order')->addCondition('is_paid', true) as $order) {
+    foreach ((new Model_Order($db))->addCondition('is_paid', true) as $order) {
         $sum += $order->get('amount');
     }
 
 And again it's much more effective to do this on database side::
 
 
-    $sum = $db->add('Model_Order')
+    $sum = (new Model_Order($db))
                 ->addCondition('is_paid', true)
                 ->fx0(['sum', 'amount'])
                 ->getOne();

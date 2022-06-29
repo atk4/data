@@ -129,16 +129,11 @@ class Model implements \IteratorAggregate
     /** @var string|null */
     public $table_alias;
 
-    /** @var Persistence|Persistence\Sql|null */
-    public $persistence;
+    /** @var Persistence|null */
+    private $_persistence;
 
-    /**
-     * Persistence store some custom information in here that may be useful
-     * for them. The key is the name of persistence driver.
-     *
-     * @var array
-     */
-    public $persistence_data = [];
+    /** @var array Persistence store some custom information in here that may be useful for them. */
+    public $persistence_data;
 
     /** @var Model\Scope\RootScope */
     private $scope;
@@ -276,11 +271,10 @@ class Model implements \IteratorAggregate
     /**
      * Creation of the new model can be done in two ways:.
      *
-     * $m = $db->add(new Model());
-     *
-     * or
-     *
      * $m = new Model($db);
+     *   or
+     * $m = new Model();
+     * $m->setPersistence($db);
      *
      * The second use actually calls add() but is preferred usage because:
      *  - it's shorter
@@ -299,7 +293,7 @@ class Model implements \IteratorAggregate
         $this->setDefaults($defaults);
 
         if ($persistence !== null) {
-            $persistence->add($this);
+            $this->setPersistence($persistence);
         }
     }
 
@@ -1150,14 +1144,47 @@ class Model implements \IteratorAggregate
 
     // {{{ Persistence-related logic
 
+    public function issetPersistence(): bool
+    {
+        return $this->_persistence !== null;
+    }
+
+    public function getPersistence(): Persistence
+    {
+        return $this->_persistence;
+    }
+
+    /**
+     * @return $this
+     */
+    public function setPersistence(Persistence $persistence)
+    {
+        $this->assertIsModel();
+
+        if ($this->issetPersistence()) {
+            throw new Exception('Persistence already set');
+        }
+
+        if ($this->persistence_data === []) {
+            $this->_persistence = $persistence;
+        } else {
+            $this->persistence_data = [];
+            $persistence->add($this);
+        }
+
+        $this->getPersistence(); // assert persistence is set
+
+        return $this;
+    }
+
     public function assertHasPersistence(string $methodName = null): void
     {
-        if (!$this->persistence) {
+        if (!$this->issetPersistence()) {
             throw new Exception('Model is not associated with a persistence');
         }
 
-        if ($methodName && !$this->persistence->hasMethod($methodName)) {
-            throw new Exception("Persistence does not support {$methodName} method");
+        if ($methodName !== null && !$this->getPersistence()->hasMethod($methodName)) {
+            throw new Exception('Persistence does not support "' . $methodName . '" method');
         }
     }
 
@@ -1257,7 +1284,7 @@ class Model implements \IteratorAggregate
         }
 
         $dataRef = &$this->getDataRef();
-        $dataRef = $this->persistence->{$fromTryLoad ? 'tryLoad' : 'load'}($this->getModel(), $this->remapIdLoadToPersistence($id));
+        $dataRef = $this->getPersistence()->{$fromTryLoad ? 'tryLoad' : 'load'}($this->getModel(), $this->remapIdLoadToPersistence($id));
         if ($dataRef === null) {
             return null; // $fromTryLoad is always true here
         }
@@ -1425,34 +1452,17 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Create new model from the same base class
-     * as $this. If you omit $id then when saving
-     * a new record will be created with default ID.
-     * If you specify $id then it will be used
-     * to save/update your record. If set $id
-     * to `true` then model will assume that there
-     * is already record like that in the destination
-     * persistence.
+     * Create new model from the same base class as $this.
      *
      * See https://github.com/atk4/data/issues/111 for use-case examples.
      *
-     * @param mixed                $id
-     * @param class-string<static> $class
-     *
-     * @return self
+     * @return static
      */
-    public function withPersistence(Persistence $persistence, $id = null, string $class = null)
+    public function withPersistence(Persistence $persistence)
     {
-        $class ??= static::class;
+        $this->assertIsModel();
 
-        $model = new $class($persistence, ['table' => $this->table]);
-        if ($this->isEntity()) { // TODO should this method work with entity at all?
-            $model = $model->createEntity();
-        }
-
-        if ($this->id_field && $id !== null) {
-            $model->setId($id === true ? $this->getId() : $id);
-        }
+        $model = new static($persistence, ['table' => $this->table]);
 
         // include any fields defined inline
         foreach ($this->fields as $fieldName => $field) {
@@ -1461,17 +1471,9 @@ class Model implements \IteratorAggregate
             }
         }
 
-        if ($this->isEntity()) {
-            $modelDataRef = &$model->getDataRef();
-            $modelDirtyRef = &$model->getDirtyRef();
-            $modelDataRef = &$this->getDataRef();
-            $modelDirtyRef = &$this->getDirtyRef();
-        }
         $model->limit = $this->limit;
         $model->order = $this->order;
-        if (!$this->isEntity()) {
-            $model->scope = (clone $this->scope)->setModel($model);
-        }
+        $model->scope = (clone $this->scope)->setModel($model);
 
         return $model;
     }
@@ -1584,7 +1586,7 @@ class Model implements \IteratorAggregate
                     return $this;
                 }
 
-                $this->persistence->update($this, $this->getId(), $data);
+                $this->getPersistence()->update($this, $this->getId(), $data);
 
                 $this->hook(self::HOOK_AFTER_UPDATE, [&$data]);
             } else {
@@ -1607,7 +1609,7 @@ class Model implements \IteratorAggregate
                 }
 
                 // Collect all data of a new record
-                $id = $this->persistence->insert($this, $data);
+                $id = $this->getPersistence()->insert($this, $data);
 
                 if (!$this->id_field) {
                     $this->hook(self::HOOK_AFTER_INSERT);
@@ -1717,7 +1719,7 @@ class Model implements \IteratorAggregate
 
         // no key field - then just do export
         if ($key_field === null) {
-            return $this->persistence->export($this, $fields, $typecast_data);
+            return $this->getPersistence()->export($this, $fields, $typecast_data);
         }
 
         // do we have added key field in fields list?
@@ -1767,7 +1769,7 @@ class Model implements \IteratorAggregate
         }
 
         // export
-        $data = $this->persistence->export($this, $fields, $typecast_data);
+        $data = $this->getPersistence()->export($this, $fields, $typecast_data);
 
         // prepare resulting array
         $res = [];
@@ -1793,7 +1795,7 @@ class Model implements \IteratorAggregate
             $thisCloned = $this->createEntity();
 
             $dataRef = &$thisCloned->getDataRef();
-            $dataRef = $this->persistence->typecastLoadRow($this, $data);
+            $dataRef = $this->getPersistence()->typecastLoadRow($this, $data);
             if ($this->id_field) {
                 $thisCloned->setId($data[$this->id_field] ?? null);
             }
@@ -1833,7 +1835,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsModel();
 
-        return $this->persistence->prepareIterator($this);
+        return $this->getPersistence()->prepareIterator($this);
     }
 
     /**
@@ -1864,7 +1866,7 @@ class Model implements \IteratorAggregate
             if ($this->hook(self::HOOK_BEFORE_DELETE) === false) {
                 return;
             }
-            $this->persistence->delete($this, $this->getId());
+            $this->getPersistence()->delete($this, $this->getId());
             $this->hook(self::HOOK_AFTER_DELETE);
         });
         $this->unload();
@@ -1882,7 +1884,7 @@ class Model implements \IteratorAggregate
     public function atomic(\Closure $fx)
     {
         try {
-            return $this->persistence->atomic($fx);
+            return $this->getPersistence()->atomic($fx);
         } catch (\Exception $e) {
             if ($this->hook(self::HOOK_ROLLBACK, [$e]) === false) {
                 return false;
@@ -1909,7 +1911,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertHasPersistence('action');
 
-        return $this->persistence->action($this, $mode, $args);
+        return $this->getPersistence()->action($this, $mode, $args);
     }
 
     public function executeCountQuery(): int

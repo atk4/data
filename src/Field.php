@@ -95,8 +95,8 @@ class Field implements Expressionable
      */
     private function normalizeUsingTypecast($value)
     {
-        $persistence = $this->issetOwner() && $this->getOwner()->persistence !== null
-            ? $this->getOwner()->persistence
+        $persistence = $this->issetOwner() && $this->getOwner()->issetPersistence()
+            ? $this->getOwner()->getPersistence()
             : new class() extends Persistence {
                 public function __construct()
                 {
@@ -341,17 +341,15 @@ class Field implements Expressionable
      */
     private function typecastSaveField($value, bool $allowGenericPersistence = false)
     {
-        $persistence = $this->getOwner()->persistence;
-        if ($persistence === null) {
-            if ($allowGenericPersistence) {
-                $persistence = new class() extends Persistence {
-                    public function __construct()
-                    {
-                    }
-                };
-            } else {
-                $this->getOwner()->assertHasPersistence();
-            }
+        if (!$this->getOwner()->issetPersistence() && $allowGenericPersistence) {
+            $persistence = new class() extends Persistence {
+                public function __construct()
+                {
+                }
+            };
+        } else {
+            $this->getOwner()->assertHasPersistence();
+            $persistence = $this->getOwner()->getPersistence();
         }
 
         return $persistence->typecastSaveField($this, $value);
@@ -428,7 +426,7 @@ class Field implements Expressionable
             Scope\Condition::OPERATOR_NOT_REGEXP,
         ], true)) {
             $typecastField = new self(['type' => 'string']);
-            $typecastField->setOwner(new Model($this->getOwner()->persistence, ['table' => false]));
+            $typecastField->setOwner(new Model($this->getOwner()->getPersistence(), ['table' => false]));
             $typecastField->shortName = $this->shortName;
             $allowArray = false;
         }
@@ -489,12 +487,12 @@ class Field implements Expressionable
     public function getDsqlExpression(Expression $expression): Expression
     {
         $this->getOwner()->assertHasPersistence();
-        if (!$this->getOwner()->persistence instanceof Persistence\Sql) {
+        if (!$this->getOwner()->getPersistence() instanceof Persistence\Sql) {
             throw (new Exception('Field must have SQL persistence if it is used as part of expression'))
-                ->addMoreInfo('persistence', $this->getOwner()->persistence ?? null);
+                ->addMoreInfo('persistence', $this->getOwner()->getPersistence());
         }
 
-        return $this->getOwner()->persistence->getFieldSqlExpression($this, $expression);
+        return $this->getOwner()->getPersistence()->getFieldSqlExpression($this, $expression);
     }
 
     public function __debugInfo(): array

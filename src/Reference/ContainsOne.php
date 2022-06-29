@@ -111,7 +111,7 @@ class ContainsOne extends Reference
                 $ourModel->assertIsEntity();
 
                 /** @var Persistence\Array_ */
-                $persistence = $theirModel->persistence;
+                $persistence = $theirModel->getPersistence();
                 $row = $persistence->getRawDataByTable($theirModel, $this->table_alias);
                 $row = $row ? array_shift($row) : null; // get first and only one record from array persistence
                 $ourModel->save([$this->getOurFieldName() => $row]);

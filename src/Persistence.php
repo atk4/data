@@ -73,15 +73,13 @@ abstract class Persistence
      */
     public function add(Model $model, array $defaults = []): void
     {
-        Factory::factory($model, $defaults);
-
-        if ($model->persistence !== null) {
-            throw new Exception('Persistence already set');
+        if ($model->issetPersistence() || $model->persistence_data !== []) {
+            throw new \Error('Persistence::add() cannot be called directly, use Model::setPersistence() instead');
         }
 
-        $model->persistence = $this;
-        $model->persistence_data = [];
+        Factory::factory($model, $defaults);
         $this->initPersistence($model);
+        $model->setPersistence($this);
 
         // invokes Model::init()
         // model is not added to elements as it does not implement TrackableTrait trait

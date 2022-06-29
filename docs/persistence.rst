@@ -33,13 +33,12 @@ Create your persistence object first::
 
     $db = \Atk4\Data\Persistence::connect($dsn);
 
-There are several ways to link your model up with the persistence::
+There are two ways to link your model up with the persistence::
 
     $m = new Model_Invoice($db);
 
-    $m = $db->add(new Model_Invoice());
-
-    $m = $db->add('Invoice');
+    $m = new Model_Invoice();
+    $m->setPersistence($db);
 
 .. php:method:: load
 
@@ -558,7 +557,7 @@ pretty much anything including 'RestAPI', 'File', 'Memcache' or 'MongoDB'.
     with a new persistence.
 
 
-.. php:method:: withPersistence($persistence, $id = null, $class = null)
+.. php:method:: withPersistence($persistence)
 
 
 Creating Cache with Memcache
@@ -576,7 +575,7 @@ application::
     function loadQuick($class, $id) {
 
         // first, try to load it from MemCache
-        $m = $this->mdb->add(clone $class)->tryLoad($id);
+        $m = (clone $class)->setPersistence($this->mdb)->tryLoad($id);
 
         if ($m === null) {
             // fall-back to load from SQL
@@ -608,7 +607,7 @@ To use it with any model::
 To look in more details into the actual method, I have broken it down into chunks::
 
     // first, try to load it from MemCache:
-    $m = $this->mdb->add(clone $class)->tryLoad($id);
+    $m = (clone $class)->setPersistence($this->mdb)->tryLoad($id);
 
 The $class will be an uninitialized instance of a model (although you can also
 use a string). It will first be associated with the MemCache DB persistence and
@@ -674,7 +673,7 @@ replica may not propagate to read replica, you can simply reset the dirty flags.
 If you need further optimization, make sure `reload_after_save` is disabled
 for the write replica::
 
-    $m->withPersistence($write_replica, null, ['reload_after_save' => false])->save();
+    $m->withPersistence($write_replica)->setDefaults(['reload_after_save' => false])->save();
 
 or use::
 
@@ -687,7 +686,7 @@ If you wish that every time you save your model the copy is also stored inside
 some other database (for archive purposes) you can implement it like this::
 
     $m->onHook(Model::HOOK_BEFORE_SAVE, function ($m) {
-        $arc = $this->withPersistence($m->getApp()->archive_db, false);
+        $arc = $this->withPersistence($m->getApp()->archive_db);
 
         // add some audit fields
         $arc->addField('original_id')->set($this->getId());
@@ -695,9 +694,6 @@ some other database (for archive purposes) you can implement it like this::
 
         $arc->saveAndUnload();
     });
-
-When passing 2nd argument of `false` to the withPersistence() method, it will
-not re-use current ID instead creating new records every time.
 
 Store a specific record
 -----------------------
@@ -723,7 +719,7 @@ How to add record inside session, e.g. log the user in? Here is the code::
     $u = new User($db);
     $u = $u->load(123);
 
-    $u->withPersistence($sess, 'active_user')->save();
+    $u->withPersistence($sess)->save();
 
 .. _Action:
 

@@ -118,7 +118,7 @@ abstract class Join
      */
     protected function createFakeForeignModel(): Model
     {
-        $fakeModel = new Model($this->getOwner()->persistence, [
+        $fakeModel = new Model($this->getOwner()->getPersistence(), [
             'table' => $this->foreign_table,
         ]);
         foreach ($this->getOwner()->getFields() as $ownerField) {

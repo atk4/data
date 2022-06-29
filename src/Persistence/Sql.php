@@ -142,25 +142,22 @@ class Sql extends Persistence
         }
     }
 
-    /**
-     * Initialize persistence.
-     */
     protected function initPersistence(Model $model): void
     {
         $model->addMethod('expr', static function (Model $m, ...$args) {
             $m->assertIsModel();
 
-            return $m->persistence->expr($m, ...$args);
+            return $m->getPersistence()->expr($m, ...$args);
         });
         $model->addMethod('dsql', static function (Model $m, ...$args) {
             $m->assertIsModel();
 
-            return $m->persistence->dsql($m, ...$args); // @phpstan-ignore-line
+            return $m->getPersistence()->dsql($m, ...$args); // @phpstan-ignore-line
         });
         $model->addMethod('exprNow', static function (Model $m, ...$args) {
             $m->assertIsModel();
 
-            return $m->persistence->exprNow($m, ...$args);
+            return $m->getPersistence()->exprNow($m, ...$args);
         });
     }
 
@@ -203,7 +200,7 @@ class Sql extends Persistence
      */
     public function initQuery(Model $model): Query
     {
-        $query = $model->persistence_data['dsql'] = $this->dsql();
+        $query = $this->dsql();
 
         if ($model->table) {
             $query->table(

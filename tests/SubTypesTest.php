@@ -91,7 +91,7 @@ class StGenericTransaction extends Model
         $this->onHookShort(Model::HOOK_AFTER_LOAD, function () {
             if (static::class !== $this->getClassName()) {
                 $cl = $this->getClassName();
-                $cl = new $cl($this->persistence);
+                $cl = new $cl($this->getPersistence());
                 $cl = $cl->load($this->getId());
 
                 $this->breakHook($cl);

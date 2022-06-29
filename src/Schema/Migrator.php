@@ -47,14 +47,14 @@ class Migrator
             $this->connection = $source;
         } elseif ($source instanceof Persistence\Sql) {
             $this->connection = $source->connection;
-        } elseif ($source instanceof Model && $source->persistence instanceof Persistence\Sql) {
-            $this->connection = $source->persistence->connection;
+        } elseif ($source instanceof Model && $source->getPersistence() instanceof Persistence\Sql) {
+            $this->connection = $source->getPersistence()->connection;
         } else {
             throw (new Exception('Source is specified incorrectly. Must be Connection, Persistence or initialized Model'))
                 ->addMoreInfo('source', $source);
         }
 
-        if ($source instanceof Model && $source->persistence instanceof Persistence\Sql) {
+        if ($source instanceof Model && $source->getPersistence() instanceof Persistence\Sql) {
             $this->setModel($source);
         }
     }

@@ -19,7 +19,7 @@ class Join extends Model\Join
         }
 
         try {
-            $data = Persistence\Array_::assertInstanceOf($this->getOwner()->persistence)
+            $data = Persistence\Array_::assertInstanceOf($this->getOwner()->getPersistence())
                 ->load($this->createFakeForeignModel(), $this->getId($entity));
         } catch (Exception $e) {
             throw (new Exception('Unable to load joined record', $e->getCode(), $e))
