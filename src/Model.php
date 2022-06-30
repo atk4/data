@@ -1399,7 +1399,7 @@ class Model implements \IteratorAggregate
             throw new Exception('Entity instance does not match');
         }
 
-        return $this;
+        return $this; // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/7550
     }
 
     /**
