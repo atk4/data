@@ -317,7 +317,6 @@ class Expression implements Expressionable, \ArrayAccess
      */
     protected function escapeIdentifier(string $value): string
     {
-        // in all other cases we should escape
         $c = $this->escape_char;
 
         return $c . str_replace($c, $c . $c, $value) . $c;
@@ -333,8 +332,7 @@ class Expression implements Expressionable, \ArrayAccess
      */
     protected function escapeIdentifierSoft(string $value): string
     {
-        // in some cases we should not escape
-        if ($this->isUnescapablePattern($value)) {
+        if ($this->isUnescapableIdentifier($value)) {
             return $value;
         }
 
@@ -348,15 +346,10 @@ class Expression implements Expressionable, \ArrayAccess
     /**
      * Given the string parameter, it will detect some "deal-breaker" for our
      * soft escaping, such as "*" or "(".
-     * Those will typically indicate that expression is passed and shouldn't
-     * be escaped.
-     *
-     * @param self|string $value
      */
-    protected function isUnescapablePattern($value): bool
+    protected function isUnescapableIdentifier(string $value): bool
     {
-        return is_object($value)
-            || $value === '*'
+        return $value === '*'
             || str_contains($value, '(')
             || str_contains($value, $this->escape_char);
     }
