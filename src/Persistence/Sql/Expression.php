@@ -260,9 +260,14 @@ class Expression implements Expressionable, \ArrayAccess
             [$sql, $params] = $expr->render();
             foreach ($params as $k => $v) {
                 $this->renderParams[$k] = $v;
-                do {
+            }
+
+            if (count($params) > 0) {
+                $kWithoutColon = substr(array_key_last($params), 1);
+                while ($this->renderParamBase !== $kWithoutColon) {
                     ++$this->renderParamBase;
-                } while ($this->renderParamBase === $k);
+                }
+                ++$this->renderParamBase;
             }
         } finally {
             $expr->paramBase = $expressionParamBaseBackup;
