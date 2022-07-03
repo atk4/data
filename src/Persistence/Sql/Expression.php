@@ -516,8 +516,12 @@ class Expression implements Expressionable, \ArrayAccess
             $i = 0;
             $j = 0;
             $sql = preg_replace_callback(
-                '~(?:\'(?:\'\'|\\\\\'|[^\'])*\')?+\K(?:\?|:\w+)~s',
+                '~\'(?:\'\'|\\\\\'|[^\'])*\'\K|(?:\?|:\w+)~s',
                 function ($matches) use ($params, &$numParams, &$i, &$j) {
+                    if ($matches[0] === '') {
+                        return '';
+                    }
+
                     $numParams[++$i] = $params[$matches[0] === '?' ? ++$j : $matches[0]];
 
                     return '?';

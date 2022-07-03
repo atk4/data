@@ -10,7 +10,17 @@ trait ExpressionTrait
 {
     private function fixOpenEscapeChar(string $v): string
     {
-        return preg_replace('~(?:\'(?:\'\'|\\\\\'|[^\'])*\')?+\K\]([^\[\]\'"(){}]*?)\]~s', '[$1]', $v);
+        return preg_replace_callback(
+            '~\'(?:\'\'|\\\\\'|[^\'])*\'\K|\]([^\[\]\'"(){}]*?)\]~s',
+            function ($matches) {
+                if ($matches[0] === '') {
+                    return '';
+                }
+
+                return '[' . $matches[1] . ']';
+            },
+            $v
+        );
     }
 
     protected function escapeIdentifier(string $value): string
