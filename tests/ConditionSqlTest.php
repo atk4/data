@@ -440,12 +440,19 @@ class ConditionSqlTest extends TestCase
 
         $t = (clone $u)->addCondition('name', 'like', '%John%');
         $this->assertCount(1, $t->export());
+        $t = (clone $u)->addCondition('name', 'regexp', '^Joh');
+        $this->assertCount(1, $t->export());
 
         $t = (clone $u)->addCondition('name', 'like', '%john%');
+        $this->assertCount(1, $t->export());
+        $t = (clone $u)->addCondition('name', 'regexp', '^joh');
         $this->assertCount(1, $t->export());
 
         $t = (clone $u)->addCondition('created', 'like', '%19%');
         $this->assertCount(2, $t->export()); // only year 2019 records
+
+        $t = (clone $u)->addCondition('created', 'regexp', '19');
+        $this->assertCount(2, $t->export());
 
         $t = (clone $u)->addCondition('active', 'like', '%1%');
         $this->assertCount(2, $t->export()); // only active records
