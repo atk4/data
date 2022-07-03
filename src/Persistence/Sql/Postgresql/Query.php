@@ -17,7 +17,7 @@ class Query extends BaseQuery
         if (count($row) >= 3) {
             [$field, $cond, $value] = $row;
             if (in_array(strtolower($cond), ['like', 'not like'], true)) {
-                $field = $this->expr('CAST([] AS VARCHAR)', [$field]);
+                $field = $this->expr('CAST([] AS citext)', [$field]);
                 $row = [$field, $cond, $value];
             }
         }

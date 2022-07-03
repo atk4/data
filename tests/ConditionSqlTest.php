@@ -438,6 +438,12 @@ class ConditionSqlTest extends TestCase
         $u->addField('active', ['type' => 'boolean']);
         $u->addField('created', ['type' => 'datetime']);
 
+        $t = (clone $u)->addCondition('name', 'like', '%John%');
+        $this->assertCount(1, $t->export());
+
+        $t = (clone $u)->addCondition('name', 'like', '%john%');
+        $this->assertCount(1, $t->export());
+
         $t = (clone $u)->addCondition('created', 'like', '%19%');
         $this->assertCount(2, $t->export()); // only year 2019 records
 
