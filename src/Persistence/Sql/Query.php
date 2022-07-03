@@ -614,7 +614,7 @@ class Query extends Expression
                 $cond = '=';
             }
         } else {
-            $cond = trim(strtolower($cond)); // @phpstan-ignore-line see https://github.com/phpstan/phpstan/issues/4173
+            $cond = strtolower($cond); // @phpstan-ignore-line see https://github.com/phpstan/phpstan/issues/4173
         }
 
         // below we can be sure that all 3 arguments has been passed

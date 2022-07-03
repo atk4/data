@@ -12,6 +12,19 @@ class Query extends BaseQuery
     protected $template_update = 'update [table][join] set [set] [where]';
     protected $template_replace;
 
+    protected function _sub_render_condition(array $row): string
+    {
+        if (count($row) >= 3) {
+            [$field, $cond, $value] = $row;
+            if (in_array(strtolower($cond), ['like', 'not like'], true)) {
+                $field = $this->expr('CAST([] AS VARCHAR)', [$field]);
+                $row = [$field, $cond, $value];
+            }
+        }
+
+        return parent::_sub_render_condition($row);
+    }
+
     public function _render_limit(): ?string
     {
         if (!isset($this->args['limit'])) {
