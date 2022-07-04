@@ -600,7 +600,7 @@ class RandomTest extends TestCase
         $this->assertSame($render, $doc->action('select')->render());
 
         $this->assertSameSql(
-            'select "id", "name", "user_id", (select "name" from "' . $userSchema . '"."user" "_u_e8701ad48ba0" where "id" = "' . $docSchema . '"."doc"."user_id") "user" from "' . $docSchema . '"."doc" where (select "name" from "' . $userSchema . '"."user" "_u_e8701ad48ba0" where "id" = "' . $docSchema . '"."doc"."user_id") = \'Sarah\'',
+            'select "id", "name", "user_id", (select "name" from "' . $userSchema . '"."user" "_u_e8701ad48ba0" where "id" = "' . $docSchema . '"."doc"."user_id") "user" from "' . $docSchema . '"."doc" where (select "name" from "' . $userSchema . '"."user" "_u_e8701ad48ba0" where "id" = "' . $docSchema . '"."doc"."user_id") = :a',
             $render[0]
         );
 

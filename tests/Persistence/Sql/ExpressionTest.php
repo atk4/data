@@ -112,12 +112,12 @@ class ExpressionTest extends TestCase
         );
         // pass as array without key
         $this->assertSame(
-            '\'First\' Name',
+            ':a Name',
             $this->e(['[] Name'], ['First'])->render()[0]
         );
         // pass as array with template key
         $this->assertSame(
-            '\'Last\' Name',
+            ':a Name',
             $this->e(['template' => '[] Name'], ['Last'])->render()[0]
         );
     }
@@ -131,8 +131,8 @@ class ExpressionTest extends TestCase
     {
         $e = $this->e('hello, [who]', ['who' => 'world']);
         $this->assertSame([
-            'hello, \'world\'',
-            [],
+            'hello, :a',
+            [':a' => 'world'],
         ], $e->render());
 
         $e = $this->e('hello, {who}', ['who' => 'world']);
@@ -281,9 +281,9 @@ class ExpressionTest extends TestCase
         $e4 = $this->e('[] and good night', [$e1]);
         $s4 = $e4->render()[0]; // Hello :a and good night
 
-        $this->assertSame('Hello \'world\'! How are you.', $s2);
-        $this->assertSame('It is me again. Hello \'world\'', $s3);
-        $this->assertSame('Hello \'world\' and good night', $s4);
+        $this->assertSame('Hello :a! How are you.', $s2);
+        $this->assertSame('It is me again. Hello :a', $s3);
+        $this->assertSame('Hello :a and good night', $s4);
     }
 
     /**
@@ -381,8 +381,8 @@ class ExpressionTest extends TestCase
     {
         $e = new Expression('hello, [who]', ['who' => 'world']);
         $this->assertSame([
-            'hello, \'world\'',
-            [],
+            'hello, :a',
+            [':a' => 'world'],
         ], $e->render());
     }
 
@@ -468,7 +468,7 @@ class ExpressionTest extends TestCase
         $e = $this->e('[], []');
         $e[] = 'Hello';
         $e[] = 'World';
-        $this->assertSame('\'Hello\', \'World\'', $e->render()[0]);
+        $this->assertSame(':a, :b', $e->render()[0]);
 
         // real-life example
         $age = $this->e('coalesce([age], [default_age])');
