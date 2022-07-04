@@ -11,7 +11,7 @@ trait ExpressionTrait
     private function fixOpenEscapeChar(string $v): string
     {
         return preg_replace_callback(
-            '~\'(?:\'\'|\\\\\'|[^\'])*\'\K|\]([^\[\]\'"(){}]*?)\]~s',
+            '~\'(?:\'\'|\\\\\'|[^\'])*+\'\K|\]([^\[\]\'"(){}]*?)\]~s',
             function ($matches) {
                 if ($matches[0] === '') {
                     return '';

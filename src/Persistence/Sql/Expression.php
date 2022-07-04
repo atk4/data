@@ -370,9 +370,9 @@ class Expression implements Expressionable, \ArrayAccess
         $res = preg_replace_callback(
             <<<'EOF'
                 ~
-                 '(?:[^'\\]+|\\.|'')*'\K
-                |"(?:[^"\\]+|\\.|"")*"\K
-                |`(?:[^`\\]+|\\.|``)*`\K
+                 '(?:[^'\\]+|\\.|'')*+'\K
+                |"(?:[^"\\]+|\\.|"")*+"\K
+                |`(?:[^`\\]+|\\.|``)*+`\K
                 |\[\w*\]
                 |\{\w*\}
                 |\{\{\w*\}\}
@@ -516,7 +516,7 @@ class Expression implements Expressionable, \ArrayAccess
             $i = 0;
             $j = 0;
             $sql = preg_replace_callback(
-                '~\'(?:\'\'|\\\\\'|[^\'])*\'\K|(?:\?|:\w+)~s',
+                '~\'(?:\'\'|\\\\\'|[^\'])*+\'\K|(?:\?|:\w+)~s',
                 function ($matches) use ($params, &$numParams, &$i, &$j) {
                     if ($matches[0] === '') {
                         return '';

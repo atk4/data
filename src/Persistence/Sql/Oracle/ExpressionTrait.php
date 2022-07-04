@@ -46,7 +46,7 @@ trait ExpressionTrait
         $newParamBase = $this->paramBase;
         $newParams = [];
         $sql = preg_replace_callback(
-            '~\'(?:\'\'|\\\\\'|[^\'])*\'\K|:\w+~s',
+            '~\'(?:\'\'|\\\\\'|[^\'])*+\'\K|:\w+~s',
             function ($matches) use ($params, &$newParams, &$newParamBase) {
                 if ($matches[0] === '') {
                     return '';
@@ -58,7 +58,7 @@ trait ExpressionTrait
                     unset($value);
                     [$exprSql, $exprParams] = $expr->render();
                     $sql = preg_replace_callback(
-                        '~\'(?:\'\'|\\\\\'|[^\'])*\'\K|:\w+~s',
+                        '~\'(?:\'\'|\\\\\'|[^\'])*+\'\K|:\w+~s',
                         function ($matches) use ($exprParams, &$newParams, &$newParamBase) {
                             if ($matches[0] === '') {
                                 return '';
