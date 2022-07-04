@@ -644,6 +644,28 @@ class Sql extends Persistence
         $model->hook(self::HOOK_AFTER_DELETE_QUERY, [$delete, $c]);
     }
 
+    public function typecastSaveField(Field $field, $value)
+    {
+        $value = parent::typecastSaveField($field, $value);
+
+        if ($value !== null && $this->binaryTypeIsEncodeNeeded($field->getTypeObject())) {
+            $value = $this->binaryTypeValueEncode($value);
+        }
+
+        return $value;
+    }
+
+    public function typecastLoadField(Field $field, $value)
+    {
+        $value = parent::typecastLoadField($field, $value);
+
+        if ($value !== null && $this->binaryTypeIsDecodeNeeded($field->getTypeObject(), $value)) {
+            $value = $this->binaryTypeValueDecode($value);
+        }
+
+        return $value;
+    }
+
     public function getFieldSqlExpression(Field $field, Expression $expression): Expression
     {
         if (isset($field->getOwner()->persistence_data['use_table_prefixes'])) {

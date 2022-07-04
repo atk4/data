@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Atk4\Data\Persistence\Sql;
 
 use Atk4\Data\Exception;
-use Atk4\Data\Field;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
@@ -67,29 +66,19 @@ trait BinaryTypeCompatibilityTypecastTrait
         return false;
     }
 
-    public function typecastSaveField(Field $field, $value)
+    /**
+     * @param scalar $value
+     */
+    private function binaryTypeIsDecodeNeeded(Type $type, $value): bool
     {
-        $value = parent::typecastSaveField($field, $value);
-
-        if ($value !== null && $this->binaryTypeIsEncodeNeeded($field->getTypeObject())) {
-            $value = $this->binaryTypeValueEncode($value);
-        }
-
-        return $value;
-    }
-
-    public function typecastLoadField(Field $field, $value)
-    {
-        $value = parent::typecastLoadField($field, $value);
-
-        if ($value !== null && $this->binaryTypeIsEncodeNeeded($field->getTypeObject())) {
+        if ($this->binaryTypeIsEncodeNeeded($type)) {
             // always decode for Oracle platform to assert the value is always encoded,
             // on other platforms, binary values are stored natively
             if ($this->getDatabasePlatform() instanceof OraclePlatform || $this->binaryTypeValueIsEncoded($value)) {
-                $value = $this->binaryTypeValueDecode($value);
+                return true;
             }
         }
 
-        return $value;
+        return false;
     }
 }
