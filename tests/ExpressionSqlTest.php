@@ -133,9 +133,7 @@ class ExpressionSqlTest extends TestCase
         $m = new Model($this->db, ['table' => 'user']);
         $m->addFields(['name', 'surname', 'cached_name']);
 
-        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
-            $concatExpr = '[name] || " " || [surname]';
-        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
+        if ($this->getDatabasePlatform() instanceof SqlitePlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
             $concatExpr = '[name] || \' \' || [surname]';
         } else {
             $concatExpr = 'CONCAT([name], \' \', [surname])';
