@@ -307,6 +307,12 @@ class Expression implements Expressionable, \ArrayAccess
      */
     protected function escapeParam($value): string
     {
+        if (is_string($value)) { // DEBUG only, never inline strings by default!
+            ++$this->renderParamBase;
+
+            return $this->escapeStringLiteral($value);
+        }
+
         $name = ':' . $this->renderParamBase;
         ++$this->renderParamBase;
         $this->renderParams[$name] = $value;

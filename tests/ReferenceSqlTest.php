@@ -156,7 +156,7 @@ class ReferenceSqlTest extends TestCase
         $o->addCondition('amount', '<', 9);
 
         $this->assertSameSql(
-            'select "id", "name" from "user" "_u_e8701ad48ba0" where "id" in (select "user_id" from "order" where ("amount" > :a and "amount" < :b))',
+            'select "id", "name" from "user" "_u_e8701ad48ba0" where "id" in (select "user_id" from "order" where ("amount" > \'6\' and "amount" < \'9\'))',
             $o->ref('user_id')->action('select')->render()[0]
         );
     }

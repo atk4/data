@@ -850,11 +850,11 @@ class QueryTest extends TestCase
 
         // like | not like
         $this->assertSame(
-            'where "name" like :a',
+            'where "name" like \'foo\'',
             $this->q('[where]')->where('name', 'like', 'foo')->render()[0]
         );
         $this->assertSame(
-            'where "name" not like :a',
+            'where "name" not like \'foo\'',
             $this->q('[where]')->where('name', 'not like', 'foo')->render()[0]
         );
     }
@@ -1064,13 +1064,13 @@ class QueryTest extends TestCase
         $this->assertSame('group_concat(`foo` separator \'-\')', $q->groupConcat('foo', '-')->render()[0]);
 
         $q = new Oracle\Query();
-        $this->assertSame('listagg("foo", :a) within group (order by "foo")', $q->groupConcat('foo', '-')->render()[0]);
+        $this->assertSame('listagg("foo", \'-\') within group (order by "foo")', $q->groupConcat('foo', '-')->render()[0]);
 
         $q = new Postgresql\Query();
-        $this->assertSame('string_agg("foo", :a)', $q->groupConcat('foo', '-')->render()[0]);
+        $this->assertSame('string_agg("foo", \'-\')', $q->groupConcat('foo', '-')->render()[0]);
 
         $q = new Sqlite\Query();
-        $this->assertSame('group_concat("foo", :a)', $q->groupConcat('foo', '-')->render()[0]);
+        $this->assertSame('group_concat("foo", \'-\')', $q->groupConcat('foo', '-')->render()[0]);
     }
 
     /**
@@ -1272,7 +1272,7 @@ class QueryTest extends TestCase
 
         // set multiple fields
         $this->assertSame(
-            'insert into "employee" ("time", "name") values (now(), :a)',
+            'insert into "employee" ("time", "name") values (now(), \'unknown\')',
             $this->q()
                 ->field('time')->field('name')->table('employee')
                 ->set('time', new Expression('now()'))
@@ -1283,7 +1283,7 @@ class QueryTest extends TestCase
 
         // set as array
         $this->assertSame(
-            'insert into "employee" ("time", "name") values (now(), :a)',
+            'insert into "employee" ("time", "name") values (now(), \'unknown\')',
             $this->q()
                 ->field('time')->field('name')->table('employee')
                 ->setMulti(['time' => new Expression('now()'), 'name' => 'unknown'])
@@ -1420,7 +1420,7 @@ class QueryTest extends TestCase
             ->where('name', 'John')
             ->reset('where')
             ->where('surname', 'Doe');
-        $this->assertSame('select * from "user" where "surname" = :a', $q->render()[0]);
+        $this->assertSame('select * from "user" where "surname" = \'Doe\'', $q->render()[0]);
     }
 
     /**
@@ -1479,7 +1479,7 @@ class QueryTest extends TestCase
             ->caseWhen(['status', 'like', '%Used%'], 't2.expose_used')
             ->caseElse(null)
             ->render()[0];
-        $this->assertSame('case when "status" = :a then :b when "status" like :c then :d else :e end', $s);
+        $this->assertSame('case when "status" = \'New\' then \'t2.expose_new\' when "status" like \'%Used%\' then \'t2.expose_used\' else :e end', $s);
 
         // with subqueries
         $age = new Expression('year(now()) - year(birth_date)');
@@ -1489,7 +1489,7 @@ class QueryTest extends TestCase
             ->caseWhen(['age', '>', $q], 'Older')
             ->caseElse('Younger')
             ->render()[0];
-        $this->assertSame('case when "age" > (select year(now()) - year(birth_date) "calc_age" from "user") then :a else :b end', $s);
+        $this->assertSame('case when "age" > (select year(now()) - year(birth_date) "calc_age" from "user") then \'Older\' else \'Younger\' end', $s);
     }
 
     /**
@@ -1507,7 +1507,7 @@ class QueryTest extends TestCase
             ->caseWhen('Used', 't2.expose_used')
             ->caseElse(null)
             ->render()[0];
-        $this->assertSame('case "status" when :a then :b when :c then :d else :e end', $s);
+        $this->assertSame('case "status" when \'New\' then \'t2.expose_new\' when \'Used\' then \'t2.expose_used\' else :e end', $s);
 
         // with subqueries
         $age = new Expression('year(now()) - year(birth_date)');
@@ -1517,7 +1517,7 @@ class QueryTest extends TestCase
             ->caseWhen(100, 'Very old')
             ->caseElse('Younger')
             ->render()[0];
-        $this->assertSame('case (select year(now()) - year(birth_date) "calc_age" from "user") when :a then :b else :c end', $s);
+        $this->assertSame('case (select year(now()) - year(birth_date) "calc_age" from "user") when :a then \'Very old\' else \'Younger\' end', $s);
     }
 
     /**
@@ -1663,19 +1663,19 @@ class QueryTest extends TestCase
     public function testExists(): void
     {
         $this->assertSame(
-            'select exists (select * from "contacts" where "first_name" = :a)',
+            'select exists (select * from "contacts" where "first_name" = \'John\')',
             $this->q()->table('contacts')->where('first_name', 'John')->exists()->render()[0]
         );
 
         $q = new Oracle\Query();
         $this->assertSame(
-            'select case when exists(select * from "contacts" where "first_name" = :xxaaaa) then 1 else 0 end from "DUAL"',
+            'select case when exists(select * from "contacts" where "first_name" = \'John\') then 1 else 0 end from "DUAL"',
             $q->table('contacts')->where('first_name', 'John')->exists()->render()[0]
         );
 
         $q = new Mssql\Query();
         $this->assertSame(
-            'select case when exists(select * from [contacts] where [first_name] = :a) then 1 else 0 end',
+            'select case when exists(select * from [contacts] where [first_name] = N\'John\') then 1 else 0 end',
             $q->table('contacts')->where('first_name', 'John')->exists()->render()[0]
         );
     }

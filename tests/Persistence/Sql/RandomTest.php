@@ -64,7 +64,7 @@ class RandomTest extends TestCase
             $q->set($key, $val);
         }
         $this->assertSame(
-            'insert into  ("' . implode('", "', array_keys($data)) . '") values (:a, :b, :c, :d, :e, :f, :g, :h, :i, :j, :k, :l, :m, :n, :o, :p, :q, :r, :s, :t, :u, :v, :w, :x, :y, :z, :aa, :ab, :ac, :ad)',
+            'insert into  ("' . implode('", "', array_keys($data)) . '") values (:a, \'3576\', :c, :d, :e, :f, :g, :h, :i, \'147735\', \'9341\', :l, :m, :n, \'N\', :p, \'940 testingqq11111\', :r, \'100.00\', :t, :u, :v, :w, \'N\', :y, :z, :aa, :ab, :ac, :ad)',
             $q->render()[0]
         );
     }
@@ -93,17 +93,17 @@ class RandomTest extends TestCase
         );
 
         $this->_groupConcatTest(
-            'select "age", group_concat("name", :a) from "people" group by "age"',
+            'select "age", group_concat("name", \',\') from "people" group by "age"',
             new Sqlite\Query()
         );
 
         $this->_groupConcatTest(
-            'select "age", string_agg("name", :a) from "people" group by "age"',
+            'select "age", string_agg("name", \',\') from "people" group by "age"',
             new Postgresql\Query()
         );
 
         $this->_groupConcatTest(
-            'select "age", listagg("name", :xxaaaa) within group (order by "name") from "people" group by "age"',
+            'select "age", listagg("name", \',\') within group (order by "name") from "people" group by "age"',
             new Oracle\Query()
         );
     }

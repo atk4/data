@@ -36,7 +36,7 @@ class ConditionSqlTest extends TestCase
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
-                'select "id", "name", "gender" from "user" where "gender" = :a',
+                'select "id", "name", "gender" from "user" where "gender" = \'M\'',
                 $mm->action('select')->render()[0]
             );
         }
