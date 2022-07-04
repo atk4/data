@@ -14,6 +14,8 @@ class Query extends BaseQuery
 
     protected $expression_class = Expression::class;
 
+    protected $supportedOperators = ['=', '!=', '<', '>', '<=', '>=', 'like', 'not like', 'in', 'not in', 'regexp', 'not regexp'];
+
     protected $template_update = 'update [table][join] set [set] [where]';
 
     public function groupConcat($field, string $delimiter = ',')
