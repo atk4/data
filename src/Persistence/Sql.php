@@ -177,7 +177,7 @@ class Sql extends Persistence
             return $this->getConnection()->expr($expr, $args);
         }
         preg_replace_callback(
-            '/\[[a-z0-9_]*\]|{[a-z0-9_]*}/i',
+            '~\[\w*\]|\{\w*\}~',
             function ($matches) use (&$args, $model) {
                 $identifier = substr($matches[0], 1, -1);
                 if ($identifier && !isset($args[$identifier])) {
