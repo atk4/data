@@ -54,7 +54,7 @@ class Expression implements Expressionable, \ArrayAccess
      *
      * @var string
      */
-    protected $escape_char = '"';
+    protected $identifierEscapeChar = '"';
 
     /** @var string|null */
     private $renderParamBase;
@@ -189,7 +189,7 @@ class Expression implements Expressionable, \ArrayAccess
             $e = new static($properties, $arguments);
         }
 
-        $e->escape_char = $this->escape_char;
+        $e->identifierEscapeChar = $this->identifierEscapeChar;
 
         return $e;
     }
@@ -322,7 +322,7 @@ class Expression implements Expressionable, \ArrayAccess
      */
     protected function escapeIdentifier(string $value): string
     {
-        $c = $this->escape_char;
+        $c = $this->identifierEscapeChar;
 
         return $c . str_replace($c, $c . $c, $value) . $c;
     }
@@ -345,7 +345,7 @@ class Expression implements Expressionable, \ArrayAccess
             return implode('.', array_map(__METHOD__, explode('.', $value)));
         }
 
-        return $this->escape_char . trim($value) . $this->escape_char;
+        return $this->identifierEscapeChar . trim($value) . $this->identifierEscapeChar;
     }
 
     /**
@@ -356,7 +356,7 @@ class Expression implements Expressionable, \ArrayAccess
     {
         return $value === '*'
             || str_contains($value, '(')
-            || str_contains($value, $this->escape_char);
+            || str_contains($value, $this->identifierEscapeChar);
     }
 
     private function _render(): array

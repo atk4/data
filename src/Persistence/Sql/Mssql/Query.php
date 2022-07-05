@@ -10,7 +10,7 @@ class Query extends BaseQuery
 {
     use ExpressionTrait;
 
-    protected $escape_char = ']';
+    protected $identifierEscapeChar = ']';
 
     protected $expression_class = Expression::class;
 
