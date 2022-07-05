@@ -38,8 +38,7 @@ class Csv extends Persistence
 
     /**
      * Mode of operation. 'r' for reading and 'w' for writing.
-     * If you manually set this operation, it will be used
-     * for file opening.
+     * If you manually set this operation, it will be used for file opening.
      *
      * @var string
      */
@@ -47,12 +46,10 @@ class Csv extends Persistence
 
     /** @var string Delimiter in CSV file. */
     public $delimiter = ',';
-
     /** @var string Enclosure in CSV file. */
     public $enclosure = '"';
-
     /** @var string Escape character in CSV file. */
-    public $escape_char = '\\';
+    public $escapeChar = '\\';
 
     /** @var array|null Array of field names. */
     public $header;
@@ -105,7 +102,7 @@ class Csv extends Persistence
      */
     public function getLine(): ?array
     {
-        $data = fgetcsv($this->handle, 0, $this->delimiter, $this->enclosure, $this->escape_char);
+        $data = fgetcsv($this->handle, 0, $this->delimiter, $this->enclosure, $this->escapeChar);
         if ($data === false) {
             return null;
         }
@@ -120,7 +117,7 @@ class Csv extends Persistence
      */
     public function putLine(array $data): void
     {
-        $ok = fputcsv($this->handle, $data, $this->delimiter, $this->enclosure, $this->escape_char);
+        $ok = fputcsv($this->handle, $data, $this->delimiter, $this->enclosure, $this->escapeChar);
         if ($ok === false) {
             throw new Exception('Cannot write to CSV file');
         }
