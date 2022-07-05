@@ -11,20 +11,20 @@ trait ExpressionTrait
         $exprArgs = [];
         $buildConcatExprFx = function (array $parts) use (&$buildConcatExprFx, &$exprArgs): string {
             if (count($parts) > 1) {
-                $valueLeft = array_slice($parts, 0, intdiv(count($parts), 2));
-                $valueRight = array_slice($parts, count($valueLeft));
+                $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
+                $partsRight = array_slice($parts, count($partsLeft));
 
-                return 'CONCAT(' . $buildConcatExprFx($valueLeft) . ', ' . $buildConcatExprFx($valueRight) . ')';
+                return 'CONCAT(' . $buildConcatExprFx($partsLeft) . ', ' . $buildConcatExprFx($partsRight) . ')';
             }
 
-            $exprArgs[] = count($parts) > 0 ? reset($parts) : '';
+            $exprArgs[] = reset($parts);
 
             return 'TO_CLOB([])';
         };
 
-        // Oracle SQL (multibyte) string literal is limited to 1332 bytes
+        // Oracle (multibyte) string literal is limited to 1332 bytes
         $parts = [];
-        foreach (mb_str_split($value, 10_000) as $shorterValue) {
+        foreach (mb_str_split($value, 10_000) ?: [''] as $shorterValue) { // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/7580
             $lengthBytes = strlen($shorterValue);
             $startBytes = 0;
             do {
