@@ -46,13 +46,17 @@ trait ExpressionTrait
         $newParamBase = $this->paramBase;
         $newParams = [];
         $sql = preg_replace_callback(
-            '~\'(?:\'\'|\\\\\'|[^\'])*+\'\K|:\w+~s',
+            '~\'(?:\'\'|\\\\\'|[^\'])*+\'|:\w+~s',
             function ($matches) use ($params, &$newParams, &$newParamBase) {
-                if ($matches[0] === '') {
-                    return '';
+                if (str_starts_with($matches[0], '\'')) {
+                    $value = str_replace('\'\'', '\'', substr($matches[0], 1, -1));
+                    if (strlen($value) <= 4000) {
+                        return $matches[0];
+                    }
+                } else {
+                    $value = $params[$matches[0]];
                 }
 
-                $value = $params[$matches[0]];
                 if (is_string($value) && strlen($value) > 4000) {
                     $expr = $this->convertLongStringToClobExpr($value);
                     unset($value);
