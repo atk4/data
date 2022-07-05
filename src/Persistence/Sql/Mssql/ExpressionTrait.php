@@ -8,29 +8,9 @@ use Doctrine\DBAL\Exception\DriverException;
 
 trait ExpressionTrait
 {
-    private function fixOpenEscapeChar(string $v): string
-    {
-        return preg_replace_callback(
-            '~\'(?:\'\'|\\\\\'|[^\'])*+\'\K|\]([^\[\]\'"(){}]*?)\]~s',
-            function ($matches) {
-                if ($matches[0] === '') {
-                    return '';
-                }
-
-                return '[' . $matches[1] . ']';
-            },
-            $v
-        );
-    }
-
     protected function escapeIdentifier(string $value): string
     {
-        return $this->fixOpenEscapeChar(parent::escapeIdentifier($value));
-    }
-
-    protected function escapeIdentifierSoft(string $value): string
-    {
-        return $this->fixOpenEscapeChar(parent::escapeIdentifierSoft($value));
+        return preg_replace('~\]([^\[\]\'"(){}]*?\])~s', '[$1', parent::escapeIdentifier($value));
     }
 
     public function render(): array
