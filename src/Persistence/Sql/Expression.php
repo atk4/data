@@ -321,6 +321,19 @@ class Expression implements Expressionable, \ArrayAccess
     protected function escapeStringLiteral(string $value): string
     {
         $platform = $this->connection->getDatabasePlatform();
+        if ($platform instanceof PostgreSQLPlatform || $platform instanceof SQLServerPlatform) {
+            $dummyPersistence = new Persistence\Sql($this->connection);
+            if (\Closure::bind(fn () => $dummyPersistence->binaryTypeValueIsEncoded($value), null, Persistence\Sql::class)()) {
+                $value = \Closure::bind(fn () => $dummyPersistence->binaryTypeValueDecode($value), null, Persistence\Sql::class)();
+
+                if ($platform instanceof PostgreSQLPlatform) {
+                    return 'decode(\'' . bin2hex($value) . '\', \'hex\')';
+                }
+
+                return 'CONVERT(VARBINARY(MAX), \'' . bin2hex($value) . '\', 2)';
+            }
+        }
+
         $parts = [];
         foreach (explode("\0", $value) as $i => $v) {
             if ($i > 0) {
@@ -633,8 +646,7 @@ class Expression implements Expressionable, \ArrayAccess
                 } elseif (is_string($val)) {
                     $type = ParameterType::STRING;
 
-                    if ($platform instanceof PostgreSQLPlatform
-                        || $platform instanceof SQLServerPlatform) {
+                    if ($platform instanceof PostgreSQLPlatform || $platform instanceof SQLServerPlatform) {
                         $dummyPersistence = new Persistence\Sql($this->connection);
                         if (\Closure::bind(fn () => $dummyPersistence->binaryTypeValueIsEncoded($val), null, Persistence\Sql::class)()) {
                             $val = \Closure::bind(fn () => $dummyPersistence->binaryTypeValueDecode($val), null, Persistence\Sql::class)();
@@ -737,11 +749,11 @@ class Expression implements Expressionable, \ArrayAccess
         }
 
         // for PostgreSQL/Oracle CLOB/BLOB datatypes and PDO driver
-        if (is_resource($v) && get_resource_type($v) === 'stream' && (
-            $this->connection->getDatabasePlatform() instanceof PostgreSQLPlatform
-            || $this->connection->getDatabasePlatform() instanceof OraclePlatform
-        )) {
-            $v = stream_get_contents($v);
+        if (is_resource($v) && get_resource_type($v) === 'stream') {
+            $platform = $this->connection->getDatabasePlatform();
+            if ($platform instanceof PostgreSQLPlatform || $platform instanceof OraclePlatform) {
+                $v = stream_get_contents($v);
+            }
         }
 
         return $v; // throw a type error if not null nor string
