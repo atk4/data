@@ -38,8 +38,8 @@ trait ExpressionTrait
         [$sql, $params] = parent::render();
 
         // convert all SQL strings to NVARCHAR, eg 'text' to N'text'
-        $sql = preg_replace_callback('~(^|.)(\'(?:\'\'|\\\\\'|[^\'])*\')~s', function ($matches) {
-            return $matches[1] . (!in_array($matches[1], ['N', '\'', '\\'], true) ? 'N' : '') . $matches[2];
+        $sql = preg_replace_callback('~N?(\'(?:\'\'|\\\\\'|[^\'])*+\')~s', function ($matches) {
+            return 'N' . $matches[1];
         }, $sql);
 
         return [$sql, $params];
