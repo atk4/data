@@ -10,7 +10,11 @@ trait ExpressionTrait
 {
     protected function escapeIdentifier(string $value): string
     {
-        return preg_replace('~\]([^\[\]\'"(){}]*?\])~s', '[$1', parent::escapeIdentifier($value));
+        $res = parent::escapeIdentifier($value);
+
+        return $this->identifierEscapeChar === ']' && str_starts_with($res, ']') && str_ends_with($res, ']')
+            ? '[' . substr($res, 1)
+            : $res;
     }
 
     public function render(): array
