@@ -342,10 +342,10 @@ class Expression implements Expressionable, \ArrayAccess
         }
 
         if (str_contains($value, '.')) {
-            return implode('.', array_map(__METHOD__, explode('.', $value)));
+            return implode('.', array_map(fn ($v) => $this->escapeIdentifierSoft($v), explode('.', $value)));
         }
 
-        return $this->identifierEscapeChar . trim($value) . $this->identifierEscapeChar;
+        return $this->escapeIdentifier($value);
     }
 
     /**
