@@ -11,20 +11,20 @@ trait ExpressionTrait
         $exprArgs = [];
         $buildConcatExprFx = function (array $parts) use (&$buildConcatExprFx, &$exprArgs): string {
             if (count($parts) > 1) {
-                $valueLeft = array_slice($parts, 0, intdiv(count($parts), 2));
-                $valueRight = array_slice($parts, count($valueLeft));
+                $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
+                $partsRight = array_slice($parts, count($partsLeft));
 
-                return 'CONCAT(' . $buildConcatExprFx($valueLeft) . ', ' . $buildConcatExprFx($valueRight) . ')';
+                return 'CONCAT(' . $buildConcatExprFx($partsLeft) . ', ' . $buildConcatExprFx($partsRight) . ')';
             }
 
-            $exprArgs[] = count($parts) > 0 ? reset($parts) : '';
+            $exprArgs[] = reset($parts);
 
             return 'TO_CLOB([])';
         };
 
-        // Oracle SQL (multibyte) string literal is limited to 1332 bytes
+        // Oracle (multibyte) string literal is limited to 1332 bytes
         $parts = [];
-        foreach (mb_str_split($value, 10_000) as $shorterValue) {
+        foreach (mb_str_split($value, 10_000) ?: [''] as $shorterValue) { // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/7580
             $lengthBytes = strlen($shorterValue);
             $startBytes = 0;
             do {
@@ -46,16 +46,28 @@ trait ExpressionTrait
         $newParamBase = $this->paramBase;
         $newParams = [];
         $sql = preg_replace_callback(
-            '~(?:\'(?:\'\'|\\\\\'|[^\'])*\')?+\K:\w+~s',
+            '~\'(?:\'\'|\\\\\'|[^\'])*+\'|:\w+~s',
             function ($matches) use ($params, &$newParams, &$newParamBase) {
-                $value = $params[$matches[0]];
+                if (str_starts_with($matches[0], '\'')) {
+                    $value = str_replace('\'\'', '\'', substr($matches[0], 1, -1));
+                    if (strlen($value) <= 4000) {
+                        return $matches[0];
+                    }
+                } else {
+                    $value = $params[$matches[0]];
+                }
+
                 if (is_string($value) && strlen($value) > 4000) {
                     $expr = $this->convertLongStringToClobExpr($value);
                     unset($value);
                     [$exprSql, $exprParams] = $expr->render();
                     $sql = preg_replace_callback(
-                        '~(?:\'(?:\'\'|\\\\\'|[^\'])*\')?+\K:\w+~s',
+                        '~\'(?:\'\'|\\\\\'|[^\'])*+\'\K|:\w+~s',
                         function ($matches) use ($exprParams, &$newParams, &$newParamBase) {
+                            if ($matches[0] === '') {
+                                return '';
+                            }
+
                             $name = ':' . $newParamBase;
                             ++$newParamBase;
                             $newParams[$name] = $exprParams[$matches[0]];

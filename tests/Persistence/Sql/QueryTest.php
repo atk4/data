@@ -1374,7 +1374,7 @@ class QueryTest extends TestCase
     public function testNestedOrAndHaving(): void
     {
         $q = $this->q();
-        $q->table('employee')->field(new Expression('sum([])', ['amount']), 'salary')->group('type');
+        $q->table('employee')->field(new Expression('sum({})', ['amount']), 'salary')->group('type');
         $q->having(
             $q
                 ->orExpr()
@@ -1382,7 +1382,7 @@ class QueryTest extends TestCase
                 ->having('b', 1)
         );
         $this->assertSame(
-            'select sum(:a) "salary" from "employee" group by "type" having ("a" = :b or "b" = :c)',
+            'select sum("amount") "salary" from "employee" group by "type" having ("a" = :a or "b" = :b)',
             $q->render()[0]
         );
     }
@@ -1390,7 +1390,7 @@ class QueryTest extends TestCase
     public function testNestedOrAndHavingWithWhereException(): void
     {
         $q = $this->q();
-        $q->table('employee')->field(new Expression('sum([])', ['amount']), 'salary')->group('type');
+        $q->table('employee')->field(new Expression('sum({})', ['amount']), 'salary')->group('type');
         $q->having(
             $q
                 ->orExpr()

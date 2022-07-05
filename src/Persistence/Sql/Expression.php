@@ -54,7 +54,7 @@ class Expression implements Expressionable, \ArrayAccess
      *
      * @var string
      */
-    protected $escape_char = '"';
+    protected $identifierEscapeChar = '"';
 
     /** @var string|null */
     private $renderParamBase;
@@ -189,7 +189,7 @@ class Expression implements Expressionable, \ArrayAccess
             $e = new static($properties, $arguments);
         }
 
-        $e->escape_char = $this->escape_char;
+        $e->identifierEscapeChar = $this->identifierEscapeChar;
 
         return $e;
     }
@@ -260,9 +260,14 @@ class Expression implements Expressionable, \ArrayAccess
             [$sql, $params] = $expr->render();
             foreach ($params as $k => $v) {
                 $this->renderParams[$k] = $v;
-                do {
+            }
+
+            if (count($params) > 0) {
+                $kWithoutColon = substr(array_key_last($params), 1);
+                while ($this->renderParamBase !== $kWithoutColon) {
                     ++$this->renderParamBase;
-                } while ($this->renderParamBase === $k);
+                }
+                ++$this->renderParamBase;
             }
         } finally {
             $expr->paramBase = $expressionParamBaseBackup;
@@ -317,8 +322,7 @@ class Expression implements Expressionable, \ArrayAccess
      */
     protected function escapeIdentifier(string $value): string
     {
-        // in all other cases we should escape
-        $c = $this->escape_char;
+        $c = $this->identifierEscapeChar;
 
         return $c . str_replace($c, $c . $c, $value) . $c;
     }
@@ -333,32 +337,26 @@ class Expression implements Expressionable, \ArrayAccess
      */
     protected function escapeIdentifierSoft(string $value): string
     {
-        // in some cases we should not escape
-        if ($this->isUnescapablePattern($value)) {
+        if ($this->isUnescapableIdentifier($value)) {
             return $value;
         }
 
         if (str_contains($value, '.')) {
-            return implode('.', array_map(__METHOD__, explode('.', $value)));
+            return implode('.', array_map(fn ($v) => $this->escapeIdentifierSoft($v), explode('.', $value)));
         }
 
-        return $this->escape_char . trim($value) . $this->escape_char;
+        return $this->escapeIdentifier($value);
     }
 
     /**
      * Given the string parameter, it will detect some "deal-breaker" for our
      * soft escaping, such as "*" or "(".
-     * Those will typically indicate that expression is passed and shouldn't
-     * be escaped.
-     *
-     * @param self|string $value
      */
-    protected function isUnescapablePattern($value): bool
+    protected function isUnescapableIdentifier(string $value): bool
     {
-        return is_object($value)
-            || $value === '*'
+        return $value === '*'
             || str_contains($value, '(')
-            || str_contains($value, $this->escape_char);
+            || str_contains($value, $this->identifierEscapeChar);
     }
 
     private function _render(): array
@@ -370,9 +368,9 @@ class Expression implements Expressionable, \ArrayAccess
         $res = preg_replace_callback(
             <<<'EOF'
                 ~
-                 '(?:[^'\\]+|\\.|'')*'\K
-                |"(?:[^"\\]+|\\.|"")*"\K
-                |`(?:[^`\\]+|\\.|``)*`\K
+                 '(?:[^'\\]+|\\.|'')*+'\K
+                |"(?:[^"\\]+|\\.|"")*+"\K
+                |`(?:[^`\\]+|\\.|``)*+`\K
                 |\[\w*\]
                 |\{\w*\}
                 |\{\{\w*\}\}
@@ -516,8 +514,12 @@ class Expression implements Expressionable, \ArrayAccess
             $i = 0;
             $j = 0;
             $sql = preg_replace_callback(
-                '~(?:\'(?:\'\'|\\\\\'|[^\'])*\')?+\K(?:\?|:\w+)~s',
+                '~\'(?:\'\'|\\\\\'|[^\'])*+\'\K|(?:\?|:\w+)~s',
                 function ($matches) use ($params, &$numParams, &$i, &$j) {
+                    if ($matches[0] === '') {
+                        return '';
+                    }
+
                     $numParams[++$i] = $params[$matches[0] === '?' ? ++$j : $matches[0]];
 
                     return '?';

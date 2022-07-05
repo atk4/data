@@ -10,9 +10,11 @@ class Query extends BaseQuery
 {
     use ExpressionTrait;
 
-    protected $escape_char = '`';
+    protected $identifierEscapeChar = '`';
 
     protected $expression_class = Expression::class;
+
+    protected $supportedOperators = ['=', '!=', '<', '>', '<=', '>=', 'like', 'not like', 'in', 'not in', 'regexp', 'not regexp'];
 
     protected $template_update = 'update [table][join] set [set] [where]';
 

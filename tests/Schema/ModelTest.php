@@ -201,7 +201,7 @@ class ModelTest extends TestCase
         $model->import([['v' => $str . (
             // MSSQL database ignores trailing \0 characters even with binary comparison
             // https://dba.stackexchange.com/questions/48660/comparing-binary-0x-and-0x00-turns-out-to-be-equal-on-sql-server
-            $isBinary ? $this->getDatabasePlatform() instanceof SQLServerPlatform ? ' ' : "\0" : '.'
+            $isBinary ? ($this->getDatabasePlatform() instanceof SQLServerPlatform ? ' ' : "\0") : '.'
         )]]);
         $model->import([['v' => $str]]);
 

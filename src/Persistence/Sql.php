@@ -177,7 +177,7 @@ class Sql extends Persistence
             return $this->getConnection()->expr($expr, $args);
         }
         preg_replace_callback(
-            '/\[[a-z0-9_]*\]|{[a-z0-9_]*}/i',
+            '~\[\w*\]|\{\w*\}~',
             function ($matches) use (&$args, $model) {
                 $identifier = substr($matches[0], 1, -1);
                 if ($identifier && !isset($args[$identifier])) {
@@ -642,6 +642,28 @@ class Sql extends Persistence
         }
 
         $model->hook(self::HOOK_AFTER_DELETE_QUERY, [$delete, $c]);
+    }
+
+    public function typecastSaveField(Field $field, $value)
+    {
+        $value = parent::typecastSaveField($field, $value);
+
+        if ($value !== null && $this->binaryTypeIsEncodeNeeded($field->getTypeObject())) {
+            $value = $this->binaryTypeValueEncode($value);
+        }
+
+        return $value;
+    }
+
+    public function typecastLoadField(Field $field, $value)
+    {
+        $value = parent::typecastLoadField($field, $value);
+
+        if ($value !== null && $this->binaryTypeIsDecodeNeeded($field->getTypeObject(), $value)) {
+            $value = $this->binaryTypeValueDecode($value);
+        }
+
+        return $value;
     }
 
     public function getFieldSqlExpression(Field $field, Expression $expression): Expression

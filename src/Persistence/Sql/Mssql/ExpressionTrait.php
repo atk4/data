@@ -8,19 +8,9 @@ use Doctrine\DBAL\Exception\DriverException;
 
 trait ExpressionTrait
 {
-    private function fixOpenEscapeChar(string $v): string
-    {
-        return preg_replace('~(?:\'(?:\'\'|\\\\\'|[^\'])*\')?+\K\]([^\[\]\'"(){}]*?)\]~s', '[$1]', $v);
-    }
-
     protected function escapeIdentifier(string $value): string
     {
-        return $this->fixOpenEscapeChar(parent::escapeIdentifier($value));
-    }
-
-    protected function escapeIdentifierSoft(string $value): string
-    {
-        return $this->fixOpenEscapeChar(parent::escapeIdentifierSoft($value));
+        return preg_replace('~\]([^\[\]\'"(){}]*?\])~s', '[$1', parent::escapeIdentifier($value));
     }
 
     public function render(): array
@@ -28,8 +18,8 @@ trait ExpressionTrait
         [$sql, $params] = parent::render();
 
         // convert all SQL strings to NVARCHAR, eg 'text' to N'text'
-        $sql = preg_replace_callback('~(^|.)(\'(?:\'\'|\\\\\'|[^\'])*\')~s', function ($matches) {
-            return $matches[1] . (!in_array($matches[1], ['N', '\'', '\\'], true) ? 'N' : '') . $matches[2];
+        $sql = preg_replace_callback('~N?(\'(?:\'\'|\\\\\'|[^\'])*+\')~s', function ($matches) {
+            return 'N' . $matches[1];
         }, $sql);
 
         return [$sql, $params];
