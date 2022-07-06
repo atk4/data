@@ -60,9 +60,8 @@ class SelectTest extends TestCase
 
     /**
      * @param string|array $template
-     * @param array        $args
      */
-    private function e($template = [], array $args = null): Expression
+    private function e($template = [], array $args = []): Expression
     {
         return $this->c->expr($template, $args);
     }

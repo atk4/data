@@ -75,39 +75,18 @@ class Expression implements Expressionable, \ArrayAccess
      * If $properties is passed as string, then it's treated as template.
      *
      * @param string|array $properties
-     * @param array        $arguments
      */
-    public function __construct($properties = [], $arguments = null)
+    public function __construct($properties = [], array $arguments = [])
     {
-        // save template
         if (is_string($properties)) {
             $properties = ['template' => $properties];
-        } elseif (!is_array($properties)) {
-            throw (new Exception('Incorrect use of Expression constructor'))
-                ->addMoreInfo('properties', $properties)
-                ->addMoreInfo('arguments', $arguments);
         }
 
-        // supports passing template as property value without key 'template'
-        if (isset($properties[0])) {
-            $properties['template'] = $properties[0];
-            unset($properties[0]);
-        }
-
-        // save arguments
-        if ($arguments !== null) {
-            if (!is_array($arguments)) {
-                throw (new Exception('Expression arguments must be an array'))
-                    ->addMoreInfo('properties', $properties)
-                    ->addMoreInfo('arguments', $arguments);
-            }
-            $this->args['custom'] = $arguments;
-        }
-
-        // deal with remaining properties
         foreach ($properties as $key => $val) {
             $this->{$key} = $val;
         }
+
+        $this->args['custom'] = $arguments;
     }
 
     /**
@@ -171,11 +150,8 @@ class Expression implements Expressionable, \ArrayAccess
      * new expression to the same connection as the parent.
      *
      * @param string|array $properties
-     * @param array        $arguments
-     *
-     * @return Expression
      */
-    public function expr($properties = [], $arguments = null)
+    public function expr($properties = [], array $arguments = []): self
     {
         return $this->connection->expr($properties, $arguments);
     }

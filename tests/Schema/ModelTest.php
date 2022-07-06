@@ -225,10 +225,10 @@ class ModelTest extends TestCase
         // functional test for Expression::escapeStringLiteral() method
         $strRaw = $model->getPersistence()->typecastSaveField($model->getField('v'), $str);
         $strRawSql = \Closure::bind(function () use ($model, $strRaw) {
-            return $model->expr('', [])->escapeStringLiteral($strRaw);
+            return $model->expr('')->escapeStringLiteral($strRaw);
         }, null, Expression::class)();
         $query = $this->db->getConnection()->dsql()
-            ->field($model->expr($strRawSql, []));
+            ->field($model->expr($strRawSql));
         $resRaw = $query->getOne();
         if ($this->getDatabasePlatform() instanceof OraclePlatform && $isBinary) {
             $this->assertNotSame(strlen($str), strlen($resRaw));
@@ -251,10 +251,10 @@ class ModelTest extends TestCase
 
             $this->assertSame($length, mb_strlen($str));
             $strSql = \Closure::bind(function () use ($model, $str) {
-                return $model->expr('', [])->escapeStringLiteral($str);
+                return $model->expr('')->escapeStringLiteral($str);
             }, null, Expression::class)();
             $query = $this->db->getConnection()->dsql()
-                ->field($model->expr($strSql, []));
+                ->field($model->expr($strSql));
             $res = $query->getOne();
             if ($this->getDatabasePlatform() instanceof OraclePlatform && $length === 0) {
                 $this->assertNull($res);

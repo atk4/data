@@ -298,9 +298,8 @@ abstract class Connection
      * Returns Expression object with connection already set.
      *
      * @param string|array $properties
-     * @param array        $arguments
      */
-    public function expr($properties = [], $arguments = null): Expression
+    public function expr($properties = [], array $arguments = []): Expression
     {
         $c = $this->expression_class;
         $e = new $c($properties, $arguments);

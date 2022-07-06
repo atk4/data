@@ -26,46 +26,6 @@ class ExpressionTest extends TestCase
     }
 
     /**
-     * Test constructor exception - wrong 1st parameter.
-     *
-     * @covers ::__construct
-     */
-    public function testConstructorException1st1(): void
-    {
-        $this->expectException(Exception::class);
-        $this->e(null);
-    }
-
-    /**
-     * Test constructor exception - wrong 1st parameter.
-     *
-     * @covers ::__construct
-     */
-    public function testConstructorException1st2(): void
-    {
-        $this->expectException(Exception::class);
-        $this->e(false);
-    }
-
-    /**
-     * Test constructor exception - wrong 2nd parameter.
-     */
-    public function testConstructorException2nd1(): void
-    {
-        $this->expectException(Exception::class);
-        $this->e('hello, []', false);
-    }
-
-    /**
-     * Test constructor exception - wrong 2nd parameter.
-     */
-    public function testConstructorException2nd2(): void
-    {
-        $this->expectException(Exception::class);
-        $this->e('hello, []', 'hello');
-    }
-
-    /**
      * Test constructor exception - no arguments (template is not defined).
      */
     public function testConstructorException0arg(): void
@@ -101,20 +61,10 @@ class ExpressionTest extends TestCase
             'now()',
             $this->e('now()')->render()[0]
         );
-        // pass as array without key
-        $this->assertSame(
-            'now()',
-            $this->e(['now()'])->render()[0]
-        );
         // pass as array with template key
         $this->assertSame(
             'now()',
             $this->e(['template' => 'now()'])->render()[0]
-        );
-        // pass as array without key
-        $this->assertSame(
-            ':a Name',
-            $this->e(['[] Name'], ['First'])->render()[0]
         );
         // pass as array with template key
         $this->assertSame(

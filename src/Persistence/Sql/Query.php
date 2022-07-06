@@ -1097,11 +1097,8 @@ class Query extends Expression
      * method should be used for building parts of the query internally.
      *
      * @param string|array $properties
-     * @param array        $arguments
-     *
-     * @return Expression
      */
-    public function expr($properties = [], $arguments = null)
+    public function expr($properties = [], array $arguments = []): Expression
     {
         $c = $this->expression_class;
         $e = new $c($properties, $arguments);
