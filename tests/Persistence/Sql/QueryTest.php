@@ -10,9 +10,6 @@ use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Mysql;
 use Atk4\Data\Persistence\Sql\Query;
 
-/**
- * @remove-later.coversDefaultClass \Atk4\Data\Persistence\Sql\Query
- */
 class QueryTest extends TestCase
 {
     /**
@@ -23,9 +20,6 @@ class QueryTest extends TestCase
         return new Query(...$args);
     }
 
-    /**
-     * @remove-later.covers ::__construct
-     */
     public function testConstruct(): void
     {
         // passing properties in constructor
@@ -37,8 +31,6 @@ class QueryTest extends TestCase
 
     /**
      * dsql() should return new Query object and inherit connection from it.
-     *
-     * @remove-later.covers ::dsql
      */
     public function testDsql(): void
     {
@@ -48,8 +40,6 @@ class QueryTest extends TestCase
 
     /**
      * field() should return $this Query for chaining.
-     *
-     * @remove-later.covers ::field
      */
     public function testFieldReturnValue(): void
     {
@@ -59,9 +49,6 @@ class QueryTest extends TestCase
 
     /**
      * Testing field - basic cases.
-     *
-     * @remove-later.covers ::_render_field
-     * @remove-later.covers ::field
      */
     public function testFieldBasic(): void
     {
@@ -105,9 +92,6 @@ class QueryTest extends TestCase
 
     /**
      * Testing field - defaultField.
-     *
-     * @remove-later.covers ::_render_field
-     * @remove-later.covers ::field
      */
     public function testFieldDefaultField(): void
     {
@@ -135,9 +119,6 @@ class QueryTest extends TestCase
 
     /**
      * Testing field - basic cases.
-     *
-     * @remove-later.covers ::_render_field
-     * @remove-later.covers ::field
      */
     public function testFieldExpression(): void
     {
@@ -174,9 +155,6 @@ class QueryTest extends TestCase
 
     /**
      * Duplicate alias of field.
-     *
-     * @remove-later.covers ::_set_args
-     * @remove-later.covers ::field
      */
     public function testFieldException1(): void
     {
@@ -186,8 +164,6 @@ class QueryTest extends TestCase
 
     /**
      * Alias is NOT mandatory when pass table as Expression.
-     *
-     * @remove-later.covers ::table
      *
      * @doesNotPerformAssertions
      */
@@ -199,8 +175,6 @@ class QueryTest extends TestCase
 
     /**
      * Alias is IS mandatory when pass table as Query.
-     *
-     * @remove-later.covers ::table
      */
     public function testTableException4(): void
     {
@@ -210,9 +184,6 @@ class QueryTest extends TestCase
 
     /**
      * Table aliases should be unique.
-     *
-     * @remove-later.covers ::_set_args
-     * @remove-later.covers ::table
      */
     public function testTableException5(): void
     {
@@ -224,9 +195,6 @@ class QueryTest extends TestCase
 
     /**
      * Table aliases should be unique.
-     *
-     * @remove-later.covers ::_set_args
-     * @remove-later.covers ::table
      */
     public function testTableException6(): void
     {
@@ -238,9 +206,6 @@ class QueryTest extends TestCase
 
     /**
      * Table aliases should be unique.
-     *
-     * @remove-later.covers ::_set_args
-     * @remove-later.covers ::table
      */
     public function testTableException7(): void
     {
@@ -252,9 +217,6 @@ class QueryTest extends TestCase
 
     /**
      * Table aliases should be unique.
-     *
-     * @remove-later.covers ::_set_args
-     * @remove-later.covers ::table
      */
     public function testTableException8(): void
     {
@@ -266,9 +228,6 @@ class QueryTest extends TestCase
 
     /**
      * Table aliases should be unique.
-     *
-     * @remove-later.covers ::_set_args
-     * @remove-later.covers ::table
      */
     public function testTableException9(): void
     {
@@ -280,8 +239,6 @@ class QueryTest extends TestCase
 
     /**
      * Table can't be set as sub-Query in Update query mode.
-     *
-     * @remove-later.covers ::table
      */
     public function testTableException10(): void
     {
@@ -295,8 +252,6 @@ class QueryTest extends TestCase
 
     /**
      * Table can't be set as sub-Query in Insert query mode.
-     *
-     * @remove-later.covers ::table
      */
     public function testTableException11(): void
     {
@@ -310,8 +265,6 @@ class QueryTest extends TestCase
 
     /**
      * Requesting non-existant query mode should throw exception.
-     *
-     * @remove-later.covers ::mode
      */
     public function testModeException1(): void
     {
@@ -321,8 +274,6 @@ class QueryTest extends TestCase
 
     /**
      * table() should return $this Query for chaining.
-     *
-     * @remove-later.covers ::table
      */
     public function testTableReturnValue(): void
     {
@@ -330,11 +281,6 @@ class QueryTest extends TestCase
         $this->assertSame($q, $q->table('employee'));
     }
 
-    /**
-     * @remove-later.covers ::_render_table
-     * @remove-later.covers ::_render_table_noalias
-     * @remove-later.covers ::table
-     */
     public function testTableRender1(): void
     {
         // no table defined
@@ -429,10 +375,6 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * @remove-later.covers ::_render_table
-     * @remove-later.covers ::table
-     */
     public function testTableRender2(): void
     {
         // pass table as expression or query
@@ -470,11 +412,6 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * @remove-later.covers ::render
-     * @remove-later.covers \Atk4\Data\Persistence\Sql\Expression::consume
-     * @remove-later.covers \Atk4\Data\Persistence\Sql\Expression::render
-     */
     public function testBasicRenderSubquery(): void
     {
         $age = new Expression('coalesce([age], [default_age])');
@@ -489,9 +426,6 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * @remove-later.covers \Atk4\Data\Persistence\Sql\Expression::getDebugQuery
-     */
     public function testGetDebugQuery(): void
     {
         $age = new Expression('coalesce([age], [default_age], [foo], [bar])');
@@ -508,9 +442,6 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * @remove-later.covers ::__debugInfo
-     */
     public function testVarDump(): void
     {
         $this->assertMatchesRegularExpression(
@@ -519,9 +450,6 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * @remove-later.covers ::__debugInfo
-     */
     public function testVarDump2(): void
     {
         $this->assertStringContainsString(
@@ -530,9 +458,6 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * @remove-later.covers ::__debugInfo
-     */
     public function testVarDump3(): void
     {
         $this->assertStringContainsString(
@@ -541,9 +466,6 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * @remove-later.covers ::__debugInfo
-     */
     public function testVarDump4(): void
     {
         // should throw exception "Table cannot be Query in UPDATE, INSERT etc. query modes"
@@ -555,13 +477,6 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * @remove-later.covers ::_render_field
-     * @remove-later.covers ::_render_table
-     * @remove-later.covers ::field
-     * @remove-later.covers ::render
-     * @remove-later.covers ::table
-     */
     public function testUnionQuery(): void
     {
         // 1st query
@@ -629,8 +544,6 @@ class QueryTest extends TestCase
 
     /**
      * where() should return $this Query for chaining.
-     *
-     * @remove-later.covers ::where
      */
     public function testWhereReturnValue(): void
     {
@@ -640,8 +553,6 @@ class QueryTest extends TestCase
 
     /**
      * having() should return $this Query for chaining.
-     *
-     * @remove-later.covers ::field
      */
     public function testHavingReturnValue(): void
     {
@@ -651,10 +562,6 @@ class QueryTest extends TestCase
 
     /**
      * Basic where() tests.
-     *
-     * @remove-later.covers ::_render_where
-     * @remove-later.covers ::_sub_render_where
-     * @remove-later.covers ::where
      */
     public function testWhereBasic(): void
     {
@@ -808,10 +715,6 @@ class QueryTest extends TestCase
 
     /**
      * Testing where() with special values - null, array, like.
-     *
-     * @remove-later.covers ::_render_where
-     * @remove-later.covers ::_sub_render_where
-     * @remove-later.covers ::where
      */
     public function testWhereSpecialValues(): void
     {
@@ -857,9 +760,6 @@ class QueryTest extends TestCase
 
     /**
      * Having basically is the same as where, so we can relax and trouhly test where() instead.
-     *
-     * @remove-later.covers ::_render_having
-     * @remove-later.covers ::having
      */
     public function testBasicHaving(): void
     {
@@ -879,9 +779,6 @@ class QueryTest extends TestCase
 
     /**
      * Test Limit.
-     *
-     * @remove-later.covers ::_render_limit
-     * @remove-later.covers ::limit
      */
     public function testLimit(): void
     {
@@ -897,9 +794,6 @@ class QueryTest extends TestCase
 
     /**
      * Test Order.
-     *
-     * @remove-later.covers ::_render_order
-     * @remove-later.covers ::order
      */
     public function testOrder(): void
     {
@@ -982,8 +876,6 @@ class QueryTest extends TestCase
 
     /**
      * If first argument is array, second argument must not be used.
-     *
-     * @remove-later.covers ::order
      */
     public function testOrderException1(): void
     {
@@ -993,9 +885,6 @@ class QueryTest extends TestCase
 
     /**
      * Test Group.
-     *
-     * @remove-later.covers ::_render_group
-     * @remove-later.covers ::group
      */
     public function testGroup(): void
     {
@@ -1048,8 +937,6 @@ class QueryTest extends TestCase
 
     /**
      * Test expr().
-     *
-     * @remove-later.covers ::expr
      */
     public function testExpr(): void
     {
@@ -1061,9 +948,6 @@ class QueryTest extends TestCase
 
     /**
      * Test Join.
-     *
-     * @remove-later.covers ::_render_join
-     * @remove-later.covers ::join
      */
     public function testJoin(): void
     {
@@ -1122,10 +1006,6 @@ class QueryTest extends TestCase
 
     /**
      * Combined execution of where() clauses.
-     *
-     * @remove-later.covers ::_render_where
-     * @remove-later.covers ::mode
-     * @remove-later.covers ::where
      */
     public function testCombinedWhere(): void
     {
@@ -1175,13 +1055,6 @@ class QueryTest extends TestCase
 
     /**
      * Test OrWhere and AndWhere without where condition. Should ignore them.
-     *
-     * @remove-later.covers ::_render_andwhere
-     * @remove-later.covers ::_render_orwhere
-     * @remove-later.covers ::_render_where
-     * @remove-later.covers ::andExpr
-     * @remove-later.covers ::orExpr
-     * @remove-later.covers ::where
      */
     public function testEmptyOrAndWhere(): void
     {
@@ -1198,13 +1071,6 @@ class QueryTest extends TestCase
 
     /**
      * Test insert, update and delete templates.
-     *
-     * @remove-later.covers ::_render_set
-     * @remove-later.covers ::_render_set_fields
-     * @remove-later.covers ::_render_set_values
-     * @remove-later.covers ::mode
-     * @remove-later.covers ::set
-     * @remove-later.covers ::where
      */
     public function testInsertDeleteUpdate(): void
     {
@@ -1314,8 +1180,6 @@ class QueryTest extends TestCase
 
     /**
      * set() should return $this Query for chaining.
-     *
-     * @remove-later.covers ::set
      */
     public function testSetReturnValue(): void
     {
@@ -1325,8 +1189,6 @@ class QueryTest extends TestCase
 
     /**
      * Value of type array is not supported by SQL.
-     *
-     * @remove-later.covers ::set
      */
     public function testSetException1(): void
     {
@@ -1337,8 +1199,6 @@ class QueryTest extends TestCase
     /**
      * Field name can be expression.
      *
-     * @remove-later.covers ::set
-     *
      * @doesNotPerformAssertions
      */
     public function testSetException2(): void
@@ -1348,12 +1208,6 @@ class QueryTest extends TestCase
 
     /**
      * Test nested OR and AND expressions.
-     *
-     * @remove-later.covers ::_render_andwhere
-     * @remove-later.covers ::_render_orwhere
-     * @remove-later.covers ::andExpr
-     * @remove-later.covers ::orExpr
-     * @remove-later.covers ::where
      */
     public function testNestedOrAnd(): void
     {
@@ -1424,8 +1278,6 @@ class QueryTest extends TestCase
 
     /**
      * Test reset().
-     *
-     * @remove-later.covers \Atk4\Data\Persistence\Sql\Expression::reset
      */
     public function testReset(): void
     {
@@ -1445,9 +1297,6 @@ class QueryTest extends TestCase
 
     /**
      * Test [option].
-     *
-     * @remove-later.covers ::_render_option
-     * @remove-later.covers ::option
      */
     public function testOption(): void
     {
@@ -1485,11 +1334,6 @@ class QueryTest extends TestCase
 
     /**
      * Test caseExpr (normal).
-     *
-     * @remove-later.covers ::_render_case
-     * @remove-later.covers ::caseElse
-     * @remove-later.covers ::caseExpr
-     * @remove-later.covers ::caseWhen
      */
     public function testCaseExprNormal(): void
     {
@@ -1514,11 +1358,6 @@ class QueryTest extends TestCase
 
     /**
      * Test caseExpr (short form).
-     *
-     * @remove-later.covers ::_render_case
-     * @remove-later.covers ::caseElse
-     * @remove-later.covers ::caseExpr
-     * @remove-later.covers ::caseWhen
      */
     public function testCaseExprShortForm(): void
     {
@@ -1566,8 +1405,6 @@ class QueryTest extends TestCase
 
     /**
      * Tests exprNow() method.
-     *
-     * @remove-later.covers ::exprNow
      */
     public function testExprNow(): void
     {

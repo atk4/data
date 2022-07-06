@@ -12,9 +12,6 @@ use Atk4\Data\Persistence\Sql\Mysql;
 use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Persistence\Sql\Sqlite;
 
-/**
- * @remove-later.coversDefaultClass \Atk4\Data\Persistence\Sql\Expression
- */
 class ExpressionTest extends TestCase
 {
     /**
@@ -36,8 +33,6 @@ class ExpressionTest extends TestCase
 
     /**
      * Testing parameter edge cases - empty strings and arrays etc.
-     *
-     * @remove-later.covers ::__construct
      */
     public function testConstructor1(): void
     {
@@ -50,9 +45,6 @@ class ExpressionTest extends TestCase
     /**
      * Testing simple template patterns without arguments.
      * Testing different ways how to pass template to constructor.
-     *
-     * @remove-later.covers ::__construct
-     * @remove-later.covers ::escapeIdentifier
      */
     public function testConstructor2(): void
     {
@@ -75,8 +67,6 @@ class ExpressionTest extends TestCase
 
     /**
      * Testing template with simple arguments.
-     *
-     * @remove-later.covers ::__construct
      */
     public function testConstructor3(): void
     {
@@ -95,8 +85,6 @@ class ExpressionTest extends TestCase
 
     /**
      * Testing template with complex arguments.
-     *
-     * @remove-later.covers ::__construct
      */
     public function testConstructor4(): void
     {
@@ -191,10 +179,6 @@ class ExpressionTest extends TestCase
 
     /**
      * Test nested parameters.
-     *
-     * @remove-later.covers ::__construct
-     * @remove-later.covers ::escapeParam
-     * @remove-later.covers ::getDebugQuery
      */
     public function testNestedParams(): void
     {
@@ -215,9 +199,6 @@ class ExpressionTest extends TestCase
 
     /**
      * Tests where one expression with parameter is used within several other expressions.
-     *
-     * @remove-later.covers ::__construct
-     * @remove-later.covers ::render
      */
     public function testNestedExpressions(): void
     {
@@ -239,8 +220,6 @@ class ExpressionTest extends TestCase
 
     /**
      * expr() should return new Expression object and inherit connection from it.
-     *
-     * @remove-later.covers ::expr
      */
     public function testExpr(): void
     {
@@ -250,9 +229,6 @@ class ExpressionTest extends TestCase
 
     /**
      * Fully covers escapeIdentifier method.
-     *
-     * @remove-later.covers ::escapeIdentifier
-     * @remove-later.covers ::escapeIdentifierSoft
      */
     public function testEscape(): void
     {
@@ -299,8 +275,6 @@ class ExpressionTest extends TestCase
 
     /**
      * Fully covers escapeParam method.
-     *
-     * @remove-later.covers ::escapeParam
      */
     public function testParam(): void
     {
@@ -311,9 +285,6 @@ class ExpressionTest extends TestCase
         ], $e->render());
     }
 
-    /**
-     * @remove-later.covers ::consume
-     */
     public function testConsume(): void
     {
         $constants = (new \ReflectionClass(Expression::class))->getConstants();
@@ -352,8 +323,6 @@ class ExpressionTest extends TestCase
 
     /**
      * $escape_mode value is incorrect.
-     *
-     * @remove-later.covers ::consume
      */
     public function testConsumeException1(): void
     {
@@ -363,8 +332,6 @@ class ExpressionTest extends TestCase
 
     /**
      * Only Expressionable objects may be used in Expression.
-     *
-     * @remove-later.covers ::consume
      */
     public function testConsumeException2(): void
     {
@@ -372,12 +339,6 @@ class ExpressionTest extends TestCase
         $this->callProtected($this->e(), 'consume', new \stdClass());
     }
 
-    /**
-     * @remove-later.covers ::offsetExists
-     * @remove-later.covers ::offsetGet
-     * @remove-later.covers ::offsetSet
-     * @remove-later.covers ::offsetUnset
-     */
     public function testArrayAccess(): void
     {
         $e = $this->e('', ['parrot' => 'red', 'blue']);
@@ -428,9 +389,6 @@ class ExpressionTest extends TestCase
         ], $e->render());
     }
 
-    /**
-     * @remove-later.covers ::__debugInfo
-     */
     public function testVarDump(): void
     {
         $this->assertSame(
@@ -446,8 +404,6 @@ class ExpressionTest extends TestCase
 
     /**
      * Test reset().
-     *
-     * @remove-later.covers ::reset
      */
     public function testReset(): void
     {
