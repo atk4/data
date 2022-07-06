@@ -21,9 +21,9 @@ trait ExpressionTrait
     {
         [$sql, $params] = parent::render();
 
-        // convert all SQL strings to NVARCHAR, eg 'text' to N'text'
-        $sql = preg_replace_callback('~N?(\'(?:\'\'|\\\\\'|[^\'])*+\')~s', function ($matches) {
-            return 'N' . $matches[1];
+        // convert all string literals to NVARCHAR, eg. 'text' to N'text'
+        $sql = preg_replace_callback('~N?\'(?:\'\'|\\\\\'|[^\'])*+\'~s', function ($matches) {
+            return (substr($matches[0], 0, 1) === 'N' ? '' : 'N') . $matches[0];
         }, $sql);
 
         return [$sql, $params];
@@ -32,6 +32,47 @@ trait ExpressionTrait
     protected function hasNativeNamedParamSupport(): bool
     {
         return false;
+    }
+
+    protected function updateRenderBeforeExecute(array $render): array
+    {
+        [$sql, $params] = parent::updateRenderBeforeExecute($render);
+
+        $sql = preg_replace_callback('~N?\'(?:\'\'|\\\\\'|[^\'])*+\'~s', function ($matches) {
+            $value = str_replace('\'\'', '\'', substr($matches[0], substr($matches[0], 0, 1) === 'N' ? 2 : 1, -1));
+
+            // MSSQL (multibyte) string literal is limited to 4000 ??!!TODO!!?? bytes
+            $parts = [];
+            foreach (mb_str_split($value, 10_000) ?: [''] as $shorterValue) { // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/7580
+                $lengthBytes = strlen($shorterValue);
+                $startBytes = 0;
+                do {
+                    $part = mb_strcut($shorterValue, $startBytes, 4000);
+                    $startBytes += strlen($part);
+                    $parts[] = 'N\'' . str_replace('\'', '\'\'', $part) . '\'';
+                } while ($startBytes < $lengthBytes);
+            }
+
+            $buildConcatSqlFx = function (array $parts) use (&$buildConcatSqlFx): string {
+                if (count($parts) > 1) {
+                    $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
+                    $partsRight = array_slice($parts, count($partsLeft));
+
+                    $sqlLeft = $buildConcatSqlFx($partsLeft);
+                    if (count($partsLeft) === 1) {
+                        $sqlLeft = 'CAST(' . $sqlLeft . ' AS NVARCHAR(MAX))';
+                    }
+
+                    return 'CONCAT(' . $sqlLeft . ', ' . $buildConcatSqlFx($partsRight) . ')';
+                }
+
+                return reset($parts);
+            };
+
+            return $buildConcatSqlFx($parts);
+        }, $sql);
+
+        return [$sql, $params];
     }
 
     /**

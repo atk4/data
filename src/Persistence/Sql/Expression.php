@@ -362,8 +362,13 @@ class Expression implements Expressionable, \ArrayAccess
                 $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
                 $partsRight = array_slice($parts, count($partsLeft));
 
+                $sqlLeft = $buildConcatSqlFx($partsLeft);
+                if ($platform instanceof SQLServerPlatform && count($partsLeft) === 1) {
+                    $sqlLeft = 'CAST(' . $sqlLeft . ' AS NVARCHAR(MAX))';
+                }
+
                 return ($platform instanceof SqlitePlatform ? '(' : 'CONCAT(')
-                    . $buildConcatSqlFx($partsLeft)
+                    . $sqlLeft
                     . ($platform instanceof SqlitePlatform ? ' || ' : ', ')
                     . $buildConcatSqlFx($partsRight)
                     . ')';
