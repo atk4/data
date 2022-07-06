@@ -168,28 +168,23 @@ class Sql extends Persistence
 
     /**
      * Creates new Expression object from expression string.
-     *
-     * @param mixed $expr
      */
-    public function expr(Model $model, $expr, array $args = []): Expression
+    public function expr(Model $model, string $template, array $arguments = []): Expression
     {
-        if (!is_string($expr)) {
-            return $this->getConnection()->expr($expr, $args);
-        }
         preg_replace_callback(
             '~\[\w*\]|\{\w*\}~',
-            function ($matches) use (&$args, $model) {
+            function ($matches) use ($model, &$arguments) {
                 $identifier = substr($matches[0], 1, -1);
-                if ($identifier && !isset($args[$identifier])) {
-                    $args[$identifier] = $model->getField($identifier);
+                if ($identifier !== '' && !isset($arguments[$identifier])) {
+                    $arguments[$identifier] = $model->getField($identifier);
                 }
 
                 return $matches[0];
             },
-            $expr
+            $template
         );
 
-        return $this->getConnection()->expr($expr, $args);
+        return $this->getConnection()->expr($template, $arguments);
     }
 
     /**
