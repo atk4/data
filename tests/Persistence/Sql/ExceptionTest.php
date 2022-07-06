@@ -8,14 +8,8 @@ use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Persistence\Sql\Exception as SqlException;
 use Atk4\Data\Persistence\Sql\Expression;
 
-/**
- * @coversDefaultClass \Atk4\Data\Persistence\Sql\Exception
- */
 class ExceptionTest extends TestCase
 {
-    /**
-     * @covers ::__construct
-     */
     public function testException1(): void
     {
         $this->expectException(SqlException::class);

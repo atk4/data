@@ -19,17 +19,17 @@ class Company extends Model
         $j_company = $j_contractor->join('company.contractor_id', ['prefix' => 'company_']);
 
         $j_contractor->addFields([
-            ['name', 'actual' => 'legal_name'],
+            'name' => ['actual' => 'legal_name'],
         ]);
 
         $j_company->addFields([
-            ['business_start', 'type' => 'date'],
-            ['director_name'],
-            ['vat_calculation_type', 'enum' => ['cash', 'invoice']],
+            'business_start' => ['type' => 'date'],
+            'director_name' => [],
+            'vat_calculation_type' => ['enum' => ['cash', 'invoice']],
         ]);
 
         $this->addFields([
-            ['is_vat_registered', 'type' => 'boolean'],
+            'is_vat_registered' => ['type' => 'boolean'],
         ]);
     }
 }
