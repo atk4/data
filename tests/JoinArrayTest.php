@@ -49,9 +49,9 @@ class JoinArrayTest extends TestCase
 
         $this->expectException(Exception::class); // TODO not implemented yet, see https://github.com/atk4/data/issues/803
         $j = $m->join('contact4.foo_id', ['master_field' => 'test_id', 'reverse' => true]);
-        $this->assertTrue($this->getProtected($j, 'reverse'));
-        $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
-        $this->assertSame('foo_id', $this->getProtected($j, 'foreign_field'));
+        // $this->assertTrue($this->getProtected($j, 'reverse'));
+        // $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
+        // $this->assertSame('foo_id', $this->getProtected($j, 'foreign_field'));
     }
 
     public function testJoinException(): void

@@ -123,8 +123,9 @@ class UserActionTest extends TestCase
 
     public function testPreviewFail(): void
     {
-        $this->expectExceptionMessage('specify preview callback');
         $client = new UaClient($this->pers);
+
+        $this->expectExceptionMessage('specify preview callback');
         $client->getUserAction('backup_clients')->preview();
     }
 
@@ -159,8 +160,9 @@ class UserActionTest extends TestCase
 
     public function testException1(): void
     {
-        $this->expectException(\Atk4\Core\Exception::class);
         $client = new UaClient($this->pers);
+
+        $this->expectException(\Atk4\Core\Exception::class);
         $client->getUserAction('non_existant_action');
     }
 
@@ -224,9 +226,9 @@ class UserActionTest extends TestCase
         $this->assertNotSame('Peter', $client->get('name'));
         $client->set('name', 'Peter');
         $client->set('reminder_sent', true);
+
         $this->expectExceptionMessage('dirty fields');
         $client->getUserAction('change_details')->execute();
-        $this->assertSame('Peter', $client->get('name'));
     }
 
     public function testFieldsIncorrect(): void
@@ -238,9 +240,9 @@ class UserActionTest extends TestCase
 
         $this->assertNotSame('Peter', $client->get('name'));
         $client->set('name', 'Peter');
+
         $this->expectExceptionMessage('must be either array or boolean');
         $client->getUserAction('change_details')->execute();
-        $this->assertSame('Peter', $client->get('name'));
     }
 
     public function testConfirmation(): void

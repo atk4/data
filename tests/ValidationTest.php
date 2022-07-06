@@ -95,12 +95,13 @@ class ValidationTest extends TestCase
         try {
             $m->set('name', 'Python');
             $m->set('domain', 'example.com');
+
+            $this->expectException(ValidationException::class);
             $m->save();
-            $this->fail('Expected exception');
-        } catch (\Atk4\Data\ValidationException $e) {
+        } catch (ValidationException $e) {
             $this->assertSame('This domain is reserved for examples only', $e->getParams()['errors']['domain']);
 
-            return;
+            throw $e;
         }
     }
 
@@ -115,10 +116,9 @@ class ValidationTest extends TestCase
         $m->save();
     }
 
-    public function testValidateHook(): void
+    public function testValidateHook1(): void
     {
         $m = $this->m->createEntity();
-
         $m->onHook(Model::HOOK_VALIDATE, static function ($m) {
             if ($m->get('name') === 'C#') {
                 return ['name' => 'No sharp objects allowed'];
@@ -130,19 +130,38 @@ class ValidationTest extends TestCase
 
         try {
             $m->set('name', 'C#');
+
+            $this->expectException(ValidationException::class);
             $m->save();
-            $this->fail('Expected exception');
-        } catch (\Atk4\Data\ValidationException $e) {
+        } catch (ValidationException $e) {
             $this->assertSame('No sharp objects allowed', $e->errors['name']);
+
+            throw $e;
         }
+    }
+
+    public function testValidateHook2(): void
+    {
+        $m = $this->m->createEntity();
+        $m->onHook(Model::HOOK_VALIDATE, static function ($m) {
+            if ($m->get('name') === 'C#') {
+                return ['name' => 'No sharp objects allowed'];
+            }
+        });
+
+        $m->set('name', 'Swift');
+        $m->save();
 
         try {
             $m->set('name', 'Python');
             $m->set('domain', 'example.com');
+
+            $this->expectException(ValidationException::class);
             $m->save();
-            $this->fail('Expected exception');
-        } catch (\Atk4\Data\ValidationException $e) {
+        } catch (ValidationException $e) {
             $this->assertCount(2, $e->errors);
+
+            throw $e;
         }
     }
 }

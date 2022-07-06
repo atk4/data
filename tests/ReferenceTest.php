@@ -80,6 +80,7 @@ class ReferenceTest extends TestCase
         $order->addField('user_id');
 
         $user->hasMany('Orders', ['model' => $order]);
+
         $this->expectException(Exception::class);
         $user->hasMany('Orders', ['model' => $order]);
     }
@@ -90,6 +91,7 @@ class ReferenceTest extends TestCase
         $user = new Model(null, ['table' => 'user']);
 
         $user->hasOne('user_id', ['model' => $user]);
+
         $this->expectException(Exception::class);
         $user->hasOne('user_id', ['model' => $user]);
     }
@@ -100,6 +102,7 @@ class ReferenceTest extends TestCase
         $order->addRef('archive', ['model' => function ($m) {
             return new $m(null, ['table' => $m->table . '_archive']);
         }]);
+
         $this->expectException(Exception::class);
         $order->addRef('archive', ['model' => function ($m) {
             return new $m(null, ['table' => $m->table . '_archive']);

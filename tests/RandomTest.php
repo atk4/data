@@ -322,13 +322,14 @@ class RandomTest extends TestCase
         $m->set('name', 'Peter');
 
         try {
-            $m->save();
-            $e = null;
-        } catch (\Exception $e) {
-        }
+            $this->expectException(Exception::class);
 
-        $this->assertNotNull($e);
-        $this->assertEquals($dbData, $this->getDb());
+            $m->save();
+        } catch (\Exception $e) {
+            $this->assertEquals($dbData, $this->getDb());
+
+            throw $e;
+        }
     }
 
     public function testHookBreakers(): void
