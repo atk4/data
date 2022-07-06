@@ -11,6 +11,7 @@ use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Result as DbalResult;
 
@@ -315,7 +316,54 @@ class Expression implements Expressionable, \ArrayAccess
     }
 
     /**
-     * Escapes argument by adding backticks around it.
+     * This method should be used only when string value cannot be bound.
+     */
+    protected function escapeStringLiteral(string $value): string
+    {
+        $platform = $this->connection->getDatabasePlatform();
+        $parts = [];
+        foreach (explode("\0", $value) as $i => $v) {
+            if ($i > 0) {
+                if ($platform instanceof PostgreSQLPlatform) {
+                    // will raise SQL error, PostgreSQL does not support \0 character
+                    $parts[] = 'convert_from(decode(\'00\', \'hex\'), \'UTF8\')';
+                } elseif ($platform instanceof SQLServerPlatform) {
+                    $parts[] = 'NCHAR(0)';
+                } elseif ($platform instanceof OraclePlatform) {
+                    $parts[] = 'CHR(0)';
+                } else {
+                    $parts[] = 'x\'00\'';
+                }
+            }
+
+            if ($v !== '') {
+                $parts[] = '\'' . str_replace('\'', '\'\'', $v) . '\'';
+            }
+        }
+        if ($parts === []) {
+            $parts = ['\'\''];
+        }
+
+        $buildConcatSqlFx = function (array $parts) use (&$buildConcatSqlFx, $platform): string {
+            if (count($parts) > 1) {
+                $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
+                $partsRight = array_slice($parts, count($partsLeft));
+
+                return ($platform instanceof SqlitePlatform ? '(' : 'CONCAT(')
+                    . $buildConcatSqlFx($partsLeft)
+                    . ($platform instanceof SqlitePlatform ? ' || ' : ', ')
+                    . $buildConcatSqlFx($partsRight)
+                    . ')';
+            }
+
+            return reset($parts);
+        };
+
+        return $buildConcatSqlFx($parts);
+    }
+
+    /**
+     * Escapes identifier from argument.
      * This will allow you to use reserved SQL words as table or field
      * names such as "table" as well as other characters that SQL
      * permits in the identifiers (e.g. spaces or equation signs).
