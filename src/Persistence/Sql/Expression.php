@@ -177,22 +177,7 @@ class Expression implements Expressionable, \ArrayAccess
      */
     public function expr($properties = [], $arguments = null)
     {
-        if ($this->connection !== null) {
-            // TODO condition above always satisfied when connection is set - adjust tests,
-            // so connection is always set and remove the code below
-            return $this->connection->expr($properties, $arguments);
-        }
-
-        // make a smart guess :) when connection is not set
-        if ($this instanceof Query) {
-            $e = new self($properties, $arguments);
-        } else {
-            $e = new static($properties, $arguments);
-        }
-
-        $e->identifierEscapeChar = $this->identifierEscapeChar;
-
-        return $e;
+        return $this->connection->expr($properties, $arguments);
     }
 
     /**
@@ -280,21 +265,6 @@ class Expression implements Expressionable, \ArrayAccess
         }
 
         return $sql;
-    }
-
-    /**
-     * Creates new expression where $value appears escaped. Use this
-     * method as a conventional means of specifying arguments when you
-     * think they might have a nasty back-ticks or commas in the field
-     * names.
-     *
-     * @param string $value
-     *
-     * @return Expression
-     */
-    public function escape($value)
-    {
-        return $this->expr('{}', [$value]);
     }
 
     /**
@@ -525,7 +495,7 @@ class Expression implements Expressionable, \ArrayAccess
             } elseif (is_float($val)) {
                 $replacement = self::castFloatToString($val);
             } elseif (is_string($val)) {
-                $replacement = '\'' . addslashes($val) . '\'';
+                $replacement = '\'' . str_replace('\'', '\'\'', $val) . '\'';
             } else {
                 continue;
             }

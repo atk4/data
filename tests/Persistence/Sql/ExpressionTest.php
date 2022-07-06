@@ -10,6 +10,7 @@ use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Mysql;
 use Atk4\Data\Persistence\Sql\Query;
+use Atk4\Data\Persistence\Sql\Sqlite;
 
 /**
  * @coversDefaultClass \Atk4\Data\Persistence\Sql\Expression
@@ -300,7 +301,6 @@ class ExpressionTest extends TestCase
     /**
      * Fully covers escapeIdentifier method.
      *
-     * @covers ::escape
      * @covers ::escapeIdentifier
      * @covers ::escapeIdentifierSoft
      */
@@ -344,19 +344,6 @@ class ExpressionTest extends TestCase
         $this->assertSame(
             '"users".*',
             $this->callProtected($this->e(), 'escapeIdentifierSoft', 'users.*')
-        );
-
-        $this->assertSame(
-            '"first_name"',
-            $this->e()->escape('first_name')->render()[0]
-        );
-        $this->assertSame(
-            '"first""_name"',
-            $this->e()->escape('first"_name')->render()[0]
-        );
-        $this->assertSame(
-            '"first""_name {}"',
-            $this->e()->escape('first"_name {}')->render()[0]
         );
     }
 
@@ -405,9 +392,11 @@ class ExpressionTest extends TestCase
                 return $expr->expr('"myfield"');
             }
         };
+        $e = $this->e('hello, []', [$myField]);
+        $e->connection = new Sqlite\Connection();
         $this->assertSame(
             'hello, "myfield"',
-            $this->e('hello, []', [$myField])->render()[0]
+            $e->render()[0]
         );
     }
 

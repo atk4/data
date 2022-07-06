@@ -963,11 +963,11 @@ class QueryTest extends TestCase
         );
         $this->assertSame(
             'order by "* desc"',
-            $this->q('[order]')->order($this->q()->escape('* desc'))->render()[0]
+            $this->q('[order]')->order($this->q()->expr('{}', ['* desc']))->render()[0]
         );
         $this->assertSame(
             'order by "* desc {}"',
-            $this->q('[order]')->order($this->q()->escape('* desc {}'))->render()[0]
+            $this->q('[order]')->order($this->q()->expr('{}', ['* desc {}']))->render()[0]
         );
         // custom sort order
         $this->assertSame(
