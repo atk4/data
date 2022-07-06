@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Mssql;
 
+use Atk4\Data\Persistence\Sql\Oracle\Expression as OracleExpression;
 use Doctrine\DBAL\Exception\DriverException;
 
 trait ExpressionTrait
@@ -34,6 +35,18 @@ trait ExpressionTrait
         return false;
     }
 
+    /**
+     * Like mb_str_split() function, but split by length in bytes.
+     *
+     * @return array<string>
+     */
+    private function splitLongString(string $value, int $lengthBytes): array
+    {
+        return \Closure::bind(function () use ($value, $lengthBytes) {
+            return (new OracleExpression())->splitLongString($value, $lengthBytes);
+        }, null, OracleExpression::class)();
+    }
+
     protected function updateRenderBeforeExecute(array $render): array
     {
         [$sql, $params] = parent::updateRenderBeforeExecute($render);
@@ -41,17 +54,8 @@ trait ExpressionTrait
         $sql = preg_replace_callback('~N?\'(?:\'\'|\\\\\'|[^\'])*+\'~s', function ($matches) {
             $value = str_replace('\'\'', '\'', substr($matches[0], substr($matches[0], 0, 1) === 'N' ? 2 : 1, -1));
 
-            // MSSQL (multibyte) string literal is limited to 4000 ??!!TODO!!?? bytes
-            $parts = [];
-            foreach (mb_str_split($value, 10_000) ?: [''] as $shorterValue) { // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/7580
-                $lengthBytes = strlen($shorterValue);
-                $startBytes = 0;
-                do {
-                    $part = mb_strcut($shorterValue, $startBytes, 4000);
-                    $startBytes += strlen($part);
-                    $parts[] = 'N\'' . str_replace('\'', '\'\'', $part) . '\'';
-                } while ($startBytes < $lengthBytes);
-            }
+            // MSSQL (multibyte) string literal is limited to 4000 bytes
+            $parts = $this->splitLongString($value, 4000);
 
             $buildConcatSqlFx = function (array $parts) use (&$buildConcatSqlFx): string {
                 if (count($parts) > 1) {
@@ -66,7 +70,7 @@ trait ExpressionTrait
                     return 'CONCAT(' . $sqlLeft . ', ' . $buildConcatSqlFx($partsRight) . ')';
                 }
 
-                return reset($parts);
+                return 'N\'' . str_replace('\'', '\'\'', reset($parts)) . '\'';
             };
 
             return $buildConcatSqlFx($parts);
