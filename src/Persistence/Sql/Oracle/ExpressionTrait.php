@@ -8,6 +8,18 @@ trait ExpressionTrait
 {
     protected function convertLongStringToClobExpr(string $value): Expression
     {
+        // Oracle (multibyte) string literal is limited to 1332 bytes
+        $parts = [];
+        foreach (mb_str_split($value, 10_000) ?: [''] as $shorterValue) { // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/7580
+            $lengthBytes = strlen($shorterValue);
+            $startBytes = 0;
+            do {
+                $part = mb_strcut($shorterValue, $startBytes, 1000);
+                $startBytes += strlen($part);
+                $parts[] = $part;
+            } while ($startBytes < $lengthBytes);
+        }
+
         $exprArgs = [];
         $buildConcatExprFx = function (array $parts) use (&$buildConcatExprFx, &$exprArgs): string {
             if (count($parts) > 1) {
@@ -21,18 +33,6 @@ trait ExpressionTrait
 
             return 'TO_CLOB([])';
         };
-
-        // Oracle (multibyte) string literal is limited to 1332 bytes
-        $parts = [];
-        foreach (mb_str_split($value, 10_000) ?: [''] as $shorterValue) { // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/7580
-            $lengthBytes = strlen($shorterValue);
-            $startBytes = 0;
-            do {
-                $part = mb_strcut($shorterValue, $startBytes, 1000);
-                $startBytes += strlen($part);
-                $parts[] = $part;
-            } while ($startBytes < $lengthBytes);
-        }
 
         $expr = $buildConcatExprFx($parts);
 
