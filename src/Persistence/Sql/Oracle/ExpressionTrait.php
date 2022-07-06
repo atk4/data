@@ -6,8 +6,51 @@ namespace Atk4\Data\Persistence\Sql\Oracle;
 
 trait ExpressionTrait
 {
+    /**
+     * Like mb_str_split() function, but split by length in bytes.
+     *
+     * @return array<string>
+     */
+    private function splitLongString(string $value, int $lengthBytes): array
+    {
+        $res = [];
+        $value = array_reverse(str_split($value, 2 * $lengthBytes));
+        $i = count($value) - 1;
+        $buffer = '';
+        while (true) {
+            if (strlen($buffer) <= $lengthBytes && $i >= 0) {
+                $buffer .= array_pop($value);
+                --$i;
+            }
+
+            if (strlen($buffer) <= $lengthBytes) {
+                $res[] = $buffer;
+                $buffer = '';
+
+                break;
+            }
+
+            $l = $lengthBytes;
+            for ($j = 0; $j < 4; ++$j) {
+                $ordNextChar = ord(substr($buffer, $l - $j, 1));
+                if ($ordNextChar < 0x80 || $ordNextChar >= 0xC0) {
+                    $l -= $j;
+
+                    break;
+                }
+            }
+            $res[] = substr($buffer, 0, $l);
+            $buffer = substr($buffer, $l);
+        }
+
+        return $res;
+    }
+
     protected function convertLongStringToClobExpr(string $value): Expression
     {
+        // Oracle (multibyte) string literal is limited to 1332 bytes
+        $parts = $this->splitLongString($value, 1000);
+
         $exprArgs = [];
         $buildConcatExprFx = function (array $parts) use (&$buildConcatExprFx, &$exprArgs): string {
             if (count($parts) > 1) {
@@ -21,18 +64,6 @@ trait ExpressionTrait
 
             return 'TO_CLOB([])';
         };
-
-        // Oracle (multibyte) string literal is limited to 1332 bytes
-        $parts = [];
-        foreach (mb_str_split($value, 10_000) ?: [''] as $shorterValue) { // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/7580
-            $lengthBytes = strlen($shorterValue);
-            $startBytes = 0;
-            do {
-                $part = mb_strcut($shorterValue, $startBytes, 1000);
-                $startBytes += strlen($part);
-                $parts[] = $part;
-            } while ($startBytes < $lengthBytes);
-        }
 
         $expr = $buildConcatExprFx($parts);
 

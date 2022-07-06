@@ -27,7 +27,7 @@ class Static_ extends Array_
      *
      * @param array $data Static data in one of supported formats
      */
-    public function __construct(array $data = null)
+    public function __construct(array $data = [])
     {
         // chomp off first row, we will use it to deduct fields
         $row1 = reset($data);

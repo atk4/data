@@ -10,16 +10,20 @@ trait ExpressionTrait
 {
     protected function escapeIdentifier(string $value): string
     {
-        return preg_replace('~\]([^\[\]\'"(){}]*?\])~s', '[$1', parent::escapeIdentifier($value));
+        $res = parent::escapeIdentifier($value);
+
+        return $this->identifierEscapeChar === ']' && str_starts_with($res, ']') && str_ends_with($res, ']')
+            ? '[' . substr($res, 1)
+            : $res;
     }
 
     public function render(): array
     {
         [$sql, $params] = parent::render();
 
-        // convert all SQL strings to NVARCHAR, eg 'text' to N'text'
-        $sql = preg_replace_callback('~N?(\'(?:\'\'|\\\\\'|[^\'])*+\')~s', function ($matches) {
-            return 'N' . $matches[1];
+        // convert all string literals to NVARCHAR, eg. 'text' to N'text'
+        $sql = preg_replace_callback('~N?\'(?:\'\'|\\\\\'|[^\'])*+\'~s', function ($matches) {
+            return (substr($matches[0], 0, 1) === 'N' ? '' : 'N') . $matches[0];
         }, $sql);
 
         return [$sql, $params];

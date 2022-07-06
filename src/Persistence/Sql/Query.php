@@ -824,8 +824,8 @@ class Query extends Expression
         $ret = [];
 
         if ($this->args['set']) {
-            foreach ($this->args['set'] as [$field/* , $value */ ]) {
-                $field = $this->consume($field, self::ESCAPE_IDENTIFIER);
+            foreach ($this->args['set'] as $pair) {
+                $field = $this->consume($pair[0], self::ESCAPE_IDENTIFIER);
 
                 $ret[] = $field;
             }
@@ -840,8 +840,8 @@ class Query extends Expression
         $ret = [];
 
         if ($this->args['set']) {
-            foreach ($this->args['set'] as [/* $field */, $value]) {
-                $value = $this->consume($value, self::ESCAPE_PARAM);
+            foreach ($this->args['set'] as $pair) {
+                $value = $this->consume($pair[1], self::ESCAPE_PARAM);
 
                 $ret[] = $value;
             }
@@ -1097,11 +1097,8 @@ class Query extends Expression
      * method should be used for building parts of the query internally.
      *
      * @param string|array $properties
-     * @param array        $arguments
-     *
-     * @return Expression
      */
-    public function expr($properties = [], $arguments = null)
+    public function expr($properties = [], array $arguments = []): Expression
     {
         $c = $this->expression_class;
         $e = new $c($properties, $arguments);

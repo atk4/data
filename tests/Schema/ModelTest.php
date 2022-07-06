@@ -6,8 +6,10 @@ namespace Atk4\Data\Tests\Schema;
 
 use Atk4\Data\Field\PasswordField;
 use Atk4\Data\Model;
+use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class ModelTest extends TestCase
@@ -214,6 +216,53 @@ class ModelTest extends TestCase
         $this->assertSame(2, $row['id']);
         $this->assertSame(strlen($str), strlen($row['v']));
         $this->assertTrue($str === $row['v']);
+
+        // remove once https://github.com/php/php-src/issues/8928 is fixed
+        if (str_starts_with($_ENV['DB_DSN'], 'oci8') && $length > 1000) {
+            return;
+        }
+
+        // functional test for Expression::escapeStringLiteral() method
+        $strRaw = $model->getPersistence()->typecastSaveField($model->getField('v'), $str);
+        $strRawSql = \Closure::bind(function () use ($model, $strRaw) {
+            return $model->expr('')->escapeStringLiteral($strRaw);
+        }, null, Expression::class)();
+        $query = $this->db->getConnection()->dsql()
+            ->field($model->expr($strRawSql));
+        $resRaw = $query->getOne();
+        if ($this->getDatabasePlatform() instanceof OraclePlatform && $isBinary) {
+            $this->assertNotSame(strlen($str), strlen($resRaw));
+        } else {
+            $this->assertSame(strlen($str), strlen($resRaw));
+            $this->assertTrue($str === $resRaw);
+        }
+        $res = $model->getPersistence()->typecastLoadField($model->getField('v'), $resRaw);
+        $this->assertSame(strlen($str), strlen($res));
+        $this->assertTrue($str === $res);
+
+        if (!$isBinary) {
+            $str = $this->makePseudoRandomString($isBinary, $length);
+
+            // PostgreSQL does not support \0 character
+            // https://stackoverflow.com/questions/1347646/postgres-error-on-insert-error-invalid-byte-sequence-for-encoding-utf8-0x0
+            if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+                $str = str_replace("\0", '-', $str);
+            }
+
+            $this->assertSame($length, mb_strlen($str));
+            $strSql = \Closure::bind(function () use ($model, $str) {
+                return $model->expr('')->escapeStringLiteral($str);
+            }, null, Expression::class)();
+            $query = $this->db->getConnection()->dsql()
+                ->field($model->expr($strSql));
+            $res = $query->getOne();
+            if ($this->getDatabasePlatform() instanceof OraclePlatform && $length === 0) {
+                $this->assertNull($res);
+            } else {
+                $this->assertSame(strlen($str), strlen($res));
+                $this->assertTrue($str === $res);
+            }
+        }
     }
 
     public function providerCharacterTypeFieldLongData(): array

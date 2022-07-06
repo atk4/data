@@ -131,11 +131,11 @@ class ScopeTest extends TestCase
 
         $condition = new Condition('country_id/code', 'US');
 
-        $this->assertEquals('User that has reference Country Id where Code is equal to \'US\'', $condition->toWords($user));
+        $this->assertEquals('User that has reference Country ID where Code is equal to \'US\'', $condition->toWords($user));
 
         $condition = new Condition('country_id', 2);
 
-        $this->assertEquals('Country Id is equal to 2 (\'Latvia\')', $condition->toWords($user));
+        $this->assertEquals('Country ID is equal to 2 (\'Latvia\')', $condition->toWords($user));
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $condition = new Condition('name', $user->expr('[surname]'));
@@ -145,7 +145,7 @@ class ScopeTest extends TestCase
 
         $condition = new Condition('country_id', null);
 
-        $this->assertEquals('Country Id is equal to empty', $condition->toWords($user));
+        $this->assertEquals('Country ID is equal to empty', $condition->toWords($user));
 
         $condition = new Condition('name', '>', 'Test');
 
@@ -153,7 +153,7 @@ class ScopeTest extends TestCase
 
         $condition = (new Condition('country_id', 2))->negate();
 
-        $this->assertEquals('Country Id is not equal to 2 (\'Latvia\')', $condition->toWords($user));
+        $this->assertEquals('Country ID is not equal to 2 (\'Latvia\')', $condition->toWords($user));
 
         $condition = new Condition($user->getField('surname'), $user->getField('name'));
 

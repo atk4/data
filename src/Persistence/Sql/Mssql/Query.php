@@ -54,7 +54,7 @@ class Query extends BaseQuery
 
     public function groupConcat($field, string $delimiter = ',')
     {
-        return $this->expr('string_agg({}, \'' . $delimiter . '\')', [$field]);
+        return $this->expr('string_agg({}, ' . $this->escapeStringLiteral($delimiter) . ')', [$field]);
     }
 
     public function exists()

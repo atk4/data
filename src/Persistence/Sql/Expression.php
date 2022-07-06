@@ -11,6 +11,7 @@ use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Result as DbalResult;
 
@@ -74,39 +75,18 @@ class Expression implements Expressionable, \ArrayAccess
      * If $properties is passed as string, then it's treated as template.
      *
      * @param string|array $properties
-     * @param array        $arguments
      */
-    public function __construct($properties = [], $arguments = null)
+    public function __construct($properties = [], array $arguments = [])
     {
-        // save template
         if (is_string($properties)) {
             $properties = ['template' => $properties];
-        } elseif (!is_array($properties)) {
-            throw (new Exception('Incorrect use of Expression constructor'))
-                ->addMoreInfo('properties', $properties)
-                ->addMoreInfo('arguments', $arguments);
         }
 
-        // supports passing template as property value without key 'template'
-        if (isset($properties[0])) {
-            $properties['template'] = $properties[0];
-            unset($properties[0]);
-        }
-
-        // save arguments
-        if ($arguments !== null) {
-            if (!is_array($arguments)) {
-                throw (new Exception('Expression arguments must be an array'))
-                    ->addMoreInfo('properties', $properties)
-                    ->addMoreInfo('arguments', $arguments);
-            }
-            $this->args['custom'] = $arguments;
-        }
-
-        // deal with remaining properties
         foreach ($properties as $key => $val) {
             $this->{$key} = $val;
         }
+
+        $this->args['custom'] = $arguments;
     }
 
     /**
@@ -170,28 +150,10 @@ class Expression implements Expressionable, \ArrayAccess
      * new expression to the same connection as the parent.
      *
      * @param string|array $properties
-     * @param array        $arguments
-     *
-     * @return Expression
      */
-    public function expr($properties = [], $arguments = null)
+    public function expr($properties = [], array $arguments = []): self
     {
-        if ($this->connection !== null) {
-            // TODO condition above always satisfied when connection is set - adjust tests,
-            // so connection is always set and remove the code below
-            return $this->connection->expr($properties, $arguments);
-        }
-
-        // make a smart guess :) when connection is not set
-        if ($this instanceof Query) {
-            $e = new self($properties, $arguments);
-        } else {
-            $e = new static($properties, $arguments);
-        }
-
-        $e->identifierEscapeChar = $this->identifierEscapeChar;
-
-        return $e;
+        return $this->connection->expr($properties, $arguments);
     }
 
     /**
@@ -282,21 +244,6 @@ class Expression implements Expressionable, \ArrayAccess
     }
 
     /**
-     * Creates new expression where $value appears escaped. Use this
-     * method as a conventional means of specifying arguments when you
-     * think they might have a nasty back-ticks or commas in the field
-     * names.
-     *
-     * @param string $value
-     *
-     * @return Expression
-     */
-    public function escape($value)
-    {
-        return $this->expr('{}', [$value]);
-    }
-
-    /**
      * Converts value into parameter and returns reference. Use only during
      * query rendering. Consider using `consume()` instead, which will
      * also handle nested expressions properly.
@@ -315,7 +262,72 @@ class Expression implements Expressionable, \ArrayAccess
     }
 
     /**
-     * Escapes argument by adding backticks around it.
+     * This method should be used only when string value cannot be bound.
+     */
+    protected function escapeStringLiteral(string $value): string
+    {
+        $platform = $this->connection->getDatabasePlatform();
+        if ($platform instanceof PostgreSQLPlatform || $platform instanceof SQLServerPlatform) {
+            $dummyPersistence = new Persistence\Sql($this->connection);
+            if (\Closure::bind(fn () => $dummyPersistence->binaryTypeValueIsEncoded($value), null, Persistence\Sql::class)()) {
+                $value = \Closure::bind(fn () => $dummyPersistence->binaryTypeValueDecode($value), null, Persistence\Sql::class)();
+
+                if ($platform instanceof PostgreSQLPlatform) {
+                    return 'decode(\'' . bin2hex($value) . '\', \'hex\')';
+                }
+
+                return 'CONVERT(VARBINARY(MAX), \'' . bin2hex($value) . '\', 2)';
+            }
+        }
+
+        $parts = [];
+        foreach (explode("\0", $value) as $i => $v) {
+            if ($i > 0) {
+                if ($platform instanceof PostgreSQLPlatform) {
+                    // will raise SQL error, PostgreSQL does not support \0 character
+                    $parts[] = 'convert_from(decode(\'00\', \'hex\'), \'UTF8\')';
+                } elseif ($platform instanceof SQLServerPlatform) {
+                    $parts[] = 'NCHAR(0)';
+                } elseif ($platform instanceof OraclePlatform) {
+                    $parts[] = 'CHR(0)';
+                } else {
+                    $parts[] = 'x\'00\'';
+                }
+            }
+
+            if ($v !== '') {
+                $parts[] = '\'' . str_replace('\'', '\'\'', $v) . '\'';
+            }
+        }
+        if ($parts === []) {
+            $parts = ['\'\''];
+        }
+
+        $buildConcatSqlFx = function (array $parts) use (&$buildConcatSqlFx, $platform): string {
+            if (count($parts) > 1) {
+                $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
+                $partsRight = array_slice($parts, count($partsLeft));
+
+                $sqlLeft = $buildConcatSqlFx($partsLeft);
+                if ($platform instanceof SQLServerPlatform && count($partsLeft) === 1) {
+                    $sqlLeft = 'CAST(' . $sqlLeft . ' AS NVARCHAR(MAX))';
+                }
+
+                return ($platform instanceof SqlitePlatform ? '(' : 'CONCAT(')
+                    . $sqlLeft
+                    . ($platform instanceof SqlitePlatform ? ' || ' : ', ')
+                    . $buildConcatSqlFx($partsRight)
+                    . ')';
+            }
+
+            return reset($parts);
+        };
+
+        return $buildConcatSqlFx($parts);
+    }
+
+    /**
+     * Escapes identifier from argument.
      * This will allow you to use reserved SQL words as table or field
      * names such as "table" as well as other characters that SQL
      * permits in the identifiers (e.g. spaces or equation signs).
@@ -459,7 +471,7 @@ class Expression implements Expressionable, \ArrayAccess
             } elseif (is_float($val)) {
                 $replacement = self::castFloatToString($val);
             } elseif (is_string($val)) {
-                $replacement = '\'' . addslashes($val) . '\'';
+                $replacement = '\'' . str_replace('\'', '\'\'', $val) . '\'';
             } else {
                 continue;
             }
@@ -585,8 +597,7 @@ class Expression implements Expressionable, \ArrayAccess
                 } elseif (is_string($val)) {
                     $type = ParameterType::STRING;
 
-                    if ($platform instanceof PostgreSQLPlatform
-                        || $platform instanceof SQLServerPlatform) {
+                    if ($platform instanceof PostgreSQLPlatform || $platform instanceof SQLServerPlatform) {
                         $dummyPersistence = new Persistence\Sql($this->connection);
                         if (\Closure::bind(fn () => $dummyPersistence->binaryTypeValueIsEncoded($val), null, Persistence\Sql::class)()) {
                             $val = \Closure::bind(fn () => $dummyPersistence->binaryTypeValueDecode($val), null, Persistence\Sql::class)();
@@ -689,11 +700,11 @@ class Expression implements Expressionable, \ArrayAccess
         }
 
         // for PostgreSQL/Oracle CLOB/BLOB datatypes and PDO driver
-        if (is_resource($v) && get_resource_type($v) === 'stream' && (
-            $this->connection->getDatabasePlatform() instanceof PostgreSQLPlatform
-            || $this->connection->getDatabasePlatform() instanceof OraclePlatform
-        )) {
-            $v = stream_get_contents($v);
+        if (is_resource($v) && get_resource_type($v) === 'stream') {
+            $platform = $this->connection->getDatabasePlatform();
+            if ($platform instanceof PostgreSQLPlatform || $platform instanceof OraclePlatform) {
+                $v = stream_get_contents($v);
+            }
         }
 
         return $v; // throw a type error if not null nor string

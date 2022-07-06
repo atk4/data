@@ -35,9 +35,6 @@ class DummyConnection2 extends Connection
     }
 }
 
-/**
- * @coversDefaultClass \Atk4\Data\Persistence\Sql\Connection
- */
 class ConnectionTest extends TestCase
 {
     public function testInit(): void

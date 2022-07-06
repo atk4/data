@@ -10,10 +10,8 @@ use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Mysql;
 use Atk4\Data\Persistence\Sql\Query;
+use Atk4\Data\Persistence\Sql\Sqlite;
 
-/**
- * @coversDefaultClass \Atk4\Data\Persistence\Sql\Expression
- */
 class ExpressionTest extends TestCase
 {
     /**
@@ -22,46 +20,6 @@ class ExpressionTest extends TestCase
     public function e(...$args): Expression
     {
         return new Expression(...$args);
-    }
-
-    /**
-     * Test constructor exception - wrong 1st parameter.
-     *
-     * @covers ::__construct
-     */
-    public function testConstructorException1st1(): void
-    {
-        $this->expectException(Exception::class);
-        $this->e(null);
-    }
-
-    /**
-     * Test constructor exception - wrong 1st parameter.
-     *
-     * @covers ::__construct
-     */
-    public function testConstructorException1st2(): void
-    {
-        $this->expectException(Exception::class);
-        $this->e(false);
-    }
-
-    /**
-     * Test constructor exception - wrong 2nd parameter.
-     */
-    public function testConstructorException2nd1(): void
-    {
-        $this->expectException(Exception::class);
-        $this->e('hello, []', false);
-    }
-
-    /**
-     * Test constructor exception - wrong 2nd parameter.
-     */
-    public function testConstructorException2nd2(): void
-    {
-        $this->expectException(Exception::class);
-        $this->e('hello, []', 'hello');
     }
 
     /**
@@ -75,8 +33,6 @@ class ExpressionTest extends TestCase
 
     /**
      * Testing parameter edge cases - empty strings and arrays etc.
-     *
-     * @covers ::__construct
      */
     public function testConstructor1(): void
     {
@@ -89,9 +45,6 @@ class ExpressionTest extends TestCase
     /**
      * Testing simple template patterns without arguments.
      * Testing different ways how to pass template to constructor.
-     *
-     * @covers ::__construct
-     * @covers ::escapeIdentifier
      */
     public function testConstructor2(): void
     {
@@ -100,20 +53,10 @@ class ExpressionTest extends TestCase
             'now()',
             $this->e('now()')->render()[0]
         );
-        // pass as array without key
-        $this->assertSame(
-            'now()',
-            $this->e(['now()'])->render()[0]
-        );
         // pass as array with template key
         $this->assertSame(
             'now()',
             $this->e(['template' => 'now()'])->render()[0]
-        );
-        // pass as array without key
-        $this->assertSame(
-            ':a Name',
-            $this->e(['[] Name'], ['First'])->render()[0]
         );
         // pass as array with template key
         $this->assertSame(
@@ -124,8 +67,6 @@ class ExpressionTest extends TestCase
 
     /**
      * Testing template with simple arguments.
-     *
-     * @covers ::__construct
      */
     public function testConstructor3(): void
     {
@@ -144,8 +85,6 @@ class ExpressionTest extends TestCase
 
     /**
      * Testing template with complex arguments.
-     *
-     * @covers ::__construct
      */
     public function testConstructor4(): void
     {
@@ -240,10 +179,6 @@ class ExpressionTest extends TestCase
 
     /**
      * Test nested parameters.
-     *
-     * @covers ::__construct
-     * @covers ::escapeParam
-     * @covers ::getDebugQuery
      */
     public function testNestedParams(): void
     {
@@ -264,9 +199,6 @@ class ExpressionTest extends TestCase
 
     /**
      * Tests where one expression with parameter is used within several other expressions.
-     *
-     * @covers ::__construct
-     * @covers ::render
      */
     public function testNestedExpressions(): void
     {
@@ -287,21 +219,7 @@ class ExpressionTest extends TestCase
     }
 
     /**
-     * @covers ::__toString
-     */
-    /*
-    public function testToStringException1(): void
-    {
-        $e = new MyBadExpression('Hello');
-        $this->expectException(Exception::class);
-        $s = (string)$e;
-    }
-    */
-
-    /**
      * expr() should return new Expression object and inherit connection from it.
-     *
-     * @covers ::expr
      */
     public function testExpr(): void
     {
@@ -311,10 +229,6 @@ class ExpressionTest extends TestCase
 
     /**
      * Fully covers escapeIdentifier method.
-     *
-     * @covers ::escape
-     * @covers ::escapeIdentifier
-     * @covers ::escapeIdentifierSoft
      */
     public function testEscape(): void
     {
@@ -357,25 +271,10 @@ class ExpressionTest extends TestCase
             '"users".*',
             $this->callProtected($this->e(), 'escapeIdentifierSoft', 'users.*')
         );
-
-        $this->assertSame(
-            '"first_name"',
-            $this->e()->escape('first_name')->render()[0]
-        );
-        $this->assertSame(
-            '"first""_name"',
-            $this->e()->escape('first"_name')->render()[0]
-        );
-        $this->assertSame(
-            '"first""_name {}"',
-            $this->e()->escape('first"_name {}')->render()[0]
-        );
     }
 
     /**
      * Fully covers escapeParam method.
-     *
-     * @covers ::escapeParam
      */
     public function testParam(): void
     {
@@ -386,9 +285,6 @@ class ExpressionTest extends TestCase
         ], $e->render());
     }
 
-    /**
-     * @covers ::consume
-     */
     public function testConsume(): void
     {
         $constants = (new \ReflectionClass(Expression::class))->getConstants();
@@ -411,16 +307,22 @@ class ExpressionTest extends TestCase
             $this->callProtected($this->e(), 'consume', new Query())
         );
 
+        $myField = new class() implements Expressionable {
+            public function getDsqlExpression(Expression $expr): Expression
+            {
+                return $expr->expr('"myfield"');
+            }
+        };
+        $e = $this->e('hello, []', [$myField]);
+        $e->connection = new Sqlite\Connection();
         $this->assertSame(
             'hello, "myfield"',
-            $this->e('hello, []', [new MyField()])->render()[0]
+            $e->render()[0]
         );
     }
 
     /**
      * $escape_mode value is incorrect.
-     *
-     * @covers ::consume
      */
     public function testConsumeException1(): void
     {
@@ -430,8 +332,6 @@ class ExpressionTest extends TestCase
 
     /**
      * Only Expressionable objects may be used in Expression.
-     *
-     * @covers ::consume
      */
     public function testConsumeException2(): void
     {
@@ -439,12 +339,6 @@ class ExpressionTest extends TestCase
         $this->callProtected($this->e(), 'consume', new \stdClass());
     }
 
-    /**
-     * @covers ::offsetExists
-     * @covers ::offsetGet
-     * @covers ::offsetSet
-     * @covers ::offsetUnset
-     */
     public function testArrayAccess(): void
     {
         $e = $this->e('', ['parrot' => 'red', 'blue']);
@@ -478,25 +372,16 @@ class ExpressionTest extends TestCase
     }
 
     /**
-     * Test IteratorAggregate implementation.
-     *
-     * @covers ::getRowsIterator
-     *
-     * @doesNotPerformAssertions
-     */
-    public function testIteratorAggregate(): void
-    {
-        // TODO cannot test this without actual DB connection and executing expression
-    }
-
-    /**
      * Test for vendors that rely on JavaScript expressions, instead of parameters.
-     *
-     * @coversNothing
      */
     public function testJsonExpression(): void
     {
-        $e = new JsonExpression('hello, [who]', ['who' => 'world']);
+        $e = new class('hello, [who]', ['who' => 'world']) extends Expression {
+            public function escapeParam($value): string
+            {
+                return json_encode($value);
+            }
+        };
 
         $this->assertSame([
             'hello, "world"',
@@ -504,24 +389,21 @@ class ExpressionTest extends TestCase
         ], $e->render());
     }
 
-    /**
-     * Test var-dump code for codecoverage.
-     *
-     * @covers ::__debugInfo
-     *
-     * @doesNotPerformAssertions
-     */
     public function testVarDump(): void
     {
-        $this->e('test')->__debugInfo();
+        $this->assertSame(
+            'test',
+            $this->e('test')->__debugInfo()['R']
+        );
 
-        $this->e(' [nosuchtag] ')->__debugInfo();
+        $this->assertStringContainsString(
+            'Expression could not render tag',
+            $this->e(' [nosuchtag] ')->__debugInfo()['R']
+        );
     }
 
     /**
      * Test reset().
-     *
-     * @covers ::reset
      */
     public function testReset(): void
     {
@@ -536,30 +418,3 @@ class ExpressionTest extends TestCase
         $this->assertSame(['custom' => ['name' => 'John']], $this->getProtected($e, 'args'));
     }
 }
-
-// @codingStandardsIgnoreStart
-class JsonExpression extends Expression
-{
-    public function escapeParam($value): string
-    {
-        return json_encode($value);
-    }
-}
-class MyField implements Expressionable
-{
-    public function getDsqlExpression(Expression $expr): Expression
-    {
-        return $expr->expr('"myfield"');
-    }
-}
-/*
-class MyBadExpression extends Expression
-{
-    public function getOne()
-    {
-        // should return string, but for test case we return array to get \Exception
-        return array();
-    }
-}
-*/
-// @codingStandardsIgnoreEnd

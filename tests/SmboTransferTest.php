@@ -6,7 +6,6 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Schema\TestCase;
 use Atk4\Data\Tests\Model\Smbo\Account;
-use Atk4\Data\Tests\Model\Smbo\Company;
 use Atk4\Data\Tests\Model\Smbo\Payment;
 use Atk4\Data\Tests\Model\Smbo\Transfer;
 
@@ -24,8 +23,6 @@ class SmboTransferTest extends TestCase
         $this->createMigrator()->table('document')
             ->id()
             ->field('reference')
-            ->field('contact_from_id')
-            ->field('contact_to_id')
             ->field('doc_type')
             ->field('amount', ['type' => 'float'])
             ->create();
@@ -103,77 +100,4 @@ class SmboTransferTest extends TestCase
             ['amount' => 20.0],
         ], $data);
     }
-
-    /*
-    public function testBasicEntities(): void
-    {
-        // Create a new company
-        $company = new Company($this->db);
-        $company->set([
-            'name' => 'Test Company 1',
-            'director_name' => 'Tester Little',
-            'type' => 'Limited Company',
-            'vat_registered' => true,
-        ]);
-        $company->save();
-
-        return;
-
-        // Create two new clients, one is sole trader, other is limited company
-        $client = $company->ref('Client');
-        [$john_id, $agile_id] = $m->insert([
-            ['name' => 'John Smith Consulting', 'vat_registered' => false],
-            'Agile Software Limited',
-        ]);
-
-        // Insert a first, default invoice for our sole-trader
-        $john = $company->load($john_id);
-        $john_invoices = $john->ref('Invoice');
-        $john_invoices->insertInvoice([
-            'ref_no' => 'INV1',
-            'due_date' => (new Date())->add(new DateInterval('2w')), // due in 2 weeks
-            'lines' => [
-                ['descr' => 'Sold some sweets', 'total_gross' => 100.0],
-                ['descr' => 'Delivery', 'total_gross' => 10.0],
-            ],
-        ]);
-
-        // Use custom method to create a sub-nominal
-        $company->ref('Nominal')->insertSubNominal('Sales', 'Discounted');
-
-        // Insert our second invoice using set referencing
-        $company->ref('Client')->load($agile_id)->refSet('Invoice')->insertInvoice([
-            'lines' => [
-                [
-                    'item_id' => $john->ref('Product')->insert('Cat Food'),
-                    'nominal' => 'Sales:Discounted',
-                    'total_net' => 50.0,
-                    'vat_rate' => 23,
-                    // calculates total_gross at 61.5
-                ],
-                [
-                    'item_id' => $john->ref('Service')->insert('Delivery'),
-                    'total_net' => 10.0,
-                    'vat_rate' => '23%',
-                    // calculates total_gross at 12.3
-                ],
-            ],
-        ]);
-
-        // Next we create bank account
-        $hsbc = $john->ref('Account')->set('name', 'HSBC')->save();
-
-        // And each of our invoices will have one new payment
-        foreach ($john_invoices as $invoice) {
-            $invoice->ref('Payment')->insert(['amount' => 10.2, 'bank_account_id' => $hsbc]);
-        }
-
-        // Now let's execute report
-        $debt = $john->add(new Model_Report_Debtors());
-
-        // This should give us total amount owed by all clients:
-        // (100.0 + 10.0) + (61.5 + 12.3) - 10.2 * 2
-        $this->assertSame(163.4, $debt->sum('amount'));
-    }
-     */
 }

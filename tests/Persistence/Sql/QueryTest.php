@@ -7,16 +7,9 @@ namespace Atk4\Data\Tests\Persistence\Sql;
 use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Persistence\Sql\Exception;
 use Atk4\Data\Persistence\Sql\Expression;
-use Atk4\Data\Persistence\Sql\Mssql;
 use Atk4\Data\Persistence\Sql\Mysql;
-use Atk4\Data\Persistence\Sql\Oracle;
-use Atk4\Data\Persistence\Sql\Postgresql;
 use Atk4\Data\Persistence\Sql\Query;
-use Atk4\Data\Persistence\Sql\Sqlite;
 
-/**
- * @coversDefaultClass \Atk4\Data\Persistence\Sql\Query
- */
 class QueryTest extends TestCase
 {
     /**
@@ -27,9 +20,6 @@ class QueryTest extends TestCase
         return new Query(...$args);
     }
 
-    /**
-     * @covers ::__construct
-     */
     public function testConstruct(): void
     {
         // passing properties in constructor
@@ -41,8 +31,6 @@ class QueryTest extends TestCase
 
     /**
      * dsql() should return new Query object and inherit connection from it.
-     *
-     * @covers ::dsql
      */
     public function testDsql(): void
     {
@@ -52,8 +40,6 @@ class QueryTest extends TestCase
 
     /**
      * field() should return $this Query for chaining.
-     *
-     * @covers ::field
      */
     public function testFieldReturnValue(): void
     {
@@ -63,9 +49,6 @@ class QueryTest extends TestCase
 
     /**
      * Testing field - basic cases.
-     *
-     * @covers ::_render_field
-     * @covers ::field
      */
     public function testFieldBasic(): void
     {
@@ -109,9 +92,6 @@ class QueryTest extends TestCase
 
     /**
      * Testing field - defaultField.
-     *
-     * @covers ::_render_field
-     * @covers ::field
      */
     public function testFieldDefaultField(): void
     {
@@ -139,9 +119,6 @@ class QueryTest extends TestCase
 
     /**
      * Testing field - basic cases.
-     *
-     * @covers ::_render_field
-     * @covers ::field
      */
     public function testFieldExpression(): void
     {
@@ -178,9 +155,6 @@ class QueryTest extends TestCase
 
     /**
      * Duplicate alias of field.
-     *
-     * @covers ::_set_args
-     * @covers ::field
      */
     public function testFieldException1(): void
     {
@@ -190,8 +164,6 @@ class QueryTest extends TestCase
 
     /**
      * Alias is NOT mandatory when pass table as Expression.
-     *
-     * @covers ::table
      *
      * @doesNotPerformAssertions
      */
@@ -203,8 +175,6 @@ class QueryTest extends TestCase
 
     /**
      * Alias is IS mandatory when pass table as Query.
-     *
-     * @covers ::table
      */
     public function testTableException4(): void
     {
@@ -214,9 +184,6 @@ class QueryTest extends TestCase
 
     /**
      * Table aliases should be unique.
-     *
-     * @covers ::_set_args
-     * @covers ::table
      */
     public function testTableException5(): void
     {
@@ -228,9 +195,6 @@ class QueryTest extends TestCase
 
     /**
      * Table aliases should be unique.
-     *
-     * @covers ::_set_args
-     * @covers ::table
      */
     public function testTableException6(): void
     {
@@ -242,9 +206,6 @@ class QueryTest extends TestCase
 
     /**
      * Table aliases should be unique.
-     *
-     * @covers ::_set_args
-     * @covers ::table
      */
     public function testTableException7(): void
     {
@@ -256,9 +217,6 @@ class QueryTest extends TestCase
 
     /**
      * Table aliases should be unique.
-     *
-     * @covers ::_set_args
-     * @covers ::table
      */
     public function testTableException8(): void
     {
@@ -270,9 +228,6 @@ class QueryTest extends TestCase
 
     /**
      * Table aliases should be unique.
-     *
-     * @covers ::_set_args
-     * @covers ::table
      */
     public function testTableException9(): void
     {
@@ -284,8 +239,6 @@ class QueryTest extends TestCase
 
     /**
      * Table can't be set as sub-Query in Update query mode.
-     *
-     * @covers ::table
      */
     public function testTableException10(): void
     {
@@ -299,8 +252,6 @@ class QueryTest extends TestCase
 
     /**
      * Table can't be set as sub-Query in Insert query mode.
-     *
-     * @covers ::table
      */
     public function testTableException11(): void
     {
@@ -314,8 +265,6 @@ class QueryTest extends TestCase
 
     /**
      * Requesting non-existant query mode should throw exception.
-     *
-     * @covers ::mode
      */
     public function testModeException1(): void
     {
@@ -325,8 +274,6 @@ class QueryTest extends TestCase
 
     /**
      * table() should return $this Query for chaining.
-     *
-     * @covers ::table
      */
     public function testTableReturnValue(): void
     {
@@ -334,11 +281,6 @@ class QueryTest extends TestCase
         $this->assertSame($q, $q->table('employee'));
     }
 
-    /**
-     * @covers ::_render_table
-     * @covers ::_render_table_noalias
-     * @covers ::table
-     */
     public function testTableRender1(): void
     {
         // no table defined
@@ -433,10 +375,6 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * @covers ::_render_table
-     * @covers ::table
-     */
     public function testTableRender2(): void
     {
         // pass table as expression or query
@@ -474,11 +412,6 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * @covers ::render
-     * @covers \Atk4\Data\Persistence\Sql\Expression::consume
-     * @covers \Atk4\Data\Persistence\Sql\Expression::render
-     */
     public function testBasicRenderSubquery(): void
     {
         $age = new Expression('coalesce([age], [default_age])');
@@ -493,9 +426,6 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * @covers \Atk4\Data\Persistence\Sql\Expression::getDebugQuery
-     */
     public function testGetDebugQuery(): void
     {
         $age = new Expression('coalesce([age], [default_age], [foo], [bar])');
@@ -512,9 +442,6 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * @covers ::__debugInfo
-     */
     public function testVarDump(): void
     {
         $this->assertMatchesRegularExpression(
@@ -523,9 +450,6 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * @covers ::__debugInfo
-     */
     public function testVarDump2(): void
     {
         $this->assertStringContainsString(
@@ -534,9 +458,6 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * @covers ::__debugInfo
-     */
     public function testVarDump3(): void
     {
         $this->assertStringContainsString(
@@ -545,9 +466,6 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * @covers ::__debugInfo
-     */
     public function testVarDump4(): void
     {
         // should throw exception "Table cannot be Query in UPDATE, INSERT etc. query modes"
@@ -559,13 +477,6 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * @covers ::_render_field
-     * @covers ::_render_table
-     * @covers ::field
-     * @covers ::render
-     * @covers ::table
-     */
     public function testUnionQuery(): void
     {
         // 1st query
@@ -633,8 +544,6 @@ class QueryTest extends TestCase
 
     /**
      * where() should return $this Query for chaining.
-     *
-     * @covers ::where
      */
     public function testWhereReturnValue(): void
     {
@@ -644,8 +553,6 @@ class QueryTest extends TestCase
 
     /**
      * having() should return $this Query for chaining.
-     *
-     * @covers ::field
      */
     public function testHavingReturnValue(): void
     {
@@ -655,10 +562,6 @@ class QueryTest extends TestCase
 
     /**
      * Basic where() tests.
-     *
-     * @covers ::_render_where
-     * @covers ::_sub_render_where
-     * @covers ::where
      */
     public function testWhereBasic(): void
     {
@@ -812,10 +715,6 @@ class QueryTest extends TestCase
 
     /**
      * Testing where() with special values - null, array, like.
-     *
-     * @covers ::_render_where
-     * @covers ::_sub_render_where
-     * @covers ::where
      */
     public function testWhereSpecialValues(): void
     {
@@ -861,9 +760,6 @@ class QueryTest extends TestCase
 
     /**
      * Having basically is the same as where, so we can relax and trouhly test where() instead.
-     *
-     * @covers ::_render_having
-     * @covers ::having
      */
     public function testBasicHaving(): void
     {
@@ -883,9 +779,6 @@ class QueryTest extends TestCase
 
     /**
      * Test Limit.
-     *
-     * @covers ::_render_limit
-     * @covers ::limit
      */
     public function testLimit(): void
     {
@@ -901,9 +794,6 @@ class QueryTest extends TestCase
 
     /**
      * Test Order.
-     *
-     * @covers ::_render_order
-     * @covers ::order
      */
     public function testOrder(): void
     {
@@ -967,11 +857,11 @@ class QueryTest extends TestCase
         );
         $this->assertSame(
             'order by "* desc"',
-            $this->q('[order]')->order($this->q()->escape('* desc'))->render()[0]
+            $this->q('[order]')->order($this->q()->expr('{}', ['* desc']))->render()[0]
         );
         $this->assertSame(
             'order by "* desc {}"',
-            $this->q('[order]')->order($this->q()->escape('* desc {}'))->render()[0]
+            $this->q('[order]')->order($this->q()->expr('{}', ['* desc {}']))->render()[0]
         );
         // custom sort order
         $this->assertSame(
@@ -986,8 +876,6 @@ class QueryTest extends TestCase
 
     /**
      * If first argument is array, second argument must not be used.
-     *
-     * @covers ::order
      */
     public function testOrderException1(): void
     {
@@ -997,9 +885,6 @@ class QueryTest extends TestCase
 
     /**
      * Test Group.
-     *
-     * @covers ::_render_group
-     * @covers ::group
      */
     public function testGroup(): void
     {
@@ -1043,9 +928,6 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * Test groupConcat.
-     */
     public function testGroupConcatException(): void
     {
         // doesn't support groupConcat by default
@@ -1054,43 +936,18 @@ class QueryTest extends TestCase
     }
 
     /**
-     * Test groupConcat.
-     *
-     * @covers ::groupConcat
-     */
-    public function testGroupConcat(): void
-    {
-        $q = new Mysql\Query();
-        $this->assertSame('group_concat(`foo` separator \'-\')', $q->groupConcat('foo', '-')->render()[0]);
-
-        $q = new Oracle\Query();
-        $this->assertSame('listagg("foo", :a) within group (order by "foo")', $q->groupConcat('foo', '-')->render()[0]);
-
-        $q = new Postgresql\Query();
-        $this->assertSame('string_agg("foo", :a)', $q->groupConcat('foo', '-')->render()[0]);
-
-        $q = new Sqlite\Query();
-        $this->assertSame('group_concat("foo", :a)', $q->groupConcat('foo', '-')->render()[0]);
-    }
-
-    /**
      * Test expr().
-     *
-     * @covers ::expr
      */
     public function testExpr(): void
     {
         $this->assertSame(Expression::class, get_class($this->q()->expr('foo')));
 
         $q = new Mysql\Query();
-        $this->assertSame(\Atk4\Data\Persistence\Sql\Mysql\Expression::class, get_class($q->expr('foo')));
+        $this->assertSame(Mysql\Expression::class, get_class($q->expr('foo')));
     }
 
     /**
      * Test Join.
-     *
-     * @covers ::_render_join
-     * @covers ::join
      */
     public function testJoin(): void
     {
@@ -1149,10 +1006,6 @@ class QueryTest extends TestCase
 
     /**
      * Combined execution of where() clauses.
-     *
-     * @covers ::_render_where
-     * @covers ::mode
-     * @covers ::where
      */
     public function testCombinedWhere(): void
     {
@@ -1202,13 +1055,6 @@ class QueryTest extends TestCase
 
     /**
      * Test OrWhere and AndWhere without where condition. Should ignore them.
-     *
-     * @covers ::_render_andwhere
-     * @covers ::_render_orwhere
-     * @covers ::_render_where
-     * @covers ::andExpr
-     * @covers ::orExpr
-     * @covers ::where
      */
     public function testEmptyOrAndWhere(): void
     {
@@ -1225,13 +1071,6 @@ class QueryTest extends TestCase
 
     /**
      * Test insert, update and delete templates.
-     *
-     * @covers ::_render_set
-     * @covers ::_render_set_fields
-     * @covers ::_render_set_values
-     * @covers ::mode
-     * @covers ::set
-     * @covers ::where
      */
     public function testInsertDeleteUpdate(): void
     {
@@ -1292,10 +1131,55 @@ class QueryTest extends TestCase
         );
     }
 
+    public function testMiscInsert(): void
+    {
+        $data = [
+            'id' => null,
+            'system_id' => '3576',
+            'system' => null,
+            'created_dts' => 123,
+            'contractor_from' => null,
+            'contractor_to' => null,
+            'vat_rate_id' => null,
+            'currency_id' => null,
+            'vat_period_id' => null,
+            'journal_spec_id' => '147735',
+            'job_id' => '9341',
+            'nominal_id' => null,
+            'root_nominal_code' => null,
+            'doc_type' => null,
+            'is_cn' => 'N',
+            'doc_date' => null,
+            'ref_no' => '940 testingqq11111',
+            'po_ref' => null,
+            'total_gross' => '100.00',
+            'total_net' => null,
+            'total_vat' => null,
+            'exchange_rate' => 1.892134,
+            'note' => null,
+            'archive' => 'N',
+            'fx_document_id' => null,
+            'exchanged_total_net' => null,
+            'exchanged_total_gross' => null,
+            'exchanged_total_vat' => null,
+            'exchanged_total_a' => null,
+            'exchanged_total_b' => null,
+        ];
+
+        $q = $this->q();
+        $q->mode('insert');
+        foreach ($data as $k => $v) {
+            $q->set($k, $v);
+        }
+
+        $this->assertSame(
+            'insert into  ("' . implode('", "', array_keys($data)) . '") values (:a, :b, :c, :d, :e, :f, :g, :h, :i, :j, :k, :l, :m, :n, :o, :p, :q, :r, :s, :t, :u, :v, :w, :x, :y, :z, :aa, :ab, :ac, :ad)',
+            $q->render()[0]
+        );
+    }
+
     /**
      * set() should return $this Query for chaining.
-     *
-     * @covers ::set
      */
     public function testSetReturnValue(): void
     {
@@ -1305,8 +1189,6 @@ class QueryTest extends TestCase
 
     /**
      * Value of type array is not supported by SQL.
-     *
-     * @covers ::set
      */
     public function testSetException1(): void
     {
@@ -1317,8 +1199,6 @@ class QueryTest extends TestCase
     /**
      * Field name can be expression.
      *
-     * @covers ::set
-     *
      * @doesNotPerformAssertions
      */
     public function testSetException2(): void
@@ -1328,12 +1208,6 @@ class QueryTest extends TestCase
 
     /**
      * Test nested OR and AND expressions.
-     *
-     * @covers ::_render_andwhere
-     * @covers ::_render_orwhere
-     * @covers ::andExpr
-     * @covers ::orExpr
-     * @covers ::where
      */
     public function testNestedOrAnd(): void
     {
@@ -1404,8 +1278,6 @@ class QueryTest extends TestCase
 
     /**
      * Test reset().
-     *
-     * @covers \Atk4\Data\Persistence\Sql\Expression::reset
      */
     public function testReset(): void
     {
@@ -1425,9 +1297,6 @@ class QueryTest extends TestCase
 
     /**
      * Test [option].
-     *
-     * @covers ::_render_option
-     * @covers ::option
      */
     public function testOption(): void
     {
@@ -1465,11 +1334,6 @@ class QueryTest extends TestCase
 
     /**
      * Test caseExpr (normal).
-     *
-     * @covers ::_render_case
-     * @covers ::caseElse
-     * @covers ::caseExpr
-     * @covers ::caseWhen
      */
     public function testCaseExprNormal(): void
     {
@@ -1494,11 +1358,6 @@ class QueryTest extends TestCase
 
     /**
      * Test caseExpr (short form).
-     *
-     * @covers ::_render_case
-     * @covers ::caseElse
-     * @covers ::caseExpr
-     * @covers ::caseWhen
      */
     public function testCaseExprShortForm(): void
     {
@@ -1546,8 +1405,6 @@ class QueryTest extends TestCase
 
     /**
      * Tests exprNow() method.
-     *
-     * @covers ::exprNow
      */
     public function testExprNow(): void
     {
@@ -1657,26 +1514,6 @@ class QueryTest extends TestCase
                 . 'left join "q" on "q"."emp" = "employees"."id" '
                 . 'left join "i" on "i"."emp" = "employees"."id"',
             $q->render()[0]
-        );
-    }
-
-    public function testExists(): void
-    {
-        $this->assertSame(
-            'select exists (select * from "contacts" where "first_name" = :a)',
-            $this->q()->table('contacts')->where('first_name', 'John')->exists()->render()[0]
-        );
-
-        $q = new Oracle\Query();
-        $this->assertSame(
-            'select case when exists(select * from "contacts" where "first_name" = :xxaaaa) then 1 else 0 end from "DUAL"',
-            $q->table('contacts')->where('first_name', 'John')->exists()->render()[0]
-        );
-
-        $q = new Mssql\Query();
-        $this->assertSame(
-            'select case when exists(select * from [contacts] where [first_name] = :a) then 1 else 0 end',
-            $q->table('contacts')->where('first_name', 'John')->exists()->render()[0]
         );
     }
 }
