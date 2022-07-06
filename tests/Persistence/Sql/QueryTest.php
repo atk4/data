@@ -7,12 +7,8 @@ namespace Atk4\Data\Tests\Persistence\Sql;
 use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Persistence\Sql\Exception;
 use Atk4\Data\Persistence\Sql\Expression;
-use Atk4\Data\Persistence\Sql\Mssql;
 use Atk4\Data\Persistence\Sql\Mysql;
-use Atk4\Data\Persistence\Sql\Oracle;
-use Atk4\Data\Persistence\Sql\Postgresql;
 use Atk4\Data\Persistence\Sql\Query;
-use Atk4\Data\Persistence\Sql\Sqlite;
 
 /**
  * @coversDefaultClass \Atk4\Data\Persistence\Sql\Query
@@ -1043,34 +1039,11 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * Test groupConcat.
-     */
     public function testGroupConcatException(): void
     {
         // doesn't support groupConcat by default
         $this->expectException(Exception::class);
         $this->q()->groupConcat('foo');
-    }
-
-    /**
-     * Test groupConcat.
-     *
-     * @covers ::groupConcat
-     */
-    public function testGroupConcat(): void
-    {
-        $q = new Mysql\Query();
-        $this->assertSame('group_concat(`foo` separator \'-\')', $q->groupConcat('foo', '-')->render()[0]);
-
-        $q = new Oracle\Query();
-        $this->assertSame('listagg("foo", :a) within group (order by "foo")', $q->groupConcat('foo', '-')->render()[0]);
-
-        $q = new Postgresql\Query();
-        $this->assertSame('string_agg("foo", :a)', $q->groupConcat('foo', '-')->render()[0]);
-
-        $q = new Sqlite\Query();
-        $this->assertSame('group_concat("foo", :a)', $q->groupConcat('foo', '-')->render()[0]);
     }
 
     /**
@@ -1083,7 +1056,7 @@ class QueryTest extends TestCase
         $this->assertSame(Expression::class, get_class($this->q()->expr('foo')));
 
         $q = new Mysql\Query();
-        $this->assertSame(\Atk4\Data\Persistence\Sql\Mysql\Expression::class, get_class($q->expr('foo')));
+        $this->assertSame(Mysql\Expression::class, get_class($q->expr('foo')));
     }
 
     /**
@@ -1289,6 +1262,53 @@ class QueryTest extends TestCase
                 ->setMulti(['time' => new Expression('now()'), 'name' => 'unknown'])
                 ->mode('insert')
                 ->render()[0]
+        );
+    }
+
+    public function testMiscInsert(): void
+    {
+        $data = [
+            'id' => null,
+            'system_id' => '3576',
+            'system' => null,
+            'created_dts' => 123,
+            'contractor_from' => null,
+            'contractor_to' => null,
+            'vat_rate_id' => null,
+            'currency_id' => null,
+            'vat_period_id' => null,
+            'journal_spec_id' => '147735',
+            'job_id' => '9341',
+            'nominal_id' => null,
+            'root_nominal_code' => null,
+            'doc_type' => null,
+            'is_cn' => 'N',
+            'doc_date' => null,
+            'ref_no' => '940 testingqq11111',
+            'po_ref' => null,
+            'total_gross' => '100.00',
+            'total_net' => null,
+            'total_vat' => null,
+            'exchange_rate' => 1.892134,
+            'note' => null,
+            'archive' => 'N',
+            'fx_document_id' => null,
+            'exchanged_total_net' => null,
+            'exchanged_total_gross' => null,
+            'exchanged_total_vat' => null,
+            'exchanged_total_a' => null,
+            'exchanged_total_b' => null,
+        ];
+
+        $q = $this->q();
+        $q->mode('insert');
+        foreach ($data as $k => $v) {
+            $q->set($k, $v);
+        }
+
+        $this->assertSame(
+            'insert into  ("' . implode('", "', array_keys($data)) . '") values (:a, :b, :c, :d, :e, :f, :g, :h, :i, :j, :k, :l, :m, :n, :o, :p, :q, :r, :s, :t, :u, :v, :w, :x, :y, :z, :aa, :ab, :ac, :ad)',
+            $q->render()[0]
         );
     }
 
@@ -1657,26 +1677,6 @@ class QueryTest extends TestCase
                 . 'left join "q" on "q"."emp" = "employees"."id" '
                 . 'left join "i" on "i"."emp" = "employees"."id"',
             $q->render()[0]
-        );
-    }
-
-    public function testExists(): void
-    {
-        $this->assertSame(
-            'select exists (select * from "contacts" where "first_name" = :a)',
-            $this->q()->table('contacts')->where('first_name', 'John')->exists()->render()[0]
-        );
-
-        $q = new Oracle\Query();
-        $this->assertSame(
-            'select case when exists(select * from "contacts" where "first_name" = :xxaaaa) then 1 else 0 end from "DUAL"',
-            $q->table('contacts')->where('first_name', 'John')->exists()->render()[0]
-        );
-
-        $q = new Mssql\Query();
-        $this->assertSame(
-            'select case when exists(select * from [contacts] where [first_name] = :a) then 1 else 0 end',
-            $q->table('contacts')->where('first_name', 'John')->exists()->render()[0]
         );
     }
 }

@@ -287,18 +287,6 @@ class ExpressionTest extends TestCase
     }
 
     /**
-     * @covers ::__toString
-     */
-    /*
-    public function testToStringException1(): void
-    {
-        $e = new MyBadExpression('Hello');
-        $this->expectException(Exception::class);
-        $s = (string)$e;
-    }
-    */
-
-    /**
      * expr() should return new Expression object and inherit connection from it.
      *
      * @covers ::expr
@@ -411,9 +399,15 @@ class ExpressionTest extends TestCase
             $this->callProtected($this->e(), 'consume', new Query())
         );
 
+        $myField = new class() implements Expressionable {
+            public function getDsqlExpression(Expression $expr): Expression
+            {
+                return $expr->expr('"myfield"');
+            }
+        };
         $this->assertSame(
             'hello, "myfield"',
-            $this->e('hello, []', [new MyField()])->render()[0]
+            $this->e('hello, []', [$myField])->render()[0]
         );
     }
 
@@ -478,25 +472,16 @@ class ExpressionTest extends TestCase
     }
 
     /**
-     * Test IteratorAggregate implementation.
-     *
-     * @covers ::getRowsIterator
-     *
-     * @doesNotPerformAssertions
-     */
-    public function testIteratorAggregate(): void
-    {
-        // TODO cannot test this without actual DB connection and executing expression
-    }
-
-    /**
      * Test for vendors that rely on JavaScript expressions, instead of parameters.
-     *
-     * @coversNothing
      */
     public function testJsonExpression(): void
     {
-        $e = new JsonExpression('hello, [who]', ['who' => 'world']);
+        $e = new class('hello, [who]', ['who' => 'world']) extends Expression {
+            public function escapeParam($value): string
+            {
+                return json_encode($value);
+            }
+        };
 
         $this->assertSame([
             'hello, "world"',
@@ -505,17 +490,19 @@ class ExpressionTest extends TestCase
     }
 
     /**
-     * Test var-dump code for codecoverage.
-     *
      * @covers ::__debugInfo
-     *
-     * @doesNotPerformAssertions
      */
     public function testVarDump(): void
     {
-        $this->e('test')->__debugInfo();
+        $this->assertSame(
+            'test',
+            $this->e('test')->__debugInfo()['R']
+        );
 
-        $this->e(' [nosuchtag] ')->__debugInfo();
+        $this->assertStringContainsString(
+            'Expression could not render tag',
+            $this->e(' [nosuchtag] ')->__debugInfo()['R']
+        );
     }
 
     /**
@@ -536,30 +523,3 @@ class ExpressionTest extends TestCase
         $this->assertSame(['custom' => ['name' => 'John']], $this->getProtected($e, 'args'));
     }
 }
-
-// @codingStandardsIgnoreStart
-class JsonExpression extends Expression
-{
-    public function escapeParam($value): string
-    {
-        return json_encode($value);
-    }
-}
-class MyField implements Expressionable
-{
-    public function getDsqlExpression(Expression $expr): Expression
-    {
-        return $expr->expr('"myfield"');
-    }
-}
-/*
-class MyBadExpression extends Expression
-{
-    public function getOne()
-    {
-        // should return string, but for test case we return array to get \Exception
-        return array();
-    }
-}
-*/
-// @codingStandardsIgnoreEnd

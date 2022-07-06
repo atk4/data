@@ -20,6 +20,6 @@ class Query extends BaseQuery
 
     public function groupConcat($field, string $delimiter = ',')
     {
-        return $this->expr('group_concat({} separator \'' . str_replace('\\', '\\\\', str_replace('\'', '\'\'', $delimiter)) . '\')', [$field]);
+        return $this->expr('group_concat({} separator ' . $this->escapeStringLiteral($delimiter) . ')', [$field]);
     }
 }

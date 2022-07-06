@@ -106,11 +106,9 @@ class SelectTest extends TestCase
             $this->q()->field(new Expression('2 + 2'), 'now')->getRows()
         );
 
-        /*
-         * PostgreSQL needs to have values cast, to make the query work.
-         * But CAST(.. AS int) does not work in mysql. So we use two different tests..
-         * (CAST(.. AS int) will work on mariaDB, whereas mysql needs it to be CAST(.. AS signed))
-         */
+        // PostgreSQL needs to have values cast, to make the query work.
+        // But CAST(.. AS int) does not work in Mysql. So we use two different tests..
+        // (CAST(.. AS int) will work on MariaDB, whereas Mysql needs it to be CAST(.. AS signed))
         if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             $this->assertSame(
                 [['now' => '6']],
@@ -131,12 +129,8 @@ class SelectTest extends TestCase
 
     public function testExpression(): void
     {
-        /*
-         * PostgreSQL, at least versions before 10, needs to have the string cast to the
-         * correct datatype.
-         * But using CAST(.. AS CHAR) will return one single character on postgresql, but the
-         * entire string on mysql.
-         */
+        // PostgreSQL, at least versions before 10, needs to have the string cast to the correct datatype.
+        // But using CAST(.. AS CHAR) will return a single character on PostgreSQL, but the entire string on MySQL.
         if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform) {
             $this->assertSame(
                 'foo',
@@ -238,6 +232,77 @@ class SelectTest extends TestCase
             [['id' => '2', 'name' => 'Jack', 'surname' => 'Williams', 'retired' => '1']],
             $this->q('employee')->where('retired', true)->where($this->q()->expr('{}=[] or {}=[]', ['surname', 'Williams', 'surname', 'Smith']))->getRows()
         );
+    }
+
+    public function testGroupConcat(): void
+    {
+        $q = $this->q()
+            ->table('people')
+            ->group('age')
+            ->field('age')
+            ->field($this->q()->groupConcat('name', ','));
+
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            $this->assertSame([
+                'select `age`, group_concat(`name` separator \',\') from `people` group by `age`',
+                [],
+            ], $q->render());
+        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            $this->assertSame([
+                'select "age", string_agg("name", :a) from "people" group by "age"',
+                [':a' => ','],
+            ], $q->render());
+        } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+            $this->assertSame([
+                'select [age], string_agg([name], N\',\') from [people] group by [age]',
+                [],
+            ], $q->render());
+        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            $this->assertSame([
+                'select "age", listagg("name", :xxaaaa) within group (order by "name") from "people" group by "age"',
+                [':xxaaaa' => ','],
+            ], $q->render());
+        } else {
+            $this->assertSame([
+                'select "age", group_concat("name", :a) from "people" group by "age"',
+                [':a' => ','],
+            ], $q->render());
+        }
+    }
+
+    public function testExists(): void
+    {
+        $q = $this->q()
+            ->table('contacts')
+            ->where('first_name', 'John')
+            ->exists();
+
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            $this->assertSame([
+                'select exists (select * from `contacts` where `first_name` = :a)',
+                [':a' => 'John'],
+            ], $q->render());
+        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            $this->assertSame([
+                'select exists (select * from "contacts" where "first_name" = :a)',
+                [':a' => 'John'],
+            ], $q->render());
+        } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+            $this->assertSame([
+                'select case when exists(select * from [contacts] where [first_name] = :a) then 1 else 0 end',
+                [':a' => 'John'],
+            ], $q->render());
+        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            $this->assertSame([
+                'select case when exists(select * from "contacts" where "first_name" = :xxaaaa) then 1 else 0 end from "DUAL"',
+                [':xxaaaa' => 'John'],
+            ], $q->render());
+        } else {
+            $this->assertSame([
+                'select exists (select * from "contacts" where "first_name" = :a)',
+                [':a' => 'John'],
+            ], $q->render());
+        }
     }
 
     public function testExecuteException(): void
