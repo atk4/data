@@ -194,7 +194,8 @@ class JoinArrayTest extends TestCase
         ], $this->getInternalPersistenceData($db));
     }
 
-    /*public function testJoinSaving4(): void
+    /* Joining tables on non-id fields is not implemented yet
+    public function testJoinSaving4(): void
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $m_u = new Model($db, ['table' => 'user']);
@@ -214,7 +215,8 @@ class JoinArrayTest extends TestCase
             'user' => [1 => ['id' => 1, 'code' => 'C28', 'name' => 'John']],
             'contact' => [1 => ['id' => 1, 'code' => 'C28', 'contact_phone' => '+123']],
         ], $this->getInternalPersistenceData($db));
-    }*/
+    }
+    */
 
     public function testJoinLoading(): void
     {
