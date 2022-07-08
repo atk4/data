@@ -312,6 +312,6 @@ class TestRole extends Model
         parent::init();
 
         $this->addField('name');
-        $this->hasMany('Users', [TestUser::class, 'our_field' => 'id', 'their_field' => 'main_role_id']);
+        $this->hasMany('Users', ['model' => [TestUser::class], 'our_field' => 'id', 'their_field' => 'main_role_id']);
     }
 }
