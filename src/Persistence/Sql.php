@@ -214,17 +214,9 @@ class Sql extends Persistence
         return $query;
     }
 
-    /**
-     * Initializes WITH cursors.
-     */
     public function initWithCursors(Model $model, Query $query): void
     {
-        $with = $model->with;
-        if (count($with) === 0) {
-            return;
-        }
-
-        foreach ($with as $withAlias => ['model' => $withModel, 'recursive' => $withRecursive]) {
+        foreach ($model->cteModels as $withAlias => ['model' => $withModel, 'recursive' => $withRecursive]) {
             $subQuery = $withModel->action('select');
             $query->with($subQuery, $withAlias, null, $withRecursive);
         }

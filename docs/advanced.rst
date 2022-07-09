@@ -460,14 +460,14 @@ Using WITH cursors
 Many SQL database engines support defining WITH cursors to use in select, update
 and even delete statements.
 
-.. php:method:: addWith(string $name, Model $model, bool $recursive = false)
+.. php:method:: addCteModel(string $name, Model $model, bool $recursive = false)
 
     Agile toolkit data models also support these cursors. Usage is like this::
 
     $invoices = new Invoice();
 
     $contacts = new Contact();
-    $contacts->addWith('inv', $invoices);
+    $contacts->addCteModel('inv', $invoices);
     $contacts->join('inv.cid');
 
 .. code-block:: sql

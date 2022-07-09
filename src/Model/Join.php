@@ -141,11 +141,11 @@ abstract class Join
     public function getForeignModel(): Model
     {
         // TODO this should be removed in the future
-        if (!isset($this->getOwner()->with[$this->foreign_table])) {
+        if (!isset($this->getOwner()->cteModels[$this->foreign_table])) {
             return $this->createFakeForeignModel();
         }
 
-        return $this->getOwner()->with[$this->foreign_table]['model'];
+        return $this->getOwner()->cteModels[$this->foreign_table]['model'];
     }
 
     /**

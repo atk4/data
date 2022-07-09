@@ -9,7 +9,7 @@ use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 
-class WithTest extends TestCase
+class ModelWithCteTest extends TestCase
 {
     public function testWith(): void
     {
@@ -26,7 +26,6 @@ class WithTest extends TestCase
             ],
         ]);
 
-        // setup models
         $m_user = new Model($this->db, ['table' => 'user']);
         $m_user->addField('name');
         $m_user->addField('salary', ['type' => 'integer']);
@@ -36,13 +35,11 @@ class WithTest extends TestCase
         $m_invoice->hasOne('user_id', ['model' => $m_user]);
         $m_invoice->addCondition('net', '>', 100);
 
-        // setup test model
         $m = clone $m_user;
-        $m->addWith('i', $m_invoice); // add cursor
+        $m->addCteModel('i', $m_invoice); // add cursor
         $j_invoice = $m->join('i.user_id'); // join cursor
         $j_invoice->addField('invoiced', ['type' => 'integer', 'actual' => 'net']); // add field from joined cursor
 
-        // tests
         $this->assertSameSql(
             'with "i" as (select "id", "net", "user_id" from "invoice" where "net" > :a)' . "\n"
                 . 'select "user"."id", "user"."name", "user"."salary", "_i"."net" "invoiced" from "user" inner join "i" "_i" on "_i"."user_id" = "user"."id"',
@@ -69,16 +66,16 @@ class WithTest extends TestCase
         $m2 = new Model();
 
         $this->expectException(Exception::class);
-        $m1->addWith('t', $m2);
+        $m1->addCteModel('t', $m2);
     }
 
     public function testUniqueNameException2(): void
     {
         $m1 = new Model();
         $m2 = new Model();
-        $m1->addWith('t', $m2);
+        $m1->addCteModel('t', $m2);
 
         $this->expectException(Exception::class);
-        $m1->addWith('t', $m2);
+        $m1->addCteModel('t', $m2);
     }
 }

@@ -145,7 +145,7 @@ class Model implements \IteratorAggregate
     public $order = [];
 
     /** @var array<string, array{'model': Model, 'recursive': bool}> */
-    public $with = [];
+    public $cteModels = [];
 
     /**
      * Currently loaded record data. This record is associative array
@@ -1053,18 +1053,18 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Adds WITH cursor.
+     * Adds WITH/CTE model.
      *
      * @return $this
      */
-    public function addWith(string $name, self $model, bool $recursive = false)
+    public function addCteModel(string $name, self $model, bool $recursive = false)
     {
-        if ($name === $this->table || $name === $this->table_alias || isset($this->with[$name])) {
+        if ($name === $this->table || $name === $this->table_alias || isset($this->cteModels[$name])) {
             throw (new Exception('WITH cursor with given name already exist'))
                 ->addMoreInfo('name', $name);
         }
 
-        $this->with[$name] = [
+        $this->cteModels[$name] = [
             'model' => $model,
             'recursive' => $recursive,
         ];
