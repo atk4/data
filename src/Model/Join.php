@@ -30,7 +30,7 @@ abstract class Join
     }
 
     /**
-     * Foreign model or WITH/CTE alias when used with SQL persistence.
+     * Foreign table or WITH/CTE alias when used with SQL persistence.
      *
      * @var string
      */
