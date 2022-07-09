@@ -107,7 +107,7 @@ abstract class Join
         // quite unconsistent - drop it?
         if (str_contains($this->foreign_table, '.')) {
             // split by LAST dot in foreign_table name
-            [$this->foreign_table, $this->foreign_field] = preg_split('~\.+(?=[^.]+$)~', $this->foreign_table);
+            [$this->foreign_table, $this->foreign_field] = preg_split('~\.(?=[^.]+$)~', $this->foreign_table);
             $this->reverse = true;
         }
     }
