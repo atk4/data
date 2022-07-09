@@ -283,30 +283,14 @@ class Query extends Expression
         return $this;
     }
 
-    /**
-     * Recursive WITH query.
-     *
-     * @param Query  $cursor Specifies cursor query or array [alias => query] for adding multiple
-     * @param string $alias  Specify alias for this cursor
-     * @param array  $fields Optional array of field names used in cursor
-     *
-     * @return $this
-     */
-    public function withRecursive(self $cursor, string $alias, array $fields = null)
-    {
-        return $this->with($cursor, $alias, $fields, true);
-    }
-
     protected function _render_with(): ?string
     {
-        // will be joined for output
-        $ret = [];
-
         if (empty($this->args['with'])) {
             return '';
         }
 
-        // process each defined cursor
+        $ret = [];
+
         $isRecursive = false;
         foreach ($this->args['with'] as $alias => ['cursor' => $cursor, 'fields' => $fields, 'recursive' => $recursive]) {
             // cursor alias cannot be expression, so simply escape it
