@@ -214,33 +214,11 @@ class Sql extends Persistence
         return $query;
     }
 
-    /**
-     * Initializes WITH cursors.
-     */
     public function initWithCursors(Model $model, Query $query): void
     {
-        $with = $model->with;
-        if (count($with) === 0) {
-            return;
-        }
-
-        foreach ($with as $alias => ['model' => $withModel, 'mapping' => $withMapping, 'recursive' => $withRecursive]) {
-            // prepare field names
-            $fieldsFrom = $fieldsTo = [];
-            foreach ($withMapping as $from => $to) {
-                $fieldsFrom[] = is_int($from) ? $to : $from;
-                $fieldsTo[] = $to;
-            }
-
-            // prepare sub-query
-            if ($fieldsFrom) {
-                $withModel->setOnlyFields($fieldsFrom); // TODO this mutates model state
-            }
-            // 2nd parameter here strictly define which fields should be selected
-            // as result system fields will not be added if they are not requested
-            $subQuery = $withModel->action('select', [$fieldsFrom]);
-
-            $query->with($subQuery, $alias, $fieldsTo ?: null, $withRecursive);
+        foreach ($model->cteModels as $withAlias => ['model' => $withModel, 'recursive' => $withRecursive]) {
+            $subQuery = $withModel->action('select');
+            $query->with($subQuery, $withAlias, null, $withRecursive);
         }
     }
 

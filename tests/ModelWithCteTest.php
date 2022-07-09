@@ -9,7 +9,7 @@ use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 
-class WithTest extends TestCase
+class ModelWithCteTest extends TestCase
 {
     public function testWith(): void
     {
@@ -26,7 +26,6 @@ class WithTest extends TestCase
             ],
         ]);
 
-        // setup models
         $m_user = new Model($this->db, ['table' => 'user']);
         $m_user->addField('name');
         $m_user->addField('salary', ['type' => 'integer']);
@@ -36,16 +35,14 @@ class WithTest extends TestCase
         $m_invoice->hasOne('user_id', ['model' => $m_user]);
         $m_invoice->addCondition('net', '>', 100);
 
-        // setup test model
         $m = clone $m_user;
-        $m->addWith($m_invoice, 'i', ['user_id', 'net' => 'invoiced']); // add cursor
+        $m->addCteModel('i', $m_invoice); // add cursor
         $j_invoice = $m->join('i.user_id'); // join cursor
-        $j_invoice->addField('invoiced', ['type' => 'integer']); // add field from joined cursor
+        $j_invoice->addField('invoiced', ['type' => 'integer', 'actual' => 'net']); // add field from joined cursor
 
-        // tests
         $this->assertSameSql(
-            'with "i" ("user_id", "invoiced") as (select "user_id", "net" from "invoice" where "net" > :a)' . "\n"
-                . 'select "user"."id", "user"."name", "user"."salary", "_i"."invoiced" from "user" inner join "i" "_i" on "_i"."user_id" = "user"."id"',
+            'with "i" as (select "id", "net", "user_id" from "invoice" where "net" > :a)' . "\n"
+                . 'select "user"."id", "user"."name", "user"."salary", "_i"."net" "invoiced" from "user" inner join "i" "_i" on "_i"."user_id" = "user"."id"',
             $m->action('select')->render()[0]
         );
 
@@ -63,12 +60,34 @@ class WithTest extends TestCase
         ], $m->export());
     }
 
-    public function testUniqueAliasException(): void
+    public function testUniqueNameException1(): void
+    {
+        $m1 = new Model(null, ['table' => 't']);
+        $m2 = new Model();
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('CTE model with given name already exist');
+        $m1->addCteModel('t', $m2);
+    }
+
+    public function testUniqueNameException2(): void
+    {
+        $m1 = new Model(null, ['table_alias' => 't']);
+        $m2 = new Model();
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('CTE model with given name already exist');
+        $m1->addCteModel('t', $m2);
+    }
+
+    public function testUniqueNameException3(): void
     {
         $m1 = new Model();
         $m2 = new Model();
-        $m1->addWith($m2, 't');
+        $m1->addCteModel('t', $m2);
+
         $this->expectException(Exception::class);
-        $m1->addWith($m2, 't');
+        $this->expectExceptionMessage('CTE model with given name already exist');
+        $m1->addCteModel('t', $m2);
     }
 }
