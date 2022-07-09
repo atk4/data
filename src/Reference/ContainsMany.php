@@ -7,13 +7,8 @@ namespace Atk4\Data\Reference;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 
-/**
- * ContainsMany reference.
- */
-class ContainsMany extends ContainsOne
+class ContainsMany extends ContainsBase
 {
-    use ContainsSeedHackTrait;
-
     protected function getDefaultPersistence(Model $theirModel): Persistence
     {
         $ourModel = $this->getOurModelPassedToRefXxx();
@@ -23,9 +18,6 @@ class ContainsMany extends ContainsOne
         ]);
     }
 
-    /**
-     * Returns referenced model.
-     */
     public function ref(Model $ourModel, array $defaults = []): Model
     {
         $ourModel = $this->getOurModel($ourModel);

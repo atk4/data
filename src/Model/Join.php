@@ -30,7 +30,7 @@ abstract class Join
     }
 
     /**
-     * Foreign model or WITH/CTE alias when used with SQL persistence.
+     * Foreign table or WITH/CTE alias when used with SQL persistence.
      *
      * @var string
      */
@@ -107,7 +107,7 @@ abstract class Join
         // quite unconsistent - drop it?
         if (str_contains($this->foreign_table, '.')) {
             // split by LAST dot in foreign_table name
-            [$this->foreign_table, $this->foreign_field] = preg_split('~\.+(?=[^.]+$)~', $this->foreign_table);
+            [$this->foreign_table, $this->foreign_field] = preg_split('~\.(?=[^.]+$)~', $this->foreign_table);
             $this->reverse = true;
         }
     }
@@ -122,13 +122,13 @@ abstract class Join
             'table' => $this->foreign_table,
         ]);
         foreach ($this->getOwner()->getFields() as $ownerField) {
-            if ($ownerField->hasJoin() && $ownerField->getJoin()->shortName === $this->shortName
-                && $ownerField->shortName !== $fakeModel->id_field
-                && $ownerField->shortName !== $this->foreign_field) {
-                $fakeModel->addField($ownerField->shortName, [
-                    'actual' => $ownerField->actual,
-                    'type' => $ownerField->type,
-                ]);
+            if ($ownerField->hasJoin() && $ownerField->getJoin()->shortName === $this->shortName) {
+                $ownerFieldPersistenceName = $ownerField->getPersistenceName();
+                if ($ownerFieldPersistenceName !== $fakeModel->id_field && $ownerFieldPersistenceName !== $this->foreign_field) {
+                    $fakeModel->addField($ownerFieldPersistenceName, [
+                        'type' => $ownerField->type,
+                    ]);
+                }
             }
         }
         if ($fakeModel->id_field !== $this->foreign_field && $this->foreign_field !== null) {
@@ -465,10 +465,15 @@ abstract class Join
     /**
      * @internal should be not used outside atk4/data
      */
-    protected function getAndUnsetSaveBuffer(Model $entity): array
+    protected function getReindexAndUnsetSaveBuffer(Model $entity): array
     {
-        $res = $this->saveBufferByOid[spl_object_id($entity)];
+        $resOur = $this->saveBufferByOid[spl_object_id($entity)];
         $this->unsetSaveBuffer($entity);
+
+        $res = [];
+        foreach ($resOur as $k => $v) {
+            $res[$this->getOwner()->getField($k)->getPersistenceName()] = $v;
+        }
 
         return $res;
     }
@@ -512,13 +517,13 @@ abstract class Join
         $model = $this->getOwner();
 
         // the value for the master_field is set, so we are going to use existing record anyway
-        if ($model->hasField($this->master_field) && $entity->get($this->master_field) !== null) {
+        if ($entity->get($this->master_field) !== null) {
             return;
         }
 
         $foreignModel = $this->getForeignModel();
         $foreignEntity = $foreignModel->createEntity()
-            ->setMulti($this->getAndUnsetSaveBuffer($entity))
+            ->setMulti($this->getReindexAndUnsetSaveBuffer($entity))
             /* ->set($this->foreign_field, null) */;
         $foreignEntity->save();
 
@@ -541,11 +546,11 @@ abstract class Join
 
         $id = $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId();
         $this->assertReferenceIdNotNull($id);
-        $this->setSaveBufferValue($entity, $this->foreign_field, $id); // TODO needed? from array persistence
+        // $this->setSaveBufferValue($entity, $this->master_field, $id); // TODO needed? from array persistence
 
         $foreignModel = $this->getForeignModel();
         $foreignEntity = $foreignModel->createEntity()
-            ->setMulti($this->getAndUnsetSaveBuffer($entity))
+            ->setMulti($this->getReindexAndUnsetSaveBuffer($entity))
             ->set($this->foreign_field, $id);
         $foreignEntity->save();
 
@@ -565,7 +570,7 @@ abstract class Join
         $foreignModel = $this->getForeignModel();
         $foreignId = $this->reverse ? $entity->getId() : $entity->get($this->master_field);
         $this->assertReferenceIdNotNull($foreignId);
-        $saveBuffer = $this->getAndUnsetSaveBuffer($entity);
+        $saveBuffer = $this->getReindexAndUnsetSaveBuffer($entity);
         $foreignModel->atomic(function () use ($foreignModel, $foreignId, $saveBuffer) {
             $foreignModel = (clone $foreignModel)->addCondition($this->foreign_field, $foreignId);
             foreach ($foreignModel as $foreignEntity) {

@@ -1023,14 +1023,12 @@ class QueryTest extends TestCase
                 ->render()[0]
         );
 
-        /*
         $this->assertSame(
             'select "name" from "db"."employee" where "db"."employee"."a" = :a',
             $this->q()
-                ->field('name')->table('db.employee')->where('db.employee.a',1)
+                ->field('name')->table('db.employee')->where('db.employee.a', 1)
                 ->render()[0]
         );
-         */
 
         $this->assertSame(
             'delete from "employee" where "employee"."a" = :a',

@@ -133,7 +133,7 @@ class LFriend extends Model
                 'friend_id' => $this->get('user_id'),
             ])->delete();
         });
-         */
+        */
     }
 }
 
@@ -352,10 +352,7 @@ class LookupSqlTest extends TestCase
         ], $this->getDb(['country', 'user']));
     }
 
-    /*
-     *
-     * TODO - that's left for hasMTM implementation..., to be coming later
-     *
+    /* TODO - that's left for hasMTM implementation..., to be coming later
     public function testImportInternationalFriends(): void
     {
         $c = new LCountry($this->db);

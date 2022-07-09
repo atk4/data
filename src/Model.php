@@ -17,9 +17,9 @@ use Atk4\Data\Field\SqlExpressionField;
 use Mvorisek\Atk4\Hintable\Data\HintableModelTrait;
 
 /**
- * @property int                 $id       @Atk4\Field() Contains ID of the current record.
- *                                         If the value is null then the record is considered to be new.
- * @property Field[]|Reference[] $elements
+ * @property int                              $id       @Atk4\Field() Contains ID of the current record.
+ *                                                      If the value is null then the record is considered to be new.
+ * @property Field[]|Reference[]|Model\Join[] $elements
  *
  * @phpstan-implements \IteratorAggregate<static>
  */
@@ -486,6 +486,9 @@ class Model implements \IteratorAggregate
         $this->onHookShort(self::HOOK_AFTER_SAVE, $fx, [], -10);
     }
 
+    /**
+     * @param Field|Reference|Model\Join $obj
+     */
     public function add(object $obj, array $defaults = []): void
     {
         $this->assertIsModel();

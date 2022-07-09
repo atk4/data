@@ -108,7 +108,7 @@ class Reference
         }
     }
 
-    protected function getOurFieldName(): string
+    public function getOurFieldName(): string
     {
         return $this->our_field ?: $this->getOurModel(null)->id_field;
     }

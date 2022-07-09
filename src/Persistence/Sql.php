@@ -41,7 +41,7 @@ class Sql extends Persistence
     public const HOOK_AFTER_DELETE_QUERY = self::class . '@afterDeleteQuery';
 
     /** @var Connection */
-    public $_connection;
+    private $_connection;
 
     /** @var array Default class when adding new field. */
     public $_default_seed_addField; // no custom seed needed

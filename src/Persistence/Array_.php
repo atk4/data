@@ -177,7 +177,7 @@ class Array_ extends Persistence
             $model->table = 'data';
         }
 
-        if ($model->id_field && $model->hasField($model->id_field)) {
+        if ($model->id_field) {
             $f = $model->getField($model->id_field);
             if ($f->type === null) {
                 $f->type = 'integer';
