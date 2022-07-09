@@ -1060,7 +1060,7 @@ class Model implements \IteratorAggregate
     public function addCteModel(string $name, self $model, bool $recursive = false)
     {
         if ($name === $this->table || $name === $this->table_alias || isset($this->cteModels[$name])) {
-            throw (new Exception('WITH cursor with given name already exist'))
+            throw (new Exception('CTE model with given name already exist'))
                 ->addMoreInfo('name', $name);
         }
 
