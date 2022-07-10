@@ -120,6 +120,14 @@ class Migrator
         try {
             $this->drop();
         } catch (DbalException $e) {
+            // TODO only non existing table exceptions should be ignored,
+            // for now, do not ignore at least failed table drop due to
+            // at least one linked foreign keys
+            // should be also covered by tests more, also test self::create()
+            // called twice to assert self::dropIfExists() is not called first
+            if (str_contains(strtolower($e->getMessage()), 'foreign key')) {
+                throw $e;
+            }
         }
 
         $this->createdTableNames = array_diff($this->createdTableNames, [$this->table->getName()]);
