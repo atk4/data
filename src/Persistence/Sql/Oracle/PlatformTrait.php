@@ -96,4 +96,21 @@ trait PlatformTrait
 
         return $sqls;
     }
+
+    public function getListDatabasesSQL(): string
+    {
+        // ignore Oracle maintained schemas, improve tests performance
+        return 'SELECT username FROM sys.all_users'
+            . ' WHERE oracle_maintained = \'N\'';
+    }
+
+    public function getListTablesSQL(): string
+    {
+        // ignore Oracle maintained tables, improve tests performance
+        // self::getListViewsSQL() does not need filtering, as there is no Oracle VIEW by default
+        return 'SELECT * FROM sys.user_tables'
+            . ' LEFT JOIN sys.user_objects ON user_objects.object_type = \'TABLE\''
+            . ' AND user_objects.object_name = user_tables.table_name'
+            . ' WHERE oracle_maintained = \'N\'';
+    }
 }
