@@ -29,7 +29,7 @@ class HasMany extends Reference
         // this is pure guess, verify if such field exist, otherwise throw
         // TODO probably remove completely in the future
         $ourModel = $this->getOurModel(null);
-        $theirFieldName = preg_replace('~^.+\.~', '', $this->getModelTableString($ourModel)) . '_' . $ourModel->id_field;
+        $theirFieldName = preg_replace('~^.+\.~s', '', $this->getModelTableString($ourModel)) . '_' . $ourModel->id_field;
         if (!$this->createTheirModel()->hasField($theirFieldName)) {
             throw (new Exception('Their model does not contain fallback field'))
                 ->addMoreInfo('their_fallback_field', $theirFieldName);

@@ -240,7 +240,7 @@ abstract class Join
             }
 
             if (!$this->foreign_field) {
-                $this->foreign_field = preg_replace('~^.+?\.~', '', $this->getModelTableString($this->getOwner())) . '_' . $id_field;
+                $this->foreign_field = preg_replace('~^.+\.~s', '', $this->getModelTableString($this->getOwner())) . '_' . $id_field;
             }
         } else {
             $this->reverse = false;
