@@ -74,7 +74,7 @@ trait PlatformTrait
             // else branch should be maybe (because of concurrency) put into after update trigger
             // with pure nextval instead of setval with a loop like in Oracle trigger
             str_replace('[pk_seq]', '\'' . $pkSeqName . '\'', <<<'EOF'
-                CREATE OR REPLACE FUNCTION {trigger_func}()
+                CREATE OR REPLACE FUNCTION {{trigger_func}}()
                 RETURNS trigger AS $$
                 DECLARE
                     atk4__pk_seq_last__ {table}.{pk}%TYPE;
@@ -82,7 +82,7 @@ trait PlatformTrait
                     IF (NEW.{pk} IS NULL) THEN
                         NEW.{pk} := nextval([pk_seq]);
                     ELSE
-                        SELECT COALESCE(last_value, 0) INTO atk4__pk_seq_last__ FROM {pk_seq};
+                        SELECT COALESCE(last_value, 0) INTO atk4__pk_seq_last__ FROM {{pk_seq}};
                         IF (atk4__pk_seq_last__ <= NEW.{pk}) THEN
                             atk4__pk_seq_last__  := setval([pk_seq], NEW.{pk}, true);
                         END IF;
@@ -92,10 +92,10 @@ trait PlatformTrait
                 $$ LANGUAGE plpgsql
                 EOF),
             [
-                'table' => $table->getName(),
+                'table' => $table->getShortestName($table->getNamespaceName()),
                 'pk' => $pkColumn->getName(),
                 'pk_seq' => $pkSeqName,
-                'trigger_func' => $table->getName() . '_AI_FUNC', // TODO create only one function per schema
+                'trigger_func' => $table->getName() . '_AI_FUNC',
             ]
         )->render()[0];
 
@@ -103,13 +103,13 @@ trait PlatformTrait
             <<<'EOF'
                 CREATE TRIGGER {trigger}
                     BEFORE INSERT OR UPDATE
-                    ON {table}
+                    ON {{table}}
                     FOR EACH ROW
-                EXECUTE PROCEDURE {trigger_func}()
+                EXECUTE PROCEDURE {{trigger_func}}()
                 EOF,
             [
                 'table' => $table->getName(),
-                'trigger' => $table->getName() . '_AI_PK',
+                'trigger' => $table->getShortestName($table->getNamespaceName()) . '_AI_PK',
                 'trigger_func' => $table->getName() . '_AI_FUNC',
             ]
         )->render()[0];
