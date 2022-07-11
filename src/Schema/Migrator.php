@@ -89,6 +89,7 @@ class Migrator
 
         // fix namespaced table name split for MSSQL/PostgreSQL
         // https://github.com/doctrine/dbal/blob/3.3.7/src/Schema/AbstractAsset.php#L55
+        // https://github.com/doctrine/dbal/pull/5494
         \Closure::bind(function () use ($table, $tableName) {
             $table->_quoted = true;
             $lastDotPos = strrpos($tableName, '.');
