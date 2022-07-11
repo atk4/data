@@ -82,12 +82,26 @@ class Migrator
 
     public function table(string $tableName): self
     {
-        $tableName = preg_replace('~^.+\.~', '', $tableName);
-
-        $this->table = new Table($this->getDatabasePlatform()->quoteIdentifier($tableName));
+        $table = new Table('0.0');
         if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-            $this->table->addOption('charset', 'utf8mb4');
+            $table->addOption('charset', 'utf8mb4');
         }
+
+        // fix namespaced table name split for MSSQL/PostgreSQL
+        // https://github.com/doctrine/dbal/blob/3.3.7/src/Schema/AbstractAsset.php#L55
+        \Closure::bind(function () use ($table, $tableName) {
+            $table->_quoted = true;
+            $lastDotPos = strrpos($tableName, '.');
+            if ($lastDotPos !== false) {
+                $table->_namespace = substr($tableName, 0, $lastDotPos);
+                $table->_name = substr($tableName, $lastDotPos + 1);
+            } else {
+                $table->_namespace = null;
+                $table->_name = $tableName;
+            }
+        }, null, Table::class)();
+
+        $this->table = $table;
 
         return $this;
     }
