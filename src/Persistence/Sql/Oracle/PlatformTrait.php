@@ -57,7 +57,7 @@ trait PlatformTrait
         $sqls = parent::getCreateAutoincrementSql($name, $table, $start);
 
         // fix table name when name /w schema is used
-        // TODO submit a PR to DBAL
+        // TODO submit a PR with fixed OraclePlatform to DBAL
         $sqls[0] = preg_replace('~(?<=WHERE TABLE_NAME = \').+\.(?=.+?\')~', '', $sqls[0]);
 
         // replace trigger from https://github.com/doctrine/dbal/blob/3.1.3/src/Platforms/OraclePlatform.php#L526-L546
