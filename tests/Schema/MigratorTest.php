@@ -14,6 +14,7 @@ use Doctrine\DBAL\Exception\TableNotFoundException;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
+use Doctrine\DBAL\Schema\Identifier as DbalIdentifier;
 
 class MigratorTest extends TestCase
 {
@@ -35,7 +36,14 @@ class MigratorTest extends TestCase
 
     protected function isTableExist(string $table): bool
     {
-        return $this->createSchemaManager()->tablesExist([$table]);
+        foreach ($this->createSchemaManager()->listTableNames() as $v) {
+            $vUnquoted = (new DbalIdentifier($v))->getName();
+            if ($vUnquoted === $table) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function testCreate(): void
