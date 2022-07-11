@@ -77,7 +77,7 @@ class Join extends Model\Join
         $query->join(
             $this->foreign_table,
             $this->getOwner()->expr('{{}}.{} = {}', [
-                ($this->foreign_alias ?: $this->foreign_table),
+                $this->foreign_alias ?: $this->foreign_table,
                 $this->foreign_field,
                 $this->getOwner()->getField($this->master_field),
             ]),

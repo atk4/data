@@ -2040,7 +2040,7 @@ class Model implements \IteratorAggregate
         if ($this->isEntity()) {
             return [
                 'entityId' => $this->id_field && $this->hasField($this->id_field)
-                    ? (($this->_entityId !== null ? $this->_entityId . ($this->getId() !== null ? '' : ' (unloaded)') : 'null'))
+                    ? ($this->_entityId !== null ? $this->_entityId . ($this->getId() !== null ? '' : ' (unloaded)') : 'null')
                     : 'no id field',
                 'model' => $this->getModel()->__debugInfo(),
             ];

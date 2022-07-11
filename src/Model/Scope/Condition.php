@@ -114,7 +114,7 @@ class Condition extends AbstractScope
 
         if ($operator === null) {
             // at least MSSQL database always requires an operator
-            if (!($key instanceof Expressionable)) {
+            if (!$key instanceof Expressionable) {
                 throw new Exception('Operator must be specified');
             }
         } else {

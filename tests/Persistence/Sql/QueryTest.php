@@ -471,9 +471,9 @@ class QueryTest extends TestCase
         // should throw exception "Table cannot be Query in UPDATE, INSERT etc. query modes"
         $this->assertStringContainsString(
             'Table cannot be Query',
-            ($this->q()
+            $this->q()
                 ->mode('update')
-                ->table($this->q()->table('test'), 'foo'))->__debugInfo()['R']
+                ->table($this->q()->table('test'), 'foo')->__debugInfo()['R']
         );
     }
 
