@@ -31,6 +31,15 @@ trait PlatformTrait
 //        $this->markDoctrineTypeCommented('text');
 //    }
 
+    public function getCurrentDatabaseExpression(bool $includeSchema = false): string
+    {
+        if ($includeSchema) {
+            return 'CONCAT(DB_NAME(), \'.\', SCHEMA_NAME())';
+        }
+
+        return parent::getCurrentDatabaseExpression();
+    }
+
     // SQL Server DBAL platform has buggy identifier escaping, fix until fixed officially, see:
     // https://github.com/doctrine/dbal/pull/4360
 

@@ -370,7 +370,7 @@ class Query extends Expression
         }
 
         // Split and deduce fields
-        // NOTE that this will not allow table names with dots in there !!!
+        // TODO this will not allow table names with dots in there !!!
         [$f1, $f2] = array_pad(explode('.', $foreign_table, 2), 2, null);
 
         if (is_object($master_field)) {

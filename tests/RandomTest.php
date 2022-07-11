@@ -12,10 +12,7 @@ use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
-use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class Model_Rate extends Model
 {
@@ -570,19 +567,11 @@ class RandomTest extends TestCase
             $runWithDb = false;
         } else {
             $dbSchema = $this->db->getConnection()->dsql()
-                ->field(new Expression($this->getDatabasePlatform()->getCurrentDatabaseExpression()))
+                ->field(new Expression($this->getDatabasePlatform()->getCurrentDatabaseExpression(true))) // @phpstan-ignore-line
                 ->getOne();
             $userSchema = $dbSchema;
             $docSchema = $dbSchema;
             $runWithDb = true;
-
-            if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform
-                || $this->getDatabasePlatform() instanceof SQLServerPlatform
-                || $this->getDatabasePlatform() instanceof OraclePlatform) {
-                $userSchema = 'functional_is_failing_db1';
-                $docSchema = 'functional_is_failing_db2';
-                $runWithDb = false;
-            }
         }
 
         $user = new Model($this->db, ['table' => $userSchema . '.user']);
@@ -600,8 +589,10 @@ class RandomTest extends TestCase
         $this->assertSame($render, $selectAction->render());
         $this->assertSame($render, $doc->action('select')->render());
 
+        $userTableQuoted = '"' . str_replace('.', '"."', $userSchema) . '"."user"';
+        $docTableQuoted = '"' . str_replace('.', '"."', $docSchema) . '"."doc"';
         $this->assertSameSql(
-            'select "id", "name", "user_id", (select "name" from "' . $userSchema . '"."user" "_u_e8701ad48ba0" where "id" = "' . $docSchema . '"."doc"."user_id") "user" from "' . $docSchema . '"."doc" where (select "name" from "' . $userSchema . '"."user" "_u_e8701ad48ba0" where "id" = "' . $docSchema . '"."doc"."user_id") = :a',
+            'select "id", "name", "user_id", (select "name" from ' . $userTableQuoted . ' "_u_e8701ad48ba0" where "id" = ' . $docTableQuoted . '."user_id") "user" from ' . $docTableQuoted . ' where (select "name" from ' . $userTableQuoted . ' "_u_e8701ad48ba0" where "id" = ' . $docTableQuoted . '."user_id") = :a',
             $render[0]
         );
 

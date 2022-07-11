@@ -11,11 +11,14 @@ use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Reference\HasOne;
-use Doctrine\DBAL\Exception as DbalException;
+use Doctrine\DBAL\Driver\Exception as DbalDriverException;
+use Doctrine\DBAL\Exception\DatabaseObjectNotFoundException;
+use Doctrine\DBAL\Exception\TableNotFoundException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Table;
 
@@ -79,10 +82,27 @@ class Migrator
 
     public function table(string $tableName): self
     {
-        $this->table = new Table($this->getDatabasePlatform()->quoteIdentifier($tableName));
+        $table = new Table('0.0');
         if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-            $this->table->addOption('charset', 'utf8mb4');
+            $table->addOption('charset', 'utf8mb4');
         }
+
+        // fix namespaced table name split for MSSQL/PostgreSQL
+        // https://github.com/doctrine/dbal/blob/3.3.7/src/Schema/AbstractAsset.php#L55
+        // https://github.com/doctrine/dbal/pull/5494
+        \Closure::bind(function () use ($table, $tableName) {
+            $table->_quoted = true;
+            $lastDotPos = strrpos($tableName, '.');
+            if ($lastDotPos !== false) {
+                $table->_namespace = substr($tableName, 0, $lastDotPos);
+                $table->_name = substr($tableName, $lastDotPos + 1);
+            } else {
+                $table->_namespace = null;
+                $table->_name = $tableName;
+            }
+        }, null, Table::class)();
+
+        $this->table = $table;
 
         return $this;
     }
@@ -105,8 +125,19 @@ class Migrator
 
     public function drop(): self
     {
-        $this->createSchemaManager()
-            ->dropTable($this->getDatabasePlatform()->quoteIdentifier($this->table->getName()));
+        try {
+            $this->createSchemaManager()
+                ->dropTable($this->table->getQuotedName($this->getDatabasePlatform()));
+        } catch (DatabaseObjectNotFoundException $e) {
+            // fix exception not converted to TableNotFoundException for MSSQL
+            // https://github.com/doctrine/dbal/pull/5492
+            if ($this->getDatabasePlatform() instanceof SQLServerPlatform && $e->getPrevious() instanceof DbalDriverException
+                && preg_match('~[cC]annot drop the table \'.*\', because it does not exist or you do not have permission\.~', $e->getMessage())) {
+                throw new TableNotFoundException($e->getPrevious(), $e->getQuery());
+            }
+
+            throw $e;
+        }
 
         $this->createdTableNames = array_diff($this->createdTableNames, [$this->table->getName()]);
 
@@ -117,7 +148,7 @@ class Migrator
     {
         try {
             $this->drop();
-        } catch (DbalException $e) {
+        } catch (TableNotFoundException $e) {
         }
 
         $this->createdTableNames = array_diff($this->createdTableNames, [$this->table->getName()]);
@@ -126,10 +157,14 @@ class Migrator
         // but if AI trigger is not present, AI sequence is not dropped
         // https://github.com/doctrine/dbal/issues/4997
         if ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            $dropTriggerSql = $this->getDatabasePlatform()->getDropAutoincrementSql($this->table->getName())[1];
+            $schemaManager = $this->createSchemaManager();
+            $dropTriggerSql = $this->getDatabasePlatform()
+                ->getDropAutoincrementSql($this->table->getQuotedName($this->getDatabasePlatform()))[1];
             try {
-                $this->getConnection()->expr($dropTriggerSql)->executeStatement();
-            } catch (Exception $e) {
+                \Closure::bind(function () use ($schemaManager, $dropTriggerSql) {
+                    $schemaManager->_execSql($dropTriggerSql);
+                }, null, AbstractSchemaManager::class)();
+            } catch (DatabaseObjectNotFoundException $e) {
             }
         }
 

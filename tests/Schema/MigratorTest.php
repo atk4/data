@@ -7,115 +7,94 @@ namespace Atk4\Data\Tests\Schema;
 use Atk4\Data\Field\PasswordField;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence\Sql\Expression;
+use Atk4\Data\Schema\Migrator;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Exception\TableExistsException;
+use Doctrine\DBAL\Exception\TableNotFoundException;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
+use Doctrine\DBAL\Schema\Identifier as DbalIdentifier;
 
-class ModelTest extends TestCase
+class MigratorTest extends TestCase
 {
-    /**
-     * @doesNotPerformAssertions
-     */
-    public function testSetModelCreate(): void
+    protected function createDemoMigrator(string $table): Migrator
     {
-        $user = new TestUser($this->db);
-
-        $this->createMigrator($user)->create();
-
-        // now we can use user
-        $user->createEntity()->save(['name' => 'john', 'is_admin' => true, 'notes' => 'some long notes']);
-    }
-
-    public function testImportTable(): void
-    {
-        $this->assertTrue(true);
-
-        return; // TODO enable once import to Model is supported using DBAL
-        // @phpstan-ignore-next-line
-        $migrator = $this->createMigrator();
-
-        $migrator->table('user')->id()
-            ->field('foo')
-            ->field('str', ['type' => 'string'])
-            ->field('bool', ['type' => 'boolean'])
-            ->field('int', ['type' => 'integer'])
-            ->field('mon', ['type' => 'atk4_money'])
-            ->field('flt', ['type' => 'float'])
-            ->field('date', ['type' => 'date'])
-            ->field('datetime', ['type' => 'datetime'])
-            ->field('time', ['type' => 'time'])
-            ->field('txt', ['type' => 'text'])
-            ->field('arr', ['type' => 'array'])
-            ->field('json', ['type' => 'json'])
-            ->field('obj', ['type' => 'object'])
-            ->create();
-
-        $this->db->dsql()->table('user')
-            ->set([
-                'id' => 1,
-                'foo' => 'quite short value, max 255 characters',
-                'str' => 'quite short value, max 255 characters',
-                'bool' => true,
-                'int' => 123,
-                'mon' => 123.45,
-                'flt' => 123.456789,
-                'date' => (new \DateTime())->format('Y-m-d'),
-                'datetime' => (new \DateTime())->format('Y-m-d H:i:s'),
-                'time' => (new \DateTime())->format('H:i:s'),
-                'txt' => 'very long text value' . str_repeat('-=#', 1000), // 3000+ chars
-                'arr' => 'very long text value' . str_repeat('-=#', 1000), // 3000+ chars
-                'json' => 'very long text value' . str_repeat('-=#', 1000), // 3000+ chars
-                'obj' => 'very long text value' . str_repeat('-=#', 1000), // 3000+ chars
-            ])->insert();
-
-        $migrator2 = $this->createMigrator();
-        $migrator2->importTable('user');
-
-        $migrator2->mode('create');
-
-        $q1 = preg_replace('~\([0-9,]*\)~', '', $migrator->render()[0]); // remove parenthesis otherwise we can't differ money from float etc.
-        $q2 = preg_replace('~\([0-9,]*\)~', '', $migrator2->render()[0]);
-        $this->assertSame($q1, $q2);
-    }
-
-    /**
-     * @doesNotPerformAssertions
-     */
-    public function testMigrateTable(): void
-    {
-        $migrator = $this->createMigrator();
-        $migrator->table('user')->id()
+        return $this->createMigrator()
+            ->table($table)
+            ->id()
             ->field('foo')
             ->field('bar', ['type' => 'integer'])
             ->field('baz', ['type' => 'text'])
-            ->create();
-        $this->db->dsql()->table('user')
+            ->field('bl', ['type' => 'boolean'])
+            ->field('tm', ['type' => 'time'])
+            ->field('dt', ['type' => 'date'])
+            ->field('dttm', ['type' => 'datetime'])
+            ->field('fl', ['type' => 'float'])
+            ->field('mn', ['type' => 'atk4_money']);
+    }
+
+    protected function isTableExist(string $table): bool
+    {
+        foreach ($this->createSchemaManager()->listTableNames() as $v) {
+            $vUnquoted = (new DbalIdentifier($v))->getName();
+            if ($vUnquoted === $table) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function testCreate(): void
+    {
+        $this->createDemoMigrator('user')->create();
+        $this->assertTrue($this->isTableExist('user'));
+
+        $this->db->dsql()
+            ->mode('insert')
+            ->table('user')
             ->setMulti([
                 'id' => 1,
                 'foo' => 'foovalue',
                 'bar' => 123,
                 'baz' => 'long text value',
-            ])->mode('insert')->executeStatement();
+            ])->executeStatement();
     }
 
-    public function testCreateModel(): void
+    public function testCreateTwiceException(): void
     {
-        $this->assertTrue(true);
+        $this->createDemoMigrator('user')->create();
+        $this->assertTrue($this->isTableExist('user'));
 
-        return; // TODO enable once create from Model is supported using DBAL
-        // @phpstan-ignore-next-line
-        $this->createMigrator(new TestUser($this->db))->create();
+        $this->expectException(TableExistsException::class);
+        $this->createDemoMigrator('user')->create();
+    }
 
-        $user_model = $this->createMigrator()->createModel($this->db, 'user');
+    public function testDrop(): void
+    {
+        $this->createDemoMigrator('user')->create();
+        $this->assertTrue($this->isTableExist('user'));
+        $this->createMigrator()->table('user')->drop();
+        $this->assertFalse($this->isTableExist('user'));
+    }
 
-        $this->assertSame([
-            'name',
-            'password',
-            'is_admin',
-            'notes',
-            'main_role_id', // our_field here not role_id (reference name)
-        ], array_keys($user_model->getFields()));
+    public function testDropException(): void
+    {
+        $this->expectException(TableNotFoundException::class);
+        $this->createMigrator()->table('user')->drop();
+    }
+
+    public function testDropIfExists(): void
+    {
+        $this->createMigrator()->table('user')->dropIfExists();
+
+        $this->createDemoMigrator('user')->create();
+        $this->assertTrue($this->isTableExist('user'));
+        $this->createMigrator()->table('user')->dropIfExists();
+        $this->assertFalse($this->isTableExist('user'));
+
+        $this->createMigrator()->table('user')->dropIfExists();
     }
 
     /**
@@ -283,6 +262,18 @@ class ModelTest extends TestCase
             ['text', false, str_starts_with($_ENV['DB_DSN'], 'pdo_oci') && !isset($_ENV['CI']) ? 16 * 1024 : 256 * 1024],
             ['blob', true, 256 * 1024],
         ];
+    }
+
+    public function testSetModelCreate(): void
+    {
+        $user = new TestUser($this->db);
+        $this->createMigrator($user)->create();
+
+        $user->createEntity()
+            ->save(['name' => 'john', 'is_admin' => true, 'notes' => 'some long notes']);
+        $this->assertSame([
+            ['id' => 1, 'name' => 'john', 'password' => null, 'is_admin' => true, 'notes' => 'some long notes', 'main_role_id' => null],
+        ], $user->export());
     }
 }
 

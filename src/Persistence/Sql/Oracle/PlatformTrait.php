@@ -56,6 +56,10 @@ trait PlatformTrait
     {
         $sqls = parent::getCreateAutoincrementSql($name, $table, $start);
 
+        // fix table name when name /w schema is used
+        // TODO submit a PR with fixed OraclePlatform to DBAL
+        $sqls[0] = preg_replace('~(?<=WHERE TABLE_NAME = \').+\.(?=.+?\')~', '', $sqls[0]);
+
         // replace trigger from https://github.com/doctrine/dbal/blob/3.1.3/src/Platforms/OraclePlatform.php#L526-L546
         $tableIdentifier = \Closure::bind(fn () => $this->normalizeIdentifier($table), $this, OraclePlatform::class)();
         $nameIdentifier = \Closure::bind(fn () => $this->normalizeIdentifier($name), $this, OraclePlatform::class)();
@@ -68,20 +72,20 @@ trait PlatformTrait
         $sqls[count($sqls) - 1] = $conn->expr(
             // else branch should be maybe (because of concurrency) put into after update trigger
             str_replace('[pk_seq]', '\'' . str_replace('\'', '\'\'', $pkSeq) . '\'', <<<'EOT'
-                CREATE TRIGGER {trigger}
+                CREATE TRIGGER {{trigger}}
                     BEFORE INSERT OR UPDATE
-                    ON {table}
+                    ON {{table}}
                     FOR EACH ROW
                 DECLARE
-                    atk4__pk_seq_last__ {table}.{pk}%TYPE;
+                    atk4__pk_seq_last__ {{table}}.{pk}%TYPE;
                 BEGIN
                     IF (:NEW.{pk} IS NULL) THEN
-                        SELECT {pk_seq}.NEXTVAL INTO :NEW.{pk} FROM DUAL;
+                        SELECT {{pk_seq}}.NEXTVAL INTO :NEW.{pk} FROM DUAL;
                     ELSE
                         SELECT LAST_NUMBER INTO atk4__pk_seq_last__ FROM USER_SEQUENCES WHERE SEQUENCE_NAME = [pk_seq];
                         WHILE atk4__pk_seq_last__ <= :NEW.{pk}
                         LOOP
-                            SELECT {pk_seq}.NEXTVAL + 1 INTO atk4__pk_seq_last__ FROM DUAL;
+                            SELECT {{pk_seq}}.NEXTVAL + 1 INTO atk4__pk_seq_last__ FROM DUAL;
                         END LOOP;
                     END IF;
                 END;
@@ -95,5 +99,22 @@ trait PlatformTrait
         )->render()[0];
 
         return $sqls;
+    }
+
+    public function getListDatabasesSQL(): string
+    {
+        // ignore Oracle maintained schemas, improve tests performance
+        return 'SELECT username FROM sys.all_users'
+            . ' WHERE oracle_maintained = \'N\'';
+    }
+
+    public function getListTablesSQL(): string
+    {
+        // ignore Oracle maintained tables, improve tests performance
+        // self::getListViewsSQL() does not need filtering, as there is no Oracle VIEW by default
+        return 'SELECT * FROM sys.user_tables'
+            . ' LEFT JOIN sys.user_objects ON user_objects.object_type = \'TABLE\''
+            . ' AND user_objects.object_name = user_tables.table_name'
+            . ' WHERE oracle_maintained = \'N\'';
     }
 }

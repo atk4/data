@@ -37,7 +37,7 @@ class Connection extends BaseConnection
     public function lastInsertId(string $sequence = null): string
     {
         if ($sequence) {
-            return $this->dsql()->field($this->expr('{}.CURRVAL', [$sequence]))->getOne();
+            return $this->dsql()->field($this->expr('{{}}.CURRVAL', [$sequence]))->getOne();
         }
 
         return parent::lastInsertId($sequence);
