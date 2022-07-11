@@ -321,8 +321,8 @@ class Sql extends Persistence
 
     private function fixMssqlOracleMissingFieldsInGroup(Model $model, Query $query): void
     {
-        if (($this->getDatabasePlatform() instanceof SQLServerPlatform
-                || $this->getDatabasePlatform() instanceof OraclePlatform)) {
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform
+                || $this->getDatabasePlatform() instanceof OraclePlatform) {
             $isIdFieldInGroup = false;
             foreach ($query->args['group'] ?? [] as $v) {
                 if ($model->id_field && $v === $model->getField($model->id_field)) {

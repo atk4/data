@@ -71,7 +71,7 @@ class Action
             case 'SUM':
                 $result = array_sum($column);
 
-            break;
+                break;
             case 'AVG':
                 $column = $coalesce ? $column : array_filter($column, function ($value) {
                     return $value !== null;
@@ -79,15 +79,15 @@ class Action
 
                 $result = array_sum($column) / count($column);
 
-            break;
+                break;
             case 'MAX':
                 $result = max($column);
 
-            break;
+                break;
             case 'MIN':
                 $result = min($column);
 
-            break;
+                break;
             default:
                 throw (new Exception('Array persistence driver action unsupported format'))
                     ->addMoreInfo('action', $fx);
@@ -161,37 +161,37 @@ class Action
             case '=':
                 $result = is_array($v2) ? $this->evaluateIf($v1, 'IN', $v2) : $v1 === $v2;
 
-            break;
+                break;
             case '>':
                 $result = $v1 > $v2;
 
-            break;
+                break;
             case '>=':
                 $result = $v1 >= $v2;
 
-            break;
+                break;
             case '<':
                 $result = $v1 < $v2;
 
-            break;
+                break;
             case '<=':
                 $result = $v1 <= $v2;
 
-            break;
+                break;
             case '!=':
                 $result = !$this->evaluateIf($v1, '=', $v2);
 
-            break;
+                break;
             case 'LIKE':
                 $pattern = str_ireplace('%', '(.*?)', preg_quote($v2));
 
                 $result = (bool) preg_match('/^' . $pattern . '$/', (string) $v1);
 
-            break;
+                break;
             case 'NOT LIKE':
                 $result = !$this->evaluateIf($v1, 'LIKE', $v2);
 
-            break;
+                break;
             case 'IN':
                 $result = false;
                 foreach ($v2 as $v2Item) { // TODO flatten rows, this looses column names!
@@ -202,19 +202,19 @@ class Action
                     }
                 }
 
-            break;
+                break;
             case 'NOT IN':
                 $result = !$this->evaluateIf($v1, 'IN', $v2);
 
-            break;
+                break;
             case 'REGEXP':
                 $result = (bool) preg_match('/' . $v2 . '/', $v1);
 
-            break;
+                break;
             case 'NOT REGEXP':
                 $result = !$this->evaluateIf($v1, 'REGEXP', $v2);
 
-            break;
+                break;
             default:
                 throw (new Exception('Unsupported operator'))
                     ->addMoreInfo('operator', $operator);
