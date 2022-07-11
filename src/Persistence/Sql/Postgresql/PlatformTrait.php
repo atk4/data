@@ -92,7 +92,7 @@ trait PlatformTrait
                 $$ LANGUAGE plpgsql
                 EOF),
             [
-                'table' => $table->getShortestName($table->getNamespaceName()),
+                'table' => $table->getShortestName($table->getNamespaceName()), // TODO should be probably name /w schema, but it is not supported, get variable type differently
                 'pk' => $pkColumn->getName(),
                 'pk_seq' => $pkSeqName,
                 'trigger_func' => $table->getName() . '_AI_FUNC',
