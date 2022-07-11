@@ -41,6 +41,15 @@ trait PlatformTrait
         return 'CITEXT';
     }
 
+    public function getCurrentDatabaseExpression(bool $includeSchema = false): string
+    {
+        if ($includeSchema) {
+            return 'CONCAT(CURRENT_DATABASE(), \'.\', CURRENT_SCHEMA())';
+        }
+
+        return parent::getCurrentDatabaseExpression();
+    }
+
     // PostgreSQL DBAL platform uses SERIAL column type for autoincrement which does not increment
     // when a row with a not-null PK is inserted like Sqlite or MySQL does, unify the behaviour
 
