@@ -68,20 +68,20 @@ trait PlatformTrait
         $sqls[count($sqls) - 1] = $conn->expr(
             // else branch should be maybe (because of concurrency) put into after update trigger
             str_replace('[pk_seq]', '\'' . str_replace('\'', '\'\'', $pkSeq) . '\'', <<<'EOT'
-                CREATE TRIGGER {trigger}
+                CREATE TRIGGER {{trigger}}
                     BEFORE INSERT OR UPDATE
-                    ON {table}
+                    ON {{table}}
                     FOR EACH ROW
                 DECLARE
-                    atk4__pk_seq_last__ {table}.{pk}%TYPE;
+                    atk4__pk_seq_last__ {{table}}.{pk}%TYPE;
                 BEGIN
                     IF (:NEW.{pk} IS NULL) THEN
-                        SELECT {pk_seq}.NEXTVAL INTO :NEW.{pk} FROM DUAL;
+                        SELECT {{pk_seq}}.NEXTVAL INTO :NEW.{pk} FROM DUAL;
                     ELSE
                         SELECT LAST_NUMBER INTO atk4__pk_seq_last__ FROM USER_SEQUENCES WHERE SEQUENCE_NAME = [pk_seq];
                         WHILE atk4__pk_seq_last__ <= :NEW.{pk}
                         LOOP
-                            SELECT {pk_seq}.NEXTVAL + 1 INTO atk4__pk_seq_last__ FROM DUAL;
+                            SELECT {{pk_seq}}.NEXTVAL + 1 INTO atk4__pk_seq_last__ FROM DUAL;
                         END LOOP;
                     END IF;
                 END;

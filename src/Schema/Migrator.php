@@ -126,7 +126,7 @@ class Migrator
     {
         try {
             $this->createSchemaManager()
-                ->dropTable($this->getDatabasePlatform()->quoteIdentifier($this->table->getName()));
+                ->dropTable($this->table->getQuotedName($this->getDatabasePlatform()));
         } catch (DatabaseObjectNotFoundException $e) {
             // fix exception not converted to TableNotFoundException for MSSQL
             // https://github.com/doctrine/dbal/pull/5492
@@ -156,10 +156,14 @@ class Migrator
         // but if AI trigger is not present, AI sequence is not dropped
         // https://github.com/doctrine/dbal/issues/4997
         if ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            $dropTriggerSql = $this->getDatabasePlatform()->getDropAutoincrementSql($this->table->getName())[1];
+            $schemaManager = $this->createSchemaManager();
+            $dropTriggerSql = $this->getDatabasePlatform()
+                ->getDropAutoincrementSql($this->table->getQuotedName($this->getDatabasePlatform()))[1];
             try {
-                $this->getConnection()->expr($dropTriggerSql)->executeStatement();
-            } catch (Exception $e) {
+                \Closure::bind(function () use ($schemaManager, $dropTriggerSql) {
+                    $schemaManager->_execSql($dropTriggerSql);
+                }, null, AbstractSchemaManager::class)();
+            } catch (DatabaseObjectNotFoundException $e) {
             }
         }
 
