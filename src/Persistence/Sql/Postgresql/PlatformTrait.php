@@ -45,6 +45,7 @@ trait PlatformTrait
     {
         parent::initializeDoctrineTypeMappings();
 
+        // https://github.com/doctrine/dbal/pull/5495
         $this->doctrineTypeMapping['citext'] = 'text';
     }
 
