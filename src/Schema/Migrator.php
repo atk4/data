@@ -123,11 +123,30 @@ class Migrator
         return $this;
     }
 
-    public function drop(): self
+    public function drop(bool $dropForeignKeysFirst = false): self
     {
+        $schemaManager = $this->createSchemaManager();
+
+        if ($dropForeignKeysFirst) {
+            // TODO https://github.com/doctrine/dbal/issues/5488 implement all foreign keys fetch in one query
+            $foreignKeysByTableToDrop = [];
+            foreach ($schemaManager->listTableNames() as $tableName) {
+                $foreignKeys = $schemaManager->listTableForeignKeys($tableName);
+                foreach ($foreignKeys as $foreignKey) {
+                    if ($foreignKey->getForeignTableName() === preg_replace('~^.+\.~s', '', $this->table->getName())) {
+                        $foreignKeysByTableToDrop[$tableName][] = $foreignKey;
+                    }
+                }
+            }
+            foreach ($foreignKeysByTableToDrop as $tableName => $foreignKeys) {
+                foreach ($foreignKeys as $foreignKey) {
+                    $schemaManager->dropForeignKey($foreignKey, $this->getDatabasePlatform()->quoteIdentifier($tableName));
+                }
+            }
+        }
+
         try {
-            $this->createSchemaManager()
-                ->dropTable($this->table->getQuotedName($this->getDatabasePlatform()));
+            $schemaManager->dropTable($this->table->getQuotedName($this->getDatabasePlatform()));
         } catch (DatabaseObjectNotFoundException $e) {
             // fix exception not converted to TableNotFoundException for MSSQL
             // https://github.com/doctrine/dbal/pull/5492
@@ -144,10 +163,10 @@ class Migrator
         return $this;
     }
 
-    public function dropIfExists(): self
+    public function dropIfExists(bool $dropForeignKeysFirst = false): self
     {
         try {
-            $this->drop();
+            $this->drop($dropForeignKeysFirst);
         } catch (TableNotFoundException $e) {
         }
 
