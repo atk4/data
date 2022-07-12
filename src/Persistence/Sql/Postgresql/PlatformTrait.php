@@ -41,6 +41,13 @@ trait PlatformTrait
         return 'CITEXT';
     }
 
+    protected function initializeDoctrineTypeMappings(): void
+    {
+        parent::initializeDoctrineTypeMappings();
+
+        $this->doctrineTypeMapping['citext'] = 'text';
+    }
+
     public function getCurrentDatabaseExpression(bool $includeSchema = false): string
     {
         if ($includeSchema) {
