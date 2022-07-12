@@ -12,6 +12,7 @@ use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Result as DbalResult;
 
@@ -253,23 +254,25 @@ abstract class Connection
             $dbalConnection->_conn = $dbalDriverConnection;
         }, null, \Doctrine\DBAL\Connection::class)();
 
-        if ($dbalConnection->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+        if ($dbalConnection->getDatabasePlatform() instanceof SqlitePlatform) {
+            \Closure::bind(function () use ($dbalConnection) {
+                $dbalConnection->platform = new class() extends SqlitePlatform {
+                    use Sqlite\PlatformTrait;
+                };
+            }, null, DbalConnection::class)();
+        } elseif ($dbalConnection->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             \Closure::bind(function () use ($dbalConnection) {
                 $dbalConnection->platform = new class() extends \Doctrine\DBAL\Platforms\PostgreSQL94Platform { // @phpstan-ignore-line
                     use Postgresql\PlatformTrait;
                 };
             }, null, DbalConnection::class)();
-        }
-
-        if ($dbalConnection->getDatabasePlatform() instanceof SQLServerPlatform) {
+        } elseif ($dbalConnection->getDatabasePlatform() instanceof SQLServerPlatform) {
             \Closure::bind(function () use ($dbalConnection) {
                 $dbalConnection->platform = new class() extends \Doctrine\DBAL\Platforms\SQLServer2012Platform { // @phpstan-ignore-line
                     use Mssql\PlatformTrait;
                 };
             }, null, DbalConnection::class)();
-        }
-
-        if ($dbalConnection->getDatabasePlatform() instanceof OraclePlatform) {
+        } elseif ($dbalConnection->getDatabasePlatform() instanceof OraclePlatform) {
             \Closure::bind(function () use ($dbalConnection) {
                 $dbalConnection->platform = new class() extends OraclePlatform {
                     use Oracle\PlatformTrait;

@@ -32,9 +32,9 @@ parameters:
 
         # fix https://github.com/phpstan/phpstan-deprecation-rules/issues/52 and https://github.com/phpstan/phpstan/issues/6444
         -
-            message: '~^Call to method (getVarcharTypeDeclarationSQL|getClobTypeDeclarationSQL|getCreateTableSQL|getCurrentDatabaseExpression)\(\) of deprecated class Doctrine\\DBAL\\Platforms\\(PostgreSQLPlatform|SQLServerPlatform|AbstractPlatform):\nUse.+instead\.$~'
+            message: '~^Call to method (getVarcharTypeDeclarationSQL|getClobTypeDeclarationSQL|getCreateTableSQL|getCurrentDatabaseExpression|initializeDoctrineTypeMappings)\(\) of deprecated class Doctrine\\DBAL\\Platforms\\(PostgreSQLPlatform|SQLServerPlatform|AbstractPlatform):\nUse.+instead\.$~'
             path: '*'
-            count: 5
+            count: 6
 
         # TODO these rules are generated, this ignores should be fixed in the code
         # for src/Schema/TestCase.php

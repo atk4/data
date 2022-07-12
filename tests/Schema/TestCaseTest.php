@@ -8,22 +8,44 @@ use Atk4\Data\Schema\TestCase;
 
 class TestCaseTest extends TestCase
 {
-    public function testInit(): void
+    public function testGetSetDb(): void
     {
-        $this->setDb($q = [
+        $this->assertSame([], $this->getDb([]));
+        $this->assertSame([], $this->getDb());
+
+        $dbData = [
             'user' => [
-                ['name' => 'John', 'surname' => 'Smith'],
-                ['name' => 'Steve', 'surname' => 'Jobs'],
+                ['name' => 'John', 'age' => '25'],
+                ['name' => 'Steve', 'age' => '30'],
             ],
-        ]);
+        ];
+        $dbDataWithId = array_map(function ($rows) {
+            $rowsWithId = [];
+            $id = 1;
+            foreach ($rows as $row) {
+                $rowsWithId[$id] = array_merge(['id' => (string) $id], $row);
+                ++$id;
+            }
 
-        $q2 = $this->getDb(['user']);
+            return $rowsWithId;
+        }, $dbData);
 
-        $this->setDb($q2);
-        $q3 = $this->getDb(['user']);
+        $this->setDb($dbData);
+        $dbDataGet1 = $this->getDb(['user']);
+        $this->assertSameExportUnordered($dbDataWithId, $dbDataGet1);
+        $this->assertSameExportUnordered($dbDataWithId, $this->getDb());
+        $this->assertSameExportUnordered($dbData, $this->getDb(null, true));
 
-        $this->assertSameExportUnordered($q2, $q3);
+        $this->setDb($dbData);
+        $dbDataGet2 = $this->getDb(['user']);
+        $this->assertSameExportUnordered($dbDataWithId, $dbDataGet2);
+        $this->assertSameExportUnordered($dbDataWithId, $this->getDb());
+        $this->assertSame($dbDataGet1, $dbDataGet2);
 
-        $this->assertSameExportUnordered($q, $this->getDb(['user'], true));
+        $this->setDb($dbDataGet1);
+        $dbDataGet3 = $this->getDb(['user']);
+        $this->assertSameExportUnordered($dbDataWithId, $dbDataGet3);
+        $this->assertSameExportUnordered($dbDataWithId, $this->getDb());
+        $this->assertSame($dbDataGet1, $dbDataGet3);
     }
 }
