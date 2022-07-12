@@ -36,7 +36,7 @@ class MigratorTest extends TestCase
 
     protected function isTableExist(string $table): bool
     {
-        foreach ($this->createSchemaManager()->listTableNames() as $v) {
+        foreach ($this->getConnection()->createSchemaManager()->listTableNames() as $v) {
             $vUnquoted = (new Identifier($v))->getName();
             if ($vUnquoted === $table) {
                 return true;
@@ -128,7 +128,7 @@ class MigratorTest extends TestCase
         ];
     }
 
-    private function makePseudoRandomString(bool $isBinary, int $length): string
+    protected function makePseudoRandomString(bool $isBinary, int $length): string
     {
         $baseChars = [];
         if ($isBinary) {
@@ -206,7 +206,7 @@ class MigratorTest extends TestCase
         $strRawSql = \Closure::bind(function () use ($model, $strRaw) {
             return $model->expr('')->escapeStringLiteral($strRaw);
         }, null, Expression::class)();
-        $query = $this->db->getConnection()->dsql()
+        $query = $this->getConnection()->dsql()
             ->field($model->expr($strRawSql));
         $resRaw = $query->getOne();
         if ($this->getDatabasePlatform() instanceof OraclePlatform && $isBinary) {
@@ -232,7 +232,7 @@ class MigratorTest extends TestCase
             $strSql = \Closure::bind(function () use ($model, $str) {
                 return $model->expr('')->escapeStringLiteral($str);
             }, null, Expression::class)();
-            $query = $this->db->getConnection()->dsql()
+            $query = $this->getConnection()->dsql()
                 ->field($model->expr($strSql));
             $res = $query->getOne();
             if ($this->getDatabasePlatform() instanceof OraclePlatform && $length === 0) {

@@ -110,9 +110,9 @@ class ModelNestedSqlTest extends TestCase
         $m->setOrder('birthday');
 
         $this->assertSame(
-            $this->db->getConnection()->dsql()
+            $this->getConnection()->dsql()
                 ->table(
-                    $this->db->getConnection()->dsql()
+                    $this->getConnection()->dsql()
                         ->table('user')
                         ->field('_id', 'uid')
                         ->field('name')

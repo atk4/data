@@ -13,11 +13,11 @@ use Atk4\Data\Persistence\Sql\Query;
 class QueryTest extends TestCase
 {
     /**
-     * @param string|array ...$args
+     * @param string|array $template
      */
-    public function q(...$args): Query
+    protected function q($template = [], array $arguments = []): Query
     {
-        return new Query(...$args);
+        return new Query($template, $arguments);
     }
 
     public function testConstruct(): void

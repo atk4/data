@@ -13,7 +13,6 @@ use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
-use Doctrine\DBAL\Schema\AbstractSchemaManager;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -35,18 +34,18 @@ abstract class TestCase extends BaseTestCase
 
         $this->db = Persistence::connect($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD']);
 
-        if ($this->db->getDatabasePlatform() instanceof SqlitePlatform) {
-            $this->db->getConnection()->expr(
+        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
+            $this->getConnection()->expr(
                 'PRAGMA foreign_keys = 1'
             )->executeStatement();
         }
-        if ($this->db->getDatabasePlatform() instanceof MySQLPlatform) {
-            $this->db->getConnection()->expr(
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            $this->getConnection()->expr(
                 'SET SESSION auto_increment_increment = 1, SESSION auto_increment_offset = 1'
             )->executeStatement();
         }
 
-        $this->db->getConnection()->getConnection()->getConfiguration()->setSQLLogger(
+        $this->getConnection()->getConnection()->getConfiguration()->setSQLLogger(
             null ?? new class($this) implements SQLLogger { // @phpstan-ignore-line
                 /** @var \WeakReference<TestCase> */
                 private $testCaseWeakRef;
@@ -100,17 +99,14 @@ abstract class TestCase extends BaseTestCase
         parent::tearDown();
     }
 
-    protected function getDatabasePlatform(): AbstractPlatform
+    protected function getConnection(): Persistence\Sql\Connection
     {
-        return $this->db->getConnection()->getDatabasePlatform();
+        return $this->db->getConnection(); // @phpstan-ignore-line
     }
 
-    /**
-     * @phpstan-return AbstractSchemaManager<AbstractPlatform>
-     */
-    protected function createSchemaManager(): AbstractSchemaManager
+    protected function getDatabasePlatform(): AbstractPlatform
     {
-        return $this->db->getConnection()->getConnection()->createSchemaManager();
+        return $this->getConnection()->getDatabasePlatform();
     }
 
     private function convertSqlFromSqlite(string $sql): string
@@ -253,7 +249,7 @@ abstract class TestCase extends BaseTestCase
 
             // drop table if already created but only if it was created during this test
             foreach ($this->createdMigrators as $migr) {
-                if ($migr->getConnection() === $this->db->getConnection()) {
+                if ($migr->getConnection() === $this->getConnection()) {
                     foreach ($migr->getCreatedTableNames() as $t) {
                         if ($t === $tableName) {
                             $migrator->drop();

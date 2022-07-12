@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests\Persistence\Sql\WithDb;
 
 use Atk4\Data\Model;
-use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Exception;
 use Atk4\Data\Persistence\Sql\ExecuteException;
 use Atk4\Data\Persistence\Sql\Expression;
@@ -18,14 +17,9 @@ use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class SelectTest extends TestCase
 {
-    /** @var Connection */
-    protected $c;
-
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->c = $this->db->getConnection();
 
         $model = new Model($this->db, ['table' => 'employee']);
         $model->addField('name');
@@ -43,14 +37,11 @@ class SelectTest extends TestCase
     }
 
     /**
-     * @param mixed  $table
-     * @param string $alias
+     * @param string|Expression $table
      */
-    private function q($table = null, string $alias = null): Query
+    protected function q($table = null, string $alias = null): Query
     {
-        $q = $this->c->dsql();
-
-        // add table to query if specified
+        $q = $this->getConnection()->dsql();
         if ($table !== null) {
             $q->table($table, $alias);
         }
@@ -61,9 +52,9 @@ class SelectTest extends TestCase
     /**
      * @param string|array $template
      */
-    private function e($template = [], array $args = []): Expression
+    protected function e($template = [], array $arguments = []): Expression
     {
-        return $this->c->expr($template, $args);
+        return $this->getConnection()->expr($template, $arguments);
     }
 
     public function testBasicQueries(): void
@@ -368,19 +359,19 @@ class SelectTest extends TestCase
         $getLastAiFx = function (): int {
             $table = 'test';
             $pk = 'myid';
-            $maxIdExpr = $this->c->dsql()->table($table)->field($this->c->expr('max({})', [$pk]));
+            $maxIdExpr = $this->q()->table($table)->field($this->e('max({})', [$pk]));
             if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-                $query = $this->c->dsql()->table('INFORMATION_SCHEMA.TABLES')
-                    ->field($this->c->expr('greatest({} - 1, (' . $maxIdExpr->render()[0] . '))', ['AUTO_INCREMENT']))
+                $query = $this->q()->table('INFORMATION_SCHEMA.TABLES')
+                    ->field($this->e('greatest({} - 1, (' . $maxIdExpr->render()[0] . '))', ['AUTO_INCREMENT']))
                     ->where('TABLE_NAME', $table);
             } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-                $query = $this->c->dsql()->field($this->c->expr('currval(pg_get_serial_sequence([], []))', [$table, $pk]));
+                $query = $this->q()->field($this->e('currval(pg_get_serial_sequence([], []))', [$table, $pk]));
             } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-                $query = $this->c->dsql()->field($this->c->expr('IDENT_CURRENT([])', [$table]));
+                $query = $this->q()->field($this->e('IDENT_CURRENT([])', [$table]));
             } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-                $query = $this->c->dsql()->field($this->c->expr('{}.CURRVAL', [$table . '_SEQ']));
+                $query = $this->q()->field($this->e('{}.CURRVAL', [$table . '_SEQ']));
             } else {
-                $query = $this->c->dsql()->table('sqlite_sequence')->field('seq')->where('name', $table);
+                $query = $this->q()->table('sqlite_sequence')->field('seq')->where('name', $table);
             }
 
             return (int) $query->getOne();
