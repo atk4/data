@@ -81,6 +81,7 @@ class MigratorFkTest extends TestCase
             if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
                 // FK violation exception is not properly converted by ExceptionConverter
                 // https://github.com/doctrine/dbal/blob/3.3.7/src/Driver/API/SQLite/ExceptionConverter.php
+                // https://github.com/doctrine/dbal/issues/5496
                 // TODO submit a PR to DBAL
                 $this->assertInstanceOf(DbalDriverException::class, $dbalException);
             } else {
