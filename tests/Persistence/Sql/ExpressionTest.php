@@ -15,11 +15,11 @@ use Atk4\Data\Persistence\Sql\Sqlite;
 class ExpressionTest extends TestCase
 {
     /**
-     * @param mixed ...$args
+     * @param string|array $template
      */
-    public function e(...$args): Expression
+    protected function e($template = [], array $arguments = []): Expression
     {
-        return new Expression(...$args);
+        return new Expression($template, $arguments);
     }
 
     /**

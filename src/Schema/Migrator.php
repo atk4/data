@@ -77,7 +77,7 @@ class Migrator
      */
     protected function createSchemaManager(): AbstractSchemaManager
     {
-        return $this->getConnection()->getConnection()->createSchemaManager();
+        return $this->getConnection()->createSchemaManager();
     }
 
     public function table(string $tableName): self

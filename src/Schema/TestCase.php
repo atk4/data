@@ -13,7 +13,6 @@ use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
-use Doctrine\DBAL\Schema\AbstractSchemaManager;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -35,18 +34,18 @@ abstract class TestCase extends BaseTestCase
 
         $this->db = Persistence::connect($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD']);
 
-        if ($this->db->getDatabasePlatform() instanceof SqlitePlatform) {
-            $this->db->getConnection()->expr(
+        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
+            $this->getConnection()->expr(
                 'PRAGMA foreign_keys = 1'
             )->executeStatement();
         }
-        if ($this->db->getDatabasePlatform() instanceof MySQLPlatform) {
-            $this->db->getConnection()->expr(
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            $this->getConnection()->expr(
                 'SET SESSION auto_increment_increment = 1, SESSION auto_increment_offset = 1'
             )->executeStatement();
         }
 
-        $this->db->getConnection()->getConnection()->getConfiguration()->setSQLLogger(
+        $this->getConnection()->getConnection()->getConfiguration()->setSQLLogger(
             null ?? new class($this) implements SQLLogger { // @phpstan-ignore-line
                 /** @var \WeakReference<TestCase> */
                 private $testCaseWeakRef;
@@ -62,13 +61,23 @@ abstract class TestCase extends BaseTestCase
                         return;
                     }
 
-                    echo "\n" . $sql . "\n" . (is_array($params) ? print_r(array_map(function ($v) {
-                        if (is_string($v) && strlen($v) > 4096) {
-                            $v = '*long string* (length: ' . strlen($v) . ' bytes, sha256: ' . hash('sha256', $v) . ')';
+                    echo "\n" . $sql . "\n" . (is_array($params) && count($params) > 0 ? substr(print_r(array_map(function ($v) {
+                        if ($v === null) {
+                            $v = 'null';
+                        } elseif (is_bool($v)) {
+                            $v = $v ? 'true' : 'false';
+                        } elseif (is_float($v) && (string) $v === (string) (int) $v) {
+                            $v = $v . '.0';
+                        } elseif (is_string($v)) {
+                            if (strlen($v) > 4096) {
+                                $v = '*long string* (length: ' . strlen($v) . ' bytes, sha256: ' . hash('sha256', $v) . ')';
+                            } else {
+                                $v = '\'' . $v . '\'';
+                            }
                         }
 
                         return $v;
-                    }, $params), true) : '') . "\n\n";
+                    }, $params), true), 6) : '') . "\n\n";
                 }
 
                 public function stopQuery(): void
@@ -90,17 +99,14 @@ abstract class TestCase extends BaseTestCase
         parent::tearDown();
     }
 
-    protected function getDatabasePlatform(): AbstractPlatform
+    protected function getConnection(): Persistence\Sql\Connection
     {
-        return $this->db->getConnection()->getDatabasePlatform();
+        return $this->db->getConnection(); // @phpstan-ignore-line
     }
 
-    /**
-     * @phpstan-return AbstractSchemaManager<AbstractPlatform>
-     */
-    protected function createSchemaManager(): AbstractSchemaManager
+    protected function getDatabasePlatform(): AbstractPlatform
     {
-        return $this->db->getConnection()->getConnection()->createSchemaManager();
+        return $this->getConnection()->getDatabasePlatform();
     }
 
     private function convertSqlFromSqlite(string $sql): string
@@ -243,7 +249,7 @@ abstract class TestCase extends BaseTestCase
 
             // drop table if already created but only if it was created during this test
             foreach ($this->createdMigrators as $migr) {
-                if ($migr->getConnection() === $this->db->getConnection()) {
+                if ($migr->getConnection() === $this->getConnection()) {
                     foreach ($migr->getCreatedTableNames() as $t) {
                         if ($t === $tableName) {
                             $migrator->drop();

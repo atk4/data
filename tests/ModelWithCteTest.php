@@ -47,7 +47,7 @@ class ModelWithCteTest extends TestCase
         );
 
         if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-            $serverVersion = $this->db->getConnection()->getConnection()->getWrappedConnection()->getServerVersion();
+            $serverVersion = $this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
             if (preg_match('~^5\.(?!5\.5-.+?-MariaDB)~', $serverVersion)) {
                 $this->markTestIncomplete('MySQL Server 5.x does not support WITH clause');
             }

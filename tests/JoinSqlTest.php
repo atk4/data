@@ -129,7 +129,7 @@ class JoinSqlTest extends TestCase
             ],
         ], $this->getDb(['user', 'contact']));
 
-        $this->db->getConnection()->dsql()->table('contact')->where('id', 2)->mode('delete')->executeStatement();
+        $this->getConnection()->dsql()->table('contact')->where('id', 2)->mode('delete')->executeStatement();
 
         $m_u2->unload();
         $m_u2 = $m_u->createEntity();

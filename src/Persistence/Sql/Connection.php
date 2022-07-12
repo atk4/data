@@ -15,6 +15,7 @@ use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Result as DbalResult;
+use Doctrine\DBAL\Schema\AbstractSchemaManager;
 
 /**
  * Class for establishing and maintaining connection with your database.
@@ -440,5 +441,13 @@ abstract class Connection
     public function getDatabasePlatform(): AbstractPlatform
     {
         return $this->getConnection()->getDatabasePlatform();
+    }
+
+    /**
+     * @phpstan-return AbstractSchemaManager<AbstractPlatform>
+     */
+    public function createSchemaManager(): AbstractSchemaManager
+    {
+        return $this->getConnection()->createSchemaManager();
     }
 }

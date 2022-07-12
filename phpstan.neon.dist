@@ -38,7 +38,6 @@ parameters:
 
         # TODO these rules are generated, this ignores should be fixed in the code
         # for src/Schema/TestCase.php
-        - '~^Call to an undefined method Atk4\\Data\\Persistence::getConnection\(\)\.$~'
         - '~^Call to an undefined method Atk4\\Data\\Persistence::dsql\(\)\.$~'
         # for src/Field/SqlExpressionField.php
         - '~^Call to an undefined method Atk4\\Data\\Model::expr\(\)\.$~'
