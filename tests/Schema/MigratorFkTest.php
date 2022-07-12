@@ -33,9 +33,7 @@ class MigratorFkTest extends TestCase
 
     protected function selectTableForeignKeys(string $localTable): array
     {
-        $foreignKeys = $this->getConnection()->createSchemaManager()->listTableForeignKeys(
-            $this->getDatabasePlatform()->quoteIdentifier($localTable)
-        );
+        $foreignKeys = $this->getConnection()->createSchemaManager()->listTableForeignKeys($localTable);
 
         return array_map(function (ForeignKeyConstraint $v) {
             return [$v->getLocalColumns(), $v->getForeignTableName(), $v->getForeignColumns()];
