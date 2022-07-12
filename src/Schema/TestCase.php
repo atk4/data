@@ -62,13 +62,23 @@ abstract class TestCase extends BaseTestCase
                         return;
                     }
 
-                    echo "\n" . $sql . "\n" . (is_array($params) ? print_r(array_map(function ($v) {
-                        if (is_string($v) && strlen($v) > 4096) {
-                            $v = '*long string* (length: ' . strlen($v) . ' bytes, sha256: ' . hash('sha256', $v) . ')';
+                    echo "\n" . $sql . "\n" . (is_array($params) && count($params) > 0 ? substr(print_r(array_map(function ($v) {
+                        if ($v === null) {
+                            $v = 'null';
+                        } elseif (is_bool($v)) {
+                            $v = $v ? 'true' : 'false';
+                        } elseif (is_float($v) && (string) $v === (string) (int) $v) {
+                            $v = $v . '.0';
+                        } elseif (is_string($v)) {
+                            if (strlen($v) > 4096) {
+                                $v = '*long string* (length: ' . strlen($v) . ' bytes, sha256: ' . hash('sha256', $v) . ')';
+                            } else {
+                                $v = '\'' . $v . '\'';
+                            }
                         }
 
                         return $v;
-                    }, $params), true) : '') . "\n\n";
+                    }, $params), true), 6) : '') . "\n\n";
                 }
 
                 public function stopQuery(): void
