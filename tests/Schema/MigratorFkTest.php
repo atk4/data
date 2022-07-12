@@ -63,11 +63,11 @@ class MigratorFkTest extends TestCase
         $this->assertSame([
             [],
             [[['country_id'], 'country', ['id']]],
-            [[['client_id'], 'client', ['id']]]
+            [[['client_id'], 'client', ['id']]],
         ], [
             $this->selectTableForeignKeys('country'),
             $this->selectTableForeignKeys('client'),
-            $this->selectTableForeignKeys('invoice')
+            $this->selectTableForeignKeys('invoice'),
         ]);
 
         $clientId = $client->insert(['name' => 'Leos']);
