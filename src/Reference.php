@@ -298,12 +298,9 @@ class Reference
         return $this->createTheirModel($defaults);
     }
 
-    /** @var array<int|string, string> List of properties to show in var_dump. */
+    /** @var array<int|string, string> */
     protected $__debug_fields = ['link', 'model', 'our_field', 'their_field'];
 
-    /**
-     * Returns array with useful debug info for var_dump.
-     */
     public function __debugInfo(): array
     {
         $arr = [];
