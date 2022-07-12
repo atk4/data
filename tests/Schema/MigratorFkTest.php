@@ -42,7 +42,7 @@ class MigratorFkTest extends TestCase
         }, $foreignKeys);
     }
 
-    public function testForeignKeyDbalException(): void
+    public function testForeignKeyViolation(): void
     {
         $country = new Model($this->db, ['table' => 'country']);
         $country->addField('name');
@@ -62,13 +62,15 @@ class MigratorFkTest extends TestCase
         $this->createForeignKey('invoice', ['client_id'], 'client', ['id']);
 
         // make sure FK client-country was not removed during FK invoice-client setup
-        $this->assertSame([], $this->selectTableForeignKeys('country'));
         $this->assertSame([
-            [['country_id'], 'country', ['id']],
-        ], $this->selectTableForeignKeys('client'));
-        $this->assertSame([
-            [['client_id'], 'client', ['id']],
-        ], $this->selectTableForeignKeys('invoice'));
+            [],
+            [[['country_id'], 'country', ['id']]],
+            [[['client_id'], 'client', ['id']]]
+        ], [
+            $this->selectTableForeignKeys('country'),
+            $this->selectTableForeignKeys('client'),
+            $this->selectTableForeignKeys('invoice')
+        ]);
 
         $clientId = $client->insert(['name' => 'Leos']);
         $invoice->insert(['client_id' => $clientId]);
