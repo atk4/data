@@ -11,6 +11,7 @@ use Doctrine\DBAL\Driver\Exception as DbalDriverException;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Schema\ForeignKeyConstraint;
+use Doctrine\DBAL\Schema\Identifier;
 
 class MigratorFkTest extends TestCase
 {
@@ -35,8 +36,14 @@ class MigratorFkTest extends TestCase
     {
         $foreignKeys = $this->getConnection()->createSchemaManager()->listTableForeignKeys($localTable);
 
-        return array_map(function (ForeignKeyConstraint $v) {
-            return [$v->getLocalColumns(), $v->getForeignTableName(), $v->getForeignColumns()];
+        $unquoteIdentifierFx = fn (string $name): string => (new Identifier($name))->getName();
+
+        return array_map(function (ForeignKeyConstraint $v) use ($unquoteIdentifierFx) {
+            return [
+                array_map($unquoteIdentifierFx, $v->getLocalColumns()),
+                $unquoteIdentifierFx($v->getForeignTableName()),
+                array_map($unquoteIdentifierFx, $v->getForeignColumns()),
+            ];
         }, $foreignKeys);
     }
 
