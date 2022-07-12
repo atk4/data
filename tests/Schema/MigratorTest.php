@@ -49,14 +49,14 @@ class MigratorTest extends TestCase
             ])->executeStatement();
     }
 
-    public function testCreateTwiceException(): void
-    {
-        $this->createDemoMigrator('user')->create();
-        $this->assertTrue($this->createMigrator()->isTableExists('user'));
-
-        $this->expectException(TableExistsException::class);
-        $this->createDemoMigrator('user')->create();
-    }
+//    public function testCreateTwiceException(): void
+//    {
+//        $this->createDemoMigrator('user')->create();
+//        $this->assertTrue($this->createMigrator()->isTableExists('user'));
+//
+//        $this->expectException(TableExistsException::class);
+//        $this->createDemoMigrator('user')->create();
+//    }
 
     public function testDrop(): void
     {

@@ -136,6 +136,7 @@ class Migrator
 
     public function create(): self
     {
+        $this->dropIfExists(true);
         $this->createSchemaManager()->createTable($this->table);
         $this->createdTableNames[] = $this->table->getName();
 
