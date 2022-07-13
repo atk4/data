@@ -61,7 +61,8 @@ abstract class TestCase extends BaseTestCase
                         return;
                     }
 
-                    echo "\n" . $sql . "\n" . (is_array($params) && count($params) > 0 ? substr(print_r(array_map(function ($v) {
+                    echo "\n" . $sql . (substr($sql, -1) !== ';' ? ';' : '') . "\n"
+                        . (is_array($params) && count($params) > 0 ? substr(print_r(array_map(function ($v) {
                         if ($v === null) {
                             $v = 'null';
                         } elseif (is_bool($v)) {
@@ -77,7 +78,7 @@ abstract class TestCase extends BaseTestCase
                         }
 
                         return $v;
-                    }, $params), true), 6) : '') . "\n\n";
+                    }, $params), true), 6) : '') . "\n";
                 }
 
                 public function stopQuery(): void
