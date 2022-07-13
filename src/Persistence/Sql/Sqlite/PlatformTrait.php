@@ -5,9 +5,22 @@ declare(strict_types=1);
 namespace Atk4\Data\Persistence\Sql\Sqlite;
 
 use Doctrine\DBAL\Schema\Identifier;
+use Doctrine\DBAL\Schema\TableDiff;
 
 trait PlatformTrait
 {
+    public function supportsForeignKeyConstraints(): bool
+    {
+        // backport https://github.com/doctrine/dbal/pull/5427, remove once DBAL 3.3.x support is dropped
+        return true;
+    }
+
+    protected function getPreAlterTableIndexForeignKeySQL(TableDiff $diff): array
+    {
+        // https://github.com/doctrine/dbal/pull/5486
+        return [];
+    }
+
     // fix quoted table name support
     // TODO submit a PR with fixed SqlitePlatform to DBAL
 
