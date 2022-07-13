@@ -38,13 +38,16 @@ class MigratorFkTest extends TestCase
 
         $unquoteIdentifierFx = fn (string $name): string => (new Identifier($name))->getName();
 
-        return array_map(function (ForeignKeyConstraint $v) use ($unquoteIdentifierFx) {
+        $res = array_map(function (ForeignKeyConstraint $v) use ($unquoteIdentifierFx) {
             return [
                 array_map($unquoteIdentifierFx, $v->getLocalColumns()),
                 $unquoteIdentifierFx($v->getForeignTableName()),
                 array_map($unquoteIdentifierFx, $v->getForeignColumns()),
             ];
         }, $foreignKeys);
+        sort($res);
+
+        return $res;
     }
 
     public function testForeignKeyViolation(): void
@@ -55,6 +58,7 @@ class MigratorFkTest extends TestCase
         $client = new Model($this->db, ['table' => 'client']);
         $client->addField('name');
         $client->hasOne('country_id', ['model' => $country]);
+        $client->hasOne('created_by_client_id', ['model' => $client]);
 
         $invoice = new Model($this->db, ['table' => 'invoice']);
         $invoice->hasOne('client_id', ['model' => $client]);
@@ -63,13 +67,22 @@ class MigratorFkTest extends TestCase
         $this->createMigrator($invoice)->create();
         $this->createMigrator($country)->create();
 
+        // https://github.com/doctrine/dbal/issues/5485
+        // TODO submit a PR to DBAL
+        $isBrokenFkSqlite = $this->getDatabasePlatform() instanceof SqlitePlatform;
+
         $this->createForeignKey('client', ['country_id'], 'country', ['id']);
+        if (!$isBrokenFkSqlite) {
+            $this->createForeignKey('client', ['created_by_client_id'], 'client', ['id']);
+        }
         $this->createForeignKey('invoice', ['client_id'], 'client', ['id']);
 
         // make sure FK client-country was not removed during FK invoice-client setup
         $this->assertSame([
             [],
-            [[['country_id'], 'country', ['id']]],
+            $isBrokenFkSqlite ?
+                [[['country_id'], 'country', ['id']]]
+                : [[['country_id'], 'country', ['id']], [['created_by_client_id'], 'client', ['id']]],
             [[['client_id'], 'client', ['id']]],
         ], [
             $this->selectTableForeignKeys('country'),
@@ -79,6 +92,9 @@ class MigratorFkTest extends TestCase
 
         $clientId = $client->insert(['name' => 'Leos']);
         $invoice->insert(['client_id' => $clientId]);
+
+        // same table FK
+        $client->insert(['name' => 'Ewa', 'created_by_client_id' => $clientId]);
 
         $this->expectException(Exception::class);
         try {
