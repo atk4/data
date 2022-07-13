@@ -37,11 +37,11 @@ trait SchemaManagerTrait
 
         // fix https://github.com/doctrine/dbal/pull/5486/files#r920239919
         foreach ($foreignKeys as $foreignKey) {
-            if (ctype_digit($foreignKey->getName())) {
-                \Closure::bind(function () use ($foreignKey) {
+            \Closure::bind(function () use ($foreignKey) {
+                if (ctype_digit((string) $foreignKey->_name)) {
                     $foreignKey->_name = null; // @phpstan-ignore-line
-                }, null, Identifier::class)();
-            }
+                }
+            }, null, Identifier::class)();
         }
 
         return $foreignKeys;
