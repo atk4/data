@@ -39,7 +39,7 @@ trait SchemaManagerTrait
         foreach ($foreignKeys as $foreignKey) {
             if (ctype_digit($foreignKey->getName())) {
                 \Closure::bind(function () use ($foreignKey) {
-                    $foreignKey->_name = null;
+                    $foreignKey->_name = null; // @phpstan-ignore-line
                 }, null, Identifier::class)();
             }
         }
