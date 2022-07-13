@@ -89,11 +89,17 @@ abstract class TestCase extends BaseTestCase
 
     protected function tearDown(): void
     {
-        while (count($this->createdMigrators) > 0) {
-            $migrator = array_pop($this->createdMigrators);
-            foreach ($migrator->getCreatedTableNames() as $t) {
-                (clone $migrator)->table($t)->dropIfExists(true);
+        $debugOrig = $this->debug;
+        try {
+            $this->debug = false;
+            while (count($this->createdMigrators) > 0) {
+                $migrator = array_pop($this->createdMigrators);
+                foreach ($migrator->getCreatedTableNames() as $t) {
+                    (clone $migrator)->table($t)->dropIfExists(true);
+                }
             }
+        } finally {
+            $this->debug = $debugOrig;
         }
 
         parent::tearDown();
