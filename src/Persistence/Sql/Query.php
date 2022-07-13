@@ -787,16 +787,12 @@ class Query extends Expression
 
     protected function _render_set(): ?string
     {
-        // will be joined for output
         $ret = [];
+        foreach ($this->args['set'] as [$field, $value]) {
+            $field = $this->consume($field, self::ESCAPE_IDENTIFIER);
+            $value = $this->consume($value, self::ESCAPE_PARAM);
 
-        if (isset($this->args['set']) && $this->args['set']) {
-            foreach ($this->args['set'] as [$field, $value]) {
-                $field = $this->consume($field, self::ESCAPE_IDENTIFIER);
-                $value = $this->consume($value, self::ESCAPE_PARAM);
-
-                $ret[] = $field . '=' . $value;
-            }
+            $ret[] = $field . '=' . $value;
         }
 
         return implode(', ', $ret);
@@ -804,15 +800,11 @@ class Query extends Expression
 
     protected function _render_set_fields(): ?string
     {
-        // will be joined for output
         $ret = [];
+        foreach ($this->args['set'] as $pair) {
+            $field = $this->consume($pair[0], self::ESCAPE_IDENTIFIER);
 
-        if ($this->args['set']) {
-            foreach ($this->args['set'] as $pair) {
-                $field = $this->consume($pair[0], self::ESCAPE_IDENTIFIER);
-
-                $ret[] = $field;
-            }
+            $ret[] = $field;
         }
 
         return implode(', ', $ret);
@@ -820,15 +812,11 @@ class Query extends Expression
 
     protected function _render_set_values(): ?string
     {
-        // will be joined for output
         $ret = [];
+        foreach ($this->args['set'] as $pair) {
+            $value = $this->consume($pair[1], self::ESCAPE_PARAM);
 
-        if ($this->args['set']) {
-            foreach ($this->args['set'] as $pair) {
-                $value = $this->consume($pair[1], self::ESCAPE_PARAM);
-
-                $ret[] = $value;
-            }
+            $ret[] = $value;
         }
 
         return implode(', ', $ret);
