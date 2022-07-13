@@ -67,22 +67,14 @@ class MigratorFkTest extends TestCase
         $this->createMigrator($invoice)->create();
         $this->createMigrator($country)->create();
 
-        // https://github.com/doctrine/dbal/issues/5485
-        // TODO submit a PR to DBAL
-        $isBrokenFkSqlite = $this->getDatabasePlatform() instanceof SqlitePlatform;
-
         $this->createForeignKey('client', ['country_id'], 'country', ['id']);
-        if (!$isBrokenFkSqlite) {
-            $this->createForeignKey('client', ['created_by_client_id'], 'client', ['id']);
-        }
+        $this->createForeignKey('client', ['created_by_client_id'], 'client', ['id']);
         $this->createForeignKey('invoice', ['client_id'], 'client', ['id']);
 
         // make sure FK client-country was not removed during FK invoice-client setup
         $this->assertSame([
             [],
-            $isBrokenFkSqlite ?
-                [[['country_id'], 'country', ['id']]]
-                : [[['country_id'], 'country', ['id']], [['created_by_client_id'], 'client', ['id']]],
+            [[['country_id'], 'country', ['id']], [['created_by_client_id'], 'client', ['id']]],
             [[['client_id'], 'client', ['id']]],
         ], [
             $this->selectTableForeignKeys('country'),

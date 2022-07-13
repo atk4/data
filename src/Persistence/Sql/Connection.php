@@ -17,7 +17,6 @@ use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Result as DbalResult;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\SqliteSchemaManager;
-use Doctrine\DBAL\Schema\TableDiff;
 
 /**
  * Class for establishing and maintaining connection with your database.
@@ -455,25 +454,7 @@ abstract class Connection
         if ($platform instanceof SqlitePlatform) {
             // @phpstan-ignore-next-line
             return new class($dbalConnection, $platform) extends SqliteSchemaManager {
-                public function alterTable(TableDiff $tableDiff)
-                {
-                    $hadForeignKeysEnabled = (bool) $this->_conn->executeQuery('PRAGMA foreign_keys')->fetchOne();
-                    if ($hadForeignKeysEnabled) {
-                        $this->_execSql('PRAGMA foreign_keys = 0');
-                    }
-
-                    parent::alterTable($tableDiff);
-
-                    if ($hadForeignKeysEnabled) {
-                        $this->_execSql('PRAGMA foreign_keys = 1');
-
-                        $rows = $this->_conn->executeQuery('PRAGMA foreign_key_check')->fetchAllAssociative();
-                        if (count($rows) > 0) {
-                            throw (new Exception('Foreign key constraints are violated'))
-                                ->addMoreInfo('data', $rows);
-                        }
-                    }
-                }
+                use Sqlite\SchemaManagerTrait;
             };
         }
 
