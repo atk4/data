@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Sqlite;
 
+use Doctrine\DBAL\Schema\ForeignKeyConstraint;
 use Doctrine\DBAL\Schema\Identifier;
 use Doctrine\DBAL\Schema\TableDiff;
 
@@ -47,5 +48,19 @@ trait PlatformTrait
     public function getListTableForeignKeysSQL($table, $database = null)
     {
         return parent::getListTableForeignKeysSQL($this->unquoteTableIdentifier($table), $database);
+    }
+
+    public function getAlterTableSQL(TableDiff $diff): array
+    {
+        // fix https://github.com/doctrine/dbal/pull/5501
+        $diff = clone $diff;
+        $diff->fromTable = clone $diff->fromTable;
+        foreach ($diff->fromTable->getForeignKeys() as $foreignKey) {
+            \Closure::bind(function () use ($foreignKey) {
+                $foreignKey->_localColumnNames = $foreignKey->createIdentifierMap($foreignKey->getUnquotedLocalColumns());
+            }, null, ForeignKeyConstraint::class)();
+        }
+
+        return parent::getAlterTableSQL($diff);
     }
 }
