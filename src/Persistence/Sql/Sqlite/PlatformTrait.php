@@ -61,6 +61,11 @@ trait PlatformTrait
             }, null, ForeignKeyConstraint::class)();
         }
 
+        // fix no indexes, alter table drops and recreates the table newly, so indexes must be recreated as well
+        // https://github.com/doctrine/dbal/pull/5486#issuecomment-1184957078
+        $diff = clone $diff;
+        $diff->addedIndexes = array_merge($diff->addedIndexes, $diff->fromTable->getIndexes());
+
         return parent::getAlterTableSQL($diff);
     }
 }
