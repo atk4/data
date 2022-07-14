@@ -7,9 +7,7 @@ namespace Atk4\Data\Tests\Schema;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Driver\Exception as DbalDriverException;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
-use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Schema\ForeignKeyConstraint;
 use Doctrine\DBAL\Schema\Identifier;
 
@@ -93,15 +91,7 @@ class MigratorFkTest extends TestCase
             $invoice->insert(['client_id' => 50]);
         } catch (Exception $e) {
             $dbalException = $e->getPrevious()->getPrevious();
-            if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
-                // FK violation exception is not properly converted by ExceptionConverter
-                // https://github.com/doctrine/dbal/blob/3.3.7/src/Driver/API/SQLite/ExceptionConverter.php
-                // https://github.com/doctrine/dbal/issues/5496
-                // TODO submit a PR to DBAL
-                $this->assertInstanceOf(DbalDriverException::class, $dbalException);
-            } else {
-                $this->assertInstanceOf(ForeignKeyConstraintViolationException::class, $dbalException);
-            }
+            $this->assertInstanceOf(ForeignKeyConstraintViolationException::class, $dbalException);
 
             throw $e;
         }

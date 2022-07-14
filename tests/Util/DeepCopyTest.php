@@ -192,7 +192,7 @@ class DeepCopyTest extends TestCase
         // now that invoice is mostly paid, due amount will reflect that
         $this->assertEquals(5, $invoice->get('due'));
 
-        // Next we copy invocie into simply a new record. Duplicate. However this time we will also duplicate payments,
+        // Next we copy invoice into simply a new record. Duplicate. However this time we will also duplicate payments,
         // and client. Because Payment references client too, we need to duplicate that one also, this way new record
         // structure will not be related to any existing records.
         $dc = new DeepCopy();
