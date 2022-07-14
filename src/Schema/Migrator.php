@@ -11,14 +11,12 @@ use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Reference\HasOne;
-use Doctrine\DBAL\Driver\Exception as DbalDriverException;
 use Doctrine\DBAL\Exception\DatabaseObjectNotFoundException;
 use Doctrine\DBAL\Exception\TableNotFoundException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
-use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Table;
 
@@ -145,18 +143,7 @@ class Migrator
             }
         }
 
-        try {
-            $schemaManager->dropTable($this->table->getQuotedName($this->getDatabasePlatform()));
-        } catch (DatabaseObjectNotFoundException $e) {
-            // fix exception not converted to TableNotFoundException for MSSQL
-            // https://github.com/doctrine/dbal/pull/5492
-            if ($this->getDatabasePlatform() instanceof SQLServerPlatform && $e->getPrevious() instanceof DbalDriverException
-                && preg_match('~[cC]annot drop the table \'.*\', because it does not exist or you do not have permission\.~', $e->getMessage())) {
-                throw new TableNotFoundException($e->getPrevious(), $e->getQuery());
-            }
-
-            throw $e;
-        }
+        $schemaManager->dropTable($this->table->getQuotedName($this->getDatabasePlatform()));
 
         $this->createdTableNames = array_diff($this->createdTableNames, [$this->table->getName()]);
 

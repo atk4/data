@@ -6,17 +6,16 @@ namespace Atk4\Data\Persistence\Sql;
 
 use Atk4\Core\DiContainerTrait;
 use Doctrine\Common\EventManager;
+use Doctrine\DBAL\Configuration as DbalConfiguration;
 use Doctrine\DBAL\Connection as DbalConnection;
+use Doctrine\DBAL\ConnectionException as DbalConnectionException;
+use Doctrine\DBAL\Driver as DbalDriver;
 use Doctrine\DBAL\Driver\Connection as DbalDriverConnection;
+use Doctrine\DBAL\Driver\Middleware as DbalMiddleware;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
-use Doctrine\DBAL\Platforms\SqlitePlatform;
-use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Result as DbalResult;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
-use Doctrine\DBAL\Schema\SqliteSchemaManager;
 
 /**
  * Class for establishing and maintaining connection with your database.
@@ -224,6 +223,21 @@ abstract class Connection
         return null; // @phpstan-ignore-line
     }
 
+    protected static function createDbalConfiguration(): DbalConfiguration
+    {
+        $dbalConfiguration = new DbalConfiguration();
+        $dbalConfiguration->setMiddlewares([
+            new class() implements DbalMiddleware {
+                public function wrap(DbalDriver $driver): DbalDriver
+                {
+                    return new DbalDriverMiddleware($driver);
+                }
+            },
+        ]);
+
+        return $dbalConfiguration;
+    }
+
     protected static function createDbalEventManager(): EventManager
     {
         return new EventManager();
@@ -240,7 +254,7 @@ abstract class Connection
 
         $dbalConnection = DriverManager::getConnection(
             $dsn,
-            null,
+            (static::class)::createDbalConfiguration(),
             (static::class)::createDbalEventManager()
         );
 
@@ -249,38 +263,14 @@ abstract class Connection
 
     protected static function connectFromDbalDriverConnection(DbalDriverConnection $dbalDriverConnection): DbalConnection
     {
-        $dbalConnection = DriverManager::getConnection([
-            'driver' => self::getDriverNameFromDbalDriverConnection($dbalDriverConnection),
-        ], null, (static::class)::createDbalEventManager());
+        $dbalConnection = DriverManager::getConnection(
+            ['driver' => self::getDriverNameFromDbalDriverConnection($dbalDriverConnection)],
+            (static::class)::createDbalConfiguration(),
+            (static::class)::createDbalEventManager()
+        );
         \Closure::bind(function () use ($dbalConnection, $dbalDriverConnection): void {
             $dbalConnection->_conn = $dbalDriverConnection;
         }, null, \Doctrine\DBAL\Connection::class)();
-
-        if ($dbalConnection->getDatabasePlatform() instanceof SqlitePlatform) {
-            \Closure::bind(function () use ($dbalConnection) {
-                $dbalConnection->platform = new class() extends SqlitePlatform {
-                    use Sqlite\PlatformTrait;
-                };
-            }, null, DbalConnection::class)();
-        } elseif ($dbalConnection->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            \Closure::bind(function () use ($dbalConnection) {
-                $dbalConnection->platform = new class() extends \Doctrine\DBAL\Platforms\PostgreSQL94Platform { // @phpstan-ignore-line
-                    use Postgresql\PlatformTrait;
-                };
-            }, null, DbalConnection::class)();
-        } elseif ($dbalConnection->getDatabasePlatform() instanceof SQLServerPlatform) {
-            \Closure::bind(function () use ($dbalConnection) {
-                $dbalConnection->platform = new class() extends \Doctrine\DBAL\Platforms\SQLServer2012Platform { // @phpstan-ignore-line
-                    use Mssql\PlatformTrait;
-                };
-            }, null, DbalConnection::class)();
-        } elseif ($dbalConnection->getDatabasePlatform() instanceof OraclePlatform) {
-            \Closure::bind(function () use ($dbalConnection) {
-                $dbalConnection->platform = new class() extends OraclePlatform {
-                    use Oracle\PlatformTrait;
-                };
-            }, null, DbalConnection::class)();
-        }
 
         return $dbalConnection;
     }
@@ -383,7 +373,7 @@ abstract class Connection
     {
         try {
             $this->getConnection()->beginTransaction();
-        } catch (\Doctrine\DBAL\ConnectionException $e) {
+        } catch (DbalConnectionException $e) {
             throw new Exception('Begin transaction failed', 0, $e);
         }
     }
@@ -410,7 +400,7 @@ abstract class Connection
     {
         try {
             $this->getConnection()->commit();
-        } catch (\Doctrine\DBAL\ConnectionException $e) {
+        } catch (DbalConnectionException $e) {
             throw new Exception('Commit failed', 0, $e);
         }
     }
@@ -422,7 +412,7 @@ abstract class Connection
     {
         try {
             $this->getConnection()->rollBack();
-        } catch (\Doctrine\DBAL\ConnectionException $e) {
+        } catch (DbalConnectionException $e) {
             throw new Exception('Rollback failed', 0, $e);
         }
     }
@@ -449,15 +439,6 @@ abstract class Connection
      */
     public function createSchemaManager(): AbstractSchemaManager
     {
-        $dbalConnection = $this->getConnection();
-        $platform = $this->getDatabasePlatform();
-        if ($platform instanceof SqlitePlatform) {
-            // @phpstan-ignore-next-line
-            return new class($dbalConnection, $platform) extends SqliteSchemaManager {
-                use Sqlite\SchemaManagerTrait;
-            };
-        }
-
-        return $dbalConnection->createSchemaManager();
+        return $this->getConnection()->createSchemaManager();
     }
 }
