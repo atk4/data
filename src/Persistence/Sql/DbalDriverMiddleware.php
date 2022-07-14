@@ -128,8 +128,8 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
                 function (DbalDriverConvertedException $convertedException, ?DbalQuery $query): DbalDriverConvertedException {
                     // fix table not found exception conversion
                     // https://github.com/doctrine/dbal/pull/5492
-                    $exception = self::getUnconvertedException($convertedException);
-                    if ($exception instanceof DatabaseObjectNotFoundException) {
+                    if ($convertedException instanceof DatabaseObjectNotFoundException) {
+                        $exception = self::getUnconvertedException($convertedException);
                         $exceptionMessageLc = strtolower($exception->getMessage());
                         if (str_contains($exceptionMessageLc, 'cannot drop the table')) {
                             return new TableNotFoundException($exception, $query);
