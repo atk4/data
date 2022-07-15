@@ -46,14 +46,14 @@ class Sql extends Persistence
     /** @var array Default class when adding new field. */
     protected $_defaultSeedAddField; // no custom seed needed
 
+    /** @var array Default class when adding Expression field. */
+    protected $_defaultSeedAddExpression = [SqlExpressionField::class];
+
     /** @var array Default class when adding hasOne field. */
     protected $_defaultSeedHasOne = [\Atk4\Data\Reference\HasOneSql::class];
 
     /** @var array Default class when adding hasMany field. */
     protected $_defaultSeedHasMany; // no custom seed needed
-
-    /** @var array Default class when adding Expression field. */
-    protected $_defaultSeedAddExpression = [SqlExpressionField::class];
 
     /** @var array Default class when adding join. */
     protected $_defaultSeedJoin = [Sql\Join::class];
@@ -123,13 +123,11 @@ class Sql extends Persistence
 
     public function add(Model $model, array $defaults = []): void
     {
-        // Use our own classes for fields, references and expressions unless
-        // $defaults specify them otherwise.
         $defaults = array_merge([
             '_defaultSeedAddField' => $this->_defaultSeedAddField,
+            '_defaultSeedAddExpression' => $this->_defaultSeedAddExpression,
             '_defaultSeedHasOne' => $this->_defaultSeedHasOne,
             '_defaultSeedHasMany' => $this->_defaultSeedHasMany,
-            '_defaultSeedAddExpression' => $this->_defaultSeedAddExpression,
             '_defaultSeedJoin' => $this->_defaultSeedJoin,
         ], $defaults);
 
