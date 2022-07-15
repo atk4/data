@@ -636,10 +636,10 @@ Ordering result-set
 
 Use this to order your :php:class:`Query` result-set::
 
-    $q->order('name');              // .. order by name
-    $q->order('name desc');         // .. order by name desc
-    $q->order('name desc, id asc')  // .. order by name desc, id asc
-    $q->order('name', true);        // .. order by name desc
+    $q->order('name');                  // .. order by name
+    $q->order('name desc');             // .. order by name desc
+    $q->order(['name desc', 'id asc'])  // .. order by name desc, id asc
+    $q->order('name', true);            // .. order by name desc
 
 Method can be executed several times on the same Query object.
 

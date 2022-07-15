@@ -880,7 +880,7 @@ class Query extends Expression
      *
      * $q->order('name');
      * $q->order('name desc');
-     * $q->order('name desc, id asc')
+     * $q->order(['name desc', 'id asc'])
      * $q->order('name', true);
      *
      * @param string|Expressionable|array<int, string|Expressionable> $order order by
@@ -908,11 +908,10 @@ class Query extends Expression
 
         // first argument may contain space, to divide field and ordering keyword
         if ($desc === null && is_string($order) && str_contains($order, ' ')) {
-            $_chunks = explode(' ', $order);
-            $_desc = strtolower(array_pop($_chunks));
-            if (in_array($_desc, ['desc', 'asc'], true)) {
-                $order = implode(' ', $_chunks);
-                $desc = $_desc;
+            $lastSpacePos = strrpos($order, ' ');
+            if (in_array(strtolower(substr($order, $lastSpacePos + 1)), ['desc', 'asc'], true)) {
+                $desc = substr($order, $lastSpacePos + 1);
+                $order = substr($order, 0, $lastSpacePos);
             }
         }
 
