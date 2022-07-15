@@ -93,19 +93,6 @@ class ReferenceTest extends TestCase
         $user->hasOne('user_id', ['model' => $user]);
     }
 
-    public function testRefName3(): void
-    {
-        $order = new Model($this->db, ['table' => 'order']);
-        $order->addRef('archive', ['model' => function ($m) {
-            return new $m(null, ['table' => $m->table . '_archive']);
-        }]);
-
-        $this->expectException(Exception::class);
-        $order->addRef('archive', ['model' => function ($m) {
-            return new $m(null, ['table' => $m->table . '_archive']);
-        }]);
-    }
-
     public function testCustomRef(): void
     {
         $m = new Model($this->db, ['table' => 'user']);
