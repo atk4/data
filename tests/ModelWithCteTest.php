@@ -26,19 +26,19 @@ class ModelWithCteTest extends TestCase
             ],
         ]);
 
-        $m_user = new Model($this->db, ['table' => 'user']);
-        $m_user->addField('name');
-        $m_user->addField('salary', ['type' => 'integer']);
+        $mUser = new Model($this->db, ['table' => 'user']);
+        $mUser->addField('name');
+        $mUser->addField('salary', ['type' => 'integer']);
 
-        $m_invoice = new Model($this->db, ['table' => 'invoice']);
-        $m_invoice->addField('net', ['type' => 'integer']);
-        $m_invoice->hasOne('user_id', ['model' => $m_user]);
-        $m_invoice->addCondition('net', '>', 100);
+        $mInvoice = new Model($this->db, ['table' => 'invoice']);
+        $mInvoice->addField('net', ['type' => 'integer']);
+        $mInvoice->hasOne('user_id', ['model' => $mUser]);
+        $mInvoice->addCondition('net', '>', 100);
 
-        $m = clone $m_user;
-        $m->addCteModel('i', $m_invoice); // add cursor
-        $j_invoice = $m->join('i.user_id'); // join cursor
-        $j_invoice->addField('invoiced', ['type' => 'integer', 'actual' => 'net']); // add field from joined cursor
+        $m = clone $mUser;
+        $m->addCteModel('i', $mInvoice); // add cursor
+        $jInvoice = $m->join('i.user_id'); // join cursor
+        $jInvoice->addField('invoiced', ['type' => 'integer', 'actual' => 'net']); // add field from joined cursor
 
         $this->assertSameSql(
             'with "i" as (select "id", "net", "user_id" from "invoice" where "net" > :a)' . "\n"
@@ -72,7 +72,7 @@ class ModelWithCteTest extends TestCase
 
     public function testUniqueNameException2(): void
     {
-        $m1 = new Model(null, ['table_alias' => 't']);
+        $m1 = new Model(null, ['tableAlias' => 't']);
         $m2 = new Model();
 
         $this->expectException(Exception::class);

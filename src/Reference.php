@@ -31,11 +31,11 @@ class Reference
     /**
      * Use this alias for related entity by default. This can help you
      * if you create sub-queries or joins to separate this from main
-     * table. The table_alias will be uniquely generated.
+     * table. The tableAlias will be uniquely generated.
      *
      * @var string
      */
-    protected $table_alias;
+    protected $tableAlias;
 
     /**
      * What should we pass into owner->ref() to get through to this reference.
@@ -199,8 +199,8 @@ class Reference
      */
     public function createTheirModel(array $defaults = []): Model
     {
-        // set table_alias
-        $defaults['table_alias'] ??= $this->table_alias;
+        // set tableAlias
+        $defaults['tableAlias'] ??= $this->tableAlias;
 
         // if model is Closure, then call the closure and it should return a model
         if ($this->model instanceof \Closure) {
@@ -228,17 +228,17 @@ class Reference
 
     protected function initTableAlias(): void
     {
-        if (!$this->table_alias) {
+        if (!$this->tableAlias) {
             $ourModel = $this->getOurModel(null);
 
             $aliasFull = $this->link;
             $alias = preg_replace('~_(' . preg_quote($ourModel->id_field ?? '', '~') . '|id)$~', '', $aliasFull);
             $alias = preg_replace('~([0-9a-z]?)[0-9a-z]*[^0-9a-z]*~i', '$1', $alias);
-            if ($ourModel->table_alias !== null) {
-                $aliasFull = $ourModel->table_alias . '_' . $aliasFull;
-                $alias = preg_replace('~^_(.+)_[0-9a-f]{12}$~', '$1', $ourModel->table_alias) . '_' . $alias;
+            if ($ourModel->tableAlias !== null) {
+                $aliasFull = $ourModel->tableAlias . '_' . $aliasFull;
+                $alias = preg_replace('~^_(.+)_[0-9a-f]{12}$~', '$1', $ourModel->tableAlias) . '_' . $alias;
             }
-            $this->table_alias = '_' . $alias . '_' . substr(md5($aliasFull), 0, 12);
+            $this->tableAlias = '_' . $alias . '_' . substr(md5($aliasFull), 0, 12);
         }
     }
 

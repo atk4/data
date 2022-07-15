@@ -100,11 +100,11 @@ to re-use your query efficiently::
 
 The example above will perform a select query first:
 
- - `select id from user where id=123`
+ - `select id from user where id = 123`
 
 If a single row can be retrieved, then the update will be performed:
 
- - `update user set name="John", surname="Smith", revision=revision + 1 where id=123`
+ - `update user set name="John", surname="Smith", revision=revision + 1 where id = 123`
 
 Otherwise an insert operation will be performed:
 
@@ -148,7 +148,7 @@ This query will perform `select name from (select * from employee)`::
         ->field('date')
         ->field('amount', null, 'credit');
 
-    $u = $c->dsql("[] union []", [$q1, $q2]);
+    $u = $c->dsql('[] union []', [$q1, $q2]);
 
     $q = $c->dsql()
         ->field('date, debit, credit')
@@ -161,9 +161,9 @@ query:
 
 .. code-block:: sql
 
-    select `date`,`debit`,`credit` from (
-        (select `date`,`amount` `debit` from `sales`) union
-        (select `date`,`amount` `credit` from `purchases`)
+    select `date`, `debit`, `credit` from (
+        (select `date`, `amount` `debit` from `sales`) union
+        (select `date`, `amount` `credit` from `purchases`)
     ) `derrivedTable`
 
 Modifying Select Query
@@ -220,13 +220,13 @@ table::
 Finally, you can also specify a different query instead of table, by simply
 passing another :php:class:`Query` object::
 
-    $sub_q = $c->dsql();
-    $sub_q->table('employee');
-    $sub_q->where('name', 'John');
+    $subQuery = $c->dsql();
+    $subQuery->table('employee');
+    $subQuery->where('name', 'John');
 
     $q = $c->dsql();
     $q->field('surname');
-    $q->table($sub_q, 'sub');
+    $q->table($subQuery, 'sub');
 
     // SELECT `surname` FROM (SELECT * FROM `employee` WHERE `name` = :a) `sub`
 
@@ -471,13 +471,13 @@ and overwrite this simple method to support expressions like this, for example:
 Joining with other tables
 -------------------------
 
-.. php:method:: join($foreignTable, $master_field, $join_kind)
+.. php:method:: join($foreignTable, $masterField, $joinKind)
 
     Join results with additional table using "JOIN" statement in your query.
 
     :param string|array $foreignTable: table to join (may include field and alias)
-    :param mixed  $master_field:  main field (and table) to join on or Expression
-    :param string $join_kind:     'left' (default), 'inner', 'right' etc - which join type to use
+    :param mixed  $masterField:  main field (and table) to join on or Expression
+    :param string $joinKind:     'left' (default), 'inner', 'right' etc - which join type to use
     :returns: $this
 
 When joining with a different table, the results will be stacked by the SQL
@@ -596,9 +596,9 @@ Use WITH cursors
 .. code-block:: sql
 
     with
-        `q` (`emp`,`quoted`) as (select `emp_id`,sum(`total_net`) from `quotes` group by `emp_id`),
-        `i` (`emp`,`invoiced`) as (select `emp_id`,sum(`total_net`) from `invoices` group by `emp_id`)
-    select `name`,`salary`,`q`.`quoted`,`i`.`invoiced`
+        `q` (`emp`, `quoted`) as (select `emp_id`, sum(`total_net`) from `quotes` group by `emp_id`),
+        `i` (`emp`, `invoiced`) as (select `emp_id`, sum(`total_net`) from `invoices` group by `emp_id`)
+    select `name`, `salary`, `q`.`quoted`, `i`.`invoiced`
     from `employees`
         left join `q` on `q`.`emp` = `employees`.`id`
         left join `i` on `i`.`emp` = `employees`.`id`
@@ -636,10 +636,10 @@ Ordering result-set
 
 Use this to order your :php:class:`Query` result-set::
 
-    $q->order('name');              // .. order by name
-    $q->order('name desc');         // .. order by name desc
-    $q->order('name desc, id asc')  // .. order by name desc, id asc
-    $q->order('name',true);         // .. order by name desc
+    $q->order('name');                  // .. order by name
+    $q->order('name desc');             // .. order by name desc
+    $q->order(['name desc', 'id asc'])  // .. order by name desc, id asc
+    $q->order('name', true);            // .. order by name desc
 
 Method can be executed several times on the same Query object.
 

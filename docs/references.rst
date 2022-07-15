@@ -21,9 +21,9 @@ use::
     $m->hasMany('Orders', ['model' => [Model_Order::class]]);
     $m = $m->load(13);
 
-    $orders_for_user_13 = $m->ref('Orders');
+    $ordersForUser13 = $m->ref('Orders');
 
-As mentioned - $orders_for_user_13 will have it's DataSet automatically adjusted
+As mentioned - $ordersForUser13 will have it's DataSet automatically adjusted
 so that you could only access orders for the user with ID=13. The following is
 also possible::
 
@@ -31,8 +31,8 @@ also possible::
     $m->hasMany('Orders', ['model' => [Model_Order::class]]);
     $m->addCondition('is_vip', true);
 
-    $orders_for_vips = $m->ref('Orders');
-    $orders_for_vips = $orders_for_vips->loadAny();
+    $ordersForVips = $m->ref('Orders');
+    $ordersForVips = $ordersForVips->loadAny();
 
 Condition on the base model will be carried over to the orders and you will
 only be able to access orders that belong to VIP users. The query for loading
@@ -57,11 +57,11 @@ not reside inside the same database?
 
 You can specify it like this::
 
-    $m = new Model_User($db_array_cache, 'user');
-    $m->hasMany('Orders', ['model' => [Model_Order::class, $db_sql]]);
+    $m = new Model_User($dbArrayCache, 'user');
+    $m->hasMany('Orders', ['model' => [Model_Order::class, $dbSql]]);
     $m->addCondition('is_vip', true);
 
-    $orders_for_vips = $m->ref('Orders');
+    $ordersForVips = $m->ref('Orders');
 
 Now that a different databases are used, the queries can no longer be
 joined so Agile Data will carry over list of IDs instead:
@@ -71,7 +71,7 @@ joined so Agile Data will carry over list of IDs instead:
     $ids = select id from user where is_vip = 1
     select * from order where user_id in ($ids)
 
-Since we are using ``$db_array_cache``, then field values will actually
+Since we are using ``$dbArrayCache``, then field values will actually
 be retrieved from memory.
 
 .. note:: This is not implemented as of 1.1.0, see https://github.com/atk4/data/issues/158
@@ -129,7 +129,7 @@ It is possible to perform reference through an 3rd party table::
 
 Now you can fetch all the payments associated with the invoice through::
 
-    $payments_for_invoice_1 = $i->load(1)->ref('Payments');
+    $paymentsForInvoice1 = $i->load(1)->ref('Payments');
 
 Dealing with NON-ID fields
 --------------------------
@@ -143,7 +143,7 @@ available. Both models will relate through ``currency.code = exchange.currency_c
 
     $c->hasMany('Exchanges', ['model' => $e, 'their_field' => 'currency_code', 'our_field' => 'code']);
 
-    $c->addCondition('is_convertable',true);
+    $c->addCondition('is_convertable', true);
     $e = $c->ref('Exchanges');
 
 This will produce the following query:
@@ -152,7 +152,7 @@ This will produce the following query:
 
     select * from exchange
     where currency_code in
-        (select code form currency where is_convertable=1)
+        (select code form currency where is_convertable = 1)
 
 
 Concatenating Fields
@@ -171,7 +171,7 @@ Add Aggregate Fields
 
 Reference hasMany makes it a little simpler for you to define an aggregate fields::
 
-    $u = new Model_User($db_array_cache, 'user');
+    $u = new Model_User($dbArrayCache, 'user');
 
     $u->hasMany('Orders', ['model' => [Model_Order::class]])
         ->addField('amount', ['aggregate' => 'sum']);
@@ -258,7 +258,7 @@ Normally ref() will return a usable model back to you, however if you use refLin
 the conditioning will be done differently. refLink is useful when defining
 sub-queries::
 
-    $m = new Model_User($db_array_cache, 'user');
+    $m = new Model_User($dbArrayCache, 'user');
     $m->hasMany('Orders', ['model' => [Model_Order::class]]);
     $m->addCondition('is_vip', true);
 
@@ -405,7 +405,7 @@ This would create 'currency' field containing name of the currency::
 
     $i = $i->load(20);
 
-    echo "Currency for invoice 20 is " . $i->get('currency');   // EUR
+    echo 'Currency for invoice 20 is ' . $i->get('currency');   // EUR
 
 Unlike addField() which creates fields read-only, title field can in fact be
 modified::
@@ -477,7 +477,7 @@ such as import more fields with :php:meth:`Model::addField()`.
 Or you can use :php:meth:`Model::refModel()` which will simply return referenced
 model and you can do fancy things with it.
 
-    $ref_model = $model->refModel('owner_id');
+    $refModel = $model->refModel('owner_id');
 
 You can also use :php:meth:`Model::hasRef()` to check if particular reference
 exists in model::
@@ -506,7 +506,7 @@ and traversal will encapsulate sub-queries resulting in a query like this:
 
     select * from address where id in
         (select address_id from user where id in
-            (select user_id from order where id=1 ))
+            (select user_id from order where id = 1 ))
 
 
 Reference Aliases
@@ -529,10 +529,10 @@ When generating expression for 'parent', the sub-query will use alias ``pi``
 consisting of first letters in 'parent_item_id'. (except _id). You can actually
 specify a custom table alias if you want::
 
-    $item->hasMany('parent_item_id', ['model' => [Model_Item::class], 'table_alias' => 'mypi'])
+    $item->hasMany('parent_item_id', ['model' => [Model_Item::class], 'tableAlias' => 'mypi'])
         ->addField('parent', 'name');
 
-Additionally you can pass table_alias as second argument into :php:meth:`Model::ref()`
+Additionally you can pass tableAlias as second argument into :php:meth:`Model::ref()`
 or :php:meth:`Model::refLink()`. This can help you in creating a recursive models
 that relate to itself. Here is example::
 
@@ -547,11 +547,11 @@ that relate to itself. Here is example::
             $this->addField('name');
             $this->addField('age');
             $i2 = $this->join('item2.item_id');
-            $i2->hasOne('parent_item_id', ['model' => $m, 'table_alias' => 'parent'])
+            $i2->hasOne('parent_item_id', ['model' => $m, 'tableAlias' => 'parent'])
                 ->addTitle();
 
-            $this->hasMany('Child', ['model' => $m, 'their_field' => 'parent_item_id', 'table_alias' => 'child'])
-                ->addField('child_age',['aggregate' => 'sum', 'field' => 'age']);
+            $this->hasMany('Child', ['model' => $m, 'their_field' => 'parent_item_id', 'tableAlias' => 'child'])
+                ->addField('child_age', ['aggregate' => 'sum', 'field' => 'age']);
         }
     }
 
@@ -560,7 +560,7 @@ Loading model like that can produce a pretty sophisticated query:
 .. code-block:: sql
 
     select
-        `pp`.`id`,`pp`.`name`,`pp`.`age`,`pp_i`.`parent_item_id`,
+        `pp`.`id`, `pp`.`name`, `pp`.`age`, `pp_i`.`parent_item_id`,
         (select `parent`.`name`
          from `item` `parent`
          left join `item2` as `parent_i` on `parent_i`.`item_id` = `parent`.`id`
@@ -569,7 +569,7 @@ Loading model like that can produce a pretty sophisticated query:
         (select sum(`child`.`age`) from `item` `child`
          left join `item2` as `child_i` on `child_i`.`item_id` = `child`.`id`
          where `child_i`.`parent_item_id` = `pp`.`id`
-        ) `child_age`,`pp`.`id` `_i`
+        ) `child_age`, `pp`.`id` `_i`
     from `item` `pp`left join `item2` as `pp_i` on `pp_i`.`item_id` = `pp`.`id`
 
 Various ways to specify options
@@ -651,7 +651,7 @@ References are implemented through several classes:
 
     Defines generic reference, that is typically created by :php:meth:`Model::addRef`
 
-.. php:attr:: table_alias
+.. php:attr:: tableAlias
 
     Alias for related table. Because multiple references can point to the same
     table, ability to have unique alias is pretty good.

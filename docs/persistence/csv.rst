@@ -58,10 +58,10 @@ which fields you would like to see in the CSV::
 Additionally if you want to use a different column titles, you can::
 
     foreach (new Model_User($db) as $m) {
-        $m_csv = $m->withPersistence($csv);
-        $m_csv->setOnlyFields(['id', 'name', 'password'])
-        $m_csv->getField('name')->actual = 'First Name';
-        $m_csv->save();
+        $mCsv = $m->withPersistence($csv);
+        $mCsv->setOnlyFields(['id', 'name', 'password'])
+        $mCsv->getField('name')->actual = 'First Name';
+        $mCsv->save();
     }
 
 Like with any other persistence you can use typecasting if you want data to be
@@ -72,30 +72,30 @@ a performance inefficiency. This can be solved by re-using Csv model through
 iterations::
 
     $m = new Model_User($db);
-    $m_csv = $m->withPersistence($csv);
-    $m_csv->setOnlyFields(['id', 'name', 'password'])
-    $m_csv->getField('name')->actual = 'First Name';
+    $mCsv = $m->withPersistence($csv);
+    $mCsv->setOnlyFields(['id', 'name', 'password'])
+    $mCsv->getField('name')->actual = 'First Name';
 
-    foreach ($m as $m_csv) {
-        $m_csv->save();
+    foreach ($m as $mCsv) {
+        $mCsv->save();
     }
 
 This code can be further simplified if you use import() method::
 
     $m = new Model_User($db);
-    $m_csv = $m->withPersistence($csv);
-    $m_csv->setOnlyFields(['id', 'name', 'password'])
-    $m_csv->getField('name')->actual = 'First Name';
-    $m_csv->import($m);
+    $mCsv = $m->withPersistence($csv);
+    $mCsv->setOnlyFields(['id', 'name', 'password'])
+    $mCsv->getField('name')->actual = 'First Name';
+    $mCsv->import($m);
 
 Naturally you can also move data in the other direction::
 
     $m = new Model_User($db);
-    $m_csv = $m->withPersistence($csv);
-    $m_csv->setOnlyFields(['id', 'name', 'password'])
-    $m_csv->getField('name')->actual = 'First Name';
+    $mCsv = $m->withPersistence($csv);
+    $mCsv->setOnlyFields(['id', 'name', 'password'])
+    $mCsv->getField('name')->actual = 'First Name';
 
-    $m->import($m_csv);
+    $m->import($mCsv);
 
 Only the last line changes and the data will now flow in the other direction.
 

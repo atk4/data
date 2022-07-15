@@ -70,7 +70,7 @@ class HasMany extends Reference
         // TODO horrible hack to render the field with a table prefix,
         // find a solution how to wrap the field inside custom Field (without owner?)
         $ourModelCloned = clone $this->getOurModel(null);
-        $ourModelCloned->persistence_data['use_table_prefixes'] = true;
+        $ourModelCloned->persistenceData['use_table_prefixes'] = true;
 
         return $ourModelCloned->getRef($this->link)->getOurField();
     }
@@ -115,7 +115,7 @@ class HasMany extends Reference
                 ->addMoreInfo('defaults', $defaults);
         }
 
-        $defaults['aggregate_relation'] = $this;
+        $defaults['aggregateRelation'] = $this;
 
         $alias = $defaults['field'] ?? null;
         $field = $alias ?? $fieldName;

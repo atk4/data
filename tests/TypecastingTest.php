@@ -379,12 +379,12 @@ class TypecastingTest extends TestCase
 
     public function testTimestamp(): void
     {
-        $sql_time = '2016-10-25 11:44:08';
+        $sqlTime = '2016-10-25 11:44:08';
 
         $this->setDb([
             'types' => [
                 [
-                    'date' => $sql_time,
+                    'date' => $sqlTime,
                 ],
             ],
         ]);
@@ -399,12 +399,12 @@ class TypecastingTest extends TestCase
 
     public function testBadTimestamp(): void
     {
-        $sql_time = '20blah16-10-25 11:44:08';
+        $sqlTime = '20blah16-10-25 11:44:08';
 
         $this->setDb([
             'types' => [
                 [
-                    'date' => $sql_time,
+                    'date' => $sqlTime,
                 ],
             ],
         ]);
@@ -417,12 +417,12 @@ class TypecastingTest extends TestCase
 
     public function testDirtyTimestamp(): void
     {
-        $sql_time = '2016-10-25 11:44:08';
+        $sqlTime = '2016-10-25 11:44:08';
 
         $this->setDb([
             'types' => [
                 [
-                    'date' => $sql_time,
+                    'date' => $sqlTime,
                 ],
             ],
         ]);
@@ -496,13 +496,13 @@ class TypecastingTest extends TestCase
 
     public function testDirtyTime(): void
     {
-        $sql_time = new \DateTime('11:44:08 GMT');
-        $sql_time_new = new \DateTime('12:34:56 GMT');
+        $sqlTime = new \DateTime('11:44:08 GMT');
+        $sqlTimeNew = new \DateTime('12:34:56 GMT');
 
         $this->setDb([
             'types' => [
                 [
-                    'date' => $sql_time->format('H:i:s'),
+                    'date' => $sqlTime->format('H:i:s'),
                 ],
             ],
         ]);
@@ -511,20 +511,20 @@ class TypecastingTest extends TestCase
         $m->addField('ts', ['actual' => 'date', 'type' => 'time']);
         $m = $m->loadOne();
 
-        $m->set('ts', $sql_time_new);
+        $m->set('ts', $sqlTimeNew);
         $this->assertTrue($m->isDirty('ts'));
 
-        $m->set('ts', $sql_time);
+        $m->set('ts', $sqlTime);
         $this->assertFalse($m->isDirty('ts'));
 
-        $m->set('ts', $sql_time_new);
+        $m->set('ts', $sqlTimeNew);
         $this->assertTrue($m->isDirty('ts'));
     }
 
     public function testDirtyTimeAfterSave(): void
     {
-        $sql_time = new \DateTime('11:44:08 GMT');
-        $sql_time_new = new \DateTime('12:34:56 GMT');
+        $sqlTime = new \DateTime('11:44:08 GMT');
+        $sqlTimeNew = new \DateTime('12:34:56 GMT');
 
         $this->setDb([
             'types' => [
@@ -538,16 +538,16 @@ class TypecastingTest extends TestCase
         $m->addField('ts', ['actual' => 'date', 'type' => 'time']);
         $m = $m->loadOne();
 
-        $m->set('ts', $sql_time);
+        $m->set('ts', $sqlTime);
         $this->assertTrue($m->isDirty('ts'));
 
         $m->save();
         $m->reload();
 
-        $m->set('ts', $sql_time);
+        $m->set('ts', $sqlTime);
         $this->assertFalse($m->isDirty('ts'));
 
-        $m->set('ts', $sql_time_new);
+        $m->set('ts', $sqlTimeNew);
         $this->assertTrue($m->isDirty('ts'));
     }
 }

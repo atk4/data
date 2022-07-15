@@ -15,7 +15,7 @@ Quick Example::
 
     $query->where('time', $query->expr(
         'between "[]" and "[]"',
-        [$from_time, $to_time]
+        [$fromTime, $toTime]
     ));
 
     // Produces: .. where `time` between :a and :b
@@ -82,7 +82,7 @@ Creating Expression
 
     use Atk4\Data\Persistence\Sql\Expression;
 
-    $expr = new Expression("NOW()");
+    $expr = new Expression('NOW()');
 
 You can also use :php:meth:`expr()` method to create expression, in which case
 you do not have to define "use" block::
@@ -94,7 +94,7 @@ you do not have to define "use" block::
 You can specify some of the expression properties through first argument of the
 constructor::
 
-    $expr = new Expression(["NOW()", 'connection' => $pdo]);
+    $expr = new Expression(['NOW()', 'connection' => $pdo]);
 
 :ref:`Scroll down <properties>` for full list of properties.
 
@@ -114,13 +114,13 @@ Arguments can be specified immediately through an array as a second argument
 into constructor or you can specify arguments later::
 
     $expr = new Expression(
-        "coalesce([name], [surname])",
+        'coalesce([name], [surname])',
         ['name' => $name, 'surname' => $surname]
     );
 
     // is the same as
 
-    $expr = new Expression("coalesce([name], [surname])");
+    $expr = new Expression('coalesce([name], [surname])');
     $expr['name'] = $name;
     $expr['surname'] = $surname;
 
@@ -129,7 +129,7 @@ Nested expressions
 
 Expressions can be nested several times::
 
-    $age = new Expression("coalesce([age], [default_age])");
+    $age = new Expression('coalesce([age], [default_age])');
     $age['age'] = new Expression("year(now()) - year(birth_date)");
     $age['default_age'] = 18;
 
@@ -162,18 +162,18 @@ your expression. Before you do, however, you need to have :php:attr:`$connection
 property set. (See `Connecting to Database` on more details). In short the
 following code will connect your expression with the database::
 
-    $expr = new Expression('connection' => $pdo_dbh);
+    $expr = new Expression('connection' => $pdo);
 
 If you are looking to use connection :php:class:`Query` class, you may want to
 consider using a proper vendor-specific subclass::
 
-    $query = new \Atk4\Data\Persistence\Sql\Mysql\Query('connection' => $pdo_dbh);
+    $query = new \Atk4\Data\Persistence\Sql\Mysql\Query('connection' => $pdo);
 
 
 If your expression already exist and you wish to associate it with connection
 you can simply change the value of :php:attr:`$connection` property::
 
-    $expr->connection = $pdo_dbh;
+    $expr->connection = $pdo;
 
 Finally, you can pass connection class into :php:meth:`executeQuery` directly.
 
@@ -182,7 +182,7 @@ Finally, you can pass connection class into :php:meth:`executeQuery` directly.
     Executes expression using current database connection or the one you
     specify as the argument::
 
-        $stmt = $expr->executeQuery($pdo_dbh);
+        $stmt = $expr->executeQuery($pdo);
 
     returns `Doctrine\DBAL\Result`.
 
@@ -206,7 +206,7 @@ Finally, you can pass connection class into :php:meth:`executeQuery` directly.
     Executes expression and return whole result-set in form of array of hashes::
 
         $data = new Expression([
-                'connection' => $pdo_dbh,
+                'connection' => $pdo,
                 'template' => 'show databases',
             ])->getRows();
         echo json_encode($data);
@@ -227,7 +227,7 @@ Finally, you can pass connection class into :php:meth:`executeQuery` directly.
     Executes expression and returns first row of data from result-set as a hash::
 
         $data = new Expression([
-                'connection' => $pdo_dbh,
+                'connection' => $pdo,
                 'template' => 'SELECT @@global.time_zone, @@session.time_zone',
             ])->getRow()
 
@@ -245,7 +245,7 @@ Finally, you can pass connection class into :php:meth:`executeQuery` directly.
     result-set::
 
         $time = new Expression([
-                'connection' => $pdo_dbh,
+                'connection' => $pdo,
                 'template' => 'now()',
             ])->getOne();
 
@@ -291,21 +291,21 @@ parts of the query. You must not call them in normal circumstances.
 
 .. php:method::consume($expression, string $escapeMode = self::ESCAPE_PARAM)
 
-  Makes `$sql_code` part of `$this` expression. Argument may be either a string
+  Makes `$sqlCode` part of `$this` expression. Argument may be either a string
   (which will be escaped) or another :php:class:`Expression` or :php:class:`Query`.
   If specified :php:class:`Query` is in "select" mode, then it's automatically
   placed inside brackets::
 
-      $query->consume('first_name');  // `first_name`
-      $query->consume($other_query);  // will merge parameters and return string
+      $query->consume('first_name'); // `first_name`
+      $query->consume($otherQuery);  // will merge parameters and return string
 
-.. php:method:: escapeIdentifier($sql_code)
+.. php:method:: escapeIdentifier($sqlCode)
 
   Always surrounds `$sql code` with back-ticks.
 
   This escaping method is automatically used for `{...}` expression template tags .
 
-.. php:method:: escapeIdentifierSoft($sql_code)
+.. php:method:: escapeIdentifierSoft($sqlCode)
 
   Surrounds `$sql code` with back-ticks.
 
@@ -313,7 +313,7 @@ parts of the query. You must not call them in normal circumstances.
 
   It will smartly escape table.field type of strings resulting in `table`.`field`.
 
-  Will do nothing if it finds "*", "`" or "(" character in `$sql_code`::
+  Will do nothing if it finds "*", "`" or "(" character in `$sqlCode`::
 
       $query->escapeIdentifierSoft('first_name');  // `first_name`
       $query->escapeIdentifierSoft('first.name');  // `first`.`name`
@@ -337,9 +337,9 @@ Other Properties
 .. php:attr:: template
 
     Template which is used when rendering.
-    You can set this with either `new Expression("show tables")`
-    or `new Expression(["show tables"])`
-    or `new Expression(["template" => "show tables"])`.
+    You can set this with either `new Expression('show tables')`
+    or `new Expression(['show tables'])`
+    or `new Expression(['template' => 'show tables'])`.
 
 .. php:attr:: connection
 

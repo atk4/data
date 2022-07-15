@@ -30,7 +30,7 @@ abstract class ContainsBase extends Reference
     public $ui = [];
 
     /** @var string Required! We need table alias for internal use only. */
-    protected $table_alias = 'tbl';
+    protected $tableAlias = 'tbl';
 
     /**
      * Reference\ContainsOne will also add a field corresponding

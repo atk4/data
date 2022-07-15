@@ -176,7 +176,7 @@ class ExpressionSqlTest extends TestCase
         $this->assertEquals(9, $m->createEntity()->save(['a' => 4, 'b' => 5])->get('sum'));
 
         $this->setDb($dbData);
-        $m = new Model($this->db, ['table' => 'math', 'reload_after_save' => false]);
+        $m = new Model($this->db, ['table' => 'math', 'reloadAfterSave' => false]);
         $m->addFields(['a', 'b']);
 
         $m->addExpression('sum', ['expr' => '[a] + [b]']);

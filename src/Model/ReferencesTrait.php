@@ -14,19 +14,19 @@ use Atk4\Data\Reference;
 trait ReferencesTrait
 {
     /** @var array The seed used by addRef() method. */
-    public $_default_seed_addRef = [Reference::class];
+    protected $_defaultSeedAddRef = [Reference::class];
 
     /** @var array The seed used by hasOne() method. */
-    public $_default_seed_hasOne = [Reference\HasOne::class];
+    protected $_defaultSeedHasOne = [Reference\HasOne::class];
 
     /** @var array The seed used by hasMany() method. */
-    public $_default_seed_hasMany = [Reference\HasMany::class];
+    protected $_defaultSeedHasMany = [Reference\HasMany::class];
 
     /** @var array The seed used by containsOne() method. */
-    public $_default_seed_containsOne = [Reference\ContainsOne::class];
+    protected $_defaultSeedContainsOne = [Reference\ContainsOne::class];
 
     /** @var array The seed used by containsMany() method. */
-    public $_default_seed_containsMany = [Reference\ContainsMany::class];
+    protected $_defaultSeedContainsMany = [Reference\ContainsMany::class];
 
     /**
      * @param array<string, mixed> $defaults Properties which we will pass to Reference object constructor
@@ -55,7 +55,7 @@ trait ReferencesTrait
      */
     public function addRef(string $link, array $defaults): Reference
     {
-        return $this->_addRef($this->_default_seed_addRef, $link, $defaults);
+        return $this->_addRef($this->_defaultSeedAddRef, $link, $defaults);
     }
 
     /**
@@ -65,7 +65,7 @@ trait ReferencesTrait
      */
     public function hasOne(string $link, array $defaults = []) // : Reference
     {
-        return $this->_addRef($this->_default_seed_hasOne, $link, $defaults); // @phpstan-ignore-line
+        return $this->_addRef($this->_defaultSeedHasOne, $link, $defaults); // @phpstan-ignore-line
     }
 
     /**
@@ -75,7 +75,7 @@ trait ReferencesTrait
      */
     public function hasMany(string $link, array $defaults = []) // : Reference
     {
-        return $this->_addRef($this->_default_seed_hasMany, $link, $defaults); // @phpstan-ignore-line
+        return $this->_addRef($this->_defaultSeedHasMany, $link, $defaults); // @phpstan-ignore-line
     }
 
     /**
@@ -85,7 +85,7 @@ trait ReferencesTrait
      */
     public function containsOne(string $link, array $defaults = []) // : Reference
     {
-        return $this->_addRef($this->_default_seed_containsOne, $link, $defaults); // @phpstan-ignore-line
+        return $this->_addRef($this->_defaultSeedContainsOne, $link, $defaults); // @phpstan-ignore-line
     }
 
     /**
@@ -95,7 +95,7 @@ trait ReferencesTrait
      */
     public function containsMany(string $link, array $defaults = []) // : Reference
     {
-        return $this->_addRef($this->_default_seed_containsMany, $link, $defaults); // @phpstan-ignore-line
+        return $this->_addRef($this->_defaultSeedContainsMany, $link, $defaults); // @phpstan-ignore-line
     }
 
     /**

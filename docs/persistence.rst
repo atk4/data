@@ -172,15 +172,8 @@ complex logic::
     // May transparently work with 2 columns: 'balance_amount' and
     // 'balance_currency_id' for example.
 
-The process of converting field values as indicated above is called
-"normalization" and it is controlled by one model property:
-
-    $m->load_normalization = false;
-
-If you switch on :php:attr:`Model::load_normalization` then the values will also be
-normalized as they are loaded from the database. Normally you should only
-do that if you're storing values into database by other means and not through
-Agile Data.
+Loaded/saved data are always normalized unless the field value normalization
+is intercepted a hook.
 
 Final field flag that is worth mentioning is called :php:attr:`Field::read_only`
 and if set, then value of a field may not be modified directly::
@@ -290,58 +283,6 @@ I wanted to draw your attention to the use of field flags:
  - system flag is used to hide `balance_amount` and `balance_currency_id` in UI.
  - never_persist flag is used because there are no `balance` column in persistence.
 
-
-Type Matrix
------------
-
-.. todo:: this section might need cleanup
-
-+----+----------------------------------------------------------+------+----+-----+
-| ty | description                                              | nati | sq | mon |
-| pe |                                                          | ve   | l  | go  |
-|    |                                                          |      |    |     |
-|    |                                                          |      |    |     |
-|    |                                                          |      |    |     |
-+====+==========================================================+======+====+=====+
-| st | Will be trim() ed.                                       |      |    |     |
-| ri |                                                          |      |    |     |
-| ng |                                                          |      |    |     |
-+----+----------------------------------------------------------+------+----+-----+
-| in | will cast to int make sure it's not passed as a string.  | -394 | 49 | 49  |
-| te |                                                          | ,    |    |     |
-| ge |                                                          | "49" |    |     |
-| r  |                                                          |      |    |     |
-+----+----------------------------------------------------------+------+----+-----+
-| fl | decimal number with floating point                       | 3.28 |    |     |
-| oa |                                                          | 84,  |    |     |
-| t  |                                                          |      |    |     |
-+----+----------------------------------------------------------+------+----+-----+
-| at | Will convert loosly-specified currency into float or     | "£3, | 38 |     |
-| k4 | dedicated format for storage. Optionally support 'fmt'   | 294. | 29 |     |
-| _m | property.                                                | 48", | 4. |     |
-| on |                                                          | 3.99 | 48 |     |
-| y  |                                                          | 999  | ,  |     |
-|    |                                                          |      | 4  |     |
-+----+----------------------------------------------------------+------+----+-----+
-| bo | true / false type value.                                 | true | 1  | tru |
-| ol |                                                          |      |    | e   |
-| ea |                                                          |      |    |     |
-| n  |                                                          |      |    |     |
-+----+----------------------------------------------------------+------+----+-----+
-| js | Optionally pass 'fmt' option, which is 'json' by         | [2 => | {2 | sto |
-| on | default. Will json_encode and json_decode(..., true)     | "bar | :" | red |
-|    | the value if database does not support array storage.    | "]   | ba | as- |
-|    |                                                          |      | r" | is  |
-|    |                                                          |      | }  |     |
-+----+----------------------------------------------------------+------+----+-----+
-| bi | Supports storage of binary data like BLOBs               |      |    |     |
-| na |                                                          |      |    |     |
-| ry |                                                          |      |    |     |
-+----+----------------------------------------------------------+------+----+-----+
-
--  Money: http://php.net/manual/en/numberformatter.parsecurrency.php.
--  money: See also
-   http://www.thefinancials.com/Default.aspx?SubSectionID=curformat
 
 Dates and Time
 --------------
@@ -517,7 +458,7 @@ There are two approaches to deal with this problem. The first involves disabling
 after-save reloading::
 
     function archive() {
-        $this->reload_after_save = false;
+        $this->reloadAfterSave = false;
         $this->set('is_archived', true);
         return $this;
     }
@@ -654,11 +595,11 @@ In theory you can use hooks (that have option to cancel default action) to
 create a comprehensive system-wide solution, I'll illustrate how this can be
 done with a single record::
 
-    $m = new Order($read_replica);
+    $m = new Order($readReplica);
 
     $m->set('completed', true);
 
-    $m->withPersistence($write_replica)->save();
+    $m->withPersistence($writeReplica)->save();
     $dirtyRef = &$m->getDirtyRef();
     $dirtyRef = [];
 
@@ -666,18 +607,18 @@ done with a single record::
     // $m->reload();
 
 By changing 'completed' field value, it creates a dirty field inside `$m`,
-which will be saved inside a `$write_replica`. Although the proper approach
+which will be saved inside a `$writeReplica`. Although the proper approach
 would be to reload the `$m`, if there is chance that your update to a write
 replica may not propagate to read replica, you can simply reset the dirty flags.
 
-If you need further optimization, make sure `reload_after_save` is disabled
+If you need further optimization, make sure `reloadAfterSave` is disabled
 for the write replica::
 
-    $m->withPersistence($write_replica)->setDefaults(['reload_after_save' => false])->save();
+    $m->withPersistence($writeReplica)->setDefaults(['reloadAfterSave' => false])->save();
 
 or use::
 
-    $m->withPersistence($write_replica)->saveAndUnload();
+    $m->withPersistence($writeReplica)->saveAndUnload();
 
 Archive Copies into different persistence
 -----------------------------------------
@@ -707,8 +648,8 @@ you can implement it like this::
     }
 
     $sess = new \Atk4\Data\Persistence\Array_($_SESSION['ad']);
-    $logged_user = new User($sess);
-    $logged_user = $logged_user->load('active_user');
+    $loggedUser = new User($sess);
+    $loggedUser = $loggedUser->load('active_user');
 
 This would load the user data from Array located inside a local session. There
 is no point storing multiple users, so I'm using id='active_user' for the only
@@ -765,11 +706,11 @@ When used inside the same Persistence, sometimes actions can be used without
 executing::
 
     $m = Model_Product($db);
-    $m->addCondition('name', $product_name);
-    $id_query_action = $m->action('getOne',['id']);
+    $m->addCondition('name', $productName);
+    $action = $m->action('getOne', ['id']);
 
     $m = Model_Invoice($db);
-    $m->insert(['qty' => 20, 'product_id' => $id_query_action]);
+    $m->insert(['qty' => 20, 'product_id' => $action]);
 
 Insert operation will check if you are using same persistence.
 If the persistence object is different, it will execute action and will use

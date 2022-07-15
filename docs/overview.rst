@@ -61,7 +61,7 @@ Class: Field
 ------------
 
  - Represent logical data column (e.g. "date_of_birth")
- - Stores column meta-information (e.g. "type" => "date", "caption" => "Birth Date")
+ - Stores column meta-information (e.g. ['type' => 'date', 'caption' => 'Birth Date'])
  - Handles value normalization
  - Documentation: :php:class:`Field`
 

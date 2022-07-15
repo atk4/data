@@ -392,8 +392,7 @@ class ConditionSqlTest extends TestCase
     }
 
     /**
-     * Test loadBy and tryLoadBy.
-     * They should set only temporary condition.
+     * Test loadBy and tryLoadBy. They should set only temporary condition.
      */
     public function testLoadBy(): void
     {
@@ -420,9 +419,6 @@ class ConditionSqlTest extends TestCase
         $this->assertNull($u->getField('name')->default); // should not set field default value
     }
 
-    /**
-     * Test LIKE condition.
-     */
     public function testLikeCondition(): void
     {
         $this->setDb([

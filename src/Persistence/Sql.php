@@ -44,19 +44,19 @@ class Sql extends Persistence
     private $_connection;
 
     /** @var array Default class when adding new field. */
-    public $_default_seed_addField; // no custom seed needed
-
-    /** @var array Default class when adding hasOne field. */
-    public $_default_seed_hasOne = [\Atk4\Data\Reference\HasOneSql::class];
-
-    /** @var array Default class when adding hasMany field. */
-    public $_default_seed_hasMany; // no custom seed needed
+    protected $_defaultSeedAddField; // no custom seed needed
 
     /** @var array Default class when adding Expression field. */
-    public $_default_seed_addExpression = [SqlExpressionField::class];
+    protected $_defaultSeedAddExpression = [SqlExpressionField::class];
+
+    /** @var array Default class when adding hasOne field. */
+    protected $_defaultSeedHasOne = [\Atk4\Data\Reference\HasOneSql::class];
+
+    /** @var array Default class when adding hasMany field. */
+    protected $_defaultSeedHasMany; // no custom seed needed
 
     /** @var array Default class when adding join. */
-    public $_default_seed_join = [Sql\Join::class];
+    protected $_defaultSeedJoin = [Sql\Join::class];
 
     /**
      * @param Connection|string|array|DbalConnection|DbalDriverConnection $connection
@@ -123,14 +123,12 @@ class Sql extends Persistence
 
     public function add(Model $model, array $defaults = []): void
     {
-        // Use our own classes for fields, references and expressions unless
-        // $defaults specify them otherwise.
         $defaults = array_merge([
-            '_default_seed_addField' => $this->_default_seed_addField,
-            '_default_seed_hasOne' => $this->_default_seed_hasOne,
-            '_default_seed_hasMany' => $this->_default_seed_hasMany,
-            '_default_seed_addExpression' => $this->_default_seed_addExpression,
-            '_default_seed_join' => $this->_default_seed_join,
+            '_defaultSeedAddField' => $this->_defaultSeedAddField,
+            '_defaultSeedAddExpression' => $this->_defaultSeedAddExpression,
+            '_defaultSeedHasOne' => $this->_defaultSeedHasOne,
+            '_defaultSeedHasMany' => $this->_defaultSeedHasMany,
+            '_defaultSeedJoin' => $this->_defaultSeedJoin,
         ], $defaults);
 
         parent::add($model, $defaults);
@@ -205,7 +203,7 @@ class Sql extends Persistence
         if ($model->table) {
             $query->table(
                 is_object($model->table) ? $model->table->action('select') : $model->table,
-                $model->table_alias ?? (is_object($model->table) ? '_tm' : null)
+                $model->tableAlias ?? (is_object($model->table) ? '_tm' : null)
             );
         }
 
@@ -426,9 +424,9 @@ class Sql extends Persistence
                 $field = is_string($field) ? $model->getField($field) : $field;
 
                 if ($type === 'fx') {
-                    $expr = "{$fx}([])";
+                    $expr = $fx . '([])';
                 } else {
-                    $expr = "coalesce({$fx}([]), 0)";
+                    $expr = 'coalesce(' . $fx . '([]), 0)';
                 }
 
                 $query = $this->action($model, 'select', [[]]);
@@ -588,7 +586,7 @@ class Sql extends Persistence
         $model->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update, $c]);
 
         // if any rows were updated in database, and we had expressions, reload
-        if ($model->reload_after_save && $c > 0) {
+        if ($model->reloadAfterSave && $c > 0) {
             $d = $model->getDirtyRef();
             $model->reload();
             \Closure::bind(function () use ($model) {
@@ -641,12 +639,12 @@ class Sql extends Persistence
 
     public function getFieldSqlExpression(Field $field, Expression $expression): Expression
     {
-        if (isset($field->getOwner()->persistence_data['use_table_prefixes'])) {
+        if (isset($field->getOwner()->persistenceData['use_table_prefixes'])) {
             $mask = '{{}}.{}';
             $prop = [
                 $field->hasJoin()
-                    ? ($field->getJoin()->foreign_alias ?: $field->getJoin()->shortName)
-                    : ($field->getOwner()->table_alias ?? (is_object($field->getOwner()->table) ? '_tm' : $field->getOwner()->table)),
+                    ? ($field->getJoin()->foreignAlias ?: $field->getJoin()->shortName)
+                    : ($field->getOwner()->tableAlias ?? (is_object($field->getOwner()->table) ? '_tm' : $field->getOwner()->table)),
                 $field->getPersistenceName(),
             ];
         } else {

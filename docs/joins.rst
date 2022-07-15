@@ -21,10 +21,10 @@ Agile Data allows you to map multiple table fields into a single business model
 by using joins::
 
     $user->addField('username');
-    $j_contact = $user->join('contact');
-    $j_contact->addField('address');
-    $j_contact->addField('county');
-    $j_contact->hasOne('Country');
+    $jContact = $user->join('contact');
+    $jContact->addField('address');
+    $jContact->addField('county');
+    $jContact->hasOne('Country');
 
 This code will load data from two tables simultaneously and if you do change any
 of those fields they will be update in their respective tables. With SQL the
@@ -34,16 +34,16 @@ load query would look like this:
 
     select
         u.username, c.address, c.county, c.country_id
-        (select name from country where country.id=c.country_id) country
+        (select name from country where country.id = c.country_id) country
     from user u
-    join contact c on c.id=u.contact_id
+    join contact c on c.id = u.contact_id
     where u.id = $id
 
 If driver is unable to query both tables simultaneously, then it will load one
 record first, then load other record and will collect fields together::
 
-    $user_data = $user->find($id);
-    $contact_data = $contact->find($user_data->get('contact_id'));
+    $user = $user->load($id);
+    $contact = $contact->load($user->get('contact_id'));
 
 When saving the record, Joins will automatically record data correctly:
 
@@ -66,10 +66,10 @@ but you wouldn't want that adding a new user would create a new country::
 
     $user->addField('username');
     $user->addField('country_id');
-    $j_country = $user->weakJoin('country', ['prefix' => 'country_']);
-    $j_country->addField('code');
-    $j_country->addField('name');
-    $j_country->addField('default_currency', ['prefix' => false]);
+    $jCountry = $user->weakJoin('country', ['prefix' => 'country_']);
+    $jCountry->addField('code');
+    $jCountry->addField('name');
+    $jCountry->addField('default_currency', ['prefix' => false]);
 
 After this you will have the following fields in your model:
 
@@ -114,7 +114,7 @@ earlier examples, we the master table was "user" that contained reference to
 "contact". The condition would look like this ``user.contact_id=contact.id``.
 In some cases, however, a relation should be reversed::
 
-    $j_contact = $user->join('contact.user_id');
+    $jContact = $user->join('contact.user_id');
 
 This will result in the following join condition: ``user.id=contact.user_id``.
 The first argument to join defines both the table that we need to join and
@@ -125,15 +125,15 @@ Reverse joins are saved in the opposite order - primary table will be saved
 first and when id of a primary table is known, foreign table record is stored
 and ID is supplied. You can pass option 'master_field' to the join() which will
 specify which field to be used for matching. By default the field is calculated
-like this: foreign_table . '_id'. Here is usage example::
+like this: foreignTable . '_id'. Here is usage example::
 
     $user->addField('username');
-    $j_cc = $user->join('credit_card', [
+    $jCreditCard = $user->join('credit_card', [
         'prefix' => 'cc_',
         'master_field' => 'default_credit_card_id',
     ]);
-    $j_cc->addField('integer');  // creates cc_number
-    $j_cc->addField('name');    // creates cc_name
+    $jCreditCard->addField('integer');  // creates cc_number
+    $jCreditCard->addField('name');    // creates cc_name
 
 Master field can also be specified as an object of a Field class.
 
@@ -173,7 +173,7 @@ with a foreign table.
 
     same as :php:meth:`Model::hasMany` but condition for related model will be
     based on foreign table field and :php:attr:`Reference::their_field` will be
-    set to $foreign_table . '_id'.
+    set to $foreignTable . '_id'.
 
 .. php:method:: containsOne
 
@@ -206,21 +206,21 @@ When it comes to deleting record, there are three possible conditions:
    If we are using strong join and master table contains ID of foreign table,
    then foreign master table record is deleted first. Foreign table record is
    deleted after. This is done to avoid error with foreign constraints.
-2. [delete_behaviour = cascade, reverse = true]
+2. [deleteBehaviour = cascade, reverse = true]
    If we are using strong join and foreign table contains ID of master table,
    then foreign table record is deleted first followed by the master table record.
 
-3. [delete_behaviour = ignore, reverse = false]
+3. [deleteBehaviour = ignore, reverse = false]
    If we are using weak join and the master table contains ID of foreign table,
    then master table is deleted first. Foreign table record is not deleted.
 
-4. [delete_behaviour = setnull, reverse = true]
+4. [deleteBehaviour = setnull, reverse = true]
    If we are using weak join and foreign table contains ID of master table,
    then foreign table is updated to set ID of master table to NULL first.
    Then the master table record is deleted.
 
 Based on the way how you define join an appropriate strategy is selected and
-Join will automatically decide on $delete_behaviour and $reverse values.
+Join will automatically decide on $deleteBehaviour and $reverse values.
 There are situations, however when it's impossible to determine in which order
 the operations have to be performed. A good example is when you define both
 master/foreign fields.
@@ -228,7 +228,7 @@ master/foreign fields.
 In this case system will default to "reverse=false" and will delete master
 record first, however you can specify a different value for "reverse".
 
-Sometimes it's also sensible to set delete_behaviour = ignore and perform your
+Sometimes it's also sensible to set deleteBehaviour = ignore and perform your
 own delete operation yourself.
 
 
@@ -244,7 +244,7 @@ Joins are implemented like this:
   When save is executed, it will execute additional query to update foreign table.
 - while $model->getId() stores the ID of the main table active record, $join->id
   stores ID of the foreign record and will be used when updating.
-- option 'delete_behaviour' is 'cascade' for strong joins and 'ignore' for weak
+- option 'deleteBehaviour' is 'cascade' for strong joins and 'ignore' for weak
   joins, but you can set some other value. If you use "setnull" value and you
   are using reverse join, then foreign table record will not be updated, but
   value of the foreign field will be set to null.
@@ -281,14 +281,14 @@ When you're dealing with SQL drivers, you can specify `\Atk4\Data\Persistence\Sq
 
     $stats = $user->join('stats', [
         'on' => $user->expr('year({}) = _st.year'),
-        'foreign_alias' => '_st',
+        'foreignAlias' => '_st',
     ]);
 
 You can also specify ``'on' => false`` then the ON clause will not be used at all
 and you'll have to add additional where() condition yourself.
 
-``foreign_alias`` can be specified and will be used as table alias and prefix
-for all fields. It will default to ``'_' . $foreign_table->get(0)``. Agile Data will
+``foreignAlias`` can be specified and will be used as table alias and prefix
+for all fields. It will default to ``'_' . $this->foreignTable``. Agile Data will
 also resolve situations when multiple tables have same first character so the
 prefixes will be named '_c', '_c_2', '_c_3' etc.
 

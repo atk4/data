@@ -46,14 +46,14 @@ by switching to DSQL::
     $pdo = DB::connection()->getPdo();
     $c = new Connection(['connection' => $pdo]);
 
-    $user_ids = $c->dsql()->table('expired_users')->field('user_id');
-    $c->dsql()->table('user')->where('id', 'in', $user_ids)->set('active', 0)->mode('update')->executeStatement();
+    $userIds = $c->dsql()->table('expired_users')->field('user_id');
+    $c->dsql()->table('user')->where('id', 'in', $userIds)->set('active', 0)->mode('update')->executeStatement();
 
     // Native Laravel Database Query Builder
-    // $user_ids = DB::table('expired_users')->lists('user_id');
-    // DB::table('user')->whereIn('id', $user_ids)->update(['active', 0]);
+    // $userIds = DB::table('expired_users')->lists('user_id');
+    // DB::table('user')->whereIn('id', $userIds)->update(['active', 0]);
 
-The native query builder in the example above populates $user_id with array from
+The native query builder in the example above populates $userIds with array from
 `expired_users` table, then creates second query, which is an update. With
 DSQL we have accomplished same thing with a single query and without fetching
 results too.
@@ -68,9 +68,9 @@ results too.
         id in (SELECT user_id from expired_users)
 
 If you are creating :php:class:`Connection` through constructor, you may have
-to explicitly specify property :php:attr:`Connection::query_class`::
+to explicitly specify property :php:attr:`Connection::queryClass`::
 
-    $c = new Connection(['connection' => $pdo, 'query_class' => Atk4\Data\Persistence\Sql\Sqlite\Query::class]);
+    $c = new Connection(['connection' => $pdo, 'queryClass' => Atk4\Data\Persistence\Sql\Sqlite\Query::class]);
 
 This is also useful, if you have created your own Query class in a different
 namespace and wish to use it.
@@ -91,19 +91,19 @@ Let's say you want to add support for new SQL vendor::
 
         // also join is not supported
         public function join(
-            $foreign_table,
-            $master_field = null,
-            $join_kind = null,
-            $_foreign_alias = null
+            $foreignTable,
+            $masterField = null,
+            $joinKind = null,
+            $foreignAlias = null
         ) {
-            throw new Atk4\Data\Persistence\Sql\Exception("Join is not supported by the database");
+            throw new Atk4\Data\Persistence\Sql\Exception('Join is not supported by the database');
         }
     }
 
 Now that our custom query class is complete, we would like to use it by default
 on the connection::
 
-    $c = \Atk4\Data\Persistence\Sql\Connection::connect($dsn, $user, $pass, ['query_class' => 'Query_MyVendor']);
+    $c = \Atk4\Data\Persistence\Sql\Connection::connect($dsn, $user, $pass, ['queryClass' => 'Query_MyVendor']);
 
 .. _new_vendor:
 

@@ -73,7 +73,7 @@ abstract class Persistence
      */
     public function add(Model $model, array $defaults = []): void
     {
-        if ($model->issetPersistence() || $model->persistence_data !== []) {
+        if ($model->issetPersistence() || $model->persistenceData !== []) {
             throw new \Error('Persistence::add() cannot be called directly, use Model::setPersistence() instead');
         }
 

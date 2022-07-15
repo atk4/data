@@ -14,7 +14,7 @@ class ContainsOne extends ContainsBase
         $ourModel = $this->getOurModelPassedToRefXxx();
 
         return new Persistence\Array_([
-            $this->table_alias => $ourModel->isEntity() && $this->getOurFieldValue($ourModel) !== null ? [1 => $this->getOurFieldValue($ourModel)] : [],
+            $this->tableAlias => $ourModel->isEntity() && $this->getOurFieldValue($ourModel) !== null ? [1 => $this->getOurFieldValue($ourModel)] : [],
         ]);
     }
 
@@ -24,7 +24,7 @@ class ContainsOne extends ContainsBase
 
         $theirModel = $this->createTheirModel(array_merge($defaults, [
             'containedInEntity' => $ourModel->isEntity() ? $ourModel : null,
-            'table' => $this->table_alias,
+            'table' => $this->tableAlias,
         ]));
 
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
@@ -34,7 +34,7 @@ class ContainsOne extends ContainsBase
 
                 /** @var Persistence\Array_ */
                 $persistence = $theirModel->getPersistence();
-                $row = $persistence->getRawDataByTable($theirModel, $this->table_alias);
+                $row = $persistence->getRawDataByTable($theirModel, $this->tableAlias);
                 $row = $row ? array_shift($row) : null; // get first and only one record from array persistence
                 $ourModel->save([$this->getOurFieldName() => $row]);
             });

@@ -180,7 +180,7 @@ class CsvTest extends TestCase
 
         // TODO should be not needed after https://github.com/atk4/data/pull/690 is merged
         // Exception: Csv persistence does not support other than LOAD ANY mode
-        $m2->reload_after_save = false;
+        $m2->reloadAfterSave = false;
 
         foreach ($m as $row) {
             $m2->createEntity()->save($row->get());
@@ -194,9 +194,6 @@ class CsvTest extends TestCase
         );
     }
 
-    /**
-     * Test export.
-     */
     public function testExport(): void
     {
         $data = [

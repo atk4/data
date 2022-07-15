@@ -25,10 +25,10 @@ abstract class Connection
     use DiContainerTrait;
 
     /** @var string Query classname */
-    protected $query_class = Query::class;
+    protected $queryClass = Query::class;
 
     /** @var string Expression classname */
-    protected $expression_class = Expression::class;
+    protected $expressionClass = Expression::class;
 
     /** @var DbalConnection */
     private $_connection;
@@ -282,7 +282,7 @@ abstract class Connection
      */
     public function dsql($properties = []): Query
     {
-        $c = $this->query_class;
+        $c = $this->queryClass;
         $q = new $c($properties);
         $q->connection = $this;
 
@@ -296,7 +296,7 @@ abstract class Connection
      */
     public function expr($properties = [], array $arguments = []): Expression
     {
-        $c = $this->expression_class;
+        $c = $this->expressionClass;
         $e = new $c($properties, $arguments);
         $e->connection = $this;
 

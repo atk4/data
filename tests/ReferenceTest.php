@@ -40,9 +40,6 @@ class ReferenceTest extends TestCase
         $this->assertSame(100, $user->ref('BigOrders')->createEntity()->get('amount'));
     }
 
-    /**
-     * Test caption of referenced model.
-     */
     public function testModelCaption(): void
     {
         $user = new Model(null, ['table' => 'user']);
@@ -94,19 +91,6 @@ class ReferenceTest extends TestCase
 
         $this->expectException(Exception::class);
         $user->hasOne('user_id', ['model' => $user]);
-    }
-
-    public function testRefName3(): void
-    {
-        $order = new Model($this->db, ['table' => 'order']);
-        $order->addRef('archive', ['model' => function ($m) {
-            return new $m(null, ['table' => $m->table . '_archive']);
-        }]);
-
-        $this->expectException(Exception::class);
-        $order->addRef('archive', ['model' => function ($m) {
-            return new $m(null, ['table' => $m->table . '_archive']);
-        }]);
     }
 
     public function testCustomRef(): void

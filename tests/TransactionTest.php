@@ -112,10 +112,10 @@ class TransactionTest extends TestCase
         $m->addField('name');
         $m->addField('foo');
 
-        $hook_called = false;
+        $hookCalled = false;
         $values = [];
-        $m->onHook(Model::HOOK_ROLLBACK, static function (Model $model, \Exception $e) use (&$hook_called, &$values) {
-            $hook_called = true;
+        $m->onHook(Model::HOOK_ROLLBACK, static function (Model $model, \Exception $e) use (&$hookCalled, &$values) {
+            $hookCalled = true;
             $values = $model->get(); // model field values are still the same no matter we rolled back
             $model->breakHook(false); // if we break hook and return false then exception is not thrown, but rollback still happens
         });
@@ -125,7 +125,7 @@ class TransactionTest extends TestCase
         $m->setMulti(['name' => 'Jane', 'foo' => 'bar']);
         $m->save();
 
-        $this->assertTrue($hook_called);
+        $this->assertTrue($hookCalled);
         $this->assertSame($m->get(), $values);
     }
 }

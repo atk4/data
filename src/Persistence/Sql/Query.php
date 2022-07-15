@@ -22,7 +22,7 @@ class Query extends Expression
     public $defaultField = '*';
 
     /** @var string Expression classname */
-    protected $expression_class = Expression::class;
+    protected $expressionClass = Expression::class;
 
     /** @var bool */
     public $wrapInParentheses = true;
@@ -83,7 +83,6 @@ class Query extends Expression
             throw new \TypeError('Array input is no longer accepted');
         }
 
-        // save field in args
         $this->_set_args('field', $alias, $field);
 
         return $this;
@@ -92,16 +91,13 @@ class Query extends Expression
     /**
      * Returns template component for [field].
      *
-     * @param bool $add_alias Should we add aliases, see _render_field_noalias()
+     * @param bool $addAlias Should we add aliases, see _render_field_noalias()
      *
      * @return string Parsed template chunk
      */
-    protected function _render_field($add_alias = true): string
+    protected function _render_field($addAlias = true): string
     {
-        // will be joined for output
-        $ret = [];
-
-        // If no fields were defined, use defaultField
+        // if no fields were defined, use defaultField
         if (empty($this->args['field'])) {
             if ($this->defaultField instanceof Expression) {
                 return $this->consume($this->defaultField);
@@ -110,21 +106,20 @@ class Query extends Expression
             return (string) $this->defaultField;
         }
 
-        // process each defined field
+        $res = [];
         foreach ($this->args['field'] as $alias => $field) {
-            // Do not add alias, if:
-            //  - we don't want aliases OR
-            //  - alias is the same as field OR
-            //  - alias is numeric
-            if (
-                $add_alias === false
+            // do not add alias when:
+            //  - we don't want aliases
+            //  - OR alias is the same as field
+            //  - OR alias is numeric
+            if ($addAlias === false
                 || (is_string($field) && $alias === $field)
                 || is_int($alias)
             ) {
                 $alias = null;
             }
 
-            // Will parameterize the value and escape if necessary
+            // will parameterize the value and escape if necessary
             $field = $this->consume($field, self::ESCAPE_IDENTIFIER_SOFT);
 
             if ($alias) {
@@ -132,10 +127,10 @@ class Query extends Expression
                 $field .= ' ' . $this->escapeIdentifier($alias);
             }
 
-            $ret[] = $field;
+            $res[] = $field;
         }
 
-        return implode(', ', $ret);
+        return implode(', ', $res);
     }
 
     protected function _render_field_noalias(): string
@@ -171,7 +166,6 @@ class Query extends Expression
             $alias = $table;
         }
 
-        // save table in args
         $this->_set_args('table', $alias, $table);
 
         return $this;
@@ -203,30 +197,25 @@ class Query extends Expression
     }
 
     /**
-     * @param bool $add_alias Should we add aliases, see _render_table_noalias()
+     * @param bool $addAlias Should we add aliases, see _render_table_noalias()
      */
-    protected function _render_table($add_alias = true): ?string
+    protected function _render_table($addAlias = true): ?string
     {
-        // will be joined for output
-        $ret = [];
-
         if (empty($this->args['table'])) {
             return '';
         }
 
-        // process tables one by one
+        $res = [];
         foreach ($this->args['table'] as $alias => $table) {
-            // throw exception if we don't want to add alias and table is defined as Expression
-            if ($add_alias === false && $table instanceof self) {
+            if ($addAlias === false && $table instanceof self) {
                 throw new Exception('Table cannot be Query in UPDATE, INSERT etc. query modes');
             }
 
-            // Do not add alias, if:
-            //  - we don't want aliases OR
-            //  - alias is the same as table name OR
-            //  - alias is numeric
-            if (
-                $add_alias === false
+            // do not add alias when:
+            //  - we don't want aliases
+            //  - OR alias is the same as table name
+            //  - OR alias is numeric
+            if ($addAlias === false
                 || (is_string($table) && $alias === $table)
                 || is_int($alias)
             ) {
@@ -241,10 +230,10 @@ class Query extends Expression
                 $table .= ' ' . $this->escapeIdentifier($alias);
             }
 
-            $ret[] = $table;
+            $res[] = $table;
         }
 
-        return implode(', ', $ret);
+        return implode(', ', $res);
     }
 
     protected function _render_table_noalias(): ?string
@@ -273,7 +262,6 @@ class Query extends Expression
      */
     public function with(self $cursor, string $alias, array $fields = null, bool $recursive = false)
     {
-        // save cursor in args
         $this->_set_args('with', $alias, [
             'cursor' => $cursor,
             'fields' => $fields,
@@ -289,7 +277,7 @@ class Query extends Expression
             return '';
         }
 
-        $ret = [];
+        $res = [];
 
         $isRecursive = false;
         foreach ($this->args['with'] as $alias => ['cursor' => $cursor, 'fields' => $fields, 'recursive' => $recursive]) {
@@ -304,15 +292,14 @@ class Query extends Expression
             // will parameterize the value and escape if necessary
             $s .= 'as ' . $this->consume($cursor, self::ESCAPE_IDENTIFIER_SOFT);
 
-            // is at least one recursive ?
             if ($recursive) {
                 $isRecursive = true;
             }
 
-            $ret[] = $s;
+            $res[] = $s;
         }
 
-        return 'with ' . ($isRecursive ? 'recursive ' : '') . implode(',' . "\n", $ret) . "\n";
+        return 'with ' . ($isRecursive ? 'recursive ' : '') . implode(',' . "\n", $res) . "\n";
     }
 
     // }}}
@@ -340,47 +327,47 @@ class Query extends Expression
      * You can use expression for more complex joins
      *  $q->join('address',
      *      $q->orExpr()
-     *          ->where('user.billing_id=address.id')
-     *          ->where('user.technical_id=address.id')
+     *          ->where('user.billing_id', 'address.id')
+     *          ->where('user.technical_id', 'address.id')
      *  )
      *
-     * @param string $foreign_table  Table to join with
-     * @param mixed  $master_field   Field in master table
-     * @param string $join_kind      'left' or 'inner', etc
-     * @param string $_foreign_alias Internal, don't use
+     * @param string            $foreignTable Table to join with
+     * @param string|Expression $masterField  Field in master table
+     * @param string            $joinKind     'left' or 'inner', etc
+     * @param string            $foreignAlias
      *
      * @return $this
      */
     public function join(
-        $foreign_table,
-        $master_field = null,
-        $join_kind = null,
-        $_foreign_alias = null
+        $foreignTable,
+        $masterField = null,
+        $joinKind = null,
+        $foreignAlias = null
     ) {
         // remove in v4.0
-        if (is_array($foreign_table)) {
+        if (is_array($foreignTable)) {
             throw new \TypeError('Array input is no longer accepted');
         }
 
         $j = [];
 
         // try to find alias in foreign table definition. this behaviour should be deprecated
-        if ($_foreign_alias === null) {
-            [$foreign_table, $_foreign_alias] = array_pad(explode(' ', $foreign_table, 2), 2, null);
+        if ($foreignAlias === null) {
+            [$foreignTable, $foreignAlias] = array_pad(explode(' ', $foreignTable, 2), 2, null);
         }
 
-        // Split and deduce fields
+        // split and deduce fields
         // TODO this will not allow table names with dots in there !!!
-        [$f1, $f2] = array_pad(explode('.', $foreign_table, 2), 2, null);
+        [$f1, $f2] = array_pad(explode('.', $foreignTable, 2), 2, null);
 
-        if (is_object($master_field)) {
-            $j['expr'] = $master_field;
+        if (is_object($masterField)) {
+            $j['expr'] = $masterField;
         } else {
-            // Split and deduce primary table
-            if ($master_field === null) {
+            // split and deduce primary table
+            if ($masterField === null) {
                 [$m1, $m2] = [null, null];
             } else {
-                [$m1, $m2] = array_pad(explode('.', $master_field, 2), 2, null);
+                [$m1, $m2] = array_pad(explode('.', $masterField, 2), 2, null);
             }
             if ($m2 === null) {
                 $m2 = $m1;
@@ -390,7 +377,7 @@ class Query extends Expression
                 $m1 = $this->getMainTable();
             }
 
-            // Identify fields we use for joins
+            // identify fields we use for joins
             if ($f2 === null && $m2 === null) {
                 $m2 = $f1 . '_id';
             }
@@ -407,8 +394,8 @@ class Query extends Expression
         }
         $j['f2'] = $f2;
 
-        $j['t'] = $join_kind ?: 'left';
-        $j['fa'] = $_foreign_alias;
+        $j['t'] = $joinKind ?: 'left';
+        $j['fa'] = $foreignAlias;
 
         $this->args['join'][] = $j;
 
@@ -549,16 +536,14 @@ class Query extends Expression
      */
     protected function _sub_render_where($kind): array
     {
-        // will be joined for output
-        $ret = [];
-
-        // where() might have been called multiple times. Collect all conditions,
-        // then join them with AND keyword
+        // where() might have been called multiple times
+        // collect all conditions, then join them with AND keyword
+        $res = [];
         foreach ($this->args[$kind] as $row) {
-            $ret[] = $this->_sub_render_condition($row);
+            $res[] = $this->_sub_render_condition($row);
         }
 
-        return $ret;
+        return $res;
     }
 
     protected function _sub_render_condition(array $row): string
@@ -576,13 +561,11 @@ class Query extends Expression
         $field = $this->consume($field, self::ESCAPE_IDENTIFIER_SOFT);
 
         if (count($row) === 1) {
-            // Only a single parameter was passed, so we simply include all
+            // only a single parameter was passed, so we simply include all
             return $field;
         }
 
-        // below are only cases when 2 or 3 arguments are passed
-
-        // if no condition defined - set default condition
+        // if no condition defined - use default
         if (count($row) === 2) {
             $value = $cond; // @phpstan-ignore-line see https://github.com/phpstan/phpstan/issues/4173
 
@@ -787,39 +770,39 @@ class Query extends Expression
 
     protected function _render_set(): ?string
     {
-        $ret = [];
+        $res = [];
         foreach ($this->args['set'] as [$field, $value]) {
             $field = $this->consume($field, self::ESCAPE_IDENTIFIER);
             $value = $this->consume($value, self::ESCAPE_PARAM);
 
-            $ret[] = $field . '=' . $value;
+            $res[] = $field . '=' . $value;
         }
 
-        return implode(', ', $ret);
+        return implode(', ', $res);
     }
 
     protected function _render_set_fields(): ?string
     {
-        $ret = [];
+        $res = [];
         foreach ($this->args['set'] as $pair) {
             $field = $this->consume($pair[0], self::ESCAPE_IDENTIFIER);
 
-            $ret[] = $field;
+            $res[] = $field;
         }
 
-        return implode(', ', $ret);
+        return implode(', ', $res);
     }
 
     protected function _render_set_values(): ?string
     {
-        $ret = [];
+        $res = [];
         foreach ($this->args['set'] as $pair) {
             $value = $this->consume($pair[1], self::ESCAPE_PARAM);
 
-            $ret[] = $value;
+            $res[] = $value;
         }
 
-        return implode(', ', $ret);
+        return implode(', ', $res);
     }
 
     // }}}
@@ -897,7 +880,7 @@ class Query extends Expression
      *
      * $q->order('name');
      * $q->order('name desc');
-     * $q->order('name desc, id asc')
+     * $q->order(['name desc', 'id asc'])
      * $q->order('name', true);
      *
      * @param string|Expressionable|array<int, string|Expressionable> $order order by
@@ -923,14 +906,12 @@ class Query extends Expression
             return $this;
         }
 
-        // First argument may contain space, to divide field and ordering keyword.
-        // Explode string only if ordering keyword is 'desc' or 'asc'.
+        // first argument may contain space, to divide field and ordering keyword
         if ($desc === null && is_string($order) && str_contains($order, ' ')) {
-            $_chunks = explode(' ', $order);
-            $_desc = strtolower(array_pop($_chunks));
-            if (in_array($_desc, ['desc', 'asc'], true)) {
-                $order = implode(' ', $_chunks);
-                $desc = $_desc;
+            $lastSpacePos = strrpos($order, ' ');
+            if (in_array(strtolower(substr($order, $lastSpacePos + 1)), ['desc', 'asc'], true)) {
+                $desc = substr($order, $lastSpacePos + 1);
+                $order = substr($order, 0, $lastSpacePos);
             }
         }
 
@@ -1034,7 +1015,7 @@ class Query extends Expression
     {
         $prop = 'template_' . $mode;
 
-        if (@isset($this->{$prop})) { // @ is needed to pass phpunit without a deprecation warning
+        if (@isset($this->{$prop})) {
             $this->mode = $mode;
             $this->template = $this->{$prop};
         } else {
@@ -1072,7 +1053,7 @@ class Query extends Expression
      */
     public function expr($properties = [], array $arguments = []): Expression
     {
-        $c = $this->expression_class;
+        $c = $this->expressionClass;
         $e = new $c($properties, $arguments);
         $e->connection = $this->connection;
 
@@ -1176,11 +1157,11 @@ class Query extends Expression
             return null;
         }
 
-        $ret = '';
+        $res = '';
 
         // operand
-        if ($short_form = isset($this->args['case_operand'])) {
-            $ret .= ' ' . $this->consume($this->args['case_operand'][0], self::ESCAPE_IDENTIFIER_SOFT);
+        if ($shortForm = isset($this->args['case_operand'])) {
+            $res .= ' ' . $this->consume($this->args['case_operand'][0], self::ESCAPE_IDENTIFIER_SOFT);
         }
 
         // when, then
@@ -1190,28 +1171,28 @@ class Query extends Expression
                     ->addMoreInfo('row', $row);
             }
 
-            $ret .= ' when ';
-            if ($short_form) {
+            $res .= ' when ';
+            if ($shortForm) {
                 // short-form
                 if (is_array($row[0])) {
                     throw (new Exception('When using short form CASE statement, then you should not set array as when() method 1st parameter'))
                         ->addMoreInfo('when', $row[0]);
                 }
-                $ret .= $this->consume($row[0], self::ESCAPE_PARAM);
+                $res .= $this->consume($row[0], self::ESCAPE_PARAM);
             } else {
-                $ret .= $this->_sub_render_condition($row[0]);
+                $res .= $this->_sub_render_condition($row[0]);
             }
 
             // then
-            $ret .= ' then ' . $this->consume($row[1], self::ESCAPE_PARAM);
+            $res .= ' then ' . $this->consume($row[1], self::ESCAPE_PARAM);
         }
 
         // else
         if (array_key_exists('case_else', $this->args)) {
-            $ret .= ' else ' . $this->consume($this->args['case_else'][0], self::ESCAPE_PARAM);
+            $res .= ' else ' . $this->consume($this->args['case_else'][0], self::ESCAPE_PARAM);
         }
 
-        return ' case' . $ret . ' end';
+        return ' case' . $res . ' end';
     }
 
     /**
@@ -1223,13 +1204,11 @@ class Query extends Expression
      */
     protected function _set_args($what, $alias, $value): void
     {
-        // save value in args
         if ($alias === null) {
             $this->args[$what][] = $value;
         } else {
-            // don't allow multiple values with same alias
             if (isset($this->args[$what][$alias])) {
-                throw (new Exception('Alias should be unique'))
+                throw (new Exception('Alias must be unique'))
                     ->addMoreInfo('what', $what)
                     ->addMoreInfo('alias', $alias);
             }

@@ -9,7 +9,7 @@ use Atk4\Data\Model;
 class Payment extends Document
 {
     /** @var Model\Join */
-    public $j_payment;
+    public $jPayment;
 
     protected function init(): void
     {
@@ -17,11 +17,11 @@ class Payment extends Document
 
         $this->addCondition('doc_type', 'payment');
 
-        $this->j_payment = $this->join('payment.document_id');
+        $this->jPayment = $this->join('payment.document_id');
 
-        $this->j_payment->addField('cheque_no');
-        $this->j_payment->hasOne('account_id', ['model' => [Account::class]]);
+        $this->jPayment->addField('cheque_no');
+        $this->jPayment->hasOne('account_id', ['model' => [Account::class]]);
 
-        $this->j_payment->addField('misc_payment', ['type' => 'boolean']);
+        $this->jPayment->addField('misc_payment', ['type' => 'boolean']);
     }
 }

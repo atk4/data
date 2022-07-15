@@ -14,7 +14,7 @@ class Query extends BaseQuery
 
     protected $paramBase = 'xxaaaa';
 
-    protected $expression_class = Expression::class;
+    protected $expressionClass = Expression::class;
 
     public function render(): array
     {

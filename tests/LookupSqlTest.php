@@ -94,7 +94,7 @@ class LFriend extends Model
     public $title_field = 'friend_name';
 
     /** @var bool */
-    public $skip_reverse = false;
+    public $skipReverse = false;
 
     protected function init(): void
     {
@@ -108,12 +108,12 @@ class LFriend extends Model
         // add or remove reverse friendships
         /*
         $this->onHookShort(self::HOOK_AFTER_INSERT, function () {
-            if ($this->skip_reverse) {
+            if ($this->skipReverse) {
                 return;
             }
 
             $c = clone $this;
-            $c->skip_reverse = true;
+            $c->skipReverse = true;
             $this->insert([
                 'user_id' => $this->get('friend_id'),
                 'friend_id' => $this->get('user_id'),
@@ -121,12 +121,12 @@ class LFriend extends Model
         });
 
         $this->onHookShort(Model::HOOK_BEFORE_DELETE, function () {
-            if ($this->skip_reverse) {
+            if ($this->skipReverse) {
                 return;
             }
 
             $c = clone $this;
-            $c->skip_reverse = true;
+            $c->skipReverse = true;
 
             $c = $c->loadBy([
                 'user_id' => $this->get('friend_id'),
@@ -143,15 +143,11 @@ class LookupSqlTest extends TestCase
     {
         parent::setUp();
 
-        // populate database for our three models
         $this->createMigrator(new LCountry($this->db))->create();
         $this->createMigrator(new LUser($this->db))->create();
         $this->createMigrator(new LFriend($this->db))->create();
     }
 
-    /**
-     * test various ways to import countries.
-     */
     public function testImportCountriesBasic(): void
     {
         $c = new LCountry($this->db);

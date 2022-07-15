@@ -29,11 +29,9 @@ class ContainsOneTest extends TestCase
     {
         parent::setUp();
 
-        // populate database for our models
         $this->createMigrator(new Country($this->db))->create();
         $this->createMigrator(new Invoice($this->db))->create();
 
-        // fill in some default values
         $m = new Country($this->db);
         $m->import([
             [
@@ -61,9 +59,6 @@ class ContainsOneTest extends TestCase
         ]);
     }
 
-    /**
-     * Test caption of referenced model.
-     */
     public function testModelCaption(): void
     {
         $i = new Invoice($this->db);
@@ -134,7 +129,8 @@ class ContainsOneTest extends TestCase
         $this->assertSame('United Kingdom', $c->name);
 
         // let's test how it all looks in persistence without typecasting
-        $exp_addr = $i->getModel()->setOrder('id')->export(null, null, false)[0][$i->fieldName()->addr];
+        $exportAddr = $i->getModel()->setOrder('id')
+            ->export(null, null, false)[0][$i->fieldName()->addr];
         $formatDtForCompareFunc = function (\DateTimeInterface $dt): string {
             $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC')); // @phpstan-ignore-line
 
@@ -153,7 +149,7 @@ class ContainsOneTest extends TestCase
                     $i->addr->door_code->fieldName()->valid_till => $formatDtForCompareFunc(new \DateTime('2019-07-01')),
                 ]),
             ]),
-            $exp_addr
+            $exportAddr
         );
 
         // so far so good. now let's try to delete door_code

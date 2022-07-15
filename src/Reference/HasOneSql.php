@@ -69,10 +69,6 @@ class HasOneSql extends HasOne
      * ['full_name' => 'name', 'day_of_birth' => ['dob', 'type' => 'date']] - use alias and options
      * [['dob', 'type' => 'date']]  - use options
      *
-     * You may also use second param to specify parameters:
-     *
-     * addFields(['from', 'to'], ['type' => 'date']);
-     *
      * @return $this
      */
     public function addFields(array $fields = [], array $defaults = [])

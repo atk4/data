@@ -114,7 +114,7 @@ substitution::
 
 
     // however, for export, we don't need expensive substitution
-    $transaction_data = $account->ref('Transaction')->export();
+    $transactionData = $account->ref('Transaction')->export();
 
 Audit Fields
 ============
@@ -246,12 +246,12 @@ Start by creating a class::
                 return $m;
             }
 
-            $reloadAfterSaveBackup = $m->getModel()->reload_after_save;
+            $reloadAfterSaveBackup = $m->getModel()->reloadAfterSave;
             try {
-                $m->getModel()->reload_after_save = false;
+                $m->getModel()->reloadAfterSave = false;
                 $m->save(['is_deleted' => true])->unload();
             } finally {
-                $m->getModel()->reload_after_save = $reloadAfterSaveBackup;
+                $m->getModel()->reloadAfterSave = $reloadAfterSaveBackup;
             }
 
             $m->hook('afterSoftDelete', [$id]);
@@ -266,12 +266,12 @@ Start by creating a class::
                 return $m;
             }
 
-            $reloadAfterSaveBackup = $m->getModel()->reload_after_save;
+            $reloadAfterSaveBackup = $m->getModel()->reloadAfterSave;
             try {
-                $m->getModel()->reload_after_save = false;
+                $m->getModel()->reloadAfterSave = false;
                 $m->save(['is_deleted' => false])->unload();
             } finally {
-                $m->getModel()->reload_after_save = $reloadAfterSaveBackup;
+                $m->getModel()->reloadAfterSave = $reloadAfterSaveBackup;
             }
 
             $m->hook('afterRestore', [$id]);
@@ -301,7 +301,7 @@ Hooks are called through the model, so your call-back will automatically receive
 first argument $m, and afterSoftDelete will pass second argument - $id of deleted
 record.
 
-I am then setting reload_after_save value to false, because after I set
+I am then setting reloadAfterSave value to false, because after I set
 'is_deleted' to false, $m will no longer be able to load the record - it will
 fall outside of the DataSet. (We might implement a better method for saving
 records outside of DataSet in the future).
@@ -354,12 +354,12 @@ before and just slightly modifying it::
 
             $id = $m->getId();
 
-            $reloadAfterSaveBackup = $m->getModel()->reload_after_save;
+            $reloadAfterSaveBackup = $m->getModel()->reloadAfterSave;
             try {
-                $m->getModel()->reload_after_save = false;
+                $m->getModel()->reloadAfterSave = false;
                 $m->save(['is_deleted' => true])->unload();
             } finally {
-                $m->getModel()->reload_after_save = $reloadAfterSaveBackup;
+                $m->getModel()->reloadAfterSave = $reloadAfterSaveBackup;
             }
 
             $m->hook(Model::HOOK_AFTER_DELETE);
@@ -375,12 +375,12 @@ before and just slightly modifying it::
                 return $m;
             }
 
-            $reloadAfterSaveBackup = $m->getModel()->reload_after_save;
+            $reloadAfterSaveBackup = $m->getModel()->reloadAfterSave;
             try {
-                $m->getModel()->reload_after_save = false;
+                $m->getModel()->reloadAfterSave = false;
                 $m->save(['is_deleted' => false])->unload();
             } finally {
-                $m->getModel()->reload_after_save = $reloadAfterSaveBackup;
+                $m->getModel()->reloadAfterSave = $reloadAfterSaveBackup;
             }
 
             $m->hook('afterRestore', [$id]);
@@ -632,7 +632,7 @@ API call) this approach will require us to perform 2 extra queries::
     $m = new Model_Invoice($db);
     $m->insert([
         'total' => 20,
-        'client_id' => $m->ref('client_id')->loadBy('code', $client_code)->getId(),
+        'client_id' => $m->ref('client_id')->loadBy('code', $clientCode)->getId(),
         'category_id' => $m->ref('category_id')->loadBy('name', $category)->getId(),
     ]);
 
@@ -642,7 +642,7 @@ to make things easier::
     $m = new Model_Invoice($db);
     $m->insert([
         'total' => 20,
-        'client_code' => $client_code,
+        'client_code' => $clientCode,
         'category' => $category,
     ]);
 
@@ -744,7 +744,7 @@ section. Add this into your Invoice Model::
 Next both payment and lines need to be added after invoice is actually created,
 so::
 
-    $this->onHookShort(Model::HOOK_AFTER_SAVE, function ($is_update) {
+    $this->onHookShort(Model::HOOK_AFTER_SAVE, function ($isUpdate) {
         if($this->_isset('payment')) {
             $this->ref('Payment')->insert($this->get('payment'));
         }

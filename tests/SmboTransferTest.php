@@ -37,10 +37,7 @@ class SmboTransferTest extends TestCase
             ->create();
     }
 
-    /**
-     * Testing transfer between two accounts.
-     */
-    public function testTransfer(): void
+    public function testTransferBetweenAccounts(): void
     {
         $aib = (new Account($this->db))->createEntity()->save(['name' => 'AIB']);
         $boi = (new Account($this->db))->createEntity()->save(['name' => 'BOI']);

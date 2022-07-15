@@ -64,10 +64,10 @@ class Model_Item3 extends Model
         $this->addField('name');
         $this->addField('age');
         $i2 = $this->join('item2.item_id');
-        $i2->hasOne('parent_item_id', ['model' => $m, 'table_alias' => 'parent'])
+        $i2->hasOne('parent_item_id', ['model' => $m, 'tableAlias' => 'parent'])
             ->addTitle();
 
-        $this->hasMany('Child', ['model' => $m, 'their_field' => 'parent_item_id', 'table_alias' => 'child'])
+        $this->hasMany('Child', ['model' => $m, 'their_field' => 'parent_item_id', 'tableAlias' => 'child'])
             ->addField('child_age', ['aggregate' => 'sum', 'field' => 'age']);
     }
 }
@@ -264,8 +264,8 @@ class RandomTest extends TestCase
             $m->load(2)->get()
         );
 
-        $this->assertSame(1, $m->load(2)->ref('Child', ['table_alias' => 'pp'])->executeCountQuery());
-        $this->assertSame('John', $m->load(2)->ref('parent_item_id', ['table_alias' => 'pp'])->get('name'));
+        $this->assertSame(1, $m->load(2)->ref('Child', ['tableAlias' => 'pp'])->executeCountQuery());
+        $this->assertSame('John', $m->load(2)->ref('parent_item_id', ['tableAlias' => 'pp'])->get('name'));
     }
 
     public function testDirty2(): void
@@ -433,9 +433,6 @@ class RandomTest extends TestCase
         $mm->getTitles();
     }
 
-    /**
-     * Test export.
-     */
     public function testExport(): void
     {
         $this->setDb([

@@ -12,7 +12,7 @@ class Query extends BaseQuery
 
     protected $identifierEscapeChar = '`';
 
-    protected $expression_class = Expression::class;
+    protected $expressionClass = Expression::class;
 
     protected $supportedOperators = ['=', '!=', '<', '>', '<=', '>=', 'like', 'not like', 'in', 'not in', 'regexp', 'not regexp'];
 

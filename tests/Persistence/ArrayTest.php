@@ -178,9 +178,6 @@ class ArrayTest extends TestCase
         $this->assertSame('JohnSarah', $output);
     }
 
-    /**
-     * Test short format.
-     */
     public function testShortFormat(): void
     {
         $p = new Persistence\Array_([
@@ -206,9 +203,6 @@ class ArrayTest extends TestCase
         $this->assertSame('Smith', $mm->get('surname'));
     }
 
-    /**
-     * Test export.
-     */
     public function testExport(): void
     {
         $p = new Persistence\Array_([
@@ -230,9 +224,6 @@ class ArrayTest extends TestCase
         ], $m->export(['surname']));
     }
 
-    /**
-     * Test Model->action('count').
-     */
     public function testActionCount(): void
     {
         $p = new Persistence\Array_([
@@ -247,9 +238,6 @@ class ArrayTest extends TestCase
         $this->assertSame(2, $m->executeCountQuery());
     }
 
-    /**
-     * Test Model->action('field').
-     */
     public function testActionField(): void
     {
         $p = new Persistence\Array_([
@@ -275,10 +263,7 @@ class ArrayTest extends TestCase
         ], $q->getRows());
     }
 
-    /**
-     * Test Model->addCondition operator LIKE.
-     */
-    public function testLike(): void
+    public function testConditionLike(): void
     {
         $dbData = ['countries' => [
             1 => ['name' => 'ABC9', 'code' => 11, 'country' => 'Ireland', 'active' => 1],
@@ -386,10 +371,7 @@ class ArrayTest extends TestCase
         $this->assertCount(9, $m->export());
     }
 
-    /**
-     * Test Model->addCondition operator REGEXP.
-     */
-    public function testConditions(): void
+    public function testConditionRegexp(): void
     {
         $dbData = ['countries' => [
             1 => ['name' => 'ABC9', 'code' => 11, 'country' => 'Ireland', 'active' => 1],
@@ -548,9 +530,6 @@ class ArrayTest extends TestCase
         return $d;
     }
 
-    /**
-     * Test Model->setOrder().
-     */
     public function testOrder(): void
     {
         $dbData = [
@@ -695,9 +674,6 @@ class ArrayTest extends TestCase
         ], $m->export());
     }
 
-    /**
-     * Test Model->setLimit().
-     */
     public function testLimit(): void
     {
         // order by one field ascending
@@ -733,9 +709,6 @@ class ArrayTest extends TestCase
         $this->assertSame(3, $m->executeCountQuery());
     }
 
-    /**
-     * Test Model->addCondition().
-     */
     public function testCondition(): void
     {
         $p = new Persistence\Array_($dbData = [
@@ -800,9 +773,6 @@ class ArrayTest extends TestCase
         $m->addCondition(new Model(), 'like', '%o%');
     }
 
-    /**
-     * Test Model->hasOne().
-     */
     public function testHasOne(): void
     {
         $p = new Persistence\Array_([
@@ -833,9 +803,6 @@ class ArrayTest extends TestCase
         $this->assertSame('UK', $uu->ref('country_id')->get('name'));
     }
 
-    /**
-     * Test Model->hasMany().
-     */
     public function testHasMany(): void
     {
         $p = new Persistence\Array_([

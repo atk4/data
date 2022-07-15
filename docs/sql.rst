@@ -105,7 +105,7 @@ SQL Reference
     While similar to :php:meth:`Reference\HasOne::ref` this implementation
     implements deep traversal::
 
-        $country_model = $customer_model->addCondition('is_vip', true)
+        $countryModel = $customerModel->addCondition('is_vip', true)
             ->ref('country_id'); // $model was not loaded!
 
 .. php:method:: refLink
@@ -154,7 +154,7 @@ Expression will map into the SQL code, but will perform as read-only field other
         $model->addExpression('can_buy_alcohol', ['expr' => 'if([age] > 25, 1, 0)', 'type' => 'boolean']);
 
 Adding expressions to model will make it automatically reload itself after save
-as default behavior, see :php:attr:`Model::reload_after_save`.
+as default behavior, see :php:attr:`Model::reloadAfterSave`.
 
 Transactions
 ============
@@ -275,7 +275,7 @@ Action: fx
 Executes single-argument SQL function on field::
 
     $action = $model->action('fx', ['avg', 'age']);
-    $avg_age = $action->getOne();
+    $ageAvg = $action->getOne();
 
 This method also supports alias. Use of alias is handy if you are using those
 actions as part of other query (e.g. UNION)
@@ -334,15 +334,15 @@ You should be familiar with http://dsql.readthedocs.io/en/develop/expressions.ht
 
 In short this should allow you to build and execute any SQL statement::
 
-    $this->expr("call get_nominal_sheet([], [], '2014-10-01', '2015-09-30', 0)", [
+    $this->expr('call get_nominal_sheet([], [], \'2014-10-01\', \'2015-09-30\', 0)', [
         $this->getApp()->system->getId(),
         $this->getApp()->system['contractor_id'],
     ])->executeQuery();
 
 Depending on the statement you can also use your statement to retrieve data::
 
-    $data = $this->expr("call get_client_report_data([client_id])", [
-        'client_id' => $client_id,
+    $data = $this->expr('call get_client_report_data([client_id])', [
+        'client_id' => $clientId,
     ])->getRows();
 
 This can be handy if you wish to create a method for your Model to abstract away
@@ -356,9 +356,9 @@ the data::
         function getReportData($arg) {
             $this->assertIsLoaded();
 
-            return $this->expr("call get_client_report_data([client_id, arg])", [
+            return $this->expr('call get_client_report_data([client_id, arg])', [
                 'arg' => $arg,
-                'client_id' => $client_id,
+                'client_id' => $clientId,
             ])->getRows();
         }
     }
@@ -373,9 +373,9 @@ Here is another example using PHP generator::
         function fetchReportData($arg) {
             $this->assertIsLoaded();
 
-            foreach ($this->expr("call get_client_report_data([client_id, arg])", [
+            foreach ($this->expr('call get_client_report_data([client_id, arg])', [
                 'arg' => $arg,
-                'client_id' => $client_id,
+                'client_id' => $clientId,
             ]) as $row) {
                 yield $row;
             }
@@ -421,7 +421,7 @@ you can significantly affect the query building of an SQL model::
 
     class CompanyProfit extends \Atk4\Data\Model {
 
-        public $company_id = null; // inject company_id, which will act as a condition/argument
+        public $companyId = null;  // inject company ID, which will act as a condition/argument
         public $read_only  = true; // instructs rest of the app, that this model is read-only
 
         function init(): void {
@@ -436,16 +436,16 @@ you can significantly affect the query building of an SQL model::
             if ($mode == 'select') {
 
                 // must return DSQL object here
-                return $this->expr("call get_company_profit([company_id])", [
-                    'company_id' => $this->company_id,
+                return $this->expr('call get_company_profit([company_id])', [
+                    'company_id' => $this->companyId,
                 ]);
             }
 
             if ($mode == 'count') {
 
                 // optionally - expression for counting data rows, for pagination support
-                return $this->expr("select count(*) from (call get_company_profit([company_id]))", [
-                    'company_id' => $this->company_id,
+                return $this->expr('select count(*) from (call get_company_profit([company_id]))', [
+                    'company_id' => $this->companyId,
                 ]);
             }
 
@@ -468,7 +468,7 @@ procedure inside Model::init() then set $table property to a temporary table::
         function init(): void {
             parent::init();
 
-            $res = $this->expr("call get_nominal_sheet([], [], '2014-10-01', '2015-09-30', 0)", [
+            $res = $this->expr('call get_nominal_sheet([], [], \'2014-10-01\', \'2015-09-30\', 0)', [
                 $this->getApp()->system->getId(),
                 $this->getApp()->system['contractor_id'],
             ])->executeQuery();
@@ -495,7 +495,7 @@ Technically you can also specify expression as a $table property of your model::
         function init(): void {
             parent::init();
 
-            $this->init = $this->expr("call get_report_data()");
+            $this->init = $this->expr('call get_report_data()');
 
             $this->addField('date', ['type' => 'date']);
             $this->addField('items', ['type' => 'integer']);

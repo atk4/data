@@ -23,7 +23,7 @@ class Join extends Model\Join
                 ->load($this->createFakeForeignModel(), $this->getId($entity));
         } catch (Exception $e) {
             throw (new Exception('Unable to load joined record', $e->getCode(), $e))
-                ->addMoreInfo('table', $this->foreign_table)
+                ->addMoreInfo('table', $this->foreignTable)
                 ->addMoreInfo('id', $this->getId($entity));
         }
         $dataRef = &$entity->getDataRef();

@@ -10,30 +10,21 @@ use Atk4\Data\Persistence;
 class Join extends Model\Join
 {
     /**
-     * By default we create ON expression ourselves, but if you want to specify
-     * it, use the 'on' property.
+     * By default we create ON expression ourselves, but it can be specific explicitly.
      *
      * @var Expressionable|string|null
      */
     protected $on;
 
-    /**
-     * Will use either foreign_alias or create #join_<table>.
-     */
-    public function getDesiredName(): string
-    {
-        return '_' . ($this->foreign_alias ?: $this->foreign_table);
-    }
-
     protected function init(): void
     {
         parent::init();
 
-        $this->getOwner()->persistence_data['use_table_prefixes'] = true; // TODO thus mutates the owner model!
+        $this->getOwner()->persistenceData['use_table_prefixes'] = true; // TODO thus mutates the owner model!
 
         // our short name will be unique
-        if (!$this->foreign_alias) {
-            $this->foreign_alias = ($this->getOwner()->table_alias ?: '') . $this->shortName;
+        if (!$this->foreignAlias) {
+            $this->foreignAlias = ($this->getOwner()->tableAlias ?: '') . $this->shortName;
         }
 
         // Master field indicates ID of the joined item. In the past it had to be
@@ -65,33 +56,33 @@ class Join extends Model\Join
         // if ON is set, we don't have to worry about anything
         if ($this->on) {
             $query->join(
-                $this->foreign_table,
+                $this->foreignTable,
                 $this->on instanceof Expressionable ? $this->on : $this->getOwner()->expr($this->on),
                 $this->kind,
-                $this->foreign_alias
+                $this->foreignAlias
             );
 
             return;
         }
 
         $query->join(
-            $this->foreign_table,
+            $this->foreignTable,
             $this->getOwner()->expr('{{}}.{} = {}', [
-                $this->foreign_alias ?: $this->foreign_table,
+                $this->foreignAlias ?: $this->foreignTable,
                 $this->foreign_field,
                 $this->getOwner()->getField($this->master_field),
             ]),
             $this->kind,
-            $this->foreign_alias
+            $this->foreignAlias
         );
 
         /*
         if ($this->reverse) {
             $query->field([$this->shortName => (
-                $this->join ?: ($model->table_alias ?: $model->table) . '.' . $this->master_field
+                $this->join ?: ($model->tableAlias ?: $model->table) . '.' . $this->master_field
             )]);
         } else {
-            $query->field([$this->shortName => $this->foreign_alias . '.' . $this->foreign_field]);
+            $query->field([$this->shortName => $this->foreignAlias . '.' . $this->foreign_field]);
         }
         */
     }
