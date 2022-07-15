@@ -154,7 +154,7 @@ Expression will map into the SQL code, but will perform as read-only field other
         $model->addExpression('can_buy_alcohol', ['expr' => 'if([age] > 25, 1, 0)', 'type' => 'boolean']);
 
 Adding expressions to model will make it automatically reload itself after save
-as default behavior, see :php:attr:`Model::reload_after_save`.
+as default behavior, see :php:attr:`Model::reloadAfterSave`.
 
 Transactions
 ============

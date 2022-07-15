@@ -147,13 +147,13 @@ class SqlTest extends TestCase
         $m->addField('surname');
 
         // insert new record, model id field
-        $m->reload_after_save = false;
+        $m->reloadAfterSave = false;
         $m = $m->createEntity();
         $m->save(['name' => 'Jane', 'surname' => 'Doe']);
         $this->assertSame('Jane', $m->get('name'));
         $this->assertSame('Doe', $m->get('surname'));
         $this->assertEquals(3, $m->getId());
-        // id field value is set with new id value even if reload_after_save = false
+        // id field value is set with new id value even if reloadAfterSave = false
         $this->assertEquals(3, $m->getId());
     }
 

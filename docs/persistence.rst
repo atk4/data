@@ -458,7 +458,7 @@ There are two approaches to deal with this problem. The first involves disabling
 after-save reloading::
 
     function archive() {
-        $this->reload_after_save = false;
+        $this->reloadAfterSave = false;
         $this->set('is_archived', true);
         return $this;
     }
@@ -611,10 +611,10 @@ which will be saved inside a `$writeReplica`. Although the proper approach
 would be to reload the `$m`, if there is chance that your update to a write
 replica may not propagate to read replica, you can simply reset the dirty flags.
 
-If you need further optimization, make sure `reload_after_save` is disabled
+If you need further optimization, make sure `reloadAfterSave` is disabled
 for the write replica::
 
-    $m->withPersistence($writeReplica)->setDefaults(['reload_after_save' => false])->save();
+    $m->withPersistence($writeReplica)->setDefaults(['reloadAfterSave' => false])->save();
 
 or use::
 

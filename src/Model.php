@@ -240,7 +240,7 @@ class Model implements \IteratorAggregate
      *
      * @var bool|null
      */
-    public $reload_after_save;
+    public $reloadAfterSave;
 
     /**
      * If this model is "contained into" another entity by using ContainsOne
@@ -1428,12 +1428,12 @@ class Model implements \IteratorAggregate
      */
     public function saveAndUnload(array $data = [])
     {
-        $reloadAfterSaveBackup = $this->reload_after_save;
+        $reloadAfterSaveBackup = $this->reloadAfterSave;
         try {
-            $this->getModel()->reload_after_save = false;
+            $this->getModel()->reloadAfterSave = false;
             $this->save($data);
         } finally {
-            $this->getModel()->reload_after_save = $reloadAfterSaveBackup;
+            $this->getModel()->reloadAfterSave = $reloadAfterSaveBackup;
         }
 
         $this->unload();
@@ -1609,7 +1609,7 @@ class Model implements \IteratorAggregate
                     $this->setId($id);
                     $this->hook(self::HOOK_AFTER_INSERT);
 
-                    if ($this->reload_after_save !== false) {
+                    if ($this->reloadAfterSave !== false) {
                         $d = $dirtyRef;
                         $dirtyRef = [];
                         $this->reload();
@@ -1651,12 +1651,12 @@ class Model implements \IteratorAggregate
         }
 
         // save data fields
-        $reloadAfterSaveBackup = $this->reload_after_save;
+        $reloadAfterSaveBackup = $this->reloadAfterSave;
         try {
-            $this->getModel()->reload_after_save = false;
+            $this->getModel()->reloadAfterSave = false;
             $this->save($row);
         } finally {
-            $this->getModel()->reload_after_save = $reloadAfterSaveBackup;
+            $this->getModel()->reloadAfterSave = $reloadAfterSaveBackup;
         }
 
         // store id value

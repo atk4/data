@@ -142,7 +142,7 @@ This is to ensure that expression 'sum' would be re-calculated for the values of
 Reload after save will only be executed if you have defined any expressions
 inside your model, however you can affect this behavior::
 
-    $m = new Model_Math($db, ['reload_after_save' => false]);
+    $m = new Model_Math($db, ['reloadAfterSave' => false]);
     $m->set('a', 4);
     $m->set('b', 6);
 
@@ -183,13 +183,13 @@ Then try the following code::
 This will output 4, because model didn't reload itself due to lack of any
 expressions. This time you can explicitly enable reload after save::
 
-    $m = new Model_Math($db, ['reload_after_save' => true]);
+    $m = new Model_Math($db, ['reloadAfterSave' => true]);
     $m->set('a', 4);
 
     $m->save();
 
     echo $m->get('a')+$m->get('b'); // outputs 14
 
-.. note:: If your model is using reload_after_save, but you wish to insert
+.. note:: If your model is using reloadAfterSave, but you wish to insert
     data without additional query - use :php:meth:`Model::insert()` or
     :php:meth:`Model::import()`.

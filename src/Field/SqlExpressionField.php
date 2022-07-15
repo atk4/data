@@ -39,8 +39,8 @@ class SqlExpressionField extends Field
     {
         $this->_init();
 
-        if ($this->getOwner()->reload_after_save === null) {
-            $this->getOwner()->reload_after_save = true;
+        if ($this->getOwner()->reloadAfterSave === null) {
+            $this->getOwner()->reloadAfterSave = true;
         }
 
         if ($this->concat) {

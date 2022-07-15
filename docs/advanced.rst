@@ -246,12 +246,12 @@ Start by creating a class::
                 return $m;
             }
 
-            $reloadAfterSaveBackup = $m->getModel()->reload_after_save;
+            $reloadAfterSaveBackup = $m->getModel()->reloadAfterSave;
             try {
-                $m->getModel()->reload_after_save = false;
+                $m->getModel()->reloadAfterSave = false;
                 $m->save(['is_deleted' => true])->unload();
             } finally {
-                $m->getModel()->reload_after_save = $reloadAfterSaveBackup;
+                $m->getModel()->reloadAfterSave = $reloadAfterSaveBackup;
             }
 
             $m->hook('afterSoftDelete', [$id]);
@@ -266,12 +266,12 @@ Start by creating a class::
                 return $m;
             }
 
-            $reloadAfterSaveBackup = $m->getModel()->reload_after_save;
+            $reloadAfterSaveBackup = $m->getModel()->reloadAfterSave;
             try {
-                $m->getModel()->reload_after_save = false;
+                $m->getModel()->reloadAfterSave = false;
                 $m->save(['is_deleted' => false])->unload();
             } finally {
-                $m->getModel()->reload_after_save = $reloadAfterSaveBackup;
+                $m->getModel()->reloadAfterSave = $reloadAfterSaveBackup;
             }
 
             $m->hook('afterRestore', [$id]);
@@ -301,7 +301,7 @@ Hooks are called through the model, so your call-back will automatically receive
 first argument $m, and afterSoftDelete will pass second argument - $id of deleted
 record.
 
-I am then setting reload_after_save value to false, because after I set
+I am then setting reloadAfterSave value to false, because after I set
 'is_deleted' to false, $m will no longer be able to load the record - it will
 fall outside of the DataSet. (We might implement a better method for saving
 records outside of DataSet in the future).
@@ -354,12 +354,12 @@ before and just slightly modifying it::
 
             $id = $m->getId();
 
-            $reloadAfterSaveBackup = $m->getModel()->reload_after_save;
+            $reloadAfterSaveBackup = $m->getModel()->reloadAfterSave;
             try {
-                $m->getModel()->reload_after_save = false;
+                $m->getModel()->reloadAfterSave = false;
                 $m->save(['is_deleted' => true])->unload();
             } finally {
-                $m->getModel()->reload_after_save = $reloadAfterSaveBackup;
+                $m->getModel()->reloadAfterSave = $reloadAfterSaveBackup;
             }
 
             $m->hook(Model::HOOK_AFTER_DELETE);
@@ -375,12 +375,12 @@ before and just slightly modifying it::
                 return $m;
             }
 
-            $reloadAfterSaveBackup = $m->getModel()->reload_after_save;
+            $reloadAfterSaveBackup = $m->getModel()->reloadAfterSave;
             try {
-                $m->getModel()->reload_after_save = false;
+                $m->getModel()->reloadAfterSave = false;
                 $m->save(['is_deleted' => false])->unload();
             } finally {
-                $m->getModel()->reload_after_save = $reloadAfterSaveBackup;
+                $m->getModel()->reloadAfterSave = $reloadAfterSaveBackup;
             }
 
             $m->hook('afterRestore', [$id]);

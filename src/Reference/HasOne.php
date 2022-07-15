@@ -114,7 +114,7 @@ class HasOne extends Reference
         }
 
         // their model will be reloaded after saving our model to reflect changes in referenced fields
-        $theirModel->getModel(true)->reload_after_save = false;
+        $theirModel->getModel(true)->reloadAfterSave = false;
 
         if ($ourModel->isEntity()) {
             $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function (Model $theirModel) use ($ourModel) {
