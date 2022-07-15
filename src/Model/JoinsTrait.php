@@ -12,7 +12,7 @@ use Atk4\Data\Exception;
 trait JoinsTrait
 {
     /** @var array The class used by join() method. */
-    public $_default_seed_join = [Join::class];
+    protected $_defaultSeedJoin = [Join::class];
 
     /**
      * Creates an objects that describes relationship between multiple tables (or collections).
@@ -29,7 +29,7 @@ trait JoinsTrait
 
         $defaults[0] = $foreignTable;
 
-        $join = Join::fromSeed($this->_default_seed_join, $defaults);
+        $join = Join::fromSeed($this->_defaultSeedJoin, $defaults);
 
         if ($this->hasElement($name = $join->getDesiredName())) {
             throw (new Exception('Join with such name already exists'))

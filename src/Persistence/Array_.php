@@ -166,7 +166,7 @@ class Array_ extends Persistence
         }
 
         $defaults = array_merge([
-            '_default_seed_join' => [Array_\Join::class],
+            '_defaultSeedJoin' => [Array_\Join::class],
         ], $defaults);
 
         parent::add($model, $defaults);

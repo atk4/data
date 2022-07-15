@@ -109,10 +109,10 @@ class Model implements \IteratorAggregate
     private static $_modelOnlyProperties;
 
     /** @var string|array The class used by addField() method. */
-    public $_default_seed_addField = [Field::class];
+    protected $_defaultSeedAddField = [Field::class];
 
     /** @var string|array The class used by addExpression() method. */
-    public $_default_seed_addExpression = [CallbackField::class];
+    protected $_defaultSeedAddExpression = [CallbackField::class];
 
     /** @var array<string, Field> */
     protected $fields = [];
@@ -554,7 +554,7 @@ class Model implements \IteratorAggregate
         $seed = Factory::mergeSeeds(
             $seed,
             isset($seed['type']) ? ($this->fieldSeedByType[$seed['type']] ?? null) : null,
-            $this->_default_seed_addField
+            $this->_defaultSeedAddField
         );
 
         return Field::fromSeed($seed);
@@ -1930,7 +1930,7 @@ class Model implements \IteratorAggregate
     public function addExpression(string $name, $seed)
     {
         /** @var CallbackField|SqlExpressionField */
-        $field = Field::fromSeed($this->_default_seed_addExpression, $seed);
+        $field = Field::fromSeed($this->_defaultSeedAddExpression, $seed);
 
         $this->addField($name, $field);
 

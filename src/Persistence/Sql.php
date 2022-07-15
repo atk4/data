@@ -44,19 +44,19 @@ class Sql extends Persistence
     private $_connection;
 
     /** @var array Default class when adding new field. */
-    public $_default_seed_addField; // no custom seed needed
+    protected $_defaultSeedAddField; // no custom seed needed
 
     /** @var array Default class when adding hasOne field. */
-    public $_default_seed_hasOne = [\Atk4\Data\Reference\HasOneSql::class];
+    protected $_defaultSeedHasOne = [\Atk4\Data\Reference\HasOneSql::class];
 
     /** @var array Default class when adding hasMany field. */
-    public $_default_seed_hasMany; // no custom seed needed
+    protected $_defaultSeedHasMany; // no custom seed needed
 
     /** @var array Default class when adding Expression field. */
-    public $_default_seed_addExpression = [SqlExpressionField::class];
+    protected $_defaultSeedAddExpression = [SqlExpressionField::class];
 
     /** @var array Default class when adding join. */
-    public $_default_seed_join = [Sql\Join::class];
+    protected $_defaultSeedJoin = [Sql\Join::class];
 
     /**
      * @param Connection|string|array|DbalConnection|DbalDriverConnection $connection
@@ -126,11 +126,11 @@ class Sql extends Persistence
         // Use our own classes for fields, references and expressions unless
         // $defaults specify them otherwise.
         $defaults = array_merge([
-            '_default_seed_addField' => $this->_default_seed_addField,
-            '_default_seed_hasOne' => $this->_default_seed_hasOne,
-            '_default_seed_hasMany' => $this->_default_seed_hasMany,
-            '_default_seed_addExpression' => $this->_default_seed_addExpression,
-            '_default_seed_join' => $this->_default_seed_join,
+            '_defaultSeedAddField' => $this->_defaultSeedAddField,
+            '_defaultSeedHasOne' => $this->_defaultSeedHasOne,
+            '_defaultSeedHasMany' => $this->_defaultSeedHasMany,
+            '_defaultSeedAddExpression' => $this->_defaultSeedAddExpression,
+            '_defaultSeedJoin' => $this->_defaultSeedJoin,
         ], $defaults);
 
         parent::add($model, $defaults);

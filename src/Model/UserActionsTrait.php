@@ -9,7 +9,7 @@ use Atk4\Core\Factory;
 trait UserActionsTrait
 {
     /** @var string|array Default class for addUserAction(). */
-    public $_default_seed_action = [UserAction::class];
+    protected $_defaultSeedUserAction = [UserAction::class];
 
     /** @var array<string, UserAction> Collection of user actions - using key as action system name */
     protected $userActions = [];
@@ -33,7 +33,7 @@ trait UserActionsTrait
         }
 
         /** @var UserAction $action */
-        $action = Factory::factory($this->_default_seed_action, $defaults);
+        $action = Factory::factory($this->_defaultSeedUserAction, $defaults);
 
         $this->_addIntoCollection($name, $action, 'userActions');
 
