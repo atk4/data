@@ -40,8 +40,8 @@ class EmailFieldTest extends TestCase
     public function testEmailValidateDns(): void
     {
         $m = new Model();
-        $m->addField('email', [EmailField::class, 'dns_check' => true]);
-        $m->addField('email_idn', [EmailField::class, 'dns_check' => true]);
+        $m->addField('email', [EmailField::class, 'dnsCheck' => true]);
+        $m->addField('email_idn', [EmailField::class, 'dnsCheck' => true]);
         $entity = $m->createEntity();
 
         $entity->set('email', ' foo@gmail.com');
@@ -58,7 +58,7 @@ class EmailFieldTest extends TestCase
     {
         $m = new Model();
         $m->addField('email', [EmailField::class]);
-        $m->addField('email_name', [EmailField::class, 'allow_name' => true]);
+        $m->addField('email_name', [EmailField::class, 'allowName' => true]);
         $entity = $m->createEntity();
 
         $entity->set('email_name', 'Žlutý Kůň <me3@❤.com>');

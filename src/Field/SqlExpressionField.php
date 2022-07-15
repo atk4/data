@@ -30,7 +30,7 @@ class SqlExpressionField extends Field
     public $concat;
 
     /** @var Reference\HasMany|null When defining as aggregate, this will point to relation object. */
-    public $aggregate_relation;
+    public $aggregateRelation;
 
     /** @var string Specifies which field to use. */
     public $field;

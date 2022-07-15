@@ -520,13 +520,13 @@ When ORM promise you "security" they don't really extend it to the cases where y
 Agile Data provides a universal support for Expressions and each expression have support for `escaping` and `parameters`. My next example will add scope filtering the countries by their length. Automatic parameters will ensure that any nastiness will be properly escaped:
 
 ``` php
-$country->addCondition($country->expr('length([name]) = []', [$_GET['len']])); // 2
+$country->addCondition($country->expr('length([name]) = []', [$_GET['len']]));
 ```
 
 Resulting query is:
 
 ``` php
-where length(`name`) = :a  [:a=2]
+where length(`name`) = :a
 ```
 
 Another great security feature is invoked when you try and add a new country:
@@ -671,7 +671,7 @@ $salary
 
 // finally, fetch result
 foreach ($salary as $row) {
-    echo "Data: " . json_encode($row) . "\n";
+    echo 'Data: ' . json_encode($row) . "\n";
 }
 ```
 

@@ -59,12 +59,12 @@ The operation must be specified as second argument::
 
     $m = new Model_User($db, 'user');
     $girls = (clone $m)->addCondition('gender', 'F');
-    $not_girls = (clone $m)->addCondition('gender', '!=', 'F');
+    $notGirls = (clone $m)->addCondition('gender', '!=', 'F');
 
 When you use 'in' or 'not in' you should pass value as array::
 
     $m = new Model_User($db, 'user');
-    $girls_or_boys = (clone $m)->addCondition('gender', 'in', ['F', 'M']);
+    $girlsOrBoys = (clone $m)->addCondition('gender', 'in', ['F', 'M']);
 
 Multiple Conditions
 -------------------
@@ -79,7 +79,7 @@ You can set multiple conditions on the same field even if they are contradicting
 Normally, however, you would use a different fields::
 
     $m = new Model_User($db, 'user');
-    $girl_sue = (clone $m)
+    $girlSue = (clone $m)
         ->addCondition('gender', 'F')
         ->addCondition('name', 'Sue');
 
@@ -109,7 +109,7 @@ format::
 
 For all other cases you can implement them with :php:meth:`Model::expr`::
 
-    $m->addCondition($m->expr("(day([birth_date]) = day([registration_date]) or day([birth_date]) = [])", 10));
+    $m->addCondition($m->expr('(day([birth_date]) = day([registration_date]) or day([birth_date]) = [])', 10));
 
 This rather unusual condition will show user records who have registered on same
 date when they were born OR if they were born on 10th. (This is really silly

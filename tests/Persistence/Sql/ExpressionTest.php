@@ -22,19 +22,13 @@ class ExpressionTest extends TestCase
         return new Expression($template, $arguments);
     }
 
-    /**
-     * Test constructor exception - no arguments (template is not defined).
-     */
-    public function testConstructorException0arg(): void
+    public function testConstructorNoTemplateException(): void
     {
         $this->expectException(Exception::class);
         $this->e()->render();
     }
 
-    /**
-     * Testing parameter edge cases - empty strings and arrays etc.
-     */
-    public function testConstructor1(): void
+    public function testConstructorEmptyTemplate(): void
     {
         $this->assertSame(
             '',
@@ -177,12 +171,8 @@ class ExpressionTest extends TestCase
         yield [$fullStr, $fullStr, []];
     }
 
-    /**
-     * Test nested parameters.
-     */
     public function testNestedParams(): void
     {
-        // ++1 and --2
         $e1 = $this->e('[] and []', [
             $this->e('++[]', [1]),
             $this->e('--[]', [2]),
@@ -227,10 +217,7 @@ class ExpressionTest extends TestCase
         $this->assertInstanceOf(Mysql\Connection::class, $e->expr()->connection);
     }
 
-    /**
-     * Fully covers escapeIdentifier method.
-     */
-    public function testEscape(): void
+    public function testEscapeIdentifier(): void
     {
         // escaping expressions
         $this->assertSame(
@@ -273,10 +260,7 @@ class ExpressionTest extends TestCase
         );
     }
 
-    /**
-     * Fully covers escapeParam method.
-     */
-    public function testParam(): void
+    public function testEscapeParam(): void
     {
         $e = new Expression('hello, [who]', ['who' => 'world']);
         $this->assertSame([
@@ -321,19 +305,13 @@ class ExpressionTest extends TestCase
         );
     }
 
-    /**
-     * $escape_mode value is incorrect.
-     */
-    public function testConsumeException1(): void
+    public function testConsumeUnsupportedEscapeModeException(): void
     {
         $this->expectException(Exception::class);
         $this->callProtected($this->e(), 'consume', 123, 'blahblah');
     }
 
-    /**
-     * Only Expressionable objects may be used in Expression.
-     */
-    public function testConsumeException2(): void
+    public function testConsumeNotExpressionableObjectException(): void
     {
         $this->expectException(Exception::class);
         $this->callProtected($this->e(), 'consume', new \stdClass());
@@ -371,10 +349,7 @@ class ExpressionTest extends TestCase
         $this->assertSame('coalesce(year(now()) - year(birth_date), :a)', $age->render()[0]);
     }
 
-    /**
-     * Test for vendors that rely on JavaScript expressions, instead of parameters.
-     */
-    public function testJsonExpression(): void
+    public function testEscapeParamCustom(): void
     {
         $e = new class('hello, [who]', ['who' => 'world']) extends Expression {
             public function escapeParam($value): string
@@ -402,9 +377,6 @@ class ExpressionTest extends TestCase
         );
     }
 
-    /**
-     * Test reset().
-     */
     public function testReset(): void
     {
         // reset everything

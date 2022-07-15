@@ -61,39 +61,39 @@ class Static_ extends Array_
             $this->titleForModel = 'title';
         }
 
-        $key_override = [];
-        $def_types = [];
-        $must_override = false;
+        $keyOverride = [];
+        $defTypes = [];
+        $mustOverride = false;
 
         foreach ($row1 as $key => $value) {
             // id information present, use it instead
             if ($key === 'id') {
-                $must_override = true;
+                $mustOverride = true;
             }
 
             // try to detect type of field by its value
             if (is_bool($value)) {
-                $def_types[] = ['type' => 'boolean'];
+                $defTypes[] = ['type' => 'boolean'];
             } elseif (is_int($value)) {
-                $def_types[] = ['type' => 'integer'];
+                $defTypes[] = ['type' => 'integer'];
             } elseif (is_float($value)) {
-                $def_types[] = ['type' => 'float'];
+                $defTypes[] = ['type' => 'float'];
             } elseif ($value instanceof \DateTimeInterface) {
-                $def_types[] = ['type' => 'datetime'];
+                $defTypes[] = ['type' => 'datetime'];
             } elseif (is_array($value)) {
-                $def_types[] = ['type' => 'json'];
+                $defTypes[] = ['type' => 'json'];
             } elseif (is_object($value)) {
-                $def_types[] = ['type' => 'object'];
+                $defTypes[] = ['type' => 'object'];
             } else {
-                $def_types[] = ['type' => 'string'];
+                $defTypes[] = ['type' => 'string'];
             }
 
             // if title is not set, use first key
             if (!$this->titleForModel) {
                 if (is_int($key)) {
-                    $key_override[] = 'name';
+                    $keyOverride[] = 'name';
                     $this->titleForModel = 'name';
-                    $must_override = true;
+                    $mustOverride = true;
 
                     continue;
                 }
@@ -102,20 +102,20 @@ class Static_ extends Array_
             }
 
             if (is_int($key)) {
-                $key_override[] = 'field' . $key;
-                $must_override = true;
+                $keyOverride[] = 'field' . $key;
+                $mustOverride = true;
 
                 continue;
             }
 
-            $key_override[] = $key;
+            $keyOverride[] = $key;
         }
 
-        if ($must_override) {
+        if ($mustOverride) {
             $data2 = [];
 
             foreach ($data as $key => $row) {
-                $row = array_combine($key_override, $row);
+                $row = array_combine($keyOverride, $row);
                 if (isset($row['id'])) {
                     $key = $row['id'];
                 }
@@ -124,7 +124,7 @@ class Static_ extends Array_
             $data = $data2;
         }
 
-        $this->fieldsForModel = array_combine($key_override, $def_types);
+        $this->fieldsForModel = array_combine($keyOverride, $defTypes);
         parent::__construct($data);
     }
 

@@ -122,8 +122,7 @@ class ReferenceSqlTest extends TestCase
     }
 
     /**
-     * Tests that condition defined on the parent model is retained when traversing
-     * through hasMany.
+     * Tests that condition defined on the parent model is retained when traversing through hasMany.
      */
     public function testBasicOne(): void
     {
@@ -493,7 +492,7 @@ class ReferenceSqlTest extends TestCase
     }
 
     /**
-     * test case hasOne::our_key == owner::id_field.
+     * Tests hasOne::our_key == owner::id_field.
      */
     public function testIdFieldReferenceOurFieldCase(): void
     {
@@ -531,9 +530,6 @@ class ReferenceSqlTest extends TestCase
         $this->assertSame('order', $o->table);
     }
 
-    /**
-     * Few tests to test Reference\HasOneSql addTitle() method.
-     */
     public function testAddTitle(): void
     {
         $this->setDb([
@@ -686,20 +682,19 @@ class ReferenceSqlTest extends TestCase
         $this->assertSame('Surname', $u->getField('last_name')->getCaption());
 
         $o = (new Model($this->db, ['table' => 'order']));
-        $order_user_ref = $o->hasOne('my_user', ['model' => $u, 'our_field' => 'user_id']);
-        $order_user_ref->addField('user_last_name', 'last_name');
+        $orderUserRef = $o->hasOne('my_user', ['model' => $u, 'our_field' => 'user_id']);
+        $orderUserRef->addField('user_last_name', 'last_name');
 
-        $referenced_caption = $o->getField('user_last_name')->getCaption();
+        $referencedCaption = $o->getField('user_last_name')->getCaption();
 
         // Test : $field->caption for the field 'last_name' is defined in referenced model (User)
         // When Order add field from Referenced model User
         // caption will be passed to Order field user_last_name
-        $this->assertSame('Surname', $referenced_caption);
+        $this->assertSame('Surname', $referencedCaption);
     }
 
     /**
-     * HasOne: Test if field type is taken from referenced Model if not set in HasOne::addField().
-     * Test if field type is set in HasOne::addField(), it has priority.
+     * Test if field type is taken from referenced Model if not set in HasOne::addField().
      */
     public function testHasOneReferenceType(): void
     {
@@ -723,14 +718,14 @@ class ReferenceSqlTest extends TestCase
         $user->getField('some_number')->type = 'integer';
         $user->getField('some_other_number')->type = 'integer';
         $order = (new Model($this->db, ['table' => 'order']));
-        $order_UserRef = $order->hasOne('my_user', ['model' => $user, 'our_field' => 'user_id']);
+        $orderUserRef = $order->hasOne('my_user', ['model' => $user, 'our_field' => 'user_id']);
 
         // no type set in defaults, should pull type integer from user model
-        $order_UserRef->addField('some_number');
+        $orderUserRef->addField('some_number');
         $this->assertSame('integer', $order->getField('some_number')->type);
 
         // set type in defaults, this should have higher priority than type set in Model
-        $order_UserRef->addField('some_other_number', null, ['type' => 'string']);
+        $orderUserRef->addField('some_other_number', null, ['type' => 'string']);
         $this->assertSame('string', $order->getField('some_other_number')->type);
     }
 }

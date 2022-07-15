@@ -283,7 +283,7 @@ class Condition extends AbstractScope
         $operator = $this->operatorToWords();
         $value = $this->valueToWords($model, $this->value);
 
-        return trim("{$key} {$operator} {$value}");
+        return trim($key . ' ' . $operator . ' ' . $value);
     }
 
     protected function keyToWords(Model $model): string
@@ -300,7 +300,7 @@ class Condition extends AbstractScope
                 $field = array_pop($references);
 
                 foreach ($references as $link) {
-                    $words[] = "that has reference {$this->readableCaption($link)}";
+                    $words[] = 'that has reference ' . $this->readableCaption($link);
 
                     $model = $model->refLink($link);
                 }
@@ -341,12 +341,12 @@ class Condition extends AbstractScope
         }
 
         if (is_array($value)) {
-            $ret = [];
+            $res = [];
             foreach ($value as $v) {
-                $ret[] = $this->valueToWords($model, $v);
+                $res[] = $this->valueToWords($model, $v);
             }
 
-            return implode(' or ', $ret);
+            return implode(' or ', $res);
         }
 
         if (is_object($value)) {

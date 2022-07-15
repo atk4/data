@@ -29,11 +29,9 @@ class ContainsManyTest extends TestCase
     {
         parent::setUp();
 
-        // populate database for our models
         $this->createMigrator(new VatRate($this->db))->create();
         $this->createMigrator(new Invoice($this->db))->create();
 
-        // fill in some default values
         $m = new VatRate($this->db);
         $m->import([
             [
@@ -63,9 +61,6 @@ class ContainsManyTest extends TestCase
         ]);
     }
 
-    /**
-     * Test caption of referenced model.
-     */
     public function testModelCaption(): void
     {
         $i = new Invoice($this->db);
@@ -175,9 +170,6 @@ class ContainsManyTest extends TestCase
         $this->assertSame(10 * 2 * (1 + 21 / 100) + 40 * 1 * (1 + 21 / 100) + 50 * 3 * (1 + 15 / 100), $i->total_gross); // = 245.1
     }
 
-    /**
-     * Nested containsMany tests.
-     */
     public function testNestedContainsMany(): void
     {
         $i = new Invoice($this->db);
@@ -247,7 +239,8 @@ class ContainsManyTest extends TestCase
         $this->assertSame(24.2 * 15 / 100 + 86.25 * 20 / 100, $i->discounts_total_sum); // =20.88
 
         // let's test how it all looks in persistence without typecasting
-        $exp_lines = $i->getModel()->setOrder($i->fieldName()->id)->export(null, null, false)[0][$i->fieldName()->lines];
+        $exportLines = $i->getModel()->setOrder($i->fieldName()->id)
+            ->export(null, null, false)[0][$i->fieldName()->lines];
         $formatDtForCompareFunc = function (\DateTimeInterface $dt): string {
             $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC')); // @phpstan-ignore-line
 
@@ -289,7 +282,7 @@ class ContainsManyTest extends TestCase
                     ]),
                 ],
             ]),
-            $exp_lines
+            $exportLines
         );
     }
 

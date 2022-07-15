@@ -194,9 +194,6 @@ class CsvTest extends TestCase
         );
     }
 
-    /**
-     * Test export.
-     */
     public function testExport(): void
     {
         $data = [

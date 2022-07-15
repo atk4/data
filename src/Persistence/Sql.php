@@ -205,7 +205,7 @@ class Sql extends Persistence
         if ($model->table) {
             $query->table(
                 is_object($model->table) ? $model->table->action('select') : $model->table,
-                $model->table_alias ?? (is_object($model->table) ? '_tm' : null)
+                $model->tableAlias ?? (is_object($model->table) ? '_tm' : null)
             );
         }
 
@@ -426,9 +426,9 @@ class Sql extends Persistence
                 $field = is_string($field) ? $model->getField($field) : $field;
 
                 if ($type === 'fx') {
-                    $expr = "{$fx}([])";
+                    $expr = $fx . '([])';
                 } else {
-                    $expr = "coalesce({$fx}([]), 0)";
+                    $expr = 'coalesce(' . $fx . '([]), 0)';
                 }
 
                 $query = $this->action($model, 'select', [[]]);
@@ -641,12 +641,12 @@ class Sql extends Persistence
 
     public function getFieldSqlExpression(Field $field, Expression $expression): Expression
     {
-        if (isset($field->getOwner()->persistence_data['use_table_prefixes'])) {
+        if (isset($field->getOwner()->persistenceData['use_table_prefixes'])) {
             $mask = '{{}}.{}';
             $prop = [
                 $field->hasJoin()
-                    ? ($field->getJoin()->foreign_alias ?: $field->getJoin()->shortName)
-                    : ($field->getOwner()->table_alias ?? (is_object($field->getOwner()->table) ? '_tm' : $field->getOwner()->table)),
+                    ? ($field->getJoin()->foreignAlias ?: $field->getJoin()->shortName)
+                    : ($field->getOwner()->tableAlias ?? (is_object($field->getOwner()->table) ? '_tm' : $field->getOwner()->table)),
                 $field->getPersistenceName(),
             ];
         } else {

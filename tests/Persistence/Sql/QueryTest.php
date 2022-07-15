@@ -38,18 +38,12 @@ class QueryTest extends TestCase
         $this->assertInstanceOf(Mysql\Connection::class, $q->dsql()->connection);
     }
 
-    /**
-     * field() should return $this Query for chaining.
-     */
-    public function testFieldReturnValue(): void
+    public function testFieldReturnThis(): void
     {
         $q = $this->q();
         $this->assertSame($q, $q->field('first_name'));
     }
 
-    /**
-     * Testing field - basic cases.
-     */
     public function testFieldBasic(): void
     {
         $this->assertSame(
@@ -90,9 +84,6 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * Testing field - defaultField.
-     */
     public function testFieldDefaultField(): void
     {
         // default defaultField
@@ -117,9 +108,6 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * Testing field - basic cases.
-     */
     public function testFieldExpression(): void
     {
         $this->assertSame(
@@ -153,10 +141,7 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * Duplicate alias of field.
-     */
-    public function testFieldException1(): void
+    public function testFieldDuplicateAliasException(): void
     {
         $this->expectException(Exception::class);
         $this->q()->field('name', 'a')->field('surname', 'a');
@@ -542,27 +527,18 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * where() should return $this Query for chaining.
-     */
-    public function testWhereReturnValue(): void
+    public function testWhereReturnThis(): void
     {
         $q = $this->q();
         $this->assertSame($q, $q->where('id', 1));
     }
 
-    /**
-     * having() should return $this Query for chaining.
-     */
-    public function testHavingReturnValue(): void
+    public function testHavingReturnThis(): void
     {
         $q = $this->q();
         $this->assertSame($q, $q->having('id', 1));
     }
 
-    /**
-     * Basic where() tests.
-     */
     public function testWhereBasic(): void
     {
         // one parameter as a string - treat as expression
@@ -713,9 +689,6 @@ class QueryTest extends TestCase
         yield ['in', null];
     }
 
-    /**
-     * Testing where() with special values - null, array, like.
-     */
     public function testWhereSpecialValues(): void
     {
         // in | not in
@@ -759,7 +732,7 @@ class QueryTest extends TestCase
     }
 
     /**
-     * Having basically is the same as where, so we can relax and trouhly test where() instead.
+     * Having basically is the same as where, so we can relax and thoroughly test where() instead.
      */
     public function testBasicHaving(): void
     {
@@ -777,9 +750,6 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * Test Limit.
-     */
     public function testLimit(): void
     {
         $this->assertSame(
@@ -792,9 +762,6 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * Test Order.
-     */
     public function testOrder(): void
     {
         $this->assertSame(
@@ -874,18 +841,13 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * If first argument is array, second argument must not be used.
-     */
     public function testOrderException1(): void
     {
+        // if first argument is array, second argument must not be used
         $this->expectException(Exception::class);
         $this->q('[order]')->order(['name', 'surname'], 'desc');
     }
 
-    /**
-     * Test Group.
-     */
     public function testGroup(): void
     {
         $this->assertSame(
@@ -935,9 +897,6 @@ class QueryTest extends TestCase
         $this->q()->groupConcat('foo');
     }
 
-    /**
-     * Test expr().
-     */
     public function testExpr(): void
     {
         $this->assertSame(Expression::class, get_class($this->q()->expr('foo')));
@@ -946,9 +905,6 @@ class QueryTest extends TestCase
         $this->assertSame(Mysql\Expression::class, get_class($q->expr('foo')));
     }
 
-    /**
-     * Test Join.
-     */
     public function testJoin(): void
     {
         $this->assertSame(
@@ -1038,24 +994,22 @@ class QueryTest extends TestCase
                 ->render()[0]
         );
 
-        $user_ids = $this->q()->table('expired_users')->field('user_id');
+        $userIds = $this->q()->table('expired_users')->field('user_id');
 
         $this->assertSame(
             'update "user" set "active"=:a  where "id" in (select "user_id" from "expired_users")',
             $this->q()
                 ->table('user')
-                ->where('id', 'in', $user_ids)
+                ->where('id', 'in', $userIds)
                 ->set('active', 0)
                 ->mode('update')
                 ->render()[0]
         );
     }
 
-    /**
-     * Test OrWhere and AndWhere without where condition. Should ignore them.
-     */
     public function testEmptyOrAndWhere(): void
     {
+        // empty condition equals to no condition
         $this->assertSame(
             '',
             $this->q()->orExpr()->render()[0]
@@ -1067,9 +1021,6 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * Test insert, update and delete templates.
-     */
     public function testInsertDeleteUpdate(): void
     {
         // delete template
@@ -1204,9 +1155,6 @@ class QueryTest extends TestCase
         $this->q()->set(new Expression('foo'), 1);
     }
 
-    /**
-     * Test nested OR and AND expressions.
-     */
     public function testNestedOrAnd(): void
     {
         // test 1
@@ -1274,9 +1222,6 @@ class QueryTest extends TestCase
         $q->render();
     }
 
-    /**
-     * Test reset().
-     */
     public function testReset(): void
     {
         // reset everything
@@ -1293,9 +1238,6 @@ class QueryTest extends TestCase
         $this->assertSame('select * from "user" where "surname" = :a', $q->render()[0]);
     }
 
-    /**
-     * Test [option].
-     */
     public function testOption(): void
     {
         // single option
@@ -1330,9 +1272,6 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * Test caseExpr (normal).
-     */
     public function testCaseExprNormal(): void
     {
         // Test normal form
@@ -1354,9 +1293,6 @@ class QueryTest extends TestCase
         $this->assertSame('case when "age" > (select year(now()) - year(birth_date) "calc_age" from "user") then :a else :b end', $s);
     }
 
-    /**
-     * Test caseExpr (short form).
-     */
     public function testCaseExprShortForm(): void
     {
         $s = $this->q()->caseExpr('status')
@@ -1401,9 +1337,6 @@ class QueryTest extends TestCase
             ->render();
     }
 
-    /**
-     * Tests exprNow() method.
-     */
     public function testExprNow(): void
     {
         $this->assertSame(
@@ -1423,10 +1356,7 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * Test table name with dots in it - Select.
-     */
-    public function testTableNameDot1(): void
+    public function testTableNameWithDot(): void
     {
         // render table
         $this->assertSame(
@@ -1455,9 +1385,6 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * Test WITH.
-     */
     public function testWith(): void
     {
         $q1 = $this->q()->table('salaries')->field('salary');

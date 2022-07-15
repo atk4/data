@@ -9,13 +9,13 @@ class Transfer extends Payment
     /** @var bool */
     public $detached = false;
     /** @var static|null */
-    public $other_leg_creation;
+    public $otherLegCreation;
 
     protected function init(): void
     {
         parent::init();
 
-        $this->j_payment->hasOne('transfer_document_id', ['model' => [self::class]]);
+        $this->jPayment->hasOne('transfer_document_id', ['model' => [self::class]]);
 
         // only used to create / destroy trasfer legs
         if (!$this->detached) {
@@ -29,7 +29,7 @@ class Transfer extends Payment
             if ($this->get('destination_account_id') && !$this->getId()) {
                 // In this section we test if "clone" works ok
 
-                $this->other_leg_creation = $m2 = clone $this;
+                $this->otherLegCreation = $m2 = clone $this;
                 $m2->set('account_id', $m2->get('destination_account_id'));
                 $m2->set('amount', -$m2->get('amount'));
 
@@ -42,10 +42,10 @@ class Transfer extends Payment
         });
 
         $this->onHookShort(self::HOOK_AFTER_SAVE, function () {
-            if ($this->other_leg_creation) {
-                $this->other_leg_creation->set('transfer_document_id', $this->getId())->save();
+            if ($this->otherLegCreation) {
+                $this->otherLegCreation->set('transfer_document_id', $this->getId())->save();
             }
-            $this->other_leg_creation = null;
+            $this->otherLegCreation = null;
         });
     }
 }

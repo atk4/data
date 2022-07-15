@@ -71,13 +71,13 @@ try to understand what each section does to your base query::
     $salary = new Query(['connection' => $pdo]);
 
     // Create few expression objects
-    $e_ms = $salary->expr('max(salary)');
-    $e_df = $salary->expr('TimeStampDiff(month, from_date, to_date)');
+    $eMaxSalary = $salary->expr('max(salary)');
+    $eMonths = $salary->expr('TimeStampDiff(month, from_date, to_date)');
 
     // Configure our basic query
     $salary
         ->table('salary')
-        ->field(['emp_no', 'max_salary' => $e_ms, 'months' => $e_df])
+        ->field(['emp_no', 'max_salary' => $eMaxSalary, 'months' => $eMonths])
         ->group('emp_no')
         ->order('-max_salary')
 
@@ -99,7 +99,7 @@ try to understand what each section does to your base query::
 
     // Finally, fetch result
     foreach ($salary as $row) {
-        echo "Data: " . json_encode($row) . "\n";
+        echo 'Data: ' . json_encode($row) . "\n";
     }
 
 The above query resulting code will look like this:
@@ -156,13 +156,13 @@ The format of the ``$dsn`` is the same as with for
 If you need to execute query that is not supported by DSQL, you should always
 use expressions::
 
-    $tables = $c->expr('show tables like []', [$like_str])->getRows();
+    $tables = $c->expr('show tables like []', [$likeStr])->getRows();
 
 DSQL classes are mindful about your SQL vendor and it's quirks, so when you're
 building sub-queries with :php:meth:`Query::dsql`, you can avoid some nasty
 problems::
 
-    $sqlite_c->dsql()->table('user')->mode('truncate')->executeStatement();
+    $sqliteConnection->dsql()->table('user')->mode('truncate')->executeStatement();
 
 The above code will work even though SQLite does not support truncate. That's
 because DSQL takes care of this.
@@ -190,7 +190,7 @@ see :ref:`query-modes`.
 You can actually perform multiple operations::
 
     $q = $c->dsql()->table('employee')->where('emp_no', 1234);
-    $backup_data = $q->getRows();
+    $backupData = $q->getRows();
     $q->mode('delete')->executeStatement();
 
 A good practice is to re-use the same query object before you branch out and
@@ -201,7 +201,7 @@ perform the action::
     if ($confirmed) {
         $q->mode('delete')->executeStatement();
     } else {
-        echo "Are you sure you want to delete " . $q->field('count(*)') . " employees?";
+        echo 'Are you sure you want to delete ' . $q->field('count(*)') . ' employees?';
     }
 
 
@@ -214,7 +214,7 @@ When you are selecting data from your database, DSQL will prepare and execute
 statement for you. Depending on the connection, there may be some magic
 involved, but once the query is executed, you can start streaming your data::
 
-    foreach ($query->table('employee')->where('dep_no',123) as $employee) {
+    foreach ($query->table('employee')->where('dep_no', 123) as $employee) {
         echo $employee['first_name'] . "\n";
     }
 

@@ -376,7 +376,7 @@ class Expression implements Expressionable, \ArrayAccess
         // - [xxx] = param
         // - {xxx} = escape
         // - {{xxx}} = escapeSoft
-        $nameless_count = 0;
+        $namelessCount = 0;
         $res = preg_replace_callback(
             <<<'EOF'
                 ~
@@ -388,7 +388,7 @@ class Expression implements Expressionable, \ArrayAccess
                 |\{\{\w*\}\}
                 ~xs
                 EOF,
-            function ($matches) use (&$nameless_count) {
+            function ($matches) use (&$namelessCount) {
                 if ($matches[0] === '') {
                     return '';
                 }
@@ -409,7 +409,7 @@ class Expression implements Expressionable, \ArrayAccess
 
                 // allow template to contain []
                 if ($identifier === '') {
-                    $identifier = $nameless_count++;
+                    $identifier = $namelessCount++;
 
                     // use rendering only with named tags
                 }

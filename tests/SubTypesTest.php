@@ -144,16 +144,12 @@ class StTransaction_TransferIn extends StGenericTransaction
     }
 }
 
-/**
- * Implements various tests for deep copying objects.
- */
 class SubTypesTest extends TestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
 
-        // populate database for our three models
         $this->createMigrator(new StAccount($this->db))->create();
         $this->createMigrator(new StTransaction_TransferOut($this->db))->create();
     }

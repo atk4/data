@@ -12,16 +12,16 @@ use Atk4\Data\ValidationException;
  *
  * Usage:
  *  $user->addField('email', [EmailField::class]);
- *  $user->addField('email_mx_check', [EmailField::class, 'dns_check' => true]);
- *  $user->addField('email_with_name', [EmailField::class, 'allow_name' => true]);
+ *  $user->addField('email_mx_check', [EmailField::class, 'dnsCheck' => true]);
+ *  $user->addField('email_with_name', [EmailField::class, 'allowName' => true]);
  */
 class EmailField extends Field
 {
     /** @var bool Enable lookup for MX record for email addresses stored */
-    public $dns_check = false;
+    public $dnsCheck = false;
 
     /** @var bool Allow display name as per RFC2822, eg. format like "Romans <me@example.com>" */
-    public $allow_name = false;
+    public $allowName = false;
 
     public function normalize($value)
     {
@@ -31,7 +31,7 @@ class EmailField extends Field
         }
 
         $email = trim($value);
-        if ($this->allow_name) {
+        if ($this->allowName) {
             $email = preg_replace('/^[^<]*<([^>]*)>/', '\1', $email);
         }
 
@@ -46,7 +46,7 @@ class EmailField extends Field
             throw new ValidationException([$this->shortName => 'Email address format is invalid'], $this->getOwner());
         }
 
-        if ($this->dns_check) {
+        if ($this->dnsCheck) {
             if (!$this->hasAnyDnsRecord($domain)) {
                 throw new ValidationException([$this->shortName => 'Email address domain does not exist'], $this->getOwner());
             }

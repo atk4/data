@@ -78,6 +78,7 @@ class TransactionTest extends TestCase
 
     /**
      * Tests simple and nested transactions.
+     * TODO split this test.
      */
     public function testTransactions(): void
     {
@@ -241,12 +242,8 @@ class TransactionTest extends TestCase
         );
     }
 
-    /**
-     * Tests inTransaction().
-     */
     public function testInTransaction(): void
     {
-        // inTransaction tests
         $this->assertFalse(
             $this->getConnection()->inTransaction()
         );

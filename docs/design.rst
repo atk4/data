@@ -100,7 +100,7 @@ While most of relational mapping solutions would load all basket items, Agile
 Data performs same operations inside database if possible.
 
 Finally - some of your code may rely of some specific database vendor
-features. Example would be defining an expression using "IF (expr, val1, val2) "
+features. Example would be defining an expression using "IF (expr, val1, val2)"
 expression for some field of Domain model or using stored procedure as the
 source instead of table.
 
@@ -441,7 +441,7 @@ with condition on user_id. We can't do that, because "query", "table" and
 "user_id" are persistence details and we must keep them outside of business logic.
 Other ORM solution give you something like this::
 
-    $array_of_orders = $user->orders();
+    $arrayOfOrders = $user->orders();
 
 Unfortunately this has practical performance implications and scalability
 constraints. What if your user is having millions of orders? Even with
@@ -450,12 +450,12 @@ lazy-loading, you will be operating with million "id" records.
 Agile Data implements traversal as a simple operation that converts one DataSet
 into another::
 
-    $user_dataset->addCondition('is_vip', true);
-    $vip_orders = $user_dataset->ref('Order');
+    $userModel->addCondition('is_vip', true);
+    $vipOrders = $userModel->ref('Order');
 
-    $sum = $vip_orders->fx0(['sum', 'amount'])->getOne();
+    $sum = $vipOrders->fx0(['sum', 'amount'])->getOne();
 
-The implementation of `ref()` is pretty powerful - $user_dataset can address 3
+The implementation of `ref()` is pretty powerful - $userModel can address 3
 users in the database and only 2 of those users are VIP. Typical ORM would
 require you to fetch all VIP records and then perform additional queries to find
 their orders.
@@ -474,7 +474,7 @@ into DatabaseVendor-specific operations.
 To continue my example from above, I'll use a query method to calculate number
 of orders placed by VIP clients::
 
-    $vip_order_count = $vip_orders->fx(['count'])->getOne();
+    $vipOrderCount = $vipOrders->fx(['count'])->getOne();
 
 This code will attempt to execute a single-query only, however the ability to
 optimize your request relies on the capabilities of database vendor.
@@ -483,12 +483,12 @@ The actual database operation(s) might look like this on SQL database:
 .. code-block:: sql
 
     select count(*) from `order` where user_id in
-        (select id from user where type="user" and is_vip=1)
+        (select id from user where type = "user" and is_vip = 1)
 
 While with MongoDB, the query could be different::
 
-    $ids = collections.client.find({'is_vip':true}).field('id');
-    return collections.order.find({'user_id':$ids}).count();
+    $ids = collections.client.find({'is_vip': true}).field('id');
+    return collections.order.find({'user_id': $ids}).count();
 
 Finally the code above will work even if you use a simple Array as a data source::
 
@@ -501,7 +501,8 @@ Finally the code above will work even if you use a simple Array as a data source
                     ['amount' => 10],
                     ['amount' => 20],
                 ],
-            ],[
+            ],
+            [
                 'name' => 'Bill',
                 'email' => 'bill@yahoo.com',
                 'Orders' => [
@@ -513,9 +514,9 @@ Finally the code above will work even if you use a simple Array as a data source
 
 So getting back to the operation above, lets look at it in more details::
 
-    $vip_order_count = $vip_orders->fx(['count'])->getOne();
+    $vipOrderCount = $vipOrders->fx(['count'])->getOne();
 
-While "vip_orders" is actually a DataSet, executing count() will cross you over
+While "$vipOrders" is actually a DataSet, executing count() will cross you over
 into persistence layer. However this method is returning a new object, which is then
 executed when you call getOne(). For SQL persistencies it returns \Atk4\Data\Persistence\Sql\Query
 object, for example.

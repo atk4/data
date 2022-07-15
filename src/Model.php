@@ -127,13 +127,13 @@ class Model implements \IteratorAggregate
     public $table;
 
     /** @var string|null */
-    public $table_alias;
+    public $tableAlias;
 
     /** @var Persistence|null */
     private $_persistence;
 
     /** @var array Persistence store some custom information in here that may be useful for them. */
-    public $persistence_data;
+    public $persistenceData;
 
     /** @var Model\Scope\RootScope */
     private $scope;
@@ -532,7 +532,7 @@ class Model implements \IteratorAggregate
      *  ['field' => 'must be 4 digits exactly'] or empty array if no errors were present.
      *
      * You may also use format:
-     *  ['field' => ['must not have character [ch]', 'ch' => $bad_character']] for better localization of error message.
+     *  ['field' => ['must not have character [ch]', 'ch' => $badCharacter]] for better localization of error message.
      *
      * Always use
      *   return array_merge(parent::validate($intent), $errors);
@@ -544,9 +544,9 @@ class Model implements \IteratorAggregate
     public function validate(string $intent = null): array
     {
         $errors = [];
-        foreach ($this->hook(self::HOOK_VALIDATE, [$intent]) as $handler_error) {
-            if ($handler_error) {
-                $errors = array_merge($errors, $handler_error);
+        foreach ($this->hook(self::HOOK_VALIDATE, [$intent]) as $error) {
+            if ($error) {
+                $errors = array_merge($errors, $error);
             }
         }
 
@@ -1062,7 +1062,7 @@ class Model implements \IteratorAggregate
      */
     public function addCteModel(string $name, self $model, bool $recursive = false)
     {
-        if ($name === $this->table || $name === $this->table_alias || isset($this->cteModels[$name])) {
+        if ($name === $this->table || $name === $this->tableAlias || isset($this->cteModels[$name])) {
             throw (new Exception('CTE model with given name already exist'))
                 ->addMoreInfo('name', $name);
         }
@@ -1165,10 +1165,10 @@ class Model implements \IteratorAggregate
             throw new Exception('Persistence already set');
         }
 
-        if ($this->persistence_data === []) {
+        if ($this->persistenceData === []) {
             $this->_persistence = $persistence;
         } else {
-            $this->persistence_data = [];
+            $this->persistenceData = [];
             $persistence->add($this);
         }
 
@@ -1553,14 +1553,14 @@ class Model implements \IteratorAggregate
             if (($errors = $this->validate('save')) !== []) {
                 throw new ValidationException($errors, $this);
             }
-            $is_update = $this->isLoaded();
-            if ($this->hook(self::HOOK_BEFORE_SAVE, [$is_update]) === false) {
+            $isUpdate = $this->isLoaded();
+            if ($this->hook(self::HOOK_BEFORE_SAVE, [$isUpdate]) === false) {
                 return $this;
             }
 
-            if ($is_update) {
+            if ($isUpdate) {
                 $data = [];
-                $dirty_join = false;
+                $dirtyJoin = false;
                 foreach ($dirtyRef as $name => $ignore) {
                     $field = $this->getField($name);
                     if ($field->read_only || $field->never_persist || $field->never_save) {
@@ -1570,7 +1570,7 @@ class Model implements \IteratorAggregate
                     $value = $this->get($name);
 
                     if ($field->hasJoin()) {
-                        $dirty_join = true;
+                        $dirtyJoin = true;
                         $field->getJoin()->setSaveBufferValue($this, $name, $value);
                     } else {
                         $data[$name] = $value;
@@ -1578,7 +1578,7 @@ class Model implements \IteratorAggregate
                 }
 
                 // No save needed, nothing was changed
-                if (count($data) === 0 && !$dirty_join) {
+                if (count($data) === 0 && !$dirtyJoin) {
                     return $this;
                 }
 
@@ -1633,7 +1633,7 @@ class Model implements \IteratorAggregate
                 $dirtyRef = $this->dirtyAfterReload;
             }
 
-            $this->hook(self::HOOK_AFTER_SAVE, [$is_update]);
+            $this->hook(self::HOOK_AFTER_SAVE, [$isUpdate]);
 
             return $this;
         });
@@ -1708,23 +1708,23 @@ class Model implements \IteratorAggregate
     /**
      * Export DataSet as array of hashes.
      *
-     * @param array|null $fields        Names of fields to export
-     * @param string     $key_field     Optional name of field which value we will use as array key
-     * @param bool       $typecast_data Should we typecast exported data
+     * @param array|null $fields   Names of fields to export
+     * @param string     $keyField Optional name of field which value we will use as array key
+     * @param bool       $typecast Should we typecast exported data
      */
-    public function export(array $fields = null, $key_field = null, $typecast_data = true): array
+    public function export(array $fields = null, string $keyField = null, bool $typecast = true): array
     {
         $this->assertIsModel();
         $this->assertHasPersistence('export');
 
         // no key field - then just do export
-        if ($key_field === null) {
-            return $this->getPersistence()->export($this, $fields, $typecast_data);
+        if ($keyField === null) {
+            return $this->getPersistence()->export($this, $fields, $typecast);
         }
 
         // do we have added key field in fields list?
         // if so, then will have to remove it afterwards
-        $key_field_added = false;
+        $keyFieldAdded = false;
 
         // prepare array with field names
         if ($fields === null) {
@@ -1733,19 +1733,19 @@ class Model implements \IteratorAggregate
             if ($this->onlyFields !== null) {
                 // Add requested fields first
                 foreach ($this->onlyFields as $field) {
-                    $f_object = $this->getField($field);
-                    if ($f_object->never_persist) {
+                    $fObject = $this->getField($field);
+                    if ($fObject->never_persist) {
                         continue;
                     }
                     $fields[$field] = true;
                 }
 
                 // now add system fields, if they were not added
-                foreach ($this->getFields() as $field => $f_object) {
-                    if ($f_object->never_persist) {
+                foreach ($this->getFields() as $field => $fObject) {
+                    if ($fObject->never_persist) {
                         continue;
                     }
-                    if ($f_object->system && !isset($fields[$field])) {
+                    if ($fObject->system && !isset($fields[$field])) {
                         $fields[$field] = true;
                     }
                 }
@@ -1753,8 +1753,8 @@ class Model implements \IteratorAggregate
                 $fields = array_keys($fields);
             } else {
                 // Add all model fields
-                foreach ($this->getFields() as $field => $f_object) {
-                    if ($f_object->never_persist) {
+                foreach ($this->getFields() as $field => $fObject) {
+                    if ($fObject->never_persist) {
                         continue;
                     }
                     $fields[] = $field;
@@ -1762,21 +1762,21 @@ class Model implements \IteratorAggregate
             }
         }
 
-        // add key_field to array if it's not there
-        if (!in_array($key_field, $fields, true)) {
-            $fields[] = $key_field;
-            $key_field_added = true;
+        // add $keyField to array if it's not there
+        if (!in_array($keyField, $fields, true)) {
+            $fields[] = $keyField;
+            $keyFieldAdded = true;
         }
 
         // export
-        $data = $this->getPersistence()->export($this, $fields, $typecast_data);
+        $data = $this->getPersistence()->export($this, $fields, $typecast);
 
         // prepare resulting array
         $res = [];
         foreach ($data as $row) {
-            $key = $row[$key_field];
-            if ($key_field_added) {
-                unset($row[$key_field]);
+            $key = $row[$keyField];
+            if ($keyFieldAdded) {
+                unset($row[$keyField]);
             }
             $res[$key] = $row;
         }

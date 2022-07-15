@@ -12,7 +12,7 @@ class Query extends BaseQuery
 
     protected $identifierEscapeChar = ']';
 
-    protected $expression_class = Expression::class;
+    protected $expressionClass = Expression::class;
 
     protected $template_insert = <<<'EOF'
         begin try

@@ -46,9 +46,6 @@ class ConnectionTest extends TestCase
         );
     }
 
-    /**
-     * Test DSN normalize.
-     */
     public function testDsnNormalize(): void
     {
         // standard

@@ -25,9 +25,6 @@ abstract class TestCase extends BaseTestCase
     /** @var Migrator[] */
     private $createdMigrators = [];
 
-    /**
-     * Setup test database.
-     */
     protected function setUp(): void
     {
         parent::setUp();
@@ -245,9 +242,6 @@ abstract class TestCase extends BaseTestCase
         return $migrator;
     }
 
-    /**
-     * Sets database into a specific test.
-     */
     public function setDb(array $dbData, bool $importData = true): void
     {
         // create tables
@@ -321,9 +315,6 @@ abstract class TestCase extends BaseTestCase
         }
     }
 
-    /**
-     * Return database data.
-     */
     public function getDb(array $tableNames = null, bool $noId = false): array
     {
         if ($tableNames === null) {

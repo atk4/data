@@ -46,7 +46,7 @@ class JoinSqlTest extends TestCase
 
     public function testJoinSaving1(): void
     {
-        $m_u = new Model($this->db, ['table' => 'user']);
+        $user = new Model($this->db, ['table' => 'user']);
         $this->setDb([
             'user' => [
                 '_' => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
@@ -56,26 +56,26 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        $m_u->addField('contact_id');
-        $m_u->addField('name');
-        $j = $m_u->join('contact');
+        $user->addField('contact_id');
+        $user->addField('name');
+        $j = $user->join('contact');
         $j->addField('contact_phone');
 
-        $m_u2 = $m_u->createEntity();
-        $m_u2->set('name', 'John');
-        $m_u2->set('contact_phone', '+123');
+        $user2 = $user->createEntity();
+        $user2->set('name', 'John');
+        $user2->set('contact_phone', '+123');
 
-        $m_u2->save();
+        $user2->save();
 
         $this->assertEquals([
             'user' => [1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1]],
             'contact' => [1 => ['id' => 1, 'contact_phone' => '+123']],
         ], $this->getDb(['user', 'contact']));
 
-        $m_u2 = $m_u->createEntity();
-        $m_u2->set('name', 'Joe');
-        $m_u2->set('contact_phone', '+321');
-        $m_u2->save();
+        $user2 = $user->createEntity();
+        $user2->set('name', 'Joe');
+        $user2->set('contact_phone', '+321');
+        $user2->save();
 
         $this->assertEquals([
             'user' => [
@@ -91,7 +91,7 @@ class JoinSqlTest extends TestCase
 
     public function testJoinSaving2(): void
     {
-        $m_u = new Model($this->db, ['table' => 'user']);
+        $user = new Model($this->db, ['table' => 'user']);
         $this->setDb([
             'user' => [
                 '_' => ['id' => 1, 'name' => 'John'],
@@ -100,24 +100,24 @@ class JoinSqlTest extends TestCase
                 '_' => ['id' => 1, 'contact_phone' => '+123', 'test_id' => 0],
             ],
         ]);
-        $m_u->addField('name');
-        $j = $m_u->join('contact.test_id');
+        $user->addField('name');
+        $j = $user->join('contact.test_id');
         $j->addFields(['contact_phone']);
 
-        $m_u2 = $m_u->createEntity();
-        $m_u2->set('name', 'John');
-        $m_u2->set('contact_phone', '+123');
-        $m_u2->save();
+        $user2 = $user->createEntity();
+        $user2->set('name', 'John');
+        $user2->set('contact_phone', '+123');
+        $user2->save();
 
         $this->assertEquals([
             'user' => [1 => ['id' => 1, 'name' => 'John']],
             'contact' => [1 => ['id' => 1, 'test_id' => 1, 'contact_phone' => '+123']],
         ], $this->getDb(['user', 'contact']));
 
-        $m_u2->unload();
-        $m_u2 = $m_u->createEntity();
-        $m_u2->set('name', 'Peter');
-        $m_u2->save();
+        $user2->unload();
+        $user2 = $user->createEntity();
+        $user2->set('name', 'Peter');
+        $user2->save();
         $this->assertEquals([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
@@ -131,11 +131,11 @@ class JoinSqlTest extends TestCase
 
         $this->getConnection()->dsql()->table('contact')->where('id', 2)->mode('delete')->executeStatement();
 
-        $m_u2->unload();
-        $m_u2 = $m_u->createEntity();
-        $m_u2->set('name', 'Sue');
-        $m_u2->set('contact_phone', '+444');
-        $m_u2->save();
+        $user2->unload();
+        $user2 = $user->createEntity();
+        $user2->set('name', 'Sue');
+        $user2->set('contact_phone', '+444');
+        $user2->save();
         $this->assertEquals([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
@@ -151,7 +151,7 @@ class JoinSqlTest extends TestCase
 
     public function testJoinSaving3(): void
     {
-        $m_u = new Model($this->db, ['table' => 'user']);
+        $user = new Model($this->db, ['table' => 'user']);
         $this->setDb([
             'user' => [
                 '_' => ['id' => 1, 'name' => 'John', 'test_id' => 0],
@@ -161,15 +161,15 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        $m_u->addField('name');
-        $j = $m_u->join('contact', ['master_field' => 'test_id']);
+        $user->addField('name');
+        $j = $user->join('contact', ['master_field' => 'test_id']);
         $j->addField('contact_phone');
-        $m_u = $m_u->createEntity();
+        $user = $user->createEntity();
 
-        $m_u->set('name', 'John');
-        $m_u->set('contact_phone', '+123');
+        $user->set('name', 'John');
+        $user->set('contact_phone', '+123');
 
-        $m_u->save();
+        $user->save();
 
         $this->assertEquals([
             'user' => [1 => ['id' => 1, 'test_id' => 1, 'name' => 'John']],
@@ -191,27 +191,27 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        $m_u = new Model($this->db, ['table' => 'user']);
-        $m_u->addField('name');
-        $j = $m_u->join('contact');
+        $user = new Model($this->db, ['table' => 'user']);
+        $user->addField('name');
+        $j = $user->join('contact');
         $j->addField('contact_phone');
 
-        $m_u2 = $m_u->load(1);
+        $user2 = $user->load(1);
         $this->assertSame([
             'id' => 1, 'name' => 'John', 'contact_id' => '1', 'contact_phone' => '+123',
-        ], $m_u2->get());
+        ], $user2->get());
 
-        $m_u2 = $m_u->load(3);
+        $user2 = $user->load(3);
         $this->assertSame([
             'id' => 3, 'name' => 'Joe', 'contact_id' => '2', 'contact_phone' => '+321',
-        ], $m_u2->get());
+        ], $user2->get());
 
-        $m_u2 = $m_u2->unload();
+        $user2 = $user2->unload();
         $this->assertSame([
             'id' => null, 'name' => null, 'contact_id' => null, 'contact_phone' => null,
-        ], $m_u2->get());
+        ], $user2->get());
 
-        $this->assertNull($m_u->tryLoad(4));
+        $this->assertNull($user->tryLoad(4));
     }
 
     public function testJoinUpdate(): void
@@ -228,16 +228,16 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        $m_u = new Model($this->db, ['table' => 'user']);
-        $m_u->addField('contact_id');
-        $m_u->addField('name');
-        $j = $m_u->join('contact');
+        $user = new Model($this->db, ['table' => 'user']);
+        $user->addField('contact_id');
+        $user->addField('name');
+        $j = $user->join('contact');
         $j->addField('contact_phone');
 
-        $m_u2 = $m_u->load(1);
-        $m_u2->set('name', 'John 2');
-        $m_u2->set('contact_phone', '+555');
-        $m_u2->save();
+        $user2 = $user->load(1);
+        $user2->set('name', 'John 2');
+        $user2->set('contact_phone', '+555');
+        $user2->save();
 
         $this->assertEquals([
             'user' => [
@@ -251,12 +251,12 @@ class JoinSqlTest extends TestCase
             ],
         ], $this->getDb());
 
-        $m_u2 = $m_u->load(1);
-        $m_u2->set('name', 'XX');
-        $m_u2->set('contact_phone', '+999');
-        $m_u2 = $m_u->load(3);
-        $m_u2->set('name', 'XX');
-        $m_u2->save();
+        $user2 = $user->load(1);
+        $user2->set('name', 'XX');
+        $user2->set('contact_phone', '+999');
+        $user2 = $user->load(3);
+        $user2->set('name', 'XX');
+        $user2->save();
 
         $this->assertEquals([
             'user' => [
@@ -270,8 +270,8 @@ class JoinSqlTest extends TestCase
             ],
         ], $this->getDb());
 
-        $m_u2->set('contact_phone', '+999');
-        $m_u2->save();
+        $user2->set('contact_phone', '+999');
+        $user2->save();
 
         $this->assertEquals([
             'user' => [
@@ -285,10 +285,10 @@ class JoinSqlTest extends TestCase
             ],
         ], $this->getDb());
 
-        $m_u2 = $m_u->createEntity();
-        $m_u2->set('name', 'YYY');
-        $m_u2->set('contact_phone', '+777');
-        $m_u2->save();
+        $user2 = $user->createEntity();
+        $user2->set('name', 'YYY');
+        $user2->set('contact_phone', '+777');
+        $user2->save();
 
         $this->assertEquals([
             'user' => [
@@ -321,14 +321,14 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        $m_u = new Model($this->db, ['table' => 'user']);
-        $m_u->addField('contact_id');
-        $m_u->addField('name');
-        $j = $m_u->join('contact');
+        $user = new Model($this->db, ['table' => 'user']);
+        $user->addField('contact_id');
+        $user->addField('name');
+        $j = $user->join('contact');
         $j->addField('contact_phone');
 
-        $m_u = $m_u->load(1);
-        $m_u->delete();
+        $user = $user->load(1);
+        $user->delete();
 
         $this->assertEquals([
             'user' => [
@@ -345,7 +345,7 @@ class JoinSqlTest extends TestCase
 
     public function testDoubleSaveHook(): void
     {
-        $m_u = new Model($this->db, ['table' => 'user']);
+        $user = new Model($this->db, ['table' => 'user']);
         $this->setDb([
             'user' => [
                 '_' => ['id' => 1, 'name' => 'John'],
@@ -354,19 +354,19 @@ class JoinSqlTest extends TestCase
                 '_' => ['id' => 1, 'contact_phone' => '+123', 'test_id' => 0],
             ],
         ]);
-        $m_u->addField('name');
-        $j = $m_u->join('contact.test_id');
+        $user->addField('name');
+        $j = $user->join('contact.test_id');
         $j->addField('contact_phone');
 
-        $m_u->onHook(Model::HOOK_AFTER_SAVE, static function ($m) {
+        $user->onHook(Model::HOOK_AFTER_SAVE, static function ($m) {
             if ($m->get('contact_phone') !== '+123') {
                 $m->set('contact_phone', '+123');
                 $m->save();
             }
         });
-        $m_u = $m_u->createEntity();
-        $m_u->set('name', 'John');
-        $m_u->save();
+        $user = $user->createEntity();
+        $user->set('name', 'John');
+        $user->save();
 
         $this->assertEquals([
             'user' => [1 => ['id' => 1, 'name' => 'John']],
@@ -395,28 +395,28 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        $m_u = new Model($this->db, ['table' => 'user']);
-        $m_u->addField('contact_id');
-        $m_u->addField('name');
-        $j_contact = $m_u->join('contact');
-        $j_contact->addField('contact_phone');
-        $j_country = $j_contact->join('country');
-        $j_country->addField('country_name', ['actual' => 'name']);
+        $user = new Model($this->db, ['table' => 'user']);
+        $user->addField('contact_id');
+        $user->addField('name');
+        $jContact = $user->join('contact');
+        $jContact->addField('contact_phone');
+        $jCountry = $jContact->join('country');
+        $jCountry->addField('country_name', ['actual' => 'name']);
 
-        $m_u2 = $m_u->load(10);
-        $m_u2->delete();
+        $user2 = $user->load(10);
+        $user2->delete();
 
-        $m_u2 = $m_u->loadBy('country_name', 'US');
-        $this->assertEquals(30, $m_u2->getId());
-        $m_u2->set('country_name', 'USA');
-        $m_u2->save();
+        $user2 = $user->loadBy('country_name', 'US');
+        $this->assertEquals(30, $user2->getId());
+        $user2->set('country_name', 'USA');
+        $user2->save();
 
-        $m_u2 = $m_u2->unload();
-        $this->assertFalse($m_u2->isLoaded());
+        $user2 = $user2->unload();
+        $this->assertFalse($user2->isLoaded());
 
-        $this->assertSame($m_u2->getModel()->getField('country_id')->getJoin(), $m_u2->getModel()->getField('contact_phone')->getJoin());
+        $this->assertSame($user2->getModel()->getField('country_id')->getJoin(), $user2->getModel()->getField('contact_phone')->getJoin());
 
-        $m_u->createEntity()->save(['name' => 'new', 'contact_phone' => '+000', 'country_name' => 'LV']);
+        $user->createEntity()->save(['name' => 'new', 'contact_phone' => '+000', 'country_name' => 'LV']);
 
         $this->assertEquals([
             'user' => [
@@ -459,19 +459,19 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        $m_u = new Model($this->db, ['table' => 'user']);
-        $m_u->addField('contact_id');
-        $m_u->addField('name');
-        $j = $m_u->join('contact');
+        $user = new Model($this->db, ['table' => 'user']);
+        $user->addField('contact_id');
+        $user->addField('name');
+        $j = $user->join('contact');
         $j->addField('contact_phone');
         $c = $j->join('country');
         $c->addFields(['country_name' => ['actual' => 'name']]);
 
-        $m_u2 = $m_u->load(10);
-        $m_u2->delete();
+        $user2 = $user->load(10);
+        $user2->delete();
 
-        $m_u = $m_u->loadBy('country_name', 'US');
-        $this->assertEquals(30, $m_u->getId());
+        $user = $user->loadBy('country_name', 'US');
+        $this->assertEquals(30, $user->getId());
 
         $this->assertEquals([
             'user' => [
@@ -490,9 +490,6 @@ class JoinSqlTest extends TestCase
         ], $this->getDb());
     }
 
-    /**
-     * Test hasOne and hasMany trough Join.
-     */
     public function testJoinHasOneHasMany(): void
     {
         $this->setDb([
@@ -517,50 +514,50 @@ class JoinSqlTest extends TestCase
         ]);
 
         // main user model joined to contact table
-        $m_u = new Model($this->db, ['table' => 'user']);
-        $m_u->addField('contact_id');
-        $m_u->addField('name');
-        $j = $m_u->join('contact');
+        $user = new Model($this->db, ['table' => 'user']);
+        $user->addField('contact_id');
+        $user->addField('name');
+        $j = $user->join('contact');
 
-        $m_u2 = $m_u->load(1);
+        $user2 = $user->load(1);
         $this->assertEquals([
             'id' => 1, 'name' => 'John', 'contact_id' => 10,
-        ], $m_u2->get());
+        ], $user2->get());
 
         // hasOne phone model
-        $m_p = new Model($this->db, ['table' => 'phone']);
-        $m_p->addField('number');
-        $ref_one = $j->hasOne('phone_id', ['model' => $m_p]); // hasOne on JOIN
-        $ref_one->addField('number');
+        $phone = new Model($this->db, ['table' => 'phone']);
+        $phone->addField('number');
+        $refOne = $j->hasOne('phone_id', ['model' => $phone]); // hasOne on JOIN
+        $refOne->addField('number');
 
-        $m_u2 = $m_u->load(1);
+        $user2 = $user->load(1);
         $this->assertEquals([
             'id' => 1, 'name' => 'John', 'contact_id' => 10, 'phone_id' => 20, 'number' => '+123',
-        ], $m_u2->get());
+        ], $user2->get());
 
         // hasMany token model (uses default our_field, their_field)
-        $m_t = new Model($this->db, ['table' => 'token']);
-        $m_t->addField('user_id');
-        $m_t->addField('token');
-        $ref_many = $j->hasMany('Token', ['model' => $m_t]); // hasMany on JOIN (use default our_field, their_field)
+        $token = new Model($this->db, ['table' => 'token']);
+        $token->addField('user_id');
+        $token->addField('token');
+        $refMany = $j->hasMany('Token', ['model' => $token]); // hasMany on JOIN (use default our_field, their_field)
 
-        $m_u2 = $m_u->load(1);
+        $user2 = $user->load(1);
         $this->assertSameExportUnordered([
             ['id' => 30, 'user_id' => '1', 'token' => 'ABC'],
             ['id' => 31, 'user_id' => '1', 'token' => 'DEF'],
-        ], $m_u2->ref('Token')->export());
+        ], $user2->ref('Token')->export());
 
         // hasMany email model (uses custom our_field, their_field)
-        $m_e = new Model($this->db, ['table' => 'email']);
-        $m_e->addField('contact_id');
-        $m_e->addField('address');
-        $ref_many = $j->hasMany('Email', ['model' => $m_e, 'our_field' => 'contact_id', 'their_field' => 'contact_id']); // hasMany on JOIN (use custom our_field, their_field)
+        $email = new Model($this->db, ['table' => 'email']);
+        $email->addField('contact_id');
+        $email->addField('address');
+        $refMany = $j->hasMany('Email', ['model' => $email, 'our_field' => 'contact_id', 'their_field' => 'contact_id']); // hasMany on JOIN (use custom our_field, their_field)
 
-        $m_u2 = $m_u->load(1);
+        $user2 = $user->load(1);
         $this->assertSameExportUnordered([
             ['id' => 40, 'contact_id' => '10', 'address' => 'john@foo.net'],
             ['id' => 41, 'contact_id' => '10', 'address' => 'johnny@foo.net'],
-        ], $m_u2->ref('Email')->export());
+        ], $user2->ref('Email')->export());
     }
 
     public function testJoinReverseOneOnOne(): void
@@ -576,9 +573,9 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        $m_user = new Model($this->db, ['table' => 'user']);
-        $m_user->addField('name');
-        $j = $m_user->join('detail.my_user_id', [
+        $user = new Model($this->db, ['table' => 'user']);
+        $user->addField('name');
+        $j = $user->join('detail.my_user_id', [
             // 'reverse' => true, // this will be reverse join by default
             // also no need to set these (will be done automatically), but still let's do that for test sake
             'master_field' => 'id',
@@ -587,50 +584,50 @@ class JoinSqlTest extends TestCase
         $j->addField('notes');
 
         // try load one record
-        $m = $m_user->tryLoad(20);
+        $m = $user->tryLoad(20);
         $this->assertTrue($m->isLoaded());
         $this->assertEquals(['id' => 20, 'name' => 'Peter', 'notes' => 'second note'], $m->get());
 
         // try to update loaded record
         $m->save(['name' => 'Mark', 'notes' => '2nd note']);
-        $m = $m_user->tryLoad(20);
+        $m = $user->tryLoad(20);
         $this->assertTrue($m->isLoaded());
         $this->assertEquals(['id' => 20, 'name' => 'Mark', 'notes' => '2nd note'], $m->get());
 
         // insert new record
-        $m = $m_user->createEntity()->save(['name' => 'Emily', 'notes' => '3rd note']);
-        $m = $m_user->tryLoad(21);
+        $m = $user->createEntity()->save(['name' => 'Emily', 'notes' => '3rd note']);
+        $m = $user->tryLoad(21);
         $this->assertTrue($m->isLoaded());
         $this->assertEquals(['id' => 21, 'name' => 'Emily', 'notes' => '3rd note'], $m->get());
 
         // now test reverse join defined differently
-        $m_user = new Model($this->db, ['table' => 'user']);
-        $m_user->addField('name');
-        $j = $m_user->join('detail', [ // here we just set foreign table name without dot and foreign_field
+        $user = new Model($this->db, ['table' => 'user']);
+        $user->addField('name');
+        $j = $user->join('detail', [ // here we just set foreign table name without dot and foreign_field
             'reverse' => true, // and set it as revers join
             'foreign_field' => 'my_user_id', // this is custome name so we have to set it here otherwise it will generate user_id
         ]);
         $j->addField('notes');
 
         // insert new record
-        $m = $m_user->createEntity()->save(['name' => 'Olaf', 'notes' => '4th note']);
-        $m = $m_user->tryLoad(22);
+        $m = $user->createEntity()->save(['name' => 'Olaf', 'notes' => '4th note']);
+        $m = $user->tryLoad(22);
         $this->assertTrue($m->isLoaded());
         $this->assertEquals(['id' => 22, 'name' => 'Olaf', 'notes' => '4th note'], $m->get());
 
-        // now test reverse join with table_alias and foreign_alias
-        $m_user = new Model($this->db, ['table' => 'user', 'table_alias' => 'u']);
-        $m_user->addField('name');
-        $j = $m_user->join('detail', [
+        // now test reverse join with tableAlias and foreignAlias
+        $user = new Model($this->db, ['table' => 'user', 'tableAlias' => 'u']);
+        $user->addField('name');
+        $j = $user->join('detail', [
             'reverse' => true,
             'foreign_field' => 'my_user_id',
-            'foreign_alias' => 'a',
+            'foreignAlias' => 'a',
         ]);
         $j->addField('notes');
 
         // insert new record
-        $m = $m_user->createEntity()->save(['name' => 'Chris', 'notes' => '5th note']);
-        $m = $m_user->tryLoad(23);
+        $m = $user->createEntity()->save(['name' => 'Chris', 'notes' => '5th note']);
+        $m = $user->tryLoad(23);
         $this->assertTrue($m->isLoaded());
         $this->assertEquals(['id' => 23, 'name' => 'Chris', 'notes' => '5th note'], $m->get());
     }
@@ -653,22 +650,22 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        $m_u = new Model($this->db, ['table' => 'user']);
-        $m_u->addField('contact_id', ['actual' => 'cid']);
-        $m_u->addField('name', ['actual' => 'first_name']);
+        $user = new Model($this->db, ['table' => 'user']);
+        $user->addField('contact_id', ['actual' => 'cid']);
+        $user->addField('name', ['actual' => 'first_name']);
         // normal join
-        $j = $m_u->join('contact', ['prefix' => 'j1_']);
+        $j = $user->join('contact', ['prefix' => 'j1_']);
         $j->addField('phone', ['actual' => 'contact_phone']);
         // reverse join
-        $j2 = $m_u->join('salaries.uid', ['prefix' => 'j2_']);
+        $j2 = $user->join('salaries.uid', ['prefix' => 'j2_']);
         $j2->addField('salary', ['actual' => 'amount']);
 
         // update
-        $m_u2 = $m_u->load(1);
-        $m_u2->set('name', 'John 2');
-        $m_u2->set('j1_phone', '+555');
-        $m_u2->set('j2_salary', 111);
-        $m_u2->save();
+        $user2 = $user->load(1);
+        $user2->set('name', 'John 2');
+        $user2->set('j1_phone', '+555');
+        $user2->set('j2_salary', 111);
+        $user2->save();
 
         $this->assertEquals([
             'user' => [
@@ -687,11 +684,11 @@ class JoinSqlTest extends TestCase
         ], $this->getDb());
 
         // insert
-        $m_u3 = $m_u->createEntity()->unload();
-        $m_u3->set('name', 'Marvin');
-        $m_u3->set('j1_phone', '+999');
-        $m_u3->set('j2_salary', 222);
-        $m_u3->save();
+        $user3 = $user->createEntity()->unload();
+        $user3->set('name', 'Marvin');
+        $user3->set('j1_phone', '+999');
+        $user3->set('j2_salary', 222);
+        $user3->save();
 
         $this->assertEquals([
             'user' => [

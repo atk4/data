@@ -66,27 +66,27 @@ class JoinArrayTest extends TestCase
     public function testJoinSaving1(): void
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
-        $m_u = new Model($db, ['table' => 'user']);
-        $m_u->addField('contact_id', ['type' => 'integer']);
-        $m_u->addField('name');
-        $j = $m_u->join('contact');
+        $user = new Model($db, ['table' => 'user']);
+        $user->addField('contact_id', ['type' => 'integer']);
+        $user->addField('name');
+        $j = $user->join('contact');
         $j->addField('contact_phone');
 
-        $m_u2 = $m_u->createEntity();
-        $m_u2->set('name', 'John');
-        $m_u2->set('contact_phone', '+123');
-        $m_u2->save();
+        $user2 = $user->createEntity();
+        $user2->set('name', 'John');
+        $user2->set('contact_phone', '+123');
+        $user2->save();
 
         $this->assertEquals([
             'user' => [1 => ['name' => 'John', 'contact_id' => 1]],
             'contact' => [1 => ['contact_phone' => '+123']],
         ], $this->getInternalPersistenceData($db));
 
-        $m_u2->unload();
-        $m_u2 = $m_u->createEntity();
-        $m_u2->set('name', 'Peter');
-        $m_u2->set('contact_id', 1);
-        $m_u2->save();
+        $user2->unload();
+        $user2 = $user->createEntity();
+        $user2->set('name', 'Peter');
+        $user2->set('contact_id', 1);
+        $user2->save();
 
         $this->assertEquals([
             'user' => [
@@ -98,11 +98,11 @@ class JoinArrayTest extends TestCase
             ],
         ], $this->getInternalPersistenceData($db));
 
-        $m_u2->unload();
-        $m_u2 = $m_u->createEntity();
-        $m_u2->set('name', 'Joe');
-        $m_u2->set('contact_phone', '+321');
-        $m_u2->save();
+        $user2->unload();
+        $user2 = $user->createEntity();
+        $user2->set('name', 'Joe');
+        $user2->set('contact_phone', '+321');
+        $user2->save();
 
         $this->assertEquals([
             'user' => [
@@ -120,26 +120,26 @@ class JoinArrayTest extends TestCase
     public function testJoinSaving2(): void
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
-        $m_u = new Model($db, ['table' => 'user']);
-        $m_u->addField('name');
-        $j = $m_u->join('contact.test_id');
+        $user = new Model($db, ['table' => 'user']);
+        $user->addField('name');
+        $j = $user->join('contact.test_id');
         $j->addField('contact_phone');
         $j->addField('test_id', ['type' => 'integer']);
 
-        $m_u2 = $m_u->createEntity();
-        $m_u2->set('name', 'John');
-        $m_u2->set('contact_phone', '+123');
-        $m_u2->save();
+        $user2 = $user->createEntity();
+        $user2->set('name', 'John');
+        $user2->set('contact_phone', '+123');
+        $user2->save();
 
         $this->assertEquals([
             'user' => [1 => ['name' => 'John']],
             'contact' => [1 => ['test_id' => 1, 'contact_phone' => '+123']],
         ], $this->getInternalPersistenceData($db));
 
-        $m_u2->unload();
-        $m_u2 = $m_u->createEntity();
-        $m_u2->set('name', 'Peter');
-        $m_u2->save();
+        $user2->unload();
+        $user2 = $user->createEntity();
+        $user2->set('name', 'Peter');
+        $user2->save();
         $this->assertEquals([
             'user' => [
                 1 => ['name' => 'John'],
@@ -151,15 +151,15 @@ class JoinArrayTest extends TestCase
             ],
         ], $this->getInternalPersistenceData($db));
 
-        $m_c = new Model($db, ['table' => 'contact']);
-        $m_c = $m_c->load(2);
-        $m_c->delete();
+        $contact = new Model($db, ['table' => 'contact']);
+        $contact = $contact->load(2);
+        $contact->delete();
 
-        $m_u2->unload();
-        $m_u2 = $m_u->createEntity();
-        $m_u2->set('name', 'Sue');
-        $m_u2->set('contact_phone', '+444');
-        $m_u2->save();
+        $user2->unload();
+        $user2 = $user->createEntity();
+        $user2->set('name', 'Sue');
+        $user2->set('contact_phone', '+444');
+        $user2->save();
         $this->assertEquals([
             'user' => [
                 1 => ['name' => 'John'],
@@ -176,17 +176,17 @@ class JoinArrayTest extends TestCase
     public function testJoinSaving3(): void
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
-        $m_u = new Model($db, ['table' => 'user']);
-        $m_u->addField('name');
-        $m_u->addField('test_id', ['type' => 'integer']);
-        $j = $m_u->join('contact', ['master_field' => 'test_id']);
+        $user = new Model($db, ['table' => 'user']);
+        $user->addField('name');
+        $user->addField('test_id', ['type' => 'integer']);
+        $j = $user->join('contact', ['master_field' => 'test_id']);
         $j->addField('contact_phone');
-        $m_u = $m_u->createEntity();
+        $user = $user->createEntity();
 
-        $m_u->set('name', 'John');
-        $m_u->set('contact_phone', '+123');
+        $user->set('name', 'John');
+        $user->set('contact_phone', '+123');
 
-        $m_u->save();
+        $user->save();
 
         $this->assertEquals([
             'user' => [1 => ['test_id' => 1, 'name' => 'John']],
@@ -198,18 +198,18 @@ class JoinArrayTest extends TestCase
     public function testJoinSaving4(): void
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
-        $m_u = new Model($db, ['table' => 'user']);
-        $m_u->addField('name');
-        $m_u->addField('code');
-        $j = $m_u->join('contact.code', ['master_field' => 'code']);
+        $user = new Model($db, ['table' => 'user']);
+        $user->addField('name');
+        $user->addField('code');
+        $j = $user->join('contact.code', ['master_field' => 'code']);
         $j->addField('contact_phone');
-        $m_u = $m_u->createEntity();
+        $user = $user->createEntity();
 
-        $m_u->set('name', 'John');
-        $m_u->set('code', 'C28');
-        $m_u->set('contact_phone', '+123');
+        $user->set('name', 'John');
+        $user->set('code', 'C28');
+        $user->set('contact_phone', '+123');
 
-        $m_u->save();
+        $user->save();
 
         $this->assertEquals([
             'user' => [1 => ['id' => 1, 'code' => 'C28', 'name' => 'John']],
@@ -231,28 +231,28 @@ class JoinArrayTest extends TestCase
                 2 => ['contact_phone' => '+321'],
             ],
         ]);
-        $m_u = new Model($db, ['table' => 'user']);
-        $m_u->addField('contact_id', ['type' => 'integer']);
-        $m_u->addField('name');
-        $j = $m_u->join('contact');
+        $user = new Model($db, ['table' => 'user']);
+        $user->addField('contact_id', ['type' => 'integer']);
+        $user->addField('name');
+        $j = $user->join('contact');
         $j->addField('contact_phone');
 
-        $m_u2 = $m_u->load(1);
+        $user2 = $user->load(1);
         $this->assertSame([
             'id' => 1, 'contact_id' => 1, 'name' => 'John', 'contact_phone' => '+123',
-        ], $m_u2->get());
+        ], $user2->get());
 
-        $m_u2 = $m_u->load(3);
+        $user2 = $user->load(3);
         $this->assertSame([
             'id' => 3, 'contact_id' => 2, 'name' => 'Joe', 'contact_phone' => '+321',
-        ], $m_u2->get());
+        ], $user2->get());
 
-        $m_u2 = $m_u2->unload();
+        $user2 = $user2->unload();
         $this->assertSame([
             'id' => null, 'contact_id' => null, 'name' => null, 'contact_phone' => null,
-        ], $m_u2->get());
+        ], $user2->get());
 
-        $this->assertNull($m_u->tryLoad(4));
+        $this->assertNull($user->tryLoad(4));
     }
 
     public function testJoinUpdate(): void
@@ -268,16 +268,16 @@ class JoinArrayTest extends TestCase
                 2 => ['contact_phone' => '+321'],
             ],
         ]);
-        $m_u = new Model($db, ['table' => 'user']);
-        $m_u->addField('contact_id', ['type' => 'integer']);
-        $m_u->addField('name');
-        $j = $m_u->join('contact');
+        $user = new Model($db, ['table' => 'user']);
+        $user->addField('contact_id', ['type' => 'integer']);
+        $user->addField('name');
+        $j = $user->join('contact');
         $j->addField('contact_phone');
 
-        $m_u2 = $m_u->load(1);
-        $m_u2->set('name', 'John 2');
-        $m_u2->set('contact_phone', '+555');
-        $m_u2->save();
+        $user2 = $user->load(1);
+        $user2->set('name', 'John 2');
+        $user2->set('contact_phone', '+555');
+        $user2->save();
 
         $this->assertSame([
             'user' => [
@@ -291,10 +291,10 @@ class JoinArrayTest extends TestCase
             ],
         ], $this->getInternalPersistenceData($db));
 
-        $m_u2 = $m_u->load(3);
-        $m_u2->set('name', 'XX');
-        $m_u2->set('contact_phone', '+999');
-        $m_u2->save();
+        $user2 = $user->load(3);
+        $user2->set('name', 'XX');
+        $user2->set('contact_phone', '+999');
+        $user2->save();
 
         $this->assertSame([
             'user' => [
@@ -308,10 +308,10 @@ class JoinArrayTest extends TestCase
             ],
         ], $this->getInternalPersistenceData($db));
 
-        $m_u2 = $m_u->createEntity();
-        $m_u2->set('name', 'YYY');
-        $m_u2->set('contact_phone', '+777');
-        $m_u2->save();
+        $user2 = $user->createEntity();
+        $user2->set('name', 'YYY');
+        $user2->set('contact_phone', '+777');
+        $user2->save();
 
         $this->assertEquals([
             'user' => [
@@ -343,14 +343,14 @@ class JoinArrayTest extends TestCase
                 3 => ['contact_phone' => '+777'],
             ],
         ]);
-        $m_u = new Model($db, ['table' => 'user']);
-        $m_u->addField('contact_id', ['type' => 'integer']);
-        $m_u->addField('name');
-        $j = $m_u->join('contact');
+        $user = new Model($db, ['table' => 'user']);
+        $user->addField('contact_id', ['type' => 'integer']);
+        $user->addField('name');
+        $j = $user->join('contact');
         $j->addField('contact_phone');
 
-        $m_u = $m_u->load(1);
-        $m_u->delete();
+        $user = $user->load(1);
+        $user->delete();
 
         $this->assertSame([
             'user' => [
@@ -378,13 +378,13 @@ class JoinArrayTest extends TestCase
                 3 => ['contact_phone' => '+777'],
             ],
         ]);
-        $m_u = new Model($db, ['table' => 'user']);
-        $m_u->addField('contact_id', ['type' => 'integer']);
-        $m_u->addField('name');
-        $j = $m_u->join('contact');
+        $user = new Model($db, ['table' => 'user']);
+        $user->addField('contact_id', ['type' => 'integer']);
+        $user->addField('name');
+        $j = $user->join('contact');
         $j->addField('contact_phone');
         $this->expectException(Exception::class);
-        $m_u = $m_u->load(2);
+        $user = $user->load(2);
     }
 
     public function testForeignFieldNameGuessTableWithSchema(): void

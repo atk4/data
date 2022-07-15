@@ -10,7 +10,7 @@ use Doctrine\DBAL\Event\Listeners\OracleSessionInit;
 
 class Connection extends BaseConnection
 {
-    protected $query_class = Query::class;
+    protected $queryClass = Query::class;
 
     protected static function createDbalEventManager(): EventManager
     {

@@ -63,7 +63,7 @@ Here is how you can use all of this together::
 
     $connection = Atk4\Data\Persistence\Sql\Connection::connect($dsn, 'root', 'root');
 
-    echo "Time now is : ". $connection->expr("select now()");
+    echo "Time now is : ". $connection->expr('select now()');
 
 :php:meth:`connect` will determine appropriate class that can be used for this
 DSN string. This can be a PDO class or it may try to use a 3rd party connection

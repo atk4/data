@@ -34,12 +34,14 @@ abstract class Join
      *
      * @var string
      */
-    protected $foreign_table;
+    protected $foreignTable;
+
+    /** @var string Alias for the joined table. */
+    public $foreignAlias;
 
     /**
      * By default this will be either "inner" (for strong) or "left" for weak joins.
-     * You can specify your own type of join by passing ['kind' => 'right']
-     * as second argument to join().
+     * You can specify your own type of join like "right".
      *
      * @var string
      */
@@ -67,7 +69,7 @@ abstract class Join
 
     /**
      * Field to be used for matching inside master table.
-     * By default it's $foreign_table . '_id'.
+     * By default it's $foreignTable . '_id'.
      *
      * @var string
      */
@@ -80,9 +82,6 @@ abstract class Join
      * @var string
      */
     protected $foreign_field;
-
-    /** @var string A short symbolic name that will be used as an alias for the joined table. */
-    public $foreign_alias;
 
     /**
      * When $prefix is set, then all the fields generated through
@@ -100,14 +99,14 @@ abstract class Join
 
     public function __construct(string $foreignTable = null)
     {
-        $this->foreign_table = $foreignTable;
+        $this->foreignTable = $foreignTable;
 
         // handle foreign table containing a dot - that will be reverse join
         // TODO this table split condition makes JoinArrayTest::testForeignFieldNameGuessTableWithSchema test
         // quite unconsistent - drop it?
-        if (str_contains($this->foreign_table, '.')) {
-            // split by LAST dot in foreign_table name
-            [$this->foreign_table, $this->foreign_field] = preg_split('~\.(?=[^.]+$)~', $this->foreign_table);
+        if (str_contains($this->foreignTable, '.')) {
+            // split by LAST dot in foreignTable name
+            [$this->foreignTable, $this->foreign_field] = preg_split('~\.(?=[^.]+$)~', $this->foreignTable);
             $this->reverse = true;
         }
     }
@@ -119,7 +118,7 @@ abstract class Join
     protected function createFakeForeignModel(): Model
     {
         $fakeModel = new Model($this->getOwner()->getPersistence(), [
-            'table' => $this->foreign_table,
+            'table' => $this->foreignTable,
         ]);
         foreach ($this->getOwner()->getFields() as $ownerField) {
             if ($ownerField->hasJoin() && $ownerField->getJoin()->shortName === $this->shortName) {
@@ -141,11 +140,11 @@ abstract class Join
     public function getForeignModel(): Model
     {
         // TODO this should be removed in the future
-        if (!isset($this->getOwner()->cteModels[$this->foreign_table])) {
+        if (!isset($this->getOwner()->cteModels[$this->foreignTable])) {
             return $this->createFakeForeignModel();
         }
 
-        return $this->getOwner()->cteModels[$this->foreign_table]['model'];
+        return $this->getOwner()->cteModels[$this->foreignTable]['model'];
     }
 
     /**
@@ -208,49 +207,49 @@ abstract class Join
     }
 
     /**
-     * Will use either foreign_alias or create #join_<table>.
+     * Will use either foreignAlias or #join_<table>.
      */
     public function getDesiredName(): string
     {
-        return '#join_' . $this->foreign_table;
+        return /* '#join_' */ '_' . ($this->foreignAlias ?: $this->foreignTable);
     }
 
     protected function init(): void
     {
         $this->_init();
 
-        $this->getForeignModel(); // assert valid foreign_table
+        $this->getForeignModel(); // assert valid foreignTable
 
         // owner model should have id_field set
-        $id_field = $this->getOwner()->id_field;
-        if (!$id_field) {
-            throw (new Exception('Joins owner model should have id_field set'))
+        $idField = $this->getOwner()->id_field;
+        if (!$idField) {
+            throw (new Exception('Join owner model must have id_field set'))
                 ->addMoreInfo('model', $this->getOwner());
         }
 
         if ($this->reverse === true) {
-            if ($this->master_field && $this->master_field !== $id_field) { // TODO not implemented yet, see https://github.com/atk4/data/issues/803
+            if ($this->master_field && $this->master_field !== $idField) { // TODO not implemented yet, see https://github.com/atk4/data/issues/803
                 throw (new Exception('Joining tables on non-id fields is not implemented yet'))
                     ->addMoreInfo('master_field', $this->master_field)
-                    ->addMoreInfo('id_field', $id_field);
+                    ->addMoreInfo('id_field', $idField);
             }
 
             if (!$this->master_field) {
-                $this->master_field = $id_field;
+                $this->master_field = $idField;
             }
 
             if (!$this->foreign_field) {
-                $this->foreign_field = preg_replace('~^.+\.~s', '', $this->getModelTableString($this->getOwner())) . '_' . $id_field;
+                $this->foreign_field = preg_replace('~^.+\.~s', '', $this->getModelTableString($this->getOwner())) . '_' . $idField;
             }
         } else {
             $this->reverse = false;
 
             if (!$this->master_field) {
-                $this->master_field = $this->foreign_table . '_' . $id_field;
+                $this->master_field = $this->foreignTable . '_' . $idField;
             }
 
             if (!$this->foreign_field) {
-                $this->foreign_field = $id_field;
+                $this->foreign_field = $idField;
             }
         }
 

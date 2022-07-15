@@ -135,16 +135,12 @@ class DcPayment extends Model
     }
 }
 
-/**
- * Implements various tests for deep copying objects.
- */
 class DeepCopyTest extends TestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
 
-        // populate database for our three models
         $this->createMigrator(new DcClient($this->db))->create();
         $this->createMigrator(new DcInvoice($this->db))->create();
         $this->createMigrator(new DcQuote($this->db))->create();
@@ -155,11 +151,11 @@ class DeepCopyTest extends TestCase
     public function testBasic(): void
     {
         $client = new DcClient($this->db);
-        $client_id = $client->insert(['name' => 'John']);
+        $clientId = $client->insert(['name' => 'John']);
 
         $quote = new DcQuote($this->db);
 
-        $quote->insert(['ref' => 'q1', 'client_id' => $client_id, 'Lines' => [
+        $quote->insert(['ref' => 'q1', 'client_id' => $clientId, 'Lines' => [
             ['name' => 'tools', 'qty' => 5, 'price' => 10],
             ['name' => 'work', 'qty' => 1, 'price' => 40],
         ]]);
@@ -196,27 +192,27 @@ class DeepCopyTest extends TestCase
         // and client. Because Payment references client too, we need to duplicate that one also, this way new record
         // structure will not be related to any existing records.
         $dc = new DeepCopy();
-        $invoice_copy = $dc
+        $invoiceCopy = $dc
             ->from($invoice)
             ->to(new DcInvoice())
             ->with(['Lines', 'client_id', 'Payments' => ['client_id']])
             ->copy();
 
         // Invoice copy receives a new ID
-        $this->assertNotSame($invoice->getId(), $invoice_copy->getId());
-        $this->assertSame('q1_copy', $invoice_copy->get('ref'));
+        $this->assertNotSame($invoice->getId(), $invoiceCopy->getId());
+        $this->assertSame('q1_copy', $invoiceCopy->get('ref'));
 
         // ..however the due amount is the same - 5
-        $this->assertEquals(5, $invoice_copy->get('due'));
+        $this->assertEquals(5, $invoiceCopy->get('due'));
 
         // ..client record was created in the process
-        $this->assertNotSame($invoice_copy->get('client_id'), $invoice->get('client_id'));
+        $this->assertNotSame($invoiceCopy->get('client_id'), $invoice->get('client_id'));
 
         // ..but he is still called John
-        $this->assertSame('John', $invoice_copy->ref('client_id')->get('name'));
+        $this->assertSame('John', $invoiceCopy->ref('client_id')->get('name'));
 
         // finally, the client_id used for newly created payment and new invoice correspond
-        $this->assertSame($invoice_copy->get('client_id'), $invoice_copy->ref('Payments')->loadAny()->get('client_id'));
+        $this->assertSame($invoiceCopy->get('client_id'), $invoiceCopy->ref('Payments')->loadAny()->get('client_id'));
 
         // the final test is to copy client entirely!
 
@@ -267,12 +263,12 @@ class DeepCopyTest extends TestCase
     public function testError(): void
     {
         $client = new DcClient($this->db);
-        $client_id = $client->insert(['name' => 'John']);
+        $clientId = $client->insert(['name' => 'John']);
 
         $quote = new DcQuote($this->db);
         $quote->hasMany('Lines2', ['model' => [DcQuoteLine::class], 'their_field' => 'parent_id']);
 
-        $quote->insert(['ref' => 'q1', 'client_id' => $client_id, 'Lines' => [
+        $quote->insert(['ref' => 'q1', 'client_id' => $clientId, 'Lines' => [
             ['name' => 'tools', 'qty' => 5, 'price' => 10],
             ['name' => 'work', 'qty' => 1, 'price' => 40],
         ]]);
@@ -309,11 +305,11 @@ class DeepCopyTest extends TestCase
     public function testDeepError(): void
     {
         $client = new DcClient($this->db);
-        $client_id = $client->insert(['name' => 'John']);
+        $clientId = $client->insert(['name' => 'John']);
 
         $quote = new DcQuote($this->db);
 
-        $quote->insert(['ref' => 'q1', 'client_id' => $client_id, 'Lines' => [
+        $quote->insert(['ref' => 'q1', 'client_id' => $clientId, 'Lines' => [
             ['name' => 'tools', 'qty' => 5, 'price' => 10],
             ['name' => 'work', 'qty' => 1, 'price' => 40],
         ]]);

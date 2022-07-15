@@ -69,23 +69,23 @@ Model object = Data Set
 From the moment when you create instance of your model class, it represents a DataSet - set of records
 that share some common traits::
 
-   $all_users = new User($db); // John, Susan, Leo, Bill, Karen
+   $allUsers = new User($db); // John, Susan, Leo, Bill, Karen
 
 Certain operations may "shrink" this set, such as adding conditions::
 
-   $male_users = $all_users->addCondition('gender', 'M');
+   $maleUsers = $allUsers->addCondition('gender', 'M');
 
-   send_email_to_users($male_users);
+   send_email_to_users($maleUsers);
 
 This essentially filters your users without fetching them from the database server. In my example,
-when I pass `$male_users` to the method, no records are loaded yet from the database. It is up to
+when I pass `$maleUsers` to the method, no records are loaded yet from the database. It is up to
 the implementation of `send_email_to_users` to load or iterate records or perhaps approach the
 data-set differently, e.g. execute multi-record operation.
 
 Note that most
-operations on Model are mutating (meaning that in example above `$all_users` will also be filtered
-and in fact, `$all_users` and `$male_users` will reference same object. Use `clone` if you do not wish
-to affect `$all_users`.
+operations on Model are mutating (meaning that in example above `$allUsers` will also be filtered
+and in fact, `$allUsers` and `$maleUsers` will reference same object. Use `clone` if you do not wish
+to affect `$allUsers`.
 
 Model object = meta information
 -------------------------------
@@ -440,7 +440,7 @@ See :php:class:`Persistence\\Static_`
 Refers to the persistence driver in use by current model. Calling certain
 methods such as save(), addCondition() or action() will rely on this property.
 
-.. php:attr:: persistence_data
+.. php:attr:: persistenceData
 
 DO NOT USE: Array containing arbitrary data by a specific persistence layer.
 
@@ -469,11 +469,10 @@ Populating Data
     Inserts a new record into the database and returns $id. It does not affect
     currently loaded record and in practice would be similar to::
 
-        $m_x = $m;
-        $m_x->unload();
-        $m_x->setMulti($row);
-        $m_x->save();
-        return $m_x;
+        $entity = $m->createEntity();
+        $entity->setMulti($row);
+        $entity->save();
+        return $entity;
 
     The main goal for insert() method is to be as fast as possible, while still
     performing data validation. After inserting method will return cloned model.
@@ -660,19 +659,8 @@ ID Field
     If your data storage uses field different than ``id`` to keep the ID of your
     records, then you can specify that in $id_field property.
 
-.. tip:: You can change ID value of the current ID field by calling::
-
-        $m->set('id', $new_id);
-        $m->save();
-
-    This will update existing record with new $id. If you want to save your
-    current field over another existing record then::
-
-        $m->setId($new_id);
-        $m->save();
-
-    You must remember that only dirty fields are saved, though. (We might add
-    replace() function though).
+    ID value of loaded entity cannot be changed. If you want to duplicate a record,
+    you need to create a new entity and save it.
 
 .. _title_field:
 
@@ -733,7 +721,7 @@ Setting limit and sort order
         $m->setOrder(['name', 'salary' => true]);
         $m->setOrder(['name' => false, 'salary' => true]);
         $m->setOrder([ ['name'], ['salary', 'desc'] ]);
-        $m->setOrder([ ['name'], ['salary',true] ]);
+        $m->setOrder([ ['name'], ['salary', true] ]);
         $m->setOrder([ ['name'], ['salary desc'] ]);
         // and there can be many more similar combinations how to call this
 

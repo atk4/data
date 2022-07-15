@@ -40,9 +40,6 @@ class ReferenceTest extends TestCase
         $this->assertSame(100, $user->ref('BigOrders')->createEntity()->get('amount'));
     }
 
-    /**
-     * Test caption of referenced model.
-     */
     public function testModelCaption(): void
     {
         $user = new Model(null, ['table' => 'user']);

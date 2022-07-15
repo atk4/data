@@ -153,7 +153,7 @@ Set this to true for field that may not contain "empty" value.
 You can't use NULL or any value that is considered ``empty()`` by PHP.
 Some examples that are not allowed are:
 
- - empty string ""
+ - empty string ''
  - 0 numerical value or 0.00
  - boolean false
 
@@ -207,7 +207,7 @@ if user should be allowed to edit this field.
 
 .. php:method:: set
 
-Set the value of the field. Same as $model->set($field_name, $value);
+Set the value of the field. Same as $model->set($fieldName, $value);
 
 .. php:method:: setNull
 
@@ -231,7 +231,7 @@ See also :php:method:`Model::setNull`.
 
 .. php:method:: get
 
-Get the value of the field. Same as $model->get($field_name, $value);
+Get the value of the field. Same as $model->get($fieldName);
 
 UI Presentation
 ---------------
