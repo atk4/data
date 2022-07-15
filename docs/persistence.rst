@@ -172,15 +172,8 @@ complex logic::
     // May transparently work with 2 columns: 'balance_amount' and
     // 'balance_currency_id' for example.
 
-The process of converting field values as indicated above is called
-"normalization" and it is controlled by one model property:
-
-    $m->load_normalization = false;
-
-If you switch on :php:attr:`Model::load_normalization` then the values will also be
-normalized as they are loaded from the database. Normally you should only
-do that if you're storing values into database by other means and not through
-Agile Data.
+Loaded/saved data are always normalized unless the field value normalization
+is intercepted a hook.
 
 Final field flag that is worth mentioning is called :php:attr:`Field::read_only`
 and if set, then value of a field may not be modified directly::

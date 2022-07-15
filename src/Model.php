@@ -230,16 +230,6 @@ class Model implements \IteratorAggregate
     public $onlyFields;
 
     /**
-     * When set to true, loading model from database will also
-     * perform value normalization. Use this if you think that
-     * persistence may contain badly formatted data that may
-     * impact your business logic.
-     *
-     * @var bool
-     */
-    public $load_normalization = false;
-
-    /**
      * Models that contain expressions will automatically reload after save.
      * This is to ensure that any SQL-based calculation are executed and
      * updated correctly after you have performed any modifications to
