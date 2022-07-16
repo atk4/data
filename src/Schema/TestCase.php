@@ -53,9 +53,7 @@ abstract class TestCase extends BaseTestCase
             {
                 \Closure::bind(function () {
                     if ($this->_connection === null) {
-                        $connection = Persistence\Sql::assertInstanceOf(
-                            Persistence::connect($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD'])
-                        )->_connection;
+                        $connection = Persistence::connect($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD'])->_connection; // @phpstan-ignore-line
                         $this->_connection = $connection;
 
                         if ($connection->getDatabasePlatform() instanceof MySQLPlatform) {
