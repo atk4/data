@@ -289,16 +289,15 @@ class DeepCopy
             return $destination;
         } catch (DeepCopyException $e) {
             throw $e;
-        } catch (\Atk4\Core\Exception $e) {
-            $this->debug('noticed a problem');
+        } catch (\Exception $e) {
+            $this->debug('model copy failed');
 
-            throw (new DeepCopyException('Problem cloning model', 0, $e))
+            throw (new DeepCopyException('Model copy failed', 0, $e))
                 ->addMoreInfo('source', $source)
                 ->addMoreInfo('source_info', $source->__debugInfo())
                 ->addMoreInfo('source_data', $source->get())
                 ->addMoreInfo('destination', $destination)
-                ->addMoreInfo('destination_info', $destination->__debugInfo())
-                ->addMoreInfo('depth', $e->getParams()['field'] ?? '?');
+                ->addMoreInfo('destination_info', $destination->__debugInfo());
         }
     }
 }
