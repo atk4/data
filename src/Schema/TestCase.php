@@ -72,31 +72,36 @@ abstract class TestCase extends BaseTestCase
         return $this->getConnection()->getDatabasePlatform();
     }
 
-
     protected function logQuery(string $sql, array $params, array $types): void
     {
         if (!$this->debug) {
             return;
         }
 
-        echo "\n" . $sql . (substr($sql, -1) !== ';' ? ';' : '') . "\n"
-            . (count($params) > 0 ? substr(print_r(array_map(function ($v) {
+        $lines = [$sql . (substr($sql, -1) !== ';' ? ';' : '')];
+        if (count($params) > 0) {
+            $lines[] = '/*';
+            foreach ($params as $k => $v) {
                 if ($v === null) {
-                    $v = 'null';
+                    $vStr = 'null';
                 } elseif (is_bool($v)) {
-                    $v = $v ? 'true' : 'false';
-                } elseif (is_float($v) && (string) $v === (string) (int) $v) {
-                    $v = $v . '.0';
-                } elseif (is_string($v)) {
+                    $vStr = $v ? 'true' : 'false';
+                } elseif (is_int($v)) {
+                    $vStr = $v;
+                } else {
                     if (strlen($v) > 4096) {
-                        $v = '*long string* (length: ' . strlen($v) . ' bytes, sha256: ' . hash('sha256', $v) . ')';
+                        $vStr = '*long string* (length: ' . strlen($v) . ' bytes, sha256: ' . hash('sha256', $v) . ')';
                     } else {
-                        $v = '\'' . $v . '\'';
+                        $vStr = '\'' . str_replace('\'', '\'\'', $v) . '\'';
                     }
                 }
 
-                return $v;
-            }, $params), true), 6) : '') . "\n";
+                $lines[] = '    [' . $k . '] => ' . $vStr;
+            }
+            $lines[] = '*/';
+        }
+
+        echo "\n" . implode("\n", $lines) . "\n\n";
     }
 
     private function convertSqlFromSqlite(string $sql): string
@@ -112,6 +117,12 @@ abstract class TestCase extends BaseTestCase
 
                 $str = substr(preg_replace('~\\\\(.)~s', '$1', $matches[0]), 1, -1);
                 if (substr($matches[0], 0, 1) === '"') {
+                    // keep info queries from DBAL in double quotes
+                    // https://github.com/doctrine/dbal/blob/3.3.7/src/Connection.php#L1298
+                    if (in_array($str, ['START TRANSACTION', 'COMMIT', 'ROLLBACK'], true)) {
+                        return $matches[0];
+                    }
+
                     return $platform->quoteSingleIdentifier($str);
                 }
 

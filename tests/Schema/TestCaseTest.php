@@ -4,10 +4,71 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests\Schema;
 
+use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
+use Doctrine\DBAL\Platforms\SqlitePlatform;
 
 class TestCaseTest extends TestCase
 {
+    public function testLogQuery(): void
+    {
+        $m = new Model($this->db, ['table' => 't']);
+        $m->addField('name');
+        $m->addField('int', ['type' => 'integer']);
+        $m->addField('float', ['type' => 'float']);
+        $m->addField('null');
+        $m->addCondition('int', '>', -1);
+
+        ob_start();
+        try {
+            $this->createMigrator($m)->create();
+
+            $this->debug = true;
+
+            $m->atomic(function () use ($m) {
+                $m->insert(['name' => 'Ewa', 'int' => 1, 'float' => 1]);
+            });
+
+            $this->assertSame(1, $m->loadAny()->getId());
+
+            $output = ob_get_contents();
+        } finally {
+            ob_end_clean();
+        }
+
+        if (!$this->getDatabasePlatform() instanceof SqlitePlatform
+            && (!$this->getDatabasePlatform() instanceof MySQLPlatform || !$this->getConnection()->getConnection()->getNativeConnection() instanceof \PDO)) {
+            return;
+        }
+
+        $this->assertSameSql(
+            <<<'EOF'
+
+                "START TRANSACTION";
+
+
+                insert into "t" ("name", "int", "float", "null") values (:a, :b, :c, :d);
+                /*
+                    [:a] => 'Ewa'
+                    [:b] => 1
+                    [:c] => '1.0'
+                    [:d] => null
+                */
+
+
+                "COMMIT";
+
+
+                select "id", "name", "int", "float", "null" from "t" where "int" > :a limit 0, 1;
+                /*
+                    [:a] => -1
+                */
+                EOF . "\n\n",
+            $output
+        );
+    }
+
     public function testGetSetDb(): void
     {
         $this->assertSame([], $this->getDb([]));
