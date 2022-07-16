@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests;
 
 use Atk4\Core\Phpunit\TestCase;
+use Atk4\Data\Exception;
 use Atk4\Data\Model;
 
 class ConditionTest extends TestCase
 {
-    public function testException1(): void
+    public function testUnexistingFieldException(): void
     {
-        // not existing field in condition
         $m = new Model();
         $m->addField('name');
 
-        $this->expectException(\Atk4\Core\Exception::class);
+        $this->expectException(Exception::class);
         $m->addCondition('last_name', 'Smith');
     }
 

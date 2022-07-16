@@ -14,7 +14,7 @@ class Connection extends BaseConnection
 
     protected static function createDbalEventManager(): EventManager
     {
-        $evm = new EventManager();
+        $evm = parent::createDbalEventManager();
 
         // setup connection globalization to use standard datetime format incl. microseconds support
         // and make comparison of character types case insensitive

@@ -244,7 +244,7 @@ class BusinessModelTest extends TestCase
         $this->assertSame(1000, $m->get('salary'));
         $this->assertFalse($m->_isset('salary'));
 
-        // Next we load record from $db
+        // next we load record from $db
         $dataRef = &$m->getDataRef();
         $dataRef = ['salary' => 2000];
         $this->assertSame(2000, $m->get('salary'));

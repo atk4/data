@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
+use Atk4\Core\Exception as CoreException;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Schema\TestCase;
@@ -162,7 +163,7 @@ class UserActionTest extends TestCase
     {
         $client = new UaClient($this->pers);
 
-        $this->expectException(\Atk4\Core\Exception::class);
+        $this->expectException(CoreException::class);
         $client->getUserAction('non_existant_action');
     }
 

@@ -277,7 +277,7 @@ class DeepCopyTest extends TestCase
         $invoice = new DcInvoice();
         $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, static function ($m) {
             if (!$m->get('ref')) {
-                throw new \Atk4\Core\Exception('no ref');
+                throw new \Exception('no ref');
             }
         });
 
@@ -318,7 +318,7 @@ class DeepCopyTest extends TestCase
         $invoice = new DcInvoice();
         $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, static function ($m) {
             if (!$m->get('ref')) {
-                throw new \Atk4\Core\Exception('no ref');
+                throw new \Exception('no ref');
             }
         });
 

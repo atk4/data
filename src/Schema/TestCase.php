@@ -7,9 +7,7 @@ namespace Atk4\Data\Schema;
 use Atk4\Core\Phpunit\TestCase as BaseTestCase;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
-use Doctrine\DBAL\Logging\SQLLogger;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
@@ -25,64 +23,25 @@ abstract class TestCase extends BaseTestCase
     /** @var Migrator[] */
     private $createdMigrators = [];
 
+    /**
+     * @return static|null
+     */
+    public static function getTestFromBacktrace()
+    {
+        foreach (debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS | \DEBUG_BACKTRACE_PROVIDE_OBJECT) as $frame) {
+            if (($frame['object'] ?? null) instanceof static) {
+                return $frame['object']; // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/7639
+            }
+        }
+
+        return null;
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->db = Persistence::connect($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD']);
-
-        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
-            $this->getConnection()->expr(
-                'PRAGMA foreign_keys = 1'
-            )->executeStatement();
-        }
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-            $this->getConnection()->expr(
-                'SET SESSION auto_increment_increment = 1, SESSION auto_increment_offset = 1'
-            )->executeStatement();
-        }
-
-        $this->getConnection()->getConnection()->getConfiguration()->setSQLLogger(
-            null ?? new class($this) implements SQLLogger { // @phpstan-ignore-line
-                /** @var \WeakReference<TestCase> */
-                private $testCaseWeakRef;
-
-                public function __construct(TestCase $testCase)
-                {
-                    $this->testCaseWeakRef = \WeakReference::create($testCase);
-                }
-
-                public function startQuery($sql, array $params = null, array $types = null): void
-                {
-                    if (!$this->testCaseWeakRef->get()->debug) {
-                        return;
-                    }
-
-                    echo "\n" . $sql . (substr($sql, -1) !== ';' ? ';' : '') . "\n"
-                        . (is_array($params) && count($params) > 0 ? substr(print_r(array_map(function ($v) {
-                            if ($v === null) {
-                                $v = 'null';
-                            } elseif (is_bool($v)) {
-                                $v = $v ? 'true' : 'false';
-                            } elseif (is_float($v) && (string) $v === (string) (int) $v) {
-                                $v = $v . '.0';
-                            } elseif (is_string($v)) {
-                                if (strlen($v) > 4096) {
-                                    $v = '*long string* (length: ' . strlen($v) . ' bytes, sha256: ' . hash('sha256', $v) . ')';
-                                } else {
-                                    $v = '\'' . $v . '\'';
-                                }
-                            }
-
-                            return $v;
-                        }, $params), true), 6) : '') . "\n";
-                }
-
-                public function stopQuery(): void
-                {
-                }
-            }
-        );
+        $this->db = new TestSqlPersistence();
     }
 
     protected function tearDown(): void
@@ -113,6 +72,38 @@ abstract class TestCase extends BaseTestCase
         return $this->getConnection()->getDatabasePlatform();
     }
 
+    protected function logQuery(string $sql, array $params, array $types): void
+    {
+        if (!$this->debug) {
+            return;
+        }
+
+        $lines = [$sql . (substr($sql, -1) !== ';' ? ';' : '')];
+        if (count($params) > 0) {
+            $lines[] = '/*';
+            foreach ($params as $k => $v) {
+                if ($v === null) {
+                    $vStr = 'null';
+                } elseif (is_bool($v)) {
+                    $vStr = $v ? 'true' : 'false';
+                } elseif (is_int($v)) {
+                    $vStr = $v;
+                } else {
+                    if (strlen($v) > 4096) {
+                        $vStr = '*long string* (length: ' . strlen($v) . ' bytes, sha256: ' . hash('sha256', $v) . ')';
+                    } else {
+                        $vStr = '\'' . str_replace('\'', '\'\'', $v) . '\'';
+                    }
+                }
+
+                $lines[] = '    [' . $k . '] => ' . $vStr;
+            }
+            $lines[] = '*/';
+        }
+
+        echo "\n" . implode("\n", $lines) . "\n\n";
+    }
+
     private function convertSqlFromSqlite(string $sql): string
     {
         $platform = $this->getDatabasePlatform();
@@ -126,6 +117,12 @@ abstract class TestCase extends BaseTestCase
 
                 $str = substr(preg_replace('~\\\\(.)~s', '$1', $matches[0]), 1, -1);
                 if (substr($matches[0], 0, 1) === '"') {
+                    // keep info queries from DBAL in double quotes
+                    // https://github.com/doctrine/dbal/blob/3.3.7/src/Connection.php#L1298
+                    if (in_array($str, ['START TRANSACTION', 'COMMIT', 'ROLLBACK'], true)) {
+                        return $matches[0];
+                    }
+
                     return $platform->quoteSingleIdentifier($str);
                 }
 

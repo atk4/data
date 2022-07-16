@@ -680,7 +680,9 @@ class Expression implements Expressionable, \ArrayAccess
         $precisionBackup = ini_get('precision');
         ini_set('precision', '-1');
         try {
-            return (string) $value;
+            $valueStr = (string) $value;
+
+            return $valueStr === (string) (int) $value ? $valueStr . '.0' : $valueStr;
         } finally {
             ini_set('precision', $precisionBackup);
         }
@@ -696,7 +698,13 @@ class Expression implements Expressionable, \ArrayAccess
         } elseif (is_int($v)) {
             return (string) $v;
         } elseif (is_float($v)) {
-            return self::castFloatToString($v);
+            $res = self::castFloatToString($v);
+            // most DB drivers fetch float as string
+            if (str_ends_with($res, '.0')) {
+                $res = substr($res, 0, -2);
+            }
+
+            return $res;
         }
 
         // for PostgreSQL/Oracle CLOB/BLOB datatypes and PDO driver
