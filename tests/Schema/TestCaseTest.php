@@ -48,7 +48,9 @@ class TestCaseTest extends TestCase
                 "START TRANSACTION";
 
 
-                insert into "t" ("name", "int", "float", "null") values (:a, :b, :c, :d);
+                insert into "t" ("name", "int", "float", "null")
+                values
+                  (:a, :b, :c, :d);
                 /*
                     [:a] => 'Ewa'
                     [:b] => 1
@@ -60,7 +62,19 @@ class TestCaseTest extends TestCase
                 "COMMIT";
 
 
-                select "id", "name", "int", "float", "null" from "t" where "int" > :a limit 0, 1;
+                select
+                  "id",
+                  "name",
+                  "int",
+                  "float",
+                  "null"
+                from
+                  "t"
+                where
+                  "int" > :a
+                limit
+                  0,
+                  1;
                 /*
                     [:a] => -1
                 */

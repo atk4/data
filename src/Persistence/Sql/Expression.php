@@ -459,31 +459,28 @@ class Expression implements Expressionable, \ArrayAccess
      */
     public function getDebugQuery(): string
     {
-        [$result, $params] = $this->render();
-
-        foreach (array_reverse($params) as $key => $val) {
-            if ($val === null) {
-                $replacement = 'NULL';
-            } elseif (is_bool($val)) {
-                $replacement = $val ? '1' : '0';
-            } elseif (is_int($val)) {
-                $replacement = (string) $val;
-            } elseif (is_float($val)) {
-                $replacement = self::castFloatToString($val);
-            } elseif (is_string($val)) {
-                $replacement = '\'' . str_replace('\'', '\'\'', $val) . '\'';
-            } else {
-                continue;
-            }
-
-            $result = preg_replace('~' . $key . '(?!\w)~', $replacement, $result);
-        }
+        [$sql, $params] = $this->render();
 
         if (class_exists('SqlFormatter')) { // requires optional "jdorn/sql-formatter" package
-            $result = \SqlFormatter::format($result, false);
+            $sql = preg_replace('~ +(?=\n|$)|(?<=:) (?=\w)~', '', \SqlFormatter::format($sql, false));
         }
 
-        return $result;
+        $sql = preg_replace_callback('~:\w+~', function ($matches) use ($params) {
+            $v = $params[$matches[0]];
+            if ($v === null) {
+                return 'NULL';
+            } elseif (is_bool($v)) {
+                return $v ? '1' : '0';
+            } elseif (is_int($v)) {
+                return (string) $v;
+            } elseif (is_float($v)) {
+                return self::castFloatToString($v);
+            }
+
+            return '\'' . str_replace('\'', '\'\'', $v) . '\'';
+        }, $sql);
+
+        return $sql;
     }
 
     public function __debugInfo(): array

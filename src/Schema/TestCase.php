@@ -78,7 +78,14 @@ abstract class TestCase extends BaseTestCase
             return;
         }
 
-        $lines = [$sql . (substr($sql, -1) !== ';' ? ';' : '')];
+        if (class_exists('SqlFormatter')) { // requires optional "jdorn/sql-formatter" package
+            if (substr($sql, -1) !== ';') {
+                $sql .= ';';
+            }
+            $sql = preg_replace('~ +(?=\n|$)|(?<=:) (?=\w)~', '', \SqlFormatter::format($sql, false));
+        }
+
+        $lines = [$sql];
         if (count($params) > 0) {
             $lines[] = '/*';
             foreach ($params as $k => $v) {
@@ -87,7 +94,7 @@ abstract class TestCase extends BaseTestCase
                 } elseif (is_bool($v)) {
                     $vStr = $v ? 'true' : 'false';
                 } elseif (is_int($v)) {
-                    $vStr = $v;
+                    $vStr = (string) $v;
                 } else {
                     if (strlen($v) > 4096) {
                         $vStr = '*long string* (length: ' . strlen($v) . ' bytes, sha256: ' . hash('sha256', $v) . ')';
