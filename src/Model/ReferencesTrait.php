@@ -103,7 +103,7 @@ trait ReferencesTrait
      */
     public function hasRef(string $link): bool
     {
-        return $this->getModel(true)->hasElement('#ref_' . $link);
+        return $this->getModel(true)->hasElement('#ref-' . $link);
     }
 
     /**
@@ -113,7 +113,7 @@ trait ReferencesTrait
     {
         $this->assertIsModel();
 
-        return $this->getElement('#ref_' . $link);
+        return $this->getElement('#ref-' . $link);
     }
 
     /**
@@ -127,8 +127,8 @@ trait ReferencesTrait
 
         $refs = [];
         foreach (array_keys($this->elements) as $k) {
-            if (str_starts_with($k, '#ref_')) {
-                $link = substr($k, strlen('#ref_'));
+            if (str_starts_with($k, '#ref-')) {
+                $link = substr($k, strlen('#ref-'));
                 $refs[$link] = $this->getRef($link);
             }
         }

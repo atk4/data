@@ -6,8 +6,7 @@ namespace Atk4\Data\Model;
 
 trait JoinLinkTrait
 {
-    /** @var string|null The short name of the join link. */
-    protected $joinName;
+    protected ?string $joinName = null;
 
     public function hasJoin(): bool
     {
@@ -22,6 +21,7 @@ trait JoinLinkTrait
     public function setJoin(Join $join): self
     {
         $this->joinName = $join->shortName;
+        $this->getJoin(); // assert join name exists
 
         return $this;
     }

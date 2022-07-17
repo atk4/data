@@ -236,9 +236,14 @@ class Migrator
                 $refype = self::REF_TYPE_PRIMARY;
                 $persistField = $field;
             } else {
-                $refField = $this->getReferenceField($field);
-                $refype = $refField !== null ? self::REF_TYPE_LINK : $refype = self::REF_TYPE_NONE;
-                $persistField = $refField ?? $field;
+                $refField = $field->hasReference() ? $this->getReferenceField($field) : null;
+                if ($refField !== null) {
+                    $refype = self::REF_TYPE_LINK;
+                    $persistField = $refField;
+                } else {
+                    $refype = self::REF_TYPE_NONE;
+                    $persistField = $field;
+                }
             }
 
             $options = [

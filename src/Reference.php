@@ -173,11 +173,11 @@ class Reference
     }
 
     /**
-     * Will use #ref_<link>.
+     * Will use #ref-<link>.
      */
     public function getDesiredName(): string
     {
-        return '#ref_' . $this->link;
+        return '#ref-' . $this->link;
     }
 
     public function getOurModel(?Model $ourModel): Model

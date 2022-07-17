@@ -23,10 +23,8 @@ trait FieldPropertiesTrait
     /**
      * If value of this field is defined by a model, this property
      * will contain reference link.
-     *
-     * @var string|null
      */
-    protected $referenceLink;
+    protected ?string $referenceLink = null;
 
     /** @var string|null Actual field name. */
     public $actual;

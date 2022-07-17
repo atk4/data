@@ -207,11 +207,11 @@ abstract class Join
     }
 
     /**
-     * Will use either foreignAlias or #join_<table>.
+     * Will use either foreignAlias or #join-<table>.
      */
     public function getDesiredName(): string
     {
-        return /* '#join_' */ '_' . ($this->foreignAlias ?: $this->foreignTable);
+        return '#join-' . ($this->foreignAlias ?? $this->foreignTable);
     }
 
     protected function init(): void
