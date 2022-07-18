@@ -36,7 +36,7 @@ abstract class Join
      */
     protected $foreignTable;
 
-    /** @var string Alias for the joined table. */
+    /** @var string|null Alias for the joined table. */
     public $foreignAlias;
 
     /**
@@ -73,7 +73,7 @@ abstract class Join
      *
      * @var string
      */
-    protected $master_field;
+    public $master_field;
 
     /**
      * Field to be used for matching in a foreign table.
@@ -81,7 +81,7 @@ abstract class Join
      *
      * @var string
      */
-    protected $foreign_field;
+    public $foreign_field;
 
     /**
      * When $prefix is set, then all the fields generated through

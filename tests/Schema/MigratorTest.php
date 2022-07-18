@@ -14,7 +14,6 @@ use Doctrine\DBAL\Exception\TableNotFoundException;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
-use Doctrine\DBAL\Schema\Identifier;
 
 class MigratorTest extends TestCase
 {
@@ -34,22 +33,10 @@ class MigratorTest extends TestCase
             ->field('mn', ['type' => 'atk4_money']);
     }
 
-    protected function isTableExist(string $table): bool
-    {
-        foreach ($this->getConnection()->createSchemaManager()->listTableNames() as $v) {
-            $vUnquoted = (new Identifier($v))->getName();
-            if ($vUnquoted === $table) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     public function testCreate(): void
     {
         $this->createDemoMigrator('user')->create();
-        $this->assertTrue($this->isTableExist('user'));
+        $this->assertTrue($this->createMigrator()->isTableExists('user'));
 
         $this->db->dsql()
             ->mode('insert')
@@ -65,7 +52,7 @@ class MigratorTest extends TestCase
     public function testCreateTwiceException(): void
     {
         $this->createDemoMigrator('user')->create();
-        $this->assertTrue($this->isTableExist('user'));
+        $this->assertTrue($this->createMigrator()->isTableExists('user'));
 
         $this->expectException(TableExistsException::class);
         $this->createDemoMigrator('user')->create();
@@ -74,9 +61,9 @@ class MigratorTest extends TestCase
     public function testDrop(): void
     {
         $this->createDemoMigrator('user')->create();
-        $this->assertTrue($this->isTableExist('user'));
+        $this->assertTrue($this->createMigrator()->isTableExists('user'));
         $this->createMigrator()->table('user')->drop();
-        $this->assertFalse($this->isTableExist('user'));
+        $this->assertFalse($this->createMigrator()->isTableExists('user'));
     }
 
     public function testDropException(): void
@@ -90,9 +77,9 @@ class MigratorTest extends TestCase
         $this->createMigrator()->table('user')->dropIfExists();
 
         $this->createDemoMigrator('user')->create();
-        $this->assertTrue($this->isTableExist('user'));
+        $this->assertTrue($this->createMigrator()->isTableExists('user'));
         $this->createMigrator()->table('user')->dropIfExists();
-        $this->assertFalse($this->isTableExist('user'));
+        $this->assertFalse($this->createMigrator()->isTableExists('user'));
 
         $this->createMigrator()->table('user')->dropIfExists();
     }

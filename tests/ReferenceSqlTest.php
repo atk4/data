@@ -107,6 +107,7 @@ class ReferenceSqlTest extends TestCase
         $this->markTestIncompleteWhenCreateUniqueIndexIsNotSupportedByPlatform();
 
         $u->hasOne('cur', ['model' => $c, 'our_field' => 'currency', 'their_field' => 'currency']);
+        $this->createMigrator()->createForeignKey($u->getRef('cur'));
 
         $cc = $u->load(1)->ref('cur');
         $this->assertSame('Euro', $cc->get('name'));
@@ -522,6 +523,7 @@ class ReferenceSqlTest extends TestCase
         $p->addField('name');
         $p->delete(2);
         $p->hasOne('Stadium', ['model' => $s, 'our_field' => 'id', 'their_field' => 'player_id']);
+        $this->createMigrator()->createForeignKey($p->getRef('Stadium'));
 
         $s = $p->ref('Stadium')->createEntity()->save(['name' => 'Nou camp nou', 'player_id' => 4]);
         $p = $p->createEntity()->save(['name' => 'Ivan']);

@@ -25,7 +25,7 @@ class Join extends Model\Join
 
         // our short name will be unique
         // TODO this should be removed, short name is not guaranteed to be unique with nested model/query
-        if (!$this->foreignAlias) {
+        if ($this->foreignAlias === null) {
             $this->foreignAlias = ($this->getOwner()->tableAlias ?? '') . preg_replace('~^#join-~', '_', $this->shortName);
         }
 
