@@ -125,15 +125,17 @@ trait ReferencesTrait
     {
         $this->assertIsModel();
 
-        $refs = [];
-        foreach (array_keys($this->elements) as $k) {
+        $res = [];
+        foreach ($this->elements as $k => $v) {
             if (str_starts_with($k, '#ref-')) {
                 $link = substr($k, strlen('#ref-'));
-                $refs[$link] = $this->getRef($link);
+                $res[$link] = $this->getRef($link);
+            } elseif ($v instanceof Reference) {
+                throw new \Error('Unexpected Reference index');
             }
         }
 
-        return $refs;
+        return $res;
     }
 
     /**
