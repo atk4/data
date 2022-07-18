@@ -60,6 +60,7 @@ class JoinSqlTest extends TestCase
         $user->addField('contact_id');
         $user->addField('name');
         $j = $user->join('contact');
+        $this->createMigrator()->createForeignKey($j);
         $j->addField('contact_phone');
 
         $user2 = $user->createEntity();
@@ -103,6 +104,7 @@ class JoinSqlTest extends TestCase
         ]);
         $user->addField('name');
         $j = $user->join('contact.test_id');
+        $this->createMigrator()->createForeignKey($j);
         $j->addFields(['contact_phone']);
 
         $user2 = $user->createEntity();
@@ -164,6 +166,7 @@ class JoinSqlTest extends TestCase
 
         $user->addField('name');
         $j = $user->join('contact', ['master_field' => 'test_id']);
+        $this->createMigrator()->createForeignKey($j);
         $j->addField('contact_phone');
         $user = $user->createEntity();
 
@@ -195,6 +198,7 @@ class JoinSqlTest extends TestCase
         $user = new Model($this->db, ['table' => 'user']);
         $user->addField('name');
         $j = $user->join('contact');
+        $this->createMigrator()->createForeignKey($j);
         $j->addField('contact_phone');
 
         $user2 = $user->load(1);
@@ -233,6 +237,7 @@ class JoinSqlTest extends TestCase
         $user->addField('contact_id');
         $user->addField('name');
         $j = $user->join('contact');
+        $this->createMigrator()->createForeignKey($j);
         $j->addField('contact_phone');
 
         $user2 = $user->load(1);
@@ -326,6 +331,7 @@ class JoinSqlTest extends TestCase
         $user->addField('contact_id');
         $user->addField('name');
         $j = $user->join('contact');
+        // TODO persist order is broken $this->createMigrator()->createForeignKey($j);
         $j->addField('contact_phone');
 
         $user = $user->load(1);
@@ -357,6 +363,7 @@ class JoinSqlTest extends TestCase
         ]);
         $user->addField('name');
         $j = $user->join('contact.test_id');
+        $this->createMigrator()->createForeignKey($j);
         $j->addField('contact_phone');
 
         $user->onHook(Model::HOOK_AFTER_SAVE, static function ($m) {
@@ -400,8 +407,10 @@ class JoinSqlTest extends TestCase
         $user->addField('contact_id');
         $user->addField('name');
         $jContact = $user->join('contact');
+        // TODO persist order is broken $this->createMigrator()->createForeignKey($jContact);
         $jContact->addField('contact_phone');
         $jCountry = $jContact->join('country');
+        $this->createMigrator()->createForeignKey($jCountry);
         $jCountry->addField('country_name', ['actual' => 'name']);
 
         $user2 = $user->load(10);
@@ -464,8 +473,10 @@ class JoinSqlTest extends TestCase
         $user->addField('contact_id');
         $user->addField('name');
         $j = $user->join('contact');
+        // TODO persist order is broken $this->createMigrator()->createForeignKey($j);
         $j->addField('contact_phone');
         $c = $j->join('country');
+        $this->createMigrator()->createForeignKey($c);
         $c->addFields(['country_name' => ['actual' => 'name']]);
 
         $user2 = $user->load(10);
@@ -519,6 +530,7 @@ class JoinSqlTest extends TestCase
         $user->addField('contact_id');
         $user->addField('name');
         $j = $user->join('contact');
+        $this->createMigrator()->createForeignKey($j);
 
         $user2 = $user->load(1);
         $this->assertEquals([
@@ -529,6 +541,7 @@ class JoinSqlTest extends TestCase
         $phone = new Model($this->db, ['table' => 'phone']);
         $phone->addField('number');
         $refOne = $j->hasOne('phone_id', ['model' => $phone]); // hasOne on JOIN
+        $this->createMigrator()->createForeignKey($refOne);
         $refOne->addField('number');
 
         $user2 = $user->load(1);
@@ -541,6 +554,7 @@ class JoinSqlTest extends TestCase
         $token->addField('user_id');
         $token->addField('token');
         $refMany = $j->hasMany('Token', ['model' => $token]); // hasMany on JOIN (use default our_field, their_field)
+        $this->createMigrator()->createForeignKey($refMany);
 
         $user2 = $user->load(1);
         $this->assertSameExportUnordered([
@@ -555,6 +569,7 @@ class JoinSqlTest extends TestCase
         $email->addField('contact_id');
         $email->addField('address');
         $refMany = $j->hasMany('Email', ['model' => $email, 'our_field' => 'contact_id', 'their_field' => 'contact_id']); // hasMany on JOIN (use custom our_field, their_field)
+        $this->createMigrator()->createForeignKey($refMany);
 
         $user2 = $user->load(1);
         $this->assertSameExportUnordered([
@@ -584,6 +599,7 @@ class JoinSqlTest extends TestCase
             'master_field' => 'id',
             'foreign_field' => 'my_user_id',
         ]);
+        $this->createMigrator()->createForeignKey($j);
         $j->addField('notes');
 
         // try load one record
