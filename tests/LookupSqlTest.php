@@ -150,7 +150,6 @@ class LookupSqlTest extends TestCase
         $friend = new LFriend($this->db);
         $this->createMigrator($friend)->create();
         $this->createMigrator()->createForeignKey($user->getRef('country_id'));
-        $this->createMigrator()->createForeignKey($user->getRef('Friends'));
         $this->createMigrator()->createForeignKey($friend->getRef('user_id'));
         $this->createMigrator()->createForeignKey($friend->getRef('friend_id'));
     }
