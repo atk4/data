@@ -392,7 +392,7 @@ class JoinSqlTest extends TestCase
             'country' => [
                 1 => ['id' => 1, 'name' => 'UK'],
                 2 => ['id' => 2, 'name' => 'US'],
-                3 => ['id' => 3, 'name' => 'India'],
+                5 => ['id' => 5, 'name' => 'India'],
             ],
         ]);
 
@@ -429,12 +429,12 @@ class JoinSqlTest extends TestCase
             'contact' => [
                 200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
                 300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
-                301 => ['id' => 301, 'contact_phone' => '+000', 'country_id' => 4],
+                301 => ['id' => 301, 'contact_phone' => '+000', 'country_id' => 6],
             ],
             'country' => [
                 2 => ['id' => 2, 'name' => 'USA'],
-                3 => ['id' => 3, 'name' => 'India'],
-                4 => ['id' => 4, 'name' => 'LV'],
+                5 => ['id' => 5, 'name' => 'India'],
+                6 => ['id' => 6, 'name' => 'LV'],
             ],
         ], $this->getDb());
     }
@@ -456,7 +456,7 @@ class JoinSqlTest extends TestCase
             'country' => [
                 1 => ['id' => 1, 'name' => 'UK'],
                 2 => ['id' => 2, 'name' => 'US'],
-                3 => ['id' => 3, 'name' => 'India'],
+                5 => ['id' => 5, 'name' => 'India'],
             ],
         ]);
 
@@ -486,7 +486,7 @@ class JoinSqlTest extends TestCase
             ],
             'country' => [
                 2 => ['id' => 2, 'name' => 'US'],
-                3 => ['id' => 3, 'name' => 'India'],
+                5 => ['id' => 5, 'name' => 'India'],
             ],
         ], $this->getDb());
     }
