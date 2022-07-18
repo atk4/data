@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Schema;
 
-use Atk4\Data\Model;
 use Atk4\Data\Persistence;
-use Atk4\Data\Persistence\Sql\Query;
 use Doctrine\DBAL\Logging\SQLLogger;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 
@@ -52,51 +50,5 @@ final class TestSqlPersistence extends Persistence\Sql
         }, $this, Persistence\Sql::class)();
 
         return parent::getConnection();
-    }
-
-    public function initQuery(Model $model): Query
-    {
-        $this->setupforeignKeysFromModel($model);
-
-        return parent::initQuery($model);
-    }
-
-    /** @var array<\Closure> */
-    public $afterTransactionCallbacks = [];
-
-    public function atomic(\Closure $fx)
-    {
-        $res = parent::atomic($fx);
-
-        if (!$this->getConnection()->inTransaction()) {
-            while (count($this->afterTransactionCallbacks) > 0) {
-                $fx = array_shift($this->afterTransactionCallbacks); // can be slow with large array
-                $fx();
-            }
-        }
-
-        return $res;
-    }
-
-    /** @var array<string> */
-    private $processingTables = [];
-
-    public function setupforeignKeysFromModel(Model $model): void
-    {
-        $table = $model;
-        do {
-            $table = $table->table;
-        } while (is_object($table));
-        if (isset($this->processingTables[$table])) {
-            return;
-        }
-
-        $this->processingTables[$table] = true;
-        try {
-            $migrator = new Migrator($this);
-            $migrator->debugSetupForeignKeysFromModel($model);
-        } finally {
-            unset($this->processingTables[$table]);
-        }
     }
 }

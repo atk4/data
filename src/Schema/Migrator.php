@@ -32,8 +32,6 @@ use Doctrine\DBAL\Schema\Table;
 
 class Migrator
 {
-    use MigratorFkTrait;
-
     public const REF_TYPE_NONE = 0;
     public const REF_TYPE_LINK = 1;
     public const REF_TYPE_PRIMARY = 2;
