@@ -356,59 +356,34 @@ abstract class Join
     }
 
     /**
-     * Wrapper for containsOne that will associate field
-     * with join.
+     * Wrapper for ContainsOne that will associate field with join.
      *
      * @todo NOT IMPLEMENTED !
      *
-     * @return ???
+     * @return Reference\ContainsOne
      */
     /*
-    public function containsOne(Model $model, array $defaults = [])
+    public function containsOne(string $link, array $defaults = []) // : Reference
     {
-        if (is_string($defaults[0])) {
-            $defaults[0] = $this->addField($defaults[0], ['system' => true]);
-        }
+        $defaults['joinName'] = $this->shortName;
 
-        return parent::containsOne($model, $defaults);
+        return $this->getOwner()->containsOne($link, $defaults);
     }
     */
 
     /**
-     * Wrapper for containsMany that will associate field
-     * with join.
+     * Wrapper for ContainsMany that will associate field with join.
      *
      * @todo NOT IMPLEMENTED !
      *
-     * @return ???
+     * @return Reference\ContainsMany
      */
     /*
-    public function containsMany(Model $model, array $defaults = [])
+    public function containsMany(string $link, array $defaults = []) // : Reference
     {
-        if (is_string($defaults[0])) {
-            $defaults[0] = $this->addField($defaults[0], ['system' => true]);
-        }
+        $defaults['joinName'] = $this->shortName;
 
-        return parent::containsMany($model, $defaults);
-    }
-    */
-
-    /**
-     * Will iterate through this model by pulling
-     *  - fields
-     *  - references
-     *  - conditions.
-     *
-     * and then will apply them locally. If you think that any fields
-     * could clash, then use ['prefix' => 'm2'] which will be pre-pended
-     * to all the fields. Conditions will be automatically mapped.
-     *
-     * @todo NOT IMPLEMENTED !
-     */
-    /*
-    public function importModel(Model $model, array $defaults = [])
-    {
-        // not implemented yet !!!
+        return $this->getOwner()->containsMany($link, $defaults);
     }
     */
 
