@@ -547,6 +547,8 @@ class JoinSqlTest extends TestCase
             ['id' => 31, 'user_id' => '1', 'token' => 'DEF'],
         ], $user2->ref('Token')->export());
 
+        $this->markTestIncompleteWhenCreateUniqueIndexIsNotSupportedByPlatform();
+
         // hasMany email model (uses custom our_field, their_field)
         $email = new Model($this->db, ['table' => 'email']);
         $email->addField('contact_id');

@@ -7,6 +7,7 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
@@ -97,14 +98,20 @@ class ReferenceSqlTest extends TestCase
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'currency']);
         $c = (new Model($this->db, ['table' => 'currency']))->addFields(['currency', 'name']);
 
-        $u->hasMany('cur', ['model' => $c, 'our_field' => 'currency', 'their_field' => 'currency']);
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            $serverVersion = $this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
+            if (preg_match('~^5\.6~', $serverVersion)) {
+                $this->markTestIncomplete('TODO MySQL: Unique key exceed max key (767 bytes) length');
+            }
+        }
+        $this->markTestIncompleteWhenCreateUniqueIndexIsNotSupportedByPlatform();
+
+        $u->hasOne('cur', ['model' => $c, 'our_field' => 'currency', 'their_field' => 'currency']);
 
         $cc = $u->load(1)->ref('cur');
-        $cc = $cc->tryLoadOne();
         $this->assertSame('Euro', $cc->get('name'));
 
         $cc = $u->load(2)->ref('cur');
-        $cc = $cc->tryLoadOne();
         $this->assertSame('Pound', $cc->get('name'));
     }
 
@@ -508,6 +515,8 @@ class ReferenceSqlTest extends TestCase
         $s = (new Model($this->db, ['table' => 'stadium']));
         $s->addField('name');
         $s->addField('player_id', ['type' => 'integer']);
+
+        $this->markTestIncompleteWhenCreateUniqueIndexIsNotSupportedByPlatform();
 
         $p = new Model($this->db, ['table' => 'player']);
         $p->addField('name');
