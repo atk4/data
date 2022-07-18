@@ -7,6 +7,7 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
 
 class JoinSqlTest extends TestCase
 {
@@ -636,30 +637,39 @@ class JoinSqlTest extends TestCase
 
     public function testJoinActualFieldNamesAndPrefix(): void
     {
+        // currently we setup only integer PK and integer fields ending with "_id" name as unsigned
+        // TODO improve Migrator so this hack is not needed
+        $userForeignIdFieldName = 'uid';
+        $contactForeignIdFieldName = 'cid';
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            $userForeignIdFieldName = 'user_id';
+            $contactForeignIdFieldName = 'contact_id';
+        }
+
         $this->setDb([
             'user' => [
-                1 => ['id' => 1, 'first_name' => 'John', 'cid' => 1],
-                2 => ['id' => 2, 'first_name' => 'Peter', 'cid' => 1],
-                3 => ['id' => 3, 'first_name' => 'Joe', 'cid' => 2],
+                1 => ['id' => 1, 'first_name' => 'John', $contactForeignIdFieldName => 1],
+                2 => ['id' => 2, 'first_name' => 'Peter', $contactForeignIdFieldName => 1],
+                3 => ['id' => 3, 'first_name' => 'Joe', $contactForeignIdFieldName => 2],
             ],
             'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+123'],
                 2 => ['id' => 2, 'contact_phone' => '+321'],
             ],
             'salaries' => [
-                1 => ['id' => 1, 'amount' => 123, 'uid' => 1],
-                2 => ['id' => 2, 'amount' => 456, 'uid' => 2],
+                1 => ['id' => 1, 'amount' => 123, $userForeignIdFieldName => 1],
+                2 => ['id' => 2, 'amount' => 456, $userForeignIdFieldName => 2],
             ],
         ]);
 
         $user = new Model($this->db, ['table' => 'user']);
-        $user->addField('contact_id', ['actual' => 'cid']);
+        $user->addField('contact_id', ['actual' => $contactForeignIdFieldName]);
         $user->addField('name', ['actual' => 'first_name']);
         // normal join
         $j = $user->join('contact', ['prefix' => 'j1_']);
         $j->addField('phone', ['actual' => 'contact_phone']);
         // reverse join
-        $j2 = $user->join('salaries.uid', ['prefix' => 'j2_']);
+        $j2 = $user->join('salaries.' . $userForeignIdFieldName, ['prefix' => 'j2_']);
         $j2->addField('salary', ['actual' => 'amount']);
 
         // update
@@ -671,17 +681,17 @@ class JoinSqlTest extends TestCase
 
         $this->assertEquals([
             'user' => [
-                1 => ['id' => 1, 'first_name' => 'John 2', 'cid' => 1],
-                2 => ['id' => 2, 'first_name' => 'Peter', 'cid' => 1],
-                3 => ['id' => 3, 'first_name' => 'Joe', 'cid' => 2],
+                1 => ['id' => 1, 'first_name' => 'John 2', $contactForeignIdFieldName => 1],
+                2 => ['id' => 2, 'first_name' => 'Peter', $contactForeignIdFieldName => 1],
+                3 => ['id' => 3, 'first_name' => 'Joe', $contactForeignIdFieldName => 2],
             ],
             'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+555'],
                 2 => ['id' => 2, 'contact_phone' => '+321'],
             ],
             'salaries' => [
-                1 => ['id' => 1, 'amount' => 111, 'uid' => 1],
-                2 => ['id' => 2, 'amount' => 456, 'uid' => 2],
+                1 => ['id' => 1, 'amount' => 111, $userForeignIdFieldName => 1],
+                2 => ['id' => 2, 'amount' => 456, $userForeignIdFieldName => 2],
             ],
         ], $this->getDb());
 
@@ -694,10 +704,10 @@ class JoinSqlTest extends TestCase
 
         $this->assertEquals([
             'user' => [
-                1 => ['id' => 1, 'first_name' => 'John 2', 'cid' => 1],
-                2 => ['id' => 2, 'first_name' => 'Peter', 'cid' => 1],
-                3 => ['id' => 3, 'first_name' => 'Joe', 'cid' => 2],
-                4 => ['id' => 4, 'first_name' => 'Marvin', 'cid' => 3],
+                1 => ['id' => 1, 'first_name' => 'John 2', $contactForeignIdFieldName => 1],
+                2 => ['id' => 2, 'first_name' => 'Peter', $contactForeignIdFieldName => 1],
+                3 => ['id' => 3, 'first_name' => 'Joe', $contactForeignIdFieldName => 2],
+                4 => ['id' => 4, 'first_name' => 'Marvin', $contactForeignIdFieldName => 3],
             ],
             'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+555'],
@@ -705,9 +715,9 @@ class JoinSqlTest extends TestCase
                 3 => ['id' => 3, 'contact_phone' => '+999'],
             ],
             'salaries' => [
-                1 => ['id' => 1, 'amount' => 111, 'uid' => 1],
-                2 => ['id' => 2, 'amount' => 456, 'uid' => 2],
-                3 => ['id' => 3, 'amount' => 222, 'uid' => 4],
+                1 => ['id' => 1, 'amount' => 111, $userForeignIdFieldName => 1],
+                2 => ['id' => 2, 'amount' => 456, $userForeignIdFieldName => 2],
+                3 => ['id' => 3, 'amount' => 222, $userForeignIdFieldName => 4],
             ],
         ], $this->getDb());
     }
