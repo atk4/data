@@ -314,6 +314,7 @@ class RandomTest extends TestCase
                 1 => ['id' => 1, 'name' => 'John'],
             ],
         ];
+        $this->dropCreatedDb();
         $this->setDb($dbData);
 
         $m->set('name', 'Peter');

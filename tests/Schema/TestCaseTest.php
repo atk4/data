@@ -83,7 +83,7 @@ class TestCaseTest extends TestCase
         );
     }
 
-    public function testGetSetDb(): void
+    public function testGetSetDropDb(): void
     {
         $this->assertSame([], $this->getDb([]));
         $this->assertSame([], $this->getDb());
@@ -111,12 +111,14 @@ class TestCaseTest extends TestCase
         $this->assertSameExportUnordered($dbDataWithId, $this->getDb());
         $this->assertSameExportUnordered($dbData, $this->getDb(null, true));
 
+        $this->dropCreatedDb();
         $this->setDb($dbData);
         $dbDataGet2 = $this->getDb(['user']);
         $this->assertSameExportUnordered($dbDataWithId, $dbDataGet2);
         $this->assertSameExportUnordered($dbDataWithId, $this->getDb());
         $this->assertSame($dbDataGet1, $dbDataGet2);
 
+        $this->dropCreatedDb();
         $this->setDb($dbDataGet1);
         $dbDataGet3 = $this->getDb(['user']);
         $this->assertSameExportUnordered($dbDataWithId, $dbDataGet3);

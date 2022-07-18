@@ -590,7 +590,6 @@ class ReferenceSqlTest extends TestCase
             ],
         ];
 
-        // restore DB
         $this->setDb($dbData);
 
         // with default title_field='name'
@@ -607,7 +606,7 @@ class ReferenceSqlTest extends TestCase
         $o->reload();
         $this->assertEquals(2, $o->get('user_id')); // and it's really saved like that
 
-        // restore DB
+        $this->dropCreatedDb();
         $this->setDb($dbData);
 
         // with custom title_field='last_name'
@@ -624,7 +623,7 @@ class ReferenceSqlTest extends TestCase
         $o->reload();
         $this->assertEquals(2, $o->get('user_id')); // and it's really saved like that
 
-        // restore DB
+        $this->dropCreatedDb();
         $this->setDb($dbData);
 
         // with custom title_field='last_name' and custom link name
@@ -641,7 +640,7 @@ class ReferenceSqlTest extends TestCase
         $o->reload();
         $this->assertEquals(2, $o->get('user_id')); // and it's really saved like that
 
-        // restore DB
+        $this->dropCreatedDb();
         $this->setDb($dbData);
 
         // with custom title_field='last_name' and custom link name
@@ -666,7 +665,6 @@ class ReferenceSqlTest extends TestCase
      */
     public function testHasOneReferenceCaption(): void
     {
-        // restore DB
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'last_name' => 'Doe'],
@@ -706,7 +704,6 @@ class ReferenceSqlTest extends TestCase
      */
     public function testHasOneReferenceType(): void
     {
-        // restore DB
         $this->setDb([
             'user' => [
                 1 => [
