@@ -17,12 +17,4 @@ trait JoinLinkTrait
     {
         return $this->getOwner()->getElement($this->joinName);
     }
-
-    public function setJoin(Join $join): self
-    {
-        $this->joinName = $join->shortName;
-        $this->getJoin(); // assert join name exists
-
-        return $this;
-    }
 }
