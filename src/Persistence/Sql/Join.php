@@ -20,11 +20,13 @@ class Join extends Model\Join
     {
         parent::init();
 
-        $this->getOwner()->persistenceData['use_table_prefixes'] = true; // TODO thus mutates the owner model!
+        // TODO thus mutates the owner model!
+        $this->getOwner()->persistenceData['use_table_prefixes'] = true;
 
         // our short name will be unique
-        if (!$this->foreignAlias) {
-            $this->foreignAlias = ($this->getOwner()->tableAlias ?: '') . $this->shortName;
+        // TODO this should be removed, short name is not guaranteed to be unique with nested model/query
+        if ($this->foreignAlias === null) {
+            $this->foreignAlias = ($this->getOwner()->tableAlias ?? '') . '_' . (str_starts_with($this->shortName, '#join-') ? substr($this->shortName, 6) : $this->shortName);
         }
 
         // Master field indicates ID of the joined item. In the past it had to be
@@ -68,7 +70,7 @@ class Join extends Model\Join
         $query->join(
             $this->foreignTable,
             $this->getOwner()->expr('{{}}.{} = {}', [
-                $this->foreignAlias ?: $this->foreignTable,
+                $this->foreignAlias ?? $this->foreignTable,
                 $this->foreign_field,
                 $this->getOwner()->getField($this->master_field),
             ]),

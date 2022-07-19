@@ -385,11 +385,14 @@ class Field implements Expressionable
         return $this->getValueForCompare($value) === $this->getValueForCompare($value2);
     }
 
-    public function getReference(): ?Reference
+    public function hasReference(): bool
     {
-        return $this->referenceLink !== null
-            ? $this->getOwner()->getRef($this->referenceLink)
-            : null;
+        return $this->referenceLink !== null;
+    }
+
+    public function getReference(): Reference
+    {
+        return $this->getOwner()->getRef($this->referenceLink);
     }
 
     public function getPersistenceName(): string

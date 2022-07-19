@@ -63,8 +63,7 @@ abstract class ContainsBase extends Reference
         // TODO https://github.com/atk4/data/issues/881
         // prevent unmanaged ContainsXxx data modification (/wo proper normalize, hooks, ...)
         $this->onHookToOurModel($ourModel, Model::HOOK_NORMALIZE, function (Model $ourModel, Field $field, $value) {
-            $ourRef = $field->getReference();
-            if ($ourRef === null || $field->shortName !== $this->getOurFieldName() || $value === null) {
+            if (!$field->hasReference() || $field->shortName !== $this->getOurFieldName() || $value === null) {
                 // this code relies on Field::$referenceLink set
                 // also, allowing null value to be set will not fire any HOOK_BEFORE_DELETE/HOOK_AFTER_DELETE hook
                 return;

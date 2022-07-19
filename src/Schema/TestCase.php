@@ -7,6 +7,7 @@ namespace Atk4\Data\Schema;
 use Atk4\Core\Phpunit\TestCase as BaseTestCase;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\Sql\Expression;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
@@ -49,12 +50,7 @@ abstract class TestCase extends BaseTestCase
         $debugOrig = $this->debug;
         try {
             $this->debug = false;
-            while (count($this->createdMigrators) > 0) {
-                $migrator = array_pop($this->createdMigrators);
-                foreach ($migrator->getCreatedTableNames() as $t) {
-                    (clone $migrator)->table($t)->dropIfExists(true);
-                }
-            }
+            $this->dropCreatedDb();
         } finally {
             $this->debug = $debugOrig;
         }
@@ -78,30 +74,18 @@ abstract class TestCase extends BaseTestCase
             return;
         }
 
-        $lines = [$sql . (substr($sql, -1) !== ';' ? ';' : '')];
-        if (count($params) > 0) {
-            $lines[] = '/*';
-            foreach ($params as $k => $v) {
-                if ($v === null) {
-                    $vStr = 'null';
-                } elseif (is_bool($v)) {
-                    $vStr = $v ? 'true' : 'false';
-                } elseif (is_int($v)) {
-                    $vStr = $v;
-                } else {
-                    if (strlen($v) > 4096) {
-                        $vStr = '*long string* (length: ' . strlen($v) . ' bytes, sha256: ' . hash('sha256', $v) . ')';
-                    } else {
-                        $vStr = '\'' . str_replace('\'', '\'\'', $v) . '\'';
-                    }
-                }
-
-                $lines[] = '    [' . $k . '] => ' . $vStr;
+        $exprNoRender = new class($sql, $params) extends Expression {
+            public function render(): array
+            {
+                return [$this->template, $this->args['custom']];
             }
-            $lines[] = '*/';
+        };
+        $sqlWithParams = $exprNoRender->getDebugQuery();
+        if (substr($sqlWithParams, -1) !== ';') {
+            $sqlWithParams .= ';';
         }
 
-        echo "\n" . implode("\n", $lines) . "\n\n";
+        echo "\n" . $sqlWithParams . "\n\n";
     }
 
     private function convertSqlFromSqlite(string $sql): string
@@ -241,23 +225,10 @@ abstract class TestCase extends BaseTestCase
 
     public function setDb(array $dbData, bool $importData = true): void
     {
-        // create tables
         foreach ($dbData as $tableName => $data) {
             $migrator = $this->createMigrator()->table($tableName);
 
-            // drop table if already created but only if it was created during this test
-            foreach ($this->createdMigrators as $migr) {
-                if ($migr->getConnection() === $this->getConnection()) {
-                    foreach ($migr->getCreatedTableNames() as $t) {
-                        if ($t === $tableName) {
-                            $migrator->drop();
-
-                            break 2;
-                        }
-                    }
-                }
-            }
-
+            // create table
             $firstRow = current($data);
             $idColumnName = null;
             if ($firstRow) {
@@ -348,5 +319,26 @@ abstract class TestCase extends BaseTestCase
         }
 
         return $resAll;
+    }
+
+    public function dropCreatedDb(): void
+    {
+        while (count($this->createdMigrators) > 0) {
+            $migrator = array_pop($this->createdMigrators);
+            foreach ($migrator->getCreatedTableNames() as $t) {
+                (clone $migrator)->table($t)->dropIfExists(true);
+            }
+        }
+    }
+
+    public function markTestIncompleteWhenCreateUniqueIndexIsNotSupportedByPlatform(): void
+    {
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+            // https://github.com/doctrine/dbal/issues/5507
+            $this->markTestIncomplete('TODO MSSQL: DBAL must setup unique index without WHERE clause');
+        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            // https://github.com/doctrine/dbal/issues/5508
+            $this->markTestIncomplete('TODO Oracle: DBAL must setup unique index on table column too');
+        }
     }
 }

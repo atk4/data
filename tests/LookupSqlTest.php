@@ -143,9 +143,15 @@ class LookupSqlTest extends TestCase
     {
         parent::setUp();
 
-        $this->createMigrator(new LCountry($this->db))->create();
-        $this->createMigrator(new LUser($this->db))->create();
-        $this->createMigrator(new LFriend($this->db))->create();
+        $country = new LCountry($this->db);
+        $this->createMigrator($country)->create();
+        $user = new LUser($this->db);
+        $this->createMigrator($user)->create();
+        $friend = new LFriend($this->db);
+        $this->createMigrator($friend)->create();
+        $this->createMigrator()->createForeignKey($user->getRef('country_id'));
+        $this->createMigrator()->createForeignKey($friend->getRef('user_id'));
+        $this->createMigrator()->createForeignKey($friend->getRef('friend_id'));
     }
 
     public function testImportCountriesBasic(): void

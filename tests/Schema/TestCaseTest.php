@@ -37,8 +37,7 @@ class TestCaseTest extends TestCase
             ob_end_clean();
         }
 
-        if (!$this->getDatabasePlatform() instanceof SqlitePlatform
-            && (!$this->getDatabasePlatform() instanceof MySQLPlatform || !$this->getConnection()->getConnection()->getNativeConnection() instanceof \PDO)) {
+        if (!$this->getDatabasePlatform() instanceof SqlitePlatform && !$this->getDatabasePlatform() instanceof MySQLPlatform) {
             return;
         }
 
@@ -48,28 +47,33 @@ class TestCaseTest extends TestCase
                 "START TRANSACTION";
 
 
-                insert into "t" ("name", "int", "float", "null") values (:a, :b, :c, :d);
-                /*
-                    [:a] => 'Ewa'
-                    [:b] => 1
-                    [:c] => '1.0'
-                    [:d] => null
-                */
+                insert into "t" ("name", "int", "float", "null")
+                values
+                  ('Ewa', 1, '1.0', NULL);
 
 
                 "COMMIT";
 
 
-                select "id", "name", "int", "float", "null" from "t" where "int" > :a limit 0, 1;
-                /*
-                    [:a] => -1
-                */
+                select
+                  "id",
+                  "name",
+                  "int",
+                  "float",
+                  "null"
+                from
+                  "t"
+                where
+                  "int" > -1
+                limit
+                  0,
+                  1;
                 EOF . "\n\n",
             $output
         );
     }
 
-    public function testGetSetDb(): void
+    public function testGetSetDropDb(): void
     {
         $this->assertSame([], $this->getDb([]));
         $this->assertSame([], $this->getDb());
@@ -97,12 +101,14 @@ class TestCaseTest extends TestCase
         $this->assertSameExportUnordered($dbDataWithId, $this->getDb());
         $this->assertSameExportUnordered($dbData, $this->getDb(null, true));
 
+        $this->dropCreatedDb();
         $this->setDb($dbData);
         $dbDataGet2 = $this->getDb(['user']);
         $this->assertSameExportUnordered($dbDataWithId, $dbDataGet2);
         $this->assertSameExportUnordered($dbDataWithId, $this->getDb());
         $this->assertSame($dbDataGet1, $dbDataGet2);
 
+        $this->dropCreatedDb();
         $this->setDb($dbDataGet1);
         $dbDataGet3 = $this->getDb(['user']);
         $this->assertSameExportUnordered($dbDataWithId, $dbDataGet3);

@@ -36,7 +36,7 @@ abstract class Join
      */
     protected $foreignTable;
 
-    /** @var string Alias for the joined table. */
+    /** @var string|null Alias for the joined table. */
     public $foreignAlias;
 
     /**
@@ -73,7 +73,7 @@ abstract class Join
      *
      * @var string
      */
-    protected $master_field;
+    public $master_field;
 
     /**
      * Field to be used for matching in a foreign table.
@@ -81,7 +81,7 @@ abstract class Join
      *
      * @var string
      */
-    protected $foreign_field;
+    public $foreign_field;
 
     /**
      * When $prefix is set, then all the fields generated through
@@ -207,11 +207,11 @@ abstract class Join
     }
 
     /**
-     * Will use either foreignAlias or #join_<table>.
+     * Will use either foreignAlias or #join-<table>.
      */
     public function getDesiredName(): string
     {
-        return /* '#join_' */ '_' . ($this->foreignAlias ?: $this->foreignTable);
+        return '#join-' . ($this->foreignAlias ?? $this->foreignTable);
     }
 
     protected function init(): void
@@ -278,6 +278,11 @@ abstract class Join
         }
     }
 
+    private function getJoinNameFromShortName(): string
+    {
+        return str_starts_with($this->shortName, '#join-') ? substr($this->shortName, 6) : null;
+    }
+
     /**
      * Adding field into join will automatically associate that field
      * with this join. That means it won't be loaded from $table, but
@@ -285,7 +290,7 @@ abstract class Join
      */
     public function addField(string $name, array $seed = []): Field
     {
-        $seed['joinName'] = $this->shortName;
+        $seed['joinName'] = $this->getJoinNameFromShortName();
 
         return $this->getOwner()->addField($this->prefix . $name, $seed);
     }
@@ -316,7 +321,7 @@ abstract class Join
      */
     public function join(string $foreignTable, array $defaults = []): self
     {
-        $defaults['joinName'] = $this->shortName;
+        $defaults['joinName'] = $this->getJoinNameFromShortName();
 
         return $this->getOwner()->join($foreignTable, $defaults);
     }
@@ -328,7 +333,7 @@ abstract class Join
      */
     public function leftJoin(string $foreignTable, array $defaults = []): self
     {
-        $defaults['joinName'] = $this->shortName;
+        $defaults['joinName'] = $this->getJoinNameFromShortName();
 
         return $this->getOwner()->leftJoin($foreignTable, $defaults);
     }
@@ -340,7 +345,7 @@ abstract class Join
      */
     public function hasOne(string $link, array $defaults = [])
     {
-        $defaults['joinName'] = $this->shortName;
+        $defaults['joinName'] = $this->getJoinNameFromShortName();
 
         return $this->getOwner()->hasOne($link, $defaults);
     }
@@ -356,59 +361,32 @@ abstract class Join
     }
 
     /**
-     * Wrapper for containsOne that will associate field
-     * with join.
+     * Wrapper for ContainsOne that will associate field with join.
      *
      * @todo NOT IMPLEMENTED !
      *
-     * @return ???
+     * @return Reference\ContainsOne
      */
     /*
-    public function containsOne(Model $model, array $defaults = [])
+    public function containsOne(string $link, array $defaults = []) // : Reference
     {
-        if (is_string($defaults[0])) {
-            $defaults[0] = $this->addField($defaults[0], ['system' => true]);
-        }
+        $defaults['joinName'] = $this->getJoinNameFromShortName();
 
-        return parent::containsOne($model, $defaults);
+        return $this->getOwner()->containsOne($link, $defaults);
     }
     */
 
     /**
-     * Wrapper for containsMany that will associate field
-     * with join.
+     * Wrapper for ContainsMany that will associate field with join.
      *
      * @todo NOT IMPLEMENTED !
      *
-     * @return ???
+     * @return Reference\ContainsMany
      */
     /*
-    public function containsMany(Model $model, array $defaults = [])
+    public function containsMany(string $link, array $defaults = []) // : Reference
     {
-        if (is_string($defaults[0])) {
-            $defaults[0] = $this->addField($defaults[0], ['system' => true]);
-        }
-
-        return parent::containsMany($model, $defaults);
-    }
-    */
-
-    /**
-     * Will iterate through this model by pulling
-     *  - fields
-     *  - references
-     *  - conditions.
-     *
-     * and then will apply them locally. If you think that any fields
-     * could clash, then use ['prefix' => 'm2'] which will be pre-pended
-     * to all the fields. Conditions will be automatically mapped.
-     *
-     * @todo NOT IMPLEMENTED !
-     */
-    /*
-    public function importModel(Model $model, array $defaults = [])
-    {
-        // not implemented yet !!!
+        return $this->getOwner()->containsMany($link, $defaults);
     }
     */
 

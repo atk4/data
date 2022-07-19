@@ -55,4 +55,36 @@ trait JoinsTrait
 
         return $this->join($foreignTable, $defaults);
     }
+
+    public function hasJoin(string $link): bool
+    {
+        return $this->getModel(true)->hasElement('#join-' . $link);
+    }
+
+    public function getJoin(string $link): Join
+    {
+        $this->assertIsModel();
+
+        return $this->getElement('#join-' . $link);
+    }
+
+    /**
+     * @return array<string, Join>
+     */
+    public function getJoins(): array
+    {
+        $this->assertIsModel();
+
+        $res = [];
+        foreach ($this->elements as $k => $v) {
+            if (str_starts_with($k, '#join-')) {
+                $link = substr($k, strlen('#join-'));
+                $res[$link] = $this->getJoin($link);
+            } elseif ($v instanceof Join) {
+                throw new \Error('Unexpected Join index');
+            }
+        }
+
+        return $res;
+    }
 }

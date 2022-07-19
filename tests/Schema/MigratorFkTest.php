@@ -9,38 +9,18 @@ use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\DBAL\Schema\ForeignKeyConstraint;
-use Doctrine\DBAL\Schema\Identifier;
 
 class MigratorFkTest extends TestCase
 {
-    /**
-     * @param array<string> $localColumns
-     * @param array<string> $targetColumns
-     */
-    protected function createForeignKey(string $localTable, array $localColumns, string $targetTable, array $targetColumns): void
-    {
-        $platform = $this->getDatabasePlatform();
-        $this->getConnection()->createSchemaManager()->createForeignKey(
-            new ForeignKeyConstraint(
-                array_map(fn ($v) => $platform->quoteIdentifier($v), $localColumns),
-                $platform->quoteIdentifier($targetTable),
-                array_map(fn ($v) => $platform->quoteIdentifier($v), $targetColumns)
-            ),
-            $platform->quoteIdentifier($localTable)
-        );
-    }
-
-    protected function selectTableForeignKeys(string $localTable): array
+    protected function listTableForeignKeys(string $localTable): array
     {
         $foreignKeys = $this->getConnection()->createSchemaManager()->listTableForeignKeys($localTable);
 
-        $unquoteIdentifierFx = fn (string $name): string => (new Identifier($name))->getName();
-
-        $res = array_map(function (ForeignKeyConstraint $v) use ($unquoteIdentifierFx) {
+        $res = array_map(function (ForeignKeyConstraint $v) {
             return [
-                array_map($unquoteIdentifierFx, $v->getLocalColumns()),
-                $unquoteIdentifierFx($v->getForeignTableName()),
-                array_map($unquoteIdentifierFx, $v->getForeignColumns()),
+                $v->getUnquotedLocalColumns(),
+                $v->getForeignTableName(),
+                $v->getUnquotedForeignColumns(),
             ];
         }, $foreignKeys);
         sort($res);
@@ -65,9 +45,9 @@ class MigratorFkTest extends TestCase
         $this->createMigrator($invoice)->create();
         $this->createMigrator($country)->create();
 
-        $this->createForeignKey('client', ['country_id'], 'country', ['id']);
-        $this->createForeignKey('client', ['created_by_client_id'], 'client', ['id']);
-        $this->createForeignKey('invoice', ['client_id'], 'client', ['id']);
+        $this->createMigrator()->createForeignKey($client->getRef('country_id'));
+        $this->createMigrator()->createForeignKey($client->getRef('created_by_client_id'));
+        $this->createMigrator()->createForeignKey($invoice->getRef('client_id'));
 
         // make sure FK client-country was not removed during FK invoice-client setup
         $this->assertSame([
@@ -75,9 +55,9 @@ class MigratorFkTest extends TestCase
             [[['country_id'], 'country', ['id']], [['created_by_client_id'], 'client', ['id']]],
             [[['client_id'], 'client', ['id']]],
         ], [
-            $this->selectTableForeignKeys('country'),
-            $this->selectTableForeignKeys('client'),
-            $this->selectTableForeignKeys('invoice'),
+            $this->listTableForeignKeys('country'),
+            $this->listTableForeignKeys('client'),
+            $this->listTableForeignKeys('invoice'),
         ]);
 
         $clientId = $client->insert(['name' => 'Leos']);

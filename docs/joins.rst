@@ -66,7 +66,7 @@ but you wouldn't want that adding a new user would create a new country::
 
     $user->addField('username');
     $user->addField('country_id');
-    $jCountry = $user->weakJoin('country', ['prefix' => 'country_']);
+    $jCountry = $user->join('country', ['weak' => true, 'prefix' => 'country_']);
     $jCountry->addField('code');
     $jCountry->addField('name');
     $jCountry->addField('default_currency', ['prefix' => false]);
@@ -78,32 +78,6 @@ After this you will have the following fields in your model:
 - country_code [read_only]
 - country_name [read_only]
 - default_currency [read_only]
-
-.. php:method:: importModel
-
-You can achieve a similar functionality with hasOne reference, but with weak
-join you can pull multiple fields into your model.
-Finally you can even join using existing models::
-
-    $user->addField('username');
-    $user->addField('country_id');
-    $user->weakJoin('country')->importModel('Country');
-
-This will automatically import fields, expressions, references and conditions
-from 'Country' model into $user model and will also re-map field names in
-process.
-
-.. php:method:: weakJoinModel
-
-To save you some time with weakJoin() and importModel(), if you wish to simply
-import another model fields, you can actually use this syntax::
-
-    $user->weakJoinModel('Country', ['code', 'name', 'default_currency']);
-
-When joining model like that, all the fields will be prefixed automatically
-using Country::$table property.
-
-Note that weak joins are not yet fully implemented !!!
 
 
 Join relationship definitions
@@ -156,13 +130,6 @@ with a foreign table.
 .. php:method:: join
 
     same as :php:meth:`Model::join` but links new table with this foreign table.
-
-.. php:method:: weakJoin
-
-    same as :php:meth:`Model::weakJoin` but links new table with this foreign
-    table.
-
-    Not yet implemented !
 
 .. php:method:: hasOne
 

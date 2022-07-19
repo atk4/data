@@ -643,7 +643,7 @@ class Sql extends Persistence
             $mask = '{{}}.{}';
             $prop = [
                 $field->hasJoin()
-                    ? ($field->getJoin()->foreignAlias ?: $field->getJoin()->shortName)
+                    ? ($field->getJoin()->foreignAlias ?? $field->getJoin()->shortName)
                     : ($field->getOwner()->tableAlias ?? (is_object($field->getOwner()->table) ? '_tm' : $field->getOwner()->table)),
                 $field->getPersistenceName(),
             ];

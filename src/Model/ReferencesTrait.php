@@ -98,42 +98,36 @@ trait ReferencesTrait
         return $this->_addRef($this->_defaultSeedContainsMany, $link, $defaults); // @phpstan-ignore-line
     }
 
-    /**
-     * Returns true if reference exists.
-     */
     public function hasRef(string $link): bool
     {
-        return $this->getModel(true)->hasElement('#ref_' . $link);
+        return $this->getModel(true)->hasElement('#ref-' . $link);
     }
 
-    /**
-     * Returns the reference.
-     */
     public function getRef(string $link): Reference
     {
         $this->assertIsModel();
 
-        return $this->getElement('#ref_' . $link);
+        return $this->getElement('#ref-' . $link);
     }
 
     /**
-     * Returns all references.
-     *
      * @return array<string, Reference>
      */
     public function getRefs(): array
     {
         $this->assertIsModel();
 
-        $refs = [];
-        foreach (array_keys($this->elements) as $k) {
-            if (str_starts_with($k, '#ref_')) {
-                $link = substr($k, strlen('#ref_'));
-                $refs[$link] = $this->getRef($link);
+        $res = [];
+        foreach ($this->elements as $k => $v) {
+            if (str_starts_with($k, '#ref-')) {
+                $link = substr($k, strlen('#ref-'));
+                $res[$link] = $this->getRef($link);
+            } elseif ($v instanceof Reference) {
+                throw new \Error('Unexpected Reference index');
             }
         }
 
-        return $refs;
+        return $res;
     }
 
     /**

@@ -381,7 +381,7 @@ class Condition extends AbstractScope
 
         // use the referenced model title if such exists
         $title = null;
-        if ($field instanceof Field && $field->getReference() !== null) {
+        if ($field instanceof Field && $field->hasReference()) {
             // make sure we set the value in the Model
             $model = $model->isEntity() ? clone $model : $model->createEntity();
             $model->set($field->shortName, $value);

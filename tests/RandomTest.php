@@ -314,6 +314,7 @@ class RandomTest extends TestCase
                 1 => ['id' => 1, 'name' => 'John'],
             ],
         ];
+        $this->dropCreatedDb();
         $this->setDb($dbData);
 
         $m->set('name', 'Peter');
@@ -596,6 +597,7 @@ class RandomTest extends TestCase
         if ($runWithDb) {
             $this->createMigrator($user)->create();
             $this->createMigrator($doc)->create();
+            $this->createMigrator()->createForeignKey($doc->getRef('user_id'));
 
             $user->createEntity()
                 ->set('name', 'Sarah')

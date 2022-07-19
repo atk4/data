@@ -98,8 +98,6 @@ class Expression implements Expressionable, \ArrayAccess
     }
 
     /**
-     * Whether or not an offset exists.
-     *
      * @param int|string $offset
      */
     public function offsetExists($offset): bool
@@ -108,8 +106,6 @@ class Expression implements Expressionable, \ArrayAccess
     }
 
     /**
-     * Returns the value at specified offset.
-     *
      * @param int|string $offset
      *
      * @return mixed
@@ -121,8 +117,6 @@ class Expression implements Expressionable, \ArrayAccess
     }
 
     /**
-     * Assigns a value to the specified offset.
-     *
      * @param int|string|null $offset
      * @param mixed           $value  The value to set
      */
@@ -136,8 +130,6 @@ class Expression implements Expressionable, \ArrayAccess
     }
 
     /**
-     * Unsets an offset.
-     *
      * @param int|string $offset
      */
     public function offsetUnset($offset): void
@@ -459,31 +451,45 @@ class Expression implements Expressionable, \ArrayAccess
      */
     public function getDebugQuery(): string
     {
-        [$result, $params] = $this->render();
-
-        foreach (array_reverse($params) as $key => $val) {
-            if ($val === null) {
-                $replacement = 'NULL';
-            } elseif (is_bool($val)) {
-                $replacement = $val ? '1' : '0';
-            } elseif (is_int($val)) {
-                $replacement = (string) $val;
-            } elseif (is_float($val)) {
-                $replacement = self::castFloatToString($val);
-            } elseif (is_string($val)) {
-                $replacement = '\'' . str_replace('\'', '\'\'', $val) . '\'';
-            } else {
-                continue;
-            }
-
-            $result = preg_replace('~' . $key . '(?!\w)~', $replacement, $result);
-        }
+        [$sql, $params] = $this->render();
 
         if (class_exists('SqlFormatter')) { // requires optional "jdorn/sql-formatter" package
-            $result = \SqlFormatter::format($result, false);
+            $sql = preg_replace('~ +(?=\n|$)|(?<=:) (?=\w)~', '', \SqlFormatter::format($sql, false));
         }
 
-        return $result;
+        $i = 0;
+        $sql = preg_replace_callback(
+            '~\'(?:\'\'|\\\\\'|[^\'])*+\'\K|(?:\?|:\w+)~s',
+            function ($matches) use ($params, &$i) {
+                if ($matches[0] === '') {
+                    return '';
+                }
+
+                $k = $matches[0] === '?' ? ++$i : $matches[0];
+                if (!array_key_exists($k, $params)) {
+                    return $matches[0];
+                }
+
+                $v = $params[$k];
+
+                if ($v === null) {
+                    return 'NULL';
+                } elseif (is_bool($v)) {
+                    return $v ? '1' : '0';
+                } elseif (is_int($v)) {
+                    return (string) $v;
+                } elseif (is_float($v)) {
+                    return self::castFloatToString($v);
+                } elseif (strlen($v) > 4096) {
+                    return '*long string* (length: ' . strlen($v) . ' bytes, sha256: ' . hash('sha256', $v) . ')';
+                }
+
+                return '\'' . str_replace('\'', '\'\'', $v) . '\'';
+            },
+            $sql
+        );
+
+        return $sql;
     }
 
     public function __debugInfo(): array
