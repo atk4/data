@@ -278,6 +278,11 @@ abstract class Join
         }
     }
 
+    private function getJoinNameFromShortName(): string
+    {
+        return str_starts_with($this->shortName, '#join-') ? substr($this->shortName, 6) : null;
+    }
+
     /**
      * Adding field into join will automatically associate that field
      * with this join. That means it won't be loaded from $table, but
@@ -285,7 +290,7 @@ abstract class Join
      */
     public function addField(string $name, array $seed = []): Field
     {
-        $seed['joinName'] = $this->shortName;
+        $seed['joinName'] = $this->getJoinNameFromShortName();
 
         return $this->getOwner()->addField($this->prefix . $name, $seed);
     }
@@ -316,7 +321,7 @@ abstract class Join
      */
     public function join(string $foreignTable, array $defaults = []): self
     {
-        $defaults['joinName'] = $this->shortName;
+        $defaults['joinName'] = $this->getJoinNameFromShortName();
 
         return $this->getOwner()->join($foreignTable, $defaults);
     }
@@ -328,7 +333,7 @@ abstract class Join
      */
     public function leftJoin(string $foreignTable, array $defaults = []): self
     {
-        $defaults['joinName'] = $this->shortName;
+        $defaults['joinName'] = $this->getJoinNameFromShortName();
 
         return $this->getOwner()->leftJoin($foreignTable, $defaults);
     }
@@ -340,7 +345,7 @@ abstract class Join
      */
     public function hasOne(string $link, array $defaults = [])
     {
-        $defaults['joinName'] = $this->shortName;
+        $defaults['joinName'] = $this->getJoinNameFromShortName();
 
         return $this->getOwner()->hasOne($link, $defaults);
     }
@@ -365,7 +370,7 @@ abstract class Join
     /*
     public function containsOne(string $link, array $defaults = []) // : Reference
     {
-        $defaults['joinName'] = $this->shortName;
+        $defaults['joinName'] = $this->getJoinNameFromShortName();
 
         return $this->getOwner()->containsOne($link, $defaults);
     }
@@ -381,8 +386,6 @@ abstract class Join
     /*
     public function containsMany(string $link, array $defaults = []) // : Reference
     {
-        $defaults['joinName'] = $this->shortName;
-
         return $this->getOwner()->containsMany($link, $defaults);
     }
     */

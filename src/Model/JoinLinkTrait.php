@@ -15,6 +15,6 @@ trait JoinLinkTrait
 
     public function getJoin(): Join
     {
-        return $this->getOwner()->getElement($this->joinName);
+        return $this->getOwner()->getJoin($this->joinName);
     }
 }

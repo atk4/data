@@ -26,7 +26,7 @@ class Join extends Model\Join
         // our short name will be unique
         // TODO this should be removed, short name is not guaranteed to be unique with nested model/query
         if ($this->foreignAlias === null) {
-            $this->foreignAlias = ($this->getOwner()->tableAlias ?? '') . preg_replace('~^#join-~', '_', $this->shortName);
+            $this->foreignAlias = ($this->getOwner()->tableAlias ?? '') . '_' . (str_starts_with($this->shortName, '#join-') ? substr($this->shortName, 6) : $this->shortName);
         }
 
         // Master field indicates ID of the joined item. In the past it had to be
