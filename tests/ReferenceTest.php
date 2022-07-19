@@ -23,13 +23,13 @@ class ReferenceTest extends TestCase
         $order->addField('amount', ['default' => 20]);
         $order->addField('user_id', ['type' => 'integer']);
 
-        $user->getModel()->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
+        $r1 = $user->getModel()->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
         $o = $user->ref('Orders')->createEntity();
 
         $this->assertSame(20, $o->get('amount'));
         $this->assertSame(1, $o->get('user_id'));
 
-        $user->getModel()->hasMany('BigOrders', ['model' => function () {
+        $r2 = $user->getModel()->hasMany('BigOrders', ['model' => function () {
             $m = new Model();
             $m->addField('amount', ['default' => 100]);
             $m->addField('user_id');
@@ -38,6 +38,15 @@ class ReferenceTest extends TestCase
         }]);
 
         $this->assertSame(100, $user->ref('BigOrders')->createEntity()->get('amount'));
+
+        $this->assertSame([
+            'Orders' => $r1,
+            'BigOrders' => $r2,
+        ], $user->getModel()->getRefs());
+        $this->assertSame($r1, $user->getModel()->getRef('Orders'));
+        $this->assertSame($r2, $user->getModel()->getRef('BigOrders'));
+        $this->assertTrue($user->getModel()->hasRef('BigOrders'));
+        $this->assertFalse($user->getModel()->hasRef('SmallOrders'));
     }
 
     public function testModelCaption(): void

@@ -15,26 +15,36 @@ class JoinSqlTest extends TestCase
     {
         $m = new Model($this->db, ['table' => 'user']);
 
-        $j = $m->join('contact');
-        $this->assertFalse($this->getProtected($j, 'reverse'));
-        $this->assertSame('contact_id', $this->getProtected($j, 'master_field'));
-        $this->assertSame('id', $this->getProtected($j, 'foreign_field'));
+        $j1 = $m->join('contact');
+        $this->assertFalse($this->getProtected($j1, 'reverse'));
+        $this->assertSame('contact_id', $this->getProtected($j1, 'master_field'));
+        $this->assertSame('id', $this->getProtected($j1, 'foreign_field'));
 
-        $j = $m->join('contact2.test_id');
-        $this->assertTrue($this->getProtected($j, 'reverse'));
-        $this->assertSame('id', $this->getProtected($j, 'master_field'));
-        $this->assertSame('test_id', $this->getProtected($j, 'foreign_field'));
+        $j2 = $m->join('contact2.test_id');
+        $this->assertTrue($this->getProtected($j2, 'reverse'));
+        $this->assertSame('id', $this->getProtected($j2, 'master_field'));
+        $this->assertSame('test_id', $this->getProtected($j2, 'foreign_field'));
 
-        $j = $m->join('contact3', ['master_field' => 'test_id']);
-        $this->assertFalse($this->getProtected($j, 'reverse'));
-        $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
-        $this->assertSame('id', $this->getProtected($j, 'foreign_field'));
+        $j3 = $m->join('contact3', ['master_field' => 'test_id']);
+        $this->assertFalse($this->getProtected($j3, 'reverse'));
+        $this->assertSame('test_id', $this->getProtected($j3, 'master_field'));
+        $this->assertSame('id', $this->getProtected($j3, 'foreign_field'));
+
+        $this->assertSame([
+            'contact' => $j1,
+            'contact2' => $j2,
+            'contact3' => $j3,
+        ], $m->getJoins());
+        $this->assertSame($j1, $m->getJoin('contact'));
+        $this->assertSame($j2, $m->getJoin('contact2'));
+        $this->assertTrue($m->hasJoin('contact2'));
+        $this->assertFalse($m->hasJoin('contact8'));
 
         $this->expectException(Exception::class); // TODO not implemented yet, see https://github.com/atk4/data/issues/803
-        $j = $m->join('contact4.foo_id', ['master_field' => 'test_id', 'reverse' => true]);
-        // $this->assertTrue($this->getProtected($j, 'reverse'));
-        // $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
-        // $this->assertSame('foo_id', $this->getProtected($j, 'foreign_field'));
+        $j4 = $m->join('contact4.foo_id', ['master_field' => 'test_id', 'reverse' => true]);
+        // $this->assertTrue($this->getProtected($j4, 'reverse'));
+        // $this->assertSame('test_id', $this->getProtected($j4, 'master_field'));
+        // $this->assertSame('foo_id', $this->getProtected($j4, 'foreign_field'));
     }
 
     public function testDirectionException(): void

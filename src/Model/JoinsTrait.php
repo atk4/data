@@ -56,9 +56,11 @@ trait JoinsTrait
         return $this->join($foreignTable, $defaults);
     }
 
-    /**
-     * Returns the join.
-     */
+    public function hasJoin(string $link): bool
+    {
+        return $this->getModel(true)->hasElement('#join-' . $link);
+    }
+
     public function getJoin(string $link): Join
     {
         $this->assertIsModel();
@@ -67,8 +69,6 @@ trait JoinsTrait
     }
 
     /**
-     * Returns all joins.
-     *
      * @return array<string, Join>
      */
     public function getJoins(): array

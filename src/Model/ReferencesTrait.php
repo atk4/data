@@ -98,17 +98,11 @@ trait ReferencesTrait
         return $this->_addRef($this->_defaultSeedContainsMany, $link, $defaults); // @phpstan-ignore-line
     }
 
-    /**
-     * Returns true if reference exists.
-     */
     public function hasRef(string $link): bool
     {
         return $this->getModel(true)->hasElement('#ref-' . $link);
     }
 
-    /**
-     * Returns the reference.
-     */
     public function getRef(string $link): Reference
     {
         $this->assertIsModel();
@@ -117,8 +111,6 @@ trait ReferencesTrait
     }
 
     /**
-     * Returns all references.
-     *
      * @return array<string, Reference>
      */
     public function getRefs(): array

@@ -98,8 +98,6 @@ class Expression implements Expressionable, \ArrayAccess
     }
 
     /**
-     * Whether or not an offset exists.
-     *
      * @param int|string $offset
      */
     public function offsetExists($offset): bool
@@ -108,8 +106,6 @@ class Expression implements Expressionable, \ArrayAccess
     }
 
     /**
-     * Returns the value at specified offset.
-     *
      * @param int|string $offset
      *
      * @return mixed
@@ -121,8 +117,6 @@ class Expression implements Expressionable, \ArrayAccess
     }
 
     /**
-     * Assigns a value to the specified offset.
-     *
      * @param int|string|null $offset
      * @param mixed           $value  The value to set
      */
@@ -136,8 +130,6 @@ class Expression implements Expressionable, \ArrayAccess
     }
 
     /**
-     * Unsets an offset.
-     *
      * @param int|string $offset
      */
     public function offsetUnset($offset): void
