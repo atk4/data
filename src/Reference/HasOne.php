@@ -68,7 +68,7 @@ class HasOne extends Reference
         $ourModelCloned = clone $this->getOurModel(null);
         $ourModelCloned->persistenceData['use_table_prefixes'] = true;
 
-        return $ourModelCloned->getRef($this->link)->getOurField();
+        return $ourModelCloned->getReference($this->link)->getOurField();
     }
 
     /**

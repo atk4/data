@@ -146,7 +146,7 @@ class JobReport extends Job {
         $timesheet = new Timesheet($this->getPersistence());
 
         // timesheet relates to client, import client.hourly_rate as expression
-        $timesheet->getRef('client_id')->addField('hourly_rate');
+        $timesheet->getReference('client_id')->addField('hourly_rate');
 
         // calculate timesheet cost expression
         $timesheet->addExpression('cost', ['expr' => '[hours] * [hourly_rate]']);

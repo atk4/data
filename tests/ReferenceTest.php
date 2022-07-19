@@ -42,11 +42,11 @@ class ReferenceTest extends TestCase
         $this->assertSame([
             'Orders' => $r1,
             'BigOrders' => $r2,
-        ], $user->getModel()->getRefs());
-        $this->assertSame($r1, $user->getModel()->getRef('Orders'));
-        $this->assertSame($r2, $user->getModel()->getRef('BigOrders'));
-        $this->assertTrue($user->getModel()->hasRef('BigOrders'));
-        $this->assertFalse($user->getModel()->hasRef('SmallOrders'));
+        ], $user->getModel()->getReferences());
+        $this->assertSame($r1, $user->getModel()->getReference('Orders'));
+        $this->assertSame($r2, $user->getModel()->getReference('BigOrders'));
+        $this->assertTrue($user->getModel()->hasReference('BigOrders'));
+        $this->assertFalse($user->getModel()->hasReference('SmallOrders'));
     }
 
     public function testModelCaption(): void
@@ -102,10 +102,10 @@ class ReferenceTest extends TestCase
         $user->hasOne('user_id', ['model' => $user]);
     }
 
-    public function testCustomRef(): void
+    public function testCustomReference(): void
     {
         $m = new Model($this->db, ['table' => 'user']);
-        $m->addRef('archive', ['model' => function ($m) {
+        $m->addReference('archive', ['model' => function ($m) {
             return new $m(null, ['table' => $m->table . '_archive']);
         }]);
 
@@ -119,6 +119,6 @@ class ReferenceTest extends TestCase
         $order->addField('user_id');
 
         $user->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
-        $this->assertSame($user->getRef('Orders')->getTheirFieldName(), 'user_id');
+        $this->assertSame($user->getReference('Orders')->getTheirFieldName(), 'user_id');
     }
 }

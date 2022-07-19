@@ -218,7 +218,7 @@ class DeepCopy
             foreach ($this->extractKeys($references) as $refKey => $refVal) {
                 $this->debug('Considering ' . $refKey);
 
-                if ($source->hasRef($refKey) && $source->getModel(true)->getRef($refKey) instanceof HasOne) {
+                if ($source->hasReference($refKey) && $source->getModel(true)->getReference($refKey) instanceof HasOne) {
                     $this->debug('Proceeding with ' . $refKey);
 
                     // load destination model through $source
@@ -272,7 +272,7 @@ class DeepCopy
             // Next look for hasMany relationships and copy those too
 
             foreach ($this->extractKeys($references) as $refKey => $refVal) {
-                if ($source->hasRef($refKey) && $source->getModel(true)->getRef($refKey) instanceof HasMany) {
+                if ($source->hasReference($refKey) && $source->getModel(true)->getReference($refKey) instanceof HasMany) {
                     // No mapping, will always copy
                     foreach ($source->ref($refKey) as $refModel) {
                         $this->_copy(

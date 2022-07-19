@@ -46,7 +46,7 @@ class ModelAggregateTest extends TestCase
     protected function createInvoice(): Model\Invoice
     {
         $invoice = new Model\Invoice($this->db);
-        $invoice->getRef('client_id')->addTitle();
+        $invoice->getReference('client_id')->addTitle();
 
         return $invoice;
     }

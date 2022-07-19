@@ -45,7 +45,7 @@ class FolderTest extends TestCase
         ]);
 
         $f = new Folder($this->db);
-        $this->createMigrator()->createForeignKey($f->getRef('SubFolder'));
+        $this->createMigrator()->createForeignKey($f->getReference('SubFolder'));
         $f = $f->load(4);
 
         $this->assertSame([

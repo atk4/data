@@ -502,8 +502,8 @@ the new object is created and added into Model of class :php:class:`Reference\Ha
 or :php:class:`Reference\\HasOne` (or :php:class:`Reference\\HasOneSql` in case you
 use SQL database). The object itself is quite simple and you can fetch it from
 the model if you keep the return value of hasOne() / hasMany() or call
-:php:meth:`Model::getRef()` with the same identifier later on.
-You can also use :php:meth:`Model::hasRef()` to check if reference exists in model.
+:php:meth:`Model::getReference()` with the same identifier later on.
+You can also use :php:meth:`Model::hasReference()` to check if reference exists in model.
 
 Calling :php:meth:`Model::ref()` will proxy into the ref() method of reference
 object which will in turn figure out what to do.
@@ -537,8 +537,8 @@ Aggregation actions can be used in Expressions with hasMany references and they
 can be brought into the original model as fields::
 
     $m = new Model_Client($db);
-    $m->getRef('Invoice')->addField('max_delivery', ['aggregate' => 'max', 'field' => 'shipping']);
-    $m->getRef('Payment')->addField('total_paid', ['aggregate' => 'sum', 'field' => 'amount']);
+    $m->getReference('Invoice')->addField('max_delivery', ['aggregate' => 'max', 'field' => 'shipping']);
+    $m->getReference('Payment')->addField('total_paid', ['aggregate' => 'sum', 'field' => 'amount']);
     $m->export(['name', 'max_delivery', 'total_paid']);
 
 The above code is more concise and can be used together with reference declaration,
@@ -572,7 +572,7 @@ Field referencing allows you to fetch a specific field from related model::
 This is useful with hasMany references::
 
     $m = new Model_User($db);
-    $m->getRef('country_id')->addField('country', 'name');
+    $m->getReference('country_id')->addField('country', 'name');
     $m = $m->loadAny();
     $m->get();  // look for 'country' field
 
@@ -614,8 +614,8 @@ will continue to work even without SQL (although might be more performance-expen
 however if you're stuck with SQL you can use free-form pattern-based expressions::
 
     $m = new Model_Client($db);
-    $m->getRef('Invoice')->addField('total_purchase', ['aggregate' => 'sum', 'field' => 'total']);
-    $m->getRef('Payment')->addField('total_paid', ['aggregate' => 'sum', 'field' => 'amount']);
+    $m->getReference('Invoice')->addField('total_purchase', ['aggregate' => 'sum', 'field' => 'total']);
+    $m->getReference('Payment')->addField('total_paid', ['aggregate' => 'sum', 'field' => 'amount']);
 
     $m->addExpression('balance', ['expr' => '[total_purchase] + [total_paid]']);
     $m->export(['name', 'balance']);

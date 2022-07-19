@@ -1641,7 +1641,7 @@ class Model implements \IteratorAggregate
             }
 
             // and reference must exist with same name
-            if (!$this->hasRef($key)) {
+            if (!$this->hasReference($key)) {
                 continue;
             }
 
