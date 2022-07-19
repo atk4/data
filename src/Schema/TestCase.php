@@ -7,6 +7,7 @@ namespace Atk4\Data\Schema;
 use Atk4\Core\Phpunit\TestCase as BaseTestCase;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\Sql\Expression;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
@@ -73,37 +74,18 @@ abstract class TestCase extends BaseTestCase
             return;
         }
 
-        if (class_exists('SqlFormatter')) { // requires optional "jdorn/sql-formatter" package
-            if (substr($sql, -1) !== ';') {
-                $sql .= ';';
+        $exprNoRender = new class($sql, $params) extends Expression {
+            public function render(): array
+            {
+                return [$this->template, $this->args['custom']];
             }
-            $sql = preg_replace('~ +(?=\n|$)|(?<=:) (?=\w)~', '', \SqlFormatter::format($sql, false));
+        };
+        $sqlWithParams = $exprNoRender->getDebugQuery();
+        if (substr($sqlWithParams, -1) !== ';') {
+            $sqlWithParams .= ';';
         }
 
-        $lines = [$sql];
-        if (count($params) > 0) {
-            $lines[] = '/*';
-            foreach ($params as $k => $v) {
-                if ($v === null) {
-                    $vStr = 'null';
-                } elseif (is_bool($v)) {
-                    $vStr = $v ? 'true' : 'false';
-                } elseif (is_int($v)) {
-                    $vStr = (string) $v;
-                } else {
-                    if (strlen($v) > 4096) {
-                        $vStr = '*long string* (length: ' . strlen($v) . ' bytes, sha256: ' . hash('sha256', $v) . ')';
-                    } else {
-                        $vStr = '\'' . str_replace('\'', '\'\'', $v) . '\'';
-                    }
-                }
-
-                $lines[] = '    [' . $k . '] => ' . $vStr;
-            }
-            $lines[] = '*/';
-        }
-
-        echo "\n" . implode("\n", $lines) . "\n\n";
+        echo "\n" . $sqlWithParams . "\n\n";
     }
 
     private function convertSqlFromSqlite(string $sql): string

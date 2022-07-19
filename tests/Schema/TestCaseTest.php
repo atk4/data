@@ -37,8 +37,7 @@ class TestCaseTest extends TestCase
             ob_end_clean();
         }
 
-        if (!$this->getDatabasePlatform() instanceof SqlitePlatform
-            && (!$this->getDatabasePlatform() instanceof MySQLPlatform || !$this->getConnection()->getConnection()->getNativeConnection() instanceof \PDO)) {
+        if (!$this->getDatabasePlatform() instanceof SqlitePlatform && !$this->getDatabasePlatform() instanceof MySQLPlatform) {
             return;
         }
 
@@ -50,13 +49,7 @@ class TestCaseTest extends TestCase
 
                 insert into "t" ("name", "int", "float", "null")
                 values
-                  (:a, :b, :c, :d);
-                /*
-                    [:a] => 'Ewa'
-                    [:b] => 1
-                    [:c] => '1.0'
-                    [:d] => null
-                */
+                  ('Ewa', 1, '1.0', NULL);
 
 
                 "COMMIT";
@@ -71,13 +64,10 @@ class TestCaseTest extends TestCase
                 from
                   "t"
                 where
-                  "int" > :a
+                  "int" > -1
                 limit
                   0,
                   1;
-                /*
-                    [:a] => -1
-                */
                 EOF . "\n\n",
             $output
         );

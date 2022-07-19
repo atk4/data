@@ -457,20 +457,37 @@ class Expression implements Expressionable, \ArrayAccess
             $sql = preg_replace('~ +(?=\n|$)|(?<=:) (?=\w)~', '', \SqlFormatter::format($sql, false));
         }
 
-        $sql = preg_replace_callback('~:\w+~', function ($matches) use ($params) {
-            $v = $params[$matches[0]];
-            if ($v === null) {
-                return 'NULL';
-            } elseif (is_bool($v)) {
-                return $v ? '1' : '0';
-            } elseif (is_int($v)) {
-                return (string) $v;
-            } elseif (is_float($v)) {
-                return self::castFloatToString($v);
-            }
+        $i = 0;
+        $sql = preg_replace_callback(
+            '~\'(?:\'\'|\\\\\'|[^\'])*+\'\K|(?:\?|:\w+)~s',
+            function ($matches) use ($params, &$i) {
+                if ($matches[0] === '') {
+                    return '';
+                }
 
-            return '\'' . str_replace('\'', '\'\'', $v) . '\'';
-        }, $sql);
+                $k = $matches[0] === '?' ? ++$i : $matches[0];
+                if (!array_key_exists($k, $params)) {
+                    return $matches[0];
+                }
+
+                $v = $params[$k];
+
+                if ($v === null) {
+                    return 'NULL';
+                } elseif (is_bool($v)) {
+                    return $v ? '1' : '0';
+                } elseif (is_int($v)) {
+                    return (string) $v;
+                } elseif (is_float($v)) {
+                    return self::castFloatToString($v);
+                } elseif (strlen($v) > 4096) {
+                    return '*long string* (length: ' . strlen($v) . ' bytes, sha256: ' . hash('sha256', $v) . ')';
+                }
+
+                return '\'' . str_replace('\'', '\'\'', $v) . '\'';
+            },
+            $sql
+        );
 
         return $sql;
     }

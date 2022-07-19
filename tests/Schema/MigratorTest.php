@@ -145,6 +145,10 @@ class MigratorTest extends TestCase
      */
     public function testCharacterTypeFieldLong(string $type, bool $isBinary, int $length): void
     {
+        if ($length > 1000) {
+            $this->debug = false;
+        }
+
         if ($length === 0) {
             $str = '';
 
