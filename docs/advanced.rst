@@ -783,12 +783,12 @@ different for the extended class::
 
 Alternatively you can replace model in the init() method of Model_Invoice::
 
-    $this->getRef('client_id')->model = 'Model_Client';
+    $this->getReference('client_id')->model = 'Model_Client';
 
 You can also use array here if you wish to pass additional information into
 related model::
 
-    $this->getRef('client_id')->model = ['Model_Client', 'no_audit' => true];
+    $this->getReference('client_id')->model = ['Model_Client', 'no_audit' => true];
 
 Combined with our "Audit" handler above, this should allow you to relate
 with deleted clients.
@@ -833,7 +833,7 @@ sometimes that can be quite useful. Consider adding this inside your Model_Conta
 This way if you extend your class into 'Model_Client' and modify the 'Invoice'
 reference to use different model::
 
-    $this->getRef('Invoice')->model = 'Model_Invoice_Sale';
+    $this->getReference('Invoice')->model = 'Model_Invoice_Sale';
 
 The 'OverdueInvoice' reference will be also properly adjusted.
 

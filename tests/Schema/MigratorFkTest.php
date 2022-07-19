@@ -45,9 +45,9 @@ class MigratorFkTest extends TestCase
         $this->createMigrator($invoice)->create();
         $this->createMigrator($country)->create();
 
-        $this->createMigrator()->createForeignKey($client->getRef('country_id'));
-        $this->createMigrator()->createForeignKey($client->getRef('created_by_client_id'));
-        $this->createMigrator()->createForeignKey($invoice->getRef('client_id'));
+        $this->createMigrator()->createForeignKey($client->getReference('country_id'));
+        $this->createMigrator()->createForeignKey($client->getReference('created_by_client_id'));
+        $this->createMigrator()->createForeignKey($invoice->getReference('client_id'));
 
         // make sure FK client-country was not removed during FK invoice-client setup
         $this->assertSame([

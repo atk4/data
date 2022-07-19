@@ -67,7 +67,7 @@ class LUser extends Model
         $this->addField('name');
         $this->addField('is_vip', ['type' => 'boolean', 'default' => false]);
 
-        $ref = $this->hasOne('country_id', ['model' => [LCountry::class]])
+        $this->hasOne('country_id', ['model' => [LCountry::class]])
             ->addFields(['country_code' => 'code', 'is_eu'])
             ->addTitle();
 
@@ -149,9 +149,9 @@ class LookupSqlTest extends TestCase
         $this->createMigrator($user)->create();
         $friend = new LFriend($this->db);
         $this->createMigrator($friend)->create();
-        $this->createMigrator()->createForeignKey($user->getRef('country_id'));
-        $this->createMigrator()->createForeignKey($friend->getRef('user_id'));
-        $this->createMigrator()->createForeignKey($friend->getRef('friend_id'));
+        $this->createMigrator()->createForeignKey($user->getReference('country_id'));
+        $this->createMigrator()->createForeignKey($friend->getReference('user_id'));
+        $this->createMigrator()->createForeignKey($friend->getReference('friend_id'));
     }
 
     public function testImportCountriesBasic(): void

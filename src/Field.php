@@ -392,7 +392,7 @@ class Field implements Expressionable
 
     public function getReference(): Reference
     {
-        return $this->getOwner()->getRef($this->referenceLink);
+        return $this->getOwner()->getReference($this->referenceLink);
     }
 
     public function getPersistenceName(): string

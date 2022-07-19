@@ -428,12 +428,12 @@ explicitly::
 User-defined Reference
 ======================
 
-.. php:method:: addRef($link, $callback)
+.. php:method:: addReference($link, $callback)
 
 Sometimes you would want to have a different type of relation between models,
-so with `addRef` you can define whatever reference you want::
+so with `addReference` you can define whatever reference you want::
 
-    $m->addRef('Archive', ['model' => function ($m) {
+    $m->addReference('Archive', ['model' => function ($m) {
         return $m->newInstance(null, ['table' => $m->table . '_archive']);
     }]);
 
@@ -447,7 +447,7 @@ Note that you can create one-to-many or many-to-one relations, by using your
 custom logic.
 No condition will be applied by default so it's all up to you::
 
-    $m->addRef('Archive', ['model' => function ($m) {
+    $m->addReference('Archive', ['model' => function ($m) {
         $archive = $m->newInstance(null, ['table' => $m->table . '_archive']);
 
         $m->addField('original_id', ['type' => 'integer']);
@@ -461,16 +461,16 @@ No condition will be applied by default so it's all up to you::
 Reference Discovery
 ===================
 
-You can call :php:meth:`Model::getRefs()` to fetch all the references of a model::
+You can call :php:meth:`Model::getReferences()` to fetch all the references of a model::
 
-    $refs = $model->getRefs();
-    $ref = $refs['owner_id'];
+    $references = $model->getReferences();
+    $reference = $references['owner_id'];
 
-or if you know the reference you'd like to fetch, you can use :php:meth:`Model::getRef()`::
+or if you know the reference you'd like to fetch, you can use :php:meth:`Model::getReference()`::
 
-    $ref = $model->getRef('owner_id');
+    $reference = $model->getReference('owner_id');
 
-While :php:meth:`Model::ref()` returns a related model, :php:meth:`Model::getRef()`
+While :php:meth:`Model::ref()` returns a related model, :php:meth:`Model::getReference()`
 gives you the reference object itself so that you could perform some changes on it,
 such as import more fields with :php:meth:`Model::addField()`.
 
@@ -479,11 +479,11 @@ model and you can do fancy things with it.
 
     $refModel = $model->refModel('owner_id');
 
-You can also use :php:meth:`Model::hasRef()` to check if particular reference
+You can also use :php:meth:`Model::hasReference()` to check if particular reference
 exists in model::
 
-    if ($model->hasRef('owner_id')) {
-        $ref = $model->getRef('owner_id');
+    if ($model->hasReference('owner_id')) {
+        $reference = $model->getReference('owner_id');
     }
 
 Deep traversal
@@ -649,7 +649,7 @@ References are implemented through several classes:
 
 .. php:class:: Reference\HasOne
 
-    Defines generic reference, that is typically created by :php:meth:`Model::addRef`
+    Defines generic reference, that is typically created by :php:meth:`Model::addReference`
 
 .. php:attr:: tableAlias
 

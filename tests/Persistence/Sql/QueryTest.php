@@ -22,7 +22,6 @@ class QueryTest extends TestCase
 
     public function testConstruct(): void
     {
-        // passing properties in constructor
         $this->assertSame(
             '"q"',
             $this->callProtected($this->q(), 'escapeIdentifier', 'q')

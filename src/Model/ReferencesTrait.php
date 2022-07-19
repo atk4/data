@@ -13,8 +13,8 @@ use Atk4\Data\Reference;
  */
 trait ReferencesTrait
 {
-    /** @var array The seed used by addRef() method. */
-    protected $_defaultSeedAddRef = [Reference::class];
+    /** @var array The seed used by addReference() method. */
+    protected $_defaultSeedAddReference = [Reference::class];
 
     /** @var array The seed used by hasOne() method. */
     protected $_defaultSeedHasOne = [Reference\HasOne::class];
@@ -29,9 +29,9 @@ trait ReferencesTrait
     protected $_defaultSeedContainsMany = [Reference\ContainsMany::class];
 
     /**
-     * @param array<string, mixed> $defaults Properties which we will pass to Reference object constructor
+     * @param array<string, mixed> $defaults
      */
-    protected function _addRef(array $seed, string $link, array $defaults = []): Reference
+    protected function _addReference(array $seed, string $link, array $defaults = []): Reference
     {
         $this->assertIsModel();
 
@@ -53,9 +53,9 @@ trait ReferencesTrait
     /**
      * Add generic relation. Provide your own call-back that will return the model.
      */
-    public function addRef(string $link, array $defaults): Reference
+    public function addReference(string $link, array $defaults): Reference
     {
-        return $this->_addRef($this->_defaultSeedAddRef, $link, $defaults);
+        return $this->_addReference($this->_defaultSeedAddReference, $link, $defaults);
     }
 
     /**
@@ -65,7 +65,7 @@ trait ReferencesTrait
      */
     public function hasOne(string $link, array $defaults = []) // : Reference
     {
-        return $this->_addRef($this->_defaultSeedHasOne, $link, $defaults); // @phpstan-ignore-line
+        return $this->_addReference($this->_defaultSeedHasOne, $link, $defaults); // @phpstan-ignore-line
     }
 
     /**
@@ -75,7 +75,7 @@ trait ReferencesTrait
      */
     public function hasMany(string $link, array $defaults = []) // : Reference
     {
-        return $this->_addRef($this->_defaultSeedHasMany, $link, $defaults); // @phpstan-ignore-line
+        return $this->_addReference($this->_defaultSeedHasMany, $link, $defaults); // @phpstan-ignore-line
     }
 
     /**
@@ -85,7 +85,7 @@ trait ReferencesTrait
      */
     public function containsOne(string $link, array $defaults = []) // : Reference
     {
-        return $this->_addRef($this->_defaultSeedContainsOne, $link, $defaults); // @phpstan-ignore-line
+        return $this->_addReference($this->_defaultSeedContainsOne, $link, $defaults); // @phpstan-ignore-line
     }
 
     /**
@@ -95,15 +95,15 @@ trait ReferencesTrait
      */
     public function containsMany(string $link, array $defaults = []) // : Reference
     {
-        return $this->_addRef($this->_defaultSeedContainsMany, $link, $defaults); // @phpstan-ignore-line
+        return $this->_addReference($this->_defaultSeedContainsMany, $link, $defaults); // @phpstan-ignore-line
     }
 
-    public function hasRef(string $link): bool
+    public function hasReference(string $link): bool
     {
         return $this->getModel(true)->hasElement('#ref-' . $link);
     }
 
-    public function getRef(string $link): Reference
+    public function getReference(string $link): Reference
     {
         $this->assertIsModel();
 
@@ -113,7 +113,7 @@ trait ReferencesTrait
     /**
      * @return array<string, Reference>
      */
-    public function getRefs(): array
+    public function getReferences(): array
     {
         $this->assertIsModel();
 
@@ -121,7 +121,7 @@ trait ReferencesTrait
         foreach ($this->elements as $k => $v) {
             if (str_starts_with($k, '#ref-')) {
                 $link = substr($k, strlen('#ref-'));
-                $res[$link] = $this->getRef($link);
+                $res[$link] = $this->getReference($link);
             } elseif ($v instanceof Reference) {
                 throw new \Error('Unexpected Reference index');
             }
@@ -135,7 +135,7 @@ trait ReferencesTrait
      */
     public function ref(string $link, array $defaults = []): Model
     {
-        return $this->getModel(true)->getRef($link)->ref($this, $defaults);
+        return $this->getModel(true)->getReference($link)->ref($this, $defaults);
     }
 
     /**
@@ -143,7 +143,7 @@ trait ReferencesTrait
      */
     public function refModel(string $link, array $defaults = []): Model
     {
-        return $this->getModel(true)->getRef($link)->refModel($this, $defaults);
+        return $this->getModel(true)->getReference($link)->refModel($this, $defaults);
     }
 
     /**
@@ -151,6 +151,6 @@ trait ReferencesTrait
      */
     public function refLink(string $link, array $defaults = []): Model
     {
-        return $this->getModel(true)->getRef($link)->refLink($this, $defaults);
+        return $this->getModel(true)->getReference($link)->refLink($this, $defaults);
     }
 }

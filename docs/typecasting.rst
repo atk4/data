@@ -1,5 +1,5 @@
 
-.. _ref: typecasting
+.. _Typecasting:
 
 ===========
 Typecasting

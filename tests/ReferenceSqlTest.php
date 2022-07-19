@@ -107,7 +107,7 @@ class ReferenceSqlTest extends TestCase
         $this->markTestIncompleteWhenCreateUniqueIndexIsNotSupportedByPlatform();
 
         $u->hasOne('cur', ['model' => $c, 'our_field' => 'currency', 'their_field' => 'currency']);
-        $this->createMigrator()->createForeignKey($u->getRef('cur'));
+        $this->createMigrator()->createForeignKey($u->getReference('cur'));
 
         $cc = $u->load(1)->ref('cur');
         $this->assertSame('Euro', $cc->get('name'));
@@ -436,7 +436,7 @@ class ReferenceSqlTest extends TestCase
     public function testUnloadedEntityTraversingHasOneEx(): void
     {
         $user = $this->setupDbForTraversing();
-        $user->getRef('Company')->setDefaults(['our_field' => 'id']);
+        $user->getReference('Company')->setDefaults(['our_field' => 'id']);
         $userEntity = $user->createEntity();
 
         $this->expectException(Exception::class);
@@ -523,7 +523,7 @@ class ReferenceSqlTest extends TestCase
         $p->addField('name');
         $p->delete(2);
         $p->hasOne('Stadium', ['model' => $s, 'our_field' => 'id', 'their_field' => 'player_id']);
-        $this->createMigrator()->createForeignKey($p->getRef('Stadium'));
+        $this->createMigrator()->createForeignKey($p->getReference('Stadium'));
 
         $s = $p->ref('Stadium')->createEntity()->save(['name' => 'Nou camp nou', 'player_id' => 4]);
         $p = $p->createEntity()->save(['name' => 'Ivan']);
@@ -559,7 +559,7 @@ class ReferenceSqlTest extends TestCase
         $o->hasOne('user_id', ['model' => $u]);
         $this->assertSame($o->getField('user_id')->isVisible(), true);
 
-        $o->getRef('user_id')->addTitle();
+        $o->getReference('user_id')->addTitle();
         $this->assertTrue($o->hasField('user'));
         $this->assertSame($o->getField('user')->isVisible(), true);
         $this->assertSame($o->getField('user_id')->isVisible(), false);
@@ -568,7 +568,7 @@ class ReferenceSqlTest extends TestCase
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
         $o->hasOne('user_id', ['model' => $u]);
         $o->getField('user_id')->ui['visible'] = true;
-        $o->getRef('user_id')->addTitle();
+        $o->getReference('user_id')->addTitle();
 
         $this->assertSame($o->getField('user_id')->isVisible(), true);
     }
@@ -633,7 +633,7 @@ class ReferenceSqlTest extends TestCase
         $o = (new Model($this->db, ['table' => 'order']));
         $o->hasOne('my_user', ['model' => $u, 'our_field' => 'user_id'])->addTitle();
 
-        // change order user by changing ref field value
+        // change order user by changing reference field value
         $o = $o->load(1);
         $o->set('my_user', 'Foo');
         $this->assertEquals(1, $o->get('user_id'));
