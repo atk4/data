@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Sqlite;
 
-use Atk4\Data\Persistence\Sql\Exception;
+use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\Schema\Identifier;
 use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Schema\TableDiff;
@@ -25,8 +25,7 @@ trait SchemaManagerTrait
 
             $rows = $this->_conn->executeQuery('PRAGMA foreign_key_check')->fetchAllAssociative();
             if (count($rows) > 0) {
-                throw (new Exception('Foreign key constraints are violated'))
-                    ->addMoreInfo('data', $rows);
+                throw new DbalException('Foreign key constraints are violated');
             }
         }
     }
