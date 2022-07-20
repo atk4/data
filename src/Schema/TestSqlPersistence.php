@@ -37,6 +37,11 @@ final class TestSqlPersistence extends Persistence\Sql
                     null ?? new class() implements SQLLogger {
                         public function startQuery($sql, array $params = null, array $types = null): void
                         {
+                            // fix https://github.com/doctrine/dbal/issues/5525
+                            if ($params !== null && $params !== [] && array_is_list($params)) {
+                                $params = array_combine(range(1, count($params)), $params);
+                            }
+
                             $test = TestCase::getTestFromBacktrace();
                             \Closure::bind(fn () => $test->logQuery($sql, $params ?? [], $types ?? []), null, TestCase::class)();
                         }
