@@ -7,6 +7,7 @@ namespace Atk4\Data\Tests\Schema;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\DBAL\Schema\ForeignKeyConstraint;
 
@@ -75,5 +76,23 @@ class MigratorFkTest extends TestCase
 
             throw $e;
         }
+    }
+
+    public function testForeignKeyViolationDuringSetup(): void
+    {
+        $country = new Model($this->db, ['table' => 'country']);
+        $country->addField('name');
+
+        $client = new Model($this->db, ['table' => 'client']);
+        $client->addField('name');
+        $client->hasOne('country_id', ['model' => $country]);
+
+        $this->createMigrator($client)->create();
+        $this->createMigrator($country)->create();
+
+        $client->insert(['name' => 'Leos', 'country_id' => 10]);
+
+        $this->expectException(DbalException::class);
+        $this->createMigrator()->createForeignKey($client->getReference('country_id'));
     }
 }
