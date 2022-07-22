@@ -513,13 +513,13 @@ class FieldTest extends TestCase
 
         // string
         $m->set('string', "Two\r\nLines  ");
-        $this->assertSame('TwoLines', $m->get('string'));
+        $this->assertSame('Two Lines', $m->get('string'));
 
         $m->set('string', "Two\rLines  ");
-        $this->assertSame('TwoLines', $m->get('string'));
+        $this->assertSame('Two Lines', $m->get('string'));
 
         $m->set('string', "Two\nLines  ");
-        $this->assertSame('TwoLines', $m->get('string'));
+        $this->assertSame('Two Lines', $m->get('string'));
 
         // text
         $m->set('text', "Two\r\nLines  ");
@@ -691,7 +691,7 @@ class FieldTest extends TestCase
         $m->addField('object', ['type' => 'object']);
         $m = $m->createEntity();
 
-        $this->assertSame('TwoLines', $m->getField('string')->toString("Two\r\nLines  "));
+        $this->assertSame('Two Lines', $m->getField('string')->toString("Two\r\nLines  "));
         $this->assertSame("Two\nLines", $m->getField('text')->toString("Two\r\nLines  "));
         $this->assertSame('123', $m->getField('integer')->toString(123));
         $this->assertSame('123.45', $m->getField('money')->toString(123.45));

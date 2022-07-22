@@ -141,21 +141,21 @@ class Field implements Expressionable
                 switch ($this->type) {
                     case null:
                     case 'string':
-                        $value = trim(str_replace(["\r", "\n"], '', $value)); // remove all line-ends and trim
+                        $value = trim(preg_replace('~\r?\n|\r~', ' ', $value)); // remove all line-ends and trim
 
                         break;
                     case 'text':
-                        $value = rtrim(str_replace(["\r\n", "\r"], "\n", $value)); // normalize line-ends to LF and rtrim
+                        $value = rtrim(preg_replace('~\r?\n|\r~', "\n", $value)); // normalize line-ends to LF and rtrim
 
                         break;
                     case 'boolean':
                     case 'integer':
-                        $value = preg_replace('/\s+|[,`\']/', '', $value);
+                        $value = preg_replace('~\s+|[,`\']~', '', $value);
 
                         break;
                     case 'float':
                     case 'atk4_money':
-                        $value = preg_replace('/\s+|[,`\'](?=.*\.)/', '', $value);
+                        $value = preg_replace('~\s+|[`\']|,(?=.*\.)~', '', $value);
 
                         break;
                 }
