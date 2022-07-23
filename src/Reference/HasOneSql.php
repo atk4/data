@@ -10,6 +10,50 @@ use Atk4\Data\Model;
 class HasOneSql extends HasOne
 {
     /**
+     * @param ($theirFieldIsTitle is true ? null : string) $theirFieldName
+     */
+    private function _addField(string $fieldName, bool $theirFieldIsTitle, ?string $theirFieldName, array $defaults): SqlExpressionField
+    {
+        $ourModel = $this->getOurModel(null);
+
+        $fieldExpression = $ourModel->addExpression($fieldName, array_merge([
+            'expr' => function (Model $ourModel) use ($theirFieldIsTitle, $theirFieldName) {
+                $theirModel = $ourModel->refLink($this->link);
+                if ($theirFieldIsTitle) {
+                    $theirFieldName = $theirModel->title_field;
+                }
+
+                // remove order if we just select one field from hasOne model, needed for Oracle
+                return $theirModel->action('field', [$theirFieldName])->reset('order');
+            },
+        ], $defaults, [
+            // to be able to change field, but not save it
+            // afterSave hook will take care of the rest
+            'read_only' => false,
+            'never_save' => true,
+        ]));
+
+        $this->onHookToOurModel($ourModel, Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($fieldName, $theirFieldIsTitle, $theirFieldName) {
+            // if field is changed, but reference ID field (our_field)
+            // is not changed, then update reference ID field value
+            if ($ourModel->isDirty($fieldName) && !$ourModel->isDirty($this->our_field)) {
+                $theirModel = $this->createTheirModel();
+                if ($theirFieldIsTitle) {
+                    $theirFieldName = $theirModel->title_field;
+                }
+
+                $theirModel->addCondition($theirFieldName, $ourModel->get($fieldName));
+                $ourModel->set($this->getOurFieldName(), $theirModel->loadOne()->getId());
+                if (!$theirFieldIsTitle) { // why for non-title only?
+                    $ourModel->_unset($fieldName);
+                }
+            }
+        }, [], 20);
+
+        return $fieldExpression;
+    }
+
+    /**
      * Creates expression which sub-selects a field inside related model.
      */
     public function addField(string $fieldName, string $theirFieldName = null, array $defaults = []): SqlExpressionField
@@ -28,35 +72,7 @@ class HasOneSql extends HasOne
         $defaults['caption'] ??= $refModelField->caption;
         $defaults['ui'] ??= $refModelField->ui;
 
-        $fieldExpression = $ourModel->addExpression($fieldName, array_merge(
-            [
-                'expr' => function (Model $ourModel) use ($theirFieldName) {
-                    // remove order if we just select one field from hasOne model
-                    // that is mandatory for Oracle
-                    return $ourModel->refLink($this->link)->action('field', [$theirFieldName])->reset('order');
-                },
-            ],
-            $defaults,
-            [
-                // to be able to change field, but not save it
-                // afterSave hook will take care of the rest
-                'read_only' => false,
-                'never_save' => true,
-            ]
-        ));
-
-        // Will try to execute last
-        $this->onHookToOurModel($ourModel, Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($fieldName, $theirFieldName) {
-            // if field is changed, but reference ID field (our_field)
-            // is not changed, then update reference ID field value
-            if ($ourModel->isDirty($fieldName) && !$ourModel->isDirty($this->our_field)) {
-                $theirModel = $this->createTheirModel();
-
-                $theirModel->addCondition($theirFieldName, $ourModel->get($fieldName));
-                $ourModel->set($this->getOurFieldName(), $theirModel->action('field', [$theirModel->id_field]));
-                $ourModel->_unset($fieldName);
-            }
-        }, [], 20);
+        $fieldExpression = $this->_addField($fieldName, false, $theirFieldName, $defaults);
 
         return $fieldExpression;
     }
@@ -127,8 +143,6 @@ class HasOneSql extends HasOne
      * $order->hasOne('user_id', 'User')->addTitle();
      *
      * This will add expression 'user' equal to ref('user_id')['name'];
-     *
-     * This method returns newly created expression field.
      */
     public function addTitle(array $defaults = []): SqlExpressionField
     {
@@ -136,38 +150,12 @@ class HasOneSql extends HasOne
 
         $fieldName = $defaults['field'] ?? preg_replace('~_(' . preg_quote($ourModel->id_field, '~') . '|id)$~', '', $this->link);
 
-        $fieldExpression = $ourModel->addExpression($fieldName, array_replace_recursive(
-            [
-                'expr' => function (Model $ourModel) {
-                    $theirModel = $ourModel->refLink($this->link);
+        $fieldExpression = $this->_addField($fieldName, true, null, array_merge_recursive([
+            'type' => null,
+            'ui' => ['editable' => false, 'visible' => true],
+        ], $defaults));
 
-                    return $theirModel->action('field', [$theirModel->title_field])->reset('order');
-                },
-                'type' => null,
-                'ui' => ['editable' => false, 'visible' => true],
-            ],
-            $defaults,
-            [
-                // to be able to change title field, but not save it
-                // afterSave hook will take care of the rest
-                'read_only' => false,
-                'never_save' => true,
-            ]
-        ));
-
-        // Will try to execute last
-        $this->onHookToOurModel($ourModel, Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($fieldName) {
-            // if title field is changed, but reference ID field (our_field)
-            // is not changed, then update reference ID field value
-            if ($ourModel->isDirty($fieldName) && !$ourModel->isDirty($this->our_field)) {
-                $theirModel = $this->createTheirModel();
-
-                $theirModel->addCondition($theirModel->title_field, $ourModel->get($fieldName));
-                $ourModel->set($this->getOurFieldName(), $theirModel->action('field', [$theirModel->id_field]));
-            }
-        }, [], 20);
-
-        // Set ID field as not visible in grid by default
+        // set ID field as not visible in grid by default
         if (!array_key_exists('visible', $this->getOurField()->ui)) {
             $this->getOurField()->ui['visible'] = false;
         }
