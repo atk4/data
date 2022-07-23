@@ -43,7 +43,7 @@ class HasOneSql extends HasOne
                 }
 
                 $theirModel->addCondition($theirFieldName, $ourModel->get($fieldName));
-                $ourModel->set($this->getOurFieldName(), $theirModel->action('field', [$theirModel->id_field]));
+                $ourModel->set($this->getOurFieldName(), $theirModel->loadOne()->getId());
                 if (!$theirFieldIsTitle) { // why for non-title only?
                     $ourModel->_unset($fieldName);
                 }
