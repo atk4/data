@@ -46,6 +46,7 @@
         "mvorisek/atk4-hintable": "~1.9.0"
     },
     "require-dev": {
+        "amphp/mysql": "^2.1",
         "ergebnis/composer-normalize": "^2.13",
         "friendsofphp/php-cs-fixer": "^3.0",
         "johnkary/phpunit-speedtrap": "^3.3",
