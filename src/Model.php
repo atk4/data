@@ -1875,7 +1875,7 @@ class Model implements \IteratorAggregate
     {
         try {
             return $this->getPersistence()->atomic($fx);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             if ($this->hook(self::HOOK_ROLLBACK, [$e]) === false) {
                 return false;
             }
