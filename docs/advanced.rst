@@ -652,7 +652,7 @@ Here is how to add them. First you need to create fields::
     $this->addField('client_name', ['neverPersist' => true]);
     $this->addField('category', ['neverPersist' => true]);
 
-I have declared those fields with neverPersist so they will never be used by
+I have declared those fields with `neverPersist` so they will never be used by
 persistence layer to load or save anything. Next I need a beforeSave handler::
 
     $this->onHookShort(Model::HOOK_BEFORE_SAVE, function () {

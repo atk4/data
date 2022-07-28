@@ -363,7 +363,7 @@ class LookupSqlTest extends TestCase
         $c->insert(['Canada', 'Users' => ['Alain', ['Duncan', 'is_vip' => true]]]);
 
         // Inserting Users into Latvia can also specify Friends. In this case Friend name will be looked up
-        $c->insert(['Latvia', 'Users' => ['Imants', ['Juris', 'friend_names' => 'Alain, Imants']]]);
+        $c->insert(['Latvia', 'Users' => ['Imants', ['Juris', 'friend_names' => 'Alain, Imants' TODO convert to array, we never split implicitly ]]]);
 
         // Inserting This time explicitly specify friend attributes
         $c->insert(['UK', 'Users' => [

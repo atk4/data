@@ -121,9 +121,7 @@ class HasMany extends Reference
         $field = $alias ?? $fieldName;
 
         if (isset($defaults['concat'])) {
-            $defaults['aggregate'] = $this->getOurModel(null)->dsql()->groupConcat($field, $defaults['concat']);
-            $defaults['readOnly'] = false;
-            $defaults['neverSave'] = true;
+            $defaults['aggregate'] = $this->getOurModel(null)->dsql()->groupConcat($field, $defaults['concat']); // TODO better to concat by NUL byte or very unlikely string
         }
 
         if (isset($defaults['expr'])) {

@@ -228,12 +228,12 @@ class ExpressionSqlTest extends TestCase
 
         $i = new Model($this->db, ['table' => 'invoice']);
 
-        $i->addExpression('zero_basic', ['expr' => $i->expr('0'), 'type' => 'integer', 'system' => true]);
-        $i->addExpression('zero_neverSave', ['expr' => $i->expr('0'), 'type' => 'integer', 'system' => true, 'neverSave' => true]);
-        $i->addExpression('zero_neverPersist', ['expr' => $i->expr('0'), 'type' => 'integer', 'system' => true, 'neverPersist' => true]);
+        $i->addExpression('zero_basic', ['expr' => $i->expr('0'), 'type' => 'integer']);
+        $i->addExpression('zero_neverSave', ['expr' => $i->expr('0'), 'type' => 'integer', 'neverSave' => true]);
+        $i->addExpression('zero_neverPersist', ['expr' => $i->expr('0'), 'type' => 'integer', 'neverPersist' => true]);
         $i->addExpression('one_basic', ['expr' => $i->expr('1'), 'type' => 'integer', 'system' => true]);
-        $i->addExpression('one_neverSave', ['expr' => $i->expr('1'), 'type' => 'integer', 'system' => true, 'neverSave' => true]);
-        $i->addExpression('one_neverPersist', ['expr' => $i->expr('1'), 'type' => 'integer', 'system' => true, 'neverPersist' => true]);
+        $i->addExpression('one_neverSave', ['expr' => $i->expr('1'), 'type' => 'integer', 'neverSave' => true, 'system' => true]);
+        $i->addExpression('one_neverPersist', ['expr' => $i->expr('1'), 'type' => 'integer', 'neverPersist' => true, 'system' => true]);
         $i = $i->loadOne();
 
         // normal fields

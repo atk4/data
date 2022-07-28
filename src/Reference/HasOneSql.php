@@ -30,7 +30,6 @@ class HasOneSql extends HasOne
             // to be able to change field, but not save it
             // afterSave hook will take care of the rest
             'readOnly' => false,
-            'neverSave' => true,
         ]));
 
         $this->onHookToOurModel($ourModel, Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($fieldName, $theirFieldIsTitle, $theirFieldName) {

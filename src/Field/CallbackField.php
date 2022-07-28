@@ -17,10 +17,8 @@ class CallbackField extends Field
         init as private _init;
     }
 
-    /** @var bool Expressions are always readOnly. */
-    public $readOnly = true;
-    /** @var bool Never persist this field. */
-    public $neverPersist = true;
+    public bool $neverPersist = true;
+    public bool $readOnly = true;
 
     /** @var \Closure(Model): mixed */
     public $expr;

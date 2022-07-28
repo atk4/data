@@ -6,8 +6,19 @@ namespace Atk4\Data\Model;
 
 trait FieldPropertiesTrait
 {
-    /** @var string|null Field type. Name of type registered in \Doctrine\DBAL\Types\Type. */
-    public $type;
+    /** @var string|null Persistence field name, if null, shortName is used. */
+    public ?string $actual = null;
+    /** @var bool Persistence option, if true, field is not loaded nor inserted/updated. */
+    public bool $neverPersist = false;
+    /** @var bool Persistence option, if true, field is not inserted/updated. */
+    public bool $neverSave = false;
+
+    /** @var string|null DBAL type registered in \Doctrine\DBAL\Types\Type. */
+    public ?string $type = null;
+    /** @var bool Mandatory field must not be null. The value must be set, even if it's an empty value. */
+    public bool $mandatory = false;
+    /** @var bool Required field must have non-empty value. A null value is considered empty too. */
+    public bool $required = false;
 
     /** @var array|null For several types enum can provide list of available options. ['blue', 'red']. */
     public $enum;
@@ -21,49 +32,20 @@ trait FieldPropertiesTrait
     public $values;
 
     /**
-     * If value of this field is defined by a model, this property
-     * will contain reference link.
+     * If value of this field is defined by a model, this property will contain reference link.
      */
     protected ?string $referenceLink = null;
 
-    /** @var string|null Actual field name. */
-    public $actual;
-
-    /**
-     * Is it system field?
-     * System fields will be always loaded and saved.
-     *
-     * @var bool
-     */
-    public $system = false;
+    /** @var bool Is it system field? System fields are be always loaded and saved. */
+    public bool $system = false;
 
     /** @var mixed Default value of field. */
     public $default;
 
     /**
-     * Setting this to true will never actually load or store
-     * the field in the database. It will action as normal,
-     * but will be skipped by load/update/insert.
-     *
-     * @var bool
-     */
-    public bool $neverPersist = false;
-
-    /**
-     * Setting this to true will never actually store
-     * the field in the database. It will action as normal,
-     * but will be skipped by update/insert.
-     *
-     * @var bool
-     */
-    public bool $neverSave = false;
-
-    /**
      * Is field read only?
      * Field value may not be changed. It'll never be saved.
      * For example, expressions are read only.
-     *
-     * @var bool
      */
     public bool $readOnly = false;
 
@@ -85,23 +67,4 @@ trait FieldPropertiesTrait
      * @var array
      */
     public $ui = [];
-
-    /**
-     * Mandatory field must not be null. The value must be set, even if
-     * it's an empty value.
-     *
-     * Can contain error message for UI.
-     *
-     * @var bool|string
-     */
-    public $mandatory = false;
-
-    /**
-     * Required field must have non-empty value. A null value is considered empty too.
-     *
-     * Can contain error message for UI.
-     *
-     * @var bool|string
-     */
-    public $required = false;
 }
