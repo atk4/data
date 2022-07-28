@@ -147,29 +147,21 @@ class QueryTest extends TestCase
     }
 
     /**
-     * Alias is NOT mandatory when pass table as Expression.
-     *
      * @doesNotPerformAssertions
      */
-    public function testTableException3(): void
+    public function testTableNoAliasExpressionException(): void
     {
         // $this->expectException(Exception::class); // no more
         $this->q()->table($this->q()->expr('test'));
     }
 
-    /**
-     * Alias is IS mandatory when pass table as Query.
-     */
-    public function testTableException4(): void
+    public function testTableNoAliasQueryException(): void
     {
         $this->expectException(Exception::class);
         $this->q()->table($this->q()->table('test'));
     }
 
-    /**
-     * Table aliases should be unique.
-     */
-    public function testTableException5(): void
+    public function testTableAliasNotUniqueException(): void
     {
         $this->expectException(Exception::class);
         $this->q()
@@ -177,10 +169,7 @@ class QueryTest extends TestCase
             ->table('bar', 'a');
     }
 
-    /**
-     * Table aliases should be unique.
-     */
-    public function testTableException6(): void
+    public function testTableAliasNotUniqueException2(): void
     {
         $this->expectException(Exception::class);
         $this->q()
@@ -188,10 +177,7 @@ class QueryTest extends TestCase
             ->table('bar');
     }
 
-    /**
-     * Table aliases should be unique.
-     */
-    public function testTableException7(): void
+    public function testTableAliasNotUniqueException3(): void
     {
         $this->expectException(Exception::class);
         $this->q()
@@ -199,10 +185,7 @@ class QueryTest extends TestCase
             ->table('foo');
     }
 
-    /**
-     * Table aliases should be unique.
-     */
-    public function testTableException8(): void
+    public function testTableAliasNotUniqueException4(): void
     {
         $this->expectException(Exception::class);
         $this->q()
@@ -210,10 +193,7 @@ class QueryTest extends TestCase
             ->table('foo');
     }
 
-    /**
-     * Table aliases should be unique.
-     */
-    public function testTableException9(): void
+    public function testTableAliasNotUniqueException5(): void
     {
         $this->expectException(Exception::class);
         $this->q()

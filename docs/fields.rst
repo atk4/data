@@ -135,9 +135,9 @@ Similar with $enum, but difference is that this array is a hash array so
 array keys will be used as values and array values will be used as titles
 for these values.
 
-.. php:attr:: mandatory
+.. php:attr:: nullable
 
-Set this to true if field value must not be NULL. Attempting to set field
+Set this to false if field value must NOT be NULL. Attempting to set field
 value to "NULL" will result in exception.
 Example::
 
@@ -211,11 +211,11 @@ Set the value of the field. Same as $model->set($fieldName, $value);
 
 .. php:method:: setNull
 
-Set field value to NULL. This will bypass "mandatory" and "required" checks and
+Set field value to NULL. This will bypass "nullable" and "required" checks and
 should only be used if you are planning to set a different value to the field
 before executing save().
 
-If you do not set non-null value to a mandatory field, save() will fail with
+If you do not set non-null value to a not-nullable field, save() will fail with
 exception.
 
 Example::

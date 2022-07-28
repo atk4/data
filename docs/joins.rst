@@ -57,7 +57,7 @@ Strong and Weak joins
 ---------------------
 
 When you are joining tables, then by default a strong join is used. That means
-that both records are mandatory and when adding records, they will both be added
+that both records are not-nullable and when adding records, they will both be added
 and linked.
 
 Weak join is used if you do not really want to modify the other table.

@@ -157,9 +157,8 @@ class Query extends Expression
             throw new \TypeError('Array input is no longer accepted');
         }
 
-        // if table is set as sub-Query, then alias is mandatory
         if ($table instanceof self && $alias === null) {
-            throw new Exception('If table is set as Query, then table alias is mandatory');
+            throw new Exception('If table is set as subquery, then table alias is required');
         }
 
         if (is_string($table) && $alias === null) {

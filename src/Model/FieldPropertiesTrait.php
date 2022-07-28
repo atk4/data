@@ -15,8 +15,8 @@ trait FieldPropertiesTrait
 
     /** @var string|null DBAL type registered in \Doctrine\DBAL\Types\Type. */
     public ?string $type = null;
-    /** @var bool Mandatory field must not be null. The value must be set, even if it's an empty value. */
-    public bool $mandatory = false;
+    /** @var bool Nullable field can be null, otherwise the value must be set, even if it is an empty value. */
+    public bool $nullable = true;
     /** @var bool Required field must have non-empty value. A null value is considered empty too. */
     public bool $required = false;
 
@@ -63,8 +63,6 @@ trait FieldPropertiesTrait
      *
      * By default hasOne relation ID field should be editable in forms,
      * but not visible in grids. UI should respect these flags.
-     *
-     * @var array
      */
-    public $ui = [];
+    public array $ui = [];
 }
