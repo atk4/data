@@ -88,7 +88,7 @@ class DcInvoiceLine extends Model
         $this->addField('type', ['enum' => ['invoice', 'quote']]);
         $this->addCondition('type', '=', 'invoice');
 
-        $this->addField('qty', ['type' => 'integer', 'mandatory' => true]);
+        $this->addField('qty', ['type' => 'integer', 'nullable' => false]);
         $this->addField('price', ['type' => 'atk4_money']);
         $this->addField('vat', ['type' => 'float', 'default' => 0.21]);
 

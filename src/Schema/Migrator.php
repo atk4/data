@@ -235,7 +235,7 @@ class Migrator
 
         $column = $this->table->addColumn($this->getDatabasePlatform()->quoteSingleIdentifier($fieldName), $options['type']);
 
-        if (!($options['mandatory'] ?? false) && $refType !== self::REF_TYPE_PRIMARY) {
+        if (($options['nullable'] ?? true) && $refType !== self::REF_TYPE_PRIMARY) {
             $column->setNotnull(false);
         }
 
@@ -267,7 +267,7 @@ class Migrator
         $options = [
             'type' => 'integer',
             'ref_type' => self::REF_TYPE_PRIMARY,
-            'mandatory' => true,
+            'nullable' => false,
         ];
 
         $this->field($name, $options);
@@ -299,9 +299,9 @@ class Migrator
             }
 
             $options = [
-                'type' => $refype !== self::REF_TYPE_NONE && empty($persistField->type) ? 'integer' : $persistField->type,
+                'type' => $refype !== self::REF_TYPE_NONE && $persistField->type === null ? 'integer' : $persistField->type,
                 'ref_type' => $refype,
-                'mandatory' => ($field->mandatory || $field->required) && ($persistField->mandatory || $persistField->required),
+                'nullable' => ($field->nullable && !$field->required) || ($persistField->nullable && !$persistField->required),
             ];
 
             $this->field($field->getPersistenceName(), $options);

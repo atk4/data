@@ -67,10 +67,10 @@ class FieldTest extends TestCase
         $this->assertTrue($m->compare('foo', 'zzz'));
     }
 
-    public function testMandatory1(): void
+    public function testNotNullable1(): void
     {
         $m = new Model();
-        $m->addField('foo', ['mandatory' => true]);
+        $m->addField('foo', ['nullable' => false]);
         $m = $m->createEntity();
         $m->set('foo', 'abc');
         $m->set('foo', '');
@@ -99,7 +99,7 @@ class FieldTest extends TestCase
         $m->set('foo', null);
     }
 
-    public function testMandatory2(): void
+    public function testNotNullable2(): void
     {
         $this->setDb([
             'user' => [
@@ -108,7 +108,7 @@ class FieldTest extends TestCase
         ]);
 
         $m = new Model($this->db, ['table' => 'user']);
-        $m->addField('name', ['mandatory' => true]);
+        $m->addField('name', ['nullable' => false]);
         $m->addField('surname');
         $this->expectException(Exception::class);
         $m->insert(['surname' => 'qq']);
@@ -129,7 +129,7 @@ class FieldTest extends TestCase
         $m->insert(['surname' => 'qq', 'name' => '']);
     }
 
-    public function testMandatory3(): void
+    public function testNotNullable3(): void
     {
         $this->setDb([
             'user' => [
@@ -138,14 +138,14 @@ class FieldTest extends TestCase
         ]);
 
         $m = new Model($this->db, ['table' => 'user']);
-        $m->addField('name', ['mandatory' => true]);
+        $m->addField('name', ['nullable' => false]);
         $m->addField('surname');
         $m = $m->load(1);
         $this->expectException(Exception::class);
         $m->save(['name' => null]);
     }
 
-    public function testMandatory4(): void
+    public function testNotNullable4(): void
     {
         $this->setDb([
             'user' => [
@@ -154,7 +154,7 @@ class FieldTest extends TestCase
         ]);
 
         $m = new Model($this->db, ['table' => 'user']);
-        $m->addField('name', ['mandatory' => true, 'default' => 'NoName']);
+        $m->addField('name', ['nullable' => false, 'default' => 'NoName']);
         $m->addField('surname');
         $m->insert(['surname' => 'qq']);
         $this->assertEquals([
@@ -779,7 +779,7 @@ class FieldTest extends TestCase
     {
         $m = new Model();
         $m->addField('a');
-        $m->addField('b', ['mandatory' => true]);
+        $m->addField('b', ['nullable' => false]);
         $m->addField('c', ['required' => true]);
         $m = $m->createEntity();
 
@@ -814,7 +814,7 @@ class FieldTest extends TestCase
     {
         $m = new Model();
         $m->addField('foo');
-        $m->addField('bar', ['mandatory' => true]);
+        $m->addField('bar', ['nullable' => false]);
 
         $entity = $m->createEntity();
         $entityFooField = new Model\EntityFieldPair($entity, 'foo');
