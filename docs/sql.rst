@@ -422,7 +422,7 @@ you can significantly affect the query building of an SQL model::
     class CompanyProfit extends \Atk4\Data\Model {
 
         public $companyId = null;  // inject company ID, which will act as a condition/argument
-        public $read_only  = true; // instructs rest of the app, that this model is read-only
+        public $readOnly  = true; // instructs rest of the app, that this model is read-only
 
         function init(): void {
             parent::init();
@@ -463,7 +463,7 @@ procedure inside Model::init() then set $table property to a temporary table::
 
     class NominalReport extends \Atk4\Data\Model {
         public $table = 'temp_nominal_sheet';
-        public $read_only = true; // instructs rest of the app, that this model is read-only
+        public $readOnly = true; // instructs rest of the app, that this model is read-only
 
         function init(): void {
             parent::init();
@@ -490,7 +490,7 @@ Technically you can also specify expression as a $table property of your model::
     class ClientReport extends \Atk4\Data\Model {
 
         public $table = null; // will be set in init()
-        public $read_only = true; // instructs rest of the app, that this model is read-only
+        public $readOnly = true; // instructs rest of the app, that this model is read-only
 
         function init(): void {
             parent::init();

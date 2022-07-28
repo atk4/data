@@ -280,7 +280,7 @@ class Migrator
         $this->table($model->table);
 
         foreach ($model->getFields() as $field) {
-            if ($field->never_persist || $field instanceof SqlExpressionField) {
+            if ($field->neverPersist || $field instanceof SqlExpressionField) {
                 continue;
             }
 
@@ -329,7 +329,7 @@ class Migrator
 
     protected function resolvePersistenceField(Field $field): ?Field
     {
-        if ($field->never_persist || $field instanceof SqlExpressionField) {
+        if ($field->neverPersist || $field instanceof SqlExpressionField) {
             return null;
         }
 

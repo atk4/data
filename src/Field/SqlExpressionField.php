@@ -20,8 +20,8 @@ class SqlExpressionField extends Field
     /** @var \Closure(object, Expression): (string|Expressionable)|string|Expressionable Used expression. */
     public $expr;
 
-    /** @var bool Expressions are always read_only. */
-    public $read_only = true;
+    /** @var bool Expressions are always readOnly. */
+    public $readOnly = true;
 
     /** @var string Specifies how to aggregate this. */
     public $aggregate;

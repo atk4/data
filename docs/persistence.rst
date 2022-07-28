@@ -150,7 +150,7 @@ then exception will be generated::
 
 It's not only the 'type' property, but 'enum' can also imply restrictions::
 
-    $m->addField('access_type', ['enum' => ['read_only', 'full']]);
+    $m->addField('access_type', ['enum' => ['readOnly', 'full']]);
 
     $m->set('access_type', 'full'); // OK
     $m->set('access_type', 'half-full'); // Exception
@@ -175,20 +175,20 @@ complex logic::
 Loaded/saved data are always normalized unless the field value normalization
 is intercepted a hook.
 
-Final field flag that is worth mentioning is called :php:attr:`Field::read_only`
+Final field flag that is worth mentioning is called :php:attr:`Field::readOnly`
 and if set, then value of a field may not be modified directly::
 
-    $m->addField('ref_no', ['read_only' => true]);
+    $m->addField('ref_no', ['readOnly' => true]);
     $m = $m->load(123);
 
     $m->get('ref_no'); // perfect for reading field that is populated by trigger.
 
     $m->set('ref_no', 'foo'); // exception
 
-Note that `read_only` can still have a default value::
+Note that `readOnly` can still have a default value::
 
     $m->addField('created', [
-        'read_only' => true,
+        'readOnly' => true,
         'type' => 'datetime',
         'default' => new DateTime(),
     ]);
@@ -259,7 +259,7 @@ Your init() method for a Field_Currency might look like this::
     function init(): void {
         parent::init();
 
-        $this->never_persist = true;
+        $this->neverPersist = true;
 
         $f = $this->shortName; // balance
 
@@ -281,7 +281,7 @@ There are more work to be done until Field_Currency could be a valid field, but
 I wanted to draw your attention to the use of field flags:
 
  - system flag is used to hide `balance_amount` and `balance_currency_id` in UI.
- - never_persist flag is used because there are no `balance` column in persistence.
+ - neverPersist flag is used because there are no `balance` column in persistence.
 
 
 Dates and Time

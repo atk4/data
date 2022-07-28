@@ -229,23 +229,23 @@ class ExpressionSqlTest extends TestCase
         $i = new Model($this->db, ['table' => 'invoice']);
 
         $i->addExpression('zero_basic', ['expr' => $i->expr('0'), 'type' => 'integer', 'system' => true]);
-        $i->addExpression('zero_never_save', ['expr' => $i->expr('0'), 'type' => 'integer', 'system' => true, 'never_save' => true]);
-        $i->addExpression('zero_never_persist', ['expr' => $i->expr('0'), 'type' => 'integer', 'system' => true, 'never_persist' => true]);
+        $i->addExpression('zero_neverSave', ['expr' => $i->expr('0'), 'type' => 'integer', 'system' => true, 'neverSave' => true]);
+        $i->addExpression('zero_neverPersist', ['expr' => $i->expr('0'), 'type' => 'integer', 'system' => true, 'neverPersist' => true]);
         $i->addExpression('one_basic', ['expr' => $i->expr('1'), 'type' => 'integer', 'system' => true]);
-        $i->addExpression('one_never_save', ['expr' => $i->expr('1'), 'type' => 'integer', 'system' => true, 'never_save' => true]);
-        $i->addExpression('one_never_persist', ['expr' => $i->expr('1'), 'type' => 'integer', 'system' => true, 'never_persist' => true]);
+        $i->addExpression('one_neverSave', ['expr' => $i->expr('1'), 'type' => 'integer', 'system' => true, 'neverSave' => true]);
+        $i->addExpression('one_neverPersist', ['expr' => $i->expr('1'), 'type' => 'integer', 'system' => true, 'neverPersist' => true]);
         $i = $i->loadOne();
 
         // normal fields
         $this->assertSame(0, $i->get('zero_basic'));
         $this->assertSame(1, $i->get('one_basic'));
 
-        // never_save - are loaded from DB, but not saved
-        $this->assertSame(0, $i->get('zero_never_save'));
-        $this->assertSame(1, $i->get('one_never_save'));
+        // neverSave - are loaded from DB, but not saved
+        $this->assertSame(0, $i->get('zero_neverSave'));
+        $this->assertSame(1, $i->get('one_neverSave'));
 
-        // never_persist - are not loaded from DB and not saved - as result expressions will not be executed
-        $this->assertNull($i->get('zero_never_persist'));
-        $this->assertNull($i->get('one_never_persist'));
+        // neverPersist - are not loaded from DB and not saved - as result expressions will not be executed
+        $this->assertNull($i->get('zero_neverPersist'));
+        $this->assertNull($i->get('one_neverPersist'));
     }
 }

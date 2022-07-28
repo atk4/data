@@ -43,11 +43,11 @@ trait FieldPropertiesTrait
     /**
      * Setting this to true will never actually load or store
      * the field in the database. It will action as normal,
-     * but will be skipped by load/iterate/update/insert.
+     * but will be skipped by load/update/insert.
      *
      * @var bool
      */
-    public $never_persist = false;
+    public bool $neverPersist = false;
 
     /**
      * Setting this to true will never actually store
@@ -56,7 +56,7 @@ trait FieldPropertiesTrait
      *
      * @var bool
      */
-    public $never_save = false;
+    public bool $neverSave = false;
 
     /**
      * Is field read only?
@@ -65,7 +65,7 @@ trait FieldPropertiesTrait
      *
      * @var bool
      */
-    public $read_only = false;
+    public bool $readOnly = false;
 
     /**
      * Defines a label to go along with this field. Use getCaption() which

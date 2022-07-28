@@ -164,7 +164,7 @@ Example::
     $model->set('age', null); // exception
 
 
-.. php:attr:: read_only
+.. php:attr:: readOnly
 
 Modifying field that is read-only through set() methods (or array access) will
 result in exception. :php:class:`SqlExpressionField` is read-only by default.
@@ -187,16 +187,16 @@ or grids (see :php:meth:`Field::isVisible`, :php:meth:`Field::isEditable`).
 
 Adding condition on a field will also make it system.
 
-.. php:attr:: never_persist
+.. php:attr:: neverPersist
 
 Field will never be loaded or saved into persistence. You can use this flag
 for fields that physically are not located in the database, yet you want to see
 this field in beforeSave hooks.
 
-.. php:attr:: never_save
+.. php:attr:: neverSave
 
 This field will be loaded normally, but will not be saved in a database.
-Unlike "read_only" which has a similar effect, you can still change the value
+Unlike "readOnly" which has a similar effect, you can still change the value
 of this field. It will simply be ignored on save. You can create some logic in
 beforeSave hook to read this value.
 
@@ -253,7 +253,7 @@ forms by default.
 
 .. php:method:: isVisible
 
-Returns true if UI should render this field in Grid and other read_only display
+Returns true if UI should render this field in Grid and other readOnly display
 views by default.
 
 .. php:method:: isHidden

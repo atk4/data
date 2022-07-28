@@ -54,7 +54,7 @@ class AggregateModel extends Model
         $this->table = $baseModel;
 
         // this model should always be read-only and does not have ID field
-        $this->read_only = true;
+        $this->readOnly = true;
         $this->id_field = null;
 
         parent::__construct($baseModel->getPersistence(), $defaults);

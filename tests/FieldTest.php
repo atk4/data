@@ -193,7 +193,7 @@ class FieldTest extends TestCase
     public function testReadOnly1(): void
     {
         $m = new Model();
-        $m->addField('foo', ['read_only' => true]);
+        $m->addField('foo', ['readOnly' => true]);
         $m = $m->createEntity();
         $this->expectException(Exception::class);
         $m->set('foo', 'bar');
@@ -202,7 +202,7 @@ class FieldTest extends TestCase
     public function testReadOnly2(): void
     {
         $m = new Model();
-        $m->addField('foo', ['read_only' => true, 'default' => 'abc']);
+        $m->addField('foo', ['readOnly' => true, 'default' => 'abc']);
         $m = $m->createEntity();
         $m->set('foo', 'abc');
         $this->assertSame('abc', $m->get('foo'));
@@ -317,8 +317,8 @@ class FieldTest extends TestCase
         ]);
 
         $m = new Model($this->db, ['table' => 'item']);
-        $m->addField('name', ['never_persist' => true]);
-        $m->addField('surname', ['never_save' => true]);
+        $m->addField('name', ['neverPersist' => true]);
+        $m->addField('surname', ['neverSave' => true]);
         $m = $m->load(1);
 
         $this->assertNull($m->get('name'));
@@ -331,7 +331,7 @@ class FieldTest extends TestCase
 
         $m->reload();
         $this->assertSame('Smith', $m->get('surname'));
-        $m->getField('surname')->never_save = false;
+        $m->getField('surname')->neverSave = false;
         $m->set('surname', 'Stalker');
         $m->save();
         $dbData['item'][1]['surname'] = 'Stalker';

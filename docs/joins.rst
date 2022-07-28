@@ -75,9 +75,9 @@ After this you will have the following fields in your model:
 
 - username
 - country_id
-- country_code [read_only]
-- country_name [read_only]
-- default_currency [read_only]
+- country_code [readOnly]
+- country_name [readOnly]
+- default_currency [readOnly]
 
 
 Join relationship definitions
