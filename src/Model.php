@@ -178,13 +178,13 @@ class Model implements \IteratorAggregate
     private $dirtyAfterReload = [];
 
     /**
-     * Setting model as read_only will protect you from accidentally
+     * Setting model as readOnly will protect you from accidentally
      * updating the model. This property is intended for UI and other code
      * detecting read-only models and acting accordingly.
      *
      * @var bool
      */
-    public $read_only = false;
+    public $readOnly = false;
 
     /**
      * While in most cases your id field will be called 'id', sometimes
@@ -426,7 +426,7 @@ class Model implements \IteratorAggregate
 
         $this->initEntityIdHooks();
 
-        if ($this->read_only) {
+        if ($this->readOnly) {
             return; // don't declare user action for read-only model
         }
 
@@ -788,7 +788,7 @@ class Model implements \IteratorAggregate
             return $this;
         }
 
-        if ($f->read_only) {
+        if ($f->readOnly) {
             throw (new Exception('Attempting to change read-only field'))
                 ->addMoreInfo('field', $field)
                 ->addMoreInfo('model', $this);
@@ -1531,7 +1531,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertHasPersistence();
 
-        if ($this->read_only) {
+        if ($this->readOnly) {
             throw new Exception('Model is read-only and cannot be saved');
         }
 
@@ -1553,7 +1553,7 @@ class Model implements \IteratorAggregate
                 $dirtyJoin = false;
                 foreach ($dirtyRef as $name => $ignore) {
                     $field = $this->getField($name);
-                    if ($field->read_only || $field->never_persist || $field->never_save) {
+                    if ($field->readOnly || $field->neverPersist || $field->neverSave) {
                         continue;
                     }
 
@@ -1583,7 +1583,7 @@ class Model implements \IteratorAggregate
                 $data = [];
                 foreach ($this->get() as $name => $value) {
                     $field = $this->getField($name);
-                    if ($field->read_only || $field->never_persist || $field->never_save) {
+                    if ($field->readOnly || $field->neverPersist || $field->neverSave) {
                         continue;
                     }
 
@@ -1724,7 +1724,7 @@ class Model implements \IteratorAggregate
                 // Add requested fields first
                 foreach ($this->onlyFields as $field) {
                     $fObject = $this->getField($field);
-                    if ($fObject->never_persist) {
+                    if ($fObject->neverPersist) {
                         continue;
                     }
                     $fields[$field] = true;
@@ -1732,7 +1732,7 @@ class Model implements \IteratorAggregate
 
                 // now add system fields, if they were not added
                 foreach ($this->getFields() as $field => $fObject) {
-                    if ($fObject->never_persist) {
+                    if ($fObject->neverPersist) {
                         continue;
                     }
                     if ($fObject->system && !isset($fields[$field])) {
@@ -1744,7 +1744,7 @@ class Model implements \IteratorAggregate
             } else {
                 // Add all model fields
                 foreach ($this->getFields() as $field => $fObject) {
-                    if ($fObject->never_persist) {
+                    if ($fObject->neverPersist) {
                         continue;
                     }
                     $fields[] = $field;
@@ -1848,7 +1848,7 @@ class Model implements \IteratorAggregate
 
         $this->assertIsLoaded();
 
-        if ($this->read_only) {
+        if ($this->readOnly) {
             throw new Exception('Model is read-only and cannot be deleted');
         }
 
@@ -1875,7 +1875,7 @@ class Model implements \IteratorAggregate
     {
         try {
             return $this->getPersistence()->atomic($fx);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             if ($this->hook(self::HOOK_ROLLBACK, [$e]) === false) {
                 return false;
             }

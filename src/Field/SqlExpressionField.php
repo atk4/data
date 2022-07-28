@@ -17,11 +17,11 @@ class SqlExpressionField extends Field
         init as private _init;
     }
 
+    public bool $neverSave = true;
+    public bool $readOnly = true;
+
     /** @var \Closure(object, Expression): (string|Expressionable)|string|Expressionable Used expression. */
     public $expr;
-
-    /** @var bool Expressions are always read_only. */
-    public $read_only = true;
 
     /** @var string Specifies how to aggregate this. */
     public $aggregate;

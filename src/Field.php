@@ -454,7 +454,7 @@ class Field implements Expressionable
      */
     public function isEditable(): bool
     {
-        return $this->ui['editable'] ?? !$this->read_only && !$this->never_persist && !$this->system;
+        return $this->ui['editable'] ?? !$this->readOnly && !$this->neverPersist && !$this->system;
     }
 
     /**
@@ -507,7 +507,7 @@ class Field implements Expressionable
         ];
 
         foreach ([
-            'actual', 'system', 'never_persist', 'never_save', 'read_only', 'ui', 'joinName',
+            'actual', 'neverPersist', 'neverSave', 'system', 'readOnly', 'ui', 'joinName',
         ] as $key) {
             if ($this->{$key} !== null) {
                 $arr[$key] = $this->{$key};

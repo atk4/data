@@ -106,7 +106,7 @@ When you declare a model Field you can also store some persistence-related meta-
    $model->addField('date_of_birth', ['type' => 'date', 'persistence' => ['format' => 'Ymd']]);
 
    // declare field which is not saved
-   $model->addField('secret', ['never_persist' => true]);
+   $model->addField('secret', ['neverPersist' => true]);
 
    // rellocate into a different field
    $model->addField('old_field', ['actual' => 'new_field']);
@@ -247,7 +247,7 @@ Read-only Fields
 ^^^^^^^^^^^^^^^^
 Although you may make any field read-only::
 
-   $this->addField('name', ['read_only' => true]);
+   $this->addField('name', ['readOnly' => true]);
 
 There are two methods for adding dynamically calculated fields.
 

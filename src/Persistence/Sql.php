@@ -248,7 +248,7 @@ class Sql extends Persistence
             // Add requested fields first
             foreach ($model->onlyFields as $fieldName) {
                 $field = $model->getField($fieldName);
-                if ($field->never_persist) {
+                if ($field->neverPersist) {
                     continue;
                 }
                 $this->initField($query, $field);
@@ -257,7 +257,7 @@ class Sql extends Persistence
 
             // now add system fields, if they were not added
             foreach ($model->getFields() as $fieldName => $field) {
-                if ($field->never_persist) {
+                if ($field->neverPersist) {
                     continue;
                 }
                 if ($field->system && !isset($addedFields[$fieldName])) {
@@ -266,7 +266,7 @@ class Sql extends Persistence
             }
         } else {
             foreach ($model->getFields() as $fieldName => $field) {
-                if ($field->never_persist) {
+                if ($field->neverPersist) {
                     continue;
                 }
                 $this->initField($query, $field);

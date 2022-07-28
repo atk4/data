@@ -346,7 +346,7 @@ abstract class Connection
             $this->commit();
 
             return $res;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->rollBack();
 
             throw $e;

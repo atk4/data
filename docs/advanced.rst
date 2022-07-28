@@ -648,11 +648,11 @@ to make things easier::
 
 Here is how to add them. First you need to create fields::
 
-    $this->addField('client_code', ['never_persist' => true]);
-    $this->addField('client_name', ['never_persist' => true]);
-    $this->addField('category', ['never_persist' => true]);
+    $this->addField('client_code', ['neverPersist' => true]);
+    $this->addField('client_name', ['neverPersist' => true]);
+    $this->addField('category', ['neverPersist' => true]);
 
-I have declared those fields with never_persist so they will never be used by
+I have declared those fields with `neverPersist` so they will never be used by
 persistence layer to load or save anything. Next I need a beforeSave handler::
 
     $this->onHookShort(Model::HOOK_BEFORE_SAVE, function () {
@@ -734,12 +734,12 @@ information. Here is usage example::
     ]);
 
 Not only 'insert' but 'set' and 'save' should be able to use those fields for
-'payment' and 'lines', so we need to first define those as 'never_persist'.
+'payment' and 'lines', so we need to first define those as 'neverPersist'.
 If you curious about client lookup by-name, I have explained it in the previous
 section. Add this into your Invoice Model::
 
-    $this->addField('payment', ['never_persist' => true]);
-    $this->addField('lines', ['never_persist' => true]);
+    $this->addField('payment', ['neverPersist' => true]);
+    $this->addField('lines', ['neverPersist' => true]);
 
 Next both payment and lines need to be added after invoice is actually created,
 so::
