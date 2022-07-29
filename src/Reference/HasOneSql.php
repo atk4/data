@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Reference;
 
+use Atk4\Data\Exception;
 use Atk4\Data\Field\SqlExpressionField;
 use Atk4\Data\Model;
 
@@ -27,23 +28,40 @@ class HasOneSql extends HasOne
                 return $theirModel->action('field', [$theirFieldName])->reset('order');
             },
         ], $defaults, [
-            // to be able to change field, but not save it
-            // afterSave hook will take care of the rest
+            // allow to set our field value by an imported foreign field, but only when
+            // the our field value is null
             'readOnly' => false,
         ]));
 
         $this->onHookToOurModel($ourModel, Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($fieldName, $theirFieldIsTitle, $theirFieldName) {
-            // if field is changed, but reference ID field (our_field)
-            // is not changed, then update reference ID field value
-            if ($ourModel->isDirty($fieldName) && !$ourModel->isDirty($this->our_field)) {
+            // fix UI persistence normalization of empty string to null
+            if ($ourModel->isDirty($fieldName) && $ourModel->get($fieldName) === '' && $ourModel->getField($fieldName)->nullable) {
+                $ourModel->set($fieldName, null);
+            }
+
+            if ($ourModel->isDirty($fieldName)) {
                 $theirModel = $this->createTheirModel();
                 if ($theirFieldIsTitle) {
                     $theirFieldName = $theirModel->title_field;
                 }
 
-                $theirModel->addCondition($theirFieldName, $ourModel->get($fieldName));
-                $ourModel->set($this->getOurFieldName(), $theirModel->loadOne()->getId());
-                if (!$theirFieldIsTitle) { // why for non-title only?
+                // when our field is not null or dirty too, update nothing, but check if the imported
+                // field was changed to expected value implied by the relation
+                if ($ourModel->isDirty($this->getOurFieldName()) || $ourModel->get($this->getOurFieldName()) !== null) {
+                    $importedFieldValue = $ourModel->get($fieldName);
+                    $expectedTheirEntity = $theirModel->loadBy($this->getTheirFieldName($theirModel), $ourModel->get($this->getOurFieldName()));
+                    if (!$expectedTheirEntity->compare($theirFieldName, $importedFieldValue)) {
+                        throw (new Exception('Imported field was changed to an unexpected value'))
+                            ->addMoreInfo('ourFieldName', $this->getOurFieldName())
+                            ->addMoreInfo('theirFieldName', $this->getTheirFieldName($theirModel))
+                            ->addMoreInfo('importedFieldName', $fieldName)
+                            ->addMoreInfo('sourceFieldName', $theirFieldName)
+                            ->addMoreInfo('importedFieldValue', $importedFieldValue)
+                            ->addMoreInfo('sourceFieldValue', $expectedTheirEntity->get($theirFieldName));
+                    }
+                } else {
+                    $newTheirEntity = $theirModel->loadBy($theirFieldName, $ourModel->get($fieldName));
+                    $ourModel->set($this->getOurFieldName(), $newTheirEntity->get($this->getTheirFieldName($theirModel)));
                     $ourModel->_unset($fieldName);
                 }
             }
@@ -71,7 +89,9 @@ class HasOneSql extends HasOne
         $defaults['caption'] ??= $refModelField->caption;
         $defaults['ui'] ??= $refModelField->ui;
 
-        $fieldExpression = $this->_addField($fieldName, false, $theirFieldName, $defaults);
+        $fieldExpression = $this->_addField($fieldName, false, $theirFieldName, array_merge_recursive([
+            'ui' => ['editable' => false], // fix https://github.com/atk4/data/issues/929
+        ], $defaults));
 
         return $fieldExpression;
     }

@@ -601,12 +601,15 @@ class ReferenceSqlTest extends TestCase
 
         // change order user by changing title_field value
         $o = $o->load(1);
-        $o->set('user', 'Peter');
         $this->assertEquals(1, $o->get('user_id'));
+        $o->set('user_id', null);
         $o->save();
-        $this->assertEquals(2, $o->get('user_id')); // user_id changed to Peters ID
+        $o->set('user', 'Peter');
+        $this->assertNull($o->get('user_id'));
+        $o->save();
+        $this->assertEquals(2, $o->get('user_id'));
         $o->reload();
-        $this->assertEquals(2, $o->get('user_id')); // and it's really saved like that
+        $this->assertEquals(2, $o->get('user_id'));
 
         $this->dropCreatedDb();
         $this->setDb($dbData);
@@ -618,12 +621,15 @@ class ReferenceSqlTest extends TestCase
 
         // change order user by changing title_field value
         $o = $o->load(1);
-        $o->set('user', 'Foo');
         $this->assertEquals(1, $o->get('user_id'));
+        $o->set('user_id', null);
         $o->save();
-        $this->assertEquals(2, $o->get('user_id')); // user_id changed to Peters ID
+        $o->set('user', 'Foo');
+        $this->assertNull($o->get('user_id'));
+        $o->save();
+        $this->assertEquals(2, $o->get('user_id'));
         $o->reload();
-        $this->assertEquals(2, $o->get('user_id')); // and it's really saved like that
+        $this->assertEquals(2, $o->get('user_id'));
 
         $this->dropCreatedDb();
         $this->setDb($dbData);
@@ -635,12 +641,15 @@ class ReferenceSqlTest extends TestCase
 
         // change order user by changing reference field value
         $o = $o->load(1);
-        $o->set('my_user', 'Foo');
         $this->assertEquals(1, $o->get('user_id'));
+        $o->set('user_id', null);
         $o->save();
-        $this->assertEquals(2, $o->get('user_id')); // user_id changed to Peters ID
+        $o->set('my_user', 'Foo');
+        $this->assertNull($o->get('user_id'));
+        $o->save();
+        $this->assertEquals(2, $o->get('user_id'));
         $o->reload();
-        $this->assertEquals(2, $o->get('user_id')); // and it's really saved like that
+        $this->assertEquals(2, $o->get('user_id'));
 
         $this->dropCreatedDb();
         $this->setDb($dbData);
@@ -650,15 +659,33 @@ class ReferenceSqlTest extends TestCase
         $o = (new Model($this->db, ['table' => 'order']));
         $o->hasOne('my_user', ['model' => $u, 'our_field' => 'user_id'])->addTitle();
 
-        // change order user by changing ref field value
+        // change order user by changing ref field and title_field value - same
         $o = $o->load(1);
-        $o->set('my_user', 'Foo'); // user_id = 2
-        $o->set('user_id', 3);     // user_id = 3 (this will take precedence)
-        $this->assertEquals(3, $o->get('user_id'));
+        $this->assertEquals(1, $o->get('user_id'));
+        $o->set('user_id', null);
         $o->save();
-        $this->assertEquals(3, $o->get('user_id')); // user_id changed to Goofy ID
+        $o->set('my_user', 'Foo'); // user_id = 2
+        $o->set('user_id', 2);
+        $this->assertEquals(2, $o->get('user_id'));
+        $o->save();
+        $this->assertEquals(2, $o->get('user_id'));
         $o->reload();
-        $this->assertEquals(3, $o->get('user_id')); // and it's really saved like that
+        $this->assertEquals(2, $o->get('user_id'));
+
+        $this->dropCreatedDb();
+        $this->setDb($dbData);
+
+        // change order user by changing ref field and title_field value - mismatched
+        $o = $o->getModel()->load(1);
+        $this->assertEquals(1, $o->get('user_id'));
+        $o->set('user_id', null);
+        $o->save();
+        $o->set('my_user', 'Foo'); // user_id = 2
+        $o->set('user_id', 3);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Imported field was changed to an unexpected value');
+        $o->save();
     }
 
     /**

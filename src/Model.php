@@ -466,10 +466,6 @@ class Model implements \IteratorAggregate
 
         $this->onHookShort(self::HOOK_BEFORE_LOAD, $fx, [], 10);
         $this->onHookShort(self::HOOK_AFTER_LOAD, $fx, [], -10);
-        $this->onHookShort(self::HOOK_BEFORE_INSERT, $fx, [], 10);
-        $this->onHookShort(self::HOOK_AFTER_INSERT, $fx, [], -10);
-        $this->onHookShort(self::HOOK_BEFORE_UPDATE, $fx, [], 10);
-        $this->onHookShort(self::HOOK_AFTER_UPDATE, $fx, [], -10);
         $this->onHookShort(self::HOOK_BEFORE_DELETE, $fx, [], 10);
         $this->onHookShort(self::HOOK_AFTER_DELETE, $fx, [], -10);
         $this->onHookShort(self::HOOK_BEFORE_SAVE, $fx, [], 10);
