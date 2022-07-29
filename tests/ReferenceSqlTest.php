@@ -608,8 +608,6 @@ class ReferenceSqlTest extends TestCase
         $this->assertNull($o->get('user_id'));
         $o->save();
         $this->assertEquals(2, $o->get('user_id'));
-        $o->reload();
-        $this->assertEquals(2, $o->get('user_id'));
 
         $this->dropCreatedDb();
         $this->setDb($dbData);
@@ -627,8 +625,6 @@ class ReferenceSqlTest extends TestCase
         $o->set('user', 'Foo');
         $this->assertNull($o->get('user_id'));
         $o->save();
-        $this->assertEquals(2, $o->get('user_id'));
-        $o->reload();
         $this->assertEquals(2, $o->get('user_id'));
 
         $this->dropCreatedDb();
@@ -648,8 +644,6 @@ class ReferenceSqlTest extends TestCase
         $this->assertNull($o->get('user_id'));
         $o->save();
         $this->assertEquals(2, $o->get('user_id'));
-        $o->reload();
-        $this->assertEquals(2, $o->get('user_id'));
 
         $this->dropCreatedDb();
         $this->setDb($dbData);
@@ -668,8 +662,6 @@ class ReferenceSqlTest extends TestCase
         $o->set('user_id', 2);
         $this->assertEquals(2, $o->get('user_id'));
         $o->save();
-        $this->assertEquals(2, $o->get('user_id'));
-        $o->reload();
         $this->assertEquals(2, $o->get('user_id'));
 
         $this->dropCreatedDb();

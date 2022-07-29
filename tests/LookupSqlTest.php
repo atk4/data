@@ -298,6 +298,10 @@ class LookupSqlTest extends TestCase
 
         $u = new LUser($this->db);
 
+        $this->assertTrue($u->getField('country_id')->isEditable());
+        $this->assertFalse($u->getField('country')->isEditable());
+        $this->assertFalse($u->getField('country_code')->isEditable());
+
         $u->import([
             ['name' => 'Alain', 'country_code' => 'CA'],
             ['name' => 'Imants', 'country_code' => 'LV'],

@@ -85,7 +85,7 @@ class HasOneSql extends HasOne
         $defaults['ui'] ??= $refModelField->ui;
 
         $fieldExpression = $this->_addField($fieldName, false, $theirFieldName, array_merge_recursive([
-            'ui' => ['editable' => false], // fix https://github.com/atk4/data/issues/929
+            'ui' => ['editable' => false],
         ], $defaults));
 
         return $fieldExpression;
