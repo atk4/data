@@ -34,11 +34,6 @@ class HasOneSql extends HasOne
         ]));
 
         $this->onHookToOurModel($ourModel, Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($fieldName, $theirFieldIsTitle, $theirFieldName) {
-            // fix UI persistence normalization of empty string to null
-            if ($ourModel->isDirty($fieldName) && $ourModel->get($fieldName) === '' && $ourModel->getField($fieldName)->nullable) {
-                $ourModel->set($fieldName, null);
-            }
-
             if ($ourModel->isDirty($fieldName)) {
                 $theirModel = $this->createTheirModel();
                 if ($theirFieldIsTitle) {
