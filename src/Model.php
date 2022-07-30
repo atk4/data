@@ -1627,21 +1627,14 @@ class Model implements \IteratorAggregate
 
     protected function _insert(array $row): void
     {
-        // Find any row values that do not correspond to fields, and they may correspond to
-        // references instead
+        // find any row values that do not correspond to fields, they may correspond to references instead
         $refs = [];
         foreach ($row as $key => $value) {
-            // and we only support array values
-            if (!is_array($value)) {
+            if (!is_array($value) || !$this->hasReference($key)) {
                 continue;
             }
 
-            // and reference must exist with same name
-            if (!$this->hasReference($key)) {
-                continue;
-            }
-
-            // Then we move value for later
+            // then we move value for later
             $refs[$key] = $value;
             unset($row[$key]);
         }
@@ -1655,11 +1648,6 @@ class Model implements \IteratorAggregate
             $this->getModel()->reloadAfterSave = $reloadAfterSaveBackup;
         }
 
-        // store id value
-        if ($this->id_field) {
-            $this->getDataRef()[$this->id_field] = $this->getId();
-        }
-
         // if there was referenced data, then import it
         foreach ($refs as $key => $value) {
             $this->ref($key)->import($value);
@@ -1667,26 +1655,50 @@ class Model implements \IteratorAggregate
     }
 
     /**
+     * @param array<string, mixed> $row
+     *
      * @return mixed
      */
     public function insert(array $row)
     {
         $entity = $this->createEntity();
-        $entity->_insert($row);
+
+        $hasArrayValue = false;
+        foreach ($row as $v) {
+            if (is_array($v)) {
+                $hasArrayValue = false;
+
+                break;
+            }
+        }
+
+        if (!$hasArrayValue) {
+            $entity->_insert($row);
+        } else {
+            $this->atomic(function () use ($entity, $row) {
+                $entity->_insert($row);
+            });
+        }
 
         return $this->id_field ? $entity->getId() : null;
     }
 
     /**
+     * @param array<int, array<string, mixed>> $rows
+     *
      * @return $this
      */
     public function import(array $rows)
     {
-        $this->atomic(function () use ($rows) {
-            foreach ($rows as $row) {
-                $this->insert($row);
-            }
-        });
+        if (count($rows) === 1) {
+            $this->insert(reset($rows));
+        } elseif (count($rows) !== 0) {
+            $this->atomic(function () use ($rows) {
+                foreach ($rows as $row) {
+                    $this->insert($row);
+                }
+            });
+        }
 
         return $this;
     }
