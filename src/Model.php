@@ -1666,7 +1666,7 @@ class Model implements \IteratorAggregate
         $hasArrayValue = false;
         foreach ($row as $v) {
             if (is_array($v)) {
-                $hasArrayValue = false;
+                $hasArrayValue = true;
 
                 break;
             }
