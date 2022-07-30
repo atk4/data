@@ -234,13 +234,8 @@ class Model implements \IteratorAggregate
      * This is to ensure that any SQL-based calculation are executed and
      * updated correctly after you have performed any modifications to
      * the fields.
-     *
-     * You can set this property to "true" or "false" if you want to explicitly
-     * enable or disable reloading.
-     *
-     * @var bool|null
      */
-    public $reloadAfterSave;
+    public bool $reloadAfterSave = true;
 
     /**
      * If this model is "contained into" another entity by using ContainsOne
@@ -1605,7 +1600,7 @@ class Model implements \IteratorAggregate
                     $this->setId($id);
                     $this->hook(self::HOOK_AFTER_INSERT);
 
-                    if ($this->reloadAfterSave !== false) {
+                    if ($this->reloadAfterSave) {
                         $d = $dirtyRef;
                         $dirtyRef = [];
                         $this->reload();

@@ -116,8 +116,8 @@ Note that altering data via $m->set() does not work in beforeInsert and beforeUp
 hooks, only by altering $data.
 
 afterInsert will receive either $id of new record or null if model couldn't
-provide ID field. Also, afterInsert is actually called before
-:php:meth:`Model::reloadAfterSave` reloading is done.
+provide ID field. Also, afterInsert is actually called before reloading is done
+(when :php:attr:`Model::reloadAfterSave` is set).
 
 For some examples, see :ref:`soft_delete`
 
