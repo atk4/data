@@ -6,7 +6,6 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\SqlitePlatform;
 
 class ConditionSqlTest extends TestCase
 {
@@ -33,13 +32,6 @@ class ConditionSqlTest extends TestCase
         $this->assertSame('John', $mm2->get('name'));
         $mm2 = $mm->tryLoad(2);
         $this->assertNull($mm2);
-
-        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
-            $this->assertSame(
-                'select "id", "name", "gender" from "user" where "gender" = :a',
-                $mm->action('select')->render()[0]
-            );
-        }
 
         $mm = clone $m;
         $mm->addCondition('id', 2);

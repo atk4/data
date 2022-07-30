@@ -587,10 +587,10 @@ class RandomTest extends TestCase
         $this->assertSame($render, $selectAction->render());
         $this->assertSame($render, $doc->action('select')->render());
 
-        $userTableQuoted = '"' . str_replace('.', '"."', $userSchema) . '"."user"';
-        $docTableQuoted = '"' . str_replace('.', '"."', $docSchema) . '"."doc"';
+        $userTableQuoted = '`' . str_replace('.', '`.`', $userSchema) . '`.`user`';
+        $docTableQuoted = '`' . str_replace('.', '`.`', $docSchema) . '`.`doc`';
         $this->assertSameSql(
-            'select "id", "name", "user_id", (select "name" from ' . $userTableQuoted . ' "_u_e8701ad48ba0" where "id" = ' . $docTableQuoted . '."user_id") "user" from ' . $docTableQuoted . ' where (select "name" from ' . $userTableQuoted . ' "_u_e8701ad48ba0" where "id" = ' . $docTableQuoted . '."user_id") = :a',
+            'select `id`, `name`, `user_id`, (select `name` from ' . $userTableQuoted . ' `_u_e8701ad48ba0` where `id` = ' . $docTableQuoted . '.`user_id`) `user` from ' . $docTableQuoted . ' where (select `name` from ' . $userTableQuoted . ' `_u_e8701ad48ba0` where `id` = ' . $docTableQuoted . '.`user_id`) = :a',
             $render[0]
         );
 

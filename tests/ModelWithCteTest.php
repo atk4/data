@@ -41,8 +41,8 @@ class ModelWithCteTest extends TestCase
         $jInvoice->addField('invoiced', ['type' => 'integer', 'actual' => 'net']); // add field from joined cursor
 
         $this->assertSameSql(
-            'with "i" as (select "id", "net", "user_id" from "invoice" where "net" > :a)' . "\n"
-                . 'select "user"."id", "user"."name", "user"."salary", "_i"."net" "invoiced" from "user" inner join "i" "_i" on "_i"."user_id" = "user"."id"',
+            'with `i` as (select `id`, `net`, `user_id` from `invoice` where `net` > :a)' . "\n"
+                . 'select `user`.`id`, `user`.`name`, `user`.`salary`, `_i`.`net` `invoiced` from `user` inner join `i` `_i` on `_i`.`user_id` = `user`.`id`',
             $m->action('select')->render()[0]
         );
 

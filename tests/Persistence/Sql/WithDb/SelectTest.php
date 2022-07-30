@@ -254,7 +254,7 @@ class SelectTest extends TestCase
             ], $q->render());
         } else {
             $this->assertSame([
-                'select "age", group_concat("name", :a) from "people" group by "age"',
+                'select `age`, group_concat(`name`, :a) from `people` group by `age`',
                 [':a' => ','],
             ], $q->render());
         }
@@ -289,7 +289,7 @@ class SelectTest extends TestCase
             ], $q->render());
         } else {
             $this->assertSame([
-                'select exists (select * from "contacts" where "first_name" = :a)',
+                'select exists (select * from `contacts` where `first_name` = :a)',
                 [':a' => 'John'],
             ], $q->render());
         }
@@ -316,7 +316,7 @@ class SelectTest extends TestCase
 
             $this->assertSame($expectedErrorCode, $e->getCode());
             $this->assertSameSql(
-                preg_replace('~\s+~', '', 'select "non_existing_field" from "non_existing_table"'),
+                preg_replace('~\s+~', '', 'select `non_existing_field` from `non_existing_table`'),
                 preg_replace('~\s+~', '', $e->getDebugQuery())
             );
 

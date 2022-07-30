@@ -12,6 +12,7 @@ use Doctrine\DBAL\Events;
 
 class Connection extends BaseConnection
 {
+    protected string $expressionClass = Expression::class;
     protected string $queryClass = Query::class;
 
     protected static function createDbalEventManager(): EventManager

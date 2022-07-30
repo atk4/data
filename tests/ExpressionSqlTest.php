@@ -33,7 +33,7 @@ class ExpressionSqlTest extends TestCase
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
-                'select "id", "total_net", "total_vat", ("total_net" + "total_vat") "total_gross" from "invoice"',
+                'select `id`, `total_net`, `total_vat`, (`total_net` + `total_vat`) `total_gross` from `invoice`',
                 $i->action('select')->render()[0]
             );
         }
@@ -50,7 +50,7 @@ class ExpressionSqlTest extends TestCase
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertEquals(
-                'select "id", "total_net", "total_vat", ("total_net" + "total_vat") "total_gross", (("total_net" + "total_vat") * 2) "double_total_gross" from "invoice"',
+                'select `id`, `total_net`, `total_vat`, (`total_net` + `total_vat`) `total_gross`, ((`total_net` + `total_vat`) * 2) `double_total_gross` from `invoice`',
                 $i->action('select')->render()[0]
             );
         }
@@ -75,7 +75,7 @@ class ExpressionSqlTest extends TestCase
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
-                'select "id", "total_net", "total_vat", ("total_net" + "total_vat") "total_gross" from "invoice"',
+                'select `id`, `total_net`, `total_vat`, (`total_net` + `total_vat`) `total_gross` from `invoice`',
                 $i->action('select')->render()[0]
             );
         }
@@ -103,7 +103,7 @@ class ExpressionSqlTest extends TestCase
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
-                'select "id", "total_net", "total_vat", (select sum("total_net") from "invoice") "sum_net" from "invoice"',
+                'select `id`, `total_net`, `total_vat`, (select sum(`total_net`) from `invoice`) `sum_net` from `invoice`',
                 $i->action('select')->render()[0]
             );
         }
@@ -142,9 +142,9 @@ class ExpressionSqlTest extends TestCase
 
         $m->addCondition($m->expr('[full_name] != [cached_name]'));
 
-        $concatSql = preg_replace('~\[(\w+)\]~', '"$1"', $concatExpr);
+        $concatSql = preg_replace('~\[(\w+)\]~', '`$1`', $concatExpr);
         $this->assertSameSql(
-            'select "id", "name", "surname", "cached_name", (' . $concatSql . ') "full_name" from "user" where ((' . $concatSql . ') != "cached_name")',
+            'select `id`, `name`, `surname`, `cached_name`, (' . $concatSql . ') `full_name` from `user` where ((' . $concatSql . ') != `cached_name`)',
             $m->action('select')->render()[0]
         );
 

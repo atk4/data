@@ -10,6 +10,7 @@ use Atk4\Data\Model\Scope;
 use Atk4\Data\Model\Scope\Condition;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 
 class SCountry extends Model
@@ -137,10 +138,10 @@ class ScopeTest extends TestCase
 
         $this->assertEquals('Country ID is equal to 2 (\'Latvia\')', $condition->toWords($user));
 
-        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
+        if ($this->getDatabasePlatform() instanceof SqlitePlatform || $this->getDatabasePlatform() instanceof MySQLPlatform) {
             $condition = new Condition('name', $user->expr('[surname]'));
 
-            $this->assertEquals('Name is equal to expression \'"surname"\'', $condition->toWords($user));
+            $this->assertSame('Name is equal to expression \'`surname`\'', $condition->toWords($user));
         }
 
         $condition = new Condition('country_id', null);
