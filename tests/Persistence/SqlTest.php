@@ -69,6 +69,7 @@ class SqlTest extends TestCase
 
         $m->loadAny();
         $m->tryLoadAny();
+
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Ambiguous conditions, more than one record can be loaded');
         $m->tryLoadOne();

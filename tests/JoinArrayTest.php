@@ -383,6 +383,7 @@ class JoinArrayTest extends TestCase
         $user->addField('name');
         $j = $user->join('contact');
         $j->addField('contact_phone');
+
         $this->expectException(Exception::class);
         $user = $user->load(2);
     }

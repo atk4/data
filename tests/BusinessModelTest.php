@@ -48,6 +48,7 @@ class BusinessModelTest extends TestCase
     {
         $m = new Model();
         $m = $m->createEntity();
+
         $this->expectException(Exception::class);
         $m->set('name', 5);
     }
@@ -180,6 +181,7 @@ class BusinessModelTest extends TestCase
     {
         $m = new Model();
         $m = $m->createEntity();
+
         $this->expectException(\Error::class);
         $m->set(0, 'foo'); // @phpstan-ignore-line
     }
@@ -188,6 +190,7 @@ class BusinessModelTest extends TestCase
     {
         $m = new Model();
         $m = $m->createEntity();
+
         $this->expectException(Exception::class);
         $m->set('3', 'foo');
     }
@@ -196,6 +199,7 @@ class BusinessModelTest extends TestCase
     {
         $m = new Model();
         $m = $m->createEntity();
+
         $this->expectException(Exception::class);
         $m->set('3b', 'foo');
     }
@@ -204,6 +208,7 @@ class BusinessModelTest extends TestCase
     {
         $m = new Model();
         $m = $m->createEntity();
+
         $this->expectException(Exception::class);
         $m->set('', 'foo');
     }

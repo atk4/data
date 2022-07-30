@@ -607,6 +607,7 @@ class ArrayTest extends TestCase
         $p = new Persistence\Array_([
             ['id' => 3, 'f1' => 'A'],
         ]);
+
         $this->expectException(Exception::class);
         $m = new Model($p);
     }
@@ -741,6 +742,7 @@ class ArrayTest extends TestCase
         $p = new Persistence\Array_([1 => ['name' => 'John']]);
         $m = new Model($p);
         $m->addField('name');
+
         $this->expectException(Exception::class);
         $m->action('foo');
     }
@@ -760,6 +762,7 @@ class ArrayTest extends TestCase
         $p = new Persistence\Array_([1 => ['name' => 'John']]);
         $m = new Model($p);
         $m->addField('name');
+
         $this->expectException(Exception::class);
         $m->addCondition('name');
     }
@@ -769,6 +772,7 @@ class ArrayTest extends TestCase
         $p = new Persistence\Array_([1 => ['name' => 'John']]);
         $m = new Model($p);
         $m->addField('name');
+
         $this->expectException(Exception::class);
         $m->addCondition(new Model(), 'like', '%o%');
     }

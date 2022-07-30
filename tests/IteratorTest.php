@@ -17,6 +17,7 @@ class IteratorTest extends TestCase
     {
         $m = new Model();
         $m->addFields(['name', 'salary']);
+
         $this->expectException(Exception::class);
         $m->setOrder(['name', 'salary'], 'desc');
     }
@@ -27,6 +28,7 @@ class IteratorTest extends TestCase
     public function testException2(): void
     {
         $m = new Model();
+
         $this->expectException(Exception::class);
         $m = $m->tryLoad(1);
     }
@@ -37,6 +39,7 @@ class IteratorTest extends TestCase
     public function testException3(): void
     {
         $m = new Model();
+
         $this->expectException(Exception::class);
         $m = $m->tryLoadAny();
     }
@@ -47,6 +50,7 @@ class IteratorTest extends TestCase
     public function testException4(): void
     {
         $m = new Model();
+
         $this->expectException(Exception::class);
         $m = $m->load(1);
     }
@@ -57,6 +61,7 @@ class IteratorTest extends TestCase
     public function testException5(): void
     {
         $m = new Model();
+
         $this->expectException(Exception::class);
         $m = $m->loadAny();
     }
@@ -67,6 +72,7 @@ class IteratorTest extends TestCase
     public function testException6(): void
     {
         $m = new Model();
+
         $this->expectException(Exception::class);
         $m->save();
     }
@@ -77,6 +83,7 @@ class IteratorTest extends TestCase
     public function testException7(): void
     {
         $m = new Model();
+
         $this->expectException(Exception::class);
         $m->action('count');
     }

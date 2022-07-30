@@ -411,6 +411,7 @@ class TypecastingTest extends TestCase
 
         $m = new Model($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
+
         $this->expectException(Exception::class);
         $m = $m->loadOne();
     }

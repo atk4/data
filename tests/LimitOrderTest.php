@@ -209,6 +209,7 @@ class LimitOrderTest extends TestCase
 
         $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['net']);
         $i->setOrder(new \DateTime()); // @phpstan-ignore-line
+
         $this->expectException(Exception::class);
         $i->export(); // executes query and throws exception because of DateTime object
     }

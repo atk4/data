@@ -46,6 +46,7 @@ class ConditionSqlTest extends TestCase
         $m = new Model($this->db, ['table' => 'user']);
         $scope = $m->scope();
         $this->assertSame($scope, $m->createEntity()->getModel()->scope());
+
         $this->expectException(\Atk4\Data\Exception::class);
         $m->createEntity()->scope();
     }
@@ -67,6 +68,7 @@ class ConditionSqlTest extends TestCase
         \Closure::bind(function () use ($m) {
             $m->_entityId = 2;
         }, null, Model::class)();
+
         $this->expectException(\Atk4\Data\Exception::class);
         $this->expectExceptionMessageMatches('~entity.+different~');
         $m->reload();

@@ -62,6 +62,7 @@ class ReadOnlyModeTest extends TestCase
     {
         $m = $this->m->load(1);
         $m->set('name', 'X');
+
         $this->expectException(Exception::class);
         $m->save();
     }
@@ -81,6 +82,7 @@ class ReadOnlyModeTest extends TestCase
     public function testSave1(): void
     {
         $m = $this->m->tryLoadAny();
+
         $this->expectException(Exception::class);
         $m->saveAndUnload();
     }

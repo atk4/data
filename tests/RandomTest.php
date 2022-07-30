@@ -321,7 +321,6 @@ class RandomTest extends TestCase
 
         try {
             $this->expectException(Exception::class);
-
             $m->save();
         } catch (\Exception $e) {
             $this->assertEquals($dbData, $this->getDb());
@@ -532,6 +531,7 @@ class RandomTest extends TestCase
     public function testDuplicateWithIdArgumentException(): void
     {
         $m = new Model_Rate();
+
         $this->expectException(Exception::class);
         $m->duplicate(2)->save();
     }
