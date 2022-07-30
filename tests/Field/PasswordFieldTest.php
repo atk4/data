@@ -75,9 +75,13 @@ class PasswordFieldTest extends TestCase
     public function testInvalidPasswordCntrlChar(): void
     {
         $field = new PasswordField();
+        $pwd = 'myPassword' . "\t" . 'x';
+        $hash = $field->hashPassword($pwd);
+        $this->assertTrue($field->hashPasswordIsHashed($hash));
+        $this->assertTrue($field->hashPasswordVerify($hash, str_replace("\t", ' ', $pwd)));
 
         $this->expectException(Exception::class);
-        $field->hashPassword('myPassword' . "\t" . 'x');
+        $field->hashPassword('myPassword' . "\x07" . 'x');
     }
 
     public function testSetUnhashedException(): void

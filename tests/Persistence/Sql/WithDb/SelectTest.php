@@ -141,7 +141,6 @@ class SelectTest extends TestCase
 
     public function testOtherQueries(): void
     {
-        // truncate table
         $this->q('employee')->mode('truncate')->executeStatement();
         $this->assertSame(
             '0',
@@ -210,10 +209,19 @@ class SelectTest extends TestCase
 
     public function testEmptyGetOne(): void
     {
-        // truncate table
         $this->q('employee')->mode('truncate')->executeStatement();
+        $q = $this->q('employee')->field('name');
+
         $this->expectException(Exception::class);
-        $this->q('employee')->field('name')->getOne();
+        $q->getOne();
+    }
+
+    public function testSelectUnexistingColumnException(): void
+    {
+        $q = $this->q('employee')->field('Sqlite must use backticks for identifier escape');
+
+        $this->expectException(Exception::class);
+        $q->executeStatement();
     }
 
     public function testWhereExpression(): void
@@ -254,7 +262,7 @@ class SelectTest extends TestCase
             ], $q->render());
         } else {
             $this->assertSame([
-                'select "age", group_concat("name", :a) from "people" group by "age"',
+                'select `age`, group_concat(`name`, :a) from `people` group by `age`',
                 [':a' => ','],
             ], $q->render());
         }
@@ -289,7 +297,7 @@ class SelectTest extends TestCase
             ], $q->render());
         } else {
             $this->assertSame([
-                'select exists (select * from "contacts" where "first_name" = :a)',
+                'select exists (select * from `contacts` where `first_name` = :a)',
                 [':a' => 'John'],
             ], $q->render());
         }
@@ -297,10 +305,11 @@ class SelectTest extends TestCase
 
     public function testExecuteException(): void
     {
-        $this->expectException(ExecuteException::class);
+        $q = $this->q('non_existing_table')->field('non_existing_field');
 
+        $this->expectException(ExecuteException::class);
         try {
-            $this->q('non_existing_table')->field('non_existing_field')->getOne();
+            $q->getOne();
         } catch (ExecuteException $e) {
             if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
                 $expectedErrorCode = 1146; // SQLSTATE[42S02]: Base table or view not found: 1146 Table 'non_existing_table' doesn't exist
@@ -316,7 +325,7 @@ class SelectTest extends TestCase
 
             $this->assertSame($expectedErrorCode, $e->getCode());
             $this->assertSameSql(
-                preg_replace('~\s+~', '', 'select "non_existing_field" from "non_existing_table"'),
+                preg_replace('~\s+~', '', 'select `non_existing_field` from `non_existing_table`'),
                 preg_replace('~\s+~', '', $e->getDebugQuery())
             );
 

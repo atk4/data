@@ -8,6 +8,10 @@ use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 
 class Query extends BaseQuery
 {
+    protected string $identifierEscapeChar = '`';
+
+    protected string $expressionClass = Expression::class;
+
     protected $template_truncate = 'delete [from] [table_noalias]';
 
     public function groupConcat($field, string $delimiter = ',')

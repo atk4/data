@@ -6,7 +6,6 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\SqlitePlatform;
 
 class ConditionSqlTest extends TestCase
 {
@@ -34,13 +33,6 @@ class ConditionSqlTest extends TestCase
         $mm2 = $mm->tryLoad(2);
         $this->assertNull($mm2);
 
-        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
-            $this->assertSame(
-                'select "id", "name", "gender" from "user" where "gender" = :a',
-                $mm->action('select')->render()[0]
-            );
-        }
-
         $mm = clone $m;
         $mm->addCondition('id', 2);
         $mm2 = $mm->tryLoad(1);
@@ -54,6 +46,7 @@ class ConditionSqlTest extends TestCase
         $m = new Model($this->db, ['table' => 'user']);
         $scope = $m->scope();
         $this->assertSame($scope, $m->createEntity()->getModel()->scope());
+
         $this->expectException(\Atk4\Data\Exception::class);
         $m->createEntity()->scope();
     }
@@ -75,6 +68,7 @@ class ConditionSqlTest extends TestCase
         \Closure::bind(function () use ($m) {
             $m->_entityId = 2;
         }, null, Model::class)();
+
         $this->expectException(\Atk4\Data\Exception::class);
         $this->expectExceptionMessageMatches('~entity.+different~');
         $m->reload();

@@ -12,9 +12,9 @@ class Query extends BaseQuery
 {
     use ExpressionTrait;
 
-    protected $paramBase = 'xxaaaa';
+    protected string $paramBase = 'xxaaaa';
 
-    protected $expressionClass = Expression::class;
+    protected string $expressionClass = Expression::class;
 
     public function render(): array
     {

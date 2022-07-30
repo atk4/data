@@ -277,7 +277,7 @@ class ModelAggregateTest extends TestCase
         $aggregate->setOrder('client_id', 'asc');
 
         $this->assertSameSql(
-            'select "client", "client_id", sum("amount") "amount" from (select "id", "client_id", "name", "amount", (select "name" from "client" "_c_2bfe9d72a4aa" where "id" = "invoice"."client_id") "client" from "invoice") "_tm" group by "client_id", "client" order by "client_id"',
+            'select `client`, `client_id`, sum(`amount`) `amount` from (select `id`, `client_id`, `name`, `amount`, (select `name` from `client` `_c_2bfe9d72a4aa` where `id` = `invoice`.`client_id`) `client` from `invoice`) `_tm` group by `client_id`, `client` order by `client_id`',
             $aggregate->action('select')->render()[0]
         );
 
@@ -285,7 +285,7 @@ class ModelAggregateTest extends TestCase
         $aggregate->removeField('client');
         $aggregate->groupByFields = array_diff($aggregate->groupByFields, ['client']);
         $this->assertSameSql(
-            'select "client_id", sum("amount") "amount" from (select "id", "client_id", "name", "amount", (select "name" from "client" "_c_2bfe9d72a4aa" where "id" = "invoice"."client_id") "client" from "invoice") "_tm" group by "client_id" order by "client_id"',
+            'select `client_id`, sum(`amount`) `amount` from (select `id`, `client_id`, `name`, `amount`, (select `name` from `client` `_c_2bfe9d72a4aa` where `id` = `invoice`.`client_id`) `client` from `invoice`) `_tm` group by `client_id` order by `client_id`',
             $aggregate->action('select')->render()[0]
         );
     }
@@ -335,7 +335,7 @@ class ModelAggregateTest extends TestCase
         self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
         $this->assertSameSql(
-            'select count(*) from ((select 1 from (select "id", "client_id", "name", "amount", (select "name" from "client" "_c_2bfe9d72a4aa" where "id" = "invoice"."client_id") "client" from "invoice") "_tm" group by "client_id", "client")) "_tc"',
+            'select count(*) from ((select 1 from (select `id`, `client_id`, `name`, `amount`, (select `name` from `client` `_c_2bfe9d72a4aa` where `id` = `invoice`.`client_id`) `client` from `invoice`) `_tm` group by `client_id`, `client`)) `_tc`',
             $aggregate->action('count')->render()[0]
         );
     }
@@ -349,7 +349,7 @@ class ModelAggregateTest extends TestCase
         ]);
 
         $this->assertSameSql(
-            'select sum("amount") "xyz" from (select "id", "client_id", "name", "amount", (select "name" from "client" "_c_2bfe9d72a4aa" where "id" = "invoice"."client_id") "client" from "invoice") "_tm" group by "abc"',
+            'select sum(`amount`) `xyz` from (select `id`, `client_id`, `name`, `amount`, (select `name` from `client` `_c_2bfe9d72a4aa` where `id` = `invoice`.`client_id`) `client` from `invoice`) `_tm` group by `abc`',
             $aggregate->action('select')->render()[0]
         );
     }

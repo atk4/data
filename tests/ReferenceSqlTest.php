@@ -59,7 +59,7 @@ class ReferenceSqlTest extends TestCase
         $oo = $u->addCondition('id', '>', '1')->ref('Orders');
 
         $this->assertSameSql(
-            'select "id", "amount", "user_id" from "order" "_O_7442e29d7d53" where "user_id" in (select "id" from "user" where "id" > :a)',
+            'select `id`, `amount`, `user_id` from `order` `_O_7442e29d7d53` where `user_id` in (select `id` from `user` where `id` > :a)',
             $oo->action('select')->render()[0]
         );
     }
@@ -75,7 +75,7 @@ class ReferenceSqlTest extends TestCase
         $u->hasMany('Orders', ['model' => $o]);
 
         $this->assertSameSql(
-            'select "id", "amount", "user_id" from "order" "_O_7442e29d7d53" where "user_id" = "user"."id"',
+            'select `id`, `amount`, `user_id` from `order` `_O_7442e29d7d53` where `user_id` = `user`.`id`',
             $u->refLink('Orders')->action('select')->render()[0]
         );
     }
@@ -124,7 +124,7 @@ class ReferenceSqlTest extends TestCase
         $u->hasMany('cur', ['model' => $c, 'our_field' => 'currency_code', 'their_field' => 'code']);
 
         $this->assertSameSql(
-            'select "id", "code", "name" from "currency" "_c_b5fddf1ef601" where "code" = "user"."currency_code"',
+            'select `id`, `code`, `name` from `currency` `_c_b5fddf1ef601` where `code` = `user`.`currency_code`',
             $u->refLink('cur')->action('select')->render()[0]
         );
     }
@@ -163,7 +163,7 @@ class ReferenceSqlTest extends TestCase
         $o->addCondition('amount', '<', 9);
 
         $this->assertSameSql(
-            'select "id", "name" from "user" "_u_e8701ad48ba0" where "id" in (select "user_id" from "order" where ("amount" > :a and "amount" < :b))',
+            'select `id`, `name` from `user` `_u_e8701ad48ba0` where `id` in (select `user_id` from `order` where (`amount` > :a and `amount` < :b))',
             $o->ref('user_id')->action('select')->render()[0]
         );
     }
@@ -237,7 +237,7 @@ class ReferenceSqlTest extends TestCase
         $i->addExpression('total_net', ['expr' => $i->refLink('line')->action('fx', ['sum', 'total_net'])]);
 
         $this->assertSameSql(
-            'select "id", "ref_no", (select sum("total_net") from "invoice_line" "_l_6438c669e0d0" where "invoice_id" = "invoice"."id") "total_net" from "invoice"',
+            'select `id`, `ref_no`, (select sum(`total_net`) from `invoice_line` `_l_6438c669e0d0` where `invoice_id` = `invoice`.`id`) `total_net` from `invoice`',
             $i->action('select')->render()[0]
         );
     }
@@ -601,12 +601,13 @@ class ReferenceSqlTest extends TestCase
 
         // change order user by changing title_field value
         $o = $o->load(1);
-        $o->set('user', 'Peter');
         $this->assertEquals(1, $o->get('user_id'));
+        $o->set('user_id', null);
         $o->save();
-        $this->assertEquals(2, $o->get('user_id')); // user_id changed to Peters ID
-        $o->reload();
-        $this->assertEquals(2, $o->get('user_id')); // and it's really saved like that
+        $o->set('user', 'Peter');
+        $this->assertNull($o->get('user_id'));
+        $o->save();
+        $this->assertEquals(2, $o->get('user_id'));
 
         $this->dropCreatedDb();
         $this->setDb($dbData);
@@ -618,12 +619,13 @@ class ReferenceSqlTest extends TestCase
 
         // change order user by changing title_field value
         $o = $o->load(1);
-        $o->set('user', 'Foo');
         $this->assertEquals(1, $o->get('user_id'));
+        $o->set('user_id', null);
         $o->save();
-        $this->assertEquals(2, $o->get('user_id')); // user_id changed to Peters ID
-        $o->reload();
-        $this->assertEquals(2, $o->get('user_id')); // and it's really saved like that
+        $o->set('user', 'Foo');
+        $this->assertNull($o->get('user_id'));
+        $o->save();
+        $this->assertEquals(2, $o->get('user_id'));
 
         $this->dropCreatedDb();
         $this->setDb($dbData);
@@ -635,12 +637,13 @@ class ReferenceSqlTest extends TestCase
 
         // change order user by changing reference field value
         $o = $o->load(1);
-        $o->set('my_user', 'Foo');
         $this->assertEquals(1, $o->get('user_id'));
+        $o->set('user_id', null);
         $o->save();
-        $this->assertEquals(2, $o->get('user_id')); // user_id changed to Peters ID
-        $o->reload();
-        $this->assertEquals(2, $o->get('user_id')); // and it's really saved like that
+        $o->set('my_user', 'Foo');
+        $this->assertNull($o->get('user_id'));
+        $o->save();
+        $this->assertEquals(2, $o->get('user_id'));
 
         $this->dropCreatedDb();
         $this->setDb($dbData);
@@ -650,15 +653,31 @@ class ReferenceSqlTest extends TestCase
         $o = (new Model($this->db, ['table' => 'order']));
         $o->hasOne('my_user', ['model' => $u, 'our_field' => 'user_id'])->addTitle();
 
-        // change order user by changing ref field value
+        // change order user by changing ref field and title_field value - same
         $o = $o->load(1);
-        $o->set('my_user', 'Foo'); // user_id = 2
-        $o->set('user_id', 3);     // user_id = 3 (this will take precedence)
-        $this->assertEquals(3, $o->get('user_id'));
+        $this->assertEquals(1, $o->get('user_id'));
+        $o->set('user_id', null);
         $o->save();
-        $this->assertEquals(3, $o->get('user_id')); // user_id changed to Goofy ID
-        $o->reload();
-        $this->assertEquals(3, $o->get('user_id')); // and it's really saved like that
+        $o->set('my_user', 'Foo'); // user_id = 2
+        $o->set('user_id', 2);
+        $this->assertEquals(2, $o->get('user_id'));
+        $o->save();
+        $this->assertEquals(2, $o->get('user_id'));
+
+        $this->dropCreatedDb();
+        $this->setDb($dbData);
+
+        // change order user by changing ref field and title_field value - mismatched
+        $o = $o->getModel()->load(1);
+        $this->assertEquals(1, $o->get('user_id'));
+        $o->set('user_id', null);
+        $o->save();
+        $o->set('my_user', 'Foo'); // user_id = 2
+        $o->set('user_id', 3);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Imported field was changed to an unexpected value');
+        $o->save();
     }
 
     /**

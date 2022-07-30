@@ -93,21 +93,15 @@ abstract class TestCase extends BaseTestCase
         $platform = $this->getDatabasePlatform();
 
         $convertedSql = preg_replace_callback(
-            '~\'(?:[^\'\\\\]+|\\\\.)*+\'|"(?:[^"\\\\]+|\\\\.)*+"|:(\w+)~s',
+            '~\'(?:[^\'\\\\]+|\\\\.)*+\'|`(?:[^`\\\\]+|\\\\.)*+`|:(\w+)~s',
             function ($matches) use ($platform) {
                 if (isset($matches[1])) {
                     return ':' . ($platform instanceof OraclePlatform ? 'xxaaa' : '') . $matches[1];
                 }
 
                 $str = substr(preg_replace('~\\\\(.)~s', '$1', $matches[0]), 1, -1);
-                if (substr($matches[0], 0, 1) === '"') {
-                    // keep info queries from DBAL in double quotes
-                    // https://github.com/doctrine/dbal/blob/3.3.7/src/Connection.php#L1298
-                    if (in_array($str, ['START TRANSACTION', 'COMMIT', 'ROLLBACK'], true)) {
-                        return $matches[0];
-                    }
-
-                    return $platform->quoteSingleIdentifier($str);
+                if (substr($matches[0], 0, 1) === '`') {
+                    return $this->getConnection()->expr('{}', [$str])->render()[0];
                 }
 
                 return ($platform instanceof SQLServerPlatform ? 'N' : '') . $platform->quoteStringLiteral($str);

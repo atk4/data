@@ -8,5 +8,5 @@ use Atk4\Data\Persistence\Sql\Connection as BaseConnection;
 
 class Connection extends BaseConnection
 {
-    protected $queryClass = Query::class;
+    protected string $queryClass = Query::class;
 }

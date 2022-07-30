@@ -13,22 +13,18 @@ class Query extends Expression
      * Query will use one of the predefined templates. The $mode will contain
      * name of template used. Basically it's part of Query property name -
      * Query::template_[$mode].
-     *
-     * @var string
      */
-    public $mode = 'select';
+    public string $mode = 'select';
 
     /** @var string|Expression If no fields are defined, this field is used. */
     public $defaultField = '*';
 
-    /** @var string Expression classname */
-    protected $expressionClass = Expression::class;
+    protected string $expressionClass = Expression::class;
 
-    /** @var bool */
-    public $wrapInParentheses = true;
+    public bool $wrapInParentheses = true;
 
     /** @var array<string> */
-    protected $supportedOperators = ['=', '!=', '<', '>', '<=', '>=', 'like', 'not like', 'in', 'not in'];
+    protected array $supportedOperators = ['=', '!=', '<', '>', '<=', '>=', 'like', 'not like', 'in', 'not in'];
 
     /** @var string */
     protected $template_select = '[with]select[option] [field] [from] [table][join][where][group][having][order][limit]';

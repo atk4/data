@@ -20,6 +20,7 @@ class ExceptionTest extends TestCase
     public function testException2(): void
     {
         $e = new Expression('hello, [world]');
+
         $this->expectException(SqlException::class);
         $e->render();
     }

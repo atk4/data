@@ -44,29 +44,25 @@ class Expression implements Expressionable, \ArrayAccess
      *
      * @var array<array<mixed>>
      */
-    public $args = ['custom' => []];
+    public array $args = ['custom' => []];
 
     /** @var string As per PDO, escapeParam() will convert value into :a, :b, :c .. :aa .. etc. */
-    protected $paramBase = 'a';
+    protected string $paramBase = 'a';
 
     /**
      * Identifier (table, column, ...) escaping symbol. By SQL Standard it's double
      * quote, but MySQL uses backtick.
-     *
-     * @var string
      */
-    protected $identifierEscapeChar = '"';
+    protected string $identifierEscapeChar = '"';
 
-    /** @var string|null */
-    private $renderParamBase;
-    /** @var array|null */
-    private $renderParams;
+    private ?string $renderParamBase = null;
+    private ?array $renderParams = null;
 
     /** @var Connection|null */
     public $connection;
 
-    /** @var bool Wrap the expression in parentheses when consumed by another expression or not. */
-    public $wrapInParentheses = false;
+    /** Wrap the expression in parentheses when consumed by another expression or not. */
+    public bool $wrapInParentheses = false;
 
     /**
      * Specifying options to constructors will override default
@@ -228,7 +224,7 @@ class Expression implements Expressionable, \ArrayAccess
         }
 
         // wrap in parentheses if expression requires so
-        if ($expr->wrapInParentheses === true) {
+        if ($expr->wrapInParentheses) {
             $sql = '(' . $sql . ')';
         }
 

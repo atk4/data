@@ -158,6 +158,7 @@ class CsvTest extends TestCase
 
         $p = $this->makeCsvPersistence($this->file);
         $m = new Model($p);
+
         $this->expectException(Exception::class);
         $m = $m->tryLoad(1);
     }

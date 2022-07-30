@@ -47,7 +47,7 @@ class TestCaseTest extends TestCase
                 "START TRANSACTION";
 
 
-                insert into "t" ("name", "int", "float", "null")
+                insert into `t` (`name`, `int`, `float`, `null`)
                 values
                   ('Ewa', 1, '1.0', NULL);
 
@@ -56,15 +56,15 @@ class TestCaseTest extends TestCase
 
 
                 select
-                  "id",
-                  "name",
-                  "int",
-                  "float",
-                  "null"
+                  `id`,
+                  `name`,
+                  `int`,
+                  `float`,
+                  `null`
                 from
-                  "t"
+                  `t`
                 where
-                  "int" > -1
+                  `int` > -1
                 limit
                   0,
                   1;

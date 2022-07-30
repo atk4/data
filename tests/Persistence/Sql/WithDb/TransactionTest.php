@@ -53,9 +53,10 @@ class TransactionTest extends TestCase
 
     public function testCommitException2(): void
     {
-        // try to commit when not in transaction anymore
         $this->getConnection()->beginTransaction();
         $this->getConnection()->commit();
+
+        // try to commit when not in transaction anymore
         $this->expectException(Exception::class);
         $this->getConnection()->commit();
     }
@@ -69,9 +70,10 @@ class TransactionTest extends TestCase
 
     public function testRollbackException2(): void
     {
-        // try to rollback when not in transaction anymore
         $this->getConnection()->beginTransaction();
         $this->getConnection()->rollBack();
+
+        // try to rollback when not in transaction anymore
         $this->expectException(Exception::class);
         $this->getConnection()->rollBack();
     }

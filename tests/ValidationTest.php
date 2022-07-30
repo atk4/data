@@ -74,6 +74,7 @@ class ValidationTest extends TestCase
     {
         $m = $this->m->createEntity();
         $m->set('name', 'Python');
+
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Snakes');
         $m->save();
@@ -84,6 +85,7 @@ class ValidationTest extends TestCase
         $m = $this->m->createEntity();
         $m->set('name', 'Python');
         $m->set('domain', 'example.com');
+
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Multiple');
         $m->save();

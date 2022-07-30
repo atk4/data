@@ -141,7 +141,7 @@ class Field implements Expressionable
                 switch ($this->type) {
                     case null:
                     case 'string':
-                        $value = trim(preg_replace('~\r?\n|\r~', ' ', $value)); // remove all line-ends and trim
+                        $value = trim(preg_replace('~\r?\n|\r|\s~', ' ', $value)); // remove all line-ends and trim
 
                         break;
                     case 'text':
