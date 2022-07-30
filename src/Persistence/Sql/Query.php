@@ -24,7 +24,7 @@ class Query extends Expression
     public bool $wrapInParentheses = true;
 
     /** @var array<string> */
-    protected $supportedOperators = ['=', '!=', '<', '>', '<=', '>=', 'like', 'not like', 'in', 'not in'];
+    protected array $supportedOperators = ['=', '!=', '<', '>', '<=', '>=', 'like', 'not like', 'in', 'not in'];
 
     /** @var string */
     protected $template_select = '[with]select[option] [field] [from] [table][join][where][group][having][order][limit]';

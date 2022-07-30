@@ -286,10 +286,6 @@ class ExpressionTest extends TestCase
             123,
             $this->callProtected($this->e(), 'consume', 123, $constants['ESCAPE_NONE'])
         );
-        $this->assertSame(
-            '(select *)',
-            $this->callProtected($this->e(), 'consume', new Query())
-        );
 
         $myField = new class() implements Expressionable {
             public function getDsqlExpression(Expression $expr): Expression

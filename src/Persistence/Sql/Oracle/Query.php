@@ -12,7 +12,7 @@ class Query extends BaseQuery
 {
     use ExpressionTrait;
 
-    protected $paramBase = 'xxaaaa';
+    protected string $paramBase = 'xxaaaa';
 
     protected string $expressionClass = Expression::class;
 

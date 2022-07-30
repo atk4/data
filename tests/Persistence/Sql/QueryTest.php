@@ -100,11 +100,6 @@ class QueryTest extends TestCase
             'all.values',
             $this->callProtected($this->q(['defaultField' => 'all.values']), '_render_field')
         );
-        // defaultField as Expression object - not escaped
-        $this->assertSame(
-            'values()',
-            $this->callProtected($this->q(['defaultField' => new Expression('values()')]), '_render_field')
-        );
     }
 
     public function testFieldExpression(): void
