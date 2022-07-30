@@ -10,9 +10,9 @@ class Query extends BaseQuery
 {
     use ExpressionTrait;
 
-    protected $identifierEscapeChar = ']';
+    protected string $identifierEscapeChar = ']';
 
-    protected $expressionClass = Expression::class;
+    protected string $expressionClass = Expression::class;
 
     protected $template_insert = <<<'EOF'
         begin try

@@ -52,10 +52,8 @@ class Expression implements Expressionable, \ArrayAccess
     /**
      * Identifier (table, column, ...) escaping symbol. By SQL Standard it's double
      * quote, but MySQL uses backtick.
-     *
-     * @var string
      */
-    protected $identifierEscapeChar = '"';
+    protected string $identifierEscapeChar = '"';
 
     /** @var string|null */
     private $renderParamBase;
@@ -65,8 +63,8 @@ class Expression implements Expressionable, \ArrayAccess
     /** @var Connection|null */
     public $connection;
 
-    /** @var bool Wrap the expression in parentheses when consumed by another expression or not. */
-    public $wrapInParentheses = false;
+    /** Wrap the expression in parentheses when consumed by another expression or not. */
+    public bool $wrapInParentheses = false;
 
     /**
      * Specifying options to constructors will override default
@@ -228,7 +226,7 @@ class Expression implements Expressionable, \ArrayAccess
         }
 
         // wrap in parentheses if expression requires so
-        if ($expr->wrapInParentheses === true) {
+        if ($expr->wrapInParentheses) {
             $sql = '(' . $sql . ')';
         }
 

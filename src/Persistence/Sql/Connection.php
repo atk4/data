@@ -24,11 +24,8 @@ abstract class Connection
 {
     use DiContainerTrait;
 
-    /** @var string Query classname */
-    protected $queryClass = Query::class;
-
-    /** @var string Expression classname */
-    protected $expressionClass = Expression::class;
+    protected string $queryClass = Query::class;
+    protected string $expressionClass = Expression::class;
 
     /** @var DbalConnection */
     private $_connection;
