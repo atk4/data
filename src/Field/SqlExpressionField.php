@@ -39,10 +39,6 @@ class SqlExpressionField extends Field
     {
         $this->_init();
 
-        if ($this->getOwner()->reloadAfterSave === null) {
-            $this->getOwner()->reloadAfterSave = true;
-        }
-
         if ($this->concat) {
             $this->onHookToOwnerEntity(Model::HOOK_AFTER_SAVE, \Closure::fromCallable([$this, 'afterSave']));
         }

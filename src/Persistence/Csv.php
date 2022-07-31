@@ -205,6 +205,8 @@ class Csv extends Persistence
 
     public function tryLoad(Model $model, $id): ?array
     {
+        $model->assertIsModel();
+
         if ($id !== self::ID_LOAD_ANY) {
             throw new Exception('CSV Persistence does not support other than LOAD ANY mode'); // @TODO
         }

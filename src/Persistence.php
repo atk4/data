@@ -131,6 +131,8 @@ abstract class Persistence
      */
     public function load(Model $model, $id): array
     {
+        $model->assertIsModel();
+
         $data = $this->tryLoad($model, $id);
 
         if (!$data) {
@@ -139,7 +141,7 @@ abstract class Persistence
             throw (new Exception($noId ? 'No record was found' : 'Record with specified ID was not found', 404))
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('id', $noId ? null : $id)
-                ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
+                ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
         return $data;
@@ -152,6 +154,8 @@ abstract class Persistence
      */
     public function insert(Model $model, array $data)
     {
+        $model->assertIsModel();
+
         if ($model->id_field && array_key_exists($model->id_field, $data) && $data[$model->id_field] === null) {
             unset($data[$model->id_field]);
         }
@@ -201,6 +205,8 @@ abstract class Persistence
      */
     public function update(Model $model, $id, array $data): void
     {
+        $model->assertIsModel();
+
         $idRaw = $model->id_field ? $this->typecastSaveField($model->getField($model->id_field), $id) : null;
         unset($id);
         if ($idRaw === null || (array_key_exists($model->id_field, $data) && $data[$model->id_field] === null)) {
@@ -217,9 +223,9 @@ abstract class Persistence
         if (is_object($model->table)) {
             $idPersistenceName = $model->getField($model->id_field)->getPersistenceName();
             $innerId = $this->typecastLoadField($model->table->getField($idPersistenceName), $idRaw);
-            $innerModel = $model->table->loadBy($idPersistenceName, $innerId);
+            $innerEntity = $model->table->loadBy($idPersistenceName, $innerId);
 
-            $innerModel->save($this->typecastLoadRow($model->table, $dataRaw));
+            $innerEntity->saveAndUnload($this->typecastLoadRow($model->table, $dataRaw));
 
             return;
         }
@@ -242,6 +248,8 @@ abstract class Persistence
      */
     public function delete(Model $model, $id): void
     {
+        $model->assertIsModel();
+
         $idRaw = $model->id_field ? $this->typecastSaveField($model->getField($model->id_field), $id) : null;
         unset($id);
         if ($idRaw === null) {
@@ -251,9 +259,9 @@ abstract class Persistence
         if (is_object($model->table)) {
             $idPersistenceName = $model->getField($model->id_field)->getPersistenceName();
             $innerId = $this->typecastLoadField($model->table->getField($idPersistenceName), $idRaw);
-            $innerModel = $model->table->loadBy($idPersistenceName, $innerId);
+            $innerEntity = $model->table->loadBy($idPersistenceName, $innerId);
 
-            $innerModel->delete();
+            $innerEntity->delete();
 
             return;
         }

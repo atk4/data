@@ -303,7 +303,7 @@ class Sql extends Persistence
     }
 
     /**
-     * Will apply $model->scope() conditions onto $query.
+     * Will apply model scope/conditions onto $query.
      */
     public function initQueryConditions(Model $model, Query $query): void
     {
@@ -449,6 +449,8 @@ class Sql extends Persistence
 
     public function tryLoad(Model $model, $id): ?array
     {
+        $model->assertIsModel();
+
         $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
 
         $query = $model->action('select');
@@ -532,13 +534,14 @@ class Sql extends Persistence
 
         $insert->setMulti($dataRaw);
 
+        $model->hook(self::HOOK_BEFORE_INSERT_QUERY, [$insert]);
+
         try {
-            $model->hook(self::HOOK_BEFORE_INSERT_QUERY, [$insert]);
             $c = $insert->executeStatement();
         } catch (SqlException $e) {
             throw (new Exception('Unable to execute insert query', 0, $e))
                 ->addMoreInfo('model', $model)
-                ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
+                ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
         if ($model->id_field) {
@@ -571,30 +574,10 @@ class Sql extends Persistence
         } catch (SqlException $e) {
             throw (new Exception('Unable to update due to query error', 0, $e))
                 ->addMoreInfo('model', $model)
-                ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
-        }
-
-        if ($model->id_field) {
-            $newIdRaw = $dataRaw[$model->getField($model->id_field)->getPersistenceName()] ?? null;
-            if ($newIdRaw !== null && $model->getDirtyRef()[$model->id_field]) {
-                // ID was changed
-                // TODO this cannot work with entity
-                $model->setId($this->typecastLoadField($model->getField($model->id_field), $newIdRaw));
-            }
+                ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
         $model->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update, $c]);
-
-        // if any rows were updated in database, and we had expressions, reload
-        if ($model->reloadAfterSave) {
-            $d = $model->getDirtyRef();
-            $model->reload();
-            \Closure::bind(function () use ($model) {
-                $model->dirtyAfterReload = $model->getDirtyRef();
-            }, null, Model::class)();
-            $dirtyRef = &$model->getDirtyRef();
-            $dirtyRef = $d;
-        }
     }
 
     protected function deleteRaw(Model $model, $idRaw): void
@@ -609,7 +592,7 @@ class Sql extends Persistence
         } catch (SqlException $e) {
             throw (new Exception('Unable to delete due to query error', 0, $e))
                 ->addMoreInfo('model', $model)
-                ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
+                ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
         $model->hook(self::HOOK_AFTER_DELETE_QUERY, [$delete, $c]);

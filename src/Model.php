@@ -234,13 +234,8 @@ class Model implements \IteratorAggregate
      * This is to ensure that any SQL-based calculation are executed and
      * updated correctly after you have performed any modifications to
      * the fields.
-     *
-     * You can set this property to "true" or "false" if you want to explicitly
-     * enable or disable reloading.
-     *
-     * @var bool|null
      */
-    public $reloadAfterSave;
+    public bool $reloadAfterSave = true;
 
     /**
      * If this model is "contained into" another entity by using ContainsOne
@@ -420,17 +415,13 @@ class Model implements \IteratorAggregate
 
         if ($this->id_field) {
             $this->addField($this->id_field, ['type' => 'integer', 'required' => true, 'system' => true]);
-        } else {
-            return; // don't declare actions for model without id_field
+
+            $this->initEntityIdHooks();
+
+            if (!$this->readOnly) {
+                $this->initUserActions();
+            }
         }
-
-        $this->initEntityIdHooks();
-
-        if ($this->readOnly) {
-            return; // don't declare user action for read-only model
-        }
-
-        $this->initUserActions();
     }
 
     public function assertIsInitialized(): void
@@ -1572,7 +1563,7 @@ class Model implements \IteratorAggregate
                     return $this;
                 }
 
-                $this->getPersistence()->update($this, $this->getId(), $data);
+                $this->getPersistence()->update($this->getModel(), $this->getId(), $data);
 
                 $this->hook(self::HOOK_AFTER_UPDATE, [&$data]);
             } else {
@@ -1595,7 +1586,7 @@ class Model implements \IteratorAggregate
                 }
 
                 // Collect all data of a new record
-                $id = $this->getPersistence()->insert($this, $data);
+                $id = $this->getPersistence()->insert($this->getModel(), $data);
 
                 if (!$this->id_field) {
                     $this->hook(self::HOOK_AFTER_INSERT);
@@ -1604,15 +1595,15 @@ class Model implements \IteratorAggregate
                 } else {
                     $this->setId($id);
                     $this->hook(self::HOOK_AFTER_INSERT);
-
-                    if ($this->reloadAfterSave !== false) {
-                        $d = $dirtyRef;
-                        $dirtyRef = [];
-                        $this->reload();
-                        $this->dirtyAfterReload = $dirtyRef;
-                        $dirtyRef = $d;
-                    }
                 }
+            }
+
+            if ($this->id_field && $this->reloadAfterSave) {
+                $d = $dirtyRef;
+                $dirtyRef = [];
+                $this->reload();
+                $this->dirtyAfterReload = $dirtyRef;
+                $dirtyRef = $d;
             }
 
             if ($this->isLoaded()) {
@@ -1864,7 +1855,7 @@ class Model implements \IteratorAggregate
             if ($this->hook(self::HOOK_BEFORE_DELETE) === false) {
                 return;
             }
-            $this->getPersistence()->delete($this, $this->getId());
+            $this->getPersistence()->delete($this->getModel(), $this->getId());
             $this->hook(self::HOOK_AFTER_DELETE);
         });
         $this->unload();
