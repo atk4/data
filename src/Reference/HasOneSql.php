@@ -82,11 +82,9 @@ class HasOneSql extends HasOne
         $defaults['enum'] ??= $refModelField->enum;
         $defaults['values'] ??= $refModelField->values;
         $defaults['caption'] ??= $refModelField->caption;
-        $defaults['ui'] ??= $refModelField->ui;
+        $defaults['ui'] = array_merge($defaults['ui'] ?? $refModelField->ui, ['editable' => false]);
 
-        $fieldExpression = $this->_addField($fieldName, false, $theirFieldName, array_merge_recursive([
-            'ui' => ['editable' => false],
-        ], $defaults));
+        $fieldExpression = $this->_addField($fieldName, false, $theirFieldName, $defaults);
 
         return $fieldExpression;
     }
@@ -164,10 +162,9 @@ class HasOneSql extends HasOne
 
         $fieldName = $defaults['field'] ?? preg_replace('~_(' . preg_quote($ourModel->id_field, '~') . '|id)$~', '', $this->link);
 
-        $fieldExpression = $this->_addField($fieldName, true, null, array_merge_recursive([
-            'type' => null,
-            'ui' => ['editable' => false, 'visible' => true],
-        ], $defaults));
+        $defaults['ui'] = array_merge(['visible' => true], $defaults['ui'] ?? [], ['editable' => false]);
+
+        $fieldExpression = $this->_addField($fieldName, true, null, $defaults);
 
         // set ID field as not visible in grid by default
         if (!array_key_exists('visible', $this->getOurField()->ui)) {
