@@ -10,7 +10,6 @@ use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Expression;
-use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 
@@ -283,52 +282,6 @@ class RandomTest extends TestCase
         $this->assertSame('WORLD', $m->get('caps'));
     }
 
-    public function testUpdateCondition(): void
-    {
-        $this->setDb([
-            'item' => [
-                ['name' => 'John'],
-                ['name' => 'Sue'],
-                ['name' => 'Smith'],
-            ],
-        ]);
-
-        $m = new Model($this->db, ['table' => 'item']);
-        $m->addField('name');
-        $m = $m->load(2);
-
-        $m->onHook(Persistence\Sql::HOOK_AFTER_UPDATE_QUERY, static function (Model $m, Query $update, int $c) {
-            // we can use afterUpdate to make sure that record was updated
-            if ($c === 0) {
-                throw (new Exception('Update didn\'t affect any records'))
-                    ->addMoreInfo('query', $update->getDebugQuery())
-                    ->addMoreInfo('affected_rows', $c)
-                    ->addMoreInfo('model', $m);
-            }
-        });
-
-        $this->assertSame('Sue', $m->get('name'));
-
-        $dbData = [
-            'item' => [
-                1 => ['id' => 1, 'name' => 'John'],
-            ],
-        ];
-        $this->dropCreatedDb();
-        $this->setDb($dbData);
-
-        $m->set('name', 'Peter');
-
-        try {
-            $this->expectException(Exception::class);
-            $m->save();
-        } catch (\Exception $e) {
-            $this->assertEquals($dbData, $this->getDb());
-
-            throw $e;
-        }
-    }
-
     public function testHookBreakers(): void
     {
         $this->setDb([
@@ -374,8 +327,8 @@ class RandomTest extends TestCase
         $m = new Model_Item($this->db);
 
         $this->expectException(CoreException::class);
-        $m->hasOne('foo', ['model' => [Model_Item::class]])
-            ->addTitle(); // field foo already exists, so we can't add title with same name
+        $this->expectExceptionMessage('already exist');
+        $m->hasOne('foo', ['model' => [Model_Item::class]])->addTitle();
     }
 
     public function testModelCaption(): void
