@@ -525,11 +525,11 @@ class ReferenceSqlTest extends TestCase
         $p->hasOne('Stadium', ['model' => $s, 'our_field' => 'id', 'their_field' => 'player_id']);
         $this->createMigrator()->createForeignKey($p->getReference('Stadium'));
 
-        $s = $p->ref('Stadium')->createEntity()->save(['name' => 'Nou camp nou', 'player_id' => 4]);
-        $p = $p->createEntity()->save(['name' => 'Ivan']);
+        $s->createEntity()->save(['name' => 'Nou camp nou', 'player_id' => 4]);
+        $pEntity = $p->createEntity()->save(['name' => 'Ivan']);
 
-        $this->assertSame('Nou camp nou', $p->ref('Stadium')->get('name'));
-        $this->assertSame(4, $p->ref('Stadium')->get('player_id'));
+        $this->assertSame('Nou camp nou', $pEntity->ref('Stadium')->get('name'));
+        $this->assertSame(4, $pEntity->ref('Stadium')->get('player_id'));
     }
 
     public function testModelProperty(): void

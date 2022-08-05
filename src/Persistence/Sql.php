@@ -527,6 +527,20 @@ class Sql extends Persistence
         }
     }
 
+    /**
+     * @param mixed $idRaw
+     */
+    private function assertExactlyOneRecordUpdated(Model $model, $idRaw, int $affectedRows, string $operation): void
+    {
+        if ($affectedRows !== 1) {
+            throw (new Exception(ucfirst($operation) . ' failed, exactly 1 row was expected to be affected'))
+                ->addMoreInfo('model', $model)
+                ->addMoreInfo('scope', $model->scope()->toWords())
+                ->addMoreInfo('idRaw', $idRaw)
+                ->addMoreInfo('affectedRows', $affectedRows);
+        }
+    }
+
     protected function insertRaw(Model $model, array $dataRaw)
     {
         $insert = $this->initQuery($model);
@@ -544,6 +558,8 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
+        $this->assertExactlyOneRecordUpdated($model, null, $c, 'insert');
+
         if ($model->id_field) {
             $idRaw = $dataRaw[$model->getField($model->id_field)->getPersistenceName()] ?? null;
             if ($idRaw === null) {
@@ -553,7 +569,7 @@ class Sql extends Persistence
             $idRaw = '';
         }
 
-        $model->hook(self::HOOK_AFTER_INSERT_QUERY, [$insert, $c]);
+        $model->hook(self::HOOK_AFTER_INSERT_QUERY, [$insert]);
 
         return $idRaw;
     }
@@ -577,7 +593,9 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
-        $model->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update, $c]);
+        $this->assertExactlyOneRecordUpdated($model, $idRaw, $c, 'update');
+
+        $model->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update]);
     }
 
     protected function deleteRaw(Model $model, $idRaw): void
@@ -595,7 +613,9 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
-        $model->hook(self::HOOK_AFTER_DELETE_QUERY, [$delete, $c]);
+        $this->assertExactlyOneRecordUpdated($model, $idRaw, $c, 'delete');
+
+        $model->hook(self::HOOK_AFTER_DELETE_QUERY, [$delete]);
     }
 
     public function typecastSaveField(Field $field, $value)

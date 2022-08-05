@@ -52,6 +52,22 @@ class TestCaseTest extends TestCase
                   ('Ewa', 1, '1.0', NULL);
 
 
+                select
+                  `id`,
+                  `name`,
+                  `int`,
+                  `float`,
+                  `null`
+                from
+                  `t`
+                where
+                  `int` > -1
+                  and `id` = 1
+                limit
+                  0,
+                  2;
+
+
                 "COMMIT";
 
 
