@@ -94,7 +94,7 @@ you do not have to define "use" block::
 You can specify some of the expression properties through first argument of the
 constructor::
 
-    $expr = new Expression(['NOW()', 'connection' => $pdo]);
+    $expr = new Expression(['NOW()', 'connection' => $connection]);
 
 :ref:`Scroll down <properties>` for full list of properties.
 
@@ -162,18 +162,12 @@ your expression. Before you do, however, you need to have :php:attr:`$connection
 property set. (See `Connecting to Database` on more details). In short the
 following code will connect your expression with the database::
 
-    $expr = new Expression('connection' => $pdo);
+    $expr = new Expression('connection' => $connection);
 
 If you are looking to use connection :php:class:`Query` class, you may want to
 consider using a proper vendor-specific subclass::
 
-    $query = new \Atk4\Data\Persistence\Sql\Mysql\Query('connection' => $pdo);
-
-
-If your expression already exist and you wish to associate it with connection
-you can simply change the value of :php:attr:`$connection` property::
-
-    $expr->connection = $pdo;
+    $query = new \Atk4\Data\Persistence\Sql\Mysql\Query('connection' => $connection);
 
 Finally, you can pass connection class into :php:meth:`executeQuery` directly.
 
@@ -182,7 +176,7 @@ Finally, you can pass connection class into :php:meth:`executeQuery` directly.
     Executes expression using current database connection or the one you
     specify as the argument::
 
-        $stmt = $expr->executeQuery($pdo);
+        $stmt = $expr->executeQuery($connection);
 
     returns `Doctrine\DBAL\Result`.
 
@@ -206,7 +200,7 @@ Finally, you can pass connection class into :php:meth:`executeQuery` directly.
     Executes expression and return whole result-set in form of array of hashes::
 
         $data = new Expression([
-                'connection' => $pdo,
+                'connection' => $connection,
                 'template' => 'show databases',
             ])->getRows();
         echo json_encode($data);
@@ -227,7 +221,7 @@ Finally, you can pass connection class into :php:meth:`executeQuery` directly.
     Executes expression and returns first row of data from result-set as a hash::
 
         $data = new Expression([
-                'connection' => $pdo,
+                'connection' => $connection,
                 'template' => 'SELECT @@global.time_zone, @@session.time_zone',
             ])->getRow()
 
@@ -245,7 +239,7 @@ Finally, you can pass connection class into :php:meth:`executeQuery` directly.
     result-set::
 
         $time = new Expression([
-                'connection' => $pdo,
+                'connection' => $connection,
                 'template' => 'now()',
             ])->getOne();
 
@@ -343,7 +337,7 @@ Other Properties
 
 .. php:attr:: connection
 
-    PDO connection object or any other DB connection object.
+    DB connection object.
 
 .. php:attr:: paramBase
 

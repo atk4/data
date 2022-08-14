@@ -630,7 +630,7 @@ DSQL tries to do things differently:
 DSQL Is Simple and Powerful
 
 ``` php
-$query = new Atk4\Data\Persistence\Sql\Query();
+$query = $connection->dsql();
 $query->table('employees')
     ->where('birth_date', '1961-05-02')
     ->field('count(*)');
@@ -641,7 +641,7 @@ If the basic query is not fun, how about more complex one?
 
 ``` php
 // establish a query looking for a maximum salary
-$salary = new Atk4\Data\Persistence\Sql\Query(['connection' => $pdo]);
+$salary = $connection->dsql();
 
 // create few expression objects
 $eMs = $salary->expr('max(salary)');

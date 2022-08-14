@@ -21,16 +21,16 @@ or query::
 
     $query = (new Query())->table('user')->where('id', 1);
 
-When it's time to execute you can specify your PDO manually::
+When it's time to execute you can specify your Connection manually::
 
-    $rows = $expr->getRows($pdo);
+    $rows = $expr->getRows($connection);
     foreach ($rows as $row) {
         echo json_encode($row) . "\n";
     }
 
 With queries you might need to select mode first::
 
-    $stmt = $query->mode('delete')->executeStatement($pdo);
+    $stmt = $query->mode('delete')->executeStatement($connection);
 
 The :php:meth:`Expresssion::execute` is a convenient way to prepare query,
 bind all parameters and get `Doctrine\DBAL\Result`, but if you wish to do it manually,
@@ -43,7 +43,6 @@ If you use DSQL inside another framework, it's possible that there is already
 a PDO object which you can use. In Laravel you can optimize some of your queries
 by switching to DSQL::
 
-    $pdo = DB::connection()->getPdo();
     $c = new Connection(['connection' => $pdo]);
 
     $userIds = $c->dsql()->table('expired_users')->field('user_id');
