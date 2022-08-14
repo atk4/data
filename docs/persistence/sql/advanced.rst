@@ -15,11 +15,11 @@ Using DSQL without Connection
 You can use :php:class:`Query` and :php:class:`Expression` without connection
 at all. Simply create expression::
 
-    $expr = new Expression('show tables like []', ['foo%']);
+    $expr = new Mysql\Expression('show tables like []', ['foo%']);
 
 or query::
 
-    $query = (new Query())->table('user')->where('id', 1);
+    $query = (new Mysql\Query())->table('user')->where('id', 1);
 
 When it's time to execute you can specify your Connection manually::
 

@@ -352,7 +352,7 @@ You can also mix and match with expressions and strings::
     $q->where([['name', 'like', '%john%'], 'surname is null']);
         // .. WHERE `name` like '%john%' AND `surname` is null
 
-    $q->where([['name', 'like', '%john%'], new Expression('surname is null')]);
+    $q->where([['name', 'like', '%john%'], $q->expr('surname is null')]);
         // .. WHERE `name` like '%john%' AND surname is null
 
 There is a more flexible way to use OR arguments:
@@ -439,7 +439,7 @@ Few examples::
 
     $q->group('gender')->group('age');
 
-    $q->group(new Expression('year(date)'));
+    $q->group($q->expr('year(date)'));
 
 Method can be executed several times on the same Query object.
 
@@ -553,7 +553,7 @@ Joining on expression
 For a more complex join conditions, you can pass second argument as expression::
 
     $q->table('user', 'u');
-    $q->join('address a', new Expression('a.name like u.pattern'));
+    $q->join('address a', $q->expr('a.name like u.pattern'));
 
 
 Use WITH cursors
