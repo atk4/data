@@ -23,7 +23,7 @@ class Invoice extends Model
     {
         parent::init();
 
-        $this->title_field = $this->fieldName()->ref_no;
+        $this->titleField = $this->fieldName()->ref_no;
 
         $this->addField($this->fieldName()->ref_no, ['required' => true]);
         $this->addField($this->fieldName()->amount, ['type' => 'atk4_money']);

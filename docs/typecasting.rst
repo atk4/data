@@ -44,10 +44,10 @@ Some types such as `boolean` may support additional options like::
         'enum' => ['No', 'Yes'],
     ]);
 
-    $m->set('is_married', 'Yes');  // normalizes into true
-    $m->set('is_married', true);   // better way because no need to normalize
+    $m->set('is_married', 'Yes'); // normalizes into true
+    $m->set('is_married', true); // better way because no need to normalize
 
-    $m->save();   // stores as "Yes" because of type-casting
+    $m->save(); // stores as "Yes" because of type-casting
 
 Value types
 ===========

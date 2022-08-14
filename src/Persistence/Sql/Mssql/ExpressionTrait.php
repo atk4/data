@@ -26,7 +26,7 @@ trait ExpressionTrait
     }
 
     /**
-     * Fix exception throwing for MSSQL TRY/CATCH SQL (for Query::$template_insert).
+     * Fix exception throwing for MSSQL TRY/CATCH SQL (for Query::$templateInsert).
      *
      * Remove once https://github.com/microsoft/msphpsql/issues/1387 is fixed and released.
      */

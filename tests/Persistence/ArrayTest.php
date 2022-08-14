@@ -561,8 +561,8 @@ class ArrayTest extends TestCase
 
         // order by one field descending
         $p = new Persistence\Array_($dbData);
-        $m = new Model($p, ['id_field' => 'myid']);
-        $m->id_field = 'id';
+        $m = new Model($p, ['idField' => 'myid']);
+        $m->idField = 'id';
         $m->removeField('myid');
         $m->addField('id');
         $m->getField('id')->actual = 'myid';

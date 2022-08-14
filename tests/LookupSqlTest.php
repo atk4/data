@@ -91,7 +91,7 @@ class LUser extends Model
 class LFriend extends Model
 {
     public $table = 'friend';
-    public $title_field = 'friend_name';
+    public ?string $titleField = 'friend_name';
 
     /** @var bool */
     public $skipReverse = false;
@@ -305,7 +305,7 @@ class LookupSqlTest extends TestCase
         $u->import([
             ['name' => 'Alain', 'country_code' => 'CA'],
             ['name' => 'Imants', 'country_code' => 'LV'],
-            // 'name' => 'Romans', 'country_code' => 'UK'],  // does not exist
+            // 'name' => 'Romans', 'country_code' => 'UK'], // does not exist
         ]);
 
         $this->assertSameExportUnordered([

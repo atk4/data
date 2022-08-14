@@ -280,7 +280,7 @@ parts of the query. You must not call them in normal circumstances.
   placed inside brackets::
 
       $query->consume('first_name'); // `first_name`
-      $query->consume($otherQuery);  // will merge parameters and return string
+      $query->consume($otherQuery); // will merge parameters and return string
 
 .. php:method:: escapeIdentifier($sqlCode)
 
@@ -298,10 +298,10 @@ parts of the query. You must not call them in normal circumstances.
 
   Will do nothing if it finds "*", "`" or "(" character in `$sqlCode`::
 
-      $query->escapeIdentifierSoft('first_name');  // `first_name`
-      $query->escapeIdentifierSoft('first.name');  // `first`.`name`
-      $query->escapeIdentifierSoft('(2 + 2)');     // (2 + 2)
-      $query->escapeIdentifierSoft('*');           // *
+      $query->escapeIdentifierSoft('first_name'); // `first_name`
+      $query->escapeIdentifierSoft('first.name'); // `first`.`name`
+      $query->escapeIdentifierSoft('(2 + 2)'); // (2 + 2)
+      $query->escapeIdentifierSoft('*'); // *
 
 .. php:method:: escapeParam($value)
 

@@ -51,7 +51,7 @@ class SqlTest extends TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $mm = (clone $m)->addCondition($m->id_field, 1);
+        $mm = (clone $m)->addCondition($m->idField, 1);
         $this->assertSame('John', $mm->load(1)->get('name'));
         $this->assertNull($mm->tryLoad(2));
         $this->assertSame('John', $mm->tryLoadOne()->get('name'));

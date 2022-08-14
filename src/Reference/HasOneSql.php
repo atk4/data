@@ -21,7 +21,7 @@ class HasOneSql extends HasOne
             'expr' => function (Model $ourModel) use ($theirFieldIsTitle, $theirFieldName) {
                 $theirModel = $ourModel->refLink($this->link);
                 if ($theirFieldIsTitle) {
-                    $theirFieldName = $theirModel->title_field;
+                    $theirFieldName = $theirModel->titleField;
                 }
 
                 // remove order if we just select one field from hasOne model, needed for Oracle
@@ -37,7 +37,7 @@ class HasOneSql extends HasOne
             if ($ourModel->isDirty($fieldName)) {
                 $theirModel = $this->createTheirModel();
                 if ($theirFieldIsTitle) {
-                    $theirFieldName = $theirModel->title_field;
+                    $theirFieldName = $theirModel->titleField;
                 }
 
                 // when our field is not null or dirty too, update nothing, but check if the imported
@@ -160,7 +160,7 @@ class HasOneSql extends HasOne
     {
         $ourModel = $this->getOurModel(null);
 
-        $fieldName = $defaults['field'] ?? preg_replace('~_(' . preg_quote($ourModel->id_field, '~') . '|id)$~', '', $this->link);
+        $fieldName = $defaults['field'] ?? preg_replace('~_(' . preg_quote($ourModel->idField, '~') . '|id)$~', '', $this->link);
 
         $defaults['ui'] = array_merge(['visible' => true], $defaults['ui'] ?? [], ['editable' => false]);
 

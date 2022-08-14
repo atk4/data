@@ -106,7 +106,7 @@ class ReferenceSqlTest extends TestCase
         }
         $this->markTestIncompleteWhenCreateUniqueIndexIsNotSupportedByPlatform();
 
-        $u->hasOne('cur', ['model' => $c, 'our_field' => 'currency', 'their_field' => 'currency']);
+        $u->hasOne('cur', ['model' => $c, 'ourField' => 'currency', 'theirField' => 'currency']);
         $this->createMigrator()->createForeignKey($u->getReference('cur'));
 
         $cc = $u->load(1)->ref('cur');
@@ -121,7 +121,7 @@ class ReferenceSqlTest extends TestCase
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'currency_code']);
         $c = (new Model($this->db, ['table' => 'currency']))->addFields(['code', 'name']);
 
-        $u->hasMany('cur', ['model' => $c, 'our_field' => 'currency_code', 'their_field' => 'code']);
+        $u->hasMany('cur', ['model' => $c, 'ourField' => 'currency_code', 'theirField' => 'code']);
 
         $this->assertSameSql(
             'select `id`, `code`, `name` from `currency` `_c_b5fddf1ef601` where `code` = `user`.`currency_code`',
@@ -395,7 +395,7 @@ class ReferenceSqlTest extends TestCase
 
         $company = (new Model($this->db, ['table' => 'company']))->addFields(['name']);
 
-        $user->hasOne('Company', ['model' => $company, 'our_field' => 'company_id', 'their_field' => 'id']);
+        $user->hasOne('Company', ['model' => $company, 'ourField' => 'company_id', 'theirField' => 'id']);
 
         $order = new Model($this->db, ['table' => 'order']);
         $order->addField('company_id');
@@ -436,7 +436,7 @@ class ReferenceSqlTest extends TestCase
     public function testUnloadedEntityTraversingHasOneEx(): void
     {
         $user = $this->setupDbForTraversing();
-        $user->getReference('Company')->setDefaults(['our_field' => 'id']);
+        $user->getReference('Company')->setDefaults(['ourField' => 'id']);
         $userEntity = $user->createEntity();
 
         $this->expectException(Exception::class);
@@ -522,7 +522,7 @@ class ReferenceSqlTest extends TestCase
         $p = new Model($this->db, ['table' => 'player']);
         $p->addField('name');
         $p->delete(2);
-        $p->hasOne('Stadium', ['model' => $s, 'our_field' => 'id', 'their_field' => 'player_id']);
+        $p->hasOne('Stadium', ['model' => $s, 'ourField' => 'id', 'theirField' => 'player_id']);
         $this->createMigrator()->createForeignKey($p->getReference('Stadium'));
 
         $s->createEntity()->save(['name' => 'Nou camp nou', 'player_id' => 4]);
@@ -535,7 +535,7 @@ class ReferenceSqlTest extends TestCase
     public function testModelProperty(): void
     {
         $user = new Model($this->db, ['table' => 'user']);
-        $user->hasMany('Orders', ['model' => [Model::class, 'table' => 'order'], 'their_field' => 'id']);
+        $user->hasMany('Orders', ['model' => [Model::class, 'table' => 'order'], 'theirField' => 'id']);
         $o = $user->ref('Orders');
         $this->assertSame('order', $o->table);
     }
@@ -594,12 +594,12 @@ class ReferenceSqlTest extends TestCase
 
         $this->setDb($dbData);
 
-        // with default title_field='name'
+        // with default titleField='name'
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, ['table' => 'order']));
         $o->hasOne('user_id', ['model' => $u])->addTitle();
 
-        // change order user by changing title_field value
+        // change order user by changing titleField value
         $o = $o->load(1);
         $this->assertEquals(1, $o->get('user_id'));
         $o->set('user_id', null);
@@ -612,12 +612,12 @@ class ReferenceSqlTest extends TestCase
         $this->dropCreatedDb();
         $this->setDb($dbData);
 
-        // with custom title_field='last_name'
-        $u = (new Model($this->db, ['table' => 'user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
+        // with custom titleField='last_name'
+        $u = (new Model($this->db, ['table' => 'user', 'titleField' => 'last_name']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, ['table' => 'order']));
         $o->hasOne('user_id', ['model' => $u])->addTitle();
 
-        // change order user by changing title_field value
+        // change order user by changing titleField value
         $o = $o->load(1);
         $this->assertEquals(1, $o->get('user_id'));
         $o->set('user_id', null);
@@ -630,10 +630,10 @@ class ReferenceSqlTest extends TestCase
         $this->dropCreatedDb();
         $this->setDb($dbData);
 
-        // with custom title_field='last_name' and custom link name
-        $u = (new Model($this->db, ['table' => 'user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
+        // with custom titleField='last_name' and custom link name
+        $u = (new Model($this->db, ['table' => 'user', 'titleField' => 'last_name']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, ['table' => 'order']));
-        $o->hasOne('my_user', ['model' => $u, 'our_field' => 'user_id'])->addTitle();
+        $o->hasOne('my_user', ['model' => $u, 'ourField' => 'user_id'])->addTitle();
 
         // change order user by changing reference field value
         $o = $o->load(1);
@@ -648,12 +648,12 @@ class ReferenceSqlTest extends TestCase
         $this->dropCreatedDb();
         $this->setDb($dbData);
 
-        // with custom title_field='last_name' and custom link name
-        $u = (new Model($this->db, ['table' => 'user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
+        // with custom titleField='last_name' and custom link name
+        $u = (new Model($this->db, ['table' => 'user', 'titleField' => 'last_name']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, ['table' => 'order']));
-        $o->hasOne('my_user', ['model' => $u, 'our_field' => 'user_id'])->addTitle();
+        $o->hasOne('my_user', ['model' => $u, 'ourField' => 'user_id'])->addTitle();
 
-        // change order user by changing ref field and title_field value - same
+        // change order user by changing ref field and titleField value - same
         $o = $o->load(1);
         $this->assertEquals(1, $o->get('user_id'));
         $o->set('user_id', null);
@@ -667,7 +667,7 @@ class ReferenceSqlTest extends TestCase
         $this->dropCreatedDb();
         $this->setDb($dbData);
 
-        // change order user by changing ref field and title_field value - mismatched
+        // change order user by changing ref field and titleField value - mismatched
         $o = $o->getModel()->load(1);
         $this->assertEquals(1, $o->get('user_id'));
         $o->set('user_id', null);
@@ -698,7 +698,7 @@ class ReferenceSqlTest extends TestCase
                 3 => ['id' => 3, 'user_id' => 1],
             ],
         ]);
-        $u = (new Model($this->db, ['table' => 'user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
+        $u = (new Model($this->db, ['table' => 'user', 'titleField' => 'last_name']))->addFields(['name', 'last_name']);
 
         // Test : Now the caption is null and is generated from field name
         $this->assertSame('Last Name', $u->getField('last_name')->getCaption());
@@ -709,7 +709,7 @@ class ReferenceSqlTest extends TestCase
         $this->assertSame('Surname', $u->getField('last_name')->getCaption());
 
         $o = (new Model($this->db, ['table' => 'order']));
-        $orderUserRef = $o->hasOne('my_user', ['model' => $u, 'our_field' => 'user_id']);
+        $orderUserRef = $o->hasOne('my_user', ['model' => $u, 'ourField' => 'user_id']);
         $orderUserRef->addField('user_last_name', 'last_name');
 
         $referencedCaption = $o->getField('user_last_name')->getCaption();
@@ -744,7 +744,7 @@ class ReferenceSqlTest extends TestCase
         $user->getField('some_number')->type = 'integer';
         $user->getField('some_other_number')->type = 'integer';
         $order = (new Model($this->db, ['table' => 'order']));
-        $orderUserRef = $order->hasOne('my_user', ['model' => $user, 'our_field' => 'user_id']);
+        $orderUserRef = $order->hasOne('my_user', ['model' => $user, 'ourField' => 'user_id']);
 
         // no type set in defaults, should pull type integer from user model
         $orderUserRef->addField('some_number');

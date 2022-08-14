@@ -140,7 +140,11 @@ class JobReport extends Job {
 
         // build relation between job and invoice line
         $this->hasMany('InvoiceLines', ['model' => $invoiceLines])
-            ->addField('invoiced', ['aggregate' => 'sum', 'field' => 'total', 'type' => 'atk4_money']);
+            ->addField('invoiced', [
+                'aggregate' => 'sum',
+                'field' => 'total',
+                'type' => 'atk4_money'
+            ]);
 
         // next we need to see how much is reported through timesheets
         $timesheet = new Timesheet($this->getPersistence());
@@ -153,10 +157,11 @@ class JobReport extends Job {
 
         // build relation between Job and Timesheets
         $this->hasMany('Timesheets', ['model' => $timesheet])
-            ->addField(
-                'reported',
-                ['aggregate' => 'sum', 'field' => 'cost', 'type' => 'atk4_money']
-            );
+            ->addField('reported', [
+                'aggregate' => 'sum',
+                'field' => 'cost',
+                'type' => 'atk4_money'
+            ]);
 
         // finally lets calculate profit
         $this->addExpression('profit', ['expr' => '[invoiced] - [reported]']);
@@ -339,12 +344,12 @@ Resulting queries (I have removed back-ticks and parametric variables for readab
 -   `category_id` can be looked up directly inside the INSERT (standard feature of SQL reference fields).
 
 ```sql
-select id, name from client where name = "Pear Company" and is_deleted = 0;
+select id, name from client where name = 'Pear Company' and is_deleted = 0;
 insert into order (company_id, ref, delivery_date)
-    values (293, "TBL1", "2015-18-12");
+    values (293, 'TBL1', '2015-18-12');
 insert into order_lines (order_id, title, category_id, qty, price) values
-    (201, "Table", (select id from category where name = "furniture"), 2, 10.50),
-    (201, "Chair", (select id from category where name = "furniture"), 19, 3.25);
+    (201, 'Table', (select id from category where name = 'furniture'), 2, 10.5),
+    (201, 'Chair', (select id from category where name = 'furniture'), 19, 3.25);
 ```
 
 If you have enjoyed those examples and would like to try them yourself, continue to https://github.com/atk4/data-primer.
@@ -502,7 +507,7 @@ If you wonder how those advanced features may impact performance of loading and 
 
 ``` php
 foreach ($client->ref('Project') as $project) {
-    echo $project->get('name') . "\n"
+    echo $project->get('name') . "\n";
 }
 
 // $project refers to same object at all times, but $project's active data

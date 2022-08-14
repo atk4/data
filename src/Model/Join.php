@@ -29,15 +29,11 @@ abstract class Join
         setOwner as private _setOwner;
     }
 
-    /**
-     * Foreign table or WITH/CTE alias when used with SQL persistence.
-     *
-     * @var string
-     */
-    protected $foreignTable;
+    /** Foreign table or WITH/CTE alias when used with SQL persistence. */
+    protected string $foreignTable;
 
-    /** @var string|null Alias for the joined table. */
-    public $foreignAlias;
+    /** Alias for the joined table. */
+    public ?string $foreignAlias = null;
 
     /**
      * By default this will be either "inner" (for strong) or "left" for weak joins.
@@ -47,8 +43,8 @@ abstract class Join
      */
     protected $kind;
 
-    /** @var bool Weak join does not update foreign table. */
-    protected $weak = false;
+    /** Weak join does not update foreign table. */
+    protected bool $weak = false;
 
     /**
      * Normally the foreign table is saved first, then it's ID is used in the
@@ -62,42 +58,34 @@ abstract class Join
      * Then the ID connecting tables is stored in foreign table and the order
      * of saving and delete needs to be reversed. In this case $reverse
      * will be set to `true`. You can specify value of this property.
-     *
-     * @var bool
      */
-    protected $reverse;
+    protected bool $reverse = false;
 
     /**
      * Field to be used for matching inside master table.
      * By default it's $foreignTable . '_id'.
-     *
-     * @var string
      */
-    public $master_field;
+    public ?string $masterField = null;
 
     /**
      * Field to be used for matching in a foreign table.
      * By default it's 'id'.
-     *
-     * @var string
      */
-    public $foreign_field;
+    public ?string $foreignField = null;
 
     /**
      * When $prefix is set, then all the fields generated through
      * our wrappers will be automatically prefixed inside the model.
-     *
-     * @var string
      */
-    protected $prefix = '';
+    protected string $prefix = '';
 
     /** @var mixed ID indexed by spl_object_id(entity) used by a joined table. */
     protected $idByOid;
 
     /** @var array<int, array<string, mixed>> Data indexed by spl_object_id(entity) which is populated here as the save/insert progresses. */
-    private $saveBufferByOid = [];
+    private array $saveBufferByOid = [];
 
-    public function __construct(string $foreignTable = null)
+    public function __construct(string $foreignTable)
     {
         $this->foreignTable = $foreignTable;
 
@@ -106,7 +94,7 @@ abstract class Join
         // quite unconsistent - drop it?
         if (str_contains($this->foreignTable, '.')) {
             // split by LAST dot in foreignTable name
-            [$this->foreignTable, $this->foreign_field] = preg_split('~\.(?=[^.]+$)~', $this->foreignTable);
+            [$this->foreignTable, $this->foreignField] = preg_split('~\.(?=[^.]+$)~', $this->foreignTable);
             $this->reverse = true;
         }
     }
@@ -123,15 +111,15 @@ abstract class Join
         foreach ($this->getOwner()->getFields() as $ownerField) {
             if ($ownerField->hasJoin() && $ownerField->getJoin()->shortName === $this->shortName) {
                 $ownerFieldPersistenceName = $ownerField->getPersistenceName();
-                if ($ownerFieldPersistenceName !== $fakeModel->id_field && $ownerFieldPersistenceName !== $this->foreign_field) {
+                if ($ownerFieldPersistenceName !== $fakeModel->idField && $ownerFieldPersistenceName !== $this->foreignField) {
                     $fakeModel->addField($ownerFieldPersistenceName, [
                         'type' => $ownerField->type,
                     ]);
                 }
             }
         }
-        if ($fakeModel->id_field !== $this->foreign_field && $this->foreign_field !== null) {
-            $fakeModel->addField($this->foreign_field, ['type' => 'integer']);
+        if ($fakeModel->idField !== $this->foreignField && $this->foreignField !== null) {
+            $fakeModel->addField($this->foreignField, ['type' => 'integer']);
         }
 
         return $fakeModel;
@@ -220,36 +208,36 @@ abstract class Join
 
         $this->getForeignModel(); // assert valid foreignTable
 
-        // owner model should have id_field set
-        $idField = $this->getOwner()->id_field;
+        // owner model should have idField set
+        $idField = $this->getOwner()->idField;
         if (!$idField) {
-            throw (new Exception('Join owner model must have id_field set'))
+            throw (new Exception('Join owner model must have idField set'))
                 ->addMoreInfo('model', $this->getOwner());
         }
 
         if ($this->reverse === true) {
-            if ($this->master_field && $this->master_field !== $idField) { // TODO not implemented yet, see https://github.com/atk4/data/issues/803
+            if ($this->masterField && $this->masterField !== $idField) { // TODO not implemented yet, see https://github.com/atk4/data/issues/803
                 throw (new Exception('Joining tables on non-id fields is not implemented yet'))
-                    ->addMoreInfo('master_field', $this->master_field)
-                    ->addMoreInfo('id_field', $idField);
+                    ->addMoreInfo('masterField', $this->masterField)
+                    ->addMoreInfo('idField', $idField);
             }
 
-            if (!$this->master_field) {
-                $this->master_field = $idField;
+            if (!$this->masterField) {
+                $this->masterField = $idField;
             }
 
-            if (!$this->foreign_field) {
-                $this->foreign_field = preg_replace('~^.+\.~s', '', $this->getModelTableString($this->getOwner())) . '_' . $idField;
+            if (!$this->foreignField) {
+                $this->foreignField = preg_replace('~^.+\.~s', '', $this->getModelTableString($this->getOwner())) . '_' . $idField;
             }
         } else {
             $this->reverse = false;
 
-            if (!$this->master_field) {
-                $this->master_field = $this->foreignTable . '_' . $idField;
+            if (!$this->masterField) {
+                $this->masterField = $this->foreignTable . '_' . $idField;
             }
 
-            if (!$this->foreign_field) {
-                $this->foreign_field = $idField;
+            if (!$this->foreignField) {
+                $this->foreignField = $idField;
             }
         }
 
@@ -493,26 +481,26 @@ abstract class Join
 
         $model = $this->getOwner();
 
-        // the value for the master_field is set, so we are going to use existing record anyway
-        if ($entity->get($this->master_field) !== null) {
+        // the value for the masterField is set, so we are going to use existing record anyway
+        if ($entity->get($this->masterField) !== null) {
             return;
         }
 
         $foreignModel = $this->getForeignModel();
         $foreignEntity = $foreignModel->createEntity()
             ->setMulti($this->getReindexAndUnsetSaveBuffer($entity))
-            /* ->set($this->foreign_field, null) */;
+            /* ->set($this->foreignField, null) */;
         $foreignEntity->save();
 
         $this->setId($entity, $foreignEntity->getId());
 
         if ($this->hasJoin()) {
-            $this->getJoin()->setSaveBufferValue($entity, $this->master_field, $this->getId($entity));
+            $this->getJoin()->setSaveBufferValue($entity, $this->masterField, $this->getId($entity));
         } else {
-            $data[$this->master_field] = $this->getId($entity);
+            $data[$this->masterField] = $this->getId($entity);
         }
 
-        // $entity->set($this->master_field, $this->getId($entity)); // TODO needed? from array persistence
+        // $entity->set($this->masterField, $this->getId($entity)); // TODO needed? from array persistence
     }
 
     public function afterInsert(Model $entity): void
@@ -523,12 +511,12 @@ abstract class Join
 
         $id = $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId();
         $this->assertReferenceIdNotNull($id);
-        // $this->setSaveBufferValue($entity, $this->master_field, $id); // TODO needed? from array persistence
+        // $this->setSaveBufferValue($entity, $this->masterField, $id); // TODO needed? from array persistence
 
         $foreignModel = $this->getForeignModel();
         $foreignEntity = $foreignModel->createEntity()
             ->setMulti($this->getReindexAndUnsetSaveBuffer($entity))
-            ->set($this->foreign_field, $id);
+            ->set($this->foreignField, $id);
         $foreignEntity->save();
 
         $this->setId($entity, $entity->getId()); // TODO why is this here? it seems to be not needed
@@ -545,11 +533,11 @@ abstract class Join
         }
 
         $foreignModel = $this->getForeignModel();
-        $foreignId = $this->reverse ? $entity->getId() : $entity->get($this->master_field);
+        $foreignId = $this->reverse ? $entity->getId() : $entity->get($this->masterField);
         $this->assertReferenceIdNotNull($foreignId);
         $saveBuffer = $this->getReindexAndUnsetSaveBuffer($entity);
         $foreignModel->atomic(function () use ($foreignModel, $foreignId, $saveBuffer) {
-            $foreignModel = (clone $foreignModel)->addCondition($this->foreign_field, $foreignId);
+            $foreignModel = (clone $foreignModel)->addCondition($this->foreignField, $foreignId);
             foreach ($foreignModel as $foreignEntity) {
                 $foreignEntity->setMulti($saveBuffer);
                 $foreignEntity->save();
@@ -566,10 +554,10 @@ abstract class Join
         }
 
         $foreignModel = $this->getForeignModel();
-        $foreignId = $this->reverse ? $entity->getId() : $entity->get($this->master_field);
+        $foreignId = $this->reverse ? $entity->getId() : $entity->get($this->masterField);
         $this->assertReferenceIdNotNull($foreignId);
         $foreignModel->atomic(function () use ($foreignModel, $foreignId) {
-            $foreignModel = (clone $foreignModel)->addCondition($this->foreign_field, $foreignId);
+            $foreignModel = (clone $foreignModel)->addCondition($this->foreignField, $foreignId);
             foreach ($foreignModel as $foreignEntity) {
                 $foreignEntity->delete();
             }

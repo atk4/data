@@ -156,8 +156,8 @@ abstract class Persistence
     {
         $model->assertIsModel();
 
-        if ($model->id_field && array_key_exists($model->id_field, $data) && $data[$model->id_field] === null) {
-            unset($data[$model->id_field]);
+        if ($model->idField && array_key_exists($model->idField, $data) && $data[$model->idField] === null) {
+            unset($data[$model->idField]);
         }
 
         $dataRaw = $this->typecastSaveRow($model, $data);
@@ -165,15 +165,15 @@ abstract class Persistence
 
         if (is_object($model->table)) {
             $innerInsertId = $model->table->insert($this->typecastLoadRow($model->table, $dataRaw));
-            if (!$model->id_field) {
+            if (!$model->idField) {
                 return false;
             }
 
-            $idField = $model->getField($model->id_field);
+            $idField = $model->getField($model->idField);
             $insertId = $this->typecastLoadField(
                 $idField,
-                $idField->getPersistenceName() === $model->table->id_field
-                    ? $this->typecastSaveField($model->table->getField($model->table->id_field), $innerInsertId)
+                $idField->getPersistenceName() === $model->table->idField
+                    ? $this->typecastSaveField($model->table->getField($model->table->idField), $innerInsertId)
                     : $dataRaw[$idField->getPersistenceName()]
             );
 
@@ -181,11 +181,11 @@ abstract class Persistence
         }
 
         $idRaw = $this->insertRaw($model, $dataRaw);
-        if (!$model->id_field) {
+        if (!$model->idField) {
             return false;
         }
 
-        $id = $this->typecastLoadField($model->getField($model->id_field), $idRaw);
+        $id = $this->typecastLoadField($model->getField($model->idField), $idRaw);
 
         return $id;
     }
@@ -207,10 +207,10 @@ abstract class Persistence
     {
         $model->assertIsModel();
 
-        $idRaw = $model->id_field ? $this->typecastSaveField($model->getField($model->id_field), $id) : null;
+        $idRaw = $model->idField ? $this->typecastSaveField($model->getField($model->idField), $id) : null;
         unset($id);
-        if ($idRaw === null || (array_key_exists($model->id_field, $data) && $data[$model->id_field] === null)) {
-            throw new Exception('Unable to update record: Model id_field is not set');
+        if ($idRaw === null || (array_key_exists($model->idField, $data) && $data[$model->idField] === null)) {
+            throw new Exception('Unable to update record: Model idField is not set');
         }
 
         $dataRaw = $this->typecastSaveRow($model, $data);
@@ -221,7 +221,7 @@ abstract class Persistence
         }
 
         if (is_object($model->table)) {
-            $idPersistenceName = $model->getField($model->id_field)->getPersistenceName();
+            $idPersistenceName = $model->getField($model->idField)->getPersistenceName();
             $innerId = $this->typecastLoadField($model->table->getField($idPersistenceName), $idRaw);
             $innerEntity = $model->table->loadBy($idPersistenceName, $innerId);
 
@@ -250,14 +250,14 @@ abstract class Persistence
     {
         $model->assertIsModel();
 
-        $idRaw = $model->id_field ? $this->typecastSaveField($model->getField($model->id_field), $id) : null;
+        $idRaw = $model->idField ? $this->typecastSaveField($model->getField($model->idField), $id) : null;
         unset($id);
         if ($idRaw === null) {
-            throw new Exception('Unable to delete record: Model id_field is not set');
+            throw new Exception('Unable to delete record: Model idField is not set');
         }
 
         if (is_object($model->table)) {
-            $idPersistenceName = $model->getField($model->id_field)->getPersistenceName();
+            $idPersistenceName = $model->getField($model->idField)->getPersistenceName();
             $innerId = $this->typecastLoadField($model->table->getField($idPersistenceName), $idRaw);
             $innerEntity = $model->table->loadBy($idPersistenceName, $innerId);
 

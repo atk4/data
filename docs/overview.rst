@@ -133,8 +133,8 @@ using::
 
     $user = new User($db);
 
-    $user = $user->load(20);            // load specific user record into PHP
-    echo $user->get('name') . ': ';    // access field values
+    $user = $user->load(20); // load specific user record into PHP
+    echo $user->get('name') . ': '; // access field values
 
     $gross = $user->ref('Invoice')
         ->addCondition('status', 'due')

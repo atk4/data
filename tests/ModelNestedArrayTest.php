@@ -80,10 +80,10 @@ class ModelNestedArrayTest extends TestCase
             'testCaseWeakRef' => \WeakReference::create($this),
             'testModelAlias' => 'inner',
             'table' => 'user',
-            'id_field' => '_id',
+            'idField' => '_id',
         ]);
         $mInner->removeField('_id');
-        $mInner->id_field = 'uid';
+        $mInner->idField = 'uid';
         $mInner->addField('uid', ['actual' => '_id', 'type' => 'integer']);
         $mInner->addField('name');
         $mInner->addField('y', ['actual' => '_birthday', 'type' => 'date']);
@@ -95,7 +95,7 @@ class ModelNestedArrayTest extends TestCase
             'table' => $mInner,
         ]);
         $m->removeField('id');
-        $m->id_field = 'birthday';
+        $m->idField = 'birthday';
         $m->addField('name');
         $m->addField('birthday', ['actual' => 'y', 'type' => 'date']);
 

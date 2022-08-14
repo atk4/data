@@ -130,7 +130,7 @@ class Static_ extends Array_
 
     public function add(Model $model, array $defaults = []): void
     {
-        if ($model->id_field && !$model->hasField($model->id_field)) {
+        if ($model->idField && !$model->hasField($model->idField)) {
             // init model, but prevent array persistence data seeding, id field with correct type must be setup first
             \Closure::bind(function () use ($model, $defaults) {
                 $hadData = true;
@@ -150,8 +150,8 @@ class Static_ extends Array_
                 $model->_persistence = null;
             }, null, Model::class)();
 
-            if (isset($this->fieldsForModel[$model->id_field])) {
-                $model->getField($model->id_field)->type = $this->fieldsForModel[$model->id_field]['type'];
+            if (isset($this->fieldsForModel[$model->idField])) {
+                $model->getField($model->idField)->type = $this->fieldsForModel[$model->idField]['type'];
             }
         }
         $this->addMissingFieldsToModel($model);
@@ -165,7 +165,7 @@ class Static_ extends Array_
     protected function addMissingFieldsToModel(Model $model): void
     {
         if ($this->titleForModel) {
-            $model->title_field = $this->titleForModel;
+            $model->titleField = $this->titleForModel;
         }
 
         foreach ($this->fieldsForModel as $field => $def) {

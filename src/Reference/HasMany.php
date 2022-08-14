@@ -22,14 +22,14 @@ class HasMany extends Reference
 
     public function getTheirFieldName(Model $theirModel = null): string
     {
-        if ($this->their_field) {
-            return $this->their_field;
+        if ($this->theirField) {
+            return $this->theirField;
         }
 
         // this is pure guess, verify if such field exist, otherwise throw
         // TODO probably remove completely in the future
         $ourModel = $this->getOurModel(null);
-        $theirFieldName = preg_replace('~^.+\.~s', '', $this->getModelTableString($ourModel)) . '_' . $ourModel->id_field;
+        $theirFieldName = preg_replace('~^.+\.~s', '', $this->getModelTableString($ourModel)) . '_' . $ourModel->idField;
         if (!$this->createTheirModel()->hasField($theirFieldName)) {
             throw (new Exception('Their model does not contain fallback field'))
                 ->addMoreInfo('their_fallback_field', $theirFieldName);
@@ -48,8 +48,8 @@ class HasMany extends Reference
         $ourModel = $this->getOurModel($ourModel);
 
         if ($ourModel->isEntity()) {
-            $res = $this->our_field
-                ? $ourModel->get($this->our_field)
+            $res = $this->ourField
+                ? $ourModel->get($this->ourField)
                 : $ourModel->getId();
             $this->assertReferenceValueNotNull($res);
 

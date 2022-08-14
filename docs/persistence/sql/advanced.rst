@@ -89,7 +89,7 @@ Let's say you want to add support for new SQL vendor::
         protected string $expressionClass = Expression_MyVendor::class;
 
         // truncate is done differently by this vendor
-        protected $template_truncate = 'delete [from] [table]';
+        protected string $templateTruncate = 'delete [from] [table]';
 
         // also join is not supported
         public function join(
@@ -151,7 +151,7 @@ By Default DSQL comes with the following :ref:`query-modes`:
 You can add new mode if you wish. Let's look at how to add a MySQL specific
 query "LOAD DATA INFILE":
 
-1. Define new property inside your :php:class:`Query` class $template_load_data.
+1. Define new property inside your :php:class:`Query` class $templateLoadData.
 2. Add public method allowing to specify necessary parameters.
 3. Re-use existing methods/template tags if you can.
 4. Create _render method if your tag rendering is complex.
@@ -162,7 +162,7 @@ So to implement our task, you might need a class like this::
 
     class QueryMysqlCustom extends \Atk4\Data\Persistence\Sql\Mysql\Query
     {
-        protected $template_load_data = 'load data local infile [file] into table [table]';
+        protected string $templateLoadData = 'load data local infile [file] into table [table]';
 
         public function file($file)
         {
@@ -174,7 +174,7 @@ So to implement our task, you might need a class like this::
 
         public function loadData(): array
         {
-            return $this->mode('load_data')->getRows();
+            return $this->mode('loadData')->getRows();
         }
     }
 

@@ -15,7 +15,7 @@ either explicitly or through a $table property inside a model::
 
     $m = new Model_User($db, 'user');
     $m = $m->load(1);
-    echo $m->get('gender');   // "M"
+    echo $m->get('gender'); // "M"
 
 
 Following this line, you can load ANY record from the table. It's possible to
@@ -36,8 +36,8 @@ Basic Usage
 There are many ways to execute addCondition. The most basic one that will be
 supported by all the drivers consists of 2 arguments or if operator is '='::
 
-    $m->addCondition('gender', 'F');         // or
-    $m->addCondition('gender', '=', 'F');
+    $m->addCondition('gender', 'F');
+    $m->addCondition('gender', '=', 'F'); // exactly same
 
 Once you add a condition, you can't get rid of it, so if you want
 to preserve the state of your model, you need to use clone::
@@ -45,8 +45,8 @@ to preserve the state of your model, you need to use clone::
     $m = new Model_User($db, 'user');
     $girls = (clone $m)->addCondition('gender', 'F');
 
-    $m = $m->load(1);        // success
-    $girls = $girls->load(1);    // exception
+    $m = $m->load(1); // success
+    $girls = $girls->load(1); // exception
 
 Operations
 ----------

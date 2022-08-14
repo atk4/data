@@ -97,17 +97,17 @@ assume that it's a reverse join.
 
 Reverse joins are saved in the opposite order - primary table will be saved
 first and when id of a primary table is known, foreign table record is stored
-and ID is supplied. You can pass option 'master_field' to the join() which will
+and ID is supplied. You can pass option 'masterField' to the join() which will
 specify which field to be used for matching. By default the field is calculated
 like this: foreignTable . '_id'. Here is usage example::
 
     $user->addField('username');
     $jCreditCard = $user->join('credit_card', [
         'prefix' => 'cc_',
-        'master_field' => 'default_credit_card_id',
+        'masterField' => 'default_credit_card_id',
     ]);
-    $jCreditCard->addField('integer');  // creates cc_number
-    $jCreditCard->addField('name');    // creates cc_name
+    $jCreditCard->addField('integer'); // creates cc_number
+    $jCreditCard->addField('name'); // creates cc_name
 
 Master field can also be specified as an object of a Field class.
 
@@ -139,7 +139,7 @@ with a foreign table.
 .. php:method:: hasMany
 
     same as :php:meth:`Model::hasMany` but condition for related model will be
-    based on foreign table field and :php:attr:`Reference::their_field` will be
+    based on foreign table field and :php:attr:`Reference::theirField` will be
     set to $foreignTable . '_id'.
 
 .. php:method:: containsOne

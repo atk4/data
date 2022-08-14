@@ -333,12 +333,12 @@ Starting with the basic examples::
     $q->where('id', '>', 1);
 
     $q->where('id', '=', null); // will render to "IS NULL" SQL
-    $q->where('id', null);   // same as above
+    $q->where('id', null) // same as above
 
-    $q->where('now()', 1);   // will not use backticks
+    $q->where('now()', 1); // will not use backticks
     $q->where($c->expr('now()'), 1); // same as above
 
-    $q->where('id', [1, 2]);  // renders as id in (1, 2)
+    $q->where('id', [1, 2]); // renders as id in (1, 2)
 
 You may call where() multiple times, and conditions are always additive (uses AND).
 The easiest way to supply OR condition is to specify multiple conditions
@@ -484,13 +484,13 @@ When joining with a different table, the results will be stacked by the SQL
 server so that fields from both tables are available. The first argument can
 specify the table to join, but may contain more information::
 
-    $q->join('address');           // address.id = address_id
+    $q->join('address'); // address.id = address_id
         // JOIN `address` ON `address`.`id`=`address_id`
 
-    $q->join('address a');         // specifies alias for the table
+    $q->join('address a'); // specifies alias for the table
         // JOIN `address` `a` ON `address`.`id`=`address_id`
 
-    $q->join('address.user_id');   // address.user_id = id
+    $q->join('address.user_id'); // address.user_id = id
         // JOIN `address` ON `address`.`user_id`=`id`
 
 You can also pass array as a first argument, to join multiple tables::
@@ -636,10 +636,10 @@ Ordering result-set
 
 Use this to order your :php:class:`Query` result-set::
 
-    $q->order('name');                  // .. order by name
-    $q->order('name desc');             // .. order by name desc
-    $q->order(['name desc', 'id asc'])  // .. order by name desc, id asc
-    $q->order('name', true);            // .. order by name desc
+    $q->order('name'); // .. order by name
+    $q->order('name desc'); // .. order by name desc
+    $q->order(['name desc', 'id asc']) // .. order by name desc, id asc
+    $q->order('name', true); // .. order by name desc
 
 Method can be executed several times on the same Query object.
 
@@ -706,7 +706,7 @@ Other settings
 --------------
 
 Limit and Order are normally not included to avoid side-effects, but you can
-modify :php:attr:`$template_update` to include those tags.
+modify :php:attr:`$templateUpdate` to include those tags.
 
 
 Delete Query
@@ -722,7 +722,7 @@ Other settings
 --------------
 
 Limit and Order are normally not included to avoid side-effects, but you can
-modify :php:attr:`$template_update` to include those tags.
+modify :php:attr:`$templateUpdate` to include those tags.
 
 
 Dropping attributes
@@ -833,26 +833,26 @@ Properties
 
     If no fields are defined, this field is used.
 
-.. php:attr:: template_select
+.. php:attr:: templateSelect
 
     Template for SELECT query. See :ref:`Query Modes`.
 
-.. php:attr:: template_insert
+.. php:attr:: templateInsert
 
     Template for INSERT query. See :ref:`Query Modes`.
 
-.. php:attr:: template_replace
+.. php:attr:: templateReplace
 
     Template for REPLACE query. See :ref:`Query Modes`.
 
-.. php:attr:: template_update
+.. php:attr:: templateUpdate
 
     Template for UPDATE query. See :ref:`Query Modes`.
 
-.. php:attr:: template_delete
+.. php:attr:: templateDelete
 
     Template for DELETE query. See :ref:`Query Modes`.
 
-.. php:attr:: template_truncate
+.. php:attr:: templateTruncate
 
     Template for TRUNCATE query. See :ref:`Query Modes`.

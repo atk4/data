@@ -20,7 +20,7 @@ class StaticTest extends TestCase
         $this->assertSame('world', $m->get('name'));
 
         // custom title field and try loading from same static twice
-        $m = new Model($p); // , ['title_field' => 'foo']);
+        $m = new Model($p); // , ['titleField' => 'foo']);
         $m = $m->load(2);
         $this->assertSame('world', $m->get('name')); // still 'name' here not 'foo'
     }
@@ -111,22 +111,22 @@ class StaticTest extends TestCase
 
         $p = new Persistence\Static_([1 => ['foo' => 'hello', 'bar' => 'world']]);
         $m = new StaticTestModel($p);
-        $this->assertSame('foo', $m->title_field);
+        $this->assertSame('foo', $m->titleField);
     }
 
     public function testTitleOrName(): void
     {
         $p = new Persistence\Static_([1 => ['foo' => 'hello', 'bar' => 'world']]);
         $m = new Model($p);
-        $this->assertSame('foo', $m->title_field);
+        $this->assertSame('foo', $m->titleField);
 
         $p = new Persistence\Static_([1 => ['foo' => 'hello', 'name' => 'x']]);
         $m = new Model($p);
-        $this->assertSame('name', $m->title_field);
+        $this->assertSame('name', $m->titleField);
 
         $p = new Persistence\Static_([1 => ['foo' => 'hello', 'title' => 'x']]);
         $m = new Model($p);
-        $this->assertSame('title', $m->title_field);
+        $this->assertSame('title', $m->titleField);
     }
 
     public function testFieldTypes(): void
@@ -179,7 +179,7 @@ class StaticTest extends TestCase
 
 class StaticTestModel extends Model
 {
-    public $title_field = 'foo';
+    public ?string $titleField = 'foo';
 
     protected function init(): void
     {

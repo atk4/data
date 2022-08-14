@@ -17,18 +17,18 @@ class JoinSqlTest extends TestCase
 
         $j1 = $m->join('contact');
         $this->assertFalse($this->getProtected($j1, 'reverse'));
-        $this->assertSame('contact_id', $this->getProtected($j1, 'master_field'));
-        $this->assertSame('id', $this->getProtected($j1, 'foreign_field'));
+        $this->assertSame('contact_id', $this->getProtected($j1, 'masterField'));
+        $this->assertSame('id', $this->getProtected($j1, 'foreignField'));
 
         $j2 = $m->join('contact2.test_id');
         $this->assertTrue($this->getProtected($j2, 'reverse'));
-        $this->assertSame('id', $this->getProtected($j2, 'master_field'));
-        $this->assertSame('test_id', $this->getProtected($j2, 'foreign_field'));
+        $this->assertSame('id', $this->getProtected($j2, 'masterField'));
+        $this->assertSame('test_id', $this->getProtected($j2, 'foreignField'));
 
-        $j3 = $m->join('contact3', ['master_field' => 'test_id']);
+        $j3 = $m->join('contact3', ['masterField' => 'test_id']);
         $this->assertFalse($this->getProtected($j3, 'reverse'));
-        $this->assertSame('test_id', $this->getProtected($j3, 'master_field'));
-        $this->assertSame('id', $this->getProtected($j3, 'foreign_field'));
+        $this->assertSame('test_id', $this->getProtected($j3, 'masterField'));
+        $this->assertSame('id', $this->getProtected($j3, 'foreignField'));
 
         $this->assertSame([
             'contact' => $j1,
@@ -41,10 +41,10 @@ class JoinSqlTest extends TestCase
         $this->assertFalse($m->hasJoin('contact8'));
 
         $this->expectException(Exception::class); // TODO not implemented yet, see https://github.com/atk4/data/issues/803
-        $j4 = $m->join('contact4.foo_id', ['master_field' => 'test_id', 'reverse' => true]);
+        $j4 = $m->join('contact4.foo_id', ['masterField' => 'test_id', 'reverse' => true]);
         // $this->assertTrue($this->getProtected($j4, 'reverse'));
-        // $this->assertSame('test_id', $this->getProtected($j4, 'master_field'));
-        // $this->assertSame('foo_id', $this->getProtected($j4, 'foreign_field'));
+        // $this->assertSame('test_id', $this->getProtected($j4, 'masterField'));
+        // $this->assertSame('foo_id', $this->getProtected($j4, 'foreignField'));
     }
 
     public function testDirectionException(): void
@@ -52,7 +52,7 @@ class JoinSqlTest extends TestCase
         $m = new Model($this->db, ['table' => 'user']);
 
         $this->expectException(Exception::class);
-        $j = $m->join('contact.foo_id', ['master_field' => 'test_id']);
+        $j = $m->join('contact.foo_id', ['masterField' => 'test_id']);
     }
 
     public function testJoinSaving1(): void
@@ -175,7 +175,7 @@ class JoinSqlTest extends TestCase
         ]);
 
         $user->addField('name');
-        $j = $user->join('contact', ['master_field' => 'test_id']);
+        $j = $user->join('contact', ['masterField' => 'test_id']);
         $this->createMigrator()->createForeignKey($j);
         $j->addField('contact_phone');
         $user = $user->createEntity();
@@ -559,11 +559,11 @@ class JoinSqlTest extends TestCase
             'id' => 1, 'name' => 'John', 'contact_id' => 10, 'phone_id' => 20, 'number' => '+123',
         ], $user2->get());
 
-        // hasMany token model (uses default our_field, their_field)
+        // hasMany token model (uses default ourField, theirField)
         $token = new Model($this->db, ['table' => 'token']);
         $token->addField('user_id');
         $token->addField('token');
-        $refMany = $j->hasMany('Token', ['model' => $token]); // hasMany on JOIN (use default our_field, their_field)
+        $refMany = $j->hasMany('Token', ['model' => $token]); // hasMany on JOIN (use default ourField, theirField)
         $this->createMigrator()->createForeignKey($refMany);
 
         $user2 = $user->load(1);
@@ -574,11 +574,11 @@ class JoinSqlTest extends TestCase
 
         $this->markTestIncompleteWhenCreateUniqueIndexIsNotSupportedByPlatform();
 
-        // hasMany email model (uses custom our_field, their_field)
+        // hasMany email model (uses custom ourField, theirField)
         $email = new Model($this->db, ['table' => 'email']);
         $email->addField('contact_id');
         $email->addField('address');
-        $refMany = $j->hasMany('Email', ['model' => $email, 'our_field' => 'contact_id', 'their_field' => 'contact_id']); // hasMany on JOIN (use custom our_field, their_field)
+        $refMany = $j->hasMany('Email', ['model' => $email, 'ourField' => 'contact_id', 'theirField' => 'contact_id']); // hasMany on JOIN (use custom ourField, theirField)
         $this->createMigrator()->createForeignKey($refMany);
 
         $user2 = $user->load(1);
@@ -606,8 +606,8 @@ class JoinSqlTest extends TestCase
         $j = $user->join('detail.my_user_id', [
             // 'reverse' => true, // this will be reverse join by default
             // also no need to set these (will be done automatically), but still let's do that for test sake
-            'master_field' => 'id',
-            'foreign_field' => 'my_user_id',
+            'masterField' => 'id',
+            'foreignField' => 'my_user_id',
         ]);
         $this->createMigrator()->createForeignKey($j);
         $j->addField('notes');
@@ -632,9 +632,9 @@ class JoinSqlTest extends TestCase
         // now test reverse join defined differently
         $user = new Model($this->db, ['table' => 'user']);
         $user->addField('name');
-        $j = $user->join('detail', [ // here we just set foreign table name without dot and foreign_field
+        $j = $user->join('detail', [ // here we just set foreign table name without dot and foreignField
             'reverse' => true, // and set it as revers join
-            'foreign_field' => 'my_user_id', // this is custome name so we have to set it here otherwise it will generate user_id
+            'foreignField' => 'my_user_id', // this is custome name so we have to set it here otherwise it will generate user_id
         ]);
         $j->addField('notes');
 
@@ -649,7 +649,7 @@ class JoinSqlTest extends TestCase
         $user->addField('name');
         $j = $user->join('detail', [
             'reverse' => true,
-            'foreign_field' => 'my_user_id',
+            'foreignField' => 'my_user_id',
             'foreignAlias' => 'a',
         ]);
         $j->addField('notes');

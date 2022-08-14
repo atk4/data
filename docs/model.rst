@@ -373,10 +373,10 @@ a hook::
 Now if you attempt to save object, you will receive :php:class:`ValidationException`::
 
    $model->set('name', 'Swift');
-   $model->saveAndUnload();      // all good
+   $model->saveAndUnload(); // all good
 
    $model->set('name', 'C#');
-   $model->saveAndUnload();      // exception here
+   $model->saveAndUnload(); // exception here
 
 
 Other Uses
@@ -423,7 +423,7 @@ explicitly associate model with persistence like this::
 
    // ....
 
-   $m->setPersistence($db);  // links with persistence
+   $m->setPersistence($db); // links with persistence
 
 Multiple models can be associated with the same persistence. Here are also some examples
 of static persistence::
@@ -431,7 +431,7 @@ of static persistence::
    $m = new Model(new Persistence\Static_(['john', 'peter', 'steve']);
 
    $m = $m->load(1);
-   echo $m->get('name');  // peter
+   echo $m->get('name'); // peter
 
 See :php:class:`Persistence\\Static_`
 
@@ -606,30 +606,30 @@ Full example::
     // Fields can be added after model is created
     $m->addField('salary', ['default' => 1000]);
 
-    echo $m->_isset('salary');  // false
-    echo $m->get('salary');          // 1000
+    echo $m->_isset('salary'); // false
+    echo $m->get('salary'); // 1000
 
     // Next we load record from $db
     $m = $m->load(1);
 
-    echo $m->get('salary');          // 2000 (from db)
-    echo $m->_isset('salary');  // false, was not changed
+    echo $m->get('salary'); // 2000 (from db)
+    echo $m->_isset('salary'); // false, was not changed
 
     $m->set('salary', 3000);
 
-    echo $m->get('salary');          // 3000 (changed)
-    echo $m->_isset('salary');  // true
+    echo $m->get('salary'); // 3000 (changed)
+    echo $m->_isset('salary'); // true
 
-    $m->_unset('salary');        // return to original value
+    $m->_unset('salary'); // return to original value
 
-    echo $m->get('salary');          // 2000
-    echo $m->_isset('salary');  // false
+    echo $m->get('salary'); // 2000
+    echo $m->_isset('salary'); // false
 
     $m->set('salary', 3000);
     $m->save();
 
-    echo $m->get('salary');          // 3000 (now in db)
-    echo $m->_isset('salary');  // false
+    echo $m->get('salary'); // 3000 (now in db)
+    echo $m->_isset('salary'); // false
 
 .. php:method:: protected normalizeFieldName
 
@@ -642,32 +642,32 @@ Those are three properties that you can specify in the model or pass it through
 defaults::
 
     class MyModel ..
-        public $title_field = 'full_name';
+        public ?string $titleField = 'full_name';
 
 or as defaults::
 
-    $m = new MyModel($db, ['title_field' => 'full_name']);
+    $m = new MyModel($db, ['titleField' => 'full_name']);
 
 
-.. _id_field:
+.. _idField:
 
 ID Field
 --------
 
-.. php:attr:: id_field
+.. php:attr:: idField
 
     If your data storage uses field different than ``id`` to keep the ID of your
-    records, then you can specify that in $id_field property.
+    records, then you can specify that in $idField property.
 
     ID value of loaded entity cannot be changed. If you want to duplicate a record,
     you need to create a new entity and save it.
 
-.. _title_field:
+.. _titleField:
 
 Title Field
 -----------
 
-.. php:attr:: title_field
+.. php:attr:: titleField
 
     This field by default is set to 'name' will act as a primary title field of
     your table. This is especially handy if you use model inside UI framework,
@@ -675,7 +675,7 @@ Title Field
     or inside drop-down.
 
     If you don't have field 'name' but you want some other field to be title,
-    you can specify that in the property. If title_field is not needed, set it
+    you can specify that in the property. If titleField is not needed, set it
     to false or point towards a non-existent field.
 
     See: :php:meth::`hasOne::addTitle()`

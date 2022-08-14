@@ -70,7 +70,7 @@ There are two ways to link your model up with the persistence::
         $m = $m->tryLoad(10);
         $m->setMulti($data);
 
-        $m->save();     // will either create new record or update existing
+        $m->save(); // will either create new record or update existing
 
 .. php:method:: unload
 
@@ -80,7 +80,7 @@ There are two ways to link your model up with the persistence::
         $m->unload();
 
         $m->set('name', 'New User');
-        $m->save();         // creates new user
+        $m->save(); // creates new user
 
 .. php:method:: delete($id = null)
 
@@ -126,7 +126,7 @@ correctly for saving and restored as they were when loading::
 
     $m = $m->load();
 
-    $m->get('is_admin');  // converted back to `false`
+    $m->get('is_admin'); // converted back to `false`
 
 Behind a two simple lines might be a long path for the value. The various
 components are essential and as developer you must understand the full sequence::
@@ -144,7 +144,7 @@ Calling "set()" or using array-access to set the value will start by casting
 the value to an appropriate data-type. If it is impossible to cast the value,
 then exception will be generated::
 
-    $m->set('is_admin', "1"); // OK, but stores as `true`
+    $m->set('is_admin', '1'); // OK, but stores as `true`
 
     $m->set('is_admin', 123); // throws exception.
 
@@ -158,10 +158,10 @@ It's not only the 'type' property, but 'enum' can also imply restrictions::
 There are also non-trivial types in Agile Data::
 
     $m->addField('salary', ['type' => 'atk4_money']);
-    $m->set('salary', "20");  // converts to 20.00
+    $m->set('salary', '20'); // converts to 20.00
 
     $m->addField('date', ['type' => 'date']);
-    $m->set('date', time());  // converts to DateTime class
+    $m->set('date', time()); // converts to DateTime class
 
 Finally, you may create your own custom field types that follow a more
 complex logic::
@@ -193,7 +193,7 @@ Note that `readOnly` can still have a default value::
         'default' => new DateTime(),
     ]);
 
-    $m->save();  // stores creation time just fine and also will loade it.
+    $m->save(); // stores creation time just fine and also will loade it.
 
 
 .. note:: If you have been following our "Domain" vs "Persistence" then you can
@@ -417,9 +417,9 @@ Start by creating a beforeSave handler for Order::
 
             if (
                 (new static())
-                    ->addCondition('client_id', $this->get('client_id'))  // same client
-                    ->addCondition($this->id_field, '!=', $this->getId()) // has another order
-                    ->tryLoadBy('ref', $this->get('ref'))                 // with same ref
+                    ->addCondition('client_id', $this->get('client_id')) // same client
+                    ->addCondition($this->idField, '!=', $this->getId()) // has another order
+                    ->tryLoadBy('ref', $this->get('ref')) // with same ref
                     !== null
             ) {
                 throw (new Exception('Order with ref already exists for this client'))
@@ -723,7 +723,7 @@ The default action type can be set when executing action, for example::
 
     $a = $m->action('field', 'user', 'getOne');
 
-    echo $a();   // same as $a->getOne();
+    echo $a(); // same as $a->getOne();
 
 SQL Actions
 -----------

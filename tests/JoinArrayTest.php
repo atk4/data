@@ -34,24 +34,24 @@ class JoinArrayTest extends TestCase
 
         $j = $m->join('contact');
         $this->assertFalse($this->getProtected($j, 'reverse'));
-        $this->assertSame('contact_id', $this->getProtected($j, 'master_field'));
-        $this->assertSame('id', $this->getProtected($j, 'foreign_field'));
+        $this->assertSame('contact_id', $this->getProtected($j, 'masterField'));
+        $this->assertSame('id', $this->getProtected($j, 'foreignField'));
 
         $j = $m->join('contact2.test_id');
         $this->assertTrue($this->getProtected($j, 'reverse'));
-        $this->assertSame('id', $this->getProtected($j, 'master_field'));
-        $this->assertSame('test_id', $this->getProtected($j, 'foreign_field'));
+        $this->assertSame('id', $this->getProtected($j, 'masterField'));
+        $this->assertSame('test_id', $this->getProtected($j, 'foreignField'));
 
-        $j = $m->join('contact3', ['master_field' => 'test_id']);
+        $j = $m->join('contact3', ['masterField' => 'test_id']);
         $this->assertFalse($this->getProtected($j, 'reverse'));
-        $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
-        $this->assertSame('id', $this->getProtected($j, 'foreign_field'));
+        $this->assertSame('test_id', $this->getProtected($j, 'masterField'));
+        $this->assertSame('id', $this->getProtected($j, 'foreignField'));
 
         $this->expectException(Exception::class); // TODO not implemented yet, see https://github.com/atk4/data/issues/803
-        $j = $m->join('contact4.foo_id', ['master_field' => 'test_id', 'reverse' => true]);
+        $j = $m->join('contact4.foo_id', ['masterField' => 'test_id', 'reverse' => true]);
         // $this->assertTrue($this->getProtected($j, 'reverse'));
-        // $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
-        // $this->assertSame('foo_id', $this->getProtected($j, 'foreign_field'));
+        // $this->assertSame('test_id', $this->getProtected($j, 'masterField'));
+        // $this->assertSame('foo_id', $this->getProtected($j, 'foreignField'));
     }
 
     public function testJoinException(): void
@@ -60,7 +60,7 @@ class JoinArrayTest extends TestCase
         $m = new Model($db, ['table' => 'user']);
 
         $this->expectException(Exception::class);
-        $j = $m->join('contact.foo_id', ['master_field' => 'test_id']);
+        $j = $m->join('contact.foo_id', ['masterField' => 'test_id']);
     }
 
     public function testJoinSaving1(): void
@@ -179,7 +179,7 @@ class JoinArrayTest extends TestCase
         $user = new Model($db, ['table' => 'user']);
         $user->addField('name');
         $user->addField('test_id', ['type' => 'integer']);
-        $j = $user->join('contact', ['master_field' => 'test_id']);
+        $j = $user->join('contact', ['masterField' => 'test_id']);
         $j->addField('contact_phone');
         $user = $user->createEntity();
 
@@ -201,7 +201,7 @@ class JoinArrayTest extends TestCase
         $user = new Model($db, ['table' => 'user']);
         $user->addField('name');
         $user->addField('code');
-        $j = $user->join('contact.code', ['master_field' => 'code']);
+        $j = $user->join('contact.code', ['masterField' => 'code']);
         $j->addField('contact_phone');
         $user = $user->createEntity();
 
@@ -395,12 +395,12 @@ class JoinArrayTest extends TestCase
         $m = new Model($db, ['table' => 'db.user']);
         $j = $m->join('contact');
         $this->assertFalse($this->getProtected($j, 'reverse'));
-        $this->assertSame('contact_id', $this->getProtected($j, 'master_field'));
-        $this->assertSame('id', $this->getProtected($j, 'foreign_field'));
+        $this->assertSame('contact_id', $this->getProtected($j, 'masterField'));
+        $this->assertSame('id', $this->getProtected($j, 'foreignField'));
 
         $j = $m->join('contact2', ['reverse' => true]);
         $this->assertTrue($this->getProtected($j, 'reverse'));
-        $this->assertSame('id', $this->getProtected($j, 'master_field'));
-        $this->assertSame('user_id', $this->getProtected($j, 'foreign_field'));
+        $this->assertSame('id', $this->getProtected($j, 'masterField'));
+        $this->assertSame('user_id', $this->getProtected($j, 'foreignField'));
     }
 }

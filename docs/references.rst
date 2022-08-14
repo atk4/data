@@ -106,7 +106,7 @@ There are several ways how to link models with hasMany::
 
     $m->hasMany('Orders', ['model' => [Model_Order::class]]); // using seed
 
-    $m->hasMany('Order', ['model' => function ($m, $r) {   // using callback
+    $m->hasMany('Order', ['model' => function ($m, $r) { // using callback
         return new Model_Order();
     }]);
 
@@ -141,7 +141,7 @@ available. Both models will relate through ``currency.code = exchange.currency_c
     $c = new Model_Currency();
     $e = new Model_ExchangeRate();
 
-    $c->hasMany('Exchanges', ['model' => $e, 'their_field' => 'currency_code', 'our_field' => 'code']);
+    $c->hasMany('Exchanges', ['model' => $e, 'theirField' => 'currency_code', 'ourField' => 'code']);
 
     $c->addCondition('is_convertable', true);
     $e = $c->ref('Exchanges');
@@ -326,7 +326,7 @@ DataSet of the user model::
     $u = $o->ref('user_id');
 
 
-    $u = $u->loadAny();  // will load some user who has at least one failed order
+    $u = $u->loadAny(); // will load some user who has at least one failed order
 
 The important point here is that no additional queries are generated in the
 process and the loadAny() will look like this:
@@ -339,11 +339,11 @@ process and the loadAny() will look like this:
 By passing options to hasOne() you can also differentiate field name::
 
     $o->addField('user_id');
-    $o->hasOne('User', ['model' => $u, 'our_field' => 'user_id']);
+    $o->hasOne('User', ['model' => $u, 'ourField' => 'user_id']);
 
     $o->load(1)->ref('User')['name'];
 
-You can also use ``their_field`` if you need non-id matching (see example above
+You can also use ``theirField`` if you need non-id matching (see example above
 for hasMany()).
 
 Importing Fields
@@ -405,7 +405,7 @@ This would create 'currency' field containing name of the currency::
 
     $i = $i->load(20);
 
-    echo 'Currency for invoice 20 is ' . $i->get('currency');   // EUR
+    echo 'Currency for invoice 20 is ' . $i->get('currency'); // EUR
 
 Unlike addField() which creates fields read-only, title field can in fact be
 modified::
@@ -550,7 +550,7 @@ that relate to itself. Here is example::
             $i2->hasOne('parent_item_id', ['model' => $m, 'tableAlias' => 'parent'])
                 ->addTitle();
 
-            $this->hasMany('Child', ['model' => $m, 'their_field' => 'parent_item_id', 'tableAlias' => 'child'])
+            $this->hasMany('Child', ['model' => $m, 'theirField' => 'parent_item_id', 'tableAlias' => 'child'])
                 ->addField('child_age', ['aggregate' => 'sum', 'field' => 'age']);
         }
     }
@@ -668,7 +668,7 @@ References are implemented through several classes:
 
     May store reference to related model, depending on implementation.
 
-.. php:attr:: our_field
+.. php:attr:: ourField
 
     This is an optional property which can be used by your implementation
     to store field-level relationship based on a common field matching.

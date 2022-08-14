@@ -202,7 +202,7 @@ class DeepCopy
                 // foreach ($destination->unique fields) { try load by
 
                 // if we still have id field, then remove it
-                unset($data[$source->id_field]);
+                unset($data[$source->idField]);
 
                 // Copy fields as they are
                 $destination = $destination->createEntity();

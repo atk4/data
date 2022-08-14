@@ -13,7 +13,7 @@ class Query extends BaseQuery
     protected string $identifierEscapeChar = ']';
     protected string $expressionClass = Expression::class;
 
-    protected $template_insert = <<<'EOF'
+    protected string $templateInsert = <<<'EOF'
         begin try
           insert[option] into [table_noalias] ([set_fields]) values ([set_values]);
         end try begin catch

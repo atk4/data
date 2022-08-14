@@ -31,8 +31,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
     /** @const string keep input as is */
     protected const ESCAPE_NONE = 'none';
 
-    /** @var string */
-    protected $template;
+    protected ?string $template = null;
 
     /**
      * Configuration accumulated by calling methods such as Query::field(), Query::table(), etc.

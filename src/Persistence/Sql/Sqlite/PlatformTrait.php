@@ -10,6 +10,11 @@ use Doctrine\DBAL\Schema\TableDiff;
 
 trait PlatformTrait
 {
+    public function getIdentifierQuoteCharacter(): string
+    {
+        return '`';
+    }
+
     public function supportsForeignKeyConstraints(): bool
     {
         // backport https://github.com/doctrine/dbal/pull/5427, remove once DBAL 3.3.x support is dropped

@@ -36,7 +36,7 @@ class DcInvoice extends Model
 
         $this->hasOne('client_id', ['model' => [DcClient::class]]);
 
-        $this->hasMany('Lines', ['model' => [DcInvoiceLine::class], 'their_field' => 'parent_id'])
+        $this->hasMany('Lines', ['model' => [DcInvoiceLine::class], 'theirField' => 'parent_id'])
             ->addField('total', ['aggregate' => 'sum', 'field' => 'total']);
 
         $this->hasMany('Payments', ['model' => [DcPayment::class]])
@@ -65,7 +65,7 @@ class DcQuote extends Model
         parent::init();
         $this->hasOne('client_id', ['model' => [DcClient::class]]);
 
-        $this->hasMany('Lines', ['model' => [DcQuoteLine::class], 'their_field' => 'parent_id'])
+        $this->hasMany('Lines', ['model' => [DcQuoteLine::class], 'theirField' => 'parent_id'])
             ->addField('total', ['aggregate' => 'sum', 'field' => 'total']);
 
         $this->addField('ref');
@@ -266,7 +266,7 @@ class DeepCopyTest extends TestCase
         $clientId = $client->insert(['name' => 'John']);
 
         $quote = new DcQuote($this->db);
-        $quote->hasMany('Lines2', ['model' => [DcQuoteLine::class], 'their_field' => 'parent_id']);
+        $quote->hasMany('Lines2', ['model' => [DcQuoteLine::class], 'theirField' => 'parent_id']);
 
         $quote->insert(['ref' => 'q1', 'client_id' => $clientId, 'Lines' => [
             ['name' => 'tools', 'qty' => 5, 'price' => 10],

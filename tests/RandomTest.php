@@ -65,7 +65,7 @@ class Model_Item3 extends Model
         $i2->hasOne('parent_item_id', ['model' => $m, 'tableAlias' => 'parent'])
             ->addTitle();
 
-        $this->hasMany('Child', ['model' => $m, 'their_field' => 'parent_item_id', 'tableAlias' => 'child'])
+        $this->hasMany('Child', ['model' => $m, 'theirField' => 'parent_item_id', 'tableAlias' => 'child'])
             ->addField('child_age', ['aggregate' => 'sum', 'field' => 'age']);
     }
 }
@@ -357,27 +357,27 @@ class RandomTest extends TestCase
 
         $mm = $m->createEntity();
 
-        // default title_field = name
+        // default titleField = name
         $this->assertNull($mm->getTitle()); // not loaded model returns null
 
         $mm = $m->load(2);
-        $this->assertSame('Sue', $mm->getTitle()); // loaded returns title_field value
+        $this->assertSame('Sue', $mm->getTitle()); // loaded returns titleField value
 
-        // set custom title_field
-        $m->title_field = 'parent_item_id';
+        // set custom titleField
+        $m->titleField = 'parent_item_id';
         $this->assertEquals(1, $mm->getTitle()); // returns parent_item_id value
 
-        // set custom title_field as title_field from linked model
-        $m->title_field = 'parent_item';
-        $this->assertSame('John', $mm->getTitle()); // returns parent record title_field
+        // set custom titleField as titleField from linked model
+        $m->titleField = 'parent_item';
+        $this->assertSame('John', $mm->getTitle()); // returns parent record titleField
 
-        // no title_field set - return id value
-        $m->title_field = null;
+        // no titleField set - return id value
+        $m->titleField = null;
         $this->assertEquals(2, $mm->getTitle()); // loaded returns id value
 
         // expression as title field
         $m->addExpression('my_name', ['expr' => '[id]']);
-        $m->title_field = 'my_name';
+        $m->titleField = 'my_name';
         $mm = $m->load(2);
         $this->assertEquals(2, $mm->getTitle()); // loaded returns id value
 
@@ -395,7 +395,7 @@ class RandomTest extends TestCase
         ]);
 
         // model without id field
-        $m1 = new Model($this->db, ['table' => 'user', 'id_field' => false]);
+        $m1 = new Model($this->db, ['table' => 'user', 'idField' => false]);
         $m1->addField('code', ['type' => 'integer']);
         $m1->addField('name');
 

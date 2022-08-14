@@ -147,7 +147,7 @@ class Csv extends Persistence
 
         $header = [];
         foreach (array_keys($model->getFields()) as $name) {
-            if ($model->id_field && $name === $model->id_field) {
+            if ($model->idField && $name === $model->idField) {
                 continue;
             }
 
@@ -177,19 +177,19 @@ class Csv extends Persistence
     public function typecastLoadRow(Model $model, array $row): array
     {
         $id = null;
-        if ($model->id_field) {
-            if (isset($row[$model->id_field])) {
+        if ($model->idField) {
+            if (isset($row[$model->idField])) {
                 // temporary remove id field
-                $id = $row[$model->id_field];
-                unset($row[$model->id_field]);
+                $id = $row[$model->idField];
+                unset($row[$model->idField]);
             } else {
                 $id = null;
             }
         }
 
         $row = array_combine($this->header, $row);
-        if ($model->id_field && $id !== null) {
-            $row[$model->id_field] = $id;
+        if ($model->idField && $id !== null) {
+            $row[$model->idField] = $id;
         }
 
         foreach ($row as $key => $value) {
@@ -227,8 +227,8 @@ class Csv extends Persistence
         }
 
         $data = $this->typecastLoadRow($model, $data);
-        if ($model->id_field) {
-            $data[$model->id_field] = $this->line;
+        if ($model->idField) {
+            $data[$model->idField] = $this->line;
         }
 
         return $data;
@@ -252,8 +252,8 @@ class Csv extends Persistence
                 break;
             }
             $data = $this->typecastLoadRow($model, $data);
-            if ($model->id_field) {
-                $data[$model->id_field] = $this->line;
+            if ($model->idField) {
+                $data[$model->idField] = $this->line;
             }
 
             yield $data;
@@ -280,7 +280,7 @@ class Csv extends Persistence
 
         $this->putLine($line);
 
-        return $model->id_field ? $dataRaw[$model->id_field] : null;
+        return $model->idField ? $dataRaw[$model->idField] : null;
     }
 
     /**
