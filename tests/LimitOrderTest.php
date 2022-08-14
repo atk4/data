@@ -20,7 +20,9 @@ class LimitOrderTest extends TestCase
             ],
         ]);
 
-        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
+        $i = new Model($this->db, ['table' => 'invoice']);
+        $i->addField('total_net');
+        $i->addField('total_vat');
         $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]']);
         $i->getField($i->id_field)->system = false;
         $i->id_field = null;
@@ -44,7 +46,9 @@ class LimitOrderTest extends TestCase
             ],
         ]);
 
-        $ii = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
+        $ii = (new Model($this->db, ['table' => 'invoice']));
+        $ii->addField('total_net');
+        $ii->addField('total_vat');
         $ii->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]']);
         $ii->getField($ii->id_field)->system = false;
         $ii->id_field = null;
@@ -96,7 +100,9 @@ class LimitOrderTest extends TestCase
             ],
         ]);
 
-        $ii = (new Model($this->db, ['table' => 'invoice']))->addFields(['net', 'vat']);
+        $ii = new Model($this->db, ['table' => 'invoice']);
+        $ii->addField('net');
+        $ii->addField('vat');
         $ii->getField($ii->id_field)->system = false;
         $ii->id_field = null;
 
@@ -142,7 +148,10 @@ class LimitOrderTest extends TestCase
         ]);
 
         // order by expression field
-        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['code', 'net', 'vat']);
+        $i = new Model($this->db, ['table' => 'invoice']);
+        $i->addField('code');
+        $i->addField('net');
+        $i->addField('vat');
         $i->addExpression('gross', ['expr' => '[net] + [vat]']);
         $i->getField($i->id_field)->system = false;
         $i->id_field = null;
@@ -196,10 +205,7 @@ class LimitOrderTest extends TestCase
         ], $i->export());
     }
 
-    /**
-     * Unsupported order parameter.
-     */
-    public function testExceptionUnsupportedOrderParam(): void
+    public function testOrderByUnsupportedParamException(): void
     {
         $this->setDb([
             'invoice' => [
@@ -207,11 +213,12 @@ class LimitOrderTest extends TestCase
             ],
         ]);
 
-        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['net']);
+        $i = new Model($this->db, ['table' => 'invoice']);
+        $i->addField('net');
         $i->setOrder(new \DateTime()); // @phpstan-ignore-line
 
-        $this->expectException(Exception::class);
-        $i->export(); // executes query and throws exception because of DateTime object
+        $this->expectException(\TypeError::class);
+        $i->export();
     }
 
     public function testLimit(): void
@@ -224,7 +231,9 @@ class LimitOrderTest extends TestCase
             ],
         ]);
 
-        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
+        $i = new Model($this->db, ['table' => 'invoice']);
+        $i->addField('total_net');
+        $i->addField('total_vat');
         $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]']);
         $i->getField($i->id_field)->system = false;
         $i->id_field = null;
@@ -270,7 +279,8 @@ class LimitOrderTest extends TestCase
             ],
         ]);
 
-        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net']);
+        $i = new Model($this->db, ['table' => 'invoice']);
+        $i->addField('total_net');
         $i->setOrder('total_net');
 
         $this->assertEquals(10, $i->loadAny()->get('total_net'));
