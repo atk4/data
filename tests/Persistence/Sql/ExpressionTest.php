@@ -18,7 +18,9 @@ class ExpressionTest extends TestCase
      */
     protected function e($template = [], array $arguments = []): Expression
     {
-        return new Expression($template, $arguments);
+        return new class($template, $arguments) extends Expression {
+            protected string $identifierEscapeChar = '"';
+        };
     }
 
     public function testConstructorNoTemplateException(): void
@@ -207,13 +209,14 @@ class ExpressionTest extends TestCase
         $this->assertSame('Hello :a and good night', $s4);
     }
 
-    /**
-     * expr() should return new Expression object and inherit connection from it.
-     */
     public function testExpr(): void
     {
-        $e = $this->e(['connection' => new Mysql\Connection()]);
-        $this->assertInstanceOf(Mysql\Connection::class, $e->expr()->connection);
+        $this->assertInstanceOf(Expression::class, $this->e('foo'));
+
+        $connection = new Mysql\Connection();
+        $e = new Mysql\Expression(['connection' => $connection]);
+        $this->assertSame(Mysql\Expression::class, get_class($e->expr('foo')));
+        $this->assertSame($connection, $e->expr('foo')->connection);
     }
 
     public function testEscapeIdentifier(): void
@@ -261,7 +264,7 @@ class ExpressionTest extends TestCase
 
     public function testEscapeParam(): void
     {
-        $e = new Expression('hello, [who]', ['who' => 'world']);
+        $e = $this->e('hello, [who]', ['who' => 'world']);
         $this->assertSame([
             'hello, :a',
             [':a' => 'world'],
@@ -310,6 +313,21 @@ class ExpressionTest extends TestCase
     {
         $this->expectException(Exception::class);
         $this->callProtected($this->e(), 'consume', new \stdClass());
+    }
+
+    public function testRenderNoTagException(): void
+    {
+        $e = $this->e('hello, [world]');
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Expression could not render tag');
+        try {
+            $e->render();
+        } catch (Exception $e) {
+            $this->assertSame('world', $e->getParams()['tag']);
+
+            throw $e;
+        }
     }
 
     public function testArrayAccess(): void

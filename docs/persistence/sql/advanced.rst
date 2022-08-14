@@ -15,22 +15,22 @@ Using DSQL without Connection
 You can use :php:class:`Query` and :php:class:`Expression` without connection
 at all. Simply create expression::
 
-    $expr = new Expression('show tables like []', ['foo%']);
+    $expr = new Mysql\Expression('show tables like []', ['foo%']);
 
 or query::
 
-    $query = (new Query())->table('user')->where('id', 1);
+    $query = (new Mysql\Query())->table('user')->where('id', 1);
 
-When it's time to execute you can specify your PDO manually::
+When it's time to execute you can specify your Connection manually::
 
-    $rows = $expr->getRows($pdo);
+    $rows = $expr->getRows($connection);
     foreach ($rows as $row) {
         echo json_encode($row) . "\n";
     }
 
 With queries you might need to select mode first::
 
-    $stmt = $query->mode('delete')->executeStatement($pdo);
+    $stmt = $query->mode('delete')->executeStatement($connection);
 
 The :php:meth:`Expresssion::execute` is a convenient way to prepare query,
 bind all parameters and get `Doctrine\DBAL\Result`, but if you wish to do it manually,
@@ -43,7 +43,6 @@ If you use DSQL inside another framework, it's possible that there is already
 a PDO object which you can use. In Laravel you can optimize some of your queries
 by switching to DSQL::
 
-    $pdo = DB::connection()->getPdo();
     $c = new Connection(['connection' => $pdo]);
 
     $userIds = $c->dsql()->table('expired_users')->field('user_id');
@@ -86,6 +85,9 @@ Let's say you want to add support for new SQL vendor::
 
     class Query_MyVendor extends Atk4\Data\Persistence\Sql\Query
     {
+        protected string $identifierEscapeChar = '"';
+        protected string $expressionClass = Expression_MyVendor::class;
+
         // truncate is done differently by this vendor
         protected $template_truncate = 'delete [from] [table]';
 
@@ -157,6 +159,7 @@ query "LOAD DATA INFILE":
 So to implement our task, you might need a class like this::
 
     use \Atk4\Data\Persistence\Sql\Exception;
+
     class QueryMysqlCustom extends \Atk4\Data\Persistence\Sql\Mysql\Query
     {
         protected $template_load_data = 'load data local infile [file] into table [table]';

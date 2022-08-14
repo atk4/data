@@ -8,15 +8,6 @@ use Doctrine\DBAL\Exception\DriverException;
 
 trait ExpressionTrait
 {
-    protected function escapeIdentifier(string $value): string
-    {
-        $res = parent::escapeIdentifier($value);
-
-        return $this->identifierEscapeChar === ']' && str_starts_with($res, ']') && str_ends_with($res, ']')
-            ? '[' . substr($res, 1)
-            : $res;
-    }
-
     public function render(): array
     {
         [$sql, $params] = parent::render();

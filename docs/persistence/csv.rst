@@ -37,7 +37,7 @@ You can take a model that is loaded from other persistence and save
 it into CSV like this. The next example demonstrates a basic functionality
 of SQL database export to CSV file::
 
-    $db = new Persistence\Sql($pdo);
+    $db = new Persistence\Sql($connection);
     $csv = new Persistence\Csv('dump.csv');
 
     $m = new Model_User($db);

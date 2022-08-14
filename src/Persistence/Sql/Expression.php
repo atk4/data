@@ -18,7 +18,7 @@ use Doctrine\DBAL\Result as DbalResult;
 /**
  * @phpstan-implements \ArrayAccess<int|string, mixed>
  */
-class Expression implements Expressionable, \ArrayAccess
+abstract class Expression implements Expressionable, \ArrayAccess
 {
     use WarnDynamicPropertyTrait;
 
@@ -49,17 +49,13 @@ class Expression implements Expressionable, \ArrayAccess
     /** @var string As per PDO, escapeParam() will convert value into :a, :b, :c .. :aa .. etc. */
     protected string $paramBase = 'a';
 
-    /**
-     * Identifier (table, column, ...) escaping symbol. By SQL Standard it's double
-     * quote, but MySQL uses backtick.
-     */
-    protected string $identifierEscapeChar = '"';
+    /** @var '"'|'`'|']' Identifier (table, column, ...) escaping symbol. */
+    protected string $identifierEscapeChar;
 
     private ?string $renderParamBase = null;
     private ?array $renderParams = null;
 
-    /** @var Connection|null */
-    public $connection;
+    public Connection $connection;
 
     /** Wrap the expression in parentheses when consumed by another expression or not. */
     public bool $wrapInParentheses = false;
@@ -134,8 +130,7 @@ class Expression implements Expressionable, \ArrayAccess
     }
 
     /**
-     * Use this instead of "new Expression()" if you want to automatically bind
-     * new expression to the same connection as the parent.
+     * Create Expression object with the same connection.
      *
      * @param string|array $properties
      */
@@ -322,9 +317,11 @@ class Expression implements Expressionable, \ArrayAccess
      */
     protected function escapeIdentifier(string $value): string
     {
-        $c = $this->identifierEscapeChar;
+        $char = $this->identifierEscapeChar;
 
-        return $c . str_replace($c, $c . $c, $value) . $c;
+        return ($char === ']' ? '[' : $char)
+            . str_replace($char, $char . $char, $value)
+            . $char;
     }
 
     /**

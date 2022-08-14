@@ -389,13 +389,13 @@ class Array_ extends Persistence
     protected function setLimitOrder(Model $model, Action $action): void
     {
         // first order by
-        if ($model->order) {
+        if (count($model->order) > 0) {
             $action->order($model->order);
         }
 
         // then set limit
-        if ($model->limit && ($model->limit[0] || $model->limit[1])) {
-            $action->limit($model->limit[0] ?? 0, $model->limit[1] ?? 0);
+        if ($model->limit[0] !== null || $model->limit[1] !== 0) {
+            $action->limit($model->limit[0] ?? \PHP_INT_MAX, $model->limit[1]);
         }
     }
 

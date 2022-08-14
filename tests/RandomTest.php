@@ -9,7 +9,6 @@ use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
-use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 
@@ -518,7 +517,7 @@ class RandomTest extends TestCase
             $runWithDb = false;
         } else {
             $dbSchema = $this->getConnection()->dsql()
-                ->field(new Expression($this->getDatabasePlatform()->getCurrentDatabaseExpression(true))) // @phpstan-ignore-line
+                ->field($this->getConnection()->expr('{{}}', [$this->getDatabasePlatform()->getCurrentDatabaseExpression(true)])) // @phpstan-ignore-line
                 ->getOne();
             $userSchema = $dbSchema;
             $docSchema = $dbSchema;

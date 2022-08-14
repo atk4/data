@@ -80,9 +80,7 @@ Creating Expression
 
 ::
 
-    use Atk4\Data\Persistence\Sql\Expression;
-
-    $expr = new Expression('NOW()');
+    $expr = $connection->expr('NOW()');
 
 You can also use :php:meth:`expr()` method to create expression, in which case
 you do not have to define "use" block::
@@ -94,7 +92,7 @@ you do not have to define "use" block::
 You can specify some of the expression properties through first argument of the
 constructor::
 
-    $expr = new Expression(['NOW()', 'connection' => $pdo]);
+    $expr = $connection->expr(['template' => 'NOW()']);
 
 :ref:`Scroll down <properties>` for full list of properties.
 
@@ -113,14 +111,14 @@ square brackets:
 Arguments can be specified immediately through an array as a second argument
 into constructor or you can specify arguments later::
 
-    $expr = new Expression(
+    $expr = $connection->expr(
         'coalesce([name], [surname])',
         ['name' => $name, 'surname' => $surname]
     );
 
     // is the same as
 
-    $expr = new Expression('coalesce([name], [surname])');
+    $expr = $connection->expr('coalesce([name], [surname])');
     $expr['name'] = $name;
     $expr['surname'] = $surname;
 
@@ -129,8 +127,8 @@ Nested expressions
 
 Expressions can be nested several times::
 
-    $age = new Expression('coalesce([age], [default_age])');
-    $age['age'] = new Expression("year(now()) - year(birth_date)");
+    $age = $connection->expr('coalesce([age], [default_age])');
+    $age['age'] = $connection->expr("year(now()) - year(birth_date)");
     $age['default_age'] = 18;
 
     $query->table('user')->field($age, 'calculated_age');
@@ -162,18 +160,12 @@ your expression. Before you do, however, you need to have :php:attr:`$connection
 property set. (See `Connecting to Database` on more details). In short the
 following code will connect your expression with the database::
 
-    $expr = new Expression('connection' => $pdo);
+    $expr = $connection->expr();
 
 If you are looking to use connection :php:class:`Query` class, you may want to
 consider using a proper vendor-specific subclass::
 
-    $query = new \Atk4\Data\Persistence\Sql\Mysql\Query('connection' => $pdo);
-
-
-If your expression already exist and you wish to associate it with connection
-you can simply change the value of :php:attr:`$connection` property::
-
-    $expr->connection = $pdo;
+    $query = new \Atk4\Data\Persistence\Sql\Mysql\Query('connection' => $connection);
 
 Finally, you can pass connection class into :php:meth:`executeQuery` directly.
 
@@ -182,7 +174,7 @@ Finally, you can pass connection class into :php:meth:`executeQuery` directly.
     Executes expression using current database connection or the one you
     specify as the argument::
 
-        $stmt = $expr->executeQuery($pdo);
+        $stmt = $expr->executeQuery($connection);
 
     returns `Doctrine\DBAL\Result`.
 
@@ -205,10 +197,7 @@ Finally, you can pass connection class into :php:meth:`executeQuery` directly.
 
     Executes expression and return whole result-set in form of array of hashes::
 
-        $data = new Expression([
-                'connection' => $pdo,
-                'template' => 'show databases',
-            ])->getRows();
+        $data = $connection->expr('show databases')->getRows();
         echo json_encode($data);
 
     The output would be
@@ -226,10 +215,7 @@ Finally, you can pass connection class into :php:meth:`executeQuery` directly.
 
     Executes expression and returns first row of data from result-set as a hash::
 
-        $data = new Expression([
-                'connection' => $pdo,
-                'template' => 'SELECT @@global.time_zone, @@session.time_zone',
-            ])->getRow()
+        $data = $connection->expr('SELECT @@global.time_zone, @@session.time_zone')->getRow()
 
         echo json_encode($data);
 
@@ -244,10 +230,7 @@ Finally, you can pass connection class into :php:meth:`executeQuery` directly.
     Executes expression and return first value of first row of data from
     result-set::
 
-        $time = new Expression([
-                'connection' => $pdo,
-                'template' => 'now()',
-            ])->getOne();
+        $time = $connection->expr('NOW()')->getOne();
 
 Magic an Debug Methods
 ======================
@@ -337,13 +320,13 @@ Other Properties
 .. php:attr:: template
 
     Template which is used when rendering.
-    You can set this with either `new Expression('show tables')`
-    or `new Expression(['show tables'])`
-    or `new Expression(['template' => 'show tables'])`.
+    You can set this with either `$connection->expr('show tables')`
+    or `$connection->expr(['show tables'])`
+    or `$connection->expr(['template' => 'show tables'])`.
 
 .. php:attr:: connection
 
-    PDO connection object or any other DB connection object.
+    DB connection object.
 
 .. php:attr:: paramBase
 

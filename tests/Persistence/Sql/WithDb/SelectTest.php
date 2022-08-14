@@ -73,12 +73,12 @@ class SelectTest extends TestCase
 
         $this->assertSame(
             '4',
-            $this->q()->field(new Expression('2 + 2'))->getOne()
+            $this->q()->field($this->e('2 + 2'))->getOne()
         );
 
         $this->assertSame(
             '4',
-            $this->q('employee')->field(new Expression('count(*)'))->getOne()
+            $this->q('employee')->field($this->e('count(*)'))->getOne()
         );
 
         $names = [];
@@ -93,7 +93,7 @@ class SelectTest extends TestCase
 
         $this->assertSame(
             [['now' => '4']],
-            $this->q()->field(new Expression('2 + 2'), 'now')->getRows()
+            $this->q()->field($this->e('2 + 2'), 'now')->getRows()
         );
 
         // PostgreSQL needs to have values cast, to make the query work.
@@ -102,18 +102,18 @@ class SelectTest extends TestCase
         if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             $this->assertSame(
                 [['now' => '6']],
-                $this->q()->field(new Expression('CAST([] AS int) + CAST([] AS int)', [3, 3]), 'now')->getRows()
+                $this->q()->field($this->e('CAST([] AS int) + CAST([] AS int)', [3, 3]), 'now')->getRows()
             );
         } else {
             $this->assertSame(
                 [['now' => '6']],
-                $this->q()->field(new Expression('[] + []', [3, 3]), 'now')->getRows()
+                $this->q()->field($this->e('[] + []', [3, 3]), 'now')->getRows()
             );
         }
 
         $this->assertSame(
             '5',
-            $this->q()->field(new Expression('COALESCE([], \'5\')', [null]), 'null_test')->getOne()
+            $this->q()->field($this->e('COALESCE([], \'5\')', [null]), 'null_test')->getOne()
         );
     }
 
@@ -144,7 +144,7 @@ class SelectTest extends TestCase
         $this->q('employee')->mode('truncate')->executeStatement();
         $this->assertSame(
             '0',
-            $this->q('employee')->field(new Expression('count(*)'))->getOne()
+            $this->q('employee')->field($this->e('count(*)'))->getOne()
         );
 
         // insert

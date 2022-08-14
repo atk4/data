@@ -8,7 +8,6 @@ use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Model\Scope;
 use Atk4\Data\Model\Scope\Condition;
-use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
@@ -176,7 +175,7 @@ class ScopeTest extends TestCase
     {
         $user = new SUser($this->db);
 
-        $condition = new Condition(new Expression('false'));
+        $condition = new Condition($this->getConnection()->expr('false'));
 
         $this->assertEquals('expression \'false\'', $condition->toWords($user));
 
@@ -235,7 +234,7 @@ class ScopeTest extends TestCase
 
     public function testConditionUnsupportedNegate(): void
     {
-        $condition = new Condition(new Expression('false'));
+        $condition = new Condition($this->getConnection()->expr('1 = 1'));
 
         $this->expectException(Exception::class);
         $condition->negate();

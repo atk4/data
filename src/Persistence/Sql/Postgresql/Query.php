@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Postgresql;
 
-use Atk4\Data\Persistence\Sql\Expression;
+use Atk4\Data\Persistence\Sql\Expression as BaseExpression;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 
 class Query extends BaseQuery
 {
+    protected string $identifierEscapeChar = '"';
+    protected string $expressionClass = Expression::class;
+
     protected $template_update = 'update [table][join] set [set] [where]';
     protected $template_replace;
 
@@ -35,7 +38,7 @@ class Query extends BaseQuery
             . ' offset ' . (int) $this->args['limit']['shift'];
     }
 
-    public function groupConcat($field, string $delimiter = ','): Expression
+    public function groupConcat($field, string $delimiter = ','): BaseExpression
     {
         return $this->expr('string_agg({}, [])', [$field, $delimiter]);
     }

@@ -35,9 +35,7 @@ Getting Started
 We will start by looking at the :php:class:`Query` building, because you do
 not need a database to create a query::
 
-    use Atk4\Data\Persistence\Sql\Query;
-
-    $query = new Query(['connection' => $pdo]);
+    $query = $connection->dsql();
 
 Once you have a query object, you can add parameters by calling some of it's
 methods::
@@ -68,7 +66,7 @@ The next example might be a bit too complex for you, but still read through and
 try to understand what each section does to your base query::
 
     // Establish a query looking for a maximum salary
-    $salary = new Query(['connection' => $pdo]);
+    $salary = $connection->dsql();
 
     // Create few expression objects
     $eMaxSalary = $salary->expr('max(salary)');

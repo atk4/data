@@ -31,7 +31,7 @@ DSQL by example
 ===============
 The simplest way to explain DSQL is by example::
 
-    $query = new Atk4\Data\Persistence\Sql\Query();
+    $query = $connection->dsql();
     $query->table('employees')
           ->where('birth_date', '1961-05-02')
           ->field('count(*)');
