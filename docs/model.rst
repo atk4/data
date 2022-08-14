@@ -373,10 +373,10 @@ a hook::
 Now if you attempt to save object, you will receive :php:class:`ValidationException`::
 
    $model->set('name', 'Swift');
-   $model->saveAndUnload();      // all good
+   $model->saveAndUnload(); // all good
 
    $model->set('name', 'C#');
-   $model->saveAndUnload();      // exception here
+   $model->saveAndUnload(); // exception here
 
 
 Other Uses
@@ -423,7 +423,7 @@ explicitly associate model with persistence like this::
 
    // ....
 
-   $m->setPersistence($db);  // links with persistence
+   $m->setPersistence($db); // links with persistence
 
 Multiple models can be associated with the same persistence. Here are also some examples
 of static persistence::
@@ -431,7 +431,7 @@ of static persistence::
    $m = new Model(new Persistence\Static_(['john', 'peter', 'steve']);
 
    $m = $m->load(1);
-   echo $m->get('name');  // peter
+   echo $m->get('name'); // peter
 
 See :php:class:`Persistence\\Static_`
 
@@ -606,30 +606,30 @@ Full example::
     // Fields can be added after model is created
     $m->addField('salary', ['default' => 1000]);
 
-    echo $m->_isset('salary');  // false
-    echo $m->get('salary');          // 1000
+    echo $m->_isset('salary'); // false
+    echo $m->get('salary'); // 1000
 
     // Next we load record from $db
     $m = $m->load(1);
 
-    echo $m->get('salary');          // 2000 (from db)
-    echo $m->_isset('salary');  // false, was not changed
+    echo $m->get('salary'); // 2000 (from db)
+    echo $m->_isset('salary'); // false, was not changed
 
     $m->set('salary', 3000);
 
-    echo $m->get('salary');          // 3000 (changed)
-    echo $m->_isset('salary');  // true
+    echo $m->get('salary'); // 3000 (changed)
+    echo $m->_isset('salary'); // true
 
-    $m->_unset('salary');        // return to original value
+    $m->_unset('salary'); // return to original value
 
-    echo $m->get('salary');          // 2000
-    echo $m->_isset('salary');  // false
+    echo $m->get('salary'); // 2000
+    echo $m->_isset('salary'); // false
 
     $m->set('salary', 3000);
     $m->save();
 
-    echo $m->get('salary');          // 3000 (now in db)
-    echo $m->_isset('salary');  // false
+    echo $m->get('salary'); // 3000 (now in db)
+    echo $m->_isset('salary'); // false
 
 .. php:method:: protected normalizeFieldName
 

@@ -421,7 +421,7 @@ you can significantly affect the query building of an SQL model::
 
     class CompanyProfit extends \Atk4\Data\Model {
 
-        public $companyId = null;  // inject company ID, which will act as a condition/argument
+        public $companyId = null; // inject company ID, which will act as a condition/argument
         public $readOnly  = true; // instructs rest of the app, that this model is read-only
 
         function init(): void {

@@ -333,12 +333,12 @@ Starting with the basic examples::
     $q->where('id', '>', 1);
 
     $q->where('id', '=', null); // will render to "IS NULL" SQL
-    $q->where('id', null);   // same as above
+    $q->where('id', null) // same as above
 
-    $q->where('now()', 1);   // will not use backticks
+    $q->where('now()', 1); // will not use backticks
     $q->where($c->expr('now()'), 1); // same as above
 
-    $q->where('id', [1, 2]);  // renders as id in (1, 2)
+    $q->where('id', [1, 2]); // renders as id in (1, 2)
 
 You may call where() multiple times, and conditions are always additive (uses AND).
 The easiest way to supply OR condition is to specify multiple conditions
@@ -484,13 +484,13 @@ When joining with a different table, the results will be stacked by the SQL
 server so that fields from both tables are available. The first argument can
 specify the table to join, but may contain more information::
 
-    $q->join('address');           // address.id = address_id
+    $q->join('address'); // address.id = address_id
         // JOIN `address` ON `address`.`id`=`address_id`
 
-    $q->join('address a');         // specifies alias for the table
+    $q->join('address a'); // specifies alias for the table
         // JOIN `address` `a` ON `address`.`id`=`address_id`
 
-    $q->join('address.user_id');   // address.user_id = id
+    $q->join('address.user_id'); // address.user_id = id
         // JOIN `address` ON `address`.`user_id`=`id`
 
 You can also pass array as a first argument, to join multiple tables::
@@ -636,10 +636,10 @@ Ordering result-set
 
 Use this to order your :php:class:`Query` result-set::
 
-    $q->order('name');                  // .. order by name
-    $q->order('name desc');             // .. order by name desc
-    $q->order(['name desc', 'id asc'])  // .. order by name desc, id asc
-    $q->order('name', true);            // .. order by name desc
+    $q->order('name'); // .. order by name
+    $q->order('name desc'); // .. order by name desc
+    $q->order(['name desc', 'id asc']) // .. order by name desc, id asc
+    $q->order('name', true); // .. order by name desc
 
 Method can be executed several times on the same Query object.
 

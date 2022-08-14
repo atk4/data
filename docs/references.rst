@@ -106,7 +106,7 @@ There are several ways how to link models with hasMany::
 
     $m->hasMany('Orders', ['model' => [Model_Order::class]]); // using seed
 
-    $m->hasMany('Order', ['model' => function ($m, $r) {   // using callback
+    $m->hasMany('Order', ['model' => function ($m, $r) { // using callback
         return new Model_Order();
     }]);
 
@@ -326,7 +326,7 @@ DataSet of the user model::
     $u = $o->ref('user_id');
 
 
-    $u = $u->loadAny();  // will load some user who has at least one failed order
+    $u = $u->loadAny(); // will load some user who has at least one failed order
 
 The important point here is that no additional queries are generated in the
 process and the loadAny() will look like this:
@@ -405,7 +405,7 @@ This would create 'currency' field containing name of the currency::
 
     $i = $i->load(20);
 
-    echo 'Currency for invoice 20 is ' . $i->get('currency');   // EUR
+    echo 'Currency for invoice 20 is ' . $i->get('currency'); // EUR
 
 Unlike addField() which creates fields read-only, title field can in fact be
 modified::

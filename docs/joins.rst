@@ -106,8 +106,8 @@ like this: foreignTable . '_id'. Here is usage example::
         'prefix' => 'cc_',
         'master_field' => 'default_credit_card_id',
     ]);
-    $jCreditCard->addField('integer');  // creates cc_number
-    $jCreditCard->addField('name');    // creates cc_name
+    $jCreditCard->addField('integer'); // creates cc_number
+    $jCreditCard->addField('name'); // creates cc_name
 
 Master field can also be specified as an object of a Field class.
 

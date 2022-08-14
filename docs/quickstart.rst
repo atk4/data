@@ -222,7 +222,7 @@ You can load / unload records like this::
     $m = new Model_User($db);
     $m = $m->loadAny();
 
-    $m->get();     // inside console, this will show you what's inside your model
+    $m->get(); // inside console, this will show you what's inside your model
 
     $m->set('email', 'test@example.com');
     $m->save();
@@ -243,7 +243,7 @@ be saved inside DataSet::
 
     $m->get(); // will show country_id as 2
     $m->set('country_id', 3);
-    $m->save();  // will generate exception because model you try to save doesn't match conditions set
+    $m->save(); // will generate exception because model you try to save doesn't match conditions set
 
 
 Other Parameters
@@ -394,7 +394,7 @@ For some persistence classes, you should use constructor directly::
     $m = new \Atk4\Data\Model($db);
     $m->addField('name');
     $m = $m->load(2);
-    echo $m->get('name');  // Peter
+    echo $m->get('name'); // Peter
 
 There are several Persistence classes that deal with different data sources.
 Lets load up our console and try out a different persistence::
@@ -574,7 +574,7 @@ This is useful with hasMany references::
     $m = new Model_User($db);
     $m->getReference('country_id')->addField('country', 'name');
     $m = $m->loadAny();
-    $m->get();  // look for 'country' field
+    $m->get(); // look for 'country' field
 
 hasMany::addField() again is a short-cut for creating expression, which you can
 also build manually::

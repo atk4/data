@@ -148,10 +148,10 @@ inside your model, however you can affect this behavior::
 
     $m->save();
 
-    echo $m->get('sum');   // outputs null
+    echo $m->get('sum'); // outputs null
 
     $m->reload();
-    echo $m->get('sum');   // outputs 10
+    echo $m->get('sum'); // outputs 10
 
 Now it requires an explicit reload for your model to fetch the result. There
 is another scenario when your database defines default fields:

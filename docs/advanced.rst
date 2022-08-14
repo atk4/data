@@ -177,9 +177,9 @@ which I want to define like this::
 In order to add your defined behavior to the model. The first check actually
 allows you to define models that will bypass audit altogether::
 
-    $u1 = new Model_User($db);   // Model_User::init() includes audit
+    $u1 = new Model_User($db); // Model_User::init() includes audit
 
-    $u2 = new Model_User($db, ['no_audit' => true]);  // will exclude audit features
+    $u2 = new Model_User($db, ['no_audit' => true]); // will exclude audit features
 
 Next we are going to define 'created_dts' field which will default to the
 current date and time.

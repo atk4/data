@@ -292,9 +292,9 @@ abstract class Query extends Expression
      * to reference the main table, unless you specify it explicitly.
      *
      * Examples:
-     *  $q->join('address');         // on user.address_id=address.id
-     *  $q->join('address.user_id'); // on address.user_id=user.id
-     *  $q->join('address a');       // With alias
+     *  $q->join('address'); // on user.address_id = address.id
+     *  $q->join('address.user_id'); // on address.user_id = user.id
+     *  $q->join('address a'); // with alias
      *
      * Second argument may specify the field of the master table
      *  $q->join('address', 'billing_id');
@@ -332,7 +332,8 @@ abstract class Query extends Expression
 
         $j = [];
 
-        // try to find alias in foreign table definition. this behaviour should be deprecated
+        // try to find alias in foreign table definition
+        // TODO this behaviour should be deprecated
         if ($foreignAlias === null) {
             [$foreignTable, $foreignAlias] = array_pad(explode(' ', $foreignTable, 2), 2, null);
         }
