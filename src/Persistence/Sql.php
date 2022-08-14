@@ -186,7 +186,7 @@ class Sql extends Persistence
     }
 
     /**
-     * Creates new Query object with current_timestamp(precision) expression.
+     * Creates new Query object with current time expression.
      */
     public function exprNow(int $precision = null): Expression
     {
