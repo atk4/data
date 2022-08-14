@@ -15,14 +15,14 @@ class HasOne extends Reference
 
     /**
      * Reference\HasOne will also add a field corresponding
-     * to 'our_field' unless it exists.
+     * to 'ourField' unless it exists.
      */
     protected function init(): void
     {
         parent::init();
 
-        if (!$this->our_field) {
-            $this->our_field = $this->link;
+        if (!$this->ourField) {
+            $this->ourField = $this->link;
         }
 
         if ($this->type === null) { // different default value than in Model\FieldPropertiesTrait
@@ -35,7 +35,7 @@ class HasOne extends Reference
         $fieldPropsRefl[] = (new \ReflectionClass(Model\JoinLinkTrait::class))->getProperty('joinName');
 
         $ourModel = $this->getOurModel(null);
-        if (!$ourModel->hasField($this->our_field)) {
+        if (!$ourModel->hasField($this->ourField)) {
             $fieldSeed = [];
             foreach ($fieldPropsRefl as $fieldPropRefl) {
                 $v = $this->{$fieldPropRefl->getName()};
@@ -47,7 +47,7 @@ class HasOne extends Reference
                 }
             }
 
-            $ourModel->addField($this->our_field, $fieldSeed);
+            $ourModel->addField($this->ourField, $fieldSeed);
         }
 
         // TODO seeding thru Model\FieldPropertiesTrait is a hack, at least unset these properties for now
@@ -113,7 +113,7 @@ class HasOne extends Reference
 
         if ($ourModel->isEntity()) {
             $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function (Model $theirModel) use ($ourModel) {
-                $theirValue = $this->their_field ? $theirModel->get($this->their_field) : $theirModel->getId();
+                $theirValue = $this->theirField ? $theirModel->get($this->theirField) : $theirModel->getId();
 
                 if (!$this->getOurField()->compare($this->getOurFieldValue($ourModel), $theirValue)) {
                     $ourModel->set($this->getOurFieldName(), $theirValue)->save();

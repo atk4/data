@@ -59,18 +59,14 @@ class Reference
     /**
      * This is an optional property which can be used by your implementation
      * to store field-level relationship based on a common field matching.
-     *
-     * @var string
      */
-    protected $our_field;
+    protected ?string $ourField = null;
 
     /**
      * This is an optional property which can be used by your implementation
      * to store field-level relationship based on a common field matching.
-     *
-     * @var string|null
      */
-    protected $their_field;
+    protected ?string $theirField = null;
 
     /**
      * Caption of the referenced model. Can be used in UI components, for example.
@@ -110,7 +106,7 @@ class Reference
 
     public function getOurFieldName(): string
     {
-        return $this->our_field ?: $this->getOurModel(null)->idField;
+        return $this->ourField ?: $this->getOurModel(null)->idField;
     }
 
     final protected function getOurField(): Field
@@ -128,7 +124,7 @@ class Reference
 
     public function getTheirFieldName(Model $theirModel = null): string
     {
-        return $this->their_field ?? ($theirModel ?? Model::assertInstanceOf($this->model))->idField;
+        return $this->theirField ?? ($theirModel ?? Model::assertInstanceOf($this->model))->idField;
     }
 
     protected function onHookToOurModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
@@ -299,7 +295,7 @@ class Reference
     }
 
     /** @var array<int|string, string> */
-    protected $__debug_fields = ['link', 'model', 'our_field', 'their_field'];
+    protected $__debug_fields = ['link', 'model', 'ourField', 'theirField'];
 
     public function __debugInfo(): array
     {

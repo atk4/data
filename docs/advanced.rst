@@ -520,7 +520,7 @@ Next we need to define reference. Inside Model_Invoice add::
         $j = $p->join('invoice_payment.payment_id');
         $j->addField('amount_closed');
         $j->hasOne('invoice_id', 'Model_Invoice');
-    }, 'their_field' => 'invoice_id']);
+    }, 'theirField' => 'invoice_id']);
 
     $this->onHookShort(Model::HOOK_BEFORE_DELETE, function () {
         foreach ($this->ref('InvoicePayment') as $payment) {

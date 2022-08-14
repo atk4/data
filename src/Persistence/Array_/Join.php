@@ -13,7 +13,7 @@ class Join extends Model\Join
     public function afterLoad(Model $entity): void
     {
         // we need to collect ID
-        $this->setId($entity, $entity->getDataRef()[$this->master_field]);
+        $this->setId($entity, $entity->getDataRef()[$this->masterField]);
         if ($this->getId($entity) === null) {
             return;
         }

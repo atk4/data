@@ -22,8 +22,8 @@ class HasMany extends Reference
 
     public function getTheirFieldName(Model $theirModel = null): string
     {
-        if ($this->their_field) {
-            return $this->their_field;
+        if ($this->theirField) {
+            return $this->theirField;
         }
 
         // this is pure guess, verify if such field exist, otherwise throw
@@ -48,8 +48,8 @@ class HasMany extends Reference
         $ourModel = $this->getOurModel($ourModel);
 
         if ($ourModel->isEntity()) {
-            $res = $this->our_field
-                ? $ourModel->get($this->our_field)
+            $res = $this->ourField
+                ? $ourModel->get($this->ourField)
                 : $ourModel->getId();
             $this->assertReferenceValueNotNull($res);
 

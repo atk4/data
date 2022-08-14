@@ -34,12 +34,12 @@ class Join extends Model\Join
         // so you can use expressions or fields inside joined entities.
         // If string specified here does not point to an existing model field
         // a new basic field is inserted and marked hidden.
-        if (!$this->reverse && !$this->getOwner()->hasField($this->master_field)) {
+        if (!$this->reverse && !$this->getOwner()->hasField($this->masterField)) {
             $owner = $this->hasJoin() ? $this->getJoin() : $this->getOwner();
 
-            $field = $owner->addField($this->master_field, ['system' => true, 'readOnly' => true]);
+            $field = $owner->addField($this->masterField, ['system' => true, 'readOnly' => true]);
 
-            $this->master_field = $field->shortName;
+            $this->masterField = $field->shortName;
         }
     }
 
@@ -71,8 +71,8 @@ class Join extends Model\Join
             $this->foreignTable,
             $this->getOwner()->expr('{{}}.{} = {}', [
                 $this->foreignAlias ?? $this->foreignTable,
-                $this->foreign_field,
-                $this->getOwner()->getField($this->master_field),
+                $this->foreignField,
+                $this->getOwner()->getField($this->masterField),
             ]),
             $this->kind,
             $this->foreignAlias
@@ -81,10 +81,10 @@ class Join extends Model\Join
         /*
         if ($this->reverse) {
             $query->field([$this->shortName => (
-                $this->join ?: ($model->tableAlias ?: $model->table) . '.' . $this->master_field
+                $this->join ?: ($model->tableAlias ?: $model->table) . '.' . $this->masterField
             )]);
         } else {
-            $query->field([$this->shortName => $this->foreignAlias . '.' . $this->foreign_field]);
+            $query->field([$this->shortName => $this->foreignAlias . '.' . $this->foreignField]);
         }
         */
     }

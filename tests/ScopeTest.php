@@ -48,7 +48,7 @@ class SUser extends Model
             ->addFields(['country_code' => 'code', 'is_eu'])
             ->addTitle();
 
-        $this->hasMany('Tickets', ['model' => [STicket::class], 'their_field' => 'user']);
+        $this->hasMany('Tickets', ['model' => [STicket::class], 'theirField' => 'user']);
     }
 }
 
