@@ -133,8 +133,7 @@ class Expression implements Expressionable, \ArrayAccess
     }
 
     /**
-     * Use this instead of "new Expression()" if you want to automatically bind
-     * new expression to the same connection as the parent.
+     * Create Expression object with the same connection.
      *
      * @param string|array $properties
      */
@@ -321,9 +320,9 @@ class Expression implements Expressionable, \ArrayAccess
      */
     protected function escapeIdentifier(string $value): string
     {
-        $c = $this->identifierEscapeChar;
+        $char = $this->identifierEscapeChar;
 
-        return $c . str_replace($c, $c . $c, $value) . $c;
+        return $char . str_replace($char, $char . $char, $value) . $char;
     }
 
     /**

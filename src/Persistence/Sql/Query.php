@@ -1022,8 +1022,7 @@ abstract class Query extends Expression
     }
 
     /**
-     * Use this instead of "new Query()" if you want to automatically bind
-     * query to the same connection as the parent.
+     * Create Query object with the same connection.
      *
      * @param string|array $properties
      *
@@ -1038,18 +1037,14 @@ abstract class Query extends Expression
     }
 
     /**
-     * Returns Expression object for the corresponding Query
-     * sub-class (e.g. Mysql\Query will return Mysql\Expression).
-     *
-     * Connection is not mandatory, but if set, will be preserved. This
-     * method should be used for building parts of the query internally.
+     * Create Expression object with the same connection.
      *
      * @param string|array $properties
      */
     public function expr($properties = [], array $arguments = []): Expression
     {
-        $c = $this->expressionClass;
-        $e = new $c($properties, $arguments);
+        $class = $this->expressionClass;
+        $e = new $class($properties, $arguments);
         $e->connection = $this->connection;
 
         return $e;
