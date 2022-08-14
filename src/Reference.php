@@ -232,7 +232,7 @@ class Reference
             $ourModel = $this->getOurModel(null);
 
             $aliasFull = $this->link;
-            $alias = preg_replace('~_(' . preg_quote($ourModel->id_field ?? '', '~') . '|id)$~', '', $aliasFull);
+            $alias = preg_replace('~_(' . preg_quote($ourModel->id_field !== false ? $ourModel->id_field : '', '~') . '|id)$~', '', $aliasFull);
             $alias = preg_replace('~([0-9a-z]?)[0-9a-z]*[^0-9a-z]*~i', '$1', $alias);
             if ($ourModel->tableAlias !== null) {
                 $aliasFull = $ourModel->tableAlias . '_' . $aliasFull;
