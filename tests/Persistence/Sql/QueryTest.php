@@ -34,13 +34,24 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * dsql() should return new Query object and inherit connection from it.
-     */
+    public function testExpr(): void
+    {
+        $this->assertInstanceOf(Expression::class, $this->q()->expr('foo'));
+
+        $connection = new Mysql\Connection();
+        $q = new Mysql\Query(['connection' => $connection]);
+        $this->assertSame(Mysql\Expression::class, get_class($q->expr('foo')));
+        $this->assertSame($connection, $q->expr('foo')->connection);
+    }
+
     public function testDsql(): void
     {
-        $q = $this->q(['connection' => new Mysql\Connection()]);
-        $this->assertInstanceOf(Mysql\Connection::class, $q->dsql()->connection);
+        $this->assertInstanceOf(Query::class, $this->q()->dsql());
+
+        $connection = new Mysql\Connection();
+        $q = new Mysql\Query(['connection' => $connection]);
+        $this->assertSame(Mysql\Query::class, get_class($q->dsql()));
+        $this->assertSame($connection, $q->dsql()->connection);
     }
 
     public function testFieldReturnThis(): void
@@ -875,15 +886,6 @@ class QueryTest extends TestCase
         // doesn't support groupConcat by default
         $this->expectException(Exception::class);
         $this->q()->groupConcat('foo');
-    }
-
-    public function testExpr(): void
-    {
-        $this->assertSame(Expression::class, get_class($this->q()->expr('foo')));
-
-        $q = new Mysql\Query();
-        $q->connection = new Mysql\Connection();
-        $this->assertSame(Mysql\Expression::class, get_class($q->expr('foo')));
     }
 
     public function testJoin(): void

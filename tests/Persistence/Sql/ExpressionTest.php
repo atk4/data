@@ -207,13 +207,14 @@ class ExpressionTest extends TestCase
         $this->assertSame('Hello :a and good night', $s4);
     }
 
-    /**
-     * expr() should return new Expression object and inherit connection from it.
-     */
     public function testExpr(): void
     {
-        $e = $this->e(['connection' => new Mysql\Connection()]);
-        $this->assertInstanceOf(Mysql\Connection::class, $e->expr()->connection);
+        $this->assertInstanceOf(Expression::class, $this->e('foo'));
+
+        $connection = new Mysql\Connection();
+        $e = new Mysql\Expression(['connection' => $connection]);
+        $this->assertSame(Mysql\Expression::class, get_class($e->expr('foo')));
+        $this->assertSame($connection, $e->expr('foo')->connection);
     }
 
     public function testEscapeIdentifier(): void
