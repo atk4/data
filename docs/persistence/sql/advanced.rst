@@ -86,7 +86,6 @@ Let's say you want to add support for new SQL vendor::
     class Query_MyVendor extends Atk4\Data\Persistence\Sql\Query
     {
         protected string $identifierEscapeChar = '"';
-
         protected string $expressionClass = Expression_MyVendor::class;
 
         // truncate is done differently by this vendor

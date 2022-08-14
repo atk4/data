@@ -15,7 +15,6 @@ class Query extends BaseQuery
     protected string $paramBase = 'xxaaaa';
 
     protected string $identifierEscapeChar = '"';
-
     protected string $expressionClass = Expression::class;
 
     public function render(): array

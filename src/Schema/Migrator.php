@@ -11,7 +11,6 @@ use Atk4\Data\Model;
 use Atk4\Data\Model\Join;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Connection;
-use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Reference;
 use Atk4\Data\Reference\HasMany;
 use Atk4\Data\Reference\HasOne;
@@ -206,7 +205,7 @@ class Migrator
             $database = substr($tableName, 0, $lastDotPos);
             if ($platform instanceof PostgreSQLPlatform || $platform instanceof SQLServerPlatform) {
                 $currentDatabase = $this->getConnection()->dsql()
-                    ->field($this->getConnection()->expr('{}', [$this->getDatabasePlatform()->getCurrentDatabaseExpression(true)])) // @phpstan-ignore-line
+                    ->field($this->getConnection()->expr('{{}}', [$this->getDatabasePlatform()->getCurrentDatabaseExpression(true)])) // @phpstan-ignore-line
                     ->getOne();
             } else {
                 $currentDatabase = $this->getConnection()->getConnection()->getDatabase();

@@ -11,7 +11,6 @@ class Query extends BaseQuery
     use ExpressionTrait;
 
     protected string $identifierEscapeChar = ']';
-
     protected string $expressionClass = Expression::class;
 
     protected $template_insert = <<<'EOF'
