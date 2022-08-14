@@ -58,8 +58,7 @@ class Expression implements Expressionable, \ArrayAccess
     private ?string $renderParamBase = null;
     private ?array $renderParams = null;
 
-    /** @var Connection|null */
-    public $connection;
+    public Connection $connection;
 
     /** Wrap the expression in parentheses when consumed by another expression or not. */
     public bool $wrapInParentheses = false;

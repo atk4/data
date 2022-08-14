@@ -17,7 +17,13 @@ class QueryTest extends TestCase
      */
     protected function q($template = [], array $arguments = []): Query
     {
-        return new Query($template, $arguments);
+        $query = new class($template, $arguments) extends Query {};
+
+        if (!(new \ReflectionProperty($query, 'connection'))->isInitialized($query)) {
+            $query->connection = new \Atk4\Data\Persistence\Sql\Sqlite\Connection();
+        }
+
+        return $query;
     }
 
     public function testConstruct(): void
@@ -876,6 +882,7 @@ class QueryTest extends TestCase
         $this->assertSame(Expression::class, get_class($this->q()->expr('foo')));
 
         $q = new Mysql\Query();
+        $q->connection = new Mysql\Connection();
         $this->assertSame(Mysql\Expression::class, get_class($q->expr('foo')));
     }
 

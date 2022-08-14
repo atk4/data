@@ -7,7 +7,7 @@ namespace Atk4\Data\Persistence\Sql;
 /**
  * Perform query operation on SQL server (such as select, insert, delete, etc).
  */
-class Query extends Expression
+abstract class Query extends Expression
 {
     /**
      * Query will use one of the predefined templates. The $mode will contain
