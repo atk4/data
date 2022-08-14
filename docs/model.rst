@@ -642,7 +642,7 @@ Those are three properties that you can specify in the model or pass it through
 defaults::
 
     class MyModel ..
-        public $title_field = 'full_name';
+        public ?string $title_field = 'full_name';
 
 or as defaults::
 

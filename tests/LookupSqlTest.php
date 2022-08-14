@@ -91,7 +91,7 @@ class LUser extends Model
 class LFriend extends Model
 {
     public $table = 'friend';
-    public $title_field = 'friend_name';
+    public ?string $title_field = 'friend_name';
 
     /** @var bool */
     public $skipReverse = false;

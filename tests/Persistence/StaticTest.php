@@ -179,7 +179,7 @@ class StaticTest extends TestCase
 
 class StaticTestModel extends Model
 {
-    public $title_field = 'foo';
+    public ?string $title_field = 'foo';
 
     protected function init(): void
     {

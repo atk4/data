@@ -187,17 +187,15 @@ class Model implements \IteratorAggregate
      * you would want to use a different one or maybe don't create field
      * at all.
      *
-     * @var string|null
+     * @var string|false
      */
     public $id_field = 'id';
 
     /**
      * Title field is used typically by UI components for a simple human
      * readable row title/description.
-     *
-     * @var string|null
      */
-    public $title_field = 'name';
+    public ?string $title_field = 'name';
 
     /**
      * Caption of the model. Can be used in UI components, for example.
