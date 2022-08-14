@@ -30,8 +30,8 @@ abstract class Persistence
     /** @const string */
     public const ID_LOAD_ANY = self::class . '@idLoadAny-qZ5TJwMVJ4LzVhuN';
 
-    /** @var bool internal only, prevent recursion */
-    private $typecastSaveSkipNormalize = false;
+    /** @internal prevent recursion */
+    private bool $typecastSaveSkipNormalize = false;
 
     /**
      * Connects database.

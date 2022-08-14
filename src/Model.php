@@ -108,14 +108,14 @@ class Model implements \IteratorAggregate
     /** @var array<string, true> */
     private static $_modelOnlyProperties;
 
-    /** @var string|array The class used by addField() method. */
+    /** @var array The seed used by addField() method. */
     protected $_defaultSeedAddField = [Field::class];
 
-    /** @var string|array The class used by addExpression() method. */
+    /** @var array The seed used by addExpression() method. */
     protected $_defaultSeedAddExpression = [CallbackField::class];
 
     /** @var array<string, Field> */
-    protected $fields = [];
+    protected array $fields = [];
 
     /**
      * Contains name of table, session key, collection or file where this
@@ -138,14 +138,14 @@ class Model implements \IteratorAggregate
     /** @var Model\Scope\RootScope */
     private $scope;
 
-    /** @var array */
-    public $limit = [null, 0];
+    /** @var array{0: int|null, 1: int} */
+    public array $limit = [null, 0];
 
-    /** @var array */
-    public $order = [];
+    /** @var array<int, array{0: string, 1: 'asc'|'desc'}> */
+    public array $order = [];
 
     /** @var array<string, array{'model': Model, 'recursive': bool}> */
-    public $cteModels = [];
+    public array $cteModels = [];
 
     /**
      * Currently loaded record data. This record is associative array
@@ -153,10 +153,8 @@ class Model implements \IteratorAggregate
      * fields only if $onlyFields mode is false.
      *
      * Avoid accessing $data directly, use set() / get() instead.
-     *
-     * @var array
      */
-    private $data = [];
+    private array $data = [];
 
     /**
      * After loading an active record from DataSet it will be stored in
@@ -531,7 +529,7 @@ class Model implements \IteratorAggregate
     }
 
     /** @var array<string, array> */
-    protected $fieldSeedByType = [];
+    protected array $fieldSeedByType = [];
 
     /**
      * Given a field seed, return a field object.
@@ -1259,11 +1257,13 @@ class Model implements \IteratorAggregate
             return $res;
         }
 
-        $dataRef = &$this->getDataRef();
-        $dataRef = $this->getPersistence()->{$fromTryLoad ? 'tryLoad' : 'load'}($this->getModel(), $this->remapIdLoadToPersistence($id));
-        if ($dataRef === null) {
+        $data = $this->getPersistence()->{$fromTryLoad ? 'tryLoad' : 'load'}($this->getModel(), $this->remapIdLoadToPersistence($id));
+        if ($data === null) {
             return null; // $fromTryLoad is always true here
         }
+
+        $dataRef = &$this->getDataRef();
+        $dataRef = $data;
 
         if ($this->id_field) {
             $this->setId($this->getId());
