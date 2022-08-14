@@ -706,7 +706,7 @@ Other settings
 --------------
 
 Limit and Order are normally not included to avoid side-effects, but you can
-modify :php:attr:`$template_update` to include those tags.
+modify :php:attr:`$templateUpdate` to include those tags.
 
 
 Delete Query
@@ -722,7 +722,7 @@ Other settings
 --------------
 
 Limit and Order are normally not included to avoid side-effects, but you can
-modify :php:attr:`$template_update` to include those tags.
+modify :php:attr:`$templateUpdate` to include those tags.
 
 
 Dropping attributes
@@ -833,26 +833,26 @@ Properties
 
     If no fields are defined, this field is used.
 
-.. php:attr:: template_select
+.. php:attr:: templateSelect
 
     Template for SELECT query. See :ref:`Query Modes`.
 
-.. php:attr:: template_insert
+.. php:attr:: templateInsert
 
     Template for INSERT query. See :ref:`Query Modes`.
 
-.. php:attr:: template_replace
+.. php:attr:: templateReplace
 
     Template for REPLACE query. See :ref:`Query Modes`.
 
-.. php:attr:: template_update
+.. php:attr:: templateUpdate
 
     Template for UPDATE query. See :ref:`Query Modes`.
 
-.. php:attr:: template_delete
+.. php:attr:: templateDelete
 
     Template for DELETE query. See :ref:`Query Modes`.
 
-.. php:attr:: template_truncate
+.. php:attr:: templateTruncate
 
     Template for TRUNCATE query. See :ref:`Query Modes`.

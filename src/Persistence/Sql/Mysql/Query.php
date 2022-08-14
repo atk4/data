@@ -15,7 +15,7 @@ class Query extends BaseQuery
 
     protected array $supportedOperators = ['=', '!=', '<', '>', '<=', '>=', 'like', 'not like', 'in', 'not in', 'regexp', 'not regexp'];
 
-    protected $template_update = 'update [table][join] set [set] [where]';
+    protected string $templateUpdate = 'update [table][join] set [set] [where]';
 
     public function groupConcat($field, string $delimiter = ',')
     {

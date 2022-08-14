@@ -9,11 +9,7 @@ namespace Atk4\Data\Persistence\Sql;
  */
 abstract class Query extends Expression
 {
-    /**
-     * Query will use one of the predefined templates. The $mode will contain
-     * name of template used. Basically it's part of Query property name -
-     * Query::template_[$mode].
-     */
+    /** Template name for render. */
     public string $mode = 'select';
 
     /** @var string|Expression If no fields are defined, this field is used. */
@@ -27,23 +23,12 @@ abstract class Query extends Expression
     /** @var array<string> */
     protected array $supportedOperators = ['=', '!=', '<', '>', '<=', '>=', 'like', 'not like', 'in', 'not in'];
 
-    /** @var string */
-    protected $template_select = '[with]select[option] [field] [from] [table][join][where][group][having][order][limit]';
-
-    /** @var string */
-    protected $template_insert = 'insert[option] into [table_noalias] ([set_fields]) values ([set_values])';
-
-    /** @var string */
-    protected $template_replace = 'replace[option] into [table_noalias] ([set_fields]) values ([set_values])';
-
-    /** @var string */
-    protected $template_delete = '[with]delete [from] [table_noalias][where][having]';
-
-    /** @var string */
-    protected $template_update = '[with]update [table_noalias] set [set] [where]';
-
-    /** @var string */
-    protected $template_truncate = 'truncate table [table_noalias]';
+    protected string $templateSelect = '[with]select[option] [field] [from] [table][join][where][group][having][order][limit]';
+    protected string $templateInsert = 'insert[option] into [table_noalias] ([set_fields]) values ([set_values])';
+    protected string $templateReplace = 'replace[option] into [table_noalias] ([set_fields]) values ([set_values])';
+    protected string $templateDelete = '[with]delete [from] [table_noalias][where][having]';
+    protected string $templateUpdate = '[with]update [table_noalias] set [set] [where]';
+    protected string $templateTruncate = 'truncate table [table_noalias]';
 
     // {{{ Field specification and rendering
 
@@ -1009,11 +994,11 @@ abstract class Query extends Expression
      */
     public function mode($mode)
     {
-        $prop = 'template_' . $mode;
+        $templatePropertyName = 'template' . ucfirst($mode);
 
-        if (@isset($this->{$prop})) {
+        if (@isset($this->{$templatePropertyName})) {
             $this->mode = $mode;
-            $this->template = $this->{$prop};
+            $this->template = $this->{$templatePropertyName};
         } else {
             throw (new Exception('Query does not have this mode'))
                 ->addMoreInfo('mode', $mode);
