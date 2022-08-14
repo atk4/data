@@ -85,7 +85,7 @@ class HasOne extends Reference
         if ($ourModel->isEntity()) {
             $ourValue = $this->getOurFieldValue($ourModel);
 
-            if ($this->getOurFieldName() === $ourModel->id_field) {
+            if ($this->getOurFieldName() === $ourModel->idField) {
                 $this->assertReferenceValueNotNull($ourValue);
                 $tryLoad = true;
             } else {

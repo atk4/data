@@ -186,7 +186,7 @@ class Table
     public function getRowById(\Atk4\Data\Model $model, $idRaw): ?Row
     {
         foreach ($this->getRows() as $row) {
-            if ($row->getValue($model->getField($model->id_field)->getPersistenceName()) === $idRaw) {
+            if ($row->getValue($model->getField($model->idField)->getPersistenceName()) === $idRaw) {
                 return $row;
             }
         }

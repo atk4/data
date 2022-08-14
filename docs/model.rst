@@ -642,32 +642,32 @@ Those are three properties that you can specify in the model or pass it through
 defaults::
 
     class MyModel ..
-        public ?string $title_field = 'full_name';
+        public ?string $titleField = 'full_name';
 
 or as defaults::
 
-    $m = new MyModel($db, ['title_field' => 'full_name']);
+    $m = new MyModel($db, ['titleField' => 'full_name']);
 
 
-.. _id_field:
+.. _idField:
 
 ID Field
 --------
 
-.. php:attr:: id_field
+.. php:attr:: idField
 
     If your data storage uses field different than ``id`` to keep the ID of your
-    records, then you can specify that in $id_field property.
+    records, then you can specify that in $idField property.
 
     ID value of loaded entity cannot be changed. If you want to duplicate a record,
     you need to create a new entity and save it.
 
-.. _title_field:
+.. _titleField:
 
 Title Field
 -----------
 
-.. php:attr:: title_field
+.. php:attr:: titleField
 
     This field by default is set to 'name' will act as a primary title field of
     your table. This is especially handy if you use model inside UI framework,
@@ -675,7 +675,7 @@ Title Field
     or inside drop-down.
 
     If you don't have field 'name' but you want some other field to be title,
-    you can specify that in the property. If title_field is not needed, set it
+    you can specify that in the property. If titleField is not needed, set it
     to false or point towards a non-existent field.
 
     See: :php:meth::`hasOne::addTitle()`

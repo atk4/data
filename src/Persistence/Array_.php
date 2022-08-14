@@ -103,7 +103,7 @@ class Array_ extends Persistence
 
         $rows = [];
         foreach ($this->data[$table]->getRows() as $row) {
-            $rows[$row->getValue($model->id_field)] = $row->getData();
+            $rows[$row->getValue($model->idField)] = $row->getData();
         }
 
         return $rows;
@@ -115,7 +115,7 @@ class Array_ extends Persistence
      */
     private function assertNoIdMismatch(Model $model, $idFromRow, $id): void
     {
-        if ($idFromRow !== null && !$model->getField($model->id_field)->compare($idFromRow, $id)) {
+        if ($idFromRow !== null && !$model->getField($model->idField)->compare($idFromRow, $id)) {
             throw (new Exception('Row constains ID column, but it does not match the row ID'))
                 ->addMoreInfo('idFromKey', $id)
                 ->addMoreInfo('idFromData', $idFromRow);
@@ -127,8 +127,8 @@ class Array_ extends Persistence
      */
     private function saveRow(Model $model, array $rowData, $id): void
     {
-        if ($model->id_field) {
-            $idField = $model->getField($model->id_field);
+        if ($model->idField) {
+            $idField = $model->getField($model->idField);
             $id = $idField->normalize($id);
             $idColumnName = $idField->getPersistenceName();
             if (array_key_exists($idColumnName, $rowData)) {
@@ -177,8 +177,8 @@ class Array_ extends Persistence
             $model->table = 'data';
         }
 
-        if ($model->id_field) {
-            $f = $model->getField($model->id_field);
+        if ($model->idField) {
+            $f = $model->getField($model->idField);
             if ($f->type === null) {
                 $f->type = 'integer';
             }
@@ -228,7 +228,7 @@ class Array_ extends Persistence
                     ->addMoreInfo('id', null);
             }
 
-            $idRaw = reset($rowsRaw)[$model->id_field];
+            $idRaw = reset($rowsRaw)[$model->idField];
 
             $row = $this->tryLoad($model, $idRaw);
 
@@ -238,7 +238,7 @@ class Array_ extends Persistence
         if (is_object($model->table)) {
             $action = $this->action($model, 'select');
             $condition = new Model\Scope\Condition('', $id);
-            $condition->key = $model->getField($model->id_field);
+            $condition->key = $model->getField($model->idField);
             $condition->setOwner($model->createEntity()); // TODO needed for typecasting to apply
             $action->filter($condition);
 
@@ -264,7 +264,7 @@ class Array_ extends Persistence
     {
         $this->seedData($model);
 
-        $idRaw = $dataRaw[$model->id_field] ?? $this->generateNewId($model);
+        $idRaw = $dataRaw[$model->idField] ?? $this->generateNewId($model);
 
         $this->saveRow($model, $dataRaw, $idRaw);
 
@@ -294,7 +294,7 @@ class Array_ extends Persistence
     {
         $this->seedData($model);
 
-        $type = $model->id_field ? $model->getField($model->id_field)->type : 'integer';
+        $type = $model->idField ? $model->getField($model->idField)->type : 'integer';
 
         switch ($type) {
             case 'integer':
@@ -366,7 +366,7 @@ class Array_ extends Persistence
 
             $rows = [];
             foreach ($table->getRows() as $row) {
-                $rows[$row->getValue($model->getField($model->id_field)->getPersistenceName())] = $row->getData();
+                $rows[$row->getValue($model->getField($model->idField)->getPersistenceName())] = $row->getData();
             }
         }
 
@@ -407,9 +407,9 @@ class Array_ extends Persistence
         $scope = $model->getModel(true)->scope();
 
         // add entity ID to scope to allow easy traversal
-        if ($model->isEntity() && $model->id_field && $model->getId() !== null) {
+        if ($model->isEntity() && $model->idField && $model->getId() !== null) {
             $scope = new Model\Scope([$scope]);
-            $scope->addCondition($model->getField($model->id_field), $model->getId());
+            $scope->addCondition($model->getField($model->idField), $model->getId());
         }
 
         $action->filter($scope);

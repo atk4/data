@@ -594,12 +594,12 @@ class ReferenceSqlTest extends TestCase
 
         $this->setDb($dbData);
 
-        // with default title_field='name'
+        // with default titleField='name'
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, ['table' => 'order']));
         $o->hasOne('user_id', ['model' => $u])->addTitle();
 
-        // change order user by changing title_field value
+        // change order user by changing titleField value
         $o = $o->load(1);
         $this->assertEquals(1, $o->get('user_id'));
         $o->set('user_id', null);
@@ -612,12 +612,12 @@ class ReferenceSqlTest extends TestCase
         $this->dropCreatedDb();
         $this->setDb($dbData);
 
-        // with custom title_field='last_name'
-        $u = (new Model($this->db, ['table' => 'user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
+        // with custom titleField='last_name'
+        $u = (new Model($this->db, ['table' => 'user', 'titleField' => 'last_name']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, ['table' => 'order']));
         $o->hasOne('user_id', ['model' => $u])->addTitle();
 
-        // change order user by changing title_field value
+        // change order user by changing titleField value
         $o = $o->load(1);
         $this->assertEquals(1, $o->get('user_id'));
         $o->set('user_id', null);
@@ -630,8 +630,8 @@ class ReferenceSqlTest extends TestCase
         $this->dropCreatedDb();
         $this->setDb($dbData);
 
-        // with custom title_field='last_name' and custom link name
-        $u = (new Model($this->db, ['table' => 'user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
+        // with custom titleField='last_name' and custom link name
+        $u = (new Model($this->db, ['table' => 'user', 'titleField' => 'last_name']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, ['table' => 'order']));
         $o->hasOne('my_user', ['model' => $u, 'our_field' => 'user_id'])->addTitle();
 
@@ -648,12 +648,12 @@ class ReferenceSqlTest extends TestCase
         $this->dropCreatedDb();
         $this->setDb($dbData);
 
-        // with custom title_field='last_name' and custom link name
-        $u = (new Model($this->db, ['table' => 'user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
+        // with custom titleField='last_name' and custom link name
+        $u = (new Model($this->db, ['table' => 'user', 'titleField' => 'last_name']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, ['table' => 'order']));
         $o->hasOne('my_user', ['model' => $u, 'our_field' => 'user_id'])->addTitle();
 
-        // change order user by changing ref field and title_field value - same
+        // change order user by changing ref field and titleField value - same
         $o = $o->load(1);
         $this->assertEquals(1, $o->get('user_id'));
         $o->set('user_id', null);
@@ -667,7 +667,7 @@ class ReferenceSqlTest extends TestCase
         $this->dropCreatedDb();
         $this->setDb($dbData);
 
-        // change order user by changing ref field and title_field value - mismatched
+        // change order user by changing ref field and titleField value - mismatched
         $o = $o->getModel()->load(1);
         $this->assertEquals(1, $o->get('user_id'));
         $o->set('user_id', null);
@@ -698,7 +698,7 @@ class ReferenceSqlTest extends TestCase
                 3 => ['id' => 3, 'user_id' => 1],
             ],
         ]);
-        $u = (new Model($this->db, ['table' => 'user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
+        $u = (new Model($this->db, ['table' => 'user', 'titleField' => 'last_name']))->addFields(['name', 'last_name']);
 
         // Test : Now the caption is null and is generated from field name
         $this->assertSame('Last Name', $u->getField('last_name')->getCaption());

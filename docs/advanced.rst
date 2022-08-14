@@ -426,7 +426,7 @@ inside your model are unique::
 
             // by default make 'name' unique
             if (!$this->fields) {
-                $this->fields = [$this->getOwner()->title_field];
+                $this->fields = [$this->getOwner()->titleField];
             }
 
             $this->getOwner()->onHook(Model::HOOK_BEFORE_SAVE, \Closure::fromCallable([$this, 'beforeSave']));
@@ -437,7 +437,7 @@ inside your model are unique::
             foreach ($this->fields as $field) {
                 if ($m->getDirtyRef()[$field]) {
                     $mm = clone $m;
-                    $mm->addCondition($mm->id_field != $this->id);
+                    $mm->addCondition($mm->idField != $this->id);
                     $mm = $mm->tryLoadBy($field, $m->get($field));
 
                     if ($mm !== null) {
@@ -670,7 +670,7 @@ persistence layer to load or save anything. Next I need a beforeSave handler::
 
         if($this->_isset('category') && !$this->_isset('category_id')) {
             $c = $this->refModel('category_id');
-            $c->addCondition($c->title_field, 'like', $this->get('category'));
+            $c->addCondition($c->titleField, 'like', $this->get('category'));
             $this->set('category_id', $c->action('field', ['id']));
         }
     });
@@ -689,7 +689,7 @@ What if the user-specified entry is not found? Lets look at the code::
 
     if($m->_isset('category') && !$m->_isset('category_id')) {
         $c = $this->refModel('category_id');
-        $c->addCondition($c->title_field, 'like', $m->get('category'));
+        $c->addCondition($c->titleField, 'like', $m->get('category'));
         $m->set('category_id', $c->action('field', ['id']));
     }
 
@@ -698,7 +698,7 @@ If you wish to use a different value instead, you can create an expression::
 
     if($m->_isset('category') && !$m->_isset('category_id')) {
         $c = $this->refModel('category_id');
-        $c->addCondition($c->title_field, 'like', $m->get('category'));
+        $c->addCondition($c->titleField, 'like', $m->get('category'));
         $m->set('category_id', $this->expr('coalesce([], [])', [
             $c->action('field', ['id']),
             $m->getField('category_id')->default,

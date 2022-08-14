@@ -123,14 +123,14 @@ abstract class Join
         foreach ($this->getOwner()->getFields() as $ownerField) {
             if ($ownerField->hasJoin() && $ownerField->getJoin()->shortName === $this->shortName) {
                 $ownerFieldPersistenceName = $ownerField->getPersistenceName();
-                if ($ownerFieldPersistenceName !== $fakeModel->id_field && $ownerFieldPersistenceName !== $this->foreign_field) {
+                if ($ownerFieldPersistenceName !== $fakeModel->idField && $ownerFieldPersistenceName !== $this->foreign_field) {
                     $fakeModel->addField($ownerFieldPersistenceName, [
                         'type' => $ownerField->type,
                     ]);
                 }
             }
         }
-        if ($fakeModel->id_field !== $this->foreign_field && $this->foreign_field !== null) {
+        if ($fakeModel->idField !== $this->foreign_field && $this->foreign_field !== null) {
             $fakeModel->addField($this->foreign_field, ['type' => 'integer']);
         }
 
@@ -220,10 +220,10 @@ abstract class Join
 
         $this->getForeignModel(); // assert valid foreignTable
 
-        // owner model should have id_field set
-        $idField = $this->getOwner()->id_field;
+        // owner model should have idField set
+        $idField = $this->getOwner()->idField;
         if (!$idField) {
-            throw (new Exception('Join owner model must have id_field set'))
+            throw (new Exception('Join owner model must have idField set'))
                 ->addMoreInfo('model', $this->getOwner());
         }
 
@@ -231,7 +231,7 @@ abstract class Join
             if ($this->master_field && $this->master_field !== $idField) { // TODO not implemented yet, see https://github.com/atk4/data/issues/803
                 throw (new Exception('Joining tables on non-id fields is not implemented yet'))
                     ->addMoreInfo('master_field', $this->master_field)
-                    ->addMoreInfo('id_field', $idField);
+                    ->addMoreInfo('idField', $idField);
             }
 
             if (!$this->master_field) {
