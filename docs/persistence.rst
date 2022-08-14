@@ -144,7 +144,7 @@ Calling "set()" or using array-access to set the value will start by casting
 the value to an appropriate data-type. If it is impossible to cast the value,
 then exception will be generated::
 
-    $m->set('is_admin', "1"); // OK, but stores as `true`
+    $m->set('is_admin', '1'); // OK, but stores as `true`
 
     $m->set('is_admin', 123); // throws exception.
 
@@ -158,7 +158,7 @@ It's not only the 'type' property, but 'enum' can also imply restrictions::
 There are also non-trivial types in Agile Data::
 
     $m->addField('salary', ['type' => 'atk4_money']);
-    $m->set('salary', "20");  // converts to 20.00
+    $m->set('salary', '20');  // converts to 20.00
 
     $m->addField('date', ['type' => 'date']);
     $m->set('date', time());  // converts to DateTime class

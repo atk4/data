@@ -1188,12 +1188,12 @@ class QueryTest extends TestCase
                 ->where('b', 1)
                 ->where(
                     $q->andExpr()
-                        ->where('true')
-                        ->where('false')
+                        ->where('1 = 1')
+                        ->where('1 = 0')
                 )
         );
         $this->assertSame(
-            'select "name" from "employee" where ("a" = :a or "b" = :b or ((true) and (false)))',
+            'select "name" from "employee" where ("a" = :a or "b" = :b or ((1 = 1) and (1 = 0)))',
             $q->render()[0]
         );
     }

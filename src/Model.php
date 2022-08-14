@@ -179,10 +179,8 @@ class Model implements \IteratorAggregate
      * Setting model as readOnly will protect you from accidentally
      * updating the model. This property is intended for UI and other code
      * detecting read-only models and acting accordingly.
-     *
-     * @var bool
      */
-    public $readOnly = false;
+    public bool $readOnly = false;
 
     /**
      * While in most cases your id field will be called 'id', sometimes

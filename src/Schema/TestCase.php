@@ -101,7 +101,7 @@ abstract class TestCase extends BaseTestCase
 
                 $str = substr(preg_replace('~\\\\(.)~s', '$1', $matches[0]), 1, -1);
                 if (substr($matches[0], 0, 1) === '`') {
-                    return $this->getConnection()->expr('{}', [$str])->render()[0];
+                    return $platform->quoteSingleIdentifier($str);
                 }
 
                 return ($platform instanceof SQLServerPlatform ? 'N' : '') . $platform->quoteStringLiteral($str);
