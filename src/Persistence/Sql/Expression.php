@@ -49,11 +49,8 @@ abstract class Expression implements Expressionable, \ArrayAccess
     /** @var string As per PDO, escapeParam() will convert value into :a, :b, :c .. :aa .. etc. */
     protected string $paramBase = 'a';
 
-    /**
-     * Identifier (table, column, ...) escaping symbol. By SQL Standard it's double
-     * quote, but MySQL uses backtick.
-     */
-    protected string $identifierEscapeChar = '"';
+    /** @var '"'|'`'|']' Identifier (table, column, ...) escaping symbol. */
+    protected string $identifierEscapeChar;
 
     private ?string $renderParamBase = null;
     private ?array $renderParams = null;
@@ -322,7 +319,9 @@ abstract class Expression implements Expressionable, \ArrayAccess
     {
         $char = $this->identifierEscapeChar;
 
-        return $char . str_replace($char, $char . $char, $value) . $char;
+        return ($char === ']' ? '[' : $char)
+            . str_replace($char, $char . $char, $value)
+            . $char;
     }
 
     /**

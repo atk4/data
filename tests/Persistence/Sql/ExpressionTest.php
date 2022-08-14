@@ -18,7 +18,9 @@ class ExpressionTest extends TestCase
      */
     protected function e($template = [], array $arguments = []): Expression
     {
-        return new class($template, $arguments) extends Expression {};
+        return new class($template, $arguments) extends Expression {
+            protected string $identifierEscapeChar = '"';
+        };
     }
 
     public function testConstructorNoTemplateException(): void

@@ -19,9 +19,13 @@ class QueryTest extends TestCase
     protected function q($template = [], array $arguments = []): Query
     {
         $query = new class($template, $arguments) extends Query {
+            protected string $identifierEscapeChar = '"';
+
             public function __construct($properties = [], array $arguments = [])
             {
-                $this->expressionClass = get_class(new class() extends Expression {});
+                $this->expressionClass = get_class(new class() extends Expression {
+                    protected string $identifierEscapeChar = '"';
+                });
 
                 parent::__construct($properties, $arguments);
             }

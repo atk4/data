@@ -19,7 +19,8 @@ abstract class Query extends Expression
     /** @var string|Expression If no fields are defined, this field is used. */
     public $defaultField = '*';
 
-    protected string $expressionClass = Expression::class;
+    /** @var class-string<Expression> */
+    protected string $expressionClass;
 
     public bool $wrapInParentheses = true;
 

@@ -85,6 +85,10 @@ Let's say you want to add support for new SQL vendor::
 
     class Query_MyVendor extends Atk4\Data\Persistence\Sql\Query
     {
+        protected string $identifierEscapeChar = '"';
+
+        protected string $expressionClass = Expression_MyVendor::class;
+
         // truncate is done differently by this vendor
         protected $template_truncate = 'delete [from] [table]';
 
@@ -156,6 +160,7 @@ query "LOAD DATA INFILE":
 So to implement our task, you might need a class like this::
 
     use \Atk4\Data\Persistence\Sql\Exception;
+
     class QueryMysqlCustom extends \Atk4\Data\Persistence\Sql\Mysql\Query
     {
         protected $template_load_data = 'load data local infile [file] into table [table]';

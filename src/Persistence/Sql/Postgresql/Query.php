@@ -9,6 +9,10 @@ use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 
 class Query extends BaseQuery
 {
+    protected string $identifierEscapeChar = '"';
+
+    protected string $expressionClass = Expression::class;
+
     protected $template_update = 'update [table][join] set [set] [where]';
     protected $template_replace;
 
