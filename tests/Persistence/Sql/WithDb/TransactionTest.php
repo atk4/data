@@ -88,7 +88,7 @@ class TransactionTest extends TestCase
         $this->q('employee')->mode('truncate')->executeStatement();
         $this->assertSame(
             '0',
-            $this->q('employee')->field(new Expression('count(*)'))->getOne()
+            $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
         );
 
         // without transaction, ignoring exceptions
@@ -105,7 +105,7 @@ class TransactionTest extends TestCase
 
         $this->assertSame(
             '1',
-            $this->q('employee')->field(new Expression('count(*)'))->getOne()
+            $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
         );
 
         // 1-level transaction: begin, insert, 2, rollback, 1
@@ -115,13 +115,13 @@ class TransactionTest extends TestCase
             ->mode('insert')->executeStatement();
         $this->assertSame(
             '2',
-            $this->q('employee')->field(new Expression('count(*)'))->getOne()
+            $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
         );
 
         $this->getConnection()->rollBack();
         $this->assertSame(
             '1',
-            $this->q('employee')->field(new Expression('count(*)'))->getOne()
+            $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
         );
 
         // atomic method, rolls back everything inside atomic() callback in case of exception
@@ -140,7 +140,7 @@ class TransactionTest extends TestCase
 
         $this->assertSame(
             '1',
-            $this->q('employee')->field(new Expression('count(*)'))->getOne()
+            $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
         );
 
         // atomic method, nested atomic transaction, rolls back everything
@@ -170,7 +170,7 @@ class TransactionTest extends TestCase
 
         $this->assertSame(
             '1',
-            $this->q('employee')->field(new Expression('count(*)'))->getOne()
+            $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
         );
 
         // atomic method, nested atomic transaction, rolls back everything
@@ -197,7 +197,7 @@ class TransactionTest extends TestCase
 
         $this->assertSame(
             '1',
-            $this->q('employee')->field(new Expression('count(*)'))->getOne()
+            $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
         );
 
         // atomic method, nested atomic transaction, rolls back everything
@@ -224,7 +224,7 @@ class TransactionTest extends TestCase
 
         $this->assertSame(
             '1',
-            $this->q('employee')->field(new Expression('count(*)'))->getOne()
+            $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
         );
 
         // atomic method, success - commit
@@ -240,7 +240,7 @@ class TransactionTest extends TestCase
 
         $this->assertSame(
             '2',
-            $this->q('employee')->field(new Expression('count(*)'))->getOne()
+            $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
         );
     }
 

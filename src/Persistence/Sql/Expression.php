@@ -18,7 +18,7 @@ use Doctrine\DBAL\Result as DbalResult;
 /**
  * @phpstan-implements \ArrayAccess<int|string, mixed>
  */
-class Expression implements Expressionable, \ArrayAccess
+abstract class Expression implements Expressionable, \ArrayAccess
 {
     use WarnDynamicPropertyTrait;
 

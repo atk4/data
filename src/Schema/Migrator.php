@@ -206,7 +206,7 @@ class Migrator
             $database = substr($tableName, 0, $lastDotPos);
             if ($platform instanceof PostgreSQLPlatform || $platform instanceof SQLServerPlatform) {
                 $currentDatabase = $this->getConnection()->dsql()
-                    ->field(new Expression($this->getDatabasePlatform()->getCurrentDatabaseExpression(true))) // @phpstan-ignore-line
+                    ->field($this->getConnection()->expr('{}', [$this->getDatabasePlatform()->getCurrentDatabaseExpression(true)])) // @phpstan-ignore-line
                     ->getOne();
             } else {
                 $currentDatabase = $this->getConnection()->getConnection()->getDatabase();
@@ -381,7 +381,7 @@ class Migrator
     {
         try {
             [$sql] = $this->getConnection()->dsql()
-                ->field(new Expression('1'))
+                ->field($this->getConnection()->expr('1'))
                 ->table($tableName)
                 ->render();
             $this->getConnection()->getConnection()->executeQuery($sql);

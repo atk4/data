@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests\Persistence\Sql;
 
 use Atk4\Core\Phpunit\TestCase;
+use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Exception;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Mysql;
@@ -17,13 +18,32 @@ class QueryTest extends TestCase
      */
     protected function q($template = [], array $arguments = []): Query
     {
-        $query = new class($template, $arguments) extends Query {};
+        $query = new class($template, $arguments) extends Query {
+            public function __construct($properties = [], array $arguments = [])
+            {
+                $this->expressionClass = get_class(new class() extends Expression {});
+
+                parent::__construct($properties, $arguments);
+            }
+        };
 
         if (!(new \ReflectionProperty($query, 'connection'))->isInitialized($query)) {
             $query->connection = new \Atk4\Data\Persistence\Sql\Sqlite\Connection();
+            \Closure::bind(function () use ($query) {
+                $query->connection->expressionClass = \Closure::bind(fn () => $query->expressionClass, null, Query::class)();
+                $query->connection->queryClass = get_class($query);
+            }, null, Connection::class)();
         }
 
         return $query;
+    }
+
+    /**
+     * @param string|array $template
+     */
+    protected function e($template = [], array $arguments = []): Expression
+    {
+        return $this->q()->expr($template, $arguments);
     }
 
     public function testConstruct(): void
@@ -139,7 +159,7 @@ class QueryTest extends TestCase
         );
         $this->assertSame(
             'now()',
-            $this->q('[field]')->field(new Expression('now()'))->render()[0]
+            $this->q('[field]')->field($this->e('now()'))->render()[0]
         );
         // Usage of field aliases
         $this->assertSame(
@@ -148,7 +168,7 @@ class QueryTest extends TestCase
         );
         $this->assertSame(// alias can be passed as 2nd argument
             'now() "time"',
-            $this->q('[field]')->field(new Expression('now()'), 'time')->render()[0]
+            $this->q('[field]')->field($this->e('now()'), 'time')->render()[0]
         );
     }
 
@@ -263,7 +283,7 @@ class QueryTest extends TestCase
         $this->assertSame(
             'select now()',
             $this->q()
-                ->field(new Expression('now()'))
+                ->field($this->e('now()'))
                 ->render()[0]
         );
 
@@ -284,19 +304,19 @@ class QueryTest extends TestCase
         $this->assertSame(
             'select "na""me" from "employee"',
             $this->q()
-                ->field(new Expression('{}', ['na"me']))->table('employee')
+                ->field($this->e('{}', ['na"me']))->table('employee')
                 ->render()[0]
         );
         $this->assertSame(
             'select "жук" from "employee"',
             $this->q()
-                ->field(new Expression('{}', ['жук']))->table('employee')
+                ->field($this->e('{}', ['жук']))->table('employee')
                 ->render()[0]
         );
         $this->assertSame(
             'select "this is 💩" from "employee"',
             $this->q()
-                ->field(new Expression('{}', ['this is 💩']))->table('employee')
+                ->field($this->e('{}', ['this is 💩']))->table('employee')
                 ->render()[0]
         );
 
@@ -366,7 +386,7 @@ class QueryTest extends TestCase
         $this->assertSame(
             'select "name" from "myt""able"',
             $this->q()
-                ->field('name')->table(new Expression('{}', ['myt"able']))
+                ->field('name')->table($this->e('{}', ['myt"able']))
                 ->render()[0]
         );
 
@@ -390,8 +410,8 @@ class QueryTest extends TestCase
 
     public function testBasicRenderSubquery(): void
     {
-        $age = new Expression('coalesce([age], [default_age])');
-        $age['age'] = new Expression('year(now()) - year(birth_date)');
+        $age = $this->e('coalesce([age], [default_age])');
+        $age['age'] = $this->e('year(now()) - year(birth_date)');
         $age['default_age'] = 18;
 
         $q = $this->q()->table('user')->field($age, 'calculated_age');
@@ -404,8 +424,8 @@ class QueryTest extends TestCase
 
     public function testGetDebugQuery(): void
     {
-        $age = new Expression('coalesce([age], [default_age], [foo], [bar])');
-        $age['age'] = new Expression('year(now()) - year(birth_date)');
+        $age = $this->e('coalesce([age], [default_age], [foo], [bar])');
+        $age['age'] = $this->e('year(now()) - year(birth_date)');
         $age['default_age'] = 18;
         $age['foo'] = 'foo';
         $age['bar'] = null;
@@ -430,7 +450,7 @@ class QueryTest extends TestCase
     {
         $this->assertStringContainsString(
             'Expression could not render tag',
-            (new Expression('Hello [world]'))->__debugInfo()['R']
+            $this->e('Hello [world]')->__debugInfo()['R']
         );
     }
 
@@ -438,7 +458,7 @@ class QueryTest extends TestCase
     {
         $this->assertStringContainsString(
             'Hello \'php\'',
-            (new Expression('Hello [world]', ['world' => 'php']))->__debugInfo()['R']
+            $this->e('Hello [world]', ['world' => 'php'])->__debugInfo()['R']
         );
     }
 
@@ -478,7 +498,7 @@ class QueryTest extends TestCase
         );
 
         // $q1 union $q2
-        $u = new Expression('([] union [])', [$q1, $q2]);
+        $u = $this->e('([] union [])', [$q1, $q2]);
         $this->assertSame(
             '((select "date", "amount" "debit", 0 "credit" from "sales") union (select "date", 0 "debit", "amount" "credit" from "purchases"))',
             $u->render()[0]
@@ -500,7 +520,7 @@ class QueryTest extends TestCase
         // Let's test how to do that properly
         $q1->wrapInParentheses = false;
         $q2->wrapInParentheses = false;
-        $u = new Expression('([] union [])', [$q1, $q2]);
+        $u = $this->e('([] union [])', [$q1, $q2]);
         $this->assertSame(
             '(select "date", "amount" "debit", 0 "credit" from "sales" union select "date", 0 "debit", "amount" "credit" from "purchases")',
             $u->render()[0]
@@ -595,7 +615,7 @@ class QueryTest extends TestCase
         // field name as expression
         $this->assertSame(
             'where now = :a',
-            $this->q('[where]')->where(new Expression('now'), 1)->render()[0]
+            $this->q('[where]')->where($this->e('now'), 1)->render()[0]
         );
 
         // more than one where condition - join with AND keyword
@@ -811,7 +831,7 @@ class QueryTest extends TestCase
         );
         $this->assertSame(
             'order by "* desc"',
-            $this->q('[order]')->order(new Expression('"* desc"'))->render()[0]
+            $this->q('[order]')->order($this->e('"* desc"'))->render()[0]
         );
         $this->assertSame(
             'order by "* desc"',
@@ -873,7 +893,7 @@ class QueryTest extends TestCase
         );
         $this->assertSame(
             'group by date_format(dat, "%Y")',
-            $this->q('[group]')->group(new Expression('date_format(dat, "%Y")'))->render()[0]
+            $this->q('[group]')->group($this->e('date_format(dat, "%Y")'))->render()[0]
         );
         $this->assertSame(
             'group by date_format(dat, "%Y")',
@@ -939,7 +959,7 @@ class QueryTest extends TestCase
         $this->assertSame(
             'left join "address" "a" on a.name like u.pattern',
             $this->q('[join]')->table('user', 'u')
-                ->join('address a', new Expression('a.name like u.pattern'))->render()[0]
+                ->join('address a', $this->e('a.name like u.pattern'))->render()[0]
         );
     }
 
@@ -1027,7 +1047,7 @@ class QueryTest extends TestCase
         $this->assertSame(
             'update "employee" set "name"="name"+1',
             $this->q()
-                ->field('name')->table('employee')->set('name', new Expression('"name"+1'))
+                ->field('name')->table('employee')->set('name', $this->e('"name"+1'))
                 ->mode('update')
                 ->render()[0]
         );
@@ -1046,7 +1066,7 @@ class QueryTest extends TestCase
             'insert into "employee" ("time", "name") values (now(), :a)',
             $this->q()
                 ->field('time')->field('name')->table('employee')
-                ->set('time', new Expression('now()'))
+                ->set('time', $this->e('now()'))
                 ->set('name', 'unknown')
                 ->mode('insert')
                 ->render()[0]
@@ -1057,7 +1077,7 @@ class QueryTest extends TestCase
             'insert into "employee" ("time", "name") values (now(), :a)',
             $this->q()
                 ->field('time')->field('name')->table('employee')
-                ->setMulti(['time' => new Expression('now()'), 'name' => 'unknown'])
+                ->setMulti(['time' => $this->e('now()'), 'name' => 'unknown'])
                 ->mode('insert')
                 ->render()[0]
         );
@@ -1135,7 +1155,7 @@ class QueryTest extends TestCase
      */
     public function testSetException2(): void
     {
-        $this->q()->set(new Expression('foo'), 1);
+        $this->q()->set($this->e('foo'), 1);
     }
 
     public function testNestedOrAnd(): void
@@ -1177,7 +1197,7 @@ class QueryTest extends TestCase
     public function testNestedOrAndHaving(): void
     {
         $q = $this->q();
-        $q->table('employee')->field(new Expression('sum({})', ['amount']), 'salary')->group('type');
+        $q->table('employee')->field($this->e('sum({})', ['amount']), 'salary')->group('type');
         $q->having(
             $q
                 ->orExpr()
@@ -1193,7 +1213,7 @@ class QueryTest extends TestCase
     public function testNestedOrAndHavingWithWhereException(): void
     {
         $q = $this->q();
-        $q->table('employee')->field(new Expression('sum({})', ['amount']), 'salary')->group('type');
+        $q->table('employee')->field($this->e('sum({})', ['amount']), 'salary')->group('type');
         $q->having(
             $q
                 ->orExpr()
@@ -1266,7 +1286,7 @@ class QueryTest extends TestCase
         $this->assertSame('case when "status" = :a then :b when "status" like :c then :d else :e end', $s);
 
         // with subqueries
-        $age = new Expression('year(now()) - year(birth_date)');
+        $age = $this->e('year(now()) - year(birth_date)');
         $q = $this->q()->table('user')->field($age, 'calc_age');
 
         $s = $this->q()->caseExpr()
@@ -1286,7 +1306,7 @@ class QueryTest extends TestCase
         $this->assertSame('case "status" when :a then :b when :c then :d else :e end', $s);
 
         // with subqueries
-        $age = new Expression('year(now()) - year(birth_date)');
+        $age = $this->e('year(now()) - year(birth_date)');
         $q = $this->q()->table('user')->field($age, 'calc_age');
 
         $s = $this->q()->caseExpr($q)

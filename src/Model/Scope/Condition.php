@@ -10,6 +10,7 @@ use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Expressionable;
+use Atk4\Data\Persistence\Sql\Sqlite\Expression as SqliteExpression;
 
 class Condition extends AbstractScope
 {
@@ -355,7 +356,7 @@ class Condition extends AbstractScope
             }
 
             if ($value instanceof Expressionable) {
-                return 'expression \'' . $value->getDsqlExpression(new Expression())->getDebugQuery() . '\'';
+                return 'expression \'' . $value->getDsqlExpression(new SqliteExpression())->getDebugQuery() . '\'';
             }
 
             return 'object ' . print_r($value, true);

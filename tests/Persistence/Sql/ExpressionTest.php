@@ -18,7 +18,7 @@ class ExpressionTest extends TestCase
      */
     protected function e($template = [], array $arguments = []): Expression
     {
-        return new Expression($template, $arguments);
+        return new class($template, $arguments) extends Expression {};
     }
 
     public function testConstructorNoTemplateException(): void
@@ -262,7 +262,7 @@ class ExpressionTest extends TestCase
 
     public function testEscapeParam(): void
     {
-        $e = new Expression('hello, [who]', ['who' => 'world']);
+        $e = $this->e('hello, [who]', ['who' => 'world']);
         $this->assertSame([
             'hello, :a',
             [':a' => 'world'],
@@ -311,6 +311,21 @@ class ExpressionTest extends TestCase
     {
         $this->expectException(Exception::class);
         $this->callProtected($this->e(), 'consume', new \stdClass());
+    }
+
+    public function testRenderNoTagException(): void
+    {
+        $e = $this->e('hello, [world]');
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Expression could not render tag');
+        try {
+            $e->render();
+        } catch (Exception $e) {
+            $this->assertSame('world', $e->getParams()['tag']);
+
+            throw $e;
+        }
     }
 
     public function testArrayAccess(): void
