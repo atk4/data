@@ -15,7 +15,7 @@ class Query extends BaseQuery
     protected string $templateUpdate = 'update [table][join] set [set] [where]';
     protected string $templateReplace;
 
-    protected function _sub_render_condition(array $row): string
+    protected function _subrenderCondition(array $row): string
     {
         if (count($row) >= 3) {
             [$field, $cond, $value] = $row;
@@ -25,10 +25,10 @@ class Query extends BaseQuery
             }
         }
 
-        return parent::_sub_render_condition($row);
+        return parent::_subrenderCondition($row);
     }
 
-    public function _render_limit(): ?string
+    protected function _renderLimit(): ?string
     {
         if (!isset($this->args['limit'])) {
             return null;

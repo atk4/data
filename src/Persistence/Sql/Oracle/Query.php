@@ -32,7 +32,7 @@ class Query extends BaseQuery
         return parent::render();
     }
 
-    protected function _sub_render_condition(array $row): string
+    protected function _subrenderCondition(array $row): string
     {
         if (count($row) === 2) {
             [$field, $value] = $row;
@@ -63,10 +63,10 @@ class Query extends BaseQuery
             }
         }
 
-        return parent::_sub_render_condition($row);
+        return parent::_subrenderCondition($row);
     }
 
-    public function _render_limit(): ?string
+    protected function _renderLimit(): ?string
     {
         if (!isset($this->args['limit'])) {
             return null;

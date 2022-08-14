@@ -88,39 +88,39 @@ class QueryTest extends TestCase
     {
         $this->assertSame(
             '"first_name"',
-            $this->callProtected($this->q()->field('first_name'), '_render_field')
+            $this->callProtected($this->q()->field('first_name'), '_renderField')
         );
         $this->assertSame(
             '"first_name", "last_name"',
-            $this->callProtected($this->q()->field('first_name')->field('last_name'), '_render_field')
+            $this->callProtected($this->q()->field('first_name')->field('last_name'), '_renderField')
         );
         $this->assertSame(
             '"last_name"',
-            $this->callProtected($this->q()->field('first_name')->reset('field')->field('last_name'), '_render_field')
+            $this->callProtected($this->q()->field('first_name')->reset('field')->field('last_name'), '_renderField')
         );
         $this->assertSame(
             '*',
-            $this->callProtected($this->q()->field('first_name')->reset('field'), '_render_field')
+            $this->callProtected($this->q()->field('first_name')->reset('field'), '_renderField')
         );
         $this->assertSame(
             '*',
-            $this->callProtected($this->q()->field('first_name')->reset(), '_render_field')
+            $this->callProtected($this->q()->field('first_name')->reset(), '_renderField')
         );
         $this->assertSame(
             '"employee"."first_name"',
-            $this->callProtected($this->q()->field('employee.first_name'), '_render_field')
+            $this->callProtected($this->q()->field('employee.first_name'), '_renderField')
         );
         $this->assertSame(
             '"first_name" "name"',
-            $this->callProtected($this->q()->field('first_name', 'name'), '_render_field')
+            $this->callProtected($this->q()->field('first_name', 'name'), '_renderField')
         );
         $this->assertSame(
             '*',
-            $this->callProtected($this->q()->field('*'), '_render_field')
+            $this->callProtected($this->q()->field('*'), '_renderField')
         );
         $this->assertSame(
             '"employee"."first_name"',
-            $this->callProtected($this->q()->field('employee.first_name'), '_render_field')
+            $this->callProtected($this->q()->field('employee.first_name'), '_renderField')
         );
     }
 
@@ -129,17 +129,17 @@ class QueryTest extends TestCase
         // default defaultField
         $this->assertSame(
             '*',
-            $this->callProtected($this->q(), '_render_field')
+            $this->callProtected($this->q(), '_renderField')
         );
         // defaultField as custom string - not escaped
         $this->assertSame(
             'id',
-            $this->callProtected($this->q(['defaultField' => 'id']), '_render_field')
+            $this->callProtected($this->q(['defaultField' => 'id']), '_renderField')
         );
         // defaultField as custom string with dot - not escaped
         $this->assertSame(
             'all.values',
-            $this->callProtected($this->q(['defaultField' => 'all.values']), '_render_field')
+            $this->callProtected($this->q(['defaultField' => 'all.values']), '_renderField')
         );
     }
 
@@ -358,7 +358,7 @@ class QueryTest extends TestCase
                 ->field('name')->table('employee', 'e')->table('jobs', 'j')
                 ->render()[0]
         );
-        // testing _render_table_noalias, shouldn't render table alias 'emp'
+        // testing _renderTableNoalias, shouldn't render table alias 'emp'
         $this->assertSame(
             'insert into "employee" ("name") values (:a)',
             $this->q()
@@ -1368,12 +1368,12 @@ class QueryTest extends TestCase
         // render table
         $this->assertSame(
             '"foo"."bar"',
-            $this->callProtected($this->q()->table('foo.bar'), '_render_table')
+            $this->callProtected($this->q()->table('foo.bar'), '_renderTable')
         );
 
         $this->assertSame(
             '"foo"."bar" "a"',
-            $this->callProtected($this->q()->table('foo.bar', 'a'), '_render_table')
+            $this->callProtected($this->q()->table('foo.bar', 'a'), '_renderTable')
         );
 
         // where clause

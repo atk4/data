@@ -11,14 +11,14 @@ use Atk4\Data\Schema\TestCase;
 
 trait UaReminder
 {
-    public function send_reminder(): string
+    public function sendReminder(): string
     {
         $this->save(['reminder_sent' => true]);
 
         return 'sent reminder to ' . $this->getTitle();
     }
 
-    public function backup_clients(): string
+    public function backupClients(): string
     {
         return 'backs up all clients';
     }
@@ -38,10 +38,10 @@ class UaClient extends Model
         $this->addField('reminder_sent', ['type' => 'boolean']);
 
         // this action can be invoked from UI
-        $this->addUserAction('send_reminder');
+        $this->addUserAction('sendReminder');
 
         // this action will be system action, so it will not be invokable from UI
-        $this->addUserAction('backup_clients', ['appliesTo' => Model\UserAction::APPLIES_TO_ALL_RECORDS, 'system' => true]);
+        $this->addUserAction('backupClients', ['appliesTo' => Model\UserAction::APPLIES_TO_ALL_RECORDS, 'system' => true]);
     }
 }
 
@@ -68,14 +68,14 @@ class UserActionTest extends TestCase
         $this->assertCount(0, $client->getUserActions(Model\UserAction::APPLIES_TO_ALL_RECORDS)); // don't return system actions here
 
         // action takes no arguments. If it would, we should be able to find info about those
-        $act1 = $client->getUserActions()['send_reminder'];
+        $act1 = $client->getUserActions()['sendReminder'];
         $this->assertSame([], $act1->args);
         $this->assertSame(Model\UserAction::APPLIES_TO_SINGLE_RECORD, $act1->appliesTo);
 
         // load record, before executing, because scope is single record
         $client = $client->load(1);
 
-        $act1 = $client->getModel()->getUserActions()['send_reminder'];
+        $act1 = $client->getModel()->getUserActions()['sendReminder'];
         $act1 = $act1->getActionForEntity($client);
         $this->assertNotTrue($client->get('reminder_sent'));
         $res = $act1->execute();
@@ -85,7 +85,7 @@ class UserActionTest extends TestCase
         $client->unload();
 
         // test system action
-        $act2 = $client->getUserAction('backup_clients');
+        $act2 = $client->getUserAction('backupClients');
 
         // action takes no arguments. If it would, we should be able to find info about those
         $this->assertSame([], $act2->args);
@@ -113,10 +113,10 @@ class UserActionTest extends TestCase
         };
         $this->assertSame('will say John', $client->getUserAction('say_name')->preview('x'));
 
-        $client->getModel()->addUserAction('also_backup', ['callback' => 'backup_clients']);
+        $client->getModel()->addUserAction('also_backup', ['callback' => 'backupClients']);
         $this->assertSame('backs up all clients', $client->getUserAction('also_backup')->execute());
 
-        $client->getUserAction('also_backup')->preview = 'backup_clients';
+        $client->getUserAction('also_backup')->preview = 'backupClients';
         $this->assertSame('backs up all clients', $client->getUserAction('also_backup')->preview());
 
         $this->assertSame('Also Backup UaClient', $client->getUserAction('also_backup')->getDescription());
@@ -127,7 +127,7 @@ class UserActionTest extends TestCase
         $client = new UaClient($this->pers);
 
         $this->expectExceptionMessage('specify preview callback');
-        $client->getUserAction('backup_clients')->preview();
+        $client->getUserAction('backupClients')->preview();
     }
 
     public function testAppliesTo1(): void
@@ -136,7 +136,7 @@ class UserActionTest extends TestCase
         $client = $client->createEntity();
 
         $this->expectExceptionMessage('load existing record');
-        $client->executeUserAction('send_reminder');
+        $client->executeUserAction('sendReminder');
     }
 
     public function testAppliesTo2(): void
@@ -172,10 +172,10 @@ class UserActionTest extends TestCase
         $client = new UaClient($this->pers);
         $client = $client->load(1);
 
-        $client->getUserAction('send_reminder')->enabled = false;
+        $client->getUserAction('sendReminder')->enabled = false;
 
         $this->expectExceptionMessage('disabled');
-        $client->getUserAction('send_reminder')->execute();
+        $client->getUserAction('sendReminder')->execute();
     }
 
     public function testDisabled2(): void
@@ -183,12 +183,12 @@ class UserActionTest extends TestCase
         $client = new UaClient($this->pers);
         $client = $client->load(1);
 
-        $client->getUserAction('send_reminder')->enabled = function () {
+        $client->getUserAction('sendReminder')->enabled = function () {
             return false;
         };
 
         $this->expectExceptionMessage('disabled');
-        $client->getUserAction('send_reminder')->execute();
+        $client->getUserAction('sendReminder')->execute();
     }
 
     public function testDisabled3(): void
@@ -196,11 +196,11 @@ class UserActionTest extends TestCase
         $client = new UaClient($this->pers);
         $client = $client->load(1);
 
-        $client->getUserAction('send_reminder')->enabled = function () {
+        $client->getUserAction('sendReminder')->enabled = function () {
             return true;
         };
 
-        $client->getUserAction('send_reminder')->execute();
+        $client->getUserAction('sendReminder')->execute();
         $this->assertTrue(true); // no exception
     }
 

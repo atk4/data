@@ -294,19 +294,15 @@ class Reference
         return $this->createTheirModel($defaults);
     }
 
-    /** @var array<int|string, string> */
-    protected $__debug_fields = ['link', 'model', 'ourField', 'theirField'];
-
     public function __debugInfo(): array
     {
-        $arr = [];
-        foreach ($this->__debug_fields as $k => $v) {
-            $k = is_int($k) ? $v : $k;
-            if ($this->{$v} !== null) {
-                $arr[$k] = $this->{$v};
+        $res = [];
+        foreach (['link', 'model', 'ourField', 'theirField'] as $k) {
+            if ($this->{$k} !== null) {
+                $res[$k] = $this->{$k};
             }
         }
 
-        return $arr;
+        return $res;
     }
 }
