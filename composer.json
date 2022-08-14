@@ -36,13 +36,13 @@
     "require": {
         "php": ">=7.4 <8.3",
         "atk4/core": "dev-develop",
-        "doctrine/dbal": "^3.3",
+        "doctrine/dbal": "~3.3.0",
         "mvorisek/atk4-hintable": "~1.9.0"
     },
     "require-release": {
         "php": ">=7.4 <8.3",
         "atk4/core": "~3.2.0",
-        "doctrine/dbal": "^3.3",
+        "doctrine/dbal": "~3.3.0",
         "mvorisek/atk4-hintable": "~1.9.0"
     },
     "require-dev": {
