@@ -141,7 +141,7 @@ class Model implements \IteratorAggregate
     /** @var array{0: int|null, 1: int} */
     public array $limit = [null, 0];
 
-    /** @var array<int, array{0: string, 1: 'asc'|'desc'}> */
+    /** @var array<int, array{0: string|Expressionable, 1: 'asc'|'desc'}> */
     public array $order = [];
 
     /** @var array<string, array{'model': Model, 'recursive': bool}> */

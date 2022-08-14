@@ -291,12 +291,8 @@ class Sql extends Persistence
 
                 if ($order[0] instanceof Expressionable) {
                     $query->order($order[0], $isDesc);
-                } elseif (is_string($order[0])) {
-                    $query->order($model->getField($order[0]), $isDesc);
                 } else {
-                    throw (new Exception('Unsupported order parameter'))
-                        ->addMoreInfo('model', $model)
-                        ->addMoreInfo('field', $order[0]);
+                    $query->order($model->getField($order[0]), $isDesc);
                 }
             }
         }
