@@ -296,12 +296,13 @@ class Reference
 
     public function __debugInfo(): array
     {
+        $res = [];
         foreach (['link', 'model', 'ourField', 'theirField'] as $k) {
             if ($this->{$k} !== null) {
-                $arr[$k] = $this->{$k};
+                $res[$k] = $this->{$k};
             }
         }
 
-        return $arr;
+        return $res;
     }
 }
