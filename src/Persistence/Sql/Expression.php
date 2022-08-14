@@ -397,15 +397,20 @@ abstract class Expression implements Expressionable, \ArrayAccess
 
                     // use rendering only with named tags
                 }
-                $fx = '_render_' . $identifier;
 
                 if (array_key_exists($identifier, $this->args['custom'])) {
                     $value = $this->consume($this->args['custom'][$identifier], $escapeMode);
-                } elseif (method_exists($this, $fx)) {
-                    $value = $this->{$fx}();
                 } else {
-                    throw (new Exception('Expression could not render tag'))
-                        ->addMoreInfo('tag', $identifier);
+                    $renderMethodName = !is_int($identifier) ? '_render' . ucfirst($identifier) : null;
+                    if ($renderMethodName !== null
+                        && method_exists($this, $renderMethodName)
+                        && (new \ReflectionMethod($this, $renderMethodName))->getName() === $renderMethodName
+                    ) {
+                        $value = $this->{$renderMethodName}();
+                    } else {
+                        throw (new Exception('Expression could not render tag'))
+                            ->addMoreInfo('tag', $identifier);
+                    }
                 }
 
                 return $value;

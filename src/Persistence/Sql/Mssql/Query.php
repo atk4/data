@@ -15,15 +15,15 @@ class Query extends BaseQuery
 
     protected string $templateInsert = <<<'EOF'
         begin try
-          insert[option] into [table_noalias] ([set_fields]) values ([set_values]);
+          insert[option] into [tableNoalias] ([setFields]) values ([setValues]);
         end try begin catch
           if ERROR_NUMBER() = 544 begin
-            set IDENTITY_INSERT [table_noalias] on;
+            set IDENTITY_INSERT [tableNoalias] on;
             begin try
-              insert[option] into [table_noalias] ([set_fields]) values ([set_values]);
-              set IDENTITY_INSERT [table_noalias] off;
+              insert[option] into [tableNoalias] ([setFields]) values ([setValues]);
+              set IDENTITY_INSERT [tableNoalias] off;
             end try begin catch
-              set IDENTITY_INSERT [table_noalias] off;
+              set IDENTITY_INSERT [tableNoalias] off;
               throw;
             end catch
           end else begin
@@ -32,7 +32,7 @@ class Query extends BaseQuery
         end catch
         EOF;
 
-    public function _render_limit(): ?string
+    protected function _renderLimit(): ?string
     {
         if (!isset($this->args['limit'])) {
             return null;

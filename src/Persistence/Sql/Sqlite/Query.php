@@ -11,7 +11,7 @@ class Query extends BaseQuery
     protected string $identifierEscapeChar = '`';
     protected string $expressionClass = Expression::class;
 
-    protected string $templateTruncate = 'delete [from] [table_noalias]';
+    protected string $templateTruncate = 'delete [from] [tableNoalias]';
 
     public function groupConcat($field, string $delimiter = ',')
     {

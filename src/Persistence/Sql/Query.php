@@ -24,11 +24,11 @@ abstract class Query extends Expression
     protected array $supportedOperators = ['=', '!=', '<', '>', '<=', '>=', 'like', 'not like', 'in', 'not in'];
 
     protected string $templateSelect = '[with]select[option] [field] [from] [table][join][where][group][having][order][limit]';
-    protected string $templateInsert = 'insert[option] into [table_noalias] ([set_fields]) values ([set_values])';
-    protected string $templateReplace = 'replace[option] into [table_noalias] ([set_fields]) values ([set_values])';
-    protected string $templateDelete = '[with]delete [from] [table_noalias][where][having]';
-    protected string $templateUpdate = '[with]update [table_noalias] set [set] [where]';
-    protected string $templateTruncate = 'truncate table [table_noalias]';
+    protected string $templateInsert = 'insert[option] into [tableNoalias] ([setFields]) values ([setValues])';
+    protected string $templateReplace = 'replace[option] into [tableNoalias] ([setFields]) values ([setValues])';
+    protected string $templateDelete = '[with]delete [from] [tableNoalias][where][having]';
+    protected string $templateUpdate = '[with]update [tableNoalias] set [set] [where]';
+    protected string $templateTruncate = 'truncate table [tableNoalias]';
 
     // {{{ Field specification and rendering
 
@@ -65,7 +65,7 @@ abstract class Query extends Expression
             throw new \TypeError('Array input is no longer accepted');
         }
 
-        $this->_set_args('field', $alias, $field);
+        $this->_setArgs('field', $alias, $field);
 
         return $this;
     }
@@ -73,11 +73,11 @@ abstract class Query extends Expression
     /**
      * Returns template component for [field].
      *
-     * @param bool $addAlias Should we add aliases, see _render_field_noalias()
+     * @param bool $addAlias Should we add aliases, see _renderFieldNoalias()
      *
      * @return string Parsed template chunk
      */
-    protected function _render_field($addAlias = true): string
+    protected function _renderField($addAlias = true): string
     {
         // if no fields were defined, use defaultField
         if (empty($this->args['field'])) {
@@ -115,9 +115,9 @@ abstract class Query extends Expression
         return implode(', ', $res);
     }
 
-    protected function _render_field_noalias(): string
+    protected function _renderFieldNoalias(): string
     {
-        return $this->_render_field(false);
+        return $this->_renderField(false);
     }
 
     // }}}
@@ -147,7 +147,7 @@ abstract class Query extends Expression
             $alias = $table;
         }
 
-        $this->_set_args('table', $alias, $table);
+        $this->_setArgs('table', $alias, $table);
 
         return $this;
     }
@@ -178,9 +178,9 @@ abstract class Query extends Expression
     }
 
     /**
-     * @param bool $addAlias Should we add aliases, see _render_table_noalias()
+     * @param bool $addAlias Should we add aliases, see _renderTableNoalias()
      */
-    protected function _render_table($addAlias = true): ?string
+    protected function _renderTable($addAlias = true): ?string
     {
         if (empty($this->args['table'])) {
             return '';
@@ -217,12 +217,12 @@ abstract class Query extends Expression
         return implode(', ', $res);
     }
 
-    protected function _render_table_noalias(): ?string
+    protected function _renderTableNoalias(): ?string
     {
-        return $this->_render_table(false);
+        return $this->_renderTable(false);
     }
 
-    protected function _render_from(): ?string
+    protected function _renderFrom(): ?string
     {
         return empty($this->args['table']) ? '' : 'from';
     }
@@ -243,7 +243,7 @@ abstract class Query extends Expression
      */
     public function with(self $cursor, string $alias, array $fields = null, bool $recursive = false)
     {
-        $this->_set_args('with', $alias, [
+        $this->_setArgs('with', $alias, [
             'cursor' => $cursor,
             'fields' => $fields,
             'recursive' => $recursive,
@@ -252,7 +252,7 @@ abstract class Query extends Expression
         return $this;
     }
 
-    protected function _render_with(): ?string
+    protected function _renderWith(): ?string
     {
         if (empty($this->args['with'])) {
             return '';
@@ -384,7 +384,7 @@ abstract class Query extends Expression
         return $this;
     }
 
-    public function _render_join(): ?string
+    protected function _renderJoin(): ?string
     {
         if (!isset($this->args['join'])) {
             return '';
@@ -516,19 +516,19 @@ abstract class Query extends Expression
      *
      * @return string[]
      */
-    protected function _sub_render_where($kind): array
+    protected function _subrenderWhere($kind): array
     {
         // where() might have been called multiple times
         // collect all conditions, then join them with AND keyword
         $res = [];
         foreach ($this->args[$kind] as $row) {
-            $res[] = $this->_sub_render_condition($row);
+            $res[] = $this->_subrenderCondition($row);
         }
 
         return $res;
     }
 
-    protected function _sub_render_condition(array $row): string
+    protected function _subrenderCondition(array $row): string
     {
         if (count($row) === 3) {
             [$field, $cond, $value] = $row;
@@ -616,16 +616,16 @@ abstract class Query extends Expression
         return $field . ' ' . $cond . ' ' . $value;
     }
 
-    protected function _render_where(): ?string
+    protected function _renderWhere(): ?string
     {
         if (!isset($this->args['where'])) {
             return null;
         }
 
-        return ' where ' . implode(' and ', $this->_sub_render_where('where'));
+        return ' where ' . implode(' and ', $this->_subrenderWhere('where'));
     }
 
-    protected function _render_orwhere(): ?string
+    protected function _renderOrwhere(): ?string
     {
         if (isset($this->args['where']) && isset($this->args['having'])) {
             throw new Exception('Mixing of WHERE and HAVING conditions not allowed in query expression');
@@ -633,14 +633,14 @@ abstract class Query extends Expression
 
         foreach (['where', 'having'] as $kind) {
             if (isset($this->args[$kind])) {
-                return implode(' or ', $this->_sub_render_where($kind));
+                return implode(' or ', $this->_subrenderWhere($kind));
             }
         }
 
         return null;
     }
 
-    protected function _render_andwhere(): ?string
+    protected function _renderAndwhere(): ?string
     {
         if (isset($this->args['where']) && isset($this->args['having'])) {
             throw new Exception('Mixing of WHERE and HAVING conditions not allowed in query expression');
@@ -648,20 +648,20 @@ abstract class Query extends Expression
 
         foreach (['where', 'having'] as $kind) {
             if (isset($this->args[$kind])) {
-                return implode(' and ', $this->_sub_render_where($kind));
+                return implode(' and ', $this->_subrenderWhere($kind));
             }
         }
 
         return null;
     }
 
-    protected function _render_having(): ?string
+    protected function _renderHaving(): ?string
     {
         if (!isset($this->args['having'])) {
             return null;
         }
 
-        return ' having ' . implode(' and ', $this->_sub_render_where('having'));
+        return ' having ' . implode(' and ', $this->_subrenderWhere('having'));
     }
 
     // }}}
@@ -688,7 +688,7 @@ abstract class Query extends Expression
         return $this;
     }
 
-    protected function _render_group(): ?string
+    protected function _renderGroup(): ?string
     {
         if (!isset($this->args['group'])) {
             return '';
@@ -750,7 +750,7 @@ abstract class Query extends Expression
         return $this;
     }
 
-    protected function _render_set(): ?string
+    protected function _renderSet(): ?string
     {
         $res = [];
         foreach ($this->args['set'] as [$field, $value]) {
@@ -763,7 +763,7 @@ abstract class Query extends Expression
         return implode(', ', $res);
     }
 
-    protected function _render_set_fields(): ?string
+    protected function _renderSetFields(): ?string
     {
         $res = [];
         foreach ($this->args['set'] as $pair) {
@@ -775,7 +775,7 @@ abstract class Query extends Expression
         return implode(', ', $res);
     }
 
-    protected function _render_set_values(): ?string
+    protected function _renderSetValues(): ?string
     {
         $res = [];
         foreach ($this->args['set'] as $pair) {
@@ -811,7 +811,7 @@ abstract class Query extends Expression
         return $this;
     }
 
-    protected function _render_option(): ?string
+    protected function _renderOption(): ?string
     {
         if (!isset($this->args['option'][$this->mode])) {
             return '';
@@ -842,7 +842,7 @@ abstract class Query extends Expression
         return $this;
     }
 
-    public function _render_limit(): ?string
+    protected function _renderLimit(): ?string
     {
         if (!isset($this->args['limit'])) {
             return null;
@@ -909,7 +909,7 @@ abstract class Query extends Expression
         return $this;
     }
 
-    public function _render_order(): ?string
+    protected function _renderOrder(): ?string
     {
         if (!isset($this->args['order'])) {
             return '';
@@ -1128,7 +1128,7 @@ abstract class Query extends Expression
         return $this;
     }
 
-    protected function _render_case(): ?string
+    protected function _renderCase(): ?string
     {
         if (!isset($this->args['case_when'])) {
             return null;
@@ -1157,7 +1157,7 @@ abstract class Query extends Expression
                 }
                 $res .= $this->consume($row[0], self::ESCAPE_PARAM);
             } else {
-                $res .= $this->_sub_render_condition($row[0]);
+                $res .= $this->_subrenderCondition($row[0]);
             }
 
             // then
@@ -1179,7 +1179,7 @@ abstract class Query extends Expression
      * @param string|null $alias Alias name
      * @param mixed       $value Value to set in args array
      */
-    protected function _set_args($what, $alias, $value): void
+    protected function _setArgs($what, $alias, $value): void
     {
         if ($alias === null) {
             $this->args[$what][] = $value;
