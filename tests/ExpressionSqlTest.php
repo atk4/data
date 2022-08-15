@@ -28,7 +28,9 @@ class ExpressionSqlTest extends TestCase
             ],
         ]);
 
-        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
+        $i = new Model($this->db, ['table' => 'invoice']);
+        $i->addField('total_net');
+        $i->addField('total_vat');
         $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]']);
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
@@ -68,7 +70,9 @@ class ExpressionSqlTest extends TestCase
             ],
         ]);
 
-        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
+        $i = new Model($this->db, ['table' => 'invoice']);
+        $i->addField('total_net');
+        $i->addField('total_vat');
         $i->addExpression('total_gross', ['expr' => function ($i, $q) {
             return '[total_net] + [total_vat]';
         }, 'type' => 'float']);
@@ -98,7 +102,9 @@ class ExpressionSqlTest extends TestCase
             ],
         ]);
 
-        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
+        $i = new Model($this->db, ['table' => 'invoice']);
+        $i->addField('total_net');
+        $i->addField('total_vat');
         $i->addExpression('sum_net', ['expr' => $i->action('fx', ['sum', 'total_net'])]);
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
@@ -131,7 +137,9 @@ class ExpressionSqlTest extends TestCase
         ]);
 
         $m = new Model($this->db, ['table' => 'user']);
-        $m->addFields(['name', 'surname', 'cached_name']);
+        $m->addField('name');
+        $m->addField('surname');
+        $m->addField('cached_name');
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
             $concatExpr = '[name] || \' \' || [surname]';
@@ -163,7 +171,8 @@ class ExpressionSqlTest extends TestCase
         ]);
 
         $m = new Model($this->db, ['table' => 'math']);
-        $m->addFields(['a', 'b']);
+        $m->addField('a');
+        $m->addField('b');
 
         $m->addExpression('sum', ['expr' => '[a] + [b]']);
 
@@ -178,7 +187,8 @@ class ExpressionSqlTest extends TestCase
         $this->dropCreatedDb();
         $this->setDb($dbData);
         $m = new Model($this->db, ['table' => 'math', 'reloadAfterSave' => false]);
-        $m->addFields(['a', 'b']);
+        $m->addField('a');
+        $m->addField('b');
 
         $m->addExpression('sum', ['expr' => '[a] + [b]']);
 

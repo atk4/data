@@ -171,26 +171,48 @@ class FieldTest extends TestCase
     public function testCaption(): void
     {
         $m = new Model();
-        $f = $m->addField('foo');
-        $this->assertSame('Foo', $f->getCaption());
 
-        $f = $m->addField('user_defined_entity');
-        $this->assertSame('User Defined Entity', $f->getCaption());
+        $m->addField('foo');
+        $this->assertSame(
+            'Foo',
+            $m->getField('foo')->getCaption()
+        );
 
-        $f = $m->addField('foo2', ['caption' => 'My Foo']);
-        $this->assertSame('My Foo', $f->getCaption());
+        $m->addField('user_defined_entity');
+        $this->assertSame(
+            'User Defined Entity',
+            $m->getField('user_defined_entity')->getCaption()
+        );
 
-        $f = $m->addField('foo3', ['ui' => ['caption' => 'My Foo']]);
-        $this->assertSame('My Foo', $f->getCaption());
+        $m->addField('foo2', ['caption' => 'My Foo']);
+        $this->assertSame(
+            'My Foo',
+            $m->getField('foo2')->getCaption()
+        );
 
-        $f = $m->addField('userDefinedEntity');
-        $this->assertSame('User Defined Entity', $f->getCaption());
+        $m->addField('foo3', ['ui' => ['caption' => 'My Foo']]);
+        $this->assertSame(
+            'My Foo',
+            $m->getField('foo3')->getCaption()
+        );
 
-        $f = $m->addField('newNASA_module');
-        $this->assertSame('New NASA Module', $f->getCaption());
+        $m->addField('userDefinedEntity');
+        $this->assertSame(
+            'User Defined Entity',
+            $m->getField('userDefinedEntity')->getCaption()
+        );
 
-        $f = $m->addField('this\\ _isNASA_MyBigBull shit_123\Foo');
-        $this->assertSame('This Is NASA My Big Bull Shit 123 Foo', $f->getCaption());
+        $m->addField('newNASA_module');
+        $this->assertSame(
+            'New NASA Module',
+            $m->getField('newNASA_module')->getCaption()
+        );
+
+        $m->addField('this\\ _isNASA_MyBigBull shit_123\Foo');
+        $this->assertSame(
+            'This Is NASA My Big Bull Shit 123 Foo',
+            $m->getField('this\\ _isNASA_MyBigBull shit_123\Foo')->getCaption()
+        );
     }
 
     public function testReadOnly1(): void

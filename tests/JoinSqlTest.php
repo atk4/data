@@ -103,7 +103,6 @@ class JoinSqlTest extends TestCase
 
     public function testJoinSaving2(): void
     {
-        $user = new Model($this->db, ['table' => 'user']);
         $this->setDb([
             'user' => [
                 '_' => ['id' => 1, 'name' => 'John'],
@@ -112,6 +111,8 @@ class JoinSqlTest extends TestCase
                 '_' => ['id' => 1, 'contact_phone' => '+123', 'test_id' => 0],
             ],
         ]);
+
+        $user = new Model($this->db, ['table' => 'user']);
         $user->addField('name');
         $j = $user->join('contact.test_id');
         $this->createMigrator()->createForeignKey($j);
@@ -362,7 +363,6 @@ class JoinSqlTest extends TestCase
 
     public function testDoubleSaveHook(): void
     {
-        $user = new Model($this->db, ['table' => 'user']);
         $this->setDb([
             'user' => [
                 '_' => ['id' => 1, 'name' => 'John'],
@@ -371,6 +371,8 @@ class JoinSqlTest extends TestCase
                 '_' => ['id' => 1, 'contact_phone' => '+123', 'test_id' => 0],
             ],
         ]);
+
+        $user = new Model($this->db, ['table' => 'user']);
         $user->addField('name');
         $j = $user->join('contact.test_id');
         $this->createMigrator()->createForeignKey($j);

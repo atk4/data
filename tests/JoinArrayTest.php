@@ -231,6 +231,7 @@ class JoinArrayTest extends TestCase
                 2 => ['contact_phone' => '+321'],
             ],
         ]);
+
         $user = new Model($db, ['table' => 'user']);
         $user->addField('contact_id', ['type' => 'integer']);
         $user->addField('name');
@@ -268,6 +269,7 @@ class JoinArrayTest extends TestCase
                 2 => ['contact_phone' => '+321'],
             ],
         ]);
+
         $user = new Model($db, ['table' => 'user']);
         $user->addField('contact_id', ['type' => 'integer']);
         $user->addField('name');
@@ -343,6 +345,7 @@ class JoinArrayTest extends TestCase
                 3 => ['contact_phone' => '+777'],
             ],
         ]);
+
         $user = new Model($db, ['table' => 'user']);
         $user->addField('contact_id', ['type' => 'integer']);
         $user->addField('name');
@@ -378,6 +381,7 @@ class JoinArrayTest extends TestCase
                 3 => ['contact_phone' => '+777'],
             ],
         ]);
+
         $user = new Model($db, ['table' => 'user']);
         $user->addField('contact_id', ['type' => 'integer']);
         $user->addField('name');

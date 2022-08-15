@@ -35,8 +35,12 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
-        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
-        $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount', 'user_id']);
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name');
+
+        $o = new Model($this->db, ['table' => 'order']);
+        $o->addField('amount');
+        $o->addField('user_id');
 
         $u->hasMany('Orders', ['model' => $o]);
 
@@ -69,8 +73,12 @@ class ReferenceSqlTest extends TestCase
      */
     public function testLink(): void
     {
-        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
-        $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount', 'user_id']);
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name');
+
+        $o = new Model($this->db, ['table' => 'order']);
+        $o->addField('amount');
+        $o->addField('user_id');
 
         $u->hasMany('Orders', ['model' => $o]);
 
@@ -95,8 +103,13 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
-        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'currency']);
-        $c = (new Model($this->db, ['table' => 'currency']))->addFields(['currency', 'name']);
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name');
+        $u->addField('currency');
+
+        $c = new Model($this->db, ['table' => 'currency']);
+        $c->addField('currency');
+        $c->addField('name');
 
         if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
             $serverVersion = $this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
@@ -118,8 +131,13 @@ class ReferenceSqlTest extends TestCase
 
     public function testLink2(): void
     {
-        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'currency_code']);
-        $c = (new Model($this->db, ['table' => 'currency']))->addFields(['code', 'name']);
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name');
+        $u->addField('currency_code');
+
+        $c = new Model($this->db, ['table' => 'currency']);
+        $c->addField('code');
+        $c->addField('name');
 
         $u->hasMany('cur', ['model' => $c, 'ourField' => 'currency_code', 'theirField' => 'code']);
 
@@ -149,8 +167,11 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
-        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
-        $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name');
+
+        $o = new Model($this->db, ['table' => 'order']);
+        $o->addField('amount');
 
         $o->hasOne('user_id', ['model' => $u]);
 
@@ -188,10 +209,16 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
-        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'date' => ['type' => 'date']]);
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name');
+        $u->addField('date', ['type' => 'date']);
 
-        $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
-        $o->hasOne('user_id', ['model' => $u])->addFields(['username' => 'name', ['date', 'type' => 'date']]);
+        $o = new Model($this->db, ['table' => 'order']);
+        $o->addField('amount');
+        $o->hasOne('user_id', ['model' => $u])->addFields([
+            'username' => 'name',
+            ['date', 'type' => 'date']
+        ]);
 
         $this->assertSame('John', $o->load(1)->get('username'));
         $this->assertEquals(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('date'));
@@ -201,13 +228,18 @@ class ReferenceSqlTest extends TestCase
         $this->assertSame('Joe', $o->load(5)->get('username'));
 
         // few more tests
-        $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
-        $o->hasOne('user_id', ['model' => $u])->addFields(['username' => 'name', 'thedate' => ['date', 'type' => 'date']]);
+        $o = new Model($this->db, ['table' => 'order']);
+        $o->addField('amount');
+        $o->hasOne('user_id', ['model' => $u])->addFields([
+            'username' => 'name',
+            'thedate' => ['date', 'type' => 'date']
+        ]);
         $this->assertSame('John', $o->load(1)->get('username'));
         $this->assertEquals(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('thedate'));
 
-        $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
-        $o->hasOne('user_id', ['model' => $u])->addFields(['date'], ['type' => 'date']);
+        $o = new Model($this->db, ['table' => 'order']);
+        $o->addField('amount');
+        $o->hasOne('user_id', ['model' => $u])->addField('date', null, ['type' => 'date']);
         $this->assertEquals(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('date'));
     }
 
@@ -230,10 +262,16 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
-        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['ref_no']);
-        $l = (new Model($this->db, ['table' => 'invoice_line']))->addFields(['invoice_id', 'total_net', 'total_vat', 'total_gross']);
-        $i->hasMany('line', ['model' => $l]);
+        $i = new Model($this->db, ['table' => 'invoice']);
+        $i->addField('ref_no');
 
+        $l = new Model($this->db, ['table' => 'invoice_line']);
+        $l->addField('invoice_id');
+        $l->addField('total_net');
+        $l->addField('total_vat');
+        $l->addField('total_gross');
+
+        $i->hasMany('line', ['model' => $l]);
         $i->addExpression('total_net', ['expr' => $i->refLink('line')->action('fx', ['sum', 'total_net'])]);
 
         $this->assertSameSql(
@@ -261,19 +299,20 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
-        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['ref_no']);
-        $l = (new Model($this->db, ['table' => 'invoice_line']))->addFields([
-            'invoice_id',
-            'total_net' => ['type' => 'atk4_money'],
-            'total_vat' => ['type' => 'atk4_money'],
-            'total_gross' => ['type' => 'atk4_money'],
+        $i = new Model($this->db, ['table' => 'invoice']);
+        $i->addField('ref_no');
+
+        $l = new Model($this->db, ['table' => 'invoice_line']);
+        $l->addField('invoice_id');
+        $l->addField('total_net', ['type' => 'atk4_money']);
+        $l->addField('total_vat', ['type' => 'atk4_money']);
+        $l->addField('total_gross', ['type' => 'atk4_money']);
+
+        $i->hasMany('line', ['model' => $l])->addFields([
+            'total_vat' => ['aggregate' => 'sum', 'type' => 'atk4_money'],
+            'total_net' => ['aggregate' => 'sum'],
+            'total_gross' => ['aggregate' => 'sum'],
         ]);
-        $i->hasMany('line', ['model' => $l])
-            ->addFields([
-                'total_vat' => ['aggregate' => 'sum', 'type' => 'atk4_money'],
-                'total_net' => ['aggregate' => 'sum'],
-                'total_gross' => ['aggregate' => 'sum'],
-            ]);
         $i = $i->load('1');
 
         // type was set explicitly
@@ -338,19 +377,24 @@ class ReferenceSqlTest extends TestCase
             return 'SUM(' . $v . ')';
         };
 
-        $l = (new Model($this->db, ['table' => 'list']))->addFields(['name']);
-        $i = (new Model($this->db, ['table' => 'item']))->addFields(['list_id', 'name', 'code']);
-        $l->hasMany('Items', ['model' => $i])
-            ->addFields([
-                'items_name' => ['aggregate' => 'count', 'field' => 'name'],
-                'items_code' => ['aggregate' => 'count', 'field' => 'code'], // counts only not-null values
-                'items_star' => ['aggregate' => 'count'], // no field set, counts all rows with count(*)
-                'items_c:' => ['concat' => '::', 'field' => 'name'],
-                'items_c-' => ['aggregate' => $i->dsql()->groupConcat($i->expr('[name]'), '-')],
-                'len' => ['aggregate' => $i->expr($buildSumWithIntegerCastSqlFx($buildLengthSqlFx('[name]')))], // TODO cast should be implicit when using "aggregate", sandpit http://sqlfiddle.com/#!17/0d2c0/3
-                'len2' => ['expr' => $buildSumWithIntegerCastSqlFx($buildLengthSqlFx('[name]'))],
-                'chicken5' => ['expr' => $buildSumWithIntegerCastSqlFx('[]'), 'args' => ['5']],
-            ]);
+        $l = new Model($this->db, ['table' => 'list']);
+        $l->addField('name');
+
+        $i = new Model($this->db, ['table' => 'item']);
+        $i->addField('list_id');
+        $i->addField('name');
+        $i->addField('code');
+
+        $l->hasMany('Items', ['model' => $i])->addFields([
+            'items_name' => ['aggregate' => 'count', 'field' => 'name'],
+            'items_code' => ['aggregate' => 'count', 'field' => 'code'], // counts only not-null values
+            'items_star' => ['aggregate' => 'count'], // no field set, counts all rows with count(*)
+            'items_c:' => ['concat' => '::', 'field' => 'name'],
+            'items_c-' => ['aggregate' => $i->dsql()->groupConcat($i->expr('[name]'), '-')],
+            'len' => ['aggregate' => $i->expr($buildSumWithIntegerCastSqlFx($buildLengthSqlFx('[name]')))], // TODO cast should be implicit when using "aggregate", sandpit http://sqlfiddle.com/#!17/0d2c0/3
+            'len2' => ['expr' => $buildSumWithIntegerCastSqlFx($buildLengthSqlFx('[name]'))],
+            'chicken5' => ['expr' => $buildSumWithIntegerCastSqlFx('[]'), 'args' => ['5']],
+        ]);
 
         $ll = $l->load(1);
         $this->assertEquals(2, $ll->get('items_name')); // 2 not-null values
@@ -391,9 +435,12 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
-        $user = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'company_id']);
+        $user = new Model($this->db, ['table' => 'user']);
+        $user->addField('name');
+        $user->addField('company_id');
 
-        $company = (new Model($this->db, ['table' => 'company']))->addFields(['name']);
+        $company = new Model($this->db, ['table' => 'company']);
+        $company->addField('name');
 
         $user->hasOne('Company', ['model' => $company, 'ourField' => 'company_id', 'theirField' => 'id']);
 
@@ -469,8 +516,11 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
-        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
-        $c = (new Model($this->db, ['table' => 'contact']))->addFields(['address']);
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name');
+
+        $c = new Model($this->db, ['table' => 'contact']);
+        $c->addField('address');
 
         $u->hasOne('contact_id', ['model' => $c])
             ->addField('address');
@@ -552,8 +602,11 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
-        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
-        $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name');
+
+        $o = new Model($this->db, ['table' => 'order']);
+        $o->addField('amount');
 
         // by default not set
         $o->hasOne('user_id', ['model' => $u]);
@@ -565,7 +618,8 @@ class ReferenceSqlTest extends TestCase
         $this->assertSame($o->getField('user_id')->isVisible(), false);
 
         // if it is set manually then it will not be changed
-        $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
+        $o = new Model($this->db, ['table' => 'order']);
+        $o->addField('amount');
         $o->hasOne('user_id', ['model' => $u]);
         $o->getField('user_id')->ui['visible'] = true;
         $o->getReference('user_id')->addTitle();
@@ -595,7 +649,10 @@ class ReferenceSqlTest extends TestCase
         $this->setDb($dbData);
 
         // with default titleField='name'
-        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'last_name']);
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name');
+        $u->addField('last_name');
+
         $o = (new Model($this->db, ['table' => 'order']));
         $o->hasOne('user_id', ['model' => $u])->addTitle();
 
@@ -613,7 +670,10 @@ class ReferenceSqlTest extends TestCase
         $this->setDb($dbData);
 
         // with custom titleField='last_name'
-        $u = (new Model($this->db, ['table' => 'user', 'titleField' => 'last_name']))->addFields(['name', 'last_name']);
+        $u = new Model($this->db, ['table' => 'user', 'titleField' => 'last_name']);
+        $u->addField('name');
+        $u->addField('last_name');
+
         $o = (new Model($this->db, ['table' => 'order']));
         $o->hasOne('user_id', ['model' => $u])->addTitle();
 
@@ -631,7 +691,10 @@ class ReferenceSqlTest extends TestCase
         $this->setDb($dbData);
 
         // with custom titleField='last_name' and custom link name
-        $u = (new Model($this->db, ['table' => 'user', 'titleField' => 'last_name']))->addFields(['name', 'last_name']);
+        $u = new Model($this->db, ['table' => 'user', 'titleField' => 'last_name']);
+        $u->addField('name');
+        $u->addField('last_name');
+
         $o = (new Model($this->db, ['table' => 'order']));
         $o->hasOne('my_user', ['model' => $u, 'ourField' => 'user_id'])->addTitle();
 
@@ -649,7 +712,10 @@ class ReferenceSqlTest extends TestCase
         $this->setDb($dbData);
 
         // with custom titleField='last_name' and custom link name
-        $u = (new Model($this->db, ['table' => 'user', 'titleField' => 'last_name']))->addFields(['name', 'last_name']);
+        $u = new Model($this->db, ['table' => 'user', 'titleField' => 'last_name']);
+        $u->addField('name');
+        $u->addField('last_name');
+
         $o = (new Model($this->db, ['table' => 'order']));
         $o->hasOne('my_user', ['model' => $u, 'ourField' => 'user_id'])->addTitle();
 
@@ -698,7 +764,10 @@ class ReferenceSqlTest extends TestCase
                 3 => ['id' => 3, 'user_id' => 1],
             ],
         ]);
-        $u = (new Model($this->db, ['table' => 'user', 'titleField' => 'last_name']))->addFields(['name', 'last_name']);
+
+        $u = new Model($this->db, ['table' => 'user', 'titleField' => 'last_name']);
+        $u->addField('name');
+        $u->addField('last_name');
 
         // Test : Now the caption is null and is generated from field name
         $this->assertSame('Last Name', $u->getField('last_name')->getCaption());
@@ -739,8 +808,12 @@ class ReferenceSqlTest extends TestCase
                 1 => ['id' => 1, 'user_id' => 1],
             ],
         ]);
-        $user = (new Model($this->db, ['table' => 'user']))
-            ->addFields(['name', 'last_name', 'some_number', 'some_other_number']);
+
+        $user = new Model($this->db, ['table' => 'user']);
+        $user->addField('name');
+        $user->addField('last_name');
+        $user->addField('some_number');
+        $user->addField('some_other_number');
         $user->getField('some_number')->type = 'integer';
         $user->getField('some_other_number')->type = 'integer';
         $order = (new Model($this->db, ['table' => 'order']));
