@@ -1879,16 +1879,15 @@ class Model implements \IteratorAggregate
      *
      * @param array{'expr': mixed} $seed
      *
-     * @return CallbackField|SqlExpressionField
+     * @return $this
      */
     public function addExpression(string $name, $seed)
     {
         /** @var CallbackField|SqlExpressionField */
         $field = Field::fromSeed($this->_defaultSeedAddExpression, $seed);
-
         $this->addField($name, $field);
 
-        return $field;
+        return $this;
     }
 
     /**
@@ -1896,15 +1895,14 @@ class Model implements \IteratorAggregate
      *
      * @param array{'expr': \Closure} $seed
      *
-     * @return CallbackField
+     * @return $this
      */
     public function addCalculatedField(string $name, $seed)
     {
         $field = new CallbackField($seed);
-
         $this->addField($name, $field);
 
-        return $field;
+        return $this;
     }
 
     // }}}

@@ -13,11 +13,11 @@ class HasOneSql extends HasOne
     /**
      * @param ($theirFieldIsTitle is true ? null : string) $theirFieldName
      */
-    private function _addField(string $fieldName, bool $theirFieldIsTitle, ?string $theirFieldName, array $defaults): SqlExpressionField
+    private function _addField(string $fieldName, bool $theirFieldIsTitle, ?string $theirFieldName, array $defaults): void
     {
         $ourModel = $this->getOurModel(null);
 
-        $fieldExpression = $ourModel->addExpression($fieldName, array_merge([
+        $ourModel->addExpression($fieldName, array_merge([
             'expr' => function (Model $ourModel) use ($theirFieldIsTitle, $theirFieldName) {
                 $theirModel = $ourModel->refLink($this->link);
                 if ($theirFieldIsTitle) {
@@ -61,8 +61,6 @@ class HasOneSql extends HasOne
                 }
             }
         }, [], 20);
-
-        return $fieldExpression;
     }
 
     /**
@@ -139,13 +137,13 @@ class HasOneSql extends HasOne
 
         $defaults['ui'] = array_merge(['visible' => true], $defaults['ui'] ?? [], ['editable' => false]);
 
-        $fieldExpression = $this->_addField($fieldName, true, null, $defaults);
+        $this->_addField($fieldName, true, null, $defaults);
 
         // set ID field as not visible in grid by default
         if (!array_key_exists('visible', $this->getOurField()->ui)) {
             $this->getOurField()->ui['visible'] = false;
         }
 
-        return $fieldExpression;
+        return $ourModel->getField($fieldName); // @phpstan-ignore-line
     }
 }
