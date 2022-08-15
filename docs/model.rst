@@ -165,11 +165,9 @@ Persistence object. It is commonly used to declare fields, conditions, relations
 You may safely rely on `$this->getPersistence()` result to make choices::
 
    if ($this->getPersistence() instanceof \Atk4\Data\Persistence\Sql) {
-
       // Calculating on SQL server is more efficient!!
       $this->addExpression('total', ['expr' => '[amount] + [vat]']);
    } else {
-
       // Fallback
       $this->addCalculatedField('total', ['expr' => function ($m) {
          return $m->get('amount') + $m->get('vat');
@@ -181,11 +179,9 @@ you use Persistence's "afterAdd" hook. This will not affect ALL models but just 
 which are associated with said persistence::
 
    $db->onHook(Persistence::HOOK_AFTER_ADD, function ($p, $m) use ($acl) {
-
       $fields = $m->getFields();
 
       $acl->disableRestrictedFields($fields);
-
    });
 
    $invoice = new Invoice($db);
@@ -206,8 +202,7 @@ performance. In ATK Data this is not an issue, because "Model" is re-usable::
       var_dump($user->getField['name']);
 
       // this is also the same object every time!!
-      var_dump($user)
-
+      var_dump($user);
    }
 
 Instead, Field handles many very valuable operations which would otherwise fall on the
@@ -300,7 +295,6 @@ This can also be useful for calculating relative times::
          $this->addCalculatedField('event_ts_human_friendly', ['expr' => function ($m) {
             return $this->humanTiming($m->get('event_ts'));
          }]);
-
       }
    }
 
@@ -311,9 +305,7 @@ Another common thing to define inside :php:meth:`Model::init()` would be
 a user invokable actions::
 
    class User extends Model {
-
       function init(): void {
-
          parent::init();
 
          $this->addField('name');
@@ -321,7 +313,6 @@ a user invokable actions::
          $this->addField('password');
 
          $this->addUserAction('send_new_password');
-
       }
 
       function send_new_password()

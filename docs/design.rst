@@ -161,7 +161,6 @@ Code::
 
     class Model_Client extends Model_User {
         public function sendPasswordReminder() {
-
             mail($this->get('email'), 'Your password is: ' . $this->get('password'));
         }
     }

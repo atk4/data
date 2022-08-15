@@ -718,8 +718,7 @@ class Model implements \IteratorAggregate
                 return false;
             }
             foreach ($filter as $f) {
-                if (
-                    ($f === 'system' && $field->system)
+                if (($f === 'system' && $field->system)
                     || ($f === 'not system' && !$field->system)
                     || ($f === 'editable' && $field->isEditable())
                     || ($f === 'visible' && $field->isVisible())

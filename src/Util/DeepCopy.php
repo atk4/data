@@ -224,8 +224,7 @@ class DeepCopy
                     // load destination model through $source
                     $sourceTable = $source->refModel($refKey)->table;
 
-                    if (
-                        isset($this->mapping[$sourceTable])
+                    if (isset($this->mapping[$sourceTable])
                         && array_key_exists($source->get($refKey), $this->mapping[$sourceTable])
                     ) {
                         // no need to deep copy, simply alter ID

@@ -108,7 +108,6 @@ Now, every time you iterate (or load) you can decide if you want to invoke type
 substitution::
 
     foreach ($account->ref('Transactions', ['typeSubstitution' => true]) as $tr) {
-
         $tr->verify(); // verify() method can be overloaded!
     }
 
@@ -133,13 +132,11 @@ I will be looking to create the following fields:
 To implement the above, I'll create a new class::
 
     class Controller_Audit {
-
         use \Atk4\Core\InitializerTrait {
             init as private _init;
         }
         use \Atk4\Core\TrackableTrait;
         use \Atk4\Core\AppScopeTrait;
-
     }
 
 TrackableTrait means that I'll be able to add this object inside model with
@@ -214,7 +211,6 @@ soft-delete controller for Agile Data (for educational purposes).
 Start by creating a class::
 
     class Controller_SoftDelete {
-
         use \Atk4\Core\InitializerTrait {
             init as private _init;
         }
@@ -325,7 +321,6 @@ achieved through a pretty simple controller. In fact I'm reusing the one from
 before and just slightly modifying it::
 
     class Controller_SoftDelete {
-
         use \Atk4\Core\InitializerTrait {
             init as private _init;
         }
@@ -570,12 +565,10 @@ payment towards a most suitable invoice::
         $invoices->setOrder('date');
 
         while($this->get('amount_due') > 0) {
-
             // see if any invoices match by 'reference'
             $invoice = $invoices->tryLoadBy('reference', $this->get('reference'));
 
             if ($invoice === null) {
-
                 // otherwise load any unpaid invoice
                 $invoice = $invoices->tryLoadAny();
 
@@ -612,7 +605,6 @@ category_id::
 
     class Model_Invoice extends \Atk4\Data\Model {
         function init(): void {
-
             parent::init();
 
             ...

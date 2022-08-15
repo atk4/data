@@ -57,7 +57,8 @@ trait BinaryTypeCompatibilityTypecastTrait
         $platform = $this->getDatabasePlatform();
         if ($platform instanceof PostgreSQLPlatform
             || $platform instanceof SQLServerPlatform
-            || $platform instanceof OraclePlatform) {
+            || $platform instanceof OraclePlatform
+        ) {
             if (in_array($type->getName(), ['binary', 'blob'], true)) {
                 return true;
             }

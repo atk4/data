@@ -287,7 +287,6 @@ like this::
             $j->addField('address_2');
             $j->addField('address_3');
             $j->hasOne('country_id', 'Country');
-
         }
     }
 
