@@ -1510,7 +1510,7 @@ class Model implements \IteratorAggregate
 
     protected function validateEntityScope(): void
     {
-        if (!$this->getModel()->scope()->isEmpty()) {
+        if ($this->reloadAfterSave && !$this->getModel()->scope()->isEmpty()) {
             $this->getPersistence()->load($this->getModel(), $this->getId());
         }
     }
