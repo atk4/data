@@ -481,14 +481,6 @@ class RandomTest extends TestCase
         ], $m->export());
     }
 
-    public function testDuplicateWithIdArgumentException(): void
-    {
-        $m = new Model_Rate();
-
-        $this->expectException(Exception::class);
-        $m->duplicate(2)->save();
-    }
-
     public function testNoWriteActionInsert(): void
     {
         $this->expectException(Exception::class);
