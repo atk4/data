@@ -134,7 +134,8 @@ It might be handy to use in-line definition of a model. Try the following
 inside console::
 
     $m = new \Atk4\Data\Model($db, 'contact_info');
-    $m->addFields(['address_1', 'address_2']);
+    $m->addField('address_1');
+    $m->addField('address_2');
     $m->addCondition('address_1', '!=', null);
     $m = $m->loadAny();
     $m->get();
@@ -150,7 +151,8 @@ Next, exit and create file `src/Model_ContactInfo.php`::
         {
             parent::init();
 
-            $this->addFields(['address_1', 'address_2']);
+            $this->addField('address_1');
+            $this->addField('address_2');
             $this->addCondition('address_1', '!=', null);
         }
     }

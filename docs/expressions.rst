@@ -122,7 +122,8 @@ the following model::
         {
             parent::init();
 
-            $this->addFields(['a', 'b']);
+            $this->addField('a');
+            $this->addField('b');
 
             $this->addExpression('sum', ['expr' => '[a] + [b]']);
         }
@@ -170,7 +171,8 @@ Then try the following code::
         {
             parent::init();
 
-            $this->addFields(['a', 'b']);
+            $this->addField('a');
+            $this->addField('b');
         }
     }
 

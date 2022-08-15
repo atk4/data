@@ -219,7 +219,7 @@ Second argument to addField() will contain a seed for the Field class::
 
 You may also specify your own Field implementation::
 
-   $field = $this->addField('amount_and_currency', [MyAmountCurrencyField::class]);
+   $this->addField('amount_and_currency', [MyAmountCurrencyField::class]);
 
 Read more about :php:class:`Field`
 

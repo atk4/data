@@ -16,8 +16,8 @@ class IteratorTest extends TestCase
     public function testException1(): void
     {
         $m = new Model();
-        $m->addFields(['name', 'salary']);
-
+        $m->addField('name');
+        $m->addField('salary');
         $this->expectException(Exception::class);
         $m->setOrder(['name', 'salary'], 'desc');
     }
@@ -98,7 +98,9 @@ class IteratorTest extends TestCase
             ],
         ]);
 
-        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
+        $i = new Model($this->db, ['table' => 'invoice']);
+        $i->addField('total_net');
+        $i->addField('total_vat');
         $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]']);
 
         $i->setOrder('total_net');
@@ -141,7 +143,9 @@ class IteratorTest extends TestCase
             ],
         ]);
 
-        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
+        $i = new Model($this->db, ['table' => 'invoice']);
+        $i->addField('total_net');
+        $i->addField('total_vat');
         $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]']);
 
         $i->setOrder('total_net');
@@ -184,7 +188,9 @@ class IteratorTest extends TestCase
             ],
         ]);
 
-        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
+        $i = new Model($this->db, ['table' => 'invoice']);
+        $i->addField('total_net');
+        $i->addField('total_vat');
         $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]']);
 
         $i->setOrder('total_net');

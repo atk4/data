@@ -109,9 +109,9 @@ class BusinessModelTest extends TestCase
 
         // now with defaults
         $m = new Model();
-        $f = $m->addField('name', ['default' => 'John']);
+        $m->addField('name', ['default' => 'John']);
         $m = $m->createEntity();
-        $this->assertSame('John', $f->default);
+        $this->assertSame('John', $m->getField('name')->default);
 
         $this->assertSame('John', $m->get('name'));
 

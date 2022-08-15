@@ -19,7 +19,8 @@ class ConditionSqlTest extends TestCase
         ]);
 
         $m = new Model($this->db, ['table' => 'user']);
-        $m->addFields(['name', 'gender']);
+        $m->addField('name');
+        $m->addField('gender');
 
         $mm = $m->tryLoad(1);
         $this->assertSame('John', $mm->get('name'));
@@ -61,7 +62,8 @@ class ConditionSqlTest extends TestCase
         ]);
 
         $m = new Model($this->db, ['table' => 'user']);
-        $m->addFields(['name', 'gender']);
+        $m->addField('name');
+        $m->addField('gender');
 
         $m = $m->tryLoad(1);
         $this->assertSame('John', $m->get('name'));
@@ -86,7 +88,8 @@ class ConditionSqlTest extends TestCase
         ]);
 
         $m = new Model($this->db, ['table' => 'user']);
-        $m->addFields(['name', 'gender']);
+        $m->addField('name');
+        $m->addField('gender');
 
         $m->addCondition('gender', null);
 
@@ -111,7 +114,8 @@ class ConditionSqlTest extends TestCase
         ]);
 
         $m = new Model($this->db, ['table' => 'user']);
-        $m->addFields(['name', 'gender']);
+        $m->addField('name');
+        $m->addField('gender');
 
         $mm = $m->tryLoad(1);
         $this->assertSame('John', $mm->get('name'));
@@ -157,7 +161,8 @@ class ConditionSqlTest extends TestCase
         ]);
 
         $m = new Model($this->db, ['table' => 'user']);
-        $m->addFields(['name', 'gender']);
+        $m->addField('name');
+        $m->addField('gender');
 
         $mm = $m->tryLoad(1);
         $this->assertSame('John', $mm->get('name'));
@@ -189,7 +194,9 @@ class ConditionSqlTest extends TestCase
         ]);
 
         $m = new Model($this->db, ['table' => 'user']);
-        $m->addFields(['name', 'gender', 'surname']);
+        $m->addField('name');
+        $m->addField('gender');
+        $m->addField('surname');
 
         $mm = $m->tryLoad(1);
         $this->assertSame('John', $mm->get('name'));
@@ -240,7 +247,9 @@ class ConditionSqlTest extends TestCase
         ]);
 
         $m = new Model($this->db, ['table' => 'user']);
-        $m->addFields(['name', 'gender', 'surname']);
+        $m->addField('name');
+        $m->addField('gender');
+        $m->addField('surname');
 
         $m->join('contact')->addField('contact_phone');
 
@@ -369,7 +378,8 @@ class ConditionSqlTest extends TestCase
             ],
         ]);
 
-        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name');
 
         $u->addCondition(Model\Scope::createOr(
             ['name', 'John'],
@@ -398,7 +408,8 @@ class ConditionSqlTest extends TestCase
             ],
         ]);
 
-        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name');
 
         $u2 = $u->loadBy('name', 'John');
         $this->assertSame(['id' => 1, 'name' => 'John'], $u2->get());

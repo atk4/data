@@ -115,7 +115,7 @@ class JoinSqlTest extends TestCase
         $user->addField('name');
         $j = $user->join('contact.test_id');
         $this->createMigrator()->createForeignKey($j);
-        $j->addFields(['contact_phone']);
+        $j->addField('contact_phone');
 
         $user2 = $user->createEntity();
         $user2->set('name', 'John');
@@ -487,7 +487,7 @@ class JoinSqlTest extends TestCase
         $j->addField('contact_phone');
         $c = $j->join('country');
         $this->createMigrator()->createForeignKey($c);
-        $c->addFields(['country_name' => ['actual' => 'name']]);
+        $c->addField('country_name', ['actual' => 'name']);
 
         $user2 = $user->load(10);
         $user2->delete();
