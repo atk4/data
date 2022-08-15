@@ -309,6 +309,10 @@ abstract class TestCase extends BaseTestCase
                 }
             }
 
+            if (!$noId) {
+                ksort($res);
+            }
+
             $resAll[$table] = $res;
         }
 
