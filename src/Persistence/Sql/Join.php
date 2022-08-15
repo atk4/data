@@ -37,9 +37,11 @@ class Join extends Model\Join
         if (!$this->reverse && !$this->getOwner()->hasField($this->masterField)) {
             $owner = $this->hasJoin() ? $this->getJoin() : $this->getOwner();
 
-            $field = $owner->addField($this->masterField, ['system' => true, 'readOnly' => true]);
+            $owner->addField($this->masterField, ['system' => true, 'readOnly' => true]);
 
-            $this->masterField = $field->shortName;
+            if ($this->hasJoin()) {
+                $this->masterField = $this->getJoin()->prefix . $this->masterField;
+            }
         }
     }
 

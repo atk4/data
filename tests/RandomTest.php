@@ -112,61 +112,6 @@ class RandomTest extends TestCase
         ], $this->getDb());
     }
 
-    public function testAddFields(): void
-    {
-        $this->setDb([
-            'user' => [
-                1 => ['name' => 'John', 'login' => 'john@example.com'],
-            ],
-        ]);
-
-        $m = new Model($this->db, ['table' => 'user']);
-        $m->addFields(['name', 'login'], ['default' => 'unknown']);
-
-        $m->insert(['name' => 'Peter']);
-        $m->insert([]);
-
-        $this->assertEquals([
-            'user' => [
-                1 => ['id' => 1, 'name' => 'John', 'login' => 'john@example.com'],
-                2 => ['id' => 2, 'name' => 'Peter', 'login' => 'unknown'],
-                3 => ['id' => 3, 'name' => 'unknown', 'login' => 'unknown'],
-            ],
-        ], $this->getDb());
-    }
-
-    public function testAddFields2(): void
-    {
-        $this->setDb([
-            'user' => [
-                1 => ['name' => 'John', 'last_name' => null, 'login' => null, 'salary' => null, 'tax' => null, 'vat' => null],
-            ],
-        ]);
-
-        $m = new Model($this->db, ['table' => 'user']);
-        $m->addFields(['name'], ['default' => 'anonymous']);
-        $m->addFields([
-            'last_name',
-            'login' => ['default' => 'unknown'],
-            'salary' => [CustomField::class, 'type' => 'atk4_money', 'default' => 100],
-            'tax' => [CustomField::class, 'type' => 'atk4_money', 'default' => 20],
-            'vat' => new CustomField(['type' => 'atk4_money', 'default' => 15]),
-        ]);
-
-        $m->insert([]);
-
-        $this->assertSameExportUnordered([
-            ['id' => 1, 'name' => 'John', 'last_name' => null, 'login' => null, 'salary' => null, 'tax' => null, 'vat' => null],
-            ['id' => 2, 'name' => 'anonymous', 'last_name' => null, 'login' => 'unknown', 'salary' => 100.0, 'tax' => 20.0, 'vat' => 15.0],
-        ], $m->export());
-
-        $m = $m->load(2);
-        $this->assertTrue(is_float($m->get('salary')));
-        $this->assertTrue(is_float($m->get('tax')));
-        $this->assertTrue(is_float($m->get('vat')));
-        $this->assertInstanceOf(CustomField::class, $m->getField('salary'));
-    }
-
     public function testSetPersistence(): void
     {
         $m = new Model($this->db, ['table' => 'user']);

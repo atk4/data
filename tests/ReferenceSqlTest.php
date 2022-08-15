@@ -215,10 +215,9 @@ class ReferenceSqlTest extends TestCase
 
         $o = new Model($this->db, ['table' => 'order']);
         $o->addField('amount');
-        $o->hasOne('user_id', ['model' => $u])->addFields([
-            'username' => 'name',
-            ['date', 'type' => 'date'],
-        ]);
+        $o->hasOne('user_id', ['model' => $u])
+            ->addField('username', 'name')
+            ->addField('date', null, ['type' => 'date']);
 
         $this->assertSame('John', $o->load(1)->get('username'));
         $this->assertEquals(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('date'));
@@ -230,10 +229,9 @@ class ReferenceSqlTest extends TestCase
         // few more tests
         $o = new Model($this->db, ['table' => 'order']);
         $o->addField('amount');
-        $o->hasOne('user_id', ['model' => $u])->addFields([
-            'username' => 'name',
-            'thedate' => ['date', 'type' => 'date'],
-        ]);
+        $o->hasOne('user_id', ['model' => $u])
+            ->addField('username', 'name')
+            ->addField('thedate', 'date', ['type' => 'date']);
         $this->assertSame('John', $o->load(1)->get('username'));
         $this->assertEquals(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('thedate'));
 
@@ -308,11 +306,10 @@ class ReferenceSqlTest extends TestCase
         $l->addField('total_vat', ['type' => 'atk4_money']);
         $l->addField('total_gross', ['type' => 'atk4_money']);
 
-        $i->hasMany('line', ['model' => $l])->addFields([
-            'total_net' => ['aggregate' => 'sum'],
-            'total_vat' => ['aggregate' => 'sum', 'type' => 'atk4_money'],
-            'total_gross' => ['aggregate' => 'sum', 'type' => 'atk4_money'],
-        ]);
+        $i->hasMany('line', ['model' => $l])
+            ->addField('total_net', ['aggregate' => 'sum'])
+            ->addField('total_vat', ['aggregate' => 'sum', 'type' => 'atk4_money'])
+            ->addField('total_gross', ['aggregate' => 'sum', 'type' => 'atk4_money']);
         $i = $i->load('1');
 
         // type was set explicitly
@@ -385,16 +382,15 @@ class ReferenceSqlTest extends TestCase
         $i->addField('name');
         $i->addField('code');
 
-        $l->hasMany('Items', ['model' => $i])->addFields([
-            'items_name' => ['aggregate' => 'count', 'field' => 'name', 'type' => 'integer'],
-            'items_code' => ['aggregate' => 'count', 'field' => 'code', 'type' => 'integer'], // counts only not-null values
-            'items_star' => ['aggregate' => 'count', 'type' => 'integer'], // no field set, counts all rows with count(*)
-            'items_c:' => ['concat' => '::', 'field' => 'name'],
-            'items_c-' => ['aggregate' => $i->dsql()->groupConcat($i->expr('[name]'), '-')],
-            'len' => ['aggregate' => $i->expr($buildSumWithIntegerCastSqlFx($buildLengthSqlFx('[name]'))), 'type' => 'integer'], // TODO cast should be implicit when using "aggregate", sandpit http://sqlfiddle.com/#!17/0d2c0/3
-            'len2' => ['expr' => $buildSumWithIntegerCastSqlFx($buildLengthSqlFx('[name]')), 'type' => 'integer'],
-            'chicken5' => ['expr' => $buildSumWithIntegerCastSqlFx('[]'), 'args' => ['5'], 'type' => 'integer'],
-        ]);
+        $l->hasMany('Items', ['model' => $i])
+            ->addField('items_name', ['aggregate' => 'count', 'field' => 'name', 'type' => 'integer'])
+            ->addField('items_code', ['aggregate' => 'count', 'field' => 'code', 'type' => 'integer']) // counts only not-null values
+            ->addField('items_star', ['aggregate' => 'count', 'type' => 'integer']) // no field set, counts all rows with count(*)
+            ->addField('items_c:', ['concat' => '::', 'field' => 'name'])
+            ->addField('items_c-', ['aggregate' => $i->dsql()->groupConcat($i->expr('[name]'), '-')])
+            ->addField('len', ['aggregate' => $i->expr($buildSumWithIntegerCastSqlFx($buildLengthSqlFx('[name]'))), 'type' => 'integer']) // TODO cast should be implicit when using "aggregate", sandpit http://sqlfiddle.com/#!17/0d2c0/3
+            ->addField('len2', ['expr' => $buildSumWithIntegerCastSqlFx($buildLengthSqlFx('[name]')), 'type' => 'integer'])
+            ->addField('chicken5', ['expr' => $buildSumWithIntegerCastSqlFx('[]'), 'args' => ['5'], 'type' => 'integer']);
 
         $ll = $l->load(1);
         $this->assertSame(2, $ll->get('items_name')); // 2 not-null values

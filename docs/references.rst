@@ -123,7 +123,8 @@ It is possible to perform reference through an 3rd party table::
 
     $p
         ->join('invoice_payment.payment_id')
-        ->addFields(['amount_allocated', 'invoice_id']);
+        ->addField('amount_allocated')
+        ->addField('invoice_id');
 
     $i->hasMany('Payments', ['model' => $p]);
 
@@ -187,11 +188,9 @@ You can also define multiple fields, although you must remember that this will
 keep making your query bigger and bigger::
 
     $invoice->hasMany('Invoice_Line', ['model' => [Model_Invoice_Line::class]])
-        ->addFields([
-            ['total_vat', 'aggregate' => 'sum'],
-            ['total_net', 'aggregate' => 'sum'],
-            ['total_gross', 'aggregate' => 'sum'],
-        ]);
+        ->addField('total_vat', ['aggregate' => 'sum'])
+        ->addField('total_net', ['aggregate' => 'sum'])
+        ->addField('total_gross', ['aggregate' => 'sum']);
 
 Imported fields will preserve format of the field they reference. In the example,
 if 'Invoice_line' field total_vat has type `money` then it will also be used
@@ -366,19 +365,15 @@ This code also resolves problem with a duplicate 'name' field. Since you might h
 a 'name' field inside 'Invoice' already, you can name the field 'currency_name'
 which will reference 'name' field inside Currency. You can also import multiple
 fields but keep in mind that this may make your query much longer.
-The argument is associative array and if key is specified, then the field will
-be renamed, just as we did above::
 
     $u = new Model_User($db)
     $a = new Model_Address($db);
 
     $u->hasOne('address_id', ['model' => $a])
-        ->addFields([
-            'address_1',
-            'address_2',
-            'address_3',
-            'address_notes' => ['notes', 'type' => 'text'],
-        ]);
+        ->addField('address_1')
+        ->addField('address_2')
+        ->addField('address_3')
+        ->addField('address_notes', 'notes', ['type' => 'text']);
 
 Above, all ``address_`` fields are copied with the same name, however field
 'notes' from Address model will be called 'address_notes' inside user model.
@@ -572,26 +567,6 @@ Loading model like that can produce a pretty sophisticated query:
          where `child_i`.`parent_item_id` = `pp`.`id`
         ) `child_age`, `pp`.`id` `_i`
     from `item` `pp`left join `item2` as `pp_i` on `pp_i`.`item_id` = `pp`.`id`
-
-Various ways to specify options
--------------------------------
-
-When calling `hasOne()->addFields()` there are various ways to pass options:
-
-- `addFields(['name', 'dob'])` - no options are passed, use defaults. Note that
-  reference will not fetch the type of foreign field due to performance consideration.
-
-- `addFields(['first_name' => 'name'])` - this indicates aliasing. Field `name`
-  will be added as `first_name`.
-
-- `addFields([['dob', 'type' => 'date']])` - wrap inside array to pass options to
-  field
-
-- `addFields(['the_date' => ['dob', 'type' => 'date']])` - combination of aliasing
-  and options
-
-- `addFields(['dob', 'dod'], ['type' => 'date'])` - passing defaults for multiple
-  fields
 
 
 References with New Records

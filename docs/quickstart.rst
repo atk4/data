@@ -323,7 +323,7 @@ You cannot add conditions just yet, although you can pass in some of the default
 Adding Fields
 -------------
 
-Methods :php:meth:`Model::addField()` and :php:meth:`Model::addFields()` can
+Method :php:meth:`Model::addField()` can
 declare model fields. You need to declare them before you are able to use.
 You might think that some SQL reverse-engineering could be good at this point,
 but this would mimic your business logic after your presentation logic, while
