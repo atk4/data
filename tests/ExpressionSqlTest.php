@@ -29,9 +29,9 @@ class ExpressionSqlTest extends TestCase
         ]);
 
         $i = new Model($this->db, ['table' => 'invoice']);
-        $i->addField('total_net');
-        $i->addField('total_vat');
-        $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]']);
+        $i->addField('total_net', ['type' => 'integer']);
+        $i->addField('total_vat', ['type' => 'float']);
+        $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]', 'type' => 'float']);
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
@@ -41,24 +41,24 @@ class ExpressionSqlTest extends TestCase
         }
 
         $ii = $i->tryLoad(1);
-        $this->assertEquals(10, $ii->get('total_net'));
-        $this->assertEquals($ii->get('total_net') + $ii->get('total_vat'), $ii->get('total_gross'));
+        $this->assertSame(10, $ii->get('total_net'));
+        $this->assertSame($ii->get('total_net') + $ii->get('total_vat'), $ii->get('total_gross'));
 
         $ii = $i->tryLoad(2);
-        $this->assertEquals(20, $ii->get('total_net'));
-        $this->assertEquals($ii->get('total_net') + $ii->get('total_vat'), $ii->get('total_gross'));
+        $this->assertSame(20, $ii->get('total_net'));
+        $this->assertSame($ii->get('total_net') + $ii->get('total_vat'), $ii->get('total_gross'));
 
-        $i->addExpression('double_total_gross', ['expr' => '[total_gross] * 2']);
+        $i->addExpression('double_total_gross', ['expr' => '[total_gross] * 2', 'type' => 'float']);
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
-            $this->assertEquals(
+            $this->assertSame(
                 'select `id`, `total_net`, `total_vat`, (`total_net` + `total_vat`) `total_gross`, ((`total_net` + `total_vat`) * 2) `double_total_gross` from `invoice`',
                 $i->action('select')->render()[0]
             );
         }
 
         $i = $i->tryLoad(1);
-        $this->assertEquals(($i->get('total_net') + $i->get('total_vat')) * 2, $i->get('double_total_gross'));
+        $this->assertSame(($i->get('total_net') + $i->get('total_vat')) * 2, $i->get('double_total_gross'));
     }
 
     public function testBasicCallback(): void
@@ -71,8 +71,8 @@ class ExpressionSqlTest extends TestCase
         ]);
 
         $i = new Model($this->db, ['table' => 'invoice']);
-        $i->addField('total_net');
-        $i->addField('total_vat');
+        $i->addField('total_net', ['type' => 'integer']);
+        $i->addField('total_vat', ['type' => 'float']);
         $i->addExpression('total_gross', ['expr' => function ($i, $q) {
             return '[total_net] + [total_vat]';
         }, 'type' => 'float']);
@@ -85,12 +85,12 @@ class ExpressionSqlTest extends TestCase
         }
 
         $ii = $i->tryLoad(1);
-        $this->assertEquals(10, $ii->get('total_net'));
-        $this->assertEquals($ii->get('total_net') + $ii->get('total_vat'), $ii->get('total_gross'));
+        $this->assertSame(10, $ii->get('total_net'));
+        $this->assertSame($ii->get('total_net') + $ii->get('total_vat'), $ii->get('total_gross'));
 
         $ii = $i->tryLoad(2);
-        $this->assertEquals(20, $ii->get('total_net'));
-        $this->assertEquals($ii->get('total_net') + $ii->get('total_vat'), $ii->get('total_gross'));
+        $this->assertSame(20, $ii->get('total_net'));
+        $this->assertSame($ii->get('total_net') + $ii->get('total_vat'), $ii->get('total_gross'));
     }
 
     public function testQuery(): void
@@ -103,9 +103,9 @@ class ExpressionSqlTest extends TestCase
         ]);
 
         $i = new Model($this->db, ['table' => 'invoice']);
-        $i->addField('total_net');
-        $i->addField('total_vat');
-        $i->addExpression('sum_net', ['expr' => $i->action('fx', ['sum', 'total_net'])]);
+        $i->addField('total_net', ['type' => 'integer']);
+        $i->addField('total_vat', ['type' => 'float']);
+        $i->addExpression('sum_net', ['expr' => $i->action('fx', ['sum', 'total_net']), ['type' => 'integer']]);
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
@@ -115,14 +115,14 @@ class ExpressionSqlTest extends TestCase
         }
 
         $ii = $i->tryLoad(1);
-        $this->assertEquals(10, $ii->get('total_net'));
-        $this->assertEquals(30, $ii->get('sum_net'));
+        $this->assertSame(10, $ii->get('total_net'));
+        $this->assertSame(30, $ii->get('sum_net'));
 
         $q = $this->db->dsql();
         $q->field($i->action('count'), 'total_orders');
         $q->field($i->action('fx', ['sum', 'total_net']), 'total_net');
-        $this->assertEquals(
-            ['total_orders' => 2, 'total_net' => 30],
+        $this->assertSame(
+            ['total_orders' => '2', 'total_net' => '30'],
             $q->getRow()
         );
     }
@@ -171,32 +171,33 @@ class ExpressionSqlTest extends TestCase
         ]);
 
         $m = new Model($this->db, ['table' => 'math']);
-        $m->addField('a');
-        $m->addField('b');
+        $m->addField('a', ['type' => 'integer']);
+        $m->addField('b', ['type' => 'integer']);
 
-        $m->addExpression('sum', ['expr' => '[a] + [b]']);
+        $m->addExpression('sum', ['expr' => '[a] + [b]', 'type' => 'integer']);
 
         $mm = $m->load(1);
-        $this->assertEquals(4, $mm->get('sum'));
+        $this->assertSame(4, $mm->get('sum'));
 
         $mm->save(['a' => 3]);
-        $this->assertEquals(5, $mm->get('sum'));
+        $this->assertSame(5, $mm->get('sum'));
 
-        $this->assertEquals(9, $m->createEntity()->save(['a' => 4, 'b' => 5])->get('sum'));
+        $this->assertSame(9, $m->createEntity()->save(['a' => 4, 'b' => 5])->get('sum'));
 
         $this->dropCreatedDb();
         $this->setDb($dbData);
-        $m = new Model($this->db, ['table' => 'math', 'reloadAfterSave' => false]);
-        $m->addField('a');
-        $m->addField('b');
 
-        $m->addExpression('sum', ['expr' => '[a] + [b]']);
+        $m = new Model($this->db, ['table' => 'math', 'reloadAfterSave' => false]);
+        $m->addField('a', ['type' => 'integer']);
+        $m->addField('b', ['type' => 'integer']);
+
+        $m->addExpression('sum', ['expr' => '[a] + [b]', 'type' => 'integer']);
 
         $mm = $m->load(1);
-        $this->assertEquals(4, $mm->get('sum'));
+        $this->assertSame(4, $mm->get('sum'));
 
         $mm->save(['a' => 3]);
-        $this->assertEquals(4, $mm->get('sum'));
+        $this->assertSame(4, $mm->get('sum'));
 
         $this->assertNull($m->createEntity()->save(['a' => 4, 'b' => 5])->get('sum'));
     }
@@ -204,28 +205,28 @@ class ExpressionSqlTest extends TestCase
     public function testExpressionActionAlias(): void
     {
         $m = new Model($this->db, ['table' => false]);
-        $m->addExpression('x', ['expr' => '2 + 3']);
+        $m->addExpression('x', ['expr' => '2 + 3', 'type' => 'integer']);
 
         // use alias as array key if it is set
         $q = $m->action('field', ['x', 'alias' => 'foo']);
-        $this->assertEquals([['foo' => 5]], $q->getRows());
+        $this->assertSame([['foo' => '5']], $q->getRows());
 
         // if alias is not set, then use field name as key
         $q = $m->action('field', ['x']);
-        $this->assertEquals([['x' => 5]], $q->getRows());
+        $this->assertSame([['x' => '5']], $q->getRows());
 
         // FX actions
         $q = $m->action('fx', ['sum', 'x', 'alias' => 'foo']);
-        $this->assertEquals([['foo' => 5]], $q->getRows());
+        $this->assertSame([['foo' => '5']], $q->getRows());
 
         $q = $m->action('fx', ['sum', 'x']);
-        $this->assertEquals([['sum_x' => 5]], $q->getRows());
+        $this->assertSame([['sum_x' => '5']], $q->getRows());
 
         $q = $m->action('fx0', ['sum', 'x', 'alias' => 'foo']);
-        $this->assertEquals([['foo' => 5]], $q->getRows());
+        $this->assertSame([['foo' => '5']], $q->getRows());
 
         $q = $m->action('fx0', ['sum', 'x']);
-        $this->assertEquals([['sum_x' => 5]], $q->getRows());
+        $this->assertSame([['sum_x' => '5']], $q->getRows());
     }
 
     public function testNeverSaveNeverPersist(): void

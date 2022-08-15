@@ -160,10 +160,10 @@ class FieldTest extends TestCase
         $m->addField('name', ['nullable' => false, 'default' => 'NoName']);
         $m->addField('surname');
         $m->insert(['surname' => 'qq']);
-        $this->assertEquals([
+        $this->assertSame([
             'user' => [
-                1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
-                2 => ['id' => 2, 'name' => 'NoName', 'surname' => 'qq'],
+                1 => ['id' => '1', 'name' => 'John', 'surname' => 'Smith'],
+                2 => ['id' => '2', 'name' => 'NoName', 'surname' => 'qq'],
             ],
         ], $this->getDb());
     }
@@ -422,15 +422,15 @@ class FieldTest extends TestCase
 
         $m->getModel()->insert(['name' => 'Peter', 'category' => 'Sales']);
 
-        $this->assertEquals([
+        $this->assertSame([
             'user' => [
-                1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'category_id' => 2],
-                2 => ['id' => 2, 'name' => 'Peter', 'surname' => null, 'category_id' => 3],
+                1 => ['id' => '1', 'name' => 'John', 'surname' => 'Smith', 'category_id' => '2'],
+                2 => ['id' => '2', 'name' => 'Peter', 'surname' => null, 'category_id' => '3'],
             ],
             'category' => [
-                1 => ['id' => 1, 'name' => 'General'],
-                2 => ['id' => 2, 'name' => 'Programmer'],
-                3 => ['id' => 3, 'name' => 'Sales'],
+                1 => ['id' => '1', 'name' => 'General'],
+                2 => ['id' => '2', 'name' => 'Programmer'],
+                3 => ['id' => '3', 'name' => 'Sales'],
             ],
         ], $this->getDb());
     }
@@ -466,20 +466,20 @@ class FieldTest extends TestCase
             ['id' => 2, 'first_name' => 'Peter', 'surname' => 'qq'],
         ], $m->export());
 
-        $this->assertEquals([
+        $this->assertSame([
             'user' => [
-                1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
-                2 => ['id' => 2, 'name' => 'Peter', 'surname' => 'qq'],
+                1 => ['id' => '1', 'name' => 'John', 'surname' => 'Smith'],
+                2 => ['id' => '2', 'name' => 'Peter', 'surname' => 'qq'],
             ],
         ], $this->getDb());
 
         $mm->set('first_name', 'Scott');
         $mm->save();
 
-        $this->assertEquals([
+        $this->assertSame([
             'user' => [
-                1 => ['id' => 1, 'name' => 'Scott', 'surname' => 'Smith'],
-                2 => ['id' => 2, 'name' => 'Peter', 'surname' => 'qq'],
+                1 => ['id' => '1', 'name' => 'Scott', 'surname' => 'Smith'],
+                2 => ['id' => '2', 'name' => 'Peter', 'surname' => 'qq'],
             ],
         ], $this->getDb());
     }

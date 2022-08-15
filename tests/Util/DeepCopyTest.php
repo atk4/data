@@ -37,12 +37,12 @@ class DcInvoice extends Model
         $this->hasOne('client_id', ['model' => [DcClient::class]]);
 
         $this->hasMany('Lines', ['model' => [DcInvoiceLine::class], 'theirField' => 'parent_id'])
-            ->addField('total', ['aggregate' => 'sum', 'field' => 'total']);
+            ->addField('total', ['aggregate' => 'sum', 'field' => 'total', 'type' => 'atk4_money']);
 
         $this->hasMany('Payments', ['model' => [DcPayment::class]])
-            ->addField('paid', ['aggregate' => 'sum', 'field' => 'amount']);
+            ->addField('paid', ['aggregate' => 'sum', 'field' => 'amount', 'type' => 'atk4_money']);
 
-        $this->addExpression('due', ['expr' => '[total] - [paid]']);
+        $this->addExpression('due', ['expr' => '[total] - [paid]', 'type' => 'atk4_money']);
 
         $this->addField('ref');
 
@@ -66,7 +66,7 @@ class DcQuote extends Model
         $this->hasOne('client_id', ['model' => [DcClient::class]]);
 
         $this->hasMany('Lines', ['model' => [DcQuoteLine::class], 'theirField' => 'parent_id'])
-            ->addField('total', ['aggregate' => 'sum', 'field' => 'total']);
+            ->addField('total', ['aggregate' => 'sum', 'field' => 'total', 'type' => 'atk4_money']);
 
         $this->addField('ref');
 
@@ -93,7 +93,7 @@ class DcInvoiceLine extends Model
         $this->addField('vat', ['type' => 'float', 'default' => 0.21]);
 
         // total is calculated with VAT
-        $this->addExpression('total', ['expr' => '[qty] * [price] * (1 + [vat])']);
+        $this->addExpression('total', ['expr' => '[qty] * [price] * (1 + [vat])', 'type' => 'atk4_money']);
     }
 }
 
@@ -116,7 +116,7 @@ class DcQuoteLine extends Model
         $this->addField('price', ['type' => 'atk4_money']);
 
         // total is calculated WITHOUT VAT
-        $this->addExpression('total', ['expr' => '[qty] * [price]']);
+        $this->addExpression('total', ['expr' => '[qty] * [price]', 'type' => 'atk4_money']);
     }
 }
 
@@ -162,7 +162,7 @@ class DeepCopyTest extends TestCase
         $quote = $quote->loadOne();
 
         // total price should match
-        $this->assertEquals(90.0, $quote->get('total'));
+        $this->assertSame(90.0, $quote->get('total'));
 
         $dc = new DeepCopy();
         $invoice = $dc
@@ -173,8 +173,8 @@ class DeepCopyTest extends TestCase
 
         // price now will be with VAT
         $this->assertSame('q1', $invoice->get('ref'));
-        $this->assertEquals(108.9, $invoice->get('total'));
-        $this->assertEquals(1, $invoice->getId());
+        $this->assertSame(108.9, $invoice->get('total'));
+        $this->assertSame(1, $invoice->getId());
 
         // Note that we did not specify that 'client_id' should be copied, so same value here
         $this->assertSame($quote->get('client_id'), $invoice->get('client_id'));
@@ -186,7 +186,7 @@ class DeepCopyTest extends TestCase
         $invoice->reload();
 
         // now that invoice is mostly paid, due amount will reflect that
-        $this->assertEquals(5, $invoice->get('due'));
+        $this->assertSame(5.0, $invoice->get('due'));
 
         // Next we copy invoice into simply a new record. Duplicate. However this time we will also duplicate payments,
         // and client. Because Payment references client too, we need to duplicate that one also, this way new record
@@ -203,7 +203,7 @@ class DeepCopyTest extends TestCase
         $this->assertSame('q1_copy', $invoiceCopy->get('ref'));
 
         // ..however the due amount is the same - 5
-        $this->assertEquals(5, $invoiceCopy->get('due'));
+        $this->assertSame(5.0, $invoiceCopy->get('due'));
 
         // ..client record was created in the process
         $this->assertNotSame($invoiceCopy->get('client_id'), $invoice->get('client_id'));
@@ -236,7 +236,7 @@ class DeepCopyTest extends TestCase
             ->copy();
 
         // New client receives new ID, but also will have all the relevant records copied
-        $this->assertEquals(3, $client3->getId());
+        $this->assertSame(3, $client3->getId());
 
         // We should have one of each records for this new client
         $this->assertSame(1, $client3->ref('Invoices')->executeCountQuery());
@@ -248,16 +248,16 @@ class DeepCopyTest extends TestCase
         }
 
         // We created invoice for 90 for client1, so after copying it should still be 90
-        $this->assertEquals(90, $client3->ref('Quotes')->action('fx', ['sum', 'total'])->getOne());
+        $this->assertSame(90.0, (float) $client3->ref('Quotes')->action('fx', ['sum', 'total'])->getOne());
 
         // The total of the invoice we copied, should remain, it's calculated based on lines
-        $this->assertEquals(108.9, $client3->ref('Invoices')->action('fx', ['sum', 'total'])->getOne());
+        $this->assertSame(108.9, (float) $client3->ref('Invoices')->action('fx', ['sum', 'total'])->getOne());
 
         // Payments by this clients should also be copied correctly
-        $this->assertEquals(103.9, $client3->ref('Payments')->action('fx', ['sum', 'amount'])->getOne());
+        $this->assertSame(103.9, (float) $client3->ref('Payments')->action('fx', ['sum', 'amount'])->getOne());
 
         // If copied payments are properly allocated against copied invoices, then due amount will be 5
-        $this->assertEquals(5, $client3->ref('Invoices')->action('fx', ['sum', 'due'])->getOne());
+        $this->assertSame(5.0, (float) $client3->ref('Invoices')->action('fx', ['sum', 'due'])->getOne());
     }
 
     public function testError(): void
@@ -282,7 +282,7 @@ class DeepCopyTest extends TestCase
         });
 
         // total price should match
-        $this->assertEquals(90.0, $quote->get('total'));
+        $this->assertSame(90.0, $quote->get('total'));
 
         $dc = new DeepCopy();
 
@@ -323,7 +323,7 @@ class DeepCopyTest extends TestCase
         });
 
         // total price should match
-        $this->assertEquals(90.0, $quote->get('total'));
+        $this->assertSame(90.0, $quote->get('total'));
 
         $dc = new DeepCopy();
 
