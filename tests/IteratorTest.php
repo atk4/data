@@ -99,9 +99,9 @@ class IteratorTest extends TestCase
         ]);
 
         $i = new Model($this->db, ['table' => 'invoice']);
-        $i->addField('total_net');
-        $i->addField('total_vat');
-        $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]']);
+        $i->addField('total_net', ['type' => 'integer']);
+        $i->addField('total_vat', ['type' => 'integer']);
+        $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]', 'type' => 'integer']);
 
         $i->setOrder('total_net');
         $i->setOnlyFields(['total_net']);
@@ -120,7 +120,7 @@ class IteratorTest extends TestCase
             $data[] = $row->get();
         }
 
-        $this->assertEquals([
+        $this->assertSame([
             ['total_net' => 10],
             ['total_net' => 15],
             ['total_net' => 20],
@@ -144,9 +144,9 @@ class IteratorTest extends TestCase
         ]);
 
         $i = new Model($this->db, ['table' => 'invoice']);
-        $i->addField('total_net');
-        $i->addField('total_vat');
-        $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]']);
+        $i->addField('total_net', ['type' => 'integer']);
+        $i->addField('total_vat', ['type' => 'integer']);
+        $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]', 'type' => 'integer']);
 
         $i->setOrder('total_net');
         $i->setOnlyFields(['total_net']);
@@ -189,9 +189,9 @@ class IteratorTest extends TestCase
         ]);
 
         $i = new Model($this->db, ['table' => 'invoice']);
-        $i->addField('total_net');
-        $i->addField('total_vat');
-        $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]']);
+        $i->addField('total_net', ['type' => 'integer']);
+        $i->addField('total_vat', ['type' => 'integer']);
+        $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]', 'type' => 'integer']);
 
         $i->setOrder('total_net');
         $i->setOnlyFields(['total_net']);
@@ -201,9 +201,9 @@ class IteratorTest extends TestCase
             $data[$id] = $item;
         }
 
-        $this->assertEquals(10, $data[1]->get('total_net'));
-        $this->assertEquals(20, $data[2]->get('total_net'));
-        $this->assertEquals(15, $data[3]->get('total_net'));
+        $this->assertSame(10, $data[1]->get('total_net'));
+        $this->assertSame(20, $data[2]->get('total_net'));
+        $this->assertSame(15, $data[3]->get('total_net'));
         $this->assertNull($i->createEntity()->get('total_net'));
     }
 }

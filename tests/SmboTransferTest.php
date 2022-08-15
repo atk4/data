@@ -45,8 +45,8 @@ class SmboTransferTest extends TestCase
         $t = $aib->transfer($boi, 100); // create transfer between accounts
         $t->save();
 
-        $this->assertEquals(-100, $aib->reload()->get('balance'));
-        $this->assertEquals(100, $boi->reload()->get('balance'));
+        $this->assertSame(-100.0, $aib->reload()->get('balance'));
+        $this->assertSame(100.0, $boi->reload()->get('balance'));
 
         $t = new Transfer($this->db);
         $data = $t->export(['id', 'transfer_document_id']);

@@ -501,9 +501,9 @@ class FieldTest extends TestCase
         $m->insert(['net' => 30, 'vat' => 8]);
 
         $mm = $m->load(1);
-        $this->assertEquals(121, $mm->get('total'));
+        $this->assertSame(121.0, $mm->get('total'));
         $mm = $m->load(2);
-        $this->assertEquals(38, $mm->get('total'));
+        $this->assertSame(38.0, $mm->get('total'));
 
         $d = $m->export(); // in export calculated fields are not included
         $this->assertFalse(array_key_exists('total', $d[0]));
