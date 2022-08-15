@@ -95,7 +95,8 @@ class RandomTest extends TestCase
         ]);
 
         $m = new Model($this->db, ['table' => 'user']);
-        $m->addFields(['name', 'salary' => ['default' => 10]]);
+        $m->addField('name');
+        $m->addField('salary', ['default' => 10]);
 
         $m->import([['name' => 'Peter'], ['name' => 'Steve', 'salary' => 30]]);
         $m->insert(['name' => 'Sue']);
@@ -478,14 +479,6 @@ class RandomTest extends TestCase
             ['id' => 2, 'dat' => '12/12/12', 'bid' => 8.3, 'ask' => 9.2],
             ['id' => 3, 'dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4],
         ], $m->export());
-    }
-
-    public function testDuplicateWithIdArgumentException(): void
-    {
-        $m = new Model_Rate();
-
-        $this->expectException(Exception::class);
-        $m->duplicate(2)->save();
     }
 
     public function testNoWriteActionInsert(): void

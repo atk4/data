@@ -623,30 +623,6 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * @deprecated will be removed in v4.0
-     *
-     * @return $this
-     */
-    public function onlyFields(array $fields = [])
-    {
-        'trigger_error'('Method is deprecated. Use setOnlyFields() instead', \E_USER_DEPRECATED);
-
-        return $this->setOnlyFields($fields);
-    }
-
-    /**
-     * @deprecated will be removed in v4.0
-     *
-     * @return $this
-     */
-    public function allFields()
-    {
-        'trigger_error'('Method is deprecated. Use setOnlyFields(null) instead', \E_USER_DEPRECATED);
-
-        return $this->setOnlyFields(null);
-    }
-
-    /**
      * Sets which fields we will select.
      *
      * @param array<string>|null $fields
@@ -718,8 +694,7 @@ class Model implements \IteratorAggregate
                 return false;
             }
             foreach ($filter as $f) {
-                if (
-                    ($f === 'system' && $field->system)
+                if (($f === 'system' && $field->system)
                     || ($f === 'not system' && !$field->system)
                     || ($f === 'editable' && $field->isEditable())
                     || ($f === 'visible' && $field->isVisible())
@@ -1160,16 +1135,6 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * @deprecated will be removed in v4.0
-     */
-    public function loaded(): bool
-    {
-        'trigger_error'('Method is deprecated. Use isLoaded() instead', \E_USER_DEPRECATED);
-
-        return $this->isLoaded();
-    }
-
-    /**
      * Is entity loaded?
      */
     public function isLoaded(): bool
@@ -1383,11 +1348,6 @@ class Model implements \IteratorAggregate
      */
     public function duplicate()
     {
-        // deprecated, to be removed in v3.2
-        if (func_num_args() > 0) {
-            throw new Exception('Duplicating using existing ID is no longer supported');
-        }
-
         $this->assertIsEntity();
 
         $duplicate = clone $this;

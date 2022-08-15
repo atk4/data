@@ -552,19 +552,11 @@ abstract class Expression implements Expressionable, \ArrayAccess
      *
      * @return DbalResult|int<0, max>
      * @phpstan-return ($fromExecuteStatement is true ? int<0, max> : DbalResult)
-     *
-     * @deprecated Expression::execute() is deprecated and will be removed in v4.0, use Expression::executeQuery() or Expression::executeStatement() instead
      */
-    public function execute(object $connection = null, bool $fromExecuteStatement = null)
+    protected function _execute(?object $connection, bool $fromExecuteStatement)
     {
         if ($connection === null) {
             $connection = $this->connection;
-        }
-
-        if ($fromExecuteStatement === null) {
-            'trigger_error'('Method is deprecated. Use executeQuery() or executeStatement() instead', \E_USER_DEPRECATED);
-
-            $fromExecuteStatement = false;
         }
 
         if (!$connection instanceof DbalConnection) {
@@ -660,7 +652,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
      */
     public function executeQuery(object $connection = null): DbalResult
     {
-        return $this->execute($connection, false); // @phpstan-ignore-line
+        return $this->_execute($connection, false);
     }
 
     /**
@@ -670,7 +662,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
      */
     public function executeStatement(object $connection = null): int
     {
-        return $this->execute($connection, true); // @phpstan-ignore-line
+        return $this->_execute($connection, true);
     }
 
     // {{{ Result Querying

@@ -109,9 +109,9 @@ class BusinessModelTest extends TestCase
 
         // now with defaults
         $m = new Model();
-        $f = $m->addField('name', ['default' => 'John']);
+        $m->addField('name', ['default' => 'John']);
         $m = $m->createEntity();
-        $this->assertSame('John', $f->default);
+        $this->assertSame('John', $m->getField('name')->default);
 
         $this->assertSame('John', $m->get('name'));
 
@@ -133,7 +133,7 @@ class BusinessModelTest extends TestCase
         $this->assertNotNull($m->getField('id'));
 
         $m->set('id', 20);
-        $this->assertEquals(20, $m->getId());
+        $this->assertSame(20, $m->getId());
     }
 
     public function testException1(): void
@@ -218,7 +218,7 @@ class BusinessModelTest extends TestCase
         $p = new Persistence\Array_();
         $c = new Client($p);
         $c = $c->createEntity();
-        $this->assertEquals(10, $c->get('order'));
+        $this->assertSame(10, $c->get('order'));
     }
 
     public function testNormalize(): void

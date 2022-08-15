@@ -103,7 +103,6 @@ class JoinSqlTest extends TestCase
 
     public function testJoinSaving2(): void
     {
-        $user = new Model($this->db, ['table' => 'user']);
         $this->setDb([
             'user' => [
                 '_' => ['id' => 1, 'name' => 'John'],
@@ -112,10 +111,12 @@ class JoinSqlTest extends TestCase
                 '_' => ['id' => 1, 'contact_phone' => '+123', 'test_id' => 0],
             ],
         ]);
+
+        $user = new Model($this->db, ['table' => 'user']);
         $user->addField('name');
         $j = $user->join('contact.test_id');
         $this->createMigrator()->createForeignKey($j);
-        $j->addFields(['contact_phone']);
+        $j->addField('contact_phone');
 
         $user2 = $user->createEntity();
         $user2->set('name', 'John');
@@ -362,7 +363,6 @@ class JoinSqlTest extends TestCase
 
     public function testDoubleSaveHook(): void
     {
-        $user = new Model($this->db, ['table' => 'user']);
         $this->setDb([
             'user' => [
                 '_' => ['id' => 1, 'name' => 'John'],
@@ -371,6 +371,8 @@ class JoinSqlTest extends TestCase
                 '_' => ['id' => 1, 'contact_phone' => '+123', 'test_id' => 0],
             ],
         ]);
+
+        $user = new Model($this->db, ['table' => 'user']);
         $user->addField('name');
         $j = $user->join('contact.test_id');
         $this->createMigrator()->createForeignKey($j);
@@ -427,7 +429,7 @@ class JoinSqlTest extends TestCase
         $user2->delete();
 
         $user2 = $user->loadBy('country_name', 'US');
-        $this->assertEquals(30, $user2->getId());
+        $this->assertSame(30, $user2->getId());
         $user2->set('country_name', 'USA');
         $user2->save();
 
@@ -487,13 +489,13 @@ class JoinSqlTest extends TestCase
         $j->addField('contact_phone');
         $c = $j->join('country');
         $this->createMigrator()->createForeignKey($c);
-        $c->addFields(['country_name' => ['actual' => 'name']]);
+        $c->addField('country_name', ['actual' => 'name']);
 
         $user2 = $user->load(10);
         $user2->delete();
 
         $user = $user->loadBy('country_name', 'US');
-        $this->assertEquals(30, $user->getId());
+        $this->assertSame(30, $user->getId());
 
         $this->assertEquals([
             'user' => [
@@ -615,19 +617,19 @@ class JoinSqlTest extends TestCase
         // try load one record
         $m = $user->tryLoad(20);
         $this->assertTrue($m->isLoaded());
-        $this->assertEquals(['id' => 20, 'name' => 'Peter', 'notes' => 'second note'], $m->get());
+        $this->assertSame(['id' => 20, 'name' => 'Peter', 'notes' => 'second note'], $m->get());
 
         // try to update loaded record
         $m->save(['name' => 'Mark', 'notes' => '2nd note']);
         $m = $user->tryLoad(20);
         $this->assertTrue($m->isLoaded());
-        $this->assertEquals(['id' => 20, 'name' => 'Mark', 'notes' => '2nd note'], $m->get());
+        $this->assertSame(['id' => 20, 'name' => 'Mark', 'notes' => '2nd note'], $m->get());
 
         // insert new record
         $m = $user->createEntity()->save(['name' => 'Emily', 'notes' => '3rd note']);
         $m = $user->tryLoad(21);
         $this->assertTrue($m->isLoaded());
-        $this->assertEquals(['id' => 21, 'name' => 'Emily', 'notes' => '3rd note'], $m->get());
+        $this->assertSame(['id' => 21, 'name' => 'Emily', 'notes' => '3rd note'], $m->get());
 
         // now test reverse join defined differently
         $user = new Model($this->db, ['table' => 'user']);
@@ -642,7 +644,7 @@ class JoinSqlTest extends TestCase
         $m = $user->createEntity()->save(['name' => 'Olaf', 'notes' => '4th note']);
         $m = $user->tryLoad(22);
         $this->assertTrue($m->isLoaded());
-        $this->assertEquals(['id' => 22, 'name' => 'Olaf', 'notes' => '4th note'], $m->get());
+        $this->assertSame(['id' => 22, 'name' => 'Olaf', 'notes' => '4th note'], $m->get());
 
         // now test reverse join with tableAlias and foreignAlias
         $user = new Model($this->db, ['table' => 'user', 'tableAlias' => 'u']);
@@ -658,7 +660,7 @@ class JoinSqlTest extends TestCase
         $m = $user->createEntity()->save(['name' => 'Chris', 'notes' => '5th note']);
         $m = $user->tryLoad(23);
         $this->assertTrue($m->isLoaded());
-        $this->assertEquals(['id' => 23, 'name' => 'Chris', 'notes' => '5th note'], $m->get());
+        $this->assertSame(['id' => 23, 'name' => 'Chris', 'notes' => '5th note'], $m->get());
     }
 
     public function testJoinActualFieldNamesAndPrefix(): void

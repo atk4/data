@@ -20,9 +20,10 @@ corresponds to an expression:
 Example will calculate "total_gross" by adding up values for "net" and "vat"::
 
     $m = new Model_Invoice($db);
-    $m->addFields(['total_net', 'total_vat']);
-
+    $m->addField('total_net');
+    $m->addField('total_vat');
     $m->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]']);
+
     $m = $m->load(1);
 
     echo $m->get('total_gross');
@@ -121,7 +122,8 @@ the following model::
         {
             parent::init();
 
-            $this->addFields(['a', 'b']);
+            $this->addField('a');
+            $this->addField('b');
 
             $this->addExpression('sum', ['expr' => '[a] + [b]']);
         }
@@ -169,7 +171,8 @@ Then try the following code::
         {
             parent::init();
 
-            $this->addFields(['a', 'b']);
+            $this->addField('a');
+            $this->addField('b');
         }
     }
 

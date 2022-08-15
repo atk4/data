@@ -104,8 +104,7 @@ class HasMany extends Reference
     }
 
     /**
-     * Adds field as expression to our model.
-     * Used in aggregate strategy.
+     * Adds field as expression to our model. Used in aggregate strategy.
      */
     public function addField(string $fieldName, array $defaults = []): Field
     {

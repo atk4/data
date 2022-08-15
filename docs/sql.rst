@@ -166,19 +166,14 @@ Transactions
 This method allows you to execute code within a 'START TRANSACTION / COMMIT' block::
 
     class Invoice {
-
         function applyPayment(Payment $p) {
-
             $this->getPersistence()->atomic(function () use ($p) {
-
                 $this->set('paid', true);
                 $this->save();
 
                 $p->set('applied', true);
                 $p->save();
-
             });
-
         }
     }
 
@@ -420,7 +415,6 @@ generates queries for most of model operations.  By re-defining this method,
 you can significantly affect the query building of an SQL model::
 
     class CompanyProfit extends \Atk4\Data\Model {
-
         public $companyId = null; // inject company ID, which will act as a condition/argument
         public $readOnly  = true; // instructs rest of the app, that this model is read-only
 
@@ -434,7 +428,6 @@ you can significantly affect the query building of an SQL model::
         public function action($mode, $args = [])
 
             if ($mode == 'select') {
-
                 // must return DSQL object here
                 return $this->expr('call get_company_profit([company_id])', [
                     'company_id' => $this->companyId,
@@ -442,7 +435,6 @@ you can significantly affect the query building of an SQL model::
             }
 
             if ($mode == 'count') {
-
                 // optionally - expression for counting data rows, for pagination support
                 return $this->expr('select count(*) from (call get_company_profit([company_id]))', [
                     'company_id' => $this->companyId,
@@ -488,7 +480,6 @@ as an Model Source
 Technically you can also specify expression as a $table property of your model::
 
     class ClientReport extends \Atk4\Data\Model {
-
         public $table = null; // will be set in init()
         public $readOnly = true; // instructs rest of the app, that this model is read-only
 

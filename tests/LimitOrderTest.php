@@ -20,13 +20,13 @@ class LimitOrderTest extends TestCase
         ]);
 
         $i = new Model($this->db, ['table' => 'invoice', 'idField' => false]);
-        $i->addField('total_net');
-        $i->addField('total_vat');
-        $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]']);
+        $i->addField('total_net', ['type' => 'integer']);
+        $i->addField('total_vat', ['type' => 'integer']);
+        $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]', 'type' => 'integer']);
 
         $i->setOrder('total_net');
         $i->setOnlyFields(['total_net']);
-        $this->assertEquals([
+        $this->assertSame([
             ['total_net' => 10],
             ['total_net' => 15],
             ['total_net' => 20],
@@ -44,14 +44,14 @@ class LimitOrderTest extends TestCase
         ]);
 
         $ii = new Model($this->db, ['table' => 'invoice', 'idField' => false]);
-        $ii->addField('total_net');
-        $ii->addField('total_vat');
-        $ii->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]']);
+        $ii->addField('total_net', ['type' => 'integer']);
+        $ii->addField('total_vat', ['type' => 'integer']);
+        $ii->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]', 'type' => 'integer']);
 
         $i = clone $ii;
         $i->setOrder(['total_net' => 'desc', 'total_gross' => 'desc']);
         $i->setOnlyFields(['total_net', 'total_gross']);
-        $this->assertEquals([
+        $this->assertSame([
             ['total_net' => 15, 'total_gross' => 19],
             ['total_net' => 10, 'total_gross' => 15],
             ['total_net' => 10, 'total_gross' => 14],
@@ -60,7 +60,7 @@ class LimitOrderTest extends TestCase
         $i = clone $ii;
         $i->setOrder(['total_net' => 'desc', 'total_gross']);
         $i->setOnlyFields(['total_net', 'total_gross']);
-        $this->assertEquals([
+        $this->assertSame([
             ['total_net' => 15, 'total_gross' => 19],
             ['total_net' => 10, 'total_gross' => 14],
             ['total_net' => 10, 'total_gross' => 15],
@@ -69,7 +69,7 @@ class LimitOrderTest extends TestCase
         $i = clone $ii;
         $i->setOrder(['total_net' => 'desc', 'total_gross']);
         $i->setOnlyFields(['total_net', 'total_vat']);
-        $this->assertEquals([
+        $this->assertSame([
             ['total_net' => 15, 'total_vat' => 4],
             ['total_net' => 10, 'total_vat' => 4],
             ['total_net' => 10, 'total_vat' => 5],
@@ -78,7 +78,7 @@ class LimitOrderTest extends TestCase
         $i = clone $ii;
         $i->setOrder(['total_gross' => 'desc', 'total_net']);
         $i->setOnlyFields(['total_net', 'total_vat']);
-        $this->assertEquals([
+        $this->assertSame([
             ['total_net' => 15, 'total_vat' => 4],
             ['total_net' => 10, 'total_vat' => 5],
             ['total_net' => 10, 'total_vat' => 4],
@@ -96,14 +96,14 @@ class LimitOrderTest extends TestCase
         ]);
 
         $ii = new Model($this->db, ['table' => 'invoice', 'idField' => false]);
-        $ii->addField('net');
-        $ii->addField('vat');
+        $ii->addField('net', ['type' => 'integer']);
+        $ii->addField('vat', ['type' => 'integer']);
 
         // pass parameters as array elements [field, order]
         $i = clone $ii;
         $i->setOrder([['net', 'desc'], ['vat']]);
         $i->setOnlyFields(['net', 'vat']);
-        $this->assertEquals([
+        $this->assertSame([
             ['net' => 15, 'vat' => 4],
             ['net' => 10, 'vat' => 4],
             ['net' => 10, 'vat' => 5],
@@ -113,7 +113,7 @@ class LimitOrderTest extends TestCase
         $i = clone $ii;
         $i->setOrder(['net' => 'desc', 'vat' => 'asc']);
         $i->setOnlyFields(['net', 'vat']);
-        $this->assertEquals([
+        $this->assertSame([
             ['net' => 15, 'vat' => 4],
             ['net' => 10, 'vat' => 4],
             ['net' => 10, 'vat' => 5],
@@ -123,7 +123,7 @@ class LimitOrderTest extends TestCase
         $i = clone $ii;
         $i->setOrder(['net' => 'desc', 'vat']); // and you can even mix them (see 'vat' is a value not a key here)
         $i->setOnlyFields(['net', 'vat']);
-        $this->assertEquals([
+        $this->assertSame([
             ['net' => 15, 'vat' => 4],
             ['net' => 10, 'vat' => 4],
             ['net' => 10, 'vat' => 5],
@@ -143,13 +143,13 @@ class LimitOrderTest extends TestCase
         // order by expression field
         $i = new Model($this->db, ['table' => 'invoice', 'idField' => false]);
         $i->addField('code');
-        $i->addField('net');
-        $i->addField('vat');
-        $i->addExpression('gross', ['expr' => '[net] + [vat]']);
+        $i->addField('net', ['type' => 'integer']);
+        $i->addField('vat', ['type' => 'integer']);
+        $i->addExpression('gross', ['expr' => '[net] + [vat]', 'type' => 'integer']);
 
         $i->setOrder('gross');
         $i->setOnlyFields(['gross']);
-        $this->assertEquals([
+        $this->assertSame([
             ['gross' => 14],
             ['gross' => 15],
             ['gross' => 19],
@@ -205,7 +205,7 @@ class LimitOrderTest extends TestCase
         ]);
 
         $i = new Model($this->db, ['table' => 'invoice']);
-        $i->addField('net');
+        $i->addField('net', ['type' => 'integer']);
         $i->setOrder(new \DateTime()); // @phpstan-ignore-line
 
         $this->expectException(\TypeError::class);
@@ -223,13 +223,13 @@ class LimitOrderTest extends TestCase
         ]);
 
         $i = new Model($this->db, ['table' => 'invoice', 'idField' => false]);
-        $i->addField('total_net');
-        $i->addField('total_vat');
-        $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]']);
+        $i->addField('total_net', ['type' => 'integer']);
+        $i->addField('total_vat', ['type' => 'integer']);
+        $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]', 'type' => 'integer']);
 
         $i->setOrder('total_net');
         $i->setOnlyFields(['total_net']);
-        $this->assertEquals([
+        $this->assertSame([
             ['total_net' => 10],
             ['total_net' => 15],
             ['total_net' => 20],
@@ -238,21 +238,21 @@ class LimitOrderTest extends TestCase
         $ii = $i;
         $i = clone $ii;
         $i->setLimit(2);
-        $this->assertEquals([
+        $this->assertSame([
             ['total_net' => 10],
             ['total_net' => 15],
         ], $i->export());
 
         $i = clone $ii;
         $i->setLimit(2, 1);
-        $this->assertEquals([
+        $this->assertSame([
             ['total_net' => 15],
             ['total_net' => 20],
         ], $i->export());
 
         $i = clone $ii;
         $i->setLimit(null, 1);
-        $this->assertEquals([
+        $this->assertSame([
             ['total_net' => 15],
             ['total_net' => 20],
         ], $i->export());
@@ -269,26 +269,26 @@ class LimitOrderTest extends TestCase
         ]);
 
         $i = new Model($this->db, ['table' => 'invoice']);
-        $i->addField('total_net');
+        $i->addField('total_net', ['type' => 'integer']);
         $i->setOrder('total_net');
 
-        $this->assertEquals(10, $i->loadAny()->get('total_net'));
+        $this->assertSame(10, $i->loadAny()->get('total_net'));
         $i->setLimit(2);
-        $this->assertEquals(10, $i->loadAny()->get('total_net'));
+        $this->assertSame(10, $i->loadAny()->get('total_net'));
 
         $i->setLimit(2, 2);
-        $this->assertEquals(20, $i->loadAny()->get('total_net'));
-        $this->assertEquals(20, $i->loadOne()->get('total_net'));
+        $this->assertSame(20, $i->loadAny()->get('total_net'));
+        $this->assertSame(20, $i->loadOne()->get('total_net'));
 
         $i->setLimit(1);
-        $this->assertEquals(10, $i->loadAny()->get('total_net'));
-        $this->assertEquals(10, $i->loadOne()->get('total_net'));
+        $this->assertSame(10, $i->loadAny()->get('total_net'));
+        $this->assertSame(10, $i->loadOne()->get('total_net'));
         $i->setLimit(1, 1);
-        $this->assertEquals(15, $i->loadAny()->get('total_net'));
-        $this->assertEquals(15, $i->loadOne()->get('total_net'));
+        $this->assertSame(15, $i->loadAny()->get('total_net'));
+        $this->assertSame(15, $i->loadOne()->get('total_net'));
         $i->setLimit(1, 2);
-        $this->assertEquals(20, $i->loadAny()->get('total_net'));
-        $this->assertEquals(20, $i->loadOne()->get('total_net'));
+        $this->assertSame(20, $i->loadAny()->get('total_net'));
+        $this->assertSame(20, $i->loadOne()->get('total_net'));
         $i->setLimit(1, 3);
         $this->assertNull($i->tryLoadAny());
         $this->assertNull($i->tryLoadOne());

@@ -365,7 +365,8 @@ class Client extends \Atk4\Data\Model {
     function init(): void {
         parent::init();
 
-        $this->addFields(['name', 'address']);
+        $this->addField('name');
+        $this->addField('address');
 
         $this->hasMany('Project', ['model' => [Project::class]]);
     }
@@ -583,7 +584,9 @@ class User extends \Atk4\Data\Model
     {
         parent::init();
 
-        $this->addFields(['email', 'name', 'password']);
+        $this->addField('email');
+        $this->addField('name');
+        $this->addField('password');
 
         // add your table fields here
     }

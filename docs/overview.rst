@@ -178,18 +178,14 @@ instance, the above expression will still be usable with any SQL vendor, but if
 you want it to work with NoSQL, then your solution might be::
 
     if ($model->hasMethod('addExpression')) {
-
         // method is injected by Persistence
         $model->addExpression('gross', ['expr' => '[net] + [vat]']);
-
     } else {
-
         // persistence does not support expressions
         $model->addField('gross');
         $model->onHook(Model::HOOK_BEFORE_SAVE, function ($m) {
             $m->set('gross', $m->get('net') + $m->get('vat'));
         });
-
     }
 
 Generic Persistence-code

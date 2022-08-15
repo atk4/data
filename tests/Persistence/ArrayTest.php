@@ -37,6 +37,7 @@ class ArrayTest extends TestCase
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ]);
+
         $m = new Model($p, ['table' => 'user']);
         $m->addField('name');
         $m->addField('surname');
@@ -70,6 +71,7 @@ class ArrayTest extends TestCase
                 2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
             ],
         ]);
+
         $m = new Male($p, ['table' => 'user']);
 
         $m = $m->load(1);
@@ -98,6 +100,7 @@ class ArrayTest extends TestCase
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ]);
+
         $m = new Model($p, ['table' => 'user']);
         $m->addField('name');
         $m->addField('surname');
@@ -140,6 +143,7 @@ class ArrayTest extends TestCase
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ]);
+
         $m = new Model($p, ['table' => 'user']);
         $m->addField('name');
         $m->addField('surname');
@@ -165,6 +169,7 @@ class ArrayTest extends TestCase
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ]);
+
         $m = new Model($p, ['table' => 'user']);
         $m->addField('name');
         $m->addField('surname');
@@ -184,6 +189,7 @@ class ArrayTest extends TestCase
             1 => ['name' => 'John', 'surname' => 'Smith'],
             2 => ['name' => 'Sarah', 'surname' => 'Jones'],
         ]);
+
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
@@ -209,6 +215,7 @@ class ArrayTest extends TestCase
             1 => ['name' => 'John', 'surname' => 'Smith'],
             2 => ['name' => 'Sarah', 'surname' => 'Jones'],
         ]);
+
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
@@ -230,6 +237,7 @@ class ArrayTest extends TestCase
             1 => ['name' => 'John', 'surname' => 'Smith'],
             2 => ['name' => 'Sarah', 'surname' => 'Jones'],
         ]);
+
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
@@ -244,6 +252,7 @@ class ArrayTest extends TestCase
             1 => ['name' => 'John', 'surname' => 'Smith'],
             2 => ['name' => 'Sarah', 'surname' => 'Jones'],
         ]);
+
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
@@ -718,6 +727,7 @@ class ArrayTest extends TestCase
             3 => ['name' => 'Sarah', 'surname' => 'XX'],
             4 => ['name' => 'Sarah', 'surname' => 'Smith'],
         ]);
+
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');

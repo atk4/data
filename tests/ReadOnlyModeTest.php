@@ -25,8 +25,8 @@ class ReadOnlyModeTest extends TestCase
         ]);
 
         $this->m = new Model($this->db, ['table' => 'user', 'readOnly' => true]);
-
-        $this->m->addFields(['name', 'gender']);
+        $this->m->addField('name');
+        $this->m->addField('gender');
     }
 
     /**
@@ -43,7 +43,7 @@ class ReadOnlyModeTest extends TestCase
         $m = $this->m->tryLoadAny();
         $this->assertSame('Sue', $m->get('name'));
 
-        $this->assertEquals([1 => 'John', 2 => 'Sue'], $this->m->getTitles());
+        $this->assertSame([2 => 'Sue', 1 => 'John'], $this->m->getTitles());
     }
 
     /**

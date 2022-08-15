@@ -160,10 +160,10 @@ class FieldTest extends TestCase
         $m->addField('name', ['nullable' => false, 'default' => 'NoName']);
         $m->addField('surname');
         $m->insert(['surname' => 'qq']);
-        $this->assertEquals([
+        $this->assertSame([
             'user' => [
-                1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
-                2 => ['id' => 2, 'name' => 'NoName', 'surname' => 'qq'],
+                1 => ['id' => '1', 'name' => 'John', 'surname' => 'Smith'],
+                2 => ['id' => '2', 'name' => 'NoName', 'surname' => 'qq'],
             ],
         ], $this->getDb());
     }
@@ -171,26 +171,48 @@ class FieldTest extends TestCase
     public function testCaption(): void
     {
         $m = new Model();
-        $f = $m->addField('foo');
-        $this->assertSame('Foo', $f->getCaption());
 
-        $f = $m->addField('user_defined_entity');
-        $this->assertSame('User Defined Entity', $f->getCaption());
+        $m->addField('foo');
+        $this->assertSame(
+            'Foo',
+            $m->getField('foo')->getCaption()
+        );
 
-        $f = $m->addField('foo2', ['caption' => 'My Foo']);
-        $this->assertSame('My Foo', $f->getCaption());
+        $m->addField('user_defined_entity');
+        $this->assertSame(
+            'User Defined Entity',
+            $m->getField('user_defined_entity')->getCaption()
+        );
 
-        $f = $m->addField('foo3', ['ui' => ['caption' => 'My Foo']]);
-        $this->assertSame('My Foo', $f->getCaption());
+        $m->addField('foo2', ['caption' => 'My Foo']);
+        $this->assertSame(
+            'My Foo',
+            $m->getField('foo2')->getCaption()
+        );
 
-        $f = $m->addField('userDefinedEntity');
-        $this->assertSame('User Defined Entity', $f->getCaption());
+        $m->addField('foo3', ['ui' => ['caption' => 'My Foo']]);
+        $this->assertSame(
+            'My Foo',
+            $m->getField('foo3')->getCaption()
+        );
 
-        $f = $m->addField('newNASA_module');
-        $this->assertSame('New NASA Module', $f->getCaption());
+        $m->addField('userDefinedEntity');
+        $this->assertSame(
+            'User Defined Entity',
+            $m->getField('userDefinedEntity')->getCaption()
+        );
 
-        $f = $m->addField('this\\ _isNASA_MyBigBull shit_123\Foo');
-        $this->assertSame('This Is NASA My Big Bull Shit 123 Foo', $f->getCaption());
+        $m->addField('newNASA_module');
+        $this->assertSame(
+            'New NASA Module',
+            $m->getField('newNASA_module')->getCaption()
+        );
+
+        $m->addField('this\\ _isNASA_MyBigBull shit_123\Foo');
+        $this->assertSame(
+            'This Is NASA My Big Bull Shit 123 Foo',
+            $m->getField('this\\ _isNASA_MyBigBull shit_123\Foo')->getCaption()
+        );
     }
 
     public function testReadOnly1(): void
@@ -400,15 +422,15 @@ class FieldTest extends TestCase
 
         $m->getModel()->insert(['name' => 'Peter', 'category' => 'Sales']);
 
-        $this->assertEquals([
+        $this->assertSame([
             'user' => [
-                1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'category_id' => 2],
-                2 => ['id' => 2, 'name' => 'Peter', 'surname' => null, 'category_id' => 3],
+                1 => ['id' => '1', 'name' => 'John', 'surname' => 'Smith', 'category_id' => '2'],
+                2 => ['id' => '2', 'name' => 'Peter', 'surname' => null, 'category_id' => '3'],
             ],
             'category' => [
-                1 => ['id' => 1, 'name' => 'General'],
-                2 => ['id' => 2, 'name' => 'Programmer'],
-                3 => ['id' => 3, 'name' => 'Sales'],
+                1 => ['id' => '1', 'name' => 'General'],
+                2 => ['id' => '2', 'name' => 'Programmer'],
+                3 => ['id' => '3', 'name' => 'Sales'],
             ],
         ], $this->getDb());
     }
@@ -444,20 +466,20 @@ class FieldTest extends TestCase
             ['id' => 2, 'first_name' => 'Peter', 'surname' => 'qq'],
         ], $m->export());
 
-        $this->assertEquals([
+        $this->assertSame([
             'user' => [
-                1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
-                2 => ['id' => 2, 'name' => 'Peter', 'surname' => 'qq'],
+                1 => ['id' => '1', 'name' => 'John', 'surname' => 'Smith'],
+                2 => ['id' => '2', 'name' => 'Peter', 'surname' => 'qq'],
             ],
         ], $this->getDb());
 
         $mm->set('first_name', 'Scott');
         $mm->save();
 
-        $this->assertEquals([
+        $this->assertSame([
             'user' => [
-                1 => ['id' => 1, 'name' => 'Scott', 'surname' => 'Smith'],
-                2 => ['id' => 2, 'name' => 'Peter', 'surname' => 'qq'],
+                1 => ['id' => '1', 'name' => 'Scott', 'surname' => 'Smith'],
+                2 => ['id' => '2', 'name' => 'Peter', 'surname' => 'qq'],
             ],
         ], $this->getDb());
     }
@@ -479,9 +501,9 @@ class FieldTest extends TestCase
         $m->insert(['net' => 30, 'vat' => 8]);
 
         $mm = $m->load(1);
-        $this->assertEquals(121, $mm->get('total'));
+        $this->assertSame(121.0, $mm->get('total'));
         $mm = $m->load(2);
-        $this->assertEquals(38, $mm->get('total'));
+        $this->assertSame(38.0, $mm->get('total'));
 
         $d = $m->export(); // in export calculated fields are not included
         $this->assertFalse(array_key_exists('total', $d[0]));

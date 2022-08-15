@@ -414,7 +414,6 @@ Start by creating a beforeSave handler for Order::
 
     $this->onHookShort(Model::HOOK_BEFORE_SAVE, function () {
         if ($this->isDirty('ref')) {
-
             if (
                 (new static())
                     ->addCondition('client_id', $this->get('client_id')) // same client
@@ -514,7 +513,6 @@ to load records from two persistencies that are stored inside properties of my
 application::
 
     function loadQuick($class, $id) {
-
         // first, try to load it from MemCache
         $m = (clone $class)->setPersistence($this->mdb)->tryLoad($id);
 
@@ -768,7 +766,6 @@ Here is a way how to intervene with the process::
             ->setOrder('date desc')
             ->setLimit(1)
             ->action('field', ['total_gross'], 'getOne');
-
     }, 'type' => 'float']);
 
 The code above uses refLink and also creates expression, but it tweaks
