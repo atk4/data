@@ -60,11 +60,6 @@ abstract class Query extends Expression
      */
     public function field($field, $alias = null)
     {
-        // remove in v4.0
-        if (is_string($field) && str_contains($field, ',') || is_array($field)) {
-            throw new \TypeError('Array input is no longer accepted');
-        }
-
         $this->_setArgs('field', $alias, $field);
 
         return $this;
@@ -134,11 +129,6 @@ abstract class Query extends Expression
      */
     public function table($table, $alias = null)
     {
-        // remove in v4.0
-        if (is_string($table) && str_contains($table, ',') || is_array($table)) {
-            throw new \TypeError('Array input is no longer accepted');
-        }
-
         if ($table instanceof self && $alias === null) {
             throw new Exception('If table is set as subquery, then table alias is required');
         }
@@ -325,11 +315,6 @@ abstract class Query extends Expression
         $joinKind = null,
         $foreignAlias = null
     ) {
-        // remove in v4.0
-        if (is_array($foreignTable)) {
-            throw new \TypeError('Array input is no longer accepted');
-        }
-
         $j = [];
 
         // try to find alias in foreign table definition
@@ -451,11 +436,6 @@ abstract class Query extends Expression
         // Number of passed arguments will be used to determine if arguments were specified or not
         if ($numArgs === null) {
             $numArgs = func_num_args();
-        }
-
-        // remove in v4.0
-        if (is_array($field)) {
-            throw new Exception('Array input as OR conditions is no longer supported');
         }
 
         if (is_string($field) && preg_match('~([><!=]|(<!\w)(not|is|in|like))\s*$~i', $field)) {
@@ -678,11 +658,6 @@ abstract class Query extends Expression
      */
     public function group($group)
     {
-        // remove in v4.0
-        if (is_array($group)) {
-            throw new \TypeError('Array input is no longer accepted');
-        }
-
         $this->args['group'][] = $group;
 
         return $this;
@@ -715,11 +690,6 @@ abstract class Query extends Expression
      */
     public function set($field, $value = null)
     {
-        // remove in v4.0
-        if (is_array($field)) {
-            throw new \TypeError('Array input is no longer accepted');
-        }
-
         if (is_array($value)) {
             throw (new Exception('Array values are not supported by SQL'))
                 ->addMoreInfo('field', $field)
@@ -794,18 +764,13 @@ abstract class Query extends Expression
     /**
      * Set options for particular mode.
      *
-     * @param mixed  $option
-     * @param string $mode   select|insert|replace
+     * @param string|Expressionable $option
+     * @param string                $mode
      *
      * @return $this
      */
     public function option($option, $mode = 'select')
     {
-        // remove in v4.0
-        if (is_string($option) && str_contains($option, ',') || is_array($option)) {
-            throw new \TypeError('Array input is no longer accepted');
-        }
-
         $this->args['option'][$mode][] = $option;
 
         return $this;

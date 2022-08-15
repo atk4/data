@@ -623,30 +623,6 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * @deprecated will be removed in v4.0
-     *
-     * @return $this
-     */
-    public function onlyFields(array $fields = [])
-    {
-        'trigger_error'('Method is deprecated. Use setOnlyFields() instead', \E_USER_DEPRECATED);
-
-        return $this->setOnlyFields($fields);
-    }
-
-    /**
-     * @deprecated will be removed in v4.0
-     *
-     * @return $this
-     */
-    public function allFields()
-    {
-        'trigger_error'('Method is deprecated. Use setOnlyFields(null) instead', \E_USER_DEPRECATED);
-
-        return $this->setOnlyFields(null);
-    }
-
-    /**
      * Sets which fields we will select.
      *
      * @param array<string>|null $fields
@@ -1156,16 +1132,6 @@ class Model implements \IteratorAggregate
         if ($methodName !== null && !$this->getPersistence()->hasMethod($methodName)) {
             throw new Exception('Persistence does not support "' . $methodName . '" method');
         }
-    }
-
-    /**
-     * @deprecated will be removed in v4.0
-     */
-    public function loaded(): bool
-    {
-        'trigger_error'('Method is deprecated. Use isLoaded() instead', \E_USER_DEPRECATED);
-
-        return $this->isLoaded();
     }
 
     /**

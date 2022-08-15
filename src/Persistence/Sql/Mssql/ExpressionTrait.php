@@ -30,7 +30,7 @@ trait ExpressionTrait
      *
      * Remove once https://github.com/microsoft/msphpsql/issues/1387 is fixed and released.
      */
-    public function execute(object $connection = null, bool $fromExecuteStatement = null)
+    protected function _execute(?object $connection, bool $fromExecuteStatement)
     {
         $templateStr = preg_replace('~^\s*begin\s+(.+?)\s+end\s*$~is', '$1', $this->template ?? 'select...'); // @phpstan-ignore-line
         if (preg_match('~^(.*?)begin\s+try(.+?)end\s+try\s+begin\s+catch(.+)end\s+catch(.*?)$~is', $templateStr, $matches)) {
@@ -40,7 +40,7 @@ trait ExpressionTrait
                     ? $template
                     : 'BEGIN' . "\n" . $template . "\n" . 'END';
 
-                return $thisCloned->execute($connection, $fromExecuteStatement);
+                return $thisCloned->_execute($connection, $fromExecuteStatement);
             };
 
             $templateBefore = trim($matches[1]);
@@ -91,6 +91,6 @@ trait ExpressionTrait
             }
         }
 
-        return parent::execute($connection, $fromExecuteStatement);
+        return parent::_execute($connection, $fromExecuteStatement);
     }
 }
