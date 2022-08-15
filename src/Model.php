@@ -1382,11 +1382,6 @@ class Model implements \IteratorAggregate
      */
     public function duplicate()
     {
-        // deprecated, to be removed in v3.2
-        if (func_num_args() > 0) {
-            throw new Exception('Duplicating using existing ID is no longer supported');
-        }
-
         $this->assertIsEntity();
 
         $duplicate = clone $this;
