@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Atk4\Data\Model;
 
 use Atk4\Core\DiContainerTrait;
-use Atk4\Core\Factory;
 use Atk4\Core\InitializerTrait;
 use Atk4\Core\TrackableTrait;
 use Atk4\Data\Exception;
-use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Reference;
 
@@ -275,29 +273,14 @@ abstract class Join
      * Adding field into join will automatically associate that field
      * with this join. That means it won't be loaded from $table, but
      * form the join instead.
-     */
-    public function addField(string $name, array $seed = []): Field
-    {
-        $seed['joinName'] = $this->getJoinNameFromShortName();
-
-        return $this->getOwner()->addField($this->prefix . $name, $seed);
-    }
-
-    /**
-     * Adds multiple fields.
      *
      * @return $this
      */
-    public function addFields(array $fields = [], array $defaults = [])
+    public function addField(string $name, array $seed = [])
     {
-        foreach ($fields as $name => $seed) {
-            if (is_int($name)) {
-                $name = $seed;
-                $seed = [];
-            }
+        $seed['joinName'] = $this->getJoinNameFromShortName();
 
-            $this->addField($name, Factory::mergeSeeds($seed, $defaults));
-        }
+        $this->getOwner()->addField($this->prefix . $name, $seed);
 
         return $this;
     }

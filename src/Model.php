@@ -545,8 +545,10 @@ class Model implements \IteratorAggregate
      * Adds new field into model.
      *
      * @param array|object $seed
+     *
+     * @return $this
      */
-    public function addField(string $name, $seed = []): Field
+    public function addField(string $name, $seed = [])
     {
         $this->assertIsModel();
 
@@ -556,24 +558,7 @@ class Model implements \IteratorAggregate
             $field = $this->fieldFactory($seed);
         }
 
-        return $this->_addIntoCollection($name, $field, 'fields');
-    }
-
-    /**
-     * Adds multiple fields into model.
-     *
-     * @return $this
-     */
-    public function addFields(array $fields, array $defaults = [])
-    {
-        foreach ($fields as $name => $seed) {
-            if (is_int($name)) {
-                $name = $seed;
-                $seed = [];
-            }
-
-            $this->addField($name, Factory::mergeSeeds($seed, $defaults));
-        }
+        $this->_addIntoCollection($name, $field, 'fields');
 
         return $this;
     }

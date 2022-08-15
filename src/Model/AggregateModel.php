@@ -94,7 +94,7 @@ class AggregateModel extends Model
         return $this;
     }
 
-    public function addField(string $name, $seed = []): Field
+    public function addField(string $name, $seed = [])
     {
         if ($seed instanceof SqlExpressionField) {
             return parent::addField($name, $seed);

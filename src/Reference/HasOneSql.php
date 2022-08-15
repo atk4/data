@@ -67,8 +67,10 @@ class HasOneSql extends HasOne
 
     /**
      * Creates expression which sub-selects a field inside related model.
+     *
+     * @return $this
      */
-    public function addField(string $fieldName, string $theirFieldName = null, array $defaults = []): SqlExpressionField
+    public function addField(string $fieldName, string $theirFieldName = null, array $defaults = [])
     {
         if ($theirFieldName === null) {
             $theirFieldName = $fieldName;
@@ -84,34 +86,7 @@ class HasOneSql extends HasOne
         $defaults['caption'] ??= $refModelField->caption;
         $defaults['ui'] = array_merge($defaults['ui'] ?? $refModelField->ui, ['editable' => false]);
 
-        $fieldExpression = $this->_addField($fieldName, false, $theirFieldName, $defaults);
-
-        return $fieldExpression;
-    }
-
-    /**
-     * Add multiple expressions by calling addField several times. Fields
-     * may contain 3 types of elements:.
-     *
-     * ['name', 'surname'] - will import those fields as-is
-     * ['full_name' => 'name', 'day_of_birth' => ['dob', 'type' => 'date']] - use alias and options
-     * [['dob', 'type' => 'date']]  - use options
-     *
-     * @return $this
-     */
-    public function addFields(array $fields = [], array $defaults = [])
-    {
-        foreach ($fields as $ourFieldName => $ourFieldDefaults) {
-            $ourFieldDefaults = array_merge($defaults, (array) $ourFieldDefaults);
-
-            $theirFieldName = $ourFieldDefaults[0] ?? null;
-            unset($ourFieldDefaults[0]);
-            if (is_int($ourFieldName)) {
-                $ourFieldName = $theirFieldName;
-            }
-
-            $this->addField($ourFieldName, $theirFieldName, $ourFieldDefaults);
-        }
+        $this->_addField($fieldName, false, $theirFieldName, $defaults);
 
         return $this;
     }
