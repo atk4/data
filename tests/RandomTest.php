@@ -27,8 +27,6 @@ class Model_Rate extends Model
 }
 class Model_Item extends Model
 {
-    use ModelSoftDeleteTrait;
-
     public $table = 'item';
 
     protected function init(): void
@@ -39,8 +37,15 @@ class Model_Item extends Model
         $this->hasOne('parent_item_id', ['model' => [self::class]])
             ->addTitle();
 
-        $this->initSoftDelete();
+        $this->addField('is_deleted', ['type' => 'boolean', 'nullable' => false, 'default' => false]);
+        $this->addCondition('is_deleted', false);
+        $this->onHook(Model::HOOK_BEFORE_DELETE, function (Model $entity) {
+            $softDeleteController = new ControllerSoftDelete();
+            $softDeleteController->softDelete($entity);
 
+            $entity->hook(Model::HOOK_AFTER_DELETE);
+            $entity->breakHook(false); // this will cancel original Model::delete()
+        });
     }
 }
 class Model_Item2 extends Model
@@ -73,21 +78,6 @@ class Model_Item3 extends Model
 
         $this->hasMany('Child', ['model' => [self::class], 'theirField' => 'parent_item_id', 'tableAlias' => 'child'])
             ->addField('child_age', ['aggregate' => 'sum', 'field' => 'age']);
-    }
-}
-
-trait ModelSoftDeleteTrait {
-    protected function initSoftDelete(): void
-    {
-        $this->addField('is_deleted', ['type' => 'boolean', 'nullable' => false, 'default' => false]);
-        $this->addCondition('is_deleted', false);
-        $this->onHook(Model::HOOK_BEFORE_DELETE, function (Model $entity) {
-            $softDeleteController = new ControllerSoftDelete();
-            $softDeleteController->softDelete($entity);
-
-            $entity->hook(Model::HOOK_AFTER_DELETE);
-            $entity->breakHook(false); // this will cancel original Model::delete()
-        });
     }
 }
 
