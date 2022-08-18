@@ -87,7 +87,7 @@ trait ModelSoftDeleteTrait
 
             $entity->hook(Model::HOOK_AFTER_DELETE);
             $entity->breakHook(false); // this will cancel original Model::delete()
-        }, [], 100);
+        });
     }
 }
 
