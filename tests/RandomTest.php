@@ -178,8 +178,8 @@ class RandomTest extends TestCase
         $softDeleteController->softDelete($entity);
         $this->assertEquals([
             'item' => [
-                1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => null, 'is_deleted' => '0'],
-                2 => ['id' => 2, 'name' => 'Michael', 'parent_item_id' => null, 'is_deleted' => '1'],
+                1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => null, 'is_deleted' => false],
+                2 => ['id' => 2, 'name' => 'Michael', 'parent_item_id' => null, 'is_deleted' => true],
             ],
         ], $this->getDb());
 
@@ -189,8 +189,8 @@ class RandomTest extends TestCase
         $softDeleteController->restore($entity);
         $this->assertEquals([
             'item' => [
-                1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => null, 'is_deleted' => '0'],
-                2 => ['id' => 2, 'name' => 'Michael', 'parent_item_id' => null, 'is_deleted' => '0'],
+                1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => null, 'is_deleted' => false],
+                2 => ['id' => 2, 'name' => 'Michael', 'parent_item_id' => null, 'is_deleted' => false],
             ],
         ], $this->getDb());
 
@@ -198,8 +198,8 @@ class RandomTest extends TestCase
         $entity->delete();
         $this->assertEquals([
             'item' => [
-                1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => null, 'is_deleted' => '0'],
-                2 => ['id' => 2, 'name' => 'Michael', 'parent_item_id' => null, 'is_deleted' => '1'],
+                1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => null, 'is_deleted' => false],
+                2 => ['id' => 2, 'name' => 'Michael', 'parent_item_id' => null, 'is_deleted' => true],
             ],
         ], $this->getDb());
     }
