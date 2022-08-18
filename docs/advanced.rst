@@ -225,7 +225,7 @@ Start by creating a class::
 
             $this->getOwner()->addField('is_deleted', ['type' => 'boolean']);
 
-            if (isset($this->getOwner()->deleted_only)) {
+            if (property_exists($this->getOwner(), 'deleted_only') && $this->getOwner()->deleted_only) {
                 $this->getOwner()->addCondition('is_deleted', true);
                 $this->getOwner()->addMethod('restore', \Closure::fromCallable([$this, 'restore']));
             } else {
