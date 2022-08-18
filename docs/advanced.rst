@@ -20,6 +20,7 @@ store extra fields there. In your code::
     {
         protected function init(): void {
             parent::init();
+
             $j = $this->join('transaction_transfer.transaction_id');
             $j->addField('destination_account');
         }
@@ -519,7 +520,7 @@ will return NULL. Finally let's build allocation method, that allocates new
 payment towards a most suitable invoice::
 
 
-    // Add to Model_Payment
+    // add to Model_Payment
     public function autoAllocate()
     {
         $client = $this->ref['client_id'];

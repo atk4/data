@@ -609,6 +609,7 @@ Consider the following two models::
         protected function init(): void
         {
             parent::init();
+
             $this->addField('name');
 
             $this->hasOne('contact_id', ['model' => [Model_Contact::class]]);

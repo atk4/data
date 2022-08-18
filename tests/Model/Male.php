@@ -9,6 +9,7 @@ class Male extends Person
     protected function init(): void
     {
         parent::init();
+
         $this->addCondition('gender', 'M');
     }
 }
