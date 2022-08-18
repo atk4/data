@@ -240,36 +240,46 @@ Start by creating a class::
             }
         }
 
-        public function softDelete(Model $entity)
+        public function softDelete(Model $m)
         {
-            $entity->assertIsLoaded();
+            $m->assertIsLoaded();
 
-            $id = $entity->getId();
-            if ($entity->hook('beforeSoftDelete') === false) {
-                return $entity;
+            $id = $m->getId();
+            if ($m->hook('beforeSoftDelete') === false) {
+                return $m;
             }
 
-            $entity->saveAndUnload(['is_deleted' => true]);
+            $reloadAfterSaveBackup = $m->getModel()->reloadAfterSave;
+            try {
+                $m->getModel()->reloadAfterSave = false;
+                $m->save(['is_deleted' => true])->unload();
+            } finally {
+                $m->getModel()->reloadAfterSave = $reloadAfterSaveBackup;
+            }
 
-            $entity->hook('afterSoftDelete', [$id]);
-
-            return $entity;
+            $m->hook('afterSoftDelete', [$id]);
+            return $m;
         }
 
-        public function restore(Model $entity)
+        public function restore(Model $m)
         {
-            $entity->assertIsLoaded();
+            $m->assertIsLoaded();
 
-            $id = $entity->getId();
-            if ($entity->hook('beforeRestore') === false) {
-                return $entity;
+            $id = $m->getId();
+            if ($m->hook('beforeRestore') === false) {
+                return $m;
             }
 
-            $entity->saveAndUnload(['is_deleted' => false]);
+            $reloadAfterSaveBackup = $m->getModel()->reloadAfterSave;
+            try {
+                $m->getModel()->reloadAfterSave = false;
+                $m->save(['is_deleted' => false])->unload();
+            } finally {
+                $m->getModel()->reloadAfterSave = $reloadAfterSaveBackup;
+            }
 
-            $entity->hook('afterRestore', [$id]);
-
-            return $entity;
+            $m->hook('afterRestore', [$id]);
+            return $m;
         }
     }
 
