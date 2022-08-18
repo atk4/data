@@ -118,7 +118,8 @@ the following model::
     class Model_Math extends \Atk4\Data\Model
     {
         public $table = 'math';
-        function init(): void
+
+        protected function init(): void
         {
             parent::init();
 
@@ -167,7 +168,8 @@ Then try the following code::
     class Model_Math extends \Atk4\Data\Model
     {
         public $table = 'math';
-        function init(): void
+
+        protected function init(): void
         {
             parent::init();
 

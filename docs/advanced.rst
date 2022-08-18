@@ -16,8 +16,9 @@ multiple transaction types. Some of those types would even require additional
 fields. The pattern suggest you should add a new table "transaction_transfer" and
 store extra fields there. In your code::
 
-    class Transaction_Transfer extends Transaction {
-        function init(): void {
+    class Transaction_Transfer extends Transaction
+    {
+        protected function init(): void {
             parent::init();
             $j = $this->join('transaction_transfer.transaction_id');
             $j->addField('destination_account');
@@ -94,12 +95,13 @@ of the record. Finally to help with performance, you can implement a switch::
 
     ...
 
-    function init(): void {
-        ..
+    protected function init(): void
+    {
+        ...
 
         if ($this->typeSubstitution) {
             $this->onHook(Model::HOOK_AFTER_LOAD,
-                ..........
+                ...
             )
         }
     }
@@ -131,7 +133,8 @@ I will be looking to create the following fields:
 
 To implement the above, I'll create a new class::
 
-    class ControllerAudit {
+    class ControllerAudit
+    {
         use \Atk4\Core\InitializerTrait {
             init as private _init;
         }
@@ -145,7 +148,8 @@ $owner, and $app values (due to AppScopeTrait) as well as execute init() method,
 which I want to define like this::
 
 
-    protected function init(): void {
+    protected function init(): void
+    {
         $this->_init();
 
         if (isset($this->getOwner()->no_audit)) {
@@ -210,13 +214,15 @@ soft-delete controller for Agile Data (for educational purposes).
 
 Start by creating a class::
 
-    class ControllerSoftDelete {
+    class ControllerSoftDelete
+    {
         use \Atk4\Core\InitializerTrait {
             init as private _init;
         }
         use \Atk4\Core\TrackableTrait;
 
-        protected function init(): void {
+        protected function init(): void
+        {
             $this->_init();
 
             if (property_exists($this->getOwner(), 'no_soft_delete')) {
@@ -234,7 +240,8 @@ Start by creating a class::
             }
         }
 
-        public function softDelete(Model $entity) {
+        public function softDelete(Model $entity)
+        {
             $entity->assertIsLoaded();
 
             $id = $entity->getId();
@@ -249,7 +256,8 @@ Start by creating a class::
             return $entity;
         }
 
-        public function restore(Model $entity) {
+        public function restore(Model $entity)
+        {
             $entity->assertIsLoaded();
 
             $id = $entity->getId();
@@ -310,14 +318,17 @@ In case you want $m->delete() to perform soft-delete for you - this can also be
 achieved through a pretty simple controller. In fact I'm reusing the one from
 before and just slightly modifying it::
 
-    class ControllerSoftDelete2 extends ControllerSoftDelete {
-        protected function init(): void {
+    class ControllerSoftDelete2 extends ControllerSoftDelete
+    {
+        protected function init(): void
+        {
             parent::init();
 
             $this->getOwner()->onHook(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'softDelete']), null, 100);
         }
 
-        public function softDelete(Model $m) {
+        public function softDelete(Model $m)
+        {
             parent::softDelete();
 
             $m->hook(Model::HOOK_AFTER_DELETE);
@@ -351,7 +362,8 @@ to another user?
 With Agile Data you can create controller that will ensure that certain fields
 inside your model are unique::
 
-    class ControllerUniqueFields {
+    class ControllerUniqueFields
+    {
         use \Atk4\Core\InitializerTrait {
             init as private _init;
         }
@@ -359,7 +371,8 @@ inside your model are unique::
 
         protected $fields = null;
 
-        function init(): void {
+        protected function init(): void
+        {
             $this->_init();
 
             // by default make 'name' unique
@@ -370,7 +383,7 @@ inside your model are unique::
             $this->getOwner()->onHook(Model::HOOK_BEFORE_SAVE, \Closure::fromCallable([$this, 'beforeSave']));
         }
 
-        function beforeSave(Model $m)
+        protected function beforeSave(Model $m)
         {
             foreach ($this->fields as $field) {
                 if ($m->getDirtyRef()[$field]) {
@@ -434,10 +447,11 @@ Here is what I need to do:
 
 Create new Model::
 
-    class Model_InvoicePayment extends \Atk4\Data\Model {
+    class Model_InvoicePayment extends \Atk4\Data\Model
+    {
         public $table = 'invoice_payment';
 
-        function init(): void
+        protected function init(): void
         {
             parent::init();
             $this->hasOne('invoice_id', 'Model_Invoice');
@@ -496,7 +510,7 @@ payment towards a most suitable invoice::
 
 
     // Add to Model_Payment
-    function autoAllocate()
+    public function autoAllocate()
     {
         $client = $this->ref['client_id'];
         $invoices = $client->ref('Invoice');
@@ -546,8 +560,10 @@ adding invoice, I want to make it possible to specify 'Category' through the
 name, not only category_id. First, let me illustrate how can I do that with
 category_id::
 
-    class Model_Invoice extends \Atk4\Data\Model {
-        function init(): void {
+    class Model_Invoice extends \Atk4\Data\Model
+    {
+        protected function init(): void
+        {
             parent::init();
 
             ...

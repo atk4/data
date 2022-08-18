@@ -147,7 +147,8 @@ Next, exit and create file `src/Model_ContactInfo.php`::
     class Model_ContactInfo extends \Atk4\Data\Model
     {
         public $table = 'contact_info';
-        function init(): void
+
+        protected function init(): void
         {
             parent::init();
 
@@ -202,7 +203,7 @@ it cannot be removed for safety reasons.
 Suppose you have a method that converts DataSet into JSON. Ability to add
 conditions is your way to specify which records to operate on::
 
-    function myexport(\Atk4\Data\Model $m, $fields)
+    public function myexport(\Atk4\Data\Model $m, $fields)
     {
         return json_encode($m->export($fields));
     }
@@ -278,7 +279,8 @@ like this::
     {
         public $table = 'user';
 
-        function init(): void {
+        protected function init(): void
+        {
             parent::init();
 
             $this->addField('username');

@@ -133,13 +133,21 @@ Remember that it had nothing to do with your database structure, right?
 
 A code to declare a model::
 
-    class Model_User extends \Atk4\Data\Model { }
+    class Model_User extends \Atk4\Data\Model
+    {
+    }
 
-    class Model_Client extends Model_User { }
+    class Model_Client extends Model_User
+    {
+    }
 
-    class Model_Admin extends Model_User { }
+    class Model_Admin extends Model_User
+    {
+    }
 
-    class Model_Order extends \Atk4\Data\Model { }
+    class Model_Order extends \Atk4\Data\Model
+    {
+    }
 
 Domain Model Methods
 --------------------
@@ -159,8 +167,10 @@ about object inheritance.
 
 Code::
 
-    class Model_Client extends Model_User {
-        public function sendPasswordReminder() {
+    class Model_Client extends Model_User
+    {
+        public function sendPasswordReminder()
+        {
             mail($this->get('email'), 'Your password is: ' . $this->get('password'));
         }
     }
@@ -200,8 +210,10 @@ behavior.
 
 Code to declare fields::
 
-    class Model_Order extends \Atk4\Data\Model {
-        protected function init(): void {
+    class Model_Order extends \Atk4\Data\Model
+    {
+        protected function init(): void
+        {
             parent::init();
 
             $this->addField('description');
@@ -231,16 +243,20 @@ work from a specific record, but more on that later.
 
 Code (add inside `init()`)::
 
-    class Model_Client extends Model_User {
-        protected function init(): void {
+    class Model_Client extends Model_User
+    {
+        protected function init(): void
+        {
             parent::init();
 
             $this->hasMany('Order', ['model' => [Model_Order::class]]);
         }
     }
 
-    class Model_Order extends \Atk4\Data\Model {
-        protected function init(): void {
+    class Model_Order extends \Atk4\Data\Model
+    {
+        protected function init(): void
+        {
             parent::init();
 
             $this->hasOne('Client', ['model' => [Model_Client::class]]);
@@ -311,8 +327,10 @@ This is, however, a good point for you to write the initial batch of the code.
 
 Code::
 
-    class Model_User extends \Atk4\Data\Model {
-        protected function init(): void {
+    class Model_User extends \Atk4\Data\Model
+    {
+        protected function init(): void
+        {
             parent::init();
 
             $this->addField('password');
@@ -331,8 +349,10 @@ Persistence Hooks
 Hooks can help you perform operations when object is being persisted::
 
 
-    class Model_User extends \Atk4\Data\Model {
-        protected function init(): void {
+    class Model_User extends \Atk4\Data\Model
+    {
+        protected function init(): void
+        {
             parent::init();
 
             // add fields here
@@ -486,6 +506,7 @@ The actual database operation(s) might look like this on SQL database:
 While with MongoDB, the query could be different::
 
     $ids = collections.client.find({'is_vip': true}).field('id');
+
     return collections.order.find({'user_id': $ids}).count();
 
 Finally the code above will work even if you use a simple Array as a data source::
