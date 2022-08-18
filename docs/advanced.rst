@@ -320,66 +320,19 @@ In case you want $m->delete() to perform soft-delete for you - this can also be
 achieved through a pretty simple controller. In fact I'm reusing the one from
 before and just slightly modifying it::
 
-    class ControllerSoftDelete {
-        use \Atk4\Core\InitializerTrait {
-            init as private _init;
-        }
-        use \Atk4\Core\TrackableTrait;
-
+    class ControllerSoftDelete2 extends ControllerSoftDelete {
         protected function init(): void {
-            $this->_init();
+            parent::init();
 
-            if(property_exists($this->getOwner(), 'no_soft_delete')) {
-                return;
-            }
-
-            $this->getOwner()->addField('is_deleted', ['type' => 'boolean']);
-
-            if (isset($this->getOwner()->deleted_only)) {
-                $this->getOwner()->addCondition('is_deleted', true);
-                $this->getOwner()->addMethod('restore', \Closure::fromCallable([$this, 'restore']));
-            } else {
-                $this->getOwner()->addCondition('is_deleted', false);
-                $this->getOwner()->onHook(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'softDelete']), null, 100);
-            }
+            $this->getOwner()->onHook(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'softDelete']), null, 100);
         }
 
         public function softDelete(Model $m) {
-            $m->assertIsLoaded();
-
-            $id = $m->getId();
-
-            $reloadAfterSaveBackup = $m->getModel()->reloadAfterSave;
-            try {
-                $m->getModel()->reloadAfterSave = false;
-                $m->save(['is_deleted' => true])->unload();
-            } finally {
-                $m->getModel()->reloadAfterSave = $reloadAfterSaveBackup;
-            }
+            parent::softDelete();
 
             $m->hook(Model::HOOK_AFTER_DELETE);
 
             $m->breakHook(false); // this will cancel original delete()
-        }
-
-        public function restore(Model $m) {
-            $m->assertIsLoaded();
-
-            $id = $m->getId();
-            if ($m->hook('beforeRestore') === false) {
-                return $m;
-            }
-
-            $reloadAfterSaveBackup = $m->getModel()->reloadAfterSave;
-            try {
-                $m->getModel()->reloadAfterSave = false;
-                $m->save(['is_deleted' => false])->unload();
-            } finally {
-                $m->getModel()->reloadAfterSave = $reloadAfterSaveBackup;
-            }
-
-            $m->hook('afterRestore', [$id]);
-            return $m;
         }
     }
 
