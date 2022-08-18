@@ -39,13 +39,6 @@ class Model_Item extends Model
 
         $this->addField('is_deleted', ['type' => 'boolean', 'nullable' => false, 'default' => false]);
         $this->addCondition('is_deleted', false);
-        $this->onHook(Model::HOOK_BEFORE_DELETE, function (Model $entity) {
-            $softDeleteController = new ControllerSoftDelete();
-            $softDeleteController->softDelete($entity);
-
-            $entity->hook(Model::HOOK_AFTER_DELETE);
-            $entity->breakHook(false); // this will cancel original Model::delete()
-        });
     }
 }
 class Model_Item2 extends Model
@@ -181,15 +174,6 @@ class RandomTest extends TestCase
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => null, 'is_deleted' => false],
                 2 => ['id' => 2, 'name' => 'Michael', 'parent_item_id' => null, 'is_deleted' => false],
-            ],
-        ], $this->getDb());
-
-        $entity = $m->loadBy('name', 'Michael');
-        $entity->delete();
-        $this->assertEquals([
-            'item' => [
-                1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => null, 'is_deleted' => false],
-                2 => ['id' => 2, 'name' => 'Michael', 'parent_item_id' => null, 'is_deleted' => true],
             ],
         ], $this->getDb());
     }
