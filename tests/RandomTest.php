@@ -40,6 +40,7 @@ class Model_Item extends Model
             ->addTitle();
 
         $this->initSoftDelete();
+
     }
 }
 class Model_Item2 extends Model
@@ -75,8 +76,7 @@ class Model_Item3 extends Model
     }
 }
 
-trait ModelSoftDeleteTrait
-{
+trait ModelSoftDeleteTrait {
     protected function initSoftDelete(): void
     {
         $this->addField('is_deleted', ['type' => 'boolean', 'nullable' => false, 'default' => false]);
@@ -91,10 +91,8 @@ trait ModelSoftDeleteTrait
     }
 }
 
-class ControllerSoftDelete
-{
-    protected function init(): void
-    {
+class ControllerSoftDelete {
+    protected function init(): void {
         // example broken for clone "Object cannot be cloned with hook bound to a different object than this"
         // TODO remove this code from docs, hard to fix, controller is not meant to be added this way to model
         throw new \Error();
@@ -121,8 +119,7 @@ class ControllerSoftDelete
         }
     }
 
-    public function softDelete(Model $entity): void
-    {
+    public function softDelete(Model $entity): void {
         $entity->assertIsLoaded();
 
         $this->invokeCallbackWithoutUndeletedCondition($entity->getModel(), function () use ($entity): void {
@@ -136,8 +133,7 @@ class ControllerSoftDelete
         });
     }
 
-    public function restore(Model $entity): void
-    {
+    public function restore(Model $entity): void {
         $entity->assertIsLoaded();
 
         $this->invokeCallbackWithoutUndeletedCondition($entity->getModel(), function () use ($entity): void {
