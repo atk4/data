@@ -256,7 +256,8 @@ of References.
 Your init() method for a Field_Currency might look like this::
 
 
-    function init(): void {
+    protected function init(): void
+    {
         parent::init();
 
         $this->neverPersist = true;
@@ -456,9 +457,11 @@ of the result-set.
 There are two approaches to deal with this problem. The first involves disabling
 after-save reloading::
 
-    function archive() {
+    public function archive()
+    {
         $this->reloadAfterSave = false;
         $this->set('is_archived', true);
+
         return $this;
     }
 
@@ -467,10 +470,11 @@ disabling reload is a hack to get your record into the database safely.
 
 The other, more appropriate option is to re-use a vanilla Order record::
 
-    function archive() {
+    public function archive()
+    {
         $this->save(); // just to be sure, no dirty stuff is left over
 
-        $archive = (new static());
+        $archive = new static();
         $archive = $archive->load($this->getId());
         $archive->set('is_archived', true);
 
@@ -512,7 +516,8 @@ You can use several designs. I will create a method inside my application class
 to load records from two persistencies that are stored inside properties of my
 application::
 
-    function loadQuick($class, $id) {
+    public function loadQuick($class, $id)
+    {
         // first, try to load it from MemCache
         $m = (clone $class)->setPersistence($this->mdb)->tryLoad($id);
 

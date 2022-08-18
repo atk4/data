@@ -125,8 +125,10 @@ Agile Data was designed in a way where all of your code can rely ONLY on model o
 This next example builds a complex "Job Profitability Report" by only relying on Model logic:
 
 ``` php
-class JobReport extends Job {
-    function init(): void {
+class JobReport extends Job
+{
+    protected function init(): void
+    {
         parent::init();
 
         // Invoice contains Lines that may relevant to this job
@@ -359,10 +361,12 @@ If you have enjoyed those examples and would like to try them yourself, continue
 Agile Data uses vendor-independent and lightweight `Model` class to describe your business entities:
 
 ``` php
-class Client extends \Atk4\Data\Model {
+class Client extends \Atk4\Data\Model
+{
     public $table = 'client';
 
-    function init(): void {
+    protected function init(): void
+    {
         parent::init();
 
         $this->addField('name');
@@ -580,7 +584,8 @@ namespace my;
 class User extends \Atk4\Data\Model
 {
     public $table = 'user';
-    function init(): void
+
+    protected function init(): void
     {
         parent::init();
 

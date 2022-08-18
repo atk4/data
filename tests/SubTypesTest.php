@@ -127,6 +127,7 @@ class StTransaction_TransferOut extends StGenericTransaction
     protected function init(): void
     {
         parent::init();
+
         $this->hasOne('link_id', ['model' => [StTransaction_TransferIn::class]]);
 
         // $this->join('transaction', 'linked_transaction');
@@ -140,6 +141,7 @@ class StTransaction_TransferIn extends StGenericTransaction
     protected function init(): void
     {
         parent::init();
+
         $this->hasOne('link_id', ['model' => [StTransaction_TransferOut::class]]);
     }
 }

@@ -13,6 +13,7 @@ class Person extends Model
     protected function init(): void
     {
         parent::init();
+
         $this->addField('name');
         $this->addField('surname');
         $this->addField('gender', ['enum' => ['M', 'F']]);

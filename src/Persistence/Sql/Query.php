@@ -47,7 +47,7 @@ abstract class Query extends Expression
      *
      * You can use $q->dsql() for subqueries. Subqueries will be wrapped in
      * brackets.
-     *  $q->field( $q->dsql()->table('x')... , 'alias');
+     *  $q->field( $q->dsql()->table('x')..., 'alias');
      *
      * If you need to use funky name for the field (e.g, one containing
      * a dot or a space), you should wrap it into expression:
@@ -577,7 +577,7 @@ abstract class Query extends Expression
                     return '1 = 1'; // always true
                 }
 
-                $value = '(' . implode(', ', array_map(function ($v) { return $this->consume($v); }, $value)) . ')';
+                $value = '(' . implode(', ', array_map(fn ($v) => $this->consume($v), $value)) . ')';
 
                 return $field . ' ' . $cond . ' ' . $value;
             }

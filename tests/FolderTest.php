@@ -14,6 +14,7 @@ class Folder extends Model
     protected function init(): void
     {
         parent::init();
+
         $this->addField('name');
 
         $this->hasMany('SubFolder', ['model' => [self::class], 'theirField' => 'parent_id'])

@@ -10,7 +10,7 @@ Model
 Probably the most significant class in ATK Data - Model - acts as a Parent for all your
 entity classes::
 
-   class User extends \Atk4\Data\Model
+    class User extends \Atk4\Data\Model
 
 You must define individual classes for all your business entities. Other frameworks may rely
 on XML or annotations, in ATK everything is defined inside your "Model" class through
@@ -19,15 +19,15 @@ pure PHP (See Initialization below)
 Once you create instance of your model class, it can be recycled. With a single
 object you can load/unload individual records (See Single record Operations below)::
 
-   $m = new User($db);
+    $m = new User($db);
 
-   $m = $m->load(3);
-   $m->set('note', 'just updating');
-   $m->save();
-   $m->unload();
+    $m = $m->load(3);
+    $m->set('note', 'just updating');
+    $m->save();
+    $m->unload();
 
-   $m = $m->load(8);
-   ....
+    $m = $m->load(8);
+    ...
 
 and even perform operations on multiple records (See `Persistence Actions` below).
 
@@ -57,8 +57,8 @@ Model class can be seen as a "gateway" between your code and many other features
 
 For example - you may define fields and relations for the model::
 
-   $model->addField('age', ['type' => 'integer']);
-   $model->hasMany('Children', ['model' => [Person::class]]);
+    $model->addField('age', ['type' => 'integer']);
+    $model->hasMany('Children', ['model' => [Person::class]]);
 
 Methods `addField` and `hasMany` will ultimatelly create and link model with a corresponding
 `Field` object and `Reference` object. Those classes contain the logic, but in 95% of the use-cases,
@@ -69,13 +69,13 @@ Model object = Data Set
 From the moment when you create instance of your model class, it represents a DataSet - set of records
 that share some common traits::
 
-   $allUsers = new User($db); // John, Susan, Leo, Bill, Karen
+    $allUsers = new User($db); // John, Susan, Leo, Bill, Karen
 
 Certain operations may "shrink" this set, such as adding conditions::
 
-   $maleUsers = $allUsers->addCondition('gender', 'M');
+    $maleUsers = $allUsers->addCondition('gender', 'M');
 
-   send_email_to_users($maleUsers);
+    send_email_to_users($maleUsers);
 
 This essentially filters your users without fetching them from the database server. In my example,
 when I pass `$maleUsers` to the method, no records are loaded yet from the database. It is up to
@@ -92,7 +92,7 @@ Model object = meta information
 By design, Model object does not have direct knowledge of higher level objects or specific
 implementations. Still - Model will be a good place to deposit some meta-information::
 
-   $model->addField('age', ['ui' => ['caption' => 'Put your age here']]);
+    $model->addField('age', ['ui' => ['caption' => 'Put your age here']]);
 
 Model and Field class will simply store the "ui" property which may (or may not) be used by ATK UI
 component or some add-on.
@@ -102,17 +102,17 @@ Domain vs Persistence
 ---------------------
 When you declare a model Field you can also store some persistence-related meta-information::
 
-   // override how your persistence formats date field
-   $model->addField('date_of_birth', ['type' => 'date', 'persistence' => ['format' => 'Ymd']]);
+    // override how your persistence formats date field
+    $model->addField('date_of_birth', ['type' => 'date', 'persistence' => ['format' => 'Ymd']]);
 
-   // declare field which is not saved
-   $model->addField('secret', ['neverPersist' => true]);
+    // declare field which is not saved
+    $model->addField('secret', ['neverPersist' => true]);
 
-   // rellocate into a different field
-   $model->addField('old_field', ['actual' => 'new_field']);
+    // rellocate into a different field
+    $model->addField('old_field', ['actual' => 'new_field']);
 
-   // or even into a different table
-   $model->join('new_table')->addField('extra_field');
+    // or even into a different table
+    $model->join('new_table')->addField('extra_field');
 
 Model also has a property `$table`, which indicate name of default table/collection/file to be
 used by persistence. (Name of property is decided to avoid beginner confusion)
@@ -123,19 +123,21 @@ Good naming for a Model
 Some parts of this documentation were created years ago and may use class notation: `Model_User`.
 We actually recommend you to use namespaces instead::
 
-   namespace yourapp\Model;
+    namespace yourapp\Model;
 
-   use \Atk4\Data\Model;
+    use \Atk4\Data\Model;
 
-   class User extends Model {
-      function init(): void {
-         parent::init();
+    class User extends Model
+    {
+        protected function init(): void
+        {
+            parent::init();
 
-         $this->addField('name');
+            $this->addField('name');
 
-         $this->hasMany('Invoices', ['model' => [Invoice::class]]);
-      }
-   }
+            $this->hasMany('Invoices', ['model' => [Invoice::class]]);
+        }
+    }
 
 PHP does not have a "class" type, so `Invoice::class` will translate into a string "yourapp\Model\Invoice"
 and is a most efficient way to specify related class name.
@@ -154,7 +156,8 @@ Persistence object. It is commonly used to declare fields, conditions, relations
 
     class Model_User extends Atk4\Data\Model
     {
-        function init(): void {
+        protected function init(): void
+        {
             parent::init();
 
             $this->addField('name');
@@ -164,46 +167,46 @@ Persistence object. It is commonly used to declare fields, conditions, relations
 
 You may safely rely on `$this->getPersistence()` result to make choices::
 
-   if ($this->getPersistence() instanceof \Atk4\Data\Persistence\Sql) {
-      // Calculating on SQL server is more efficient!!
-      $this->addExpression('total', ['expr' => '[amount] + [vat]']);
-   } else {
-      // Fallback
-      $this->addCalculatedField('total', ['expr' => function ($m) {
-         return $m->get('amount') + $m->get('vat');
-      }, 'type' => 'float']);
-   }
+    if ($this->getPersistence() instanceof \Atk4\Data\Persistence\Sql) {
+        // Calculating on SQL server is more efficient!!
+        $this->addExpression('total', ['expr' => '[amount] + [vat]']);
+    } else {
+        // Fallback
+        $this->addCalculatedField('total', ['expr' => function ($m) {
+            return $m->get('amount') + $m->get('vat');
+        }, 'type' => 'float']);
+    }
 
 To invoke code from `init()` methods of ALL models (for example soft-delete logic),
 you use Persistence's "afterAdd" hook. This will not affect ALL models but just models
 which are associated with said persistence::
 
-   $db->onHook(Persistence::HOOK_AFTER_ADD, function ($p, $m) use ($acl) {
-      $fields = $m->getFields();
+    $db->onHook(Persistence::HOOK_AFTER_ADD, function ($p, $m) use ($acl) {
+        $fields = $m->getFields();
 
-      $acl->disableRestrictedFields($fields);
-   });
+        $acl->disableRestrictedFields($fields);
+    });
 
-   $invoice = new Invoice($db);
+    $invoice = new Invoice($db);
 
 Fields
 ------
 Each model field is represented by a Field object::
 
-   $model->addField('name');
+    $model->addField('name');
 
-   var_dump($model->getField('name'));
+    var_dump($model->getField('name'));
 
 Other persistence framework will use "properties", because individual objects may impact
 performance. In ATK Data this is not an issue, because "Model" is re-usable::
 
-   foreach (new User($db) as $user) {
-      // will be the same object every time!!
-      var_dump($user->getField['name']);
+    foreach (new User($db) as $user) {
+        // will be the same object every time!!
+        var_dump($user->getField['name']);
 
-      // this is also the same object every time!!
-      var_dump($user);
-   }
+        // this is also the same object every time!!
+        var_dump($user);
+    }
 
 Instead, Field handles many very valuable operations which would otherwise fall on the
 shoulders of developer (Read more here :php:class:`Field`)
@@ -215,11 +218,11 @@ The fields are implemented on top of Containers from Agile Core.
 
 Second argument to addField() will contain a seed for the Field class::
 
-   $this->addField('surname', ['default' => 'Smith']);
+    $this->addField('surname', ['default' => 'Smith']);
 
 You may also specify your own Field implementation::
 
-   $this->addField('amount_and_currency', [MyAmountCurrencyField::class]);
+    $this->addField('amount_and_currency', [MyAmountCurrencyField::class]);
 
 Read more about :php:class:`Field`
 
@@ -242,7 +245,7 @@ Read-only Fields
 ^^^^^^^^^^^^^^^^
 Although you may make any field read-only::
 
-   $this->addField('name', ['readOnly' => true]);
+    $this->addField('name', ['readOnly' => true]);
 
 There are two methods for adding dynamically calculated fields.
 
@@ -250,20 +253,20 @@ There are two methods for adding dynamically calculated fields.
 
 Defines a field as server-side expression (e.g. SQL)::
 
-   $this->addExpression('total', ['expr' => '[amount] + [vat]']);
+    $this->addExpression('total', ['expr' => '[amount] + [vat]']);
 
 The above code is executed on the server (SQL) and can be very powerful.
 You must make sure that expression is valid for current `$this->getPersistence()`::
 
-   $product->addExpression('discount', ['expr' => $this->refLink('category_id')->fieldQuery('default_discount')]);
-   // expression as a sub-select from referenced model (Category) imported as a read-only field
-   // of $product model
+    $product->addExpression('discount', ['expr' => $this->refLink('category_id')->fieldQuery('default_discount')]);
+    // expression as a sub-select from referenced model (Category) imported as a read-only field
+    // of $product model
 
-   $product->addExpression('total', ['expr' => 'if ([is_discounted], ([amount] + [vat])*[discount], [amount] + [vat])']);
-   // new "total" field now contains complex logic, which is executed in SQL
+    $product->addExpression('total', ['expr' => 'if ([is_discounted], ([amount] + [vat])*[discount], [amount] + [vat])']);
+    // new "total" field now contains complex logic, which is executed in SQL
 
-   $product->addCondition('total', '<', 10);
-   // filter products that cost less than 10.00 (including discount)
+    $product->addCondition('total', '<', 10);
+    // filter products that cost less than 10.00 (including discount)
 
 
 For the times when you are not working with SQL persistence, you can calculate field in PHP.
@@ -273,12 +276,12 @@ For the times when you are not working with SQL persistence, you can calculate f
 Creates new field object inside your model. Field value will be automatically
 calculated by your callback method right after individual record is loaded by the model::
 
-   $this->addField('term', ['caption' => 'Repayment term in months', 'default' => 36]);
-   $this->addField('rate', ['caption' => 'APR %', 'default' => 5]);
+    $this->addField('term', ['caption' => 'Repayment term in months', 'default' => 36]);
+    $this->addField('rate', ['caption' => 'APR %', 'default' => 5]);
 
-   $this->addCalculatedField('interest', ['expr' => function ($m) {
-      return $m->calculateInterest();
-   }, 'type' => 'float']);
+    $this->addCalculatedField('interest', ['expr' => function ($m) {
+        return $m->calculateInterest();
+    }, 'type' => 'float']);
 
 .. important:: always use argument `$m` instead of `$this` inside your callbacks. If model is to be
    `clone`d, the code relying on `$this` would reference original model, but the code using
@@ -286,17 +289,19 @@ calculated by your callback method right after individual record is loaded by th
 
 This can also be useful for calculating relative times::
 
-   class MyModel extends Model {
-      use HumanTiming; // see https://stackoverflow.com/questions/2915864/php-how-to-find-the-time-elapsed-since-a-date-time
+    class MyModel extends Model
+    {
+        use HumanTiming; // see https://stackoverflow.com/questions/2915864/php-how-to-find-the-time-elapsed-since-a-date-time
 
-      function init(): void {
-         parent::init();
+        protected function init(): void
+        {
+            parent::init();
 
-         $this->addCalculatedField('event_ts_human_friendly', ['expr' => function ($m) {
-            return $this->humanTiming($m->get('event_ts'));
-         }]);
-      }
-   }
+            $this->addCalculatedField('event_ts_human_friendly', ['expr' => function ($m) {
+                return $this->humanTiming($m->get('event_ts'));
+            }]);
+        }
+    }
 
 
 Actions
@@ -304,37 +309,39 @@ Actions
 Another common thing to define inside :php:meth:`Model::init()` would be
 a user invokable actions::
 
-   class User extends Model {
-      function init(): void {
-         parent::init();
+    class User extends Model
+    {
+        protected function init(): void
+        {
+            parent::init();
 
-         $this->addField('name');
-         $this->addField('email');
-         $this->addField('password');
+            $this->addField('name');
+            $this->addField('email');
+            $this->addField('password');
 
-         $this->addUserAction('send_new_password');
-      }
+            $this->addUserAction('send_new_password');
+        }
 
-      function send_new_password()
-      {
-         // .. code here
+        public function send_new_password()
+        {
+            // .. code here
 
-         $this->save(['password' => .. ]);
+            $this->save(['password' => .. ]);
 
-         return 'generated and sent password to ' . $m->get('name');
-      }
-   }
+            return 'generated and sent password to ' . $m->get('name');
+        }
+    }
 
 With a method alone, you can generate and send passwords::
 
-   $user = $user->load(3);
-   $user->send_new_password();
+    $user = $user->load(3);
+    $user->send_new_password();
 
 but using `$this->addUserAction()` exposes that method to the ATK UI wigets,
 so if your admin is using `Crud`, a new button will be available allowing
 passwords to be generated and sent to the users::
 
-   Crud::addTo($app)->setModel(new User($app->db));
+    Crud::addTo($app)->setModel(new User($app->db));
 
 Read more about :php:class:`Model\UserAction`
 
@@ -353,21 +360,21 @@ Validation
 Validation is an extensive topic, but the simplest use-case would be through
 a hook::
 
-   $this->addField('name');
+    $this->addField('name');
 
-   $this->onHookShort(Model::HOOK_VALIDATE, function () {
-      if ($this->get('name') === 'C#') {
-         return ['name' => 'No sharp objects are allowed'];
-      }
-   });
+    $this->onHookShort(Model::HOOK_VALIDATE, function () {
+        if ($this->get('name') === 'C#') {
+            return ['name' => 'No sharp objects are allowed'];
+        }
+    });
 
 Now if you attempt to save object, you will receive :php:class:`ValidationException`::
 
-   $model->set('name', 'Swift');
-   $model->saveAndUnload(); // all good
+    $model->set('name', 'Swift');
+    $model->saveAndUnload(); // all good
 
-   $model->set('name', 'C#');
-   $model->saveAndUnload(); // exception here
+    $model->set('name', 'C#');
+    $model->saveAndUnload(); // exception here
 
 
 Other Uses
@@ -380,19 +387,22 @@ Inheritance
 -----------
 ATK Data models are really good for structuring hierarchically. Here is example::
 
-   class VipUser extends User {
-      function init(): void {
-         parent::init();
+    class VipUser extends User
+    {
+        protected function init(): void
+        {
+            parent::init();
 
-         $this->addCondition('purchases', '>', 1000);
+            $this->addCondition('purchases', '>', 1000);
 
-         $this->addUserAction('send_gift');
-      }
+            $this->addUserAction('send_gift');
+        }
 
-      function send_gift() {
-          ...
-      }
-   }
+        public function send_gift()
+        {
+            ...
+        }
+    }
 
 This introduces a new business object, which is a sub-set of User. The new class will
 inherit all the fields, methods and actions of "User" class but will introduce one new
@@ -405,24 +415,24 @@ Associating Model with Database
 After talking extensively about model definition, lets discuss how model is associated
 with persistence. In the most basic form, model is associated with persistence like this::
 
-   $m = new User($db);
+    $m = new User($db);
 
 If model was created without persistence :php:meth:`Model::init()` will not fire. You can
 explicitly associate model with persistence like this::
 
-   $m = new User();
+    $m = new User();
 
-   // ....
+    // ....
 
-   $m->setPersistence($db); // links with persistence
+    $m->setPersistence($db); // links with persistence
 
 Multiple models can be associated with the same persistence. Here are also some examples
 of static persistence::
 
-   $m = new Model(new Persistence\Static_(['john', 'peter', 'steve']);
+    $m = new Model(new Persistence\Static_(['john', 'peter', 'steve']);
 
-   $m = $m->load(1);
-   echo $m->get('name'); // peter
+    $m = $m->load(1);
+    echo $m->get('name'); // peter
 
 See :php:class:`Persistence\\Static_`
 
@@ -441,7 +451,7 @@ If $table property is set, then your persistence driver will use it as default
 table / collection when loading data. If you omit the table, you should specify
 it when associating model with database::
 
-   $m = new User($db, 'user');
+    $m = new User($db, 'user');
 
 This also overrides current table value.
 
@@ -463,6 +473,7 @@ Populating Data
         $entity = $m->createEntity();
         $entity->setMulti($row);
         $entity->save();
+
         return $entity;
 
     The main goal for insert() method is to be as fast as possible, while still
@@ -569,7 +580,7 @@ When you modify active record, it keeps the original value in the $dirty array:
     Return true if one or multiple fields contain unsaved changes (dirty)::
 
         if ($m->isDirty(['name', 'surname'])) {
-           $m->set('full_name', $m->get('name') . ' ' . $m->get('surname'));
+            $m->set('full_name', $m->get('name') . ' ' . $m->get('surname'));
         }
 
     When the code above is placed in beforeSave hook, it will only be executed

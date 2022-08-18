@@ -63,6 +63,7 @@ class DcQuote extends Model
     protected function init(): void
     {
         parent::init();
+
         $this->hasOne('client_id', ['model' => [DcClient::class]]);
 
         $this->hasMany('Lines', ['model' => [DcQuoteLine::class], 'theirField' => 'parent_id'])
@@ -81,6 +82,7 @@ class DcInvoiceLine extends Model
     protected function init(): void
     {
         parent::init();
+
         $this->hasOne('parent_id', ['model' => [DcInvoice::class]]);
 
         $this->addField('name');
@@ -127,6 +129,7 @@ class DcPayment extends Model
     protected function init(): void
     {
         parent::init();
+
         $this->hasOne('client_id', ['model' => [DcClient::class]]);
 
         $this->hasOne('invoice_id', ['model' => [DcInvoice::class]]);

@@ -536,10 +536,12 @@ Additionally you can pass tableAlias as second argument into :php:meth:`Model::r
 or :php:meth:`Model::refLink()`. This can help you in creating a recursive models
 that relate to itself. Here is example::
 
-    class Model_Item3 extends \Atk4\Data\Model {
+    class Model_Item3 extends \Atk4\Data\Model
+    {
         public $table = 'item';
 
-        function init(): void {
+        protected function init(): void
+        {
             parent::init();
 
             $m = new Model_Item3();
@@ -562,13 +564,13 @@ Loading model like that can produce a pretty sophisticated query:
     select
         `pp`.`id`, `pp`.`name`, `pp`.`age`, `pp_i`.`parent_item_id`,
         (select `parent`.`name`
-         from `item` `parent`
-         left join `item2` as `parent_i` on `parent_i`.`item_id` = `parent`.`id`
-         where `parent`.`id` = `pp_i`.`parent_item_id`
-         ) `parent_item`,
+        from `item` `parent`
+        left join `item2` as `parent_i` on `parent_i`.`item_id` = `parent`.`id`
+        where `parent`.`id` = `pp_i`.`parent_item_id`
+        ) `parent_item`,
         (select sum(`child`.`age`) from `item` `child`
-         left join `item2` as `child_i` on `child_i`.`item_id` = `child`.`id`
-         where `child_i`.`parent_item_id` = `pp`.`id`
+        left join `item2` as `child_i` on `child_i`.`item_id` = `child`.`id`
+        where `child_i`.`parent_item_id` = `pp`.`id`
         ) `child_age`, `pp`.`id` `_i`
     from `item` `pp`left join `item2` as `pp_i` on `pp_i`.`item_id` = `pp`.`id`
 
@@ -600,19 +602,26 @@ Agile Data takes extra care to help you link your new records with new related
 entities.
 Consider the following two models::
 
-    class Model_User extends \Atk4\Data\Model {
+    class Model_User extends \Atk4\Data\Model
+    {
         public $table = 'user';
-        function init(): void {
+
+        protected function init(): void
+        {
             parent::init();
+
             $this->addField('name');
 
             $this->hasOne('contact_id', ['model' => [Model_Contact::class]]);
         }
     }
 
-    class Model_Contact extends \Atk4\Data\Model {
+    class Model_Contact extends \Atk4\Data\Model
+    {
         public $table = 'contact';
-        function init(): void {
+
+        protected function init(): void
+        {
             parent::init();
 
             $this->addField('address');

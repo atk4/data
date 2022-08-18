@@ -33,8 +33,8 @@ The simplest way to explain DSQL is by example::
 
     $query = $connection->dsql();
     $query->table('employees')
-          ->where('birth_date', '1961-05-02')
-          ->field('count(*)');
+        ->where('birth_date', '1961-05-02')
+        ->field('count(*)');
     echo 'Employees born on May 2, 1961: ' . $query->getOne();
 
 The above code will execute the following query:
@@ -95,9 +95,9 @@ You can specify DSQL as a project or module dependency in composer.json:
 .. code-block:: js
 
     {
-      "require": {
-         "atk4/dsql": "*"
-      }
+        "require": {
+            "atk4/dsql": "*"
+        }
     }
 
 After installing, you need to require Composer's autoloader in your PHP file::

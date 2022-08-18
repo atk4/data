@@ -165,8 +165,10 @@ Transactions
 
 This method allows you to execute code within a 'START TRANSACTION / COMMIT' block::
 
-    class Invoice {
-        function applyPayment(Payment $p) {
+    class Invoice
+    {
+        public function applyPayment(Payment $p)
+        {
             $this->getPersistence()->atomic(function () use ($p) {
                 $this->set('paid', true);
                 $this->save();
@@ -343,12 +345,15 @@ Depending on the statement you can also use your statement to retrieve data::
 This can be handy if you wish to create a method for your Model to abstract away
 the data::
 
-    class Client extends \Atk4\Data\Model {
-        function init(): void {
+    class Client extends \Atk4\Data\Model
+    {
+        protected function init(): void
+        {
             ...
         }
 
-        function getReportData($arg) {
+        public function getReportData($arg)
+        {
             $this->assertIsLoaded();
 
             return $this->expr('call get_client_report_data([client_id, arg])', [
@@ -360,12 +365,15 @@ the data::
 
 Here is another example using PHP generator::
 
-    class Client extends \Atk4\Data\Model {
-        function init(): void {
+    class Client extends \Atk4\Data\Model
+    {
+        protected function init(): void
+        {
             ...
         }
 
-        function fetchReportData($arg) {
+        public function fetchReportData($arg)
+        {
             $this->assertIsLoaded();
 
             foreach ($this->expr('call get_client_report_data([client_id, arg])', [
@@ -386,9 +394,12 @@ as a Model Field
 any expression for your field query. You can use SQL stored function for data
 fetching like this::
 
-    class Category extends \Atk4\Data\Model {
+    class Category extends \Atk4\Data\Model
+    {
         public $table = 'category';
-        function init(): void {
+
+        protected function init(): void
+        {
             parent::init();
 
             $this->hasOne('parent_id', ['model' => [self::class]]);
@@ -414,11 +425,13 @@ Method :php:meth:`Persistence\Sql::action` and :php:meth:`Model::action`
 generates queries for most of model operations.  By re-defining this method,
 you can significantly affect the query building of an SQL model::
 
-    class CompanyProfit extends \Atk4\Data\Model {
+    class CompanyProfit extends \Atk4\Data\Model
+    {
         public $companyId = null; // inject company ID, which will act as a condition/argument
         public $readOnly  = true; // instructs rest of the app, that this model is read-only
 
-        function init(): void {
+        protected function init(): void
+        {
             parent::init();
 
             $this->addField('date_period');
@@ -453,11 +466,13 @@ A most convenient (although inefficient) way for stored procedures is to place
 output data inside a temporary table. You can perform an actual call to stored
 procedure inside Model::init() then set $table property to a temporary table::
 
-    class NominalReport extends \Atk4\Data\Model {
+    class NominalReport extends \Atk4\Data\Model
+    {
         public $table = 'temp_nominal_sheet';
         public $readOnly = true; // instructs rest of the app, that this model is read-only
 
-        function init(): void {
+        protected function init(): void
+        {
             parent::init();
 
             $res = $this->expr('call get_nominal_sheet([], [], \'2014-10-01\', \'2015-09-30\', 0)', [
@@ -479,11 +494,13 @@ as an Model Source
 
 Technically you can also specify expression as a $table property of your model::
 
-    class ClientReport extends \Atk4\Data\Model {
+    class ClientReport extends \Atk4\Data\Model
+    {
         public $table = null; // will be set in init()
         public $readOnly = true; // instructs rest of the app, that this model is read-only
 
-        function init(): void {
+        protected function init(): void
+        {
             parent::init();
 
             $this->init = $this->expr('call get_report_data()');
