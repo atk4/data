@@ -131,7 +131,7 @@ I will be looking to create the following fields:
 
 To implement the above, I'll create a new class::
 
-    class Controller_Audit {
+    class ControllerAudit {
         use \Atk4\Core\InitializerTrait {
             init as private _init;
         }
@@ -140,7 +140,7 @@ To implement the above, I'll create a new class::
     }
 
 TrackableTrait means that I'll be able to add this object inside model with
-``$model->add(new Controller_Audit())`` and that will automatically populate
+``$model->add(new ControllerAudit())`` and that will automatically populate
 $owner, and $app values (due to AppScopeTrait) as well as execute init() method,
 which I want to define like this::
 
@@ -148,14 +148,14 @@ which I want to define like this::
     protected function init(): void {
         $this->_init();
 
-        if(isset($this->getOwner()->no_audit)) {
+        if (isset($this->getOwner()->no_audit)) {
             return;
         }
 
         $this->getOwner()->addField('created_dts', ['type' => 'datetime', 'default' => new \DateTime()]);
 
         $this->getOwner()->hasOne('created_by_user_id', 'User');
-        if(isset($this->getApp()->user) && $this->getApp()->user->isLoaded()) {
+        if (isset($this->getApp()->user) && $this->getApp()->user->isLoaded()) {
             $this->getOwner()->getField('created_by_user_id')->default = $this->getApp()->user->getId();
         }
 
@@ -164,7 +164,7 @@ which I want to define like this::
         $this->getOwner()->addField('updated_dts', ['type' => 'datetime']);
 
         $this->getOwner()->onHook(Model::HOOK_BEFORE_UPDATE, function ($m, $data) {
-            if(isset($this->getApp()->user) && $this->getApp()->user->isLoaded()) {
+            if (isset($this->getApp()->user) && $this->getApp()->user->isLoaded()) {
                 $data['updated_by'] = $this->getApp()->user->getId();
             }
             $data['updated_dts'] = new \DateTime();
@@ -210,22 +210,22 @@ soft-delete controller for Agile Data (for educational purposes).
 
 Start by creating a class::
 
-    class Controller_SoftDelete {
+    class ControllerSoftDelete {
         use \Atk4\Core\InitializerTrait {
             init as private _init;
         }
         use \Atk4\Core\TrackableTrait;
 
-        function init(): void {
+        protected function init(): void {
             $this->_init();
 
-            if(property_exists($this->getOwner(), 'no_soft_delete')) {
+            if (property_exists($this->getOwner(), 'no_soft_delete')) {
                 return;
             }
 
             $this->getOwner()->addField('is_deleted', ['type' => 'boolean']);
 
-            if (property_exists($this->getOwner(), 'deleted_only')) {
+            if (isset($this->getOwner()->deleted_only)) {
                 $this->getOwner()->addCondition('is_deleted', true);
                 $this->getOwner()->addMethod('restore', \Closure::fromCallable([$this, 'restore']));
             } else {
@@ -234,7 +234,7 @@ Start by creating a class::
             }
         }
 
-        function softDelete(Model $m) {
+        public function softDelete(Model $m) {
             $m->assertIsLoaded();
 
             $id = $m->getId();
@@ -254,7 +254,7 @@ Start by creating a class::
             return $m;
         }
 
-        function restore(Model $m) {
+        public function restore(Model $m) {
             $m->assertIsLoaded();
 
             $id = $m->getId();
@@ -320,13 +320,13 @@ In case you want $m->delete() to perform soft-delete for you - this can also be
 achieved through a pretty simple controller. In fact I'm reusing the one from
 before and just slightly modifying it::
 
-    class Controller_SoftDelete {
+    class ControllerSoftDelete {
         use \Atk4\Core\InitializerTrait {
             init as private _init;
         }
         use \Atk4\Core\TrackableTrait;
 
-        function init(): void {
+        protected function init(): void {
             $this->_init();
 
             if(property_exists($this->getOwner(), 'no_soft_delete')) {
@@ -344,7 +344,7 @@ before and just slightly modifying it::
             }
         }
 
-        function softDelete(Model $m) {
+        public function softDelete(Model $m) {
             $m->assertIsLoaded();
 
             $id = $m->getId();
@@ -362,7 +362,7 @@ before and just slightly modifying it::
             $m->breakHook(false); // this will cancel original delete()
         }
 
-        function restore(Model $m) {
+        public function restore(Model $m) {
             $m->assertIsLoaded();
 
             $id = $m->getId();
@@ -408,7 +408,7 @@ to another user?
 With Agile Data you can create controller that will ensure that certain fields
 inside your model are unique::
 
-    class Controller_UniqueFields {
+    class ControllerUniqueFields {
         use \Atk4\Core\InitializerTrait {
             init as private _init;
         }
@@ -564,7 +564,7 @@ payment towards a most suitable invoice::
         // Prioritize older invoices
         $invoices->setOrder('date');
 
-        while($this->get('amount_due') > 0) {
+        while ($this->get('amount_due') > 0) {
             // see if any invoices match by 'reference'
             $invoice = $invoices->tryLoadBy('reference', $this->get('reference'));
 
@@ -648,19 +648,19 @@ I have declared those fields with `neverPersist` so they will never be used by
 persistence layer to load or save anything. Next I need a beforeSave handler::
 
     $this->onHookShort(Model::HOOK_BEFORE_SAVE, function () {
-        if($this->_isset('client_code') && !$this->_isset('client_id')) {
+        if ($this->_isset('client_code') && !$this->_isset('client_id')) {
             $cl = $this->refModel('client_id');
             $cl->addCondition('code', $this->get('client_code'));
             $this->set('client_id', $cl->action('field', ['id']));
         }
 
-        if($this->_isset('client_name') && !$this->_isset('client_id')) {
+        if ($this->_isset('client_name') && !$this->_isset('client_id')) {
             $cl = $this->refModel('client_id');
             $cl->addCondition('name', 'like', $this->get('client_name'));
             $this->set('client_id', $cl->action('field', ['id']));
         }
 
-        if($this->_isset('category') && !$this->_isset('category_id')) {
+        if ($this->_isset('category') && !$this->_isset('category_id')) {
             $c = $this->refModel('category_id');
             $c->addCondition($c->titleField, 'like', $this->get('category'));
             $this->set('category_id', $c->action('field', ['id']));
@@ -679,7 +679,7 @@ Fallback to default value
 You might wonder, with the lookup like that, how the default values will work?
 What if the user-specified entry is not found? Lets look at the code::
 
-    if($m->_isset('category') && !$m->_isset('category_id')) {
+    if ($m->_isset('category') && !$m->_isset('category_id')) {
         $c = $this->refModel('category_id');
         $c->addCondition($c->titleField, 'like', $m->get('category'));
         $m->set('category_id', $c->action('field', ['id']));
@@ -688,7 +688,7 @@ What if the user-specified entry is not found? Lets look at the code::
 So if category with a name is not found, then sub-query will return "NULL".
 If you wish to use a different value instead, you can create an expression::
 
-    if($m->_isset('category') && !$m->_isset('category_id')) {
+    if ($m->_isset('category') && !$m->_isset('category_id')) {
         $c = $this->refModel('category_id');
         $c->addCondition($c->titleField, 'like', $m->get('category'));
         $m->set('category_id', $this->expr('coalesce([], [])', [
@@ -737,11 +737,11 @@ Next both payment and lines need to be added after invoice is actually created,
 so::
 
     $this->onHookShort(Model::HOOK_AFTER_SAVE, function ($isUpdate) {
-        if($this->_isset('payment')) {
+        if ($this->_isset('payment')) {
             $this->ref('Payment')->insert($this->get('payment'));
         }
 
-        if($this->_isset('lines')) {
+        if ($this->_isset('lines')) {
             $this->ref('Line')->import($this->get('lines'));
         }
     });
