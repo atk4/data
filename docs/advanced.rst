@@ -234,44 +234,34 @@ Start by creating a class::
             }
         }
 
-        public function softDelete(Model $m) {
-            $m->assertIsLoaded();
+        public function softDelete(Model $entity) {
+            $entity->assertIsLoaded();
 
-            $id = $m->getId();
-            if ($m->hook('beforeSoftDelete') === false) {
-                return $m;
+            $id = $entity->getId();
+            if ($entity->hook('beforeSoftDelete') === false) {
+                return $entity;
             }
 
-            $reloadAfterSaveBackup = $m->getModel()->reloadAfterSave;
-            try {
-                $m->getModel()->reloadAfterSave = false;
-                $m->save(['is_deleted' => true])->unload();
-            } finally {
-                $m->getModel()->reloadAfterSave = $reloadAfterSaveBackup;
-            }
+            $entity->saveAndUnload(['is_deleted' => true]);
 
-            $m->hook('afterSoftDelete', [$id]);
-            return $m;
+            $entity->hook('afterSoftDelete', [$id]);
+
+            return $entity;
         }
 
-        public function restore(Model $m) {
-            $m->assertIsLoaded();
+        public function restore(Model $entity) {
+            $entity->assertIsLoaded();
 
-            $id = $m->getId();
-            if ($m->hook('beforeRestore') === false) {
-                return $m;
+            $id = $entity->getId();
+            if ($entity->hook('beforeRestore') === false) {
+                return $entity;
             }
 
-            $reloadAfterSaveBackup = $m->getModel()->reloadAfterSave;
-            try {
-                $m->getModel()->reloadAfterSave = false;
-                $m->save(['is_deleted' => false])->unload();
-            } finally {
-                $m->getModel()->reloadAfterSave = $reloadAfterSaveBackup;
-            }
+            $entity->saveAndUnload(['is_deleted' => false]);
 
-            $m->hook('afterRestore', [$id]);
-            return $m;
+            $entity->hook('afterRestore', [$id]);
+
+            return $entity;
         }
     }
 
