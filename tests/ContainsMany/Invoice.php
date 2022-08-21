@@ -7,8 +7,6 @@ namespace Atk4\Data\Tests\ContainsMany;
 use Atk4\Data\Model;
 
 /**
- * Invoice model.
- *
  * @property string $ref_no              @Atk4\Field()
  * @property float  $amount              @Atk4\Field()
  * @property Line   $lines               @Atk4\RefMany()

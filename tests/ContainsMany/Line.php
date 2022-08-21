@@ -7,8 +7,6 @@ namespace Atk4\Data\Tests\ContainsMany;
 use Atk4\Data\Model;
 
 /**
- * Invoice lines model.
- *
  * @property VatRate   $vat_rate_id       @Atk4\RefOne()
  * @property float     $price             @Atk4\Field()
  * @property float     $qty               @Atk4\Field()

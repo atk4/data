@@ -26,8 +26,6 @@ store extra fields there. In your code::
         }
     }
 
-(See also: http://nearly.guru/blog/data/disjoint-subtypes-in-php)
-
 As you implement single Account and multiple Transaction types, you want to relate
 both::
 

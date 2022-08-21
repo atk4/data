@@ -10,7 +10,7 @@ use Atk4\Data\Model;
 /**
  * The root scope object used in the Model::$scope property
  * All other conditions of the Model object are elements of the root scope
- * Scope elements are joined only using AND junction.
+ * Scope elements are joined always using AND junction.
  */
 class RootScope extends Model\Scope
 {
