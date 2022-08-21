@@ -174,13 +174,10 @@ class ConnectionTest extends TestCase
     {
         $c = new Persistence\Sql\Sqlite\Connection();
         $q = $c->expr('select (2 + 2)');
-
-        $this->assertSame(
-            'select (2 + 2)',
-            $q->render()[0]
-        );
+        $this->assertSame('select (2 + 2)', $q->render()[0]);
 
         $this->expectException(Persistence\Sql\Exception::class);
+        $this->expectExceptionMessage('DBAL connection is not set');
         $q->executeQuery();
     }
 }
