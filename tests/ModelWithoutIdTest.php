@@ -11,7 +11,8 @@ use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 
 class ModelWithoutIdTest extends TestCase
 {
-    public Model $m;
+    /** @var Model */
+    public $m;
 
     protected function setUp(): void
     {

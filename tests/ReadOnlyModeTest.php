@@ -10,7 +10,8 @@ use Atk4\Data\Schema\TestCase;
 
 class ReadOnlyModeTest extends TestCase
 {
-    public Model $m;
+    /** @var Model */
+    public $m;
 
     protected function setUp(): void
     {
