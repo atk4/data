@@ -68,9 +68,6 @@ There are two ways to link your model up with the persistence::
     Same as load() but will return null if record is not found::
 
         $m = $m->tryLoad(10);
-        $m->setMulti($data);
-
-        $m->save(); // will either create new record or update existing
 
 .. php:method:: unload
 
@@ -415,13 +412,11 @@ Start by creating a beforeSave handler for Order::
 
     $this->onHookShort(Model::HOOK_BEFORE_SAVE, function () {
         if ($this->isDirty('ref')) {
-            if (
-                (new static())
-                    ->addCondition('client_id', $this->get('client_id')) // same client
-                    ->addCondition($this->idField, '!=', $this->getId()) // has another order
-                    ->tryLoadBy('ref', $this->get('ref')) // with same ref
-                    !== null
-            ) {
+            $m = (new static())
+                ->addCondition('client_id', $this->get('client_id')) // same client
+                ->addCondition($this->idField, '!=', $this->getId()) // has another order
+                ->tryLoadBy('ref', $this->get('ref')) // with same ref
+            if ($m !== null) {
                 throw (new Exception('Order with ref already exists for this client'))
                     ->addMoreInfo('client', $this->get('client_id'))
                     ->addMoreInfo('ref', $this->get('ref'))

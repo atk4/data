@@ -10,8 +10,7 @@ use Atk4\Data\Schema\TestCase;
 
 class ReadOnlyModeTest extends TestCase
 {
-    /** @var Model */
-    public $m;
+    public Model $m;
 
     protected function setUp(): void
     {
@@ -35,30 +34,30 @@ class ReadOnlyModeTest extends TestCase
     public function testBasic(): void
     {
         $this->m->setOrder('name', 'asc');
-        $m = $this->m->tryLoadAny();
+        $m = $this->m->loadAny();
         $this->assertSame('John', $m->get('name'));
 
         $this->m->order = [];
         $this->m->setOrder('name', 'desc');
-        $m = $this->m->tryLoadAny();
+        $m = $this->m->loadAny();
         $this->assertSame('Sue', $m->get('name'));
 
         $this->assertSame([2 => 'Sue', 1 => 'John'], $this->m->getTitles());
     }
 
-    /**
-     * Read only model can be loaded just fine.
-     */
     public function testLoad(): void
     {
         $m = $this->m->load(1);
         $this->assertTrue($m->isLoaded());
     }
 
-    /**
-     * Model cannot be saved.
-     */
-    public function testLoadSave(): void
+    public function testInsert(): void
+    {
+        $this->expectException(Exception::class);
+        $this->m->insert(['name' => 'Joe']);
+    }
+
+    public function testSave(): void
     {
         $m = $this->m->load(1);
         $m->set('name', 'X');
@@ -67,29 +66,14 @@ class ReadOnlyModeTest extends TestCase
         $m->save();
     }
 
-    /**
-     * Insert should fail too.
-     */
-    public function testInsert(): void
+    public function testSaveAndUnload(): void
     {
-        $this->expectException(Exception::class);
-        $this->m->insert(['name' => 'Joe']);
-    }
-
-    /**
-     * Different attempt that should also fail.
-     */
-    public function testSave1(): void
-    {
-        $m = $this->m->tryLoadAny();
+        $m = $this->m->loadAny();
 
         $this->expectException(Exception::class);
         $m->saveAndUnload();
     }
 
-    /**
-     * Conditions should work fine.
-     */
     public function testLoadBy(): void
     {
         $m = $this->m->loadBy('name', 'Sue');

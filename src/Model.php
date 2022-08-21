@@ -9,6 +9,7 @@ use Atk4\Core\ContainerTrait;
 use Atk4\Core\DiContainerTrait;
 use Atk4\Core\DynamicMethodTrait;
 use Atk4\Core\Factory;
+use Atk4\Core\HookBreaker;
 use Atk4\Core\HookTrait;
 use Atk4\Core\InitializerTrait;
 use Atk4\Core\ReadableCaptionTrait;
@@ -769,7 +770,7 @@ class Model implements \IteratorAggregate
     {
         // set temporary hook to disable any normalization (null validation)
         $hookIndex = $this->getModel()->onHookShort(self::HOOK_NORMALIZE, static function () {
-            throw new \Atk4\Core\HookBreaker(false);
+            throw new HookBreaker(false);
         }, [], \PHP_INT_MIN);
         try {
             return $this->set($field, null);

@@ -262,7 +262,6 @@ class TypecastingTest extends TestCase
         date_default_timezone_set('Asia/Seoul');
 
         $m = new Model($this->db, ['table' => 'types']);
-
         $m->addField('date', ['type' => 'date']);
         $m->addField('datetime', ['type' => 'datetime']);
         $m->addField('time', ['type' => 'time']);
@@ -294,60 +293,33 @@ class TypecastingTest extends TestCase
         $this->assertEquals($dbData, $this->getDb());
     }
 
-    public function testTryLoad(): void
+    public function testLoad(): void
     {
         $this->setDb([
             'types' => [
-                [
-                    'date' => '2013-02-20',
-                ],
+                ['date' => '2013-02-20'],
             ],
         ]);
 
         $m = new Model($this->db, ['table' => 'types']);
-
         $m->addField('date', ['type' => 'date']);
 
-        $m = $m->tryLoad(1);
-
+        $m = $m->load(1);
         $this->assertInstanceOf(\DateTime::class, $m->get('date'));
     }
 
-    public function testTryLoadAny(): void
+    public function testLoadAny(): void
     {
         $this->setDb([
             'types' => [
-                [
-                    'date' => '2013-02-20',
-                ],
+                ['date' => '2013-02-20'],
             ],
         ]);
 
         $m = new Model($this->db, ['table' => 'types']);
-
         $m->addField('date', ['type' => 'date']);
 
-        $m = $m->tryLoadAny();
-
-        $this->assertInstanceOf(\DateTime::class, $m->get('date'));
-    }
-
-    public function testTryLoadBy(): void
-    {
-        $this->setDb([
-            'types' => [
-                [
-                    'date' => '2013-02-20',
-                ],
-            ],
-        ]);
-
-        $m = new Model($this->db, ['table' => 'types']);
-
-        $m->addField('date', ['type' => 'date']);
-
-        $m = $m->loadBy('id', 1);
-
+        $m = $m->loadAny();
         $this->assertInstanceOf(\DateTime::class, $m->get('date'));
     }
 
@@ -355,9 +327,7 @@ class TypecastingTest extends TestCase
     {
         $this->setDb([
             'types' => [
-                [
-                    'date' => '2013-02-20',
-                ],
+                ['date' => '2013-02-20'],
             ],
         ]);
 
@@ -380,12 +350,9 @@ class TypecastingTest extends TestCase
     public function testTimestamp(): void
     {
         $sqlTime = '2016-10-25 11:44:08';
-
         $this->setDb([
             'types' => [
-                [
-                    'date' => $sqlTime,
-                ],
+                ['date' => $sqlTime],
             ],
         ]);
 
@@ -400,12 +367,9 @@ class TypecastingTest extends TestCase
     public function testBadTimestamp(): void
     {
         $sqlTime = '20blah16-10-25 11:44:08';
-
         $this->setDb([
             'types' => [
-                [
-                    'date' => $sqlTime,
-                ],
+                ['date' => $sqlTime],
             ],
         ]);
 
@@ -413,18 +377,15 @@ class TypecastingTest extends TestCase
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
 
         $this->expectException(Exception::class);
-        $m = $m->loadOne();
+        $m->loadOne();
     }
 
     public function testDirtyTimestamp(): void
     {
         $sqlTime = '2016-10-25 11:44:08';
-
         $this->setDb([
             'types' => [
-                [
-                    'date' => $sqlTime,
-                ],
+                ['date' => $sqlTime],
             ],
         ]);
 
@@ -440,9 +401,7 @@ class TypecastingTest extends TestCase
     {
         $this->setDb([
             'types' => [
-                [
-                    'date' => '',
-                ],
+                ['date' => ''],
             ],
         ]);
 
@@ -499,12 +458,9 @@ class TypecastingTest extends TestCase
     {
         $sqlTime = new \DateTime('11:44:08 GMT');
         $sqlTimeNew = new \DateTime('12:34:56 GMT');
-
         $this->setDb([
             'types' => [
-                [
-                    'date' => $sqlTime->format('H:i:s'),
-                ],
+                ['date' => $sqlTime->format('H:i:s')],
             ],
         ]);
 
@@ -526,12 +482,9 @@ class TypecastingTest extends TestCase
     {
         $sqlTime = new \DateTime('11:44:08 GMT');
         $sqlTimeNew = new \DateTime('12:34:56 GMT');
-
         $this->setDb([
             'types' => [
-                [
-                    'date' => null,
-                ],
+                ['date' => null],
             ],
         ]);
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests\Persistence\Sql;
 
 use Atk4\Core\Phpunit\TestCase;
+use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Exception;
 use Atk4\Data\Persistence\Sql\Expression;
@@ -32,7 +33,7 @@ class QueryTest extends TestCase
         };
 
         if (!(new \ReflectionProperty($query, 'connection'))->isInitialized($query)) {
-            $query->connection = new \Atk4\Data\Persistence\Sql\Sqlite\Connection();
+            $query->connection = new Persistence\Sql\Sqlite\Connection();
             \Closure::bind(function () use ($query) {
                 $query->connection->expressionClass = \Closure::bind(fn () => $query->expressionClass, null, Query::class)();
                 $query->connection->queryClass = get_class($query);

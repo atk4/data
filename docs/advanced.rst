@@ -403,7 +403,7 @@ inside your model are unique::
                     $mm = $mm->tryLoadBy($field, $m->get($field));
 
                     if ($mm !== null) {
-                        throw (new \Atk4\Core\Exception('Duplicate record exists'))
+                        throw (new \Atk4\Data\Exception('Duplicate record exists'))
                             ->addMoreInfo('field', $field)
                             ->addMoreInfo('value', $m->get($field));
                     }

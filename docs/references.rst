@@ -89,7 +89,7 @@ If you are worried about performance you can keep 2 models in memory::
     $client = $order->refModel('client_id');
 
     foreach ($order as $o) {
-        $client = $client->load($o->get('client_id'));
+        $c = $client->load($o->get('client_id'));
     }
 
 .. warning:: This code is seriously flawed and is called "N+1 Problem".

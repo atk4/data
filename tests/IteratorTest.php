@@ -30,7 +30,7 @@ class IteratorTest extends TestCase
         $m = new Model();
 
         $this->expectException(Exception::class);
-        $m = $m->tryLoad(1);
+        $m->tryLoad(1);
     }
 
     /**
@@ -41,7 +41,7 @@ class IteratorTest extends TestCase
         $m = new Model();
 
         $this->expectException(Exception::class);
-        $m = $m->tryLoadAny();
+        $m->tryLoadAny();
     }
 
     /**
@@ -52,7 +52,7 @@ class IteratorTest extends TestCase
         $m = new Model();
 
         $this->expectException(Exception::class);
-        $m = $m->load(1);
+        $m->load(1);
     }
 
     /**
@@ -63,7 +63,7 @@ class IteratorTest extends TestCase
         $m = new Model();
 
         $this->expectException(Exception::class);
-        $m = $m->loadAny();
+        $m->loadAny();
     }
 
     /**

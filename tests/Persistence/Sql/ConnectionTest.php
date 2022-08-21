@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests\Persistence\Sql;
 
 use Atk4\Core\Phpunit\TestCase;
+use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Connection;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
@@ -148,30 +149,30 @@ class ConnectionTest extends TestCase
     public function testMysqlFail(): void
     {
         $this->expectException(\Exception::class);
-        $c = Connection::connect('mysql:host=256.256.256.256'); // invalid host
+        Connection::connect('mysql:host=256.256.256.256'); // invalid host
     }
 
     public function testException1(): void
     {
-        $this->expectException(\Atk4\Data\Persistence\Sql\Exception::class);
-        $c = \Atk4\Data\Persistence\Sql\Sqlite\Connection::connect(':');
+        $this->expectException(Persistence\Sql\Exception::class);
+        Persistence\Sql\Sqlite\Connection::connect(':');
     }
 
     public function testException2(): void
     {
-        $this->expectException(\Atk4\Data\Persistence\Sql\Exception::class);
-        $c = Connection::connect('');
+        $this->expectException(Persistence\Sql\Exception::class);
+        Connection::connect('');
     }
 
     public function testException3(): void
     {
         $this->expectException(\TypeError::class);
-        $c = new \Atk4\Data\Persistence\Sql\Sqlite\Connection('sqlite::memory'); // @phpstan-ignore-line
+        new Persistence\Sql\Sqlite\Connection('sqlite::memory'); // @phpstan-ignore-line
     }
 
     public function testException4(): void
     {
-        $c = new \Atk4\Data\Persistence\Sql\Sqlite\Connection();
+        $c = new Persistence\Sql\Sqlite\Connection();
         $q = $c->expr('select (2 + 2)');
 
         $this->assertSame(
@@ -179,7 +180,7 @@ class ConnectionTest extends TestCase
             $q->render()[0]
         );
 
-        $this->expectException(\Atk4\Data\Persistence\Sql\Exception::class);
+        $this->expectException(Persistence\Sql\Exception::class);
         $q->executeQuery();
     }
 }

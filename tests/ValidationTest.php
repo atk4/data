@@ -50,8 +50,7 @@ class BadValidationModel extends Model
 
 class ValidationTest extends TestCase
 {
-    /** @var Model */
-    public $m;
+    public Model $m;
 
     protected function setUp(): void
     {

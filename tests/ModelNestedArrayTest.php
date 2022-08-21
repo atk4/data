@@ -160,12 +160,8 @@ class ModelNestedArrayTest extends TestCase
         $m = $this->createTestModel();
 
         $m->load(new \DateTime('2005-4-3'))
-            ->setMulti([
-                'name' => 'Sue', // no change
-            ])->save()
-            ->setMulti([
-                'name' => 'Susan',
-            ])->save();
+            ->set('name', 'Sue')->save() // no change
+            ->set('name', 'Susan')->save();
 
         $this->assertSame([
             ['main', Model::HOOK_BEFORE_LOAD, [\DateTime::class]],

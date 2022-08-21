@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Persistence\Array_\Db;
 
 use Atk4\Data\Exception;
+use Atk4\Data\Model;
 
 class Table
 {
@@ -183,7 +184,7 @@ class Table
      *
      * @param mixed $idRaw
      */
-    public function getRowById(\Atk4\Data\Model $model, $idRaw): ?Row
+    public function getRowById(Model $model, $idRaw): ?Row
     {
         foreach ($this->getRows() as $row) {
             if ($row->getValue($model->getField($model->idField)->getPersistenceName()) === $idRaw) {

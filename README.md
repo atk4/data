@@ -271,7 +271,7 @@ Read more on [working with individual data records](http://agile-data.readthedoc
 
 #### Q: I do not like to use class `\Atk4\Data\Model` as a parent
 
-Class `Model` implements a lot of essential functionality. As I mentioned before Model is not an Entity, so while iterating through result, no multiple Model instances are created. If you need a deeper explanation read my blog post: http://www.agiletoolkit.org/blog/why-should-you-extend-your-entity-class
+Class `Model` implements a lot of essential functionality. If you need a deeper explanation read my blog post: http://www.agiletoolkit.org/blog/why-should-you-extend-your-entity-class
 
 #### Q: Agile Data has small community
 

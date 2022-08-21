@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests\Persistence;
 
 use Atk4\Core\Phpunit\TestCase;
+use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 
@@ -88,9 +89,9 @@ class StaticTest extends TestCase
     {
         $p = new Persistence\Static_(['hello', 'world']);
 
-        $this->expectException(\Atk4\Data\Exception::class);
+        $this->expectException(Exception::class);
         $this->expectExceptionMessage('Must not be a zero');
-        $m = new Model($p);
+        new Model($p);
     }
 
     public function testEmpty(): void

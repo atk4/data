@@ -14,6 +14,7 @@ use Atk4\Data\Persistence\Sql\Exception as SqlException;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Query;
+use Atk4\Data\Reference\HasOneSql;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Driver\Connection as DbalDriverConnection;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
@@ -50,7 +51,7 @@ class Sql extends Persistence
     protected $_defaultSeedAddExpression = [SqlExpressionField::class];
 
     /** @var array Default class when adding hasOne field. */
-    protected $_defaultSeedHasOne = [\Atk4\Data\Reference\HasOneSql::class];
+    protected $_defaultSeedHasOne = [HasOneSql::class];
 
     /** @var array Default class when adding hasMany field. */
     protected $_defaultSeedHasMany; // no custom seed needed

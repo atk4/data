@@ -618,7 +618,7 @@ class ArrayTest extends TestCase
         ]);
 
         $this->expectException(Exception::class);
-        $m = new Model($p);
+        new Model($p);
     }
 
     public function testImportAndAutoincrement(): void
@@ -849,26 +849,7 @@ class ArrayTest extends TestCase
         $this->assertSame(1, $cc->ref('Users')->executeCountQuery());
     }
 
-    public function testLoadAnyThrowsExceptionOnRecordNotFound(): void
-    {
-        $p = new Persistence\Array_();
-        $m = new Model($p);
-        $m->addField('name');
-        $this->expectExceptionCode(404);
-        $m = $m->loadAny();
-    }
-
-    public function testTryLoadAnyNotThrowsExceptionOnRecordNotFound(): void
-    {
-        $p = new Persistence\Array_();
-        $m = new Model($p);
-        $m->addField('name');
-        $m->addField('surname');
-        $m = $m->tryLoadAny();
-        $this->assertNull($m);
-    }
-
-    public function testTryLoadAnyReturnsFirstRecord(): void
+    public function testLoadAnyReturnsFirstRecord(): void
     {
         $a = [
             2 => ['name' => 'John', 'surname' => 'Smith'],
@@ -879,7 +860,28 @@ class ArrayTest extends TestCase
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
-        $m = $m->tryLoadAny();
+        $m = $m->loadAny();
         $this->assertSame(2, $m->getId());
+    }
+
+    public function testLoadAnyThrowsExceptionOnRecordNotFound(): void
+    {
+        $p = new Persistence\Array_();
+        $m = new Model($p);
+        $m->addField('name');
+
+        $this->expectExceptionCode(404);
+        $m->loadAny();
+    }
+
+    public function testTryLoadAnyNotThrowsExceptionOnRecordNotFound(): void
+    {
+        $p = new Persistence\Array_();
+        $m = new Model($p);
+        $m->addField('name');
+        $m->addField('surname');
+
+        $m = $m->tryLoadAny();
+        $this->assertNull($m);
     }
 }

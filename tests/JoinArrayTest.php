@@ -60,7 +60,7 @@ class JoinArrayTest extends TestCase
         $m = new Model($db, ['table' => 'user']);
 
         $this->expectException(Exception::class);
-        $j = $m->join('contact.foo_id', ['masterField' => 'test_id']);
+        $m->join('contact.foo_id', ['masterField' => 'test_id']);
     }
 
     public function testJoinSaving1(): void
@@ -389,7 +389,7 @@ class JoinArrayTest extends TestCase
         $j->addField('contact_phone');
 
         $this->expectException(Exception::class);
-        $user = $user->load(2);
+        $user->load(2);
     }
 
     public function testForeignFieldNameGuessTableWithSchema(): void
