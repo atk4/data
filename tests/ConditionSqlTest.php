@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
+use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 
@@ -22,14 +23,14 @@ class ConditionSqlTest extends TestCase
         $m->addField('name');
         $m->addField('gender');
 
-        $mm = $m->tryLoad(1);
+        $mm = $m->load(1);
         $this->assertSame('John', $mm->get('name'));
-        $mm = $m->tryLoad(2);
+        $mm = $m->load(2);
         $this->assertSame('Sue', $mm->get('name'));
 
         $mm = clone $m;
         $mm->addCondition('gender', 'M');
-        $mm2 = $mm->tryLoad(1);
+        $mm2 = $mm->load(1);
         $this->assertSame('John', $mm2->get('name'));
         $mm2 = $mm->tryLoad(2);
         $this->assertNull($mm2);
@@ -38,7 +39,7 @@ class ConditionSqlTest extends TestCase
         $mm->addCondition('id', 2);
         $mm2 = $mm->tryLoad(1);
         $this->assertNull($mm2);
-        $mm2 = $mm->tryLoad(2);
+        $mm2 = $mm->load(2);
         $this->assertSame('Sue', $mm2->get('name'));
     }
 
@@ -48,7 +49,7 @@ class ConditionSqlTest extends TestCase
         $scope = $m->scope();
         $this->assertSame($scope, $m->createEntity()->getModel()->scope());
 
-        $this->expectException(\Atk4\Data\Exception::class);
+        $this->expectException(Exception::class);
         $m->createEntity()->scope();
     }
 
@@ -65,13 +66,13 @@ class ConditionSqlTest extends TestCase
         $m->addField('name');
         $m->addField('gender');
 
-        $m = $m->tryLoad(1);
+        $m = $m->load(1);
         $this->assertSame('John', $m->get('name'));
         \Closure::bind(function () use ($m) {
             $m->_entityId = 2;
         }, null, Model::class)();
 
-        $this->expectException(\Atk4\Data\Exception::class);
+        $this->expectException(Exception::class);
         $this->expectExceptionMessageMatches('~entity.+different~');
         $m->reload();
     }
@@ -117,14 +118,14 @@ class ConditionSqlTest extends TestCase
         $m->addField('name');
         $m->addField('gender');
 
-        $mm = $m->tryLoad(1);
+        $mm = $m->load(1);
         $this->assertSame('John', $mm->get('name'));
-        $mm = $m->tryLoad(2);
+        $mm = $m->load(2);
         $this->assertSame('Sue', $mm->get('name'));
 
         $mm = clone $m;
         $mm->addCondition('gender', 'M');
-        $mm2 = $mm->tryLoad(1);
+        $mm2 = $mm->load(1);
         $this->assertSame('John', $mm2->get('name'));
         $mm2 = $mm->tryLoad(2);
         $this->assertNull($mm2);
@@ -133,19 +134,19 @@ class ConditionSqlTest extends TestCase
         $mm->addCondition('gender', '!=', 'M');
         $mm2 = $mm->tryLoad(1);
         $this->assertNull($mm2);
-        $mm2 = $mm->tryLoad(2);
+        $mm2 = $mm->load(2);
         $this->assertSame('Sue', $mm2->get('name'));
 
         $mm = clone $m;
         $mm->addCondition('id', '>', 1);
         $mm2 = $mm->tryLoad(1);
         $this->assertNull($mm2);
-        $mm2 = $mm->tryLoad(2);
+        $mm2 = $mm->load(2);
         $this->assertSame('Sue', $mm2->get('name'));
 
         $mm = clone $m;
         $mm->addCondition('id', 'in', [1, 3]);
-        $mm2 = $mm->tryLoad(1);
+        $mm2 = $mm->load(1);
         $this->assertSame('John', $mm2->get('name'));
         $mm2 = $mm->tryLoad(2);
         $this->assertNull($mm2);
@@ -164,23 +165,23 @@ class ConditionSqlTest extends TestCase
         $m->addField('name');
         $m->addField('gender');
 
-        $mm = $m->tryLoad(1);
+        $mm = $m->load(1);
         $this->assertSame('John', $mm->get('name'));
-        $mm = $m->tryLoad(2);
+        $mm = $m->load(2);
         $this->assertSame('Sue', $mm->get('name'));
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('[] > 1', [$mm->getField('id')]));
         $mm2 = $mm->tryLoad(1);
         $this->assertNull($mm2);
-        $mm2 = $mm->tryLoad(2);
+        $mm2 = $mm->load(2);
         $this->assertSame('Sue', $mm2->get('name'));
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('[id] > 1'));
         $mm2 = $mm->tryLoad(1);
         $this->assertNull($mm2);
-        $mm2 = $mm->tryLoad(2);
+        $mm2 = $mm->load(2);
         $this->assertSame('Sue', $mm2->get('name'));
     }
 
@@ -198,35 +199,35 @@ class ConditionSqlTest extends TestCase
         $m->addField('gender');
         $m->addField('surname');
 
-        $mm = $m->tryLoad(1);
+        $mm = $m->load(1);
         $this->assertSame('John', $mm->get('name'));
-        $mm = $m->tryLoad(2);
+        $mm = $m->load(2);
         $this->assertSame('Sue', $mm->get('name'));
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('[name] = [surname]'));
         $mm2 = $mm->tryLoad(1);
         $this->assertNull($mm2);
-        $mm2 = $mm->tryLoad(2);
+        $mm2 = $mm->load(2);
         $this->assertSame('Sue', $mm2->get('name'));
 
         $mm = clone $m;
         $mm->addCondition($m->getField('name'), $m->getField('surname'));
         $mm2 = $mm->tryLoad(1);
         $this->assertNull($mm2);
-        $mm2 = $mm->tryLoad(2);
+        $mm2 = $mm->load(2);
         $this->assertSame('Sue', $mm2->get('name'));
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('[name] != [surname]'));
-        $mm2 = $mm->tryLoad(1);
+        $mm2 = $mm->load(1);
         $this->assertSame('John', $mm2->get('name'));
         $mm2 = $mm->tryLoad(2);
         $this->assertNull($mm2);
 
         $mm = clone $m;
         $mm->addCondition($m->getField('name'), '!=', $m->getField('surname'));
-        $mm2 = $mm->tryLoad(1);
+        $mm2 = $mm->load(1);
         $this->assertSame('John', $mm2->get('name'));
         $mm2 = $mm->tryLoad(2);
         $this->assertNull($mm2);
@@ -253,13 +254,13 @@ class ConditionSqlTest extends TestCase
 
         $m->join('contact')->addField('contact_phone');
 
-        $mm2 = $m->tryLoad(1);
+        $mm2 = $m->load(1);
         $this->assertSame('John', $mm2->get('name'));
         $this->assertSame('+123 smiths', $mm2->get('contact_phone'));
-        $mm2 = $m->tryLoad(2);
+        $mm2 = $m->load(2);
         $this->assertSame('Sue', $mm2->get('name'));
         $this->assertSame('+321 sues', $mm2->get('contact_phone'));
-        $mm2 = $m->tryLoad(3);
+        $mm2 = $m->load(3);
         $this->assertSame('Peter', $mm2->get('name'));
         $this->assertSame('+123 smiths', $mm2->get('contact_phone'));
 
@@ -267,7 +268,7 @@ class ConditionSqlTest extends TestCase
         $mm->addCondition($mm->expr('[name] = [surname]'));
         $mm2 = $mm->tryLoad(1);
         $this->assertNull($mm2);
-        $mm2 = $mm->tryLoad(2);
+        $mm2 = $mm->load(2);
         $this->assertSame('Sue', $mm2->get('name'));
         $this->assertSame('+321 sues', $mm2->get('contact_phone'));
         $mm2 = $mm->tryLoad(3);
@@ -275,12 +276,12 @@ class ConditionSqlTest extends TestCase
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('\'+123 smiths\' = [contact_phone]'));
-        $mm2 = $mm->tryLoad(1);
+        $mm2 = $mm->load(1);
         $this->assertSame('John', $mm2->get('name'));
         $this->assertSame('+123 smiths', $mm2->get('contact_phone'));
         $mm2 = $mm->tryLoad(2);
         $this->assertNull($mm2);
-        $mm2 = $mm->tryLoad(3);
+        $mm2 = $mm->load(3);
         $this->assertSame('Peter', $mm2->get('name'));
         $this->assertSame('+123 smiths', $mm2->get('contact_phone'));
     }
@@ -329,7 +330,7 @@ class ConditionSqlTest extends TestCase
         $m->addField('name');
         $m->addField('date', ['type' => 'date']);
 
-        $m = $m->tryLoadBy('date', new \DateTime('08-12-1982'));
+        $m = $m->loadBy('date', new \DateTime('08-12-1982'));
         $this->assertSame('Sue', $m->get('name'));
     }
 
@@ -364,8 +365,8 @@ class ConditionSqlTest extends TestCase
         $m->addField('name');
         $m->addField('date', ['type' => 'date']);
 
-        $this->expectException(\Atk4\Data\Exception::class);
-        $m = $m->tryLoadBy('name', new \DateTime('08-12-1982'));
+        $this->expectException(Exception::class);
+        $m->tryLoadBy('name', new \DateTime('08-12-1982'));
     }
 
     public function testOrConditions(): void
@@ -395,10 +396,7 @@ class ConditionSqlTest extends TestCase
         $this->assertSame(1, $u->executeCountQuery());
     }
 
-    /**
-     * Test loadBy and tryLoadBy. They should set only temporary condition.
-     */
-    public function testLoadBy(): void
+    public function testLoadByRestoreCondition(): void
     {
         $this->setDb([
             'user' => [

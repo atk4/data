@@ -36,12 +36,12 @@ class ModelWithoutIdTest extends TestCase
     public function testBasic(): void
     {
         $this->m->setOrder('name', 'asc');
-        $m = $this->m->tryLoadAny();
+        $m = $this->m->loadAny();
         $this->assertSame('John', $m->get('name'));
 
         $this->m->order = [];
         $this->m->setOrder('name', 'desc');
-        $m = $this->m->tryLoadAny();
+        $m = $this->m->loadAny();
         $this->assertSame('Sue', $m->get('name'));
 
         $names = [];
@@ -97,7 +97,7 @@ class ModelWithoutIdTest extends TestCase
             $this->markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
         }
 
-        $m = $this->m->tryLoadAny();
+        $m = $this->m->loadAny();
         $m->saveAndUnload();
 
         $this->assertSame(3, $this->m->executeCountQuery());
@@ -112,15 +112,12 @@ class ModelWithoutIdTest extends TestCase
             $this->markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
         }
 
-        $m = $this->m->tryLoadAny();
+        $m = $this->m->loadAny();
         $m->save();
 
         $this->assertSame(3, $this->m->executeCountQuery());
     }
 
-    /**
-     * Conditions should work fine.
-     */
     public function testLoadBy(): void
     {
         $m = $this->m->loadBy('name', 'Sue');

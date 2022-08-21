@@ -281,7 +281,7 @@ class Field implements Expressionable
                 $messages[] = $e->getMessage();
             } while ($e = $e->getPrevious());
 
-            throw (new ValidationException([$this->shortName => implode(': ', $messages)], $this->getOwner()))
+            throw (new ValidationException([$this->shortName => implode(': ', $messages)], $this->issetOwner() ? $this->getOwner() : null))
                 ->addMoreInfo('field', $this);
         }
     }
@@ -501,7 +501,7 @@ class Field implements Expressionable
     public function __debugInfo(): array
     {
         $arr = [
-            'ownerClass' => get_class($this->getOwner()),
+            'ownerClass' => $this->issetOwner() ? get_class($this->getOwner()) : null,
             'shortName' => $this->shortName,
             'type' => $this->type,
         ];

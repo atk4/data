@@ -45,17 +45,17 @@ class ReferenceSqlTest extends TestCase
         $u->hasMany('Orders', ['model' => $o]);
 
         $oo = $u->load(1)->ref('Orders');
-        $ooo = $oo->tryLoad(1);
+        $ooo = $oo->load(1);
         $this->assertSame(20, $ooo->get('amount'));
         $ooo = $oo->tryLoad(2);
         $this->assertNull($ooo);
-        $ooo = $oo->tryLoad(3);
+        $ooo = $oo->load(3);
         $this->assertSame(5, $ooo->get('amount'));
 
         $oo = $u->load(2)->ref('Orders');
         $ooo = $oo->tryLoad(1);
         $this->assertNull($ooo);
-        $ooo = $oo->tryLoad(2);
+        $ooo = $oo->load(2);
         $this->assertSame(15, $ooo->get('amount'));
         $ooo = $oo->tryLoad(3);
         $this->assertNull($ooo);

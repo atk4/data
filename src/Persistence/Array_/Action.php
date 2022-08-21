@@ -10,7 +10,7 @@ use Atk4\Data\Model;
 
 /**
  * Returned by Model::action(). Compatible with DSQL to a certain point as it implements
- * specific actions such as getOne() or getRows().
+ * specific methods such as getOne() or getRows().
  */
 class Action
 {

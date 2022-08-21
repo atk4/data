@@ -18,11 +18,6 @@ use Atk4\Data\Tests\ContainsOne\Invoice;
  *     - hasOne(Country, SQL)
  *     - containsOne(DoorCode)
  */
-
-/**
- * ATK Data has support of containsOne / containsMany.
- * Basically data model can contain other data models with one or many records.
- */
 class ContainsOneTest extends TestCase
 {
     protected function setUp(): void

@@ -10,7 +10,7 @@ use Atk4\Data\Reference\HasMany;
 use Atk4\Data\Reference\HasOne;
 
 /**
- * Class DeepCopy implements copying records between two models:.
+ * Implements copying records between two models:.
  *
  * $dc = new DeepCopy();
  *

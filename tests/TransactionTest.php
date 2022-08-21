@@ -70,7 +70,7 @@ class TransactionTest extends TestCase
         $m->onHookShort(Model::HOOK_AFTER_SAVE, static function (bool $isUpdate) use ($testCase) {
             $testCase->assertTrue($isUpdate);
         });
-        $m = $m->loadBy('name', 'John')->save(['name' => 'Foo']);
+        $m->loadBy('name', 'John')->save(['name' => 'Foo']);
     }
 
     public function testAfterSaveHook(): void
@@ -96,7 +96,7 @@ class TransactionTest extends TestCase
         $m->onHookShort(Model::HOOK_AFTER_SAVE, static function (bool $isUpdate) use ($testCase) {
             $testCase->assertTrue($isUpdate);
         });
-        $m = $m->loadBy('name', 'John')->save(['name' => 'Foo']);
+        $m->loadBy('name', 'John')->save(['name' => 'Foo']);
     }
 
     public function testOnRollbackHook(): void

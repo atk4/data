@@ -54,18 +54,18 @@ class SqlTest extends TestCase
         $mm = (clone $m)->addCondition($m->idField, 1);
         $this->assertSame('John', $mm->load(1)->get('name'));
         $this->assertNull($mm->tryLoad(2));
-        $this->assertSame('John', $mm->tryLoadOne()->get('name'));
         $this->assertSame('John', $mm->loadOne()->get('name'));
-        $this->assertSame('John', $mm->tryLoadAny()->get('name'));
+        $this->assertSame('John', $mm->tryLoadOne()->get('name'));
         $this->assertSame('John', $mm->loadAny()->get('name'));
+        $this->assertSame('John', $mm->tryLoadAny()->get('name'));
 
         $mm = (clone $m)->addCondition('surname', 'Jones');
         $this->assertSame('Sarah', $mm->load(2)->get('name'));
         $this->assertNull($mm->tryLoad(1));
-        $this->assertSame('Sarah', $mm->tryLoadOne()->get('name'));
         $this->assertSame('Sarah', $mm->loadOne()->get('name'));
-        $this->assertSame('Sarah', $mm->tryLoadAny()->get('name'));
+        $this->assertSame('Sarah', $mm->tryLoadOne()->get('name'));
         $this->assertSame('Sarah', $mm->loadAny()->get('name'));
+        $this->assertSame('Sarah', $mm->tryLoadAny()->get('name'));
 
         $m->loadAny();
         $m->tryLoadAny();

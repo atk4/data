@@ -160,7 +160,7 @@ class CsvTest extends TestCase
         $m = new Model($p);
 
         $this->expectException(Exception::class);
-        $m = $m->tryLoad(1);
+        $m->tryLoad(1);
     }
 
     public function testPersistenceCopy(): void

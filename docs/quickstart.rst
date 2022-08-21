@@ -26,40 +26,8 @@ Requirements
 
 If you wish to try out some examples in this guide, you will need the following:
 
-- PHP 5.6 or above.
-- MySQL or MariaDB
-- Install `Agile Data Primer <https://github.com/atk4/data-primer/>`_
-
-.. code-block:: bash
-
-    git clone https://github.com/atk4/data-primer.git
-    cd data-primer
-    composer update
-    cp config-example.php config.php
-
-    # EDIT FILE CONFIG.PHP
-    vim config.hpp
-
-    php console.php
-
-Console is using `Psysh <http://psysh.org>`_ to help you interact with objects
-like this::
-
-    > $db
-    => Atk4\Data\Persistence\Sql {...}
-
-    > exit
-
-.. note:: I recommend that you enter statements into console one-by-one and
-    carefully observe results. You should also experiment where possible, try
-    different conditions or no conditions at all.
-
-    You can always create new model object if you mess up. If you change any
-    of the classes, you'll have to restart console.
-
-    There seem to be a bug inside Psysh where it looses MySQL connection, in
-    this case restart the console.
-
+- PHP 7.4 or above.
+- any of supported database - Sqlite, MySQL/MariaDB, PostgreSQL, MSSQL or Oracle
 
 Core Concepts
 =============

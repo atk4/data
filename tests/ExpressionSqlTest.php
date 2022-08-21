@@ -40,11 +40,11 @@ class ExpressionSqlTest extends TestCase
             );
         }
 
-        $ii = $i->tryLoad(1);
+        $ii = $i->load(1);
         $this->assertSame(10, $ii->get('total_net'));
         $this->assertSame($ii->get('total_net') + $ii->get('total_vat'), $ii->get('total_gross'));
 
-        $ii = $i->tryLoad(2);
+        $ii = $i->load(2);
         $this->assertSame(20, $ii->get('total_net'));
         $this->assertSame($ii->get('total_net') + $ii->get('total_vat'), $ii->get('total_gross'));
 
@@ -57,7 +57,7 @@ class ExpressionSqlTest extends TestCase
             );
         }
 
-        $i = $i->tryLoad(1);
+        $i = $i->load(1);
         $this->assertSame(($i->get('total_net') + $i->get('total_vat')) * 2, $i->get('double_total_gross'));
     }
 
@@ -84,11 +84,11 @@ class ExpressionSqlTest extends TestCase
             );
         }
 
-        $ii = $i->tryLoad(1);
+        $ii = $i->load(1);
         $this->assertSame(10, $ii->get('total_net'));
         $this->assertSame($ii->get('total_net') + $ii->get('total_vat'), $ii->get('total_gross'));
 
-        $ii = $i->tryLoad(2);
+        $ii = $i->load(2);
         $this->assertSame(20, $ii->get('total_net'));
         $this->assertSame($ii->get('total_net') + $ii->get('total_vat'), $ii->get('total_gross'));
     }
@@ -114,7 +114,7 @@ class ExpressionSqlTest extends TestCase
             );
         }
 
-        $ii = $i->tryLoad(1);
+        $ii = $i->load(1);
         $this->assertSame(10, $ii->get('total_net'));
         $this->assertSame(30, $ii->get('sum_net'));
 
@@ -158,7 +158,7 @@ class ExpressionSqlTest extends TestCase
 
         $mm = $m->tryLoad(1);
         $this->assertNull($mm);
-        $mm = $m->tryLoad(2);
+        $mm = $m->load(2);
         $this->assertSame('Sue', $mm->get('name'));
     }
 

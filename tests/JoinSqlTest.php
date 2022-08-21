@@ -52,7 +52,7 @@ class JoinSqlTest extends TestCase
         $m = new Model($this->db, ['table' => 'user']);
 
         $this->expectException(Exception::class);
-        $j = $m->join('contact.foo_id', ['masterField' => 'test_id']);
+        $m->join('contact.foo_id', ['masterField' => 'test_id']);
     }
 
     public function testJoinSaving1(): void
@@ -614,20 +614,19 @@ class JoinSqlTest extends TestCase
         $this->createMigrator()->createForeignKey($j);
         $j->addField('notes');
 
-        // try load one record
-        $m = $user->tryLoad(20);
+        // load one record
+        $m = $user->load(20);
         $this->assertTrue($m->isLoaded());
         $this->assertSame(['id' => 20, 'name' => 'Peter', 'notes' => 'second note'], $m->get());
 
-        // try to update loaded record
+        // update loaded record
         $m->save(['name' => 'Mark', 'notes' => '2nd note']);
-        $m = $user->tryLoad(20);
-        $this->assertTrue($m->isLoaded());
+        $m = $user->load(20);
         $this->assertSame(['id' => 20, 'name' => 'Mark', 'notes' => '2nd note'], $m->get());
 
         // insert new record
         $m = $user->createEntity()->save(['name' => 'Emily', 'notes' => '3rd note']);
-        $m = $user->tryLoad(21);
+        $m = $user->load(21);
         $this->assertTrue($m->isLoaded());
         $this->assertSame(['id' => 21, 'name' => 'Emily', 'notes' => '3rd note'], $m->get());
 
@@ -642,8 +641,7 @@ class JoinSqlTest extends TestCase
 
         // insert new record
         $m = $user->createEntity()->save(['name' => 'Olaf', 'notes' => '4th note']);
-        $m = $user->tryLoad(22);
-        $this->assertTrue($m->isLoaded());
+        $m = $user->load(22);
         $this->assertSame(['id' => 22, 'name' => 'Olaf', 'notes' => '4th note'], $m->get());
 
         // now test reverse join with tableAlias and foreignAlias
@@ -658,8 +656,7 @@ class JoinSqlTest extends TestCase
 
         // insert new record
         $m = $user->createEntity()->save(['name' => 'Chris', 'notes' => '5th note']);
-        $m = $user->tryLoad(23);
-        $this->assertTrue($m->isLoaded());
+        $m = $user->load(23);
         $this->assertSame(['id' => 23, 'name' => 'Chris', 'notes' => '5th note'], $m->get());
     }
 
