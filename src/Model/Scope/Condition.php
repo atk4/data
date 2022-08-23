@@ -274,7 +274,9 @@ class Condition extends AbstractScope
 
     public function toWords(Model $model = null): string
     {
-        $model = $model ?: $this->getModel();
+        if ($model === null) {
+            $model = $this->getModel();
+        }
 
         if ($model === null) {
             throw new Exception('Condition must be associated with Model to convert to words');

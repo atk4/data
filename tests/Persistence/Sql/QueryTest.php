@@ -273,10 +273,7 @@ class QueryTest extends TestCase
         $this->q()->mode('non_existant_mode');
     }
 
-    /**
-     * table() should return $this Query for chaining.
-     */
-    public function testTableReturnValue(): void
+    public function testTableReturnThis(): void
     {
         $q = $this->q();
         $this->assertSame($q, $q->table('employee'));
@@ -1135,10 +1132,7 @@ class QueryTest extends TestCase
         );
     }
 
-    /**
-     * set() should return $this Query for chaining.
-     */
-    public function testSetReturnValue(): void
+    public function testSetReturnThis(): void
     {
         $q = $this->q();
         $this->assertSame($q, $q->set('id', 1));
