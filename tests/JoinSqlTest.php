@@ -42,9 +42,9 @@ class JoinSqlTest extends TestCase
 
         $this->expectException(Exception::class); // TODO not implemented yet, see https://github.com/atk4/data/issues/803
         $j4 = $m->join('contact4.foo_id', ['masterField' => 'test_id', 'reverse' => true]);
-        // $this->assertTrue($this->getProtected($j4, 'reverse'));
-        // $this->assertSame('test_id', $this->getProtected($j4, 'masterField'));
-        // $this->assertSame('foo_id', $this->getProtected($j4, 'foreignField'));
+        // static::assertTrue($this->getProtected($j4, 'reverse'));
+        // static::assertSame('test_id', $this->getProtected($j4, 'masterField'));
+        // static::assertSame('foo_id', $this->getProtected($j4, 'foreignField'));
     }
 
     public function testDirectionException(): void
