@@ -109,7 +109,7 @@ class UserActionTest extends TestCase
         static::assertSame('John', $client->getUserAction('say_name')->execute());
 
         $client->getUserAction('say_name')->preview = function ($m, $arg) {
-            return ($m instanceof UaClient) ? 'will say ' . $m->get('name') : 'will fail';
+            return $m instanceof UaClient ? 'will say ' . $m->get('name') : 'will fail';
         };
         static::assertSame('will say John', $client->getUserAction('say_name')->preview('x'));
 

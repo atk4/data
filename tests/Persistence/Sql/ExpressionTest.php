@@ -311,7 +311,7 @@ class ExpressionTest extends TestCase
 
     public function testConsumeNotExpressionableObjectException(): void
     {
-        $this->expectException(Exception::class);
+        $this->expectException(\Error::class);
         $this->callProtected($this->e(), 'consume', new \stdClass());
     }
 

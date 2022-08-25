@@ -368,7 +368,7 @@ abstract class Persistence
     {
         if ($value === null) {
             return null;
-        } elseif (!is_scalar($value)) {
+        } elseif (!is_scalar($value)) { // @phpstan-ignore-line
             throw new Exception('Unexpected non-scalar value');
         }
 
