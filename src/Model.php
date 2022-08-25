@@ -1385,6 +1385,34 @@ class Model implements \IteratorAggregate
     }
 
     /**
+     * Store the data into database, but will never attempt to
+     * reload the data and permits that entity leaves scope after save.
+     * Additionally, any data will be unloaded. removeConditionFields will
+     * eliminate all conditions on those fields, set null to ignore all conditions.
+     *
+     * @return $this
+     */
+    public function saveWithoutScope(array $data = [], array $removedConditionFields = null)
+    {
+        $scopeElementsOrig = $this->getModel()->scope()->elements;
+        try {
+            foreach ($this->getModel()->scope()->elements as $k => $v) {
+                if ($v instanceof Model\Scope\Condition && (!$removedConditionFields || in_array($v->key, $removedConditionFields))) {
+                    unset($this->getModel()->scope()->elements[$k]);
+                }
+            }
+
+            $this->saveAndUnload($data);
+
+        } finally {
+            $this->getModel()->scope()->elements = $scopeElementsOrig;
+        }
+
+
+        return $this;
+    }
+
+    /**
      * Create new model from the same base class as $this.
      *
      * See https://github.com/atk4/data/issues/111 for use-case examples.
