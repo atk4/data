@@ -18,6 +18,8 @@ parameters:
     checkMissingIterableValueType: false # TODO
 
     ignoreErrors:
+        - '~^Unsafe usage of new static\(\)\.$~'
+
         -
             message: '~^Call to deprecated method getRawDataByTable\(\) of class Atk4\\Data\\Persistence\\Array_:~'
             path: '*'
