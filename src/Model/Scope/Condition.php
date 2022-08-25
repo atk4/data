@@ -25,6 +25,9 @@ class Condition extends AbstractScope
     /** @var mixed */
     public $value;
 
+    /** @var boolean */
+    public $weak = false;
+
     public const OPERATOR_EQUALS = '=';
     public const OPERATOR_DOESNOT_EQUAL = '!=';
     public const OPERATOR_GREATER = '>';

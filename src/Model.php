@@ -1003,6 +1003,30 @@ class Model implements \IteratorAggregate
     }
 
     /**
+     * Same as addCondition but condition will be dropped on save event and not be enforced.
+     * Therefore, it is valid to save an entity where the saved entity will not comply to the
+     * weak condition anymore.
+     *
+     * Example:
+     *
+     * $messsageModel->addWeakCondition('unread', true);
+     * $messageModel->save(['unread' => false]);
+     *
+     * @param mixed $field
+     * @param mixed $operator
+     * @param mixed $value
+     *
+     * @return $this
+     */
+    public function addWeakCondition($field, $operator = null, $value = null)
+    {
+
+        $this->scope()->addCondition(...func_get_args(), true);
+
+        return $this;
+    }
+
+    /**
      * Adds WITH/CTE model.
      *
      * @return $this
@@ -1341,6 +1365,21 @@ class Model implements \IteratorAggregate
     }
 
     /**
+     * Try to reload model by taking its current ID, otherwise return null.
+     *
+     * @return $this
+     */
+    public function tryReload()
+    {
+        $id = $this->getId();
+        $this->unload();
+
+        $res = $this->_load(true, true, $id);
+
+        return $this;
+    }
+
+    /**
      * Keeps the model data, but wipes out the ID so
      * when you save it next time, it ends up as a new
      * record in the database.
@@ -1495,10 +1534,30 @@ class Model implements \IteratorAggregate
         return $this->_loadBy(true, $fieldName, $value);
     }
 
+    protected function invokeCallbackWithoutWeakConditions(Model $model, \Closure $callback)
+    {
+        $scopeElementsOrig = $model->scope()->elements;
+        try {
+            foreach ($model->scope()->elements as $k => $v) {
+                if ($v instanceof Model\Scope\Condition && $v->weak) {
+                    unset($model->scope()->elements[$k]);
+                }
+            }
+
+            return $callback();
+        } finally {
+            $model->scope()->elements = $scopeElementsOrig;
+        }
+    }
+
     protected function validateEntityScope(): void
     {
         if (!$this->getModel()->scope()->isEmpty()) {
-            $this->getPersistence()->load($this->getModel(), $this->getId());
+
+            $this->invokeCallbackWithoutWeakConditions($entity->getModel(), function () use ($entity): void {
+                $this->getPersistence()->load($this->getModel(), $this->getId());
+            });
+
         }
     }
 
@@ -1592,7 +1651,7 @@ class Model implements \IteratorAggregate
             if ($this->idField && $this->reloadAfterSave) {
                 $d = $dirtyRef;
                 $dirtyRef = [];
-                $this->reload();
+                $this->tryReload();
                 $this->dirtyAfterReload = $dirtyRef;
                 $dirtyRef = $d;
             }

@@ -74,7 +74,7 @@ class Scope extends Scope\AbstractScope
      *
      * @return $this
      */
-    public function addCondition($field, $operator = null, $value = null)
+    public function addCondition($field, $operator = null, $value = null, $weak = false)
     {
         if (func_num_args() === 1 && $field instanceof Scope\AbstractScope) {
             $condition = $field;
