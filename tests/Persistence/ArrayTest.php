@@ -43,24 +43,24 @@ class ArrayTest extends TestCase
         $m->addField('surname');
 
         $mm = $m->load(1);
-        $this->assertSame('John', $mm->get('name'));
+        static::assertSame('John', $mm->get('name'));
 
         $mm->unload();
-        $this->assertFalse($mm->isLoaded());
+        static::assertFalse($mm->isLoaded());
 
         $mm = $m->tryLoadAny();
-        $this->assertTrue($mm->isLoaded());
+        static::assertTrue($mm->isLoaded());
 
         $mm = $m->load(2);
-        $this->assertSame('Jones', $mm->get('surname'));
+        static::assertSame('Jones', $mm->get('surname'));
         $mm->set('surname', 'Smith');
         $mm->save();
 
         $mm = $m->load(1);
-        $this->assertSame('John', $mm->get('name'));
+        static::assertSame('John', $mm->get('name'));
 
         $mm = $m->load(2);
-        $this->assertSame('Smith', $mm->get('surname'));
+        static::assertSame('Smith', $mm->get('surname'));
     }
 
     public function testSaveAndUnload(): void
@@ -75,16 +75,16 @@ class ArrayTest extends TestCase
         $m = new Male($p, ['table' => 'user']);
 
         $m = $m->load(1);
-        $this->assertTrue($m->isLoaded());
+        static::assertTrue($m->isLoaded());
         $m->set('gender', 'F');
         $m->saveAndUnload();
-        $this->assertFalse($m->isLoaded());
+        static::assertFalse($m->isLoaded());
 
         $m = new Female($p, ['table' => 'user']);
         $m = $m->load(1);
-        $this->assertTrue($m->isLoaded());
+        static::assertTrue($m->isLoaded());
 
-        $this->assertSame([
+        static::assertSame([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'F'],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
@@ -115,7 +115,7 @@ class ArrayTest extends TestCase
         $mm->set('surname', 'QQ');
         $mm->save();
 
-        $this->assertSame([
+        static::assertSame([
             'user' => [
                 1 => ['name' => 'Peter', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'QQ'],
@@ -126,7 +126,7 @@ class ArrayTest extends TestCase
         $m->setMulti(['name' => 'Foo', 'surname' => 'Bar']);
         $m->save();
 
-        $this->assertSame([
+        static::assertSame([
             'user' => [
                 1 => ['name' => 'Peter', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'QQ'],
@@ -150,7 +150,7 @@ class ArrayTest extends TestCase
 
         $m->insert(['name' => 'Foo', 'surname' => 'Bar']);
 
-        $this->assertSame([
+        static::assertSame([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
@@ -158,7 +158,7 @@ class ArrayTest extends TestCase
             ],
         ], $this->getInternalPersistenceData($p));
 
-        $this->assertSame(3, $p->lastInsertId());
+        static::assertSame(3, $p->lastInsertId());
     }
 
     public function testIterator(): void
@@ -180,7 +180,7 @@ class ArrayTest extends TestCase
             $output .= $row->get('name');
         }
 
-        $this->assertSame('JohnSarah', $output);
+        static::assertSame('JohnSarah', $output);
     }
 
     public function testShortFormat(): void
@@ -195,18 +195,18 @@ class ArrayTest extends TestCase
         $m->addField('surname');
 
         $mm = $m->load(1);
-        $this->assertSame('John', $mm->get('name'));
+        static::assertSame('John', $mm->get('name'));
 
         $mm = $m->load(2);
-        $this->assertSame('Jones', $mm->get('surname'));
+        static::assertSame('Jones', $mm->get('surname'));
         $mm->set('surname', 'Smith');
         $mm->save();
 
         $mm = $m->load(1);
-        $this->assertSame('John', $mm->get('name'));
+        static::assertSame('John', $mm->get('name'));
 
         $mm = $m->load(2);
-        $this->assertSame('Smith', $mm->get('surname'));
+        static::assertSame('Smith', $mm->get('surname'));
     }
 
     public function testExport(): void
@@ -220,12 +220,12 @@ class ArrayTest extends TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $this->assertSame([
+        static::assertSame([
             1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
             2 => ['id' => 2, 'name' => 'Sarah', 'surname' => 'Jones'],
         ], $m->export());
 
-        $this->assertSame([
+        static::assertSame([
             1 => ['surname' => 'Smith'],
             2 => ['surname' => 'Jones'],
         ], $m->export(['surname']));
@@ -242,8 +242,8 @@ class ArrayTest extends TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $this->assertSame(2, $m->action('count')->getOne());
-        $this->assertSame(2, $m->executeCountQuery());
+        static::assertSame(2, $m->action('count')->getOne());
+        static::assertSame(2, $m->executeCountQuery());
     }
 
     public function testActionField(): void
@@ -259,14 +259,14 @@ class ArrayTest extends TestCase
 
         // use alias as array key if it is set
         $q = $m->action('field', ['name', 'alias' => 'first_name']);
-        $this->assertSame([
+        static::assertSame([
             1 => ['first_name' => 'John'],
             2 => ['first_name' => 'Sarah'],
         ], $q->getRows());
 
         // if alias is not set, then use field name as key
         $q = $m->action('field', ['name']);
-        $this->assertSame([
+        static::assertSame([
             1 => ['name' => 'John'],
             2 => ['name' => 'Sarah'],
         ], $q->getRows());
@@ -301,83 +301,83 @@ class ArrayTest extends TestCase
         // case : str%
         $m->addCondition('country', 'LIKE', 'La%');
         $result = $m->action('select')->getRows();
-        $this->assertCount(3, $result);
-        $this->assertSame($dbDataCountries[3], $result[3]);
-        $this->assertSame($dbDataCountries[7], $result[7]);
-        $this->assertSame($dbDataCountries[9], $result[9]);
+        static::assertCount(3, $result);
+        static::assertSame($dbDataCountries[3], $result[3]);
+        static::assertSame($dbDataCountries[7], $result[7]);
+        static::assertSame($dbDataCountries[9], $result[9]);
         unset($result);
 
         // case : str% NOT LIKE
         $m->scope()->clear();
         $m->addCondition('country', 'NOT LIKE', 'La%');
         $result = $m->action('select')->getRows();
-        $this->assertCount(7, $m->export());
-        $this->assertSame($dbDataCountries[1], $result[1]);
-        $this->assertSame($dbDataCountries[2], $result[2]);
-        $this->assertSame($dbDataCountries[4], $result[4]);
-        $this->assertSame($dbDataCountries[5], $result[5]);
-        $this->assertSame($dbDataCountries[6], $result[6]);
-        $this->assertSame($dbDataCountries[8], $result[8]);
+        static::assertCount(7, $m->export());
+        static::assertSame($dbDataCountries[1], $result[1]);
+        static::assertSame($dbDataCountries[2], $result[2]);
+        static::assertSame($dbDataCountries[4], $result[4]);
+        static::assertSame($dbDataCountries[5], $result[5]);
+        static::assertSame($dbDataCountries[6], $result[6]);
+        static::assertSame($dbDataCountries[8], $result[8]);
         unset($result);
 
         // case : %str
         $m->scope()->clear();
         $m->addCondition('country', 'LIKE', '%ia');
         $result = $m->action('select')->getRows();
-        $this->assertCount(4, $result);
-        $this->assertSame($dbDataCountries[3], $result[3]);
-        $this->assertSame($dbDataCountries[7], $result[7]);
-        $this->assertSame($dbDataCountries[8], $result[8]);
-        $this->assertSame($dbDataCountries[9], $result[9]);
+        static::assertCount(4, $result);
+        static::assertSame($dbDataCountries[3], $result[3]);
+        static::assertSame($dbDataCountries[7], $result[7]);
+        static::assertSame($dbDataCountries[8], $result[8]);
+        static::assertSame($dbDataCountries[9], $result[9]);
         unset($result);
 
         // case : %str%
         $m->scope()->clear();
         $m->addCondition('country', 'LIKE', '%a%');
         $result = $m->action('select')->getRows();
-        $this->assertCount(8, $result);
-        $this->assertSame($dbDataCountries[1], $result[1]);
-        $this->assertSame($dbDataCountries[2], $result[2]);
-        $this->assertSame($dbDataCountries[3], $result[3]);
-        $this->assertSame($dbDataCountries[6], $result[6]);
-        $this->assertSame($dbDataCountries[7], $result[7]);
-        $this->assertSame($dbDataCountries[8], $result[8]);
-        $this->assertSame($dbDataCountries[9], $result[9]);
+        static::assertCount(8, $result);
+        static::assertSame($dbDataCountries[1], $result[1]);
+        static::assertSame($dbDataCountries[2], $result[2]);
+        static::assertSame($dbDataCountries[3], $result[3]);
+        static::assertSame($dbDataCountries[6], $result[6]);
+        static::assertSame($dbDataCountries[7], $result[7]);
+        static::assertSame($dbDataCountries[8], $result[8]);
+        static::assertSame($dbDataCountries[9], $result[9]);
         unset($result);
 
         // case : boolean field
         $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '0');
-        $this->assertCount(4, $m->export());
+        static::assertCount(4, $m->export());
 
         $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '1');
-        $this->assertCount(6, $m->export());
+        static::assertCount(6, $m->export());
 
         $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '%0%');
-        $this->assertCount(4, $m->export());
+        static::assertCount(4, $m->export());
 
         $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '%1%');
-        $this->assertCount(6, $m->export());
+        static::assertCount(6, $m->export());
 
         $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '%999%');
-        $this->assertCount(0, $m->export());
+        static::assertCount(0, $m->export());
 
         $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '%ABC%');
-        $this->assertCount(0, $m->export());
+        static::assertCount(0, $m->export());
 
         // null value
         $m->scope()->clear();
         $m->addCondition('code', '=', null);
-        $this->assertCount(1, $m->export());
+        static::assertCount(1, $m->export());
 
         $m->scope()->clear();
         $m->addCondition('code', '!=', null);
-        $this->assertCount(9, $m->export());
+        static::assertCount(9, $m->export());
     }
 
     public function testConditionRegexp(): void
@@ -408,79 +408,79 @@ class ArrayTest extends TestCase
         $m->scope()->clear();
         $m->addCondition('country', 'REGEXP', 'Ireland|UK');
         $result = $m->action('select')->getRows();
-        $this->assertCount(5, $result);
-        $this->assertSame($dbDataCountries[1], $result[1]);
-        $this->assertSame($dbDataCountries[2], $result[2]);
-        $this->assertSame($dbDataCountries[4], $result[4]);
-        $this->assertSame($dbDataCountries[5], $result[5]);
-        $this->assertSame($dbDataCountries[6], $result[6]);
+        static::assertCount(5, $result);
+        static::assertSame($dbDataCountries[1], $result[1]);
+        static::assertSame($dbDataCountries[2], $result[2]);
+        static::assertSame($dbDataCountries[4], $result[4]);
+        static::assertSame($dbDataCountries[5], $result[5]);
+        static::assertSame($dbDataCountries[6], $result[6]);
         unset($result);
 
         $m->scope()->clear();
         $m->addCondition('country', 'NOT REGEXP', 'Ireland|UK|Latvia');
         $result = $m->action('select')->getRows();
-        $this->assertCount(1, $result);
-        $this->assertSame($dbDataCountries[8], $result[8]);
+        static::assertCount(1, $result);
+        static::assertSame($dbDataCountries[8], $result[8]);
         unset($result);
 
         $m->scope()->clear();
         $m->addCondition('code', '>', 18);
         $result = $m->action('select')->getRows();
-        $this->assertCount(1, $result);
-        $this->assertSame($dbDataCountries[9], $result[9]);
+        static::assertCount(1, $result);
+        static::assertSame($dbDataCountries[9], $result[9]);
         unset($result);
 
         $m->scope()->clear();
         $m->addCondition('code', '>=', 18);
         $result = $m->action('select')->getRows();
-        $this->assertCount(2, $result);
-        $this->assertSame($dbDataCountries[8], $result[8]);
-        $this->assertSame($dbDataCountries[9], $result[9]);
+        static::assertCount(2, $result);
+        static::assertSame($dbDataCountries[8], $result[8]);
+        static::assertSame($dbDataCountries[9], $result[9]);
         unset($result);
 
         $m->scope()->clear();
         $m->addCondition('code', '<', 12);
         $result = $m->action('select')->getRows();
-        $this->assertCount(1, $result);
-        $this->assertSame($dbDataCountries[1], $result[1]);
+        static::assertCount(1, $result);
+        static::assertSame($dbDataCountries[1], $result[1]);
         unset($result);
 
         $m->scope()->clear();
         $m->addCondition('code', '<=', 12);
         $result = $m->action('select')->getRows();
-        $this->assertCount(2, $result);
-        $this->assertSame($dbDataCountries[1], $result[1]);
-        $this->assertSame($dbDataCountries[2], $result[2]);
+        static::assertCount(2, $result);
+        static::assertSame($dbDataCountries[1], $result[1]);
+        static::assertSame($dbDataCountries[2], $result[2]);
         unset($result);
 
         $m->scope()->clear();
         $m->addCondition('code', [11, 12]);
         $result = $m->action('select')->getRows();
-        $this->assertCount(2, $result);
-        $this->assertSame($dbDataCountries[1], $result[1]);
-        $this->assertSame($dbDataCountries[2], $result[2]);
+        static::assertCount(2, $result);
+        static::assertSame($dbDataCountries[1], $result[1]);
+        static::assertSame($dbDataCountries[2], $result[2]);
         unset($result);
 
         $m->scope()->clear();
         $m->addCondition('code', 'IN', []);
         $result = $m->action('select')->getRows();
-        $this->assertCount(0, $result);
+        static::assertCount(0, $result);
         unset($result);
 
         $m->scope()->clear();
         $m->addCondition('code', 'NOT IN', [11, 12, 13, 14, 15, 16, 17]);
         $result = $m->action('select')->getRows();
-        $this->assertCount(2, $result);
-        $this->assertSame($dbDataCountries[8], $result[8]);
-        $this->assertSame($dbDataCountries[9], $result[9]);
+        static::assertCount(2, $result);
+        static::assertSame($dbDataCountries[8], $result[8]);
+        static::assertSame($dbDataCountries[9], $result[9]);
         unset($result);
 
         $m->scope()->clear();
         $m->addCondition('code', '!=', [11, 12, 13, 14, 15, 16, 17]);
         $result = $m->action('select')->getRows();
-        $this->assertCount(2, $result);
-        $this->assertSame($dbDataCountries[8], $result[8]);
-        $this->assertSame($dbDataCountries[9], $result[9]);
+        static::assertCount(2, $result);
+        static::assertSame($dbDataCountries[8], $result[8]);
+        static::assertSame($dbDataCountries[9], $result[9]);
         unset($result);
     }
 
@@ -502,11 +502,11 @@ class ArrayTest extends TestCase
         $m = new Model($p, ['table' => 'invoices']);
         $m->addField('items', ['type' => 'integer']);
 
-        $this->assertSame(13.5, $m->action('fx', ['avg', 'items'])->getOne());
-        $this->assertSame(12.272727272727273, $m->action('fx0', ['avg', 'items'])->getOne());
-        $this->assertSame(0, $m->action('fx', ['min', 'items'])->getOne());
-        $this->assertSame(19, $m->action('fx', ['max', 'items'])->getOne());
-        $this->assertSame(135, $m->action('fx', ['sum', 'items'])->getOne());
+        static::assertSame(13.5, $m->action('fx', ['avg', 'items'])->getOne());
+        static::assertSame(12.272727272727273, $m->action('fx0', ['avg', 'items'])->getOne());
+        static::assertSame(0, $m->action('fx', ['min', 'items'])->getOne());
+        static::assertSame(19, $m->action('fx', ['max', 'items'])->getOne());
+        static::assertSame(135, $m->action('fx', ['sum', 'items'])->getOne());
     }
 
     public function testExists(): void
@@ -517,11 +517,11 @@ class ArrayTest extends TestCase
         $m = new Model($p, ['table' => 'invoices']);
         $m->addField('items', ['type' => 'integer']);
 
-        $this->assertSame(1, $m->action('exists')->getOne());
+        static::assertSame(1, $m->action('exists')->getOne());
 
         $m->delete(1);
 
-        $this->assertSame(0, $m->action('exists')->getOne());
+        static::assertSame(0, $m->action('exists')->getOne());
     }
 
     /**
@@ -558,7 +558,7 @@ class ArrayTest extends TestCase
         $m->addField('f3');
         $m->setOrder('f1');
         $d = $this->_getRows($m, ['f1']);
-        $this->assertSame([
+        static::assertSame([
             ['f1' => 'A'],
             ['f1' => 'A'],
             ['f1' => 'C'],
@@ -566,7 +566,7 @@ class ArrayTest extends TestCase
             ['f1' => 'D'],
             ['f1' => 'E'],
         ], $d);
-        $this->assertSame($d, array_values($m->export(['f1']))); // array_values to get rid of keys
+        static::assertSame($d, array_values($m->export(['f1']))); // array_values to get rid of keys
 
         // order by one field descending
         $p = new Persistence\Array_($dbData);
@@ -580,7 +580,7 @@ class ArrayTest extends TestCase
         $m->addField('f3');
         $m->setOrder('f1', 'desc');
         $d = $this->_getRows($m, ['f1']);
-        $this->assertSame([
+        static::assertSame([
             ['f1' => 'E'],
             ['f1' => 'D'],
             ['f1' => 'D'],
@@ -588,7 +588,7 @@ class ArrayTest extends TestCase
             ['f1' => 'A'],
             ['f1' => 'A'],
         ], $d);
-        $this->assertSame($d, array_values($m->export(['f1']))); // array_values to get rid of keys
+        static::assertSame($d, array_values($m->export(['f1']))); // array_values to get rid of keys
 
         // order by two fields ascending
         $p = new Persistence\Array_($dbData);
@@ -600,7 +600,7 @@ class ArrayTest extends TestCase
         $m->setOrder('f1', 'desc');
         $m->setOrder('f2', 'desc');
         $d = $this->_getRows($m, ['f1', 'f2', 'id']);
-        $this->assertSame([
+        static::assertSame([
             ['id' => 5, 'f1' => 'E', 'f2' => 'A'],
             ['id' => 3, 'f1' => 'D', 'f2' => 'C'],
             ['id' => 2, 'f1' => 'D', 'f2' => 'A'],
@@ -608,7 +608,7 @@ class ArrayTest extends TestCase
             ['id' => 4, 'f1' => 'A', 'f2' => 'C'],
             ['id' => 1, 'f1' => 'A', 'f2' => 'B'],
         ], $d);
-        $this->assertSame($d, array_values($m->export(['f1', 'f2', 'id']))); // array_values to get rid of keys
+        static::assertSame($d, array_values($m->export(['f1', 'f2', 'id']))); // array_values to get rid of keys
     }
 
     public function testNoKeyException(): void
@@ -631,45 +631,45 @@ class ArrayTest extends TestCase
             ['id' => 1, 'f1' => 'A'],
             ['id' => 2, 'f1' => 'B'],
         ]);
-        $this->assertSame(2, $m->executeCountQuery());
+        static::assertSame(2, $m->executeCountQuery());
 
         $m->import([
             ['f1' => 'C'],
             ['f1' => 'D'],
         ]);
-        $this->assertSame(4, $m->executeCountQuery());
+        static::assertSame(4, $m->executeCountQuery());
 
         $m->import([
             ['id' => 6, 'f1' => 'E'],
             ['id' => 7, 'f1' => 'F'],
         ]);
-        $this->assertSame(6, $m->executeCountQuery());
+        static::assertSame(6, $m->executeCountQuery());
 
         $m->delete(6);
-        $this->assertSame(5, $m->executeCountQuery());
+        static::assertSame(5, $m->executeCountQuery());
 
         $m->import([
             ['f1' => 'G'],
             ['f1' => 'H'],
         ]);
-        $this->assertSame(7, $m->executeCountQuery());
+        static::assertSame(7, $m->executeCountQuery());
 
         $m->import([
             ['id' => 99, 'f1' => 'I'],
             ['id' => 20, 'f1' => 'J'],
         ]);
-        $this->assertSame(9, $m->executeCountQuery());
+        static::assertSame(9, $m->executeCountQuery());
 
         $m->import([
             ['f1' => 'K'],
             ['f1' => 'L'],
         ]);
-        $this->assertSame(11, $m->executeCountQuery());
+        static::assertSame(11, $m->executeCountQuery());
 
         $m->delete(100);
         $m->createEntity()->set('f1', 'M')->save();
 
-        $this->assertSame([
+        static::assertSame([
             1 => ['id' => 1, 'f1' => 'A'],
             2 => ['id' => 2, 'f1' => 'B'],
             3 => ['id' => 3, 'f1' => 'C'],
@@ -696,19 +696,19 @@ class ArrayTest extends TestCase
         $m = new Model($p);
         $m->addField('f1');
 
-        $this->assertSame(4, $m->executeCountQuery());
+        static::assertSame(4, $m->executeCountQuery());
 
         $m->setLimit(3);
-        $this->assertSame(3, $m->executeCountQuery());
-        $this->assertSame([
+        static::assertSame(3, $m->executeCountQuery());
+        static::assertSame([
             ['id' => 1, 'f1' => 'A'],
             ['id' => 2, 'f1' => 'D'],
             ['id' => 3, 'f1' => 'E'],
         ], array_values($m->export()));
 
         $m->setLimit(2, 1);
-        $this->assertSame(2, $m->executeCountQuery());
-        $this->assertSame([
+        static::assertSame(2, $m->executeCountQuery());
+        static::assertSame([
             ['id' => 2, 'f1' => 'D'],
             ['id' => 3, 'f1' => 'E'],
         ], array_values($m->export()));
@@ -716,7 +716,7 @@ class ArrayTest extends TestCase
         // well, this is strange, that you can actually change limit on-the-fly and then previous
         // limit is not taken into account, but most likely you will never set it multiple times
         $m->setLimit(3);
-        $this->assertSame(3, $m->executeCountQuery());
+        static::assertSame(3, $m->executeCountQuery());
     }
 
     public function testCondition(): void
@@ -732,19 +732,19 @@ class ArrayTest extends TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $this->assertSame(4, $m->executeCountQuery());
-        $this->assertSame(['data' => $dbData], $this->getInternalPersistenceData($p));
+        static::assertSame(4, $m->executeCountQuery());
+        static::assertSame(['data' => $dbData], $this->getInternalPersistenceData($p));
 
         $m->addCondition('name', 'Sarah');
-        $this->assertSame(3, $m->executeCountQuery());
+        static::assertSame(3, $m->executeCountQuery());
 
         $m->addCondition('surname', 'Smith');
-        $this->assertSame(1, $m->executeCountQuery());
-        $this->assertSame([4 => ['id' => 4, 'name' => 'Sarah', 'surname' => 'Smith']], $m->export());
-        $this->assertSame([4 => ['id' => 4, 'name' => 'Sarah', 'surname' => 'Smith']], $m->action('select')->getRows());
+        static::assertSame(1, $m->executeCountQuery());
+        static::assertSame([4 => ['id' => 4, 'name' => 'Sarah', 'surname' => 'Smith']], $m->export());
+        static::assertSame([4 => ['id' => 4, 'name' => 'Sarah', 'surname' => 'Smith']], $m->action('select')->getRows());
 
         $m->addCondition('surname', 'Siiiith');
-        $this->assertSame(0, $m->executeCountQuery());
+        static::assertSame(0, $m->executeCountQuery());
     }
 
     public function testUnsupportedAction(): void
@@ -811,10 +811,10 @@ class ArrayTest extends TestCase
         $user->hasOne('country_id', ['model' => $country]);
 
         $uu = $user->load(1);
-        $this->assertSame('Latvia', $uu->ref('country_id')->get('name'));
+        static::assertSame('Latvia', $uu->ref('country_id')->get('name'));
 
         $uu = $user->load(2);
-        $this->assertSame('UK', $uu->ref('country_id')->get('name'));
+        static::assertSame('UK', $uu->ref('country_id')->get('name'));
     }
 
     public function testHasMany(): void
@@ -843,10 +843,10 @@ class ArrayTest extends TestCase
         $user->hasOne('country_id', ['model' => $country]);
 
         $cc = $country->load(1);
-        $this->assertSame(2, $cc->ref('Users')->executeCountQuery());
+        static::assertSame(2, $cc->ref('Users')->executeCountQuery());
 
         $cc = $country->load(2);
-        $this->assertSame(1, $cc->ref('Users')->executeCountQuery());
+        static::assertSame(1, $cc->ref('Users')->executeCountQuery());
     }
 
     public function testLoadAnyReturnsFirstRecord(): void
@@ -861,7 +861,7 @@ class ArrayTest extends TestCase
         $m->addField('name');
         $m->addField('surname');
         $m = $m->loadAny();
-        $this->assertSame(2, $m->getId());
+        static::assertSame(2, $m->getId());
     }
 
     public function testLoadAnyThrowsExceptionOnRecordNotFound(): void
@@ -882,6 +882,6 @@ class ArrayTest extends TestCase
         $m->addField('surname');
 
         $m = $m->tryLoadAny();
-        $this->assertNull($m);
+        static::assertNull($m);
     }
 }

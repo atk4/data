@@ -164,10 +164,10 @@ class SubTypesTest extends TestCase
         $inheritance->transferTo($current, 500);
         $current->withdraw(350);
 
-        $this->assertInstanceOf(StTransaction_Ob::class, $inheritance->ref('Transactions')->load(1));
-        $this->assertInstanceOf(StTransaction_TransferOut::class, $inheritance->ref('Transactions')->load(2));
-        $this->assertInstanceOf(StTransaction_TransferIn::class, $current->ref('Transactions')->load(3));
-        $this->assertInstanceOf(StTransaction_Withdrawal::class, $current->ref('Transactions')->load(4));
+        static::assertInstanceOf(StTransaction_Ob::class, $inheritance->ref('Transactions')->load(1));
+        static::assertInstanceOf(StTransaction_TransferOut::class, $inheritance->ref('Transactions')->load(2));
+        static::assertInstanceOf(StTransaction_TransferIn::class, $current->ref('Transactions')->load(3));
+        static::assertInstanceOf(StTransaction_Withdrawal::class, $current->ref('Transactions')->load(4));
 
         $assertClassesFx = function (array $expectedClasses) use ($current): void {
             $classes = [];
@@ -184,8 +184,8 @@ class SubTypesTest extends TestCase
 
         $current->deposit(50);
         $current->deposit(50);
-        $this->assertInstanceOf(StTransaction_Deposit::class, $current->ref('Transactions')->load(5));
-        $this->assertInstanceOf(StTransaction_Deposit::class, $current->ref('Transactions')->load(5));
+        static::assertInstanceOf(StTransaction_Deposit::class, $current->ref('Transactions')->load(5));
+        static::assertInstanceOf(StTransaction_Deposit::class, $current->ref('Transactions')->load(5));
 
         $assertClassesFx([
             StTransaction_TransferIn::class,

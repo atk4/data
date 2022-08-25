@@ -60,9 +60,9 @@ class ContainsOneTest extends TestCase
         $a = $i->addr;
 
         // test caption of containsOne reference
-        $this->assertSame('Secret Code', $a->getField($a->fieldName()->door_code)->getCaption());
-        $this->assertSame('Secret Code', $a->refModel($a->fieldName()->door_code)->getModelCaption());
-        $this->assertSame('Secret Code', $a->door_code->getModelCaption());
+        static::assertSame('Secret Code', $a->getField($a->fieldName()->door_code)->getCaption());
+        static::assertSame('Secret Code', $a->refModel($a->fieldName()->door_code)->getModelCaption());
+        static::assertSame('Secret Code', $a->door_code->getModelCaption());
     }
 
     public function testContainsOne(): void
@@ -70,10 +70,10 @@ class ContainsOneTest extends TestCase
         $i = new Invoice($this->db);
         $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
 
-        $this->assertSame(Address::class, get_class($i->getModel()->addr));
+        static::assertSame(Address::class, get_class($i->getModel()->addr));
 
         // check do we have address set
-        $this->assertNull($i->addr);
+        static::assertNull($i->addr);
         $a = $i->getModel()->addr->createEntity();
         $a->containedInEntity = $i;
 
@@ -89,15 +89,15 @@ class ContainsOneTest extends TestCase
         $a->save();
 
         // now reload invoice and see if it is saved
-        $this->assertEquals($row, $i->addr->get());
+        static::assertEquals($row, $i->addr->get());
         $i->reload();
-        $this->assertEquals($row, $i->addr->get());
+        static::assertEquals($row, $i->addr->get());
         $i = $i->getModel()->load($i->getId());
-        $this->assertEquals($row, $i->addr->get());
+        static::assertEquals($row, $i->addr->get());
 
         // now try to change some field in address
         $i->addr->set($i->addr->fieldName()->address, 'bar')->save();
-        $this->assertSame('bar', $i->addr->address);
+        static::assertSame('bar', $i->addr->address);
 
         // now add nested containsOne - DoorCode
         $iEntity = $i->addr;
@@ -109,19 +109,19 @@ class ContainsOneTest extends TestCase
             $c->fieldName()->valid_till => new \DateTime('2019-07-01'),
         ]);
         $c->save();
-        $this->assertEquals($row, $i->addr->door_code->get());
+        static::assertEquals($row, $i->addr->door_code->get());
 
         // update DoorCode
         $i->reload();
         $i->addr->door_code->save([$i->addr->door_code->fieldName()->code => 'DEF']);
-        $this->assertEquals(array_merge($row, [$i->addr->door_code->fieldName()->code => 'DEF']), $i->addr->door_code->get());
+        static::assertEquals(array_merge($row, [$i->addr->door_code->fieldName()->code => 'DEF']), $i->addr->door_code->get());
 
         // try hasOne reference
         $c = $i->addr->country_id;
-        $this->assertSame('Latvia', $c->name);
+        static::assertSame('Latvia', $c->name);
         $i->addr->set($i->addr->fieldName()->country_id, 2)->save();
         $c = $i->addr->country_id;
-        $this->assertSame('United Kingdom', $c->name);
+        static::assertSame('United Kingdom', $c->name);
 
         // let's test how it all looks in persistence without typecasting
         $exportAddr = $i->getModel()->setOrder('id')
@@ -131,7 +131,7 @@ class ContainsOneTest extends TestCase
 
             return $dt->format('Y-m-d H:i:s.u');
         };
-        $this->assertJsonStringEqualsJsonString(
+        static::assertJsonStringEqualsJsonString(
             json_encode([
                 $i->addr->fieldName()->id => 1,
                 $i->addr->fieldName()->country_id => 2,
@@ -149,13 +149,13 @@ class ContainsOneTest extends TestCase
 
         // so far so good. now let's try to delete door_code
         $i->addr->door_code->delete();
-        $this->assertNull($i->addr->get($i->addr->fieldName()->door_code));
-        $this->assertNull($i->addr->door_code);
+        static::assertNull($i->addr->get($i->addr->fieldName()->door_code));
+        static::assertNull($i->addr->door_code);
 
         // and now delete address
         $i->addr->delete();
-        $this->assertNull($i->get($i->fieldName()->addr));
-        $this->assertNull($i->addr);
+        static::assertNull($i->get($i->fieldName()->addr));
+        static::assertNull($i->addr);
     }
 
     /**
@@ -167,7 +167,7 @@ class ContainsOneTest extends TestCase
         $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
 
         // with address
-        $this->assertNull($i->addr);
+        static::assertNull($i->addr);
         $a = $i->getModel()->addr->createEntity();
         $a->containedInEntity = $i;
         $a->setMulti($row = [
@@ -185,18 +185,18 @@ class ContainsOneTest extends TestCase
         $a->set('post_index', 'LV-1234');
         $a->save();
 
-        $this->assertEquals(array_merge($row, ['post_index' => 'LV-1234']), $a->get());
+        static::assertEquals(array_merge($row, ['post_index' => 'LV-1234']), $a->get());
 
         // now this one is a bit tricky
         // each time you call ref() it returns you new model object so it will not have post_index field
-        $this->assertFalse($i->addr->hasField('post_index'));
+        static::assertFalse($i->addr->hasField('post_index'));
 
         // now reload invoice just in case
         $i->reload();
 
         // and it references to same old Address model without post_index field - no errors
         $a = $i->addr;
-        $this->assertEquals($row, $a->get());
+        static::assertEquals($row, $a->get());
     }
 
     public function testUnmanagedDataModificationException(): void

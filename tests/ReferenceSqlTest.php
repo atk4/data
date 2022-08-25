@@ -46,19 +46,19 @@ class ReferenceSqlTest extends TestCase
 
         $oo = $u->load(1)->ref('Orders');
         $ooo = $oo->load(1);
-        $this->assertSame(20, $ooo->get('amount'));
+        static::assertSame(20, $ooo->get('amount'));
         $ooo = $oo->tryLoad(2);
-        $this->assertNull($ooo);
+        static::assertNull($ooo);
         $ooo = $oo->load(3);
-        $this->assertSame(5, $ooo->get('amount'));
+        static::assertSame(5, $ooo->get('amount'));
 
         $oo = $u->load(2)->ref('Orders');
         $ooo = $oo->tryLoad(1);
-        $this->assertNull($ooo);
+        static::assertNull($ooo);
         $ooo = $oo->load(2);
-        $this->assertSame(15, $ooo->get('amount'));
+        static::assertSame(15, $ooo->get('amount'));
         $ooo = $oo->tryLoad(3);
-        $this->assertNull($ooo);
+        static::assertNull($ooo);
 
         $oo = $u->addCondition('id', '>', '1')->ref('Orders');
 
@@ -114,7 +114,7 @@ class ReferenceSqlTest extends TestCase
         if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
             $serverVersion = $this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
             if (preg_match('~^5\.6~', $serverVersion)) {
-                $this->markTestIncomplete('TODO MySQL: Unique key exceed max key (767 bytes) length');
+                static::markTestIncomplete('TODO MySQL: Unique key exceed max key (767 bytes) length');
             }
         }
         $this->markTestIncompleteWhenCreateUniqueIndexIsNotSupportedByPlatform();
@@ -123,10 +123,10 @@ class ReferenceSqlTest extends TestCase
         $this->createMigrator()->createForeignKey($u->getReference('cur'));
 
         $cc = $u->load(1)->ref('cur');
-        $this->assertSame('Euro', $cc->get('name'));
+        static::assertSame('Euro', $cc->get('name'));
 
         $cc = $u->load(2)->ref('cur');
-        $this->assertSame('Pound', $cc->get('name'));
+        static::assertSame('Pound', $cc->get('name'));
     }
 
     public function testLink2(): void
@@ -175,10 +175,10 @@ class ReferenceSqlTest extends TestCase
 
         $o->hasOne('user_id', ['model' => $u]);
 
-        $this->assertSame('John', $o->load(1)->ref('user_id')->get('name'));
-        $this->assertSame('Peter', $o->load(2)->ref('user_id')->get('name'));
-        $this->assertSame('John', $o->load(3)->ref('user_id')->get('name'));
-        $this->assertSame('Joe', $o->load(5)->ref('user_id')->get('name'));
+        static::assertSame('John', $o->load(1)->ref('user_id')->get('name'));
+        static::assertSame('Peter', $o->load(2)->ref('user_id')->get('name'));
+        static::assertSame('John', $o->load(3)->ref('user_id')->get('name'));
+        static::assertSame('Joe', $o->load(5)->ref('user_id')->get('name'));
 
         $o->addCondition('amount', '>', 6);
         $o->addCondition('amount', '<', 9);
@@ -220,12 +220,12 @@ class ReferenceSqlTest extends TestCase
             ['date', 'type' => 'date'],
         ]);
 
-        $this->assertSame('John', $o->load(1)->get('username'));
-        $this->assertEquals(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('date'));
+        static::assertSame('John', $o->load(1)->get('username'));
+        static::assertEquals(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('date'));
 
-        $this->assertSame('Peter', $o->load(2)->get('username'));
-        $this->assertSame('John', $o->load(3)->get('username'));
-        $this->assertSame('Joe', $o->load(5)->get('username'));
+        static::assertSame('Peter', $o->load(2)->get('username'));
+        static::assertSame('John', $o->load(3)->get('username'));
+        static::assertSame('Joe', $o->load(5)->get('username'));
 
         // few more tests
         $o = new Model($this->db, ['table' => 'order']);
@@ -234,13 +234,13 @@ class ReferenceSqlTest extends TestCase
             'username' => 'name',
             'thedate' => ['date', 'type' => 'date'],
         ]);
-        $this->assertSame('John', $o->load(1)->get('username'));
-        $this->assertEquals(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('thedate'));
+        static::assertSame('John', $o->load(1)->get('username'));
+        static::assertEquals(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('thedate'));
 
         $o = new Model($this->db, ['table' => 'order']);
         $o->addField('amount');
         $o->hasOne('user_id', ['model' => $u])->addField('date', null, ['type' => 'date']);
-        $this->assertEquals(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('date'));
+        static::assertEquals(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('date'));
     }
 
     public function testRelatedExpression(): void
@@ -316,14 +316,14 @@ class ReferenceSqlTest extends TestCase
         $i = $i->load('1');
 
         // type was set explicitly
-        $this->assertSame('atk4_money', $i->getField('total_vat')->type);
+        static::assertSame('atk4_money', $i->getField('total_vat')->type);
 
         // type was not set and is not inherited
-        $this->assertNull($i->getField('total_net')->type);
+        static::assertNull($i->getField('total_net')->type);
 
-        $this->assertSame(40.0, (float) $i->get('total_net'));
-        $this->assertSame(9.2, $i->get('total_vat'));
-        $this->assertSame(49.2, $i->get('total_gross'));
+        static::assertSame(40.0, (float) $i->get('total_net'));
+        static::assertSame(9.2, $i->get('total_vat'));
+        static::assertSame(49.2, $i->get('total_gross'));
 
         $i->ref('line')->import([
             ['total_net' => ($n = 1), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1))],
@@ -331,18 +331,18 @@ class ReferenceSqlTest extends TestCase
         ]);
         $i->reload();
 
-        $this->assertSame($n = 43.0, (float) $i->get('total_net'));
-        $this->assertSame($n * $vat, $i->get('total_vat'));
-        $this->assertSame($n * ($vat + 1), $i->get('total_gross'));
+        static::assertSame($n = 43.0, (float) $i->get('total_net'));
+        static::assertSame($n * $vat, $i->get('total_vat'));
+        static::assertSame($n * ($vat + 1), $i->get('total_gross'));
 
         $i->ref('line')->import([
             ['total_net' => null, 'total_vat' => null, 'total_gross' => 1],
         ]);
         $i->reload();
 
-        $this->assertSame($n = 43.0, (float) $i->get('total_net'));
-        $this->assertSame($n * $vat, $i->get('total_vat'));
-        $this->assertSame($n * ($vat + 1) + 1, $i->get('total_gross'));
+        static::assertSame($n = 43.0, (float) $i->get('total_net'));
+        static::assertSame($n * $vat, $i->get('total_vat'));
+        static::assertSame($n * ($vat + 1) + 1, $i->get('total_gross'));
     }
 
     public function testOtherAggregates(): void
@@ -397,24 +397,24 @@ class ReferenceSqlTest extends TestCase
         ]);
 
         $ll = $l->load(1);
-        $this->assertSame(2, $ll->get('items_name')); // 2 not-null values
-        $this->assertSame(1, $ll->get('items_code')); // only 1 not-null value
-        $this->assertSame(2, $ll->get('items_star')); // 2 rows in total
-        $this->assertSame($ll->get('items_c:') === 'Pork::Chicken' ? 'Pork::Chicken' : 'Chicken::Pork', $ll->get('items_c:'));
-        $this->assertSame($ll->get('items_c-') === 'Pork-Chicken' ? 'Pork-Chicken' : 'Chicken-Pork', $ll->get('items_c-'));
-        $this->assertSame(strlen('Chicken') + strlen('Pork'), $ll->get('len'));
-        $this->assertSame(strlen('Chicken') + strlen('Pork'), $ll->get('len2'));
-        $this->assertSame(10, $ll->get('chicken5'));
+        static::assertSame(2, $ll->get('items_name')); // 2 not-null values
+        static::assertSame(1, $ll->get('items_code')); // only 1 not-null value
+        static::assertSame(2, $ll->get('items_star')); // 2 rows in total
+        static::assertSame($ll->get('items_c:') === 'Pork::Chicken' ? 'Pork::Chicken' : 'Chicken::Pork', $ll->get('items_c:'));
+        static::assertSame($ll->get('items_c-') === 'Pork-Chicken' ? 'Pork-Chicken' : 'Chicken-Pork', $ll->get('items_c-'));
+        static::assertSame(strlen('Chicken') + strlen('Pork'), $ll->get('len'));
+        static::assertSame(strlen('Chicken') + strlen('Pork'), $ll->get('len2'));
+        static::assertSame(10, $ll->get('chicken5'));
 
         $ll = $l->load(2);
-        $this->assertSame(0, $ll->get('items_name'));
-        $this->assertSame(0, $ll->get('items_code'));
-        $this->assertSame(0, $ll->get('items_star'));
-        $this->assertNull($ll->get('items_c:'));
-        $this->assertNull($ll->get('items_c-'));
-        $this->assertNull($ll->get('len'));
-        $this->assertNull($ll->get('len2'));
-        $this->assertNull($ll->get('chicken5'));
+        static::assertSame(0, $ll->get('items_name'));
+        static::assertSame(0, $ll->get('items_code'));
+        static::assertSame(0, $ll->get('items_star'));
+        static::assertNull($ll->get('items_c:'));
+        static::assertNull($ll->get('items_c-'));
+        static::assertNull($ll->get('len'));
+        static::assertNull($ll->get('len2'));
+        static::assertNull($ll->get('chicken5'));
     }
 
     protected function setupDbForTraversing(): Model
@@ -477,7 +477,7 @@ class ReferenceSqlTest extends TestCase
         $userEntity = $user->createEntity();
 
         $companyEntity = $userEntity->ref('Company');
-        $this->assertFalse($companyEntity->isLoaded());
+        static::assertFalse($companyEntity->isLoaded());
     }
 
     public function testUnloadedEntityTraversingHasOneEx(): void
@@ -526,27 +526,27 @@ class ReferenceSqlTest extends TestCase
             ->addField('address');
 
         $uu = $u->load(1);
-        $this->assertSame('John contact', $uu->get('address'));
-        $this->assertSame('John contact', $uu->ref('contact_id')->get('address'));
+        static::assertSame('John contact', $uu->get('address'));
+        static::assertSame('John contact', $uu->ref('contact_id')->get('address'));
 
         $uu = $u->load(2);
-        $this->assertNull($uu->get('address'));
-        $this->assertNull($uu->get('contact_id'));
-        $this->assertNull($uu->ref('contact_id')->get('address'));
+        static::assertNull($uu->get('address'));
+        static::assertNull($uu->get('contact_id'));
+        static::assertNull($uu->ref('contact_id')->get('address'));
 
         $uu = $u->load(3);
-        $this->assertSame('Joe contact', $uu->get('address'));
-        $this->assertSame('Joe contact', $uu->ref('contact_id')->get('address'));
+        static::assertSame('Joe contact', $uu->get('address'));
+        static::assertSame('Joe contact', $uu->ref('contact_id')->get('address'));
 
         $uu = $u->load(2);
         $uu->ref('contact_id')->save(['address' => 'Peters new contact']);
 
-        $this->assertNotNull($uu->get('contact_id'));
-        $this->assertSame('Peters new contact', $uu->ref('contact_id')->get('address'));
+        static::assertNotNull($uu->get('contact_id'));
+        static::assertSame('Peters new contact', $uu->ref('contact_id')->get('address'));
 
         $uu->save()->reload();
-        $this->assertSame('Peters new contact', $uu->ref('contact_id')->get('address'));
-        $this->assertSame('Peters new contact', $uu->get('address'));
+        static::assertSame('Peters new contact', $uu->ref('contact_id')->get('address'));
+        static::assertSame('Peters new contact', $uu->get('address'));
     }
 
     public function testHasOneIdFieldAsOurField(): void
@@ -578,8 +578,8 @@ class ReferenceSqlTest extends TestCase
         $s->createEntity()->save(['name' => 'Nou camp nou', 'player_id' => 4]);
         $pEntity = $p->createEntity()->save(['name' => 'Ivan']);
 
-        $this->assertSame('Nou camp nou', $pEntity->ref('Stadium')->get('name'));
-        $this->assertSame(4, $pEntity->ref('Stadium')->get('player_id'));
+        static::assertSame('Nou camp nou', $pEntity->ref('Stadium')->get('name'));
+        static::assertSame(4, $pEntity->ref('Stadium')->get('player_id'));
     }
 
     public function testModelProperty(): void
@@ -587,7 +587,7 @@ class ReferenceSqlTest extends TestCase
         $user = new Model($this->db, ['table' => 'user']);
         $user->hasMany('Orders', ['model' => [Model::class, 'table' => 'order'], 'theirField' => 'id']);
         $o = $user->ref('Orders');
-        $this->assertSame('order', $o->table);
+        static::assertSame('order', $o->table);
     }
 
     public function testAddTitle(): void
@@ -610,12 +610,12 @@ class ReferenceSqlTest extends TestCase
 
         // by default not set
         $o->hasOne('user_id', ['model' => $u]);
-        $this->assertSame($o->getField('user_id')->isVisible(), true);
+        static::assertSame($o->getField('user_id')->isVisible(), true);
 
         $o->getReference('user_id')->addTitle();
-        $this->assertTrue($o->hasField('user'));
-        $this->assertSame($o->getField('user')->isVisible(), true);
-        $this->assertSame($o->getField('user_id')->isVisible(), false);
+        static::assertTrue($o->hasField('user'));
+        static::assertSame($o->getField('user')->isVisible(), true);
+        static::assertSame($o->getField('user_id')->isVisible(), false);
 
         // if it is set manually then it will not be changed
         $o = new Model($this->db, ['table' => 'order']);
@@ -624,7 +624,7 @@ class ReferenceSqlTest extends TestCase
         $o->getField('user_id')->ui['visible'] = true;
         $o->getReference('user_id')->addTitle();
 
-        $this->assertSame($o->getField('user_id')->isVisible(), true);
+        static::assertSame($o->getField('user_id')->isVisible(), true);
     }
 
     /**
@@ -658,13 +658,13 @@ class ReferenceSqlTest extends TestCase
 
         // change order user by changing titleField value
         $o = $o->load(1);
-        $this->assertSame(1, $o->get('user_id'));
+        static::assertSame(1, $o->get('user_id'));
         $o->set('user_id', null);
         $o->save();
         $o->set('user', 'Peter');
-        $this->assertNull($o->get('user_id'));
+        static::assertNull($o->get('user_id'));
         $o->save();
-        $this->assertSame(2, $o->get('user_id'));
+        static::assertSame(2, $o->get('user_id'));
 
         $this->dropCreatedDb();
         $this->setDb($dbData);
@@ -679,13 +679,13 @@ class ReferenceSqlTest extends TestCase
 
         // change order user by changing titleField value
         $o = $o->load(1);
-        $this->assertSame(1, $o->get('user_id'));
+        static::assertSame(1, $o->get('user_id'));
         $o->set('user_id', null);
         $o->save();
         $o->set('user', 'Foo');
-        $this->assertNull($o->get('user_id'));
+        static::assertNull($o->get('user_id'));
         $o->save();
-        $this->assertSame(2, $o->get('user_id'));
+        static::assertSame(2, $o->get('user_id'));
 
         $this->dropCreatedDb();
         $this->setDb($dbData);
@@ -700,13 +700,13 @@ class ReferenceSqlTest extends TestCase
 
         // change order user by changing reference field value
         $o = $o->load(1);
-        $this->assertSame(1, $o->get('user_id'));
+        static::assertSame(1, $o->get('user_id'));
         $o->set('user_id', null);
         $o->save();
         $o->set('my_user', 'Foo');
-        $this->assertNull($o->get('user_id'));
+        static::assertNull($o->get('user_id'));
         $o->save();
-        $this->assertSame(2, $o->get('user_id'));
+        static::assertSame(2, $o->get('user_id'));
 
         $this->dropCreatedDb();
         $this->setDb($dbData);
@@ -721,21 +721,21 @@ class ReferenceSqlTest extends TestCase
 
         // change order user by changing ref field and titleField value - same
         $o = $o->load(1);
-        $this->assertSame(1, $o->get('user_id'));
+        static::assertSame(1, $o->get('user_id'));
         $o->set('user_id', null);
         $o->save();
         $o->set('my_user', 'Foo'); // user_id = 2
         $o->set('user_id', 2);
-        $this->assertSame(2, $o->get('user_id'));
+        static::assertSame(2, $o->get('user_id'));
         $o->save();
-        $this->assertSame(2, $o->get('user_id'));
+        static::assertSame(2, $o->get('user_id'));
 
         $this->dropCreatedDb();
         $this->setDb($dbData);
 
         // change order user by changing ref field and titleField value - mismatched
         $o = $o->getModel()->load(1);
-        $this->assertSame(1, $o->get('user_id'));
+        static::assertSame(1, $o->get('user_id'));
         $o->set('user_id', null);
         $o->save();
         $o->set('my_user', 'Foo'); // user_id = 2
@@ -770,12 +770,12 @@ class ReferenceSqlTest extends TestCase
         $u->addField('last_name');
 
         // Test : Now the caption is null and is generated from field name
-        $this->assertSame('Last Name', $u->getField('last_name')->getCaption());
+        static::assertSame('Last Name', $u->getField('last_name')->getCaption());
 
         $u->getField('last_name')->caption = 'Surname';
 
         // Test : Now the caption is not null and the value is returned
-        $this->assertSame('Surname', $u->getField('last_name')->getCaption());
+        static::assertSame('Surname', $u->getField('last_name')->getCaption());
 
         $o = (new Model($this->db, ['table' => 'order']));
         $orderUserRef = $o->hasOne('my_user', ['model' => $u, 'ourField' => 'user_id']);
@@ -786,7 +786,7 @@ class ReferenceSqlTest extends TestCase
         // Test : $field->caption for the field 'last_name' is defined in referenced model (User)
         // When Order add field from Referenced model User
         // caption will be passed to Order field user_last_name
-        $this->assertSame('Surname', $referencedCaption);
+        static::assertSame('Surname', $referencedCaption);
     }
 
     /**
@@ -821,10 +821,10 @@ class ReferenceSqlTest extends TestCase
 
         // no type set in defaults, should pull type integer from user model
         $orderUserRef->addField('some_number');
-        $this->assertSame('integer', $order->getField('some_number')->type);
+        static::assertSame('integer', $order->getField('some_number')->type);
 
         // set type in defaults, this should have higher priority than type set in Model
         $orderUserRef->addField('some_other_number', null, ['type' => 'string']);
-        $this->assertSame('string', $order->getField('some_other_number')->type);
+        static::assertSame('string', $order->getField('some_other_number')->type);
     }
 }

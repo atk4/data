@@ -110,7 +110,7 @@ abstract class TestCase extends BaseTestCase
         );
 
         if ($platform instanceof SqlitePlatform && $convertedSql !== $sql) {
-            $this->assertSame($sql, $convertedSql);
+            static::assertSame($sql, $convertedSql);
         }
 
         return $convertedSql;
@@ -118,7 +118,7 @@ abstract class TestCase extends BaseTestCase
 
     protected function assertSameSql(string $expectedSqliteSql, string $actualSql, string $message = ''): void
     {
-        $this->assertSame($this->convertSqlFromSqlite($expectedSqliteSql), $actualSql, $message);
+        static::assertSame($this->convertSqlFromSqlite($expectedSqliteSql), $actualSql, $message);
     }
 
     /**
@@ -201,12 +201,12 @@ abstract class TestCase extends BaseTestCase
     protected function assertSameExportUnordered(array $expected, array $actual, string $message = ''): void
     {
         if ($this->compareExportUnorderedValue($expected, $actual) === 0) {
-            $this->assertTrue(true);
+            static::assertTrue(true);
 
             return;
         }
 
-        $this->assertSame($expected, $actual, $message);
+        static::assertSame($expected, $actual, $message);
     }
 
     public function createMigrator(Model $model = null): Migrator
@@ -333,10 +333,10 @@ abstract class TestCase extends BaseTestCase
     {
         if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             // https://github.com/doctrine/dbal/issues/5507
-            $this->markTestIncomplete('TODO MSSQL: DBAL must setup unique index without WHERE clause');
+            static::markTestIncomplete('TODO MSSQL: DBAL must setup unique index without WHERE clause');
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
             // https://github.com/doctrine/dbal/issues/5508
-            $this->markTestIncomplete('TODO Oracle: DBAL must setup unique index on table column too');
+            static::markTestIncomplete('TODO Oracle: DBAL must setup unique index on table column too');
         }
     }
 }

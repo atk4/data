@@ -33,7 +33,7 @@ class TransactionTest extends TestCase
         } catch (\Exception $e) {
         }
 
-        $this->assertSame('Sue', $this->getDb()['item'][2]['name']);
+        static::assertSame('Sue', $this->getDb()['item'][2]['name']);
 
         $m->onHook(Model::HOOK_AFTER_DELETE, static function (Model $model) {
             throw new \Exception('Awful thing happened');
@@ -44,7 +44,7 @@ class TransactionTest extends TestCase
         } catch (\Exception $e) {
         }
 
-        $this->assertSame('Sue', $this->getDb()['item'][2]['name']);
+        static::assertSame('Sue', $this->getDb()['item'][2]['name']);
     }
 
     public function testBeforeSaveHook(): void
@@ -125,7 +125,7 @@ class TransactionTest extends TestCase
         $m->setMulti(['name' => 'Jane', 'foo' => 'bar']);
         $m->save();
 
-        $this->assertTrue($hookCalled);
-        $this->assertSame($m->get(), $values);
+        static::assertTrue($hookCalled);
+        static::assertSame($m->get(), $values);
     }
 }

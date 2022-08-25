@@ -118,7 +118,7 @@ class ScopeTest extends TestCase
 
         $user = $user->loadOne();
 
-        $this->assertSame('Smith', $user->get('surname'));
+        static::assertSame('Smith', $user->get('surname'));
     }
 
     public function testUnexistingFieldException(): void
@@ -139,11 +139,11 @@ class ScopeTest extends TestCase
 
         $m->addCondition('gender', 'M');
 
-        $this->assertCount(1, $m->scope()->getNestedConditions());
+        static::assertCount(1, $m->scope()->getNestedConditions());
 
         $m->addCondition('gender', 'F');
 
-        $this->assertCount(2, $m->scope()->getNestedConditions());
+        static::assertCount(2, $m->scope()->getNestedConditions());
     }
 
     public function testEditableAfterCondition(): void
@@ -154,8 +154,8 @@ class ScopeTest extends TestCase
 
         $m->addCondition('gender', 'M');
 
-        $this->assertTrue($m->getField('gender')->system);
-        $this->assertFalse($m->getField('gender')->isEditable());
+        static::assertTrue($m->getField('gender')->system);
+        static::assertFalse($m->getField('gender')->isEditable());
     }
 
     public function testEditableHasOne(): void
@@ -167,8 +167,8 @@ class ScopeTest extends TestCase
         $m->addField('name');
         $m->hasOne('gender_id', ['model' => $gender]);
 
-        $this->assertFalse($m->getField('gender_id')->system);
-        $this->assertTrue($m->getField('gender_id')->isEditable());
+        static::assertFalse($m->getField('gender_id')->system);
+        static::assertTrue($m->getField('gender_id')->isEditable());
     }
 
     public function testConditionToWords(): void
@@ -176,34 +176,34 @@ class ScopeTest extends TestCase
         $user = new SUser($this->db);
 
         $condition = new Condition($this->getConnection()->expr('false'));
-        $this->assertSame('expression \'false\'', $condition->toWords($user));
+        static::assertSame('expression \'false\'', $condition->toWords($user));
 
         $condition = new Condition('country_id/code', 'US');
-        $this->assertSame('User that has reference Country ID where Code is equal to \'US\'', $condition->toWords($user));
+        static::assertSame('User that has reference Country ID where Code is equal to \'US\'', $condition->toWords($user));
 
         $condition = new Condition('country_id', 2);
-        $this->assertSame('Country ID is equal to 2 (\'Latvia\')', $condition->toWords($user));
+        static::assertSame('Country ID is equal to 2 (\'Latvia\')', $condition->toWords($user));
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform || $this->getDatabasePlatform() instanceof MySQLPlatform) {
             $condition = new Condition('name', $user->expr('[surname]'));
-            $this->assertSame('Name is equal to expression \'`surname`\'', $condition->toWords($user));
+            static::assertSame('Name is equal to expression \'`surname`\'', $condition->toWords($user));
         }
 
         $condition = new Condition('country_id', null);
-        $this->assertSame('Country ID is equal to empty', $condition->toWords($user));
+        static::assertSame('Country ID is equal to empty', $condition->toWords($user));
 
         $condition = new Condition('name', '>', 'Test');
-        $this->assertSame('Name is greater than \'Test\'', $condition->toWords($user));
+        static::assertSame('Name is greater than \'Test\'', $condition->toWords($user));
 
         $condition = (new Condition('country_id', 2))->negate();
-        $this->assertSame('Country ID is not equal to 2 (\'Latvia\')', $condition->toWords($user));
+        static::assertSame('Country ID is not equal to 2 (\'Latvia\')', $condition->toWords($user));
 
         $condition = new Condition($user->getField('surname'), $user->getField('name'));
-        $this->assertSame('Surname is equal to User Name', $condition->toWords($user));
+        static::assertSame('Surname is equal to User Name', $condition->toWords($user));
 
         $country = new SCountry($this->db);
         $country->addCondition('Users/#', '>', 0);
-        $this->assertSame('Country that has reference Users where number of records is greater than 0', $country->scope()->toWords());
+        static::assertSame('Country that has reference Users where number of records is greater than 0', $country->scope()->toWords());
     }
 
     public function testConditionUnsupportedToWords(): void
@@ -243,10 +243,10 @@ class ScopeTest extends TestCase
         $user = new SUser($this->db);
         $user->addCondition('country_id/code', 'LV');
 
-        $this->assertSame(1, $user->executeCountQuery());
+        static::assertSame(1, $user->executeCountQuery());
 
         foreach ($user as $u) {
-            $this->assertSame('LV', $u->get('country_code'));
+            static::assertSame('LV', $u->get('country_code'));
         }
 
         $user = new SUser($this->db);
@@ -254,10 +254,10 @@ class ScopeTest extends TestCase
         // users that have no ticket
         $user->addCondition('Tickets/#', 0);
 
-        $this->assertSame(1, $user->executeCountQuery());
+        static::assertSame(1, $user->executeCountQuery());
 
         foreach ($user as $u) {
-            $this->assertTrue(in_array($u->get('name'), ['Alain', 'Aerton', 'Rubens'], true));
+            static::assertTrue(in_array($u->get('name'), ['Alain', 'Aerton', 'Rubens'], true));
         }
 
         $country = new SCountry($this->db);
@@ -266,7 +266,7 @@ class ScopeTest extends TestCase
         $country->addCondition('Users/#', '>', 1);
 
         foreach ($country as $c) {
-            $this->assertSame('BR', $c->get('code'));
+            static::assertSame('BR', $c->get('code'));
         }
 
         $country = new SCountry($this->db);
@@ -275,7 +275,7 @@ class ScopeTest extends TestCase
         $country->addCondition('Users/Tickets/number', '001');
 
         foreach ($country as $c) {
-            $this->assertSame('CA', $c->get('code'));
+            static::assertSame('CA', $c->get('code'));
         }
 
         $country = new SCountry($this->db);
@@ -284,7 +284,7 @@ class ScopeTest extends TestCase
         $country->addCondition('Users/Tickets/#', '>', 1);
 
         foreach ($country as $c) {
-            $this->assertSame('LV', $c->get('code'));
+            static::assertSame('LV', $c->get('code'));
         }
 
         $country = new SCountry($this->db);
@@ -292,10 +292,10 @@ class ScopeTest extends TestCase
         // countries with users that have any tickets
         $country->addCondition('Users/Tickets/#', '>', 0);
 
-        $this->assertSame(3, $country->executeCountQuery());
+        static::assertSame(3, $country->executeCountQuery());
 
         foreach ($country as $c) {
-            $this->assertTrue(in_array($c->get('code'), ['LV', 'CA', 'BR'], true));
+            static::assertTrue(in_array($c->get('code'), ['LV', 'CA', 'BR'], true));
         }
 
         $country = new SCountry($this->db);
@@ -303,10 +303,10 @@ class ScopeTest extends TestCase
         // countries with users that have no tickets
         $country->addCondition('Users/Tickets/#', 0);
 
-        $this->assertSame(1, $country->executeCountQuery());
+        static::assertSame(1, $country->executeCountQuery());
 
         foreach ($country as $c) {
-            $this->assertTrue(in_array($c->get('code'), ['FR'], true));
+            static::assertTrue(in_array($c->get('code'), ['FR'], true));
         }
 
         $user = new SUser($this->db);
@@ -325,9 +325,9 @@ class ScopeTest extends TestCase
             $user->addCondition('Tickets/user/country_id/Users/country_id/Users/name', '!=', null); // should be always true
         }
 
-        $this->assertSame(2, $user->executeCountQuery());
+        static::assertSame(2, $user->executeCountQuery());
         foreach ($user as $u) {
-            $this->assertTrue(in_array($u->get('name'), ['Aerton', 'Rubens'], true));
+            static::assertTrue(in_array($u->get('name'), ['Aerton', 'Rubens'], true));
         }
     }
 
@@ -346,14 +346,14 @@ class ScopeTest extends TestCase
 
         $scope = Scope::createOr($scope1, $scope2);
 
-        $this->assertSame(Scope::OR, $scope->getJunction());
-        $this->assertSame('(Name is equal to \'John\' and Country Code is equal to \'CA\') or (Surname is equal to \'Doe\' and Country Code is equal to \'LV\')', $scope->toWords($user));
+        static::assertSame(Scope::OR, $scope->getJunction());
+        static::assertSame('(Name is equal to \'John\' and Country Code is equal to \'CA\') or (Surname is equal to \'Doe\' and Country Code is equal to \'LV\')', $scope->toWords($user));
 
         $user->scope()->add($scope);
 
-        $this->assertSame($user, $scope->getModel());
-        $this->assertSame(2, count($user->export()));
-        $this->assertSame($scope->toWords($user), $user->scope()->toWords());
+        static::assertSame($user, $scope->getModel());
+        static::assertSame(2, count($user->export()));
+        static::assertSame($scope->toWords($user), $user->scope()->toWords());
 
         // TODO once PHP7.3 support is dropped, we should use WeakRef for owner
         // and unset($scope); here
@@ -366,12 +366,12 @@ class ScopeTest extends TestCase
 
         $scope->addCondition('country_code', 'BR');
 
-        $this->assertSame('(Name is equal to \'John\' and Country Code is equal to \'CA\') or (Surname is equal to \'Doe\' and Country Code is equal to \'LV\') or Country Code is equal to \'BR\'', $scope->toWords($user));
+        static::assertSame('(Name is equal to \'John\' and Country Code is equal to \'CA\') or (Surname is equal to \'Doe\' and Country Code is equal to \'LV\') or Country Code is equal to \'BR\'', $scope->toWords($user));
 
         $user = new SUser($this->db);
         $user->scope()->add($scope);
 
-        $this->assertSame(4, count($user->export()));
+        static::assertSame(4, count($user->export()));
     }
 
     public function testScopeToWords(): void
@@ -386,7 +386,7 @@ class ScopeTest extends TestCase
 
         $scope = Scope::createAnd($scope1, $condition3);
 
-        $this->assertSame('(Name is equal to \'Alain\' and Country Code is equal to \'CA\') and Surname is not equal to \'Prost\'', $scope->toWords($user));
+        static::assertSame('(Name is equal to \'Alain\' and Country Code is equal to \'CA\') and Surname is not equal to \'Prost\'', $scope->toWords($user));
     }
 
     public function testNegate(): void
@@ -401,7 +401,7 @@ class ScopeTest extends TestCase
         $user->scope()->add($condition);
 
         foreach ($user as $u) {
-            $this->assertTrue($u->get('name') === 'Alain' && $u->get('country_code') === 'FR');
+            static::assertTrue($u->get('name') === 'Alain' && $u->get('country_code') === 'FR');
         }
     }
 
@@ -415,7 +415,7 @@ class ScopeTest extends TestCase
         $scope = Scope::createAnd($condition1, $condition2);
         $scope = Scope::createOr($scope, new Condition('name', 'John'));
 
-        $this->assertSame('(Name is equal to \'Alain\' and Country Code is equal to \'FR\') or Name is equal to \'John\'', $scope->toWords($user));
+        static::assertSame('(Name is equal to \'Alain\' and Country Code is equal to \'FR\') or Name is equal to \'John\'', $scope->toWords($user));
     }
 
     public function testOr(): void
@@ -428,7 +428,7 @@ class ScopeTest extends TestCase
         $scope = Scope::createOr($condition1, $condition2);
         $scope = Scope::createAnd($scope, new Condition('name', 'John'));
 
-        $this->assertSame('(Name is equal to \'Alain\' or Country Code is equal to \'FR\') and Name is equal to \'John\'', $scope->toWords($user));
+        static::assertSame('(Name is equal to \'Alain\' or Country Code is equal to \'FR\') and Name is equal to \'John\'', $scope->toWords($user));
     }
 
     public function testMerge(): void
@@ -440,7 +440,7 @@ class ScopeTest extends TestCase
 
         $scope = Scope::createAnd($condition1, $condition2);
 
-        $this->assertSame('Name is equal to \'Alain\' and Country Code is equal to \'FR\'', $scope->toWords($user));
+        static::assertSame('Name is equal to \'Alain\' and Country Code is equal to \'FR\'', $scope->toWords($user));
     }
 
     public function testDestroyEmpty(): void
@@ -454,8 +454,8 @@ class ScopeTest extends TestCase
 
         $scope->clear();
 
-        $this->assertTrue($scope->isEmpty());
-        $this->assertEmpty($scope->toWords($user));
+        static::assertTrue($scope->isEmpty());
+        static::assertEmpty($scope->toWords($user));
     }
 
     public function testInvalid1(): void

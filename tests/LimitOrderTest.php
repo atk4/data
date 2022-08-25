@@ -26,7 +26,7 @@ class LimitOrderTest extends TestCase
 
         $i->setOrder('total_net');
         $i->setOnlyFields(['total_net']);
-        $this->assertSame([
+        static::assertSame([
             ['total_net' => 10],
             ['total_net' => 15],
             ['total_net' => 20],
@@ -51,7 +51,7 @@ class LimitOrderTest extends TestCase
         $i = clone $ii;
         $i->setOrder(['total_net' => 'desc', 'total_gross' => 'desc']);
         $i->setOnlyFields(['total_net', 'total_gross']);
-        $this->assertSame([
+        static::assertSame([
             ['total_net' => 15, 'total_gross' => 19],
             ['total_net' => 10, 'total_gross' => 15],
             ['total_net' => 10, 'total_gross' => 14],
@@ -60,7 +60,7 @@ class LimitOrderTest extends TestCase
         $i = clone $ii;
         $i->setOrder(['total_net' => 'desc', 'total_gross']);
         $i->setOnlyFields(['total_net', 'total_gross']);
-        $this->assertSame([
+        static::assertSame([
             ['total_net' => 15, 'total_gross' => 19],
             ['total_net' => 10, 'total_gross' => 14],
             ['total_net' => 10, 'total_gross' => 15],
@@ -69,7 +69,7 @@ class LimitOrderTest extends TestCase
         $i = clone $ii;
         $i->setOrder(['total_net' => 'desc', 'total_gross']);
         $i->setOnlyFields(['total_net', 'total_vat']);
-        $this->assertSame([
+        static::assertSame([
             ['total_net' => 15, 'total_vat' => 4],
             ['total_net' => 10, 'total_vat' => 4],
             ['total_net' => 10, 'total_vat' => 5],
@@ -78,7 +78,7 @@ class LimitOrderTest extends TestCase
         $i = clone $ii;
         $i->setOrder(['total_gross' => 'desc', 'total_net']);
         $i->setOnlyFields(['total_net', 'total_vat']);
-        $this->assertSame([
+        static::assertSame([
             ['total_net' => 15, 'total_vat' => 4],
             ['total_net' => 10, 'total_vat' => 5],
             ['total_net' => 10, 'total_vat' => 4],
@@ -103,7 +103,7 @@ class LimitOrderTest extends TestCase
         $i = clone $ii;
         $i->setOrder([['net', 'desc'], ['vat']]);
         $i->setOnlyFields(['net', 'vat']);
-        $this->assertSame([
+        static::assertSame([
             ['net' => 15, 'vat' => 4],
             ['net' => 10, 'vat' => 4],
             ['net' => 10, 'vat' => 5],
@@ -113,7 +113,7 @@ class LimitOrderTest extends TestCase
         $i = clone $ii;
         $i->setOrder(['net' => 'desc', 'vat' => 'asc']);
         $i->setOnlyFields(['net', 'vat']);
-        $this->assertSame([
+        static::assertSame([
             ['net' => 15, 'vat' => 4],
             ['net' => 10, 'vat' => 4],
             ['net' => 10, 'vat' => 5],
@@ -123,7 +123,7 @@ class LimitOrderTest extends TestCase
         $i = clone $ii;
         $i->setOrder(['net' => 'desc', 'vat']); // and you can even mix them (see 'vat' is a value not a key here)
         $i->setOnlyFields(['net', 'vat']);
-        $this->assertSame([
+        static::assertSame([
             ['net' => 15, 'vat' => 4],
             ['net' => 10, 'vat' => 4],
             ['net' => 10, 'vat' => 5],
@@ -149,7 +149,7 @@ class LimitOrderTest extends TestCase
 
         $i->setOrder('gross');
         $i->setOnlyFields(['gross']);
-        $this->assertSame([
+        static::assertSame([
             ['gross' => 14],
             ['gross' => 15],
             ['gross' => 19],
@@ -159,7 +159,7 @@ class LimitOrderTest extends TestCase
         $i->order = []; // reset
         $i->setOrder($i->expr('[net] * [vat]'));
         $i->setOnlyFields(['code']);
-        $this->assertSame([
+        static::assertSame([
             ['code' => 'B'], // 10 * 4 = 40
             ['code' => 'A'], // 10 * 5 = 50
             ['code' => 'C'], // 15 * 4 = 60
@@ -169,7 +169,7 @@ class LimitOrderTest extends TestCase
         $i->order = []; // reset
         $i->setOrder($i->expr('[net] * [vat] desc'));
         $i->setOnlyFields(['code']);
-        $this->assertSame([
+        static::assertSame([
             ['code' => 'C'], // 15 * 4 = 60
             ['code' => 'A'], // 10 * 5 = 50
             ['code' => 'B'], // 10 * 4 = 40
@@ -179,7 +179,7 @@ class LimitOrderTest extends TestCase
         $i->order = []; // reset
         $i->setOrder($i->expr('[net] * [vat]'), 'desc');
         $i->setOnlyFields(['code']);
-        $this->assertSame([
+        static::assertSame([
             ['code' => 'C'], // 15 * 4 = 60
             ['code' => 'A'], // 10 * 5 = 50
             ['code' => 'B'], // 10 * 4 = 40
@@ -189,7 +189,7 @@ class LimitOrderTest extends TestCase
         $i->order = []; // reset
         $i->setOrder(['vat', $i->expr('[net] * [vat]')]);
         $i->setOnlyFields(['code']);
-        $this->assertSame([
+        static::assertSame([
             ['code' => 'B'], // 4, 10 * 4 = 40
             ['code' => 'C'], // 4, 15 * 4 = 60
             ['code' => 'A'], // 5, 10 * 5 = 50
@@ -229,7 +229,7 @@ class LimitOrderTest extends TestCase
 
         $i->setOrder('total_net');
         $i->setOnlyFields(['total_net']);
-        $this->assertSame([
+        static::assertSame([
             ['total_net' => 10],
             ['total_net' => 15],
             ['total_net' => 20],
@@ -238,21 +238,21 @@ class LimitOrderTest extends TestCase
         $ii = $i;
         $i = clone $ii;
         $i->setLimit(2);
-        $this->assertSame([
+        static::assertSame([
             ['total_net' => 10],
             ['total_net' => 15],
         ], $i->export());
 
         $i = clone $ii;
         $i->setLimit(2, 1);
-        $this->assertSame([
+        static::assertSame([
             ['total_net' => 15],
             ['total_net' => 20],
         ], $i->export());
 
         $i = clone $ii;
         $i->setLimit(null, 1);
-        $this->assertSame([
+        static::assertSame([
             ['total_net' => 15],
             ['total_net' => 20],
         ], $i->export());
@@ -272,29 +272,29 @@ class LimitOrderTest extends TestCase
         $i->addField('total_net', ['type' => 'integer']);
         $i->setOrder('total_net');
 
-        $this->assertSame(10, $i->loadAny()->get('total_net'));
+        static::assertSame(10, $i->loadAny()->get('total_net'));
         $i->setLimit(2);
-        $this->assertSame(10, $i->loadAny()->get('total_net'));
+        static::assertSame(10, $i->loadAny()->get('total_net'));
 
         $i->setLimit(2, 2);
-        $this->assertSame(20, $i->loadAny()->get('total_net'));
-        $this->assertSame(20, $i->loadOne()->get('total_net'));
+        static::assertSame(20, $i->loadAny()->get('total_net'));
+        static::assertSame(20, $i->loadOne()->get('total_net'));
 
         $i->setLimit(1);
-        $this->assertSame(10, $i->loadAny()->get('total_net'));
-        $this->assertSame(10, $i->loadOne()->get('total_net'));
+        static::assertSame(10, $i->loadAny()->get('total_net'));
+        static::assertSame(10, $i->loadOne()->get('total_net'));
         $i->setLimit(1, 1);
-        $this->assertSame(15, $i->loadAny()->get('total_net'));
-        $this->assertSame(15, $i->loadOne()->get('total_net'));
+        static::assertSame(15, $i->loadAny()->get('total_net'));
+        static::assertSame(15, $i->loadOne()->get('total_net'));
         $i->setLimit(1, 2);
-        $this->assertSame(20, $i->loadAny()->get('total_net'));
-        $this->assertSame(20, $i->loadOne()->get('total_net'));
+        static::assertSame(20, $i->loadAny()->get('total_net'));
+        static::assertSame(20, $i->loadOne()->get('total_net'));
         $i->setLimit(1, 3);
-        $this->assertNull($i->tryLoadAny());
-        $this->assertNull($i->tryLoadOne());
+        static::assertNull($i->tryLoadAny());
+        static::assertNull($i->tryLoadOne());
 
         $i->setLimit(0);
-        $this->assertNull($i->tryLoadAny());
-        $this->assertNull($i->tryLoadOne());
+        static::assertNull($i->tryLoadAny());
+        static::assertNull($i->tryLoadOne());
     }
 }

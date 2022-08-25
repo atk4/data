@@ -62,15 +62,15 @@ class TypecastingTest extends TestCase
         $m->addField('json', ['type' => 'json']);
         $mm = $m->load(1);
 
-        $this->assertSame('foo', $mm->get('string'));
-        $this->assertTrue($mm->get('boolean'));
-        $this->assertSame(8.20, $mm->get('money'));
-        $this->assertEquals(new \DateTime('2013-02-20 UTC'), $mm->get('date'));
-        $this->assertEquals(new \DateTime('2013-02-20 20:00:12 UTC'), $mm->get('datetime'));
-        $this->assertEquals(new \DateTime('1970-01-01 12:00:50 UTC'), $mm->get('time'));
-        $this->assertSame(2940, $mm->get('integer'));
-        $this->assertSame([1, 2, 3], $mm->get('json'));
-        $this->assertSame(8.20234376757473, $mm->get('float'));
+        static::assertSame('foo', $mm->get('string'));
+        static::assertTrue($mm->get('boolean'));
+        static::assertSame(8.20, $mm->get('money'));
+        static::assertEquals(new \DateTime('2013-02-20 UTC'), $mm->get('date'));
+        static::assertEquals(new \DateTime('2013-02-20 20:00:12 UTC'), $mm->get('datetime'));
+        static::assertEquals(new \DateTime('1970-01-01 12:00:50 UTC'), $mm->get('time'));
+        static::assertSame(2940, $mm->get('integer'));
+        static::assertSame([1, 2, 3], $mm->get('json'));
+        static::assertSame(8.20234376757473, $mm->get('float'));
 
         $m->createEntity()->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
 
@@ -102,7 +102,7 @@ class TypecastingTest extends TestCase
                 ],
             ],
         ];
-        $this->assertEquals($dbData, $this->getDb());
+        static::assertEquals($dbData, $this->getDb());
 
         [$first, $duplicate] = $m->export();
 
@@ -112,12 +112,12 @@ class TypecastingTest extends TestCase
         $this->assertSameExportUnordered([$first], [$duplicate]);
 
         $m->load(2)->set('float', 8.20234376757474)->save();
-        $this->assertSame(8.20234376757474, $m->load(2)->get('float'));
+        static::assertSame(8.20234376757474, $m->load(2)->get('float'));
         $m->load(2)->set('float', 8.202343767574732)->save();
         // pdo_sqlite in truncating float, see https://github.com/php/php-src/issues/8510
         // fixed since PHP 8.1, but if converted in SQL to string explicitly, the result is still wrong
         if (!$this->getDatabasePlatform() instanceof SqlitePlatform || \PHP_VERSION_ID >= 80100) {
-            $this->assertSame(8.202343767574732, $m->load(2)->get('float'));
+            static::assertSame(8.202343767574732, $m->load(2)->get('float'));
         }
     }
 
@@ -164,38 +164,38 @@ class TypecastingTest extends TestCase
         $mm = $m->load(1);
 
         // Only
-        $this->assertSame($emptyStringValue, $mm->get('string'));
-        $this->assertSame($emptyStringValue, $mm->get('notype'));
-        $this->assertNull($mm->get('date'));
-        $this->assertNull($mm->get('datetime'));
-        $this->assertNull($mm->get('time'));
-        $this->assertNull($mm->get('boolean'));
-        $this->assertNull($mm->get('integer'));
-        $this->assertNull($mm->get('money'));
-        $this->assertNull($mm->get('float'));
-        $this->assertNull($mm->get('json'));
-        $this->assertNull($mm->get('object'));
+        static::assertSame($emptyStringValue, $mm->get('string'));
+        static::assertSame($emptyStringValue, $mm->get('notype'));
+        static::assertNull($mm->get('date'));
+        static::assertNull($mm->get('datetime'));
+        static::assertNull($mm->get('time'));
+        static::assertNull($mm->get('boolean'));
+        static::assertNull($mm->get('integer'));
+        static::assertNull($mm->get('money'));
+        static::assertNull($mm->get('float'));
+        static::assertNull($mm->get('json'));
+        static::assertNull($mm->get('object'));
 
         unset($row['id']);
         $mm->setMulti($row);
 
-        $this->assertSame('', $mm->get('string'));
-        $this->assertSame('', $mm->get('notype'));
-        $this->assertNull($mm->get('date'));
-        $this->assertNull($mm->get('datetime'));
-        $this->assertNull($mm->get('time'));
-        $this->assertNull($mm->get('boolean'));
-        $this->assertNull($mm->get('integer'));
-        $this->assertNull($mm->get('money'));
-        $this->assertNull($mm->get('float'));
-        $this->assertNull($mm->get('json'));
-        $this->assertNull($mm->get('object'));
+        static::assertSame('', $mm->get('string'));
+        static::assertSame('', $mm->get('notype'));
+        static::assertNull($mm->get('date'));
+        static::assertNull($mm->get('datetime'));
+        static::assertNull($mm->get('time'));
+        static::assertNull($mm->get('boolean'));
+        static::assertNull($mm->get('integer'));
+        static::assertNull($mm->get('money'));
+        static::assertNull($mm->get('float'));
+        static::assertNull($mm->get('json'));
+        static::assertNull($mm->get('object'));
         if (!$this->getDatabasePlatform() instanceof OraclePlatform) { // @TODO IMPORTANT we probably want to cast to string for Oracle on our own, so dirty array stay clean!
-            $this->assertSame([], $mm->getDirtyRef());
+            static::assertSame([], $mm->getDirtyRef());
         }
 
         $mm->save();
-        $this->assertEquals($dbData, $this->getDb());
+        static::assertEquals($dbData, $this->getDb());
 
         $m->createEntity()->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
 
@@ -214,7 +214,7 @@ class TypecastingTest extends TestCase
             'object' => null,
         ];
 
-        $this->assertEquals($dbData, $this->getDb());
+        static::assertEquals($dbData, $this->getDb());
     }
 
     public function testTypecastNull(): void
@@ -238,7 +238,7 @@ class TypecastingTest extends TestCase
 
         $dbData['test'][2] = array_merge(['id' => '2'], $row);
 
-        $this->assertEquals($dbData, $this->getDb());
+        static::assertEquals($dbData, $this->getDb());
     }
 
     public function testTypeCustom1(): void
@@ -273,14 +273,14 @@ class TypecastingTest extends TestCase
 
         $mm = $m->load(1);
 
-        $this->assertSame(1, $mm->getId());
-        $this->assertSame(1, $mm->get('id'));
-        $this->assertSame('2013-02-21 05:00:12.235689', $mm->get('datetime')->format('Y-m-d H:i:s.u'));
-        $this->assertSame('2013-02-20', $mm->get('date')->format('Y-m-d'));
-        $this->assertSame('12:00:50.235689', $mm->get('time')->format('H:i:s.u'));
+        static::assertSame(1, $mm->getId());
+        static::assertSame(1, $mm->get('id'));
+        static::assertSame('2013-02-21 05:00:12.235689', $mm->get('datetime')->format('Y-m-d H:i:s.u'));
+        static::assertSame('2013-02-20', $mm->get('date')->format('Y-m-d'));
+        static::assertSame('12:00:50.235689', $mm->get('time')->format('H:i:s.u'));
 
-        $this->assertTrue($mm->get('b1'));
-        $this->assertFalse($mm->get('b2'));
+        static::assertTrue($mm->get('b1'));
+        static::assertFalse($mm->get('b2'));
 
         $m->createEntity()->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
         $m->delete(1);
@@ -290,7 +290,7 @@ class TypecastingTest extends TestCase
         $row['money'] = '8.2'; // here it will loose last zero and that's as expected
         $dbData['types'][2] = array_merge(['id' => '2'], $row);
 
-        $this->assertEquals($dbData, $this->getDb());
+        static::assertEquals($dbData, $this->getDb());
     }
 
     public function testLoad(): void
@@ -305,7 +305,7 @@ class TypecastingTest extends TestCase
         $m->addField('date', ['type' => 'date']);
 
         $m = $m->load(1);
-        $this->assertInstanceOf(\DateTime::class, $m->get('date'));
+        static::assertInstanceOf(\DateTime::class, $m->get('date'));
     }
 
     public function testLoadAny(): void
@@ -320,7 +320,7 @@ class TypecastingTest extends TestCase
         $m->addField('date', ['type' => 'date']);
 
         $m = $m->loadAny();
-        $this->assertInstanceOf(\DateTime::class, $m->get('date'));
+        static::assertInstanceOf(\DateTime::class, $m->get('date'));
     }
 
     public function testLoadBy(): void
@@ -335,16 +335,16 @@ class TypecastingTest extends TestCase
         $m->addField('date', ['type' => 'date']);
 
         $m2 = $m->loadOne();
-        $this->assertTrue($m2->isLoaded());
+        static::assertTrue($m2->isLoaded());
         $d = $m2->get('date');
         $m2->unload();
 
         $m2 = $m->loadBy('date', $d);
-        $this->assertTrue($m2->isLoaded());
+        static::assertTrue($m2->isLoaded());
         $m2->unload();
 
         $m2 = $m->addCondition('date', $d)->loadOne();
-        $this->assertTrue($m2->isLoaded());
+        static::assertTrue($m2->isLoaded());
     }
 
     public function testTimestamp(): void
@@ -361,7 +361,7 @@ class TypecastingTest extends TestCase
         $m = $m->loadOne();
 
         // must respect 'actual'
-        $this->assertNotNull($m->get('ts'));
+        static::assertNotNull($m->get('ts'));
     }
 
     public function testBadTimestamp(): void
@@ -394,7 +394,7 @@ class TypecastingTest extends TestCase
         $m = $m->loadOne();
         $m->set('ts', clone $m->get('ts'));
 
-        $this->assertFalse($m->isDirty('ts'));
+        static::assertFalse($m->isDirty('ts'));
     }
 
     public function testTimestampSave(): void
@@ -412,7 +412,7 @@ class TypecastingTest extends TestCase
         $m->save();
 
         // stores valid date.
-        $this->assertEquals(['types' => [1 => ['id' => 1, 'date' => '2012-03-01']]], $this->getDb());
+        static::assertEquals(['types' => [1 => ['id' => 1, 'date' => '2012-03-01']]], $this->getDb());
     }
 
     public function testIntegerSave(): void
@@ -422,16 +422,16 @@ class TypecastingTest extends TestCase
         $m = $m->createEntity();
 
         $m->getDataRef()['i'] = 1;
-        $this->assertSame([], $m->getDirtyRef());
+        static::assertSame([], $m->getDirtyRef());
 
         $m->set('i', '1');
-        $this->assertSame([], $m->getDirtyRef());
+        static::assertSame([], $m->getDirtyRef());
 
         $m->set('i', '2');
-        $this->assertSame(['i' => 1], $m->getDirtyRef());
+        static::assertSame(['i' => 1], $m->getDirtyRef());
 
         $m->set('i', '1');
-        $this->assertSame([], $m->getDirtyRef());
+        static::assertSame([], $m->getDirtyRef());
 
         // same test without type integer
         $m = new Model($this->db, ['table' => 'types']);
@@ -439,19 +439,19 @@ class TypecastingTest extends TestCase
         $m = $m->createEntity();
 
         $m->getDataRef()['i'] = 1;
-        $this->assertSame([], $m->getDirtyRef());
+        static::assertSame([], $m->getDirtyRef());
 
         $m->set('i', '1');
-        $this->assertSame([], $m->getDirtyRef());
+        static::assertSame([], $m->getDirtyRef());
 
         $m->set('i', '2');
-        $this->assertSame(['i' => 1], $m->getDirtyRef());
+        static::assertSame(['i' => 1], $m->getDirtyRef());
 
         $m->set('i', '1');
-        $this->assertSame([], $m->getDirtyRef());
+        static::assertSame([], $m->getDirtyRef());
 
         $m->set('i', 1);
-        $this->assertSame([], $m->getDirtyRef());
+        static::assertSame([], $m->getDirtyRef());
     }
 
     public function testDirtyTime(): void
@@ -469,13 +469,13 @@ class TypecastingTest extends TestCase
         $m = $m->loadOne();
 
         $m->set('ts', $sqlTimeNew);
-        $this->assertTrue($m->isDirty('ts'));
+        static::assertTrue($m->isDirty('ts'));
 
         $m->set('ts', $sqlTime);
-        $this->assertFalse($m->isDirty('ts'));
+        static::assertFalse($m->isDirty('ts'));
 
         $m->set('ts', $sqlTimeNew);
-        $this->assertTrue($m->isDirty('ts'));
+        static::assertTrue($m->isDirty('ts'));
     }
 
     public function testDirtyTimeAfterSave(): void
@@ -493,15 +493,15 @@ class TypecastingTest extends TestCase
         $m = $m->loadOne();
 
         $m->set('ts', $sqlTime);
-        $this->assertTrue($m->isDirty('ts'));
+        static::assertTrue($m->isDirty('ts'));
 
         $m->save();
         $m->reload();
 
         $m->set('ts', $sqlTime);
-        $this->assertFalse($m->isDirty('ts'));
+        static::assertFalse($m->isDirty('ts'));
 
         $m->set('ts', $sqlTimeNew);
-        $this->assertTrue($m->isDirty('ts'));
+        static::assertTrue($m->isDirty('ts'));
     }
 }

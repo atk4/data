@@ -61,9 +61,9 @@ class ContainsManyTest extends TestCase
         $i = new Invoice($this->db);
 
         // test caption of containsMany reference
-        $this->assertSame('My Invoice Lines', $i->getField($i->fieldName()->lines)->getCaption());
-        $this->assertSame('My Invoice Lines', $i->refModel($i->fieldName()->lines)->getModelCaption());
-        $this->assertSame('My Invoice Lines', $i->lines->getModelCaption());
+        static::assertSame('My Invoice Lines', $i->getField($i->fieldName()->lines)->getCaption());
+        static::assertSame('My Invoice Lines', $i->refModel($i->fieldName()->lines)->getModelCaption());
+        static::assertSame('My Invoice Lines', $i->lines->getModelCaption());
     }
 
     public function testContainsMany(): void
@@ -71,11 +71,11 @@ class ContainsManyTest extends TestCase
         $i = new Invoice($this->db);
         $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
 
-        $this->assertSame(Line::class, get_class($i->getModel()->lines));
+        static::assertSame(Line::class, get_class($i->getModel()->lines));
 
         // now let's add some lines
         $l = $i->lines;
-        $this->assertNotNull($l);
+        static::assertNotNull($l);
         $rows = [
             1 => [
                 $l->fieldName()->id => 1,
@@ -154,15 +154,15 @@ class ContainsManyTest extends TestCase
 
         // try hasOne reference
         $v = $i->lines->load(4)->vat_rate_id;
-        $this->assertSame(15, $v->rate);
+        static::assertSame(15, $v->rate);
 
         // test expression fields
         $v = $i->lines->load(4);
-        $this->assertSame(50 * 3 * (1 + 15 / 100), $v->total_gross);
+        static::assertSame(50 * 3 * (1 + 15 / 100), $v->total_gross);
 
         // and what about calculated field?
         $i->reload(); // we need to reload invoice for changes in lines to be recalculated
-        $this->assertSame(10 * 2 * (1 + 21 / 100) + 40 * 1 * (1 + 21 / 100) + 50 * 3 * (1 + 15 / 100), $i->total_gross); // = 245.1
+        static::assertSame(10 * 2 * (1 + 21 / 100) + 40 * 1 * (1 + 21 / 100) + 50 * 3 * (1 + 15 / 100), $i->total_gross); // = 245.1
     }
 
     public function testNestedContainsMany(): void
@@ -228,10 +228,10 @@ class ContainsManyTest extends TestCase
         ], $i->lines->load(1)->discounts->export());
 
         // is total_gross correctly calculated?
-        $this->assertSame(10 * 2 * (1 + 21 / 100) + 15 * 5 * (1 + 15 / 100), $i->total_gross); // =110.45
+        static::assertSame(10 * 2 * (1 + 21 / 100) + 15 * 5 * (1 + 15 / 100), $i->total_gross); // =110.45
 
         // do we also correctly calculate discounts from nested containsMany?
-        $this->assertSame(24.2 * 15 / 100 + 86.25 * 20 / 100, $i->discounts_total_sum); // =20.88
+        static::assertSame(24.2 * 15 / 100 + 86.25 * 20 / 100, $i->discounts_total_sum); // =20.88
 
         // let's test how it all looks in persistence without typecasting
         $exportLines = $i->getModel()->setOrder($i->fieldName()->id)
@@ -241,7 +241,7 @@ class ContainsManyTest extends TestCase
 
             return $dt->format('Y-m-d H:i:s.u');
         };
-        $this->assertJsonStringEqualsJsonString(
+        static::assertJsonStringEqualsJsonString(
             json_encode([
                 1 => [
                     $i->lines->fieldName()->id => 1,

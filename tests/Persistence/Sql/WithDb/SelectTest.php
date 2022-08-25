@@ -59,9 +59,9 @@ class SelectTest extends TestCase
 
     public function testBasicQueries(): void
     {
-        $this->assertSame(4, count($this->q('employee')->getRows()));
+        static::assertSame(4, count($this->q('employee')->getRows()));
 
-        $this->assertSame(
+        static::assertSame(
             ['name' => 'Oliver', 'surname' => 'Smith'],
             $this->q('employee')->field('name')->field('surname')->order('id')->getRow()
         );
@@ -71,12 +71,12 @@ class SelectTest extends TestCase
             $this->q('employee')->field('surname')->where('retired', true)->getRows()
         );
 
-        $this->assertSame(
+        static::assertSame(
             '4',
             $this->q()->field($this->e('2 + 2'))->getOne()
         );
 
-        $this->assertSame(
+        static::assertSame(
             '4',
             $this->q('employee')->field($this->e('count(*)'))->getOne()
         );
@@ -86,12 +86,12 @@ class SelectTest extends TestCase
             $names[] = $row['name'];
         }
 
-        $this->assertSame(
+        static::assertSame(
             ['Charlie', 'Oliver'],
             $names
         );
 
-        $this->assertSame(
+        static::assertSame(
             [['now' => '4']],
             $this->q()->field($this->e('2 + 2'), 'now')->getRows()
         );
@@ -100,18 +100,18 @@ class SelectTest extends TestCase
         // But CAST(.. AS int) does not work in Mysql. So we use two different tests..
         // (CAST(.. AS int) will work on MariaDB, whereas Mysql needs it to be CAST(.. AS signed))
         if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            $this->assertSame(
+            static::assertSame(
                 [['now' => '6']],
                 $this->q()->field($this->e('CAST([] AS int) + CAST([] AS int)', [3, 3]), 'now')->getRows()
             );
         } else {
-            $this->assertSame(
+            static::assertSame(
                 [['now' => '6']],
                 $this->q()->field($this->e('[] + []', [3, 3]), 'now')->getRows()
             );
         }
 
-        $this->assertSame(
+        static::assertSame(
             '5',
             $this->q()->field($this->e('COALESCE([], \'5\')', [null]), 'null_test')->getOne()
         );
@@ -122,17 +122,17 @@ class SelectTest extends TestCase
         // PostgreSQL, at least versions before 10, needs to have the string cast to the correct datatype.
         // But using CAST(.. AS CHAR) will return a single character on PostgreSQL, but the entire string on MySQL.
         if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            $this->assertSame(
+            static::assertSame(
                 'foo',
                 $this->e('select CAST([] AS VARCHAR)', ['foo'])->getOne()
             );
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            $this->assertSame(
+            static::assertSame(
                 'foo',
                 $this->e('select CAST([] AS VARCHAR2(100)) FROM DUAL', ['foo'])->getOne()
             );
         } else {
-            $this->assertSame(
+            static::assertSame(
                 'foo',
                 $this->e('select CAST([] AS CHAR)', ['foo'])->getOne()
             );
@@ -142,7 +142,7 @@ class SelectTest extends TestCase
     public function testOtherQueries(): void
     {
         $this->q('employee')->mode('truncate')->executeStatement();
-        $this->assertSame(
+        static::assertSame(
             '0',
             $this->q('employee')->field($this->e('count(*)'))->getOne()
         );
@@ -154,7 +154,7 @@ class SelectTest extends TestCase
         $this->q('employee')
             ->setMulti(['id' => 2, 'name' => 'Jane', 'surname' => 'Doe', 'retired' => false])
             ->mode('insert')->executeStatement();
-        $this->assertSame(
+        static::assertSame(
             [['id' => '1', 'name' => 'John'], ['id' => '2', 'name' => 'Jane']],
             $this->q('employee')->field('id')->field('name')->order('id')->getRows()
         );
@@ -164,7 +164,7 @@ class SelectTest extends TestCase
             ->where('name', 'John')
             ->set('name', 'Johnny')
             ->mode('update')->executeStatement();
-        $this->assertSame(
+        static::assertSame(
             [['id' => '1', 'name' => 'Johnny'], ['id' => '2', 'name' => 'Jane']],
             $this->q('employee')->field('id')->field('name')->order('id')->getRows()
         );
@@ -192,7 +192,7 @@ class SelectTest extends TestCase
         usort($data, function ($a, $b) {
             return $a['id'] - $b['id']; // @phpstan-ignore-line
         });
-        $this->assertSame(
+        static::assertSame(
             [['id' => '1', 'name' => 'Peter'], ['id' => '2', 'name' => 'Jane']],
             $data
         );
@@ -201,7 +201,7 @@ class SelectTest extends TestCase
         $this->q('employee')
             ->where('retired', true)
             ->mode('delete')->executeStatement();
-        $this->assertSame(
+        static::assertSame(
             [['id' => '2', 'name' => 'Jane']],
             $this->q('employee')->field('id')->field('name')->getRows()
         );
@@ -226,7 +226,7 @@ class SelectTest extends TestCase
 
     public function testWhereExpression(): void
     {
-        $this->assertSame(
+        static::assertSame(
             [['id' => '2', 'name' => 'Jack', 'surname' => 'Williams', 'retired' => '1']],
             $this->q('employee')->where('retired', true)->where($this->q()->expr('{}=[] or {}=[]', ['surname', 'Williams', 'surname', 'Smith']))->getRows()
         );
@@ -241,27 +241,27 @@ class SelectTest extends TestCase
             ->field($this->q()->groupConcat('name', ','));
 
         if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-            $this->assertSame([
+            static::assertSame([
                 'select `age`, group_concat(`name` separator \',\') from `people` group by `age`',
                 [],
             ], $q->render());
         } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            $this->assertSame([
+            static::assertSame([
                 'select "age", string_agg("name", :a) from "people" group by "age"',
                 [':a' => ','],
             ], $q->render());
         } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            $this->assertSame([
+            static::assertSame([
                 'select [age], string_agg([name], N\',\') from [people] group by [age]',
                 [],
             ], $q->render());
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            $this->assertSame([
+            static::assertSame([
                 'select "age", listagg("name", :xxaaaa) within group (order by "name") from "people" group by "age"',
                 [':xxaaaa' => ','],
             ], $q->render());
         } else {
-            $this->assertSame([
+            static::assertSame([
                 'select `age`, group_concat(`name`, :a) from `people` group by `age`',
                 [':a' => ','],
             ], $q->render());
@@ -276,27 +276,27 @@ class SelectTest extends TestCase
             ->exists();
 
         if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-            $this->assertSame([
+            static::assertSame([
                 'select exists (select * from `contacts` where `first_name` = :a)',
                 [':a' => 'John'],
             ], $q->render());
         } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            $this->assertSame([
+            static::assertSame([
                 'select exists (select * from "contacts" where "first_name" = :a)',
                 [':a' => 'John'],
             ], $q->render());
         } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            $this->assertSame([
+            static::assertSame([
                 'select case when exists(select * from [contacts] where [first_name] = :a) then 1 else 0 end',
                 [':a' => 'John'],
             ], $q->render());
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            $this->assertSame([
+            static::assertSame([
                 'select case when exists(select * from "contacts" where "first_name" = :xxaaaa) then 1 else 0 end from "DUAL"',
                 [':xxaaaa' => 'John'],
             ], $q->render());
         } else {
-            $this->assertSame([
+            static::assertSame([
                 'select exists (select * from `contacts` where `first_name` = :a)',
                 [':a' => 'John'],
             ], $q->render());
@@ -323,7 +323,7 @@ class SelectTest extends TestCase
                 $expectedErrorCode = 1; // SQLSTATE[HY000]: General error: 1 no such table: non_existing_table
             }
 
-            $this->assertSame($expectedErrorCode, $e->getCode());
+            static::assertSame($expectedErrorCode, $e->getCode());
             $this->assertSameSql(
                 preg_replace('~\s+~', '', 'select `non_existing_field` from `non_existing_table`'),
                 preg_replace('~\s+~', '', $e->getDebugQuery())
@@ -344,7 +344,7 @@ class SelectTest extends TestCase
             $tableAlias = '名';
         }
 
-        $this->assertSame(
+        static::assertSame(
             [$columnAlias => 'žlutý_😀'],
             $this->q(
                 $this->q()->field($this->e('\'žlutý_😀\''), $columnAlias),
@@ -390,53 +390,53 @@ class SelectTest extends TestCase
             ['id' => 1, 'f1' => 'A'],
             ['id' => 2, 'f1' => 'B'],
         ]);
-        $this->assertSame(2, $m->executeCountQuery());
-        $this->assertSame(2, $getLastAiFx());
+        static::assertSame(2, $m->executeCountQuery());
+        static::assertSame(2, $getLastAiFx());
 
         $m->import([
             ['f1' => 'C'],
             ['f1' => 'D'],
         ]);
-        $this->assertSame(4, $m->executeCountQuery());
-        $this->assertSame(4, $getLastAiFx());
+        static::assertSame(4, $m->executeCountQuery());
+        static::assertSame(4, $getLastAiFx());
 
         $m->import([
             ['id' => 6, 'f1' => 'E'],
             ['id' => 7, 'f1' => 'F'],
         ]);
-        $this->assertSame(6, $m->executeCountQuery());
-        $this->assertSame(7, $getLastAiFx());
+        static::assertSame(6, $m->executeCountQuery());
+        static::assertSame(7, $getLastAiFx());
 
         $m->delete(6);
-        $this->assertSame(5, $m->executeCountQuery());
-        $this->assertSame(7, $getLastAiFx());
+        static::assertSame(5, $m->executeCountQuery());
+        static::assertSame(7, $getLastAiFx());
 
         $m->import([
             ['f1' => 'G'],
             ['f1' => 'H'],
         ]);
-        $this->assertSame(7, $m->executeCountQuery());
-        $this->assertSame(9, $getLastAiFx());
+        static::assertSame(7, $m->executeCountQuery());
+        static::assertSame(9, $getLastAiFx());
 
         $m->import([
             ['id' => 99, 'f1' => 'I'],
             ['id' => 20, 'f1' => 'J'],
         ]);
-        $this->assertSame(9, $m->executeCountQuery());
-        $this->assertSame(99, $getLastAiFx());
+        static::assertSame(9, $m->executeCountQuery());
+        static::assertSame(99, $getLastAiFx());
 
         $m->import([
             ['f1' => 'K'],
             ['f1' => 'L'],
         ]);
-        $this->assertSame(11, $m->executeCountQuery());
-        $this->assertSame(101, $getLastAiFx());
+        static::assertSame(11, $m->executeCountQuery());
+        static::assertSame(101, $getLastAiFx());
 
         $m->delete(100);
         $m->createEntity()->set('f1', 'M')->save();
-        $this->assertSame(102, $getLastAiFx());
+        static::assertSame(102, $getLastAiFx());
 
-        $this->assertSame([
+        static::assertSame([
             ['id' => 1, 'f1' => 'A'],
             ['id' => 2, 'f1' => 'B'],
             ['id' => 3, 'f1' => 'C'],
