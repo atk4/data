@@ -109,7 +109,7 @@ class TypecastingTest extends TestCase
         unset($first['id']);
         unset($duplicate['id']);
 
-        $this->assertSameExportUnordered([$first], [$duplicate]);
+        static::assertSameExportUnordered([$first], [$duplicate]);
 
         $m->load(2)->set('float', 8.20234376757474)->save();
         static::assertSame(8.20234376757474, $m->load(2)->get('float'));

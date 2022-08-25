@@ -53,7 +53,7 @@ class ModelWithCteTest extends TestCase
             }
         }
 
-        $this->assertSameExportUnordered([
+        static::assertSameExportUnordered([
             ['id' => 10, 'name' => 'John', 'salary' => 2500, 'invoiced' => 500],
             ['id' => 20, 'name' => 'Peter', 'salary' => 4000, 'invoiced' => 200],
             ['id' => 20, 'name' => 'Peter', 'salary' => 4000, 'invoiced' => 400],

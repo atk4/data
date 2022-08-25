@@ -64,7 +64,7 @@ class ModelAggregateTest extends TestCase
             'c' => ['expr' => 'count(*)', 'type' => 'integer'],
         ]);
 
-        $this->assertSameExportUnordered([
+        static::assertSameExportUnordered([
             ['client_id' => 1, 'c' => 2],
             ['client_id' => 2, 'c' => 1],
         ], $aggregate->export());
@@ -80,7 +80,7 @@ class ModelAggregateTest extends TestCase
         ]);
         self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
-        $this->assertSameExportUnordered([
+        static::assertSameExportUnordered([
             ['client' => 'Vinny', 'client_id' => 1, 'c' => 2],
             ['client' => 'Zoe', 'client_id' => 2, 'c' => 1],
         ], $aggregate->export());
@@ -96,7 +96,7 @@ class ModelAggregateTest extends TestCase
         ]);
         self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
-        $this->assertSameExportUnordered([
+        static::assertSameExportUnordered([
             ['client' => 'Vinny', 'client_id' => 1, 'amount' => 19.0],
             ['client' => 'Zoe', 'client_id' => 2, 'amount' => 4.0],
         ], $aggregate->export());
@@ -115,7 +115,7 @@ class ModelAggregateTest extends TestCase
         ]);
         self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
-        $this->assertSameExportUnordered([
+        static::assertSameExportUnordered([
             ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'min' => 4.0, 'max' => 15.0, 'amount' => 19.0],
             ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'min' => 4.0, 'max' => 4.0, 'amount' => 4.0],
         ], $aggregate->export());
@@ -134,7 +134,7 @@ class ModelAggregateTest extends TestCase
 
         $aggregate->addExpression('double', ['expr' => '[s] + [amount]', 'type' => 'atk4_money']);
 
-        $this->assertSameExportUnordered([
+        static::assertSameExportUnordered([
             ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'amount' => 19.0, 'double' => 38.0],
             ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
         ], $aggregate->export());
@@ -154,7 +154,7 @@ class ModelAggregateTest extends TestCase
 
         $aggregate->addExpression('double', ['expr' => '[s] + [amount]', 'type' => 'atk4_money']);
 
-        $this->assertSameExportUnordered([
+        static::assertSameExportUnordered([
             ['client' => 'Vinny', 'client_id' => 1, 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
             ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
         ], $aggregate->export());

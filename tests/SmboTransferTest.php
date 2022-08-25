@@ -81,7 +81,7 @@ class SmboTransferTest extends TestCase
 
         // Account is not loaded, will dump all Payments related to ANY Account
         $data = $a->ref('Payment')->export(['amount']);
-        $this->assertSameExportUnordered([
+        static::assertSameExportUnordered([
             ['amount' => 10.0],
             ['amount' => 20.0],
             ['amount' => 30.0],
@@ -91,7 +91,7 @@ class SmboTransferTest extends TestCase
         // Account is loaded, will dump all Payments related to that particular Account
         $a = $a->load(1);
         $data = $a->ref('Payment')->export(['amount']);
-        $this->assertSameExportUnordered([
+        static::assertSameExportUnordered([
             ['amount' => 10.0],
             ['amount' => 20.0],
         ], $data);

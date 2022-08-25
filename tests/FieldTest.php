@@ -461,7 +461,7 @@ class FieldTest extends TestCase
         $mm = $m->loadBy('first_name', 'John');
         static::assertSame('John', $mm->get('first_name'));
 
-        $this->assertSameExportUnordered([
+        static::assertSameExportUnordered([
             ['id' => 1, 'first_name' => 'John', 'surname' => 'Smith'],
             ['id' => 2, 'first_name' => 'Peter', 'surname' => 'qq'],
         ], $m->export());
