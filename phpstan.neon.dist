@@ -6,13 +6,18 @@ parameters:
         - vendor/
 
     # some extra rules
+    checkAlwaysTrueCheckTypeFunctionCall: true
+    checkAlwaysTrueInstanceof: true
+    checkAlwaysTrueStrictComparison: true
+    checkExplicitMixedMissingReturn: true
+    checkFunctionNameCase: true
     # TODO checkMissingClosureNativeReturnTypehintRule: true
+    reportMaybesInMethodSignatures: true
+    reportStaticMethodSignatures: true
     checkTooWideReturnTypesInProtectedAndPublicMethods: true
     checkMissingIterableValueType: false # TODO
 
     ignoreErrors:
-        - '~^Only booleans are allowed in (\|\||&&|a negated boolean|an if condition|a ternary operator condition), .+ given( on the (left|right) side)?\.~'
-
         -
             message: '~^Call to deprecated method getRawDataByTable\(\) of class Atk4\\Data\\Persistence\\Array_:~'
             path: '*'
