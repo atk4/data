@@ -3,12 +3,7 @@ parameters:
     paths:
         - ./
     excludePaths:
-        - cache/
-        - build/
         - vendor/
-
-    # TODO review once we drop PHP 7.x support
-    treatPhpDocTypesAsCertain: false
 
     # some extra rules
     checkAlwaysTrueCheckTypeFunctionCall: true
@@ -23,8 +18,6 @@ parameters:
     checkMissingIterableValueType: false # TODO
 
     ignoreErrors:
-        - '~^Unsafe usage of new static\(\)\.$~'
-
         -
             message: '~^Call to deprecated method getRawDataByTable\(\) of class Atk4\\Data\\Persistence\\Array_:~'
             path: '*'
