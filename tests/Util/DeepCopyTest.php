@@ -165,7 +165,7 @@ class DeepCopyTest extends TestCase
         $quote = $quote->loadOne();
 
         // total price should match
-        $this->assertSame(90.0, $quote->get('total'));
+        static::assertSame(90.0, $quote->get('total'));
 
         $dc = new DeepCopy();
         $invoice = $dc
@@ -175,13 +175,13 @@ class DeepCopyTest extends TestCase
             ->copy();
 
         // price now will be with VAT
-        $this->assertSame('q1', $invoice->get('ref'));
-        $this->assertSame(108.9, $invoice->get('total'));
-        $this->assertSame(1, $invoice->getId());
+        static::assertSame('q1', $invoice->get('ref'));
+        static::assertSame(108.9, $invoice->get('total'));
+        static::assertSame(1, $invoice->getId());
 
         // Note that we did not specify that 'client_id' should be copied, so same value here
-        $this->assertSame($quote->get('client_id'), $invoice->get('client_id'));
-        $this->assertSame('John', $invoice->ref('client_id')->get('name'));
+        static::assertSame($quote->get('client_id'), $invoice->get('client_id'));
+        static::assertSame('John', $invoice->ref('client_id')->get('name'));
 
         // now to add payment for the invoice. Payment originates from the same client as noted on the invoice
         $invoice->ref('Payments')->insert(['amount' => $invoice->get('total') - 5, 'client_id' => $invoice->get('client_id')]);
@@ -189,7 +189,7 @@ class DeepCopyTest extends TestCase
         $invoice->reload();
 
         // now that invoice is mostly paid, due amount will reflect that
-        $this->assertSame(5.0, $invoice->get('due'));
+        static::assertSame(5.0, $invoice->get('due'));
 
         // Next we copy invoice into simply a new record. Duplicate. However this time we will also duplicate payments,
         // and client. Because Payment references client too, we need to duplicate that one also, this way new record
@@ -202,20 +202,20 @@ class DeepCopyTest extends TestCase
             ->copy();
 
         // Invoice copy receives a new ID
-        $this->assertNotSame($invoice->getId(), $invoiceCopy->getId());
-        $this->assertSame('q1_copy', $invoiceCopy->get('ref'));
+        static::assertNotSame($invoice->getId(), $invoiceCopy->getId());
+        static::assertSame('q1_copy', $invoiceCopy->get('ref'));
 
         // ..however the due amount is the same - 5
-        $this->assertSame(5.0, $invoiceCopy->get('due'));
+        static::assertSame(5.0, $invoiceCopy->get('due'));
 
         // ..client record was created in the process
-        $this->assertNotSame($invoiceCopy->get('client_id'), $invoice->get('client_id'));
+        static::assertNotSame($invoiceCopy->get('client_id'), $invoice->get('client_id'));
 
         // ..but he is still called John
-        $this->assertSame('John', $invoiceCopy->ref('client_id')->get('name'));
+        static::assertSame('John', $invoiceCopy->ref('client_id')->get('name'));
 
         // finally, the client_id used for newly created payment and new invoice correspond
-        $this->assertSame($invoiceCopy->get('client_id'), $invoiceCopy->ref('Payments')->loadAny()->get('client_id'));
+        static::assertSame($invoiceCopy->get('client_id'), $invoiceCopy->ref('Payments')->loadAny()->get('client_id'));
 
         // the final test is to copy client entirely!
 
@@ -239,28 +239,28 @@ class DeepCopyTest extends TestCase
             ->copy();
 
         // New client receives new ID, but also will have all the relevant records copied
-        $this->assertSame(3, $client3->getId());
+        static::assertSame(3, $client3->getId());
 
         // We should have one of each records for this new client
-        $this->assertSame(1, $client3->ref('Invoices')->executeCountQuery());
-        $this->assertSame(1, $client3->ref('Quotes')->executeCountQuery());
-        $this->assertSame(1, $client3->ref('Payments')->executeCountQuery());
+        static::assertSame(1, $client3->ref('Invoices')->executeCountQuery());
+        static::assertSame(1, $client3->ref('Quotes')->executeCountQuery());
+        static::assertSame(1, $client3->ref('Payments')->executeCountQuery());
 
         if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            $this->markTestIncomplete('TODO MSSQL: Cannot perform an aggregate function on an expression containing an aggregate or a subquery');
+            static::markTestIncomplete('TODO MSSQL: Cannot perform an aggregate function on an expression containing an aggregate or a subquery');
         }
 
         // We created invoice for 90 for client1, so after copying it should still be 90
-        $this->assertSame(90.0, (float) $client3->ref('Quotes')->action('fx', ['sum', 'total'])->getOne());
+        static::assertSame(90.0, (float) $client3->ref('Quotes')->action('fx', ['sum', 'total'])->getOne());
 
         // The total of the invoice we copied, should remain, it's calculated based on lines
-        $this->assertSame(108.9, (float) $client3->ref('Invoices')->action('fx', ['sum', 'total'])->getOne());
+        static::assertSame(108.9, (float) $client3->ref('Invoices')->action('fx', ['sum', 'total'])->getOne());
 
         // Payments by this clients should also be copied correctly
-        $this->assertSame(103.9, (float) $client3->ref('Payments')->action('fx', ['sum', 'amount'])->getOne());
+        static::assertSame(103.9, (float) $client3->ref('Payments')->action('fx', ['sum', 'amount'])->getOne());
 
         // If copied payments are properly allocated against copied invoices, then due amount will be 5
-        $this->assertSame(5.0, (float) $client3->ref('Invoices')->action('fx', ['sum', 'due'])->getOne());
+        static::assertSame(5.0, (float) $client3->ref('Invoices')->action('fx', ['sum', 'due'])->getOne());
     }
 
     public function testError(): void
@@ -285,7 +285,7 @@ class DeepCopyTest extends TestCase
         });
 
         // total price should match
-        $this->assertSame(90.0, $quote->get('total'));
+        static::assertSame(90.0, $quote->get('total'));
 
         $dc = new DeepCopy();
 
@@ -299,7 +299,7 @@ class DeepCopyTest extends TestCase
                 ->with(['Lines', 'Lines2'])
                 ->copy();
         } catch (DeepCopyException $e) {
-            $this->assertSame('no ref', $e->getPrevious()->getMessage());
+            static::assertSame('no ref', $e->getPrevious()->getMessage());
 
             throw $e;
         }
@@ -326,7 +326,7 @@ class DeepCopyTest extends TestCase
         });
 
         // total price should match
-        $this->assertSame(90.0, $quote->get('total'));
+        static::assertSame(90.0, $quote->get('total'));
 
         $dc = new DeepCopy();
 
@@ -339,7 +339,7 @@ class DeepCopyTest extends TestCase
                 ->with(['Lines'])
                 ->copy();
         } catch (DeepCopyException $e) {
-            $this->assertSame('Must not be null', $e->getPrevious()->getMessage());
+            static::assertSame('Must not be null', $e->getPrevious()->getMessage());
 
             throw $e;
         }

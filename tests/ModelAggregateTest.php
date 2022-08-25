@@ -64,7 +64,7 @@ class ModelAggregateTest extends TestCase
             'c' => ['expr' => 'count(*)', 'type' => 'integer'],
         ]);
 
-        $this->assertSameExportUnordered([
+        static::assertSameExportUnordered([
             ['client_id' => 1, 'c' => 2],
             ['client_id' => 2, 'c' => 1],
         ], $aggregate->export());
@@ -80,7 +80,7 @@ class ModelAggregateTest extends TestCase
         ]);
         self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
-        $this->assertSameExportUnordered([
+        static::assertSameExportUnordered([
             ['client' => 'Vinny', 'client_id' => 1, 'c' => 2],
             ['client' => 'Zoe', 'client_id' => 2, 'c' => 1],
         ], $aggregate->export());
@@ -96,7 +96,7 @@ class ModelAggregateTest extends TestCase
         ]);
         self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
-        $this->assertSameExportUnordered([
+        static::assertSameExportUnordered([
             ['client' => 'Vinny', 'client_id' => 1, 'amount' => 19.0],
             ['client' => 'Zoe', 'client_id' => 2, 'amount' => 4.0],
         ], $aggregate->export());
@@ -115,7 +115,7 @@ class ModelAggregateTest extends TestCase
         ]);
         self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
-        $this->assertSameExportUnordered([
+        static::assertSameExportUnordered([
             ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'min' => 4.0, 'max' => 15.0, 'amount' => 19.0],
             ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'min' => 4.0, 'max' => 4.0, 'amount' => 4.0],
         ], $aggregate->export());
@@ -134,7 +134,7 @@ class ModelAggregateTest extends TestCase
 
         $aggregate->addExpression('double', ['expr' => '[s] + [amount]', 'type' => 'atk4_money']);
 
-        $this->assertSameExportUnordered([
+        static::assertSameExportUnordered([
             ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'amount' => 19.0, 'double' => 38.0],
             ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
         ], $aggregate->export());
@@ -154,7 +154,7 @@ class ModelAggregateTest extends TestCase
 
         $aggregate->addExpression('double', ['expr' => '[s] + [amount]', 'type' => 'atk4_money']);
 
-        $this->assertSameExportUnordered([
+        static::assertSameExportUnordered([
             ['client' => 'Vinny', 'client_id' => 1, 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
             ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
         ], $aggregate->export());
@@ -179,7 +179,7 @@ class ModelAggregateTest extends TestCase
             $this->getDatabasePlatform() instanceof SqlitePlatform ? $aggregate->expr('10') : 10
         );
 
-        $this->assertSame([
+        static::assertSame([
             ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'amount' => 19.0, 'double' => 38.0],
         ], $aggregate->export());
     }
@@ -202,7 +202,7 @@ class ModelAggregateTest extends TestCase
             $this->getDatabasePlatform() instanceof SqlitePlatform ? $aggregate->expr('38') : 38
         );
 
-        $this->assertSame([
+        static::assertSame([
             ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'amount' => 19.0, 'double' => 38.0],
         ], $aggregate->export());
     }
@@ -221,7 +221,7 @@ class ModelAggregateTest extends TestCase
         $aggregate->addExpression('double', ['expr' => '[s] + [amount]', 'type' => 'atk4_money']);
         $aggregate->addCondition('client_id', 2);
 
-        $this->assertSame([
+        static::assertSame([
             ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
         ], $aggregate->export());
     }
@@ -241,7 +241,7 @@ class ModelAggregateTest extends TestCase
         $scope = Scope::createAnd(new Condition('client_id', 2), new Condition('amount', $numExpr));
         $aggregate->addCondition($scope);
 
-        $this->assertSame([
+        static::assertSame([
             ['client' => 'Zoe', 'client_id' => 2, 'amount' => 4.0],
         ], $aggregate->export());
     }
@@ -258,10 +258,10 @@ class ModelAggregateTest extends TestCase
 
         $aggregate->hasOne('client_id', ['model' => [Model\Invoice::class]]);
 
-        $this->assertSame(1, $aggregate->loadBy('client', 'Vinny')->ref('client_id')->id);
-        $this->assertSame(2, $aggregate->loadBy('client', 'Zoe')->ref('client_id')->id);
+        static::assertSame(1, $aggregate->loadBy('client', 'Vinny')->ref('client_id')->id);
+        static::assertSame(2, $aggregate->loadBy('client', 'Zoe')->ref('client_id')->id);
         $aggregate->table->addCondition('client', 'Zoe');
-        $this->assertSame(2, $aggregate->ref('client_id')->loadOne()->id);
+        static::assertSame(2, $aggregate->ref('client_id')->loadOne()->id);
     }
 
     public function testGroupOrderSql(): void
@@ -302,7 +302,7 @@ class ModelAggregateTest extends TestCase
         $aggregate->setLimit(1);
         $aggregate->setOrder('client_id', 'asc');
 
-        $this->assertSame([
+        static::assertSame([
             ['client' => 'Vinny', 'client_id' => 1, 'amount' => 19.0],
         ], $aggregate->export());
     }
@@ -319,7 +319,7 @@ class ModelAggregateTest extends TestCase
         $aggregate->setLimit(2, 1);
         $aggregate->setOrder('client_id', 'asc');
 
-        $this->assertSame([
+        static::assertSame([
             ['client' => 'Zoe', 'client_id' => 2, 'amount' => 4.0],
         ], $aggregate->export());
     }

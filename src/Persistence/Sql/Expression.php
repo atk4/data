@@ -188,14 +188,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
                 ->addMoreInfo('escapeMode', $escapeMode);
         }
 
-        if ($expr instanceof Expressionable) {
-            $expr = $expr->getDsqlExpression($this);
-        }
-
-        if (!$expr instanceof self) {
-            throw (new Exception('Only Expressionable object can be used in Expression'))
-                ->addMoreInfo('object', $expr);
-        }
+        $expr = $expr->getDsqlExpression($this);
 
         // render given expression into params of the current expression
         $expressionParamBaseBackup = $expr->paramBase;
@@ -599,7 +592,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
                             $type = ParameterType::BINARY;
                         }
                     }
-                } elseif (is_resource($val)) {
+                } elseif (is_resource($val)) { // phpstan-ignore-line
                     throw new Exception('Resource type is not supported, set value as string instead');
                 } else {
                     throw (new Exception('Incorrect param type'))
@@ -703,7 +696,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
         }
 
         // for PostgreSQL/Oracle CLOB/BLOB datatypes and PDO driver
-        if (is_resource($v) && get_resource_type($v) === 'stream') {
+        if (is_resource($v) && get_resource_type($v) === 'stream') { // @phpstan-ignore-line
             $platform = $this->connection->getDatabasePlatform();
             if ($platform instanceof PostgreSQLPlatform || $platform instanceof OraclePlatform) {
                 $v = stream_get_contents($v);

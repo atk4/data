@@ -18,7 +18,8 @@ store extra fields there. In your code::
 
     class Transaction_Transfer extends Transaction
     {
-        protected function init(): void {
+        protected function init(): void
+        {
             parent::init();
 
             $j = $this->join('transaction_transfer.transaction_id');

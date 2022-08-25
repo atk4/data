@@ -49,7 +49,7 @@ class FolderTest extends TestCase
         $this->createMigrator()->createForeignKey($f->getReference('SubFolder'));
         $f = $f->load(4);
 
-        $this->assertSame([
+        static::assertSame([
             'id' => 4,
             'name' => 'My Projects',
             'count' => '3',

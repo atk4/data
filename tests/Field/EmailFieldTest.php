@@ -17,19 +17,19 @@ class EmailFieldTest extends TestCase
         $m->addField('email', [EmailField::class]);
         $entity = $m->createEntity();
 
-        $this->assertNull($entity->get('email'));
+        static::assertNull($entity->get('email'));
 
         // normal value
         $entity->set('email', 'foo@example.com');
-        $this->assertSame('foo@example.com', $entity->get('email'));
+        static::assertSame('foo@example.com', $entity->get('email'));
 
         // null value
         $entity->set('email', null);
-        $this->assertNull($entity->get('email'));
+        static::assertNull($entity->get('email'));
 
         // padding, spacing etc removed
         $entity->set('email', " \t " . 'foo@example.com ' . " \n ");
-        $this->assertSame('foo@example.com', $entity->get('email'));
+        static::assertSame('foo@example.com', $entity->get('email'));
 
         // no domain - go to hell :)
         $this->expectException(ValidationException::class);
@@ -47,7 +47,7 @@ class EmailFieldTest extends TestCase
         $entity->set('email', ' foo@gmail.com');
 
         $entity->set('email_idn', 'test@háčkyčárky.cz'); // official IDN test domain
-        $this->assertSame('test@háčkyčárky.cz', $entity->get('email_idn'));
+        static::assertSame('test@háčkyčárky.cz', $entity->get('email_idn'));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('domain does not exist');
@@ -62,7 +62,7 @@ class EmailFieldTest extends TestCase
         $entity = $m->createEntity();
 
         $entity->set('email_name', 'Žlutý Kůň <me3@❤.com>');
-        $this->assertSame('Žlutý Kůň <me3@❤.com>', $entity->get('email_name'));
+        static::assertSame('Žlutý Kůň <me3@❤.com>', $entity->get('email_name'));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('format is invalid');

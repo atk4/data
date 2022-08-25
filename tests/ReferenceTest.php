@@ -26,8 +26,8 @@ class ReferenceTest extends TestCase
         $r1 = $user->getModel()->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
         $o = $user->ref('Orders')->createEntity();
 
-        $this->assertSame(20, $o->get('amount'));
-        $this->assertSame(1, $o->get('user_id'));
+        static::assertSame(20, $o->get('amount'));
+        static::assertSame(1, $o->get('user_id'));
 
         $r2 = $user->getModel()->hasMany('BigOrders', ['model' => function () {
             $m = new Model();
@@ -37,16 +37,16 @@ class ReferenceTest extends TestCase
             return $m;
         }]);
 
-        $this->assertSame(100, $user->ref('BigOrders')->createEntity()->get('amount'));
+        static::assertSame(100, $user->ref('BigOrders')->createEntity()->get('amount'));
 
-        $this->assertSame([
+        static::assertSame([
             'Orders' => $r1,
             'BigOrders' => $r2,
         ], $user->getModel()->getReferences());
-        $this->assertSame($r1, $user->getModel()->getReference('Orders'));
-        $this->assertSame($r2, $user->getModel()->getReference('BigOrders'));
-        $this->assertTrue($user->getModel()->hasReference('BigOrders'));
-        $this->assertFalse($user->getModel()->hasReference('SmallOrders'));
+        static::assertSame($r1, $user->getModel()->getReference('Orders'));
+        static::assertSame($r2, $user->getModel()->getReference('BigOrders'));
+        static::assertTrue($user->getModel()->hasReference('BigOrders'));
+        static::assertFalse($user->getModel()->hasReference('SmallOrders'));
     }
 
     public function testModelCaption(): void
@@ -65,8 +65,8 @@ class ReferenceTest extends TestCase
         $user->getModel()->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
 
         // test caption of containsOne reference
-        $this->assertSame('My Orders', $user->refModel('Orders')->getModelCaption());
-        $this->assertSame('My Orders', $user->ref('Orders')->getModelCaption());
+        static::assertSame('My Orders', $user->refModel('Orders')->getModelCaption());
+        static::assertSame('My Orders', $user->ref('Orders')->getModelCaption());
     }
 
     public function testModelProperty(): void
@@ -76,7 +76,7 @@ class ReferenceTest extends TestCase
         $user->setId(1);
         $user->getModel()->hasOne('order_id', ['model' => [Model::class, 'table' => 'order']]);
         $o = $user->ref('order_id');
-        $this->assertSame('order', $o->table);
+        static::assertSame('order', $o->table);
     }
 
     public function testRefName1(): void
@@ -109,7 +109,7 @@ class ReferenceTest extends TestCase
             return new $m(null, ['table' => $m->table . '_archive']);
         }]);
 
-        $this->assertSame('user_archive', $m->ref('archive')->table);
+        static::assertSame('user_archive', $m->ref('archive')->table);
     }
 
     public function testTheirFieldNameGuessTableWithSchema(): void
@@ -119,6 +119,6 @@ class ReferenceTest extends TestCase
         $order->addField('user_id');
 
         $user->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
-        $this->assertSame($user->getReference('Orders')->getTheirFieldName(), 'user_id');
+        static::assertSame($user->getReference('Orders')->getTheirFieldName(), 'user_id');
     }
 }

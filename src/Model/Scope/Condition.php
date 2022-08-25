@@ -101,7 +101,7 @@ class Condition extends AbstractScope
             throw new Exception('Only Scope can contain another conditions');
         } elseif ($key instanceof Field) { // for BC
             $key = $key->shortName;
-        } elseif (!is_string($key) && !($key instanceof Expressionable)) {
+        } elseif (!is_string($key) && !$key instanceof Expressionable) { // @phpstan-ignore-line
             throw new Exception('Field must be a string or an instance of Expressionable');
         }
 
@@ -274,7 +274,9 @@ class Condition extends AbstractScope
 
     public function toWords(Model $model = null): string
     {
-        $model = $model ?: $this->getModel();
+        if ($model === null) {
+            $model = $this->getModel();
+        }
 
         if ($model === null) {
             throw new Exception('Condition must be associated with Model to convert to words');

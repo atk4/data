@@ -49,11 +49,11 @@ class ModelWithCteTest extends TestCase
         if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
             $serverVersion = $this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
             if (preg_match('~^5\.(?!5\.5-.+?-MariaDB)~', $serverVersion)) {
-                $this->markTestIncomplete('MySQL Server 5.x does not support WITH clause');
+                static::markTestIncomplete('MySQL Server 5.x does not support WITH clause');
             }
         }
 
-        $this->assertSameExportUnordered([
+        static::assertSameExportUnordered([
             ['id' => 10, 'name' => 'John', 'salary' => 2500, 'invoiced' => 500],
             ['id' => 20, 'name' => 'Peter', 'salary' => 4000, 'invoiced' => 200],
             ['id' => 20, 'name' => 'Peter', 'salary' => 4000, 'invoiced' => 400],

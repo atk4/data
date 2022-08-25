@@ -696,12 +696,7 @@ abstract class Query extends Expression
                 ->addMoreInfo('value', $value);
         }
 
-        if (is_string($field) || $field instanceof Expressionable) {
-            $this->args['set'][] = [$field, $value];
-        } else {
-            throw (new Exception('Field name should be string or Expressionable'))
-                ->addMoreInfo('field', $field);
-        }
+        $this->args['set'][] = [$field, $value];
 
         return $this;
     }

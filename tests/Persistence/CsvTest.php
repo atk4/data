@@ -101,7 +101,7 @@ class CsvTest extends TestCase
 
         $this->setDb($data);
         $data2 = $this->getDb();
-        $this->assertSame($data, $data2);
+        static::assertSame($data, $data2);
     }
 
     public function testLoadAny(): void
@@ -119,8 +119,8 @@ class CsvTest extends TestCase
         $m->addField('surname');
         $m = $m->loadAny();
 
-        $this->assertSame('John', $m->get('name'));
-        $this->assertSame('Smith', $m->get('surname'));
+        static::assertSame('John', $m->get('name'));
+        static::assertSame('Smith', $m->get('surname'));
     }
 
     public function testLoadAnyException(): void
@@ -140,11 +140,11 @@ class CsvTest extends TestCase
         $mm = $m->loadAny();
         $mm = $m->loadAny();
 
-        $this->assertSame('Sarah', $mm->get('name'));
-        $this->assertSame('Jones', $mm->get('surname'));
+        static::assertSame('Sarah', $mm->get('name'));
+        static::assertSame('Jones', $mm->get('surname'));
 
         $mm = $m->tryLoadAny();
-        $this->assertNull($mm);
+        static::assertNull($mm);
     }
 
     public function testLoadByIdNotSupportedException(): void
@@ -189,7 +189,7 @@ class CsvTest extends TestCase
 
         fseek($this->file, 0);
         fseek($this->file2, 0);
-        $this->assertSame(
+        static::assertSame(
             stream_get_contents($this->file),
             stream_get_contents($this->file2)
         );
@@ -208,12 +208,12 @@ class CsvTest extends TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $this->assertSame([
+        static::assertSame([
             ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
             ['id' => 2, 'name' => 'Sarah', 'surname' => 'Jones'],
         ], $m->export());
 
-        $this->assertSame([
+        static::assertSame([
             ['surname' => 'Smith'],
             ['surname' => 'Jones'],
         ], $m->export(['surname']));

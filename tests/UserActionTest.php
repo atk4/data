@@ -64,38 +64,38 @@ class UserActionTest extends TestCase
     {
         $client = new UaClient($this->pers);
 
-        $this->assertCount(4, $client->getUserActions()); // don't return system actions here, but include add/edit/delete
-        $this->assertCount(0, $client->getUserActions(Model\UserAction::APPLIES_TO_ALL_RECORDS)); // don't return system actions here
+        static::assertCount(4, $client->getUserActions()); // don't return system actions here, but include add/edit/delete
+        static::assertCount(0, $client->getUserActions(Model\UserAction::APPLIES_TO_ALL_RECORDS)); // don't return system actions here
 
         // action takes no arguments. If it would, we should be able to find info about those
         $act1 = $client->getUserActions()['sendReminder'];
-        $this->assertSame([], $act1->args);
-        $this->assertSame(Model\UserAction::APPLIES_TO_SINGLE_RECORD, $act1->appliesTo);
+        static::assertSame([], $act1->args);
+        static::assertSame(Model\UserAction::APPLIES_TO_SINGLE_RECORD, $act1->appliesTo);
 
         // load record, before executing, because scope is single record
         $client = $client->load(1);
 
         $act1 = $client->getModel()->getUserActions()['sendReminder'];
         $act1 = $act1->getActionForEntity($client);
-        $this->assertNotTrue($client->get('reminder_sent'));
+        static::assertNotTrue($client->get('reminder_sent'));
         $res = $act1->execute();
-        $this->assertTrue($client->get('reminder_sent'));
+        static::assertTrue($client->get('reminder_sent'));
 
-        $this->assertSame('sent reminder to John', $res);
+        static::assertSame('sent reminder to John', $res);
         $client->unload();
 
         // test system action
         $act2 = $client->getUserAction('backupClients');
 
         // action takes no arguments. If it would, we should be able to find info about those
-        $this->assertSame([], $act2->args);
-        $this->assertSame(Model\UserAction::APPLIES_TO_ALL_RECORDS, $act2->appliesTo);
+        static::assertSame([], $act2->args);
+        static::assertSame(Model\UserAction::APPLIES_TO_ALL_RECORDS, $act2->appliesTo);
 
         $res = $act2->execute();
-        $this->assertSame('backs up all clients', $res);
+        static::assertSame('backs up all clients', $res);
 
         // non-existing action
-        $this->assertFalse($client->hasUserAction('foo'));
+        static::assertFalse($client->hasUserAction('foo'));
     }
 
     public function testPreview(): void
@@ -106,20 +106,20 @@ class UserActionTest extends TestCase
         });
 
         $client = $client->load(1);
-        $this->assertSame('John', $client->getUserAction('say_name')->execute());
+        static::assertSame('John', $client->getUserAction('say_name')->execute());
 
         $client->getUserAction('say_name')->preview = function ($m, $arg) {
-            return ($m instanceof UaClient) ? 'will say ' . $m->get('name') : 'will fail';
+            return $m instanceof UaClient ? 'will say ' . $m->get('name') : 'will fail';
         };
-        $this->assertSame('will say John', $client->getUserAction('say_name')->preview('x'));
+        static::assertSame('will say John', $client->getUserAction('say_name')->preview('x'));
 
         $client->getModel()->addUserAction('also_backup', ['callback' => 'backupClients']);
-        $this->assertSame('backs up all clients', $client->getUserAction('also_backup')->execute());
+        static::assertSame('backs up all clients', $client->getUserAction('also_backup')->execute());
 
         $client->getUserAction('also_backup')->preview = 'backupClients';
-        $this->assertSame('backs up all clients', $client->getUserAction('also_backup')->preview());
+        static::assertSame('backs up all clients', $client->getUserAction('also_backup')->preview());
 
-        $this->assertSame('Also Backup UaClient', $client->getUserAction('also_backup')->getDescription());
+        static::assertSame('Also Backup UaClient', $client->getUserAction('also_backup')->getDescription());
     }
 
     public function testPreviewFail(): void
@@ -201,7 +201,7 @@ class UserActionTest extends TestCase
         };
 
         $client->getUserAction('sendReminder')->execute();
-        $this->assertTrue(true); // no exception
+        static::assertTrue(true); // no exception
     }
 
     public function testFields(): void
@@ -211,10 +211,10 @@ class UserActionTest extends TestCase
 
         $client = $client->load(1);
 
-        $this->assertNotSame('Peter', $client->get('name'));
+        static::assertNotSame('Peter', $client->get('name'));
         $client->set('name', 'Peter');
         $client->getUserAction('change_details')->execute();
-        $this->assertSame('Peter', $client->get('name'));
+        static::assertSame('Peter', $client->get('name'));
     }
 
     public function testFieldsTooDirty1(): void
@@ -224,7 +224,7 @@ class UserActionTest extends TestCase
 
         $client = $client->load(1);
 
-        $this->assertNotSame('Peter', $client->get('name'));
+        static::assertNotSame('Peter', $client->get('name'));
         $client->set('name', 'Peter');
         $client->set('reminder_sent', true);
 
@@ -239,7 +239,7 @@ class UserActionTest extends TestCase
 
         $client = $client->load(1);
 
-        $this->assertNotSame('Peter', $client->get('name'));
+        static::assertNotSame('Peter', $client->get('name'));
         $client->set('name', 'Peter');
 
         $this->expectExceptionMessage('must be either array or boolean');
@@ -253,17 +253,17 @@ class UserActionTest extends TestCase
         $client = $client->load(1);
 
         $action = $client->getUserAction('test');
-        $this->assertFalse($action->getConfirmation());
+        static::assertFalse($action->getConfirmation());
 
         $action->confirmation = true;
-        $this->assertSame('Are you sure you wish to execute Test using John?', $action->getConfirmation());
+        static::assertSame('Are you sure you wish to execute Test using John?', $action->getConfirmation());
 
         $action->confirmation = 'Are you sure?';
-        $this->assertSame('Are you sure?', $action->getConfirmation());
+        static::assertSame('Are you sure?', $action->getConfirmation());
 
         $action->confirmation = function ($action) {
             return 'Proceed with Test: ' . $action->getEntity()->getTitle();
         };
-        $this->assertSame('Proceed with Test: John', $action->getConfirmation());
+        static::assertSame('Proceed with Test: John', $action->getConfirmation());
     }
 }

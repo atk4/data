@@ -57,7 +57,7 @@ class Migrator
             $this->_connection = $source;
         } elseif ($source instanceof Persistence\Sql) {
             $this->_connection = $source->getConnection();
-        } elseif ($source instanceof Model && $source->getPersistence() instanceof Persistence\Sql) {
+        } elseif ($source instanceof Model && $source->getPersistence() instanceof Persistence\Sql) { // @phpstan-ignore-line
             $this->_connection = $source->getPersistence()->getConnection();
         } else {
             throw (new Exception('Source must be SQL connection, persistence or initialized model'))

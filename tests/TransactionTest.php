@@ -33,7 +33,7 @@ class TransactionTest extends TestCase
         } catch (\Exception $e) {
         }
 
-        $this->assertSame('Sue', $this->getDb()['item'][2]['name']);
+        static::assertSame('Sue', $this->getDb()['item'][2]['name']);
 
         $m->onHook(Model::HOOK_AFTER_DELETE, static function (Model $model) {
             throw new \Exception('Awful thing happened');
@@ -44,7 +44,7 @@ class TransactionTest extends TestCase
         } catch (\Exception $e) {
         }
 
-        $this->assertSame('Sue', $this->getDb()['item'][2]['name']);
+        static::assertSame('Sue', $this->getDb()['item'][2]['name']);
     }
 
     public function testBeforeSaveHook(): void
@@ -59,16 +59,16 @@ class TransactionTest extends TestCase
         $m = new Model($this->db, ['table' => 'item']);
         $m->addField('name');
         $testCase = $this;
-        $m->onHookShort(Model::HOOK_BEFORE_SAVE, static function (bool $isUpdate) use ($testCase) {
-            $testCase->assertFalse($isUpdate);
+        $m->onHookShort(Model::HOOK_BEFORE_SAVE, static function (bool $isUpdate) {
+            static::assertFalse($isUpdate);
         });
         $m->createEntity()->save(['name' => 'Foo']);
 
         // test update
         $m = new Model($this->db, ['table' => 'item']);
         $m->addField('name');
-        $m->onHookShort(Model::HOOK_AFTER_SAVE, static function (bool $isUpdate) use ($testCase) {
-            $testCase->assertTrue($isUpdate);
+        $m->onHookShort(Model::HOOK_AFTER_SAVE, static function (bool $isUpdate) {
+            static::assertTrue($isUpdate);
         });
         $m->loadBy('name', 'John')->save(['name' => 'Foo']);
     }
@@ -85,16 +85,16 @@ class TransactionTest extends TestCase
         $m = new Model($this->db, ['table' => 'item']);
         $m->addField('name');
         $testCase = $this;
-        $m->onHookShort(Model::HOOK_AFTER_SAVE, static function (bool $isUpdate) use ($testCase) {
-            $testCase->assertFalse($isUpdate);
+        $m->onHookShort(Model::HOOK_AFTER_SAVE, static function (bool $isUpdate) {
+            static::assertFalse($isUpdate);
         });
         $m->createEntity()->save(['name' => 'Foo']);
 
         // test update
         $m = new Model($this->db, ['table' => 'item']);
         $m->addField('name');
-        $m->onHookShort(Model::HOOK_AFTER_SAVE, static function (bool $isUpdate) use ($testCase) {
-            $testCase->assertTrue($isUpdate);
+        $m->onHookShort(Model::HOOK_AFTER_SAVE, static function (bool $isUpdate) {
+            static::assertTrue($isUpdate);
         });
         $m->loadBy('name', 'John')->save(['name' => 'Foo']);
     }
@@ -125,7 +125,7 @@ class TransactionTest extends TestCase
         $m->setMulti(['name' => 'Jane', 'foo' => 'bar']);
         $m->save();
 
-        $this->assertTrue($hookCalled);
-        $this->assertSame($m->get(), $values);
+        static::assertTrue($hookCalled);
+        static::assertSame($m->get(), $values);
     }
 }
