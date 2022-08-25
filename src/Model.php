@@ -1396,11 +1396,13 @@ class Model implements \IteratorAggregate
     {
         $scopeElementsOrig = $this->getModel()->scope()->elements;
         try {
-            foreach ($this->getModel()->scope()->elements as $k => $v) {
-                if ($v instanceof Model\Scope\Condition && (!$removedConditionFields || in_array($v->key, $removedConditionFields))) {
-                    unset($this->getModel()->scope()->elements[$k]);
+            if ($removedConditionFields) {
+                foreach ($this->getModel()->scope()->elements as $k => $v) {
+                    if ($v instanceof Model\Scope\Condition && (!$removedConditionFields || in_array($v->key, $removedConditionFields))) {
+                        unset($this->getModel()->scope()->elements[$k]);
+                    }
                 }
-            }
+            } else { $this->getModel()->scope()->elements = array(); }
 
             $this->saveAndUnload($data);
 
