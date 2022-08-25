@@ -179,7 +179,7 @@ class RandomTest extends TestCase
         $p = new Persistence\Array_();
         $pAddCalled = false;
         $p->onHookShort(Persistence::HOOK_AFTER_ADD, function (Model $mFromHook) use ($m, &$pAddCalled) {
-            $this->assertSame($m, $mFromHook);
+            static::assertSame($m, $mFromHook);
             $pAddCalled = true;
         });
 
