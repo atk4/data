@@ -150,7 +150,7 @@ Example::
 .. php:attr:: required
 
 Set this to true for field that may not contain "empty" value.
-You can't use NULL or any value that is considered ``empty()`` by PHP.
+You can't use NULL or any value that is considered empty/false by PHP.
 Some examples that are not allowed are:
 
  - empty string ''

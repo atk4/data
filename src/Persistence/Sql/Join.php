@@ -80,9 +80,7 @@ class Join extends Model\Join
 
         /*
         if ($this->reverse) {
-            $query->field([$this->shortName => (
-                $this->join ?: ($model->tableAlias ?: $model->table) . '.' . $this->masterField
-            )]);
+            $query->field([$this->shortName => $this->join ?? ($model->tableAlias ?? $model->table) . '.' . $this->masterField]);
         } else {
             $query->field([$this->shortName => $this->foreignAlias . '.' . $this->foreignField]);
         }
