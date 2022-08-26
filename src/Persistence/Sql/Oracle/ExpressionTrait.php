@@ -100,7 +100,7 @@ trait ExpressionTrait
                             }
 
                             $name = ':' . $newParamBase;
-                            ++$newParamBase;
+                            ++$newParamBase; // @phpstan-ignore-line
                             $newParams[$name] = $exprParams[$matches[0]];
 
                             return $name;
@@ -109,7 +109,7 @@ trait ExpressionTrait
                     );
                 } else {
                     $sql = ':' . $newParamBase;
-                    ++$newParamBase;
+                    ++$newParamBase; // @phpstan-ignore-line
 
                     $newParams[$sql] = $value;
                 }

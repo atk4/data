@@ -15,7 +15,7 @@ parameters:
 
         # relax strict rules
         - '~^Only booleans are allowed in .+, .+ given( on the (left|right) side)?\.~'
-        - '~^Variable (property access|method call) on .+\.~'
+        - '~^Variable (static )?(property access|method call) on .+\.~'
 
         -
             message: '~^Call to deprecated method getRawDataByTable\(\) of class Atk4\\Data\\Persistence\\Array_:~'

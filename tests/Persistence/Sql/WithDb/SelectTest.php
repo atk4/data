@@ -59,7 +59,7 @@ class SelectTest extends TestCase
 
     public function testBasicQueries(): void
     {
-        static::assertSame(4, count($this->q('employee')->getRows()));
+        static::assertCount(4, $this->q('employee')->getRows());
 
         static::assertSame(
             ['name' => 'Oliver', 'surname' => 'Smith'],

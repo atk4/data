@@ -217,13 +217,13 @@ class Field implements Expressionable
                 case null:
                 case 'string':
                 case 'text':
-                    if ($this->required && empty($value)) {
+                    if ($this->required && !$value) {
                         throw new Exception('Must not be empty');
                     }
 
                     break;
                 case 'boolean':
-                    if ($this->required && empty($value)) {
+                    if ($this->required && !$value) {
                         throw new Exception('Must be true');
                     }
 
@@ -231,7 +231,7 @@ class Field implements Expressionable
                 case 'integer':
                 case 'float':
                 case 'atk4_money':
-                    if ($this->required && empty($value)) {
+                    if ($this->required && !$value) {
                         throw new Exception('Must not be a zero');
                     }
 

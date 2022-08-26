@@ -79,7 +79,7 @@ class Row
         }
 
         $that = $this;
-        \Closure::bind(function () use ($owner, $that, $newData) {
+        \Closure::bind(function () use ($owner, $that, $newData) { // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/7862
             $owner->beforeValuesSet($that, $newData);
         }, null, $owner)();
 

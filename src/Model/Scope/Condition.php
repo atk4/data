@@ -19,7 +19,7 @@ class Condition extends AbstractScope
     /** @var string|Field|Expressionable */
     public $key;
 
-    /** @var string */
+    /** @var string|null */
     public $operator;
 
     /** @var mixed */
@@ -197,6 +197,7 @@ class Condition extends AbstractScope
                         $refModel = $refModel->refLink($link);
                         $refModels[] = $refModel;
                     }
+                    unset($refModel);
 
                     foreach (array_reverse($refModels) as $refModel) {
                         if ($field === '#') {
@@ -254,7 +255,7 @@ class Condition extends AbstractScope
     public function clear()
     {
         $this->key = null; // @phpstan-ignore-line
-        $this->operator = null; // @phpstan-ignore-line
+        $this->operator = null;
         $this->value = null;
 
         return $this;
@@ -262,11 +263,11 @@ class Condition extends AbstractScope
 
     public function negate()
     {
-        if ($this->operator && isset(self::$operators[$this->operator]['negate'])) {
+        if (isset(self::$operators[$this->operator]['negate'])) {
             $this->operator = self::$operators[$this->operator]['negate'];
         } else {
             throw (new Exception('Negation of condition is not supported for this operator'))
-                ->addMoreInfo('operator', $this->operator ?: 'no operator');
+                ->addMoreInfo('operator', $this->operator ?? 'no operator');
         }
 
         return $this;

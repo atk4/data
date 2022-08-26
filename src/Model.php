@@ -202,7 +202,7 @@ class Model implements \IteratorAggregate
      * Caption of the model. Can be used in UI components, for example.
      * Should be in plain English and ready for proper localization.
      *
-     * @var string
+     * @var string|null
      */
     public $caption;
 
@@ -807,8 +807,8 @@ class Model implements \IteratorAggregate
             $this->assertIsEntity();
 
             $data = [];
-            foreach ($this->onlyFields ?? array_keys($this->getFields()) as $field) {
-                $data[$field] = $this->get($field);
+            foreach ($this->onlyFields ?? array_keys($this->getFields()) as $k) {
+                $data[$k] = $this->get($k);
             }
 
             return $data;
@@ -867,7 +867,7 @@ class Model implements \IteratorAggregate
      */
     public function getModelCaption(): string
     {
-        return $this->caption ?: $this->readableCaption(
+        return $this->caption ?? $this->readableCaption(
             (new \ReflectionClass(static::class))->isAnonymous() ? get_parent_class(static::class) : static::class
         );
     }
@@ -1042,18 +1042,18 @@ class Model implements \IteratorAggregate
                     ->addMoreInfo('arg2', $direction);
             }
 
-            foreach (array_reverse($field) as $key => $direction) {
-                if (is_int($key)) {
-                    if (is_array($direction)) {
+            foreach (array_reverse($field) as $k => $v) {
+                if (is_int($k)) {
+                    if (is_array($v)) {
                         // format [field, direction]
-                        $this->setOrder(...$direction);
+                        $this->setOrder(...$v);
                     } else {
                         // format "field"
-                        $this->setOrder($direction);
+                        $this->setOrder($v);
                     }
                 } else {
                     // format "field" => direction
-                    $this->setOrder($key, $direction);
+                    $this->setOrder($k, $v);
                 }
             }
 

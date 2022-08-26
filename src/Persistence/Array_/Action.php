@@ -126,7 +126,7 @@ class Action
             $matches = [];
 
             foreach ($condition->getNestedConditions() as $nestedCondition) {
-                $matches[] = $subMatch = (bool) $this->match($row, $nestedCondition);
+                $matches[] = $subMatch = $this->match($row, $nestedCondition);
 
                 // do not check all conditions if any match required
                 if ($condition->isOr() && $subMatch) {

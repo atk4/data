@@ -211,7 +211,7 @@ abstract class TestCase extends BaseTestCase
 
     public function createMigrator(Model $model = null): Migrator
     {
-        $migrator = new Migrator($model ?: $this->db);
+        $migrator = new Migrator($model ?? $this->db);
         $this->createdMigrators[] = $migrator;
 
         return $migrator;
