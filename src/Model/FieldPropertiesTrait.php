@@ -63,6 +63,8 @@ trait FieldPropertiesTrait
      *
      * By default hasOne relation ID field should be editable in forms,
      * but not visible in grids. UI should respect these flags.
+     *
+     * @var array<string, mixed>
      */
     public array $ui = [];
 }
