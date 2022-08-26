@@ -25,12 +25,15 @@ class ValidationException extends Exception
 
         if (count($errors) === 1) {
             parent::__construct(reset($errors));
+
             $this->addMoreInfo('field', array_key_first($errors));
         } else {
             parent::__construct('Multiple unhandled validation errors');
+
             $this->addMoreInfo('errors', $errors)
                 ->addMoreInfo('intent', $intent);
         }
+
         $this->addMoreInfo('model', $model);
     }
 }

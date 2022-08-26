@@ -464,6 +464,7 @@ Create new Model::
         protected function init(): void
         {
             parent::init();
+
             $this->hasOne('invoice_id', 'Model_Invoice');
             $this->hasOne('payment_id', 'Model_Payment');
             $this->addField('amount_closed');
