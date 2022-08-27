@@ -129,7 +129,7 @@ class Table
         $that = $this;
         $columnNames = $this->getColumnNames();
         /** @var Row $row */
-        $row = \Closure::bind(function () use ($that, $rowClass, $columnNames) {
+        $row = \Closure::bind(function () use ($that, $rowClass, $columnNames) { // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/7862
             $row = new $rowClass($that);
             foreach ($columnNames as $columnName) {
                 $row->initValue($columnName);

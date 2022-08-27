@@ -17,7 +17,7 @@ class Action
     /** @var \Iterator */
     public $generator;
 
-    /** @var \Closure[] hack for GC for PHP 8.1.3 or older */
+    /** @var array<int, \Closure> hack for GC for PHP 8.1.3 or older */
     private array $_filterFxs = [];
 
     public function __construct(array $data)
@@ -126,7 +126,7 @@ class Action
             $matches = [];
 
             foreach ($condition->getNestedConditions() as $nestedCondition) {
-                $matches[] = $subMatch = (bool) $this->match($row, $nestedCondition);
+                $matches[] = $subMatch = $this->match($row, $nestedCondition);
 
                 // do not check all conditions if any match required
                 if ($condition->isOr() && $subMatch) {

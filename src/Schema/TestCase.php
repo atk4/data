@@ -21,8 +21,8 @@ abstract class TestCase extends BaseTestCase
     /** @var bool If true, SQL queries are dumped. */
     public $debug = false;
 
-    /** @var Migrator[] */
-    private $createdMigrators = [];
+    /** @var array<int, Migrator> */
+    private array $createdMigrators = [];
 
     /**
      * @return static|null
@@ -211,7 +211,7 @@ abstract class TestCase extends BaseTestCase
 
     public function createMigrator(Model $model = null): Migrator
     {
-        $migrator = new Migrator($model ?: $this->db);
+        $migrator = new Migrator($model ?? $this->db);
         $this->createdMigrators[] = $migrator;
 
         return $migrator;

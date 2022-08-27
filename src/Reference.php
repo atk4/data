@@ -106,7 +106,7 @@ class Reference
 
     public function getOurFieldName(): string
     {
-        return $this->ourField ?: $this->getOurModel(null)->idField;
+        return $this->ourField ?? $this->getOurModel(null)->idField;
     }
 
     final protected function getOurField(): Field

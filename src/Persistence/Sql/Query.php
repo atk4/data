@@ -75,12 +75,12 @@ abstract class Query extends Expression
     protected function _renderField($addAlias = true): string
     {
         // if no fields were defined, use defaultField
-        if (empty($this->args['field'])) {
+        if (($this->args['field'] ?? []) === []) {
             if ($this->defaultField instanceof Expression) {
                 return $this->consume($this->defaultField);
             }
 
-            return (string) $this->defaultField;
+            return $this->defaultField;
         }
 
         $res = [];
@@ -172,12 +172,8 @@ abstract class Query extends Expression
      */
     protected function _renderTable($addAlias = true): ?string
     {
-        if (empty($this->args['table'])) {
-            return '';
-        }
-
         $res = [];
-        foreach ($this->args['table'] as $alias => $table) {
+        foreach ($this->args['table'] ?? [] as $alias => $table) {
             if ($addAlias === false && $table instanceof self) {
                 throw new Exception('Table cannot be Query in UPDATE, INSERT etc. query modes');
             }
@@ -214,7 +210,7 @@ abstract class Query extends Expression
 
     protected function _renderFrom(): ?string
     {
-        return empty($this->args['table']) ? '' : 'from';
+        return isset($this->args['table']) ? 'from' : '';
     }
 
     // }}}
@@ -244,7 +240,7 @@ abstract class Query extends Expression
 
     protected function _renderWith(): ?string
     {
-        if (empty($this->args['with'])) {
+        if (($this->args['with'] ?? []) === []) {
             return '';
         }
 
@@ -361,7 +357,7 @@ abstract class Query extends Expression
         }
         $j['f2'] = $f2;
 
-        $j['t'] = $joinKind ?: 'left';
+        $j['t'] = $joinKind ?? 'left';
         $j['fa'] = $foreignAlias;
 
         $this->args['join'][] = $j;
@@ -384,7 +380,7 @@ abstract class Query extends Expression
             if (isset($j['expr'])) {
                 $jj .= $this->consume($j['expr']);
             } else {
-                $jj .= $this->escapeIdentifier($j['fa'] ?: $j['f1']) . '.'
+                $jj .= $this->escapeIdentifier($j['fa'] ?? $j['f1']) . '.'
                     . $this->escapeIdentifier($j['f2']) . ' = '
                     . ($j['m1'] === null ? '' : $this->escapeIdentifier($j['m1']) . '.')
                     . $this->escapeIdentifier($j['m2']);
@@ -494,7 +490,7 @@ abstract class Query extends Expression
      *
      * @param string $kind 'where' or 'having'
      *
-     * @return string[]
+     * @return array<int, string>
      */
     protected function _subrenderWhere($kind): array
     {

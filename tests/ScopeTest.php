@@ -352,7 +352,7 @@ class ScopeTest extends TestCase
         $user->scope()->add($scope);
 
         static::assertSame($user, $scope->getModel());
-        static::assertSame(2, count($user->export()));
+        static::assertCount(2, $user->export());
         static::assertSame($scope->toWords($user), $user->scope()->toWords());
 
         // TODO once PHP7.3 support is dropped, we should use WeakRef for owner
@@ -371,7 +371,7 @@ class ScopeTest extends TestCase
         $user = new SUser($this->db);
         $user->scope()->add($scope);
 
-        static::assertSame(4, count($user->export()));
+        static::assertCount(4, $user->export());
     }
 
     public function testScopeToWords(): void

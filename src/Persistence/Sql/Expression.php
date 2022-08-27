@@ -202,9 +202,9 @@ abstract class Expression implements Expressionable, \ArrayAccess
             if (count($params) > 0) {
                 $kWithoutColon = substr(array_key_last($params), 1);
                 while ($this->renderParamBase !== $kWithoutColon) {
-                    ++$this->renderParamBase;
+                    ++$this->renderParamBase; // @phpstan-ignore-line
                 }
-                ++$this->renderParamBase;
+                ++$this->renderParamBase; // @phpstan-ignore-line
             }
         } finally {
             $expr->paramBase = $expressionParamBaseBackup;
@@ -230,7 +230,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
     protected function escapeParam($value): string
     {
         $name = ':' . $this->renderParamBase;
-        ++$this->renderParamBase;
+        ++$this->renderParamBase; // @phpstan-ignore-line
         $this->renderParams[$name] = $value;
 
         return $name;
@@ -725,7 +725,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
     /**
      * Executes expression and return whole result-set in form of array of hashes.
      *
-     * @return string[][]|null[][]
+     * @return array<int, array<string, string|null>>
      */
     public function getRows(): array
     {
@@ -746,7 +746,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
     /**
      * Executes expression and returns first row of data from result-set as a hash.
      *
-     * @return string[]|null[]|null
+     * @return array<string, string|null>|null
      */
     public function getRow(): ?array
     {

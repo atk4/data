@@ -269,7 +269,7 @@ Your init() method for a Field_Currency might look like this::
         $this->getOwner()->hasOne(
             $f . '_currency_id',
             [
-                $this->currency_model ?: new Currency(),
+                $this->currency_model ?? new Currency(),
                 'system' => true,
             ]
         );

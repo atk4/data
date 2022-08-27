@@ -125,6 +125,7 @@ class Static_ extends Array_
         }
 
         $this->fieldsForModel = array_combine($keyOverride, $defTypes);
+
         parent::__construct($data);
     }
 

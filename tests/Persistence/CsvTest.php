@@ -50,6 +50,7 @@ class CsvTest extends TestCase
             public function __construct($fileHandle, array $defaults)
             {
                 parent::__construct('', $defaults);
+
                 $this->handleUnloaded = $fileHandle;
             }
 
