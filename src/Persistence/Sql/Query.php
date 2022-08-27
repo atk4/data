@@ -490,7 +490,7 @@ abstract class Query extends Expression
      *
      * @param string $kind 'where' or 'having'
      *
-     * @return string[]
+     * @return array<int, string>
      */
     protected function _subrenderWhere($kind): array
     {

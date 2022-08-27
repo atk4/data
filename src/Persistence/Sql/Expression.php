@@ -725,7 +725,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
     /**
      * Executes expression and return whole result-set in form of array of hashes.
      *
-     * @return string[][]|null[][]
+     * @return array<int, array<string, string|null>>
      */
     public function getRows(): array
     {
@@ -746,7 +746,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
     /**
      * Executes expression and returns first row of data from result-set as a hash.
      *
-     * @return string[]|null[]|null
+     * @return array<string, string|null>|null
      */
     public function getRow(): ?array
     {
