@@ -89,7 +89,7 @@ SQL Reference
         $model->hasOne('account_id', ['model' => [Account::class]])
             ->addFields([
                 'opening_balance' => [],
-                'account_balance' => ['balance'],
+                'account_balance' => ['theirField' => 'balance'],
             ], ['type' => 'atk4_money']);
 
     If you need to pass more details to individual field, you can also use sub-array::
@@ -97,7 +97,7 @@ SQL Reference
         $model->hasOne('account_id', ['model' => [Account::class]])
             ->addFields([
                 'opening_balance' => ['caption' => 'The Opening Balance'],
-                'account_balance' => ['balance'],
+                'account_balance' => ['theirField' => 'balance'],
             ], ['type' => 'atk4_money']);
 
     Returns $this.

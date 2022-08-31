@@ -585,13 +585,13 @@ When calling `hasOne()->addFields()` there are various ways to pass options:
 - `addFields(['name' => [], 'dob' => []])` - no options are passed, use defaults. Note that
   reference will not fetch the type of foreign field due to performance consideration.
 
-- `addFields(['first_name' => ['name']])` - this indicates aliasing. Field `name`
+- `addFields(['first_name' => ['theirField' => 'name']])` - this indicates aliasing. Field `name`
   will be added as `first_name`.
 
 - `addFields(['dob' => ['type' => 'date']])` - wrap inside array to pass options to
   field
 
-- `addFields(['the_date' => ['dob', 'type' => 'date']])` - combination of aliasing
+- `addFields(['the_date' => ['theirField' => 'dob', 'type' => 'date']])` - combination of aliasing
   and options
 
 - `addFields(['dob' => [], 'dod' => []], ['type' => 'date'])` - passing defaults for multiple

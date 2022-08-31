@@ -67,7 +67,7 @@ class LUser extends Model
 
         $this->hasOne('country_id', ['model' => [LCountry::class]])
             ->addFields([
-                'country_code' => ['code'],
+                'country_code' => ['theirField' => 'code'],
                 'is_eu' => [],
             ])
             ->addTitle();

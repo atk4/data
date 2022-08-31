@@ -216,7 +216,7 @@ class ReferenceSqlTest extends TestCase
         $o = new Model($this->db, ['table' => 'order']);
         $o->addField('amount');
         $o->hasOne('user_id', ['model' => $u])->addFields([
-            'username' => ['name'],
+            'username' => ['theirField' => 'name'],
             'date' => ['type' => 'date'],
         ]);
 
@@ -231,8 +231,8 @@ class ReferenceSqlTest extends TestCase
         $o = new Model($this->db, ['table' => 'order']);
         $o->addField('amount');
         $o->hasOne('user_id', ['model' => $u])->addFields([
-            'username' => ['name'],
-            'thedate' => ['date', 'type' => 'date'],
+            'username' => ['theirField' => 'name'],
+            'thedate' => ['theirField' => 'date', 'type' => 'date'],
         ]);
         static::assertSame('John', $o->load(1)->get('username'));
         static::{'assertEquals'}(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('thedate'));

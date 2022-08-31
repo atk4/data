@@ -143,7 +143,7 @@ class RandomTest extends TestCase
     {
         $this->setDb([
             'user' => [
-                1 => ['name' => 'John', 'last_name' => null, 'login' => null, 'salary' => null, 'tax' => null, 'vat' => null],
+                1 => ['name' => 'John', 'last_name' => null, 'login' => null, 'salary' => null, 'vat' => null],
             ],
         ]);
 
@@ -155,20 +155,18 @@ class RandomTest extends TestCase
             'last_name' => [],
             'login' => ['default' => 'unknown'],
             'salary' => [CustomField::class, 'type' => 'atk4_money', 'default' => 100],
-            'tax' => [CustomField::class, 'type' => 'atk4_money', 'default' => 20],
             'vat' => new CustomField(['type' => 'atk4_money', 'default' => 15]),
         ]);
 
         $m->insert([]);
 
         static::assertSameExportUnordered([
-            ['id' => 1, 'name' => 'John', 'last_name' => null, 'login' => null, 'salary' => null, 'tax' => null, 'vat' => null],
-            ['id' => 2, 'name' => 'anonymous', 'last_name' => null, 'login' => 'unknown', 'salary' => 100.0, 'tax' => 20.0, 'vat' => 15.0],
+            ['id' => 1, 'name' => 'John', 'last_name' => null, 'login' => null, 'salary' => null, 'vat' => null],
+            ['id' => 2, 'name' => 'anonymous', 'last_name' => null, 'login' => 'unknown', 'salary' => 100.0, 'vat' => 15.0],
         ], $m->export());
 
         $m = $m->load(2);
         static::assertTrue(is_float($m->get('salary')));
-        static::assertTrue(is_float($m->get('tax')));
         static::assertTrue(is_float($m->get('vat')));
         static::assertInstanceOf(CustomField::class, $m->getField('salary'));
     }

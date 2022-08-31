@@ -97,7 +97,7 @@ class HasOneSql extends HasOne
      * may contain 3 types of elements:.
      *
      * ['name' => [], 'surname' => []] - will import those fields as-is
-     * ['full_name' => ['name'], 'day_of_birth' => ['dob', 'type' => 'date']] - use alias and options
+     * ['full_name' => ['theirField' => 'name'], 'day_of_birth' => ['theirField' => 'dob', 'type' => 'date']] - use alias and options
      * ['dob' => ['type' => 'date']]  - use options
      *
      * @param array<string, array<mixed>> $fields
@@ -110,8 +110,8 @@ class HasOneSql extends HasOne
         foreach ($fields as $ourFieldName => $ourFieldDefaults) {
             $ourFieldDefaults = array_merge($defaults, $ourFieldDefaults);
 
-            $theirFieldName = $ourFieldDefaults[0] ?? null;
-            unset($ourFieldDefaults[0]);
+            $theirFieldName = $ourFieldDefaults['theirField'] ?? null;
+            unset($ourFieldDefaults['theirField']);
 
             $this->addField($ourFieldName, $theirFieldName, $ourFieldDefaults);
         }

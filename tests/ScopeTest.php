@@ -46,7 +46,7 @@ class SUser extends Model
 
         $this->hasOne('country_id', ['model' => [SCountry::class]])
             ->addFields([
-                'country_code' => ['code'],
+                'country_code' => ['theirField' => 'code'],
                 'is_eu' => [],
             ])
             ->addTitle();
