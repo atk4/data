@@ -240,46 +240,36 @@ Start by creating a class::
             }
         }
 
-        public function softDelete(Model $m)
+        public function softDelete(Model $entity)
         {
-            $m->assertIsLoaded();
+            $entity->assertIsLoaded();
 
-            $id = $m->getId();
-            if ($m->hook('beforeSoftDelete') === false) {
-                return $m;
+            $id = $entity->getId();
+            if ($entity->hook('beforeSoftDelete') === false) {
+                return $entity;
             }
 
-            $reloadAfterSaveBackup = $m->getModel()->reloadAfterSave;
-            try {
-                $m->getModel()->reloadAfterSave = false;
-                $m->save(['is_deleted' => true])->unload();
-            } finally {
-                $m->getModel()->reloadAfterSave = $reloadAfterSaveBackup;
-            }
+            $entity->saveAndUnload(['is_deleted' => true]);
 
-            $m->hook('afterSoftDelete', [$id]);
-            return $m;
+            $entity->hook('afterSoftDelete', [$id]);
+
+            return $entity;
         }
 
-        public function restore(Model $m)
+        public function restore(Model $entity)
         {
-            $m->assertIsLoaded();
+            $entity->assertIsLoaded();
 
-            $id = $m->getId();
-            if ($m->hook('beforeRestore') === false) {
-                return $m;
+            $id = $entity->getId();
+            if ($entity->hook('beforeRestore') === false) {
+                return $entity;
             }
 
-            $reloadAfterSaveBackup = $m->getModel()->reloadAfterSave;
-            try {
-                $m->getModel()->reloadAfterSave = false;
-                $m->save(['is_deleted' => false])->unload();
-            } finally {
-                $m->getModel()->reloadAfterSave = $reloadAfterSaveBackup;
-            }
+            $entity->saveAndUnload(['is_deleted' => false]);
 
-            $m->hook('afterRestore', [$id]);
-            return $m;
+            $entity->hook('afterRestore', [$id]);
+
+            return $entity;
         }
     }
 
@@ -337,13 +327,13 @@ before and just slightly modifying it::
             $this->getOwner()->onHook(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'softDelete']), null, 100);
         }
 
-        public function softDelete(Model $m)
+        public function softDelete(Model $entity)
         {
             parent::softDelete();
 
-            $m->hook(Model::HOOK_AFTER_DELETE);
+            $entity->hook(Model::HOOK_AFTER_DELETE);
 
-            $m->breakHook(false); // this will cancel original delete()
+            $entity->breakHook(false); // this will cancel original delete()
         }
     }
 
@@ -393,18 +383,18 @@ inside your model are unique::
             $this->getOwner()->onHook(Model::HOOK_BEFORE_SAVE, \Closure::fromCallable([$this, 'beforeSave']));
         }
 
-        protected function beforeSave(Model $m)
+        protected function beforeSave(Model $entity)
         {
             foreach ($this->fields as $field) {
-                if ($m->getDirtyRef()[$field]) {
-                    $mm = clone $m;
-                    $mm->addCondition($mm->idField != $this->id);
-                    $mm = $mm->tryLoadBy($field, $m->get($field));
+                if ($entity->getDirtyRef()[$field]) {
+                    $modelCloned = clone $entity->getModel();
+                    $modelCloned->addCondition($entity->idField != $this->id);
+                    $entityCloned = $modelCloned->tryLoadBy($field, $entity->get($field));
 
-                    if ($mm !== null) {
+                    if ($entityCloned !== null) {
                         throw (new \Atk4\Data\Exception('Duplicate record exists'))
                             ->addMoreInfo('field', $field)
-                            ->addMoreInfo('value', $m->get($field));
+                            ->addMoreInfo('value', $entity->get($field));
                     }
                 }
             }
@@ -719,10 +709,10 @@ so::
 You should never call save() inside afterSave hook, but if you wish to do some
 further manipulation, you can reload a clone::
 
-    $mm = clone $m;
-    $mm->reload();
-    if ($mm->get('amount_due') == 0) {
-        $mm->save(['status' => 'paid']);
+    $entityCloned = clone $entity;
+    $entityCloned->reload();
+    if ($entityCloned->get('amount_due') == 0) {
+        $entityCloned->save(['status' => 'paid']);
     }
 
 Related Record Conditioning
