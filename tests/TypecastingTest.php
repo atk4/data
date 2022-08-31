@@ -195,14 +195,14 @@ class TypecastingTest extends TestCase
         }
 
         $mm->save();
-        static::assertSame($dbData, $this->getDb());
+        static::{'assertEquals'}($dbData, $this->getDb());
 
         $m->createEntity()->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
 
         $dbData['types'][2] = [
             'id' => 2,
-            'string' => $emptyStringValue,
-            'notype' => $emptyStringValue,
+            'string' => null,
+            'notype' => null,
             'date' => null,
             'datetime' => null,
             'time' => null,
@@ -214,7 +214,7 @@ class TypecastingTest extends TestCase
             'object' => null,
         ];
 
-        static::assertSame($dbData, $this->getDb());
+        static::{'assertEquals'}($dbData, $this->getDb());
     }
 
     public function testTypecastNull(): void
@@ -238,7 +238,7 @@ class TypecastingTest extends TestCase
 
         $dbData['test'][2] = array_merge(['id' => 2], $row);
 
-        static::assertSame($dbData, $this->getDb());
+        static::{'assertEquals'}($dbData, $this->getDb());
     }
 
     public function testTypeCustom1(): void
