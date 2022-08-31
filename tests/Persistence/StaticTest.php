@@ -50,7 +50,10 @@ class StaticTest extends TestCase
 
     public function testIdArg(): void
     {
-        $p = new Persistence\Static_([['id' => 20, 'foo' => 'hello'], ['id' => 21, 'foo' => 'world']]);
+        $p = new Persistence\Static_([
+            ['id' => 20, 'foo' => 'hello'],
+            ['id' => 21, 'foo' => 'world'],
+        ]);
         $m = new Model($p);
 
         $m = $m->load(21);

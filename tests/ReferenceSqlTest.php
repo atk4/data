@@ -221,7 +221,7 @@ class ReferenceSqlTest extends TestCase
         ]);
 
         static::assertSame('John', $o->load(1)->get('username'));
-        static::assertEquals(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('date'));
+        static::{'assertEquals'}(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('date'));
 
         static::assertSame('Peter', $o->load(2)->get('username'));
         static::assertSame('John', $o->load(3)->get('username'));
@@ -235,12 +235,12 @@ class ReferenceSqlTest extends TestCase
             'thedate' => ['date', 'type' => 'date'],
         ]);
         static::assertSame('John', $o->load(1)->get('username'));
-        static::assertEquals(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('thedate'));
+        static::{'assertEquals'}(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('thedate'));
 
         $o = new Model($this->db, ['table' => 'order']);
         $o->addField('amount');
         $o->hasOne('user_id', ['model' => $u])->addField('date', null, ['type' => 'date']);
-        static::assertEquals(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('date'));
+        static::{'assertEquals'}(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('date'));
     }
 
     public function testRelatedExpression(): void

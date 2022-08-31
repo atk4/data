@@ -53,9 +53,6 @@ return (new PhpCsFixer\Config())
         // fn => without curly brackets is less readable,
         // also prevent bounding of unwanted variables for GC
         'use_arrow_functions' => false,
-
-        // @TODO fix later
-        'php_unit_strict' => false,
     ])
     ->setFinder($finder)
     ->setCacheFile(sys_get_temp_dir() . '/php-cs-fixer.' . md5(__DIR__) . '.cache');

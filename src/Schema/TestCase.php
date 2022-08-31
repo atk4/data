@@ -301,6 +301,12 @@ abstract class TestCase extends BaseTestCase
                     $idColumnName = isset($row['_id']) ? '_id' : 'id';
                 }
 
+                foreach ($row as $k => $v) {
+                    if (preg_match('~(?:^|_)id$~', $k) && $v === (string) (int) $v) {
+                        $row[$k] = (int) $v;
+                    }
+                }
+
                 if ($noId) {
                     unset($row[$idColumnName]);
                     $res[] = $row;

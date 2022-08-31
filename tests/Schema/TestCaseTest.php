@@ -104,7 +104,7 @@ class TestCaseTest extends TestCase
             $rowsWithId = [];
             $id = 1;
             foreach ($rows as $row) {
-                $rowsWithId[$id] = array_merge(['id' => (string) $id], $row);
+                $rowsWithId[$id] = array_merge(['id' => $id], $row);
                 ++$id;
             }
 

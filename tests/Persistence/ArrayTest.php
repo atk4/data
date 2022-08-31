@@ -740,8 +740,12 @@ class ArrayTest extends TestCase
 
         $m->addCondition('surname', 'Smith');
         static::assertSame(1, $m->executeCountQuery());
-        static::assertSame([4 => ['id' => 4, 'name' => 'Sarah', 'surname' => 'Smith']], $m->export());
-        static::assertSame([4 => ['id' => 4, 'name' => 'Sarah', 'surname' => 'Smith']], $m->action('select')->getRows());
+        static::assertSame([
+            4 => ['id' => 4, 'name' => 'Sarah', 'surname' => 'Smith'],
+        ], $m->export());
+        static::assertSame([
+            4 => ['id' => 4, 'name' => 'Sarah', 'surname' => 'Smith'],
+        ], $m->action('select')->getRows());
 
         $m->addCondition('surname', 'Siiiith');
         static::assertSame(0, $m->executeCountQuery());

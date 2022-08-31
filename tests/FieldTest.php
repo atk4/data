@@ -162,8 +162,8 @@ class FieldTest extends TestCase
         $m->insert(['surname' => 'qq']);
         static::assertSame([
             'user' => [
-                1 => ['id' => '1', 'name' => 'John', 'surname' => 'Smith'],
-                2 => ['id' => '2', 'name' => 'NoName', 'surname' => 'qq'],
+                1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
+                2 => ['id' => 2, 'name' => 'NoName', 'surname' => 'qq'],
             ],
         ], $this->getDb());
     }
@@ -357,7 +357,7 @@ class FieldTest extends TestCase
         $m->set('name', 'Bill');
         $m->set('surname', 'Stalker');
         $m->save();
-        static::assertEquals($dbData, $this->getDb());
+        static::assertSame($dbData, $this->getDb());
 
         $m->reload();
         static::assertSame('Smith', $m->get('surname'));
@@ -365,7 +365,7 @@ class FieldTest extends TestCase
         $m->set('surname', 'Stalker');
         $m->save();
         $dbData['item'][1]['surname'] = 'Stalker';
-        static::assertEquals($dbData, $this->getDb());
+        static::assertSame($dbData, $this->getDb());
 
         $m->onHook(Model::HOOK_BEFORE_SAVE, static function ($m) {
             if ($m->isDirty('name')) {
@@ -382,14 +382,14 @@ class FieldTest extends TestCase
 
         $dbData['item'][1]['surname'] = 'X';
 
-        static::assertEquals($dbData, $this->getDb());
+        static::assertSame($dbData, $this->getDb());
         static::assertNull($m->get('name'));
         static::assertSame('X', $m->get('surname'));
 
         $m->set('surname', 'Y');
         $m->save();
 
-        static::assertEquals($dbData, $this->getDb());
+        static::assertSame($dbData, $this->getDb());
         static::assertSame('Y', $m->get('name'));
         static::assertSame('X', $m->get('surname'));
     }
@@ -424,13 +424,13 @@ class FieldTest extends TestCase
 
         static::assertSame([
             'user' => [
-                1 => ['id' => '1', 'name' => 'John', 'surname' => 'Smith', 'category_id' => '2'],
-                2 => ['id' => '2', 'name' => 'Peter', 'surname' => null, 'category_id' => '3'],
+                1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'category_id' => 2],
+                2 => ['id' => 2, 'name' => 'Peter', 'surname' => null, 'category_id' => 3],
             ],
             'category' => [
-                1 => ['id' => '1', 'name' => 'General'],
-                2 => ['id' => '2', 'name' => 'Programmer'],
-                3 => ['id' => '3', 'name' => 'Sales'],
+                1 => ['id' => 1, 'name' => 'General'],
+                2 => ['id' => 2, 'name' => 'Programmer'],
+                3 => ['id' => 3, 'name' => 'Sales'],
             ],
         ], $this->getDb());
     }
@@ -468,8 +468,8 @@ class FieldTest extends TestCase
 
         static::assertSame([
             'user' => [
-                1 => ['id' => '1', 'name' => 'John', 'surname' => 'Smith'],
-                2 => ['id' => '2', 'name' => 'Peter', 'surname' => 'qq'],
+                1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
+                2 => ['id' => 2, 'name' => 'Peter', 'surname' => 'qq'],
             ],
         ], $this->getDb());
 
@@ -478,8 +478,8 @@ class FieldTest extends TestCase
 
         static::assertSame([
             'user' => [
-                1 => ['id' => '1', 'name' => 'Scott', 'surname' => 'Smith'],
-                2 => ['id' => '2', 'name' => 'Peter', 'surname' => 'qq'],
+                1 => ['id' => 1, 'name' => 'Scott', 'surname' => 'Smith'],
+                2 => ['id' => 2, 'name' => 'Peter', 'surname' => 'qq'],
             ],
         ], $this->getDb());
     }

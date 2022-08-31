@@ -100,7 +100,9 @@ class MigratorTest extends TestCase
         $model->setOrder($this->getDatabasePlatform() instanceof OraclePlatform && in_array($type, ['text', 'blob'], true) ? 'id' : 'v');
 
         static::assertSameExportUnordered(
-            $isBinary ? [['id' => 3]] : [['id' => 1], ['id' => 2], ['id' => 3]],
+            $isBinary
+                ? [['id' => 3]]
+                : [['id' => 1], ['id' => 2], ['id' => 3]],
             $model->export(['id'])
         );
     }

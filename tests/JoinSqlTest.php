@@ -79,9 +79,13 @@ class JoinSqlTest extends TestCase
 
         $user2->save();
 
-        static::assertEquals([
-            'user' => [1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1]],
-            'contact' => [1 => ['id' => 1, 'contact_phone' => '+123']],
+        static::assertSame([
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
+            ],
+            'contact' => [
+                1 => ['id' => 1, 'contact_phone' => '+123'],
+            ],
         ], $this->getDb(['user', 'contact']));
 
         $user2 = $user->createEntity();
@@ -89,7 +93,7 @@ class JoinSqlTest extends TestCase
         $user2->set('contact_phone', '+321');
         $user2->save();
 
-        static::assertEquals([
+        static::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
                 2 => ['id' => 2, 'name' => 'Joe', 'contact_id' => 2],
@@ -123,23 +127,27 @@ class JoinSqlTest extends TestCase
         $user2->set('contact_phone', '+123');
         $user2->save();
 
-        static::assertEquals([
-            'user' => [1 => ['id' => 1, 'name' => 'John']],
-            'contact' => [1 => ['id' => 1, 'test_id' => 1, 'contact_phone' => '+123']],
+        static::assertSame([
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John'],
+            ],
+            'contact' => [
+                1 => ['id' => 1, 'contact_phone' => '+123', 'test_id' => 1],
+            ],
         ], $this->getDb(['user', 'contact']));
 
         $user2->unload();
         $user2 = $user->createEntity();
         $user2->set('name', 'Peter');
         $user2->save();
-        static::assertEquals([
+        static::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
                 2 => ['id' => 2, 'name' => 'Peter'],
             ],
             'contact' => [
-                1 => ['id' => 1, 'test_id' => 1, 'contact_phone' => '+123'],
-                2 => ['id' => 2, 'test_id' => 2, 'contact_phone' => null],
+                1 => ['id' => 1, 'contact_phone' => '+123', 'test_id' => 1],
+                2 => ['id' => 2, 'contact_phone' => null, 'test_id' => 2],
             ],
         ], $this->getDb(['user', 'contact']));
 
@@ -150,15 +158,15 @@ class JoinSqlTest extends TestCase
         $user2->set('name', 'Sue');
         $user2->set('contact_phone', '+444');
         $user2->save();
-        static::assertEquals([
+        static::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
                 2 => ['id' => 2, 'name' => 'Peter'],
                 3 => ['id' => 3, 'name' => 'Sue'],
             ],
             'contact' => [
-                1 => ['id' => 1, 'test_id' => 1, 'contact_phone' => '+123'],
-                3 => ['id' => 3, 'test_id' => 3, 'contact_phone' => '+444'],
+                1 => ['id' => 1, 'contact_phone' => '+123', 'test_id' => 1],
+                3 => ['id' => 3, 'contact_phone' => '+444', 'test_id' => 3],
             ],
         ], $this->getDb(['user', 'contact']));
     }
@@ -186,9 +194,13 @@ class JoinSqlTest extends TestCase
 
         $user->save();
 
-        static::assertEquals([
-            'user' => [1 => ['id' => 1, 'test_id' => 1, 'name' => 'John']],
-            'contact' => [1 => ['id' => 1, 'contact_phone' => '+123']],
+        static::assertSame([
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'test_id' => 1],
+            ],
+            'contact' => [
+                1 => ['id' => 1, 'contact_phone' => '+123'],
+            ],
         ], $this->getDb(['user', 'contact']));
     }
 
@@ -256,7 +268,7 @@ class JoinSqlTest extends TestCase
         $user2->set('contact_phone', '+555');
         $user2->save();
 
-        static::assertEquals([
+        static::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
                 2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
@@ -275,7 +287,7 @@ class JoinSqlTest extends TestCase
         $user2->set('name', 'XX');
         $user2->save();
 
-        static::assertEquals([
+        static::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
                 2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
@@ -290,7 +302,7 @@ class JoinSqlTest extends TestCase
         $user2->set('contact_phone', '+999');
         $user2->save();
 
-        static::assertEquals([
+        static::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
                 2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
@@ -307,7 +319,7 @@ class JoinSqlTest extends TestCase
         $user2->set('contact_phone', '+777');
         $user2->save();
 
-        static::assertEquals([
+        static::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
                 2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
@@ -348,7 +360,7 @@ class JoinSqlTest extends TestCase
         $user = $user->load(1);
         $user->delete();
 
-        static::assertEquals([
+        static::assertSame([
             'user' => [
                 2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
                 3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
@@ -388,9 +400,13 @@ class JoinSqlTest extends TestCase
         $user->set('name', 'John');
         $user->save();
 
-        static::assertEquals([
-            'user' => [1 => ['id' => 1, 'name' => 'John']],
-            'contact' => [1 => ['id' => 1, 'test_id' => 1, 'contact_phone' => '+123']],
+        static::assertSame([
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John'],
+            ],
+            'contact' => [
+                1 => ['id' => 1, 'contact_phone' => '+123', 'test_id' => 1],
+            ],
         ], $this->getDb(['user', 'contact']));
     }
 
@@ -440,7 +456,7 @@ class JoinSqlTest extends TestCase
 
         $user->createEntity()->save(['name' => 'new', 'contact_phone' => '+000', 'country_name' => 'LV']);
 
-        static::assertEquals([
+        static::assertSame([
             'user' => [
                 20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
                 30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
@@ -497,7 +513,7 @@ class JoinSqlTest extends TestCase
         $user = $user->loadBy('country_name', 'US');
         static::assertSame(30, $user->getId());
 
-        static::assertEquals([
+        static::assertSame([
             'user' => [
                 20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
                 30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
@@ -539,14 +555,14 @@ class JoinSqlTest extends TestCase
 
         // main user model joined to contact table
         $user = new Model($this->db, ['table' => 'user']);
-        $user->addField('contact_id');
         $user->addField('name');
+        $user->addField('contact_id');
         $j = $user->join('contact');
         $this->createMigrator()->createForeignKey($j);
 
         $user2 = $user->load(1);
-        static::assertEquals([
-            'id' => 1, 'name' => 'John', 'contact_id' => 10,
+        static::assertSame([
+            'id' => 1, 'name' => 'John', 'contact_id' => '10',
         ], $user2->get());
 
         // hasOne phone model
@@ -557,8 +573,8 @@ class JoinSqlTest extends TestCase
         $refOne->addField('number');
 
         $user2 = $user->load(1);
-        static::assertEquals([
-            'id' => 1, 'name' => 'John', 'contact_id' => 10, 'phone_id' => 20, 'number' => '+123',
+        static::assertSame([
+            'id' => 1, 'name' => 'John', 'contact_id' => '10', 'phone_id' => 20, 'number' => '+123',
         ], $user2->get());
 
         // hasMany token model (uses default ourField, theirField)
@@ -704,7 +720,7 @@ class JoinSqlTest extends TestCase
         $user2->set('j2_salary', 111);
         $user2->save();
 
-        static::assertEquals([
+        static::{'assertEquals'}([
             'user' => [
                 1 => ['id' => 1, 'first_name' => 'John 2', $contactForeignIdFieldName => 1],
                 2 => ['id' => 2, 'first_name' => 'Peter', $contactForeignIdFieldName => 1],
@@ -727,7 +743,7 @@ class JoinSqlTest extends TestCase
         $user3->set('j2_salary', 222);
         $user3->save();
 
-        static::assertEquals([
+        static::{'assertEquals'}([
             'user' => [
                 1 => ['id' => 1, 'first_name' => 'John 2', $contactForeignIdFieldName => 1],
                 2 => ['id' => 2, 'first_name' => 'Peter', $contactForeignIdFieldName => 1],
