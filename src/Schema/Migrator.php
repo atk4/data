@@ -93,7 +93,9 @@ class Migrator
      * DBAL PR rejected: https://github.com/doctrine/dbal/pull/5494
      *
      * @phpstan-template T of AbstractAsset
+     *
      * @phpstan-param T $abstractAsset
+     *
      * @phpstan-return T
      */
     protected function fixAbstractAssetName(AbstractAsset $abstractAsset, string $name): AbstractAsset
