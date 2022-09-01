@@ -61,13 +61,13 @@ class Model_Item3 extends Model
         parent::init();
 
         $this->addField('name');
-        $this->addField('age');
+        $this->addField('age', ['type' => 'integer']);
         $i2 = $this->join('item2.item_id');
         $i2->hasOne('parent_item_id', ['model' => [self::class], 'tableAlias' => 'parent'])
             ->addTitle();
 
         $this->hasMany('Child', ['model' => [self::class], 'theirField' => 'parent_item_id', 'tableAlias' => 'child'])
-            ->addField('child_age', ['aggregate' => 'sum', 'field' => 'age']);
+            ->addField('child_age', ['type' => 'integer', 'aggregate' => 'sum', 'field' => 'age']);
     }
 }
 
@@ -103,12 +103,12 @@ class RandomTest extends TestCase
         $m->insert(['name' => 'Sue']);
         $m->insert(['name' => 'John', 'salary' => 40]);
 
-        static::assertEquals([
+        static::assertSame([
             'user' => [
-                1 => ['id' => 1, 'name' => 'Peter', 'salary' => 10],
-                2 => ['id' => 2, 'name' => 'Steve', 'salary' => 30],
-                3 => ['id' => 3, 'name' => 'Sue', 'salary' => 10],
-                4 => ['id' => 4, 'name' => 'John', 'salary' => 40],
+                1 => ['id' => 1, 'name' => 'Peter', 'salary' => '10'],
+                2 => ['id' => 2, 'name' => 'Steve', 'salary' => '30'],
+                3 => ['id' => 3, 'name' => 'Sue', 'salary' => '10'],
+                4 => ['id' => 4, 'name' => 'John', 'salary' => '40'],
             ],
         ], $this->getDb());
     }
@@ -127,7 +127,7 @@ class RandomTest extends TestCase
         $m->insert(['name' => 'Peter']);
         $m->insert([]);
 
-        static::assertEquals([
+        static::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'login' => 'john@example.com'],
                 2 => ['id' => 2, 'name' => 'Peter', 'login' => 'unknown'],
@@ -259,8 +259,8 @@ class RandomTest extends TestCase
 
         $m = new Model_Item3($this->db, ['table' => 'item']);
 
-        static::assertEquals(
-            ['id' => '2', 'name' => 'Sue', 'parent_item_id' => 1, 'parent_item' => 'John', 'age' => '20', 'child_age' => 24],
+        static::assertSame(
+            ['id' => 2, 'name' => 'Sue', 'age' => 20, 'parent_item_id' => 1, 'parent_item' => 'John', 'child_age' => 24],
             $m->load(2)->get()
         );
 
@@ -367,7 +367,7 @@ class RandomTest extends TestCase
 
         // set custom titleField
         $m->titleField = 'parent_item_id';
-        static::assertEquals(1, $mm->getTitle()); // returns parent_item_id value
+        static::assertSame(1, $mm->getTitle()); // returns parent_item_id value
 
         // set custom titleField as titleField from linked model
         $m->titleField = 'parent_item';
@@ -375,13 +375,13 @@ class RandomTest extends TestCase
 
         // no titleField set - return id value
         $m->titleField = null;
-        static::assertEquals(2, $mm->getTitle()); // loaded returns id value
+        static::assertSame(2, $mm->getTitle()); // loaded returns id value
 
         // expression as title field
         $m->addExpression('my_name', ['expr' => '[id]']);
         $m->titleField = 'my_name';
         $mm = $m->load(2);
-        static::assertEquals(2, $mm->getTitle()); // loaded returns id value
+        static::assertSame('2', $mm->getTitle()); // loaded returns id value
 
         $this->expectException(Exception::class);
         $mm->getTitles();

@@ -65,9 +65,9 @@ class TypecastingTest extends TestCase
         static::assertSame('foo', $mm->get('string'));
         static::assertTrue($mm->get('boolean'));
         static::assertSame(8.20, $mm->get('money'));
-        static::assertEquals(new \DateTime('2013-02-20 UTC'), $mm->get('date'));
-        static::assertEquals(new \DateTime('2013-02-20 20:00:12 UTC'), $mm->get('datetime'));
-        static::assertEquals(new \DateTime('1970-01-01 12:00:50 UTC'), $mm->get('time'));
+        static::{'assertEquals'}(new \DateTime('2013-02-20 UTC'), $mm->get('date'));
+        static::{'assertEquals'}(new \DateTime('2013-02-20 20:00:12 UTC'), $mm->get('datetime'));
+        static::{'assertEquals'}(new \DateTime('1970-01-01 12:00:50 UTC'), $mm->get('time'));
         static::assertSame(2940, $mm->get('integer'));
         static::assertSame([1, 2, 3], $mm->get('json'));
         static::assertSame(8.20234376757473, $mm->get('float'));
@@ -102,7 +102,7 @@ class TypecastingTest extends TestCase
                 ],
             ],
         ];
-        static::assertEquals($dbData, $this->getDb());
+        static::{'assertEquals'}($dbData, $this->getDb());
 
         [$first, $duplicate] = $m->export();
 
@@ -195,14 +195,14 @@ class TypecastingTest extends TestCase
         }
 
         $mm->save();
-        static::assertEquals($dbData, $this->getDb());
+        static::{'assertEquals'}($dbData, $this->getDb());
 
         $m->createEntity()->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
 
         $dbData['types'][2] = [
             'id' => 2,
-            'string' => $emptyStringValue,
-            'notype' => $emptyStringValue,
+            'string' => null,
+            'notype' => null,
             'date' => null,
             'datetime' => null,
             'time' => null,
@@ -214,14 +214,14 @@ class TypecastingTest extends TestCase
             'object' => null,
         ];
 
-        static::assertEquals($dbData, $this->getDb());
+        static::{'assertEquals'}($dbData, $this->getDb());
     }
 
     public function testTypecastNull(): void
     {
         $dbData = [
             'test' => [
-                1 => $row = ['id' => '1', 'a' => 1, 'b' => '', 'c' => null],
+                1 => $row = ['id' => 1, 'a' => '1', 'b' => '', 'c' => null],
             ],
         ];
         $this->setDb($dbData);
@@ -236,9 +236,9 @@ class TypecastingTest extends TestCase
         $m->setMulti($row);
         $m->save();
 
-        $dbData['test'][2] = array_merge(['id' => '2'], $row);
+        $dbData['test'][2] = array_merge(['id' => 2], $row);
 
-        static::assertEquals($dbData, $this->getDb());
+        static::{'assertEquals'}($dbData, $this->getDb());
     }
 
     public function testTypeCustom1(): void
@@ -290,7 +290,7 @@ class TypecastingTest extends TestCase
         $row['money'] = '8.2'; // here it will loose last zero and that's as expected
         $dbData['types'][2] = array_merge(['id' => '2'], $row);
 
-        static::assertEquals($dbData, $this->getDb());
+        static::{'assertEquals'}($dbData, $this->getDb());
     }
 
     public function testLoad(): void
@@ -411,8 +411,11 @@ class TypecastingTest extends TestCase
         $m->set('ts', new \DateTime('2012-02-30'));
         $m->save();
 
-        // stores valid date.
-        static::assertEquals(['types' => [1 => ['id' => 1, 'date' => '2012-03-01']]], $this->getDb());
+        static::assertSame([
+            'types' => [
+                1 => ['id' => 1, 'date' => '2012-03-01'],
+            ],
+        ], $this->getDb());
     }
 
     public function testIntegerSave(): void

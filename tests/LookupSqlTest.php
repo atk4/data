@@ -182,43 +182,43 @@ class LookupSqlTest extends TestCase
         static::assertSameExportUnordered([
             'country' => [
                 1 => [
-                    'id' => '1',
+                    'id' => 1,
                     'name' => 'Canada',
                     'code' => null,
                     'is_eu' => '0',
                 ],
                 2 => [
-                    'id' => '2',
+                    'id' => 2,
                     'name' => 'Latvia',
                     'code' => 'LV',
                     'is_eu' => '1',
                 ],
                 3 => [
-                    'id' => '3',
+                    'id' => 3,
                     'name' => 'Estonia',
                     'code' => 'ES',
                     'is_eu' => '1',
                 ],
                 4 => [
-                    'id' => '4',
+                    'id' => 4,
                     'name' => 'Korea',
                     'code' => 'KR',
                     'is_eu' => '0',
                 ],
                 5 => [
-                    'id' => '5',
+                    'id' => 5,
                     'name' => 'Japan',
                     'code' => 'JP',
                     'is_eu' => '0',
                 ],
                 6 => [
-                    'id' => '6',
+                    'id' => 6,
                     'name' => 'Lithuania',
                     'code' => 'LT',
                     'is_eu' => '1',
                 ],
                 7 => [
-                    'id' => '7',
+                    'id' => 7,
                     'name' => 'Russia',
                     'code' => 'RU',
                     'is_eu' => '0',
@@ -240,13 +240,13 @@ class LookupSqlTest extends TestCase
         static::assertSameExportUnordered([
             'country' => [
                 1 => [
-                    'id' => '1',
+                    'id' => 1,
                     'name' => 'Canada',
                     'code' => null,
                     'is_eu' => '0',
                 ],
                 2 => [
-                    'id' => '2',
+                    'id' => 2,
                     'name' => 'Latvia',
                     'code' => null,
                     'is_eu' => '0',
@@ -254,28 +254,28 @@ class LookupSqlTest extends TestCase
             ],
             'user' => [
                 1 => [
-                    'id' => '1',
+                    'id' => 1,
                     'name' => 'Alain',
                     'is_vip' => '0',
-                    'country_id' => '1',
+                    'country_id' => 1,
                 ],
                 2 => [
-                    'id' => '2',
+                    'id' => 2,
                     'name' => 'Duncan',
                     'is_vip' => '1',
-                    'country_id' => '1',
+                    'country_id' => 1,
                 ],
                 3 => [
-                    'id' => '3',
+                    'id' => 3,
                     'name' => 'imants',
                     'is_vip' => '0',
-                    'country_id' => '2',
+                    'country_id' => 2,
                 ],
                 4 => [
-                    'id' => '4',
+                    'id' => 4,
                     'name' => 'juris',
                     'is_vip' => '0',
-                    'country_id' => '2',
+                    'country_id' => 2,
                 ],
             ],
         ], $this->getDb(['country', 'user']));
@@ -309,31 +309,31 @@ class LookupSqlTest extends TestCase
         static::assertSameExportUnordered([
             'country' => [
                 1 => [
-                    'id' => '1',
+                    'id' => 1,
                     'name' => 'Canada',
                     'code' => 'CA',
                     'is_eu' => '0',
                 ],
                 2 => [
-                    'id' => '2',
+                    'id' => 2,
                     'name' => 'Latvia',
                     'code' => 'LV',
                     'is_eu' => '1',
                 ],
                 3 => [
-                    'id' => '3',
+                    'id' => 3,
                     'name' => 'Japan',
                     'code' => 'JP',
                     'is_eu' => '0',
                 ],
                 4 => [
-                    'id' => '4',
+                    'id' => 4,
                     'name' => 'Lithuania',
                     'code' => 'LT',
                     'is_eu' => '1',
                 ],
                 5 => [
-                    'id' => '5',
+                    'id' => 5,
                     'name' => 'Russia',
                     'code' => 'RU',
                     'is_eu' => '0',
@@ -341,16 +341,16 @@ class LookupSqlTest extends TestCase
             ],
             'user' => [
                 1 => [
-                    'id' => '1',
+                    'id' => 1,
                     'name' => 'Alain',
                     'is_vip' => '0',
-                    'country_id' => '1',
+                    'country_id' => 1,
                 ],
                 2 => [
-                    'id' => '2',
+                    'id' => 2,
                     'name' => 'Imants',
                     'is_vip' => '0',
-                    'country_id' => '2',
+                    'country_id' => 2,
                 ],
             ],
         ], $this->getDb(['country', 'user']));

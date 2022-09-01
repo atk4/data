@@ -104,7 +104,7 @@ The example above will perform a select query first:
 
 If a single row can be retrieved, then the update will be performed:
 
- - `update user set name="John", surname="Smith", revision=revision + 1 where id = 123`
+ - `update user set name = "John", surname = "Smith", revision = revision + 1 where id = 123`
 
 Otherwise an insert operation will be performed:
 

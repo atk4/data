@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Model;
 
 use Atk4\Core\Factory;
+use Atk4\Data\Model;
 
 trait UserActionsTrait
 {
@@ -139,8 +140,8 @@ trait UserActionsTrait
         $this->addUserAction('delete', [
             'appliesTo' => UserAction::APPLIES_TO_SINGLE_RECORD,
             'modifier' => UserAction::MODIFIER_DELETE,
-            'callback' => function ($model) {
-                return $model->delete();
+            'callback' => function (Model $entity) {
+                return $entity->delete();
             },
         ]);
 

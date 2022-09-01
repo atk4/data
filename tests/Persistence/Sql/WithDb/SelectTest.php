@@ -154,20 +154,20 @@ class SelectTest extends TestCase
         $this->q('employee')
             ->setMulti(['id' => 2, 'name' => 'Jane', 'surname' => 'Doe', 'retired' => false])
             ->mode('insert')->executeStatement();
-        static::assertSame(
-            [['id' => '1', 'name' => 'John'], ['id' => '2', 'name' => 'Jane']],
-            $this->q('employee')->field('id')->field('name')->order('id')->getRows()
-        );
+        static::assertSame([
+            ['id' => '1', 'name' => 'John'],
+            ['id' => '2', 'name' => 'Jane'],
+        ], $this->q('employee')->field('id')->field('name')->order('id')->getRows());
 
         // update
         $this->q('employee')
             ->where('name', 'John')
             ->set('name', 'Johnny')
             ->mode('update')->executeStatement();
-        static::assertSame(
-            [['id' => '1', 'name' => 'Johnny'], ['id' => '2', 'name' => 'Jane']],
-            $this->q('employee')->field('id')->field('name')->order('id')->getRows()
-        );
+        static::assertSame([
+            ['id' => '1', 'name' => 'Johnny'],
+            ['id' => '2', 'name' => 'Jane'],
+        ], $this->q('employee')->field('id')->field('name')->order('id')->getRows());
 
         // replace
         if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
@@ -192,19 +192,18 @@ class SelectTest extends TestCase
         usort($data, function ($a, $b) {
             return $a['id'] - $b['id']; // @phpstan-ignore-line
         });
-        static::assertSame(
-            [['id' => '1', 'name' => 'Peter'], ['id' => '2', 'name' => 'Jane']],
-            $data
-        );
+        static::assertSame([
+            ['id' => '1', 'name' => 'Peter'],
+            ['id' => '2', 'name' => 'Jane'],
+        ], $data);
 
         // delete
         $this->q('employee')
             ->where('retired', true)
             ->mode('delete')->executeStatement();
-        static::assertSame(
-            [['id' => '2', 'name' => 'Jane']],
-            $this->q('employee')->field('id')->field('name')->getRows()
-        );
+        static::assertSame([
+            ['id' => '2', 'name' => 'Jane'],
+        ], $this->q('employee')->field('id')->field('name')->getRows());
     }
 
     public function testEmptyGetOne(): void
@@ -226,10 +225,9 @@ class SelectTest extends TestCase
 
     public function testWhereExpression(): void
     {
-        static::assertSame(
-            [['id' => '2', 'name' => 'Jack', 'surname' => 'Williams', 'retired' => '1']],
-            $this->q('employee')->where('retired', true)->where($this->q()->expr('{}=[] or {}=[]', ['surname', 'Williams', 'surname', 'Smith']))->getRows()
-        );
+        static::assertSame([
+            ['id' => '2', 'name' => 'Jack', 'surname' => 'Williams', 'retired' => '1'],
+        ], $this->q('employee')->where('retired', true)->where($this->q()->expr('{}=[] or {}=[]', ['surname', 'Williams', 'surname', 'Smith']))->getRows());
     }
 
     public function testGroupConcat(): void
