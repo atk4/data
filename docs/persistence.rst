@@ -761,7 +761,7 @@ This operation is actually consisting of 3 following operations::
 Here is a way how to intervene with the process::
 
     $client->hasMany('Invoice');
-    $client->addExpression('last_sale', ['expr' => function ($m) {
+    $client->addExpression('last_sale', ['expr' => function (Model $m) {
         return $m->refLink('Invoice')
             ->setOrder('date desc')
             ->setLimit(1)

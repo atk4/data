@@ -105,7 +105,7 @@ class ReferenceTest extends TestCase
     public function testCustomReference(): void
     {
         $m = new Model($this->db, ['table' => 'user']);
-        $m->addReference('archive', ['model' => function ($m) {
+        $m->addReference('archive', ['model' => function (Model $m) {
             return new $m(null, ['table' => $m->table . '_archive']);
         }]);
 

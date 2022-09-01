@@ -172,7 +172,7 @@ You may safely rely on `$this->getPersistence()` result to make choices::
         $this->addExpression('total', ['expr' => '[amount] + [vat]']);
     } else {
         // Fallback
-        $this->addCalculatedField('total', ['expr' => function ($m) {
+        $this->addCalculatedField('total', ['expr' => function (self $m) {
             return $m->get('amount') + $m->get('vat');
         }, 'type' => 'float']);
     }
@@ -279,7 +279,7 @@ calculated by your callback method right after individual record is loaded by th
     $this->addField('term', ['caption' => 'Repayment term in months', 'default' => 36]);
     $this->addField('rate', ['caption' => 'APR %', 'default' => 5]);
 
-    $this->addCalculatedField('interest', ['expr' => function ($m) {
+    $this->addCalculatedField('interest', ['expr' => function (self $m) {
         return $m->calculateInterest();
     }, 'type' => 'float']);
 
@@ -297,7 +297,7 @@ This can also be useful for calculating relative times::
         {
             parent::init();
 
-            $this->addCalculatedField('event_ts_human_friendly', ['expr' => function ($m) {
+            $this->addCalculatedField('event_ts_human_friendly', ['expr' => function (self $m) {
                 return $this->humanTiming($m->get('event_ts'));
             }]);
         }

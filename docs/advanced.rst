@@ -468,7 +468,7 @@ Next we need to define reference. Inside Model_Invoice add::
 
     $this->hasMany('InvoicePayment');
 
-    $this->hasMany('Payment', ['model' => function ($m) {
+    $this->hasMany('Payment', ['model' => function (self $m) {
         $p = new Model_Payment($m->getPersistence());
         $j = $p->join('invoice_payment.payment_id');
         $j->addField('amount_closed');
@@ -752,7 +752,7 @@ field only to offer payments made by the same client. Inside Model_Invoice add::
 
     $this->hasOne('client_id', 'Client');
 
-    $this->hasOne('payment_invoice_id', ['model' => function ($m) {
+    $this->hasOne('payment_invoice_id', ['model' => function (self $m) {
         return $m->ref('client_id')->ref('Payment');
     }]);
 
@@ -778,7 +778,7 @@ Agile Data allow you to define multiple references between same entities, but
 sometimes that can be quite useful. Consider adding this inside your Model_Contact::
 
     $this->hasMany('Invoice', 'Model_Invoice');
-    $this->hasMany('OverdueInvoice', ['model' => function ($m) {
+    $this->hasMany('OverdueInvoice', ['model' => function (self $m) {
         return $m->ref('Invoice')->addCondition('due', '<', date('Y-m-d'))
     }]);
 

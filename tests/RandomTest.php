@@ -274,7 +274,7 @@ class RandomTest extends TestCase
 
         // default title field
         $m = new Model($p);
-        $m->addExpression('caps', ['expr' => function ($m) {
+        $m->addExpression('caps', ['expr' => function (Model $m) {
             return strtoupper($m->get('name'));
         }]);
 
