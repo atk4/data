@@ -44,10 +44,10 @@ class UserAction
     /** @var string How this action interact with record */
     public $modifier;
 
-    /** @var \Closure(Model, mixed ...$args): mixed|string code to execute. By default will call entity method with same name */
+    /** @var \Closure|string code to execute. By default will call entity method with same name */
     public $callback;
 
-    /** @var \Closure(Model, mixed ...$args): mixed|string identical to callback, but would generate preview of action without permanent effect */
+    /** @var \Closure|string identical to callback, but would generate preview of action without permanent effect */
     public $preview;
 
     /** @var string|null caption to put on the button */
