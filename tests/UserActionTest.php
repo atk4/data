@@ -183,7 +183,7 @@ class UserActionTest extends TestCase
         $client = new UaClient($this->pers);
         $client = $client->load(1);
 
-        $client->getUserAction('sendReminder')->enabled = function () {
+        $client->getUserAction('sendReminder')->enabled = function (Model $m) {
             return false;
         };
 
@@ -196,7 +196,7 @@ class UserActionTest extends TestCase
         $client = new UaClient($this->pers);
         $client = $client->load(1);
 
-        $client->getUserAction('sendReminder')->enabled = function () {
+        $client->getUserAction('sendReminder')->enabled = function (UaClient $m) {
             return true;
         };
 

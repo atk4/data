@@ -59,7 +59,7 @@ class UserAction
     /** @var bool|string|\Closure(static): string Will ask user to confirm. */
     public $confirmation = false;
 
-    /** @var bool|\Closure(Model): bool setting this to false will disable action. */
+    /** @var bool|\Closure(object): bool setting this to false will disable action. */
     public $enabled = true;
 
     /** @var bool system action will be hidden from UI, but can still be explicitly triggered */

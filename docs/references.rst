@@ -106,7 +106,7 @@ There are several ways how to link models with hasMany::
 
     $m->hasMany('Orders', ['model' => [Model_Order::class]]); // using seed
 
-    $m->hasMany('Order', ['model' => function ($m, $r) { // using callback
+    $m->hasMany('Order', ['model' => function (Model $m, $r) { // using callback
         return new Model_Order();
     }]);
 
@@ -447,7 +447,7 @@ Note that you can create one-to-many or many-to-one relations, by using your
 custom logic.
 No condition will be applied by default so it's all up to you::
 
-    $m->addReference('Archive', ['model' => function ($m) {
+    $m->addReference('Archive', ['model' => function (Model $m) {
         $archive = $m->newInstance(null, ['table' => $m->table . '_archive']);
 
         $m->addField('original_id', ['type' => 'integer']);
