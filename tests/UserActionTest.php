@@ -101,15 +101,15 @@ class UserActionTest extends TestCase
     public function testPreview(): void
     {
         $client = new UaClient($this->pers);
-        $client->addUserAction('say_name', function ($m) {
+        $client->addUserAction('say_name', function (UaClient $m) {
             return $m->get('name');
         });
 
         $client = $client->load(1);
         static::assertSame('John', $client->getUserAction('say_name')->execute());
 
-        $client->getUserAction('say_name')->preview = function ($m, $arg) {
-            return $m instanceof UaClient ? 'will say ' . $m->get('name') : 'will fail';
+        $client->getUserAction('say_name')->preview = function (UaClient $m, string $arg) {
+            return 'will say ' . $m->get('name');
         };
         static::assertSame('will say John', $client->getUserAction('say_name')->preview('x'));
 
@@ -120,14 +120,6 @@ class UserActionTest extends TestCase
         static::assertSame('backs up all clients', $client->getUserAction('also_backup')->preview());
 
         static::assertSame('Also Backup UaClient', $client->getUserAction('also_backup')->getDescription());
-    }
-
-    public function testPreviewFail(): void
-    {
-        $client = new UaClient($this->pers);
-
-        $this->expectExceptionMessage('specify preview callback');
-        $client->getUserAction('backupClients')->preview();
     }
 
     public function testAppliesTo1(): void

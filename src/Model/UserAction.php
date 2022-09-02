@@ -198,9 +198,7 @@ class UserAction
      */
     public function preview(...$args)
     {
-        if ($this->preview === null) {
-            throw new Exception('You must specify preview callback explicitly');
-        } elseif (is_string($this->preview)) {
+        if (is_string($this->preview)) {
             $fx = \Closure::fromCallable([$this->getEntity(), $this->preview]);
         } else {
             array_unshift($args, $this->getEntity());

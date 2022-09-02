@@ -168,7 +168,7 @@ inside [blah] should correspond to field names.
 SQL Expression Matching
 -----------------------
 
-.. php:method:: expr($expression, $arguments = [])
+.. php:method:: expr($template, $arguments = [])
 
     Basically is a wrapper to create DSQL Expression, however this will find any
     usage of identifiers inside the template that do not have a corresponding

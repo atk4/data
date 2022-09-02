@@ -16,10 +16,10 @@ Connection class is handy to have if you plan on building and executing
 queries in your application. It's more appropriate to store
 connection in a global variable or global class::
 
-    $app->db = Atk4\Data\Persistence\Sql\Connection::connect($dsn, $user, $pass, $args);
+    $app->db = Atk4\Data\Persistence\Sql\Connection::connect($dsn, $user, $pass, $defaults);
 
 
-.. php:staticmethod:: connect($dsn, $user = null, $password = null, $args = [])
+.. php:staticmethod:: connect($dsn, $user = null, $password = null, $defaults = [])
 
     Determine which Connection class should be used for specified $dsn,
     establish connection to DB by creating new object of this connection class and return.
@@ -27,7 +27,7 @@ connection in a global variable or global class::
     :param string $dsn: DSN, see https://www.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/configuration.html
     :param string $user: username
     :param string $password: password
-    :param array  $args: Other default properties for connection class.
+    :param array  $defaults: Other default properties for connection class.
     :returns: new Connection
 
 
@@ -41,20 +41,19 @@ new Query or Expression class::
     $expr = $app->db->expr('show tables');
 
 
-.. php:method:: dsql($args)
-
-    Creates new Query class and sets :php:attr:`Query::connection`.
-
-    :param array  $args: Other default properties for connection class.
-    :returns: new Query
-
-.. php:method:: expr($template, $args)
+.. php:method:: expr($template, $arguments)
 
     Creates new Expression class and sets :php:attr:`Expression::connection`.
 
-    :param string  $args: Other default properties for connection class.
-    :param array  $args: Other default properties for connection class.
+    :param array  $arguments: Other default properties for connection class.
     :returns: new Expression
+
+.. php:method:: dsql($defaults)
+
+    Creates new Query class and sets :php:attr:`Query::connection`.
+
+    :param array  $defaults: Other default properties for connection class.
+    :returns: new Query
 
 
 Here is how you can use all of this together::

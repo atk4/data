@@ -965,32 +965,33 @@ abstract class Query extends Expression
     }
 
     /**
-     * Create Query object with the same connection.
-     *
-     * @param string|array $properties
-     *
-     * @return Query
-     */
-    public function dsql($properties = [])
-    {
-        $q = new static($properties);
-        $q->connection = $this->connection;
-
-        return $q;
-    }
-
-    /**
      * Create Expression object with the same connection.
      *
-     * @param string|array $properties
+     * @param string|array<string, mixed> $template
+     * @param array<int|string, mixed>    $arguments
      */
-    public function expr($properties = [], array $arguments = []): Expression
+    public function expr($template = [], array $arguments = []): Expression
     {
         $class = $this->expressionClass;
-        $e = new $class($properties, $arguments);
+        $e = new $class($template, $arguments);
         $e->connection = $this->connection;
 
         return $e;
+    }
+
+    /**
+     * Create Query object with the same connection.
+     *
+     * @param string|array<string, mixed> $defaults
+     *
+     * @return Query
+     */
+    public function dsql($defaults = [])
+    {
+        $q = new static($defaults);
+        $q->connection = $this->connection;
+
+        return $q;
     }
 
     /**

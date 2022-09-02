@@ -39,7 +39,7 @@ abstract class Persistence
      * @param string|array $dsn Format as PDO DSN or use "mysql://user:pass@host/db;option=blah",
      *                          leaving user and password arguments = null
      */
-    public static function connect($dsn, string $user = null, string $password = null, array $args = []): self
+    public static function connect($dsn, string $user = null, string $password = null, array $defaults = []): self
     {
         // parse DSN string
         $dsn = Persistence\Sql\Connection::normalizeDsn($dsn, $user, $password);
@@ -52,7 +52,7 @@ abstract class Persistence
             case 'pdo_sqlsrv':
             case 'pdo_oci':
             case 'oci8':
-                $persistence = new Persistence\Sql($dsn, $dsn['user'] ?? null, $dsn['password'] ?? null, $args);
+                $persistence = new Persistence\Sql($dsn, $dsn['user'] ?? null, $dsn['password'] ?? null, $defaults);
 
                 return $persistence;
             default:

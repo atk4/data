@@ -14,7 +14,8 @@ use Atk4\Data\Persistence\Sql\Sqlite;
 class ExpressionTest extends TestCase
 {
     /**
-     * @param string|array $template
+     * @param string|array<string, mixed> $template
+     * @param array<int|string, mixed>    $arguments
      */
     protected function e($template = [], array $arguments = []): Expression
     {

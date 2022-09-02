@@ -63,9 +63,9 @@ class Sql extends Persistence
      * @param Connection|string|array|DbalConnection|DbalDriverConnection $connection
      * @param string                                                      $user
      * @param string                                                      $password
-     * @param array                                                       $args
+     * @param array<string, mixed>                                        $defaults
      */
-    public function __construct($connection, $user = null, $password = null, $args = [])
+    public function __construct($connection, $user = null, $password = null, $defaults = [])
     {
         if ($connection instanceof Connection) {
             $this->_connection = $connection;
@@ -78,7 +78,7 @@ class Sql extends Persistence
             $connection,
             $user,
             $password,
-            $args
+            $defaults
         );
     }
 
@@ -167,6 +167,8 @@ class Sql extends Persistence
 
     /**
      * Creates new Expression object from expression string.
+     *
+     * @param array<int|string, mixed> $arguments
      */
     public function expr(Model $model, string $template, array $arguments = []): Expression
     {
@@ -362,6 +364,8 @@ class Sql extends Persistence
     }
 
     /**
+     * @param array<mixed> $args
+     *
      * @return Query
      */
     public function action(Model $model, string $type, array $args = [])

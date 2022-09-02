@@ -1870,6 +1870,8 @@ class Model implements \IteratorAggregate
      * for anything else then reading records as insert/update/delete hooks
      * will not be called.
      *
+     * @param array<mixed> $args
+     *
      * @return Persistence\Sql\Query
      */
     public function action(string $mode, array $args = [])

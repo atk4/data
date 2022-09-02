@@ -356,7 +356,7 @@ the data::
         {
             $this->assertIsLoaded();
 
-            return $this->expr('call get_client_report_data([client_id, arg])', [
+            return $this->expr('call get_client_report_data([client_id], [arg])', [
                 'arg' => $arg,
                 'client_id' => $clientId,
             ])->getRows();
@@ -376,7 +376,7 @@ Here is another example using PHP generator::
         {
             $this->assertIsLoaded();
 
-            foreach ($this->expr('call get_client_report_data([client_id, arg])', [
+            foreach ($this->expr('call get_client_report_data([client_id], [arg])', [
                 'arg' => $arg,
                 'client_id' => $clientId,
             ]) as $row) {
@@ -427,8 +427,8 @@ you can significantly affect the query building of an SQL model::
 
     class CompanyProfit extends \Atk4\Data\Model
     {
-        public $companyId = null; // inject company ID, which will act as a condition/argument
-        public $readOnly  = true; // instructs rest of the app, that this model is read-only
+        public $companyId; // inject company ID, which will act as a condition/argument
+        public bool $readOnly = true; // instructs rest of the app, that this model is read-only
 
         protected function init(): void
         {
@@ -438,8 +438,8 @@ you can significantly affect the query building of an SQL model::
             $this->addField('profit');
         }
 
-        public function action($mode, $args = [])
-
+        public function action(string $mode, array $args = [])
+        {
             if ($mode == 'select') {
                 // must return DSQL object here
                 return $this->expr('call get_company_profit([company_id])', [
@@ -469,7 +469,7 @@ procedure inside Model::init() then set $table property to a temporary table::
     class NominalReport extends \Atk4\Data\Model
     {
         public $table = 'temp_nominal_sheet';
-        public $readOnly = true; // instructs rest of the app, that this model is read-only
+        public bool $readOnly = true; // instructs rest of the app, that this model is read-only
 
         protected function init(): void
         {
@@ -496,8 +496,8 @@ Technically you can also specify expression as a $table property of your model::
 
     class ClientReport extends \Atk4\Data\Model
     {
-        public $table = null; // will be set in init()
-        public $readOnly = true; // instructs rest of the app, that this model is read-only
+        public $table; // will be set in init()
+        public bool $readOnly = true; // instructs rest of the app, that this model is read-only
 
         protected function init(): void
         {

@@ -21,7 +21,7 @@ trait FieldPropertiesTrait
     public bool $required = false;
 
     /** @var array<int, mixed>|null For several types enum can provide list of available options. ['blue', 'red']. */
-    public $enum;
+    public ?array $enum = null;
 
     /**
      * For fields that can be selected, values can represent interpretation of the values,
@@ -29,7 +29,7 @@ trait FieldPropertiesTrait
      *
      * @var array<mixed, mixed>|null
      */
-    public $values;
+    public ?array $values = null;
 
     /**
      * If value of this field is defined by a model, this property will contain reference link.

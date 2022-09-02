@@ -418,7 +418,9 @@ class Array_ extends Persistence
     /**
      * Various actions possible here, mostly for compatibility with SQLs.
      *
-     * @return mixed
+     * @param array<mixed> $args
+     *
+     * @return Action
      */
     public function action(Model $model, string $type, array $args = [])
     {

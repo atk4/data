@@ -35,7 +35,7 @@ use Atk4\Data\Persistence\Sql\Query;
  * @property Model $table
  *
  * @method Persistence\Sql getPersistence()
- * @method Expression      expr($expr, array $args = []) forwards to Persistence\Sql::expr using $this as model
+ * @method Expression      expr(string $template, array<int|string, mixed> $arguments = []) forwards to Persistence\Sql::expr using $this as model
  */
 class AggregateModel extends Model
 {
@@ -115,9 +115,6 @@ class AggregateModel extends Model
         return parent::addField($name, $seed);
     }
 
-    /**
-     * @return Query
-     */
     public function action(string $mode, array $args = [])
     {
         switch ($mode) {

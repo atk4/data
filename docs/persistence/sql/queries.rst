@@ -394,7 +394,7 @@ The above code will result in the following query:
     from
         `employee`
     where
-        deleted  = 0 and
+        deleted = 0 and
         (`a` = :a or `b` = :b or (`a` = :c and `b` = :d))
 
 Technically orExpr() generates a yet another object that is composed
@@ -750,12 +750,12 @@ Other Methods
 =============
 
 
-.. php:method:: dsql($properties)
+.. php:method:: dsql($defaults)
 
     Use this instead of `new Query()` if you want to automatically bind query
     to the same connection as the parent.
 
-.. php:method:: expr($template, $args)
+.. php:method:: expr($template, $arguments)
 
     Method very similar to :php:method:`Connection::expr` but will return a
     corresponding Expression class for this query.

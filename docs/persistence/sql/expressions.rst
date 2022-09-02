@@ -183,7 +183,7 @@ Finally, you can pass connection class into :php:meth:`executeQuery` directly.
     Complete this when ResultSet and Connection are implemented
 
 
-.. php:method:: expr($properties, $arguments)
+.. php:method:: expr($template, $arguments)
 
     Creates a new :php:class:`Expression` object that will inherit current
     :php:attr:`$connection` property. Also if you are creating a
