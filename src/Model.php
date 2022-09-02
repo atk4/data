@@ -109,10 +109,10 @@ class Model implements \IteratorAggregate
     /** @var array<string, true> */
     private static $_modelOnlyProperties;
 
-    /** @var array The seed used by addField() method. */
+    /** @var array<mixed> The seed used by addField() method. */
     protected $_defaultSeedAddField = [Field::class];
 
-    /** @var array The seed used by addExpression() method. */
+    /** @var array<mixed> The seed used by addExpression() method. */
     protected $_defaultSeedAddExpression = [CallbackField::class];
 
     /** @var array<string, Field> */
@@ -525,13 +525,15 @@ class Model implements \IteratorAggregate
         return $errors;
     }
 
-    /** @var array<string, array> */
+    /** @var array<string, array<mixed>> */
     protected array $fieldSeedByType = [];
 
     /**
      * Given a field seed, return a field object.
+     *
+     * @param array<mixed> $seed
      */
-    public function fieldFactory(array $seed = null): Field
+    protected function fieldFactory(array $seed = []): Field
     {
         $seed = Factory::mergeSeeds(
             $seed,

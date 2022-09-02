@@ -12,6 +12,9 @@ trait PlatformTrait
     // standard PostgreSQL character types are case sensitive, unify the behaviour with other databases
     // with custom case insensitive types
 
+    /**
+     * @return array<int, string>
+     */
     private function getCreateCaseInsensitiveDomainsSql(): array
     {
         $sqls = [];
@@ -70,6 +73,9 @@ trait PlatformTrait
         return $table->getColumn($table->getPrimaryKey()->getColumns()[0]);
     }
 
+    /**
+     * @return array<int, string>
+     */
     protected function getCreateAutoincrementSql(Table $table, Column $pkColumn): array
     {
         $sqls = [];

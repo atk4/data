@@ -11,8 +11,8 @@ use Atk4\Data\Schema\TestCase;
 
 class ModelNestedArrayTest extends TestCase
 {
-    /** @var array */
-    public $hookLog = [];
+    /** @var array<array{string, string, 2?: array<int, mixed>}> */
+    public array $hookLog = [];
 
     protected function setUp(): void
     {

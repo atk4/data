@@ -13,22 +13,23 @@ use Atk4\Data\Reference;
  */
 trait ReferencesTrait
 {
-    /** @var array The seed used by addReference() method. */
+    /** @var array<mixed> The seed used by addReference() method. */
     protected $_defaultSeedAddReference = [Reference::class];
 
-    /** @var array The seed used by hasOne() method. */
+    /** @var array<mixed> The seed used by hasOne() method. */
     protected $_defaultSeedHasOne = [Reference\HasOne::class];
 
-    /** @var array The seed used by hasMany() method. */
+    /** @var array<mixed> The seed used by hasMany() method. */
     protected $_defaultSeedHasMany = [Reference\HasMany::class];
 
-    /** @var array The seed used by containsOne() method. */
+    /** @var array<mixed> The seed used by containsOne() method. */
     protected $_defaultSeedContainsOne = [Reference\ContainsOne::class];
 
-    /** @var array The seed used by containsMany() method. */
+    /** @var array<mixed> The seed used by containsMany() method. */
     protected $_defaultSeedContainsMany = [Reference\ContainsMany::class];
 
     /**
+     * @param array<mixed>         $seed
      * @param array<string, mixed> $defaults
      */
     protected function _addReference(array $seed, string $link, array $defaults = []): Reference

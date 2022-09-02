@@ -281,6 +281,8 @@ abstract class Join
      * Adding field into join will automatically associate that field
      * with this join. That means it won't be loaded from $table, but
      * form the join instead.
+     *
+     * @param array<mixed> $seed
      */
     public function addField(string $name, array $seed = []): Field
     {

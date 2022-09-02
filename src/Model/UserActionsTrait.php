@@ -9,7 +9,7 @@ use Atk4\Data\Model;
 
 trait UserActionsTrait
 {
-    /** @var array The seed used by addUserAction() method. */
+    /** @var array<mixed> The seed used by addUserAction() method. */
     protected $_defaultSeedUserAction = [UserAction::class];
 
     /** @var array<string, UserAction> Collection of user actions - using key as action system name */

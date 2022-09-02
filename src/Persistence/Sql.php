@@ -44,19 +44,19 @@ class Sql extends Persistence
     /** @var Connection */
     private $_connection;
 
-    /** @var array Default class when adding new field. */
+    /** @var array<mixed> Default class when adding new field. */
     protected $_defaultSeedAddField; // no custom seed needed
 
-    /** @var array Default class when adding Expression field. */
+    /** @var array<mixed> Default class when adding Expression field. */
     protected $_defaultSeedAddExpression = [SqlExpressionField::class];
 
-    /** @var array Default class when adding hasOne field. */
+    /** @var array<mixed> Default class when adding hasOne field. */
     protected $_defaultSeedHasOne = [HasOneSql::class];
 
-    /** @var array Default class when adding hasMany field. */
+    /** @var array<mixed> Default class when adding hasMany field. */
     protected $_defaultSeedHasMany; // no custom seed needed
 
-    /** @var array Default class when adding join. */
+    /** @var array<mixed> Default class when adding join. */
     protected $_defaultSeedJoin = [Sql\Join::class];
 
     /**
