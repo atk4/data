@@ -6,18 +6,18 @@ namespace Atk4\Data\Model;
 
 trait FieldPropertiesTrait
 {
-    /** @var string|null Persistence field name, if null, shortName is used. */
+    /** Persistence field name, if null, shortName is used. */
     public ?string $actual = null;
-    /** @var bool Persistence option, if true, field is not loaded nor inserted/updated. */
+    /** Persistence option, if true, field is not loaded nor inserted/updated. */
     public bool $neverPersist = false;
-    /** @var bool Persistence option, if true, field is not inserted/updated. */
+    /** Persistence option, if true, field is not inserted/updated. */
     public bool $neverSave = false;
 
-    /** @var string|null DBAL type registered in \Doctrine\DBAL\Types\Type. */
+    /** DBAL type registered in \Doctrine\DBAL\Types\Type. */
     public ?string $type = null;
-    /** @var bool Nullable field can be null, otherwise the value must be set, even if it is an empty value. */
+    /** Nullable field can be null, otherwise the value must be set, even if it is an empty value. */
     public bool $nullable = true;
-    /** @var bool Required field must have non-empty value. A null value is considered empty too. */
+    /** Required field must have non-empty value. A null value is considered empty too. */
     public bool $required = false;
 
     /** @var array<int, mixed>|null For several types enum can provide list of available options. ['blue', 'red']. */
@@ -36,7 +36,7 @@ trait FieldPropertiesTrait
      */
     protected ?string $referenceLink = null;
 
-    /** @var bool Is it system field? System fields are be always loaded and saved. */
+    /** Is it system field? System fields are be always loaded and saved. */
     public bool $system = false;
 
     /** @var mixed Default value of field. */

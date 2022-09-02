@@ -13,18 +13,13 @@ abstract class ContainsBase extends Reference
 {
     use ContainsSeedHackTrait;
 
-    /** @var string Field type. */
+    /** Field type. */
     public string $type = 'json';
 
-    /** @var bool Is it system field? */
-    public $system = true;
+    /** Is it system field? */
+    public bool $system = true;
 
-    /**
-     * Array with UI flags like editable, visible and hidden.
-     *
-     * By default hasOne relation ID field should be editable in forms,
-     * but not visible in grids. UI should respect these flags.
-     */
+    /** @var array<string, mixed> Array with UI flags like editable, visible and hidden. */
     public array $ui = [];
 
     /** @var string Required! We need table alias for internal use only. */

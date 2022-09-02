@@ -6,16 +6,15 @@ namespace Atk4\Data;
 
 class ValidationException extends Exception
 {
-    /** @var array Array of errors */
-    public $errors = [];
+    /** @var array<string, string> */
+    public array $errors;
 
     /**
-     * @param array $errors Array of errors
-     * @param mixed $intent
+     * @param array<string, string> $errors
      *
      * @return \Exception
      */
-    public function __construct(array $errors, Model $model = null, $intent = null)
+    public function __construct(array $errors, Model $model = null)
     {
         if (count($errors) === 0) {
             throw new Exception('At least one error must be given');
@@ -28,10 +27,9 @@ class ValidationException extends Exception
 
             $this->addMoreInfo('field', array_key_first($errors));
         } else {
-            parent::__construct('Multiple unhandled validation errors');
+            parent::__construct('Multiple validation errors');
 
-            $this->addMoreInfo('errors', $errors)
-                ->addMoreInfo('intent', $intent);
+            $this->addMoreInfo('errors', $errors);
         }
 
         $this->addMoreInfo('model', $model);

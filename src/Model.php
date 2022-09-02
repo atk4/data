@@ -548,7 +548,7 @@ class Model implements \IteratorAggregate
     /**
      * Adds new field into model.
      *
-     * @param array|object $seed
+     * @param array<mixed>|object $seed
      */
     public function addField(string $name, $seed = []): Field
     {
@@ -566,7 +566,8 @@ class Model implements \IteratorAggregate
     /**
      * Adds multiple fields into model.
      *
-     * @param array<string, mixed> $defaults
+     * @param array<string, array<mixed>|object>|array<int, string> $fields
+     * @param array<string, mixed>                                  $defaults
      *
      * @return $this
      */

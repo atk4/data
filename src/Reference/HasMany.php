@@ -161,7 +161,7 @@ class HasMany extends Reference
     /**
      * Adds multiple fields.
      *
-     * @see addField()
+     * @param array<string, array<mixed>>|array<int, string> $fields
      *
      * @return $this
      */

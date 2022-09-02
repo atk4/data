@@ -100,7 +100,8 @@ class HasOneSql extends HasOne
      * ['full_name' => 'name', 'day_of_birth' => ['dob', 'type' => 'date']] - use alias and options
      * [['dob', 'type' => 'date']]  - use options
      *
-     * @param array<string, mixed> $defaults
+     * @param array<string, array<mixed>>|array<int, string> $fields
+     * @param array<string, mixed>                           $defaults
      *
      * @return $this
      */

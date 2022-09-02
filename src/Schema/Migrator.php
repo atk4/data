@@ -223,6 +223,9 @@ class Migrator
         return $tableName;
     }
 
+    /**
+     * @param array<string, mixed> $options
+     */
     public function field(string $fieldName, array $options = []): self
     {
         if (($options['type'] ?? null) === null) {

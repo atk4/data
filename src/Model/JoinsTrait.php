@@ -45,8 +45,6 @@ trait JoinsTrait
     /**
      * Add left/weak join.
      *
-     * @see join()
-     *
      * @param array<string, mixed> $defaults
      */
     public function leftJoin(string $foreignTable, array $defaults = []): Join

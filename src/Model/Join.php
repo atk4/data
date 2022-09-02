@@ -294,7 +294,8 @@ abstract class Join
     /**
      * Adds multiple fields.
      *
-     * @param array<string, mixed> $defaults
+     * @param array<string, array<mixed>>|array<int, string> $fields
+     * @param array<string, mixed>                           $defaults
      *
      * @return $this
      */
