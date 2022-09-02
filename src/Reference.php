@@ -127,6 +127,9 @@ class Reference
         return $this->theirField ?? ($theirModel ?? Model::assertInstanceOf($this->model))->idField;
     }
 
+    /**
+     * @param array<int, mixed> $args
+     */
     protected function onHookToOurModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->shortName; // use static function to allow this object to be GCed
@@ -142,6 +145,9 @@ class Reference
         );
     }
 
+    /**
+     * @param array<int, mixed> $args
+     */
     protected function onHookToTheirModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         if ($model->ownerReference !== null && $model->ownerReference !== $this) {

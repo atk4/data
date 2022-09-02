@@ -147,6 +147,9 @@ abstract class Join
         return $this->_setOwner($owner);
     }
 
+    /**
+     * @param array<int, mixed> $args
+     */
     protected function onHookToOwnerBoth(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->shortName; // use static function to allow this object to be GCed
@@ -166,6 +169,9 @@ abstract class Join
         );
     }
 
+    /**
+     * @param array<int, mixed> $args
+     */
     protected function onHookToOwnerEntity(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->shortName; // use static function to allow this object to be GCed

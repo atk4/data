@@ -70,6 +70,9 @@ class Field implements Expressionable
         return Type::getType($this->type ?? 'string');
     }
 
+    /**
+     * @param array<int, mixed> $args
+     */
     protected function onHookToOwnerEntity(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->shortName; // use static function to allow this object to be GCed
