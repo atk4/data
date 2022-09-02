@@ -34,13 +34,7 @@ class Field implements Expressionable
      */
     public function __construct(array $defaults = [])
     {
-        foreach ($defaults as $key => $val) {
-            if (is_array($val)) {
-                $this->{$key} = array_replace_recursive(is_array($this->{$key} ?? null) ? $this->{$key} : [], $val);
-            } else {
-                $this->{$key} = $val;
-            }
-        }
+        $this->setDefaults($defaults);
     }
 
     /**
