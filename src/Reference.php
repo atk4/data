@@ -300,6 +300,9 @@ class Reference
         return $this->createTheirModel($defaults);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function __debugInfo(): array
     {
         $res = [];

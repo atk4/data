@@ -27,6 +27,9 @@ class Row
         return ++self::$nextRowIndex;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function __debugInfo(): array
     {
         return [

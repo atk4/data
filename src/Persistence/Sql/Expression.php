@@ -482,6 +482,9 @@ abstract class Expression implements Expressionable, \ArrayAccess
         return $sql;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function __debugInfo(): array
     {
         $arr = [

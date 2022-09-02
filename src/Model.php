@@ -1995,6 +1995,9 @@ class Model implements \IteratorAggregate
         $this->__di_unset($name);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function __debugInfo(): array
     {
         if ($this->isEntity()) {

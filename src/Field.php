@@ -501,6 +501,9 @@ class Field implements Expressionable
         return $this->getOwner()->getPersistence()->getFieldSqlExpression($this, $expression);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function __debugInfo(): array
     {
         $arr = [
