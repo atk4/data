@@ -53,6 +53,8 @@ trait ReferencesTrait
 
     /**
      * Add generic relation. Provide your own call-back that will return the model.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function addReference(string $link, array $defaults): Reference
     {
@@ -61,6 +63,8 @@ trait ReferencesTrait
 
     /**
      * Add hasOne reference.
+     *
+     * @param array<string, mixed> $defaults
      *
      * @return Reference\HasOne|Reference\HasOneSql
      */
@@ -72,6 +76,8 @@ trait ReferencesTrait
     /**
      * Add hasMany reference.
      *
+     * @param array<string, mixed> $defaults
+     *
      * @return Reference\HasMany
      */
     public function hasMany(string $link, array $defaults = []) // : Reference
@@ -82,6 +88,8 @@ trait ReferencesTrait
     /**
      * Add containsOne reference.
      *
+     * @param array<string, mixed> $defaults
+     *
      * @return Reference\ContainsOne
      */
     public function containsOne(string $link, array $defaults = []) // : Reference
@@ -91,6 +99,8 @@ trait ReferencesTrait
 
     /**
      * Add containsMany reference.
+     *
+     * @param array<string, mixed> $defaults
      *
      * @return Reference\ContainsMany
      */
@@ -133,6 +143,8 @@ trait ReferencesTrait
 
     /**
      * Traverse to related model.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function ref(string $link, array $defaults = []): Model
     {
@@ -141,6 +153,8 @@ trait ReferencesTrait
 
     /**
      * Return related model.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function refModel(string $link, array $defaults = []): Model
     {
@@ -149,6 +163,8 @@ trait ReferencesTrait
 
     /**
      * Returns model that can be used for generating sub-query actions.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function refLink(string $link, array $defaults = []): Model
     {

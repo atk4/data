@@ -29,6 +29,9 @@ class Field implements Expressionable
 
     // {{{ Core functionality
 
+    /**
+     * @param array<string, mixed> $defaults
+     */
     public function __construct(array $defaults = [])
     {
         foreach ($defaults as $key => $val) {

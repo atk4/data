@@ -43,6 +43,9 @@ abstract class Connection
         'oci8' => Oracle\Connection::class,
     ];
 
+    /**
+     * @param array<string, mixed> $defaults
+     */
     public function __construct(array $defaults = [])
     {
         $this->setDefaults($defaults);

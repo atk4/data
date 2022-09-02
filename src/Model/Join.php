@@ -294,6 +294,8 @@ abstract class Join
     /**
      * Adds multiple fields.
      *
+     * @param array<string, mixed> $defaults
+     *
      * @return $this
      */
     public function addFields(array $fields = [], array $defaults = [])
@@ -337,6 +339,8 @@ abstract class Join
     /**
      * Creates reference based on a field from the join.
      *
+     * @param array<string, mixed> $defaults
+     *
      * @return Reference\HasOne
      */
     public function hasOne(string $link, array $defaults = [])
@@ -349,6 +353,8 @@ abstract class Join
     /**
      * Creates reference based on the field from the join.
      *
+     * @param array<string, mixed> $defaults
+     *
      * @return Reference\HasMany
      */
     public function hasMany(string $link, array $defaults = [])
@@ -359,7 +365,9 @@ abstract class Join
     /**
      * Wrapper for ContainsOne that will associate field with join.
      *
-     * @todo NOT IMPLEMENTED !
+     * @TODO NOT IMPLEMENTED!
+     *
+     * @param array<string, mixed> $defaults
      *
      * @return Reference\ContainsOne
      */
@@ -375,7 +383,9 @@ abstract class Join
     /**
      * Wrapper for ContainsMany that will associate field with join.
      *
-     * @todo NOT IMPLEMENTED !
+     * @TODO NOT IMPLEMENTED!
+     *
+     * @param array<string, mixed> $defaults
      *
      * @return Reference\ContainsMany
      */

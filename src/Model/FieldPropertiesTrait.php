@@ -20,14 +20,14 @@ trait FieldPropertiesTrait
     /** @var bool Required field must have non-empty value. A null value is considered empty too. */
     public bool $required = false;
 
-    /** @var array|null For several types enum can provide list of available options. ['blue', 'red']. */
+    /** @var array<int, mixed>|null For several types enum can provide list of available options. ['blue', 'red']. */
     public $enum;
 
     /**
      * For fields that can be selected, values can represent interpretation of the values,
      * for instance ['F' => 'Female', 'M' => 'Male'].
      *
-     * @var array|null
+     * @var array<mixed, mixed>|null
      */
     public $values;
 

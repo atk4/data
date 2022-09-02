@@ -198,6 +198,8 @@ class Reference
      * necessary conditions.
      *
      * IMPORTANT: the returned model must be a fresh clone or freshly built from a seed
+     *
+     * @param array<string, mixed> $defaults
      */
     public function createTheirModel(array $defaults = []): Model
     {
@@ -244,6 +246,9 @@ class Reference
         }
     }
 
+    /**
+     * @param array<string, mixed> $defaults
+     */
     protected function addToPersistence(Model $theirModel, array $defaults = []): void
     {
         if (!$theirModel->issetPersistence()) {
@@ -284,6 +289,8 @@ class Reference
     /**
      * Returns referenced model without any extra conditions. However other
      * relationship types may override this to imply conditions.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function ref(Model $ourModel, array $defaults = []): Model
     {
@@ -294,6 +301,8 @@ class Reference
      * Returns referenced model without any extra conditions. Ever when extended
      * must always respond with Model that does not look into current record
      * or scope.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function refModel(Model $ourModel, array $defaults = []): Model
     {

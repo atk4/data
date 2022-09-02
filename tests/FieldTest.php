@@ -282,9 +282,6 @@ class FieldTest extends TestCase
 
     public function testEnum4(): void
     {
-        // PHP type control is really crappy...
-        // This test has no purpose but it stands testament
-        // to a weird behaviours of PHP
         $m = new Model();
         $m->addField('foo', ['enum' => [1, 'bar'], 'default' => 1]);
         $m = $m->createEntity();

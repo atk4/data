@@ -90,6 +90,8 @@ class HasMany extends Reference
 
     /**
      * Creates model that can be used for generating sub-query actions.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function refLink(?Model $ourModel, array $defaults = []): Model
     {
@@ -105,6 +107,8 @@ class HasMany extends Reference
 
     /**
      * Adds field as expression to our model. Used in aggregate strategy.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function addField(string $fieldName, array $defaults = []): Field
     {

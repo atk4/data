@@ -45,6 +45,9 @@ class AggregateModel extends Model
     /** @var array<int, string|Expression> */
     public $groupByFields = [];
 
+    /**
+     * @param array<string, mixed> $defaults
+     */
     public function __construct(Model $baseModel, array $defaults = [])
     {
         if (!$baseModel->issetPersistence() && !$baseModel->getPersistence() instanceof Persistence\Sql) {

@@ -19,7 +19,7 @@ trait UserActionsTrait
      * Register new user action for this model. By default UI will allow users to trigger actions
      * from UI.
      *
-     * @param array|\Closure $defaults
+     * @param array<string, mixed>|\Closure $defaults
      */
     public function addUserAction(string $name, $defaults = []): UserAction
     {

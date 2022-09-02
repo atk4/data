@@ -36,7 +36,8 @@ class CsvTest extends TestCase
     }
 
     /**
-     * @param resource $fileHandle
+     * @param resource             $fileHandle
+     * @param array<string, mixed> $defaults
      */
     protected function makeCsvPersistence($fileHandle, array $defaults = []): Persistence\Csv
     {
@@ -45,7 +46,8 @@ class CsvTest extends TestCase
             private $handleUnloaded;
 
             /**
-             * @param resource $fileHandle
+             * @param resource             $fileHandle
+             * @param array<string, mixed> $defaults
              */
             public function __construct($fileHandle, array $defaults)
             {

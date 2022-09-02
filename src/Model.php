@@ -460,6 +460,7 @@ class Model implements \IteratorAggregate
 
     /**
      * @param Field|Reference|Model\Join $obj
+     * @param array<string, mixed>       $defaults
      */
     public function add(object $obj, array $defaults = []): void
     {
@@ -564,6 +565,8 @@ class Model implements \IteratorAggregate
 
     /**
      * Adds multiple fields into model.
+     *
+     * @param array<string, mixed> $defaults
      *
      * @return $this
      */

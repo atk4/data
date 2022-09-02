@@ -54,6 +54,9 @@ class Csv extends Persistence
     /** @var array|null Array of field names. */
     public $header;
 
+    /**
+     * @param array<string, mixed> $defaults
+     */
     public function __construct(string $file, array $defaults = [])
     {
         $this->file = $file;

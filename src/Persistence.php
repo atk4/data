@@ -70,6 +70,8 @@ abstract class Persistence
 
     /**
      * Associate model with the data driver.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function add(Model $model, array $defaults = []): void
     {

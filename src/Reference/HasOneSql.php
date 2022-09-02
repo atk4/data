@@ -12,6 +12,7 @@ class HasOneSql extends HasOne
 {
     /**
      * @param ($theirFieldIsTitle is true ? null : string) $theirFieldName
+     * @param array<string, mixed> $defaults
      */
     private function _addField(string $fieldName, bool $theirFieldIsTitle, ?string $theirFieldName, array $defaults): SqlExpressionField
     {
@@ -67,6 +68,8 @@ class HasOneSql extends HasOne
 
     /**
      * Creates expression which sub-selects a field inside related model.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function addField(string $fieldName, string $theirFieldName = null, array $defaults = []): SqlExpressionField
     {
@@ -97,6 +100,8 @@ class HasOneSql extends HasOne
      * ['full_name' => 'name', 'day_of_birth' => ['dob', 'type' => 'date']] - use alias and options
      * [['dob', 'type' => 'date']]  - use options
      *
+     * @param array<string, mixed> $defaults
+     *
      * @return $this
      */
     public function addFields(array $fields = [], array $defaults = [])
@@ -118,6 +123,8 @@ class HasOneSql extends HasOne
 
     /**
      * Creates model that can be used for generating sub-query actions.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function refLink(Model $ourModel, array $defaults = []): Model
     {
@@ -128,9 +135,6 @@ class HasOneSql extends HasOne
         return $theirModel;
     }
 
-    /**
-     * Navigate to referenced model.
-     */
     public function ref(Model $ourModel, array $defaults = []): Model
     {
         $theirModel = parent::ref($ourModel, $defaults);
@@ -155,6 +159,8 @@ class HasOneSql extends HasOne
      * $order->hasOne('user_id', 'User')->addTitle();
      *
      * This will add expression 'user' equal to ref('user_id')['name'];
+     *
+     * @param array<string, mixed> $defaults
      */
     public function addTitle(array $defaults = []): SqlExpressionField
     {
