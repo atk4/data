@@ -13,6 +13,9 @@ use Atk4\Data\Tests\Model\Male;
 
 class ArrayTest extends TestCase
 {
+    /**
+     * @return array<string, array<mixed, mixed>>
+     */
     private function getInternalPersistenceData(Persistence\Array_ $db): array
     {
         $data = [];
@@ -526,13 +529,17 @@ class ArrayTest extends TestCase
 
     /**
      * Returns exported data, but will use get() instead of export().
+     *
+     * @param array<int, string>|null $fields
+     *
+     * @return array<int, array<string, mixed>>
      */
-    protected function _getRows(Model $model, array $fields = []): array
+    protected function _getRows(Model $model, array $fields = null): array
     {
         $d = [];
         foreach ($model as $row) {
             $rowData = $row->get();
-            $rowData = $fields ? array_intersect_key($rowData, array_flip($fields)) : $rowData;
+            $rowData = $fields !== null ? array_intersect_key($rowData, array_flip($fields)) : $rowData;
             $d[] = $rowData;
         }
 

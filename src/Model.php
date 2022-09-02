@@ -804,7 +804,7 @@ class Model implements \IteratorAggregate
      * Returns field value.
      * If no field is passed, then returns array of all field values.
      *
-     * @return mixed
+     * @return ($field is null ? array<string, mixed> : mixed)
      */
     public function get(string $field = null)
     {

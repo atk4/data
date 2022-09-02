@@ -752,7 +752,7 @@ class FieldTest extends TestCase
         $model = new Model();
 
         $this->expectException(Exception::class);
-        $model->add(new Field(), ['test']);
+        $model->add(new Field());
     }
 
     public function testGetFields(): void

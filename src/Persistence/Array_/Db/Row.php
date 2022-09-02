@@ -56,6 +56,9 @@ class Row
         return $this->data[$columnName];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getData(): array
     {
         return $this->data;

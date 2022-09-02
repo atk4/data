@@ -130,11 +130,13 @@ class ExpressionTest extends TestCase
     }
 
     /**
+     * @param array<int|string, mixed> $exprArguments
+     *
      * @dataProvider provideNoTemplatingInSqlStringData
      */
-    public function testNoTemplatingInSqlString(string $expectedStr, string $exprStr, array $exprArgs): void
+    public function testNoTemplatingInSqlString(string $expectedStr, string $exprTemplate, array $exprArguments): void
     {
-        static::assertSame($expectedStr, $this->e($exprStr, $exprArgs)->render()[0]);
+        static::assertSame($expectedStr, $this->e($exprTemplate, $exprArguments)->render()[0]);
     }
 
     /**

@@ -72,6 +72,9 @@ class CsvTest extends TestCase
         };
     }
 
+    /**
+     * @param array<int, array<string, string>> $data
+     */
     protected function setDb(array $data): void
     {
         ftruncate($this->file, 0);
@@ -83,6 +86,9 @@ class CsvTest extends TestCase
         ftruncate($this->file2, 0);
     }
 
+    /**
+     * @return array<int, array<string, string>>
+     */
     protected function getDb(): array
     {
         fseek($this->file, 0);
