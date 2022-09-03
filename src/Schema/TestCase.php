@@ -8,6 +8,7 @@ use Atk4\Core\Phpunit\TestCase as BaseTestCase;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Expression;
+use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
@@ -68,6 +69,10 @@ abstract class TestCase extends BaseTestCase
         return $this->getConnection()->getDatabasePlatform();
     }
 
+    /**
+     * @param array<int|string, scalar|null>      $params
+     * @param array<int|string, ParameterType::*> $types
+     */
     protected function logQuery(string $sql, array $params, array $types): void
     {
         if (!$this->debug) {
@@ -197,6 +202,9 @@ abstract class TestCase extends BaseTestCase
      * Same as self::assertSame() except:
      * - 2D arrays (rows) are recursively compared without any order
      * - objects implementing DateTimeInterface are compared by formatted output.
+     *
+     * @param array<mixed, mixed> $expected
+     * @param array<mixed, mixed> $actual
      */
     protected static function assertSameExportUnordered(array $expected, array $actual, string $message = ''): void
     {
@@ -217,6 +225,9 @@ abstract class TestCase extends BaseTestCase
         return $migrator;
     }
 
+    /**
+     * @param array<string, array<int|'_', array<string, mixed>>> $dbData
+     */
     public function setDb(array $dbData, bool $importData = true): void
     {
         foreach ($dbData as $tableName => $data) {
@@ -277,6 +288,11 @@ abstract class TestCase extends BaseTestCase
         }
     }
 
+    /**
+     * @param array<int, string>|null $tableNames
+     *
+     * @return array<string, array<int, array<string, mixed>>>
+     */
     public function getDb(array $tableNames = null, bool $noId = false): array
     {
         if ($tableNames === null) {
