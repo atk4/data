@@ -52,6 +52,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
     protected string $identifierEscapeChar;
 
     private ?string $renderParamBase = null;
+    /** @var array<string, mixed> */
     private ?array $renderParams = null;
 
     public Connection $connection;
@@ -346,6 +347,9 @@ abstract class Expression implements Expressionable, \ArrayAccess
             || str_contains($value, $this->identifierEscapeChar);
     }
 
+    /**
+     * @return array{string, array<string, mixed>}
+     */
     private function _render(): array
     {
         // - [xxx] = param
@@ -709,7 +713,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
     }
 
     /**
-     * @return \Traversable<array<mixed>>
+     * @return \Traversable<array<string, mixed>>
      */
     public function getRowsIterator(): \Traversable
     {

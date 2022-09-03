@@ -17,15 +17,13 @@ use Atk4\Data\Model;
 class Static_ extends Array_
 {
     /** @var string This will be the title field for the model. */
-    public $titleForModel;
+    public $titleFieldForModel;
 
-    /** @var array<string, array> Populate the following fields for the model. */
+    /** @var array<string, array<mixed>> Populate the following fields for the model. */
     public $fieldsForModel = [];
 
     /**
-     * Constructor. Can pass array of data in parameters.
-     *
-     * @param array $data Static data in one of supported formats
+     * @param array<int|string, mixed> $data
      */
     public function __construct(array $data = [])
     {
@@ -44,7 +42,7 @@ class Static_ extends Array_
             }
             unset($str);
 
-            $this->titleForModel = 'name';
+            $this->titleFieldForModel = 'name';
             $this->fieldsForModel = [
                 'id' => ['type' => $allKeysInt ? 'integer' : 'string'],
                 'name' => ['type' => 'string'], // TODO type should be guessed as well
@@ -56,9 +54,9 @@ class Static_ extends Array_
         }
 
         if (isset($row1['name'])) {
-            $this->titleForModel = 'name';
+            $this->titleFieldForModel = 'name';
         } elseif (isset($row1['title'])) {
-            $this->titleForModel = 'title';
+            $this->titleFieldForModel = 'title';
         }
 
         $keyOverride = [];
@@ -89,16 +87,16 @@ class Static_ extends Array_
             }
 
             // if title is not set, use first key
-            if (!$this->titleForModel) {
+            if (!$this->titleFieldForModel) {
                 if (is_int($key)) {
                     $keyOverride[] = 'name';
-                    $this->titleForModel = 'name';
+                    $this->titleFieldForModel = 'name';
                     $mustOverride = true;
 
                     continue;
                 }
 
-                $this->titleForModel = $key;
+                $this->titleFieldForModel = $key;
             }
 
             if (is_int($key)) {
@@ -165,8 +163,8 @@ class Static_ extends Array_
      */
     protected function addMissingFieldsToModel(Model $model): void
     {
-        if ($this->titleForModel) {
-            $model->titleField = $this->titleForModel;
+        if ($this->titleFieldForModel) {
+            $model->titleField = $this->titleFieldForModel;
         }
 
         foreach ($this->fieldsForModel as $field => $def) {

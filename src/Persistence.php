@@ -36,8 +36,9 @@ abstract class Persistence
     /**
      * Connects database.
      *
-     * @param string|array $dsn Format as PDO DSN or use "mysql://user:pass@host/db;option=blah",
-     *                          leaving user and password arguments = null
+     * @param string|array<string, string> $dsn      Format as PDO DSN or use "mysql://user:pass@host/db;option=blah",
+     *                                               leaving user and password arguments = null
+     * @param array<string, mixed>         $defaults
      */
     public static function connect($dsn, string $user = null, string $password = null, array $defaults = []): self
     {
@@ -120,6 +121,8 @@ abstract class Persistence
      * Tries to load data record, but will not fail if record can't be loaded.
      *
      * @param mixed $id
+     *
+     * @return array<string, mixed>|null
      */
     public function tryLoad(Model $model, $id): ?array
     {
@@ -130,6 +133,8 @@ abstract class Persistence
      * Loads a record from model and returns a associative array.
      *
      * @param mixed $id
+     *
+     * @return array<string, mixed>
      */
     public function load(Model $model, $id): array
     {
@@ -193,6 +198,8 @@ abstract class Persistence
     }
 
     /**
+     * @param array<scalar|null> $dataRaw
+     *
      * @return mixed
      */
     protected function insertRaw(Model $model, array $dataRaw)
@@ -237,6 +244,7 @@ abstract class Persistence
 
     /**
      * @param mixed $idRaw
+     * @param array<scalar|null> $dataRaw
      */
     protected function updateRaw(Model $model, $idRaw, array $dataRaw): void
     {

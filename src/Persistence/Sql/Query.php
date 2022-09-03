@@ -220,10 +220,10 @@ abstract class Query extends Expression
     /**
      * Specify WITH query to be used.
      *
-     * @param Query  $cursor    Specifies cursor query or array [alias => query] for adding multiple
-     * @param string $alias     Specify alias for this cursor
-     * @param array  $fields    Optional array of field names used in cursor
-     * @param bool   $recursive Is it recursive?
+     * @param Query                   $cursor    Specifies cursor query or array [alias => query] for adding multiple
+     * @param string                  $alias     Specify alias for this cursor
+     * @param array<int, string>|null $fields    Optional array of field names used in cursor
+     * @param bool                    $recursive Is it recursive?
      *
      * @return $this
      */
@@ -504,6 +504,9 @@ abstract class Query extends Expression
         return $res;
     }
 
+    /**
+     * @param array<0|1|2, mixed> $row
+     */
     protected function _subrenderCondition(array $row): string
     {
         if (count($row) === 3) {

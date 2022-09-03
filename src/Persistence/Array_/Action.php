@@ -14,12 +14,15 @@ use Atk4\Data\Model;
  */
 class Action
 {
-    /** @var \Iterator */
+    /** @var \Iterator<int, array<string, mixed>> */
     public $generator;
 
     /** @var array<int, \Closure> hack for GC for PHP 8.1.3 or older */
     private array $_filterFxs = [];
 
+    /**
+     * @param array<int, array<string, mixed>> $data
+     */
     public function __construct(array $data)
     {
         $this->generator = new \ArrayIterator($data);
@@ -93,13 +96,15 @@ class Action
                     ->addMoreInfo('action', $fx);
         }
 
-        $this->generator = new \ArrayIterator([[$result]]);
+        $this->generator = new \ArrayIterator([['v' => $result]]);
 
         return $this;
     }
 
     /**
      * Checks if $row matches $condition.
+     *
+     * @param array<string, mixed> $row
      */
     protected function match(array $row, Model\Scope\AbstractScope $condition): bool
     {
@@ -268,7 +273,7 @@ class Action
      */
     public function count()
     {
-        $this->generator = new \ArrayIterator([[iterator_count($this->generator)]]);
+        $this->generator = new \ArrayIterator([['v' => iterator_count($this->generator)]]);
 
         return $this;
     }
@@ -281,7 +286,7 @@ class Action
     public function exists()
     {
         $this->generator->rewind();
-        $this->generator = new \ArrayIterator([[$this->generator->valid() ? 1 : 0]]);
+        $this->generator = new \ArrayIterator([['v' => $this->generator->valid() ? 1 : 0]]);
 
         return $this;
     }

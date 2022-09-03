@@ -70,11 +70,11 @@ abstract class Connection
      *
      * Returns normalized DSN as array ['driver', 'host', 'user', 'password', 'dbname', 'charset', ...].
      *
-     * @param array|string $dsn
-     * @param string       $user     Optional username, this takes precedence over dsn string
-     * @param string       $password Optional password, this takes precedence over dsn string
+     * @param array<string, string>|string $dsn
+     * @param string                       $user     Optional username, this takes precedence over dsn string
+     * @param string                       $password Optional password, this takes precedence over dsn string
      *
-     * @return array
+     * @return array<string, string>
      */
     public static function normalizeDsn($dsn, $user = null, $password = null)
     {
@@ -179,10 +179,10 @@ abstract class Connection
     /**
      * Connect to database and return connection class.
      *
-     * @param string|array|DbalConnection|DbalDriverConnection $dsn
-     * @param string|null                                      $user
-     * @param string|null                                      $password
-     * @param array<string, mixed>                             $defaults
+     * @param string|array<string, string>|DbalConnection|DbalDriverConnection $dsn
+     * @param string|null                                                      $user
+     * @param string|null                                                      $password
+     * @param array<string, mixed>                                             $defaults
      */
     public static function connect($dsn, $user = null, $password = null, $defaults = []): self
     {
@@ -245,6 +245,9 @@ abstract class Connection
         return new EventManager();
     }
 
+    /**
+     * @param array<string, string> $dsn
+     */
     protected static function connectFromDsn(array $dsn): DbalDriverConnection
     {
         $dsn = static::normalizeDsn($dsn);

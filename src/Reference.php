@@ -52,7 +52,7 @@ class Reference
      * then used inside getModel() to fully populate and associate with
      * persistence.
      *
-     * @var Model|\Closure(object, static, array): Model|array
+     * @var Model|\Closure(object, static, array<string, mixed>): Model|array<mixed>
      */
     public $model;
 

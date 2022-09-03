@@ -60,10 +60,10 @@ class Sql extends Persistence
     protected $_defaultSeedJoin = [Sql\Join::class];
 
     /**
-     * @param Connection|string|array|DbalConnection|DbalDriverConnection $connection
-     * @param string                                                      $user
-     * @param string                                                      $password
-     * @param array<string, mixed>                                        $defaults
+     * @param Connection|string|array<string, string>|DbalConnection|DbalDriverConnection $connection
+     * @param string                                                                      $user
+     * @param string                                                                      $password
+     * @param array<string, mixed>                                                        $defaults
      */
     public function __construct($connection, $user = null, $password = null, $defaults = [])
     {
@@ -234,7 +234,7 @@ class Sql extends Persistence
     /**
      * Adds model fields in Query.
      *
-     * @param array|null $fields
+     * @param array<int, string>|null $fields
      */
     public function initQueryFields(Model $model, Query $query, $fields = null): void
     {
@@ -501,6 +501,10 @@ class Sql extends Persistence
 
     /**
      * Export all DataSet.
+     *
+     * @param array<int, string>|null $fields
+     *
+     * @return array<int, array<string, mixed>>
      */
     public function export(Model $model, array $fields = null, bool $typecast = true): array
     {
@@ -515,6 +519,9 @@ class Sql extends Persistence
         return $data;
     }
 
+    /**
+     * @return \Traversable<array<string, mixed>>
+     */
     public function prepareIterator(Model $model): \Traversable
     {
         $export = $model->action('select');
@@ -542,6 +549,9 @@ class Sql extends Persistence
         }
     }
 
+    /**
+     * @param array<scalar|Expressionable|null> $dataRaw
+     */
     protected function insertRaw(Model $model, array $dataRaw)
     {
         $insert = $this->initQuery($model);
@@ -575,6 +585,9 @@ class Sql extends Persistence
         return $idRaw;
     }
 
+    /**
+     * @param array<scalar|Expressionable|null> $dataRaw
+     */
     protected function updateRaw(Model $model, $idRaw, array $dataRaw): void
     {
         $update = $this->initQuery($model);

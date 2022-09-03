@@ -20,7 +20,7 @@ use Atk4\Data\Persistence\Array_\Db\Table;
  */
 class Array_ extends Persistence
 {
-    /** @var array */
+    /** @var array<string, array<int|string, mixed>> */
     private $seedData;
 
     /** @var array<string, Table> */
@@ -35,6 +35,9 @@ class Array_ extends Persistence
     /** @var string */
     protected $lastInsertIdTable;
 
+    /**
+     * @param array<int|string, mixed> $data
+     */
     public function __construct(array $data = [])
     {
         $this->seedData = $data;
@@ -331,6 +334,9 @@ class Array_ extends Persistence
         return $this->lastInsertIdByTable[$this->lastInsertIdTable] ?? null;
     }
 
+    /**
+     * @return \Traversable<array<string, mixed>>
+     */
     public function prepareIterator(Model $model): \Traversable
     {
         return $model->action('select')->generator; // @phpstan-ignore-line
@@ -338,6 +344,8 @@ class Array_ extends Persistence
 
     /**
      * Export all DataSet.
+     *
+     * @param array<int, string>|null $fields
      */
     public function export(Model $model, array $fields = null, bool $typecast = true): array
     {

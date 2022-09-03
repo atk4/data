@@ -139,10 +139,10 @@ class Model implements \IteratorAggregate
     /** @var Model\Scope\RootScope */
     private $scope;
 
-    /** @var array{0: int|null, 1: int} */
+    /** @var array{int|null, int} */
     public array $limit = [null, 0];
 
-    /** @var array<int, array{0: string|Persistence\Sql\Expressionable, 1: 'asc'|'desc'}> */
+    /** @var array<int, array{string|Persistence\Sql\Expressionable, 'asc'|'desc'}> */
     public array $order = [];
 
     /** @var array<string, array{'model': Model, 'recursive': bool}> */
