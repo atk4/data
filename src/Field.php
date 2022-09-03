@@ -49,6 +49,9 @@ class Field implements Expressionable
         return $this->_setOwner($owner);
     }
 
+    /**
+     * @param array<string, mixed> $properties
+     */
     public function setDefaults(array $properties, bool $passively = false): self
     {
         $this->_setDefaults($properties, $passively);
@@ -417,6 +420,8 @@ class Field implements Expressionable
      *
      * @param string|null $operator one of Scope\Condition operators
      * @param mixed       $value    the condition value to be handled
+     *
+     * @return array{$this, string, mixed}
      */
     public function getQueryArguments($operator, $value): array
     {

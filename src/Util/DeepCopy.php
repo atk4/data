@@ -10,10 +10,9 @@ use Atk4\Data\Reference\HasMany;
 use Atk4\Data\Reference\HasOne;
 
 /**
- * Implements copying records between two models:.
+ * Implements deep copying records between two models:.
  *
  * $dc = new DeepCopy();
- *
  * $dc->from($user);
  * $dc->to(new ArchivedUser());
  * $dc->with('AuditLog');
@@ -26,31 +25,44 @@ class DeepCopy
     /** @const string */
     public const HOOK_AFTER_COPY = self::class . '@afterCopy';
 
-    /** @var Model from which we want to copy records */
-    protected $source;
+    /** Model from which we want to copy records */
+    protected Model $source;
 
-    /** @var Model in which we want to copy records into */
-    protected $destination;
+    /** Model into which we want to copy records */
+    protected Model $destination;
 
-    /** @var array containing references which we need to copy. May contain sub-arrays: ['Invoices' => ['Lines']] */
+    /**
+     * Containing references which we need to copy.
+     * May contain sub-arrays: ['Invoices' => ['Lines']].
+     *
+     * @var array<int, string>|array<string, array<mixed>>
+     */
     protected $references = [];
 
     /**
-     * @var array contains array similar to references but containing list of excluded fields:
-     *            e.g. ['Invoices' => ['Lines' => ['vat_rate_id']]]
+     * Contains array similar to references but containing list of excluded fields:
+     * e.g. ['Invoices' => ['Lines' => ['vat_rate_id']]].
+     *
+     * @var array<int, string>|array<string, array<mixed>>
      */
     protected $exclusions = [];
 
     /**
-     * @var array contains array similar to references but containing list of callback methods to transform fields/values:
-     *            e.g. ['Invoices' => ['Lines' => function ($data) {
-     *            $data['exchanged_amount'] = $data['amount'] * getExRate($data['date'], $data['currency']);
-     *            return $data;
-     *            }]]
+     * Contains array similar to references but containing list of callback methods to transform fields/values:
+     * e.g. ['Invoices' => ['Lines' => function ($data) {
+     *          $data['exchanged_amount'] = $data['amount'] * getExRate($data['date'], $data['currency']);
+     *          return $data;
+     *      }]].
+     *
+     * @var array<0, \Closure>|array<string, array<mixed>>
      */
     protected $transforms = [];
 
-    /** @var array while copying, will record mapped records in format [$table => ['old_id' => 'new_id']] */
+    /**
+     * While copying, will record mapped records in format [$table => [old ID => new ID]].
+     *
+     * @var array<string, array<mixed, mixed>>
+     */
     public $mapping = [];
 
     /**
@@ -84,6 +96,8 @@ class DeepCopy
     /**
      * Set references to copy.
      *
+     * @param array<int, string>|array<string, array<mixed>> $references
+     *
      * @return $this
      */
     public function with(array $references)
@@ -97,6 +111,8 @@ class DeepCopy
      * Specifies which fields shouldn't be copied. May also contain arrays
      * for related entries.
      * ->excluding(['name', 'address_id' => ['city']]);.
+     *
+     * @param array<int, string>|array<string, array<mixed>> $exclusions
      *
      * @return $this
      */
@@ -114,7 +130,8 @@ class DeepCopy
      * ->transformData(
      *      [function ($data) { // for Client entity
      *          $data['name'] => $data['last_name'] . ' ' . $data['first_name'];
-     *          unset($data['first_name'], $data['last_name']);
+     *          unset($data['first_name']);
+     *          unset($data['last_name']);
      *          return $data;
      *      }],
      *      'Invoices' => ['Lines' => function ($data) { // for nested Client->Invoices->Lines hasMany entity
@@ -122,6 +139,8 @@ class DeepCopy
      *          return $data;
      *      }]
      *  );
+     *
+     * @param array<0, \Closure>|array<string, array<mixed>> $transforms
      *
      * @return $this
      */
@@ -134,6 +153,10 @@ class DeepCopy
 
     /**
      * Will extract non-numeric keys from the array.
+     *
+     * @param array<int, string>|array<string, array<mixed>> $array
+     *
+     * @return array<string, array<int, string>>
      */
     protected function extractKeys(array $array): array
     {
@@ -161,15 +184,16 @@ class DeepCopy
                 $this->references,
                 $this->exclusions,
                 $this->transforms
-            )->reload();
+            )->reload(); // TODO reload should not be needed
         });
     }
 
     /**
      * Internal method for copying records.
      *
-     * @param array $exclusions fields to exclude
-     * @param array $transforms callbacks for data transforming
+     * @param array<int, string>|array<string, array<mixed>> $references
+     * @param array<int, string>|array<string, array<mixed>> $exclusions
+     * @param array<0, \Closure>|array<string, array<mixed>> $transforms
      *
      * @return Model Destination model
      */
@@ -194,7 +218,7 @@ class DeepCopy
 
                 // do data transformation from source to destination
                 // see self::transformData()
-                if (isset($transforms[0]) && $transforms[0] instanceof \Closure) {
+                if (isset($transforms[0])) {
                     $data = $transforms[0]($data);
                 }
 
