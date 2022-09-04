@@ -157,6 +157,8 @@ abstract class Persistence
     /**
      * Inserts record in database and returns new record ID.
      *
+     * @param array<string, mixed> $data
+     *
      * @return mixed
      */
     public function insert(Model $model, array $data)
@@ -210,7 +212,8 @@ abstract class Persistence
     /**
      * Updates record in database.
      *
-     * @param mixed $id
+     * @param mixed                $id
+     * @param array<string, mixed> $data
      */
     public function update(Model $model, $id, array $data): void
     {
@@ -243,7 +246,7 @@ abstract class Persistence
     }
 
     /**
-     * @param mixed $idRaw
+     * @param mixed              $idRaw
      * @param array<scalar|null> $dataRaw
      */
     protected function updateRaw(Model $model, $idRaw, array $dataRaw): void
@@ -291,6 +294,8 @@ abstract class Persistence
      * Will convert one row of data from native PHP types into
      * persistence types. This will also take care of the "actual"
      * field keys.
+     *
+     * @param array<string, mixed> $row
      *
      * @return array<scalar|Persistence\Sql\Expressionable|null>
      */

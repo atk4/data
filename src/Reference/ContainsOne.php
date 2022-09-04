@@ -34,7 +34,7 @@ class ContainsOne extends ContainsBase
 
                 /** @var Persistence\Array_ */
                 $persistence = $theirModel->getPersistence();
-                $row = $persistence->getRawDataByTable($theirModel, $this->tableAlias);
+                $row = $persistence->getRawDataByTable($theirModel, $this->tableAlias); // @phpstan-ignore-line
                 $row = $row ? array_shift($row) : null; // get first and only one record from array persistence
                 $ourModel->save([$this->getOurFieldName() => $row]);
             });

@@ -55,6 +55,9 @@ class EmailField extends Field
         return parent::normalize($value);
     }
 
+    /**
+     * @param array<int, string> $types
+     */
     private function hasAnyDnsRecord(string $domain, array $types = ['MX', 'A', 'AAAA', 'CNAME']): bool
     {
         foreach (array_unique(array_map('strtoupper', $types)) as $t) {

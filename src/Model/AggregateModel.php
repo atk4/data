@@ -66,7 +66,8 @@ class AggregateModel extends Model
     /**
      * Specify a single field or array of fields on which we will group model. Multiple calls are allowed.
      *
-     * @param array<string, array|object> $aggregateExpressions Array of aggregate expressions with alias as key
+     * @param array<int, string|Expression>      $fields
+     * @param array<string, array<mixed>|object> $aggregateExpressions Array of aggregate expressions with alias as key
      *
      * @return $this
      */

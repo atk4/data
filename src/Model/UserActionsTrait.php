@@ -151,7 +151,9 @@ trait UserActionsTrait
             'modifier' => UserAction::MODIFIER_READ,
             'fields' => true,
             'system' => true, // don't show by default
-            'args' => ['intent' => 'string'],
+            'args' => [
+                'intent' => ['type' => 'string'],
+            ],
         ]);
     }
 }

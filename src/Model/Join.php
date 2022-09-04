@@ -447,6 +447,8 @@ abstract class Join
     }
 
     /**
+     * @return array<string, mixed>
+     *
      * @internal should be not used outside atk4/data
      */
     protected function getReindexAndUnsetSaveBuffer(Model $entity): array
@@ -492,6 +494,9 @@ abstract class Join
 
     abstract public function afterLoad(Model $entity): void;
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function beforeInsert(Model $entity, array &$data): void
     {
         if ($this->weak) {
@@ -541,6 +546,9 @@ abstract class Join
         $this->setId($entity, $entity->getId()); // TODO why is this here? it seems to be not needed
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function beforeUpdate(Model $entity, array &$data): void
     {
         if ($this->weak) {

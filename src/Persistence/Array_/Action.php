@@ -231,6 +231,8 @@ class Action
     /**
      * Applies sorting on Iterator.
      *
+     * @param array<int, array{string, 'asc'|'desc'}> $fields
+     *
      * @return $this
      */
     public function order(array $fields)
@@ -293,6 +295,8 @@ class Action
 
     /**
      * Return all data inside array.
+     *
+     * @return array<int, array<string, mixed>>
      */
     public function getRows(): array
     {
@@ -301,6 +305,8 @@ class Action
 
     /**
      * Return one row of data.
+     *
+     * @return array<string, mixed>|null
      */
     public function getRow(): ?array
     {
