@@ -34,7 +34,7 @@ class ContainsMany extends ContainsBase
 
                 /** @var Persistence\Array_ */
                 $persistence = $theirModel->getPersistence();
-                $rows = $persistence->getRawDataByTable($theirModel, $this->tableAlias);
+                $rows = $persistence->getRawDataByTable($theirModel, $this->tableAlias); // @phpstan-ignore-line
                 $ourModel->save([$this->getOurFieldName() => $rows !== [] ? $rows : null]);
             });
         }

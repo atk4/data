@@ -11,6 +11,9 @@ use Atk4\Data\Persistence;
 
 class JoinArrayTest extends TestCase
 {
+    /**
+     * @return array<string, array<mixed, mixed>>
+     */
     private function getInternalPersistenceData(Persistence\Array_ $db): array
     {
         $data = [];

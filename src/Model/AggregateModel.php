@@ -35,7 +35,7 @@ use Atk4\Data\Persistence\Sql\Query;
  * @property Model $table
  *
  * @method Persistence\Sql getPersistence()
- * @method Expression      expr($expr, array $args = []) forwards to Persistence\Sql::expr using $this as model
+ * @method Expression      expr(string $template, array<int|string, mixed> $arguments = []) forwards to Persistence\Sql::expr using $this as model
  */
 class AggregateModel extends Model
 {
@@ -45,6 +45,9 @@ class AggregateModel extends Model
     /** @var array<int, string|Expression> */
     public $groupByFields = [];
 
+    /**
+     * @param array<string, mixed> $defaults
+     */
     public function __construct(Model $baseModel, array $defaults = [])
     {
         if (!$baseModel->issetPersistence() && !$baseModel->getPersistence() instanceof Persistence\Sql) {
@@ -63,7 +66,8 @@ class AggregateModel extends Model
     /**
      * Specify a single field or array of fields on which we will group model. Multiple calls are allowed.
      *
-     * @param array<string, array|object> $aggregateExpressions Array of aggregate expressions with alias as key
+     * @param array<int, string|Expression>      $fields
+     * @param array<string, array<mixed>|object> $aggregateExpressions Array of aggregate expressions with alias as key
      *
      * @return $this
      */
@@ -112,9 +116,6 @@ class AggregateModel extends Model
         return parent::addField($name, $seed);
     }
 
-    /**
-     * @return Query
-     */
     public function action(string $mode, array $args = [])
     {
         switch ($mode) {

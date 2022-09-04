@@ -29,15 +29,12 @@ class Field implements Expressionable
 
     // {{{ Core functionality
 
+    /**
+     * @param array<string, mixed> $defaults
+     */
     public function __construct(array $defaults = [])
     {
-        foreach ($defaults as $key => $val) {
-            if (is_array($val)) {
-                $this->{$key} = array_replace_recursive(is_array($this->{$key} ?? null) ? $this->{$key} : [], $val);
-            } else {
-                $this->{$key} = $val;
-            }
-        }
+        $this->setDefaults($defaults);
     }
 
     /**
@@ -52,6 +49,9 @@ class Field implements Expressionable
         return $this->_setOwner($owner);
     }
 
+    /**
+     * @param array<string, mixed> $properties
+     */
     public function setDefaults(array $properties, bool $passively = false): self
     {
         $this->_setDefaults($properties, $passively);
@@ -70,6 +70,9 @@ class Field implements Expressionable
         return Type::getType($this->type ?? 'string');
     }
 
+    /**
+     * @param array<int, mixed> $args
+     */
     protected function onHookToOwnerEntity(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->shortName; // use static function to allow this object to be GCed
@@ -417,6 +420,8 @@ class Field implements Expressionable
      *
      * @param string|null $operator one of Scope\Condition operators
      * @param mixed       $value    the condition value to be handled
+     *
+     * @return array{$this, string, mixed}
      */
     public function getQueryArguments($operator, $value): array
     {
@@ -498,6 +503,9 @@ class Field implements Expressionable
         return $this->getOwner()->getPersistence()->getFieldSqlExpression($this, $expression);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function __debugInfo(): array
     {
         $arr = [

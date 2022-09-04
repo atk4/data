@@ -107,14 +107,15 @@ class MigratorTest extends TestCase
         );
     }
 
-    public function providerCharacterTypeFieldCaseSensitivityData(): array
+    /**
+     * @return \Traversable<int, array<int, mixed>>
+     */
+    public function providerCharacterTypeFieldCaseSensitivityData(): \Traversable
     {
-        return [
-            ['string', false],
-            ['binary', true],
-            ['text', false],
-            ['blob', true],
-        ];
+        yield ['string', false];
+        yield ['binary', true];
+        yield ['text', false];
+        yield ['blob', true];
     }
 
     protected function makePseudoRandomString(bool $isBinary, int $length): string
@@ -237,24 +238,24 @@ class MigratorTest extends TestCase
         }
     }
 
-    public function providerCharacterTypeFieldLongData(): array
+    /**
+     * @return \Traversable<int, array<int, mixed>>
+     */
+    public function providerCharacterTypeFieldLongData(): \Traversable
     {
-        return [
-            ['string', false, 0],
-            ['binary', true, 0],
-            ['text', false, 0],
-            ['blob', true, 0],
-            ['string', false, 255],
-            ['binary', true, 255],
-            ['text', false, 255],
-            ['blob', true, 255],
-            // expected to fail with pdo_oci driver, multibyte Oracle CLOB stream read support
-            // is broken with long strings, oci8 driver is NOT affected,
-            // CI images ghcr.io/mvorisek/image-php are patched
-            // remove comment once https://github.com/php/php-src/pull/8018 is merged & released
-            ['text', false, str_starts_with($_ENV['DB_DSN'], 'pdo_oci') && !isset($_ENV['CI']) ? 16 * 1024 : 256 * 1024],
-            ['blob', true, 256 * 1024],
-        ];
+        yield ['binary', true, 0];
+        yield ['text', false, 0];
+        yield ['blob', true, 0];
+        yield ['string', false, 255];
+        yield ['binary', true, 255];
+        yield ['text', false, 255];
+        yield ['blob', true, 255];
+        // expected to fail with pdo_oci driver, multibyte Oracle CLOB stream read support
+        // is broken with long strings, oci8 driver is NOT affected,
+        // CI images ghcr.io/mvorisek/image-php are patched
+        // remove comment once https://github.com/php/php-src/pull/8018 is merged & released
+        yield ['text', false, str_starts_with($_ENV['DB_DSN'], 'pdo_oci') && !isset($_ENV['CI']) ? 16 * 1024 : 256 * 1024];
+        yield ['blob', true, 256 * 1024];
     }
 
     public function testSetModelCreate(): void

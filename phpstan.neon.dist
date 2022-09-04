@@ -11,16 +11,9 @@ parameters:
     ignoreErrors:
         - '~^Unsafe usage of new static\(\)\.$~'
 
-        - '~^(Property .+ has|Method .+\(\) (has parameter \$.+ with|return type has)) no value type specified in iterable type .+\.~'
-
         # relax strict rules
         - '~^Only booleans are allowed in .+, .+ given( on the (left|right) side)?\.~'
         - '~^Variable (static )?(property access|method call) on .+\.~'
-
-        -
-            message: '~^Call to deprecated method getRawDataByTable\(\) of class Atk4\\Data\\Persistence\\Array_:~'
-            path: '*'
-            count: 2
 
         # fix https://github.com/phpstan/phpstan-deprecation-rules/issues/52 and https://github.com/phpstan/phpstan/issues/6444
         -

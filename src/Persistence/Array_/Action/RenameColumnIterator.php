@@ -9,7 +9,7 @@ use Atk4\Data\Exception;
 /**
  * @internal
  *
- * @phpstan-extends \IteratorIterator<int, array, \Traversable<array>>
+ * @phpstan-extends \IteratorIterator<int, array<string, mixed>, \Traversable<array<string, mixed>>>
  */
 final class RenameColumnIterator extends \IteratorIterator
 {
@@ -19,7 +19,7 @@ final class RenameColumnIterator extends \IteratorIterator
     protected $newName;
 
     /**
-     * @param \Traversable<array> $iterator
+     * @param \Traversable<array<string, mixed>> $iterator
      */
     public function __construct(\Traversable $iterator, string $origName, string $newName)
     {
@@ -29,6 +29,9 @@ final class RenameColumnIterator extends \IteratorIterator
         $this->newName = $newName;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function current(): array
     {
         $row = parent::current();

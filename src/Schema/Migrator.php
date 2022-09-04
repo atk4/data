@@ -223,6 +223,9 @@ class Migrator
         return $tableName;
     }
 
+    /**
+     * @param array<string, mixed> $options
+     */
     public function field(string $fieldName, array $options = []): self
     {
         if (($options['type'] ?? null) === null) {
@@ -352,7 +355,7 @@ class Migrator
     /**
      * @param Reference|Join $relation
      *
-     * @return array{0: Field, 1: Field}
+     * @return array{Field, Field}
      */
     protected function resolveRelationDirection(object $relation): array
     {
@@ -443,7 +446,7 @@ class Migrator
     }
 
     /**
-     * @param Reference|Join|array{0: Field, 1: Field} $relation
+     * @param Reference|Join|array{Field, Field} $relation
      */
     public function createForeignKey($relation): void
     {

@@ -43,6 +43,9 @@ abstract class Connection
         'oci8' => Oracle\Connection::class,
     ];
 
+    /**
+     * @param array<string, mixed> $defaults
+     */
     public function __construct(array $defaults = [])
     {
         $this->setDefaults($defaults);
@@ -67,11 +70,11 @@ abstract class Connection
      *
      * Returns normalized DSN as array ['driver', 'host', 'user', 'password', 'dbname', 'charset', ...].
      *
-     * @param array|string $dsn
-     * @param string       $user     Optional username, this takes precedence over dsn string
-     * @param string       $password Optional password, this takes precedence over dsn string
+     * @param array<string, string>|string $dsn
+     * @param string                       $user     Optional username, this takes precedence over dsn string
+     * @param string                       $password Optional password, this takes precedence over dsn string
      *
-     * @return array
+     * @return array<string, string>
      */
     public static function normalizeDsn($dsn, $user = null, $password = null)
     {
@@ -176,12 +179,12 @@ abstract class Connection
     /**
      * Connect to database and return connection class.
      *
-     * @param string|array|DbalConnection|DbalDriverConnection $dsn
-     * @param string|null                                      $user
-     * @param string|null                                      $password
-     * @param array                                            $args
+     * @param string|array<string, string>|DbalConnection|DbalDriverConnection $dsn
+     * @param string|null                                                      $user
+     * @param string|null                                                      $password
+     * @param array<string, mixed>                                             $defaults
      */
-    public static function connect($dsn, $user = null, $password = null, $args = []): self
+    public static function connect($dsn, $user = null, $password = null, $defaults = []): self
     {
         if ($dsn instanceof DbalConnection) {
             $driverName = self::getDriverNameFromDbalDriverConnection($dsn->getWrappedConnection()); // @phpstan-ignore-line https://github.com/doctrine/dbal/issues/5199
@@ -198,7 +201,7 @@ abstract class Connection
             $dbalConnection = $connectionClass::connectFromDbalDriverConnection($dbalDriverConnection);
         }
 
-        $connection = new $connectionClass($args);
+        $connection = new $connectionClass($defaults);
         $connection->_connection = $dbalConnection;
 
         return $connection;
@@ -242,6 +245,9 @@ abstract class Connection
         return new EventManager();
     }
 
+    /**
+     * @param array<string, string> $dsn
+     */
     protected static function connectFromDsn(array $dsn): DbalDriverConnection
     {
         $dsn = static::normalizeDsn($dsn);
@@ -252,7 +258,7 @@ abstract class Connection
         }
 
         $dbalConnection = DriverManager::getConnection(
-            $dsn,
+            $dsn, // @phpstan-ignore-line
             (static::class)::createDbalConfiguration(),
             (static::class)::createDbalEventManager()
         );
@@ -277,12 +283,13 @@ abstract class Connection
     /**
      * Returns new Expression with connection already set.
      *
-     * @param string|array $properties
+     * @param string|array<string, mixed> $template
+     * @param array<mixed>                $arguments
      */
-    public function expr($properties = [], array $arguments = []): Expression
+    public function expr($template = [], array $arguments = []): Expression
     {
         $class = $this->expressionClass;
-        $e = new $class($properties, $arguments);
+        $e = new $class($template, $arguments);
         $e->connection = $this;
 
         return $e;
@@ -291,12 +298,12 @@ abstract class Connection
     /**
      * Returns new Query with connection already set.
      *
-     * @param string|array $properties
+     * @param string|array<string, mixed> $defaults
      */
-    public function dsql($properties = []): Query
+    public function dsql($defaults = []): Query
     {
         $class = $this->queryClass;
-        $q = new $class($properties);
+        $q = new $class($defaults);
         $q->connection = $this;
 
         return $q;

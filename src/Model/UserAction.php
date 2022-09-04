@@ -65,10 +65,10 @@ class UserAction
     /** @var bool system action will be hidden from UI, but can still be explicitly triggered */
     public $system = false;
 
-    /** @var array Argument definition. */
+    /** @var array<string, array<string, mixed>|Model> Argument definition. */
     public $args = [];
 
-    /** @var array|bool Specify which fields may be dirty when invoking action. APPLIES_TO_NO_RECORDS|APPLIES_TO_SINGLE_RECORD scopes for adding/modifying */
+    /** @var array<int, string>|bool Specify which fields may be dirty when invoking action. APPLIES_TO_NO_RECORDS|APPLIES_TO_SINGLE_RECORD scopes for adding/modifying */
     public $fields = [];
 
     /** @var bool Atomic action will automatically begin transaction before and commit it after completing. */
@@ -198,9 +198,7 @@ class UserAction
      */
     public function preview(...$args)
     {
-        if ($this->preview === null) {
-            throw new Exception('You must specify preview callback explicitly');
-        } elseif (is_string($this->preview)) {
+        if (is_string($this->preview)) {
             $fx = \Closure::fromCallable([$this->getEntity(), $this->preview]);
         } else {
             array_unshift($args, $this->getEntity());

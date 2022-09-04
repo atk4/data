@@ -172,6 +172,9 @@ class Condition extends AbstractScope
         }
     }
 
+    /**
+     * @return array<0|1|2, mixed>
+     */
     public function toQueryArguments(): array
     {
         if ($this->isEmpty()) {

@@ -23,16 +23,15 @@ final class TestSqlPersistence extends Persistence\Sql
     {
         \Closure::bind(function () {
             if ($this->_connection === null) {
-                $connection = Persistence::connect($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD'])->_connection; // @phpstan-ignore-line
-                $this->_connection = $connection;
+                $this->_connection = Persistence::connect($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD'])->_connection; // @phpstan-ignore-line
 
-                if ($connection->getDatabasePlatform() instanceof MySQLPlatform) {
-                    $connection->expr(
+                if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+                    $this->getConnection()->expr(
                         'SET SESSION auto_increment_increment = 1, SESSION auto_increment_offset = 1'
                     )->executeStatement();
                 }
 
-                $connection->getConnection()->getConfiguration()->setSQLLogger(
+                $this->getConnection()->getConnection()->getConfiguration()->setSQLLogger(
                     // @phpstan-ignore-next-line SQLLogger is deprecated
                     null ?? new class() implements SQLLogger {
                         public function startQuery($sql, array $params = null, array $types = null): void
@@ -43,7 +42,7 @@ final class TestSqlPersistence extends Persistence\Sql
                             }
 
                             $test = TestCase::getTestFromBacktrace();
-                            \Closure::bind(fn () => $test->logQuery($sql, $params ?? [], $types ?? []), null, TestCase::class)();
+                            \Closure::bind(fn () => $test->logQuery($sql, $params ?? [], $types ?? []), null, TestCase::class)(); // @phpstan-ignore-line
                         }
 
                         public function stopQuery(): void

@@ -11,7 +11,7 @@ use Atk4\Data\Exception;
  */
 trait JoinsTrait
 {
-    /** @var array The class used by join() method. */
+    /** @var array<mixed> The class used by join() method. */
     protected $_defaultSeedJoin = [Join::class];
 
     /**
@@ -44,8 +44,6 @@ trait JoinsTrait
 
     /**
      * Add left/weak join.
-     *
-     * @see join()
      *
      * @param array<string, mixed> $defaults
      */

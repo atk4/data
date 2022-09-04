@@ -21,6 +21,9 @@ class Table
         $this->tableName = $tableName;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function __debugInfo(): array
     {
         return [

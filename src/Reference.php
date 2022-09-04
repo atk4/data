@@ -52,7 +52,7 @@ class Reference
      * then used inside getModel() to fully populate and associate with
      * persistence.
      *
-     * @var Model|\Closure(object, static, array): Model|array
+     * @var Model|\Closure(object, static, array<string, mixed>): Model|array<mixed>
      */
     public $model;
 
@@ -127,6 +127,9 @@ class Reference
         return $this->theirField ?? ($theirModel ?? Model::assertInstanceOf($this->model))->idField;
     }
 
+    /**
+     * @param array<int, mixed> $args
+     */
     protected function onHookToOurModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->shortName; // use static function to allow this object to be GCed
@@ -142,6 +145,9 @@ class Reference
         );
     }
 
+    /**
+     * @param array<int, mixed> $args
+     */
     protected function onHookToTheirModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         if ($model->ownerReference !== null && $model->ownerReference !== $this) {
@@ -192,6 +198,8 @@ class Reference
      * necessary conditions.
      *
      * IMPORTANT: the returned model must be a fresh clone or freshly built from a seed
+     *
+     * @param array<string, mixed> $defaults
      */
     public function createTheirModel(array $defaults = []): Model
     {
@@ -238,6 +246,9 @@ class Reference
         }
     }
 
+    /**
+     * @param array<string, mixed> $defaults
+     */
     protected function addToPersistence(Model $theirModel, array $defaults = []): void
     {
         if (!$theirModel->issetPersistence()) {
@@ -278,6 +289,8 @@ class Reference
     /**
      * Returns referenced model without any extra conditions. However other
      * relationship types may override this to imply conditions.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function ref(Model $ourModel, array $defaults = []): Model
     {
@@ -288,12 +301,17 @@ class Reference
      * Returns referenced model without any extra conditions. Ever when extended
      * must always respond with Model that does not look into current record
      * or scope.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function refModel(Model $ourModel, array $defaults = []): Model
     {
         return $this->createTheirModel($defaults);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function __debugInfo(): array
     {
         $res = [];

@@ -220,10 +220,10 @@ abstract class Query extends Expression
     /**
      * Specify WITH query to be used.
      *
-     * @param Query  $cursor    Specifies cursor query or array [alias => query] for adding multiple
-     * @param string $alias     Specify alias for this cursor
-     * @param array  $fields    Optional array of field names used in cursor
-     * @param bool   $recursive Is it recursive?
+     * @param Query                   $cursor    Specifies cursor query or array [alias => query] for adding multiple
+     * @param string                  $alias     Specify alias for this cursor
+     * @param array<int, string>|null $fields    Optional array of field names used in cursor
+     * @param bool                    $recursive Is it recursive?
      *
      * @return $this
      */
@@ -504,6 +504,9 @@ abstract class Query extends Expression
         return $res;
     }
 
+    /**
+     * @param array<0|1|2, mixed> $row
+     */
     protected function _subrenderCondition(array $row): string
     {
         if (count($row) === 3) {
@@ -965,32 +968,33 @@ abstract class Query extends Expression
     }
 
     /**
-     * Create Query object with the same connection.
-     *
-     * @param string|array $properties
-     *
-     * @return Query
-     */
-    public function dsql($properties = [])
-    {
-        $q = new static($properties);
-        $q->connection = $this->connection;
-
-        return $q;
-    }
-
-    /**
      * Create Expression object with the same connection.
      *
-     * @param string|array $properties
+     * @param string|array<string, mixed> $template
+     * @param array<int|string, mixed>    $arguments
      */
-    public function expr($properties = [], array $arguments = []): Expression
+    public function expr($template = [], array $arguments = []): Expression
     {
         $class = $this->expressionClass;
-        $e = new $class($properties, $arguments);
+        $e = new $class($template, $arguments);
         $e->connection = $this->connection;
 
         return $e;
+    }
+
+    /**
+     * Create Query object with the same connection.
+     *
+     * @param string|array<string, mixed> $defaults
+     *
+     * @return Query
+     */
+    public function dsql($defaults = [])
+    {
+        $q = new static($defaults);
+        $q->connection = $this->connection;
+
+        return $q;
     }
 
     /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql;
 
-use Atk4\Core\WarnDynamicPropertyTrait;
+use Atk4\Core\DiContainerTrait;
 use Atk4\Data\Persistence;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Exception as DbalException;
@@ -20,7 +20,7 @@ use Doctrine\DBAL\Result as DbalResult;
  */
 abstract class Expression implements Expressionable, \ArrayAccess
 {
-    use WarnDynamicPropertyTrait;
+    use DiContainerTrait;
 
     /** @const string "[]" in template, escape as parameter */
     protected const ESCAPE_PARAM = 'param';
@@ -52,6 +52,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
     protected string $identifierEscapeChar;
 
     private ?string $renderParamBase = null;
+    /** @var array<string, mixed> */
     private ?array $renderParams = null;
 
     public Connection $connection;
@@ -63,19 +64,16 @@ abstract class Expression implements Expressionable, \ArrayAccess
      * Specifying options to constructors will override default
      * attribute values of this class.
      *
-     * If $properties is passed as string, then it's treated as template.
-     *
-     * @param string|array $properties
+     * @param string|array<string, mixed> $template
+     * @param array<int|string, mixed>    $arguments
      */
-    public function __construct($properties = [], array $arguments = [])
+    public function __construct($template = [], array $arguments = [])
     {
-        if (is_string($properties)) {
-            $properties = ['template' => $properties];
+        if (is_string($template)) {
+            $template = ['template' => $template];
         }
 
-        foreach ($properties as $key => $val) {
-            $this->{$key} = $val;
-        }
+        $this->setDefaults($template);
 
         $this->args['custom'] = $arguments;
     }
@@ -131,11 +129,12 @@ abstract class Expression implements Expressionable, \ArrayAccess
     /**
      * Create Expression object with the same connection.
      *
-     * @param string|array $properties
+     * @param string|array<string, mixed> $template
+     * @param array<int|string, mixed>    $arguments
      */
-    public function expr($properties = [], array $arguments = []): self
+    public function expr($template = [], array $arguments = []): self
     {
-        return $this->connection->expr($properties, $arguments);
+        return $this->connection->expr($template, $arguments);
     }
 
     /**
@@ -348,6 +347,9 @@ abstract class Expression implements Expressionable, \ArrayAccess
             || str_contains($value, $this->identifierEscapeChar);
     }
 
+    /**
+     * @return array{string, array<string, mixed>}
+     */
     private function _render(): array
     {
         // - [xxx] = param
@@ -482,6 +484,9 @@ abstract class Expression implements Expressionable, \ArrayAccess
         return $sql;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function __debugInfo(): array
     {
         $arr = [
@@ -708,7 +713,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
     }
 
     /**
-     * @return \Traversable<array<mixed>>
+     * @return \Traversable<array<string, mixed>>
      */
     public function getRowsIterator(): \Traversable
     {

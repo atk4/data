@@ -14,7 +14,8 @@ use Atk4\Data\Persistence\Sql\Sqlite;
 class ExpressionTest extends TestCase
 {
     /**
-     * @param string|array $template
+     * @param string|array<string, mixed> $template
+     * @param array<int|string, mixed>    $arguments
      */
     protected function e($template = [], array $arguments = []): Expression
     {
@@ -129,17 +130,19 @@ class ExpressionTest extends TestCase
     }
 
     /**
+     * @param array<int|string, mixed> $exprArguments
+     *
      * @dataProvider provideNoTemplatingInSqlStringData
      */
-    public function testNoTemplatingInSqlString(string $expectedStr, string $exprStr, array $exprArgs): void
+    public function testNoTemplatingInSqlString(string $expectedStr, string $exprTemplate, array $exprArguments): void
     {
-        static::assertSame($expectedStr, $this->e($exprStr, $exprArgs)->render()[0]);
+        static::assertSame($expectedStr, $this->e($exprTemplate, $exprArguments)->render()[0]);
     }
 
     /**
-     * @return iterable<array>
+     * @return \Traversable<int, array<int, mixed>>
      */
-    public function provideNoTemplatingInSqlStringData(): iterable
+    public function provideNoTemplatingInSqlStringData(): \Traversable
     {
         $testStrs = [];
         foreach (['\'', '"', '`'] as $enclosureChar) {

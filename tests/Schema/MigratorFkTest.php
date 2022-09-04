@@ -13,6 +13,9 @@ use Doctrine\DBAL\Schema\ForeignKeyConstraint;
 
 class MigratorFkTest extends TestCase
 {
+    /**
+     * @return array<int, array{array<int, string>, string, array<int, string>}>
+     */
     protected function listTableForeignKeys(string $localTable): array
     {
         $foreignKeys = $this->getConnection()->createSchemaManager()->listTableForeignKeys($localTable);

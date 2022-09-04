@@ -15,20 +15,25 @@ use Atk4\Data\Persistence\Sql\Query;
 class QueryTest extends TestCase
 {
     /**
-     * @param string|array $template
+     * @param string|array<string, mixed> $template
+     * @param array<int|string, mixed>    $arguments
      */
     protected function q($template = [], array $arguments = []): Query
     {
         $query = new class($template, $arguments) extends Query {
             protected string $identifierEscapeChar = '"';
 
-            public function __construct($properties = [], array $arguments = [])
+            /**
+             * @param array<string, mixed>     $defaults
+             * @param array<int|string, mixed> $arguments
+             */
+            public function __construct($defaults = [], array $arguments = [])
             {
                 $this->expressionClass = get_class(new class() extends Expression {
                     protected string $identifierEscapeChar = '"';
                 });
 
-                parent::__construct($properties, $arguments);
+                parent::__construct($defaults, $arguments);
             }
         };
 
@@ -44,7 +49,8 @@ class QueryTest extends TestCase
     }
 
     /**
-     * @param string|array $template
+     * @param string|array<string, mixed> $template
+     * @param array<int|string, mixed>    $arguments
      */
     protected function e($template = [], array $arguments = []): Expression
     {
@@ -673,9 +679,9 @@ class QueryTest extends TestCase
     }
 
     /**
-     * @return iterable<array>
+     * @return \Traversable<int, array<int, mixed>>
      */
-    public function provideWhereUnsupportedOperatorData(): iterable
+    public function provideWhereUnsupportedOperatorData(): \Traversable
     {
         // unsupported operators
         yield ['<>', 2];

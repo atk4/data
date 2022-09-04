@@ -27,6 +27,9 @@ class Row
         return ++self::$nextRowIndex;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function __debugInfo(): array
     {
         return [
@@ -53,6 +56,9 @@ class Row
         return $this->data[$columnName];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getData(): array
     {
         return $this->data;

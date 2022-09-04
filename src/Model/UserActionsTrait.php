@@ -9,7 +9,7 @@ use Atk4\Data\Model;
 
 trait UserActionsTrait
 {
-    /** @var array The seed used by addUserAction() method. */
+    /** @var array<mixed> The seed used by addUserAction() method. */
     protected $_defaultSeedUserAction = [UserAction::class];
 
     /** @var array<string, UserAction> Collection of user actions - using key as action system name */
@@ -19,7 +19,7 @@ trait UserActionsTrait
      * Register new user action for this model. By default UI will allow users to trigger actions
      * from UI.
      *
-     * @param array|\Closure $defaults
+     * @param array<string, mixed>|\Closure $defaults
      */
     public function addUserAction(string $name, $defaults = []): UserAction
     {
@@ -151,7 +151,9 @@ trait UserActionsTrait
             'modifier' => UserAction::MODIFIER_READ,
             'fields' => true,
             'system' => true, // don't show by default
-            'args' => ['intent' => 'string'],
+            'args' => [
+                'intent' => ['type' => 'string'],
+            ],
         ]);
     }
 }

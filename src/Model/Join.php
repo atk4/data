@@ -147,6 +147,9 @@ abstract class Join
         return $this->_setOwner($owner);
     }
 
+    /**
+     * @param array<int, mixed> $args
+     */
     protected function onHookToOwnerBoth(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->shortName; // use static function to allow this object to be GCed
@@ -166,6 +169,9 @@ abstract class Join
         );
     }
 
+    /**
+     * @param array<int, mixed> $args
+     */
     protected function onHookToOwnerEntity(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->shortName; // use static function to allow this object to be GCed
@@ -275,6 +281,8 @@ abstract class Join
      * Adding field into join will automatically associate that field
      * with this join. That means it won't be loaded from $table, but
      * form the join instead.
+     *
+     * @param array<mixed> $seed
      */
     public function addField(string $name, array $seed = []): Field
     {
@@ -285,6 +293,9 @@ abstract class Join
 
     /**
      * Adds multiple fields.
+     *
+     * @param array<string, array<mixed>>|array<int, string> $fields
+     * @param array<string, mixed>                           $defaults
      *
      * @return $this
      */
@@ -329,6 +340,8 @@ abstract class Join
     /**
      * Creates reference based on a field from the join.
      *
+     * @param array<string, mixed> $defaults
+     *
      * @return Reference\HasOne
      */
     public function hasOne(string $link, array $defaults = [])
@@ -341,6 +354,8 @@ abstract class Join
     /**
      * Creates reference based on the field from the join.
      *
+     * @param array<string, mixed> $defaults
+     *
      * @return Reference\HasMany
      */
     public function hasMany(string $link, array $defaults = [])
@@ -351,7 +366,9 @@ abstract class Join
     /**
      * Wrapper for ContainsOne that will associate field with join.
      *
-     * @todo NOT IMPLEMENTED !
+     * @TODO NOT IMPLEMENTED!
+     *
+     * @param array<string, mixed> $defaults
      *
      * @return Reference\ContainsOne
      */
@@ -367,7 +384,9 @@ abstract class Join
     /**
      * Wrapper for ContainsMany that will associate field with join.
      *
-     * @todo NOT IMPLEMENTED !
+     * @TODO NOT IMPLEMENTED!
+     *
+     * @param array<string, mixed> $defaults
      *
      * @return Reference\ContainsMany
      */
@@ -428,6 +447,8 @@ abstract class Join
     }
 
     /**
+     * @return array<string, mixed>
+     *
      * @internal should be not used outside atk4/data
      */
     protected function getReindexAndUnsetSaveBuffer(Model $entity): array
@@ -473,6 +494,9 @@ abstract class Join
 
     abstract public function afterLoad(Model $entity): void;
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function beforeInsert(Model $entity, array &$data): void
     {
         if ($this->weak) {
@@ -522,6 +546,9 @@ abstract class Join
         $this->setId($entity, $entity->getId()); // TODO why is this here? it seems to be not needed
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function beforeUpdate(Model $entity, array &$data): void
     {
         if ($this->weak) {

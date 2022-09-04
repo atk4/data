@@ -109,10 +109,10 @@ class Model implements \IteratorAggregate
     /** @var array<string, true> */
     private static $_modelOnlyProperties;
 
-    /** @var array The seed used by addField() method. */
+    /** @var array<mixed> The seed used by addField() method. */
     protected $_defaultSeedAddField = [Field::class];
 
-    /** @var array The seed used by addExpression() method. */
+    /** @var array<mixed> The seed used by addExpression() method. */
     protected $_defaultSeedAddExpression = [CallbackField::class];
 
     /** @var array<string, Field> */
@@ -133,16 +133,16 @@ class Model implements \IteratorAggregate
     /** @var Persistence|null */
     private $_persistence;
 
-    /** @var array Persistence store some custom information in here that may be useful for them. */
-    public $persistenceData;
+    /** @var array<string, mixed>|null Persistence store some custom information in here that may be useful for them. */
+    public ?array $persistenceData = null;
 
     /** @var Model\Scope\RootScope */
     private $scope;
 
-    /** @var array{0: int|null, 1: int} */
+    /** @var array{int|null, int} */
     public array $limit = [null, 0];
 
-    /** @var array<int, array{0: string|Persistence\Sql\Expressionable, 1: 'asc'|'desc'}> */
+    /** @var array<int, array{string|Persistence\Sql\Expressionable, 'asc'|'desc'}> */
     public array $order = [];
 
     /** @var array<string, array{'model': Model, 'recursive': bool}> */
@@ -154,6 +154,8 @@ class Model implements \IteratorAggregate
      * fields only if $onlyFields mode is false.
      *
      * Avoid accessing $data directly, use set() / get() instead.
+     *
+     * @var array<string, mixed>
      */
     private array $data = [];
 
@@ -169,12 +171,12 @@ class Model implements \IteratorAggregate
      * The $dirty data will be reset after you save() the data but it is
      * still available to all before/after save handlers.
      *
-     * @var array
+     * @var array<string, mixed>
      */
-    private $dirty = [];
+    private array $dirty = [];
 
-    /** @var array */
-    private $dirtyAfterReload = [];
+    /** @var array<string, mixed> */
+    private array $dirtyAfterReload = [];
 
     /**
      * Setting model as readOnly will protect you from accidentally
@@ -220,7 +222,7 @@ class Model implements \IteratorAggregate
      *
      * setOnlyFields() always allows to access fields with system = true.
      *
-     * @var array|null
+     * @var array<int, string>|null
      */
     public $onlyFields;
 
@@ -460,6 +462,7 @@ class Model implements \IteratorAggregate
 
     /**
      * @param Field|Reference|Model\Join $obj
+     * @param array<string, mixed>       $defaults
      */
     public function add(object $obj, array $defaults = []): void
     {
@@ -480,6 +483,8 @@ class Model implements \IteratorAggregate
     }
 
     /**
+     * @return array<string, mixed>
+     *
      * @internal should be not used outside atk4/data
      */
     public function &getDataRef(): array
@@ -490,6 +495,8 @@ class Model implements \IteratorAggregate
     }
 
     /**
+     * @return array<string, mixed>
+     *
      * @internal should be not used outside atk4/data
      */
     public function &getDirtyRef(): array
@@ -525,13 +532,15 @@ class Model implements \IteratorAggregate
         return $errors;
     }
 
-    /** @var array<string, array> */
+    /** @var array<string, array<mixed>> */
     protected array $fieldSeedByType = [];
 
     /**
      * Given a field seed, return a field object.
+     *
+     * @param array<mixed> $seed
      */
-    public function fieldFactory(array $seed = null): Field
+    protected function fieldFactory(array $seed = []): Field
     {
         $seed = Factory::mergeSeeds(
             $seed,
@@ -545,7 +554,7 @@ class Model implements \IteratorAggregate
     /**
      * Adds new field into model.
      *
-     * @param array|object $seed
+     * @param array<mixed>|object $seed
      */
     public function addField(string $name, $seed = []): Field
     {
@@ -562,6 +571,9 @@ class Model implements \IteratorAggregate
 
     /**
      * Adds multiple fields into model.
+     *
+     * @param array<string, array<mixed>|object>|array<int, string> $fields
+     * @param array<string, mixed>                                  $defaults
      *
      * @return $this
      */
@@ -626,7 +638,7 @@ class Model implements \IteratorAggregate
     /**
      * Sets which fields we will select.
      *
-     * @param array<string>|null $fields
+     * @param array<int, string>|null $fields
      *
      * @return $this
      */
@@ -671,7 +683,7 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * @param string|array|null $filter
+     * @param string|array<int, string>|null $filter
      *
      * @return array<string, Field>
      */
@@ -784,6 +796,8 @@ class Model implements \IteratorAggregate
      *
      * This method does not revert the data when an exception is thrown.
      *
+     * @param array<string, mixed> $fields
+     *
      * @return $this
      */
     public function setMulti(array $fields)
@@ -799,7 +813,7 @@ class Model implements \IteratorAggregate
      * Returns field value.
      * If no field is passed, then returns array of all field values.
      *
-     * @return mixed
+     * @return ($field is null ? array<string, mixed> : mixed)
      */
     public function get(string $field = null)
     {
@@ -1025,8 +1039,8 @@ class Model implements \IteratorAggregate
     /**
      * Set order for model records. Multiple calls are allowed.
      *
-     * @param string|array $field
-     * @param string       $direction "asc" or "desc"
+     * @param string|array<int, string|array{string, 1?: 'asc'|'desc'}>|array<string, 'asc'|'desc'> $field
+     * @param 'asc'|'desc' $direction
      *
      * @return $this
      */
@@ -1053,7 +1067,7 @@ class Model implements \IteratorAggregate
                     }
                 } else {
                     // format "field" => direction
-                    $this->setOrder($k, $v);
+                    $this->setOrder($k, $v); // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/7924
                 }
             }
 
@@ -1367,6 +1381,8 @@ class Model implements \IteratorAggregate
      * Use this instead of save() if you want to squeeze a
      * little more performance out.
      *
+     * @param array<string, mixed> $data
+     *
      * @return $this
      */
     public function saveAndUnload(array $data = [])
@@ -1474,6 +1490,8 @@ class Model implements \IteratorAggregate
 
     /**
      * Save record.
+     *
+     * @param array<string, mixed> $data
      *
      * @return $this
      */
@@ -1585,6 +1603,9 @@ class Model implements \IteratorAggregate
         });
     }
 
+    /**
+     * @param array<string, mixed> $row
+     */
     protected function _insert(array $row): void
     {
         // find any row values that do not correspond to fields, they may correspond to references instead
@@ -1666,9 +1687,11 @@ class Model implements \IteratorAggregate
     /**
      * Export DataSet as array of hashes.
      *
-     * @param array|null $fields   Names of fields to export
-     * @param string     $keyField Optional name of field which value we will use as array key
-     * @param bool       $typecast Should we typecast exported data
+     * @param array<int, string>|null $fields   Names of fields to export
+     * @param string                  $keyField Optional name of field which value we will use as array key
+     * @param bool                    $typecast Should we typecast exported data
+     *
+     * @return ($keyField is string ? array<mixed, array<string, mixed>> : array<int, array<string, mixed>>)
      */
     public function export(array $fields = null, string $keyField = null, bool $typecast = true): array
     {
@@ -1865,6 +1888,8 @@ class Model implements \IteratorAggregate
      * for anything else then reading records as insert/update/delete hooks
      * will not be called.
      *
+     * @param array<mixed> $args
+     *
      * @return Persistence\Sql\Query
      */
     public function action(string $mode, array $args = [])
@@ -1995,6 +2020,9 @@ class Model implements \IteratorAggregate
         $this->__di_unset($name);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function __debugInfo(): array
     {
         if ($this->isEntity()) {

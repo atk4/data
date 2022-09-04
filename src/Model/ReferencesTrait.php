@@ -13,22 +13,23 @@ use Atk4\Data\Reference;
  */
 trait ReferencesTrait
 {
-    /** @var array The seed used by addReference() method. */
+    /** @var array<mixed> The seed used by addReference() method. */
     protected $_defaultSeedAddReference = [Reference::class];
 
-    /** @var array The seed used by hasOne() method. */
+    /** @var array<mixed> The seed used by hasOne() method. */
     protected $_defaultSeedHasOne = [Reference\HasOne::class];
 
-    /** @var array The seed used by hasMany() method. */
+    /** @var array<mixed> The seed used by hasMany() method. */
     protected $_defaultSeedHasMany = [Reference\HasMany::class];
 
-    /** @var array The seed used by containsOne() method. */
+    /** @var array<mixed> The seed used by containsOne() method. */
     protected $_defaultSeedContainsOne = [Reference\ContainsOne::class];
 
-    /** @var array The seed used by containsMany() method. */
+    /** @var array<mixed> The seed used by containsMany() method. */
     protected $_defaultSeedContainsMany = [Reference\ContainsMany::class];
 
     /**
+     * @param array<mixed>         $seed
      * @param array<string, mixed> $defaults
      */
     protected function _addReference(array $seed, string $link, array $defaults = []): Reference
@@ -52,6 +53,8 @@ trait ReferencesTrait
 
     /**
      * Add generic relation. Provide your own call-back that will return the model.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function addReference(string $link, array $defaults): Reference
     {
@@ -60,6 +63,8 @@ trait ReferencesTrait
 
     /**
      * Add hasOne reference.
+     *
+     * @param array<string, mixed> $defaults
      *
      * @return Reference\HasOne|Reference\HasOneSql
      */
@@ -71,6 +76,8 @@ trait ReferencesTrait
     /**
      * Add hasMany reference.
      *
+     * @param array<string, mixed> $defaults
+     *
      * @return Reference\HasMany
      */
     public function hasMany(string $link, array $defaults = []) // : Reference
@@ -81,6 +88,8 @@ trait ReferencesTrait
     /**
      * Add containsOne reference.
      *
+     * @param array<string, mixed> $defaults
+     *
      * @return Reference\ContainsOne
      */
     public function containsOne(string $link, array $defaults = []) // : Reference
@@ -90,6 +99,8 @@ trait ReferencesTrait
 
     /**
      * Add containsMany reference.
+     *
+     * @param array<string, mixed> $defaults
      *
      * @return Reference\ContainsMany
      */
@@ -132,6 +143,8 @@ trait ReferencesTrait
 
     /**
      * Traverse to related model.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function ref(string $link, array $defaults = []): Model
     {
@@ -140,6 +153,8 @@ trait ReferencesTrait
 
     /**
      * Return related model.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function refModel(string $link, array $defaults = []): Model
     {
@@ -148,6 +163,8 @@ trait ReferencesTrait
 
     /**
      * Returns model that can be used for generating sub-query actions.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function refLink(string $link, array $defaults = []): Model
     {

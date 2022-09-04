@@ -20,7 +20,7 @@ use Atk4\Data\Persistence\Array_\Db\Table;
  */
 class Array_ extends Persistence
 {
-    /** @var array */
+    /** @var array<string, array<int|string, mixed>> */
     private $seedData;
 
     /** @var array<string, Table> */
@@ -35,6 +35,9 @@ class Array_ extends Persistence
     /** @var string */
     protected $lastInsertIdTable;
 
+    /**
+     * @param array<int|string, mixed> $data
+     */
     public function __construct(array $data = [])
     {
         $this->seedData = $data;
@@ -90,6 +93,8 @@ class Array_ extends Persistence
     }
 
     /**
+     * @return array<mixed, array<string, mixed>>
+     *
      * @deprecated TODO temporary for these:
      *             - https://github.com/atk4/data/blob/90ab68ac063b8fc2c72dcd66115f1bd3f70a3a92/src/Reference/ContainsOne.php#L119
      *             - https://github.com/atk4/data/blob/90ab68ac063b8fc2c72dcd66115f1bd3f70a3a92/src/Reference/ContainsMany.php#L66
@@ -123,7 +128,8 @@ class Array_ extends Persistence
     }
 
     /**
-     * @param mixed $id
+     * @param array<string, mixed> $rowData
+     * @param mixed                $id
      */
     private function saveRow(Model $model, array $rowData, $id): void
     {
@@ -158,13 +164,11 @@ class Array_ extends Persistence
         }
     }
 
+    /**
+     * @param array<string, mixed> $defaults
+     */
     public function add(Model $model, array $defaults = []): void
     {
-        if (isset($defaults[0])) {
-            $model->table = $defaults[0];
-            unset($defaults[0]);
-        }
-
         $defaults = array_merge([
             '_defaultSeedJoin' => [Array_\Join::class],
         ], $defaults);
@@ -189,16 +193,29 @@ class Array_ extends Persistence
         }
     }
 
+    /**
+     * @return array<string, string>
+     */
     private function getPersistenceNameToNameMap(Model $model): array
     {
         return array_flip(array_map(fn (Field $f) => $f->getPersistenceName(), $model->getFields()));
     }
 
+    /**
+     * @param array<string, mixed> $rowDataRaw
+     *
+     * @return array<string, mixed>
+     */
     private function filterRowDataOnlyModelFields(Model $model, array $rowDataRaw): array
     {
         return array_intersect_key($rowDataRaw, $this->getPersistenceNameToNameMap($model));
     }
 
+    /**
+     * @param array<string, mixed> $row
+     *
+     * @return array<string, mixed>
+     */
     private function remapLoadRow(Model $model, array $row): array
     {
         $rowRemapped = [];
@@ -331,6 +348,9 @@ class Array_ extends Persistence
         return $this->lastInsertIdByTable[$this->lastInsertIdTable] ?? null;
     }
 
+    /**
+     * @return \Traversable<array<string, mixed>>
+     */
     public function prepareIterator(Model $model): \Traversable
     {
         return $model->action('select')->generator; // @phpstan-ignore-line
@@ -338,6 +358,10 @@ class Array_ extends Persistence
 
     /**
      * Export all DataSet.
+     *
+     * @param array<int, string>|null $fields
+     *
+     * @return array<int, array<string, mixed>>
      */
     public function export(Model $model, array $fields = null, bool $typecast = true): array
     {
@@ -354,6 +378,8 @@ class Array_ extends Persistence
 
     /**
      * Typecast data and return Action of data array.
+     *
+     * @param array<int, string>|null $fields
      */
     public function initAction(Model $model, array $fields = null): Action
     {
@@ -418,7 +444,9 @@ class Array_ extends Persistence
     /**
      * Various actions possible here, mostly for compatibility with SQLs.
      *
-     * @return mixed
+     * @param array<mixed> $args
+     *
+     * @return Action
      */
     public function action(Model $model, string $type, array $args = [])
     {

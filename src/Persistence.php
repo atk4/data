@@ -36,10 +36,11 @@ abstract class Persistence
     /**
      * Connects database.
      *
-     * @param string|array $dsn Format as PDO DSN or use "mysql://user:pass@host/db;option=blah",
-     *                          leaving user and password arguments = null
+     * @param string|array<string, string> $dsn      Format as PDO DSN or use "mysql://user:pass@host/db;option=blah",
+     *                                               leaving user and password arguments = null
+     * @param array<string, mixed>         $defaults
      */
-    public static function connect($dsn, string $user = null, string $password = null, array $args = []): self
+    public static function connect($dsn, string $user = null, string $password = null, array $defaults = []): self
     {
         // parse DSN string
         $dsn = Persistence\Sql\Connection::normalizeDsn($dsn, $user, $password);
@@ -52,7 +53,7 @@ abstract class Persistence
             case 'pdo_sqlsrv':
             case 'pdo_oci':
             case 'oci8':
-                $persistence = new Persistence\Sql($dsn, $dsn['user'] ?? null, $dsn['password'] ?? null, $args);
+                $persistence = new Persistence\Sql($dsn, $dsn['user'] ?? null, $dsn['password'] ?? null, $defaults);
 
                 return $persistence;
             default:
@@ -70,6 +71,8 @@ abstract class Persistence
 
     /**
      * Associate model with the data driver.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function add(Model $model, array $defaults = []): void
     {
@@ -118,6 +121,8 @@ abstract class Persistence
      * Tries to load data record, but will not fail if record can't be loaded.
      *
      * @param mixed $id
+     *
+     * @return array<string, mixed>|null
      */
     public function tryLoad(Model $model, $id): ?array
     {
@@ -128,6 +133,8 @@ abstract class Persistence
      * Loads a record from model and returns a associative array.
      *
      * @param mixed $id
+     *
+     * @return array<string, mixed>
      */
     public function load(Model $model, $id): array
     {
@@ -149,6 +156,8 @@ abstract class Persistence
 
     /**
      * Inserts record in database and returns new record ID.
+     *
+     * @param array<string, mixed> $data
      *
      * @return mixed
      */
@@ -191,6 +200,8 @@ abstract class Persistence
     }
 
     /**
+     * @param array<scalar|null> $dataRaw
+     *
      * @return mixed
      */
     protected function insertRaw(Model $model, array $dataRaw)
@@ -201,7 +212,8 @@ abstract class Persistence
     /**
      * Updates record in database.
      *
-     * @param mixed $id
+     * @param mixed                $id
+     * @param array<string, mixed> $data
      */
     public function update(Model $model, $id, array $data): void
     {
@@ -234,7 +246,8 @@ abstract class Persistence
     }
 
     /**
-     * @param mixed $idRaw
+     * @param mixed              $idRaw
+     * @param array<scalar|null> $dataRaw
      */
     protected function updateRaw(Model $model, $idRaw, array $dataRaw): void
     {
@@ -281,6 +294,8 @@ abstract class Persistence
      * Will convert one row of data from native PHP types into
      * persistence types. This will also take care of the "actual"
      * field keys.
+     *
+     * @param array<string, mixed> $row
      *
      * @return array<scalar|Persistence\Sql\Expressionable|null>
      */

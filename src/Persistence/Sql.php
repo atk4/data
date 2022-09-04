@@ -44,28 +44,28 @@ class Sql extends Persistence
     /** @var Connection */
     private $_connection;
 
-    /** @var array Default class when adding new field. */
+    /** @var array<mixed> Default class when adding new field. */
     protected $_defaultSeedAddField; // no custom seed needed
 
-    /** @var array Default class when adding Expression field. */
+    /** @var array<mixed> Default class when adding Expression field. */
     protected $_defaultSeedAddExpression = [SqlExpressionField::class];
 
-    /** @var array Default class when adding hasOne field. */
+    /** @var array<mixed> Default class when adding hasOne field. */
     protected $_defaultSeedHasOne = [HasOneSql::class];
 
-    /** @var array Default class when adding hasMany field. */
+    /** @var array<mixed> Default class when adding hasMany field. */
     protected $_defaultSeedHasMany; // no custom seed needed
 
-    /** @var array Default class when adding join. */
+    /** @var array<mixed> Default class when adding join. */
     protected $_defaultSeedJoin = [Sql\Join::class];
 
     /**
-     * @param Connection|string|array|DbalConnection|DbalDriverConnection $connection
-     * @param string                                                      $user
-     * @param string                                                      $password
-     * @param array                                                       $args
+     * @param Connection|string|array<string, string>|DbalConnection|DbalDriverConnection $connection
+     * @param string                                                                      $user
+     * @param string                                                                      $password
+     * @param array<string, mixed>                                                        $defaults
      */
-    public function __construct($connection, $user = null, $password = null, $args = [])
+    public function __construct($connection, $user = null, $password = null, $defaults = [])
     {
         if ($connection instanceof Connection) {
             $this->_connection = $connection;
@@ -78,7 +78,7 @@ class Sql extends Persistence
             $connection,
             $user,
             $password,
-            $args
+            $defaults
         );
     }
 
@@ -167,6 +167,8 @@ class Sql extends Persistence
 
     /**
      * Creates new Expression object from expression string.
+     *
+     * @param array<int|string, mixed> $arguments
      */
     public function expr(Model $model, string $template, array $arguments = []): Expression
     {
@@ -232,7 +234,7 @@ class Sql extends Persistence
     /**
      * Adds model fields in Query.
      *
-     * @param array|null $fields
+     * @param array<int, string>|null $fields
      */
     public function initQueryFields(Model $model, Query $query, $fields = null): void
     {
@@ -362,6 +364,8 @@ class Sql extends Persistence
     }
 
     /**
+     * @param array<mixed> $args
+     *
      * @return Query
      */
     public function action(Model $model, string $type, array $args = [])
@@ -497,6 +501,10 @@ class Sql extends Persistence
 
     /**
      * Export all DataSet.
+     *
+     * @param array<int, string>|null $fields
+     *
+     * @return array<int, array<string, mixed>>
      */
     public function export(Model $model, array $fields = null, bool $typecast = true): array
     {
@@ -511,6 +519,9 @@ class Sql extends Persistence
         return $data;
     }
 
+    /**
+     * @return \Traversable<array<string, mixed>>
+     */
     public function prepareIterator(Model $model): \Traversable
     {
         $export = $model->action('select');
@@ -538,6 +549,9 @@ class Sql extends Persistence
         }
     }
 
+    /**
+     * @param array<scalar|Expressionable|null> $dataRaw
+     */
     protected function insertRaw(Model $model, array $dataRaw)
     {
         $insert = $this->initQuery($model);
@@ -571,6 +585,9 @@ class Sql extends Persistence
         return $idRaw;
     }
 
+    /**
+     * @param array<scalar|Expressionable|null> $dataRaw
+     */
     protected function updateRaw(Model $model, $idRaw, array $dataRaw): void
     {
         $update = $this->initQuery($model);
