@@ -161,18 +161,13 @@ class HasMany extends Reference
     /**
      * Adds multiple fields.
      *
-     * @param array<string, array<mixed>>|array<int, string> $fields
+     * @param array<string, array<mixed>> $fields
      *
      * @return $this
      */
     public function addFields(array $fields = [])
     {
         foreach ($fields as $name => $seed) {
-            if (is_int($name)) {
-                $name = $seed;
-                $seed = [];
-            }
-
             $this->addField($name, $seed);
         }
 

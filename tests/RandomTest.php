@@ -122,7 +122,10 @@ class RandomTest extends TestCase
         ]);
 
         $m = new Model($this->db, ['table' => 'user']);
-        $m->addFields(['name', 'login'], ['default' => 'unknown']);
+        $m->addFields([
+            'name' => [],
+            'login' => [],
+        ], ['default' => 'unknown']);
 
         $m->insert(['name' => 'Peter']);
         $m->insert([]);
@@ -145,9 +148,11 @@ class RandomTest extends TestCase
         ]);
 
         $m = new Model($this->db, ['table' => 'user']);
-        $m->addFields(['name'], ['default' => 'anonymous']);
         $m->addFields([
-            'last_name',
+            'name' => [],
+        ], ['default' => 'anonymous']);
+        $m->addFields([
+            'last_name' => [],
             'login' => ['default' => 'unknown'],
             'salary' => [CustomField::class, 'type' => 'atk4_money', 'default' => 100],
             'tax' => [CustomField::class, 'type' => 'atk4_money', 'default' => 20],

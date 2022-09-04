@@ -572,19 +572,14 @@ class Model implements \IteratorAggregate
     /**
      * Adds multiple fields into model.
      *
-     * @param array<string, array<mixed>|object>|array<int, string> $fields
-     * @param array<string, mixed>                                  $defaults
+     * @param array<string, array<mixed>|object> $fields
+     * @param array<string, mixed>               $defaults
      *
      * @return $this
      */
     public function addFields(array $fields, array $defaults = [])
     {
         foreach ($fields as $name => $seed) {
-            if (is_int($name)) {
-                $name = $seed;
-                $seed = [];
-            }
-
             $this->addField($name, Factory::mergeSeeds($seed, $defaults));
         }
 

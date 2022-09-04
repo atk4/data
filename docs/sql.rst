@@ -71,31 +71,33 @@ SQL Reference
     Allows importing multiple fields::
 
         $model->hasOne('country_id', ['model' => [Country::class]])
-            ->addFields(['country_name', 'country_code']);
+            ->addFields([
+                'country_name' => [],
+                'country_code' => [],
+            ]);
 
     You can specify defaults to be applied on all fields::
 
         $model->hasOne('account_id', ['model' => [Account::class]])
             ->addFields([
-                'opening_balance',
-                'balance',
+                'opening_balance' => [],
+                'balance' => [],
             ], ['type' => 'atk4_money']);
 
     You can also specify aliases::
 
         $model->hasOne('account_id', ['model' => [Account::class]])
             ->addFields([
-                'opening_balance',
-                'account_balance' => 'balance',
+                'opening_balance' => [],
+                'account_balance' => ['balance'],
             ], ['type' => 'atk4_money']);
 
     If you need to pass more details to individual field, you can also use sub-array::
 
         $model->hasOne('account_id', ['model' => [Account::class]])
             ->addFields([
-            [
-                ['opening_balance', 'caption' => 'The Opening Balance'],
-                'account_balance' => 'balance',
+                'opening_balance' => ['caption' => 'The Opening Balance'],
+                'account_balance' => ['balance'],
             ], ['type' => 'atk4_money']);
 
     Returns $this.

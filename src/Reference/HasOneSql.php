@@ -96,25 +96,22 @@ class HasOneSql extends HasOne
      * Add multiple expressions by calling addField several times. Fields
      * may contain 3 types of elements:.
      *
-     * ['name', 'surname'] - will import those fields as-is
-     * ['full_name' => 'name', 'day_of_birth' => ['dob', 'type' => 'date']] - use alias and options
-     * [['dob', 'type' => 'date']]  - use options
+     * ['name' => [], 'surname' => []] - will import those fields as-is
+     * ['full_name' => ['name'], 'day_of_birth' => ['dob', 'type' => 'date']] - use alias and options
+     * ['dob' => ['type' => 'date']]  - use options
      *
-     * @param array<string, array<mixed>>|array<int, string> $fields
-     * @param array<string, mixed>                           $defaults
+     * @param array<string, array<mixed>> $fields
+     * @param array<string, mixed>        $defaults
      *
      * @return $this
      */
     public function addFields(array $fields = [], array $defaults = [])
     {
         foreach ($fields as $ourFieldName => $ourFieldDefaults) {
-            $ourFieldDefaults = array_merge($defaults, (array) $ourFieldDefaults);
+            $ourFieldDefaults = array_merge($defaults, $ourFieldDefaults);
 
             $theirFieldName = $ourFieldDefaults[0] ?? null;
             unset($ourFieldDefaults[0]);
-            if (is_int($ourFieldName)) {
-                $ourFieldName = $theirFieldName;
-            }
 
             $this->addField($ourFieldName, $theirFieldName, $ourFieldDefaults);
         }

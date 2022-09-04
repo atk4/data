@@ -123,7 +123,10 @@ It is possible to perform reference through an 3rd party table::
 
     $p
         ->join('invoice_payment.payment_id')
-        ->addFields(['amount_allocated', 'invoice_id']);
+        ->addFields([
+            'amount_allocated' => [],
+            'invoice_id' => [],
+        ]);
 
     $i->hasMany('Payments', ['model' => $p]);
 
@@ -188,9 +191,9 @@ keep making your query bigger and bigger::
 
     $invoice->hasMany('Invoice_Line', ['model' => [Model_Invoice_Line::class]])
         ->addFields([
-            ['total_vat', 'aggregate' => 'sum'],
-            ['total_net', 'aggregate' => 'sum'],
-            ['total_gross', 'aggregate' => 'sum'],
+            'total_vat' => ['aggregate' => 'sum'],
+            'total_net' => ['aggregate' => 'sum'],
+            'total_gross' => ['aggregate' => 'sum'],
         ]);
 
 Imported fields will preserve format of the field they reference. In the example,
@@ -373,9 +376,9 @@ be renamed, just as we did above::
 
     $u->hasOne('address_id', ['model' => $a])
         ->addFields([
-            'address_1',
-            'address_2',
-            'address_3',
+            'address_1' => [],
+            'address_2' => [],
+            'address_3' => [],
             'address_notes' => ['notes', 'type' => 'text'],
         ]);
 
@@ -579,19 +582,19 @@ Various ways to specify options
 
 When calling `hasOne()->addFields()` there are various ways to pass options:
 
-- `addFields(['name', 'dob'])` - no options are passed, use defaults. Note that
+- `addFields(['name' => [], 'dob' => []])` - no options are passed, use defaults. Note that
   reference will not fetch the type of foreign field due to performance consideration.
 
-- `addFields(['first_name' => 'name'])` - this indicates aliasing. Field `name`
+- `addFields(['first_name' => ['name']])` - this indicates aliasing. Field `name`
   will be added as `first_name`.
 
-- `addFields([['dob', 'type' => 'date']])` - wrap inside array to pass options to
+- `addFields(['dob' => ['type' => 'date']])` - wrap inside array to pass options to
   field
 
 - `addFields(['the_date' => ['dob', 'type' => 'date']])` - combination of aliasing
   and options
 
-- `addFields(['dob', 'dod'], ['type' => 'date'])` - passing defaults for multiple
+- `addFields(['dob' => [], 'dod' => []], ['type' => 'date'])` - passing defaults for multiple
   fields
 
 

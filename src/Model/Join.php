@@ -294,19 +294,14 @@ abstract class Join
     /**
      * Adds multiple fields.
      *
-     * @param array<string, array<mixed>>|array<int, string> $fields
-     * @param array<string, mixed>                           $defaults
+     * @param array<string, array<mixed>> $fields
+     * @param array<string, mixed>        $defaults
      *
      * @return $this
      */
     public function addFields(array $fields = [], array $defaults = [])
     {
         foreach ($fields as $name => $seed) {
-            if (is_int($name)) {
-                $name = $seed;
-                $seed = [];
-            }
-
             $this->addField($name, Factory::mergeSeeds($seed, $defaults));
         }
 

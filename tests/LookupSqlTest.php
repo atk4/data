@@ -66,7 +66,10 @@ class LUser extends Model
         $this->addField('is_vip', ['type' => 'boolean', 'default' => false]);
 
         $this->hasOne('country_id', ['model' => [LCountry::class]])
-            ->addFields(['country_code' => 'code', 'is_eu'])
+            ->addFields([
+                'country_code' => ['code'],
+                'is_eu' => [],
+            ])
             ->addTitle();
 
         $this->hasMany('Friends', ['model' => [LFriend::class]])

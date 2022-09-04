@@ -230,13 +230,15 @@ Read more about :php:class:`Field`
 
 Creates multiple field objects in one method call. See multiple syntax examples::
 
-    $m->addFields(['name'], ['default' => 'anonymous']);
+    $m->addFields([
+        'name' => [],
+    ], ['default' => 'anonymous']);
 
     $m->addFields([
-        'last_name',
+        'last_name' => [],
         'login' => ['default' => 'unknown'],
         'salary' => ['type' => 'atk4_money', CustomField::class, 'default' => 100],
-        ['tax', CustomField::class, 'type' => 'atk4_money', 'default' => 20],
+        'tax' => [CustomField::class, 'type' => 'atk4_money', 'default' => 20],
         'vat' => new CustomField(['type' => 'atk4_money', 'default' => 15]),
     ]);
 
