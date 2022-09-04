@@ -175,9 +175,6 @@ class Model implements \IteratorAggregate
      */
     private array $dirty = [];
 
-    /** @var array<string, mixed> */
-    private array $dirtyAfterReload = [];
-
     /**
      * Setting model as readOnly will protect you from accidentally
      * updating the model. This property is intended for UI and other code
@@ -355,7 +352,6 @@ class Model implements \IteratorAggregate
                 '_entityId',
                 'data',
                 'dirty',
-                'dirtyAfterReload',
 
                 'hooks',
                 '_hookIndexCounter',
@@ -1578,15 +1574,8 @@ class Model implements \IteratorAggregate
             }
 
             if ($this->idField && $this->reloadAfterSave) {
-                $d = $dirtyRef;
                 $dirtyRef = [];
                 $this->reload();
-                $this->dirtyAfterReload = $dirtyRef;
-                $dirtyRef = $d;
-            }
-
-            if ($this->isLoaded()) {
-                $dirtyRef = $this->dirtyAfterReload;
             }
 
             $this->hook(self::HOOK_AFTER_SAVE, [$isUpdate]);
