@@ -1532,15 +1532,11 @@ class Model implements \IteratorAggregate
                 }
 
                 $id = $this->getPersistence()->insert($this->getModel(), $data);
-
-                if (!$this->idField) {
-                    $this->hook(self::HOOK_AFTER_INSERT);
-
-                    $dirtyRef = [];
-                } else {
+                if ($this->idField) {
                     $this->setId($id);
-                    $this->hook(self::HOOK_AFTER_INSERT);
                 }
+
+                $this->hook(self::HOOK_AFTER_INSERT);
             } else {
                 $data = [];
                 $dirtyJoin = false;
@@ -1573,8 +1569,9 @@ class Model implements \IteratorAggregate
                 $this->hook(self::HOOK_AFTER_UPDATE, [&$data]);
             }
 
+            $dirtyRef = [];
+
             if ($this->idField && $this->reloadAfterSave) {
-                $dirtyRef = [];
                 $this->reload();
             }
 
