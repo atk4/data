@@ -258,7 +258,7 @@ abstract class Connection
         }
 
         $dbalConnection = DriverManager::getConnection(
-            $dsn,
+            $dsn, // @phpstan-ignore-line
             (static::class)::createDbalConfiguration(),
             (static::class)::createDbalEventManager()
         );
