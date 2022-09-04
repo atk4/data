@@ -175,9 +175,6 @@ class Model implements \IteratorAggregate
      */
     private array $dirty = [];
 
-    /** @var array<string, mixed> */
-    private array $dirtyAfterReload = [];
-
     /**
      * Setting model as readOnly will protect you from accidentally
      * updating the model. This property is intended for UI and other code
@@ -355,7 +352,6 @@ class Model implements \IteratorAggregate
                 '_entityId',
                 'data',
                 'dirty',
-                'dirtyAfterReload',
 
                 'hooks',
                 '_hookIndexCounter',
@@ -1536,15 +1532,11 @@ class Model implements \IteratorAggregate
                 }
 
                 $id = $this->getPersistence()->insert($this->getModel(), $data);
-
-                if (!$this->idField) {
-                    $this->hook(self::HOOK_AFTER_INSERT);
-
-                    $dirtyRef = [];
-                } else {
+                if ($this->idField) {
                     $this->setId($id);
-                    $this->hook(self::HOOK_AFTER_INSERT);
                 }
+
+                $this->hook(self::HOOK_AFTER_INSERT);
             } else {
                 $data = [];
                 $dirtyJoin = false;
@@ -1577,16 +1569,10 @@ class Model implements \IteratorAggregate
                 $this->hook(self::HOOK_AFTER_UPDATE, [&$data]);
             }
 
-            if ($this->idField && $this->reloadAfterSave) {
-                $d = $dirtyRef;
-                $dirtyRef = [];
-                $this->reload();
-                $this->dirtyAfterReload = $dirtyRef;
-                $dirtyRef = $d;
-            }
+            $dirtyRef = [];
 
-            if ($this->isLoaded()) {
-                $dirtyRef = $this->dirtyAfterReload;
+            if ($this->idField && $this->reloadAfterSave) {
+                $this->reload();
             }
 
             $this->hook(self::HOOK_AFTER_SAVE, [$isUpdate]);
