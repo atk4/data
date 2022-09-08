@@ -32,7 +32,7 @@ abstract class TestCase extends BaseTestCase
     {
         foreach (debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS | \DEBUG_BACKTRACE_PROVIDE_OBJECT) as $frame) {
             if (($frame['object'] ?? null) instanceof static) {
-                return $frame['object']; // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/7639
+                return $frame['object'];
             }
         }
 
