@@ -115,7 +115,7 @@ class TypecastingTest extends TestCase
         static::assertSame(8.20234376757474, $m->load(2)->get('float'));
         $m->load(2)->set('float', 8.202343767574732)->save();
         // pdo_sqlite in truncating float, see https://github.com/php/php-src/issues/8510
-        // fixed since PHP 8.1, but if converted in SQL to string explicitly, the result is still wrong
+        // fixed since PHP 8.1, but if converted in SQL to string explicitly, the result is still rounded to 15 significant digits
         if (!$this->getDatabasePlatform() instanceof SqlitePlatform || \PHP_VERSION_ID >= 80100) {
             static::assertSame(8.202343767574732, $m->load(2)->get('float'));
         }
@@ -286,8 +286,7 @@ class TypecastingTest extends TestCase
         $m->delete(1);
 
         unset($dbData['types'][0]);
-        $row['b2'] = '0'; // fix false == '0', see https://github.com/sebastianbergmann/phpunit/issues/4967, remove once fixed
-        $row['money'] = '8.2'; // here it will loose last zero and that's as expected
+        $row['money'] = '8.2'; // no trailing zero is expected
         $dbData['types'][2] = array_merge(['id' => '2'], $row);
 
         static::{'assertEquals'}($dbData, $this->getDb());
