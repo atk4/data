@@ -166,7 +166,7 @@ If your persistence does not support expressions (e.g. you are using Redis or
 MongoDB), you would need to define the field differently::
 
     $model->addField('gross');
-    $model->onHook(Model::HOOK_BEFORE_SAVE, function ($m) {
+    $model->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
         $m->set('gross', $m->get('net') + $m->get('vat'));
     });
 
@@ -183,7 +183,7 @@ you want it to work with NoSQL, then your solution might be::
     } else {
         // persistence does not support expressions
         $model->addField('gross');
-        $model->onHook(Model::HOOK_BEFORE_SAVE, function ($m) {
+        $model->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
             $m->set('gross', $m->get('net') + $m->get('vat'));
         });
     }
@@ -234,8 +234,8 @@ You can use :php:class:`Persistence\Static_` for that::
     $htmltable->invokeInit();
 
     $htmltable->setModel(new User(new Persistence\Static_([
-        ['name' => 'John', 'is_admin' => false, 'salary' => 34400.00],
-        ['name' => 'Peter', 'is_admin' => false, 'salary' => 42720.00],
+        ['name' => 'John', 'is_admin' => false, 'salary' => 34_400.0],
+        ['name' => 'Peter', 'is_admin' => false, 'salary' => 42_720.0],
     ])));
 
     echo $htmltable->render();
@@ -247,8 +247,8 @@ model class to display VAT breakdown table::
     $htmltable->invokeInit();
 
     $htmltable->setModel(new Model(new Persistence\Static_([
-        ['VAT_rate' => '12.0%', 'VAT' => '36.00', 'Net' => '300.00'],
-        ['VAT_rate' => '10.0%', 'VAT' => '52.00', 'Net' => '520.00'],
+        ['VAT_rate' => '12.0%', 'VAT' => 36.0, 'Net' => 300.0],
+        ['VAT_rate' => '10.0%', 'VAT' => 52.0, 'Net' => 520.0],
     ])));
 
     echo $htmltable->render();

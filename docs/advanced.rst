@@ -167,7 +167,7 @@ which I want to define like this::
 
         $this->getOwner()->addField('updated_dts', ['type' => 'datetime']);
 
-        $this->getOwner()->onHook(Model::HOOK_BEFORE_UPDATE, function ($m, $data) {
+        $this->getOwner()->onHook(Model::HOOK_BEFORE_UPDATE, function (Model $m, array $data) {
             if (isset($this->getApp()->user) && $this->getApp()->user->isLoaded()) {
                 $data['updated_by'] = $this->getApp()->user->getId();
             }
@@ -696,7 +696,7 @@ section. Add this into your Invoice Model::
 Next both payment and lines need to be added after invoice is actually created,
 so::
 
-    $this->onHookShort(Model::HOOK_AFTER_SAVE, function ($isUpdate) {
+    $this->onHookShort(Model::HOOK_AFTER_SAVE, function (bool $isUpdate) {
         if ($this->_isset('payment')) {
             $this->ref('Payment')->insert($this->get('payment'));
         }

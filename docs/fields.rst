@@ -154,7 +154,7 @@ You can't use NULL or any value that is considered empty/false by PHP.
 Some examples that are not allowed are:
 
  - empty string ''
- - 0 numerical value or 0.00
+ - 0 numerical value or 0.0
  - boolean false
 
 Example::

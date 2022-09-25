@@ -155,7 +155,7 @@ It's not only the 'type' property, but 'enum' can also imply restrictions::
 There are also non-trivial types in Agile Data::
 
     $m->addField('salary', ['type' => 'atk4_money']);
-    $m->set('salary', '20'); // converts to 20.00
+    $m->set('salary', 20); // converts to '20.00 EUR'
 
     $m->addField('date', ['type' => 'date']);
     $m->set('date', time()); // converts to DateTime class
@@ -164,7 +164,7 @@ Finally, you may create your own custom field types that follow a more
 complex logic::
 
     $m->add(new Field_Currency(), 'balance');
-    $m->set('balance', '12,200.00 EUR');
+    $m->set('balance', 12_200.0);
 
     // May transparently work with 2 columns: 'balance_amount' and
     // 'balance_currency_id' for example.
@@ -237,7 +237,7 @@ Multi-column fields
 Lets talk more about this currency field::
 
     $m->add(new Field_Currency(), 'balance');
-    $m->set('balance', '12,200.00 EUR');
+    $m->set('balance', 12_200.0);
 
 It may be designed to split up the value by using two fields in the database:
 `balance_amount` and `balance_currency_id`.
@@ -524,11 +524,11 @@ application::
             $m = $m->withPersistence($this->mdb)->save();
         }
 
-        $m->onHook(Model::HOOK_BEFORE_SAVE, function ($m) {
+        $m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
             $m->withPersistence($this->sql)->save();
         });
 
-        $m->onHook(Model::HOOK_BEFORE_DELETE, function ($m) {
+        $m->onHook(Model::HOOK_BEFORE_DELETE, function (Model $m) {
             $m->withPersistence($this->sql)->delete();
         });
 
@@ -568,11 +568,11 @@ records.
 The last two hooks are in order to replicate any changes into the SQL database
 also::
 
-    $m->onHook(Model::HOOK_BEFORE_SAVE, function ($m) {
+    $m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
         $m->withPersistence($this->sql)->save();
     });
 
-    $m->onHook(Model::HOOK_BEFORE_DELETE, function ($m) {
+    $m->onHook(Model::HOOK_BEFORE_DELETE, function (Model $m) {
         $m->withPersistence($this->sql)->delete();
     });
 
@@ -624,7 +624,7 @@ Archive Copies into different persistence
 If you wish that every time you save your model the copy is also stored inside
 some other database (for archive purposes) you can implement it like this::
 
-    $m->onHook(Model::HOOK_BEFORE_SAVE, function ($m) {
+    $m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
         $arc = $this->withPersistence($m->getApp()->archive_db);
 
         // add some audit fields

@@ -224,7 +224,7 @@ Code to declare fields::
 
 Code to access field values::
 
-    $order->set('amount', 1200.20);
+    $order->set('amount', 1200.2);
 
 Domain Model Relationship
 -------------------------
@@ -289,7 +289,7 @@ Each object is stored with some unique identifier, so you can load and store
 object if you know it's ID::
 
     $order = $order->load(20);
-    $order->set('amount', 1200.20);
+    $order->set('amount', 1200.2);
     $order->save();
 
 

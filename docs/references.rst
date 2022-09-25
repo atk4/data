@@ -433,7 +433,7 @@ User-defined Reference
 Sometimes you would want to have a different type of relation between models,
 so with `addReference` you can define whatever reference you want::
 
-    $m->addReference('Archive', ['model' => function ($m) {
+    $m->addReference('Archive', ['model' => function (Model $m) {
         return $m->newInstance(null, ['table' => $m->table . '_archive']);
     }]);
 

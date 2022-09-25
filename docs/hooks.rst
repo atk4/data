@@ -52,7 +52,7 @@ Example with beforeSave
 The next code snippet demonstrates a basic usage of a `beforeSave` hook.
 This one will update field values just before record is saved::
 
-    $m->onHook(Model::HOOK_BEFORE_SAVE, function ($m) {
+    $m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
         $m->set('name', strtoupper($m->get('name')));
         $m->set('surname', strtoupper($m->get('surname')));
     });
@@ -85,7 +85,7 @@ model will assume the operation was successful.
 
 You can also break beforeLoad hook which can be used to skip rows::
 
-    $model->onHook(Model::HOOK_AFTER_LOAD, function ($m) {
+    $model->onHook(Model::HOOK_AFTER_LOAD, function (Model $m) {
         if ($m->get('date') < $m->date_from) {
             $m->breakHook(false); // will not yield such data row
         }
@@ -136,7 +136,7 @@ of save.
 
 You may actually drop validation exception inside save, insert or update hooks::
 
-    $m->onHook(Model::HOOK_BEFORE_SAVE, function ($m) {
+    $m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
         if ($m->get('name') === 'Yagi') {
             throw new \Atk4\Data\ValidationException(['name' => "We don't serve like you"]);
         }
@@ -184,25 +184,6 @@ Hook execution sequence
 
 - afterSave (bool $isUpdate) [after insert or update, model is reloaded]
 
-How to verify Updates
----------------------
-
-The model is only being saved if any fields have been changed (dirty).
-Sometimes it's possible that the record in the database is no longer available
-and your update() may not actually update anything. This does not normally
-generate an error, however if you want to actually make sure that update() was
-effective, you can implement this through a hook::
-
-    $m->onHook(Persistence\Sql::HOOK_AFTER_UPDATE_QUERY, function ($m, $update, $c) {
-        if ($c === 0) {
-            throw (new \Atk4\Core\Exception('Update didn\'t affect any records'))
-                ->addMoreInfo('query', $update->getDebugQuery())
-                ->addMoreInfo('statement', $c)
-                ->addMoreInfo('model', $m);
-        }
-    });
-
-
 How to prevent actions
 ----------------------
 
@@ -210,7 +191,7 @@ In some cases you want to prevent default actions from executing.
 Suppose you want to check 'memcache' before actually loading the record from
 the database. Here is how you can implement this functionality::
 
-    $m->onHook(Model::HOOK_BEFORE_LOAD, function ($m, $id) {
+    $m->onHook(Model::HOOK_BEFORE_LOAD, function (Model $m, $id) {
         $data = $m->getApp()->cacheFetch($m->table, $id);
         if ($data) {
             $dataRef = &$m->getDataRef();
@@ -238,7 +219,7 @@ This can be used in various situations.
 
 Save information into auditLog about failure:
 
-    $m->onHook(Model::HOOK_ROLLBACK, function ($m) {
+    $m->onHook(Model::HOOK_ROLLBACK, function (Model $m) {
         $m->auditLog->registerFailure();
     });
 
@@ -246,7 +227,7 @@ Upgrade schema:
 
     use Atk4\Data\Persistence\Sql\Exception as SqlException;
 
-    $m->onHook(Model::HOOK_ROLLBACK, function ($m, $exception) {
+    $m->onHook(Model::HOOK_ROLLBACK, function (Model $m, \Throwable $exception) {
         if ($exception instanceof SqlException) {
             $m->schema->upgrade();
             $m->breakHook(false); // exception will not be thrown
