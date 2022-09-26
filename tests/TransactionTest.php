@@ -23,7 +23,7 @@ class TransactionTest extends TestCase
         $m->addField('name');
         $m = $m->load(2);
 
-        $m->onHook(Model::HOOK_AFTER_SAVE, static function ($m) {
+        $m->onHook(Model::HOOK_AFTER_SAVE, static function () {
             throw new \Exception('Awful thing happened');
         });
         $m->set('name', 'XXX');

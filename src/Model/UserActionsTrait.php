@@ -76,7 +76,7 @@ trait UserActionsTrait
     {
         $this->assertIsModel();
 
-        return array_filter($this->userActions, function ($action) use ($appliesTo) {
+        return array_filter($this->userActions, function (UserAction $action) use ($appliesTo) {
             return !$action->system && ($appliesTo === null || $action->appliesTo === $appliesTo);
         });
     }

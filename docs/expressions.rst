@@ -102,7 +102,7 @@ Expression Callback
 
 You can use a callback method when defining expression::
 
-    $m->addExpression('total_gross', ['expr' => function ($m, $q) {
+    $m->addExpression('total_gross', ['expr' => function (Model $m, Expression $q) {
         return '[total_net] + [total_vat]';
     }, 'type' => 'float']);
 

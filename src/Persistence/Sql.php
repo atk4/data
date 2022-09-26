@@ -511,7 +511,7 @@ class Sql extends Persistence
         $data = $model->action('select', [$fields])->getRows();
 
         if ($typecast) {
-            $data = array_map(function ($row) use ($model) {
+            $data = array_map(function (array $row) use ($model) {
                 return $this->typecastLoadRow($model, $row);
             }, $data);
         }

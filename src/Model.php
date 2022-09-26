@@ -907,7 +907,7 @@ class Model implements \IteratorAggregate
 
         $field = $this->titleField && $this->hasField($this->titleField) ? $this->titleField : $this->idField;
 
-        return array_map(function ($row) use ($field) {
+        return array_map(function (array $row) use ($field) {
             return $row[$field];
         }, $this->export([$field], $this->idField));
     }
@@ -1768,7 +1768,7 @@ class Model implements \IteratorAggregate
             }
 
             // you can return false in afterLoad hook to prevent to yield this data row, example:
-            // $model->onHook(self::HOOK_AFTER_LOAD, static function ($m) {
+            // $model->onHook(self::HOOK_AFTER_LOAD, static function (Model $m) {
             //     if ($m->get('date') < $m->date_from) {
             //         $m->breakHook(false);
             //     }

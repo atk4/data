@@ -253,7 +253,7 @@ class UserActionTest extends TestCase
         $action->confirmation = 'Are you sure?';
         static::assertSame('Are you sure?', $action->getConfirmation());
 
-        $action->confirmation = function ($action) {
+        $action->confirmation = function (Model\UserAction $action) {
             return 'Proceed with Test: ' . $action->getEntity()->getTitle();
         };
         static::assertSame('Proceed with Test: John', $action->getConfirmation());

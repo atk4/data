@@ -65,7 +65,7 @@ to normalize value::
     $m->addField('age', ['type' => 'integer']);
     $m->addField('name', ['type' => 'string']);
 
-    $m->set('age', '49.80');
+    $m->set('age', '49.8');
     $m->set('name', '       John');
 
     echo $m->get('age'); // 49 - normalization cast value to integer

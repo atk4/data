@@ -181,7 +181,7 @@ To invoke code from `init()` methods of ALL models (for example soft-delete logi
 you use Persistence's "afterAdd" hook. This will not affect ALL models but just models
 which are associated with said persistence::
 
-    $db->onHook(Persistence::HOOK_AFTER_ADD, function ($p, $m) use ($acl) {
+    $db->onHook(Persistence::HOOK_AFTER_ADD, function (Persistence $p, Model $m) use ($acl) {
         $fields = $m->getFields();
 
         $acl->disableRestrictedFields($fields);
@@ -266,7 +266,7 @@ You must make sure that expression is valid for current `$this->getPersistence()
     // new "total" field now contains complex logic, which is executed in SQL
 
     $product->addCondition('total', '<', 10);
-    // filter products that cost less than 10.00 (including discount)
+    // filter products that cost less than 10.0 (including discount)
 
 
 For the times when you are not working with SQL persistence, you can calculate field in PHP.

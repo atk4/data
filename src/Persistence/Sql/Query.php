@@ -668,8 +668,8 @@ abstract class Query extends Expression
             return '';
         }
 
-        $g = array_map(function ($a) {
-            return $this->consume($a, self::ESCAPE_IDENTIFIER_SOFT);
+        $g = array_map(function ($v) {
+            return $this->consume($v, self::ESCAPE_IDENTIFIER_SOFT);
         }, $this->args['group']);
 
         return ' group by ' . implode(', ', $g);

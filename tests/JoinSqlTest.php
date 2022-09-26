@@ -390,7 +390,7 @@ class JoinSqlTest extends TestCase
         $this->createMigrator()->createForeignKey($j);
         $j->addField('contact_phone');
 
-        $user->onHook(Model::HOOK_AFTER_SAVE, static function ($m) {
+        $user->onHook(Model::HOOK_AFTER_SAVE, static function (Model $m) {
             if ($m->get('contact_phone') !== '+123') {
                 $m->set('contact_phone', '+123');
                 $m->save();

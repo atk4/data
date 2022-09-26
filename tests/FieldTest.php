@@ -364,7 +364,7 @@ class FieldTest extends TestCase
         $dbData['item'][1]['surname'] = 'Stalker';
         static::assertSame($dbData, $this->getDb());
 
-        $m->onHook(Model::HOOK_BEFORE_SAVE, static function ($m) {
+        $m->onHook(Model::HOOK_BEFORE_SAVE, static function (Model $m) {
             if ($m->isDirty('name')) {
                 $m->set('surname', $m->get('name'));
                 $m->_unset('name');
@@ -560,13 +560,13 @@ class FieldTest extends TestCase
         static::assertSame("Two\nLines", $m->get('text'));
 
         // integer, money, float
-        $m->set('integer', '12,345.67676767'); // no digits after dot
+        $m->set('integer', '12,345.67676767');
         static::assertSame(12345, $m->get('integer'));
 
-        $m->set('money', '12,345.67676767'); // 4 digits after dot
+        $m->set('money', '12,345.67676767');
         static::assertSame(12345.6768, $m->get('money'));
 
-        $m->set('float', '12,345.67676767'); // don't round
+        $m->set('float', '12,345.67676767');
         static::assertSame(12345.67676767, $m->get('float'));
 
         // boolean

@@ -100,7 +100,7 @@ class TestCaseTest extends TestCase
                 ['name' => 'Steve', 'age' => '30'],
             ],
         ];
-        $dbDataWithId = array_map(function ($rows) {
+        $dbDataWithId = array_map(function (array $rows) {
             $rowsWithId = [];
             $id = 1;
             foreach ($rows as $row) {

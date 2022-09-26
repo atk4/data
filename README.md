@@ -333,7 +333,7 @@ $m->loadBy('name', 'Pear Company');
 $m->ref('Order')
     ->save(['ref' => 'TBL1', 'delivery' => new DateTime('+1 month')])
     ->ref('Lines')->import([
-        ['Table', 'category' => 'furniture', 'qty' => 2, 'price' => 10.50],
+        ['Table', 'category' => 'furniture', 'qty' => 2, 'price' => 10.5],
         ['Chair', 'category' => 'furniture', 'qty' => 10, 'price' => 3.25],
     ]);
 ```
