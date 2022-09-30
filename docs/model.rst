@@ -226,7 +226,7 @@ You may also specify your own Field implementation::
 
 Read more about :php:class:`Field`
 
-.. php:method:: addFields(array $fields, $defaults = [])
+.. php:method:: addFields(array $fields, $seed = [])
 
 Creates multiple field objects in one method call. See multiple syntax examples::
 
