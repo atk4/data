@@ -30,13 +30,7 @@ trait UserActionsTrait
         }
 
         $seed = Factory::mergeSeeds($seed, $this->_defaultSeedUserAction);
-
-        if (!isset($seed['caption'])) {
-            $seed['caption'] = $this->readableCaption($name);
-        }
-
         $action = UserAction::fromSeed($seed);
-
         $this->_addIntoCollection($name, $action, 'userActions');
 
         return $action;
