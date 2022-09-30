@@ -243,6 +243,6 @@ class UserAction
 
     public function getCaption(): string
     {
-        return $this->caption ?? ucwords(str_replace('_', ' ', $this->shortName));
+        return $this->caption ?? $this->getModel()->readableCaption($this->shortName);
     }
 }

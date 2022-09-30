@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Reference;
 
+use Atk4\Core\Factory;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
@@ -162,18 +163,19 @@ class HasMany extends Reference
      * Adds multiple fields.
      *
      * @param array<string, array<mixed>>|array<int, string> $fields
+     * @param array<mixed>                                   $defaults
      *
      * @return $this
      */
-    public function addFields(array $fields = [])
+    public function addFields(array $fields = [], array $defaults = [])
     {
-        foreach ($fields as $name => $seed) {
-            if (is_int($name)) {
-                $name = $seed;
-                $seed = [];
+        foreach ($fields as $k => $v) {
+            if (is_int($k)) {
+                $k = $v;
+                $v = [];
             }
 
-            $this->addField($name, $seed);
+            $this->addField($k, Factory::mergeSeeds($v, $defaults));
         }
 
         return $this;
