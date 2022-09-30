@@ -98,6 +98,16 @@ class UserActionTest extends TestCase
         static::assertFalse($client->hasUserAction('foo'));
     }
 
+    public function testCustomSeedClass(): void
+    {
+        $customClass = get_class(new class() extends Model\UserAction {});
+
+        $client = new UaClient($this->pers);
+        $client->addUserAction('foo', [$customClass]);
+
+        static::assertSame($customClass, get_class($client->getUserAction('foo')));
+    }
+
     public function testPreview(): void
     {
         $client = new UaClient($this->pers);

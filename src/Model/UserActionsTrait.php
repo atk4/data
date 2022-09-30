@@ -19,22 +19,23 @@ trait UserActionsTrait
      * Register new user action for this model. By default UI will allow users to trigger actions
      * from UI.
      *
-     * @param array<string, mixed>|\Closure $defaults
+     * @param array<mixed>|\Closure $seed
      */
-    public function addUserAction(string $name, $defaults = []): UserAction
+    public function addUserAction(string $name, $seed = []): UserAction
     {
         $this->assertIsModel();
 
-        if ($defaults instanceof \Closure) {
-            $defaults = ['callback' => $defaults];
+        if ($seed instanceof \Closure) {
+            $seed = ['callback' => $seed];
         }
 
-        if (!isset($defaults['caption'])) {
-            $defaults['caption'] = $this->readableCaption($name);
+        $seed = Factory::mergeSeeds($seed, $this->_defaultSeedUserAction);
+
+        if (!isset($seed['caption'])) {
+            $seed['caption'] = $this->readableCaption($name);
         }
 
-        /** @var UserAction $action */
-        $action = Factory::factory($this->_defaultSeedUserAction, $defaults);
+        $action = UserAction::fromSeed($seed);
 
         $this->_addIntoCollection($name, $action, 'userActions');
 
