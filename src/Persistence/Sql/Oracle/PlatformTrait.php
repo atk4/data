@@ -71,7 +71,7 @@ trait PlatformTrait
         $pkSeq = \Closure::bind(fn () => $this->normalizeIdentifier($aiSequenceName), $this, OraclePlatform::class)()->getName();
         $sqls[count($sqls) - 1] = $conn->expr(
             // else branch should be maybe (because of concurrency) put into after update trigger
-            str_replace('[pk_seq]', '\'' . str_replace('\'', '\'\'', $pkSeq) . '\'', <<<'EOT'
+            str_replace('[pk_seq]', '\'' . str_replace('\'', '\'\'', $pkSeq) . '\'', <<<'EOF'
                 CREATE TRIGGER {{trigger}}
                     BEFORE INSERT OR UPDATE
                     ON {{table}}
@@ -89,7 +89,7 @@ trait PlatformTrait
                         END LOOP;
                     END IF;
                 END;
-                EOT),
+                EOF),
             [
                 'trigger' => \Closure::bind(fn () => $this->normalizeIdentifier($aiTriggerName), $this, OraclePlatform::class)()->getName(),
                 'table' => $tableIdentifier->getName(),

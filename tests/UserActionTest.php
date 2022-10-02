@@ -9,7 +9,7 @@ use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Schema\TestCase;
 
-trait UaReminder
+trait UaReminderTrait
 {
     public function sendReminder(): string
     {
@@ -26,7 +26,7 @@ trait UaReminder
 
 class UaClient extends Model
 {
-    use UaReminder;
+    use UaReminderTrait;
 
     public $caption = 'UaClient';
 

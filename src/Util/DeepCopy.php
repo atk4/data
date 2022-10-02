@@ -22,7 +22,6 @@ class DeepCopy
 {
     use DebugTrait;
 
-    /** @const string */
     public const HOOK_AFTER_COPY = self::class . '@afterCopy';
 
     /** Model from which we want to copy records */

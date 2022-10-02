@@ -56,46 +56,32 @@ class Model implements \IteratorAggregate
     use Model\UserActionsTrait;
     use ReadableCaptionTrait;
 
-    /** @const string */
     public const HOOK_BEFORE_LOAD = self::class . '@beforeLoad';
-    /** @const string */
     public const HOOK_AFTER_LOAD = self::class . '@afterLoad';
-    /** @const string */
     public const HOOK_BEFORE_UNLOAD = self::class . '@beforeUnload';
-    /** @const string */
     public const HOOK_AFTER_UNLOAD = self::class . '@afterUnload';
 
-    /** @const string */
     public const HOOK_BEFORE_INSERT = self::class . '@beforeInsert';
-    /** @const string */
     public const HOOK_AFTER_INSERT = self::class . '@afterInsert';
-    /** @const string */
     public const HOOK_BEFORE_UPDATE = self::class . '@beforeUpdate';
-    /** @const string */
     public const HOOK_AFTER_UPDATE = self::class . '@afterUpdate';
-    /** @const string */
     public const HOOK_BEFORE_DELETE = self::class . '@beforeDelete';
-    /** @const string */
     public const HOOK_AFTER_DELETE = self::class . '@afterDelete';
 
-    /** @const string */
     public const HOOK_BEFORE_SAVE = self::class . '@beforeSave';
-    /** @const string */
     public const HOOK_AFTER_SAVE = self::class . '@afterSave';
 
-    /** @const string Executed when execution of self::atomic() failed. */
+    /** Executed when execution of self::atomic() failed. */
     public const HOOK_ROLLBACK = self::class . '@rollback';
 
-    /** @const string Executed for every field set using self::set() method. */
+    /** Executed for every field set using self::set() method. */
     public const HOOK_NORMALIZE = self::class . '@normalize';
-    /** @const string Executed when self::validate() method is called. */
+    /** Executed when self::validate() method is called. */
     public const HOOK_VALIDATE = self::class . '@validate';
-    /** @const string Executed when self::setOnlyFields() method is called. */
+    /** Executed when self::setOnlyFields() method is called. */
     public const HOOK_ONLY_FIELDS = self::class . '@onlyFields';
 
-    /** @const string */
     protected const ID_LOAD_ONE = self::class . '@idLoadOne-h7axmDNBB3qVXjVv';
-    /** @const string */
     protected const ID_LOAD_ANY = self::class . '@idLoadAny-h7axmDNBB3qVXjVv';
 
     // {{{ Properties of the class

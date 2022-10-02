@@ -39,7 +39,6 @@ use Atk4\Data\Persistence\Sql\Query;
  */
 class AggregateModel extends Model
 {
-    /** @const string */
     public const HOOK_INIT_AGGREGATE_SELECT_QUERY = self::class . '@initAggregateSelectQuery';
 
     /** @var array<int, string|Expression> */
