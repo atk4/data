@@ -32,7 +32,7 @@ class EmailField extends Field
 
         $email = trim($value);
         if ($this->allowName) {
-            $email = preg_replace('/^[^<]*<([^>]*)>/', '\1', $email);
+            $email = preg_replace('~^[^<]*<([^>]*)>~', '\1', $email);
         }
 
         if (!str_contains($email, '@')) {

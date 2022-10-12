@@ -188,9 +188,9 @@ class Action
 
                 break;
             case 'LIKE':
-                $pattern = str_ireplace('%', '(.*?)', preg_quote($v2));
+                $pattern = str_ireplace('%', '(.*?)', preg_quote($v2, '~'));
 
-                $result = (bool) preg_match('/^' . $pattern . '$/', (string) $v1);
+                $result = (bool) preg_match('~^' . $pattern . '$~', (string) $v1);
 
                 break;
             case 'NOT LIKE':
