@@ -1672,7 +1672,7 @@ class Model implements \IteratorAggregate
 
         // no key field - then just do export
         if ($keyField === null) {
-            /* TODO this optimization should be removed in favor of one Persistence::export call and php calcualted fields should be exported as well */
+            // TODO this optimization should be removed in favor of one Persistence::export call and php calcualted fields should be exported as well
             return $this->getPersistence()->export($this, $fields, $typecast);
         }
 
