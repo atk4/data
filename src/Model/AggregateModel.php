@@ -21,8 +21,7 @@ use Atk4\Data\Persistence\Sql\Query;
  *     'salary' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
  * ];
  *
- * your resulting model will have 3 fields:
- *  first, last, salary
+ * your resulting model will have 3 fields: first, last, salary
  *
  * but when querying it will use the original model to calculate the query, then add grouping and aggregates.
  *
@@ -39,7 +38,6 @@ use Atk4\Data\Persistence\Sql\Query;
  */
 class AggregateModel extends Model
 {
-    /** @const string */
     public const HOOK_INIT_AGGREGATE_SELECT_QUERY = self::class . '@initAggregateSelectQuery';
 
     /** @var array<int, string|Expression> */

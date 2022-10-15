@@ -22,12 +22,9 @@ abstract class Persistence
     use HookTrait;
     use NameTrait;
 
-    /** @const string */
     public const HOOK_AFTER_ADD = self::class . '@afterAdd';
 
-    /** @const string */
     public const ID_LOAD_ONE = self::class . '@idLoadOne-qZ5TJwMVJ4LzVhuN';
-    /** @const string */
     public const ID_LOAD_ANY = self::class . '@idLoadAny-qZ5TJwMVJ4LzVhuN';
 
     /** @internal prevent recursion */

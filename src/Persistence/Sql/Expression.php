@@ -22,13 +22,13 @@ abstract class Expression implements Expressionable, \ArrayAccess
 {
     use DiContainerTrait;
 
-    /** @const string "[]" in template, escape as parameter */
+    /** "[]" in template, escape as parameter */
     protected const ESCAPE_PARAM = 'param';
-    /** @const string "{}" in template, escape as identifier */
+    /** "{}" in template, escape as identifier */
     protected const ESCAPE_IDENTIFIER = 'identifier';
-    /** @const string "{{}}" in template, escape as identifier, but keep input with special characters like "." or "(" unescaped */
+    /** "{{}}" in template, escape as identifier, but keep input with special characters like "." or "(" unescaped */
     protected const ESCAPE_IDENTIFIER_SOFT = 'identifier-soft';
-    /** @const string keep input as is */
+    /** Keep input as is */
     protected const ESCAPE_NONE = 'none';
 
     protected ?string $template = null;

@@ -41,52 +41,49 @@ class TestCaseTest extends TestCase
             return;
         }
 
-        $this->assertSameSql(
-            <<<'EOF'
+        $this->assertSameSql(<<<'EOF'
 
-                "START TRANSACTION";
-
-
-                insert into `t` (`name`, `int`, `float`, `null`)
-                values
-                  ('Ewa', 1, '1.0', NULL);
+            "START TRANSACTION";
 
 
-                select
-                  `id`,
-                  `name`,
-                  `int`,
-                  `float`,
-                  `null`
-                from
-                  `t`
-                where
-                  `int` > -1
-                  and `id` = 1
-                limit
-                  0,
-                  2;
+            insert into `t` (`name`, `int`, `float`, `null`)
+            values
+              ('Ewa', 1, '1.0', NULL);
 
 
-                "COMMIT";
+            select
+              `id`,
+              `name`,
+              `int`,
+              `float`,
+              `null`
+            from
+              `t`
+            where
+              `int` > -1
+              and `id` = 1
+            limit
+              0,
+              2;
 
 
-                select
-                  `id`,
-                  `name`,
-                  `int`,
-                  `float`,
-                  `null`
-                from
-                  `t`
-                where
-                  `int` > -1
-                limit
-                  0,
-                  1;
-                EOF . "\n\n",
-            $output
-        );
+            "COMMIT";
+
+
+            select
+              `id`,
+              `name`,
+              `int`,
+              `float`,
+              `null`
+            from
+              `t`
+            where
+              `int` > -1
+            limit
+              0,
+              1;
+            EOF . "\n\n", $output);
     }
 
     public function testGetSetDropDb(): void

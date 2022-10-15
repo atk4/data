@@ -26,19 +26,12 @@ class Sql extends Persistence
 {
     use Sql\BinaryTypeCompatibilityTypecastTrait;
 
-    /** @const string */
     public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelectQuery';
-    /** @const string */
     public const HOOK_BEFORE_INSERT_QUERY = self::class . '@beforeInsertQuery';
-    /** @const string */
     public const HOOK_AFTER_INSERT_QUERY = self::class . '@afterInsertQuery';
-    /** @const string */
     public const HOOK_BEFORE_UPDATE_QUERY = self::class . '@beforeUpdateQuery';
-    /** @const string */
     public const HOOK_AFTER_UPDATE_QUERY = self::class . '@afterUpdateQuery';
-    /** @const string */
     public const HOOK_BEFORE_DELETE_QUERY = self::class . '@beforeDeleteQuery';
-    /** @const string */
     public const HOOK_AFTER_DELETE_QUERY = self::class . '@afterDeleteQuery';
 
     /** @var Connection */
@@ -95,14 +88,6 @@ class Sql extends Persistence
         parent::disconnect();
 
         $this->_connection = null; // @phpstan-ignore-line
-    }
-
-    /**
-     * Returns Query instance.
-     */
-    public function dsql(): Query
-    {
-        return $this->getConnection()->dsql();
     }
 
     /**
@@ -194,6 +179,14 @@ class Sql extends Persistence
     public function exprNow(int $precision = null): Expression
     {
         return $this->getConnection()->dsql()->exprNow($precision);
+    }
+
+    /**
+     * Creates new Query object.
+     */
+    public function dsql(): Query
+    {
+        return $this->getConnection()->dsql();
     }
 
     /**
