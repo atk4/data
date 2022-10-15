@@ -281,7 +281,7 @@ abstract class Connection
     }
 
     /**
-     * Returns new Expression with connection already set.
+     * Create new Expression with connection already set.
      *
      * @param string|array<string, mixed> $template
      * @param array<mixed>                $arguments
@@ -296,7 +296,7 @@ abstract class Connection
     }
 
     /**
-     * Returns new Query with connection already set.
+     * Create new Query with connection already set.
      *
      * @param string|array<string, mixed> $defaults
      */

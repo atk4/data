@@ -91,14 +91,6 @@ class Sql extends Persistence
     }
 
     /**
-     * Returns Query instance.
-     */
-    public function dsql(): Query
-    {
-        return $this->getConnection()->dsql();
-    }
-
-    /**
      * Atomic executes operations within one begin/end transaction, so if
      * the code inside callback will fail, then all of the transaction
      * will be also rolled back.
@@ -187,6 +179,14 @@ class Sql extends Persistence
     public function exprNow(int $precision = null): Expression
     {
         return $this->getConnection()->dsql()->exprNow($precision);
+    }
+
+    /**
+     * Creates new Query object.
+     */
+    public function dsql(): Query
+    {
+        return $this->getConnection()->dsql();
     }
 
     /**
