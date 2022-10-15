@@ -11,9 +11,9 @@ use Atk4\Data\ValidationException;
  * Stores valid email as per configuration.
  *
  * Usage:
- *  $user->addField('email', [EmailField::class]);
- *  $user->addField('email_mx_check', [EmailField::class, 'dnsCheck' => true]);
- *  $user->addField('email_with_name', [EmailField::class, 'allowName' => true]);
+ * $user->addField('email', [EmailField::class]);
+ * $user->addField('email_mx_check', [EmailField::class, 'dnsCheck' => true]);
+ * $user->addField('email_with_name', [EmailField::class, 'allowName' => true]);
  */
 class EmailField extends Field
 {

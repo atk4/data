@@ -152,7 +152,7 @@ abstract class Connection
      * Adds connection class to the registry for resolving in Connection::resolve method.
      *
      * Can be used as:
-     *   Connection::registerConnection(MySQL\Connection::class, 'pdo_mysql')
+     * Connection::registerConnection(MySQL\Connection::class, 'pdo_mysql')
      *
      * @param class-string<self> $connectionClass
      */
