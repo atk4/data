@@ -21,6 +21,7 @@ use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Query as DbalQuery;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
+use Doctrine\DBAL\Schema\OracleSchemaManager;
 use Doctrine\DBAL\Schema\SqliteSchemaManager;
 
 class DbalDriverMiddleware extends AbstractDriverMiddleware
@@ -66,6 +67,10 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
         if ($platform instanceof SqlitePlatform) {
             return new class($connection, $platform) extends SqliteSchemaManager { // @phpstan-ignore-line
                 use Sqlite\SchemaManagerTrait;
+            };
+        } elseif ($platform instanceof OraclePlatform) {
+            return new class($connection, $platform) extends OracleSchemaManager { // @phpstan-ignore-line
+                use Oracle\SchemaManagerTrait;
             };
         }
 
