@@ -607,14 +607,8 @@ abstract class Expression implements Expressionable, \ArrayAccess
                         ->addMoreInfo('type', gettype($val));
                 }
 
-                if (is_string($val) && $platform instanceof OraclePlatform && strlen($val) > 2000) {
-                    $valRef = $val;
-                    $bind = $statement->bindParam($key, $valRef, ParameterType::STRING, strlen($val));
-                    unset($valRef);
-                } else {
-                    $bind = $statement->bindValue($key, $val, $type);
-                }
-                if ($bind === false) {
+                $bindResult = $statement->bindValue($key, $val, $type);
+                if (!$bindResult) {
                     throw (new Exception('Unable to bind parameter'))
                         ->addMoreInfo('param', $key)
                         ->addMoreInfo('value', $val)
