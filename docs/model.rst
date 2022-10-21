@@ -284,7 +284,7 @@ calculated by your callback method right after individual record is loaded by th
     }, 'type' => 'float']);
 
 .. important:: always use argument `$m` instead of `$this` inside your callbacks. If model is to be
-   `clone`d, the code relying on `$this` would reference original model, but the code using
+   cloned, the code relying on `$this` would reference original model, but the code using
    `$m` will properly address the model which triggered the callback.
 
 This can also be useful for calculating relative times::

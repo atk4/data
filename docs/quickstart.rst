@@ -147,7 +147,7 @@ following categories:
 Persistence
 ^^^^^^^^^^^
 
-When you create instance of a model (`new Model`) you need to specify
+When you create instance of a model (`new Model()`) you need to specify
 :php:class:`Persistence` as a parameter. If you don't you can still use
 the model, but it won't be able to :php:meth:`Model::load()` or
 :php:meth:`Model::save()` data.
