@@ -228,31 +228,31 @@ class Migrator
      */
     public function field(string $fieldName, array $options = []): self
     {
-        if (($options['type'] ?? null) === null) {
-            $options['type'] = 'string';
-        } elseif ($options['type'] === 'time' && $this->getDatabasePlatform() instanceof OraclePlatform) {
-            $options['type'] = 'string';
+        $type = $options['type'] ?? 'string';
+        unset($options['type']);
+        if ($type === 'time' && $this->getDatabasePlatform() instanceof OraclePlatform) {
+            $type = 'string';
         }
 
         $refType = $options['ref_type'] ?? self::REF_TYPE_NONE;
         unset($options['ref_type']);
 
-        $column = $this->table->addColumn($this->getDatabasePlatform()->quoteSingleIdentifier($fieldName), $options['type']);
+        $column = $this->table->addColumn($this->getDatabasePlatform()->quoteSingleIdentifier($fieldName), $type);
 
         if (($options['nullable'] ?? true) && $refType !== self::REF_TYPE_PRIMARY) {
             $column->setNotnull(false);
         }
 
-        if ($column->getType()->getName() === 'integer' && $refType !== self::REF_TYPE_NONE) {
+        if ($type === 'integer' && $refType !== self::REF_TYPE_NONE) {
             $column->setUnsigned(true);
         }
 
         // TODO remove, hack for createForeignKey so ID columns are unsigned
-        if ($column->getType()->getName() === 'integer' && str_ends_with($fieldName, '_id')) {
+        if ($type === 'integer' && str_ends_with($fieldName, '_id')) {
             $column->setUnsigned(true);
         }
 
-        if (in_array($column->getType()->getName(), ['string', 'text'], true)) {
+        if (in_array($type, ['string', 'text'], true)) {
             if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
                 $column->setPlatformOption('collation', 'NOCASE');
             }

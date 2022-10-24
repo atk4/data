@@ -629,7 +629,7 @@ class Sql extends Persistence
     {
         $value = parent::typecastSaveField($field, $value);
 
-        if ($value !== null && $this->binaryTypeIsEncodeNeeded($field->getTypeObject())) {
+        if ($value !== null && $this->binaryTypeIsEncodeNeeded($field->getType())) {
             $value = $this->binaryTypeValueEncode($value);
         }
 
@@ -640,7 +640,7 @@ class Sql extends Persistence
     {
         $value = parent::typecastLoadField($field, $value);
 
-        if ($value !== null && $this->binaryTypeIsDecodeNeeded($field->getTypeObject(), $value)) {
+        if ($value !== null && $this->binaryTypeIsDecodeNeeded($field->getType(), $value)) {
             $value = $this->binaryTypeValueDecode($value);
         }
 
