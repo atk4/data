@@ -409,7 +409,7 @@ abstract class Persistence
 
         // native DBAL DT types have no microseconds support
         if (in_array($field->type, ['datetime', 'date', 'time'], true)
-            && str_starts_with(get_class(Type::getType($field->getType())), 'Doctrine\DBAL\Types\\')) {
+            && str_starts_with(get_class(Type::getType($field->type)), 'Doctrine\DBAL\Types\\')) {
             if ($value === '') {
                 return null;
             } elseif (!$value instanceof \DateTimeInterface) {
@@ -427,7 +427,7 @@ abstract class Persistence
             return $value;
         }
 
-        $res = Type::getType($field->getType())->convertToDatabaseValue($value, $this->getDatabasePlatform());
+        $res = Type::getType($field->type)->convertToDatabaseValue($value, $this->getDatabasePlatform());
         if (is_resource($res) && get_resource_type($res) === 'stream') {
             $res = stream_get_contents($res);
         }
@@ -452,7 +452,7 @@ abstract class Persistence
 
         // native DBAL DT types have no microseconds support
         if (in_array($field->type, ['datetime', 'date', 'time'], true)
-            && str_starts_with(get_class(Type::getType($field->getType())), 'Doctrine\DBAL\Types\\')) {
+            && str_starts_with(get_class(Type::getType($field->type)), 'Doctrine\DBAL\Types\\')) {
             $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'][$field->type];
             if (str_contains($value, '.')) { // time possibly with microseconds, otherwise invalid format
                 $format = preg_replace('~(?<=H:i:s)(?![. ]*u)~', '.u', $format);
@@ -474,7 +474,7 @@ abstract class Persistence
             return $value;
         }
 
-        $res = Type::getType($field->getType())->convertToPHPValue($value, $this->getDatabasePlatform());
+        $res = Type::getType($field->type)->convertToPHPValue($value, $this->getDatabasePlatform());
         if (is_resource($res) && get_resource_type($res) === 'stream') {
             $res = stream_get_contents($res);
         }

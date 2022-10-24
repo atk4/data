@@ -48,8 +48,8 @@ class Query extends BaseQuery
         }
 
         if (count($row) >= 2 && $field instanceof Field
-            && in_array($field->getType(), ['text', 'blob'], true)) {
-            if ($field->getType() === 'text') {
+            && in_array($field->type, ['text', 'blob'], true)) {
+            if ($field->type === 'text') {
                 $field = $this->expr('LOWER([])', [$field]);
                 $value = $this->expr('LOWER([])', [$value]);
             }

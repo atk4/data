@@ -60,22 +60,16 @@ class Field implements Expressionable
     {
         $this->_setDefaults($properties, $passively);
 
-        $this->getType(); // assert type exists
+        // assert type exists
+        if (isset($properties['type'])) {
+            if ($this->type === 'array') { // remove in v4.1
+                throw new Exception('Atk4 "array" type is no longer supported, originally, it serialized value to JSON, to keep this behaviour, use "json" type');
+            }
 
-        return $this;
-    }
-
-    public function getType(): string
-    {
-        $res = $this->type ?? 'string';
-
-        if ($res === 'array') { // remove in v4.1
-            throw new Exception('Atk4 "array" type is no longer supported, originally, it serialized value to JSON, to keep this behaviour, use "json" type');
+            Type::getType($this->type);
         }
 
-        Type::getType($res); // assert type exists
-
-        return $res;
+        return $this;
     }
 
     /**
@@ -141,8 +135,6 @@ class Field implements Expressionable
      */
     public function normalize($value)
     {
-        $this->getType(); // assert type exists
-
         try {
             if ($this->issetOwner() && $this->getOwner()->hook(Model::HOOK_NORMALIZE, [$this, $value]) === false) {
                 return $value;
