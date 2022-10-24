@@ -30,22 +30,6 @@ trait SchemaManagerTrait
         }
     }
 
-    protected function _getPortableTableForeignKeysList($tableForeignKeys): array
-    {
-        $foreignKeys = parent::_getPortableTableForeignKeysList($tableForeignKeys);
-
-        // fix https://github.com/doctrine/dbal/pull/5486/files#r920239919
-        foreach ($foreignKeys as $foreignKey) {
-            \Closure::bind(function () use ($foreignKey) {
-                if (ctype_digit($foreignKey->_name)) {
-                    $foreignKey->_name = '';
-                }
-            }, null, Identifier::class)();
-        }
-
-        return $foreignKeys;
-    }
-
     // fix quoted table name support for private SqliteSchemaManager::getCreateTableSQL() method
     // https://github.com/doctrine/dbal/blob/3.3.7/src/Schema/SqliteSchemaManager.php#L539
     // TODO submit a PR with fixed SqliteSchemaManager to DBAL
