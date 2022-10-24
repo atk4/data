@@ -48,7 +48,7 @@ trait PlatformTrait
         if (str_contains($tableName, '.')) {
             [$schemaName, $tableName] = explode('.', $tableName, 2);
         } else {
-            $schemaName = $this->getDefaultSchemaName();
+            $schemaName = 'dbo';
         }
 
         return $this->getAddExtendedPropertySQL(
@@ -68,7 +68,7 @@ trait PlatformTrait
         if (str_contains($tableName, '.')) {
             [$schemaName, $tableName] = explode('.', $tableName, 2);
         } else {
-            $schemaName = $this->getDefaultSchemaName();
+            $schemaName = 'dbo';
         }
 
         return $this->getUpdateExtendedPropertySQL(
@@ -88,7 +88,7 @@ trait PlatformTrait
         if (str_contains($tableName, '.')) {
             [$schemaName, $tableName] = explode('.', $tableName, 2);
         } else {
-            $schemaName = $this->getDefaultSchemaName();
+            $schemaName = 'dbo';
         }
 
         return $this->getDropExtendedPropertySQL(
@@ -183,7 +183,7 @@ trait PlatformTrait
         if (str_contains($tableName, '.')) {
             [$schemaName, $tableName] = explode('.', $tableName, 2);
         } else {
-            $schemaName = $this->getDefaultSchemaName();
+            $schemaName = 'dbo';
         }
 
         return $this->getAddExtendedPropertySQL(
