@@ -35,6 +35,10 @@ class Field implements Expressionable
     public function __construct(array $defaults = [])
     {
         $this->setDefaults($defaults);
+
+        if (!(new \ReflectionProperty($this, 'type'))->isInitialized($this)) {
+            $this->type = 'string';
+        }
     }
 
     /**

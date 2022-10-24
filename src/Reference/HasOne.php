@@ -25,7 +25,8 @@ class HasOne extends Reference
             $this->ourField = $this->link;
         }
 
-        if ($this->type === null) { // different default value than in Model\FieldPropertiesTrait
+        // for references use "integer" as a default type
+        if (!(new \ReflectionProperty($this, 'type'))->isInitialized($this)) {
             $this->type = 'integer';
         }
 
@@ -40,7 +41,7 @@ class HasOne extends Reference
             foreach ($fieldPropsRefl as $fieldPropRefl) {
                 $v = $this->{$fieldPropRefl->getName()};
                 $vDefault = \PHP_MAJOR_VERSION < 8
-                    ? $fieldPropRefl->getDeclaringClass()->getDefaultProperties()[$fieldPropRefl->getName()]
+                    ? ($fieldPropRefl->getDeclaringClass()->getDefaultProperties()[$fieldPropRefl->getName()] ?? null)
                     : (null ?? $fieldPropRefl->getDefaultValue()); // @phpstan-ignore-line for PHP 7.x
                 if ($v !== $vDefault) {
                     $fieldSeed[$fieldPropRefl->getName()] = $v;

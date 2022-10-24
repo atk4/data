@@ -319,7 +319,7 @@ class ReferenceSqlTest extends TestCase
         static::assertSame('atk4_money', $i->getField('total_vat')->type);
 
         // type was not set and is not inherited
-        static::assertNull($i->getField('total_net')->type);
+        static::assertSame('string', $i->getField('total_net')->type);
 
         static::assertSame(40.0, (float) $i->get('total_net'));
         static::assertSame(9.2, $i->get('total_vat'));

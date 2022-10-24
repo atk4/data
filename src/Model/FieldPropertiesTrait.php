@@ -14,7 +14,7 @@ trait FieldPropertiesTrait
     public bool $neverSave = false;
 
     /** DBAL type registered in \Doctrine\DBAL\Types\Type. */
-    public ?string $type = null;
+    public string $type;
     /** Nullable field can be null, otherwise the value must be set, even if it is an empty value. */
     public bool $nullable = true;
     /** Required field must have non-empty value. A null value is considered empty too. */
