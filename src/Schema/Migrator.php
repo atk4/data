@@ -303,7 +303,7 @@ class Migrator
             }
 
             $options = [
-                'type' => $refype !== self::REF_TYPE_NONE && $persistField->type === null ? 'integer' : $persistField->type,
+                'type' => $persistField->type,
                 'ref_type' => $refype,
                 'nullable' => ($field->nullable && !$field->required) || ($persistField->nullable && !$persistField->required),
             ];

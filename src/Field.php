@@ -142,7 +142,6 @@ class Field implements Expressionable
 
             if (is_string($value)) {
                 switch ($this->type) {
-                    case null:
                     case 'string':
                         $value = trim(preg_replace('~\r?\n|\r|\s~', ' ', $value)); // remove all line-ends and trim
 
@@ -178,18 +177,13 @@ class Field implements Expressionable
                 }
             } elseif ($value !== null) {
                 switch ($this->type) {
-                    case null:
                     case 'string':
                     case 'text':
                     case 'integer':
                     case 'float':
                     case 'atk4_money':
                         if (is_bool($value)) {
-                            if ($this->type === 'boolean') {
-                                $value = $value ? '1' : '0';
-                            } else {
-                                throw new Exception('Must not be boolean type');
-                            }
+                            throw new Exception('Must not be boolean type');
                         } elseif (is_int($value)) {
                             $value = (string) $value;
                         } elseif (is_float($value)) {
@@ -217,7 +211,6 @@ class Field implements Expressionable
             }
 
             switch ($this->type) {
-                case null:
                 case 'string':
                 case 'text':
                     if ($this->required && !$value) {
