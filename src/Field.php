@@ -35,6 +35,10 @@ class Field implements Expressionable
     public function __construct(array $defaults = [])
     {
         $this->setDefaults($defaults);
+
+        if (!(new \ReflectionProperty($this, 'type'))->isInitialized($this)) {
+            $this->type = 'string';
+        }
     }
 
     /**
@@ -56,18 +60,16 @@ class Field implements Expressionable
     {
         $this->_setDefaults($properties, $passively);
 
-        $this->getTypeObject(); // assert type exists
+        // assert type exists
+        if (isset($properties['type'])) {
+            if ($this->type === 'array') { // remove in v4.1
+                throw new Exception('Atk4 "array" type is no longer supported, originally, it serialized value to JSON, to keep this behaviour, use "json" type');
+            }
 
-        return $this;
-    }
-
-    public function getTypeObject(): Type
-    {
-        if ($this->type === 'array') { // remove in 2022-mar
-            throw new Exception('Atk4 "array" type is no longer supported, originally, it serialized value to JSON, to keep this behaviour, use "json" type');
+            Type::getType($this->type);
         }
 
-        return Type::getType($this->type ?? 'string');
+        return $this;
     }
 
     /**
@@ -133,8 +135,6 @@ class Field implements Expressionable
      */
     public function normalize($value)
     {
-        $this->getTypeObject(); // assert type exists
-
         try {
             if ($this->issetOwner() && $this->getOwner()->hook(Model::HOOK_NORMALIZE, [$this, $value]) === false) {
                 return $value;
@@ -142,7 +142,6 @@ class Field implements Expressionable
 
             if (is_string($value)) {
                 switch ($this->type) {
-                    case null:
                     case 'string':
                         $value = trim(preg_replace('~\r?\n|\r|\s~', ' ', $value)); // remove all line-ends and trim
 
@@ -178,18 +177,13 @@ class Field implements Expressionable
                 }
             } elseif ($value !== null) {
                 switch ($this->type) {
-                    case null:
                     case 'string':
                     case 'text':
                     case 'integer':
                     case 'float':
                     case 'atk4_money':
                         if (is_bool($value)) {
-                            if ($this->type === 'boolean') {
-                                $value = $value ? '1' : '0';
-                            } else {
-                                throw new Exception('Must not be boolean type');
-                            }
+                            throw new Exception('Must not be boolean type');
                         } elseif (is_int($value)) {
                             $value = (string) $value;
                         } elseif (is_float($value)) {
@@ -217,7 +211,6 @@ class Field implements Expressionable
             }
 
             switch ($this->type) {
-                case null:
                 case 'string':
                 case 'text':
                     if ($this->required && !$value) {

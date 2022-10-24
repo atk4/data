@@ -181,13 +181,6 @@ class Array_ extends Persistence
             $model->table = 'data';
         }
 
-        if ($model->idField) {
-            $f = $model->getField($model->idField);
-            if ($f->type === null) {
-                $f->type = 'integer';
-            }
-        }
-
         if (!is_object($model->table)) {
             $this->seedData($model);
         }
