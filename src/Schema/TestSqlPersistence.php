@@ -31,9 +31,10 @@ final class TestSqlPersistence extends Persistence\Sql
                     )->executeStatement();
                 }
 
+                // @phpstan-ignore-next-line SQLLogger is deprecated
                 $this->getConnection()->getConnection()->getConfiguration()->setSQLLogger(
                     // @phpstan-ignore-next-line SQLLogger is deprecated
-                    null ?? new class() implements SQLLogger {
+                    new class() implements SQLLogger {
                         public function startQuery($sql, array $params = null, array $types = null): void
                         {
                             // fix https://github.com/doctrine/dbal/issues/5525
