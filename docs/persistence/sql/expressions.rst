@@ -235,22 +235,10 @@ Finally, you can pass connection class into :php:meth:`executeQuery` directly.
 Magic an Debug Methods
 ======================
 
-.. php:method:: __toString()
-
-    You may use :php:class:`Expression` or :php:class:`Query` as a string. It
-    will be automatically executed when being cast by executing :php:meth:`getOne`.
-    Because the `__toString() <http://php.net/manual/en/language.oop5.magic.php#object.tostring>`_
-    is not allowed to throw exceptions we encourage you not to use this format.
-
 .. php:method:: __debugInfo()
 
     This method is used to prepare a sensible information about your query
     when you are executing ``var_dump($expr)``. The output will be HTML-safe.
-
-.. php:method:: debug()
-
-    Calling this method will set :php:attr:`debug` into ``true`` and the further
-    execution to :php:meth:`render` will also attempt to echo query.
 
 .. php:method:: getDebugQuery()
 
