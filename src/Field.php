@@ -283,16 +283,6 @@ class Field implements Expressionable
     }
 
     /**
-     * Casts field value to string.
-     *
-     * @param mixed $value
-     */
-    public function toString($value): string
-    {
-        return (string) $this->typecastSaveField($value, true);
-    }
-
-    /**
      * Returns field value.
      *
      * @return mixed

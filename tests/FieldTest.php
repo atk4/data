@@ -716,37 +716,6 @@ class FieldTest extends TestCase
         $m->set('foo', 'ABC');
     }
 
-    public function testToString(): void
-    {
-        $m = new Model();
-
-        $m->addField('string', ['type' => 'string']);
-        $m->addField('text', ['type' => 'text']);
-        $m->addField('integer', ['type' => 'integer']);
-        $m->addField('money', ['type' => 'atk4_money']);
-        $m->addField('float', ['type' => 'float']);
-        $m->addField('boolean', ['type' => 'boolean']);
-        $m->addField('date', ['type' => 'date']);
-        $m->addField('datetime', ['type' => 'datetime']);
-        $m->addField('time', ['type' => 'time']);
-        $m->addField('json', ['type' => 'json']);
-        $m->addField('object', ['type' => 'object']);
-        $m = $m->createEntity();
-
-        static::assertSame('Two Lines', $m->getField('string')->toString("Two\r\nLines  "));
-        static::assertSame("Two\nLines", $m->getField('text')->toString("Two\r\nLines  "));
-        static::assertSame('123', $m->getField('integer')->toString(123));
-        static::assertSame('123.45', $m->getField('money')->toString(123.45));
-        static::assertSame('123.456789', $m->getField('float')->toString(123.456789));
-        static::assertSame('1', $m->getField('boolean')->toString(true));
-        static::assertSame('0', $m->getField('boolean')->toString(false));
-        static::assertSame('2019-01-20', $m->getField('date')->toString(new \DateTime('2019-01-20T12:23:34 UTC')));
-        static::assertSame('2019-01-20 12:23:34.000000', $m->getField('datetime')->toString(new \DateTime('2019-01-20 12:23:34 UTC')));
-        static::assertSame('12:23:34.000000', $m->getField('time')->toString(new \DateTime('2019-01-20 12:23:34 UTC')));
-        static::assertSame('{"foo":"bar","int":123,"rows":["a","b"]}', $m->getField('json')->toString(['foo' => 'bar', 'int' => 123, 'rows' => ['a', 'b']]));
-        static::assertSame('O:8:"stdClass":3:{s:3:"foo";s:3:"bar";s:3:"int";i:123;s:4:"rows";a:2:{i:0;s:1:"a";i:1;s:1:"b";}}', $m->getField('object')->toString((object) ['foo' => 'bar', 'int' => 123, 'rows' => ['a', 'b']]));
-    }
-
     public function testAddFieldDirectly(): void
     {
         $model = new Model();
@@ -781,41 +750,9 @@ class FieldTest extends TestCase
         // only return subset of onlyFields
         static::assertSame(['visible', 'not_editable'], array_keys($model->getFields('visible')));
 
+        $this->expectException(Exception::class);
         $this->expectExceptionMessage('not supported');
         $model->getFields('foo');
-    }
-
-    public function testDateTimeFieldsToString(): void
-    {
-        $model = new Model();
-        $model->addField('date', ['type' => 'date']);
-        $model->addField('time', ['type' => 'time']);
-        $model->addField('datetime', ['type' => 'datetime']);
-        $model = $model->createEntity();
-
-        static::assertSame('', $model->getField('date')->toString($model->get('date')));
-        static::assertSame('', $model->getField('time')->toString($model->get('time')));
-        static::assertSame('', $model->getField('datetime')->toString($model->get('datetime')));
-
-        // datetime without microseconds
-        $dt = new \DateTime('2020-01-21 21:09:42 UTC');
-        $model->set('date', $dt);
-        $model->set('time', $dt);
-        $model->set('datetime', $dt);
-
-        static::assertSame($dt->format('Y-m-d'), $model->getField('date')->toString($model->get('date')));
-        static::assertSame($dt->format('H:i:s.u'), $model->getField('time')->toString($model->get('time')));
-        static::assertSame($dt->format('Y-m-d H:i:s.u'), $model->getField('datetime')->toString($model->get('datetime')));
-
-        // datetime with microseconds
-        $dt = new \DateTime('2020-01-21 21:09:42.895623 UTC');
-        $model->set('date', $dt);
-        $model->set('time', $dt);
-        $model->set('datetime', $dt);
-
-        static::assertSame($dt->format('Y-m-d'), $model->getField('date')->toString($model->get('date')));
-        static::assertSame($dt->format('H:i:s.u'), $model->getField('time')->toString($model->get('time')));
-        static::assertSame($dt->format('Y-m-d H:i:s.u'), $model->getField('datetime')->toString($model->get('datetime')));
     }
 
     public function testSetNull(): void
