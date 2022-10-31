@@ -881,7 +881,8 @@ class ArrayTest extends TestCase
         $m = new Model($p);
         $m->addField('name');
 
-        $this->expectExceptionCode(404);
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('No record was found');
         $m->loadAny();
     }
 

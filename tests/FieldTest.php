@@ -750,6 +750,7 @@ class FieldTest extends TestCase
         // only return subset of onlyFields
         static::assertSame(['visible', 'not_editable'], array_keys($model->getFields('visible')));
 
+        $this->expectException(Exception::class);
         $this->expectExceptionMessage('not supported');
         $model->getFields('foo');
     }

@@ -143,7 +143,7 @@ abstract class Persistence
         if (!$data) {
             $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
 
-            throw (new Exception($noId ? 'No record was found' : 'Record with specified ID was not found', 404))
+            throw (new Exception($noId ? 'No record was found' : 'Record with specified ID was not found'))
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('id', $noId ? null : $id)
                 ->addMoreInfo('scope', $model->scope()->toWords());
