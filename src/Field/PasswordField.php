@@ -8,10 +8,6 @@ use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
 
-use function password_get_info;
-use function password_hash;
-use function password_verify;
-
 class PasswordField extends Field
 {
     /** @var int */
@@ -34,7 +30,7 @@ class PasswordField extends Field
     {
         $password = $this->normalizePassword($password, false);
 
-        $hash = password_hash($password, \PASSWORD_BCRYPT, ['cost' => 8]);
+        $hash = \password_hash($password, \PASSWORD_BCRYPT, ['cost' => 8]);
         $e = false;
         try {
             if (!$this->hashPasswordIsHashed($hash) || !$this->hashPasswordVerify($hash, $password)) {
@@ -54,7 +50,7 @@ class PasswordField extends Field
         $hash = $this->normalize($hash);
         $password = $this->normalizePassword($password, true);
 
-        return password_verify($password, $hash);
+        return \password_verify($password, $hash);
     }
 
     public function hashPasswordIsHashed(string $value): bool
@@ -64,7 +60,7 @@ class PasswordField extends Field
         } catch (\Exception $e) {
         }
 
-        return password_get_info($value)['algo'] === \PASSWORD_BCRYPT;
+        return \password_get_info($value)['algo'] === \PASSWORD_BCRYPT;
     }
 
     public function normalize($hash): ?string
