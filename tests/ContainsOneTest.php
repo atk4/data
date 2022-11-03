@@ -73,7 +73,7 @@ class ContainsOneTest extends TestCase
         static::assertSame(Address::class, get_class($i->getModel()->addr));
 
         // check do we have address set
-        static::assertNull($i->addr);
+        static::assertNull($i->addr); // @phpstan-ignore-line
         $a = $i->getModel()->addr->createEntity();
         $a->containedInEntity = $i;
 
@@ -150,12 +150,12 @@ class ContainsOneTest extends TestCase
         // so far so good. now let's try to delete door_code
         $i->addr->door_code->delete();
         static::assertNull($i->addr->get($i->addr->fieldName()->door_code));
-        static::assertNull($i->addr->door_code);
+        static::assertNull($i->addr->door_code); // @phpstan-ignore-line
 
         // and now delete address
         $i->addr->delete();
         static::assertNull($i->get($i->fieldName()->addr));
-        static::assertNull($i->addr);
+        static::assertNull($i->addr); // @phpstan-ignore-line
     }
 
     /**
@@ -167,7 +167,7 @@ class ContainsOneTest extends TestCase
         $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
 
         // with address
-        static::assertNull($i->addr);
+        static::assertNull($i->addr); // @phpstan-ignore-line
         $a = $i->getModel()->addr->createEntity();
         $a->containedInEntity = $i;
         $a->setMulti($row = [

@@ -130,8 +130,6 @@ class BusinessModelTest extends TestCase
         $m = new Model($p);
         $m = $m->createEntity();
 
-        static::assertNotNull($m->getField('id'));
-
         $m->set('id', 20);
         static::assertSame(20, $m->getId());
     }

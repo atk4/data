@@ -133,7 +133,7 @@ class ConnectionTest extends TestCase
             static::assertSame(DummyConnection::class, Connection::resolveConnectionClass('dummy'));
             try {
                 Connection::resolveConnectionClass('dummy2');
-                static::assertFalse(true);
+                static::assertFalse(true); // @phpstan-ignore-line
             } catch (\Exception $e) {
             }
 

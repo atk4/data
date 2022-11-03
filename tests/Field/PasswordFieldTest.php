@@ -111,11 +111,9 @@ class PasswordFieldTest extends TestCase
         $field = new PasswordField();
 
         $pwd = $field->generatePassword();
-        static::assertIsString($pwd);
         static::assertSame(8, strlen($pwd));
 
         $pwd = $field->generatePassword(50);
-        static::assertIsString($pwd);
         static::assertSame(50, strlen($pwd));
     }
 }
