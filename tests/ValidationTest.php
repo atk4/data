@@ -67,7 +67,7 @@ class ValidationTest extends TestCase
         $m->set('name', 'john');
         $m->set('domain', 'gmail.com');
         $m->save();
-        static::assertTrue(true); // no exception
+        static::assertSame('john', $m->get('name'));
     }
 
     public function testValidate2(): void

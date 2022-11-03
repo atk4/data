@@ -75,7 +75,6 @@ class ContainsManyTest extends TestCase
 
         // now let's add some lines
         $l = $i->lines;
-        static::assertNotNull($l);
         $rows = [
             1 => [
                 $l->fieldName()->id => 1,

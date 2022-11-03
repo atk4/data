@@ -209,7 +209,7 @@ abstract class TestCase extends BaseTestCase
     protected static function assertSameExportUnordered(array $expected, array $actual, string $message = ''): void
     {
         if (self::compareExportUnorderedValue($expected, $actual) === 0) {
-            static::assertTrue(true);
+            static::assertTrue(true); // @phpstan-ignore-line
 
             return;
         }

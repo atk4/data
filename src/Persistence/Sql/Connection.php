@@ -88,10 +88,10 @@ abstract class Connection
                 $dsn['dsn'] = str_replace('-', '_', $parsed['scheme']) . ':';
                 unset($parsed['scheme']);
                 foreach ($parsed as $k => $v) {
-                    if ($k === 'pass') { // @phpstan-ignore-line phpstan bug
+                    if ($k === 'pass') {
                         unset($parsed[$k]);
                         $k = 'password';
-                    } elseif ($k === 'path') { // @phpstan-ignore-line phpstan bug
+                    } elseif ($k === 'path') {
                         unset($parsed[$k]);
                         $k = 'dbname';
                         $v = preg_replace('~^/~', '', $v);

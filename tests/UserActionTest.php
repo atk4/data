@@ -185,25 +185,17 @@ class UserActionTest extends TestCase
         $client = new UaClient($this->pers);
         $client = $client->load(1);
 
-        $client->getUserAction('sendReminder')->enabled = function (Model $m) {
+        $client->getUserAction('sendReminder')->enabled = function (UaClient $m) {
+            return true;
+        };
+        $client->getUserAction('sendReminder')->execute();
+
+        $client->getUserAction('sendReminder')->enabled = function (UaClient $m) {
             return false;
         };
 
         $this->expectExceptionMessage('disabled');
         $client->getUserAction('sendReminder')->execute();
-    }
-
-    public function testDisabled3(): void
-    {
-        $client = new UaClient($this->pers);
-        $client = $client->load(1);
-
-        $client->getUserAction('sendReminder')->enabled = function (UaClient $m) {
-            return true;
-        };
-
-        $client->getUserAction('sendReminder')->execute();
-        static::assertTrue(true); // no exception
     }
 
     public function testFields(): void
