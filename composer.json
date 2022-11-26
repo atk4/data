@@ -16,7 +16,6 @@
         "oracle",
         "postgresql"
     ],
-    "version": "dev-develop",
     "authors": [
         {
             "name": "Romans Malinovskis",
@@ -34,12 +33,6 @@
     ],
     "homepage": "https://github.com/atk4/data",
     "require": {
-        "php": ">=7.4 <8.3",
-        "atk4/core": "dev-develop",
-        "doctrine/dbal": "~3.4.5",
-        "mvorisek/atk4-hintable": "~1.9.0"
-    },
-    "require-release": {
         "php": ">=7.4 <8.3",
         "atk4/core": "~4.0.0",
         "doctrine/dbal": "~3.4.5",
