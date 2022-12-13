@@ -64,7 +64,7 @@ class Migrator
                 ->addMoreInfo('source', $source);
         }
 
-        if ($source instanceof Model && $source->getPersistence() instanceof Persistence\Sql) {
+        if ($source instanceof Model) {
             $this->setModel($source);
         }
     }

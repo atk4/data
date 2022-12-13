@@ -255,15 +255,13 @@ class Field implements Expressionable
             }
 
             if ($this->enum) {
-                if ($value === null || $value === '') {
+                if ($value === '') {
                     $value = null;
                 } elseif (!in_array($value, $this->enum, true)) {
                     throw new Exception('Value is not one of the allowed values: ' . implode(', ', $this->enum));
                 }
-            }
-
-            if ($this->values) {
-                if ($value === null || $value === '') {
+            } elseif ($this->values) {
+                if ($value === '') {
                     $value = null;
                 } elseif ((!is_string($value) && !is_int($value)) || !array_key_exists($value, $this->values)) {
                     throw new Exception('Value is not one of the allowed values: ' . implode(', ', array_keys($this->values)));

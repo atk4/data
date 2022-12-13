@@ -277,7 +277,6 @@ Here is the code::
     $order = new Model_Order();
     // $order is not linked with persistence
 
-
     $order = new Model_Order();
     $order->setPersistence($db); // same as $order = new Model_Order($db)
     // $order is associated with specific persistence layer $db

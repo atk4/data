@@ -528,7 +528,7 @@ abstract class Query extends Expression
 
         // if no condition defined - use default
         if (count($row) === 2) {
-            $value = $cond; // @phpstan-ignore-line see https://github.com/phpstan/phpstan/issues/4173
+            $value = $cond;
 
             if ($value instanceof Expressionable) {
                 $value = $value->getDsqlExpression($this);
@@ -542,7 +542,7 @@ abstract class Query extends Expression
                 $cond = '=';
             }
         } else {
-            $cond = strtolower($cond); // @phpstan-ignore-line see https://github.com/phpstan/phpstan/issues/4173
+            $cond = strtolower($cond);
         }
 
         // below we can be sure that all 3 arguments has been passed

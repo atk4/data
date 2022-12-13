@@ -281,15 +281,13 @@ class Sql extends Persistence
         }
 
         // set order
-        if (count($model->order) > 0) {
-            foreach ($model->order as $order) {
-                $isDesc = strtolower($order[1]) === 'desc';
+        foreach ($model->order as $order) {
+            $isDesc = strtolower($order[1]) === 'desc';
 
-                if ($order[0] instanceof Expressionable) {
-                    $query->order($order[0], $isDesc);
-                } else {
-                    $query->order($model->getField($order[0]), $isDesc);
-                }
+            if ($order[0] instanceof Expressionable) {
+                $query->order($order[0], $isDesc);
+            } else {
+                $query->order($model->getField($order[0]), $isDesc);
             }
         }
     }

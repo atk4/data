@@ -72,7 +72,7 @@ class ConnectionTest extends TestCase
         // no password
         $dsn = Connection::normalizeDsn('mysql://root@localhost/db');
         static::assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'user' => 'root', 'dbname' => 'db'], $dsn);
-        $dsn = Connection::normalizeDsn('mysql://root:@localhost/db'); // see : after root
+        $dsn = Connection::normalizeDsn('mysql://root:@localhost/db');
         static::assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'user' => 'root', 'dbname' => 'db'], $dsn);
 
         $dsn = Connection::normalizeDsn('sqlite::memory');

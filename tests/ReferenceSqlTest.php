@@ -769,12 +769,12 @@ class ReferenceSqlTest extends TestCase
         $u->addField('name');
         $u->addField('last_name');
 
-        // Test : Now the caption is null and is generated from field name
+        // now the caption is null and is generated from field name
         static::assertSame('Last Name', $u->getField('last_name')->getCaption());
 
         $u->getField('last_name')->caption = 'Surname';
 
-        // Test : Now the caption is not null and the value is returned
+        // now the caption is not null and the value is returned
         static::assertSame('Surname', $u->getField('last_name')->getCaption());
 
         $o = (new Model($this->db, ['table' => 'order']));
@@ -783,7 +783,7 @@ class ReferenceSqlTest extends TestCase
 
         $referencedCaption = $o->getField('user_last_name')->getCaption();
 
-        // Test : $field->caption for the field 'last_name' is defined in referenced model (User)
+        // Test: $field->caption for the field 'last_name' is defined in referenced model (User)
         // When Order add field from Referenced model User
         // caption will be passed to Order field user_last_name
         static::assertSame('Surname', $referencedCaption);

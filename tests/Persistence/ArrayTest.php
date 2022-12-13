@@ -301,7 +301,7 @@ class ArrayTest extends TestCase
         $m->addField('country');
         $m->addField('active', ['type' => 'boolean']);
 
-        // case : str%
+        // case str%
         $m->addCondition('country', 'LIKE', 'La%');
         $result = $m->action('select')->getRows();
         static::assertCount(3, $result);
@@ -310,7 +310,7 @@ class ArrayTest extends TestCase
         static::assertSame($dbDataCountries[9], $result[9]);
         unset($result);
 
-        // case : str% NOT LIKE
+        // case str% NOT LIKE
         $m->scope()->clear();
         $m->addCondition('country', 'NOT LIKE', 'La%');
         $result = $m->action('select')->getRows();
@@ -323,7 +323,7 @@ class ArrayTest extends TestCase
         static::assertSame($dbDataCountries[8], $result[8]);
         unset($result);
 
-        // case : %str
+        // case %str
         $m->scope()->clear();
         $m->addCondition('country', 'LIKE', '%ia');
         $result = $m->action('select')->getRows();
@@ -334,7 +334,7 @@ class ArrayTest extends TestCase
         static::assertSame($dbDataCountries[9], $result[9]);
         unset($result);
 
-        // case : %str%
+        // case %str%
         $m->scope()->clear();
         $m->addCondition('country', 'LIKE', '%a%');
         $result = $m->action('select')->getRows();
@@ -348,7 +348,7 @@ class ArrayTest extends TestCase
         static::assertSame($dbDataCountries[9], $result[9]);
         unset($result);
 
-        // case : boolean field
+        // case boolean field
         $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '0');
         static::assertCount(4, $m->export());
