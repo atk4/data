@@ -85,6 +85,13 @@ abstract class Join
     /** @var array<int, array<string, mixed>> Data indexed by spl_object_id(entity) which is populated here as the save/insert progresses. */
     private array $saveBufferByOid = [];
 
+    /**
+     * Custom definition if $idField for of ForeignModel
+     * By Default ForeignModel idField is equal to 'id'
+     * To be used when the joined table doesn't have a field named 'id'
+     */
+    public ?string $foreignModelIdField = null;
+
     public function __construct(string $foreignTable)
     {
         $this->foreignTable = $foreignTable;
@@ -107,6 +114,7 @@ abstract class Join
     {
         $fakeModel = new Model($this->getOwner()->getPersistence(), [
             'table' => $this->foreignTable,
+            'idField' => $this->foreignModelIdField
         ]);
         foreach ($this->getOwner()->getFields() as $ownerField) {
             if ($ownerField->hasJoin() && $ownerField->getJoin()->shortName === $this->shortName) {
