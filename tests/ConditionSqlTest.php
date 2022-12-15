@@ -286,6 +286,63 @@ class ConditionSqlTest extends TestCase
         static::assertSame('+123 smiths', $mm2->get('contact_phone'));
     }
 
+    public function testExpressionJoinForeignCustomIdField(): void
+    {
+        $this->setDb([
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'gender' => 'M', 'contact_id' => 1],
+                2 => ['id' => 2, 'name' => 'Sue', 'surname' => 'Sue', 'gender' => 'F', 'contact_id' => 2],
+                3 => ['id' => 3, 'name' => 'Peter', 'surname' => 'Smith', 'gender' => 'M', 'contact_id' => 1],
+            ],
+            'contact' => [
+                1 => ['custom_id' => 1, 'contact_id' => 1, 'contact_phone' => '+123 smiths'],
+                2 => ['custom_id' => 2, 'contact_id' => 2, 'contact_phone' => '+321 sues'],
+            ],
+        ]);
+
+        $m = new Model($this->db, ['table' => 'user']);
+        $m->addField('name');
+        $m->addField('gender');
+        $m->addField('surname');
+
+        $m->join('contact', [
+            'masterField' => 'contact_id',
+            'foreignField' => 'contact_id',
+            'foreignModelIdField' => 'custom_id'
+        ])->addField('contact_phone');
+
+        $mm2 = $m->load(1);
+        static::assertSame('John', $mm2->get('name'));
+        static::assertSame('+123 smiths', $mm2->get('contact_phone'));
+        $mm2 = $m->load(2);
+        static::assertSame('Sue', $mm2->get('name'));
+        static::assertSame('+321 sues', $mm2->get('contact_phone'));
+        $mm2 = $m->load(3);
+        static::assertSame('Peter', $mm2->get('name'));
+        static::assertSame('+123 smiths', $mm2->get('contact_phone'));
+
+        $mm = clone $m;
+        $mm->addCondition($mm->expr('[name] = [surname]'));
+        $mm2 = $mm->tryLoad(1);
+        static::assertNull($mm2);
+        $mm2 = $mm->load(2);
+        static::assertSame('Sue', $mm2->get('name'));
+        static::assertSame('+321 sues', $mm2->get('contact_phone'));
+        $mm2 = $mm->tryLoad(3);
+        static::assertNull($mm2);
+
+        $mm = clone $m;
+        $mm->addCondition($mm->expr('\'+123 smiths\' = [contact_phone]'));
+        $mm2 = $mm->load(1);
+        static::assertSame('John', $mm2->get('name'));
+        static::assertSame('+123 smiths', $mm2->get('contact_phone'));
+        $mm2 = $mm->tryLoad(2);
+        static::assertNull($mm2);
+        $mm2 = $mm->load(3);
+        static::assertSame('Peter', $mm2->get('name'));
+        static::assertSame('+123 smiths', $mm2->get('contact_phone'));
+    }
+
     public function testArrayCondition(): void
     {
         $this->setDb([

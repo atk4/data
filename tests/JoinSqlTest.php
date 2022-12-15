@@ -6,6 +6,7 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
+use Atk4\Data\Persistence;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 
@@ -761,5 +762,231 @@ class JoinSqlTest extends TestCase
                 3 => ['id' => 3, 'amount' => 222, $userForeignIdFieldName => 4],
             ],
         ], $this->getDb());
+    }
+
+    public function testJoinSavingForeignCustomIdFieldRaiseException(): void
+    {
+        $this->expectException(\Atk4\Data\Persistence\Sql\ExecuteException::class);
+
+        $master_model = new \Atk4\Data\Model($this->db, [
+            'table' => 'user_join',
+        ]);
+        $master_model->addField('name');
+        $master_model->addField('test_id');
+
+        $joined_model = new \Atk4\Data\Model($this->db, [
+            'table' => 'contact_join',
+            'idField' => 'not_named_id',
+        ]);
+        $joined_model->addField('contact_id');
+        $joined_model->addField('contact_phone');
+
+        $this->createMigrator($master_model)->create();
+        $this->createMigrator($joined_model)->create();
+
+        $master_model->import([
+            [
+                'id' => 1,
+                'name' => 'John',
+                'test_id' => 21,
+            ],
+        ]);
+
+        $joined_model->import([
+            [
+                'not_named_id' => 1,
+                'contact_id' => 21,
+                'contact_phone' => '+123',
+            ],
+        ]);
+
+        $user = new Model($this->db, ['table' => 'user_join']);
+        $user->addField('name');
+        $j = $user->join('contact_join', [
+            'foreignTable'        => 'contact_join',
+            'masterField'         => 'test_id',
+            'foreignField'        => 'contact_id',
+            //'foreignModelIdField' => 'not_named_id',
+        ]);
+        $this->createMigrator()->createForeignKey($j);
+        $j->addField('contact_phone');
+
+        $user = $user->load(1);
+
+        $user->set('name', 'John');
+        $user->set('contact_phone', '+321');
+
+        $user->save();
+    }
+
+    public function testJoinSavingForeignCustomIdField(): void
+    {
+        $master_model = new \Atk4\Data\Model($this->db, [
+            'table' => 'user_join',
+        ]);
+        $master_model->addField('name');
+        $master_model->addField('test_id');
+
+        $joined_model = new \Atk4\Data\Model($this->db, [
+            'table' => 'contact_join',
+            'idField' => 'not_named_id',
+        ]);
+        $joined_model->addField('contact_id');
+        $joined_model->addField('contact_phone');
+
+        $this->createMigrator($master_model)->create();
+        $this->createMigrator($joined_model)->create();
+
+        $master_model->import([
+            [
+                'id' => 1,
+                'name' => 'John',
+                'test_id' => 21,
+            ],
+        ]);
+
+        $joined_model->import([
+            [
+                'not_named_id' => 1,
+                'contact_id' => 21,
+                'contact_phone' => '+123',
+            ],
+        ]);
+
+        $user = new Model($this->db, ['table' => 'user_join']);
+        $user->addField('name');
+        $j = $user->join('contact_join', [
+            'masterField'         => 'test_id',
+            'foreignField'        => 'contact_id',
+            'foreignModelIdField' => 'not_named_id',
+        ]);
+        $this->createMigrator()->createForeignKey($j);
+        $j->addField('contact_phone');
+
+        $user = $user->load(1);
+
+        $user->set('name', 'John');
+        $user->set('contact_phone', '+321');
+
+        $user->save();
+
+        static::assertSame([
+            'user_join' => [
+                1 => ['id' => 1, 'name' => 'John', 'test_id' => '21'],
+            ],
+            'contact_join' => [
+                1 => ['not_named_id' => 1, 'contact_id' => '21', 'contact_phone' => '+321'],
+            ],
+        ], [
+            'user_join' => [
+                1 => $master_model->load(1)->get(),
+            ],
+            'contact_join' => [
+                1 => $joined_model->load(1)->get(),
+            ],
+        ]);
+    }
+
+    public function testJoinDeleteForeignCustomIdField(): void
+    {
+        $master_model = new \Atk4\Data\Model($this->db, [
+            'table' => 'user_join',
+        ]);
+        $master_model->addField('name');
+        $master_model->addField('test_id');
+
+        $this->createMigrator($master_model)->create();
+
+        $master_model->import([
+            [
+                'id' => 1,
+                'name' => 'John',
+                'test_id' => 21,
+            ],
+        ]);
+
+        $joined_model = new \Atk4\Data\Model($this->db, [
+            'table' => 'contact_join',
+            'idField' => 'not_named_id',
+        ]);
+        $joined_model->addField('contact_id');
+        $joined_model->addField('contact_phone');
+
+        $this->createMigrator($joined_model)->create();
+
+        $joined_model->import([
+            [
+                'not_named_id' => 1,
+                'contact_id' => 21,
+                'contact_phone' => '+123',
+            ],
+        ]);
+
+        $user = new Model($this->db, ['table' => 'user_join']);
+        $user->addField('name');
+        $j = $user->join('contact_join', [
+            'masterField'         => 'test_id',
+            'foreignField'        => 'contact_id',
+            'foreignModelIdField' => 'not_named_id',
+        ]);
+        $this->createMigrator()->createForeignKey($j);
+        $j->addField('contact_phone');
+
+        $user->delete(1);
+
+        static::assertSame(null, $master_model->tryLoad(1));
+        static::assertSame(null, $joined_model->tryLoad(1));
+    }
+
+    public function testJoinDeleteForeignCustomIdFieldReverse(): void
+    {
+        $master_model = new \Atk4\Data\Model($this->db, [
+            'table' => 'user_join',
+        ]);
+        $master_model->addField('name');
+        $master_model->addField('test_id');
+
+        $this->createMigrator($master_model)->create();
+
+        $master_model->import([
+            [
+                'id' => 1,
+                'name' => 'John',
+                'test_id' => 21,
+            ],
+        ]);
+
+        $joined_model = new \Atk4\Data\Model($this->db, [
+            'table' => 'contact_join',
+            'idField' => 'not_named_id',
+        ]);
+        $joined_model->addField('contact_id');
+        $joined_model->addField('contact_phone');
+
+        $this->createMigrator($joined_model)->create();
+
+        $joined_model->import([
+            [
+                'not_named_id' => 1,
+                'contact_id' => 21,
+                'contact_phone' => '+123',
+            ],
+        ]);
+
+        $user = new Model($this->db, ['table' => 'user_join']);
+        $user->addField('name');
+        $j = $user->join('contact_join', [
+            'masterField'         => 'test_id',
+            'foreignField'        => 'contact_id',
+            'foreignModelIdField' => 'not_named_id',
+            'reverse' => true,
+        ]);
+        $this->createMigrator()->createForeignKey($j);
+        $j->addField('contact_phone');
+
+        $user->delete(1);
+
+        static::assertSame(null, $master_model->tryLoad(1));
+        static::assertSame(null, $joined_model->tryLoad(1));
     }
 }
