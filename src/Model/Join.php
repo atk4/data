@@ -76,7 +76,7 @@ abstract class Join
     /**
      * Custom definition if $idField for of ForeignModel
      * By Default ForeignModel idField is equal to 'id'
-     * To be used when the joined table doesn't have a field named 'id'
+     * To be used when the joined table doesn't have a field named 'id'.
      */
     public ?string $foreignIdField = null;
 
@@ -114,7 +114,7 @@ abstract class Join
     {
         $fakeModel = new Model($this->getOwner()->getPersistence(), [
             'table' => $this->foreignTable,
-            'idField' => $this->foreignIdField
+            'idField' => $this->foreignIdField,
         ]);
         foreach ($this->getOwner()->getFields() as $ownerField) {
             if ($ownerField->hasJoin() && $ownerField->getJoin()->shortName === $this->shortName) {

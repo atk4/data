@@ -801,9 +801,9 @@ class JoinSqlTest extends TestCase
         $user = new Model($this->db, ['table' => 'user_join']);
         $user->addField('name');
         $j = $user->join('contact_join', [
-            'foreignTable'        => 'contact_join',
-            'masterField'         => 'test_id',
-            'foreignField'        => 'contact_id',
+            'foreignTable' => 'contact_join',
+            'masterField' => 'test_id',
+            'foreignField' => 'contact_id',
             //'foreignIdField' => 'not_named_id', // Raise exception
         ]);
         $this->createMigrator()->createForeignKey($j);
@@ -856,8 +856,8 @@ class JoinSqlTest extends TestCase
         $user = new Model($this->db, ['table' => 'user_join']);
         $user->addField('name');
         $j = $user->join('contact_join', [
-            'masterField'    => 'test_id',
-            'foreignField'   => 'contact_id',
+            'masterField' => 'test_id',
+            'foreignField' => 'contact_id',
             'foreignIdField' => 'not_named_id',
         ]);
         $this->createMigrator()->createForeignKey($j);
@@ -924,8 +924,8 @@ class JoinSqlTest extends TestCase
         $user = new Model($this->db, ['table' => 'user_join']);
         $user->addField('name');
         $j = $user->join('contact_join', [
-            'masterField'    => 'test_id',
-            'foreignField'   => 'contact_id',
+            'masterField' => 'test_id',
+            'foreignField' => 'contact_id',
             'foreignIdField' => 'not_named_id',
         ]);
 
@@ -935,8 +935,8 @@ class JoinSqlTest extends TestCase
 
         $user->delete(1);
 
-        static::assertSame(null, $masterModel->tryLoad(1));
-        static::assertSame(null, $joinedModel->tryLoad(1));
+        static::assertNull($masterModel->tryLoad(1));
+        static::assertNull($joinedModel->tryLoad(1));
     }
 
     public function testJoinDeleteForeignCustomIdFieldReverse(): void
@@ -976,8 +976,8 @@ class JoinSqlTest extends TestCase
         $user = new Model($this->db, ['table' => 'user_join']);
         $user->addField('name');
         $j = $user->join('contact_join', [
-            'masterField'         => 'test_id',
-            'foreignField'        => 'contact_id',
+            'masterField' => 'test_id',
+            'foreignField' => 'contact_id',
             'foreignIdField' => 'not_named_id',
             'reverse' => true,
         ]);
@@ -986,7 +986,7 @@ class JoinSqlTest extends TestCase
 
         $user->delete(1);
 
-        static::assertSame(null, $masterModel->tryLoad(1));
-        static::assertSame(null, $joinedModel->tryLoad(1));
+        static::assertNull($masterModel->tryLoad(1));
+        static::assertNull($joinedModel->tryLoad(1));
     }
 }
