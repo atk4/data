@@ -804,7 +804,7 @@ class JoinSqlTest extends TestCase
             'foreignTable' => 'contact_join',
             'masterField' => 'test_id',
             'foreignField' => 'contact_id',
-            //'foreignIdField' => 'not_named_id', // Raise exception
+            // 'foreignIdField' => 'not_named_id', // Raise exception
         ]);
         $this->createMigrator()->createForeignKey($j);
         $j->addField('contact_phone');
