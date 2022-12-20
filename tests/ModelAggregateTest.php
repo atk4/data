@@ -19,7 +19,7 @@ class ModelAggregateTest extends TestCase
         $this->setDb([
             'client' => [
                 // allow of migrator to create all columns
-                ['name' => 'Vinny', 'surname' => null, 'order' => null],
+                ['name' => 'Vinny', 'surname' => null, 'order' => 21],
                 ['name' => 'Zoe'],
             ],
             'invoice' => [
@@ -121,22 +121,24 @@ class ModelAggregateTest extends TestCase
         ], $aggregate->export());
     }
 
-    public function testGroupSelectExpr(): void
+    public function testGroupSelectExpression(): void
     {
         $aggregate = $this->createInvoiceAggregate();
+        $aggregate->table->getReference('client_id')->addField('order'); // @phpstan-ignore-line
         $aggregate->addField('client');
 
         $aggregate->setGroupBy(['client_id'], [
             's' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
+            'sum_hasone' => ['expr' => 'sum([order])', 'type' => 'integer'],
         ]);
         self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
         $aggregate->addExpression('double', ['expr' => '[s] + [amount]', 'type' => 'atk4_money']);
 
         static::assertSameExportUnordered([
-            ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'amount' => 19.0, 'double' => 38.0],
-            ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
+            ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'amount' => 19.0, 'sum_hasone' => 42, 'double' => 38.0],
+            ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'amount' => 4.0, 'sum_hasone' => null, 'double' => 8.0],
         ], $aggregate->export());
     }
 
@@ -343,13 +345,15 @@ class ModelAggregateTest extends TestCase
     public function testAggregateFieldExpressionSql(): void
     {
         $aggregate = $this->createInvoiceAggregate();
+        $aggregate->table->getReference('client_id')->addField('order'); // @phpstan-ignore-line
 
         $aggregate->setGroupBy([$aggregate->expr('{}', ['abc'])], [
             'xyz' => ['expr' => 'sum([amount])'],
+            'sum_hasone' => ['expr' => 'sum([order])', 'type' => 'integer'],
         ]);
 
         $this->assertSameSql(
-            'select sum(`amount`) `xyz` from (select `id`, `client_id`, `name`, `amount`, (select `name` from `client` `_c_2bfe9d72a4aa` where `id` = `invoice`.`client_id`) `client` from `invoice`) `_tm` group by `abc`',
+            'select sum(`amount`) `xyz`, sum(`order`) `sum_hasone` from (select `id`, `client_id`, `name`, `amount`, (select `name` from `client` `_c_2bfe9d72a4aa` where `id` = `invoice`.`client_id`) `client`, (select `order` from `client` `_c_2bfe9d72a4aa` where `id` = `invoice`.`client_id`) `order` from `invoice`) `_tm` group by `abc`',
             $aggregate->action('select')->render()[0]
         );
     }
