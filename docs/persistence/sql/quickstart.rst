@@ -113,7 +113,7 @@ The above query resulting code will look like this:
     JOIN
         `employees` on `employees`.`emp_id` = `salary`.`emp_id`
     WHERE
-        `salary`.`emp_no` in (select `id` from `employees` where `birth_date` = :a)
+        `salary`.`emp_no` in(select `id` from `employees` where `birth_date` = :a)
     GROUP BY `emp_no`
     ORDER BY max_salary desc
 

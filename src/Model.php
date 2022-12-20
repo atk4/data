@@ -1490,7 +1490,8 @@ class Model implements \IteratorAggregate
         return $this->atomic(function () {
             $dirtyRef = &$this->getDirtyRef();
 
-            if (($errors = $this->validate('save')) !== []) {
+            $errors = $this->validate('save');
+            if ($errors !== []) {
                 throw new ValidationException($errors, $this);
             }
             $isUpdate = $this->isLoaded();
