@@ -40,7 +40,8 @@ trait ReferencesTrait
 
         $reference = Reference::fromSeed($seed, $defaults);
 
-        if ($this->hasElement($name = $reference->getDesiredName())) {
+        $name = $reference->getDesiredName();
+        if ($this->hasElement($name)) {
             throw (new Exception('Reference with such name already exists'))
                 ->addMoreInfo('name', $name)
                 ->addMoreInfo('link', $link);

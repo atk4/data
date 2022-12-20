@@ -355,7 +355,7 @@ class ScopeTest extends TestCase
         static::assertCount(2, $user->export());
         static::assertSame($scope->toWords($user), $user->scope()->toWords());
 
-        // TODO once PHP7.3 support is dropped, we should use WeakRef for owner
+        // TODO once PHP7.3 support is dropped, we should use WeakReference for owner
         // and unset($scope); here
         // now we need a clone
         // we should fix then also the shortName issue (if it was generated on adding

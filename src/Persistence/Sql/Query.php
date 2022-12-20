@@ -1097,7 +1097,8 @@ abstract class Query extends Expression
         $res = '';
 
         // operand
-        if ($shortForm = isset($this->args['case_operand'])) {
+        $isShortForm = isset($this->args['case_operand']);
+        if ($isShortForm) {
             $res .= ' ' . $this->consume($this->args['case_operand'][0], self::ESCAPE_IDENTIFIER_SOFT);
         }
 
@@ -1109,7 +1110,7 @@ abstract class Query extends Expression
             }
 
             $res .= ' when ';
-            if ($shortForm) {
+            if ($isShortForm) {
                 // short-form
                 if (is_array($row[0])) {
                     throw (new Exception('When using short form CASE statement, then you should not set array as when() method 1st parameter'))
