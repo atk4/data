@@ -1597,7 +1597,9 @@ class Model implements \IteratorAggregate
         // save data fields
         $reloadAfterSaveBackup = $this->reloadAfterSave;
         try {
-            $this->getModel()->reloadAfterSave = false;
+            if (count($this->getModel()->scope()->elements) === 0) {
+                $this->getModel()->reloadAfterSave = false;
+            }
             $this->save($row);
         } finally {
             $this->getModel()->reloadAfterSave = $reloadAfterSaveBackup;
