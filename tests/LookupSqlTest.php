@@ -6,7 +6,6 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 /**
  * You can lookup country by name or by code. We will also try looking up country by
@@ -231,10 +230,6 @@ class LookupSqlTest extends TestCase
     public function testImportInternationalUsers(): void
     {
         $c = new LCountry($this->db);
-
-        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            static::markTestIncomplete('TODO MSSQL: Cannot perform an aggregate function on an expression containing an aggregate or a subquery');
-        }
 
         // Specifying hasMany here will perform input
         $c->insert(['name' => 'Canada', 'Users' => [['name' => 'Alain'], ['name' => 'Duncan', 'is_vip' => true]]]);

@@ -67,22 +67,6 @@ class TestCaseTest extends TestCase
               2;
 
 
-            select
-              `id`,
-              `name`,
-              `int`,
-              `float`,
-              `null`
-            from
-              `t`
-            where
-              `int` > -1
-              and `id` = 1
-            limit
-              0,
-              2;
-
-
             "COMMIT";
 
 
