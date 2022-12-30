@@ -1326,6 +1326,7 @@ class Model implements \IteratorAggregate
     public function reload()
     {
         $id = $this->getId();
+        $data = $this->getDataRef(); // keep weakly persisted objects referenced
         $this->unload();
 
         $res = $this->_load(true, false, $id);
