@@ -61,7 +61,7 @@ class LocalObjectTest extends TestCase
         $v1 = $t1->convertToDatabaseValue($obj1, $platform);
         $v2 = $t1->convertToDatabaseValue($obj2, $platform);
         $v3 = $t2->convertToDatabaseValue($obj1, $platform);
-        static::assertMatchesRegularExpression('~^\w+-\w+$~', $v1);
+        static::assertMatchesRegularExpression('~^stdClass-\w+-\w+$~', $v1);
         static::assertNotSame($v1, $v2);
         static::assertNotSame($v1, $v3);
 
@@ -82,6 +82,13 @@ class LocalObjectTest extends TestCase
         static::assertNull($obj1WeakRef->get());
         unset($obj2);
         static::assertCount(0, $this->getLocalObjectHandles($t1));
+
+        $obj3 = new \stdClass();
+        $v4 = $t1->convertToDatabaseValue($obj3, $platform);
+        static::assertNotNull($v4);
+        static::assertNotSame($v4, $v1);
+        static::assertNotSame($v4, $v2);
+        static::assertNotSame($v4, $v3);
     }
 
     public function testTypeCloneException(): void
@@ -158,4 +165,29 @@ class LocalObjectTest extends TestCase
         static::assertNull($objWeakRef->get());
         static::assertNull($entity2->get('v'));
     }
+
+    public function testDatabaseValueLengthIsLimited(): void
+    {
+        $t = new LocalObjectType();
+        $platform = $this->getDatabasePlatform();
+
+        $obj1 = new LocalObjectDummyClassWithLongNameAWithLongNameBWithLongNameCWithLongNameDWithLongNameEWithLongNameFWithLongNameGWithLongNameHWithLongNameIWithLongNameJWithLongNameKWithLongNameL();
+        $obj2 = new class() extends LocalObjectDummyClassWithLongNameAWithLongNameBWithLongNameCWithLongNameDWithLongNameEWithLongNameFWithLongNameGWithLongNameHWithLongNameIWithLongNameJWithLongNameKWithLongNameL {};
+
+        $v1 = $t->convertToDatabaseValue($obj1, $platform);
+        $v2 = $t->convertToDatabaseValue($obj2, $platform);
+
+        static::assertSame($obj1, $t->convertToPHPValue($v1, $platform));
+        static::assertSame($obj2, $t->convertToPHPValue($v2, $platform));
+
+        static::assertLessThan(250, strlen($v1));
+        static::assertLessThan(250, strlen($v2));
+
+        static::assertSame('Atk4\Data\Tests\LocalObjectDummyClassWithLongNameAWithLongNameBWithLongNameCWith...eFWithLongNameGWithLongNameHWithLongNameIWithLongNameJWithLongNameKWithLongNameL', explode('-', $v1)[0]);
+        static::assertSame('Atk4\Data\Tests\LocalObjectDummyClassWithLongNameAWithLongNameBWithLongNameCWith...NameGWithLongNameHWithLongNameIWithLongNameJWithLongNameKWithLongNameL@anonymous', explode('-', $v2)[0]);
+    }
+}
+
+class LocalObjectDummyClassWithLongNameAWithLongNameBWithLongNameCWithLongNameDWithLongNameEWithLongNameFWithLongNameGWithLongNameHWithLongNameIWithLongNameJWithLongNameKWithLongNameL
+{
 }

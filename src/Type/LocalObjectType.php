@@ -13,7 +13,7 @@ use Doctrine\DBAL\Types as DbalTypes;
  */
 class LocalObjectType extends DbalTypes\Type
 {
-    private ?string $localUidPrefix = null;
+    private ?string $instanceUid = null;
 
     private int $localUidCounter;
 
@@ -29,7 +29,7 @@ class LocalObjectType extends DbalTypes\Type
 
     protected function init(): void
     {
-        $this->localUidPrefix = hash('sha256', microtime(true) . random_bytes(64));
+        $this->instanceUid = hash('sha256', microtime(true) . random_bytes(64));
         $this->localUidCounter = 0;
         $this->handles = new \WeakMap();
         $this->handlesIndex = [];
@@ -51,7 +51,7 @@ class LocalObjectType extends DbalTypes\Type
             return null;
         }
 
-        if ($this->localUidPrefix === null) {
+        if ($this->instanceUid === null) {
             $this->init();
         }
 
@@ -67,7 +67,14 @@ class LocalObjectType extends DbalTypes\Type
             $this->handlesIndex[$handle->getLocalUid()] = \WeakReference::create($handle);
         }
 
-        return $this->localUidPrefix . '-' . $handle->getLocalUid();
+        $className = get_debug_type($value);
+        if (strlen($className) > 160) { // keep result below 255 bytes
+            $className = mb_strcut($className, 0, 80)
+                . '...'
+                . mb_strcut(substr($className, strlen(mb_strcut($className, 0, 80))), -80);
+        }
+
+        return $className . '-' . $this->instanceUid . '-' . $handle->getLocalUid();
     }
 
     public function convertToPHPValue($value, AbstractPlatform $platform): ?object
@@ -76,13 +83,14 @@ class LocalObjectType extends DbalTypes\Type
             return null;
         }
 
-        $handleLocalUid = $this->localUidPrefix !== null && str_starts_with($value, $this->localUidPrefix . '-')
-            ? substr($value, strlen($this->localUidPrefix . '-'))
-            : null;
-        if ($handleLocalUid !== null && $handleLocalUid !== (string) (int) $handleLocalUid) {
+        $valueExploded = explode('-', $value, 3);
+        if (count($valueExploded) !== 3
+            || $valueExploded[1] !== $this->instanceUid
+            || $valueExploded[2] !== (string) (int) $valueExploded[2]
+        ) {
             throw new Exception('Local object does not match the DBAL type instance');
         }
-        $handle = $this->handlesIndex[(int) $handleLocalUid] ?? null;
+        $handle = $this->handlesIndex[(int) $valueExploded[2]] ?? null;
         if ($handle !== null) {
             $handle = $handle->get();
         }
