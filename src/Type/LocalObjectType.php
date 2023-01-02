@@ -94,11 +94,12 @@ class LocalObjectType extends DbalTypes\Type
         if ($handle !== null) {
             $handle = $handle->get();
         }
-        if ($handle === null) {
+        $res = $handle !== null ? $handle->getValue() : null;
+        if ($res === null) {
             throw new Exception('Local object does no longer exist');
         }
 
-        return $handle->getValue();
+        return $res;
     }
 
     public function requiresSQLCommentHint(AbstractPlatform $platform): bool
