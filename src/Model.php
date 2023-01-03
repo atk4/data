@@ -1049,7 +1049,7 @@ class Model implements \IteratorAggregate
                     }
                 } else {
                     // format "field" => direction
-                    $this->setOrder($k, $v); // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/7924
+                    $this->setOrder($k, $v);
                 }
             }
 
