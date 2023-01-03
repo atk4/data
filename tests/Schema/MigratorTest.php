@@ -30,7 +30,8 @@ class MigratorTest extends TestCase
             ->field('dt', ['type' => 'date'])
             ->field('dttm', ['type' => 'datetime'])
             ->field('fl', ['type' => 'float'])
-            ->field('mn', ['type' => 'atk4_money']);
+            ->field('mn', ['type' => 'atk4_money'])
+            ->field('lobj', ['type' => 'atk4_local_object']);
     }
 
     public function testCreate(): void

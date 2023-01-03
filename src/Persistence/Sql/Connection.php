@@ -88,10 +88,10 @@ abstract class Connection
                 $dsn['dsn'] = str_replace('-', '_', $parsed['scheme']) . ':';
                 unset($parsed['scheme']);
                 foreach ($parsed as $k => $v) {
-                    if ($k === 'pass') {
+                    if ($k === 'pass') { // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/8638
                         unset($parsed[$k]);
                         $k = 'password';
-                    } elseif ($k === 'path') {
+                    } elseif ($k === 'path') { // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/8638
                         unset($parsed[$k]);
                         $k = 'dbname';
                         $v = preg_replace('~^/~', '', $v);
@@ -215,7 +215,7 @@ abstract class Connection
         $driver = $connection->getNativeConnection();
 
         if ($driver instanceof \PDO) {
-            return 'pdo_' . $driver->getAttribute(\PDO::ATTR_DRIVER_NAME); // @phpstan-ignore-line
+            return 'pdo_' . $driver->getAttribute(\PDO::ATTR_DRIVER_NAME);
         } elseif ($driver instanceof \mysqli) {
             return 'mysqli';
         } elseif (is_resource($driver) && get_resource_type($driver) === 'oci8 connection') {

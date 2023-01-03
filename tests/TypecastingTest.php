@@ -142,6 +142,7 @@ class TypecastingTest extends TestCase
                     'float' => '',
                     'json' => '',
                     'object' => '',
+                    'local-object' => '',
                 ],
             ],
         ];
@@ -161,6 +162,7 @@ class TypecastingTest extends TestCase
         $m->addField('float', ['type' => 'float']);
         $m->addField('json', ['type' => 'json']);
         $m->addField('object', ['type' => 'object']);
+        $m->addField('local-object', ['type' => 'atk4_local_object']);
         $mm = $m->load(1);
 
         // Only
@@ -175,8 +177,10 @@ class TypecastingTest extends TestCase
         static::assertNull($mm->get('float'));
         static::assertNull($mm->get('json'));
         static::assertNull($mm->get('object'));
+        static::assertNull($mm->get('local-object'));
 
         unset($row['id']);
+        unset($row['local-object']);
         $mm->setMulti($row);
 
         static::assertSame('', $mm->get('string'));
@@ -190,6 +194,7 @@ class TypecastingTest extends TestCase
         static::assertNull($mm->get('float'));
         static::assertNull($mm->get('json'));
         static::assertNull($mm->get('object'));
+        static::assertNull($mm->get('local-object'));
         if (!$this->getDatabasePlatform() instanceof OraclePlatform) { // @TODO IMPORTANT we probably want to cast to string for Oracle on our own, so dirty array stay clean!
             static::assertSame([], $mm->getDirtyRef());
         }
@@ -212,6 +217,7 @@ class TypecastingTest extends TestCase
             'float' => null,
             'json' => null,
             'object' => null,
+            'local-object' => null,
         ];
 
         static::{'assertEquals'}($dbData, $this->getDb());
