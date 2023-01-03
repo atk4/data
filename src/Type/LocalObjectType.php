@@ -9,7 +9,13 @@ use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types as DbalTypes;
 
 /**
- * Type that allows to weak reference a local PHP object using a scalar string.
+ * Type that allows to weakly reference a local PHP object using a scalar string
+ * and get the original object instance back using the string.
+ *
+ * The local object is never serialized.
+ *
+ * An exception is thrown when getting an object from a string back and the original
+ * object instance has been destroyed/released.
  */
 class LocalObjectType extends DbalTypes\Type
 {
