@@ -33,7 +33,7 @@ class LCountry extends Model
         $this->addField('is_eu', ['type' => 'boolean', 'default' => false]);
 
         $this->hasMany('Users', ['model' => [LUser::class]])
-            ->addField('user_names', ['field' => 'name', 'concat' => ',']);
+            ->addField('user_names', ['field' => 'name', 'concat' => ', ']);
     }
 }
 
@@ -69,7 +69,7 @@ class LUser extends Model
             ->addTitle();
 
         $this->hasMany('Friends', ['model' => [LFriend::class]])
-            ->addField('friend_names', ['field' => 'friend_name', 'concat' => ',']);
+            ->addField('friend_names', ['field' => 'friend_name', 'concat' => '; ']);
     }
 }
 
@@ -358,6 +358,8 @@ class LookupSqlTest extends TestCase
         $c->insert(['name' => 'Canada', 'Users' => [['name' => 'Alain'], ['name' => 'Duncan', 'is_vip' => true]]]);
         $c->insert(['name' => 'Latvia', 'Users' => [['name' => 'imants'], ['name' => 'juris']]]);
 
+        static::assertSame('imants, juris', $c->loadBy('name', 'Latvia')->get('user_names'));
+
         if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             static::markTestIncomplete('TODO MSSQL: Cannot perform an aggregate function on an expression containing an aggregate or a subquery');
         }
@@ -371,9 +373,15 @@ class LookupSqlTest extends TestCase
             ['friend_id' => $user3->getId()],
         ]);
 
+        static::assertNull($user1->get('friend_names'));
         static::assertNull($user2->get('friend_names'));
+        static::assertNull($user3->get('friend_names'));
+        $user1->reload();
         $user2->reload();
-        static::assertSame('Duncan,juris', $user2->get('friend_names'));
+        $user3->reload();
+        static::assertNull($user1->get('friend_names'));
+        static::assertSame('Duncan; juris', $user2->get('friend_names'));
+        static::assertNull($user3->get('friend_names'));
 
         /* TODO - that's left for hasMTM implementation..., to be coming later
         // Specifying hasMany here will perform input
