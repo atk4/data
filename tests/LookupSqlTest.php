@@ -90,8 +90,7 @@ class LFriend extends Model
     public $table = 'friend';
     public ?string $titleField = 'friend_name';
 
-    /** @var bool */
-    public $skipReverse = false;
+    protected bool $skipReverse = false;
 
     protected function init(): void
     {
@@ -102,19 +101,18 @@ class LFriend extends Model
         $this->hasOne('friend_id', ['model' => [LUser::class]])
             ->addField('friend_name', 'name');
 
-        // add or remove reverse friendships
-        /*
+        // add/remove reverse friendships
         $this->onHookShort(self::HOOK_AFTER_INSERT, function () {
             if ($this->skipReverse) {
                 return;
             }
 
-            $c = clone $this;
+            $c = $this->getModel()->createEntity();
             $c->skipReverse = true;
-            $this->insert([
-                'user_id' => $this->get('friend_id'),
-                'friend_id' => $this->get('user_id'),
-            ]);
+            // $c->insert([
+            //     'user_id' => $this->get('friend_id'),
+            //     'friend_id' => $this->get('user_id'),
+            // ]);
         });
 
         $this->onHookShort(Model::HOOK_BEFORE_DELETE, function () {
@@ -122,15 +120,13 @@ class LFriend extends Model
                 return;
             }
 
-            $c = clone $this;
-            $c->skipReverse = true;
-
-            $c = $c->loadBy([
-                'user_id' => $this->get('friend_id'),
-                'friend_id' => $this->get('user_id'),
-            ])->delete();
+            // $c = $this->getModel()->loadBy([
+            //     'user_id' => $this->get('friend_id'),
+            //     'friend_id' => $this->get('user_id'),
+            // ]);
+            // $c->skipReverse = true;
+            // $c->delete();
         });
-        */
     }
 }
 
