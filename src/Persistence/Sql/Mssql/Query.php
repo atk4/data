@@ -51,9 +51,9 @@ class Query extends BaseQuery
             . ' fetch next ' . $cnt . ' rows only';
     }
 
-    public function groupConcat($field, string $delimiter = ',')
+    public function groupConcat($field, string $separator = ',')
     {
-        return $this->expr('string_agg({}, ' . $this->escapeStringLiteral($delimiter) . ')', [$field]);
+        return $this->expr('string_agg({}, ' . $this->escapeStringLiteral($separator) . ')', [$field]);
     }
 
     public function exists()

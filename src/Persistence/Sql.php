@@ -415,20 +415,25 @@ class Sql extends Persistence
                 [$fx, $field] = $args;
                 $field = is_string($field) ? $model->getField($field) : $field;
 
-                if ($type === 'fx') {
-                    $expr = $fx . '([])';
-                } else {
-                    $expr = 'coalesce(' . $fx . '([]), 0)';
-                }
-
                 $query = $this->action($model, 'select', [[]]);
 
-                if (isset($args['alias'])) {
-                    $query->reset('field')->field($query->expr($expr, [$field]), $args['alias']);
-                } elseif ($field instanceof SqlExpressionField) {
-                    $query->reset('field')->field($query->expr($expr, [$field]), $fx . '_' . $field->shortName);
+                if ($fx === 'concat') {
+                    $expr = $query->groupConcat($field, $args['concatSeparator']);
                 } else {
-                    $query->reset('field')->field($query->expr($expr, [$field]));
+                    $expr = $query->expr(
+                        $type === 'fx'
+                            ? $fx . '([])'
+                            : 'coalesce(' . $fx . '([]), 0)',
+                        [$field]
+                    );
+                }
+
+                if (isset($args['alias'])) {
+                    $query->reset('field')->field($expr, $args['alias']);
+                } elseif ($field instanceof SqlExpressionField) {
+                    $query->reset('field')->field($expr, $fx . '_' . $field->shortName);
+                } else {
+                    $query->reset('field')->field($expr);
                 }
                 $this->fixMssqlOracleMissingFieldsInGroup($model, $query);
 

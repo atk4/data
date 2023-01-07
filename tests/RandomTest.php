@@ -334,10 +334,12 @@ class RandomTest extends TestCase
 
     public function testModelCaption(): void
     {
-        $m = new Model($this->db, ['table' => 'user']);
-
         // caption is not set, so generate it from class name Model
+        $m = new Model($this->db, ['table' => 'user']);
         static::assertSame('Atk 4 Data Model', $m->getModelCaption());
+
+        $m = new class($this->db, ['table' => 'user']) extends Model {};
+        static::assertSame('Atk 4 Data Model Anonymous', $m->getModelCaption());
 
         // caption is set
         $m->caption = 'test';

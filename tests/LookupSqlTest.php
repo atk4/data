@@ -6,6 +6,7 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 /**
  * You can lookup country by name or by code. We will also try looking up country by
@@ -32,13 +33,11 @@ class LCountry extends Model
         $this->addField('is_eu', ['type' => 'boolean', 'default' => false]);
 
         $this->hasMany('Users', ['model' => [LUser::class]])
-            ->addField('user_names', ['field' => 'name', 'concat' => ',']);
+            ->addField('user_names', ['field' => 'name', 'concat' => ', ']);
     }
 }
 
 /**
- * User.
- *
  * User has one country and may have friends. Friend is a many-to-many relationship between users.
  *
  * When importing users, you should be able to specify country using 'country_id' or using some of the
@@ -70,7 +69,7 @@ class LUser extends Model
             ->addTitle();
 
         $this->hasMany('Friends', ['model' => [LFriend::class]])
-            ->addField('friend_names', ['field' => 'friend_name', 'concat' => ',']);
+            ->addField('friend_names', ['field' => 'friend_name', 'concat' => '; ']);
     }
 }
 
@@ -91,8 +90,7 @@ class LFriend extends Model
     public $table = 'friend';
     public ?string $titleField = 'friend_name';
 
-    /** @var bool */
-    public $skipReverse = false;
+    protected bool $skipReverse = false;
 
     protected function init(): void
     {
@@ -103,19 +101,18 @@ class LFriend extends Model
         $this->hasOne('friend_id', ['model' => [LUser::class]])
             ->addField('friend_name', 'name');
 
-        // add or remove reverse friendships
-        /*
+        // add/remove reverse friendships
         $this->onHookShort(self::HOOK_AFTER_INSERT, function () {
             if ($this->skipReverse) {
                 return;
             }
 
-            $c = clone $this;
+            $c = $this->getModel()->createEntity();
             $c->skipReverse = true;
-            $this->insert([
-                'user_id' => $this->get('friend_id'),
-                'friend_id' => $this->get('user_id'),
-            ]);
+            // $c->insert([
+            //     'user_id' => $this->get('friend_id'),
+            //     'friend_id' => $this->get('user_id'),
+            // ]);
         });
 
         $this->onHookShort(Model::HOOK_BEFORE_DELETE, function () {
@@ -123,15 +120,13 @@ class LFriend extends Model
                 return;
             }
 
-            $c = clone $this;
-            $c->skipReverse = true;
-
-            $c = $c->loadBy([
-                'user_id' => $this->get('friend_id'),
-                'friend_id' => $this->get('user_id'),
-            ])->delete();
+            // $c = $this->getModel()->loadBy([
+            //     'user_id' => $this->get('friend_id'),
+            //     'friend_id' => $this->get('user_id'),
+            // ]);
+            // $c->skipReverse = true;
+            // $c->delete();
         });
-        */
     }
 }
 
@@ -231,10 +226,7 @@ class LookupSqlTest extends TestCase
     {
         $c = new LCountry($this->db);
 
-        // Specifying hasMany here will perform input
         $c->insert(['name' => 'Canada', 'Users' => [['name' => 'Alain'], ['name' => 'Duncan', 'is_vip' => true]]]);
-
-        // Both lines will work quite similar
         $c->insert(['name' => 'Latvia', 'Users' => [['name' => 'imants'], ['name' => 'juris']]]);
 
         static::assertSameExportUnordered([
@@ -285,7 +277,6 @@ class LookupSqlTest extends TestCase
     {
         $c = new LCountry($this->db);
 
-        // Specifying hasMany here will perform input
         $c->import([
             ['name' => 'Canada', 'code' => 'CA'],
             ['name' => 'Latvia', 'code' => 'LV', 'is_eu' => true],
@@ -303,7 +294,7 @@ class LookupSqlTest extends TestCase
         $u->import([
             ['name' => 'Alain', 'country_code' => 'CA'],
             ['name' => 'Imants', 'country_code' => 'LV'],
-            // 'name' => 'Romans', 'country_code' => 'UK'], // does not exist
+            // ['name' => 'Romans', 'country_code' => 'UK'], // country code does not exist
         ]);
 
         static::assertSameExportUnordered([
@@ -356,11 +347,39 @@ class LookupSqlTest extends TestCase
         ], $this->getDb(['country', 'user']));
     }
 
-    /* TODO - that's left for hasMTM implementation..., to be coming later
     public function testImportInternationalFriends(): void
     {
         $c = new LCountry($this->db);
 
+        $c->insert(['name' => 'Canada', 'Users' => [['name' => 'Alain'], ['name' => 'Duncan', 'is_vip' => true]]]);
+        $c->insert(['name' => 'Latvia', 'Users' => [['name' => 'imants'], ['name' => 'juris']]]);
+
+        static::assertSame('imants, juris', $c->loadBy('name', 'Latvia')->get('user_names'));
+
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+            static::markTestIncomplete('TODO MSSQL: Cannot perform an aggregate function on an expression containing an aggregate or a subquery');
+        }
+
+        $user1 = $c->ref('Users')->loadBy('name', 'Duncan');
+        $user2 = $c->loadBy('name', 'Latvia')->ref('Users')->loadBy('name', 'imants');
+        $user3 = $user2->getModel()->loadBy('name', 'juris');
+
+        $user2->ref('Friends')->import([
+            ['friend_id' => $user1->getId()],
+            ['friend_id' => $user3->getId()],
+        ]);
+
+        static::assertNull($user1->get('friend_names'));
+        static::assertNull($user2->get('friend_names'));
+        static::assertNull($user3->get('friend_names'));
+        $user1->reload();
+        $user2->reload();
+        $user3->reload();
+        static::assertNull($user1->get('friend_names'));
+        static::assertSame('Duncan; juris', $user2->get('friend_names'));
+        static::assertNull($user3->get('friend_names'));
+
+        /* TODO - that's left for hasMTM implementation..., to be coming later
         // Specifying hasMany here will perform input
         $c->insert(['Canada', 'Users' => ['Alain', ['Duncan', 'is_vip' => true]]]);
 
@@ -377,6 +396,6 @@ class LookupSqlTest extends TestCase
         ]]);
 
         // BTW - Alain should have 3 friends here
+        */
     }
-    */
 }

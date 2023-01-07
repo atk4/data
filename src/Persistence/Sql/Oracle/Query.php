@@ -79,9 +79,9 @@ class Query extends BaseQuery
             . ' fetch next ' . $cnt . ' rows only';
     }
 
-    public function groupConcat($field, string $delimiter = ',')
+    public function groupConcat($field, string $separator = ',')
     {
-        return $this->expr('listagg({field}, []) within group (order by {field})', ['field' => $field, $delimiter]);
+        return $this->expr('listagg({field}, []) within group (order by {field})', ['field' => $field, $separator]);
     }
 
     public function exists()

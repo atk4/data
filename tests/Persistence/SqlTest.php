@@ -153,8 +153,7 @@ class SqlTest extends TestCase
         $m->save(['name' => 'Jane', 'surname' => 'Doe']);
         static::assertSame('Jane', $m->get('name'));
         static::assertSame('Doe', $m->get('surname'));
-        static::assertSame(3, $m->getId());
-        // id field value is set with new id value even if reloadAfterSave = false
+        // ID field is set with new value even if reloadAfterSave = false
         static::assertSame(3, $m->getId());
     }
 
