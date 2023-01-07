@@ -26,8 +26,8 @@ class SqlExpressionField extends Field
     /** @var string Specifies how to aggregate this. */
     public $aggregate;
 
-    /** @var string Aggregation by concatenation. */
-    public $concat;
+    /** @var string */
+    public $concatSeparator;
 
     /** @var Reference\HasMany|null When defining as aggregate, this will point to relation object. */
     public $aggregateRelation;
@@ -39,7 +39,7 @@ class SqlExpressionField extends Field
     {
         $this->_init();
 
-        if ($this->concat) {
+        if ($this->concatSeparator) {
             $this->onHookToOwnerEntity(Model::HOOK_AFTER_SAVE, \Closure::fromCallable([$this, 'afterSave']));
         }
     }
