@@ -863,7 +863,7 @@ class Model implements \IteratorAggregate
      */
     public function getModelCaption(): string
     {
-        return $this->caption ?? $this->readableCaption(get_debug_type($this));
+        return $this->caption ?? get_debug_type($this);
     }
 
     /**
