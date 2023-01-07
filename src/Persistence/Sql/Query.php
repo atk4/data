@@ -1036,7 +1036,7 @@ abstract class Query extends Expression
      *
      * @return Expression
      */
-    public function groupConcat($field, string $delimiter = ',')
+    public function groupConcat($field, string $separator = ',')
     {
         throw new Exception('groupConcat() is SQL-dependent, so use a correct class');
     }

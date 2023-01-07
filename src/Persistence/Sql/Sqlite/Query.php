@@ -13,8 +13,8 @@ class Query extends BaseQuery
 
     protected string $templateTruncate = 'delete [from] [tableNoalias]';
 
-    public function groupConcat($field, string $delimiter = ',')
+    public function groupConcat($field, string $separator = ',')
     {
-        return $this->expr('group_concat({}, [])', [$field, $delimiter]);
+        return $this->expr('group_concat({}, [])', [$field, $separator]);
     }
 }
