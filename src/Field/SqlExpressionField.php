@@ -35,23 +35,6 @@ class SqlExpressionField extends Field
     /** @var string Specifies which field to use. */
     public $field;
 
-    protected function init(): void
-    {
-        $this->_init();
-
-        if ($this->concatSeparator) {
-            $this->onHookToOwnerEntity(Model::HOOK_AFTER_SAVE, \Closure::fromCallable([$this, 'afterSave']));
-        }
-    }
-
-    /**
-     * Possibly that user will attempt to insert values here. If that is the case, then
-     * we would need to inject it into related hasMany relationship.
-     */
-    public function afterSave(Model $entity): void
-    {
-    }
-
     /**
      * Should this field use alias?
      * Expression fields always need alias.
