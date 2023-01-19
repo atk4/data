@@ -1103,7 +1103,7 @@ class Model implements \IteratorAggregate
         $this->assertIsModel();
 
         if ($this->issetPersistence()) {
-            throw new Exception('Persistence already set');
+            throw new Exception('Persistence is already set');
         }
 
         if ($this->persistenceData === []) {
