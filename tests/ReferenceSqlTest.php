@@ -114,7 +114,7 @@ class ReferenceSqlTest extends TestCase
         if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
             $serverVersion = $this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
             if (preg_match('~^5\.6~', $serverVersion)) {
-                static::markTestIncomplete('TODO MySQL: Unique key exceed max key (767 bytes) length');
+                static::markTestIncomplete('TODO MySQL 5.6: Unique key exceed max key (767 bytes) length');
             }
         }
         $this->markTestIncompleteWhenCreateUniqueIndexIsNotSupportedByPlatform();
