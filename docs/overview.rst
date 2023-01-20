@@ -218,58 +218,53 @@ Agile Data makes it very easy to use models with a simpler persistencies.
 For example, consider you want to output a "table" to the user using HTML by
 using Agile UI::
 
-    $htmltable = new \Atk4\Ui\Table();
-    $htmltable->invokeInit();
+    $table = \Atk4\Ui\Table::addTo($app);
 
-    $htmltable->setModel(new User($db));
+    $table->setModel(new User($db));
 
-    echo $htmltable->render();
+    echo $table->render();
 
 Class `\\Atk4\\Ui\\Table` here is designed to work with persistencies and models -
 it will populate columns of correct type, fetch data, calculate totals if needed.
 But what if you have your data inside an array?
 You can use :php:class:`Persistence\Static_` for that::
 
-    $htmltable = new \Atk4\Ui\Table();
-    $htmltable->invokeInit();
+    $table = \Atk4\Ui\Table::addTo($app);
 
-    $htmltable->setModel(new User(new Persistence\Static_([
+    $table->setModel(new User(new Persistence\Static_([
         ['name' => 'John', 'is_admin' => false, 'salary' => 34_400.0],
         ['name' => 'Peter', 'is_admin' => false, 'salary' => 42_720.0],
     ])));
 
-    echo $htmltable->render();
+    echo $table->render();
 
 Even if you don't have a model, you can use Static persistence with Generic
 model class to display VAT breakdown table::
 
-    $htmltable = new \Atk4\Ui\Table();
-    $htmltable->invokeInit();
+    $table = \Atk4\Ui\Table::addTo($app);
 
-    $htmltable->setModel(new Model(new Persistence\Static_([
+    $table->setModel(new Model(new Persistence\Static_([
         ['VAT_rate' => '12.0%', 'VAT' => 36.0, 'Net' => 300.0],
         ['VAT_rate' => '10.0%', 'VAT' => 52.0, 'Net' => 520.0],
     ])));
 
-    echo $htmltable->render();
+    echo $table->render();
 
 It can be made even simpler::
 
-    $htmltable = new \Atk4\Ui\Table();
-    $htmltable->invokeInit();
+    $table = \Atk4\Ui\Table::addTo($app);
 
-    $htmltable->setModel(new Model(new Persistence\Static_([
+    $table->setModel(new Model(new Persistence\Static_([
         'John',
         'Peter',
     ])));
 
-    echo $htmltable->render();
+    echo $table->render();
 
 Agile UI even offers a wrapper for static persistence::
 
-    $htmltable = new \Atk4\Ui\Table();
-    $htmltable->invokeInit();
+    $table = \Atk4\Ui\Table::addTo($app);
 
-    $htmltable->setSource([ 'John', 'Peter' ]);
+    $table->setSource([ 'John', 'Peter' ]);
 
-    echo $htmltable->render();
+    echo $table->render();

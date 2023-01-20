@@ -188,7 +188,7 @@ class RandomTest extends TestCase
         static::assertTrue($pAddCalled);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Persistence already set');
+        $this->expectExceptionMessage('Persistence is already set');
         $m->setPersistence($p);
     }
 

@@ -151,7 +151,7 @@ class Reference
     protected function onHookToTheirModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         if ($model->ownerReference !== null && $model->ownerReference !== $this) {
-            throw new Exception('Model owner reference unexpectedly already set');
+            throw new Exception('Model owner reference is unexpectedly already set');
         }
         $model->ownerReference = $this;
         $getThisFx = static function (Model $model) {

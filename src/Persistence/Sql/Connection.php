@@ -84,14 +84,15 @@ abstract class Connection
         }
         if (isset($dsn['dsn'])) {
             if (str_contains($dsn['dsn'], '://')) {
+                /** @var array<string, string> https://github.com/phpstan/phpstan/issues/8638 */
                 $parsed = array_filter(parse_url($dsn['dsn']));
                 $dsn['dsn'] = str_replace('-', '_', $parsed['scheme']) . ':';
                 unset($parsed['scheme']);
                 foreach ($parsed as $k => $v) {
-                    if ($k === 'pass') { // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/8638
+                    if ($k === 'pass') {
                         unset($parsed[$k]);
                         $k = 'password';
-                    } elseif ($k === 'path') { // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/8638
+                    } elseif ($k === 'path') {
                         unset($parsed[$k]);
                         $k = 'dbname';
                         $v = preg_replace('~^/~', '', $v);

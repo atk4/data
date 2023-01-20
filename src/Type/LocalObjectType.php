@@ -28,7 +28,7 @@ class LocalObjectType extends DbalTypes\Type
     /** @var array<int, \WeakReference<LocalObjectHandle>> */
     private array $handlesIndex;
 
-    protected function __clone()
+    private function __clone()
     {
         // prevent clonning
     }

@@ -41,17 +41,17 @@ class EmailFieldTest extends TestCase
     {
         $m = new Model();
         $m->addField('email', [EmailField::class, 'dnsCheck' => true]);
-        $m->addField('email_idn', [EmailField::class, 'dnsCheck' => true]);
         $entity = $m->createEntity();
 
         $entity->set('email', ' foo@gmail.com');
+        static::assertSame('foo@gmail.com', $entity->get('email'));
 
-        $entity->set('email_idn', 'test@háčkyčárky.cz'); // official IDN test domain
-        static::assertSame('test@háčkyčárky.cz', $entity->get('email_idn'));
+        $entity->set('email', 'test@háčkyčárky.cz'); // official IDN test domain
+        static::assertSame('test@háčkyčárky.cz', $entity->get('email'));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('domain does not exist');
-        $entity->set('email', ' foo@lrcanoetuhasnotdusantotehusontehuasntddaontehudnouhtd.com');
+        $entity->set('email', 'foo@lrcanoetuhasnotdusantotehusontehuasntddaontehudnouhtd.com');
     }
 
     public function testEmailWithName(): void
