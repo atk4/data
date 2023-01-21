@@ -607,7 +607,7 @@ class Model implements \IteratorAggregate
         try {
             return $this->_getFromCollection($name, 'fields');
         } catch (\Atk4\Core\Exception $e) {
-            throw (new Exception('Field is not defined in model', 0, $e))
+            throw (new Exception('Field is not defined'))
                 ->addMoreInfo('model', $this)
                 ->addMoreInfo('field', $name);
         }

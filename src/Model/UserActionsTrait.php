@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Model;
 
 use Atk4\Core\Factory;
+use Atk4\Data\Exception;
 use Atk4\Data\Model;
 
 trait UserActionsTrait
@@ -85,7 +86,13 @@ trait UserActionsTrait
             $this->addUserActionFromModel($name, $this->getModel()->getUserAction($name));
         }
 
-        return $this->_getFromCollection($name, 'userActions');
+        try {
+            return $this->_getFromCollection($name, 'userActions');
+        } catch (\Atk4\Core\Exception $e) {
+            throw (new Exception('User action is not defined'))
+                ->addMoreInfo('model', $this)
+                ->addMoreInfo('userAction', $name);
+        }
     }
 
     /**
