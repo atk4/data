@@ -595,8 +595,6 @@ class Model implements \IteratorAggregate
             return $this->getModel()->hasField($name);
         }
 
-        $this->assertIsModel();
-
         return $this->_hasInCollection($name, 'fields');
     }
 
@@ -605,8 +603,6 @@ class Model implements \IteratorAggregate
         if ($this->isEntity()) {
             return $this->getModel()->getField($name);
         }
-
-        $this->assertIsModel();
 
         try {
             return $this->_getFromCollection($name, 'fields');
@@ -674,8 +670,6 @@ class Model implements \IteratorAggregate
         if ($this->isEntity()) {
             return $this->getModel()->getFields($filter);
         }
-
-        $this->assertIsModel();
 
         if ($filter === null) {
             return $this->fields;
