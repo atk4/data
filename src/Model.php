@@ -269,7 +269,7 @@ class Model implements \IteratorAggregate
 
     public function assertIsModel(self $expectedModelInstance = null): void
     {
-        if ($this->isEntity()) {
+        if ($this->_model !== null) {
             throw new Exception('Expected model, but instance is an entity');
         }
 
@@ -282,7 +282,7 @@ class Model implements \IteratorAggregate
 
     public function assertIsEntity(self $expectedModelInstance = null): void
     {
-        if (!$this->isEntity()) {
+        if ($this->_model === null) {
             throw new Exception('Expected entity, but instance is a model');
         }
 
@@ -296,13 +296,15 @@ class Model implements \IteratorAggregate
      */
     public function getModel(bool $allowOnModel = false): self
     {
-        if ($allowOnModel && !$this->isEntity()) {
-            return $this;
+        if ($this->_model !== null) {
+            return $this->_model;
         }
 
-        $this->assertIsEntity();
+        if (!$allowOnModel) {
+            $this->assertIsEntity();
+        }
 
-        return $this->_model;
+        return $this;
     }
 
     public function __clone()
