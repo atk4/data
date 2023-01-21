@@ -422,7 +422,7 @@ class Model implements \IteratorAggregate
         if ($this->_entityId === null) {
             // set entity ID to the first seen ID
             $this->_entityId = $id;
-        } elseif (!$this->compare($this->idField, $this->_entityId)) {
+        } elseif ($this->_entityId !== $id && !$this->compare($this->idField, $this->_entityId)) {
             $this->unload(); // data for different ID were loaded, make sure to discard them
 
             throw (new Exception('Model instance is an entity, ID cannot be changed to a different one'))
@@ -829,8 +829,10 @@ class Model implements \IteratorAggregate
      */
     public function getId()
     {
+        $idFieldName = $this->getModel()->idField;
+
         try {
-            return $this->get($this->idField);
+            return $this->get($idFieldName);
         } catch (Exception $e) {
             $this->assertHasIdField();
 
@@ -845,11 +847,13 @@ class Model implements \IteratorAggregate
      */
     public function setId($value)
     {
+        $idFieldName = $this->getModel()->idField;
+
         try {
             if ($value === null) {
-                $this->setNull($this->idField);
+                $this->setNull($idFieldName);
             } else {
-                $this->set($this->idField, $value);
+                $this->set($idFieldName, $value);
             }
 
             $this->initEntityIdAndAssertUnchanged();
@@ -1162,7 +1166,7 @@ class Model implements \IteratorAggregate
         $dataRef = &$this->getDataRef();
         $dirtyRef = &$this->getDirtyRef();
         $dataRef = [];
-        if ($this->idField && $this->hasField($this->idField)) {
+        if ($this->idField) {
             $this->setId(null);
         }
         $dirtyRef = [];
