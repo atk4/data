@@ -8,6 +8,7 @@ use Atk4\Core\CollectionTrait;
 use Atk4\Core\ContainerTrait;
 use Atk4\Core\DiContainerTrait;
 use Atk4\Core\DynamicMethodTrait;
+use Atk4\Core\Exception as CoreException;
 use Atk4\Core\Factory;
 use Atk4\Core\HookBreaker;
 use Atk4\Core\HookTrait;
@@ -269,7 +270,7 @@ class Model implements \IteratorAggregate
 
     public function assertIsModel(self $expectedModelInstance = null): void
     {
-        if ($this->isEntity()) {
+        if ($this->_model !== null) {
             throw new Exception('Expected model, but instance is an entity');
         }
 
@@ -282,7 +283,7 @@ class Model implements \IteratorAggregate
 
     public function assertIsEntity(self $expectedModelInstance = null): void
     {
-        if (!$this->isEntity()) {
+        if ($this->_model === null) {
             throw new Exception('Expected entity, but instance is a model');
         }
 
@@ -296,13 +297,15 @@ class Model implements \IteratorAggregate
      */
     public function getModel(bool $allowOnModel = false): self
     {
-        if ($allowOnModel && !$this->isEntity()) {
-            return $this;
+        if ($this->_model !== null) {
+            return $this->_model;
         }
 
-        $this->assertIsEntity();
+        if (!$allowOnModel) {
+            $this->assertIsEntity();
+        }
 
-        return $this->_model;
+        return $this;
     }
 
     public function __clone()
@@ -595,8 +598,6 @@ class Model implements \IteratorAggregate
             return $this->getModel()->hasField($name);
         }
 
-        $this->assertIsModel();
-
         return $this->_hasInCollection($name, 'fields');
     }
 
@@ -606,12 +607,10 @@ class Model implements \IteratorAggregate
             return $this->getModel()->getField($name);
         }
 
-        $this->assertIsModel();
-
         try {
             return $this->_getFromCollection($name, 'fields');
-        } catch (\Atk4\Core\Exception $e) {
-            throw (new Exception('Field is not defined in model', 0, $e))
+        } catch (CoreException $e) {
+            throw (new Exception('Field is not defined'))
                 ->addMoreInfo('model', $this)
                 ->addMoreInfo('field', $name);
         }
@@ -674,8 +673,6 @@ class Model implements \IteratorAggregate
         if ($this->isEntity()) {
             return $this->getModel()->getFields($filter);
         }
-
-        $this->assertIsModel();
 
         if ($filter === null) {
             return $this->fields;
@@ -812,9 +809,9 @@ class Model implements \IteratorAggregate
 
         $this->getModel()->assertOnlyField($field);
 
-        $dataRef = &$this->getDataRef();
-        if (array_key_exists($field, $dataRef)) {
-            return $dataRef[$field];
+        $data = $this->getDataRef();
+        if (array_key_exists($field, $data)) {
+            return $data[$field];
         }
 
         return $this->getField($field)->default;
@@ -832,9 +829,15 @@ class Model implements \IteratorAggregate
      */
     public function getId()
     {
-        $this->assertHasIdField();
+        $idFieldName = $this->getModel()->idField;
 
-        return $this->get($this->idField);
+        try {
+            return $this->get($idFieldName);
+        } catch (\Throwable $e) {
+            $this->assertHasIdField();
+
+            throw $e;
+        }
     }
 
     /**
@@ -842,19 +845,25 @@ class Model implements \IteratorAggregate
      *
      * @return $this
      */
-    public function setId($value)
+    public function setId($value, bool $allowNull = true)
     {
-        $this->assertHasIdField();
+        $idFieldName = $this->getModel()->idField;
 
-        if ($value === null) {
-            $this->setNull($this->idField);
-        } else {
-            $this->set($this->idField, $value);
+        try {
+            if ($value === null && $allowNull) {
+                $this->setNull($idFieldName);
+            } else {
+                $this->set($idFieldName, $value);
+            }
+
+            $this->initEntityIdAndAssertUnchanged();
+
+            return $this;
+        } catch (\Throwable $e) {
+            $this->assertHasIdField();
+
+            throw $e;
         }
-
-        $this->initEntityIdAndAssertUnchanged();
-
-        return $this;
     }
 
     /**
@@ -901,7 +910,13 @@ class Model implements \IteratorAggregate
      */
     public function compare(string $name, $value): bool
     {
-        return $this->getField($name)->compare($this->get($name), $value);
+        $value2 = $this->get($name);
+
+        if ($value === $value2) { // optimization only
+            return true;
+        }
+
+        return $this->getField($name)->compare($value, $value2);
     }
 
     /**
@@ -1157,7 +1172,7 @@ class Model implements \IteratorAggregate
         $dataRef = &$this->getDataRef();
         $dirtyRef = &$this->getDirtyRef();
         $dataRef = [];
-        if ($this->idField && $this->hasField($this->idField)) {
+        if ($this->idField) {
             $this->setId(null);
         }
         $dirtyRef = [];
@@ -1222,7 +1237,7 @@ class Model implements \IteratorAggregate
         $dataRef = $data;
 
         if ($this->idField) {
-            $this->setId($this->getId());
+            $this->setId($data[$this->idField], false);
         }
 
         $res = $this->hook(self::HOOK_AFTER_LOAD);
@@ -1348,9 +1363,9 @@ class Model implements \IteratorAggregate
 
         $duplicate = clone $this;
         $duplicate->_entityId = null;
-        $dataRef = &$this->getDataRef();
+        $data = $this->getDataRef();
         $duplicateDirtyRef = &$duplicate->getDirtyRef();
-        $duplicateDirtyRef = $dataRef;
+        $duplicateDirtyRef = $data;
         $duplicate->setId(null);
 
         return $duplicate;
@@ -1519,7 +1534,7 @@ class Model implements \IteratorAggregate
 
                 $id = $this->getPersistence()->insert($this->getModel(), $data);
                 if ($this->idField) {
-                    $this->setId($id);
+                    $this->setId($id, false);
                 }
 
                 $this->hook(self::HOOK_AFTER_INSERT);
@@ -1751,7 +1766,7 @@ class Model implements \IteratorAggregate
             $dataRef = &$thisCloned->getDataRef();
             $dataRef = $this->getPersistence()->typecastLoadRow($this, $data);
             if ($this->idField) {
-                $thisCloned->setId($data[$this->idField] ?? null);
+                $thisCloned->setId($data[$this->idField], false);
             }
 
             // you can return false in afterLoad hook to prevent to yield this data row, example:
@@ -1774,7 +1789,7 @@ class Model implements \IteratorAggregate
                 $res = $thisCloned;
             }
 
-            if ($res->idField) {
+            if ($res->getModel()->idField) {
                 yield $res->getId() => $res;
             } else {
                 yield $res;
