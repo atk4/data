@@ -1216,7 +1216,7 @@ class Model implements \IteratorAggregate
         $dataRef = $data;
 
         if ($this->idField) {
-            $this->setId($this->getId());
+            $this->setId($data[$this->idField]);
         }
 
         $res = $this->hook(self::HOOK_AFTER_LOAD);
@@ -1745,7 +1745,7 @@ class Model implements \IteratorAggregate
             $dataRef = &$thisCloned->getDataRef();
             $dataRef = $this->getPersistence()->typecastLoadRow($this, $data);
             if ($this->idField) {
-                $thisCloned->setId($data[$this->idField] ?? null);
+                $thisCloned->setId($data[$this->idField]);
             }
 
             // you can return false in afterLoad hook to prevent to yield this data row, example:
