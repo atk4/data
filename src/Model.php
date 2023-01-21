@@ -833,7 +833,7 @@ class Model implements \IteratorAggregate
 
         try {
             return $this->get($idFieldName);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->assertHasIdField();
 
             throw $e;
@@ -859,7 +859,7 @@ class Model implements \IteratorAggregate
             $this->initEntityIdAndAssertUnchanged();
 
             return $this;
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->assertHasIdField();
 
             throw $e;
