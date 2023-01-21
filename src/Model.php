@@ -8,6 +8,7 @@ use Atk4\Core\CollectionTrait;
 use Atk4\Core\ContainerTrait;
 use Atk4\Core\DiContainerTrait;
 use Atk4\Core\DynamicMethodTrait;
+use Atk4\Core\Exception as CoreException;
 use Atk4\Core\Factory;
 use Atk4\Core\HookBreaker;
 use Atk4\Core\HookTrait;
@@ -608,7 +609,7 @@ class Model implements \IteratorAggregate
 
         try {
             return $this->_getFromCollection($name, 'fields');
-        } catch (\Atk4\Core\Exception $e) {
+        } catch (CoreException $e) {
             throw (new Exception('Field is not defined'))
                 ->addMoreInfo('model', $this)
                 ->addMoreInfo('field', $name);
@@ -808,9 +809,9 @@ class Model implements \IteratorAggregate
 
         $this->getModel()->assertOnlyField($field);
 
-        $dataRef = &$this->getDataRef();
-        if (array_key_exists($field, $dataRef)) {
-            return $dataRef[$field];
+        $data = $this->getDataRef();
+        if (array_key_exists($field, $data)) {
+            return $data[$field];
         }
 
         return $this->getField($field)->default;
@@ -828,9 +829,13 @@ class Model implements \IteratorAggregate
      */
     public function getId()
     {
-        $this->assertHasIdField();
+        try {
+            return $this->get($this->idField);
+        } catch (Exception $e) {
+            $this->assertHasIdField();
 
-        return $this->get($this->idField);
+            throw $e;
+        }
     }
 
     /**
@@ -840,17 +845,21 @@ class Model implements \IteratorAggregate
      */
     public function setId($value)
     {
-        $this->assertHasIdField();
+        try {
+            if ($value === null) {
+                $this->setNull($this->idField);
+            } else {
+                $this->set($this->idField, $value);
+            }
 
-        if ($value === null) {
-            $this->setNull($this->idField);
-        } else {
-            $this->set($this->idField, $value);
+            $this->initEntityIdAndAssertUnchanged();
+
+            return $this;
+        } catch (Exception $e) {
+            $this->assertHasIdField();
+
+            throw $e;
         }
-
-        $this->initEntityIdAndAssertUnchanged();
-
-        return $this;
     }
 
     /**
@@ -1344,9 +1353,9 @@ class Model implements \IteratorAggregate
 
         $duplicate = clone $this;
         $duplicate->_entityId = null;
-        $dataRef = &$this->getDataRef();
+        $data = $this->getDataRef();
         $duplicateDirtyRef = &$duplicate->getDirtyRef();
-        $duplicateDirtyRef = $dataRef;
+        $duplicateDirtyRef = $data;
         $duplicate->setId(null);
 
         return $duplicate;
@@ -1940,6 +1949,10 @@ class Model implements \IteratorAggregate
     public function &__get(string $name)
     {
         $model = $this->getModel(true);
+
+        if ($name === 'idField') { // optimization only
+            return $model->idField;
+        }
 
         if (isset($model->getHintableProps()[$name])) {
             return $this->__hintable_get($name);
