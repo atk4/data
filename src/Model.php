@@ -422,7 +422,7 @@ class Model implements \IteratorAggregate
         if ($this->_entityId === null) {
             // set entity ID to the first seen ID
             $this->_entityId = $id;
-        } elseif ($this->_entityId !== $id && !$this->compare($this->idField, $this->_entityId)) {
+        } elseif (!$this->compare($this->idField, $this->_entityId)) {
             $this->unload(); // data for different ID were loaded, make sure to discard them
 
             throw (new Exception('Model instance is an entity, ID cannot be changed to a different one'))
@@ -910,7 +910,13 @@ class Model implements \IteratorAggregate
      */
     public function compare(string $name, $value): bool
     {
-        return $this->getField($name)->compare($this->get($name), $value);
+        $value2 = $this->get($name);
+
+        if ($value === $value2) { // optimization only
+            return true;
+        }
+
+        return $this->getField($name)->compare($value, $value2);
     }
 
     /**
