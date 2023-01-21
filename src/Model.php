@@ -1789,7 +1789,7 @@ class Model implements \IteratorAggregate
                 $res = $thisCloned;
             }
 
-            if ($res->idField) {
+            if ($res->getModel()->idField) {
                 yield $res->getId() => $res;
             } else {
                 yield $res;
@@ -1959,10 +1959,6 @@ class Model implements \IteratorAggregate
     public function &__get(string $name)
     {
         $model = $this->getModel(true);
-
-        if ($name === 'idField') { // optimization only
-            return $model->idField;
-        }
 
         if (isset($model->getHintableProps()[$name])) {
             return $this->__hintable_get($name);
