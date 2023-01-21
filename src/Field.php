@@ -364,6 +364,10 @@ class Field implements Expressionable
      */
     public function compare($value, $value2): bool
     {
+        if ($value === $value2) { // optimization only
+            return true;
+        }
+
         // TODO, see https://stackoverflow.com/questions/48382457/mysql-json-column-change-array-order-after-saving
         // at least MySQL sorts the JSON keys if stored natively
         return $this->getValueForCompare($value) === $this->getValueForCompare($value2);
