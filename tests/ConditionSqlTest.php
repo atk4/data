@@ -49,7 +49,8 @@ class ConditionSqlTest extends TestCase
         $scope = $m->scope();
         static::assertSame($scope, $m->createEntity()->getModel()->scope());
 
-        $this->expectException(Exception::class);
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Expected model, but instance is an entity');
         $m->createEntity()->scope();
     }
 

@@ -271,20 +271,20 @@ class Model implements \IteratorAggregate
     public function assertIsModel(self $expectedModelInstance = null): void
     {
         if ($this->_model !== null) {
-            throw new Exception('Expected model, but instance is an entity');
+            throw new \TypeError('Expected model, but instance is an entity');
         }
 
         if ($expectedModelInstance !== null && $expectedModelInstance !== $this) {
             $expectedModelInstance->assertIsModel();
 
-            throw new Exception('Model instance does not match');
+            throw new \TypeError('Model instance does not match');
         }
     }
 
     public function assertIsEntity(self $expectedModelInstance = null): void
     {
         if ($this->_model === null) {
-            throw new Exception('Expected entity, but instance is a model');
+            throw new \TypeError('Expected entity, but instance is a model');
         }
 
         if ($expectedModelInstance !== null) {
@@ -1493,7 +1493,7 @@ class Model implements \IteratorAggregate
     public function save(array $data = [])
     {
         if ($this->readOnly) {
-            throw new Exception('Model is read-only and cannot be saved');
+            throw new Exception('Model is read-only');
         }
 
         $this->getModel()->assertHasPersistence();
@@ -1824,7 +1824,7 @@ class Model implements \IteratorAggregate
         }
 
         if ($this->readOnly) {
-            throw new Exception('Model is read-only and cannot be deleted');
+            throw new Exception('Model is read-only');
         }
 
         $this->getModel()->assertHasPersistence();

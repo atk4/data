@@ -385,7 +385,8 @@ class RandomTest extends TestCase
         $mm = $m->load(2);
         static::assertSame('2', $mm->getTitle()); // loaded returns id value
 
-        $this->expectException(Exception::class);
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Expected model, but instance is an entity');
         $mm->getTitles();
     }
 

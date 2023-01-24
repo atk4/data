@@ -73,7 +73,8 @@ class IteratorTest extends TestCase
     {
         $m = new Model();
 
-        $this->expectException(Exception::class);
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Expected entity, but instance is a model');
         $m->save();
     }
 
