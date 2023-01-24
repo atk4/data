@@ -1102,11 +1102,15 @@ class Model implements \IteratorAggregate
 
     public function issetPersistence(): bool
     {
+        $this->assertIsModel();
+
         return $this->_persistence !== null;
     }
 
     public function getPersistence(): Persistence
     {
+        $this->assertIsModel();
+
         return $this->_persistence;
     }
 
@@ -1115,8 +1119,6 @@ class Model implements \IteratorAggregate
      */
     public function setPersistence(Persistence $persistence)
     {
-        $this->assertIsModel();
-
         if ($this->issetPersistence()) {
             throw new Exception('Persistence is already set');
         }
@@ -1205,8 +1207,7 @@ class Model implements \IteratorAggregate
      */
     private function _load(bool $fromReload, bool $fromTryLoad, $id)
     {
-        $this->assertIsEntity();
-        $this->assertHasPersistence();
+        $this->getModel()->assertHasPersistence();
         if ($this->isLoaded()) {
             throw new Exception('Entity must be unloaded');
         }
@@ -1228,7 +1229,7 @@ class Model implements \IteratorAggregate
             return $res;
         }
 
-        $data = $this->getPersistence()->{$fromTryLoad ? 'tryLoad' : 'load'}($this->getModel(), $this->remapIdLoadToPersistence($id));
+        $data = $this->getModel()->getPersistence()->{$fromTryLoad ? 'tryLoad' : 'load'}($this->getModel(), $this->remapIdLoadToPersistence($id));
         if ($data === null) {
             return null; // $fromTryLoad is always true here
         }
@@ -1480,7 +1481,7 @@ class Model implements \IteratorAggregate
     protected function validateEntityScope(): void
     {
         if (!$this->getModel()->scope()->isEmpty()) {
-            $this->getPersistence()->load($this->getModel(), $this->getId());
+            $this->getModel()->getPersistence()->load($this->getModel(), $this->getId());
         }
     }
 
@@ -1497,7 +1498,7 @@ class Model implements \IteratorAggregate
             throw new Exception('Model is read-only and cannot be saved');
         }
 
-        $this->assertHasPersistence();
+        $this->getModel()->assertHasPersistence();
 
         $this->setMulti($data);
 
@@ -1532,7 +1533,7 @@ class Model implements \IteratorAggregate
                     return $this;
                 }
 
-                $id = $this->getPersistence()->insert($this->getModel(), $data);
+                $id = $this->getModel()->getPersistence()->insert($this->getModel(), $data);
                 if ($this->idField) {
                     $this->setId($id, false);
                 }
@@ -1566,7 +1567,7 @@ class Model implements \IteratorAggregate
                     return $this;
                 }
                 $this->validateEntityScope();
-                $this->getPersistence()->update($this->getModel(), $this->getId(), $data);
+                $this->getModel()->getPersistence()->update($this->getModel(), $this->getId(), $data);
                 $this->hook(self::HOOK_AFTER_UPDATE, [&$data]);
             }
 
@@ -1682,7 +1683,6 @@ class Model implements \IteratorAggregate
      */
     public function export(array $fields = null, string $keyField = null, bool $typecast = true): array
     {
-        $this->assertIsModel();
         $this->assertHasPersistence('export');
 
         // no key field - then just do export
@@ -1829,7 +1829,7 @@ class Model implements \IteratorAggregate
             throw new Exception('Model is read-only and cannot be deleted');
         }
 
-        $this->assertHasPersistence();
+        $this->getModel()->assertHasPersistence();
         $this->assertIsLoaded();
 
         $this->atomic(function () {
@@ -1837,7 +1837,7 @@ class Model implements \IteratorAggregate
                 return;
             }
             $this->validateEntityScope();
-            $this->getPersistence()->delete($this->getModel(), $this->getId());
+            $this->getModel()->getPersistence()->delete($this->getModel(), $this->getId());
             $this->hook(self::HOOK_AFTER_DELETE);
         });
         $this->unload();
@@ -1855,7 +1855,7 @@ class Model implements \IteratorAggregate
     public function atomic(\Closure $fx)
     {
         try {
-            return $this->getPersistence()->atomic($fx);
+            return $this->getModel(true)->getPersistence()->atomic($fx);
         } catch (\Throwable $e) {
             if ($this->hook(self::HOOK_ROLLBACK, [$e]) === false) {
                 return false;
@@ -1882,9 +1882,9 @@ class Model implements \IteratorAggregate
      */
     public function action(string $mode, array $args = [])
     {
-        $this->assertHasPersistence('action');
+        $this->getModel(true)->assertHasPersistence('action');
 
-        return $this->getPersistence()->action($this, $mode, $args);
+        return $this->getModel(true)->getPersistence()->action($this, $mode, $args);
     }
 
     public function executeCountQuery(): int

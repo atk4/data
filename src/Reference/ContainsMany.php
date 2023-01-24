@@ -28,13 +28,13 @@ class ContainsMany extends ContainsBase
         ]));
 
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
-            $this->onHookToTheirModel($theirModel, $spot, function (Model $theirModel) {
-                $ourModel = $this->getOurModel($theirModel->containedInEntity);
+            $this->onHookToTheirModel($theirModel, $spot, function (Model $theirEntity) {
+                $ourModel = $this->getOurModel($theirEntity->containedInEntity);
                 $ourModel->assertIsEntity();
 
                 /** @var Persistence\Array_ */
-                $persistence = $theirModel->getPersistence();
-                $rows = $persistence->getRawDataByTable($theirModel, $this->tableAlias); // @phpstan-ignore-line
+                $persistence = $theirEntity->getModel()->getPersistence();
+                $rows = $persistence->getRawDataByTable($theirEntity->getModel(), $this->tableAlias); // @phpstan-ignore-line
                 $ourModel->save([$this->getOurFieldName() => $rows !== [] ? $rows : null]);
             });
         }

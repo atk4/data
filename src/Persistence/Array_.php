@@ -102,6 +102,8 @@ class Array_ extends Persistence
      */
     public function getRawDataByTable(Model $model, string $table): array
     {
+        $model->assertIsModel();
+
         if (!is_object($model->table)) {
             $this->seedData($model);
         }

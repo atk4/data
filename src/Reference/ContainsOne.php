@@ -28,13 +28,13 @@ class ContainsOne extends ContainsBase
         ]));
 
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
-            $this->onHookToTheirModel($theirModel, $spot, function (Model $theirModel) {
-                $ourModel = $this->getOurModel($theirModel->containedInEntity);
+            $this->onHookToTheirModel($theirModel, $spot, function (Model $theirEntity) {
+                $ourModel = $this->getOurModel($theirEntity->containedInEntity);
                 $ourModel->assertIsEntity();
 
                 /** @var Persistence\Array_ */
-                $persistence = $theirModel->getPersistence();
-                $row = $persistence->getRawDataByTable($theirModel, $this->tableAlias); // @phpstan-ignore-line
+                $persistence = $theirEntity->getModel()->getPersistence();
+                $row = $persistence->getRawDataByTable($theirEntity->getModel(), $this->tableAlias); // @phpstan-ignore-line
                 $row = $row ? array_shift($row) : null; // get first and only one record from array persistence
                 $ourModel->save([$this->getOurFieldName() => $row]);
             });
