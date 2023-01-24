@@ -2003,6 +2003,55 @@ class Model implements \IteratorAggregate
         }
     }
 
+    private function logMagicCall(): void
+    {
+        $o = new class() {
+            public static $instance;
+            public $data;
+        };
+        $cl = get_class($o);
+        if ($cl::$instance === null) {
+            $cl::$instance = $o;
+            register_shutdown_function(function () use ($o) {
+                $data = $o->data;
+                uasort($data, function ($arrA, $arrB) {
+                    $sumCallsFx = function ($arr) {
+                        $sum = 0;
+                        foreach ($arr as $v) {
+                            $sum += $v[1];
+                        }
+
+                        return $sum;
+                    };
+
+                    return $sumCallsFx($arrA) <=> $sumCallsFx($arrB);
+                });
+                $data = array_map(function ($arr) {
+                    uasort($arr, function ($arrA, $arrB) {
+                        return $arrA[1] <=> $arrB[1];
+                    });
+
+                    return $arr;
+                }, $data);
+
+                print_r($data);
+            });
+        } else {
+            $o = $cl::$instance;
+        }
+
+        $tr = debug_backtrace(0, 2);
+        $callerFrame = $tr[1];
+        $name = $callerFrame['function'] . '::' . $callerFrame['args'][0];
+        unset($callerFrame['args']);
+        unset($callerFrame['type']);
+        unset($callerFrame['function']);
+
+        $k = md5(serialize($callerFrame));
+
+        $o->data[$name][$k] = [$callerFrame, ($o->data[$name][$k][1] ?? 0) + 1];
+    }
+
     public function __isset(string $name): bool
     {
         $model = $this->getModel(true);
@@ -2010,6 +2059,8 @@ class Model implements \IteratorAggregate
         if (isset($model->getHintableProps()[$name])) {
             return $this->__hintable_isset($name);
         }
+
+        $this->logMagicCall();
 
         if ($this->isEntity() && isset($model->getModelOnlyProperties()[$name])) {
             $this->assertIsGetEntityToModelMagicProperty($name);
@@ -2030,6 +2081,8 @@ class Model implements \IteratorAggregate
         if (isset($model->getHintableProps()[$name])) {
             return $this->__hintable_get($name);
         }
+
+        $this->logMagicCall();
 
         if ($this->isEntity() && isset($model->getModelOnlyProperties()[$name])) {
             $this->assertIsGetEntityToModelMagicProperty($name);
