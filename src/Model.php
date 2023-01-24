@@ -336,7 +336,7 @@ class Model implements \IteratorAggregate
                 }
             }
 
-            foreach ([
+            $modelOnlyProperties = array_diff_key($modelOnlyProperties, array_flip([
                 '_model',
                 '_entityId',
                 'data',
@@ -350,9 +350,7 @@ class Model implements \IteratorAggregate
                 'userActions', // should be removed once user actions are non-entity
 
                 'containedInEntity',
-            ] as $name) {
-                unset($modelOnlyProperties[$name]);
-            }
+            ]));
 
             self::$_modelOnlyProperties = $modelOnlyProperties;
         }
