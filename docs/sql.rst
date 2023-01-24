@@ -169,7 +169,7 @@ This method allows you to execute code within a 'START TRANSACTION / COMMIT' blo
     {
         public function applyPayment(Payment $p)
         {
-            $this->getPersistence()->atomic(function () use ($p) {
+            $this->getModel()->getPersistence()->atomic(function () use ($p) {
                 $this->set('paid', true);
                 $this->save();
 

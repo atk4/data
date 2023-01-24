@@ -81,7 +81,7 @@ hook. Place the following inside Transaction::init()::
     $this->onHookShort(Model::HOOK_AFTER_LOAD, function () {
         if (get_class($this) != $this->getClassName()) {
             $cl = $this->getClassName();
-            $m = new $cl($this->getPersistence());
+            $m = new $cl($this->getModel()->getPersistence());
             $m = $m->load($this->getId());
 
             $this->breakHook($m);

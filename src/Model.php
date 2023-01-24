@@ -1800,8 +1800,6 @@ class Model implements \IteratorAggregate
      */
     public function getRawIterator(): \Traversable
     {
-        $this->assertIsModel();
-
         return $this->getPersistence()->prepareIterator($this);
     }
 
