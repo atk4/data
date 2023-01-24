@@ -74,7 +74,7 @@ class ConditionSqlTest extends TestCase
         }, null, Model::class)();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessageMatches('~entity.+different~');
+        $this->expectExceptionMessage('Model instance is an entity, ID cannot be changed to a different one');
         $m->reload();
     }
 
