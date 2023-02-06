@@ -56,7 +56,7 @@ class ModelWithoutIdTest extends TestCase
         $m = $this->m->loadAny();
 
         $this->expectException(Exception::class);
-        $this->expectErrorMessage('ID field is not defined');
+        $this->expectExceptionMessage('ID field is not defined');
         $m->getId();
     }
 
@@ -65,7 +65,7 @@ class ModelWithoutIdTest extends TestCase
         $m = $this->m->createEntity();
 
         $this->expectException(Exception::class);
-        $this->expectErrorMessage('ID field is not defined');
+        $this->expectExceptionMessage('ID field is not defined');
         $m->setId(1);
     }
 
