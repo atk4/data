@@ -137,7 +137,11 @@ trait UserActionsTrait
             'fields' => true,
             'modifier' => UserAction::MODIFIER_UPDATE,
             'appliesTo' => UserAction::APPLIES_TO_SINGLE_RECORD,
-            'callback' => 'save',
+            'callback' => function (Model $entity) {
+                $entity->assertIsLoaded();
+
+                return $entity->save();
+            },
         ]);
 
         $this->addUserAction('delete', [

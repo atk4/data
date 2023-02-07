@@ -50,7 +50,7 @@ Field configuration
 ===================
 
 Fields can be further configured. For numeric fields it's possible to provide
-precision. For instance, when user specifies `type=money` it is represented
+precision. For instance, when user specifies `'type' => 'atk4_money'` it is represented
 as `['Number', 'precision' => 2, 'prefix' => '€']`
 
 Not only this allows us make a flexible and re-usable functionality for fields,
