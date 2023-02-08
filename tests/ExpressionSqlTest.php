@@ -132,7 +132,7 @@ class ExpressionSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'cached_name' => 'John Smith'],
-                2 => ['id' => 2, 'name' => 'Sue', 'surname' => 'Sue', 'cached_name' => 'ERROR'],
+                ['id' => 2, 'name' => 'Sue', 'surname' => 'Sue', 'cached_name' => 'ERROR'],
             ],
         ]);
 

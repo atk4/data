@@ -63,7 +63,7 @@ class StaticTest extends TestCase
 
     public function testIdKey(): void
     {
-        $p = new Persistence\Static_([20 => ['foo' => 'hello'], 21 => ['foo' => 'world']]);
+        $p = new Persistence\Static_([20 => ['foo' => 'hello'], ['foo' => 'world']]);
         $m = new Model($p);
 
         $m = $m->load(21);

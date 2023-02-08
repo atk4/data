@@ -56,7 +56,7 @@ class UserActionTest extends TestCase
 
         $this->pers = new Persistence\Static_([
             1 => ['name' => 'John'],
-            2 => ['name' => 'Peter'],
+            ['name' => 'Peter'],
         ]);
     }
 

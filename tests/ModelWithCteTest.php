@@ -20,9 +20,9 @@ class ModelWithCteTest extends TestCase
             ],
             'invoice' => [
                 1 => ['id' => 1, 'net' => 500, 'user_id' => 10],
-                2 => ['id' => 2, 'net' => 200, 'user_id' => 20],
-                3 => ['id' => 3, 'net' => 100, 'user_id' => 20],
-                4 => ['id' => 4, 'net' => 400, 'user_id' => 20],
+                ['id' => 2, 'net' => 200, 'user_id' => 20],
+                ['id' => 3, 'net' => 100, 'user_id' => 20],
+                ['id' => 4, 'net' => 400, 'user_id' => 20],
             ],
         ]);
 

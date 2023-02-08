@@ -23,8 +23,8 @@ class ReferenceSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
-                2 => ['id' => 2, 'name' => 'Peter'],
-                3 => ['id' => 3, 'name' => 'Joe'],
+                ['id' => 2, 'name' => 'Peter'],
+                ['id' => 3, 'name' => 'Joe'],
             ],
             'order' => [
                 ['amount' => 20, 'user_id' => 1],
@@ -155,8 +155,8 @@ class ReferenceSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
-                2 => ['id' => 2, 'name' => 'Peter'],
-                3 => ['id' => 3, 'name' => 'Joe'],
+                ['id' => 2, 'name' => 'Peter'],
+                ['id' => 3, 'name' => 'Joe'],
             ],
             'order' => [
                 ['amount' => '20', 'user_id' => 1],
@@ -197,8 +197,8 @@ class ReferenceSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'date' => '2001-01-02'],
-                2 => ['id' => 2, 'name' => 'Peter', 'date' => '2004-08-20'],
-                3 => ['id' => 3, 'name' => 'Joe', 'date' => '2005-08-20'],
+                ['id' => 2, 'name' => 'Peter', 'date' => '2004-08-20'],
+                ['id' => 3, 'name' => 'Joe', 'date' => '2005-08-20'],
             ],
             'order' => [
                 ['amount' => '20', 'user_id' => 1],
@@ -250,8 +250,8 @@ class ReferenceSqlTest extends TestCase
         $this->setDb([
             'invoice' => [
                 1 => ['id' => 1, 'ref_no' => 'INV203'],
-                2 => ['id' => 2, 'ref_no' => 'INV204'],
-                3 => ['id' => 3, 'ref_no' => 'INV205'],
+                ['id' => 2, 'ref_no' => 'INV204'],
+                ['id' => 3, 'ref_no' => 'INV205'],
             ],
             'invoice_line' => [
                 ['total_net' => ($n = 10), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 1],
@@ -287,8 +287,8 @@ class ReferenceSqlTest extends TestCase
         $this->setDb([
             'invoice' => [
                 1 => ['id' => 1, 'ref_no' => 'INV203'],
-                2 => ['id' => 2, 'ref_no' => 'INV204'],
-                3 => ['id' => 3, 'ref_no' => 'INV205'],
+                ['id' => 2, 'ref_no' => 'INV204'],
+                ['id' => 3, 'ref_no' => 'INV205'],
             ],
             'invoice_line' => [
                 ['total_net' => ($n = 10), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 1],
@@ -352,8 +352,8 @@ class ReferenceSqlTest extends TestCase
         $this->setDb([
             'list' => [
                 1 => ['id' => 1, 'name' => 'Meat'],
-                2 => ['id' => 2, 'name' => 'Veg'],
-                3 => ['id' => 3, 'name' => 'Fruit'],
+                ['id' => 2, 'name' => 'Veg'],
+                ['id' => 3, 'name' => 'Fruit'],
             ],
             'item' => [
                 ['name' => 'Apple', 'code' => 'ABC', 'list_id' => 3],
@@ -636,13 +636,13 @@ class ReferenceSqlTest extends TestCase
         $dbData = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'last_name' => 'Doe'],
-                2 => ['id' => 2, 'name' => 'Peter', 'last_name' => 'Foo'],
-                3 => ['id' => 3, 'name' => 'Goofy', 'last_name' => 'Goo'],
+                ['id' => 2, 'name' => 'Peter', 'last_name' => 'Foo'],
+                ['id' => 3, 'name' => 'Goofy', 'last_name' => 'Goo'],
             ],
             'order' => [
                 1 => ['id' => 1, 'user_id' => 1],
-                2 => ['id' => 2, 'user_id' => 2],
-                3 => ['id' => 3, 'user_id' => 1],
+                ['id' => 2, 'user_id' => 2],
+                ['id' => 3, 'user_id' => 1],
             ],
         ];
 
@@ -755,13 +755,13 @@ class ReferenceSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'last_name' => 'Doe'],
-                2 => ['id' => 2, 'name' => 'Peter', 'last_name' => 'Foo'],
-                3 => ['id' => 3, 'name' => 'Goofy', 'last_name' => 'Goo'],
+                ['id' => 2, 'name' => 'Peter', 'last_name' => 'Foo'],
+                ['id' => 3, 'name' => 'Goofy', 'last_name' => 'Goo'],
             ],
             'order' => [
                 1 => ['id' => 1, 'user_id' => 1],
-                2 => ['id' => 2, 'user_id' => 2],
-                3 => ['id' => 3, 'user_id' => 1],
+                ['id' => 2, 'user_id' => 2],
+                ['id' => 3, 'user_id' => 1],
             ],
         ]);
 
