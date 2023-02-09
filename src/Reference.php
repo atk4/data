@@ -69,6 +69,12 @@ class Reference
     protected ?string $theirField = null;
 
     /**
+     * Database our/their field types must always match, but DBAL types can be different in theory,
+     * set this to false when the DBAL types are intentionally different.
+     */
+    public bool $checkTheirType = true;
+
+    /**
      * Caption of the referenced model. Can be used in UI components, for example.
      * Should be in plain English and ready for proper localization.
      *
@@ -226,6 +232,16 @@ class Reference
         }
 
         $this->addToPersistence($theirModel, $defaults);
+
+        if ($this->checkTheirType) {
+            $ourField = $this->getOurField();
+            $theirField = $theirModel->getField($this->getTheirFieldName($theirModel));
+            if ($theirField->type !== $ourField->type) {
+                throw (new Exception('Reference type mismatch'))
+                    ->addMoreInfo('ourField', $ourField)
+                    ->addMoreInfo('theirField', $theirField);
+            }
+        }
 
         return $theirModel;
     }

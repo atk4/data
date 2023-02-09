@@ -77,7 +77,7 @@ class TypecastingTest extends TestCase
         $dbData = [
             'types' => [
                 1 => [
-                    'id' => '1',
+                    'id' => 1,
                     'string' => 'foo',
                     'date' => '2013-02-20',
                     'datetime' => '2013-02-20 20:00:12.000000',
@@ -89,7 +89,7 @@ class TypecastingTest extends TestCase
                     'json' => '[1,2,3]',
                 ],
                 [
-                    'id' => '2',
+                    'id' => 2,
                     'string' => 'foo',
                     'date' => '2013-02-20',
                     'datetime' => '2013-02-20 20:00:12.000000',

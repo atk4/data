@@ -439,7 +439,7 @@ abstract class Persistence
      * This is the actual field typecasting, which you can override in your
      * persistence to implement necessary typecasting.
      *
-     * @param scalar|null $value
+     * @param scalar $value
      *
      * @return mixed
      */

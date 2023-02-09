@@ -13,6 +13,8 @@ abstract class ContainsBase extends Reference
 {
     use ContainsSeedHackTrait;
 
+    public bool $checkTheirType = false;
+
     /** Field type. */
     public string $type = 'json';
 

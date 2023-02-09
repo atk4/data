@@ -67,7 +67,7 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        $user->addField('contact_id');
+        $user->addField('contact_id', ['type' => 'integer']);
         $user->addField('name');
         $j = $user->join('contact');
         $this->createMigrator()->createForeignKey($j);
@@ -226,12 +226,12 @@ class JoinSqlTest extends TestCase
 
         $user2 = $user->load(1);
         static::assertSame([
-            'id' => 1, 'name' => 'John', 'contact_id' => '1', 'contact_phone' => '+123',
+            'id' => 1, 'name' => 'John', 'contact_id' => 1, 'contact_phone' => '+123',
         ], $user2->get());
 
         $user2 = $user->load(3);
         static::assertSame([
-            'id' => 3, 'name' => 'Joe', 'contact_id' => '2', 'contact_phone' => '+321',
+            'id' => 3, 'name' => 'Joe', 'contact_id' => 2, 'contact_phone' => '+321',
         ], $user2->get());
 
         $user2 = $user2->unload();
@@ -257,7 +257,7 @@ class JoinSqlTest extends TestCase
         ]);
 
         $user = new Model($this->db, ['table' => 'user']);
-        $user->addField('contact_id');
+        $user->addField('contact_id', ['type' => 'integer']);
         $user->addField('name');
         $j = $user->join('contact');
         $this->createMigrator()->createForeignKey($j);
@@ -351,7 +351,7 @@ class JoinSqlTest extends TestCase
         ]);
 
         $user = new Model($this->db, ['table' => 'user']);
-        $user->addField('contact_id');
+        $user->addField('contact_id', ['type' => 'integer']);
         $user->addField('name');
         $j = $user->join('contact');
         // TODO persist order is broken $this->createMigrator()->createForeignKey($j);
@@ -432,7 +432,7 @@ class JoinSqlTest extends TestCase
         ]);
 
         $user = new Model($this->db, ['table' => 'user']);
-        $user->addField('contact_id');
+        $user->addField('contact_id', ['type' => 'integer']);
         $user->addField('name');
         $jContact = $user->join('contact');
         // TODO persist order is broken $this->createMigrator()->createForeignKey($jContact);
@@ -498,7 +498,7 @@ class JoinSqlTest extends TestCase
         ]);
 
         $user = new Model($this->db, ['table' => 'user']);
-        $user->addField('contact_id');
+        $user->addField('contact_id', ['type' => 'integer']);
         $user->addField('name');
         $j = $user->join('contact');
         // TODO persist order is broken $this->createMigrator()->createForeignKey($j);
@@ -556,13 +556,13 @@ class JoinSqlTest extends TestCase
         // main user model joined to contact table
         $user = new Model($this->db, ['table' => 'user']);
         $user->addField('name');
-        $user->addField('contact_id');
+        $user->addField('contact_id', ['type' => 'integer']);
         $j = $user->join('contact');
         $this->createMigrator()->createForeignKey($j);
 
         $user2 = $user->load(1);
         static::assertSame([
-            'id' => 1, 'name' => 'John', 'contact_id' => '10',
+            'id' => 1, 'name' => 'John', 'contact_id' => 10,
         ], $user2->get());
 
         // hasOne phone model
@@ -574,35 +574,35 @@ class JoinSqlTest extends TestCase
 
         $user2 = $user->load(1);
         static::assertSame([
-            'id' => 1, 'name' => 'John', 'contact_id' => '10', 'phone_id' => 20, 'number' => '+123',
+            'id' => 1, 'name' => 'John', 'contact_id' => 10, 'phone_id' => 20, 'number' => '+123',
         ], $user2->get());
 
         // hasMany token model (uses default ourField, theirField)
         $token = new Model($this->db, ['table' => 'token']);
-        $token->addField('user_id');
+        $token->addField('user_id', ['type' => 'integer']);
         $token->addField('token');
         $refMany = $j->hasMany('Token', ['model' => $token]); // hasMany on JOIN (use default ourField, theirField)
         $this->createMigrator()->createForeignKey($refMany);
 
         $user2 = $user->load(1);
         static::assertSameExportUnordered([
-            ['id' => 30, 'user_id' => '1', 'token' => 'ABC'],
-            ['id' => 31, 'user_id' => '1', 'token' => 'DEF'],
+            ['id' => 30, 'user_id' => 1, 'token' => 'ABC'],
+            ['id' => 31, 'user_id' => 1, 'token' => 'DEF'],
         ], $user2->ref('Token')->export());
 
         $this->markTestIncompleteWhenCreateUniqueIndexIsNotSupportedByPlatform();
 
         // hasMany email model (uses custom ourField, theirField)
         $email = new Model($this->db, ['table' => 'email']);
-        $email->addField('contact_id');
+        $email->addField('contact_id', ['type' => 'integer']);
         $email->addField('address');
         $refMany = $j->hasMany('Email', ['model' => $email, 'ourField' => 'contact_id', 'theirField' => 'contact_id']); // hasMany on JOIN (use custom ourField, theirField)
         $this->createMigrator()->createForeignKey($refMany);
 
         $user2 = $user->load(1);
         static::assertSameExportUnordered([
-            ['id' => 40, 'contact_id' => '10', 'address' => 'john@foo.net'],
-            ['id' => 41, 'contact_id' => '10', 'address' => 'johnny@foo.net'],
+            ['id' => 40, 'contact_id' => 10, 'address' => 'john@foo.net'],
+            ['id' => 41, 'contact_id' => 10, 'address' => 'johnny@foo.net'],
         ], $user2->ref('Email')->export());
     }
 
@@ -704,7 +704,7 @@ class JoinSqlTest extends TestCase
         ]);
 
         $user = new Model($this->db, ['table' => 'user']);
-        $user->addField('contact_id', ['actual' => $contactForeignIdFieldName]);
+        $user->addField('contact_id', ['type' => 'integer', 'actual' => $contactForeignIdFieldName]);
         $user->addField('name', ['actual' => 'first_name']);
         // normal join
         $j = $user->join('contact', ['prefix' => 'j1_']);

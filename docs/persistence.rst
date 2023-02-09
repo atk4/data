@@ -628,7 +628,7 @@ some other database (for archive purposes) you can implement it like this::
         $arc = $this->withPersistence($m->getApp()->archive_db);
 
         // add some audit fields
-        $arc->addField('original_id')->set($this->getId());
+        $arc->addField('original_id', ['type' => 'integer'])->set($this->getId());
         $arc->addField('saved_by')->set($this->getApp()->user);
 
         $arc->saveAndUnload();
