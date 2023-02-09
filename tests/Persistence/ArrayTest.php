@@ -37,7 +37,7 @@ class ArrayTest extends TestCase
         $p = new Persistence\Array_([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+                ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ]);
 
@@ -71,7 +71,7 @@ class ArrayTest extends TestCase
         $p = new Persistence\Array_([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'M'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
+                ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
             ],
         ]);
 
@@ -90,7 +90,7 @@ class ArrayTest extends TestCase
         static::assertSame([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'F'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
+                ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
             ],
         ], $this->getInternalPersistenceData($p));
     }
@@ -100,7 +100,7 @@ class ArrayTest extends TestCase
         $p = new Persistence\Array_([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+                ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ]);
 
@@ -121,7 +121,7 @@ class ArrayTest extends TestCase
         static::assertSame([
             'user' => [
                 1 => ['name' => 'Peter', 'surname' => 'Smith'],
-                2 => ['name' => 'Sarah', 'surname' => 'QQ'],
+                ['name' => 'Sarah', 'surname' => 'QQ'],
             ],
         ], $this->getInternalPersistenceData($p));
 
@@ -132,8 +132,8 @@ class ArrayTest extends TestCase
         static::assertSame([
             'user' => [
                 1 => ['name' => 'Peter', 'surname' => 'Smith'],
-                2 => ['name' => 'Sarah', 'surname' => 'QQ'],
-                3 => ['name' => 'Foo', 'surname' => 'Bar'],
+                ['name' => 'Sarah', 'surname' => 'QQ'],
+                ['name' => 'Foo', 'surname' => 'Bar'],
             ],
         ], $this->getInternalPersistenceData($p));
     }
@@ -143,7 +143,7 @@ class ArrayTest extends TestCase
         $p = new Persistence\Array_([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+                ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ]);
 
@@ -156,8 +156,8 @@ class ArrayTest extends TestCase
         static::assertSame([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
-                3 => ['name' => 'Foo', 'surname' => 'Bar'],
+                ['name' => 'Sarah', 'surname' => 'Jones'],
+                ['name' => 'Foo', 'surname' => 'Bar'],
             ],
         ], $this->getInternalPersistenceData($p));
 
@@ -169,7 +169,7 @@ class ArrayTest extends TestCase
         $p = new Persistence\Array_([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+                ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ]);
 
@@ -190,7 +190,7 @@ class ArrayTest extends TestCase
     {
         $p = new Persistence\Array_([
             1 => ['name' => 'John', 'surname' => 'Smith'],
-            2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+            ['name' => 'Sarah', 'surname' => 'Jones'],
         ]);
 
         $m = new Model($p);
@@ -216,7 +216,7 @@ class ArrayTest extends TestCase
     {
         $p = new Persistence\Array_([
             1 => ['name' => 'John', 'surname' => 'Smith'],
-            2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+            ['name' => 'Sarah', 'surname' => 'Jones'],
         ]);
 
         $m = new Model($p);
@@ -225,12 +225,12 @@ class ArrayTest extends TestCase
 
         static::assertSame([
             1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
-            2 => ['id' => 2, 'name' => 'Sarah', 'surname' => 'Jones'],
+            ['id' => 2, 'name' => 'Sarah', 'surname' => 'Jones'],
         ], $m->export());
 
         static::assertSame([
             1 => ['surname' => 'Smith'],
-            2 => ['surname' => 'Jones'],
+            ['surname' => 'Jones'],
         ], $m->export(['surname']));
     }
 
@@ -238,7 +238,7 @@ class ArrayTest extends TestCase
     {
         $p = new Persistence\Array_([
             1 => ['name' => 'John', 'surname' => 'Smith'],
-            2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+            ['name' => 'Sarah', 'surname' => 'Jones'],
         ]);
 
         $m = new Model($p);
@@ -253,7 +253,7 @@ class ArrayTest extends TestCase
     {
         $p = new Persistence\Array_([
             1 => ['name' => 'John', 'surname' => 'Smith'],
-            2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+            ['name' => 'Sarah', 'surname' => 'Jones'],
         ]);
 
         $m = new Model($p);
@@ -264,14 +264,14 @@ class ArrayTest extends TestCase
         $q = $m->action('field', ['name', 'alias' => 'first_name']);
         static::assertSame([
             1 => ['first_name' => 'John'],
-            2 => ['first_name' => 'Sarah'],
+            ['first_name' => 'Sarah'],
         ], $q->getRows());
 
         // if alias is not set, then use field name as key
         $q = $m->action('field', ['name']);
         static::assertSame([
             1 => ['name' => 'John'],
-            2 => ['name' => 'Sarah'],
+            ['name' => 'Sarah'],
         ], $q->getRows());
     }
 
@@ -279,15 +279,15 @@ class ArrayTest extends TestCase
     {
         $dbData = ['countries' => [
             1 => ['name' => 'ABC9', 'code' => 11, 'country' => 'Ireland', 'active' => 1],
-            2 => ['name' => 'ABC8', 'code' => 12, 'country' => 'Ireland', 'active' => 0],
-            3 => ['name' => null, 'code' => 13, 'country' => 'Latvia', 'active' => 1],
-            4 => ['name' => 'ABC6', 'code' => 14, 'country' => 'UK', 'active' => 0],
-            5 => ['name' => 'ABC5', 'code' => 15, 'country' => 'UK', 'active' => 0],
-            6 => ['name' => 'ABC4', 'code' => 16, 'country' => 'Ireland', 'active' => 1],
-            7 => ['name' => 'ABC3', 'code' => 17, 'country' => 'Latvia', 'active' => 0],
-            8 => ['name' => 'ABC2', 'code' => 18, 'country' => 'Russia', 'active' => 1],
-            9 => ['name' => null, 'code' => 19, 'country' => 'Latvia', 'active' => 1],
-            10 => ['code' => null, 'country' => 'Germany', 'active' => 1],
+            ['name' => 'ABC8', 'code' => 12, 'country' => 'Ireland', 'active' => 0],
+            ['name' => null, 'code' => 13, 'country' => 'Latvia', 'active' => 1],
+            ['name' => 'ABC6', 'code' => 14, 'country' => 'UK', 'active' => 0],
+            ['name' => 'ABC5', 'code' => 15, 'country' => 'UK', 'active' => 0],
+            ['name' => 'ABC4', 'code' => 16, 'country' => 'Ireland', 'active' => 1],
+            ['name' => 'ABC3', 'code' => 17, 'country' => 'Latvia', 'active' => 0],
+            ['name' => 'ABC2', 'code' => 18, 'country' => 'Russia', 'active' => 1],
+            ['name' => null, 'code' => 19, 'country' => 'Latvia', 'active' => 1],
+            ['code' => null, 'country' => 'Germany', 'active' => 1],
         ]];
 
         $dbDataCountries = $dbData['countries'];
@@ -387,14 +387,14 @@ class ArrayTest extends TestCase
     {
         $dbData = ['countries' => [
             1 => ['name' => 'ABC9', 'code' => 11, 'country' => 'Ireland', 'active' => 1],
-            2 => ['name' => 'ABC8', 'code' => 12, 'country' => 'Ireland', 'active' => 0],
-            3 => ['name' => null, 'code' => 13, 'country' => 'Latvia', 'active' => 1],
-            4 => ['name' => 'ABC6', 'code' => 14, 'country' => 'UK', 'active' => 0],
-            5 => ['name' => 'ABC5', 'code' => 15, 'country' => 'UK', 'active' => 0],
-            6 => ['name' => 'ABC4', 'code' => 16, 'country' => 'Ireland', 'active' => 1],
-            7 => ['name' => 'ABC3', 'code' => 17, 'country' => 'Latvia', 'active' => 0],
-            8 => ['name' => 'ABC2', 'code' => 18, 'country' => 'Russia', 'active' => 1],
-            9 => ['name' => null, 'code' => 19, 'country' => 'Latvia', 'active' => 1],
+            ['name' => 'ABC8', 'code' => 12, 'country' => 'Ireland', 'active' => 0],
+            ['name' => null, 'code' => 13, 'country' => 'Latvia', 'active' => 1],
+            ['name' => 'ABC6', 'code' => 14, 'country' => 'UK', 'active' => 0],
+            ['name' => 'ABC5', 'code' => 15, 'country' => 'UK', 'active' => 0],
+            ['name' => 'ABC4', 'code' => 16, 'country' => 'Ireland', 'active' => 1],
+            ['name' => 'ABC3', 'code' => 17, 'country' => 'Latvia', 'active' => 0],
+            ['name' => 'ABC2', 'code' => 18, 'country' => 'Russia', 'active' => 1],
+            ['name' => null, 'code' => 19, 'country' => 'Latvia', 'active' => 1],
         ]];
 
         $dbDataCountries = $dbData['countries'];
@@ -491,16 +491,16 @@ class ArrayTest extends TestCase
     {
         $p = new Persistence\Array_(['invoices' => [
             1 => ['number' => 'ABC9', 'items' => 11, 'active' => 1],
-            2 => ['number' => 'ABC8', 'items' => 12, 'active' => 0],
-            3 => ['items' => 13, 'active' => 1],
-            4 => ['number' => 'ABC6', 'items' => 14, 'active' => 0],
-            5 => ['number' => 'ABC5', 'items' => 15, 'active' => 0],
-            6 => ['number' => 'ABC4', 'items' => 16, 'active' => 1],
-            7 => ['number' => 'ABC3', 'items' => 17, 'active' => 0],
-            8 => ['number' => 'ABC2', 'items' => 18, 'active' => 1],
-            9 => ['items' => 19, 'active' => 1],
-            10 => ['items' => 0, 'active' => 1],
-            11 => ['items' => null, 'active' => 1],
+            ['number' => 'ABC8', 'items' => 12, 'active' => 0],
+            ['items' => 13, 'active' => 1],
+            ['number' => 'ABC6', 'items' => 14, 'active' => 0],
+            ['number' => 'ABC5', 'items' => 15, 'active' => 0],
+            ['number' => 'ABC4', 'items' => 16, 'active' => 1],
+            ['number' => 'ABC3', 'items' => 17, 'active' => 0],
+            ['number' => 'ABC2', 'items' => 18, 'active' => 1],
+            ['items' => 19, 'active' => 1],
+            ['items' => 0, 'active' => 1],
+            ['items' => null, 'active' => 1],
         ]]);
         $m = new Model($p, ['table' => 'invoices']);
         $m->addField('items', ['type' => 'integer']);
@@ -550,11 +550,11 @@ class ArrayTest extends TestCase
     {
         $dbData = [
             1 => ['f1' => 'A', 'f2' => 'B'],
-            2 => ['f1' => 'D', 'f2' => 'A'],
-            3 => ['f1' => 'D', 'f2' => 'C'],
-            4 => ['f1' => 'A', 'f2' => 'C'],
-            5 => ['f1' => 'E', 'f2' => 'A'],
-            6 => ['f1' => 'C', 'f2' => 'A'],
+            ['f1' => 'D', 'f2' => 'A'],
+            ['f1' => 'D', 'f2' => 'C'],
+            ['f1' => 'A', 'f2' => 'C'],
+            ['f1' => 'E', 'f2' => 'A'],
+            ['f1' => 'C', 'f2' => 'A'],
         ];
 
         // order by one field ascending
@@ -678,16 +678,16 @@ class ArrayTest extends TestCase
 
         static::assertSame([
             1 => ['id' => 1, 'f1' => 'A'],
-            2 => ['id' => 2, 'f1' => 'B'],
-            3 => ['id' => 3, 'f1' => 'C'],
-            4 => ['id' => 4, 'f1' => 'D'],
+            ['id' => 2, 'f1' => 'B'],
+            ['id' => 3, 'f1' => 'C'],
+            ['id' => 4, 'f1' => 'D'],
             7 => ['id' => 7, 'f1' => 'F'],
-            8 => ['id' => 8, 'f1' => 'G'],
-            9 => ['id' => 9, 'f1' => 'H'],
+            ['id' => 8, 'f1' => 'G'],
+            ['id' => 9, 'f1' => 'H'],
             99 => ['id' => 99, 'f1' => 'I'],
             20 => ['id' => 20, 'f1' => 'J'],
             101 => ['id' => 101, 'f1' => 'L'],
-            102 => ['id' => 102, 'f1' => 'M'],
+            ['id' => 102, 'f1' => 'M'],
         ], $m->export());
     }
 
@@ -696,9 +696,9 @@ class ArrayTest extends TestCase
         // order by one field ascending
         $p = new Persistence\Array_([
             1 => ['f1' => 'A'],
-            2 => ['f1' => 'D'],
-            3 => ['f1' => 'E'],
-            4 => ['f1' => 'C'],
+            ['f1' => 'D'],
+            ['f1' => 'E'],
+            ['f1' => 'C'],
         ]);
         $m = new Model($p);
         $m->addField('f1');
@@ -730,9 +730,9 @@ class ArrayTest extends TestCase
     {
         $p = new Persistence\Array_($dbData = [
             1 => ['name' => 'John', 'surname' => 'Smith'],
-            2 => ['name' => 'Sarah', 'surname' => 'QQ'],
-            3 => ['name' => 'Sarah', 'surname' => 'XX'],
-            4 => ['name' => 'Sarah', 'surname' => 'Smith'],
+            ['name' => 'Sarah', 'surname' => 'QQ'],
+            ['name' => 'Sarah', 'surname' => 'XX'],
+            ['name' => 'Sarah', 'surname' => 'Smith'],
         ]);
 
         $m = new Model($p);
@@ -803,11 +803,11 @@ class ArrayTest extends TestCase
         $p = new Persistence\Array_([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith', 'country_id' => 1],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones', 'country_id' => 2],
+                ['name' => 'Sarah', 'surname' => 'Jones', 'country_id' => 2],
             ],
             'country' => [
                 1 => ['name' => 'Latvia'],
-                2 => ['name' => 'UK'],
+                ['name' => 'UK'],
             ],
         ]);
 
@@ -833,12 +833,12 @@ class ArrayTest extends TestCase
         $p = new Persistence\Array_([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith', 'country_id' => 1],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones', 'country_id' => 2],
-                3 => ['name' => 'Janis', 'surname' => 'Berzins', 'country_id' => 1],
+                ['name' => 'Sarah', 'surname' => 'Jones', 'country_id' => 2],
+                ['name' => 'Janis', 'surname' => 'Berzins', 'country_id' => 1],
             ],
             'country' => [
                 1 => ['name' => 'Latvia'],
-                2 => ['name' => 'UK'],
+                ['name' => 'UK'],
             ],
         ]);
 
@@ -864,7 +864,7 @@ class ArrayTest extends TestCase
     {
         $a = [
             2 => ['name' => 'John', 'surname' => 'Smith'],
-            3 => ['name' => 'Sarah', 'surname' => 'Jones'],
+            ['name' => 'Sarah', 'surname' => 'Jones'],
         ];
 
         $p = new Persistence\Array_($a);

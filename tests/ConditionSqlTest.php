@@ -15,7 +15,7 @@ class ConditionSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
-                2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
+                ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
             ],
         ]);
 
@@ -58,7 +58,7 @@ class ConditionSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
-                2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
+                ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
             ],
         ]);
 
@@ -82,9 +82,9 @@ class ConditionSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
-                2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
-                3 => ['id' => 3, 'name' => 'Null1', 'gender' => null],
-                4 => ['id' => 4, 'name' => 'Null2', 'gender' => null],
+                ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
+                ['id' => 3, 'name' => 'Null1', 'gender' => null],
+                ['id' => 4, 'name' => 'Null2', 'gender' => null],
             ],
         ]);
 
@@ -110,7 +110,7 @@ class ConditionSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
-                2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
+                ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
             ],
         ]);
 
@@ -157,7 +157,7 @@ class ConditionSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
-                2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
+                ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
             ],
         ]);
 
@@ -190,7 +190,7 @@ class ConditionSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'gender' => 'M'],
-                2 => ['id' => 2, 'name' => 'Sue', 'surname' => 'Sue', 'gender' => 'F'],
+                ['id' => 2, 'name' => 'Sue', 'surname' => 'Sue', 'gender' => 'F'],
             ],
         ]);
 
@@ -238,12 +238,12 @@ class ConditionSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'gender' => 'M', 'contact_id' => 1],
-                2 => ['id' => 2, 'name' => 'Sue', 'surname' => 'Sue', 'gender' => 'F', 'contact_id' => 2],
-                3 => ['id' => 3, 'name' => 'Peter', 'surname' => 'Smith', 'gender' => 'M', 'contact_id' => 1],
+                ['id' => 2, 'name' => 'Sue', 'surname' => 'Sue', 'gender' => 'F', 'contact_id' => 2],
+                ['id' => 3, 'name' => 'Peter', 'surname' => 'Smith', 'gender' => 'M', 'contact_id' => 1],
             ],
             'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+123 smiths'],
-                2 => ['id' => 2, 'contact_phone' => '+321 sues'],
+                ['id' => 2, 'contact_phone' => '+321 sues'],
             ],
         ]);
 
@@ -291,8 +291,8 @@ class ConditionSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
-                2 => ['id' => 2, 'name' => 'Johhny'],
-                3 => ['id' => 3, 'name' => 'Mary'],
+                ['id' => 2, 'name' => 'Johhny'],
+                ['id' => 3, 'name' => 'Mary'],
             ],
         ]);
 
@@ -308,12 +308,12 @@ class ConditionSqlTest extends TestCase
 
         $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
-        $m->addCondition('name', []); // this should not fail, always should be false
+        $m->addCondition('name', []); // this should not fail, should be always false
         static::assertCount(0, $m->export());
 
         $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
-        $m->addCondition('name', 'not in', []); // this should not fail, always should be true
+        $m->addCondition('name', 'not in', []); // this should not fail, should be always true
         static::assertCount(3, $m->export());
     }
 
@@ -322,7 +322,7 @@ class ConditionSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'date' => '1981-12-08'],
-                2 => ['id' => 2, 'name' => 'Sue', 'date' => '1982-12-08'],
+                ['id' => 2, 'name' => 'Sue', 'date' => '1982-12-08'],
             ],
         ]);
 
@@ -339,7 +339,7 @@ class ConditionSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'date' => '1981-12-08'],
-                2 => ['id' => 2, 'name' => 'Sue', 'date' => '1982-12-08'],
+                ['id' => 2, 'name' => 'Sue', 'date' => '1982-12-08'],
             ],
         ]);
 
@@ -357,7 +357,7 @@ class ConditionSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'date' => '1981-12-08'],
-                2 => ['id' => 2, 'name' => 'Sue', 'date' => '1982-12-08'],
+                ['id' => 2, 'name' => 'Sue', 'date' => '1982-12-08'],
             ],
         ]);
 
@@ -374,8 +374,8 @@ class ConditionSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
-                2 => ['id' => 2, 'name' => 'Peter'],
-                3 => ['id' => 3, 'name' => 'Joe'],
+                ['id' => 2, 'name' => 'Peter'],
+                ['id' => 3, 'name' => 'Joe'],
             ],
         ]);
 
@@ -401,8 +401,8 @@ class ConditionSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
-                2 => ['id' => 2, 'name' => 'Peter'],
-                3 => ['id' => 3, 'name' => 'Joe'],
+                ['id' => 2, 'name' => 'Peter'],
+                ['id' => 3, 'name' => 'Joe'],
             ],
         ]);
 
@@ -427,8 +427,8 @@ class ConditionSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'active' => 1, 'created' => '2020-01-01 15:00:30'],
-                2 => ['id' => 2, 'name' => 'Peter', 'active' => 0, 'created' => '2019-05-20 12:13:14'],
-                3 => ['id' => 3, 'name' => 'Joe', 'active' => 1, 'created' => '2019-07-15 09:55:05'],
+                ['id' => 2, 'name' => 'Peter', 'active' => 0, 'created' => '2019-05-20 12:13:14'],
+                ['id' => 3, 'name' => 'Joe', 'active' => 1, 'created' => '2019-07-15 09:55:05'],
             ],
         ]);
 

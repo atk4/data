@@ -84,7 +84,7 @@ class ContainsManyTest extends TestCase
                 $l->fieldName()->discounts => null,
                 $l->fieldName()->add_date => new \DateTime('2019-01-01'),
             ],
-            2 => [
+            [
                 $l->fieldName()->id => 2,
                 $l->fieldName()->vat_rate_id => 2,
                 $l->fieldName()->price => 15,
@@ -92,7 +92,7 @@ class ContainsManyTest extends TestCase
                 $l->fieldName()->discounts => null,
                 $l->fieldName()->add_date => new \DateTime('2019-01-01'),
             ],
-            3 => [
+            [
                 $l->fieldName()->id => 3,
                 $l->fieldName()->vat_rate_id => 1,
                 $l->fieldName()->price => 40,
@@ -140,7 +140,7 @@ class ContainsManyTest extends TestCase
                 $l->fieldName()->discounts => null,
                 $l->fieldName()->add_date => new \DateTime('2019-01-01'),
             ],
-            4 => [
+            [
                 $l->fieldName()->id => 4,
                 $l->fieldName()->vat_rate_id => 2,
                 $l->fieldName()->price => 50,
@@ -180,7 +180,7 @@ class ContainsManyTest extends TestCase
                 $l->fieldName()->qty => 2,
                 $l->fieldName()->add_date => new \DateTime('2019-06-01'),
             ],
-            2 => [
+            [
                 $l->fieldName()->id => 2,
                 $l->fieldName()->vat_rate_id => 2,
                 $l->fieldName()->price => 15,
@@ -219,7 +219,7 @@ class ContainsManyTest extends TestCase
                 $l->discounts->fieldName()->percent => 5,
                 $l->discounts->fieldName()->valid_till => new \DateTime('2019-07-15'),
             ],
-            2 => [
+            [
                 $l->discounts->fieldName()->id => 2,
                 $l->discounts->fieldName()->percent => 10,
                 $l->discounts->fieldName()->valid_till => new \DateTime('2019-07-30'),
@@ -254,14 +254,14 @@ class ContainsManyTest extends TestCase
                             $i->lines->discounts->fieldName()->percent => 5,
                             $i->lines->discounts->fieldName()->valid_till => $formatDtForCompareFunc(new \DateTime('2019-07-15')),
                         ],
-                        2 => [
+                        [
                             $i->lines->discounts->fieldName()->id => 2,
                             $i->lines->discounts->fieldName()->percent => 10,
                             $i->lines->discounts->fieldName()->valid_till => $formatDtForCompareFunc(new \DateTime('2019-07-30')),
                         ],
                     ]),
                 ],
-                2 => [
+                [
                     $i->lines->fieldName()->id => 2,
                     $i->lines->fieldName()->vat_rate_id => 2,
                     $i->lines->fieldName()->price => '15',

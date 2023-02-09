@@ -27,99 +27,97 @@ class Static_ extends Array_
      */
     public function __construct(array $data = [])
     {
-        // chomp off first row, we will use it to deduct fields
-        $row1 = reset($data);
-
-        if (!is_array($row1)) {
-            // convert array of strings into array of hashes
-            $allKeysInt = true;
-            foreach ($data as $k => $str) {
-                $data[$k] = ['name' => $str];
-
-                if (!is_int($k)) {
-                    $allKeysInt = false;
-                }
+        if (count($data) > 0 && !is_array(reset($data))) {
+            $dataOrig = $data;
+            $data = [];
+            foreach ($dataOrig as $k => $v) {
+                $data[] = ['id' => $k, 'name' => $v];
             }
-            unset($str);
-
-            $this->titleFieldForModel = 'name';
-            $this->fieldsForModel = [
-                'id' => ['type' => $allKeysInt ? 'integer' : 'string'],
-                'name' => ['type' => 'string'], // TODO type should be guessed as well
-            ];
-
-            parent::__construct($data);
-
-            return;
         }
 
-        if (isset($row1['name'])) {
+        // detect types from values
+        $fieldTypes = [];
+        foreach ($data as $row) {
+            foreach ($row as $k => $v) {
+                if (isset($fieldTypes[$k])) {
+                    continue;
+                }
+
+                if (is_bool($v)) {
+                    $fieldType = 'boolean';
+                } elseif (is_int($v)) {
+                    $fieldType = 'integer';
+                } elseif (is_float($v)) {
+                    $fieldType = 'float';
+                } elseif ($v instanceof \DateTimeInterface) {
+                    $fieldType = 'datetime';
+                } elseif (is_array($v)) {
+                    $fieldType = 'json';
+                } elseif (is_object($v)) {
+                    $fieldType = 'object';
+                } elseif ($v !== null) {
+                    $fieldType = 'string';
+                } else {
+                    $fieldType = null;
+                }
+
+                $fieldTypes[$k] = $fieldType;
+            }
+        }
+        foreach ($fieldTypes as $k => $fieldType) {
+            if ($fieldType === null) {
+                $fieldTypes[$k] = 'string';
+            }
+        }
+
+        if (isset($fieldTypes['name'])) {
             $this->titleFieldForModel = 'name';
-        } elseif (isset($row1['title'])) {
+        } elseif (isset($fieldTypes['title'])) {
             $this->titleFieldForModel = 'title';
         }
 
-        $keyOverride = [];
         $defTypes = [];
+        $keyOverride = [];
         $mustOverride = false;
+        foreach ($fieldTypes as $k => $fieldType) {
+            $defTypes[$k] = ['type' => $fieldType];
 
-        foreach ($row1 as $key => $value) {
             // id information present, use it instead
-            if ($key === 'id') {
+            if ($k === 'id') {
                 $mustOverride = true;
-            }
-
-            // try to detect type of field by its value
-            if (is_bool($value)) {
-                $defTypes[] = ['type' => 'boolean'];
-            } elseif (is_int($value)) {
-                $defTypes[] = ['type' => 'integer'];
-            } elseif (is_float($value)) {
-                $defTypes[] = ['type' => 'float'];
-            } elseif ($value instanceof \DateTimeInterface) {
-                $defTypes[] = ['type' => 'datetime'];
-            } elseif (is_array($value)) {
-                $defTypes[] = ['type' => 'json'];
-            } elseif (is_object($value)) {
-                $defTypes[] = ['type' => 'object'];
-            } else {
-                $defTypes[] = ['type' => 'string'];
             }
 
             // if title is not set, use first key
             if (!$this->titleFieldForModel) {
-                if (is_int($key)) {
-                    $keyOverride[] = 'name';
+                if (is_int($k)) {
+                    $keyOverride[$k] = 'name';
                     $this->titleFieldForModel = 'name';
                     $mustOverride = true;
 
                     continue;
                 }
 
-                $this->titleFieldForModel = $key;
+                $this->titleFieldForModel = $k;
             }
 
-            if (is_int($key)) {
-                $keyOverride[] = 'field' . $key;
+            if (is_int($k)) {
+                $keyOverride[$k] = 'field' . $k;
                 $mustOverride = true;
-
-                continue;
+            } else {
+                $keyOverride[$k] = $k;
             }
-
-            $keyOverride[] = $key;
         }
 
         if ($mustOverride) {
-            $data2 = [];
-
-            foreach ($data as $key => $row) {
+            $dataOrig = $data;
+            $data = [];
+            foreach ($dataOrig as $k => $row) {
                 $row = array_combine($keyOverride, $row);
                 if (isset($row['id'])) {
-                    $key = $row['id'];
+                    $k = $row['id'];
                 }
-                $data2[$key] = $row;
+                $data[$k] = $row;
             }
-            $data = $data2;
         }
 
         $this->fieldsForModel = array_combine($keyOverride, $defTypes);

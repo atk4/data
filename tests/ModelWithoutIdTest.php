@@ -21,7 +21,7 @@ class ModelWithoutIdTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
-                2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
+                ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
             ],
         ]);
 

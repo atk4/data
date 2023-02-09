@@ -88,7 +88,7 @@ class TypecastingTest extends TestCase
                     'float' => 8.20234376757473,
                     'json' => '[1,2,3]',
                 ],
-                2 => [
+                [
                     'id' => '2',
                     'string' => 'foo',
                     'date' => '2013-02-20',

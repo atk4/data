@@ -31,7 +31,7 @@ class HasMany extends Reference
         // TODO probably remove completely in the future
         $ourModel = $this->getOurModel(null);
         $theirFieldName = preg_replace('~^.+\.~s', '', $this->getModelTableString($ourModel)) . '_' . $ourModel->idField;
-        if (!$this->createTheirModel()->hasField($theirFieldName)) {
+        if (!($theirModel ?? $this->createTheirModel())->hasField($theirFieldName)) {
             throw (new Exception('Their model does not contain fallback field'))
                 ->addMoreInfo('their_fallback_field', $theirFieldName);
         }

@@ -15,7 +15,7 @@ class SqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+                ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ]);
 
@@ -43,7 +43,7 @@ class SqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+                ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ]);
 
@@ -80,7 +80,7 @@ class SqlTest extends TestCase
         $dbData = [
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+                ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ];
 
@@ -115,7 +115,7 @@ class SqlTest extends TestCase
         $dbData = [
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+                ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ];
         $this->setDb($dbData);
@@ -139,7 +139,7 @@ class SqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+                ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ]);
 
@@ -162,7 +162,7 @@ class SqlTest extends TestCase
         $dbData = [
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+                ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ];
         $this->setDb($dbData, false); // create empty table
@@ -185,7 +185,7 @@ class SqlTest extends TestCase
         $dbData = [
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+                ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ];
         $this->setDb($dbData);
@@ -218,7 +218,7 @@ class SqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+                ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ]);
 

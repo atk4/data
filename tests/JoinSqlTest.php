@@ -96,11 +96,11 @@ class JoinSqlTest extends TestCase
         static::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
-                2 => ['id' => 2, 'name' => 'Joe', 'contact_id' => 2],
+                ['id' => 2, 'name' => 'Joe', 'contact_id' => 2],
             ],
             'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+123'],
-                2 => ['id' => 2, 'contact_phone' => '+321'],
+                ['id' => 2, 'contact_phone' => '+321'],
             ],
         ], $this->getDb(['user', 'contact']));
     }
@@ -143,11 +143,11 @@ class JoinSqlTest extends TestCase
         static::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
-                2 => ['id' => 2, 'name' => 'Peter'],
+                ['id' => 2, 'name' => 'Peter'],
             ],
             'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+123', 'test_id' => 1],
-                2 => ['id' => 2, 'contact_phone' => null, 'test_id' => 2],
+                ['id' => 2, 'contact_phone' => null, 'test_id' => 2],
             ],
         ], $this->getDb(['user', 'contact']));
 
@@ -161,8 +161,8 @@ class JoinSqlTest extends TestCase
         static::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
-                2 => ['id' => 2, 'name' => 'Peter'],
-                3 => ['id' => 3, 'name' => 'Sue'],
+                ['id' => 2, 'name' => 'Peter'],
+                ['id' => 3, 'name' => 'Sue'],
             ],
             'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+123', 'test_id' => 1],
@@ -209,12 +209,12 @@ class JoinSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                3 => ['id' => 3, 'name' => 'Joe', 'contact_id' => 2],
+                ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
+                ['id' => 3, 'name' => 'Joe', 'contact_id' => 2],
             ],
             'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+123'],
-                2 => ['id' => 2, 'contact_phone' => '+321'],
+                ['id' => 2, 'contact_phone' => '+321'],
             ],
         ]);
 
@@ -247,12 +247,12 @@ class JoinSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                3 => ['id' => 3, 'name' => 'Joe', 'contact_id' => 2],
+                ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
+                ['id' => 3, 'name' => 'Joe', 'contact_id' => 2],
             ],
             'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+123'],
-                2 => ['id' => 2, 'contact_phone' => '+321'],
+                ['id' => 2, 'contact_phone' => '+321'],
             ],
         ]);
 
@@ -271,12 +271,12 @@ class JoinSqlTest extends TestCase
         static::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                3 => ['id' => 3, 'name' => 'Joe', 'contact_id' => 2],
+                ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
+                ['id' => 3, 'name' => 'Joe', 'contact_id' => 2],
             ],
             'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+555'],
-                2 => ['id' => 2, 'contact_phone' => '+321'],
+                ['id' => 2, 'contact_phone' => '+321'],
             ],
         ], $this->getDb());
 
@@ -290,12 +290,12 @@ class JoinSqlTest extends TestCase
         static::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
+                ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
+                ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
             ],
             'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+555'],
-                2 => ['id' => 2, 'contact_phone' => '+321'],
+                ['id' => 2, 'contact_phone' => '+321'],
             ],
         ], $this->getDb());
 
@@ -305,12 +305,12 @@ class JoinSqlTest extends TestCase
         static::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
+                ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
+                ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
             ],
             'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+555'],
-                2 => ['id' => 2, 'contact_phone' => '+999'],
+                ['id' => 2, 'contact_phone' => '+999'],
             ],
         ], $this->getDb());
 
@@ -322,14 +322,14 @@ class JoinSqlTest extends TestCase
         static::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
-                4 => ['id' => 4, 'name' => 'YYY', 'contact_id' => 3],
+                ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
+                ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
+                ['id' => 4, 'name' => 'YYY', 'contact_id' => 3],
             ],
             'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+555'],
-                2 => ['id' => 2, 'contact_phone' => '+999'],
-                3 => ['id' => 3, 'contact_phone' => '+777'],
+                ['id' => 2, 'contact_phone' => '+999'],
+                ['id' => 3, 'contact_phone' => '+777'],
             ],
         ], $this->getDb());
     }
@@ -339,14 +339,14 @@ class JoinSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
-                4 => ['id' => 4, 'name' => 'YYY', 'contact_id' => 3],
+                ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
+                ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
+                ['id' => 4, 'name' => 'YYY', 'contact_id' => 3],
             ],
             'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+555'],
-                2 => ['id' => 2, 'contact_phone' => '+999'],
-                3 => ['id' => 3, 'contact_phone' => '+777'],
+                ['id' => 2, 'contact_phone' => '+999'],
+                ['id' => 3, 'contact_phone' => '+777'],
             ],
         ]);
 
@@ -363,12 +363,12 @@ class JoinSqlTest extends TestCase
         static::assertSame([
             'user' => [
                 2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
-                4 => ['id' => 4, 'name' => 'YYY', 'contact_id' => 3],
+                ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
+                ['id' => 4, 'name' => 'YYY', 'contact_id' => 3],
             ],
             'contact' => [
                 2 => ['id' => 2, 'contact_phone' => '+999'],
-                3 => ['id' => 3, 'contact_phone' => '+777'],
+                ['id' => 3, 'contact_phone' => '+777'],
             ],
         ], $this->getDb());
     }
@@ -426,7 +426,7 @@ class JoinSqlTest extends TestCase
             ],
             'country' => [
                 1 => ['id' => 1, 'name' => 'UK'],
-                2 => ['id' => 2, 'name' => 'US'],
+                ['id' => 2, 'name' => 'US'],
                 5 => ['id' => 5, 'name' => 'India'],
             ],
         ]);
@@ -461,17 +461,17 @@ class JoinSqlTest extends TestCase
                 20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
                 30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
                 40 => ['id' => 40, 'name' => 'YYY', 'contact_id' => 300],
-                41 => ['id' => 41, 'name' => 'new', 'contact_id' => 301],
+                ['id' => 41, 'name' => 'new', 'contact_id' => 301],
             ],
             'contact' => [
                 200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
                 300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
-                301 => ['id' => 301, 'contact_phone' => '+000', 'country_id' => 6],
+                ['id' => 301, 'contact_phone' => '+000', 'country_id' => 6],
             ],
             'country' => [
                 2 => ['id' => 2, 'name' => 'USA'],
                 5 => ['id' => 5, 'name' => 'India'],
-                6 => ['id' => 6, 'name' => 'LV'],
+                ['id' => 6, 'name' => 'LV'],
             ],
         ], $this->getDb());
     }
@@ -492,7 +492,7 @@ class JoinSqlTest extends TestCase
             ],
             'country' => [
                 1 => ['id' => 1, 'name' => 'UK'],
-                2 => ['id' => 2, 'name' => 'US'],
+                ['id' => 2, 'name' => 'US'],
                 5 => ['id' => 5, 'name' => 'India'],
             ],
         ]);
@@ -535,21 +535,21 @@ class JoinSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'contact_id' => 10],
-                2 => ['id' => 2, 'name' => 'Jane', 'contact_id' => 11],
+                ['id' => 2, 'name' => 'Jane', 'contact_id' => 11],
             ], 'contact' => [ // join User 1:1
                 10 => ['id' => 10, 'phone_id' => 20],
-                11 => ['id' => 11, 'phone_id' => 21],
+                ['id' => 11, 'phone_id' => 21],
             ], 'phone' => [ // each Contact hasOne phone
                 20 => ['id' => 20, 'number' => '+123'],
-                21 => ['id' => 21, 'number' => '+456'],
+                ['id' => 21, 'number' => '+456'],
             ], 'token' => [ // each User hassMany Token
                 30 => ['id' => 30, 'user_id' => 1, 'token' => 'ABC'],
-                31 => ['id' => 31, 'user_id' => 1, 'token' => 'DEF'],
-                32 => ['id' => 32, 'user_id' => 2, 'token' => 'GHI'],
+                ['id' => 31, 'user_id' => 1, 'token' => 'DEF'],
+                ['id' => 32, 'user_id' => 2, 'token' => 'GHI'],
             ], 'email' => [ // each Contact hasMany Email
                 40 => ['id' => 40, 'contact_id' => 10, 'address' => 'john@foo.net'],
-                41 => ['id' => 41, 'contact_id' => 10, 'address' => 'johnny@foo.net'],
-                42 => ['id' => 42, 'contact_id' => 11, 'address' => 'jane@foo.net'],
+                ['id' => 41, 'contact_id' => 10, 'address' => 'johnny@foo.net'],
+                ['id' => 42, 'contact_id' => 11, 'address' => 'jane@foo.net'],
             ],
         ]);
 
@@ -690,16 +690,16 @@ class JoinSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'first_name' => 'John', $contactForeignIdFieldName => 1],
-                2 => ['id' => 2, 'first_name' => 'Peter', $contactForeignIdFieldName => 1],
-                3 => ['id' => 3, 'first_name' => 'Joe', $contactForeignIdFieldName => 2],
+                ['id' => 2, 'first_name' => 'Peter', $contactForeignIdFieldName => 1],
+                ['id' => 3, 'first_name' => 'Joe', $contactForeignIdFieldName => 2],
             ],
             'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+123'],
-                2 => ['id' => 2, 'contact_phone' => '+321'],
+                ['id' => 2, 'contact_phone' => '+321'],
             ],
             'salaries' => [
                 1 => ['id' => 1, 'amount' => 123, $userForeignIdFieldName => 1],
-                2 => ['id' => 2, 'amount' => 456, $userForeignIdFieldName => 2],
+                ['id' => 2, 'amount' => 456, $userForeignIdFieldName => 2],
             ],
         ]);
 
@@ -723,16 +723,16 @@ class JoinSqlTest extends TestCase
         static::{'assertEquals'}([
             'user' => [
                 1 => ['id' => 1, 'first_name' => 'John 2', $contactForeignIdFieldName => 1],
-                2 => ['id' => 2, 'first_name' => 'Peter', $contactForeignIdFieldName => 1],
-                3 => ['id' => 3, 'first_name' => 'Joe', $contactForeignIdFieldName => 2],
+                ['id' => 2, 'first_name' => 'Peter', $contactForeignIdFieldName => 1],
+                ['id' => 3, 'first_name' => 'Joe', $contactForeignIdFieldName => 2],
             ],
             'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+555'],
-                2 => ['id' => 2, 'contact_phone' => '+321'],
+                ['id' => 2, 'contact_phone' => '+321'],
             ],
             'salaries' => [
                 1 => ['id' => 1, 'amount' => 111, $userForeignIdFieldName => 1],
-                2 => ['id' => 2, 'amount' => 456, $userForeignIdFieldName => 2],
+                ['id' => 2, 'amount' => 456, $userForeignIdFieldName => 2],
             ],
         ], $this->getDb());
 
@@ -746,19 +746,19 @@ class JoinSqlTest extends TestCase
         static::{'assertEquals'}([
             'user' => [
                 1 => ['id' => 1, 'first_name' => 'John 2', $contactForeignIdFieldName => 1],
-                2 => ['id' => 2, 'first_name' => 'Peter', $contactForeignIdFieldName => 1],
-                3 => ['id' => 3, 'first_name' => 'Joe', $contactForeignIdFieldName => 2],
-                4 => ['id' => 4, 'first_name' => 'Marvin', $contactForeignIdFieldName => 3],
+                ['id' => 2, 'first_name' => 'Peter', $contactForeignIdFieldName => 1],
+                ['id' => 3, 'first_name' => 'Joe', $contactForeignIdFieldName => 2],
+                ['id' => 4, 'first_name' => 'Marvin', $contactForeignIdFieldName => 3],
             ],
             'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+555'],
-                2 => ['id' => 2, 'contact_phone' => '+321'],
-                3 => ['id' => 3, 'contact_phone' => '+999'],
+                ['id' => 2, 'contact_phone' => '+321'],
+                ['id' => 3, 'contact_phone' => '+999'],
             ],
             'salaries' => [
                 1 => ['id' => 1, 'amount' => 111, $userForeignIdFieldName => 1],
-                2 => ['id' => 2, 'amount' => 456, $userForeignIdFieldName => 2],
-                3 => ['id' => 3, 'amount' => 222, $userForeignIdFieldName => 4],
+                ['id' => 2, 'amount' => 456, $userForeignIdFieldName => 2],
+                ['id' => 3, 'amount' => 222, $userForeignIdFieldName => 4],
             ],
         ], $this->getDb());
     }
