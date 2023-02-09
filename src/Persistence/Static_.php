@@ -28,14 +28,11 @@ class Static_ extends Array_
     public function __construct(array $data = [])
     {
         if (count($data) > 0 && !is_array(reset($data))) {
-            $dataNew = [];
-            foreach ($data as $k => $v) {
-                $dataNew[] = ['id' => $k, 'name' => $v];
+            $dataOrig = $data;
+            $data = [];
+            foreach ($dataOrig as $k => $v) {
+                $data[] = ['id' => $k, 'name' => $v];
             }
-
-            $this->__construct($dataNew);
-
-            return;
         }
 
         // detect types from values
