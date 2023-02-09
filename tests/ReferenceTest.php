@@ -121,4 +121,41 @@ class ReferenceTest extends TestCase
         $user->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
         static::assertSame($user->getReference('Orders')->getTheirFieldName(), 'user_id');
     }
+
+    public function testRefTypeMismatchOneException(): void
+    {
+        $user = new Model($this->db, ['table' => 'user']);
+        $order = new Model($this->db, ['table' => 'order']);
+        $order->addField('placed_by_user_id');
+
+        $order->hasOne('placed_by', ['model' => $user, 'ourField' => 'placed_by_user_id']);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Reference type mismatch');
+        $order->ref('placed_by');
+    }
+
+    public function testRefTypeMismatchManyException(): void
+    {
+        $user = new Model($this->db, ['table' => 'user']);
+        $order = new Model($this->db, ['table' => 'order']);
+        $order->addField('placed_by_user_id');
+
+        $user->hasMany('orders', ['model' => $order, 'theirField' => 'placed_by_user_id']);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Reference type mismatch');
+        $user->ref('orders');
+    }
+
+    public function testRefTypeMismatchWithDisabledCheck(): void
+    {
+        $user = new Model($this->db, ['table' => 'user']);
+        $order = new Model($this->db, ['table' => 'order']);
+        $order->addField('placed_by_user_id');
+
+        $order->hasOne('placed_by', ['model' => $user, 'ourField' => 'placed_by_user_id', 'checkTheirType' => false]);
+
+        static::assertSame('user', $order->ref('placed_by')->table);
+    }
 }
