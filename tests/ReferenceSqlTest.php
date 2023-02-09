@@ -314,7 +314,7 @@ class ReferenceSqlTest extends TestCase
                     return null;
                 }
 
-                return DbalTypes\Type::getType('integer')->convertToDatabaseValue($value->getId(), $platform);
+                return DbalTypes\Type::getType('integer')->convertToDatabaseValue($value->getValue(), $platform);
             }
 
             public function convertToPHPValue($value, AbstractPlatform $platform): ?object
@@ -331,7 +331,7 @@ class ReferenceSqlTest extends TestCase
                         $this->id = $id;
                     }
 
-                    public function getId(): int
+                    public function getValue(): int
                     {
                         return $this->id;
                     }
@@ -346,7 +346,7 @@ class ReferenceSqlTest extends TestCase
             $file->addField('name');
             $file->hasOne('parentDirectory', [
                 'model' => $file,
-                'type' => $integerWrappedType->getName(),
+                'type' => $integerWrappedType->getName(), // TODO should be implied from their model
                 'ourField' => 'parentDirectoryId',
             ]);
             $file->hasMany('childFiles', [
@@ -355,9 +355,12 @@ class ReferenceSqlTest extends TestCase
             ]);
 
             $fileEntity = $file->loadBy('name', 'v')->ref('childFiles')->createEntity();
+            static::assertSame(3, $fileEntity->get('parentDirectoryId')->getValue());
             $fileEntity->save(['name' => 'x']);
+            static::assertSame(9, $fileEntity->get('id')->getValue());
 
             $fileEntity = $fileEntity->ref('childFiles')->createEntity();
+            static::assertSame(9, $fileEntity->get('parentDirectoryId')->getValue());
             $fileEntity->save(['name' => 'y.txt']);
 
             $createWrappedIntegerFx = function (int $v) use ($integerWrappedType): object {
