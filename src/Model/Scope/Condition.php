@@ -154,7 +154,10 @@ class Condition extends AbstractScope
             // if we have a definitive equal condition set the value as default value for field
             // new records will automatically get this value assigned for the field
             // TODO: consider this when condition is part of OR scope
-            if ($this->operator === self::OPERATOR_EQUALS && !is_array($this->value) && !$this->value instanceof Expressionable) {
+            if ($this->operator === self::OPERATOR_EQUALS && !is_array($this->value)
+                && !$this->value instanceof Expressionable
+                && !$this->value instanceof Persistence\Array_\Action // needed to pass hintable tests
+            ) {
                 // key containing '/' means chained references and it is handled in toQueryArguments method
                 $field = $this->key;
                 if (is_string($field) && !str_contains($field, '/')) {
