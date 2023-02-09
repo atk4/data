@@ -350,7 +350,7 @@ class ReferenceSqlTest extends TestCase
             $file->addField('name');
             $file->hasOne('parentDirectory', [
                 'model' => $file,
-                'type' => $integerWrappedTypeName, // TODO should be implied from their model
+                'type' => $integerWrappedTypeName,
                 'ourField' => 'parentDirectoryId',
             ]);
             $file->hasMany('childFiles', [
