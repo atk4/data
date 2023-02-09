@@ -101,7 +101,7 @@ to do so.
 It might be handy to use in-line definition of a model. Try the following
 inside console::
 
-    $m = new \Atk4\Data\Model($db, 'contact_info');
+    $m = new Model($db, 'contact_info');
     $m->addField('address_1');
     $m->addField('address_2');
     $m->addCondition('address_1', '!=', null);
@@ -112,7 +112,7 @@ inside console::
 Next, exit and create file `src/Model_ContactInfo.php`::
 
     <?php
-    class Model_ContactInfo extends \Atk4\Data\Model
+    class Model_ContactInfo extends Model
     {
         public $table = 'contact_info';
 
@@ -171,7 +171,7 @@ it cannot be removed for safety reasons.
 Suppose you have a method that converts DataSet into JSON. Ability to add
 conditions is your way to specify which records to operate on::
 
-    public function myexport(\Atk4\Data\Model $m, $fields)
+    public function myexport(\Atk4\Data\Model $m, array $fields = null)
     {
         return json_encode($m->export($fields));
     }
@@ -243,7 +243,7 @@ It's time to create the first Model. Open `src/Model_User.php` which should look
 like this::
 
     <?php
-    class Model_User extends \Atk4\Data\Model
+    class Model_User extends Model
     {
         public $table = 'user';
 
@@ -350,7 +350,7 @@ Understanding Persistence
 To make things simple, console has already created persistence inside variable
 `$db`. Load up `console.php` in your editor to look at how persistence is set up::
 
-    $app->db = \Atk4\Data\Persistence::connect($dsn, $user, $pass);
+    $app->db = Persistence::connect($dsn, $user, $pass);
 
 The `$dsn` can also be using the PEAR-style DSN format, such as:
 "mysql://user:pass@db/host", in which case you do not need to specify $user and $pass.
@@ -361,8 +361,8 @@ For some persistence classes, you should use constructor directly::
     $array[1] = ['name' => 'John'];
     $array[2] = ['name' => 'Peter'];
 
-    $db = new \Atk4\Data\Persistence\Array_($array);
-    $m = new \Atk4\Data\Model($db);
+    $db = new Persistence\Array_($array);
+    $m = new Model($db);
     $m->addField('name');
     $m = $m->load(2);
     echo $m->get('name'); // Peter
@@ -371,7 +371,7 @@ There are several Persistence classes that deal with different data sources.
 Lets load up our console and try out a different persistence::
 
     $a = ['user' => [], 'contact_info' => []];
-    $ar = new \Atk4\Data\Persistence\Array_($a);
+    $ar = new Persistence\Array_($a);
     $m = new Model_User($ar);
     $m->set('username', 'test');
     $m->set('address_1', 'street');
