@@ -179,6 +179,24 @@ class StaticTest extends TestCase
         static::assertSame('string', $m->getField('id')->type);
         static::assertSame('string', $m->getField('name')->type);
     }
+
+    public function testFieldTypesIntegerNullFirst(): void
+    {
+        $p = new Persistence\Static_([1 => ['foo' => null], 2 => ['foo' => 1], 3 => ['foo' => null]]);
+        $m = new Model($p);
+
+        static::assertSame('integer', $m->getField('id')->type);
+        static::assertSame('integer', $m->getField('foo')->type);
+    }
+
+    public function testFieldTypesBasicIntegerNullFirst(): void
+    {
+        $p = new Persistence\Static_([1 => null, 2 => 1, 3 => null]);
+        $m = new Model($p);
+
+        static::assertSame('integer', $m->getField('id')->type);
+        static::assertSame('integer', $m->getField('name')->type);
+    }
 }
 
 class StaticTestModel extends Model

@@ -233,35 +233,47 @@ abstract class TestCase extends BaseTestCase
         foreach ($dbData as $tableName => $data) {
             $migrator = $this->createMigrator()->table($tableName);
 
-            // create table
-            $firstRow = current($data);
-            $idColumnName = null;
-            if ($firstRow) {
-                $idColumnName = isset($firstRow['_id']) ? '_id' : 'id';
-                $migrator->id($idColumnName);
-
-                foreach ($firstRow as $field => $row) {
-                    if ($field === $idColumnName) {
+            $fieldTypes = [];
+            foreach ($data as $row) {
+                foreach ($row as $k => $v) {
+                    if (isset($fieldTypes[$k])) {
                         continue;
                     }
 
-                    if (is_bool($row)) {
+                    if (is_bool($v)) {
                         $fieldType = 'boolean';
-                    } elseif (is_int($row)) {
+                    } elseif (is_int($v)) {
                         $fieldType = 'integer';
-                    } elseif (is_float($row)) {
+                    } elseif (is_float($v)) {
                         $fieldType = 'float';
-                    } elseif ($row instanceof \DateTimeInterface) {
+                    } elseif ($v instanceof \DateTimeInterface) {
                         $fieldType = 'datetime';
-                    } else {
+                    } elseif ($v !== null) {
                         $fieldType = 'string';
+                    } else {
+                        $fieldType = null;
                     }
 
-                    $migrator->field($field, ['type' => $fieldType]);
+                    $fieldTypes[$k] = $fieldType;
+                }
+            }
+            foreach ($fieldTypes as $k => $fieldType) {
+                if ($fieldType === null) {
+                    $fieldTypes[$k] = 'string';
+                }
+            }
+            $idColumnName = isset($fieldTypes['_id']) ? '_id' : 'id';
+
+            // create table
+            $migrator->id($idColumnName, isset($fieldTypes[$idColumnName]) ? ['type' => $fieldTypes[$idColumnName]] : []);
+            foreach ($fieldTypes as $k => $fieldType) {
+                if ($k === $idColumnName) {
+                    continue;
                 }
 
-                $migrator->create();
+                $migrator->field($k, ['type' => $fieldType]);
             }
+            $migrator->create();
 
             // import data
             if ($importData) {
