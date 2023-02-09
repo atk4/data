@@ -8,6 +8,7 @@ use Atk4\Core\ReadableCaptionTrait;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
+use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Sqlite\Expression as SqliteExpression;
@@ -150,11 +151,10 @@ class Condition extends AbstractScope
     {
         $model = $this->getModel();
         if ($model !== null) {
-            // if we have a definitive scalar value for a field
-            // sets it as default value for field and locks it
+            // if we have a definitive equal condition set the value as default value for field
             // new records will automatically get this value assigned for the field
-            // @todo: consider this when condition is part of OR scope
-            if ($this->operator === self::OPERATOR_EQUALS && !is_object($this->value) && !is_array($this->value)) {
+            // TODO: consider this when condition is part of OR scope
+            if ($this->operator === self::OPERATOR_EQUALS && !$this->value instanceof Expressionable) {
                 // key containing '/' means chained references and it is handled in toQueryArguments method
                 $field = $this->key;
                 if (is_string($field) && !str_contains($field, '/')) {
@@ -166,7 +166,9 @@ class Condition extends AbstractScope
                 // for now, do not set default at least for PK/ID
                 if ($field instanceof Field && $field->shortName !== $field->getOwner()->idField) {
                     $field->system = true;
-                    $field->default = $this->value;
+                    $fakePersistence = new Persistence\Array_();
+                    $valueCloned = $fakePersistence->typecastLoadField($field, $fakePersistence->typecastSaveField($field, $this->value));
+                    $field->default = $valueCloned;
                 }
             }
         }

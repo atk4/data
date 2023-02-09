@@ -7,9 +7,11 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
+use Doctrine\DBAL\Types as DbalTypes;
 
 /**
  * Tests that condition is applied when traversing hasMany
@@ -278,6 +280,127 @@ class ReferenceSqlTest extends TestCase
             'select `id`, `ref_no`, (select sum(`total_net`) from `invoice_line` `_l_6438c669e0d0` where `invoice_id` = `invoice`.`id`) `total_net` from `invoice`',
             $i->action('select')->render()[0]
         );
+    }
+
+    public function testReferenceWithObjectId(): void
+    {
+        $this->setDb([
+            'file' => [
+                1 => ['id' => 1, 'name' => 'a.txt', 'parentDirectoryId' => null],
+                ['id' => 2, 'name' => 'u', 'parentDirectoryId' => null],
+                ['id' => 3, 'name' => 'v', 'parentDirectoryId' => 2],
+                ['id' => 4, 'name' => 'w', 'parentDirectoryId' => 2],
+                ['id' => 5, 'name' => 'b.txt', 'parentDirectoryId' => 2],
+                ['id' => 6, 'name' => 'c.txt', 'parentDirectoryId' => 3],
+                ['id' => 7, 'name' => 'd.txt', 'parentDirectoryId' => 2],
+                ['id' => 8, 'name' => 'e.txt', 'parentDirectoryId' => 4],
+            ],
+        ]);
+
+        $integerWrappedType = new class() extends DbalTypes\Type {
+            public function getName(): string
+            {
+                return self::class;
+            }
+
+            public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform): string
+            {
+                return DbalTypes\Type::getType(DbalTypes\Types::INTEGER)->getSQLDeclaration($fieldDeclaration, $platform);
+            }
+
+            public function convertToDatabaseValue($value, AbstractPlatform $platform): ?int
+            {
+                if ($value === null) {
+                    return null;
+                }
+
+                return DbalTypes\Type::getType('integer')->convertToDatabaseValue($value->getId(), $platform);
+            }
+
+            public function convertToPHPValue($value, AbstractPlatform $platform): ?object
+            {
+                if ($value === null) {
+                    return null;
+                }
+
+                return new class(DbalTypes\Type::getType('integer')->convertToPHPValue($value, $platform)) {
+                    private int $id;
+
+                    public function __construct(int $id)
+                    {
+                        $this->id = $id;
+                    }
+
+                    public function getId(): int
+                    {
+                        return $this->id;
+                    }
+                };
+            }
+        };
+
+        DbalTypes\Type::addType($integerWrappedType->getName(), get_class($integerWrappedType));
+        try {
+            $file = new Model($this->db, ['table' => 'file']);
+            $file->getField('id')->type = $integerWrappedType->getName();
+            $file->addField('name');
+            $file->hasOne('parentDirectory', [
+                'model' => $file,
+                'type' => $integerWrappedType->getName(),
+                'ourField' => 'parentDirectoryId',
+            ]);
+            $file->hasMany('childFiles', [
+                'model' => $file,
+                'theirField' => 'parentDirectoryId'
+            ]);
+
+            $fileEntity = $file->loadBy('name', 'v')->ref('childFiles')->createEntity();
+            $fileEntity->save(['name' => 'x']);
+
+            $fileEntity = $fileEntity->ref('childFiles')->createEntity();
+            $fileEntity->save(['name' => 'y.txt']);
+
+            $createWrappedIntegerFx = function (int $v) use ($integerWrappedType): object {
+                return $integerWrappedType->convertToPHPValue($v, $this->getDatabasePlatform());
+            };
+
+            static::{'assertEquals'}([
+                ['id' => $createWrappedIntegerFx(10), 'name' => 'y.txt', 'parentDirectoryId' => $createWrappedIntegerFx(9)],
+            ], $fileEntity->getModel()->export());
+            static::assertSame([], $fileEntity->ref('childFiles')->export());
+
+            $fileEntity = $fileEntity->ref('parentDirectory');
+            static::{'assertEquals'}([
+                ['id' => $createWrappedIntegerFx(9), 'name' => 'x', 'parentDirectoryId' => $createWrappedIntegerFx(3)],
+            ], $fileEntity->getModel()->export());
+            static::{'assertEquals'}([
+                ['id' => $createWrappedIntegerFx(10), 'name' => 'y.txt', 'parentDirectoryId' => $createWrappedIntegerFx(9)],
+            ], $fileEntity->ref('childFiles')->export());
+
+            $fileEntity = $fileEntity->ref('parentDirectory');
+            static::{'assertEquals'}([
+                ['id' => $createWrappedIntegerFx(3), 'name' => 'v', 'parentDirectoryId' => $createWrappedIntegerFx(2)],
+            ], $fileEntity->getModel()->export());
+            static::{'assertEquals'}([
+                ['id' => $createWrappedIntegerFx(6), 'name' => 'c.txt', 'parentDirectoryId' => $createWrappedIntegerFx(3)],
+                ['id' => $createWrappedIntegerFx(9), 'name' => 'x', 'parentDirectoryId' => $createWrappedIntegerFx(3)],
+            ], $fileEntity->ref('childFiles')->export());
+            static::{'assertEquals'}([
+                ['id' => $createWrappedIntegerFx(6), 'name' => 'c.txt', 'parentDirectoryId' => $createWrappedIntegerFx(3)],
+                ['id' => $createWrappedIntegerFx(8), 'name' => 'e.txt', 'parentDirectoryId' => $createWrappedIntegerFx(4)],
+                ['id' => $createWrappedIntegerFx(9), 'name' => 'x', 'parentDirectoryId' => $createWrappedIntegerFx(3)],
+            ], $fileEntity->ref('parentDirectory')->ref('childFiles')->ref('childFiles')->export());
+
+            $fileEntity = $fileEntity->ref('parentDirectory');
+            static::{'assertEquals'}([
+                ['id' => $createWrappedIntegerFx(2), 'name' => 'u', 'parentDirectoryId' => null],
+            ], $fileEntity->getModel()->export());
+        } finally {
+            \Closure::bind(function () use ($integerWrappedType) {
+                $dbalTypeRegistry = DbalTypes\Type::getTypeRegistry();
+                unset($dbalTypeRegistry->instances[$integerWrappedType->getName()]);
+            }, null, DbalTypes\TypeRegistry::class)();
+        }
     }
 
     public function testAggregateHasMany(): void
