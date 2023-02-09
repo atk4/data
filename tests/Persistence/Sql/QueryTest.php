@@ -666,16 +666,17 @@ class QueryTest extends TestCase
     }
 
     /**
-     * @param mixed $operator
      * @param mixed $value
      *
      * @dataProvider provideWhereUnsupportedOperatorData
      */
-    public function testWhereUnsupportedOperator($operator, $value): void
+    public function testWhereUnsupportedOperator(string $operator, $value): void
     {
+        $q = $this->q('[where]')->where('x', $operator, $value);
+
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Unsupported operator');
-        $this->q('[where]')->where('x', $operator, $value)->render();
+        $q->render();
     }
 
     /**

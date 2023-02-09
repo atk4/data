@@ -229,10 +229,10 @@ class Sql extends Persistence
      *
      * @param array<int, string>|null $fields
      */
-    public function initQueryFields(Model $model, Query $query, $fields = null): void
+    public function initQueryFields(Model $model, Query $query, array $fields = null): void
     {
         // init fields
-        if (is_array($fields)) {
+        if ($fields !== null) {
             // Set of fields is strictly defined for purposes of export,
             // so we will ignore even system fields.
             foreach ($fields as $fieldName) {
