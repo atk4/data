@@ -298,6 +298,9 @@ class ReferenceSqlTest extends TestCase
         ]);
 
         $integerWrappedType = new class() extends DbalTypes\Type {
+            /**
+             * TODO: Remove once DBAL 3.x support is dropped.
+             */
             public function getName(): string
             {
                 return self::class;
@@ -338,20 +341,21 @@ class ReferenceSqlTest extends TestCase
                 };
             }
         };
+        $integerWrappedTypeName = $integerWrappedType->getName(); // @phpstan-ignore-line
 
-        DbalTypes\Type::addType($integerWrappedType->getName(), get_class($integerWrappedType));
+        DbalTypes\Type::addType($integerWrappedTypeName, get_class($integerWrappedType));
         try {
             $file = new Model($this->db, ['table' => 'file']);
-            $file->getField('id')->type = $integerWrappedType->getName();
+            $file->getField('id')->type = $integerWrappedTypeName;
             $file->addField('name');
             $file->hasOne('parentDirectory', [
                 'model' => $file,
-                'type' => $integerWrappedType->getName(), // TODO should be implied from their model
+                'type' => $integerWrappedTypeName, // TODO should be implied from their model
                 'ourField' => 'parentDirectoryId',
             ]);
             $file->hasMany('childFiles', [
                 'model' => $file,
-                'theirField' => 'parentDirectoryId'
+                'theirField' => 'parentDirectoryId',
             ]);
 
             $fileEntity = $file->loadBy('name', 'v')->ref('childFiles')->createEntity();
@@ -399,9 +403,9 @@ class ReferenceSqlTest extends TestCase
                 ['id' => $createWrappedIntegerFx(2), 'name' => 'u', 'parentDirectoryId' => null],
             ], $fileEntity->getModel()->export());
         } finally {
-            \Closure::bind(function () use ($integerWrappedType) {
+            \Closure::bind(function () use ($integerWrappedTypeName) {
                 $dbalTypeRegistry = DbalTypes\Type::getTypeRegistry();
-                unset($dbalTypeRegistry->instances[$integerWrappedType->getName()]);
+                unset($dbalTypeRegistry->instances[$integerWrappedTypeName]);
             }, null, DbalTypes\TypeRegistry::class)();
         }
     }
