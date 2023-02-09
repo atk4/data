@@ -65,7 +65,7 @@ For example it can be used to pull country information based on user.country_id
 but you wouldn't want that adding a new user would create a new country::
 
     $user->addField('username');
-    $user->addField('country_id');
+    $user->addField('country_id', ['type' => 'integer']);
     $jCountry = $user->join('country', ['weak' => true, 'prefix' => 'country_']);
     $jCountry->addField('code');
     $jCountry->addField('name');

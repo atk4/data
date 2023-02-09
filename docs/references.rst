@@ -338,7 +338,7 @@ process and the loadAny() will look like this:
 
 By passing options to hasOne() you can also differentiate field name::
 
-    $o->addField('user_id');
+    $o->addField('user_id', ['type' => 'integer']);
     $o->hasOne('User', ['model' => $u, 'ourField' => 'user_id']);
 
     $o->load(1)->ref('User')['name'];
