@@ -49,7 +49,8 @@ class ConditionSqlTest extends TestCase
         $scope = $m->scope();
         static::assertSame($scope, $m->createEntity()->getModel()->scope());
 
-        $this->expectException(Exception::class);
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Expected model, but instance is an entity');
         $m->createEntity()->scope();
     }
 
@@ -73,7 +74,7 @@ class ConditionSqlTest extends TestCase
         }, null, Model::class)();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessageMatches('~entity.+different~');
+        $this->expectExceptionMessage('Model instance is an entity, ID cannot be changed to a different one');
         $m->reload();
     }
 

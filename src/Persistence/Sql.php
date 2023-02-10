@@ -134,18 +134,12 @@ class Sql extends Persistence
     protected function initPersistence(Model $model): void
     {
         $model->addMethod('expr', static function (Model $m, ...$args) {
-            $m->assertIsModel();
-
             return $m->getPersistence()->expr($m, ...$args);
         });
         $model->addMethod('dsql', static function (Model $m, ...$args) {
-            $m->assertIsModel();
-
             return $m->getPersistence()->dsql($m, ...$args); // @phpstan-ignore-line
         });
         $model->addMethod('exprNow', static function (Model $m, ...$args) {
-            $m->assertIsModel();
-
             return $m->getPersistence()->exprNow($m, ...$args);
         });
     }
