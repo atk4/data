@@ -785,10 +785,12 @@ class JoinSqlTest extends TestCase
 
         $masterModel->import([
             ['id' => 1, 'name' => 'John', 'foo' => 21],
+            ['id' => 2, 'name' => 'Roman', 'foo' => 22],
         ]);
 
         $joinedModel->import([
             ['uid' => 1, 'bar' => 21, 'contact_phone' => '+123'],
+            ['uid' => 2, 'bar' => 22, 'contact_phone' => '+200'],
         ]);
 
         $user = new Model($this->db, ['table' => 'user']);
@@ -809,15 +811,17 @@ class JoinSqlTest extends TestCase
         [$masterModel, $joinedModel, $user] = $this->joinCustomForeignIdFieldSetup();
 
         $user = $user->load(1);
-        $user->set('name', 'John');
+        $user->set('name', 'Karl');
         $user->set('contact_phone', '+321');
         $user->save();
 
         static::assertSame([
-            ['id' => 1, 'name' => 'John', 'foo' => 21],
+            ['id' => 1, 'name' => 'Karl', 'foo' => 21],
+            ['id' => 2, 'name' => 'Roman', 'foo' => 22],
         ], $masterModel->export());
         static::assertSame([
             ['uid' => 1, 'bar' => 21, 'contact_phone' => '+321'],
+            ['uid' => 2, 'bar' => 22, 'contact_phone' => '+200'],
         ], $joinedModel->export());
     }
 
