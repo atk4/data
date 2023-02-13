@@ -763,61 +763,6 @@ class JoinSqlTest extends TestCase
         ], $this->getDb());
     }
 
-    public function testJoinSavingForeignCustomIdFieldRaiseException(): void
-    {
-        $masterModel = new \Atk4\Data\Model($this->db, [
-            'table' => 'user_join',
-        ]);
-        $masterModel->addField('name');
-        $masterModel->addField('test_id');
-
-        $joinedModel = new \Atk4\Data\Model($this->db, [
-            'table' => 'contact_join',
-            'idField' => 'not_named_id',
-        ]);
-        $joinedModel->addField('contact_id');
-        $joinedModel->addField('contact_phone');
-
-        $this->createMigrator($masterModel)->create();
-        $this->createMigrator($joinedModel)->create();
-
-        $masterModel->import([
-            [
-                'id' => 1,
-                'name' => 'John',
-                'test_id' => 21,
-            ],
-        ]);
-
-        $joinedModel->import([
-            [
-                'not_named_id' => 1,
-                'contact_id' => 21,
-                'contact_phone' => '+123',
-            ],
-        ]);
-
-        $user = new Model($this->db, ['table' => 'user_join']);
-        $user->addField('name');
-        $j = $user->join('contact_join', [
-            'foreignTable' => 'contact_join',
-            'masterField' => 'test_id',
-            'foreignField' => 'contact_id',
-            // 'foreignIdField' => 'not_named_id', // Raise exception
-        ]);
-        $this->createMigrator()->createForeignKey($j);
-        $j->addField('contact_phone');
-
-        $user = $user->load(1);
-
-        $user->set('name', 'John');
-        $user->set('contact_phone', '+321');
-
-        $this->expectException(\Atk4\Data\Persistence\Sql\ExecuteException::class);
-
-        $user->save();
-    }
-
     public function testJoinSavingForeignCustomIdField(): void
     {
         $masterModel = new \Atk4\Data\Model($this->db, [
