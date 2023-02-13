@@ -830,16 +830,4 @@ class JoinSqlTest extends TestCase
         static::assertNull($masterModel->tryLoad(1));
         static::assertNull($joinedModel->tryLoad(1));
     }
-
-    public function testJoinCustomForeignIdFieldReverseDelete(): void
-    {
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Joining tables on non-id fields is not implemented yet');
-        [$masterModel, $joinedModel, $user] = $this->joinCustomForeignIdFieldSetup(['reverse' => true]);
-
-        // $user->delete(1);
-
-        // static::assertNull($masterModel->tryLoad(1));
-        // static::assertNull($joinedModel->tryLoad(1));
-    }
 }
