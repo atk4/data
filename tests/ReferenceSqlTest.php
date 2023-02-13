@@ -7,9 +7,11 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
+use Doctrine\DBAL\Types as DbalTypes;
 
 /**
  * Tests that condition is applied when traversing hasMany
@@ -23,8 +25,8 @@ class ReferenceSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
-                2 => ['id' => 2, 'name' => 'Peter'],
-                3 => ['id' => 3, 'name' => 'Joe'],
+                ['id' => 2, 'name' => 'Peter'],
+                ['id' => 3, 'name' => 'Joe'],
             ],
             'order' => [
                 ['amount' => 20, 'user_id' => 1],
@@ -40,7 +42,7 @@ class ReferenceSqlTest extends TestCase
 
         $o = new Model($this->db, ['table' => 'order']);
         $o->addField('amount', ['type' => 'integer']);
-        $o->addField('user_id');
+        $o->addField('user_id', ['type' => 'integer']);
 
         $u->hasMany('Orders', ['model' => $o]);
 
@@ -78,7 +80,7 @@ class ReferenceSqlTest extends TestCase
 
         $o = new Model($this->db, ['table' => 'order']);
         $o->addField('amount');
-        $o->addField('user_id');
+        $o->addField('user_id', ['type' => 'integer']);
 
         $u->hasMany('Orders', ['model' => $o]);
 
@@ -114,7 +116,7 @@ class ReferenceSqlTest extends TestCase
         if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
             $serverVersion = $this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
             if (preg_match('~^5\.6~', $serverVersion)) {
-                static::markTestIncomplete('TODO MySQL: Unique key exceed max key (767 bytes) length');
+                static::markTestIncomplete('TODO MySQL 5.6: Unique key exceed max key (767 bytes) length');
             }
         }
         $this->markTestIncompleteWhenCreateUniqueIndexIsNotSupportedByPlatform();
@@ -155,8 +157,8 @@ class ReferenceSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
-                2 => ['id' => 2, 'name' => 'Peter'],
-                3 => ['id' => 3, 'name' => 'Joe'],
+                ['id' => 2, 'name' => 'Peter'],
+                ['id' => 3, 'name' => 'Joe'],
             ],
             'order' => [
                 ['amount' => '20', 'user_id' => 1],
@@ -197,8 +199,8 @@ class ReferenceSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'date' => '2001-01-02'],
-                2 => ['id' => 2, 'name' => 'Peter', 'date' => '2004-08-20'],
-                3 => ['id' => 3, 'name' => 'Joe', 'date' => '2005-08-20'],
+                ['id' => 2, 'name' => 'Peter', 'date' => '2004-08-20'],
+                ['id' => 3, 'name' => 'Joe', 'date' => '2005-08-20'],
             ],
             'order' => [
                 ['amount' => '20', 'user_id' => 1],
@@ -250,8 +252,8 @@ class ReferenceSqlTest extends TestCase
         $this->setDb([
             'invoice' => [
                 1 => ['id' => 1, 'ref_no' => 'INV203'],
-                2 => ['id' => 2, 'ref_no' => 'INV204'],
-                3 => ['id' => 3, 'ref_no' => 'INV205'],
+                ['id' => 2, 'ref_no' => 'INV204'],
+                ['id' => 3, 'ref_no' => 'INV205'],
             ],
             'invoice_line' => [
                 ['total_net' => ($n = 10), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 1],
@@ -266,7 +268,7 @@ class ReferenceSqlTest extends TestCase
         $i->addField('ref_no');
 
         $l = new Model($this->db, ['table' => 'invoice_line']);
-        $l->addField('invoice_id');
+        $l->addField('invoice_id', ['type' => 'integer']);
         $l->addField('total_net');
         $l->addField('total_vat');
         $l->addField('total_gross');
@@ -280,6 +282,134 @@ class ReferenceSqlTest extends TestCase
         );
     }
 
+    public function testReferenceWithObjectId(): void
+    {
+        $this->setDb([
+            'file' => [
+                1 => ['id' => 1, 'name' => 'a.txt', 'parentDirectoryId' => null],
+                ['id' => 2, 'name' => 'u', 'parentDirectoryId' => null],
+                ['id' => 3, 'name' => 'v', 'parentDirectoryId' => 2],
+                ['id' => 4, 'name' => 'w', 'parentDirectoryId' => 2],
+                ['id' => 5, 'name' => 'b.txt', 'parentDirectoryId' => 2],
+                ['id' => 6, 'name' => 'c.txt', 'parentDirectoryId' => 3],
+                ['id' => 7, 'name' => 'd.txt', 'parentDirectoryId' => 2],
+                ['id' => 8, 'name' => 'e.txt', 'parentDirectoryId' => 4],
+            ],
+        ]);
+
+        $integerWrappedType = new class() extends DbalTypes\Type {
+            /**
+             * TODO: Remove once DBAL 3.x support is dropped.
+             */
+            public function getName(): string
+            {
+                return self::class;
+            }
+
+            public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform): string
+            {
+                return DbalTypes\Type::getType(DbalTypes\Types::INTEGER)->getSQLDeclaration($fieldDeclaration, $platform);
+            }
+
+            public function convertToDatabaseValue($value, AbstractPlatform $platform): ?int
+            {
+                if ($value === null) {
+                    return null;
+                }
+
+                return DbalTypes\Type::getType('integer')->convertToDatabaseValue($value->getValue(), $platform);
+            }
+
+            public function convertToPHPValue($value, AbstractPlatform $platform): ?object
+            {
+                if ($value === null) {
+                    return null;
+                }
+
+                return new class(DbalTypes\Type::getType('integer')->convertToPHPValue($value, $platform)) {
+                    private int $id;
+
+                    public function __construct(int $id)
+                    {
+                        $this->id = $id;
+                    }
+
+                    public function getValue(): int
+                    {
+                        return $this->id;
+                    }
+                };
+            }
+        };
+        $integerWrappedTypeName = $integerWrappedType->getName(); // @phpstan-ignore-line
+
+        DbalTypes\Type::addType($integerWrappedTypeName, get_class($integerWrappedType));
+        try {
+            $file = new Model($this->db, ['table' => 'file']);
+            $file->getField('id')->type = $integerWrappedTypeName;
+            $file->addField('name');
+            $file->hasOne('parentDirectory', [
+                'model' => $file,
+                'type' => $integerWrappedTypeName,
+                'ourField' => 'parentDirectoryId',
+            ]);
+            $file->hasMany('childFiles', [
+                'model' => $file,
+                'theirField' => 'parentDirectoryId',
+            ]);
+
+            $fileEntity = $file->loadBy('name', 'v')->ref('childFiles')->createEntity();
+            static::assertSame(3, $fileEntity->get('parentDirectoryId')->getValue());
+            $fileEntity->save(['name' => 'x']);
+            static::assertSame(9, $fileEntity->get('id')->getValue());
+
+            $fileEntity = $fileEntity->ref('childFiles')->createEntity();
+            static::assertSame(9, $fileEntity->get('parentDirectoryId')->getValue());
+            $fileEntity->save(['name' => 'y.txt']);
+
+            $createWrappedIntegerFx = function (int $v) use ($integerWrappedType): object {
+                return $integerWrappedType->convertToPHPValue($v, $this->getDatabasePlatform());
+            };
+
+            static::{'assertEquals'}([
+                ['id' => $createWrappedIntegerFx(10), 'name' => 'y.txt', 'parentDirectoryId' => $createWrappedIntegerFx(9)],
+            ], $fileEntity->getModel()->export());
+            static::assertSame([], $fileEntity->ref('childFiles')->export());
+
+            $fileEntity = $fileEntity->ref('parentDirectory');
+            static::{'assertEquals'}([
+                ['id' => $createWrappedIntegerFx(9), 'name' => 'x', 'parentDirectoryId' => $createWrappedIntegerFx(3)],
+            ], $fileEntity->getModel()->export());
+            static::{'assertEquals'}([
+                ['id' => $createWrappedIntegerFx(10), 'name' => 'y.txt', 'parentDirectoryId' => $createWrappedIntegerFx(9)],
+            ], $fileEntity->ref('childFiles')->export());
+
+            $fileEntity = $fileEntity->ref('parentDirectory');
+            static::{'assertEquals'}([
+                ['id' => $createWrappedIntegerFx(3), 'name' => 'v', 'parentDirectoryId' => $createWrappedIntegerFx(2)],
+            ], $fileEntity->getModel()->export());
+            static::{'assertEquals'}([
+                ['id' => $createWrappedIntegerFx(6), 'name' => 'c.txt', 'parentDirectoryId' => $createWrappedIntegerFx(3)],
+                ['id' => $createWrappedIntegerFx(9), 'name' => 'x', 'parentDirectoryId' => $createWrappedIntegerFx(3)],
+            ], $fileEntity->ref('childFiles')->export());
+            static::{'assertEquals'}([
+                ['id' => $createWrappedIntegerFx(6), 'name' => 'c.txt', 'parentDirectoryId' => $createWrappedIntegerFx(3)],
+                ['id' => $createWrappedIntegerFx(8), 'name' => 'e.txt', 'parentDirectoryId' => $createWrappedIntegerFx(4)],
+                ['id' => $createWrappedIntegerFx(9), 'name' => 'x', 'parentDirectoryId' => $createWrappedIntegerFx(3)],
+            ], $fileEntity->ref('parentDirectory')->ref('childFiles')->ref('childFiles')->export());
+
+            $fileEntity = $fileEntity->ref('parentDirectory');
+            static::{'assertEquals'}([
+                ['id' => $createWrappedIntegerFx(2), 'name' => 'u', 'parentDirectoryId' => null],
+            ], $fileEntity->getModel()->export());
+        } finally {
+            \Closure::bind(function () use ($integerWrappedTypeName) {
+                $dbalTypeRegistry = DbalTypes\Type::getTypeRegistry();
+                unset($dbalTypeRegistry->instances[$integerWrappedTypeName]);
+            }, null, DbalTypes\TypeRegistry::class)();
+        }
+    }
+
     public function testAggregateHasMany(): void
     {
         $vat = 0.23;
@@ -287,8 +417,8 @@ class ReferenceSqlTest extends TestCase
         $this->setDb([
             'invoice' => [
                 1 => ['id' => 1, 'ref_no' => 'INV203'],
-                2 => ['id' => 2, 'ref_no' => 'INV204'],
-                3 => ['id' => 3, 'ref_no' => 'INV205'],
+                ['id' => 2, 'ref_no' => 'INV204'],
+                ['id' => 3, 'ref_no' => 'INV205'],
             ],
             'invoice_line' => [
                 ['total_net' => ($n = 10), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 1],
@@ -303,7 +433,7 @@ class ReferenceSqlTest extends TestCase
         $i->addField('ref_no');
 
         $l = new Model($this->db, ['table' => 'invoice_line']);
-        $l->addField('invoice_id');
+        $l->addField('invoice_id', ['type' => 'integer']);
         $l->addField('total_net', ['type' => 'atk4_money']);
         $l->addField('total_vat', ['type' => 'atk4_money']);
         $l->addField('total_gross', ['type' => 'atk4_money']);
@@ -352,8 +482,8 @@ class ReferenceSqlTest extends TestCase
         $this->setDb([
             'list' => [
                 1 => ['id' => 1, 'name' => 'Meat'],
-                2 => ['id' => 2, 'name' => 'Veg'],
-                3 => ['id' => 3, 'name' => 'Fruit'],
+                ['id' => 2, 'name' => 'Veg'],
+                ['id' => 3, 'name' => 'Fruit'],
             ],
             'item' => [
                 ['name' => 'Apple', 'code' => 'ABC', 'list_id' => 3],
@@ -381,7 +511,7 @@ class ReferenceSqlTest extends TestCase
         $l->addField('name');
 
         $i = new Model($this->db, ['table' => 'item']);
-        $i->addField('list_id');
+        $i->addField('list_id', ['type' => 'integer']);
         $i->addField('name');
         $i->addField('code');
 
@@ -437,7 +567,7 @@ class ReferenceSqlTest extends TestCase
 
         $user = new Model($this->db, ['table' => 'user']);
         $user->addField('name');
-        $user->addField('company_id');
+        $user->addField('company_id', ['type' => 'integer']);
 
         $company = new Model($this->db, ['table' => 'company']);
         $company->addField('name');
@@ -445,7 +575,7 @@ class ReferenceSqlTest extends TestCase
         $user->hasOne('Company', ['model' => $company, 'ourField' => 'company_id', 'theirField' => 'id']);
 
         $order = new Model($this->db, ['table' => 'order']);
-        $order->addField('company_id');
+        $order->addField('company_id', ['type' => 'integer']);
         $order->addField('description');
         $order->addField('amount', ['default' => 20, 'type' => 'float']);
 
@@ -460,14 +590,14 @@ class ReferenceSqlTest extends TestCase
         $userEntity = $user->load(1);
 
         static::assertSameExportUnordered([
-            ['id' => 1, 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
-            ['id' => 3, 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
+            ['id' => 1, 'company_id' => 1, 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
+            ['id' => 3, 'company_id' => 1, 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
         ], $userEntity->ref('Company')->ref('Orders')->export());
 
         static::assertSameExportUnordered([
-            ['id' => 1, 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
-            ['id' => 2, 'company_id' => '2', 'description' => 'Zoe Company Order', 'amount' => 10.0],
-            ['id' => 3, 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
+            ['id' => 1, 'company_id' => 1, 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
+            ['id' => 2, 'company_id' => 2, 'description' => 'Zoe Company Order', 'amount' => 10.0],
+            ['id' => 3, 'company_id' => 1, 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
         ], $userEntity->getModel()->ref('Company')->ref('Orders')->export());
     }
 
@@ -636,13 +766,13 @@ class ReferenceSqlTest extends TestCase
         $dbData = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'last_name' => 'Doe'],
-                2 => ['id' => 2, 'name' => 'Peter', 'last_name' => 'Foo'],
-                3 => ['id' => 3, 'name' => 'Goofy', 'last_name' => 'Goo'],
+                ['id' => 2, 'name' => 'Peter', 'last_name' => 'Foo'],
+                ['id' => 3, 'name' => 'Goofy', 'last_name' => 'Goo'],
             ],
             'order' => [
                 1 => ['id' => 1, 'user_id' => 1],
-                2 => ['id' => 2, 'user_id' => 2],
-                3 => ['id' => 3, 'user_id' => 1],
+                ['id' => 2, 'user_id' => 2],
+                ['id' => 3, 'user_id' => 1],
             ],
         ];
 
@@ -755,13 +885,13 @@ class ReferenceSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'last_name' => 'Doe'],
-                2 => ['id' => 2, 'name' => 'Peter', 'last_name' => 'Foo'],
-                3 => ['id' => 3, 'name' => 'Goofy', 'last_name' => 'Goo'],
+                ['id' => 2, 'name' => 'Peter', 'last_name' => 'Foo'],
+                ['id' => 3, 'name' => 'Goofy', 'last_name' => 'Goo'],
             ],
             'order' => [
                 1 => ['id' => 1, 'user_id' => 1],
-                2 => ['id' => 2, 'user_id' => 2],
-                3 => ['id' => 3, 'user_id' => 1],
+                ['id' => 2, 'user_id' => 2],
+                ['id' => 3, 'user_id' => 1],
             ],
         ]);
 

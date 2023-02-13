@@ -84,6 +84,7 @@ abstract class Connection
         }
         if (isset($dsn['dsn'])) {
             if (str_contains($dsn['dsn'], '://')) {
+                /** @var array<string, string> https://github.com/phpstan/phpstan/issues/8638 */
                 $parsed = array_filter(parse_url($dsn['dsn']));
                 $dsn['dsn'] = str_replace('-', '_', $parsed['scheme']) . ':';
                 unset($parsed['scheme']);
@@ -215,7 +216,7 @@ abstract class Connection
         $driver = $connection->getNativeConnection();
 
         if ($driver instanceof \PDO) {
-            return 'pdo_' . $driver->getAttribute(\PDO::ATTR_DRIVER_NAME); // @phpstan-ignore-line
+            return 'pdo_' . $driver->getAttribute(\PDO::ATTR_DRIVER_NAME);
         } elseif ($driver instanceof \mysqli) {
             return 'mysqli';
         } elseif (is_resource($driver) && get_resource_type($driver) === 'oci8 connection') {

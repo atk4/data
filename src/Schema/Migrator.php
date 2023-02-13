@@ -266,13 +266,16 @@ class Migrator
         return $this;
     }
 
-    public function id(string $name = 'id'): self
+    /**
+     * @param array<string, mixed> $options
+     */
+    public function id(string $name = 'id', array $options = []): self
     {
-        $options = [
+        $options = array_merge([
             'type' => 'integer',
             'ref_type' => self::REF_TYPE_PRIMARY,
             'nullable' => false,
-        ];
+        ], $options);
 
         $this->field($name, $options);
 

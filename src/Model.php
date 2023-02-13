@@ -8,6 +8,7 @@ use Atk4\Core\CollectionTrait;
 use Atk4\Core\ContainerTrait;
 use Atk4\Core\DiContainerTrait;
 use Atk4\Core\DynamicMethodTrait;
+use Atk4\Core\Exception as CoreException;
 use Atk4\Core\Factory;
 use Atk4\Core\HookBreaker;
 use Atk4\Core\HookTrait;
@@ -269,21 +270,21 @@ class Model implements \IteratorAggregate
 
     public function assertIsModel(self $expectedModelInstance = null): void
     {
-        if ($this->isEntity()) {
-            throw new Exception('Expected model, but instance is an entity');
+        if ($this->_model !== null) {
+            throw new \TypeError('Expected model, but instance is an entity');
         }
 
         if ($expectedModelInstance !== null && $expectedModelInstance !== $this) {
             $expectedModelInstance->assertIsModel();
 
-            throw new Exception('Model instance does not match');
+            throw new \TypeError('Model instance does not match');
         }
     }
 
     public function assertIsEntity(self $expectedModelInstance = null): void
     {
-        if (!$this->isEntity()) {
-            throw new Exception('Expected entity, but instance is a model');
+        if ($this->_model === null) {
+            throw new \TypeError('Expected entity, but instance is a model');
         }
 
         if ($expectedModelInstance !== null) {
@@ -296,13 +297,15 @@ class Model implements \IteratorAggregate
      */
     public function getModel(bool $allowOnModel = false): self
     {
-        if ($allowOnModel && !$this->isEntity()) {
-            return $this;
+        if ($this->_model !== null) {
+            return $this->_model;
         }
 
-        $this->assertIsEntity();
+        if (!$allowOnModel) {
+            $this->assertIsEntity();
+        }
 
-        return $this->_model;
+        return $this;
     }
 
     public function __clone()
@@ -333,7 +336,7 @@ class Model implements \IteratorAggregate
                 }
             }
 
-            foreach ([
+            $modelOnlyProperties = array_diff_key($modelOnlyProperties, array_flip([
                 '_model',
                 '_entityId',
                 'data',
@@ -347,9 +350,7 @@ class Model implements \IteratorAggregate
                 'userActions', // should be removed once user actions are non-entity
 
                 'containedInEntity',
-            ] as $name) {
-                unset($modelOnlyProperties[$name]);
-            }
+            ]));
 
             self::$_modelOnlyProperties = $modelOnlyProperties;
         }
@@ -419,7 +420,7 @@ class Model implements \IteratorAggregate
         if ($this->_entityId === null) {
             // set entity ID to the first seen ID
             $this->_entityId = $id;
-        } elseif (!$this->compare($this->idField, $this->_entityId)) {
+        } elseif ($this->_entityId !== $id && !$this->compare($this->idField, $this->_entityId)) {
             $this->unload(); // data for different ID were loaded, make sure to discard them
 
             throw (new Exception('Model instance is an entity, ID cannot be changed to a different one'))
@@ -595,8 +596,6 @@ class Model implements \IteratorAggregate
             return $this->getModel()->hasField($name);
         }
 
-        $this->assertIsModel();
-
         return $this->_hasInCollection($name, 'fields');
     }
 
@@ -606,12 +605,10 @@ class Model implements \IteratorAggregate
             return $this->getModel()->getField($name);
         }
 
-        $this->assertIsModel();
-
         try {
             return $this->_getFromCollection($name, 'fields');
-        } catch (\Atk4\Core\Exception $e) {
-            throw (new Exception('Field is not defined in model', 0, $e))
+        } catch (CoreException $e) {
+            throw (new Exception('Field is not defined'))
                 ->addMoreInfo('model', $this)
                 ->addMoreInfo('field', $name);
         }
@@ -674,8 +671,6 @@ class Model implements \IteratorAggregate
         if ($this->isEntity()) {
             return $this->getModel()->getFields($filter);
         }
-
-        $this->assertIsModel();
 
         if ($filter === null) {
             return $this->fields;
@@ -812,9 +807,9 @@ class Model implements \IteratorAggregate
 
         $this->getModel()->assertOnlyField($field);
 
-        $dataRef = &$this->getDataRef();
-        if (array_key_exists($field, $dataRef)) {
-            return $dataRef[$field];
+        $data = $this->getDataRef();
+        if (array_key_exists($field, $data)) {
+            return $data[$field];
         }
 
         return $this->getField($field)->default;
@@ -832,9 +827,15 @@ class Model implements \IteratorAggregate
      */
     public function getId()
     {
-        $this->assertHasIdField();
+        $idFieldName = $this->getModel()->idField;
 
-        return $this->get($this->idField);
+        try {
+            return $this->get($idFieldName);
+        } catch (\Throwable $e) {
+            $this->assertHasIdField();
+
+            throw $e;
+        }
     }
 
     /**
@@ -842,19 +843,25 @@ class Model implements \IteratorAggregate
      *
      * @return $this
      */
-    public function setId($value)
+    public function setId($value, bool $allowNull = true)
     {
-        $this->assertHasIdField();
+        $idFieldName = $this->getModel()->idField;
 
-        if ($value === null) {
-            $this->setNull($this->idField);
-        } else {
-            $this->set($this->idField, $value);
+        try {
+            if ($value === null && $allowNull) {
+                $this->setNull($idFieldName);
+            } else {
+                $this->set($idFieldName, $value);
+            }
+
+            $this->initEntityIdAndAssertUnchanged();
+
+            return $this;
+        } catch (\Throwable $e) {
+            $this->assertHasIdField();
+
+            throw $e;
         }
-
-        $this->initEntityIdAndAssertUnchanged();
-
-        return $this;
     }
 
     /**
@@ -863,9 +870,7 @@ class Model implements \IteratorAggregate
      */
     public function getModelCaption(): string
     {
-        return $this->caption ?? $this->readableCaption(
-            (new \ReflectionClass(static::class))->isAnonymous() ? get_parent_class(static::class) : static::class
-        );
+        return $this->caption ?? $this->readableCaption(get_debug_type($this));
     }
 
     /**
@@ -903,7 +908,13 @@ class Model implements \IteratorAggregate
      */
     public function compare(string $name, $value): bool
     {
-        return $this->getField($name)->compare($this->get($name), $value);
+        $value2 = $this->get($name);
+
+        if ($value === $value2) { // optimization only
+            return true;
+        }
+
+        return $this->getField($name)->compare($value, $value2);
     }
 
     /**
@@ -1049,7 +1060,7 @@ class Model implements \IteratorAggregate
                     }
                 } else {
                     // format "field" => direction
-                    $this->setOrder($k, $v); // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/7924
+                    $this->setOrder($k, $v);
                 }
             }
 
@@ -1089,11 +1100,15 @@ class Model implements \IteratorAggregate
 
     public function issetPersistence(): bool
     {
+        $this->assertIsModel();
+
         return $this->_persistence !== null;
     }
 
     public function getPersistence(): Persistence
     {
+        $this->assertIsModel();
+
         return $this->_persistence;
     }
 
@@ -1102,10 +1117,8 @@ class Model implements \IteratorAggregate
      */
     public function setPersistence(Persistence $persistence)
     {
-        $this->assertIsModel();
-
         if ($this->issetPersistence()) {
-            throw new Exception('Persistence already set');
+            throw new Exception('Persistence is already set');
         }
 
         if ($this->persistenceData === []) {
@@ -1159,7 +1172,7 @@ class Model implements \IteratorAggregate
         $dataRef = &$this->getDataRef();
         $dirtyRef = &$this->getDirtyRef();
         $dataRef = [];
-        if ($this->idField && $this->hasField($this->idField)) {
+        if ($this->idField) {
             $this->setId(null);
         }
         $dirtyRef = [];
@@ -1192,8 +1205,7 @@ class Model implements \IteratorAggregate
      */
     private function _load(bool $fromReload, bool $fromTryLoad, $id)
     {
-        $this->assertIsEntity();
-        $this->assertHasPersistence();
+        $this->getModel()->assertHasPersistence();
         if ($this->isLoaded()) {
             throw new Exception('Entity must be unloaded');
         }
@@ -1215,7 +1227,7 @@ class Model implements \IteratorAggregate
             return $res;
         }
 
-        $data = $this->getPersistence()->{$fromTryLoad ? 'tryLoad' : 'load'}($this->getModel(), $this->remapIdLoadToPersistence($id));
+        $data = $this->getModel()->getPersistence()->{$fromTryLoad ? 'tryLoad' : 'load'}($this->getModel(), $this->remapIdLoadToPersistence($id));
         if ($data === null) {
             return null; // $fromTryLoad is always true here
         }
@@ -1224,7 +1236,7 @@ class Model implements \IteratorAggregate
         $dataRef = $data;
 
         if ($this->idField) {
-            $this->setId($this->getId());
+            $this->setId($data[$this->idField], false);
         }
 
         $res = $this->hook(self::HOOK_AFTER_LOAD);
@@ -1326,6 +1338,7 @@ class Model implements \IteratorAggregate
     public function reload()
     {
         $id = $this->getId();
+        $data = $this->getDataRef(); // keep weakly persisted objects referenced
         $this->unload();
 
         $res = $this->_load(true, false, $id);
@@ -1349,9 +1362,9 @@ class Model implements \IteratorAggregate
 
         $duplicate = clone $this;
         $duplicate->_entityId = null;
-        $dataRef = &$this->getDataRef();
+        $data = $this->getDataRef();
         $duplicateDirtyRef = &$duplicate->getDirtyRef();
-        $duplicateDirtyRef = $dataRef;
+        $duplicateDirtyRef = $data;
         $duplicate->setId(null);
 
         return $duplicate;
@@ -1466,7 +1479,7 @@ class Model implements \IteratorAggregate
     protected function validateEntityScope(): void
     {
         if (!$this->getModel()->scope()->isEmpty()) {
-            $this->getPersistence()->load($this->getModel(), $this->getId());
+            $this->getModel()->getPersistence()->load($this->getModel(), $this->getId());
         }
     }
 
@@ -1480,17 +1493,18 @@ class Model implements \IteratorAggregate
     public function save(array $data = [])
     {
         if ($this->readOnly) {
-            throw new Exception('Model is read-only and cannot be saved');
+            throw new Exception('Model is read-only');
         }
 
-        $this->assertHasPersistence();
+        $this->getModel()->assertHasPersistence();
 
         $this->setMulti($data);
 
         return $this->atomic(function () {
             $dirtyRef = &$this->getDirtyRef();
 
-            if (($errors = $this->validate('save')) !== []) {
+            $errors = $this->validate('save');
+            if ($errors !== []) {
                 throw new ValidationException($errors, $this);
             }
             $isUpdate = $this->isLoaded();
@@ -1517,9 +1531,9 @@ class Model implements \IteratorAggregate
                     return $this;
                 }
 
-                $id = $this->getPersistence()->insert($this->getModel(), $data);
+                $id = $this->getModel()->getPersistence()->insert($this->getModel(), $data);
                 if ($this->idField) {
-                    $this->setId($id);
+                    $this->setId($id, false);
                 }
 
                 $this->hook(self::HOOK_AFTER_INSERT);
@@ -1551,7 +1565,7 @@ class Model implements \IteratorAggregate
                     return $this;
                 }
                 $this->validateEntityScope();
-                $this->getPersistence()->update($this->getModel(), $this->getId(), $data);
+                $this->getModel()->getPersistence()->update($this->getModel(), $this->getId(), $data);
                 $this->hook(self::HOOK_AFTER_UPDATE, [&$data]);
             }
 
@@ -1667,7 +1681,6 @@ class Model implements \IteratorAggregate
      */
     public function export(array $fields = null, string $keyField = null, bool $typecast = true): array
     {
-        $this->assertIsModel();
         $this->assertHasPersistence('export');
 
         // no key field - then just do export
@@ -1751,7 +1764,7 @@ class Model implements \IteratorAggregate
             $dataRef = &$thisCloned->getDataRef();
             $dataRef = $this->getPersistence()->typecastLoadRow($this, $data);
             if ($this->idField) {
-                $thisCloned->setId($data[$this->idField] ?? null);
+                $thisCloned->setId($data[$this->idField], false);
             }
 
             // you can return false in afterLoad hook to prevent to yield this data row, example:
@@ -1774,7 +1787,7 @@ class Model implements \IteratorAggregate
                 $res = $thisCloned;
             }
 
-            if ($res->idField) {
+            if ($res->getModel()->idField) {
                 yield $res->getId() => $res;
             } else {
                 yield $res;
@@ -1787,8 +1800,6 @@ class Model implements \IteratorAggregate
      */
     public function getRawIterator(): \Traversable
     {
-        $this->assertIsModel();
-
         return $this->getPersistence()->prepareIterator($this);
     }
 
@@ -1811,10 +1822,10 @@ class Model implements \IteratorAggregate
         }
 
         if ($this->readOnly) {
-            throw new Exception('Model is read-only and cannot be deleted');
+            throw new Exception('Model is read-only');
         }
 
-        $this->assertHasPersistence();
+        $this->getModel()->assertHasPersistence();
         $this->assertIsLoaded();
 
         $this->atomic(function () {
@@ -1822,7 +1833,7 @@ class Model implements \IteratorAggregate
                 return;
             }
             $this->validateEntityScope();
-            $this->getPersistence()->delete($this->getModel(), $this->getId());
+            $this->getModel()->getPersistence()->delete($this->getModel(), $this->getId());
             $this->hook(self::HOOK_AFTER_DELETE);
         });
         $this->unload();
@@ -1840,7 +1851,7 @@ class Model implements \IteratorAggregate
     public function atomic(\Closure $fx)
     {
         try {
-            return $this->getPersistence()->atomic($fx);
+            return $this->getModel(true)->getPersistence()->atomic($fx);
         } catch (\Throwable $e) {
             if ($this->hook(self::HOOK_ROLLBACK, [$e]) === false) {
                 return false;
@@ -1867,9 +1878,9 @@ class Model implements \IteratorAggregate
      */
     public function action(string $mode, array $args = [])
     {
-        $this->assertHasPersistence('action');
+        $this->getModel(true)->assertHasPersistence('action');
 
-        return $this->getPersistence()->action($this, $mode, $args);
+        return $this->getModel(true)->getPersistence()->action($this, $mode, $args);
     }
 
     public function executeCountQuery(): int

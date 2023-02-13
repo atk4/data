@@ -22,7 +22,7 @@ class Transfer extends Payment
             $this->addCondition('transfer_document_id', '!=', null);
         }
 
-        $this->addField('destination_account_id', ['neverPersist' => true]);
+        $this->addField('destination_account_id', ['type' => 'integer', 'neverPersist' => true]);
 
         $this->onHookShort(self::HOOK_BEFORE_SAVE, function () {
             // only for new records and when destination_account_id is set
@@ -34,8 +34,6 @@ class Transfer extends Payment
                 $m2->set('amount', -$m2->get('amount'));
 
                 $m2->_unset('destination_account_id');
-
-                $m2->getModel()->reloadAfterSave = false; // avoid check
 
                 $this->set('transfer_document_id', $m2->save()->getId());
             }

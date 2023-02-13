@@ -31,7 +31,8 @@ trait JoinsTrait
 
         $join = Join::fromSeed($this->_defaultSeedJoin, $defaults);
 
-        if ($this->hasElement($name = $join->getDesiredName())) {
+        $name = $join->getDesiredName();
+        if ($this->hasElement($name)) {
             throw (new Exception('Join with such name already exists'))
                 ->addMoreInfo('name', $name)
                 ->addMoreInfo('foreignTable', $foreignTable);

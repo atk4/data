@@ -31,7 +31,7 @@ class HasMany extends Reference
         // TODO probably remove completely in the future
         $ourModel = $this->getOurModel(null);
         $theirFieldName = preg_replace('~^.+\.~s', '', $this->getModelTableString($ourModel)) . '_' . $ourModel->idField;
-        if (!$this->createTheirModel()->hasField($theirFieldName)) {
+        if (!($theirModel ?? $this->createTheirModel())->hasField($theirFieldName)) {
             throw (new Exception('Their model does not contain fallback field'))
                 ->addMoreInfo('their_fallback_field', $theirFieldName);
         }
@@ -125,7 +125,9 @@ class HasMany extends Reference
         $field = $alias ?? $fieldName;
 
         if (isset($defaults['concat'])) {
-            $defaults['aggregate'] = $this->getOurModel(null)->dsql()->groupConcat($field, $defaults['concat']); // TODO better to concat by NUL byte or very unlikely string
+            $defaults['aggregate'] = 'concat';
+            $defaults['concatSeparator'] = $defaults['concat'];
+            unset($defaults['concat']);
         }
 
         if (isset($defaults['expr'])) {
@@ -152,7 +154,12 @@ class HasMany extends Reference
             };
         } else {
             $fx = function () use ($defaults, $field) {
-                return $this->refLink(null)->action('fx', [$defaults['aggregate'], $field]);
+                $args = [$defaults['aggregate'], $field];
+                if ($defaults['aggregate'] === 'concat') {
+                    $args['concatSeparator'] = $defaults['concatSeparator'];
+                }
+
+                return $this->refLink(null)->action('fx', $args);
             };
         }
 

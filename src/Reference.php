@@ -69,6 +69,12 @@ class Reference
     protected ?string $theirField = null;
 
     /**
+     * Database our/their field types must always match, but DBAL types can be different in theory,
+     * set this to false when the DBAL types are intentionally different.
+     */
+    public bool $checkTheirType = true;
+
+    /**
      * Caption of the referenced model. Can be used in UI components, for example.
      * Should be in plain English and ready for proper localization.
      *
@@ -151,7 +157,7 @@ class Reference
     protected function onHookToTheirModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         if ($model->ownerReference !== null && $model->ownerReference !== $this) {
-            throw new Exception('Model owner reference unexpectedly already set');
+            throw new Exception('Model owner reference is unexpectedly already set');
         }
         $model->ownerReference = $this;
         $getThisFx = static function (Model $model) {
@@ -227,6 +233,18 @@ class Reference
 
         $this->addToPersistence($theirModel, $defaults);
 
+        if ($this->checkTheirType) {
+            $ourField = $this->getOurField();
+            $theirField = $theirModel->getField($this->getTheirFieldName($theirModel));
+            if ($theirField->type !== $ourField->type) {
+                throw (new Exception('Reference type mismatch'))
+                    ->addMoreInfo('ourField', $ourField)
+                    ->addMoreInfo('ourFieldType', $ourField->type)
+                    ->addMoreInfo('theirField', $theirField)
+                    ->addMoreInfo('theirFieldType', $theirField->type);
+            }
+        }
+
         return $theirModel;
     }
 
@@ -279,8 +297,8 @@ class Reference
         // this is useful for ContainsOne/Many implementation in case when you have
         // SQL_Model->containsOne()->hasOne() structure to get back to SQL persistence
         // from Array persistence used in ContainsOne model
-        if ($ourModel->containedInEntity && $ourModel->containedInEntity->issetPersistence()) {
-            return $ourModel->containedInEntity->getPersistence();
+        if ($ourModel->containedInEntity && $ourModel->containedInEntity->getModel()->issetPersistence()) {
+            return $ourModel->containedInEntity->getModel()->getPersistence();
         }
 
         return $ourModel->issetPersistence() ? $ourModel->getPersistence() : false;

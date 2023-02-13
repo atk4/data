@@ -343,6 +343,14 @@ class SelectTest extends TestCase
             $tableAlias = '名';
         }
 
+        // remove once https://bugs.mysql.com/bug.php?id=109699 is fixed
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            $serverVersion = $this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
+            if ($serverVersion === '8.0.32') {
+                static::markTestIncomplete('MySQL Server 8.0.32 optimizer is broken');
+            }
+        }
+
         static::assertSame(
             [$columnAlias => 'žlutý_😀'],
             $this->q(

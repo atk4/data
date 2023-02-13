@@ -106,9 +106,9 @@ class RandomTest extends TestCase
         static::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'Peter', 'salary' => '10'],
-                2 => ['id' => 2, 'name' => 'Steve', 'salary' => '30'],
-                3 => ['id' => 3, 'name' => 'Sue', 'salary' => '10'],
-                4 => ['id' => 4, 'name' => 'John', 'salary' => '40'],
+                ['id' => 2, 'name' => 'Steve', 'salary' => '30'],
+                ['id' => 3, 'name' => 'Sue', 'salary' => '10'],
+                ['id' => 4, 'name' => 'John', 'salary' => '40'],
             ],
         ], $this->getDb());
     }
@@ -130,8 +130,8 @@ class RandomTest extends TestCase
         static::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'login' => 'john@example.com'],
-                2 => ['id' => 2, 'name' => 'Peter', 'login' => 'unknown'],
-                3 => ['id' => 3, 'name' => 'unknown', 'login' => 'unknown'],
+                ['id' => 2, 'name' => 'Peter', 'login' => 'unknown'],
+                ['id' => 3, 'name' => 'unknown', 'login' => 'unknown'],
             ],
         ], $this->getDb());
     }
@@ -188,7 +188,7 @@ class RandomTest extends TestCase
         static::assertTrue($pAddCalled);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Persistence already set');
+        $this->expectExceptionMessage('Persistence is already set');
         $m->setPersistence($p);
     }
 
@@ -206,8 +206,8 @@ class RandomTest extends TestCase
         $this->setDb([
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => 1],
-                2 => ['id' => 2, 'name' => 'Sue', 'parent_item_id' => 1],
-                3 => ['id' => 3, 'name' => 'Smith', 'parent_item_id' => 2],
+                ['id' => 2, 'name' => 'Sue', 'parent_item_id' => 1],
+                ['id' => 3, 'name' => 'Smith', 'parent_item_id' => 2],
             ],
         ]);
 
@@ -224,13 +224,13 @@ class RandomTest extends TestCase
         $this->setDb([
             'item' => [
                 1 => ['id' => 1, 'name' => 'John'],
-                2 => ['id' => 2, 'name' => 'Sue'],
-                3 => ['id' => 3, 'name' => 'Smith'],
+                ['id' => 2, 'name' => 'Sue'],
+                ['id' => 3, 'name' => 'Smith'],
             ],
             'item2' => [
                 1 => ['id' => 1, 'item_id' => 1, 'parent_item_id' => 1],
-                2 => ['id' => 2, 'item_id' => 2, 'parent_item_id' => 1],
-                3 => ['id' => 3, 'item_id' => 3, 'parent_item_id' => 2],
+                ['id' => 2, 'item_id' => 2, 'parent_item_id' => 1],
+                ['id' => 3, 'item_id' => 3, 'parent_item_id' => 2],
             ],
         ]);
 
@@ -247,13 +247,13 @@ class RandomTest extends TestCase
         $this->setDb([
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'age' => 18],
-                2 => ['id' => 2, 'name' => 'Sue', 'age' => 20],
-                3 => ['id' => 3, 'name' => 'Smith', 'age' => 24],
+                ['id' => 2, 'name' => 'Sue', 'age' => 20],
+                ['id' => 3, 'name' => 'Smith', 'age' => 24],
             ],
             'item2' => [
                 1 => ['id' => 1, 'item_id' => 1, 'parent_item_id' => 1],
-                2 => ['id' => 2, 'item_id' => 2, 'parent_item_id' => 1],
-                3 => ['id' => 3, 'item_id' => 3, 'parent_item_id' => 2],
+                ['id' => 2, 'item_id' => 2, 'parent_item_id' => 1],
+                ['id' => 3, 'item_id' => 3, 'parent_item_id' => 2],
             ],
         ]);
 
@@ -334,10 +334,12 @@ class RandomTest extends TestCase
 
     public function testModelCaption(): void
     {
-        $m = new Model($this->db, ['table' => 'user']);
-
         // caption is not set, so generate it from class name Model
+        $m = new Model($this->db, ['table' => 'user']);
         static::assertSame('Atk 4 Data Model', $m->getModelCaption());
+
+        $m = new class($this->db, ['table' => 'user']) extends Model {};
+        static::assertSame('Atk 4 Data Model Anonymous', $m->getModelCaption());
 
         // caption is set
         $m->caption = 'test';
@@ -349,13 +351,13 @@ class RandomTest extends TestCase
         $this->setDb([
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => 1],
-                2 => ['id' => 2, 'name' => 'Sue', 'parent_item_id' => 1],
+                ['id' => 2, 'name' => 'Sue', 'parent_item_id' => 1],
             ],
         ]);
 
         $m = new Model_Item($this->db, ['table' => 'item']);
 
-        static::assertSame([1 => 'John', 2 => 'Sue'], $m->setOrder('id')->getTitles()); // all titles
+        static::assertSame([1 => 'John', 'Sue'], $m->setOrder('id')->getTitles()); // all titles
 
         $mm = $m->createEntity();
 
@@ -383,7 +385,8 @@ class RandomTest extends TestCase
         $mm = $m->load(2);
         static::assertSame('2', $mm->getTitle()); // loaded returns id value
 
-        $this->expectException(Exception::class);
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Expected model, but instance is an entity');
         $mm->getTitles();
     }
 

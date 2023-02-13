@@ -134,18 +134,12 @@ class Sql extends Persistence
     protected function initPersistence(Model $model): void
     {
         $model->addMethod('expr', static function (Model $m, ...$args) {
-            $m->assertIsModel();
-
             return $m->getPersistence()->expr($m, ...$args);
         });
         $model->addMethod('dsql', static function (Model $m, ...$args) {
-            $m->assertIsModel();
-
             return $m->getPersistence()->dsql($m, ...$args); // @phpstan-ignore-line
         });
         $model->addMethod('exprNow', static function (Model $m, ...$args) {
-            $m->assertIsModel();
-
             return $m->getPersistence()->exprNow($m, ...$args);
         });
     }
@@ -229,10 +223,10 @@ class Sql extends Persistence
      *
      * @param array<int, string>|null $fields
      */
-    public function initQueryFields(Model $model, Query $query, $fields = null): void
+    public function initQueryFields(Model $model, Query $query, array $fields = null): void
     {
         // init fields
-        if (is_array($fields)) {
+        if ($fields !== null) {
             // Set of fields is strictly defined for purposes of export,
             // so we will ignore even system fields.
             foreach ($fields as $fieldName) {
@@ -415,20 +409,25 @@ class Sql extends Persistence
                 [$fx, $field] = $args;
                 $field = is_string($field) ? $model->getField($field) : $field;
 
-                if ($type === 'fx') {
-                    $expr = $fx . '([])';
-                } else {
-                    $expr = 'coalesce(' . $fx . '([]), 0)';
-                }
-
                 $query = $this->action($model, 'select', [[]]);
 
-                if (isset($args['alias'])) {
-                    $query->reset('field')->field($query->expr($expr, [$field]), $args['alias']);
-                } elseif ($field instanceof SqlExpressionField) {
-                    $query->reset('field')->field($query->expr($expr, [$field]), $fx . '_' . $field->shortName);
+                if ($fx === 'concat') {
+                    $expr = $query->groupConcat($field, $args['concatSeparator']);
                 } else {
-                    $query->reset('field')->field($query->expr($expr, [$field]));
+                    $expr = $query->expr(
+                        $type === 'fx'
+                            ? $fx . '([])'
+                            : 'coalesce(' . $fx . '([]), 0)',
+                        [$field]
+                    );
+                }
+
+                if (isset($args['alias'])) {
+                    $query->reset('field')->field($expr, $args['alias']);
+                } elseif ($field instanceof SqlExpressionField) {
+                    $query->reset('field')->field($expr, $fx . '_' . $field->shortName);
+                } else {
+                    $query->reset('field')->field($expr);
                 }
                 $this->fixMssqlOracleMissingFieldsInGroup($model, $query);
 

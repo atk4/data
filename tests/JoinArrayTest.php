@@ -94,7 +94,7 @@ class JoinArrayTest extends TestCase
         static::assertSame([
             'user' => [
                 1 => ['name' => 'John', 'contact_id' => 1],
-                2 => ['name' => 'Peter', 'contact_id' => 1],
+                ['name' => 'Peter', 'contact_id' => 1],
             ],
             'contact' => [
                 1 => ['contact_phone' => '+123'],
@@ -110,12 +110,12 @@ class JoinArrayTest extends TestCase
         static::assertSame([
             'user' => [
                 1 => ['name' => 'John', 'contact_id' => 1],
-                2 => ['name' => 'Peter', 'contact_id' => 1],
-                3 => ['name' => 'Joe', 'contact_id' => 2],
+                ['name' => 'Peter', 'contact_id' => 1],
+                ['name' => 'Joe', 'contact_id' => 2],
             ],
             'contact' => [
                 1 => ['contact_phone' => '+123'],
-                2 => ['contact_phone' => '+321'],
+                ['contact_phone' => '+321'],
             ],
         ], $this->getInternalPersistenceData($db));
     }
@@ -146,11 +146,11 @@ class JoinArrayTest extends TestCase
         static::assertSame([
             'user' => [
                 1 => ['name' => 'John'],
-                2 => ['name' => 'Peter'],
+                ['name' => 'Peter'],
             ],
             'contact' => [
                 1 => ['contact_phone' => '+123', 'test_id' => 1],
-                2 => ['contact_phone' => null, 'test_id' => 2],
+                ['contact_phone' => null, 'test_id' => 2],
             ],
         ], $this->getInternalPersistenceData($db));
 
@@ -166,8 +166,8 @@ class JoinArrayTest extends TestCase
         static::assertSame([
             'user' => [
                 1 => ['name' => 'John'],
-                2 => ['name' => 'Peter'],
-                3 => ['name' => 'Sue'],
+                ['name' => 'Peter'],
+                ['name' => 'Sue'],
             ],
             'contact' => [
                 1 => ['contact_phone' => '+123', 'test_id' => 1],
@@ -230,12 +230,12 @@ class JoinArrayTest extends TestCase
         $db = new Persistence\Array_([
             'user' => [
                 1 => ['name' => 'John', 'contact_id' => 1],
-                2 => ['name' => 'Peter', 'contact_id' => 1],
-                3 => ['name' => 'Joe', 'contact_id' => 2],
+                ['name' => 'Peter', 'contact_id' => 1],
+                ['name' => 'Joe', 'contact_id' => 2],
             ],
             'contact' => [
                 1 => ['contact_phone' => '+123'],
-                2 => ['contact_phone' => '+321'],
+                ['contact_phone' => '+321'],
             ],
         ]);
 
@@ -268,12 +268,12 @@ class JoinArrayTest extends TestCase
         $db = new Persistence\Array_([
             'user' => [
                 1 => ['name' => 'John', 'contact_id' => 1],
-                2 => ['name' => 'Peter', 'contact_id' => 1],
-                3 => ['name' => 'Joe', 'contact_id' => 2],
+                ['name' => 'Peter', 'contact_id' => 1],
+                ['name' => 'Joe', 'contact_id' => 2],
             ],
             'contact' => [
                 1 => ['contact_phone' => '+123'],
-                2 => ['contact_phone' => '+321'],
+                ['contact_phone' => '+321'],
             ],
         ]);
 
@@ -291,12 +291,12 @@ class JoinArrayTest extends TestCase
         static::assertSame([
             'user' => [
                 1 => ['name' => 'John 2', 'contact_id' => 1],
-                2 => ['name' => 'Peter', 'contact_id' => 1],
-                3 => ['name' => 'Joe', 'contact_id' => 2],
+                ['name' => 'Peter', 'contact_id' => 1],
+                ['name' => 'Joe', 'contact_id' => 2],
             ],
             'contact' => [
                 1 => ['contact_phone' => '+555'],
-                2 => ['contact_phone' => '+321'],
+                ['contact_phone' => '+321'],
             ],
         ], $this->getInternalPersistenceData($db));
 
@@ -308,12 +308,12 @@ class JoinArrayTest extends TestCase
         static::assertSame([
             'user' => [
                 1 => ['name' => 'John 2', 'contact_id' => 1],
-                2 => ['name' => 'Peter', 'contact_id' => 1],
-                3 => ['name' => 'XX', 'contact_id' => 2],
+                ['name' => 'Peter', 'contact_id' => 1],
+                ['name' => 'XX', 'contact_id' => 2],
             ],
             'contact' => [
                 1 => ['contact_phone' => '+555'],
-                2 => ['contact_phone' => '+999'],
+                ['contact_phone' => '+999'],
             ],
         ], $this->getInternalPersistenceData($db));
 
@@ -325,14 +325,14 @@ class JoinArrayTest extends TestCase
         static::assertSame([
             'user' => [
                 1 => ['name' => 'John 2', 'contact_id' => 1],
-                2 => ['name' => 'Peter', 'contact_id' => 1],
-                3 => ['name' => 'XX', 'contact_id' => 2],
-                4 => ['name' => 'YYY', 'contact_id' => 3],
+                ['name' => 'Peter', 'contact_id' => 1],
+                ['name' => 'XX', 'contact_id' => 2],
+                ['name' => 'YYY', 'contact_id' => 3],
             ],
             'contact' => [
                 1 => ['contact_phone' => '+555'],
-                2 => ['contact_phone' => '+999'],
-                3 => ['contact_phone' => '+777'],
+                ['contact_phone' => '+999'],
+                ['contact_phone' => '+777'],
             ],
         ], $this->getInternalPersistenceData($db));
     }
@@ -342,14 +342,14 @@ class JoinArrayTest extends TestCase
         $db = new Persistence\Array_([
             'user' => [
                 1 => ['name' => 'John 2', 'contact_id' => 1],
-                2 => ['name' => 'Peter', 'contact_id' => 1],
-                3 => ['name' => 'XX', 'contact_id' => 2],
-                4 => ['name' => 'YYY', 'contact_id' => 3],
+                ['name' => 'Peter', 'contact_id' => 1],
+                ['name' => 'XX', 'contact_id' => 2],
+                ['name' => 'YYY', 'contact_id' => 3],
             ],
             'contact' => [
                 1 => ['contact_phone' => '+555'],
-                2 => ['contact_phone' => '+999'],
-                3 => ['contact_phone' => '+777'],
+                ['contact_phone' => '+999'],
+                ['contact_phone' => '+777'],
             ],
         ]);
 
@@ -365,12 +365,12 @@ class JoinArrayTest extends TestCase
         static::assertSame([
             'user' => [
                 2 => ['name' => 'Peter', 'contact_id' => 1],
-                3 => ['name' => 'XX', 'contact_id' => 2],
-                4 => ['name' => 'YYY', 'contact_id' => 3],
+                ['name' => 'XX', 'contact_id' => 2],
+                ['name' => 'YYY', 'contact_id' => 3],
             ],
             'contact' => [
                 2 => ['contact_phone' => '+999'],
-                3 => ['contact_phone' => '+777'],
+                ['contact_phone' => '+777'],
             ],
         ], $this->getInternalPersistenceData($db));
     }
@@ -380,12 +380,12 @@ class JoinArrayTest extends TestCase
         $db = new Persistence\Array_([
             'user' => [
                 2 => ['name' => 'Peter', 'contact_id' => 1],
-                3 => ['name' => 'XX', 'contact_id' => 2],
-                4 => ['name' => 'YYY', 'contact_id' => 3],
+                ['name' => 'XX', 'contact_id' => 2],
+                ['name' => 'YYY', 'contact_id' => 3],
             ],
             'contact' => [
                 2 => ['contact_phone' => '+999'],
-                3 => ['contact_phone' => '+777'],
+                ['contact_phone' => '+777'],
             ],
         ]);
 

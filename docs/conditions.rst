@@ -267,7 +267,7 @@ Scope can be created using new Scope() statement from an array or joining Condit
     // $condition1 will be used as nested condition
     $condition1 = new Condition('name', 'like', 'ABC%');
 
-    // $condition2 will converted to Condtion object and used as nested condition
+    // $condition2 will converted to Condition object and used as nested condition
     $condition2 = ['country', 'US'];
 
     // $scope1 is created using AND as junction and $condition1 and $condition2 as nested conditions

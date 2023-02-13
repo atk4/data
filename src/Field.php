@@ -364,6 +364,10 @@ class Field implements Expressionable
      */
     public function compare($value, $value2): bool
     {
+        if ($value === $value2) { // optimization only
+            return true;
+        }
+
         // TODO, see https://stackoverflow.com/questions/48382457/mysql-json-column-change-array-order-after-saving
         // at least MySQL sorts the JSON keys if stored natively
         return $this->getValueForCompare($value) === $this->getValueForCompare($value2);
@@ -407,7 +411,6 @@ class Field implements Expressionable
     public function getQueryArguments($operator, $value): array
     {
         $typecastField = $this;
-        $allowArray = true;
         if (in_array($operator, [
             Scope\Condition::OPERATOR_LIKE,
             Scope\Condition::OPERATOR_NOT_LIKE,
@@ -417,12 +420,11 @@ class Field implements Expressionable
             $typecastField = new self(['type' => 'string']);
             $typecastField->setOwner(new Model($this->getOwner()->getPersistence(), ['table' => false]));
             $typecastField->shortName = $this->shortName;
-            $allowArray = false;
         }
 
         if ($value instanceof Persistence\Array_\Action) { // needed to pass hintable tests
             $v = $value;
-        } elseif (is_array($value) && $allowArray) {
+        } elseif (is_array($value)) {
             $v = array_map(fn ($value) => $typecastField->typecastSaveField($value), $value);
         } else {
             $v = $typecastField->typecastSaveField($value);

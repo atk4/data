@@ -15,7 +15,7 @@ class SqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+                ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ]);
 
@@ -43,7 +43,7 @@ class SqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+                ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ]);
 
@@ -80,7 +80,7 @@ class SqlTest extends TestCase
         $dbData = [
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+                ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ];
 
@@ -115,7 +115,7 @@ class SqlTest extends TestCase
         $dbData = [
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+                ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ];
         $this->setDb($dbData);
@@ -139,7 +139,7 @@ class SqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+                ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ]);
 
@@ -153,8 +153,7 @@ class SqlTest extends TestCase
         $m->save(['name' => 'Jane', 'surname' => 'Doe']);
         static::assertSame('Jane', $m->get('name'));
         static::assertSame('Doe', $m->get('surname'));
-        static::assertSame(3, $m->getId());
-        // id field value is set with new id value even if reloadAfterSave = false
+        // ID field is set with new value even if reloadAfterSave = false
         static::assertSame(3, $m->getId());
     }
 
@@ -163,7 +162,7 @@ class SqlTest extends TestCase
         $dbData = [
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+                ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ];
         $this->setDb($dbData, false); // create empty table
@@ -186,7 +185,7 @@ class SqlTest extends TestCase
         $dbData = [
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+                ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ];
         $this->setDb($dbData);
@@ -219,7 +218,7 @@ class SqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+                ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ]);
 

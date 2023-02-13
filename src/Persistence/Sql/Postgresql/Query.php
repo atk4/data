@@ -38,8 +38,8 @@ class Query extends BaseQuery
             . ' offset ' . (int) $this->args['limit']['shift'];
     }
 
-    public function groupConcat($field, string $delimiter = ','): BaseExpression
+    public function groupConcat($field, string $separator = ','): BaseExpression
     {
-        return $this->expr('string_agg({}, [])', [$field, $delimiter]);
+        return $this->expr('string_agg({}, [])', [$field, $separator]);
     }
 }
