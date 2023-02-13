@@ -239,7 +239,9 @@ class Reference
             if ($theirField->type !== $ourField->type) {
                 throw (new Exception('Reference type mismatch'))
                     ->addMoreInfo('ourField', $ourField)
-                    ->addMoreInfo('theirField', $theirField);
+                    ->addMoreInfo('ourFieldType', $ourField->type)
+                    ->addMoreInfo('theirField', $theirField)
+                    ->addMoreInfo('theirFieldType', $theirField->type);
             }
         }
 
