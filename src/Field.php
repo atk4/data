@@ -340,7 +340,7 @@ class Field implements Expressionable
     }
 
     /**
-     * @param mixed|void $value
+     * @param mixed $value
      */
     private function getValueForCompare($value): ?string
     {
