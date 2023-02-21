@@ -1578,11 +1578,7 @@ class Model implements \IteratorAggregate
             $this->hook(self::HOOK_AFTER_SAVE, [$isUpdate]);
 
             if ($this->idField) {
-                // fix LookupSqlTest::testImportInternationalUsers test asap, "friend_names" aggregate query is wrong
-                // https://github.com/atk4/data/issues/1045
-                if (!$this instanceof Tests\LUser) {
-                    $this->validateEntityScope();
-                }
+                $this->validateEntityScope();
             }
 
             return $this;
@@ -1845,6 +1841,8 @@ class Model implements \IteratorAggregate
      * Atomic executes operations within one begin/end transaction, so if
      * the code inside callback will fail, then all of the transaction
      * will be also rolled back.
+     *
+     * @param \Closure(): mixed $fx
      *
      * @return mixed
      */

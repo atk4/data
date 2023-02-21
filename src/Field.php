@@ -62,7 +62,7 @@ class Field implements Expressionable
 
         // assert type exists
         if (isset($properties['type'])) {
-            if ($this->type === 'array') { // remove in v4.1
+            if ($this->type === 'array') { // remove in v5.1
                 throw new Exception('Atk4 "array" type is no longer supported, originally, it serialized value to JSON, to keep this behaviour, use "json" type');
             }
 
@@ -340,7 +340,7 @@ class Field implements Expressionable
     }
 
     /**
-     * @param mixed|void $value
+     * @param mixed $value
      */
     private function getValueForCompare($value): ?string
     {

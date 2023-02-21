@@ -90,13 +90,6 @@ class Sql extends Persistence
         $this->_connection = null; // @phpstan-ignore-line
     }
 
-    /**
-     * Atomic executes operations within one begin/end transaction, so if
-     * the code inside callback will fail, then all of the transaction
-     * will be also rolled back.
-     *
-     * @return mixed
-     */
     public function atomic(\Closure $fx)
     {
         return $this->getConnection()->atomic($fx);
@@ -479,6 +472,7 @@ class Sql extends Persistence
         }
 
         if ($model->idField && !isset($data[$model->idField])) {
+            // TODO detect even an ID change here!
             throw (new Exception('Model uses "idField" but it was not available in the database'))
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('idField', $model->idField)

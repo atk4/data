@@ -26,9 +26,8 @@ abstract class AbstractScope
      */
     protected function init(): void
     {
-        /** @var Model\Scope|false $owner */
         $owner = $this->getOwner();
-        if (!$owner instanceof self) {
+        if (!$owner instanceof self) { // @phpstan-ignore-line
             throw new Exception('Scope can only be added as element to scope');
         }
 

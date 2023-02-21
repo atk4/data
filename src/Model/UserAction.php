@@ -18,7 +18,7 @@ use Atk4\Data\Model;
  *
  * UserAction must NOT rely on any specific UI implementation.
  *
- * @method Exception getOwner() use getModel() or getEntity() method instead
+ * @method false getOwner() use getModel() or getEntity() method instead
  */
 class UserAction
 {
@@ -77,7 +77,7 @@ class UserAction
     public function isOwnerEntity(): bool
     {
         /** @var Model */
-        $owner = $this->getOwner();
+        $owner = $this->getOwner(); // @phpstan-ignore-line
 
         return $owner->isEntity();
     }
@@ -85,7 +85,7 @@ class UserAction
     public function getModel(): Model
     {
         /** @var Model */
-        $owner = $this->getOwner();
+        $owner = $this->getOwner(); // @phpstan-ignore-line
 
         return $owner->getModel(true);
     }
@@ -93,7 +93,7 @@ class UserAction
     public function getEntity(): Model
     {
         /** @var Model */
-        $owner = $this->getOwner();
+        $owner = $this->getOwner(); // @phpstan-ignore-line
         $owner->assertIsEntity();
 
         return $owner;
@@ -105,7 +105,7 @@ class UserAction
     public function getActionForEntity(Model $entity): self
     {
         /** @var Model */
-        $owner = $this->getOwner();
+        $owner = $this->getOwner(); // @phpstan-ignore-line
 
         $entity->assertIsEntity($owner);
         foreach ($owner->getUserActions() as $name => $action) {
@@ -166,7 +166,7 @@ class UserAction
                     ->addMoreInfo('dirty', array_keys($this->getEntity()->getDirtyRef()))
                     ->addMoreInfo('permitted', $this->fields);
             }
-        } elseif (!is_bool($this->fields)) {
+        } elseif (!is_bool($this->fields)) { // @phpstan-ignore-line
             throw (new Exception('Argument `fields` for the user action must be either array or boolean'))
                 ->addMoreInfo('fields', $this->fields);
         }

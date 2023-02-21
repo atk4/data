@@ -251,11 +251,7 @@ class MigratorTest extends TestCase
         yield ['binary', true, 255];
         yield ['text', false, 255];
         yield ['blob', true, 255];
-        // expected to fail with pdo_oci driver, multibyte Oracle CLOB stream read support
-        // is broken with long strings, oci8 driver is NOT affected,
-        // CI images ghcr.io/mvorisek/image-php are patched
-        // remove comment once https://github.com/php/php-src/pull/8018 is merged & released
-        yield ['text', false, str_starts_with($_ENV['DB_DSN'], 'pdo_oci') && !isset($_ENV['CI']) ? 16 * 1024 : 256 * 1024];
+        yield ['text', false, 256 * 1024];
         yield ['blob', true, 256 * 1024];
     }
 
