@@ -21,7 +21,9 @@ trait UserActionsTrait
      * Register new user action for this model. By default UI will allow users to trigger actions
      * from UI.
      *
-     * @param array<mixed>|\Closure $seed
+     * @template T of Model
+     *
+     * @param array<mixed>|\Closure(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $seed
      */
     public function addUserAction(string $name, $seed = []): UserAction
     {
