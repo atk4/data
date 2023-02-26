@@ -341,7 +341,8 @@ abstract class Connection
      * the code inside callback will fail, then all of the transaction
      * will be also rolled back.
      *
-     * @param mixed ...$fxArgs
+     * @param \Closure(mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
+     * @param mixed                                                                                 ...$fxArgs
      *
      * @return mixed
      */

@@ -53,7 +53,7 @@ class DeepCopy
      *          return $data;
      *      }]].
      *
-     * @var array<0, \Closure>|array<string, array<mixed>>
+     * @var array<0, \Closure(array<string, mixed>): array<string, mixed>>|array<string, array<mixed>>
      */
     protected $transforms = [];
 
@@ -139,7 +139,7 @@ class DeepCopy
      *      }]
      *  );
      *
-     * @param array<0, \Closure>|array<string, array<mixed>> $transforms
+     * @param array<0, \Closure(array<string, mixed>): array<string, mixed>>|array<string, array<mixed>> $transforms
      *
      * @return $this
      */
@@ -190,9 +190,9 @@ class DeepCopy
     /**
      * Internal method for copying records.
      *
-     * @param array<int, string>|array<string, array<mixed>> $references
-     * @param array<int, string>|array<string, array<mixed>> $exclusions
-     * @param array<0, \Closure>|array<string, array<mixed>> $transforms
+     * @param array<int, string>|array<string, array<mixed>>                                             $references
+     * @param array<int, string>|array<string, array<mixed>>                                             $exclusions
+     * @param array<0, \Closure(array<string, mixed>): array<string, mixed>>|array<string, array<mixed>> $transforms
      *
      * @return Model Destination model
      */

@@ -44,19 +44,19 @@ class UserAction
     /** @var string How this action interact with record */
     public $modifier;
 
-    /** @var \Closure|string code to execute. By default will call entity method with same name */
+    /** @var \Closure(object, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed|string code to execute. By default will call entity method with same name */
     public $callback;
 
-    /** @var \Closure|string identical to callback, but would generate preview of action without permanent effect */
+    /** @var \Closure(object, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed|string identical to callback, but would generate preview of action without permanent effect */
     public $preview;
 
     /** @var string|null caption to put on the button */
     public $caption;
 
-    /** @var string|\Closure(static): string|null a longer description of this action. */
+    /** @var string|\Closure($this): string|null a longer description of this action. */
     public $description;
 
-    /** @var bool|string|\Closure(static): string Will ask user to confirm. */
+    /** @var bool|string|\Closure($this): string Will ask user to confirm. */
     public $confirmation = false;
 
     /** @var bool|\Closure(object): bool setting this to false will disable action. */

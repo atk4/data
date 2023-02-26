@@ -17,7 +17,7 @@ class Action
     /** @var \Iterator<int, array<string, mixed>> */
     public $generator;
 
-    /** @var array<int, \Closure> hack for GC for PHP 8.1.3 or older */
+    /** @var list<\Closure(array<string, mixed>): bool> hack for GC for PHP 8.1.3 or older */
     private array $_filterFxs = [];
 
     /**

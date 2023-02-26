@@ -827,10 +827,8 @@ class Model implements \IteratorAggregate
      */
     public function getId()
     {
-        $idFieldName = $this->getModel()->idField;
-
         try {
-            return $this->get($idFieldName);
+            return $this->get($this->getModel()->idField);
         } catch (\Throwable $e) {
             $this->assertHasIdField();
 
@@ -845,13 +843,11 @@ class Model implements \IteratorAggregate
      */
     public function setId($value, bool $allowNull = true)
     {
-        $idFieldName = $this->getModel()->idField;
-
         try {
             if ($value === null && $allowNull) {
-                $this->setNull($idFieldName);
+                $this->setNull($this->getModel()->idField);
             } else {
-                $this->set($idFieldName, $value);
+                $this->set($this->getModel()->idField, $value);
             }
 
             $this->initEntityIdAndAssertUnchanged();
@@ -1149,7 +1145,7 @@ class Model implements \IteratorAggregate
      */
     public function isLoaded(): bool
     {
-        return $this->idField && $this->getId() !== null && $this->_entityId !== null;
+        return $this->getModel()->idField && $this->getId() !== null && $this->_entityId !== null;
     }
 
     public function assertIsLoaded(): void
@@ -1917,7 +1913,9 @@ class Model implements \IteratorAggregate
     /**
      * Add expression field which will calculate its value by using callback.
      *
-     * @param array{'expr': \Closure} $seed
+     * @template T of self
+     *
+     * @param array{'expr': \Closure(T): mixed} $seed
      *
      * @return CallbackField
      */

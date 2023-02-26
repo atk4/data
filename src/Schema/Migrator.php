@@ -92,7 +92,7 @@ class Migrator
      *
      * DBAL PR rejected: https://github.com/doctrine/dbal/pull/5494
      *
-     * @phpstan-template T of AbstractAsset
+     * @template T of AbstractAsset
      *
      * @phpstan-param T $abstractAsset
      *
