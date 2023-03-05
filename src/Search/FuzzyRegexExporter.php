@@ -10,6 +10,15 @@ class FuzzyRegexExporter
 {
     use WarnDynamicPropertyTrait;
 
+    protected function exportNodeString(string $node): string
+    {
+        return strlen($node) === 1
+                || (substr($node, 0, 1) === '\\' && strlen($node) === 2)
+                || (substr($node, 0, 1) === '[' && substr($node, -1) === ']' && substr_count($node, ']') === 1)
+            ? $node
+            : '(' . $node . ')';
+    }
+
     /**
      * @return list<string>
      */
@@ -17,7 +26,11 @@ class FuzzyRegexExporter
     {
         $res = [];
         foreach ($node->getNodes() as $node) {
-            $res[] = is_string($node) ? $node : $this->export($node);
+            if (is_string($node)) {
+                $res[] = $this->exportNodeString($node);
+            } else {
+                $res[] = $this->export($node);
+            }
         }
 
         return $res;
@@ -51,6 +64,11 @@ class FuzzyRegexExporter
         $resNodes = $this->exportNodes($node);
         $resQuantifier = $this->exportQuantifier($node);
 
-        return '(' . implode($node->isDisjunctive() ? '|' : '', $resNodes) . ')' . $resQuantifier;
+        $res = '(' . implode($node->isDisjunctive() ? '|' : '', $resNodes) . ')';
+        if ($resQuantifier !== null) {
+            $res = '(' . $res . $resQuantifier . ')';
+        }
+
+        return $res;
     }
 }
