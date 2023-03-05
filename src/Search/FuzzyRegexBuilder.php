@@ -36,7 +36,7 @@ class FuzzyRegexBuilder
     public function parseRegex(string $regexWithoutDelimiter): FuzzyRegexNode
     {
         if (preg_match_all(
-                '~(\\\\.|\[(?:\\\\.|[^\]])*\]|\(((?1)*?)\)|.)([?*+]|\{(\d+)(,?)(\d*)\}|)~su',
+                '~(\\\\.|\[(?:\\\\.|[^\]])*\]|(\((?1)*?\))|.)([?*+]|\{(\d+)(,?)(\d*)\}|)~su',
                 $regexWithoutDelimiter,
                 $matchesAll,
                 \PREG_SET_ORDER
@@ -55,7 +55,7 @@ class FuzzyRegexBuilder
             }
 
             if ($matches[2] !== '') {
-                $innerNode = $this->parseRegex($matches[2]);
+                $innerNode = $this->parseRegex(substr($matches[2], 1, -1));
             } else {
                 $innerNode = $matches[1];
             }
@@ -91,10 +91,82 @@ class FuzzyRegexBuilder
                 : new FuzzyRegexNode(false, [$innerNode], $quantifierMin, $quantifierMax);
         }
         $disjunctiveNodes[] = new FuzzyRegexNode(false, $currentNodes);
-        $currentNodes = [];
 
         return count($disjunctiveNodes) === 1
             ? reset($disjunctiveNodes)
             : new FuzzyRegexNode(count($disjunctiveNodes) > 0, $disjunctiveNodes);
+    }
+
+    /**
+     * WARNING: string nodes are expected to be single character already, this is true when
+     *          the regex tree was created using self::parseRegex() method
+     */
+    public function expandRegexTreeToDisjunctiveCharacters(FuzzyRegexNode $node): FuzzyRegexNode
+    {
+        // expand quantifier so start/end characters can be separated
+        if ($node->hasQuantifier()) {
+            [$quantifierMin, $quantifierMax] = $node->getQuantifier();
+
+            // TODO
+            // return here - code below does expect no quantifier
+        }
+
+        $innerNodes = [];
+        $isUnchanged = true;
+        foreach ($node->getNodes() as $innerNode) {
+            if (is_string($innerNode)) {
+                $innerNodes[] = $innerNode;
+
+                continue;
+            }
+
+            $nodeExpanded = $this->expandRegexTreeToDisjunctiveCharacters($innerNode);
+            $nodeExpandedNodes = $nodeExpanded->getNodes();
+            if (count($nodeExpandedNodes) === 1) { // optimization only
+                $nodeExpanded = reset($nodeExpandedNodes);
+            }
+            $innerNodes[] = $nodeExpanded;
+            if ($nodeExpanded !== $innerNode) {
+                $isUnchanged = false;
+            }
+        }
+
+        if ($node->isDisjunctive()) {
+            return $isUnchanged
+                ? $node
+                : new FuzzyRegexNode(true, $innerNodes);
+        }
+
+        $leftNodesNodes = [[]];
+        foreach ($innerNodes as $innerNode) {
+            $innerNodeNodes = is_string($innerNode) || !$innerNode->isDisjunctive()
+                ?[$innerNode]
+                : $innerNode->getNodes();
+
+            $leftNodesNodesOrig = $leftNodesNodes;
+            $leftNodesNodes = [];
+            foreach ($leftNodesNodesOrig as $leftNodeNodes) {
+                foreach ($innerNodeNodes as $innerNodeNode) {
+                    $nodes = $leftNodeNodes;
+                    if (!is_string($innerNodeNode) && !$innerNodeNode->isDisjunctive()) { // optimization only
+                        foreach ($innerNodeNode->getNodes() as $innerNodeNodeNode) {
+                            $nodes[] = $innerNodeNodeNode;
+                        }
+                    } else {
+                        $nodes[] = $innerNodeNode;
+                    }
+                    $leftNodesNodes[] = $nodes;
+                }
+            }
+        }
+
+        $innerNodes = [];
+        foreach ($leftNodesNodes as $nodes) {
+            $innerNodes[] = count($nodes) === 1
+                ? reset($nodes)
+                : new FuzzyRegexNode(false, $nodes);
+        }
+
+        return new FuzzyRegexNode(true, $innerNodes);
     }
 }

@@ -75,14 +75,44 @@ class FuzzyRegexBuilderTest extends TestCase
      */
     public function provideParseRegexData(): \Traversable
     {
-        yield ['(abc)', 'abc'];
+        yield ['()', ''];
+        yield ['(a)', 'a'];
+        yield ['(ab)', 'ab'];
         yield ['((ab)|(c))', 'ab|c'];
         yield ['([ab]c)', '[ab]c'];
         yield ['((a)|([bc]))', 'a|[bc]'];
-        yield ['()', ''];
-        yield ['((())(((()))?))', '()()?'];
+        yield ['(()((())?))', '()()?'];
         yield ['(((a)?)b((c)*)(((cd))+)((((e)|(f)))?))', 'a?bc*(cd)+(e|f)?'];
         yield ['(((a){2})b((c)?)(((cd)){1,2})((((e)|(f))){2,}))', 'a{2}bc{0,1}(cd){1,2}(e|f){2,}'];
         yield ['(\\\\((\d)+))', '\\\\\d+'];
+    }
+
+    /**
+     * @dataProvider provideExpandRegexTreeToDisjunctiveCharactersData
+     */
+    public function testExpandRegexTreeToDisjunctiveCharacters(string $expectedExpandedRegex, string $regexWithoutDelimiter): void
+    {
+        $builder = new FuzzyRegexBuilder();
+        $parsedTree = $builder->parseRegex($regexWithoutDelimiter);
+        $expandedTree = $builder->expandRegexTreeToDisjunctiveCharacters($parsedTree);
+        $this->assertSameRegexTree($expectedExpandedRegex, $expandedTree);
+    }
+
+    /**
+     * @return \Traversable<int, array{string, string}>
+     */
+    public function provideExpandRegexTreeToDisjunctiveCharactersData(): \Traversable
+    {
+        yield ['(())', ''];
+        yield ['(a)', 'a'];
+        yield ['((ab))', 'ab'];
+        yield ['((ab)|c)', 'ab|c'];
+        yield ['((ab)|(cd))', 'ab|cd'];
+        yield ['((ab)|())', 'ab|'];
+        yield ['((ab)|(c|d))', 'ab|(c|d)'];
+        yield ['((abc))', 'a(bc)'];
+        yield ['((ab)|(ac))', 'a(b|c)'];
+        yield ['((ab)|(ac))', '(((a)))((((((b)))|(((c))))))((()))'];
+        yield ['((axce)|(axcf)|(axcg)|(axde)|(axdf)|(axdg)|(byce)|(bycf)|(bycg)|(byde)|(bydf)|(bydg))', '(ax|by)(c|d)(e|f|g)'];
     }
 }
