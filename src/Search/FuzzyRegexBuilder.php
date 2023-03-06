@@ -56,7 +56,9 @@ class FuzzyRegexBuilder
         $currentNodes = [];
         foreach ($matchesAll as $matches) {
             if ($matches[0] === '|') {
-                $disjunctiveNodes[] = new FuzzyRegexNode(false, $currentNodes);
+                $disjunctiveNodes[] = count($currentNodes) === 1
+                    ? reset($currentNodes)
+                    : new FuzzyRegexNode(false, $currentNodes);
                 $currentNodes = [];
 
                 continue;
@@ -64,6 +66,15 @@ class FuzzyRegexBuilder
 
             if ($matches[2] !== '') {
                 $innerNode = $this->parseRegex(substr($matches[2], 1, -1));
+                if ($this->canUnwrapRegexNode($innerNode)) {
+                    $innerNodeNodes = $innerNode->getNodes();
+                    if ($innerNodeNodes === []) {
+                        continue;
+                    }
+                    if (count($innerNodeNodes) === 1 && is_string(reset($innerNodeNodes))) {
+                        $innerNode = reset($innerNodeNodes);
+                    }
+                }
             } else {
                 $innerNode = $matches[1];
             }
@@ -98,11 +109,13 @@ class FuzzyRegexBuilder
                 ? $innerNode
                 : new FuzzyRegexNode(false, [$innerNode], $quantifierMin, $quantifierMax);
         }
-        $disjunctiveNodes[] = new FuzzyRegexNode(false, $currentNodes);
+        $disjunctiveNodes[] = count($currentNodes) === 1
+            ? reset($currentNodes)
+            : new FuzzyRegexNode(false, $currentNodes);
 
-        return count($disjunctiveNodes) === 1
+        return count($disjunctiveNodes) === 1 && !is_string(reset($disjunctiveNodes))
             ? reset($disjunctiveNodes)
-            : new FuzzyRegexNode(count($disjunctiveNodes) > 0, $disjunctiveNodes);
+            : new FuzzyRegexNode(count($disjunctiveNodes) > 1, $disjunctiveNodes);
     }
 
     /**

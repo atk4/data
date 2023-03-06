@@ -67,7 +67,13 @@ class FuzzyRegexBuilderTest extends TestCase
     public function testParseRegex(string $expectedRegex, string $regexWithoutDelimiter): void
     {
         $builder = new FuzzyRegexBuilder();
-        $this->assertSameRegexTree($expectedRegex, $builder->parseRegex($regexWithoutDelimiter));
+        $parsedTree = $builder->parseRegex($regexWithoutDelimiter);
+        $this->assertSameRegexTree($expectedRegex, $parsedTree);
+
+        $exporter = new FuzzyRegexExporter();
+        $exportedRegex = $exporter->export($parsedTree);
+        $reparsedTree = $builder->parseRegex($exportedRegex);
+        $this->assertSameRegexTree($exportedRegex, $reparsedTree);
     }
 
     /**
@@ -78,12 +84,11 @@ class FuzzyRegexBuilderTest extends TestCase
         yield ['()', ''];
         yield ['(a)', 'a'];
         yield ['(ab)', 'ab'];
-        yield ['((ab)|(c))', 'ab|c'];
-        yield ['([ab]c)', '[ab]c'];
-        yield ['((a)|([bc]))', 'a|[bc]'];
-        yield ['(()((())?))', '()()?'];
-        yield ['(((a)?)b((c)*)(((cd))+)((((e)|(f)))?))', 'a?bc*(cd)+(e|f)?'];
-        yield ['(((a){2})b((c)?)(((cd)){1,2})((((e)|(f))){2,}))', 'a{2}bc{0,1}(cd){1,2}(e|f){2,}'];
+        yield ['(a[bc])', 'a[bc]'];
+        yield ['((ab)|c)', 'ab|c'];
+        yield ['(()|a)', '(((()))()?|(((a))))'];
+        yield ['(((a)?)b((c)*)(((cd))+)(((e|f))?))', 'a?bc*(cd)+(e|f)?'];
+        yield ['(((a){2})b((c)?)(((cd)){1,2})(((e|f)){2,}))', 'a{2}bc{0,1}(cd){1,2}(e|f){2,}'];
         yield ['(\\\\((\d)+))', '\\\\\d+'];
     }
 
@@ -105,12 +110,12 @@ class FuzzyRegexBuilderTest extends TestCase
     {
         yield ['(())', ''];
         yield ['(a)', 'a'];
-        yield ['((ab))', 'ab'];
-        yield ['((ab)|c)', 'ab|c'];
-        yield ['((ab)|(cd))', 'ab|cd'];
-        yield ['((ab)|())', 'ab|'];
-        yield ['((ab)|(c|d))', 'ab|(c|d)'];
         yield ['((abc))', 'a(bc)'];
+        yield ['((ab[cd]))', 'ab[cd]'];
+        yield ['((ab)|c)', 'ab|c'];
+        yield ['((ab)|())', 'ab|'];
+        yield ['((ab)|(cd))', 'ab|cd'];
+        yield ['((ab)|(c|d))', 'ab|(c|d)'];
         yield ['((ab)|(ac))', 'a(b|c)'];
         yield ['((ab)|(ac))', '(((a)))((((((b)))|(((c))))))((()))'];
         yield ['((axce)|(axcf)|(axcg)|(axde)|(axdf)|(axdg)|(byce)|(bycf)|(bycg)|(byde)|(bydf)|(bydg))', '(ax|by)(c|d)(e|f|g)'];
