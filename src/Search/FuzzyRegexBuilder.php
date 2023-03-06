@@ -142,13 +142,16 @@ class FuzzyRegexBuilder
             }
 
             $nodeExpanded = $this->expandRegexTreeToDisjunctiveCharacters($innerNode);
-            $nodeExpandedNodes = $nodeExpanded->getNodes();
-            if (count($nodeExpandedNodes) === 1) { // optimization only
-                $nodeExpanded = reset($nodeExpandedNodes);
-            }
-            $innerNodes[] = $nodeExpanded;
-            if ($nodeExpanded !== $innerNode) {
+            if ($nodeExpanded->isDisjunctive() === $node->isDisjunctive() && $this->canUnwrapRegexNode($nodeExpanded)) {
+                foreach ($nodeExpanded->getNodes() as $nodeExpandedNode) {
+                    $innerNodes[] = $nodeExpandedNode;
+                }
                 $isUnchanged = false;
+            } else {
+                $innerNodes[] = $nodeExpanded;
+                if ($nodeExpanded !== $innerNode) {
+                    $isUnchanged = false;
+                }
             }
         }
 
