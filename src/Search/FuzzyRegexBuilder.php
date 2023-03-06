@@ -17,7 +17,8 @@ class FuzzyRegexBuilder
         $lastPos = strrpos($regex, $delimiter);
 
         if (strlen($delimiter) !== 1 || $lastPos < 1) {
-            throw new Exception('Failed to locate regex delimiter');
+            throw (new Exception('Failed to locate regex delimiter'))
+                ->addMoreInfo('regex', $regex);
         }
 
         $regexWithoutDelimiter = substr($regex, 1, $lastPos - 1);
@@ -47,7 +48,8 @@ class FuzzyRegexBuilder
                 $matchesAll,
                 \PREG_SET_ORDER
             ) === false || array_sum(array_map(fn ($matches) => strlen($matches[0]), $matchesAll)) !== strlen($regexWithoutDelimiter)) {
-            throw new Exception('Failed to tokenize search regex');
+            throw (new Exception('Failed to tokenize search regex'))
+                ->addMoreInfo('regex', $regexWithoutDelimiter);
         }
 
         $disjunctiveNodes = [];
