@@ -34,6 +34,11 @@ class FuzzyRegexBuilder
         return str_replace($newDelimiter, '\\' . $newDelimiter, str_replace('\\' . $delimiter, $delimiter, $regexWithoutDelimiter));
     }
 
+    protected function canUnwrapRegexNode(FuzzyRegexNode $node): bool
+    {
+        return !$node->hasQuantifier();
+    }
+
     public function parseRegex(string $regexWithoutDelimiter): FuzzyRegexNode
     {
         if (preg_match_all(
@@ -149,7 +154,7 @@ class FuzzyRegexBuilder
             foreach ($leftNodesNodesOrig as $leftNodeNodes) {
                 foreach ($innerNodeNodes as $innerNodeNode) {
                     $nodes = $leftNodeNodes;
-                    if (!is_string($innerNodeNode) && !$innerNodeNode->isDisjunctive()) { // optimization only
+                    if (!is_string($innerNodeNode) && !$innerNodeNode->isDisjunctive() && $this->canUnwrapRegexNode($innerNodeNode)) { // optimization only
                         foreach ($innerNodeNode->getNodes() as $innerNodeNodeNode) {
                             $nodes[] = $innerNodeNodeNode;
                         }
