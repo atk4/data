@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Search;
 
 use Atk4\Core\WarnDynamicPropertyTrait;
+use Atk4\Data\Exception;
 
 class FuzzyRegexBuilder
 {
@@ -36,7 +37,7 @@ class FuzzyRegexBuilder
     public function parseRegex(string $regexWithoutDelimiter): FuzzyRegexNode
     {
         if (preg_match_all(
-                '~(\\\\.|\[(?:\\\\.|[^\]])*\]|(\((?1)*?\))|.)([?*+]|\{(\d+)(,?)(\d*)\}|)~su',
+                '~(\\\\.|(\((?R)*+\))|\[(?:\\\\.|[^\]])*\]|[^\\\\()])([?*+]|\{(\d+)(,?)(\d*)\}|)~su',
                 $regexWithoutDelimiter,
                 $matchesAll,
                 \PREG_SET_ORDER
