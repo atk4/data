@@ -43,7 +43,7 @@ class FuzzyRegexBuilder
     public function parseRegex(string $regexWithoutDelimiter): FuzzyRegexNode
     {
         if (preg_match_all(
-                '~(\\\\.|(\((?R)*+\))|\[(?:\\\\.|[^\]])*\]|[^\\\\()])([?*+]|\{(\d+)(,?)(\d*)\}|)~su',
+                '~(\\\\.|(\((?R)*+\))|\[(?:\\\\.|[^\]])*\]|[^\\\\()[\]])([?*+]|\{(\d+)(,?)(\d*)\}|)~su',
                 $regexWithoutDelimiter,
                 $matchesAll,
                 \PREG_SET_ORDER
