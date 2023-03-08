@@ -35,11 +35,6 @@ class FuzzyRegexBuilder
         return str_replace($newDelimiter, '\\' . $newDelimiter, str_replace('\\' . $delimiter, $delimiter, $regexWithoutDelimiter));
     }
 
-    protected function canUnwrapRegexNode(FuzzyRegexNode $node): bool
-    {
-        return !$node->hasQuantifier();
-    }
-
     public function parseRegex(string $regexWithoutDelimiter): FuzzyRegexNode
     {
         if (preg_match_all(
@@ -66,7 +61,7 @@ class FuzzyRegexBuilder
 
             if ($matches[2] !== '') {
                 $innerNode = $this->parseRegex(substr($matches[2], 1, -1));
-                if ($this->canUnwrapRegexNode($innerNode)) {
+                if (!$innerNode->hasQuantifier()) {
                     $innerNodeNodes = $innerNode->getNodes();
                     if ($innerNodeNodes === []) {
                         continue;
@@ -119,10 +114,12 @@ class FuzzyRegexBuilder
     }
 
     /**
-     * WARNING: string nodes are expected to be single character already, this is true when
+     * @return list<FuzzyRegexNode>
+     *
+     * WARNING: string nodes are assumed to be conjunctive, this is true when
      *          the regex tree was created using self::parseRegex() method
      */
-    public function expandRegexTreeToDisjunctiveCharacters(FuzzyRegexNode $node): FuzzyRegexNode
+    public function transformRegexToConjunctions(FuzzyRegexNode $node): array
     {
         // expand quantifier so start/end characters can be separated
         if ($node->hasQuantifier()) {
@@ -133,7 +130,6 @@ class FuzzyRegexBuilder
         }
 
         $innerNodes = [];
-        $isUnchanged = true;
         foreach ($node->getNodes() as $innerNode) {
             if (is_string($innerNode)) {
                 $innerNodes[] = $innerNode;
@@ -141,24 +137,18 @@ class FuzzyRegexBuilder
                 continue;
             }
 
-            $nodeExpanded = $this->expandRegexTreeToDisjunctiveCharacters($innerNode);
-            if ($nodeExpanded->isDisjunctive() === $node->isDisjunctive() && $this->canUnwrapRegexNode($nodeExpanded)) {
-                foreach ($nodeExpanded->getNodes() as $nodeExpandedNode) {
-                    $innerNodes[] = $nodeExpandedNode;
+            $conjunctiveNodes = $this->transformRegexToConjunctions($innerNode);
+            if ($node->isDisjunctive()) {
+                foreach ($conjunctiveNodes as $conjunctiveNode) {
+                    $innerNodes[] = $conjunctiveNode;
                 }
-                $isUnchanged = false;
             } else {
-                $innerNodes[] = $nodeExpanded;
-                if ($nodeExpanded !== $innerNode) {
-                    $isUnchanged = false;
-                }
+                $innerNodes[] = new FuzzyRegexNode(true, $conjunctiveNodes);
             }
         }
 
         if ($node->isDisjunctive()) {
-            return $isUnchanged
-                ? $node
-                : new FuzzyRegexNode(true, $innerNodes);
+            return $innerNodes;
         }
 
         $leftNodesNodes = [[]];
@@ -172,7 +162,7 @@ class FuzzyRegexBuilder
             foreach ($leftNodesNodesOrig as $leftNodeNodes) {
                 foreach ($innerNodeNodes as $innerNodeNode) {
                     $nodes = $leftNodeNodes;
-                    if (!is_string($innerNodeNode) && !$innerNodeNode->isDisjunctive() && $this->canUnwrapRegexNode($innerNodeNode)) { // optimization only
+                    if (!is_string($innerNodeNode) && !$innerNodeNode->isDisjunctive() && !$innerNodeNode->hasQuantifier()) { // optimization only
                         foreach ($innerNodeNode->getNodes() as $innerNodeNodeNode) {
                             $nodes[] = $innerNodeNodeNode;
                         }
@@ -184,13 +174,13 @@ class FuzzyRegexBuilder
             }
         }
 
-        $innerNodes = [];
+        $res = [];
         foreach ($leftNodesNodes as $nodes) {
-            $innerNodes[] = count($nodes) === 1
+            $res[] = count($nodes) === 1
                 ? reset($nodes)
                 : new FuzzyRegexNode(false, $nodes);
         }
 
-        return new FuzzyRegexNode(true, $innerNodes);
+        return $res;
     }
 }
