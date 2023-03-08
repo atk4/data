@@ -93,20 +93,20 @@ class FuzzyRegexBuilderTest extends TestCase
     }
 
     /**
-     * @dataProvider provideTransformRegexToConjunctionsData
+     * @dataProvider provideExpandRegexToConjunctionsData
      */
-    public function testTransformRegexToConjunctions(string $expectedRegex, string $regexWithoutDelimiter): void
+    public function testExpandRegexToConjunctions(string $expectedRegex, string $regexWithoutDelimiter): void
     {
         $builder = new FuzzyRegexBuilder();
         $parsedTree = $builder->parseRegex($regexWithoutDelimiter);
-        $conjunctiveTrees = $builder->transformRegexToConjunctions($parsedTree);
+        $conjunctiveTrees = $builder->expandRegexToConjunctions($parsedTree);
         $this->assertSameRegexTree($expectedRegex, new FuzzyRegexNode(true, $conjunctiveTrees));
     }
 
     /**
      * @return \Traversable<int, array{string, string}>
      */
-    public function provideTransformRegexToConjunctionsData(): \Traversable
+    public function provideExpandRegexToConjunctionsData(): \Traversable
     {
         yield ['(())', ''];
         yield ['(a)', 'a'];

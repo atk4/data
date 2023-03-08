@@ -116,58 +116,58 @@ class FuzzyRegexBuilder
     /**
      * @return list<FuzzyRegexNode>
      *
-     * WARNING: string nodes are assumed to be conjunctive, this is true when
-     *          the regex tree was created using self::parseRegex() method
+     * WARNING: string nodes are assumed to be conjunctive, this is true when the regex tree
+     *          was created using self::parseRegex() method
      */
-    public function transformRegexToConjunctions(FuzzyRegexNode $node): array
+    public function expandRegexToConjunctions(FuzzyRegexNode $node): array
     {
-        $innerNodes = [];
+        $conjunctiveNodes = [];
         foreach ($node->getNodes() as $innerNode) {
             if (is_string($innerNode)) {
-                $innerNodes[] = $innerNode;
+                $conjunctiveNodes[] = $innerNode;
 
                 continue;
             }
 
-            $conjunctiveNodes = $this->transformRegexToConjunctions($innerNode);
+            $innerNodes = $this->expandRegexToConjunctions($innerNode);
             if ($node->isDisjunctive()) {
-                foreach ($conjunctiveNodes as $conjunctiveNode) {
-                    $innerNodes[] = $conjunctiveNode;
+                foreach ($innerNodes as $conjunctiveNode) {
+                    $conjunctiveNodes[] = $conjunctiveNode;
                 }
             } else {
-                $innerNodes[] = new FuzzyRegexNode(true, $conjunctiveNodes);
+                $conjunctiveNodes[] = new FuzzyRegexNode(true, $innerNodes);
             }
         }
 
         if ($node->isDisjunctive()) {
             if ($node->hasQuantifier()) {
-                $innerNodesOrig = $innerNodes;
-                $innerNodes = [];
-                foreach ($innerNodesOrig as $innerNode) {
-                    $innerNodes[] = new FuzzyRegexNode(false, [$innerNode], ...$node->getQuantifier());
+                $conjunctiveNodesOrig = $conjunctiveNodes;
+                $conjunctiveNodes = [];
+                foreach ($conjunctiveNodesOrig as $conjunctiveNode) {
+                    $conjunctiveNodes[] = new FuzzyRegexNode(false, [$conjunctiveNode], ...$node->getQuantifier());
                 }
             }
 
-            return $innerNodes;
+            return $conjunctiveNodes;
         }
 
         $leftNodesNodes = [[]];
-        foreach ($innerNodes as $innerNode) {
-            $innerNodeNodes = is_string($innerNode)
-                ? [$innerNode]
-                : $innerNode->getNodes();
+        foreach ($conjunctiveNodes as $conjunctiveNode) {
+            $innerNodes = is_string($conjunctiveNode)
+                ? [$conjunctiveNode]
+                : $conjunctiveNode->getNodes();
 
             $leftNodesNodesOrig = $leftNodesNodes;
             $leftNodesNodes = [];
             foreach ($leftNodesNodesOrig as $leftNodeNodes) {
-                foreach ($innerNodeNodes as $innerNodeNode) {
+                foreach ($innerNodes as $innerNode) {
                     $nodes = $leftNodeNodes;
-                    if (!is_string($innerNodeNode) && !$innerNodeNode->isDisjunctive() && !$innerNodeNode->hasQuantifier()) { // optimization only
-                        foreach ($innerNodeNode->getNodes() as $innerNodeNodeNode) {
-                            $nodes[] = $innerNodeNodeNode;
+                    if (!is_string($innerNode) && !$innerNode->hasQuantifier()) { // optimization only
+                        foreach ($innerNode->getNodes() as $innerNodeNode) {
+                            $nodes[] = $innerNodeNode;
                         }
                     } else {
-                        $nodes[] = $innerNodeNode;
+                        $nodes[] = $innerNode;
                     }
                     $leftNodesNodes[] = $nodes;
                 }
