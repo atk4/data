@@ -121,14 +121,6 @@ class FuzzyRegexBuilder
      */
     public function transformRegexToConjunctions(FuzzyRegexNode $node): array
     {
-        // expand quantifier so start/end characters can be separated
-        if ($node->hasQuantifier()) {
-            [$quantifierMin, $quantifierMax] = $node->getQuantifier();
-
-            // TODO
-            // return here - code below does expect no quantifier
-        }
-
         $innerNodes = [];
         foreach ($node->getNodes() as $innerNode) {
             if (is_string($innerNode)) {
@@ -148,13 +140,21 @@ class FuzzyRegexBuilder
         }
 
         if ($node->isDisjunctive()) {
+            if ($node->hasQuantifier()) {
+                $innerNodesOrig = $innerNodes;
+                $innerNodes = [];
+                foreach ($innerNodesOrig as $innerNode) {
+                    $innerNodes[] = new FuzzyRegexNode(false, [$innerNode], ...$node->getQuantifier());
+                }
+            }
+
             return $innerNodes;
         }
 
         $leftNodesNodes = [[]];
         foreach ($innerNodes as $innerNode) {
-            $innerNodeNodes = is_string($innerNode) || !$innerNode->isDisjunctive()
-                ?[$innerNode]
+            $innerNodeNodes = is_string($innerNode)
+                ? [$innerNode]
                 : $innerNode->getNodes();
 
             $leftNodesNodesOrig = $leftNodesNodes;
@@ -176,9 +176,9 @@ class FuzzyRegexBuilder
 
         $res = [];
         foreach ($leftNodesNodes as $nodes) {
-            $res[] = count($nodes) === 1
+            $res[] = count($nodes) === 1 && !$node->hasQuantifier()
                 ? reset($nodes)
-                : new FuzzyRegexNode(false, $nodes);
+                : new FuzzyRegexNode(false, $nodes, ...$node->getQuantifier());
         }
 
         return $res;

@@ -120,5 +120,13 @@ class FuzzyRegexBuilderTest extends TestCase
         yield ['((ab)|(ac))', '(((a)))((((((b)))|(((c))))))((()))'];
         yield ['((axce)|(axcf)|(axcg)|(axde)|(axdf)|(axdg)|(byce)|(bycf)|(bycg)|(byde)|(bydf)|(bydg))', '(ax|by)(c|d)(e|f|g)'];
         yield ['((ab)|(acd)|a)', 'a((b|cd)|)'];
+
+        yield ['(((a)+))', 'a+'];
+        yield ['((((a)+)b))', 'a+b'];
+        yield ['(((a)+)|b)', 'a+|b'];
+        yield ['(((a)+)|((bc)+))', 'a+|(bc)+'];
+        yield ['(((a)+)|((bc)+))', '(a|bc)+'];
+        yield ['(((((a)+)b)+))', '(a+b)+'];
+        yield ['(((((a)+)d)+)|((((bc)+)d)+))', '((a|bc)+d)+'];
     }
 }
