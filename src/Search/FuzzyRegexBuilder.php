@@ -259,7 +259,7 @@ class FuzzyRegexBuilder
 
                 $res[] = new FuzzyRegexNode(false, $innerNodes);
 
-                if ($quantifierMax === \PHP_INT_MAX) {
+                if ($quantifierMax === \PHP_INT_MAX && $i >= $quantifierMin - 1) {
                     break;
                 }
             }
