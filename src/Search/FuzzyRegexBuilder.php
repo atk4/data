@@ -38,20 +38,20 @@ class FuzzyRegexBuilder
     public function parseRegex(string $regexWithoutDelimiter): FuzzyRegexNode
     {
         if (preg_match_all(
-                '~(\\\\.|(\((?R)*+\))|\[(?:\\\\.|[^\]])*\]|[^\\\\()[\]])([?*+]|\{(\d+)(,?)(\d*)\}|)~su',
-                $regexWithoutDelimiter,
-                $matchesAll,
-                \PREG_SET_ORDER
-            ) === false || array_sum(array_map(fn ($matches) => strlen($matches[0]), $matchesAll)) !== strlen($regexWithoutDelimiter)) {
+            '~(\\\\.|(\((?R)*+\))|\[(?:\\\\.|[^\]])*\]|[^\\\\()[\]])([?*+]|\{(\d+)(,?)(\d*)\}|)~su',
+            $regexWithoutDelimiter,
+            $matchesAll,
+            \PREG_SET_ORDER
+        ) === false || array_sum(array_map(fn ($matches) => strlen($matches[0]), $matchesAll)) !== strlen($regexWithoutDelimiter)) {
             throw (new Exception('Failed to tokenize search regex'))
                 ->addMoreInfo('regex', $regexWithoutDelimiter);
         }
 
-        $disjunctiveNodes = [];
+        $nodes = [];
         $currentNodes = [];
         foreach ($matchesAll as $matches) {
             if ($matches[0] === '|') {
-                $disjunctiveNodes[] = count($currentNodes) === 1
+                $nodes[] = count($currentNodes) === 1
                     ? reset($currentNodes)
                     : new FuzzyRegexNode(false, $currentNodes);
                 $currentNodes = [];
@@ -104,17 +104,58 @@ class FuzzyRegexBuilder
                 ? $innerNode
                 : new FuzzyRegexNode(false, [$innerNode], $quantifierMin, $quantifierMax);
         }
-        $disjunctiveNodes[] = count($currentNodes) === 1
+        $nodes[] = count($currentNodes) === 1
             ? reset($currentNodes)
             : new FuzzyRegexNode(false, $currentNodes);
 
-        return count($disjunctiveNodes) === 1 && !is_string(reset($disjunctiveNodes))
-            ? reset($disjunctiveNodes)
-            : new FuzzyRegexNode(count($disjunctiveNodes) > 1, $disjunctiveNodes);
+        return count($nodes) === 1 && !is_string(reset($nodes))
+            ? reset($nodes)
+            : new FuzzyRegexNode(count($nodes) > 1, $nodes);
     }
 
     /**
-     * @return list<FuzzyRegexNode>
+     * @param list<string|FuzzyRegexNode> $conjunctiveNodes
+     * @param array{int, int} $quantifier
+     *
+     * @return list<string|FuzzyRegexNode>
+     */
+    protected function flattenConjunctionsShallow(array $conjunctiveNodes, array $quantifier): array
+    {
+        $leftNodesNodes = [[]];
+        foreach ($conjunctiveNodes as $conjunctiveNode) {
+            $innerNodes = !is_string($conjunctiveNode) && !$conjunctiveNode->hasQuantifier()
+                ? $conjunctiveNode->getNodes()
+                : [$conjunctiveNode];
+
+            $leftNodesNodesOrig = $leftNodesNodes;
+            $leftNodesNodes = [];
+            foreach ($leftNodesNodesOrig as $leftNodeNodes) {
+                foreach ($innerNodes as $innerNode) {
+                    $nodes = $leftNodeNodes;
+                    if (!is_string($innerNode) && !$innerNode->hasQuantifier()) {
+                        foreach ($innerNode->getNodes() as $innerNodeNode) {
+                            $nodes[] = $innerNodeNode;
+                        }
+                    } else {
+                        $nodes[] = $innerNode;
+                    }
+                    $leftNodesNodes[] = $nodes;
+                }
+            }
+        }
+
+        $res = [];
+        foreach ($leftNodesNodes as $nodes) {
+            $res[] = count($nodes) === 1 && $quantifier === [1, 1]
+                ? reset($nodes)
+                : new FuzzyRegexNode(false, $nodes, ...$quantifier);
+        }
+
+        return $res;
+    }
+
+    /**
+     * @return list<string|FuzzyRegexNode>
      *
      * WARNING: string nodes are assumed to be conjunctive, this is true when the regex tree
      *          was created using self::parseRegex() method
@@ -125,17 +166,15 @@ class FuzzyRegexBuilder
         foreach ($node->getNodes() as $innerNode) {
             if (is_string($innerNode)) {
                 $conjunctiveNodes[] = $innerNode;
-
-                continue;
-            }
-
-            $innerNodes = $this->expandRegexToConjunctions($innerNode);
-            if ($node->isDisjunctive()) {
-                foreach ($innerNodes as $conjunctiveNode) {
-                    $conjunctiveNodes[] = $conjunctiveNode;
-                }
             } else {
-                $conjunctiveNodes[] = new FuzzyRegexNode(true, $innerNodes);
+                $innerNodes = $this->expandRegexToConjunctions($innerNode);
+                if ($node->isDisjunctive()) {
+                    foreach ($innerNodes as $conjunctiveNode) {
+                        $conjunctiveNodes[] = $conjunctiveNode;
+                    }
+                } else {
+                    $conjunctiveNodes[] = new FuzzyRegexNode(true, $innerNodes);
+                }
             }
         }
 
@@ -151,34 +190,107 @@ class FuzzyRegexBuilder
             return $conjunctiveNodes;
         }
 
-        $leftNodesNodes = [[]];
-        foreach ($conjunctiveNodes as $conjunctiveNode) {
-            $innerNodes = is_string($conjunctiveNode)
-                ? [$conjunctiveNode]
-                : $conjunctiveNode->getNodes();
+        $res = $this->flattenConjunctionsShallow($conjunctiveNodes, $node->getQuantifier());
 
-            $leftNodesNodesOrig = $leftNodesNodes;
-            $leftNodesNodes = [];
-            foreach ($leftNodesNodesOrig as $leftNodeNodes) {
-                foreach ($innerNodes as $innerNode) {
-                    $nodes = $leftNodeNodes;
-                    if (!is_string($innerNode) && !$innerNode->hasQuantifier()) { // optimization only
-                        foreach ($innerNode->getNodes() as $innerNodeNode) {
-                            $nodes[] = $innerNodeNode;
-                        }
-                    } else {
-                        $nodes[] = $innerNode;
-                    }
-                    $leftNodesNodes[] = $nodes;
-                }
+        return $res;
+    }
+
+    /**
+     * @return list<string|FuzzyRegexNode>
+     */
+    protected function expandConjunctionsForOneTypoSingle(FuzzyRegexNode $conjunctiveNode): array
+    {
+        $conjunctiveNodes = [];
+        foreach ($conjunctiveNode->getNodes() as $innerNode) {
+            if (is_string($innerNode)) {
+                $conjunctiveNodes[] = $innerNode;
+            } else {
+                $conjunctiveNodes[] = new FuzzyRegexNode(true, $this->expandConjunctionsForOneTypoSingle($innerNode));
             }
         }
 
+        $conjunctiveNodes = $this->flattenConjunctionsShallow($conjunctiveNodes, [1, 1]);
+
+        if (!$conjunctiveNode->hasQuantifier()) {
+            return $conjunctiveNodes;
+        }
+
+        [$quantifierMin, $quantifierMax] = $conjunctiveNode->getQuantifier();
+
         $res = [];
-        foreach ($leftNodesNodes as $nodes) {
-            $res[] = count($nodes) === 1 && !$node->hasQuantifier()
-                ? reset($nodes)
-                : new FuzzyRegexNode(false, $nodes, ...$node->getQuantifier());
+        foreach ($conjunctiveNodes as $node) {
+            if ($quantifierMax <= 2) {
+                if ($quantifierMax >= 2) {
+                    $res[] = new FuzzyRegexNode(false, [$node, $node]);
+                    if ($quantifierMin >= 2) {
+                        continue;
+                    }
+                }
+                if ($quantifierMax >= 1) {
+                    $res[] = $node;
+                    if ($quantifierMin >= 1) {
+                        continue;
+                    }
+                }
+
+                $res[] = new FuzzyRegexNode(false, []);
+
+                continue;
+            }
+
+            for ($i = 0; $i < $quantifierMax; ++$i) {
+                $quantifierLeftMin = max(0, $quantifierMin - $i - 1);
+                $quantifierLeftMax = $quantifierMax === \PHP_INT_MAX ? \PHP_INT_MAX : $quantifierMax - $i - 1;
+                $quantifierRightMin = max(0, $quantifierMin - $quantifierLeftMin - 1);
+                $quantifierRightMax = $quantifierMax === \PHP_INT_MAX ? \PHP_INT_MAX : $quantifierMax - $quantifierLeftMax - 1;
+
+                $innerNodes = [];
+                if ($quantifierLeftMax !== 0) {
+                    $innerNodes[] = $quantifierLeftMin === 1 && $quantifierLeftMax === 1
+                        ? $node
+                        : new FuzzyRegexNode(false, !is_string($node) && !$node->hasQuantifier() ? $node->getNodes() : [$node], $quantifierLeftMin, $quantifierLeftMax);
+                }
+                $innerNodes[] = $node;
+                if ($quantifierRightMax !== 0) {
+                    $innerNodes[] = $quantifierRightMin === 1 && $quantifierRightMax === 1
+                        ? $node
+                        : new FuzzyRegexNode(false, !is_string($node) && !$node->hasQuantifier() ? $node->getNodes() : [$node], $quantifierRightMin, $quantifierRightMax);
+                }
+
+                $res[] = new FuzzyRegexNode(false, $innerNodes);
+
+                if ($quantifierMax === \PHP_INT_MAX) {
+                    break;
+                }
+            }
+
+            if ($quantifierMin === 0) {
+                $res[] = new FuzzyRegexNode(false, []);
+            }
+        }
+
+        return $res;
+    }
+
+    /**
+     * Expand nodes with quantifiers such exactly one typo can be detected if allowed in exactly
+     * one node without quantifiers.
+     *
+     * @param list<string|FuzzyRegexNode> $conjunctiveNodes
+     *
+     * @return list<string|FuzzyRegexNode>
+     */
+    public function expandConjunctionsForOneTypo(array $conjunctiveNodes): array
+    {
+        $res = [];
+        foreach ($conjunctiveNodes as $conjunctiveNode) {
+            if (is_string($conjunctiveNode)) {
+                $res[] = $conjunctiveNode;
+            } else {
+                foreach ($this->expandConjunctionsForOneTypoSingle($conjunctiveNode) as $conjunctiveNodeNode) {
+                    $res[] = $conjunctiveNodeNode;
+                }
+            }
         }
 
         return $res;
