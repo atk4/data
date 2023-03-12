@@ -229,20 +229,17 @@ class FuzzyRegexBuilder
             }
 
             if ($quantifierMax <= 2) {
-                if ($quantifierMax >= 2) {
-                    $res[] = new FuzzyRegexNode(false, [...$nodeNodes, ...$nodeNodes]);
-                    if ($quantifierMin >= 2) {
-                        continue;
+                for ($i = $quantifierMax; $i >= $quantifierMin; --$i) {
+                    $innerNodes = [];
+                    for ($j = 0; $j < $i; ++$j) {
+                        foreach ($nodeNodes as $nodeNode) {
+                            $innerNodes[] = $nodeNode;
+                        }
                     }
+                    $res[] = count($innerNodes) === 1
+                        ? reset($innerNodes)
+                        : new FuzzyRegexNode(false, $innerNodes);
                 }
-                if ($quantifierMax >= 1) {
-                    $res[] = $node;
-                    if ($quantifierMin >= 1) {
-                        continue;
-                    }
-                }
-
-                $res[] = new FuzzyRegexNode(false, []);
 
                 continue;
             }
@@ -275,7 +272,6 @@ class FuzzyRegexBuilder
                         $innerNodes[] = new FuzzyRegexNode(false, $nodeNodes, $quantifierRightMin, $quantifierRightMax);
                     }
                 }
-
                 $res[] = new FuzzyRegexNode(false, $innerNodes);
 
                 if ($quantifierMax === \PHP_INT_MAX && $i >= $quantifierMin - 1) {
