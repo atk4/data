@@ -141,7 +141,7 @@ class FuzzyRegexTest extends TestCase
         $builder = new FuzzyRegexBuilder();
         $parsedTree = $builder->parseRegex($regexWithoutDelimiter);
         $conjunctiveTrees = $builder->expandRegexToConjunctions($parsedTree);
-        $conjunctiveForOneTypoTrees = $builder->expandConjunctionsForOneTypo($conjunctiveTrees);
+        $conjunctiveForOneTypoTrees = \Closure::bind(fn () => $builder->expandConjunctionsForOneTypo($conjunctiveTrees), null, FuzzyRegexBuilder::class)();
         $this->assertSameRegexTree($expectedRegex, new FuzzyRegexNode(true, $conjunctiveForOneTypoTrees));
     }
 
@@ -175,7 +175,12 @@ class FuzzyRegexTest extends TestCase
         yield ['((((a){2,3})a)|(((a){1,2})aa)|(((a)?)a((a){2}))|(a((a){2,3})))', 'a{3,4}'];
         yield ['((((a){3})a)|(((a){2})aa)|(aa((a){2}))|(a((a){3})))', 'a{4}'];
         yield ['((((a){0,5})a)|(((a){0,4})a((a)?))|(((a){0,3})a((a){0,2}))|(((a){0,2})a((a){0,3}))|(((a)?)a((a){0,4}))|(a((a){0,5})))', 'a{1,6}'];
+        yield ['((abab)|(ab)|())', '(ab){0,2}'];
+        yield ['((((ab)*)ab((ab)*))|())', '(ab)*'];
+        yield ['((((ab)*)ab((ab)*)))', '(ab)+'];
+        yield ['((((ab){2})ab)|(ababab)|(ab((ab){2})))', '(ab){3}'];
         yield ['((ab)|b)', '(a?b)'];
-        yield ['((((a)*)a((a)*)b)|b)', '(a*b)'];
+        yield ['((abc)|c)', '((ab)?c)'];
+        yield ['((((((ab)*)ab((ab)*)c)*)((ab)*)ab((ab)*)c((((ab)*)ab((ab)*)c)*)))', '((ab)+c)+'];
     }
 }
