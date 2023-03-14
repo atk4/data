@@ -136,17 +136,17 @@ class FuzzyRegexTest extends TestCase
     /**
      * @dataProvider provideExpandConjunctionsForOneTypoData
      */
-    public function testExpandConjunctionsForOneTypo(string $expectedRegex, string $regexWithoutDelimiter): void
+    public function testExpandConjunctionsForOneTypo(string $expectedRegex, string $regexWithoutDelimiter, int $unquantifiedCount = 1): void
     {
         $builder = new FuzzyRegexBuilder();
         $parsedTree = $builder->parseRegex($regexWithoutDelimiter);
         $conjunctiveTrees = $builder->expandRegexToConjunctions($parsedTree);
-        $conjunctiveForOneTypoTrees = \Closure::bind(fn () => $builder->expandConjunctionsForOneTypo($conjunctiveTrees), null, FuzzyRegexBuilder::class)();
+        $conjunctiveForOneTypoTrees = \Closure::bind(fn () => $builder->expandConjunctionsForOneTypo($conjunctiveTrees, $unquantifiedCount), null, FuzzyRegexBuilder::class)();
         $this->assertSameRegexTree($expectedRegex, new FuzzyRegexNode(true, $conjunctiveForOneTypoTrees));
     }
 
     /**
-     * @return \Traversable<int, array{string, string}>
+     * @return \Traversable<int, array{string, string, ?int}>
      */
     public function provideExpandConjunctionsForOneTypoData(): \Traversable
     {
@@ -175,6 +175,7 @@ class FuzzyRegexTest extends TestCase
         yield ['((((a){2,3})a)|(((a){1,2})aa)|(((a)?)a((a){2}))|(a((a){2,3})))', 'a{3,4}'];
         yield ['((((a){3})a)|(((a){2})aa)|(aa((a){2}))|(a((a){3})))', 'a{4}'];
         yield ['((((a){0,5})a)|(((a){0,4})a((a)?))|(((a){0,3})a((a){0,2}))|(((a){0,2})a((a){0,3}))|(((a)?)a((a){0,4}))|(a((a){0,5})))', 'a{1,6}'];
+
         yield ['((abab)|(ab)|())', '(ab){0,2}'];
         yield ['((((ab)*)ab((ab)*))|())', '(ab)*'];
         yield ['((((ab)*)ab((ab)*)))', '(ab)+'];
@@ -182,5 +183,26 @@ class FuzzyRegexTest extends TestCase
         yield ['((ab)|b)', '(a?b)'];
         yield ['((abc)|c)', '((ab)?c)'];
         yield ['((((((ab)*)ab((ab)*)c)*)((ab)*)ab((ab)*)c((((ab)*)ab((ab)*)c)*)))', '((ab)+c)+'];
+
+        yield ['(((a)?))', 'a?', 0];
+        yield ['(a|())', 'a?', 2];
+        yield ['((aa)|a|())', 'a{0,2}', 2];
+        yield ['((aa)|a)', 'a{1,2}', 2];
+        yield ['((aa))', 'a{2}', 2];
+        yield ['((((a)*)aa((a)*))|a|())', 'a*', 2];
+        yield ['((((a)*)aa((a)*))|a)', 'a+', 2];
+        yield ['((((a)*)aa((a)*)))', 'a{2,}', 2];
+        yield ['((((a)+)aa((a)*))|(((a)*)aa((a)+)))', 'a{3,}', 2];
+        yield ['((((a){2,})aa((a)*))|(((a)+)aa((a)+))|(((a)*)aa((a){2,})))', 'a{4,}', 2];
+        yield ['((aaa)|(aa)|a|())', 'a{0,3}', 2];
+        yield ['((aaa)|(aa)|a)', 'a{1,3}', 2];
+        yield ['((aaa)|(aa))', 'a{2,3}', 2];
+        yield ['((aaa))', 'a{3}', 2];
+        yield ['((((a){0,2})aa)|(((a)?)aa((a)?))|(aa((a){0,2}))|a|())', 'a{0,4}', 2];
+        yield ['((((a){0,2})aa)|(((a)?)aa((a)?))|(aa((a){0,2}))|a)', 'a{1,4}', 2];
+        yield ['((((a){0,2})aa)|(((a)?)aa((a)?))|(aa((a){0,2})))', 'a{2,4}', 2];
+        yield ['((((a){1,2})aa)|(((a)?)aaa)|(aa((a){1,2})))', 'a{3,4}', 2];
+        yield ['((((a){2})aa)|(aaaa)|(aa((a){2})))', 'a{4}', 2];
+        yield ['((((a){0,4})aa)|(((a){0,3})aa((a)?))|(((a){0,2})aa((a){0,2}))|(((a)?)aa((a){0,3}))|(aa((a){0,4}))|a)', 'a{1,6}', 2];
     }
 }

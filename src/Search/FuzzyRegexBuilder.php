@@ -198,14 +198,18 @@ class FuzzyRegexBuilder
     /**
      * @return list<string|FuzzyRegexNode>
      */
-    protected function expandConjunctionsForOneTypoSingle(FuzzyRegexNode $conjunctiveNode): array
+    protected function expandConjunctionsForOneTypoSingle(FuzzyRegexNode $conjunctiveNode, int $unquantifiedCount): array
     {
+        if ($unquantifiedCount <= 0) {
+            return [$conjunctiveNode];
+        }
+
         $conjunctiveNodes = [];
         foreach ($conjunctiveNode->getNodes() as $innerNode) {
             if (is_string($innerNode)) {
                 $conjunctiveNodes[] = $innerNode;
             } else {
-                $conjunctiveNodes[] = new FuzzyRegexNode(true, $this->expandConjunctionsForOneTypoSingle($innerNode));
+                $conjunctiveNodes[] = new FuzzyRegexNode(true, $this->expandConjunctionsForOneTypoSingle($innerNode, $unquantifiedCount));
             }
         }
 
@@ -218,6 +222,7 @@ class FuzzyRegexBuilder
         [$quantifierMin, $quantifierMax] = $conjunctiveNode->getQuantifier();
 
         $res = [];
+        $skipLoop = $quantifierMax < 2 + $unquantifiedCount;
         foreach ($conjunctiveNodes as $node) {
             $nodeNodes = [];
             if (!is_string($node) && !$node->hasQuantifier()) {
@@ -228,27 +233,11 @@ class FuzzyRegexBuilder
                 $nodeNodes[] = $node;
             }
 
-            if ($quantifierMax <= 2) {
-                for ($i = $quantifierMax; $i >= $quantifierMin; --$i) {
-                    $innerNodes = [];
-                    for ($j = 0; $j < $i; ++$j) {
-                        foreach ($nodeNodes as $nodeNode) {
-                            $innerNodes[] = $nodeNode;
-                        }
-                    }
-                    $res[] = count($innerNodes) === 1
-                        ? reset($innerNodes)
-                        : new FuzzyRegexNode(false, $innerNodes);
-                }
-
-                continue;
-            }
-
-            for ($i = 0; $i < $quantifierMax; ++$i) {
-                $quantifierLeftMin = max(0, $quantifierMin - $i - 1);
-                $quantifierLeftMax = $quantifierMax === \PHP_INT_MAX ? \PHP_INT_MAX : $quantifierMax - $i - 1;
-                $quantifierRightMin = max(0, $quantifierMin - $quantifierLeftMin - 1);
-                $quantifierRightMax = $quantifierMax === \PHP_INT_MAX ? \PHP_INT_MAX : $quantifierMax - $quantifierLeftMax - 1;
+            for ($i = 0; $i <= $quantifierMax - $unquantifiedCount && !$skipLoop; ++$i) {
+                $quantifierLeftMin = max(0, $quantifierMin - $i - $unquantifiedCount);
+                $quantifierLeftMax = $quantifierMax === \PHP_INT_MAX ? \PHP_INT_MAX : max(0, $quantifierMax - $i - $unquantifiedCount);
+                $quantifierRightMin = max(0, $quantifierMin - $quantifierLeftMin - $unquantifiedCount);
+                $quantifierRightMax = $quantifierMax === \PHP_INT_MAX ? \PHP_INT_MAX : $quantifierMax - $quantifierLeftMax - $unquantifiedCount;
 
                 $innerNodes = [];
                 if ($quantifierLeftMax !== 0) {
@@ -260,8 +249,10 @@ class FuzzyRegexBuilder
                         $innerNodes[] = new FuzzyRegexNode(false, $nodeNodes, $quantifierLeftMin, $quantifierLeftMax);
                     }
                 }
-                foreach ($nodeNodes as $nodeNode) {
-                    $innerNodes[] = $nodeNode;
+                for ($j = 0; $j < $unquantifiedCount; ++$j) {
+                    foreach ($nodeNodes as $nodeNode) {
+                        $innerNodes[] = $nodeNode;
+                    }
                 }
                 if ($quantifierRightMax !== 0) {
                     if ($quantifierRightMin === 1 && $quantifierRightMax === 1) {
@@ -274,13 +265,21 @@ class FuzzyRegexBuilder
                 }
                 $res[] = new FuzzyRegexNode(false, $innerNodes);
 
-                if ($quantifierMax === \PHP_INT_MAX && $i >= $quantifierMin - 1) {
+                if ($quantifierMax === \PHP_INT_MAX && $i >= $quantifierMin - $unquantifiedCount) {
                     break;
                 }
             }
 
-            if ($quantifierMin === 0) {
-                $res[] = new FuzzyRegexNode(false, []);
+            for ($i = $quantifierMax === \PHP_INT_MAX || !$skipLoop ? $unquantifiedCount - 1 : $quantifierMax; $i >= $quantifierMin; --$i) {
+                $innerNodes = [];
+                for ($j = 0; $j < $i; ++$j) {
+                    foreach ($nodeNodes as $nodeNode) {
+                        $innerNodes[] = $nodeNode;
+                    }
+                }
+                $res[] = count($innerNodes) === 1
+                    ? reset($innerNodes)
+                    : new FuzzyRegexNode(false, $innerNodes);
             }
         }
 
@@ -295,14 +294,14 @@ class FuzzyRegexBuilder
      *
      * @return list<string|FuzzyRegexNode>
      */
-    protected function expandConjunctionsForOneTypo(array $conjunctiveNodes): array
+    protected function expandConjunctionsForOneTypo(array $conjunctiveNodes, int $unquantifiedCount): array
     {
         $res = [];
         foreach ($conjunctiveNodes as $conjunctiveNode) {
             if (is_string($conjunctiveNode)) {
                 $res[] = $conjunctiveNode;
             } else {
-                foreach ($this->expandConjunctionsForOneTypoSingle($conjunctiveNode) as $conjunctiveNodeNode) {
+                foreach ($this->expandConjunctionsForOneTypoSingle($conjunctiveNode, $unquantifiedCount) as $conjunctiveNodeNode) {
                     $res[] = $conjunctiveNodeNode;
                 }
             }
