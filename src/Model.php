@@ -350,6 +350,7 @@ class Model implements \IteratorAggregate
 
     /**
      * @return static
+     *
      * @phpstan-return static&IsEntity
      */
     public function createEntity(): self
@@ -1268,6 +1269,7 @@ class Model implements \IteratorAggregate
      * @param mixed $id
      *
      * @return static|null
+     *
      * @phpstan-return (static&IsLoaded)|null
      */
     public function tryLoad($id)
@@ -1283,6 +1285,7 @@ class Model implements \IteratorAggregate
      * @param mixed $id
      *
      * @return static
+     *
      * @phpstan-return static&IsLoaded
      */
     public function load($id)
@@ -1296,6 +1299,7 @@ class Model implements \IteratorAggregate
      * Try to load one record. Will throw if more than one record exists, but not if there is no record.
      *
      * @return static|null
+     *
      * @phpstan-return (static&IsLoaded)|null
      */
     public function tryLoadOne()
@@ -1307,6 +1311,7 @@ class Model implements \IteratorAggregate
      * Load one record. Will throw if more than one record exists.
      *
      * @return static
+     *
      * @phpstan-return static&IsLoaded
      */
     public function loadOne()
@@ -1320,6 +1325,7 @@ class Model implements \IteratorAggregate
      * If only one record should match, use checked "tryLoadOne" method.
      *
      * @return static|null
+     *
      * @phpstan-return (static&IsLoaded)|null
      */
     public function tryLoadAny()
@@ -1333,6 +1339,7 @@ class Model implements \IteratorAggregate
      * If only one record should match, use checked "loadOne" method.
      *
      * @return static
+     *
      * @phpstan-return static&IsLoaded
      */
     public function loadAny()
@@ -1365,6 +1372,7 @@ class Model implements \IteratorAggregate
      * record in the database.
      *
      * @return static
+     *
      * @phpstan-return static&IsEntity
      */
     public function duplicate()
@@ -1492,6 +1500,7 @@ class Model implements \IteratorAggregate
      * @param ($operator is string ? mixed : never)                                                                                                                                           $value
      *
      * @return static
+     *
      * @phpstan-return static&IsLoaded
      */
     public function loadBy($field, $operator = null, $value = null)
@@ -1507,6 +1516,7 @@ class Model implements \IteratorAggregate
      * @param ($operator is string ? mixed : never)                                                                                                                                           $value
      *
      * @return static|null
+     *
      * @phpstan-return (static&IsLoaded)|null
      */
     public function tryLoadBy($field, $operator = null, $value = null)
@@ -1803,6 +1813,7 @@ class Model implements \IteratorAggregate
      * as a next iterator value.
      *
      * @return \Traversable<static>
+     *
      * @phpstan-return \Traversable<static&IsLoaded>
      */
     #[\Override]
