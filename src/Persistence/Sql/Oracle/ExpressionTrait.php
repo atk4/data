@@ -67,6 +67,7 @@ trait ExpressionTrait
 
         $expr = $buildConcatExprFx($parts);
 
+        // @phpstan-ignore-next-line https://github.com/phpstan/phpstan/issues/9022
         return $this->expr($expr, $exprArgs); // @phpstan-ignore-line
     }
 
