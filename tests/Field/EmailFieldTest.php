@@ -46,12 +46,15 @@ class EmailFieldTest extends TestCase
         $entity->set('email', ' foo@gmail.com');
         static::assertSame('foo@gmail.com', $entity->get('email'));
 
+        $entity->set('email', ' foo@mail.co.uk');
+        static::assertSame('foo@mail.co.uk', $entity->get('email'));
+
         $entity->set('email', 'test@háčkyčárky.cz'); // official IDN test domain
         static::assertSame('test@háčkyčárky.cz', $entity->get('email'));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('domain does not exist');
-        $entity->set('email', 'foo@lrcanoetuhasnotdusantotehusontehuasntddaontehudnouhtd.com');
+        $entity->set('email', 'test@háčkyčárky2.cz');
     }
 
     public function testEmailWithName(): void
