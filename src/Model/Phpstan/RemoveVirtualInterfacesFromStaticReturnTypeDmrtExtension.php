@@ -21,9 +21,7 @@ use PHPStan\Reflection\Type\CalledOnTypeUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnionTypeMethodReflection;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
-use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MethodTypeSpecifyingExtension;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticMethodTypeSpecifyingExtension;
 use PHPStan\Type\Type;
@@ -116,23 +114,7 @@ class RemoveVirtualInterfacesFromStaticReturnTypeDmrtExtension implements Dynami
 
     protected function removeVirtualInterfacesFromType(Type $type): Type
     {
-        if ($type instanceof IntersectionType) {
-            $types = [];
-            foreach ($type->getTypes() as $t) {
-                $t = $this->removeVirtualInterfacesFromType($t);
-                if (!$t instanceof NeverType) {
-                    $types[] = $t;
-                }
-            }
-
-            return count($types) === 0 ? new NeverType() : TypeCombinator::intersect(...$types);
-        }
-
-        if ($type instanceof ObjectType && $type->isInstanceOf($this->virtualInterfaceName)->yes()) {
-            return new NeverType();
-        }
-
-        return $type->traverse(\Closure::fromCallable([$this, 'removeVirtualInterfacesFromType']));
+        return TypeCombinator::remove($type, new ObjectType($this->virtualInterfaceName));
     }
 
     /**
