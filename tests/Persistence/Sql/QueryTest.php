@@ -1367,6 +1367,107 @@ class QueryTest extends TestCase
         );
     }
 
+    /**
+     */
+    public function testFuzzyMatchScoring(): void
+    {
+        $data = [
+            ['Michael', 'Michael', 0.0],
+            ['Michael', 'michael', 0.0],
+            ['Michael', 'mickael', 1.0], // substitution: h -> k
+            ['Michael', 'micael', 1.0], // deletion: h
+            ['Michael', 'mickhael', 1.0], // addition: k
+            ['Michael', 'micheal', 1.0], // transposition: a <-> e
+            ['Michael', 'mickaell', 2.0], // substitution: h -> k, addition: l
+            ['Michael', 'tichael', 2.0], // substitution: m -> t, first letter
+            ['Michael', 'tickael', 3.0], // substitution: m -> t, first letter, substitution: h -> k
+        ];
+
+        $makeDamerauLevenshteinRegexFx = function (string $search, int $distance, bool $quote = true) use (&$makeDamerauLevenshteinRegexFx): string {
+            if ($quote) {
+                $search = preg_quote($search, '~');
+            }
+
+            $seachSplitted = preg_split('~(?:\\\\.|\[.*?\]|.)\K~su', $search); // TODO must parse other tokens https://github.com/bkiers/pcre-parser/blob/master/src/main/antlr4/nl/bigo/pcreparser/PCRE.g4
+
+            $regexParts = [];
+            $i = 0;
+            if ($distance > 1) {
+                foreach ($seachSplitted as $searchChar) {
+                    $regexParts[] = $makeDamerauLevenshteinRegexFx(substr($search, 0, $i), $distance - 1, false)
+                        . $makeDamerauLevenshteinRegexFx(substr($search, $i), $distance - 1, false);
+
+                    $i += strlen($searchChar);
+                }
+            } else {
+                foreach ($seachSplitted as $searchChar) {
+                    // addition
+                    $regexParts[] = substr($search, 0, $i)
+                      . '.'
+                      . substr($search, $i);
+
+                    // deletion
+                    if ($i < strlen($search)) {
+                        $regexParts[] = substr($search, 0, $i)
+                            . substr($search, $i + 1);
+                    }
+
+                    // substitution
+                    if ($i < strlen($search)) {
+                        $regexParts[] = substr($search, 0, $i)
+                            . '.'
+                            . substr($search, $i + 1);
+                    }
+
+                    // transposition
+                    if ($i < strlen($search) - 1) {
+                        $regexParts[] = substr($search, 0, $i)
+                            . substr($search, $i + 1, 1)
+                            . substr($search, $i, 1)
+                            . substr($search, $i + 2);
+                    }
+
+                    $i += strlen($searchChar);
+                }
+            }
+
+            return '(' . implode('|', $regexParts) . ')';
+        };
+
+        static::assertSame('(.abcd|bcd|.bcd|bacd|a.bcd|acd|a.cd|acbd|ab.cd|abd|ab.d|abdc|abc.d|abc|abc.|abcd.)', $makeDamerauLevenshteinRegexFx('abcd', 1));
+        static::assertSame('(.abcd|bcd|.bcd|bacd|a.bcd|acd|a.cd|acbd|ab.cd|abd|ab.d|abdc|abc.d|abc|abc.|abcd.)', $makeDamerauLevenshteinRegexFx('abcd', 2));
+
+
+        $allPermsFx = function (int $alphabetSize, int $maxLength): array {
+            $res = [''];
+            for ($i = 0; $i < ($alphabetSize ** $maxLength); $i++) {
+                $res[] = strtr(base_convert($i, 10, $alphabetSize), '0123456789', 'abcdefghij');
+            }
+
+            return $res;
+        };
+
+        $allPerms = $allPermsFx(4, 5);
+        foreach ($allPerms as $query) {
+            $dist = levenshtein();
+
+
+        }
+
+//        for ($i = 0 && $v = 0; strlen($v) < 6; ($v =  || 1) && $i++) {
+//            $v =
+var_dump($allPermsFx(4, 4));
+//        }
+    }
+
+    /**
+     * @return \Traversable<string, list<array{string, float}>>
+     */
+    public function provideFuzzyMatchScoringData(): \Traversable
+    {
+
+    }
+
     public function testTableNameWithDot(): void
     {
         // render table
