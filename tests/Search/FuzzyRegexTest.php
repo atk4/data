@@ -205,4 +205,49 @@ class FuzzyRegexTest extends TestCase
         yield ['((((a){2})aa)|(aaaa)|(aa((a){2})))', 'a{4}', 2];
         yield ['((((a){0,4})aa)|(((a){0,3})aa((a)?))|(((a){0,2})aa((a){0,2}))|(((a)?)aa((a){0,3}))|(aa((a){0,4}))|a)', 'a{1,6}', 2];
     }
+
+    public function testExpandRegexTreeToDisjunctiveCharactersFuzzer(): void
+    {
+        $makeTreeFx = function (int $maxDepth) use (&$makeTreeFx) {
+            $nodes = [];
+            for ($i = mt_rand(0, 4); $i > 0; $i--) {
+                if (mt_rand(0, 1) === 0) {
+                    $nodes[] = dechex(mt_rand(0, 15));
+                } elseif ($maxDepth > 0) {
+                    $nodes[] = $makeTreeFx($maxDepth - 1);
+                }
+            }
+
+            return new FuzzyRegexNode(mt_rand(0, 1) === 0, $nodes);
+        };
+
+        $checkNoDisjunctionFx = function (FuzzyRegexNode $node, FuzzyRegexNode $rootNode) use (&$checkNoDisjunctionFx) {
+            if (($node === $rootNode) !== $node->isDisjunctive()) {
+                static::assertFalse(true);
+                print_r($node);
+            }
+
+            foreach ($node->getNodes() as $innerNode) {
+                if (!is_string($innerNode)) {
+                    $checkNoDisjunctionFx($innerNode, $rootNode);
+                }
+            }
+        };
+
+        $builder = new FuzzyRegexBuilder();
+        $exporter = new FuzzyRegexExporter();
+
+        for ($i = 0; $i < 1_000; $i++) {
+            $regexTree = $makeTreeFx(7);
+            $n = $regexTree;
+
+            $res = new FuzzyRegexNode(true, $builder->transformRegexToConjunctions($regexTree));
+            $checkNoDisjunctionFx($res, $res);
+
+//            $regexTree = $builder->parseRegex($exporter->export($regexTree));
+//            $exportedRegex = $exporter->export($regexTree);
+//            $reparsedTree = $builder->parseRegex($exportedRegex);
+//            $this->assertSameRegexTree($exportedRegex, $reparsedTree);
+        }
+    }
 }
