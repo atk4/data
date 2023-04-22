@@ -205,4 +205,43 @@ class FuzzyRegexTest extends TestCase
         yield ['((((a){2})aa)|(aaaa)|(aa((a){2})))', 'a{4}', 2];
         yield ['((((a){0,4})aa)|(((a){0,3})aa((a)?))|(((a){0,2})aa((a){0,2}))|(((a)?)aa((a){0,3}))|(aa((a){0,4}))|a)', 'a{1,6}', 2];
     }
+
+    /**
+     * @dataProvider provideExpandConjunctionsOneTypoData
+     */
+    public function testExpandConjunctionsOneTypo(string $expectedRegex, string $regexWithoutDelimiter): void
+    {
+        $builder = new FuzzyRegexBuilder();
+        $parsedTree = $builder->parseRegex($regexWithoutDelimiter);
+        $conjunctiveTrees = $builder->expandRegexToConjunctions($parsedTree);
+        $conjunctiveOneTypoTrees = $builder->expandConjunctionsOneTypo($conjunctiveTrees, true, true, true, true);
+        $this->assertSameRegexTree($expectedRegex, new FuzzyRegexNode(true, $conjunctiveOneTypoTrees));
+    }
+
+    /**
+     * @return \Traversable<int, array{string, string}>
+     */
+    public function provideExpandConjunctionsOneTypoData(): \Traversable
+    {
+
+        $builder = new FuzzyRegexBuilder();
+        $parsedTree = $builder->parseRegex('((ab)+)*x');
+        $conjunctiveTrees = $builder->expandRegexToConjunctions($parsedTree);
+        $conjunctiveOneTypoTrees = $builder->expandConjunctionsOneTypo($conjunctiveTrees, true, true, true, true);
+        $exporter = new FuzzyRegexExporter();
+        $compiledRexex = '~^(' . implode('|', array_map(fn ($v) => is_string($v) ? $v : $exporter->export($v), $conjunctiveOneTypoTrees)) . ')$~';
+        echo $compiledRexex;
+        static::assertSame(1, preg_match($compiledRexex, 'ababx'));
+        static::assertSame(0, preg_match($compiledRexex, 'babax'));
+        static::assertSame(1, preg_match($compiledRexex, 'aybabx'));
+
+        yield ['(()|.)', ''];
+        yield ['(a|(.a)|()|.|(a.))', 'a'];
+        yield ['((ab)|(.ab)|b|(.b)|(ba)|(a.b)|a|(a.)|(ab.))', 'ab'];
+        yield ['(([ab]c)|(.[ab]c)|c|(.c)|(c[ab])|([ab].c)|[ab]|([ab].)|([ab]c.))', '[ab]c'];
+        yield ['((ab)|(.ab)|b|(.b)|(ba)|(a.b)|a|(a.)|(ab.)|b|(.b)|()|.|(b.))', 'ab|b'];
+        yield ['((ab)|(.ab)|b|(.b)|(ba)|(a.b)|a|(a.)|(ab.)|b|(.b)|()|.|(b.))', 'a?b'];
+//        yield ['((((a)*)a((a)*)b)|(.((a)*)a((a)*)b)|(((a)*).a((a)*)b)|(((a)*)((a)*)b)|(((a)*).((a)*)b)|(((a)*)a.((a)*)b)|(((a)*)a((a)*).b)|(((a)*)a((a)*))|(((a)*)a((a)*).)|(((a)*)a((a)*)b.))', '((ab)+)*'];
+//        yield ['((((a)*)a((a)*)b)|(.((a)*)a((a)*)b)|(((a)*).a((a)*)b)|(((a)*)((a)*)b)|(((a)*).((a)*)b)|(((a)*)a.((a)*)b)|(((a)*)a((a)*).b)|(((a)*)a((a)*))|(((a)*)a((a)*).)|(((a)*)a((a)*)b.))', '((ab)+)*b'];
+    }
 }

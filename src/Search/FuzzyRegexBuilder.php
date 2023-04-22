@@ -309,4 +309,65 @@ class FuzzyRegexBuilder
 
         return $res;
     }
+
+    /**
+     * @param list<string|FuzzyRegexNode> $conjunctiveNodes
+     *
+     * @return list<string|FuzzyRegexNode>
+     */
+    public function expandConjunctionsOneTypo(array $conjunctiveNodes, bool $allowAddition, bool $allowDeletion, bool $allowSubstitution, bool $allowTransposition): array
+    {
+        $conjunctiveNodes = $this->expandConjunctionsForOneTypo($conjunctiveNodes);
+
+        $createNodeFx = function (array $nodes) {
+            return count($nodes) === 1
+                ? reset($nodes)
+                : new FuzzyRegexNode(false, $nodes);
+        };
+
+        $res = [];
+        foreach ($conjunctiveNodes as $conjunctiveNode) {
+            $nodes = is_string($conjunctiveNode) ? [$conjunctiveNode] : $conjunctiveNode->getNodes();
+
+            $res[] = $conjunctiveNode;
+
+            for ($i = 0; $i <= count($nodes); $i++) {
+                if ($allowAddition) {
+                    $res[] = $createNodeFx([
+                        ...array_slice($nodes, 0, $i),
+                        '.',
+                        ...array_slice($nodes, $i),
+                    ]);
+                }
+
+                if ($i < count($nodes) && (is_string($nodes[$i]) || !$nodes[$i]->hasQuantifier())) {
+                    if ($allowDeletion) {
+                        $res[] = $createNodeFx([
+                            ...array_slice($nodes, 0, $i),
+                            ...array_slice($nodes, $i + 1),
+                        ]);
+                    }
+
+                    if ($allowSubstitution) {
+                        $res[] = $createNodeFx([
+                            ...array_slice($nodes, 0, $i),
+                            '.',
+                            ...array_slice($nodes, $i + 1),
+                        ]);
+                    }
+
+                    if ($allowTransposition && $i < count($nodes) - 1 && (is_string($nodes[$i + 1]) || !$nodes[$i + 1]->hasQuantifier())) {
+                        $res[] = $createNodeFx([
+                            ...array_slice($nodes, 0, $i),
+                            $nodes[$i + 1],
+                            $nodes[$i],
+                            ...array_slice($nodes, $i + 2),
+                        ]);
+                    }
+                }
+            }
+        }
+
+        return $res;
+    }
 }
