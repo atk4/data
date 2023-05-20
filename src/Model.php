@@ -1029,7 +1029,7 @@ class Model implements \IteratorAggregate
      * Set order for model records. Multiple calls are allowed.
      *
      * @param string|array<int, string|array{string, 1?: 'asc'|'desc'}>|array<string, 'asc'|'desc'> $field
-     * @param 'asc'|'desc' $direction
+     * @param 'asc'|'desc'                                                                          $direction
      *
      * @return $this
      */
@@ -1195,7 +1195,7 @@ class Model implements \IteratorAggregate
 
     /**
      * @param ($fromTryLoad is true ? false : bool) $fromReload
-     * @param mixed $id
+     * @param mixed                                 $id
      *
      * @return ($fromTryLoad is true ? static|null : static)
      */
