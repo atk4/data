@@ -151,9 +151,9 @@ class StaticTest extends TestCase
         self::assertSame('integer', $m->getField('id')->type);
         self::assertSame('integer', $m->getField('test_int')->type);
         self::assertSame('float', $m->getField('test_float')->type);
-        // static::assertSame('datetime', $m->getField('test_date')->type);
-        // static::assertSame('json', $m->getField('test_array')->type);
-        // static::assertSame('object', $m->getField('test_object')->type);
+        // self::assertSame('datetime', $m->getField('test_date')->type);
+        // self::assertSame('json', $m->getField('test_array')->type);
+        // self::assertSame('object', $m->getField('test_object')->type);
 
         // string is default type
         self::assertSame('string', $m->getField('name')->type);

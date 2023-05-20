@@ -174,7 +174,7 @@ class SubTypesTest extends TestCase
             foreach ($current->ref('Transactions')->setOrder('id') as $tr) {
                 $classes[] = get_class($tr);
             }
-            static::assertSame($expectedClasses, $classes);
+            self::assertSame($expectedClasses, $classes);
         };
 
         $assertClassesFx([
