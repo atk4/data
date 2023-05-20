@@ -115,7 +115,7 @@ abstract class TestCase extends BaseTestCase
         );
 
         if ($platform instanceof SqlitePlatform && $convertedSql !== $sql) {
-            static::assertSame($sql, $convertedSql);
+            self::assertSame($sql, $convertedSql);
         }
 
         return $convertedSql;
@@ -123,7 +123,7 @@ abstract class TestCase extends BaseTestCase
 
     protected function assertSameSql(string $expectedSqliteSql, string $actualSql, string $message = ''): void
     {
-        static::assertSame($this->convertSqlFromSqlite($expectedSqliteSql), $actualSql, $message);
+        self::assertSame($this->convertSqlFromSqlite($expectedSqliteSql), $actualSql, $message);
     }
 
     /**
@@ -209,12 +209,12 @@ abstract class TestCase extends BaseTestCase
     protected static function assertSameExportUnordered(array $expected, array $actual, string $message = ''): void
     {
         if (self::compareExportUnorderedValue($expected, $actual) === 0) {
-            static::assertTrue(true); // @phpstan-ignore-line
+            self::assertTrue(true); // @phpstan-ignore-line
 
             return;
         }
 
-        static::assertSame($expected, $actual, $message);
+        self::assertSame($expected, $actual, $message);
     }
 
     public function createMigrator(Model $model = null): Migrator
@@ -367,10 +367,10 @@ abstract class TestCase extends BaseTestCase
     {
         if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             // https://github.com/doctrine/dbal/issues/5507
-            static::markTestIncomplete('TODO MSSQL: DBAL must setup unique index without WHERE clause');
+            self::markTestIncomplete('TODO MSSQL: DBAL must setup unique index without WHERE clause');
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
             // https://github.com/doctrine/dbal/issues/5508
-            static::markTestIncomplete('TODO Oracle: DBAL must setup unique index on table column too');
+            self::markTestIncomplete('TODO Oracle: DBAL must setup unique index on table column too');
         }
     }
 }

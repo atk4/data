@@ -20,11 +20,11 @@ class BusinessModelTest extends TestCase
         $m->addField('name');
 
         $f = $m->getField('name');
-        static::assertSame('name', $f->shortName);
+        self::assertSame('name', $f->shortName);
 
         $m->addField('surname', new Field());
         $f = $m->getField('surname');
-        static::assertSame('surname', $f->shortName);
+        self::assertSame('surname', $f->shortName);
     }
 
     public function testFieldAccess(): void
@@ -35,13 +35,13 @@ class BusinessModelTest extends TestCase
         $m = $m->createEntity();
 
         $m->set('name', 5);
-        static::assertSame('5', $m->get('name'));
+        self::assertSame('5', $m->get('name'));
 
         $m->set('surname', 'Bilbo');
-        static::assertSame('5', $m->get('name'));
-        static::assertSame('Bilbo', $m->get('surname'));
+        self::assertSame('5', $m->get('name'));
+        self::assertSame('Bilbo', $m->get('surname'));
 
-        static::assertSame(['name' => '5', 'surname' => 'Bilbo'], $m->get());
+        self::assertSame(['name' => '5', 'surname' => 'Bilbo'], $m->get());
     }
 
     public function testNoFieldException(): void
@@ -62,66 +62,66 @@ class BusinessModelTest extends TestCase
         $dirtyRef = &$m->getDirtyRef();
         $dataRef = ['name' => 5];
         $m->set('name', 5);
-        static::assertSame([], $m->getDirtyRef());
+        self::assertSame([], $m->getDirtyRef());
 
         $m->set('name', 10);
-        static::assertSame(['name' => 5], $m->getDirtyRef());
+        self::assertSame(['name' => 5], $m->getDirtyRef());
 
         $m->set('name', 15);
-        static::assertSame(['name' => 5], $m->getDirtyRef());
+        self::assertSame(['name' => 5], $m->getDirtyRef());
 
         $m->set('name', 5);
-        static::assertSame([], $m->getDirtyRef());
+        self::assertSame([], $m->getDirtyRef());
 
         $m->set('name', '5');
-        static::assertSame([], $m->getDirtyRef());
+        self::assertSame([], $m->getDirtyRef());
 
         $m->set('name', '6');
-        static::assertSame(['name' => '5'], $m->getDirtyRef());
+        self::assertSame(['name' => '5'], $m->getDirtyRef());
         $m->set('name', '5');
-        static::assertSame([], $m->getDirtyRef());
+        self::assertSame([], $m->getDirtyRef());
 
         $m->set('name', '5.0');
-        static::assertSame(['name' => '5'], $m->getDirtyRef());
+        self::assertSame(['name' => '5'], $m->getDirtyRef());
 
         $dirtyRef = [];
         $dataRef = ['name' => ''];
         $m->set('name', '');
-        static::assertSame([], $m->getDirtyRef());
+        self::assertSame([], $m->getDirtyRef());
 
         $dataRef = ['name' => '5'];
         $m->set('name', 5);
-        static::assertSame([], $m->getDirtyRef());
+        self::assertSame([], $m->getDirtyRef());
         $m->set('name', 6);
-        static::assertSame(['name' => '5'], $m->getDirtyRef());
+        self::assertSame(['name' => '5'], $m->getDirtyRef());
         $m->set('name', 5);
-        static::assertSame([], $m->getDirtyRef());
+        self::assertSame([], $m->getDirtyRef());
         $m->set('name', '5');
-        static::assertSame([], $m->getDirtyRef());
+        self::assertSame([], $m->getDirtyRef());
 
         $dataRef = ['name' => 4.28];
         $m->set('name', '4.28');
-        static::assertSame([], $m->getDirtyRef());
+        self::assertSame([], $m->getDirtyRef());
         $m->set('name', '5.28');
-        static::assertSame(['name' => 4.28], $m->getDirtyRef());
+        self::assertSame(['name' => 4.28], $m->getDirtyRef());
         $m->set('name', 4.28);
-        static::assertSame([], $m->getDirtyRef());
+        self::assertSame([], $m->getDirtyRef());
 
         // now with defaults
         $m = new Model();
         $m->addField('name', ['default' => 'John']);
         $m = $m->createEntity();
-        static::assertSame('John', $m->getField('name')->default);
+        self::assertSame('John', $m->getField('name')->default);
 
-        static::assertSame('John', $m->get('name'));
+        self::assertSame('John', $m->get('name'));
 
         $m->set('name', null);
-        static::assertSame(['name' => 'John'], $m->getDirtyRef());
-        static::assertSame(['name' => null], $m->getDataRef());
-        static::assertNull($m->get('name'));
+        self::assertSame(['name' => 'John'], $m->getDirtyRef());
+        self::assertSame(['name' => null], $m->getDataRef());
+        self::assertNull($m->get('name'));
 
         $m->_unset('name');
-        static::assertSame('John', $m->get('name'));
+        self::assertSame('John', $m->get('name'));
     }
 
     public function testDefaultInit(): void
@@ -131,7 +131,7 @@ class BusinessModelTest extends TestCase
         $m = $m->createEntity();
 
         $m->set('id', 20);
-        static::assertSame(20, $m->getId());
+        self::assertSame(20, $m->getId());
     }
 
     public function testException1(): void
@@ -157,7 +157,7 @@ class BusinessModelTest extends TestCase
         $m->getModel()->setOnlyFields(null);
 
         $m->set('name', 5);
-        static::assertSame('5', $m->get('name'));
+        self::assertSame('5', $m->get('name'));
     }
 
     public function testSetTitle(): void
@@ -166,10 +166,10 @@ class BusinessModelTest extends TestCase
         $m->addField('name');
         $m = $m->createEntity();
         $m->set('name', 'foo');
-        static::assertSame('foo', $m->get('name'));
+        self::assertSame('foo', $m->get('name'));
 
         $m->set('name', 'baz');
-        static::assertSame('baz', $m->get('name'));
+        self::assertSame('baz', $m->get('name'));
     }
 
     /**
@@ -216,7 +216,7 @@ class BusinessModelTest extends TestCase
         $p = new Persistence\Array_();
         $c = new Client($p);
         $c = $c->createEntity();
-        static::assertSame(10, $c->get('order'));
+        self::assertSame(10, $c->get('order'));
     }
 
     public function testNormalize(): void
@@ -228,13 +228,13 @@ class BusinessModelTest extends TestCase
         $m = $m->createEntity();
 
         $m->set('name', '');
-        static::assertSame('', $m->get('name'));
+        self::assertSame('', $m->get('name'));
 
         $m->set('age', '');
-        static::assertNull($m->get('age'));
+        self::assertNull($m->get('age'));
 
         $m->set('data', '');
-        static::assertSame('', $m->get('data'));
+        self::assertSame('', $m->get('data'));
     }
 
     public function testExampleFromDoc(): void
@@ -244,21 +244,21 @@ class BusinessModelTest extends TestCase
         $m->addField('salary', ['type' => 'integer', 'default' => 1000]);
         $m = $m->createEntity();
 
-        static::assertSame(1000, $m->get('salary'));
-        static::assertFalse($m->_isset('salary'));
+        self::assertSame(1000, $m->get('salary'));
+        self::assertFalse($m->_isset('salary'));
 
         // next we load record from $db
         $dataRef = &$m->getDataRef();
         $dataRef = ['salary' => 2000];
-        static::assertSame(2000, $m->get('salary'));
-        static::assertFalse($m->_isset('salary'));
+        self::assertSame(2000, $m->get('salary'));
+        self::assertFalse($m->_isset('salary'));
 
         $m->set('salary', 3000);
-        static::assertSame(3000, $m->get('salary'));
-        static::assertTrue($m->_isset('salary'));
+        self::assertSame(3000, $m->get('salary'));
+        self::assertTrue($m->_isset('salary'));
 
         $m->_unset('salary');
-        static::assertSame(2000, $m->get('salary'));
-        static::assertFalse($m->_isset('salary'));
+        self::assertSame(2000, $m->get('salary'));
+        self::assertFalse($m->_isset('salary'));
     }
 }

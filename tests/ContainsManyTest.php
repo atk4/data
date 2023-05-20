@@ -61,9 +61,9 @@ class ContainsManyTest extends TestCase
         $i = new Invoice($this->db);
 
         // test caption of containsMany reference
-        static::assertSame('My Invoice Lines', $i->getField($i->fieldName()->lines)->getCaption());
-        static::assertSame('My Invoice Lines', $i->refModel($i->fieldName()->lines)->getModelCaption());
-        static::assertSame('My Invoice Lines', $i->lines->getModelCaption());
+        self::assertSame('My Invoice Lines', $i->getField($i->fieldName()->lines)->getCaption());
+        self::assertSame('My Invoice Lines', $i->refModel($i->fieldName()->lines)->getModelCaption());
+        self::assertSame('My Invoice Lines', $i->lines->getModelCaption());
     }
 
     public function testContainsMany(): void
@@ -71,7 +71,7 @@ class ContainsManyTest extends TestCase
         $i = new Invoice($this->db);
         $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
 
-        static::assertSame(Line::class, get_class($i->getModel()->lines));
+        self::assertSame(Line::class, get_class($i->getModel()->lines));
 
         // now let's add some lines
         $l = $i->lines;
@@ -107,11 +107,11 @@ class ContainsManyTest extends TestCase
         }
 
         // reload invoice just in case
-        static::assertSameExportUnordered($rows, $i->lines->export());
+        self::assertSameExportUnordered($rows, $i->lines->export());
         $i->reload();
-        static::assertSameExportUnordered($rows, $i->lines->export());
+        self::assertSameExportUnordered($rows, $i->lines->export());
         $i = $i->getModel()->load($i->getId());
-        static::assertSameExportUnordered($rows, $i->lines->export());
+        self::assertSameExportUnordered($rows, $i->lines->export());
 
         // now let's delete line with id=2 and add one more line
         $i->lines
@@ -149,19 +149,19 @@ class ContainsManyTest extends TestCase
                 $l->fieldName()->add_date => new \DateTime('2019-01-01'),
             ],
         ];
-        static::assertSameExportUnordered($rows, $i->lines->export());
+        self::assertSameExportUnordered($rows, $i->lines->export());
 
         // try hasOne reference
         $v = $i->lines->load(4)->vat_rate_id;
-        static::assertSame(15, $v->rate);
+        self::assertSame(15, $v->rate);
 
         // test expression fields
         $v = $i->lines->load(4);
-        static::assertSame(50 * 3 * (1 + 15 / 100), $v->total_gross);
+        self::assertSame(50 * 3 * (1 + 15 / 100), $v->total_gross);
 
         // and what about calculated field?
         $i->reload(); // we need to reload invoice for changes in lines to be recalculated
-        static::assertSame(10 * 2 * (1 + 21 / 100) + 40 * 1 * (1 + 21 / 100) + 50 * 3 * (1 + 15 / 100), $i->total_gross); // = 245.1
+        self::assertSame(10 * 2 * (1 + 21 / 100) + 40 * 1 * (1 + 21 / 100) + 50 * 3 * (1 + 15 / 100), $i->total_gross); // = 245.1
     }
 
     public function testNestedContainsMany(): void
@@ -213,7 +213,7 @@ class ContainsManyTest extends TestCase
         $i->reload();
 
         // ok, so now let's test
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             1 => [
                 $l->discounts->fieldName()->id => 1,
                 $l->discounts->fieldName()->percent => 5,
@@ -227,10 +227,10 @@ class ContainsManyTest extends TestCase
         ], $i->lines->load(1)->discounts->export());
 
         // is total_gross correctly calculated?
-        static::assertSame(10 * 2 * (1 + 21 / 100) + 15 * 5 * (1 + 15 / 100), $i->total_gross); // =110.45
+        self::assertSame(10 * 2 * (1 + 21 / 100) + 15 * 5 * (1 + 15 / 100), $i->total_gross); // =110.45
 
         // do we also correctly calculate discounts from nested containsMany?
-        static::assertSame(24.2 * 15 / 100 + 86.25 * 20 / 100, $i->discounts_total_sum); // =20.88
+        self::assertSame(24.2 * 15 / 100 + 86.25 * 20 / 100, $i->discounts_total_sum); // =20.88
 
         // let's test how it all looks in persistence without typecasting
         $exportLines = $i->getModel()->setOrder($i->fieldName()->id)
@@ -240,7 +240,7 @@ class ContainsManyTest extends TestCase
 
             return $dt->format('Y-m-d H:i:s.u');
         };
-        static::assertJsonStringEqualsJsonString(
+        self::assertJsonStringEqualsJsonString(
             json_encode([
                 1 => [
                     $i->lines->fieldName()->id => 1,

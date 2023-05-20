@@ -67,7 +67,7 @@ class ValidationTest extends TestCase
         $m->set('name', 'john');
         $m->set('domain', 'gmail.com');
         $m->save();
-        static::assertSame('john', $m->get('name'));
+        self::assertSame('john', $m->get('name'));
     }
 
     public function testValidate2(): void
@@ -101,7 +101,7 @@ class ValidationTest extends TestCase
             $this->expectException(ValidationException::class);
             $m->save();
         } catch (ValidationException $e) {
-            static::assertSame('This domain is reserved for examples only', $e->getParams()['errors']['domain']);
+            self::assertSame('This domain is reserved for examples only', $e->getParams()['errors']['domain']);
 
             throw $e;
         }
@@ -136,7 +136,7 @@ class ValidationTest extends TestCase
             $this->expectException(ValidationException::class);
             $m->save();
         } catch (ValidationException $e) {
-            static::assertSame('No sharp objects allowed', $e->errors['name']);
+            self::assertSame('No sharp objects allowed', $e->errors['name']);
 
             throw $e;
         }
@@ -161,7 +161,7 @@ class ValidationTest extends TestCase
             $this->expectException(ValidationException::class);
             $m->save();
         } catch (ValidationException $e) {
-            static::assertCount(2, $e->errors);
+            self::assertCount(2, $e->errors);
 
             throw $e;
         }

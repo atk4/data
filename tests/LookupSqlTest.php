@@ -174,7 +174,7 @@ class LookupSqlTest extends TestCase
             ['name' => 'Russia', 'code' => 'RU'],
         ]);
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             'country' => [
                 1 => [
                     'id' => 1,
@@ -227,13 +227,13 @@ class LookupSqlTest extends TestCase
         $c = new LCountry($this->db);
 
         if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            static::markTestIncomplete('TODO MSSQL: Cannot perform an aggregate function on an expression containing an aggregate or a subquery');
+            self::markTestIncomplete('TODO MSSQL: Cannot perform an aggregate function on an expression containing an aggregate or a subquery');
         }
 
         $c->insert(['name' => 'Canada', 'Users' => [['name' => 'Alain'], ['name' => 'Duncan', 'is_vip' => true]]]);
         $c->insert(['name' => 'Latvia', 'Users' => [['name' => 'imants'], ['name' => 'juris']]]);
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             'country' => [
                 1 => [
                     'id' => 1,
@@ -291,9 +291,9 @@ class LookupSqlTest extends TestCase
 
         $u = new LUser($this->db);
 
-        static::assertTrue($u->getField('country_id')->isEditable());
-        static::assertFalse($u->getField('country')->isEditable());
-        static::assertFalse($u->getField('country_code')->isEditable());
+        self::assertTrue($u->getField('country_id')->isEditable());
+        self::assertFalse($u->getField('country')->isEditable());
+        self::assertFalse($u->getField('country_code')->isEditable());
 
         $u->import([
             ['name' => 'Alain', 'country_code' => 'CA'],
@@ -301,7 +301,7 @@ class LookupSqlTest extends TestCase
             // ['name' => 'Romans', 'country_code' => 'UK'], // country code does not exist
         ]);
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             'country' => [
                 1 => [
                     'id' => 1,
@@ -356,13 +356,13 @@ class LookupSqlTest extends TestCase
         $c = new LCountry($this->db);
 
         if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            static::markTestIncomplete('TODO MSSQL: Cannot perform an aggregate function on an expression containing an aggregate or a subquery');
+            self::markTestIncomplete('TODO MSSQL: Cannot perform an aggregate function on an expression containing an aggregate or a subquery');
         }
 
         $c->insert(['name' => 'Canada', 'Users' => [['name' => 'Alain'], ['name' => 'Duncan', 'is_vip' => true]]]);
         $c->insert(['name' => 'Latvia', 'Users' => [['name' => 'imants'], ['name' => 'juris']]]);
 
-        static::assertSame('imants, juris', $c->loadBy('name', 'Latvia')->get('user_names'));
+        self::assertSame('imants, juris', $c->loadBy('name', 'Latvia')->get('user_names'));
 
         $user1 = $c->ref('Users')->loadBy('name', 'Duncan');
         $user2 = $c->loadBy('name', 'Latvia')->ref('Users')->loadBy('name', 'imants');
@@ -373,15 +373,15 @@ class LookupSqlTest extends TestCase
             ['friend_id' => $user3->getId()],
         ]);
 
-        static::assertNull($user1->get('friend_names'));
-        static::assertNull($user2->get('friend_names'));
-        static::assertNull($user3->get('friend_names'));
+        self::assertNull($user1->get('friend_names'));
+        self::assertNull($user2->get('friend_names'));
+        self::assertNull($user3->get('friend_names'));
         $user1->reload();
         $user2->reload();
         $user3->reload();
-        static::assertNull($user1->get('friend_names'));
-        static::assertSame('Duncan; juris', $user2->get('friend_names'));
-        static::assertNull($user3->get('friend_names'));
+        self::assertNull($user1->get('friend_names'));
+        self::assertSame('Duncan; juris', $user2->get('friend_names'));
+        self::assertNull($user3->get('friend_names'));
 
         /* TODO - that's left for hasMTM implementation..., to be coming later
         // Specifying hasMany here will perform input

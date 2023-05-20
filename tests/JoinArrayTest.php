@@ -36,25 +36,25 @@ class JoinArrayTest extends TestCase
         $m = new Model($db, ['table' => 'user']);
 
         $j = $m->join('contact');
-        static::assertFalse($this->getProtected($j, 'reverse'));
-        static::assertSame('contact_id', $this->getProtected($j, 'masterField'));
-        static::assertSame('id', $this->getProtected($j, 'foreignField'));
+        self::assertFalse($this->getProtected($j, 'reverse'));
+        self::assertSame('contact_id', $this->getProtected($j, 'masterField'));
+        self::assertSame('id', $this->getProtected($j, 'foreignField'));
 
         $j = $m->join('contact2.test_id');
-        static::assertTrue($this->getProtected($j, 'reverse'));
-        static::assertSame('id', $this->getProtected($j, 'masterField'));
-        static::assertSame('test_id', $this->getProtected($j, 'foreignField'));
+        self::assertTrue($this->getProtected($j, 'reverse'));
+        self::assertSame('id', $this->getProtected($j, 'masterField'));
+        self::assertSame('test_id', $this->getProtected($j, 'foreignField'));
 
         $j = $m->join('contact3', ['masterField' => 'test_id']);
-        static::assertFalse($this->getProtected($j, 'reverse'));
-        static::assertSame('test_id', $this->getProtected($j, 'masterField'));
-        static::assertSame('id', $this->getProtected($j, 'foreignField'));
+        self::assertFalse($this->getProtected($j, 'reverse'));
+        self::assertSame('test_id', $this->getProtected($j, 'masterField'));
+        self::assertSame('id', $this->getProtected($j, 'foreignField'));
 
         $this->expectException(Exception::class); // TODO not implemented yet, see https://github.com/atk4/data/issues/803
         $j = $m->join('contact4.foo_id', ['masterField' => 'test_id', 'reverse' => true]);
-        // static::assertTrue($this->getProtected($j, 'reverse'));
-        // static::assertSame('test_id', $this->getProtected($j, 'masterField'));
-        // static::assertSame('foo_id', $this->getProtected($j, 'foreignField'));
+        // self::assertTrue($this->getProtected($j, 'reverse'));
+        // self::assertSame('test_id', $this->getProtected($j, 'masterField'));
+        // self::assertSame('foo_id', $this->getProtected($j, 'foreignField'));
     }
 
     public function testJoinException(): void
@@ -80,7 +80,7 @@ class JoinArrayTest extends TestCase
         $user2->set('contact_phone', '+123');
         $user2->save();
 
-        static::assertSame([
+        self::assertSame([
             'user' => [1 => ['name' => 'John', 'contact_id' => 1]],
             'contact' => [1 => ['contact_phone' => '+123']],
         ], $this->getInternalPersistenceData($db));
@@ -91,7 +91,7 @@ class JoinArrayTest extends TestCase
         $user2->set('contact_id', 1);
         $user2->save();
 
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 1 => ['name' => 'John', 'contact_id' => 1],
                 ['name' => 'Peter', 'contact_id' => 1],
@@ -107,7 +107,7 @@ class JoinArrayTest extends TestCase
         $user2->set('contact_phone', '+321');
         $user2->save();
 
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 1 => ['name' => 'John', 'contact_id' => 1],
                 ['name' => 'Peter', 'contact_id' => 1],
@@ -134,7 +134,7 @@ class JoinArrayTest extends TestCase
         $user2->set('contact_phone', '+123');
         $user2->save();
 
-        static::assertSame([
+        self::assertSame([
             'user' => [1 => ['name' => 'John']],
             'contact' => [1 => ['contact_phone' => '+123', 'test_id' => 1]],
         ], $this->getInternalPersistenceData($db));
@@ -143,7 +143,7 @@ class JoinArrayTest extends TestCase
         $user2 = $user->createEntity();
         $user2->set('name', 'Peter');
         $user2->save();
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 1 => ['name' => 'John'],
                 ['name' => 'Peter'],
@@ -163,7 +163,7 @@ class JoinArrayTest extends TestCase
         $user2->set('name', 'Sue');
         $user2->set('contact_phone', '+444');
         $user2->save();
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 1 => ['name' => 'John'],
                 ['name' => 'Peter'],
@@ -191,7 +191,7 @@ class JoinArrayTest extends TestCase
 
         $user->save();
 
-        static::assertSame([
+        self::assertSame([
             'user' => [1 => ['name' => 'John', 'test_id' => 1]],
             'contact' => [1 => ['contact_phone' => '+123']],
         ], $this->getInternalPersistenceData($db));
@@ -214,7 +214,7 @@ class JoinArrayTest extends TestCase
 
         $user->save();
 
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 1 => ['id' => 1, 'code' => 'C28', 'name' => 'John'],
             ],
@@ -246,21 +246,21 @@ class JoinArrayTest extends TestCase
         $j->addField('contact_phone');
 
         $user2 = $user->load(1);
-        static::assertSame([
+        self::assertSame([
             'id' => 1, 'contact_id' => 1, 'name' => 'John', 'contact_phone' => '+123',
         ], $user2->get());
 
         $user2 = $user->load(3);
-        static::assertSame([
+        self::assertSame([
             'id' => 3, 'contact_id' => 2, 'name' => 'Joe', 'contact_phone' => '+321',
         ], $user2->get());
 
         $user2 = $user2->unload();
-        static::assertSame([
+        self::assertSame([
             'id' => null, 'contact_id' => null, 'name' => null, 'contact_phone' => null,
         ], $user2->get());
 
-        static::assertNull($user->tryLoad(4));
+        self::assertNull($user->tryLoad(4));
     }
 
     public function testJoinUpdate(): void
@@ -288,7 +288,7 @@ class JoinArrayTest extends TestCase
         $user2->set('contact_phone', '+555');
         $user2->save();
 
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 1 => ['name' => 'John 2', 'contact_id' => 1],
                 ['name' => 'Peter', 'contact_id' => 1],
@@ -305,7 +305,7 @@ class JoinArrayTest extends TestCase
         $user2->set('contact_phone', '+999');
         $user2->save();
 
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 1 => ['name' => 'John 2', 'contact_id' => 1],
                 ['name' => 'Peter', 'contact_id' => 1],
@@ -322,7 +322,7 @@ class JoinArrayTest extends TestCase
         $user2->set('contact_phone', '+777');
         $user2->save();
 
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 1 => ['name' => 'John 2', 'contact_id' => 1],
                 ['name' => 'Peter', 'contact_id' => 1],
@@ -362,7 +362,7 @@ class JoinArrayTest extends TestCase
         $user = $user->load(1);
         $user->delete();
 
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 2 => ['name' => 'Peter', 'contact_id' => 1],
                 ['name' => 'XX', 'contact_id' => 2],
@@ -405,13 +405,13 @@ class JoinArrayTest extends TestCase
 
         $m = new Model($db, ['table' => 'db.user']);
         $j = $m->join('contact');
-        static::assertFalse($this->getProtected($j, 'reverse'));
-        static::assertSame('contact_id', $this->getProtected($j, 'masterField'));
-        static::assertSame('id', $this->getProtected($j, 'foreignField'));
+        self::assertFalse($this->getProtected($j, 'reverse'));
+        self::assertSame('contact_id', $this->getProtected($j, 'masterField'));
+        self::assertSame('id', $this->getProtected($j, 'foreignField'));
 
         $j = $m->join('contact2', ['reverse' => true]);
-        static::assertTrue($this->getProtected($j, 'reverse'));
-        static::assertSame('id', $this->getProtected($j, 'masterField'));
-        static::assertSame('user_id', $this->getProtected($j, 'foreignField'));
+        self::assertTrue($this->getProtected($j, 'reverse'));
+        self::assertSame('id', $this->getProtected($j, 'masterField'));
+        self::assertSame('user_id', $this->getProtected($j, 'foreignField'));
     }
 }
