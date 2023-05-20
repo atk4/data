@@ -223,7 +223,7 @@ class ReferenceSqlTest extends TestCase
         ]);
 
         self::assertSame('John', $o->load(1)->get('username'));
-        static::{'assertEquals'}(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('date'));
+        self::{'assertEquals'}(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('date'));
 
         self::assertSame('Peter', $o->load(2)->get('username'));
         self::assertSame('John', $o->load(3)->get('username'));
@@ -237,12 +237,12 @@ class ReferenceSqlTest extends TestCase
             'thedate' => ['date', 'type' => 'date'],
         ]);
         self::assertSame('John', $o->load(1)->get('username'));
-        static::{'assertEquals'}(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('thedate'));
+        self::{'assertEquals'}(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('thedate'));
 
         $o = new Model($this->db, ['table' => 'order']);
         $o->addField('amount');
         $o->hasOne('user_id', ['model' => $u])->addField('date', null, ['type' => 'date']);
-        static::{'assertEquals'}(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('date'));
+        self::{'assertEquals'}(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('date'));
     }
 
     public function testRelatedExpression(): void
@@ -371,35 +371,35 @@ class ReferenceSqlTest extends TestCase
                 return $integerWrappedType->convertToPHPValue($v, $this->getDatabasePlatform());
             };
 
-            static::{'assertEquals'}([
+            self::{'assertEquals'}([
                 ['id' => $createWrappedIntegerFx(10), 'name' => 'y.txt', 'parentDirectoryId' => $createWrappedIntegerFx(9)],
             ], $fileEntity->getModel()->export());
             self::assertSame([], $fileEntity->ref('childFiles')->export());
 
             $fileEntity = $fileEntity->ref('parentDirectory');
-            static::{'assertEquals'}([
+            self::{'assertEquals'}([
                 ['id' => $createWrappedIntegerFx(9), 'name' => 'x', 'parentDirectoryId' => $createWrappedIntegerFx(3)],
             ], $fileEntity->getModel()->export());
-            static::{'assertEquals'}([
+            self::{'assertEquals'}([
                 ['id' => $createWrappedIntegerFx(10), 'name' => 'y.txt', 'parentDirectoryId' => $createWrappedIntegerFx(9)],
             ], $fileEntity->ref('childFiles')->export());
 
             $fileEntity = $fileEntity->ref('parentDirectory');
-            static::{'assertEquals'}([
+            self::{'assertEquals'}([
                 ['id' => $createWrappedIntegerFx(3), 'name' => 'v', 'parentDirectoryId' => $createWrappedIntegerFx(2)],
             ], $fileEntity->getModel()->export());
-            static::{'assertEquals'}([
+            self::{'assertEquals'}([
                 ['id' => $createWrappedIntegerFx(6), 'name' => 'c.txt', 'parentDirectoryId' => $createWrappedIntegerFx(3)],
                 ['id' => $createWrappedIntegerFx(9), 'name' => 'x', 'parentDirectoryId' => $createWrappedIntegerFx(3)],
             ], $fileEntity->ref('childFiles')->export());
-            static::{'assertEquals'}([
+            self::{'assertEquals'}([
                 ['id' => $createWrappedIntegerFx(6), 'name' => 'c.txt', 'parentDirectoryId' => $createWrappedIntegerFx(3)],
                 ['id' => $createWrappedIntegerFx(8), 'name' => 'e.txt', 'parentDirectoryId' => $createWrappedIntegerFx(4)],
                 ['id' => $createWrappedIntegerFx(9), 'name' => 'x', 'parentDirectoryId' => $createWrappedIntegerFx(3)],
             ], $fileEntity->ref('parentDirectory')->ref('childFiles')->ref('childFiles')->export());
 
             $fileEntity = $fileEntity->ref('parentDirectory');
-            static::{'assertEquals'}([
+            self::{'assertEquals'}([
                 ['id' => $createWrappedIntegerFx(2), 'name' => 'u', 'parentDirectoryId' => null],
             ], $fileEntity->getModel()->export());
         } finally {

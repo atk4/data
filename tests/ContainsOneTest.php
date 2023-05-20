@@ -89,11 +89,11 @@ class ContainsOneTest extends TestCase
         $a->save();
 
         // now reload invoice and see if it is saved
-        static::{'assertEquals'}($row, $i->addr->get());
+        self::{'assertEquals'}($row, $i->addr->get());
         $i->reload();
-        static::{'assertEquals'}($row, $i->addr->get());
+        self::{'assertEquals'}($row, $i->addr->get());
         $i = $i->getModel()->load($i->getId());
-        static::{'assertEquals'}($row, $i->addr->get());
+        self::{'assertEquals'}($row, $i->addr->get());
 
         // now try to change some field in address
         $i->addr->set($i->addr->fieldName()->address, 'bar')->save();
@@ -109,12 +109,12 @@ class ContainsOneTest extends TestCase
             $c->fieldName()->valid_till => new \DateTime('2019-07-01'),
         ]);
         $c->save();
-        static::{'assertEquals'}($row, $i->addr->door_code->get());
+        self::{'assertEquals'}($row, $i->addr->door_code->get());
 
         // update DoorCode
         $i->reload();
         $i->addr->door_code->save([$i->addr->door_code->fieldName()->code => 'DEF']);
-        static::{'assertEquals'}(array_merge($row, [$i->addr->door_code->fieldName()->code => 'DEF']), $i->addr->door_code->get());
+        self::{'assertEquals'}(array_merge($row, [$i->addr->door_code->fieldName()->code => 'DEF']), $i->addr->door_code->get());
 
         // try hasOne reference
         $c = $i->addr->country_id;
@@ -185,7 +185,7 @@ class ContainsOneTest extends TestCase
         $a->set('post_index', 'LV-1234');
         $a->save();
 
-        static::{'assertEquals'}(array_merge($row, ['post_index' => 'LV-1234']), $a->get());
+        self::{'assertEquals'}(array_merge($row, ['post_index' => 'LV-1234']), $a->get());
 
         // now this one is a bit tricky
         // each time you call ref() it returns you new model object so it will not have post_index field
@@ -196,7 +196,7 @@ class ContainsOneTest extends TestCase
 
         // and it references to same old Address model without post_index field - no errors
         $a = $i->addr;
-        static::{'assertEquals'}($row, $a->get());
+        self::{'assertEquals'}($row, $a->get());
     }
 
     public function testUnmanagedDataModificationException(): void

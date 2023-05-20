@@ -65,9 +65,9 @@ class TypecastingTest extends TestCase
         self::assertSame('foo', $mm->get('string'));
         self::assertTrue($mm->get('boolean'));
         self::assertSame(8.20, $mm->get('money'));
-        static::{'assertEquals'}(new \DateTime('2013-02-20 UTC'), $mm->get('date'));
-        static::{'assertEquals'}(new \DateTime('2013-02-20 20:00:12 UTC'), $mm->get('datetime'));
-        static::{'assertEquals'}(new \DateTime('1970-01-01 12:00:50 UTC'), $mm->get('time'));
+        self::{'assertEquals'}(new \DateTime('2013-02-20 UTC'), $mm->get('date'));
+        self::{'assertEquals'}(new \DateTime('2013-02-20 20:00:12 UTC'), $mm->get('datetime'));
+        self::{'assertEquals'}(new \DateTime('1970-01-01 12:00:50 UTC'), $mm->get('time'));
         self::assertSame(2940, $mm->get('integer'));
         self::assertSame([1, 2, 3], $mm->get('json'));
         self::assertSame(8.20234376757473, $mm->get('float'));
@@ -102,7 +102,7 @@ class TypecastingTest extends TestCase
                 ],
             ],
         ];
-        static::{'assertEquals'}($dbData, $this->getDb());
+        self::{'assertEquals'}($dbData, $this->getDb());
 
         [$first, $duplicate] = $m->export();
 
@@ -200,7 +200,7 @@ class TypecastingTest extends TestCase
         }
 
         $mm->save();
-        static::{'assertEquals'}($dbData, $this->getDb());
+        self::{'assertEquals'}($dbData, $this->getDb());
 
         $m->createEntity()->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
 
@@ -220,7 +220,7 @@ class TypecastingTest extends TestCase
             'local-object' => null,
         ];
 
-        static::{'assertEquals'}($dbData, $this->getDb());
+        self::{'assertEquals'}($dbData, $this->getDb());
     }
 
     public function testTypecastNull(): void
@@ -244,7 +244,7 @@ class TypecastingTest extends TestCase
 
         $dbData['test'][2] = array_merge(['id' => 2], $row);
 
-        static::{'assertEquals'}($dbData, $this->getDb());
+        self::{'assertEquals'}($dbData, $this->getDb());
     }
 
     public function testTypeCustom1(): void
@@ -295,7 +295,7 @@ class TypecastingTest extends TestCase
         $row['money'] = '8.2'; // no trailing zero is expected
         $dbData['types'][2] = array_merge(['id' => '2'], $row);
 
-        static::{'assertEquals'}($dbData, $this->getDb());
+        self::{'assertEquals'}($dbData, $this->getDb());
     }
 
     public function testLoad(): void

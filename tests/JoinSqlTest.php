@@ -720,7 +720,7 @@ class JoinSqlTest extends TestCase
         $user2->set('j2_salary', 111);
         $user2->save();
 
-        static::{'assertEquals'}([
+        self::{'assertEquals'}([
             'user' => [
                 1 => ['id' => 1, 'first_name' => 'John 2', $contactForeignIdFieldName => 1],
                 ['id' => 2, 'first_name' => 'Peter', $contactForeignIdFieldName => 1],
@@ -743,7 +743,7 @@ class JoinSqlTest extends TestCase
         $user3->set('j2_salary', 222);
         $user3->save();
 
-        static::{'assertEquals'}([
+        self::{'assertEquals'}([
             'user' => [
                 1 => ['id' => 1, 'first_name' => 'John 2', $contactForeignIdFieldName => 1],
                 ['id' => 2, 'first_name' => 'Peter', $contactForeignIdFieldName => 1],
