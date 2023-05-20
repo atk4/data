@@ -226,12 +226,12 @@ class SqlTest extends TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
             ['id' => 2, 'name' => 'Sarah', 'surname' => 'Jones'],
         ], $m->export());
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['surname' => 'Smith'],
             ['surname' => 'Jones'],
         ], $m->export(['surname']));

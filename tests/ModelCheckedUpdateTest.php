@@ -47,7 +47,7 @@ class ModelCheckedUpdateTest extends TestCase
         try {
             $m->insert(['name' => 'Benjamin']);
         } finally {
-            static::assertSameExportUnordered([
+            self::assertSameExportUnordered([
                 ['id' => 1, 'name' => 'James'],
                 ['id' => 3, 'name' => 'Jennifer'],
                 ['id' => 4, 'name' => 'John'],
@@ -67,7 +67,7 @@ class ModelCheckedUpdateTest extends TestCase
         try {
             $m->insert(['name' => 'John']);
         } finally {
-            static::assertSameExportUnordered([
+            self::assertSameExportUnordered([
                 ['id' => 1, 'name' => 'James'],
                 ['id' => 3, 'name' => 'Jennifer'],
                 ['id' => 4, 'name' => 'John'],
@@ -87,7 +87,7 @@ class ModelCheckedUpdateTest extends TestCase
         try {
             $entity3->save(['name' => 'Benjamin']);
         } finally {
-            static::assertSameExportUnordered([
+            self::assertSameExportUnordered([
                 ['id' => 1, 'name' => 'James'],
                 ['id' => 3, 'name' => 'John'],
             ], $m->export());
@@ -107,7 +107,7 @@ class ModelCheckedUpdateTest extends TestCase
         try {
             $entity3->save(['name' => 'James']);
         } finally {
-            static::assertSameExportUnordered([
+            self::assertSameExportUnordered([
                 ['id' => 1, 'name' => 'James'],
                 ['id' => 3, 'name' => 'John'],
             ], $m->export());
@@ -127,11 +127,11 @@ class ModelCheckedUpdateTest extends TestCase
         try {
             $entity3->save(['name' => 'Jan']);
         } finally {
-            static::assertSameExportUnordered([
+            self::assertSameExportUnordered([
                 ['id' => 1, 'name' => 'James'],
             ], $m->export());
             $m->scope()->clear();
-            static::assertSameExportUnordered([
+            self::assertSameExportUnordered([
                 ['id' => 1, 'name' => 'James'],
                 ['id' => 2, 'name' => 'Roman'],
                 ['id' => 3, 'name' => 'John'],
@@ -146,7 +146,7 @@ class ModelCheckedUpdateTest extends TestCase
         $entity3 = $m->load(3);
         $entity3->onHook(Model::HOOK_BEFORE_UPDATE, function (Model $entity) {
             (clone $entity)->delete();
-            static::assertSameExportUnordered([
+            self::assertSameExportUnordered([
                 ['id' => 1, 'name' => 'James'],
             ], $entity->getModel()->export());
             $entity->getModel()->scope()->clear();
@@ -157,7 +157,7 @@ class ModelCheckedUpdateTest extends TestCase
         try {
             $entity3->save(['name' => 'Jan']);
         } finally {
-            static::assertSameExportUnordered([
+            self::assertSameExportUnordered([
                 ['id' => 1, 'name' => 'James'],
                 ['id' => 2, 'name' => 'Roman'],
                 ['id' => 3, 'name' => 'Jennifer'],
@@ -176,7 +176,7 @@ class ModelCheckedUpdateTest extends TestCase
         try {
             $m->delete(3);
         } finally {
-            static::assertSameExportUnordered([
+            self::assertSameExportUnordered([
                 ['id' => 1, 'name' => 'James'],
             ], $m->export());
         }
@@ -196,7 +196,7 @@ class ModelCheckedUpdateTest extends TestCase
         try {
             $entity3->delete();
         } finally {
-            static::assertSameExportUnordered([
+            self::assertSameExportUnordered([
                 ['id' => 1, 'name' => 'James'],
             ], $m->export());
         }
@@ -215,11 +215,11 @@ class ModelCheckedUpdateTest extends TestCase
         try {
             $entity3->delete();
         } finally {
-            static::assertSameExportUnordered([
+            self::assertSameExportUnordered([
                 ['id' => 1, 'name' => 'James'],
             ], $m->export());
             $m->scope()->clear();
-            static::assertSameExportUnordered([
+            self::assertSameExportUnordered([
                 ['id' => 1, 'name' => 'James'],
                 ['id' => 2, 'name' => 'Roman'],
                 ['id' => 3, 'name' => 'Jennifer'],
@@ -234,7 +234,7 @@ class ModelCheckedUpdateTest extends TestCase
         $entity3 = $m->load(3);
         $entity3->onHook(Model::HOOK_BEFORE_DELETE, function (Model $entity) {
             (clone $entity)->delete();
-            static::assertSameExportUnordered([
+            self::assertSameExportUnordered([
                 ['id' => 1, 'name' => 'James'],
             ], $entity->getModel()->export());
             $entity->getModel()->scope()->clear();
@@ -245,7 +245,7 @@ class ModelCheckedUpdateTest extends TestCase
         try {
             $entity3->delete();
         } finally {
-            static::assertSameExportUnordered([
+            self::assertSameExportUnordered([
                 ['id' => 1, 'name' => 'James'],
                 ['id' => 2, 'name' => 'Roman'],
                 ['id' => 3, 'name' => 'Jennifer'],

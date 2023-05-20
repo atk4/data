@@ -156,7 +156,7 @@ class RandomTest extends TestCase
 
         $m->insert([]);
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['id' => 1, 'name' => 'John', 'last_name' => null, 'login' => null, 'salary' => null, 'tax' => null, 'vat' => null],
             ['id' => 2, 'name' => 'anonymous', 'last_name' => null, 'login' => 'unknown', 'salary' => 100.0, 'tax' => 20.0, 'vat' => 15.0],
         ], $m->export());
@@ -410,56 +410,56 @@ class RandomTest extends TestCase
         $m2->addField('name');
 
         // normal export
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['code' => 10, 'name' => 'John'],
             ['code' => 20, 'name' => 'Sarah'],
         ], $m1->export());
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['id' => 2, 'code' => 10, 'name' => 'John'],
             ['id' => 5, 'code' => 20, 'name' => 'Sarah'],
         ], $m2->export());
 
         // export fields explicitly set
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['name' => 'John'],
             ['name' => 'Sarah'],
         ], $m1->export(['name']));
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['name' => 'John'],
             ['name' => 'Sarah'],
         ], $m2->export(['name']));
 
         // key field explicitly set
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             10 => ['code' => 10, 'name' => 'John'],
             20 => ['code' => 20, 'name' => 'Sarah'],
         ], $m1->export(null, 'code'));
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             10 => ['id' => 2, 'code' => 10, 'name' => 'John'],
             20 => ['id' => 5, 'code' => 20, 'name' => 'Sarah'],
         ], $m2->export(null, 'code'));
 
         // field names and key field explicitly set
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             10 => ['name' => 'John'],
             20 => ['name' => 'Sarah'],
         ], $m1->export(['name'], 'code'));
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             10 => ['name' => 'John'],
             20 => ['name' => 'Sarah'],
         ], $m2->export(['name'], 'code'));
 
         // field names include key field
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             10 => ['code' => 10, 'name' => 'John'],
             20 => ['code' => 20, 'name' => 'Sarah'],
         ], $m1->export(['code', 'name'], 'code'));
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             10 => ['code' => 10, 'name' => 'John'],
             20 => ['code' => 20, 'name' => 'Sarah'],
         ], $m2->export(['code', 'name'], 'code'));
@@ -478,7 +478,7 @@ class RandomTest extends TestCase
 
         $m->load(1)->duplicate()->save();
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['id' => 1, 'dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4],
             ['id' => 2, 'dat' => '12/12/12', 'bid' => 8.3, 'ask' => 9.2],
             ['id' => 3, 'dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4],

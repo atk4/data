@@ -585,7 +585,7 @@ class JoinSqlTest extends TestCase
         $this->createMigrator()->createForeignKey($refMany);
 
         $user2 = $user->load(1);
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['id' => 30, 'user_id' => 1, 'token' => 'ABC'],
             ['id' => 31, 'user_id' => 1, 'token' => 'DEF'],
         ], $user2->ref('Token')->export());
@@ -600,7 +600,7 @@ class JoinSqlTest extends TestCase
         $this->createMigrator()->createForeignKey($refMany);
 
         $user2 = $user->load(1);
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['id' => 40, 'contact_id' => 10, 'address' => 'john@foo.net'],
             ['id' => 41, 'contact_id' => 10, 'address' => 'johnny@foo.net'],
         ], $user2->ref('Email')->export());

@@ -110,22 +110,22 @@ class TestCaseTest extends TestCase
 
         $this->setDb($dbData);
         $dbDataGet1 = $this->getDb(['user']);
-        static::assertSameExportUnordered($dbDataWithId, $dbDataGet1);
-        static::assertSameExportUnordered($dbDataWithId, $this->getDb());
-        static::assertSameExportUnordered($dbData, $this->getDb(null, true));
+        self::assertSameExportUnordered($dbDataWithId, $dbDataGet1);
+        self::assertSameExportUnordered($dbDataWithId, $this->getDb());
+        self::assertSameExportUnordered($dbData, $this->getDb(null, true));
 
         $this->dropCreatedDb();
         $this->setDb($dbData);
         $dbDataGet2 = $this->getDb(['user']);
-        static::assertSameExportUnordered($dbDataWithId, $dbDataGet2);
-        static::assertSameExportUnordered($dbDataWithId, $this->getDb());
+        self::assertSameExportUnordered($dbDataWithId, $dbDataGet2);
+        self::assertSameExportUnordered($dbDataWithId, $this->getDb());
         self::assertSame($dbDataGet1, $dbDataGet2);
 
         $this->dropCreatedDb();
         $this->setDb($dbDataGet1);
         $dbDataGet3 = $this->getDb(['user']);
-        static::assertSameExportUnordered($dbDataWithId, $dbDataGet3);
-        static::assertSameExportUnordered($dbDataWithId, $this->getDb());
+        self::assertSameExportUnordered($dbDataWithId, $dbDataGet3);
+        self::assertSameExportUnordered($dbDataWithId, $this->getDb());
         self::assertSame($dbDataGet1, $dbDataGet3);
     }
 }

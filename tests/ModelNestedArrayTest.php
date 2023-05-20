@@ -106,7 +106,7 @@ class ModelNestedArrayTest extends TestCase
     {
         $m = $this->createTestModel();
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             1 => ['name' => 'John', 'birthday' => new \DateTime('1980-2-1 UTC')],
             ['name' => 'Sue', 'birthday' => new \DateTime('2005-4-3 UTC')],
         ], $m->export());
@@ -146,9 +146,9 @@ class ModelNestedArrayTest extends TestCase
         ], $this->hookLog);
 
         self::assertSame(4, $m->table->loadBy('name', 'Karl')->getId());
-        static::assertSameExportUnordered([[new \DateTime('2000-6-1 UTC')]], [[$entity->getId()]]);
+        self::assertSameExportUnordered([[new \DateTime('2000-6-1 UTC')]], [[$entity->getId()]]);
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             1 => ['name' => 'John', 'birthday' => new \DateTime('1980-2-1 UTC')],
             ['name' => 'Sue', 'birthday' => new \DateTime('2005-4-3 UTC')],
             4 => ['name' => 'Karl', 'birthday' => new \DateTime('2000-6-1 UTC')],
@@ -198,7 +198,7 @@ class ModelNestedArrayTest extends TestCase
             ['main', '<<<'],
         ], $this->hookLog);
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             1 => ['name' => 'John', 'birthday' => new \DateTime('1980-2-1 UTC')],
             ['name' => 'Susan', 'birthday' => new \DateTime('2005-4-3 UTC')],
         ], $m->export());
@@ -230,7 +230,7 @@ class ModelNestedArrayTest extends TestCase
             ['main', Model::HOOK_AFTER_UNLOAD, []],
         ], $this->hookLog);
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             1 => ['name' => 'John', 'birthday' => new \DateTime('1980-2-1 UTC')],
         ], $m->export());
     }

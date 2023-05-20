@@ -107,11 +107,11 @@ class ContainsManyTest extends TestCase
         }
 
         // reload invoice just in case
-        static::assertSameExportUnordered($rows, $i->lines->export());
+        self::assertSameExportUnordered($rows, $i->lines->export());
         $i->reload();
-        static::assertSameExportUnordered($rows, $i->lines->export());
+        self::assertSameExportUnordered($rows, $i->lines->export());
         $i = $i->getModel()->load($i->getId());
-        static::assertSameExportUnordered($rows, $i->lines->export());
+        self::assertSameExportUnordered($rows, $i->lines->export());
 
         // now let's delete line with id=2 and add one more line
         $i->lines
@@ -149,7 +149,7 @@ class ContainsManyTest extends TestCase
                 $l->fieldName()->add_date => new \DateTime('2019-01-01'),
             ],
         ];
-        static::assertSameExportUnordered($rows, $i->lines->export());
+        self::assertSameExportUnordered($rows, $i->lines->export());
 
         // try hasOne reference
         $v = $i->lines->load(4)->vat_rate_id;
@@ -213,7 +213,7 @@ class ContainsManyTest extends TestCase
         $i->reload();
 
         // ok, so now let's test
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             1 => [
                 $l->discounts->fieldName()->id => 1,
                 $l->discounts->fieldName()->percent => 5,

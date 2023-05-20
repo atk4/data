@@ -589,12 +589,12 @@ class ReferenceSqlTest extends TestCase
         $user = $this->setupDbForTraversing();
         $userEntity = $user->load(1);
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['id' => 1, 'company_id' => 1, 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
             ['id' => 3, 'company_id' => 1, 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
         ], $userEntity->ref('Company')->ref('Orders')->export());
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['id' => 1, 'company_id' => 1, 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
             ['id' => 2, 'company_id' => 2, 'description' => 'Zoe Company Order', 'amount' => 10.0],
             ['id' => 3, 'company_id' => 1, 'description' => 'Vinny Company Order 2', 'amount' => 15.0],

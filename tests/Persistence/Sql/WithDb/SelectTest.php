@@ -67,7 +67,7 @@ class SelectTest extends TestCase
             $this->q('employee')->field('name')->field('surname')->order('id')->getRow()
         );
 
-        static::assertSameExportUnordered(
+        self::assertSameExportUnordered(
             [['surname' => 'Williams'], ['surname' => 'Taylor']],
             $this->q('employee')->field('surname')->where('retired', true)->getRows()
         );

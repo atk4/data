@@ -174,7 +174,7 @@ class LookupSqlTest extends TestCase
             ['name' => 'Russia', 'code' => 'RU'],
         ]);
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             'country' => [
                 1 => [
                     'id' => 1,
@@ -233,7 +233,7 @@ class LookupSqlTest extends TestCase
         $c->insert(['name' => 'Canada', 'Users' => [['name' => 'Alain'], ['name' => 'Duncan', 'is_vip' => true]]]);
         $c->insert(['name' => 'Latvia', 'Users' => [['name' => 'imants'], ['name' => 'juris']]]);
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             'country' => [
                 1 => [
                     'id' => 1,
@@ -301,7 +301,7 @@ class LookupSqlTest extends TestCase
             // ['name' => 'Romans', 'country_code' => 'UK'], // country code does not exist
         ]);
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             'country' => [
                 1 => [
                     'id' => 1,
