@@ -41,7 +41,7 @@ class ConnectionTest extends TestCase
     public function testInit(): void
     {
         $c = Connection::connect('sqlite::memory:');
-        static::assertSame(
+        self::assertSame(
             '4',
             $c->expr('select (2+2)')->getOne()
         );
@@ -51,78 +51,78 @@ class ConnectionTest extends TestCase
     {
         // standard
         $dsn = Connection::normalizeDsn('mysql://root:pass@localhost/db');
-        static::assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
+        self::assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
 
         $dsn = Connection::normalizeDsn('mysql:host=localhost;dbname=db');
-        static::assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'dbname' => 'db'], $dsn);
+        self::assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'dbname' => 'db'], $dsn);
 
         $dsn = Connection::normalizeDsn('mysql:host=localhost;dbname=db', 'root', 'pass');
-        static::assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'dbname' => 'db', 'user' => 'root', 'password' => 'pass'], $dsn);
+        self::assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'dbname' => 'db', 'user' => 'root', 'password' => 'pass'], $dsn);
 
         // username and password should take precedence
         $dsn = Connection::normalizeDsn('mysql://root:pass@localhost/db', 'foo', 'bar');
-        static::assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'user' => 'foo', 'password' => 'bar', 'dbname' => 'db'], $dsn);
+        self::assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'user' => 'foo', 'password' => 'bar', 'dbname' => 'db'], $dsn);
 
         // more options
         $dsn = Connection::normalizeDsn('mysql:host=localhost;dbname=db;foo=x;bar=y', 'root', 'pass');
-        static::assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'dbname' => 'db', 'foo' => 'x', 'bar' => 'y', 'user' => 'root', 'password' => 'pass'], $dsn);
+        self::assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'dbname' => 'db', 'foo' => 'x', 'bar' => 'y', 'user' => 'root', 'password' => 'pass'], $dsn);
         $dsn = Connection::normalizeDsn('mysql://root:pass@localhost/db;foo=x;bar=y');
-        static::assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db', 'foo' => 'x', 'bar' => 'y'], $dsn);
+        self::assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db', 'foo' => 'x', 'bar' => 'y'], $dsn);
 
         // no password
         $dsn = Connection::normalizeDsn('mysql://root@localhost/db');
-        static::assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'user' => 'root', 'dbname' => 'db'], $dsn);
+        self::assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'user' => 'root', 'dbname' => 'db'], $dsn);
         $dsn = Connection::normalizeDsn('mysql://root:@localhost/db');
-        static::assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'user' => 'root', 'dbname' => 'db'], $dsn);
+        self::assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'user' => 'root', 'dbname' => 'db'], $dsn);
 
         $dsn = Connection::normalizeDsn('sqlite::memory');
-        static::assertSame(['driver' => 'pdo_sqlite', 'memory' => true], $dsn); // rest is unusable anyway in this context
+        self::assertSame(['driver' => 'pdo_sqlite', 'memory' => true], $dsn); // rest is unusable anyway in this context
 
         // with port number as URL, normalize port to ;port=1234
         $dsn = Connection::normalizeDsn('mysql://root:pass@localhost:1234/db');
-        static::assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'port' => '1234', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
+        self::assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'port' => '1234', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
 
         // with port number as DSN, leave port as :port
         $dsn = Connection::normalizeDsn('mysql:host=localhost:1234;dbname=db');
-        static::assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'dbname' => 'db', 'port' => '1234'], $dsn);
+        self::assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'dbname' => 'db', 'port' => '1234'], $dsn);
 
         // driverOptions array
         $dsn = Connection::normalizeDsn('pdo-sqlsrv://localhost:1234/db?driverOptions[TrustServerCertificate]=1');
-        static::assertSame(['driver' => 'pdo_sqlsrv', 'host' => 'localhost', 'port' => '1234', 'driverOptions' => ['TrustServerCertificate' => '1'], 'dbname' => 'db'], $dsn);
+        self::assertSame(['driver' => 'pdo_sqlsrv', 'host' => 'localhost', 'port' => '1234', 'driverOptions' => ['TrustServerCertificate' => '1'], 'dbname' => 'db'], $dsn);
 
         $dsn = Connection::normalizeDsn('pdo_sqlsrv:host=localhost:1234;dbname=db;driverOptions[TrustServerCertificate]=1');
-        static::assertSame(['driver' => 'pdo_sqlsrv', 'host' => 'localhost', 'dbname' => 'db', 'driverOptions' => ['TrustServerCertificate' => '1'], 'port' => '1234'], $dsn);
+        self::assertSame(['driver' => 'pdo_sqlsrv', 'host' => 'localhost', 'dbname' => 'db', 'driverOptions' => ['TrustServerCertificate' => '1'], 'port' => '1234'], $dsn);
 
         // full PDO and native driver names
         $dsn = Connection::normalizeDsn('pdo-mysql://root:pass@localhost/db');
-        static::assertSame(['driver' => 'pdo_mysql', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
+        self::assertSame(['driver' => 'pdo_mysql', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
 
         $dsn = Connection::normalizeDsn('pdo_mysql:host=localhost;dbname=db', 'root', 'pass');
-        static::assertSame(['driver' => 'pdo_mysql', 'host' => 'localhost', 'dbname' => 'db', 'user' => 'root', 'password' => 'pass'], $dsn);
+        self::assertSame(['driver' => 'pdo_mysql', 'host' => 'localhost', 'dbname' => 'db', 'user' => 'root', 'password' => 'pass'], $dsn);
 
         $dsn = Connection::normalizeDsn('pdo-pgsql://root:pass@localhost/db');
-        static::assertSame(['driver' => 'pdo_pgsql', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
+        self::assertSame(['driver' => 'pdo_pgsql', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
 
         $dsn = Connection::normalizeDsn('pdo-sqlsrv://root:pass@localhost/db');
-        static::assertSame(['driver' => 'pdo_sqlsrv', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
+        self::assertSame(['driver' => 'pdo_sqlsrv', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
 
         $dsn = Connection::normalizeDsn('pdo-oci://root:pass@localhost/db');
-        static::assertSame(['driver' => 'pdo_oci', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
+        self::assertSame(['driver' => 'pdo_oci', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
 
         $dsn = Connection::normalizeDsn('mysqli://root:pass@localhost/db');
-        static::assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
+        self::assertSame(['driver' => 'mysqli', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
 
         $dsn = Connection::normalizeDsn('pgsql://root:pass@localhost/db');
-        static::assertSame(['driver' => 'pdo_pgsql', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
+        self::assertSame(['driver' => 'pdo_pgsql', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
 
         $dsn = Connection::normalizeDsn('sqlsrv://root:pass@localhost/db');
-        static::assertSame(['driver' => 'pdo_sqlsrv', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
+        self::assertSame(['driver' => 'pdo_sqlsrv', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
 
         $dsn = Connection::normalizeDsn('oci://root:pass@localhost/db');
-        static::assertSame(['driver' => 'oci8', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
+        self::assertSame(['driver' => 'oci8', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
 
         $dsn = Connection::normalizeDsn('oci8://root:pass@localhost/db');
-        static::assertSame(['driver' => 'oci8', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
+        self::assertSame(['driver' => 'oci8', 'host' => 'localhost', 'user' => 'root', 'password' => 'pass', 'dbname' => 'db'], $dsn);
     }
 
     public function testConnectionRegistry(): void
@@ -130,17 +130,17 @@ class ConnectionTest extends TestCase
         $registryBackup = \Closure::bind(fn () => Connection::$connectionClassRegistry, null, Connection::class)();
         try {
             Connection::registerConnectionClass(DummyConnection::class, 'dummy');
-            static::assertSame(DummyConnection::class, Connection::resolveConnectionClass('dummy'));
+            self::assertSame(DummyConnection::class, Connection::resolveConnectionClass('dummy'));
             try {
                 Connection::resolveConnectionClass('dummy2');
-                static::assertFalse(true); // @phpstan-ignore-line
+                self::assertFalse(true); // @phpstan-ignore-line
             } catch (\Exception $e) {
             }
 
             Connection::registerConnectionClass(DummyConnection2::class, 'dummy2');
-            static::assertSame(DummyConnection2::class, Connection::resolveConnectionClass('dummy2'));
+            self::assertSame(DummyConnection2::class, Connection::resolveConnectionClass('dummy2'));
 
-            static::assertNotSame($registryBackup, \Closure::bind(fn () => Connection::$connectionClassRegistry, null, Connection::class)());
+            self::assertNotSame($registryBackup, \Closure::bind(fn () => Connection::$connectionClassRegistry, null, Connection::class)());
         } finally {
             \Closure::bind(fn () => Connection::$connectionClassRegistry = $registryBackup, null, Connection::class)();
         }
@@ -174,7 +174,7 @@ class ConnectionTest extends TestCase
     {
         $c = new Persistence\Sql\Sqlite\Connection();
         $q = $c->expr('select (2 + 2)');
-        static::assertSame('select (2 + 2)', $q->render()[0]);
+        self::assertSame('select (2 + 2)', $q->render()[0]);
 
         $this->expectException(Persistence\Sql\Exception::class);
         $this->expectExceptionMessage('DBAL connection is not set');

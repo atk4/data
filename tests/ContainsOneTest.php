@@ -60,9 +60,9 @@ class ContainsOneTest extends TestCase
         $a = $i->addr;
 
         // test caption of containsOne reference
-        static::assertSame('Secret Code', $a->getField($a->fieldName()->door_code)->getCaption());
-        static::assertSame('Secret Code', $a->refModel($a->fieldName()->door_code)->getModelCaption());
-        static::assertSame('Secret Code', $a->door_code->getModelCaption());
+        self::assertSame('Secret Code', $a->getField($a->fieldName()->door_code)->getCaption());
+        self::assertSame('Secret Code', $a->refModel($a->fieldName()->door_code)->getModelCaption());
+        self::assertSame('Secret Code', $a->door_code->getModelCaption());
     }
 
     public function testContainsOne(): void
@@ -70,10 +70,10 @@ class ContainsOneTest extends TestCase
         $i = new Invoice($this->db);
         $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
 
-        static::assertSame(Address::class, get_class($i->getModel()->addr));
+        self::assertSame(Address::class, get_class($i->getModel()->addr));
 
         // check do we have address set
-        static::assertNull($i->addr); // @phpstan-ignore-line
+        self::assertNull($i->addr); // @phpstan-ignore-line
         $a = $i->getModel()->addr->createEntity();
         $a->containedInEntity = $i;
 
@@ -97,7 +97,7 @@ class ContainsOneTest extends TestCase
 
         // now try to change some field in address
         $i->addr->set($i->addr->fieldName()->address, 'bar')->save();
-        static::assertSame('bar', $i->addr->address);
+        self::assertSame('bar', $i->addr->address);
 
         // now add nested containsOne - DoorCode
         $iEntity = $i->addr;
@@ -118,10 +118,10 @@ class ContainsOneTest extends TestCase
 
         // try hasOne reference
         $c = $i->addr->country_id;
-        static::assertSame('Latvia', $c->name);
+        self::assertSame('Latvia', $c->name);
         $i->addr->set($i->addr->fieldName()->country_id, 2)->save();
         $c = $i->addr->country_id;
-        static::assertSame('United Kingdom', $c->name);
+        self::assertSame('United Kingdom', $c->name);
 
         // let's test how it all looks in persistence without typecasting
         $exportAddr = $i->getModel()->setOrder('id')
@@ -131,7 +131,7 @@ class ContainsOneTest extends TestCase
 
             return $dt->format('Y-m-d H:i:s.u');
         };
-        static::assertJsonStringEqualsJsonString(
+        self::assertJsonStringEqualsJsonString(
             json_encode([
                 $i->addr->fieldName()->id => 1,
                 $i->addr->fieldName()->country_id => 2,
@@ -149,13 +149,13 @@ class ContainsOneTest extends TestCase
 
         // so far so good. now let's try to delete door_code
         $i->addr->door_code->delete();
-        static::assertNull($i->addr->get($i->addr->fieldName()->door_code));
-        static::assertNull($i->addr->door_code); // @phpstan-ignore-line
+        self::assertNull($i->addr->get($i->addr->fieldName()->door_code));
+        self::assertNull($i->addr->door_code); // @phpstan-ignore-line
 
         // and now delete address
         $i->addr->delete();
-        static::assertNull($i->get($i->fieldName()->addr));
-        static::assertNull($i->addr); // @phpstan-ignore-line
+        self::assertNull($i->get($i->fieldName()->addr));
+        self::assertNull($i->addr); // @phpstan-ignore-line
     }
 
     /**
@@ -167,7 +167,7 @@ class ContainsOneTest extends TestCase
         $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
 
         // with address
-        static::assertNull($i->addr); // @phpstan-ignore-line
+        self::assertNull($i->addr); // @phpstan-ignore-line
         $a = $i->getModel()->addr->createEntity();
         $a->containedInEntity = $i;
         $a->setMulti($row = [
@@ -189,7 +189,7 @@ class ContainsOneTest extends TestCase
 
         // now this one is a bit tricky
         // each time you call ref() it returns you new model object so it will not have post_index field
-        static::assertFalse($i->addr->hasField('post_index'));
+        self::assertFalse($i->addr->hasField('post_index'));
 
         // now reload invoice just in case
         $i->reload();

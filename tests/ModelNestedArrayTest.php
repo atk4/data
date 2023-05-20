@@ -111,7 +111,7 @@ class ModelNestedArrayTest extends TestCase
             ['name' => 'Sue', 'birthday' => new \DateTime('2005-4-3 UTC')],
         ], $m->export());
 
-        static::assertSame([], $this->hookLog);
+        self::assertSame([], $this->hookLog);
     }
 
     public function testInsert(): void
@@ -124,7 +124,7 @@ class ModelNestedArrayTest extends TestCase
                 'birthday' => new \DateTime('2000-6-1'),
             ])->save();
 
-        static::assertSame([
+        self::assertSame([
             ['main', '>>>'],
             ['main', Model::HOOK_VALIDATE, ['save']],
             ['main', Model::HOOK_BEFORE_SAVE, [false]],
@@ -145,7 +145,7 @@ class ModelNestedArrayTest extends TestCase
             ['main', '<<<'],
         ], $this->hookLog);
 
-        static::assertSame(4, $m->table->loadBy('name', 'Karl')->getId());
+        self::assertSame(4, $m->table->loadBy('name', 'Karl')->getId());
         static::assertSameExportUnordered([[new \DateTime('2000-6-1 UTC')]], [[$entity->getId()]]);
 
         static::assertSameExportUnordered([
@@ -163,7 +163,7 @@ class ModelNestedArrayTest extends TestCase
             ->set('name', 'Sue')->save() // no change
             ->set('name', 'Susan')->save();
 
-        static::assertSame([
+        self::assertSame([
             ['main', Model::HOOK_BEFORE_LOAD, [\DateTime::class]],
             ['main', Model::HOOK_AFTER_LOAD, []],
 
@@ -210,7 +210,7 @@ class ModelNestedArrayTest extends TestCase
 
         $m->delete(new \DateTime('2005-4-3'));
 
-        static::assertSame([
+        self::assertSame([
             ['main', Model::HOOK_BEFORE_LOAD, [\DateTime::class]],
             ['main', Model::HOOK_AFTER_LOAD, []],
 

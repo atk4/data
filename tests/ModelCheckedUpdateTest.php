@@ -189,7 +189,7 @@ class ModelCheckedUpdateTest extends TestCase
 
         $entity3 = $m->load(3);
         $m->load(3)->delete();
-        static::assertTrue($entity3->isLoaded());
+        self::assertTrue($entity3->isLoaded());
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('not found');
@@ -208,7 +208,7 @@ class ModelCheckedUpdateTest extends TestCase
 
         $entity3 = $m->load(3);
         $m->addCondition('id', '<', 3);
-        static::assertTrue($entity3->isLoaded());
+        self::assertTrue($entity3->isLoaded());
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('not found');

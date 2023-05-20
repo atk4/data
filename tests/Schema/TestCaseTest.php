@@ -30,7 +30,7 @@ class TestCaseTest extends TestCase
                 $m->insert(['name' => 'Ewa', 'int' => 1, 'float' => 1]);
             });
 
-            static::assertSame(1, $m->loadAny()->getId());
+            self::assertSame(1, $m->loadAny()->getId());
 
             $output = ob_get_contents();
         } finally {
@@ -88,8 +88,8 @@ class TestCaseTest extends TestCase
 
     public function testGetSetDropDb(): void
     {
-        static::assertSame([], $this->getDb([]));
-        static::assertSame([], $this->getDb());
+        self::assertSame([], $this->getDb([]));
+        self::assertSame([], $this->getDb());
 
         $dbData = [
             'user' => [
@@ -119,13 +119,13 @@ class TestCaseTest extends TestCase
         $dbDataGet2 = $this->getDb(['user']);
         static::assertSameExportUnordered($dbDataWithId, $dbDataGet2);
         static::assertSameExportUnordered($dbDataWithId, $this->getDb());
-        static::assertSame($dbDataGet1, $dbDataGet2);
+        self::assertSame($dbDataGet1, $dbDataGet2);
 
         $this->dropCreatedDb();
         $this->setDb($dbDataGet1);
         $dbDataGet3 = $this->getDb(['user']);
         static::assertSameExportUnordered($dbDataWithId, $dbDataGet3);
         static::assertSameExportUnordered($dbDataWithId, $this->getDb());
-        static::assertSame($dbDataGet1, $dbDataGet3);
+        self::assertSame($dbDataGet1, $dbDataGet3);
     }
 }

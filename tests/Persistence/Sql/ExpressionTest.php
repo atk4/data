@@ -32,7 +32,7 @@ class ExpressionTest extends TestCase
 
     public function testConstructorEmptyTemplate(): void
     {
-        static::assertSame(
+        self::assertSame(
             '',
             $this->e('')->render()[0]
         );
@@ -45,17 +45,17 @@ class ExpressionTest extends TestCase
     public function testConstructor2(): void
     {
         // pass as string
-        static::assertSame(
+        self::assertSame(
             'now()',
             $this->e('now()')->render()[0]
         );
         // pass as array with template key
-        static::assertSame(
+        self::assertSame(
             'now()',
             $this->e(['template' => 'now()'])->render()[0]
         );
         // pass as array with template key
-        static::assertSame(
+        self::assertSame(
             ':a Name',
             $this->e(['template' => '[] Name'], ['Last'])->render()[0]
         );
@@ -67,13 +67,13 @@ class ExpressionTest extends TestCase
     public function testConstructor3(): void
     {
         $e = $this->e('hello, [who]', ['who' => 'world']);
-        static::assertSame([
+        self::assertSame([
             'hello, :a',
             [':a' => 'world'],
         ], $e->render());
 
         $e = $this->e('hello, {who}', ['who' => 'world']);
-        static::assertSame([
+        self::assertSame([
             'hello, "world"',
             [],
         ], $e->render());
@@ -85,13 +85,13 @@ class ExpressionTest extends TestCase
     public function testConstructor4(): void
     {
         // argument = Expression
-        static::assertSame(
+        self::assertSame(
             'hello, world',
             $this->e('hello, [who]', ['who' => $this->e('world')])->render()[0]
         );
 
         // multiple arguments = Expression
-        static::assertSame(
+        self::assertSame(
             'hello, world',
             $this->e(
                 '[what], [who]',
@@ -103,7 +103,7 @@ class ExpressionTest extends TestCase
         );
 
         // numeric argument = Expression
-        static::assertSame(
+        self::assertSame(
             'hello, world',
             $this->e(
                 '[]',
@@ -120,7 +120,7 @@ class ExpressionTest extends TestCase
         );
 
         // pass template as array
-        static::assertSame(
+        self::assertSame(
             'hello, world',
             $this->e(
                 ['template' => 'hello, [who]'],
@@ -136,7 +136,7 @@ class ExpressionTest extends TestCase
      */
     public function testNoTemplatingInSqlString(string $expectedStr, string $exprTemplate, array $exprArguments): void
     {
-        static::assertSame($expectedStr, $this->e($exprTemplate, $exprArguments)->render()[0]);
+        self::assertSame($expectedStr, $this->e($exprTemplate, $exprArguments)->render()[0]);
     }
 
     /**
@@ -182,13 +182,13 @@ class ExpressionTest extends TestCase
             $this->e('--[]', [2]),
         ]);
 
-        static::assertSame('++:a and --:b', $e1->render()[0]);
+        self::assertSame('++:a and --:b', $e1->render()[0]);
 
         $e2 = $this->e('=== [foo] ===', ['foo' => $e1]);
 
-        static::assertSame('=== ++:a and --:b ===', $e2->render()[0]);
+        self::assertSame('=== ++:a and --:b ===', $e2->render()[0]);
 
-        static::assertSame('++:a and --:b', $e1->render()[0]);
+        self::assertSame('++:a and --:b', $e1->render()[0]);
     }
 
     /**
@@ -207,59 +207,59 @@ class ExpressionTest extends TestCase
         $e4 = $this->e('[] and good night', [$e1]);
         $s4 = $e4->render()[0]; // Hello :a and good night
 
-        static::assertSame('Hello :a! How are you.', $s2);
-        static::assertSame('It is me again. Hello :a', $s3);
-        static::assertSame('Hello :a and good night', $s4);
+        self::assertSame('Hello :a! How are you.', $s2);
+        self::assertSame('It is me again. Hello :a', $s3);
+        self::assertSame('Hello :a and good night', $s4);
     }
 
     public function testExpr(): void
     {
-        static::assertInstanceOf(Expression::class, $this->e('foo'));
+        self::assertInstanceOf(Expression::class, $this->e('foo'));
 
         $connection = new Mysql\Connection();
         $e = new Mysql\Expression(['connection' => $connection]);
-        static::assertSame(Mysql\Expression::class, get_class($e->expr('foo')));
-        static::assertSame($connection, $e->expr('foo')->connection);
+        self::assertSame(Mysql\Expression::class, get_class($e->expr('foo')));
+        self::assertSame($connection, $e->expr('foo')->connection);
     }
 
     public function testEscapeIdentifier(): void
     {
         // escaping expressions
-        static::assertSame(
+        self::assertSame(
             '"first_name"',
             $this->callProtected($this->e(), 'escapeIdentifier', 'first_name')
         );
-        static::assertSame(
+        self::assertSame(
             '"123"',
             $this->callProtected($this->e(), 'escapeIdentifier', '123')
         );
-        static::assertSame(
+        self::assertSame(
             '"he""llo"',
             $this->callProtected($this->e(), 'escapeIdentifier', 'he"llo')
         );
 
         // should not escape expressions
-        static::assertSame(
+        self::assertSame(
             '*',
             $this->callProtected($this->e(), 'escapeIdentifierSoft', '*')
         );
-        static::assertSame(
+        self::assertSame(
             '"*"',
             $this->callProtected($this->e(), 'escapeIdentifier', '*')
         );
-        static::assertSame(
+        self::assertSame(
             '(2 + 2) age',
             $this->callProtected($this->e(), 'escapeIdentifierSoft', '(2 + 2) age')
         );
-        static::assertSame(
+        self::assertSame(
             '"(2 + 2) age"',
             $this->callProtected($this->e(), 'escapeIdentifier', '(2 + 2) age')
         );
-        static::assertSame(
+        self::assertSame(
             '"users"."first_name"',
             $this->callProtected($this->e(), 'escapeIdentifierSoft', 'users.first_name')
         );
-        static::assertSame(
+        self::assertSame(
             '"users".*',
             $this->callProtected($this->e(), 'escapeIdentifierSoft', 'users.*')
         );
@@ -268,7 +268,7 @@ class ExpressionTest extends TestCase
     public function testEscapeParam(): void
     {
         $e = $this->e('hello, [who]', ['who' => 'world']);
-        static::assertSame([
+        self::assertSame([
             'hello, :a',
             [':a' => 'world'],
         ], $e->render());
@@ -279,15 +279,15 @@ class ExpressionTest extends TestCase
         $constants = (new \ReflectionClass(Expression::class))->getConstants();
 
         // few brief tests on consume
-        static::assertSame(
+        self::assertSame(
             '"123"',
             $this->callProtected($this->e(), 'consume', '123', $constants['ESCAPE_IDENTIFIER'])
         );
-        static::assertSame(
+        self::assertSame(
             ':x',
             $this->callProtected($this->e(['renderParamBase' => 'x']), 'consume', 123, $constants['ESCAPE_PARAM'])
         );
-        static::assertSame(
+        self::assertSame(
             123,
             $this->callProtected($this->e(), 'consume', 123, $constants['ESCAPE_NONE'])
         );
@@ -300,7 +300,7 @@ class ExpressionTest extends TestCase
         };
         $e = $this->e('hello, []', [$myField]);
         $e->connection = new Sqlite\Connection();
-        static::assertSame(
+        self::assertSame(
             'hello, "myfield"',
             $e->render()[0]
         );
@@ -327,7 +327,7 @@ class ExpressionTest extends TestCase
         try {
             $e->render();
         } catch (Exception $e) {
-            static::assertSame('world', $e->getParams()['tag']);
+            self::assertSame('world', $e->getParams()['tag']);
 
             throw $e;
         }
@@ -338,31 +338,31 @@ class ExpressionTest extends TestCase
         $e = $this->e('', ['parrot' => 'red', 'blue']);
 
         // offsetGet
-        static::assertSame('red', $e['parrot']);
-        static::assertSame('blue', $e[0]);
+        self::assertSame('red', $e['parrot']);
+        self::assertSame('blue', $e[0]);
 
         // offsetSet
         $e['cat'] = 'black';
-        static::assertSame('black', $e['cat']);
+        self::assertSame('black', $e['cat']);
         $e['cat'] = 'white';
-        static::assertSame('white', $e['cat']);
+        self::assertSame('white', $e['cat']);
 
         // offsetExists, offsetUnset
-        static::assertTrue(isset($e['cat']));
+        self::assertTrue(isset($e['cat']));
         unset($e['cat']);
-        static::assertFalse(isset($e['cat']));
+        self::assertFalse(isset($e['cat']));
 
         // testing absence of specific key in asignment
         $e = $this->e('[], []');
         $e[] = 'Hello';
         $e[] = 'World';
-        static::assertSame(':a, :b', $e->render()[0]);
+        self::assertSame(':a, :b', $e->render()[0]);
 
         // real-life example
         $age = $this->e('coalesce([age], [default_age])');
         $age['age'] = $this->e('year(now()) - year(birth_date)');
         $age['default_age'] = 18;
-        static::assertSame('coalesce(year(now()) - year(birth_date), :a)', $age->render()[0]);
+        self::assertSame('coalesce(year(now()) - year(birth_date), :a)', $age->render()[0]);
     }
 
     public function testEscapeParamCustom(): void
@@ -374,7 +374,7 @@ class ExpressionTest extends TestCase
             }
         };
 
-        static::assertSame([
+        self::assertSame([
             'hello, "world"',
             [],
         ], $e->render());
@@ -382,12 +382,12 @@ class ExpressionTest extends TestCase
 
     public function testVarDump(): void
     {
-        static::assertSame(
+        self::assertSame(
             'test',
             $this->e('test')->__debugInfo()['R']
         );
 
-        static::assertStringContainsString(
+        self::assertStringContainsString(
             'Expression could not render tag',
             $this->e(' [nosuchtag] ')->__debugInfo()['R']
         );
@@ -398,11 +398,11 @@ class ExpressionTest extends TestCase
         // reset everything
         $e = $this->e('hello, [name] [surname]', ['name' => 'John', 'surname' => 'Doe']);
         $e->reset();
-        static::assertSame(['custom' => []], $this->getProtected($e, 'args'));
+        self::assertSame(['custom' => []], $this->getProtected($e, 'args'));
 
         // reset particular custom/tag
         $e = $this->e('hello, [name] [surname]', ['name' => 'John', 'surname' => 'Doe']);
         $e->reset('surname');
-        static::assertSame(['custom' => ['name' => 'John']], $this->getProtected($e, 'args'));
+        self::assertSame(['custom' => ['name' => 'John']], $this->getProtected($e, 'args'));
     }
 }

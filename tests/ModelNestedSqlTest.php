@@ -109,7 +109,7 @@ class ModelNestedSqlTest extends TestCase
         $m->table->setLimit(5);
         $m->setOrder('birthday');
 
-        static::assertSame(
+        self::assertSame(
             $this->getConnection()->dsql()
                 ->table(
                     $this->getConnection()->dsql()
@@ -129,7 +129,7 @@ class ModelNestedSqlTest extends TestCase
             $m->action('select')->render()[0]
         );
 
-        static::assertSame([
+        self::assertSame([
             ['inner', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['main', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
         ], $this->hookLog);
@@ -144,7 +144,7 @@ class ModelNestedSqlTest extends TestCase
             ['name' => 'Sue', 'birthday' => new \DateTime('2005-4-3 UTC')],
         ], $m->export());
 
-        static::assertSame([
+        self::assertSame([
             ['inner', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['main', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
         ], $this->hookLog);
@@ -160,7 +160,7 @@ class ModelNestedSqlTest extends TestCase
                 'birthday' => new \DateTime('2000-6-1'),
             ])->save();
 
-        static::assertSame([
+        self::assertSame([
             ['main', '>>>'],
             ['main', Model::HOOK_VALIDATE, ['save']],
             ['main', Model::HOOK_BEFORE_SAVE, [false]],
@@ -186,7 +186,7 @@ class ModelNestedSqlTest extends TestCase
             ['main', '<<<'],
         ], $this->hookLog);
 
-        static::assertSame(4, $m->table->loadBy('name', 'Karl')->getId());
+        self::assertSame(4, $m->table->loadBy('name', 'Karl')->getId());
         static::assertSameExportUnordered([[new \DateTime('2000-6-1 UTC')]], [[$entity->getId()]]);
 
         static::assertSameExportUnordered([
@@ -204,7 +204,7 @@ class ModelNestedSqlTest extends TestCase
             ->set('name', 'Sue')->save() // no change
             ->set('name', 'Susan')->save();
 
-        static::assertSame([
+        self::assertSame([
             ['main', Model::HOOK_BEFORE_LOAD, [\DateTime::class]],
             ['inner', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['main', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
@@ -260,7 +260,7 @@ class ModelNestedSqlTest extends TestCase
 
         $m->delete(new \DateTime('2005-4-3'));
 
-        static::assertSame([
+        self::assertSame([
             ['main', Model::HOOK_BEFORE_LOAD, [\DateTime::class]],
             ['inner', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['main', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],

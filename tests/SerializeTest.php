@@ -15,14 +15,14 @@ class SerializeTest extends TestCase
         $m = new Model($this->db, ['table' => 'job']);
         $m->addField('data', ['type' => 'object']);
 
-        static::assertSame(
+        self::assertSame(
             ['data' => 'O:8:"stdClass":1:{s:3:"foo";s:3:"bar";}'],
             $this->db->typecastSaveRow(
                 $m,
                 ['data' => (object) ['foo' => 'bar']]
             )
         );
-        static::assertSame(
+        self::assertSame(
             ['data' => ['foo' => 'bar']],
             $this->db->typecastLoadRow(
                 $m,
@@ -31,14 +31,14 @@ class SerializeTest extends TestCase
         );
 
         $m->getField('data')->type = 'json';
-        static::assertSame(
+        self::assertSame(
             ['data' => '{"foo":"bar"}'],
             $this->db->typecastSaveRow(
                 $m,
                 ['data' => ['foo' => 'bar']]
             )
         );
-        static::assertSame(
+        self::assertSame(
             ['data' => ['foo' => 'bar']],
             $this->db->typecastLoadRow(
                 $m,

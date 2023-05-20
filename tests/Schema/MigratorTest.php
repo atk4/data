@@ -37,7 +37,7 @@ class MigratorTest extends TestCase
     public function testCreate(): void
     {
         $this->createDemoMigrator('user')->create();
-        static::assertTrue($this->createMigrator()->isTableExists('user'));
+        self::assertTrue($this->createMigrator()->isTableExists('user'));
 
         $this->db->dsql()
             ->mode('insert')
@@ -53,7 +53,7 @@ class MigratorTest extends TestCase
     public function testCreateTwiceException(): void
     {
         $this->createDemoMigrator('user')->create();
-        static::assertTrue($this->createMigrator()->isTableExists('user'));
+        self::assertTrue($this->createMigrator()->isTableExists('user'));
 
         $this->expectException(TableExistsException::class);
         $this->createDemoMigrator('user')->create();
@@ -62,9 +62,9 @@ class MigratorTest extends TestCase
     public function testDrop(): void
     {
         $this->createDemoMigrator('user')->create();
-        static::assertTrue($this->createMigrator()->isTableExists('user'));
+        self::assertTrue($this->createMigrator()->isTableExists('user'));
         $this->createMigrator()->table('user')->drop();
-        static::assertFalse($this->createMigrator()->isTableExists('user'));
+        self::assertFalse($this->createMigrator()->isTableExists('user'));
     }
 
     public function testDropException(): void
@@ -78,9 +78,9 @@ class MigratorTest extends TestCase
         $this->createMigrator()->table('user')->dropIfExists();
 
         $this->createDemoMigrator('user')->create();
-        static::assertTrue($this->createMigrator()->isTableExists('user'));
+        self::assertTrue($this->createMigrator()->isTableExists('user'));
         $this->createMigrator()->table('user')->dropIfExists();
-        static::assertFalse($this->createMigrator()->isTableExists('user'));
+        self::assertFalse($this->createMigrator()->isTableExists('user'));
 
         $this->createMigrator()->table('user')->dropIfExists();
     }
@@ -166,7 +166,7 @@ class MigratorTest extends TestCase
             if (!$isBinary) {
                 $str = preg_replace('~[\x00-\x1f]~', '-', $str);
             }
-            static::assertSame($length - 1, $isBinary ? strlen($str) : mb_strlen($str));
+            self::assertSame($length - 1, $isBinary ? strlen($str) : mb_strlen($str));
         }
 
         $model = new Model($this->db, ['table' => 'user']);
@@ -183,13 +183,13 @@ class MigratorTest extends TestCase
 
         $model->addCondition('v', $str);
         $rows = $model->export();
-        static::assertCount(1, $rows);
+        self::assertCount(1, $rows);
         $row = reset($rows);
         unset($rows);
-        static::assertSame(['id', 'v'], array_keys($row));
-        static::assertSame(2, $row['id']);
-        static::assertSame(strlen($str), strlen($row['v']));
-        static::assertTrue($str === $row['v']);
+        self::assertSame(['id', 'v'], array_keys($row));
+        self::assertSame(2, $row['id']);
+        self::assertSame(strlen($str), strlen($row['v']));
+        self::assertTrue($str === $row['v']);
 
         // remove once https://github.com/php/php-src/issues/8928 is fixed
         if (str_starts_with($_ENV['DB_DSN'], 'oci8') && $length > 1000) {
@@ -205,14 +205,14 @@ class MigratorTest extends TestCase
             ->field($model->expr($strRawSql));
         $resRaw = $query->getOne();
         if ($this->getDatabasePlatform() instanceof OraclePlatform && $isBinary) {
-            static::assertNotSame(strlen($str), strlen($resRaw));
+            self::assertNotSame(strlen($str), strlen($resRaw));
         } else {
-            static::assertSame(strlen($str), strlen($resRaw));
-            static::assertTrue($str === $resRaw);
+            self::assertSame(strlen($str), strlen($resRaw));
+            self::assertTrue($str === $resRaw);
         }
         $res = $model->getPersistence()->typecastLoadField($model->getField('v'), $resRaw);
-        static::assertSame(strlen($str), strlen($res));
-        static::assertTrue($str === $res);
+        self::assertSame(strlen($str), strlen($res));
+        self::assertTrue($str === $res);
 
         if (!$isBinary) {
             $str = $this->makePseudoRandomString($isBinary, $length);
@@ -223,7 +223,7 @@ class MigratorTest extends TestCase
                 $str = str_replace("\0", '-', $str);
             }
 
-            static::assertSame($length, mb_strlen($str));
+            self::assertSame($length, mb_strlen($str));
             $strSql = \Closure::bind(function () use ($model, $str) {
                 return $model->expr('')->escapeStringLiteral($str);
             }, null, Expression::class)();
@@ -231,10 +231,10 @@ class MigratorTest extends TestCase
                 ->field($model->expr($strSql));
             $res = $query->getOne();
             if ($this->getDatabasePlatform() instanceof OraclePlatform && $length === 0) {
-                static::assertNull($res);
+                self::assertNull($res);
             } else {
-                static::assertSame(strlen($str), strlen($res));
-                static::assertTrue($str === $res);
+                self::assertSame(strlen($str), strlen($res));
+                self::assertTrue($str === $res);
             }
         }
     }
@@ -262,7 +262,7 @@ class MigratorTest extends TestCase
 
         $user->createEntity()
             ->save(['name' => 'john', 'is_admin' => true, 'notes' => 'some long notes']);
-        static::assertSame([
+        self::assertSame([
             ['id' => 1, 'name' => 'john', 'password' => null, 'is_admin' => true, 'notes' => 'some long notes', 'main_role_id' => null],
         ], $user->export());
     }

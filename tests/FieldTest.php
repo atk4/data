@@ -19,8 +19,8 @@ class FieldTest extends TestCase
         $m->addField('withdefault', ['default' => 'abc']);
         $m = $m->createEntity();
 
-        static::assertNull($m->get('nodefault'));
-        static::assertSame('abc', $m->get('withdefault'));
+        self::assertNull($m->get('nodefault'));
+        self::assertSame('abc', $m->get('withdefault'));
     }
 
     public function testDirty1(): void
@@ -29,29 +29,29 @@ class FieldTest extends TestCase
         $m->addField('foo', ['default' => 'abc']);
         $m = $m->createEntity();
 
-        static::assertFalse($m->isDirty('foo'));
+        self::assertFalse($m->isDirty('foo'));
 
         $m->set('foo', 'abc');
-        static::assertFalse($m->isDirty('foo'));
+        self::assertFalse($m->isDirty('foo'));
 
         $m->set('foo', 'bca');
-        static::assertTrue($m->isDirty('foo'));
+        self::assertTrue($m->isDirty('foo'));
 
         $m->set('foo', 'abc');
-        static::assertFalse($m->isDirty('foo'));
+        self::assertFalse($m->isDirty('foo'));
 
         // set initial data
         $m->getDataRef()['foo'] = 'xx';
-        static::assertFalse($m->isDirty('foo'));
+        self::assertFalse($m->isDirty('foo'));
 
         $m->set('foo', 'abc');
-        static::assertTrue($m->isDirty('foo'));
+        self::assertTrue($m->isDirty('foo'));
 
         $m->set('foo', 'bca');
-        static::assertTrue($m->isDirty('foo'));
+        self::assertTrue($m->isDirty('foo'));
 
         $m->set('foo', 'xx');
-        static::assertFalse($m->isDirty('foo'));
+        self::assertFalse($m->isDirty('foo'));
     }
 
     public function testCompare(): void
@@ -60,11 +60,11 @@ class FieldTest extends TestCase
         $m->addField('foo', ['default' => 'abc']);
         $m = $m->createEntity();
 
-        static::assertTrue($m->compare('foo', 'abc'));
+        self::assertTrue($m->compare('foo', 'abc'));
         $m->set('foo', 'zzz');
 
-        static::assertFalse($m->compare('foo', 'abc'));
-        static::assertTrue($m->compare('foo', 'zzz'));
+        self::assertFalse($m->compare('foo', 'abc'));
+        self::assertTrue($m->compare('foo', 'zzz'));
     }
 
     public function testNotNullable1(): void
@@ -160,7 +160,7 @@ class FieldTest extends TestCase
         $m->addField('name', ['nullable' => false, 'default' => 'NoName']);
         $m->addField('surname');
         $m->insert(['surname' => 'qq']);
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
                 ['id' => 2, 'name' => 'NoName', 'surname' => 'qq'],
@@ -173,43 +173,43 @@ class FieldTest extends TestCase
         $m = new Model();
 
         $m->addField('foo');
-        static::assertSame(
+        self::assertSame(
             'Foo',
             $m->getField('foo')->getCaption()
         );
 
         $m->addField('user_defined_entity');
-        static::assertSame(
+        self::assertSame(
             'User Defined Entity',
             $m->getField('user_defined_entity')->getCaption()
         );
 
         $m->addField('foo2', ['caption' => 'My Foo']);
-        static::assertSame(
+        self::assertSame(
             'My Foo',
             $m->getField('foo2')->getCaption()
         );
 
         $m->addField('foo3', ['ui' => ['caption' => 'My Foo']]);
-        static::assertSame(
+        self::assertSame(
             'My Foo',
             $m->getField('foo3')->getCaption()
         );
 
         $m->addField('userDefinedEntity');
-        static::assertSame(
+        self::assertSame(
             'User Defined Entity',
             $m->getField('userDefinedEntity')->getCaption()
         );
 
         $m->addField('newNASA_module');
-        static::assertSame(
+        self::assertSame(
             'New NASA Module',
             $m->getField('newNASA_module')->getCaption()
         );
 
         $m->addField('this\\ _isNASA_MyBigBull shit_123\Foo');
-        static::assertSame(
+        self::assertSame(
             'This Is NASA My Big Bull Shit 123 Foo',
             $m->getField('this\\ _isNASA_MyBigBull shit_123\Foo')->getCaption()
         );
@@ -231,7 +231,7 @@ class FieldTest extends TestCase
         $m->addField('foo', ['readOnly' => true, 'default' => 'abc']);
         $m = $m->createEntity();
         $m->set('foo', 'abc');
-        static::assertSame('abc', $m->get('foo'));
+        self::assertSame('abc', $m->get('foo'));
     }
 
     public function testEnum1(): void
@@ -251,10 +251,10 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
         $m->set('foo', '1');
 
-        static::assertSame('1', $m->get('foo'));
+        self::assertSame('1', $m->get('foo'));
 
         $m->set('foo', 'bar');
-        static::assertSame('bar', $m->get('foo'));
+        self::assertSame('bar', $m->get('foo'));
     }
 
     public function testEnum2b(): void
@@ -264,10 +264,10 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
         $m->set('foo', 1);
 
-        static::assertSame(1, $m->get('foo'));
+        self::assertSame(1, $m->get('foo'));
 
         $m->set('foo', '2');
-        static::assertSame(2, $m->get('foo'));
+        self::assertSame(2, $m->get('foo'));
     }
 
     public function testEnum3(): void
@@ -287,7 +287,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
         $m->setNull('foo');
 
-        static::assertNull($m->get('foo'));
+        self::assertNull($m->get('foo'));
     }
 
     public function testValues1(): void
@@ -307,10 +307,10 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
         $m->set('foo', 3);
 
-        static::assertSame(3, $m->get('foo'));
+        self::assertSame(3, $m->get('foo'));
 
         $m->set('foo', null);
-        static::assertNull($m->get('foo'));
+        self::assertNull($m->get('foo'));
     }
 
     public function testValues3(): void
@@ -332,7 +332,7 @@ class FieldTest extends TestCase
         $m->addField('foo', ['values' => ['1a' => 'bar']]);
         $m = $m->createEntity();
         $m->set('foo', '1a');
-        static::assertSame('1a', $m->get('foo'));
+        self::assertSame('1a', $m->get('foo'));
     }
 
     public function testNeverPersist(): void
@@ -348,21 +348,21 @@ class FieldTest extends TestCase
         $m->addField('surname', ['neverSave' => true]);
         $m = $m->load(1);
 
-        static::assertNull($m->get('name'));
-        static::assertSame('Smith', $m->get('surname'));
+        self::assertNull($m->get('name'));
+        self::assertSame('Smith', $m->get('surname'));
 
         $m->set('name', 'Bill');
         $m->set('surname', 'Stalker');
         $m->save();
-        static::assertSame($dbData, $this->getDb());
+        self::assertSame($dbData, $this->getDb());
 
         $m->reload();
-        static::assertSame('Smith', $m->get('surname'));
+        self::assertSame('Smith', $m->get('surname'));
         $m->getField('surname')->neverSave = false;
         $m->set('surname', 'Stalker');
         $m->save();
         $dbData['item'][1]['surname'] = 'Stalker';
-        static::assertSame($dbData, $this->getDb());
+        self::assertSame($dbData, $this->getDb());
 
         $m->onHook(Model::HOOK_BEFORE_SAVE, static function (Model $m) {
             if ($m->isDirty('name')) {
@@ -379,16 +379,16 @@ class FieldTest extends TestCase
 
         $dbData['item'][1]['surname'] = 'X';
 
-        static::assertSame($dbData, $this->getDb());
-        static::assertNull($m->get('name'));
-        static::assertSame('X', $m->get('surname'));
+        self::assertSame($dbData, $this->getDb());
+        self::assertNull($m->get('name'));
+        self::assertSame('X', $m->get('surname'));
 
         $m->set('surname', 'Y');
         $m->save();
 
-        static::assertSame($dbData, $this->getDb());
-        static::assertSame('Y', $m->get('name'));
-        static::assertSame('X', $m->get('surname'));
+        self::assertSame($dbData, $this->getDb());
+        self::assertSame('Y', $m->get('name'));
+        self::assertSame('X', $m->get('surname'));
     }
 
     public function testTitle(): void
@@ -414,12 +414,12 @@ class FieldTest extends TestCase
 
         $m = $m->load(1);
 
-        static::assertSame('John', $m->get('name'));
-        static::assertSame('Programmer', $m->get('category'));
+        self::assertSame('John', $m->get('name'));
+        self::assertSame('Programmer', $m->get('category'));
 
         $m->getModel()->insert(['name' => 'Peter', 'category' => 'Sales']);
 
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'category_id' => 2],
                 ['id' => 2, 'name' => 'Peter', 'surname' => null, 'category_id' => 3],
@@ -456,14 +456,14 @@ class FieldTest extends TestCase
         $m->insert(['first_name' => 'Peter', 'surname' => 'qq']);
 
         $mm = $m->loadBy('first_name', 'John');
-        static::assertSame('John', $mm->get('first_name'));
+        self::assertSame('John', $mm->get('first_name'));
 
         static::assertSameExportUnordered([
             ['id' => 1, 'first_name' => 'John', 'surname' => 'Smith'],
             ['id' => 2, 'first_name' => 'Peter', 'surname' => 'qq'],
         ], $m->export());
 
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
                 ['id' => 2, 'name' => 'Peter', 'surname' => 'qq'],
@@ -473,7 +473,7 @@ class FieldTest extends TestCase
         $mm->set('first_name', 'Scott');
         $mm->save();
 
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'Scott', 'surname' => 'Smith'],
                 ['id' => 2, 'name' => 'Peter', 'surname' => 'qq'],
@@ -498,12 +498,12 @@ class FieldTest extends TestCase
         $m->insert(['net' => 30, 'vat' => 8]);
 
         $mm = $m->load(1);
-        static::assertSame(121.0, $mm->get('total'));
+        self::assertSame(121.0, $mm->get('total'));
         $mm = $m->load(2);
-        static::assertSame(38.0, $mm->get('total'));
+        self::assertSame(38.0, $mm->get('total'));
 
         $d = $m->export(); // in export calculated fields are not included
-        static::assertFalse(array_key_exists('total', $d[0]));
+        self::assertFalse(array_key_exists('total', $d[0]));
     }
 
     public function testSystem1(): void
@@ -511,8 +511,8 @@ class FieldTest extends TestCase
         $m = new Model();
         $m->addField('foo', ['system' => true]);
         $m->addField('bar');
-        static::assertFalse($m->getField('foo')->isEditable());
-        static::assertFalse($m->getField('foo')->isVisible());
+        self::assertFalse($m->getField('foo')->isEditable());
+        self::assertFalse($m->getField('foo')->isVisible());
 
         $m->setOnlyFields(['bar']);
         // TODO: build a query and see if the field is there
@@ -521,8 +521,8 @@ class FieldTest extends TestCase
     public function testNormalize(): void
     {
         // normalize must work even without model
-        static::assertSame('test', (new Field(['type' => 'string']))->normalize('test'));
-        static::assertSame('test', (new Field(['type' => 'string']))->normalize('test '));
+        self::assertSame('test', (new Field(['type' => 'string']))->normalize('test'));
+        self::assertSame('test', (new Field(['type' => 'string']))->normalize('test '));
 
         $m = new Model();
 
@@ -541,39 +541,39 @@ class FieldTest extends TestCase
 
         // string
         $m->set('string', "Two\r\nLines  ");
-        static::assertSame('Two Lines', $m->get('string'));
+        self::assertSame('Two Lines', $m->get('string'));
 
         $m->set('string', "Two\rLines  ");
-        static::assertSame('Two Lines', $m->get('string'));
+        self::assertSame('Two Lines', $m->get('string'));
 
         $m->set('string', "Two\nLines  ");
-        static::assertSame('Two Lines', $m->get('string'));
+        self::assertSame('Two Lines', $m->get('string'));
 
         // text
         $m->set('text', "Two\r\nLines  ");
-        static::assertSame("Two\nLines", $m->get('text'));
+        self::assertSame("Two\nLines", $m->get('text'));
 
         $m->set('text', "Two\rLines  ");
-        static::assertSame("Two\nLines", $m->get('text'));
+        self::assertSame("Two\nLines", $m->get('text'));
 
         $m->set('text', "Two\nLines  ");
-        static::assertSame("Two\nLines", $m->get('text'));
+        self::assertSame("Two\nLines", $m->get('text'));
 
         // integer, money, float
         $m->set('integer', '12,345.67676767');
-        static::assertSame(12345, $m->get('integer'));
+        self::assertSame(12345, $m->get('integer'));
 
         $m->set('money', '12,345.67676767');
-        static::assertSame(12345.6768, $m->get('money'));
+        self::assertSame(12345.6768, $m->get('money'));
 
         $m->set('float', '12,345.67676767');
-        static::assertSame(12345.67676767, $m->get('float'));
+        self::assertSame(12345.67676767, $m->get('float'));
 
         // boolean
         $m->set('boolean', 0);
-        static::assertFalse($m->get('boolean'));
+        self::assertFalse($m->get('boolean'));
         $m->set('boolean', 1);
-        static::assertTrue($m->get('boolean'));
+        self::assertTrue($m->get('boolean'));
     }
 
     public function testNormalizeException1(): void
@@ -735,20 +735,20 @@ class FieldTest extends TestCase
         $model->addField('not_editable', ['ui' => ['editable' => false]]);
         $model = $model->createEntity();
 
-        static::assertSame(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));
-        static::assertSame(['system', 'editable_system', 'visible_system'], array_keys($model->getFields('system')));
-        static::assertSame(['editable', 'visible', 'not_editable'], array_keys($model->getFields('not system')));
-        static::assertSame(['editable', 'editable_system', 'visible'], array_keys($model->getFields('editable')));
-        static::assertSame(['editable', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields('visible')));
-        static::assertSame(['editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields(['editable', 'visible'])));
+        self::assertSame(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));
+        self::assertSame(['system', 'editable_system', 'visible_system'], array_keys($model->getFields('system')));
+        self::assertSame(['editable', 'visible', 'not_editable'], array_keys($model->getFields('not system')));
+        self::assertSame(['editable', 'editable_system', 'visible'], array_keys($model->getFields('editable')));
+        self::assertSame(['editable', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields('visible')));
+        self::assertSame(['editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields(['editable', 'visible'])));
 
         $model->getModel()->setOnlyFields(['system', 'visible', 'not_editable']);
 
         // getFields() is unaffected by onlyFields, will always return all fields
-        static::assertSame(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));
+        self::assertSame(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));
 
         // only return subset of onlyFields
-        static::assertSame(['visible', 'not_editable'], array_keys($model->getFields('visible')));
+        self::assertSame(['visible', 'not_editable'], array_keys($model->getFields('visible')));
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('not supported');
@@ -767,23 +767,23 @@ class FieldTest extends TestCase
         $m->set('a', 'x');
         $m->set('b', 'y');
         $m->set('c', 'z');
-        static::assertSame('x', $m->get('a'));
-        static::assertSame('y', $m->get('b'));
-        static::assertSame('z', $m->get('c'));
+        self::assertSame('x', $m->get('a'));
+        self::assertSame('y', $m->get('b'));
+        self::assertSame('z', $m->get('c'));
         $m->set('a', '');
         $m->set('b', '');
-        static::assertSame('', $m->get('a'));
-        static::assertSame('', $m->get('b'));
+        self::assertSame('', $m->get('a'));
+        self::assertSame('', $m->get('b'));
         $m->set('a', null);
-        static::assertNull($m->get('a'));
+        self::assertNull($m->get('a'));
 
         // null must pass
         $m->setNull('a');
         $m->setNull('b');
         $m->getField('c')->setNull($m);
-        static::assertNull($m->get('a'));
-        static::assertNull($m->get('b'));
-        static::assertNull($m->get('c'));
+        self::assertNull($m->get('a'));
+        self::assertNull($m->get('b'));
+        self::assertNull($m->get('c'));
 
         $this->expectException(Exception::class);
         $m->set('c', null);
@@ -799,24 +799,24 @@ class FieldTest extends TestCase
         $entityFooField = new Model\EntityFieldPair($entity, 'foo');
         $entityBarField = new Model\EntityFieldPair($entity, 'bar');
 
-        static::assertSame($m, $entityFooField->getModel());
-        static::assertSame($m, $entityBarField->getModel());
-        static::assertSame($entity, $entityFooField->getEntity());
-        static::assertSame($entity, $entityBarField->getEntity());
-        static::assertSame('foo', $entityFooField->getFieldName());
-        static::assertSame('bar', $entityBarField->getFieldName());
-        static::assertSame($m->getField('foo'), $entityFooField->getField());
-        static::assertSame($m->getField('bar'), $entityBarField->getField());
+        self::assertSame($m, $entityFooField->getModel());
+        self::assertSame($m, $entityBarField->getModel());
+        self::assertSame($entity, $entityFooField->getEntity());
+        self::assertSame($entity, $entityBarField->getEntity());
+        self::assertSame('foo', $entityFooField->getFieldName());
+        self::assertSame('bar', $entityBarField->getFieldName());
+        self::assertSame($m->getField('foo'), $entityFooField->getField());
+        self::assertSame($m->getField('bar'), $entityBarField->getField());
 
-        static::assertNull($entityFooField->get());
-        static::assertNull($entityBarField->get());
+        self::assertNull($entityFooField->get());
+        self::assertNull($entityBarField->get());
 
         $entity->set('foo', 'a');
-        static::assertSame('a', $entityFooField->get());
+        self::assertSame('a', $entityFooField->get());
         $entityBarField->set('b');
-        static::assertSame('b', $entityBarField->get());
+        self::assertSame('b', $entityBarField->get());
         $entityBarField->setNull();
-        static::assertNull($entityBarField->get());
+        self::assertNull($entityBarField->get());
 
         $this->expectException(Exception::class);
         $entityBarField->set(null);
@@ -829,12 +829,12 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $m->set('is_vip', false);
-        static::assertFalse($m->get('is_vip'));
+        self::assertFalse($m->get('is_vip'));
         $m->set('is_vip', true);
-        static::assertTrue($m->get('is_vip'));
+        self::assertTrue($m->get('is_vip'));
         $m->set('is_vip', 0);
-        static::assertFalse($m->get('is_vip'));
+        self::assertFalse($m->get('is_vip'));
         $m->set('is_vip', 1);
-        static::assertTrue($m->get('is_vip'));
+        self::assertTrue($m->get('is_vip'));
     }
 }

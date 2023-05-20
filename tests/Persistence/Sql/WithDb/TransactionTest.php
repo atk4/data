@@ -86,7 +86,7 @@ class TransactionTest extends TestCase
     {
         // truncate table, prepare
         $this->q('employee')->mode('truncate')->executeStatement();
-        static::assertSame(
+        self::assertSame(
             '0',
             $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
         );
@@ -103,7 +103,7 @@ class TransactionTest extends TestCase
             // ignore
         }
 
-        static::assertSame(
+        self::assertSame(
             '1',
             $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
         );
@@ -113,13 +113,13 @@ class TransactionTest extends TestCase
         $this->q('employee')
             ->setMulti(['id' => 3, 'name' => 'John', 'surname' => 'Doe', 'retired' => true])
             ->mode('insert')->executeStatement();
-        static::assertSame(
+        self::assertSame(
             '2',
             $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
         );
 
         $this->getConnection()->rollBack();
-        static::assertSame(
+        self::assertSame(
             '1',
             $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
         );
@@ -138,7 +138,7 @@ class TransactionTest extends TestCase
             // ignore
         }
 
-        static::assertSame(
+        self::assertSame(
             '1',
             $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
         );
@@ -168,7 +168,7 @@ class TransactionTest extends TestCase
             // ignore
         }
 
-        static::assertSame(
+        self::assertSame(
             '1',
             $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
         );
@@ -195,7 +195,7 @@ class TransactionTest extends TestCase
             // ignore
         }
 
-        static::assertSame(
+        self::assertSame(
             '1',
             $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
         );
@@ -222,7 +222,7 @@ class TransactionTest extends TestCase
             // ignore
         }
 
-        static::assertSame(
+        self::assertSame(
             '1',
             $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
         );
@@ -238,7 +238,7 @@ class TransactionTest extends TestCase
             // ignore
         }
 
-        static::assertSame(
+        self::assertSame(
             '2',
             $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
         );
@@ -246,23 +246,23 @@ class TransactionTest extends TestCase
 
     public function testInTransaction(): void
     {
-        static::assertFalse(
+        self::assertFalse(
             $this->getConnection()->inTransaction()
         );
 
         $this->getConnection()->beginTransaction();
-        static::assertTrue(
+        self::assertTrue(
             $this->getConnection()->inTransaction()
         );
 
         $this->getConnection()->rollBack();
-        static::assertFalse(
+        self::assertFalse(
             $this->getConnection()->inTransaction()
         );
 
         $this->getConnection()->beginTransaction();
         $this->getConnection()->commit();
-        static::assertFalse(
+        self::assertFalse(
             $this->getConnection()->inTransaction()
         );
     }

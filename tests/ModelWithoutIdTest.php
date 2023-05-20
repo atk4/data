@@ -37,18 +37,18 @@ class ModelWithoutIdTest extends TestCase
     {
         $this->m->setOrder('name', 'asc');
         $m = $this->m->loadAny();
-        static::assertSame('John', $m->get('name'));
+        self::assertSame('John', $m->get('name'));
 
         $this->m->order = [];
         $this->m->setOrder('name', 'desc');
         $m = $this->m->loadAny();
-        static::assertSame('Sue', $m->get('name'));
+        self::assertSame('Sue', $m->get('name'));
 
         $names = [];
         foreach ($this->m as $row) {
             $names[] = $row->get('name');
         }
-        static::assertSame(['Sue', 'John'], $names);
+        self::assertSame(['Sue', 'John'], $names);
     }
 
     public function testGetIdException(): void
@@ -81,11 +81,11 @@ class ModelWithoutIdTest extends TestCase
     public function testInsert(): void
     {
         if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            static::markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
+            self::markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
         }
 
         $this->m->insert(['name' => 'Joe']);
-        static::assertSame(3, $this->m->executeCountQuery());
+        self::assertSame(3, $this->m->executeCountQuery());
     }
 
     /**
@@ -94,13 +94,13 @@ class ModelWithoutIdTest extends TestCase
     public function testSave1(): void
     {
         if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            static::markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
+            self::markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
         }
 
         $m = $this->m->loadAny();
         $m->saveAndUnload();
 
-        static::assertSame(3, $this->m->executeCountQuery());
+        self::assertSame(3, $this->m->executeCountQuery());
     }
 
     /**
@@ -109,26 +109,26 @@ class ModelWithoutIdTest extends TestCase
     public function testSave2(): void
     {
         if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            static::markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
+            self::markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
         }
 
         $m = $this->m->loadAny();
         $m->save();
 
-        static::assertSame(3, $this->m->executeCountQuery());
+        self::assertSame(3, $this->m->executeCountQuery());
     }
 
     public function testLoadBy(): void
     {
         $m = $this->m->loadBy('name', 'Sue');
-        static::assertSame('Sue', $m->get('name'));
+        self::assertSame('Sue', $m->get('name'));
     }
 
     public function testLoadCondition(): void
     {
         $this->m->addCondition('name', 'Sue');
         $m = $this->m->loadAny();
-        static::assertSame('Sue', $m->get('name'));
+        self::assertSame('Sue', $m->get('name'));
     }
 
     public function testFailDelete1(): void
