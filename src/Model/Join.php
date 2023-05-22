@@ -369,6 +369,7 @@ abstract class Join
         return $this->getOwner()->hasMany($link, $defaults);
     }
 
+    /*
     /**
      * Wrapper for ContainsOne that will associate field with join.
      *
@@ -377,15 +378,13 @@ abstract class Join
      * @param array<string, mixed> $defaults
      *
      * @return Reference\ContainsOne
-     */
-    /*
+     *X/
     public function containsOne(string $link, array $defaults = []) // : Reference
     {
         $defaults['joinName'] = $this->getJoinNameFromShortName();
 
         return $this->getOwner()->containsOne($link, $defaults);
     }
-    */
 
     /**
      * Wrapper for ContainsMany that will associate field with join.
@@ -395,8 +394,7 @@ abstract class Join
      * @param array<string, mixed> $defaults
      *
      * @return Reference\ContainsMany
-     */
-    /*
+     *X/
     public function containsMany(string $link, array $defaults = []) // : Reference
     {
         return $this->getOwner()->containsMany($link, $defaults);
