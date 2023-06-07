@@ -1140,9 +1140,6 @@ class Model implements \IteratorAggregate
         }
     }
 
-    /**
-     * Is entity loaded?
-     */
     public function isLoaded(): bool
     {
         return $this->getModel()->idField && $this->getId() !== null && $this->_entityId !== null;
@@ -1156,8 +1153,6 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Unload model.
-     *
      * @return $this
      */
     public function unload()
@@ -1269,7 +1264,7 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Load model.
+     * Load one record by an ID.
      *
      * @param mixed $id
      *
