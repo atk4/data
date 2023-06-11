@@ -48,7 +48,6 @@ If you wish to preserve the objects that you have loaded (not recommended as the
 will consume memory), you can do it like this::
 
     $cat = [];
-
     foreach (new Model_Category($db) as $id => $c) {
         $cat[$id] = clone $c;
     }

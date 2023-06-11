@@ -129,7 +129,6 @@ class Action
             return $this->evaluateIf($row[$field->shortName] ?? null, $operator, $value);
         } elseif ($condition instanceof Model\Scope) { // nested conditions
             $matches = [];
-
             foreach ($condition->getNestedConditions() as $nestedCondition) {
                 $matches[] = $subMatch = $this->match($row, $nestedCondition);
 

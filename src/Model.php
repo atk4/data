@@ -1156,8 +1156,6 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Unload model.
-     *
      * @return $this
      */
     public function unload()
@@ -1269,7 +1267,7 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Load model.
+     * Load one record by an ID.
      *
      * @param mixed $id
      *

@@ -670,7 +670,9 @@ abstract class Expression implements Expressionable, \ArrayAccess
         try {
             $valueStr = (string) $value;
 
-            return $valueStr === (string) (int) $value ? $valueStr . '.0' : $valueStr;
+            return is_finite($value) && str_contains($valueStr, '.') === false
+                ? $valueStr . '.0'
+                : $valueStr;
         } finally {
             ini_set('precision', $precisionBackup);
         }
