@@ -1140,6 +1140,9 @@ class Model implements \IteratorAggregate
         }
     }
 
+    /**
+     * Is entity loaded?
+     */
     public function isLoaded(): bool
     {
         return $this->getModel()->idField && $this->getId() !== null && $this->_entityId !== null;
