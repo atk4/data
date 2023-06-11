@@ -84,7 +84,7 @@ class RandomTest extends TestCase
 
         $m = new Model_Rate($this->db);
 
-        static::assertSame(2, $m->executeCountQuery());
+        self::assertSame(2, $m->executeCountQuery());
     }
 
     public function testTitleImport(): void
@@ -103,7 +103,7 @@ class RandomTest extends TestCase
         $m->insert(['name' => 'Sue']);
         $m->insert(['name' => 'John', 'salary' => 40]);
 
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'Peter', 'salary' => '10'],
                 ['id' => 2, 'name' => 'Steve', 'salary' => '30'],
@@ -127,7 +127,7 @@ class RandomTest extends TestCase
         $m->insert(['name' => 'Peter']);
         $m->insert([]);
 
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'login' => 'john@example.com'],
                 ['id' => 2, 'name' => 'Peter', 'login' => 'unknown'],
@@ -156,36 +156,36 @@ class RandomTest extends TestCase
 
         $m->insert([]);
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['id' => 1, 'name' => 'John', 'last_name' => null, 'login' => null, 'salary' => null, 'tax' => null, 'vat' => null],
             ['id' => 2, 'name' => 'anonymous', 'last_name' => null, 'login' => 'unknown', 'salary' => 100.0, 'tax' => 20.0, 'vat' => 15.0],
         ], $m->export());
 
         $m = $m->load(2);
-        static::assertTrue(is_float($m->get('salary')));
-        static::assertTrue(is_float($m->get('tax')));
-        static::assertTrue(is_float($m->get('vat')));
-        static::assertInstanceOf(CustomField::class, $m->getField('salary'));
+        self::assertTrue(is_float($m->get('salary')));
+        self::assertTrue(is_float($m->get('tax')));
+        self::assertTrue(is_float($m->get('vat')));
+        self::assertInstanceOf(CustomField::class, $m->getField('salary'));
     }
 
     public function testSetPersistence(): void
     {
         $m = new Model($this->db, ['table' => 'user']);
-        static::assertTrue($m->hasField('id'));
+        self::assertTrue($m->hasField('id'));
 
         $m = new Model(null, ['table' => 'user']);
-        static::assertFalse($m->hasField('id'));
+        self::assertFalse($m->hasField('id'));
 
         $p = new Persistence\Array_();
         $pAddCalled = false;
         $p->onHookShort(Persistence::HOOK_AFTER_ADD, function (Model $mFromHook) use ($m, &$pAddCalled) {
-            static::assertSame($m, $mFromHook);
+            self::assertSame($m, $mFromHook);
             $pAddCalled = true;
         });
 
         $m->setPersistence($p);
-        static::assertTrue($m->hasField('id'));
-        static::assertTrue($pAddCalled);
+        self::assertTrue($m->hasField('id'));
+        self::assertTrue($pAddCalled);
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Persistence is already set');
@@ -213,7 +213,7 @@ class RandomTest extends TestCase
 
         $m = new Model_Item($this->db, ['table' => 'item']);
 
-        static::assertSame(
+        self::assertSame(
             ['id' => 3, 'name' => 'Smith', 'parent_item_id' => 2, 'parent_item' => 'Sue'],
             $m->load(3)->get()
         );
@@ -236,7 +236,7 @@ class RandomTest extends TestCase
 
         $m = new Model_Item2($this->db, ['table' => 'item']);
 
-        static::assertSame(
+        self::assertSame(
             ['id' => 3, 'name' => 'Smith', 'parent_item_id' => 2, 'parent_item' => 'Sue'],
             $m->load(3)->get()
         );
@@ -259,13 +259,13 @@ class RandomTest extends TestCase
 
         $m = new Model_Item3($this->db, ['table' => 'item']);
 
-        static::assertSame(
+        self::assertSame(
             ['id' => 2, 'name' => 'Sue', 'age' => 20, 'parent_item_id' => 1, 'parent_item' => 'John', 'child_age' => 24],
             $m->load(2)->get()
         );
 
-        static::assertSame(1, $m->load(2)->ref('Child', ['tableAlias' => 'pp'])->executeCountQuery());
-        static::assertSame('John', $m->load(2)->ref('parent_item_id', ['tableAlias' => 'pp'])->get('name'));
+        self::assertSame(1, $m->load(2)->ref('Child', ['tableAlias' => 'pp'])->executeCountQuery());
+        self::assertSame('John', $m->load(2)->ref('parent_item_id', ['tableAlias' => 'pp'])->get('name'));
     }
 
     public function testDirty2(): void
@@ -279,8 +279,8 @@ class RandomTest extends TestCase
         }]);
 
         $m = $m->load(2);
-        static::assertSame('world', $m->get('name'));
-        static::assertSame('WORLD', $m->get('caps'));
+        self::assertSame('world', $m->get('name'));
+        self::assertSame('WORLD', $m->get('caps'));
     }
 
     public function testHookBreakers(): void
@@ -318,7 +318,7 @@ class RandomTest extends TestCase
         $m->save();
 
         $m = $m->getModel()->load(3);
-        static::assertSame('rec #3', $m->get('name'));
+        self::assertSame('rec #3', $m->get('name'));
 
         $m->delete();
     }
@@ -336,14 +336,14 @@ class RandomTest extends TestCase
     {
         // caption is not set, so generate it from class name Model
         $m = new Model($this->db, ['table' => 'user']);
-        static::assertSame('Atk 4 Data Model', $m->getModelCaption());
+        self::assertSame('Atk 4 Data Model', $m->getModelCaption());
 
         $m = new class($this->db, ['table' => 'user']) extends Model {};
-        static::assertSame('Atk 4 Data Model Anonymous', $m->getModelCaption());
+        self::assertSame('Atk 4 Data Model Anonymous', $m->getModelCaption());
 
         // caption is set
         $m->caption = 'test';
-        static::assertSame('test', $m->getModelCaption());
+        self::assertSame('test', $m->getModelCaption());
     }
 
     public function testGetTitle(): void
@@ -357,33 +357,33 @@ class RandomTest extends TestCase
 
         $m = new Model_Item($this->db, ['table' => 'item']);
 
-        static::assertSame([1 => 'John', 'Sue'], $m->setOrder('id')->getTitles()); // all titles
+        self::assertSame([1 => 'John', 'Sue'], $m->setOrder('id')->getTitles()); // all titles
 
         $mm = $m->createEntity();
 
         // default titleField = name
-        static::assertNull($mm->getTitle()); // not loaded model returns null
+        self::assertNull($mm->getTitle()); // not loaded model returns null
 
         $mm = $m->load(2);
-        static::assertSame('Sue', $mm->getTitle()); // loaded returns titleField value
+        self::assertSame('Sue', $mm->getTitle()); // loaded returns titleField value
 
         // set custom titleField
         $m->titleField = 'parent_item_id';
-        static::assertSame(1, $mm->getTitle()); // returns parent_item_id value
+        self::assertSame(1, $mm->getTitle()); // returns parent_item_id value
 
         // set custom titleField as titleField from linked model
         $m->titleField = 'parent_item';
-        static::assertSame('John', $mm->getTitle()); // returns parent record titleField
+        self::assertSame('John', $mm->getTitle()); // returns parent record titleField
 
         // no titleField set - return id value
         $m->titleField = null;
-        static::assertSame(2, $mm->getTitle()); // loaded returns id value
+        self::assertSame(2, $mm->getTitle()); // loaded returns id value
 
         // expression as title field
         $m->addExpression('my_name', ['expr' => '[id]']);
         $m->titleField = 'my_name';
         $mm = $m->load(2);
-        static::assertSame('2', $mm->getTitle()); // loaded returns id value
+        self::assertSame('2', $mm->getTitle()); // loaded returns id value
 
         $this->expectException(\TypeError::class);
         $this->expectExceptionMessage('Expected model, but instance is an entity');
@@ -410,56 +410,56 @@ class RandomTest extends TestCase
         $m2->addField('name');
 
         // normal export
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['code' => 10, 'name' => 'John'],
             ['code' => 20, 'name' => 'Sarah'],
         ], $m1->export());
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['id' => 2, 'code' => 10, 'name' => 'John'],
             ['id' => 5, 'code' => 20, 'name' => 'Sarah'],
         ], $m2->export());
 
         // export fields explicitly set
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['name' => 'John'],
             ['name' => 'Sarah'],
         ], $m1->export(['name']));
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['name' => 'John'],
             ['name' => 'Sarah'],
         ], $m2->export(['name']));
 
         // key field explicitly set
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             10 => ['code' => 10, 'name' => 'John'],
             20 => ['code' => 20, 'name' => 'Sarah'],
         ], $m1->export(null, 'code'));
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             10 => ['id' => 2, 'code' => 10, 'name' => 'John'],
             20 => ['id' => 5, 'code' => 20, 'name' => 'Sarah'],
         ], $m2->export(null, 'code'));
 
         // field names and key field explicitly set
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             10 => ['name' => 'John'],
             20 => ['name' => 'Sarah'],
         ], $m1->export(['name'], 'code'));
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             10 => ['name' => 'John'],
             20 => ['name' => 'Sarah'],
         ], $m2->export(['name'], 'code'));
 
         // field names include key field
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             10 => ['code' => 10, 'name' => 'John'],
             20 => ['code' => 20, 'name' => 'Sarah'],
         ], $m1->export(['code', 'name'], 'code'));
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             10 => ['code' => 10, 'name' => 'John'],
             20 => ['code' => 20, 'name' => 'Sarah'],
         ], $m2->export(['code', 'name'], 'code'));
@@ -478,7 +478,7 @@ class RandomTest extends TestCase
 
         $m->load(1)->duplicate()->save();
 
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['id' => 1, 'dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4],
             ['id' => 2, 'dat' => '12/12/12', 'bid' => 8.3, 'ask' => 9.2],
             ['id' => 3, 'dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4],
@@ -533,8 +533,8 @@ class RandomTest extends TestCase
         // render twice, render must be stable
         $selectAction = $doc->action('select');
         $render = $selectAction->render();
-        static::assertSame($render, $selectAction->render());
-        static::assertSame($render, $doc->action('select')->render());
+        self::assertSame($render, $selectAction->render());
+        self::assertSame($render, $doc->action('select')->render());
 
         $userTableQuoted = '`' . str_replace('.', '`.`', $userSchema) . '`.`user`';
         $docTableQuoted = '`' . str_replace('.', '`.`', $docSchema) . '`.`doc`';
@@ -557,7 +557,7 @@ class RandomTest extends TestCase
                 ->set('user_id', 1)
                 ->save();
 
-            static::assertSame([
+            self::assertSame([
                 [
                     'id' => 1,
                     'name' => 'Invoice 7',

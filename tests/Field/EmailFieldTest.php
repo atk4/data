@@ -17,19 +17,19 @@ class EmailFieldTest extends TestCase
         $m->addField('email', [EmailField::class]);
         $entity = $m->createEntity();
 
-        static::assertNull($entity->get('email'));
+        self::assertNull($entity->get('email'));
 
         // normal value
         $entity->set('email', 'foo@example.com');
-        static::assertSame('foo@example.com', $entity->get('email'));
+        self::assertSame('foo@example.com', $entity->get('email'));
 
         // null value
         $entity->set('email', null);
-        static::assertNull($entity->get('email'));
+        self::assertNull($entity->get('email'));
 
         // padding, spacing etc removed
         $entity->set('email', " \t " . 'foo@example.com ' . " \n ");
-        static::assertSame('foo@example.com', $entity->get('email'));
+        self::assertSame('foo@example.com', $entity->get('email'));
 
         // no domain - go to hell :)
         $this->expectException(ValidationException::class);
@@ -44,14 +44,17 @@ class EmailFieldTest extends TestCase
         $entity = $m->createEntity();
 
         $entity->set('email', ' foo@gmail.com');
-        static::assertSame('foo@gmail.com', $entity->get('email'));
+        self::assertSame('foo@gmail.com', $entity->get('email'));
+
+        $entity->set('email', ' foo@mail.co.uk');
+        self::assertSame('foo@mail.co.uk', $entity->get('email'));
 
         $entity->set('email', 'test@háčkyčárky.cz'); // official IDN test domain
-        static::assertSame('test@háčkyčárky.cz', $entity->get('email'));
+        self::assertSame('test@háčkyčárky.cz', $entity->get('email'));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('domain does not exist');
-        $entity->set('email', 'foo@lrcanoetuhasnotdusantotehusontehuasntddaontehudnouhtd.com');
+        $entity->set('email', 'test@háčkyčárky2.cz');
     }
 
     public function testEmailWithName(): void
@@ -62,7 +65,7 @@ class EmailFieldTest extends TestCase
         $entity = $m->createEntity();
 
         $entity->set('email_name', 'Žlutý Kůň <me3@❤.com>');
-        static::assertSame('Žlutý Kůň <me3@❤.com>', $entity->get('email_name'));
+        self::assertSame('Žlutý Kůň <me3@❤.com>', $entity->get('email_name'));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('format is invalid');

@@ -134,7 +134,10 @@ class Reference
     }
 
     /**
-     * @param array<int, mixed> $args
+     * @template T of Model
+     *
+     * @param \Closure(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
+     * @param array<int, mixed>                                                                        $args
      */
     protected function onHookToOurModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
@@ -152,7 +155,8 @@ class Reference
     }
 
     /**
-     * @param array<int, mixed> $args
+     * @param \Closure(Model, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
+     * @param array<int, mixed>                                                                            $args
      */
     protected function onHookToTheirModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {

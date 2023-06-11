@@ -39,12 +39,12 @@ class LocalObjectTest extends TestCase
     {
         parent::setUp();
 
-        static::assertCount(0, $this->getLocalObjectHandles());
+        self::assertCount(0, $this->getLocalObjectHandles());
     }
 
     protected function tearDown(): void
     {
-        static::assertCount(0, $this->getLocalObjectHandles());
+        self::assertCount(0, $this->getLocalObjectHandles());
 
         parent::tearDown();
     }
@@ -61,34 +61,34 @@ class LocalObjectTest extends TestCase
         $v1 = $t1->convertToDatabaseValue($obj1, $platform);
         $v2 = $t1->convertToDatabaseValue($obj2, $platform);
         $v3 = $t2->convertToDatabaseValue($obj1, $platform);
-        static::assertMatchesRegularExpression('~^stdClass-\w+-\w+$~', $v1);
-        static::assertNotSame($v1, $v2);
-        static::assertNotSame($v1, $v3);
+        self::assertMatchesRegularExpression('~^stdClass-\w+-\w+$~', $v1);
+        self::assertNotSame($v1, $v2);
+        self::assertNotSame($v1, $v3);
 
-        static::assertSame($obj1, $t1->convertToPHPValue($v1, $platform));
-        static::assertSame($obj2, $t1->convertToPHPValue($v2, $platform));
-        static::assertSame($obj1, $t2->convertToPHPValue($v3, $platform));
+        self::assertSame($obj1, $t1->convertToPHPValue($v1, $platform));
+        self::assertSame($obj2, $t1->convertToPHPValue($v2, $platform));
+        self::assertSame($obj1, $t2->convertToPHPValue($v3, $platform));
 
-        static::assertSame($v1, $t1->convertToDatabaseValue($obj1, $platform));
-        static::assertSame($obj1, $t1->convertToPHPValue($v1, $platform));
+        self::assertSame($v1, $t1->convertToDatabaseValue($obj1, $platform));
+        self::assertSame($obj1, $t1->convertToPHPValue($v1, $platform));
 
-        static::assertCount(2, $this->getLocalObjectHandles($t1));
-        static::assertCount(1, $this->getLocalObjectHandles($t2));
+        self::assertCount(2, $this->getLocalObjectHandles($t1));
+        self::assertCount(1, $this->getLocalObjectHandles($t2));
         $obj1WeakRef = \WeakReference::create($obj1);
-        static::assertSame($obj1, $obj1WeakRef->get());
+        self::assertSame($obj1, $obj1WeakRef->get());
         unset($obj1);
-        static::assertCount(1, $this->getLocalObjectHandles($t1));
-        static::assertCount(0, $this->getLocalObjectHandles($t2));
-        static::assertNull($obj1WeakRef->get());
+        self::assertCount(1, $this->getLocalObjectHandles($t1));
+        self::assertCount(0, $this->getLocalObjectHandles($t2));
+        self::assertNull($obj1WeakRef->get());
         unset($obj2);
-        static::assertCount(0, $this->getLocalObjectHandles($t1));
+        self::assertCount(0, $this->getLocalObjectHandles($t1));
 
         $obj3 = new \stdClass();
         $v4 = $t1->convertToDatabaseValue($obj3, $platform);
-        static::assertNotNull($v4);
-        static::assertNotSame($v4, $v1);
-        static::assertNotSame($v4, $v2);
-        static::assertNotSame($v4, $v3);
+        self::assertNotNull($v4);
+        self::assertNotSame($v4, $v1);
+        self::assertNotSame($v4, $v2);
+        self::assertNotSame($v4, $v3);
     }
 
     public function testTypeCloneException(): void
@@ -144,26 +144,26 @@ class LocalObjectTest extends TestCase
         $objWeakRef = \WeakReference::create($obj);
         $entity->set('v', $obj);
         unset($obj);
-        static::assertNotNull($objWeakRef->get());
-        static::assertSame($objWeakRef->get(), $entity->get('v'));
+        self::assertNotNull($objWeakRef->get());
+        self::assertSame($objWeakRef->get(), $entity->get('v'));
 
         $entity->save();
-        static::assertNotNull($objWeakRef->get());
-        static::assertSame($objWeakRef->get(), $entity->get('v'));
+        self::assertNotNull($objWeakRef->get());
+        self::assertSame($objWeakRef->get(), $entity->get('v'));
 
         $entity->reload();
-        static::assertNotNull($objWeakRef->get());
-        static::assertSame($objWeakRef->get(), $entity->get('v'));
+        self::assertNotNull($objWeakRef->get());
+        self::assertSame($objWeakRef->get(), $entity->get('v'));
 
         $entity2 = $model->load($entity->getId());
         $entity->unload();
-        static::assertNotNull($objWeakRef->get());
-        static::assertNull($entity->get('v'));
-        static::assertSame($objWeakRef->get(), $entity2->get('v'));
+        self::assertNotNull($objWeakRef->get());
+        self::assertNull($entity->get('v'));
+        self::assertSame($objWeakRef->get(), $entity2->get('v'));
 
         $entity2->unload();
-        static::assertNull($objWeakRef->get());
-        static::assertNull($entity2->get('v'));
+        self::assertNull($objWeakRef->get());
+        self::assertNull($entity2->get('v'));
     }
 
     public function testDatabaseValueLengthIsLimited(): void
@@ -177,14 +177,14 @@ class LocalObjectTest extends TestCase
         $v1 = $t->convertToDatabaseValue($obj1, $platform);
         $v2 = $t->convertToDatabaseValue($obj2, $platform);
 
-        static::assertSame($obj1, $t->convertToPHPValue($v1, $platform));
-        static::assertSame($obj2, $t->convertToPHPValue($v2, $platform));
+        self::assertSame($obj1, $t->convertToPHPValue($v1, $platform));
+        self::assertSame($obj2, $t->convertToPHPValue($v2, $platform));
 
-        static::assertLessThan(250, strlen($v1));
-        static::assertLessThan(250, strlen($v2));
+        self::assertLessThan(250, strlen($v1));
+        self::assertLessThan(250, strlen($v2));
 
-        static::assertSame('Atk4\Data\Tests\LocalObjectDummyClassWithLongNameAWithLongNameBWithLongNameCWith...eFWithLongNameGWithLongNameHWithLongNameIWithLongNameJWithLongNameKWithLongNameL', explode('-', $v1)[0]);
-        static::assertSame('Atk4\Data\Tests\LocalObjectDummyClassWithLongNameAWithLongNameBWithLongNameCWith...NameGWithLongNameHWithLongNameIWithLongNameJWithLongNameKWithLongNameL@anonymous', explode('-', $v2)[0]);
+        self::assertSame('Atk4\Data\Tests\LocalObjectDummyClassWithLongNameAWithLongNameBWithLongNameCWith...eFWithLongNameGWithLongNameHWithLongNameIWithLongNameJWithLongNameKWithLongNameL', explode('-', $v1)[0]);
+        self::assertSame('Atk4\Data\Tests\LocalObjectDummyClassWithLongNameAWithLongNameBWithLongNameCWith...NameGWithLongNameHWithLongNameIWithLongNameJWithLongNameKWithLongNameL@anonymous', explode('-', $v2)[0]);
     }
 }
 

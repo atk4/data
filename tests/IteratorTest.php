@@ -121,7 +121,7 @@ class IteratorTest extends TestCase
             $data[] = $row->get();
         }
 
-        static::assertSame([
+        self::assertSame([
             ['total_net' => 10],
             ['total_net' => 15],
             ['total_net' => 20],
@@ -168,7 +168,7 @@ class IteratorTest extends TestCase
             $data[] = $row;
         }
 
-        static::assertSame([
+        self::assertSame([
             ['total_net' => '10', 'id' => '1'],
 
             ['total_net' => '10', 'id' => '1'],
@@ -202,9 +202,9 @@ class IteratorTest extends TestCase
             $data[$id] = $item;
         }
 
-        static::assertSame(10, $data[1]->get('total_net'));
-        static::assertSame(20, $data[2]->get('total_net'));
-        static::assertSame(15, $data[3]->get('total_net'));
-        static::assertNull($i->createEntity()->get('total_net'));
+        self::assertSame(10, $data[1]->get('total_net'));
+        self::assertSame(20, $data[2]->get('total_net'));
+        self::assertSame(15, $data[3]->get('total_net'));
+        self::assertNull($i->createEntity()->get('total_net'));
     }
 }

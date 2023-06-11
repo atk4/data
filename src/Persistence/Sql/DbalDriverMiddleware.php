@@ -84,6 +84,10 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
     {
         return new class($wrappedExceptionConverter, $convertFx) implements ExceptionConverter {
             private ExceptionConverter $wrappedExceptionConverter;
+
+            /**
+             * @param \Closure(DbalDriverConvertedException, ?DbalQuery): DbalDriverConvertedException $convertFx
+             */
             private \Closure $convertFx;
 
             /**

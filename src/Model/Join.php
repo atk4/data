@@ -156,7 +156,10 @@ abstract class Join
     }
 
     /**
-     * @param array<int, mixed> $args
+     * @template T of Model
+     *
+     * @param \Closure(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
+     * @param array<int, mixed>                                                                        $args
      */
     protected function onHookToOwnerBoth(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
@@ -178,7 +181,10 @@ abstract class Join
     }
 
     /**
-     * @param array<int, mixed> $args
+     * @template T of Model
+     *
+     * @param \Closure(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
+     * @param array<int, mixed>                                                                        $args
      */
     protected function onHookToOwnerEntity(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
@@ -371,6 +377,7 @@ abstract class Join
         return $this->getOwner()->hasMany($link, $defaults);
     }
 
+    /*
     /**
      * Wrapper for ContainsOne that will associate field with join.
      *
@@ -379,15 +386,13 @@ abstract class Join
      * @param array<string, mixed> $defaults
      *
      * @return Reference\ContainsOne
-     */
-    /*
+     *X/
     public function containsOne(string $link, array $defaults = []) // : Reference
     {
         $defaults['joinName'] = $this->getJoinNameFromShortName();
 
         return $this->getOwner()->containsOne($link, $defaults);
     }
-    */
 
     /**
      * Wrapper for ContainsMany that will associate field with join.
@@ -397,8 +402,7 @@ abstract class Join
      * @param array<string, mixed> $defaults
      *
      * @return Reference\ContainsMany
-     */
-    /*
+     *X/
     public function containsMany(string $link, array $defaults = []) // : Reference
     {
         return $this->getOwner()->containsMany($link, $defaults);

@@ -12,7 +12,7 @@ class HasOneSql extends HasOne
 {
     /**
      * @param ($theirFieldIsTitle is true ? null : string) $theirFieldName
-     * @param array<string, mixed> $defaults
+     * @param array<string, mixed>                         $defaults
      */
     private function _addField(string $fieldName, bool $theirFieldIsTitle, ?string $theirFieldName, array $defaults): SqlExpressionField
     {

@@ -62,7 +62,7 @@ class Field implements Expressionable
 
         // assert type exists
         if (isset($properties['type'])) {
-            if ($this->type === 'array') { // remove in v4.1
+            if ($this->type === 'array') { // remove in v5.1
                 throw new Exception('Atk4 "array" type is no longer supported, originally, it serialized value to JSON, to keep this behaviour, use "json" type');
             }
 
@@ -73,7 +73,10 @@ class Field implements Expressionable
     }
 
     /**
-     * @param array<int, mixed> $args
+     * @template T of Model
+     *
+     * @param \Closure(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
+     * @param array<int, mixed>                                                                        $args
      */
     protected function onHookToOwnerEntity(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
@@ -340,7 +343,7 @@ class Field implements Expressionable
     }
 
     /**
-     * @param mixed|void $value
+     * @param mixed $value
      */
     private function getValueForCompare($value): ?string
     {

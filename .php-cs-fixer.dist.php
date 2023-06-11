@@ -9,8 +9,8 @@ return (new PhpCsFixer\Config())
     ->setRules([
         '@PhpCsFixer' => true,
         '@PhpCsFixer:risky' => true,
-        '@PHP74Migration:risky' => true,
         '@PHP74Migration' => true,
+        '@PHP74Migration:risky' => true,
 
         // required by PSR-12
         'concat_space' => [

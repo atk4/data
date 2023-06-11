@@ -36,20 +36,20 @@ class ReadOnlyModeTest extends TestCase
     {
         $this->m->setOrder('name', 'asc');
         $m = $this->m->loadAny();
-        static::assertSame('John', $m->get('name'));
+        self::assertSame('John', $m->get('name'));
 
         $this->m->order = [];
         $this->m->setOrder('name', 'desc');
         $m = $this->m->loadAny();
-        static::assertSame('Sue', $m->get('name'));
+        self::assertSame('Sue', $m->get('name'));
 
-        static::assertSame([2 => 'Sue', 1 => 'John'], $this->m->getTitles());
+        self::assertSame([2 => 'Sue', 1 => 'John'], $this->m->getTitles());
     }
 
     public function testLoad(): void
     {
         $m = $this->m->load(1);
-        static::assertTrue($m->isLoaded());
+        self::assertTrue($m->isLoaded());
     }
 
     public function testInsert(): void
@@ -78,14 +78,14 @@ class ReadOnlyModeTest extends TestCase
     public function testLoadBy(): void
     {
         $m = $this->m->loadBy('name', 'Sue');
-        static::assertSame('Sue', $m->get('name'));
+        self::assertSame('Sue', $m->get('name'));
     }
 
     public function testLoadCondition(): void
     {
         $this->m->addCondition('name', 'Sue');
         $m = $this->m->loadAny();
-        static::assertSame('Sue', $m->get('name'));
+        self::assertSame('Sue', $m->get('name'));
     }
 
     public function testFailDelete1(): void

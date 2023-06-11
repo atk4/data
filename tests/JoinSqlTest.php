@@ -16,36 +16,36 @@ class JoinSqlTest extends TestCase
         $m = new Model($this->db, ['table' => 'user']);
 
         $j1 = $m->join('contact');
-        static::assertFalse($this->getProtected($j1, 'reverse'));
-        static::assertSame('contact_id', $this->getProtected($j1, 'masterField'));
-        static::assertSame('id', $this->getProtected($j1, 'foreignField'));
+        self::assertFalse($this->getProtected($j1, 'reverse'));
+        self::assertSame('contact_id', $this->getProtected($j1, 'masterField'));
+        self::assertSame('id', $this->getProtected($j1, 'foreignField'));
 
         $j2 = $m->join('contact2.test_id');
-        static::assertTrue($this->getProtected($j2, 'reverse'));
-        static::assertSame('id', $this->getProtected($j2, 'masterField'));
-        static::assertSame('test_id', $this->getProtected($j2, 'foreignField'));
+        self::assertTrue($this->getProtected($j2, 'reverse'));
+        self::assertSame('id', $this->getProtected($j2, 'masterField'));
+        self::assertSame('test_id', $this->getProtected($j2, 'foreignField'));
 
         $j3 = $m->join('contact3', ['masterField' => 'test_id']);
-        static::assertFalse($this->getProtected($j3, 'reverse'));
-        static::assertSame('test_id', $this->getProtected($j3, 'masterField'));
-        static::assertSame('id', $this->getProtected($j3, 'foreignField'));
+        self::assertFalse($this->getProtected($j3, 'reverse'));
+        self::assertSame('test_id', $this->getProtected($j3, 'masterField'));
+        self::assertSame('id', $this->getProtected($j3, 'foreignField'));
 
-        static::assertSame([
+        self::assertSame([
             'contact' => $j1,
             'contact2' => $j2,
             'contact3' => $j3,
         ], $m->getJoins());
-        static::assertSame($j1, $m->getJoin('contact'));
-        static::assertSame($j2, $m->getJoin('contact2'));
-        static::assertTrue($m->hasJoin('contact2'));
-        static::assertFalse($m->hasJoin('contact8'));
+        self::assertSame($j1, $m->getJoin('contact'));
+        self::assertSame($j2, $m->getJoin('contact2'));
+        self::assertTrue($m->hasJoin('contact2'));
+        self::assertFalse($m->hasJoin('contact8'));
 
         $this->expectException(Exception::class); // TODO not implemented yet, see https://github.com/atk4/data/issues/803
         $this->expectExceptionMessage('Joining tables on non-id fields is not implemented yet');
         $j4 = $m->join('contact4.foo_id', ['masterField' => 'test_id', 'reverse' => true]);
-        // static::assertTrue($this->getProtected($j4, 'reverse'));
-        // static::assertSame('test_id', $this->getProtected($j4, 'masterField'));
-        // static::assertSame('foo_id', $this->getProtected($j4, 'foreignField'));
+        // self::assertTrue($this->getProtected($j4, 'reverse'));
+        // self::assertSame('test_id', $this->getProtected($j4, 'masterField'));
+        // self::assertSame('foo_id', $this->getProtected($j4, 'foreignField'));
     }
 
     public function testDirectionException(): void
@@ -81,7 +81,7 @@ class JoinSqlTest extends TestCase
 
         $user2->save();
 
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
             ],
@@ -95,7 +95,7 @@ class JoinSqlTest extends TestCase
         $user2->set('contact_phone', '+321');
         $user2->save();
 
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
                 ['id' => 2, 'name' => 'Joe', 'contact_id' => 2],
@@ -129,7 +129,7 @@ class JoinSqlTest extends TestCase
         $user2->set('contact_phone', '+123');
         $user2->save();
 
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
             ],
@@ -142,7 +142,7 @@ class JoinSqlTest extends TestCase
         $user2 = $user->createEntity();
         $user2->set('name', 'Peter');
         $user2->save();
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
                 ['id' => 2, 'name' => 'Peter'],
@@ -160,7 +160,7 @@ class JoinSqlTest extends TestCase
         $user2->set('name', 'Sue');
         $user2->set('contact_phone', '+444');
         $user2->save();
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
                 ['id' => 2, 'name' => 'Peter'],
@@ -196,7 +196,7 @@ class JoinSqlTest extends TestCase
 
         $user->save();
 
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'test_id' => 1],
             ],
@@ -227,21 +227,21 @@ class JoinSqlTest extends TestCase
         $j->addField('contact_phone');
 
         $user2 = $user->load(1);
-        static::assertSame([
+        self::assertSame([
             'id' => 1, 'name' => 'John', 'contact_id' => 1, 'contact_phone' => '+123',
         ], $user2->get());
 
         $user2 = $user->load(3);
-        static::assertSame([
+        self::assertSame([
             'id' => 3, 'name' => 'Joe', 'contact_id' => 2, 'contact_phone' => '+321',
         ], $user2->get());
 
         $user2 = $user2->unload();
-        static::assertSame([
+        self::assertSame([
             'id' => null, 'name' => null, 'contact_id' => null, 'contact_phone' => null,
         ], $user2->get());
 
-        static::assertNull($user->tryLoad(4));
+        self::assertNull($user->tryLoad(4));
     }
 
     public function testJoinUpdate(): void
@@ -270,7 +270,7 @@ class JoinSqlTest extends TestCase
         $user2->set('contact_phone', '+555');
         $user2->save();
 
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
                 ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
@@ -289,7 +289,7 @@ class JoinSqlTest extends TestCase
         $user2->set('name', 'XX');
         $user2->save();
 
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
                 ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
@@ -304,7 +304,7 @@ class JoinSqlTest extends TestCase
         $user2->set('contact_phone', '+999');
         $user2->save();
 
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
                 ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
@@ -321,7 +321,7 @@ class JoinSqlTest extends TestCase
         $user2->set('contact_phone', '+777');
         $user2->save();
 
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
                 ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
@@ -362,7 +362,7 @@ class JoinSqlTest extends TestCase
         $user = $user->load(1);
         $user->delete();
 
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
                 ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
@@ -402,7 +402,7 @@ class JoinSqlTest extends TestCase
         $user->set('name', 'John');
         $user->save();
 
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
             ],
@@ -447,18 +447,18 @@ class JoinSqlTest extends TestCase
         $user2->delete();
 
         $user2 = $user->loadBy('country_name', 'US');
-        static::assertSame(30, $user2->getId());
+        self::assertSame(30, $user2->getId());
         $user2->set('country_name', 'USA');
         $user2->save();
 
         $user2 = $user2->unload();
-        static::assertFalse($user2->isLoaded());
+        self::assertFalse($user2->isLoaded());
 
-        static::assertSame($user2->getModel()->getField('country_id')->getJoin(), $user2->getModel()->getField('contact_phone')->getJoin());
+        self::assertSame($user2->getModel()->getField('country_id')->getJoin(), $user2->getModel()->getField('contact_phone')->getJoin());
 
         $user->createEntity()->save(['name' => 'new', 'contact_phone' => '+000', 'country_name' => 'LV']);
 
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
                 30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
@@ -513,9 +513,9 @@ class JoinSqlTest extends TestCase
         $user2->delete();
 
         $user = $user->loadBy('country_name', 'US');
-        static::assertSame(30, $user->getId());
+        self::assertSame(30, $user->getId());
 
-        static::assertSame([
+        self::assertSame([
             'user' => [
                 20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
                 30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
@@ -563,7 +563,7 @@ class JoinSqlTest extends TestCase
         $this->createMigrator()->createForeignKey($j);
 
         $user2 = $user->load(1);
-        static::assertSame([
+        self::assertSame([
             'id' => 1, 'name' => 'John', 'contact_id' => 10,
         ], $user2->get());
 
@@ -575,7 +575,7 @@ class JoinSqlTest extends TestCase
         $refOne->addField('number');
 
         $user2 = $user->load(1);
-        static::assertSame([
+        self::assertSame([
             'id' => 1, 'name' => 'John', 'contact_id' => 10, 'phone_id' => 20, 'number' => '+123',
         ], $user2->get());
 
@@ -587,7 +587,7 @@ class JoinSqlTest extends TestCase
         $this->createMigrator()->createForeignKey($refMany);
 
         $user2 = $user->load(1);
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['id' => 30, 'user_id' => 1, 'token' => 'ABC'],
             ['id' => 31, 'user_id' => 1, 'token' => 'DEF'],
         ], $user2->ref('Token')->export());
@@ -602,7 +602,7 @@ class JoinSqlTest extends TestCase
         $this->createMigrator()->createForeignKey($refMany);
 
         $user2 = $user->load(1);
-        static::assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['id' => 40, 'contact_id' => 10, 'address' => 'john@foo.net'],
             ['id' => 41, 'contact_id' => 10, 'address' => 'johnny@foo.net'],
         ], $user2->ref('Email')->export());
@@ -634,19 +634,19 @@ class JoinSqlTest extends TestCase
 
         // load one record
         $m = $user->load(20);
-        static::assertTrue($m->isLoaded());
-        static::assertSame(['id' => 20, 'name' => 'Peter', 'notes' => 'second note'], $m->get());
+        self::assertTrue($m->isLoaded());
+        self::assertSame(['id' => 20, 'name' => 'Peter', 'notes' => 'second note'], $m->get());
 
         // update loaded record
         $m->save(['name' => 'Mark', 'notes' => '2nd note']);
         $m = $user->load(20);
-        static::assertSame(['id' => 20, 'name' => 'Mark', 'notes' => '2nd note'], $m->get());
+        self::assertSame(['id' => 20, 'name' => 'Mark', 'notes' => '2nd note'], $m->get());
 
         // insert new record
         $m = $user->createEntity()->save(['name' => 'Emily', 'notes' => '3rd note']);
         $m = $user->load(21);
-        static::assertTrue($m->isLoaded());
-        static::assertSame(['id' => 21, 'name' => 'Emily', 'notes' => '3rd note'], $m->get());
+        self::assertTrue($m->isLoaded());
+        self::assertSame(['id' => 21, 'name' => 'Emily', 'notes' => '3rd note'], $m->get());
 
         // now test reverse join defined differently
         $user = new Model($this->db, ['table' => 'user']);
@@ -660,7 +660,7 @@ class JoinSqlTest extends TestCase
         // insert new record
         $m = $user->createEntity()->save(['name' => 'Olaf', 'notes' => '4th note']);
         $m = $user->load(22);
-        static::assertSame(['id' => 22, 'name' => 'Olaf', 'notes' => '4th note'], $m->get());
+        self::assertSame(['id' => 22, 'name' => 'Olaf', 'notes' => '4th note'], $m->get());
 
         // now test reverse join with tableAlias and foreignAlias
         $user = new Model($this->db, ['table' => 'user', 'tableAlias' => 'u']);
@@ -675,7 +675,7 @@ class JoinSqlTest extends TestCase
         // insert new record
         $m = $user->createEntity()->save(['name' => 'Chris', 'notes' => '5th note']);
         $m = $user->load(23);
-        static::assertSame(['id' => 23, 'name' => 'Chris', 'notes' => '5th note'], $m->get());
+        self::assertSame(['id' => 23, 'name' => 'Chris', 'notes' => '5th note'], $m->get());
     }
 
     public function testJoinActualFieldNamesAndPrefix(): void
@@ -722,7 +722,7 @@ class JoinSqlTest extends TestCase
         $user2->set('j2_salary', 111);
         $user2->save();
 
-        static::{'assertEquals'}([
+        self::{'assertEquals'}([
             'user' => [
                 1 => ['id' => 1, 'first_name' => 'John 2', $contactForeignIdFieldName => 1],
                 ['id' => 2, 'first_name' => 'Peter', $contactForeignIdFieldName => 1],
@@ -745,7 +745,7 @@ class JoinSqlTest extends TestCase
         $user3->set('j2_salary', 222);
         $user3->save();
 
-        static::{'assertEquals'}([
+        self::{'assertEquals'}([
             'user' => [
                 1 => ['id' => 1, 'first_name' => 'John 2', $contactForeignIdFieldName => 1],
                 ['id' => 2, 'first_name' => 'Peter', $contactForeignIdFieldName => 1],

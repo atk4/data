@@ -85,7 +85,7 @@ abstract class Connection
         if (isset($dsn['dsn'])) {
             if (str_contains($dsn['dsn'], '://')) {
                 /** @var array<string, string> https://github.com/phpstan/phpstan/issues/8638 */
-                $parsed = array_filter(parse_url($dsn['dsn']));
+                $parsed = array_filter(parse_url($dsn['dsn'])); // @phpstan-ignore-line
                 $dsn['dsn'] = str_replace('-', '_', $parsed['scheme']) . ':';
                 unset($parsed['scheme']);
                 foreach ($parsed as $k => $v) {
@@ -341,15 +341,16 @@ abstract class Connection
      * the code inside callback will fail, then all of the transaction
      * will be also rolled back.
      *
-     * @param mixed ...$args
+     * @param \Closure(mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
+     * @param mixed                                                                                 ...$fxArgs
      *
      * @return mixed
      */
-    public function atomic(\Closure $fx, ...$args)
+    public function atomic(\Closure $fx, ...$fxArgs)
     {
         $this->beginTransaction();
         try {
-            $res = $fx(...$args);
+            $res = $fx(...$fxArgs);
             $this->commit();
 
             return $res;

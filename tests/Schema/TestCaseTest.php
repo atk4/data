@@ -30,7 +30,7 @@ class TestCaseTest extends TestCase
                 $m->insert(['name' => 'Ewa', 'int' => 1, 'float' => 1]);
             });
 
-            static::assertSame(1, $m->loadAny()->getId());
+            self::assertSame(1, $m->loadAny()->getId());
 
             $output = ob_get_contents();
         } finally {
@@ -88,8 +88,8 @@ class TestCaseTest extends TestCase
 
     public function testGetSetDropDb(): void
     {
-        static::assertSame([], $this->getDb([]));
-        static::assertSame([], $this->getDb());
+        self::assertSame([], $this->getDb([]));
+        self::assertSame([], $this->getDb());
 
         $dbData = [
             'user' => [
@@ -110,22 +110,22 @@ class TestCaseTest extends TestCase
 
         $this->setDb($dbData);
         $dbDataGet1 = $this->getDb(['user']);
-        static::assertSameExportUnordered($dbDataWithId, $dbDataGet1);
-        static::assertSameExportUnordered($dbDataWithId, $this->getDb());
-        static::assertSameExportUnordered($dbData, $this->getDb(null, true));
+        self::assertSameExportUnordered($dbDataWithId, $dbDataGet1);
+        self::assertSameExportUnordered($dbDataWithId, $this->getDb());
+        self::assertSameExportUnordered($dbData, $this->getDb(null, true));
 
         $this->dropCreatedDb();
         $this->setDb($dbData);
         $dbDataGet2 = $this->getDb(['user']);
-        static::assertSameExportUnordered($dbDataWithId, $dbDataGet2);
-        static::assertSameExportUnordered($dbDataWithId, $this->getDb());
-        static::assertSame($dbDataGet1, $dbDataGet2);
+        self::assertSameExportUnordered($dbDataWithId, $dbDataGet2);
+        self::assertSameExportUnordered($dbDataWithId, $this->getDb());
+        self::assertSame($dbDataGet1, $dbDataGet2);
 
         $this->dropCreatedDb();
         $this->setDb($dbDataGet1);
         $dbDataGet3 = $this->getDb(['user']);
-        static::assertSameExportUnordered($dbDataWithId, $dbDataGet3);
-        static::assertSameExportUnordered($dbDataWithId, $this->getDb());
-        static::assertSame($dbDataGet1, $dbDataGet3);
+        self::assertSameExportUnordered($dbDataWithId, $dbDataGet3);
+        self::assertSameExportUnordered($dbDataWithId, $this->getDb());
+        self::assertSame($dbDataGet1, $dbDataGet3);
     }
 }

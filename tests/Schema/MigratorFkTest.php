@@ -54,7 +54,7 @@ class MigratorFkTest extends TestCase
         $this->createMigrator()->createForeignKey($invoice->getReference('client_id'));
 
         // make sure FK client-country was not removed during FK invoice-client setup
-        static::assertSame([
+        self::assertSame([
             [],
             [[['country_id'], 'country', ['id']], [['created_by_client_id'], 'client', ['id']]],
             [[['client_id'], 'client', ['id']]],
@@ -75,7 +75,7 @@ class MigratorFkTest extends TestCase
             $invoice->insert(['client_id' => 50]);
         } catch (Exception $e) {
             $dbalException = $e->getPrevious()->getPrevious();
-            static::assertInstanceOf(ForeignKeyConstraintViolationException::class, $dbalException);
+            self::assertInstanceOf(ForeignKeyConstraintViolationException::class, $dbalException);
 
             throw $e;
         }

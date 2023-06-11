@@ -827,10 +827,8 @@ class Model implements \IteratorAggregate
      */
     public function getId()
     {
-        $idFieldName = $this->getModel()->idField;
-
         try {
-            return $this->get($idFieldName);
+            return $this->get($this->getModel()->idField);
         } catch (\Throwable $e) {
             $this->assertHasIdField();
 
@@ -845,13 +843,11 @@ class Model implements \IteratorAggregate
      */
     public function setId($value, bool $allowNull = true)
     {
-        $idFieldName = $this->getModel()->idField;
-
         try {
             if ($value === null && $allowNull) {
-                $this->setNull($idFieldName);
+                $this->setNull($this->getModel()->idField);
             } else {
-                $this->set($idFieldName, $value);
+                $this->set($this->getModel()->idField, $value);
             }
 
             $this->initEntityIdAndAssertUnchanged();
@@ -1033,7 +1029,7 @@ class Model implements \IteratorAggregate
      * Set order for model records. Multiple calls are allowed.
      *
      * @param string|array<int, string|array{string, 1?: 'asc'|'desc'}>|array<string, 'asc'|'desc'> $field
-     * @param 'asc'|'desc' $direction
+     * @param 'asc'|'desc'                                                                          $direction
      *
      * @return $this
      */
@@ -1149,7 +1145,7 @@ class Model implements \IteratorAggregate
      */
     public function isLoaded(): bool
     {
-        return $this->idField && $this->getId() !== null && $this->_entityId !== null;
+        return $this->getModel()->idField && $this->getId() !== null && $this->_entityId !== null;
     }
 
     public function assertIsLoaded(): void
@@ -1160,8 +1156,6 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Unload model.
-     *
      * @return $this
      */
     public function unload()
@@ -1199,7 +1193,7 @@ class Model implements \IteratorAggregate
 
     /**
      * @param ($fromTryLoad is true ? false : bool) $fromReload
-     * @param mixed $id
+     * @param mixed                                 $id
      *
      * @return ($fromTryLoad is true ? static|null : static)
      */
@@ -1273,7 +1267,7 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Load model.
+     * Load one record by an ID.
      *
      * @param mixed $id
      *
@@ -1578,11 +1572,7 @@ class Model implements \IteratorAggregate
             $this->hook(self::HOOK_AFTER_SAVE, [$isUpdate]);
 
             if ($this->idField) {
-                // fix LookupSqlTest::testImportInternationalUsers test asap, "friend_names" aggregate query is wrong
-                // https://github.com/atk4/data/issues/1045
-                if (!$this instanceof Tests\LUser) {
-                    $this->validateEntityScope();
-                }
+                $this->validateEntityScope();
             }
 
             return $this;
@@ -1846,6 +1836,8 @@ class Model implements \IteratorAggregate
      * the code inside callback will fail, then all of the transaction
      * will be also rolled back.
      *
+     * @param \Closure(): mixed $fx
+     *
      * @return mixed
      */
     public function atomic(\Closure $fx)
@@ -1919,7 +1911,9 @@ class Model implements \IteratorAggregate
     /**
      * Add expression field which will calculate its value by using callback.
      *
-     * @param array{'expr': \Closure} $seed
+     * @template T of self
+     *
+     * @param array{'expr': \Closure(T): mixed} $seed
      *
      * @return CallbackField
      */

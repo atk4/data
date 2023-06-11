@@ -11,8 +11,14 @@ class LocalObjectHandle
     /** @var \WeakReference<object> */
     private \WeakReference $weakValue;
 
+    /**
+     * @var \Closure($this): void
+     */
     private \Closure $destructFx;
 
+    /**
+     * @param \Closure($this): void $destructFx
+     */
     public function __construct(int $localUid, object $value, \Closure $destructFx)
     {
         $this->localUid = $localUid;

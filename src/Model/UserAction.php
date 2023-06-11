@@ -18,7 +18,7 @@ use Atk4\Data\Model;
  *
  * UserAction must NOT rely on any specific UI implementation.
  *
- * @method Exception getOwner() use getModel() or getEntity() method instead
+ * @method false getOwner() use getModel() or getEntity() method instead
  */
 class UserAction
 {
@@ -44,19 +44,19 @@ class UserAction
     /** @var string How this action interact with record */
     public $modifier;
 
-    /** @var \Closure|string code to execute. By default will call entity method with same name */
+    /** @var \Closure(object, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed|string code to execute. By default will call entity method with same name */
     public $callback;
 
-    /** @var \Closure|string identical to callback, but would generate preview of action without permanent effect */
+    /** @var \Closure(object, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed|string identical to callback, but would generate preview of action without permanent effect */
     public $preview;
 
     /** @var string|null caption to put on the button */
     public $caption;
 
-    /** @var string|\Closure(static): string|null a longer description of this action. */
+    /** @var string|\Closure($this): string|null a longer description of this action. */
     public $description;
 
-    /** @var bool|string|\Closure(static): string Will ask user to confirm. */
+    /** @var bool|string|\Closure($this): string Will ask user to confirm. */
     public $confirmation = false;
 
     /** @var bool|\Closure(object): bool setting this to false will disable action. */
@@ -77,7 +77,7 @@ class UserAction
     public function isOwnerEntity(): bool
     {
         /** @var Model */
-        $owner = $this->getOwner();
+        $owner = $this->getOwner(); // @phpstan-ignore-line
 
         return $owner->isEntity();
     }
@@ -85,7 +85,7 @@ class UserAction
     public function getModel(): Model
     {
         /** @var Model */
-        $owner = $this->getOwner();
+        $owner = $this->getOwner(); // @phpstan-ignore-line
 
         return $owner->getModel(true);
     }
@@ -93,7 +93,7 @@ class UserAction
     public function getEntity(): Model
     {
         /** @var Model */
-        $owner = $this->getOwner();
+        $owner = $this->getOwner(); // @phpstan-ignore-line
         $owner->assertIsEntity();
 
         return $owner;
@@ -105,7 +105,7 @@ class UserAction
     public function getActionForEntity(Model $entity): self
     {
         /** @var Model */
-        $owner = $this->getOwner();
+        $owner = $this->getOwner(); // @phpstan-ignore-line
 
         $entity->assertIsEntity($owner);
         foreach ($owner->getUserActions() as $name => $action) {
@@ -166,7 +166,7 @@ class UserAction
                     ->addMoreInfo('dirty', array_keys($this->getEntity()->getDirtyRef()))
                     ->addMoreInfo('permitted', $this->fields);
             }
-        } elseif (!is_bool($this->fields)) {
+        } elseif (!is_bool($this->fields)) { // @phpstan-ignore-line
             throw (new Exception('Argument `fields` for the user action must be either array or boolean'))
                 ->addMoreInfo('fields', $this->fields);
         }
