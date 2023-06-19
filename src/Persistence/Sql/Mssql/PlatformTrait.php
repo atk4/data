@@ -24,12 +24,12 @@ trait PlatformTrait
 
     // TODO test DBAL DB diff for each supported Field type
     // then fix using https://github.com/doctrine/dbal/issues/5194#issuecomment-1018790220
-//    protected function initializeCommentedDoctrineTypes()
-//    {
-//        parent::initializeCommentedDoctrineTypes();
-//
-//        $this->markDoctrineTypeCommented('text');
-//    }
+    /* protected function initializeCommentedDoctrineTypes()
+    {
+        parent::initializeCommentedDoctrineTypes();
+
+        $this->markDoctrineTypeCommented('text');
+    } */
 
     public function getCurrentDatabaseExpression(bool $includeSchema = false): string
     {
