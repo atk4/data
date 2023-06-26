@@ -40,7 +40,7 @@ class UaClient extends Model
         // this action can be invoked from UI
         $this->addUserAction('sendReminder');
 
-        // this action will be system action, so it will not be invokable from UI
+        // this action will be system action, so it will not be invocable from UI
         $this->addUserAction('backupClients', ['appliesTo' => Model\UserAction::APPLIES_TO_ALL_RECORDS, 'system' => true]);
     }
 }
@@ -166,7 +166,7 @@ class UserActionTest extends TestCase
         $client = new UaClient($this->pers);
 
         $this->expectException(CoreException::class);
-        $client->getUserAction('non_existant_action');
+        $client->getUserAction('non_existent_action');
     }
 
     public function testDisabled1(): void

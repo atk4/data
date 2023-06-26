@@ -143,7 +143,7 @@ available. Both models will relate through ``currency.code = exchange.currency_c
 
     $c->hasMany('Exchanges', ['model' => $e, 'theirField' => 'currency_code', 'ourField' => 'code']);
 
-    $c->addCondition('is_convertable', true);
+    $c->addCondition('is_convertible', true);
     $e = $c->ref('Exchanges');
 
 This will produce the following query:
@@ -152,7 +152,7 @@ This will produce the following query:
 
     select * from exchange
     where currency_code in
-        (select code form currency where is_convertable = 1)
+        (select code form currency where is_convertible = 1)
 
 
 Concatenating Fields

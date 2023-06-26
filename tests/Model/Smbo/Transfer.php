@@ -17,7 +17,7 @@ class Transfer extends Payment
 
         $this->jPayment->hasOne('transfer_document_id', ['model' => [self::class]]);
 
-        // only used to create / destroy trasfer legs
+        // only used to create / destroy transfer legs
         if (!$this->detached) {
             $this->addCondition('transfer_document_id', '!=', null);
         }

@@ -10,7 +10,7 @@ SubTypes
 ========
 
 Disjoint subtypes is a concept where you give your database just a little bit of
-OOP by allowing to extend addional types without duplicating columns. For example,
+OOP by allowing to extend additional types without duplicating columns. For example,
 if you are implementing "Account" and "Transaction" models. You may want to have
 multiple transaction types. Some of those types would even require additional
 fields. The pattern suggest you should add a new table "transaction_transfer" and

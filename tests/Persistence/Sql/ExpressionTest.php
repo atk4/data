@@ -352,7 +352,7 @@ class ExpressionTest extends TestCase
         unset($e['cat']);
         self::assertFalse(isset($e['cat']));
 
-        // testing absence of specific key in asignment
+        // testing absence of specific key in assignment
         $e = $this->e('[], []');
         $e[] = 'Hello';
         $e[] = 'World';

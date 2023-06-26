@@ -152,7 +152,7 @@ This query will perform `select name from (select * from employee)`::
 
     $q = $c->dsql()
         ->field('date, debit, credit')
-        ->table($u, 'derrivedTable');
+        ->table($u, 'derivedTable');
 
     $q->getRows();
 
@@ -164,7 +164,7 @@ query:
     select `date`, `debit`, `credit` from (
         (select `date`, `amount` `debit` from `sales`) union
         (select `date`, `amount` `credit` from `purchases`)
-    ) `derrivedTable`
+    ) `derivedTable`
 
 Modifying Select Query
 ======================
@@ -465,7 +465,7 @@ That's why we have this method which will take care of this.
 If you need to add more parameters for this method, then you can extend this class
 and overwrite this simple method to support expressions like this, for example:
 
-    group_concat('phone' order by 'date' desc seprator ';')
+    group_concat('phone' order by 'date' desc separator ';')
 
 
 Joining with other tables
@@ -679,7 +679,7 @@ It is possible to add arbitrary options for the query. For example this will fet
     $q->field('birthday');
     $birthdays = $q->getRows();
 
-Other posibility is to set options for delete or insert::
+Other possibility is to set options for delete or insert::
 
     $q->option('delayed', 'insert');
 

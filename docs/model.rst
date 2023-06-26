@@ -60,7 +60,7 @@ For example - you may define fields and relations for the model::
     $model->addField('age', ['type' => 'integer']);
     $model->hasMany('Children', ['model' => [Person::class]]);
 
-Methods `addField` and `hasMany` will ultimatelly create and link model with a corresponding
+Methods `addField` and `hasMany` will ultimately create and link model with a corresponding
 `Field` object and `Reference` object. Those classes contain the logic, but in 95% of the use-cases,
 you will not have to dive deep into them.
 
@@ -307,7 +307,7 @@ This can also be useful for calculating relative times::
 Actions
 -------
 Another common thing to define inside :php:meth:`Model::init()` would be
-a user invokable actions::
+a user invocable actions::
 
     class User extends Model
     {

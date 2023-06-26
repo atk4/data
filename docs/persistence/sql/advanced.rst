@@ -32,7 +32,7 @@ With queries you might need to select mode first::
 
     $stmt = $query->mode('delete')->executeStatement($connection);
 
-The :php:meth:`Expresssion::execute` is a convenient way to prepare query,
+The :php:meth:`Expression::execute` is a convenient way to prepare query,
 bind all parameters and get `Doctrine\DBAL\Result`, but if you wish to do it manually,
 see `Manual Query Execution`_.
 
