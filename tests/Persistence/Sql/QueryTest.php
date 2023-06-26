@@ -668,7 +668,7 @@ class QueryTest extends TestCase
     /**
      * @param mixed $value
      *
-     * @dataProvider provideWhereUnsupportedOperatorData
+     * @dataProvider provideWhereUnsupportedOperatorCases
      */
     public function testWhereUnsupportedOperator(string $operator, $value): void
     {
@@ -682,7 +682,7 @@ class QueryTest extends TestCase
     /**
      * @return \Traversable<int, array<int, mixed>>
      */
-    public function provideWhereUnsupportedOperatorData(): \Traversable
+    public function provideWhereUnsupportedOperatorCases(): \Traversable
     {
         // unsupported operators
         yield ['<>', 2];
