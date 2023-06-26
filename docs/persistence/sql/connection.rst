@@ -85,12 +85,12 @@ if you connect to vendor that does not use PDO.
     :param string $connectionType Alias of the connection
     :param string $connectionClass The connection class to be used for the diver type
 
-Developers can register custom classes to handle driver types using the `Connecion::registerConnectionClass` method::
+Developers can register custom classes to handle driver types using the `Connection::registerConnectionClass` method::
 
    Connection::registerConnectionClass(Custom\MySQL\Connection::class, 'pdo_mysql');
 
 .. php:method:: connectDbalConnection(array $dsn)
 
    The method should establish connection with DB and return the underlying connection object used by
-   the `Connection` class. By default PDO is used but the method can be overriden to return custom object to be
+   the `Connection` class. By default PDO is used but the method can be overridden to return custom object to be
    used for connection to DB.

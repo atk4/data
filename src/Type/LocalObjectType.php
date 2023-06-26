@@ -30,7 +30,7 @@ class LocalObjectType extends DbalTypes\Type
 
     private function __clone()
     {
-        // prevent clonning
+        // prevent cloning
     }
 
     protected function init(): void

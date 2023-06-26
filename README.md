@@ -718,5 +718,5 @@ Please consider our other MIT-licensed project - [Agile UI](http://www.agiletool
 ## Community and Support
 
 [![Gitter](https://img.shields.io/gitter/room/atk4/data.svg)](https://gitter.im/atk4/dataset?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Stack Overlfow Community](https://img.shields.io/stackexchange/stackoverflow/t/atk4.svg)](http://stackoverflow.com/questions/ask?tags=atk4)
+[![Stack Overflow Community](https://img.shields.io/stackexchange/stackoverflow/t/atk4.svg)](http://stackoverflow.com/questions/ask?tags=atk4)
 [![Discord User forum](https://img.shields.io/badge/discord-User_Forum-green.svg)](https://forum.agiletoolkit.org/c/44)

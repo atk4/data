@@ -432,7 +432,7 @@ class FieldTest extends TestCase
         ], $this->getDb());
     }
 
-    public function testNonExisitngField(): void
+    public function testNonExistingField(): void
     {
         $m = new Model();
         $m->addField('foo');
