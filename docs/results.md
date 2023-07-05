@@ -54,7 +54,7 @@ will consume memory), you can do it like this::
 
 
 Raw Data Fetching
-----------------
+-----------------
 
 .. php:method:: getRawIterator()
 

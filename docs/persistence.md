@@ -480,7 +480,7 @@ The other, more appropriate option is to re-use a vanilla Order record::
 
 
 Working with Multiple Persistencies
-==================================
+===================================
 
 Normally when you load the model and save it later, it ends up in the same
 database from which you have loaded it. There are cases, however, when you
