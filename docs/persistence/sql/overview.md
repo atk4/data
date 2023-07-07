@@ -18,10 +18,10 @@ a part of other query.
  - free, licensed under MIT
  - no dependencies
  - follows design paradigms:
-     - "`PHP the Agile way <https://github.com/atk4/dsql/wiki/PHP-the-Agile-way>`_"
-     - "`Functional ORM <https://github.com/atk4/dsql/wiki/Functional-ORM>`_"
-     - "`Open to extend <https://github.com/atk4/dsql/wiki/Open-to-Extend>`_"
-     - "`Vendor Transparency <https://github.com/atk4/dsql/wiki/Vendor-Transparency>`_"
+     - "[PHP the Agile way](https://github.com/atk4/dsql/wiki/PHP-the-Agile-way)"
+     - "[Functional ORM](https://github.com/atk4/dsql/wiki/Functional-ORM)"
+     - "[Open to extend](https://github.com/atk4/dsql/wiki/Open-to-Extend)"
+     - "[Vendor Transparency](https://github.com/atk4/dsql/wiki/Vendor-Transparency)"
 
 ## DSQL by example
 
@@ -73,7 +73,7 @@ layer, so be sure to look at the rest of the suite.
 ## Installation
 
 The recommended way to install DSQL is with
-`Composer <http://getcomposer.org>`_. Composer is a dependency management tool
+[Composer](http://getcomposer.org). Composer is a dependency management tool
 for PHP that allows you to declare the dependencies your project has and it
 automatically installs them into your project.
 
@@ -102,7 +102,7 @@ require 'vendor/autoload.php';
 
 You can find out more on how to install Composer, configure auto-loading, and
 other best-practices for defining dependencies at
-`getcomposer.org <http://getcomposer.org>`_.
+[getcomposer.org](http://getcomposer.org).
 
 ## Getting Started
 
@@ -160,7 +160,7 @@ Look inside these the .xml files for further information and connection details.
 
 We want to ensure that DSQL is a secure library for everyone. If you've
 discovered a security vulnerability in DSQL, we appreciate your help in
-disclosing it to us in a `responsible manner <http://en.wikipedia.org/wiki/Responsible_disclosure>`_.
+disclosing it to us in a [responsible manner](http://en.wikipedia.org/wiki/Responsible_disclosure).
 
 Publicly disclosing a vulnerability can put the entire community at risk. If
 you've discovered a security concern, please email us at

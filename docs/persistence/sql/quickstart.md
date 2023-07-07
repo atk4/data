@@ -157,7 +157,7 @@ database vendor.
 There are more ways to create connection, see `Advanced Connections`_ section.
 
 The format of the `$dsn` is the same as with for
-`DBAL connection <https://www.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/configuration.html>`_.
+[DBAL connection](https://www.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/configuration.html).
 If you need to execute query that is not supported by DSQL, you should always
 use expressions:
 
