@@ -73,7 +73,7 @@ joined so Agile Data will carry over list of IDs instead:
     $ids = select id from user where is_vip = 1
     select * from order where user_id in ($ids)
 
-Since we are using ``$dbArrayCache``, then field values will actually
+Since we are using `$dbArrayCache`, then field values will actually
 be retrieved from memory.
 
 .. note:: This is not implemented as of 1.1.0, see https://github.com/atk4/data/issues/158
@@ -140,7 +140,7 @@ $paymentsForInvoice1 = $i->load(1)->ref('Payments');
 
 Sometimes you have to use non-ID references. For example, we might have two models
 describing list of currencies and for each currency we might have historic rates
-available. Both models will relate through ``currency.code = exchange.currency_code``:
+available. Both models will relate through `currency.code = exchange.currency_code`:
 
 ```
 $c = new Model_Currency();
@@ -169,7 +169,7 @@ $user->hasMany('Tags', ['model' => [Tag::class]])
     ->addField('tags', ['concat' => ',', 'field' => 'name']);
 ```
 
-This will create a new field for your user, ``tags`` which will contain all comma-separated
+This will create a new field for your user, `tags` which will contain all comma-separated
 tag names.
 
 ### Add Aggregate Fields
@@ -184,7 +184,7 @@ $u->hasMany('Orders', ['model' => [Model_Order::class]])
 ```
 
 It's important to define aggregation functions here. This will add another field
-inside ``$m`` that will correspond to the sum of all the orders. Here is another
+inside `$m` that will correspond to the sum of all the orders. Here is another
 example:
 
 ```
@@ -326,12 +326,12 @@ $o->hasOne('user_id', ['model' => $u]);
 ```
 
 This reference is similar to hasMany, but it does behave slightly different.
-Also this reference will define a system new field ``user_id`` if you haven't
+Also this reference will define a system new field `user_id` if you haven't
 done so already.
 
 ### Traversing loaded model
 
-If your ``$o`` model is loaded, then traversing into user will also load the user,
+If your `$o` model is loaded, then traversing into user will also load the user,
 because we specifically know the ID of that user. No conditions will be set:
 
 ```
@@ -369,7 +369,7 @@ $o->hasOne('User', ['model' => $u, 'ourField' => 'user_id']);
 $o->load(1)->ref('User')['name'];
 ```
 
-You can also use ``theirField`` if you need non-id matching (see example above
+You can also use `theirField` if you need non-id matching (see example above
 for hasMany()).
 
 ### Importing Fields
@@ -408,7 +408,7 @@ $u->hasOne('address_id', ['model' => $a])
     ]);
 ```
 
-Above, all ``address_`` fields are copied with the same name, however field
+Above, all `address_` fields are copied with the same name, however field
 'notes' from Address model will be called 'address_notes' inside user model.
 
 .. important::
@@ -550,7 +550,7 @@ a loaded model. To perform a single query instead, you can use:
 echo $o->addCondition('id', 1)->ref('user_id')->ref('address_id')->loadAny()['address_1'];
 ```
 
-Here ``addCondition('id', 1)`` will only set a condition without actually loading the record
+Here `addCondition('id', 1)` will only set a condition without actually loading the record
 and traversal will encapsulate sub-queries resulting in a query like this:
 
 .. code-block:: sql
@@ -576,7 +576,7 @@ $item->hasMany('parent_item_id', ['model' => [Model_Item::class]])
     ->addField('parent', 'name');
 ```
 
-When generating expression for 'parent', the sub-query will use alias ``pi``
+When generating expression for 'parent', the sub-query will use alias `pi`
 consisting of first letters in 'parent_item_id'. (except _id). You can actually
 specify a custom table alias if you want:
 

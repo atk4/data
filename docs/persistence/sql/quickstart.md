@@ -156,7 +156,7 @@ automatically do some of the hard work to adopt query building for your
 database vendor.
 There are more ways to create connection, see `Advanced Connections`_ section.
 
-The format of the ``$dsn`` is the same as with for
+The format of the `$dsn` is the same as with for
 `DBAL connection <https://www.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/configuration.html>`_.
 If you need to execute query that is not supported by DSQL, you should always
 use expressions:
@@ -190,7 +190,7 @@ query and we will look into examples in :ref:`extending_query`
 ## Query Mode
 
 When you create a new :php:class:`Query` object, it is going to be a *SELECT*
-query by default. If you wish to execute ``update`` operation instead, you
+query by default. If you wish to execute `update` operation instead, you
 cam simply call :php:meth:`Query::mode` to change it. For more information
 see :ref:`query-modes`.
 You can actually perform multiple operations:

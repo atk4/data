@@ -84,14 +84,14 @@ After this you will have the following fields in your model:
 
 When defining joins, you need to outline two fields that must match. In our
 earlier examples, we the master table was "user" that contained reference to
-"contact". The condition would look like this ``user.contact_id=contact.id``.
+"contact". The condition would look like this `user.contact_id=contact.id`.
 In some cases, however, a relation should be reversed:
 
 ```
 $jContact = $user->join('contact.user_id');
 ```
 
-This will result in the following join condition: ``user.id=contact.user_id``.
+This will result in the following join condition: `user.id=contact.user_id`.
 The first argument to join defines both the table that we need to join and
 can optionally define the field in the foreign table. If field is set, we will
 assume that it's a reverse join.
@@ -247,11 +247,11 @@ $stats = $user->join('stats', [
 ]);
 ```
 
-You can also specify ``'on' => false`` then the ON clause will not be used at all
+You can also specify `'on' => false` then the ON clause will not be used at all
 and you'll have to add additional where() condition yourself.
 
-``foreignAlias`` can be specified and will be used as table alias and prefix
-for all fields. It will default to ``'_' . $this->foreignTable``. Agile Data will
+`foreignAlias` can be specified and will be used as table alias and prefix
+for all fields. It will default to `'_' . $this->foreignTable`. Agile Data will
 also resolve situations when multiple tables have same first character so the
 prefixes will be named '_c', '_c_2', '_c_3' etc.
 

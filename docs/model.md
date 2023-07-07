@@ -707,7 +707,7 @@ $m = new MyModel($db, ['titleField' => 'full_name']);
 
 .. php:attr:: idField
 
-    If your data storage uses field different than ``id`` to keep the ID of your
+    If your data storage uses field different than `id` to keep the ID of your
     records, then you can specify that in $idField property.
 
     ID value of loaded entity cannot be changed. If you want to duplicate a record,

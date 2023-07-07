@@ -110,8 +110,8 @@ When you create a template the first argument is the template. It will be stored
 in :php:attr:`$template` property. Template string can contain arguments in a
 square brackets:
 
- - ``coalesce([], [])`` is same as ``coalesce([0], [1])``
- - ``coalesce([one], [two])``
+ - `coalesce([], [])` is same as `coalesce([0], [1])`
+ - `coalesce([one], [two])`
 
 Arguments can be specified immediately through an array as a second argument
 into constructor or you can specify arguments later:
@@ -246,7 +246,7 @@ Finally, you can pass connection class into :php:meth:`executeQuery` directly.
 .. php:method:: __debugInfo()
 
     This method is used to prepare a sensible information about your query
-    when you are executing ``var_dump($expr)``. The output will be HTML-safe.
+    when you are executing `var_dump($expr)`. The output will be HTML-safe.
 
 .. php:method:: getDebugQuery()
 
@@ -335,5 +335,5 @@ $query->escapeIdentifierSoft('*'); // *
 
 .. php:attr:: debug
 
-    If true, then next call of :php:meth:`execute` will ``echo`` results
+    If true, then next call of :php:meth:`execute` will `echo` results
     of :php:meth:`getDebugQuery`.

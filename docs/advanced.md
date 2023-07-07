@@ -155,7 +155,7 @@ class ControllerAudit
 ```
 
 TrackableTrait means that I'll be able to add this object inside model with
-``$model->add(new ControllerAudit())`` and that will automatically populate
+`$model->add(new ControllerAudit())` and that will automatically populate
 $owner, and $app values (due to AppScopeTrait) as well as execute init() method,
 which I want to define like this:
 
@@ -209,7 +209,7 @@ Of course if the application is not defined, no default is set. This would be
 handy for unit tests where you could manually specify the value for this field.
 
 The last 2 fields (update_*) will be updated through a hook - beforeUpdate() and
-will provide the values to be saved during ``save()``. beforeUpdate() will not
+will provide the values to be saved during `save()`. beforeUpdate() will not
 be called when new record is inserted, so those fields will be left as "null"
 after initial insert.
 
