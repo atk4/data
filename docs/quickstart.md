@@ -1,8 +1,6 @@
 .. _quickstart:
 
-==========
-Quickstart
-==========
+# Quickstart
 
 Agile Data Framework is built around some unique concepts. Your knowledge of
 other ORM, ActiveRecord and QueryBuilder tools could be helpful, but you should
@@ -21,16 +19,14 @@ It is up to Agile Data to decide what's the most efficient way to implement
 the aggregation. Currently only SQL persistence is capable of constructing
 aggregate sub-query.
 
-Requirements
-============
+## Requirements
 
 If you wish to try out some examples in this guide, you will need the following:
 
 - PHP 7.4 or above.
 - any of supported database - Sqlite, MySQL/MariaDB, PostgreSQL, MSSQL or Oracle
 
-Core Concepts
-=============
+## Core Concepts
 
 Business Model (see :ref:`Model`)
     You define business logic inside your own classes that extend :php:class:`Model`.
@@ -63,8 +59,7 @@ Action (see :ref:`Action`)
     them individually. Actions have 3 main purposes: data aggregation,
     referencing and multi-record operations.
 
-Persistence Domain vs Business Domain
--------------------------------------
+### Persistence Domain vs Business Domain
 
 .. image:: images/bd-vs-pd.png
 
@@ -92,8 +87,8 @@ Persistence Domain. It also allows you to perform most actions with only
 knowledge of Business Domain, keeping the rest of your application independent
 from your database choice, structure or patterns.
 
-Class vs In-Line definition
----------------------------
+### Class vs In-Line definition
+
 Business model entity in Agile Data is represented through PHP object.
 While it is advisable to create each entity in its own class, you do not have
 to do so.
@@ -137,8 +132,7 @@ Save, exit and run console again. You can now type this::
     Model_ContactInfo have application without the condition? If yes then
     either use addCondition in-line or create 2 classes.
 
-Model State
------------
+### Model State
 
 When you create a new model object, you can change its state to perform
 various operations on your data. The state can be broken down into the
@@ -235,9 +229,7 @@ You can also define your own parameters like this::
 
 This can be used internally for all sorts of decisions for model behavior.
 
-
-Getting Started
-===============
+## Getting Started
 
 It's time to create the first Model. Open `src/Model_User.php` which should look
 like this::
@@ -290,8 +282,7 @@ You cannot add conditions just yet, although you can pass in some of the default
 
     $m->setPersistence($db); // will use table user2
 
-Adding Fields
--------------
+### Adding Fields
 
 Methods :php:meth:`Model::addField()` and :php:meth:`Model::addFields()` can
 declare model fields. You need to declare them before you are able to use.
@@ -304,8 +295,7 @@ In practice, :php:meth:`Model::addField()` creates a new 'Field' object and then
 links it up to your model. This object is used to store some information about
 your field, but it also participates in some field-related activity.
 
-Table Joins
------------
+### Table Joins
 
 Similarly, :php:meth:`Model::join()` creates a Join object and stores it in $j.
 The Join object defines a relationship between the master :php:attr:`Model::table`
@@ -343,9 +333,7 @@ This architecture of Agile Data allows database persistence to implement
 different logic that will properly manipulate features of that specific
 database engine.
 
-
-Understanding Persistence
--------------------------
+### Understanding Persistence
 
 To make things simple, console has already created persistence inside variable
 `$db`. Load up `console.php` in your editor to look at how persistence is set up::
@@ -387,9 +375,7 @@ persistence logic.
     version. We plan to expand this functionality soon, see our development
     `roadmap <https://github.com/atk4/data#roadmap>`_.
 
-
-References between Models
-=========================
+## References between Models
 
 Your application normally uses multiple business entities and they can be
 related to each-other.
@@ -401,8 +387,7 @@ References are defined by calling :php:meth:`Model::hasOne()` or
 :php:meth:`Model::hasMany()`. You always specify destination model and you can
 optionally specify which fields are used for conditioning.
 
-One to Many
------------
+### One to Many
 
 Launch up console again and let's create reference between 'User' and 'System'.
 As per our database design - one user can have multiple 'system' records::
@@ -429,8 +414,7 @@ to see number of records in DataSet or export DataSet::
     $s->export();
     $s->action('count')->getDebugQuery();
 
-Many to Many
-------------
+### Many to Many
 
 Agile Data also supports another type of traversal - 'DataSet to DataSet' or
 Many to Many::
@@ -451,8 +435,7 @@ The only difference is the loaded() state of the source model.
 
 Calling ref()->ref() is also called Deep Traversal.
 
-One to One
-----------
+### One to One
 
 The third and final reference traversal type is "Active Record to Active Record"::
 
@@ -465,8 +448,7 @@ country of user john::
     $cc->getId();
     $cc->get();
 
-Implementation of References
-----------------------------
+### Implementation of References
 
 When reference is added using :php:meth:`Model::hasOne()` or :php:meth:`Model::hasMany()`,
 the new object is created and added into Model of class :php:class:`Reference\HasMany`
@@ -486,14 +468,12 @@ Finally this reference object contains method :php:meth:`Reference::getModel()`
 which will produce a (possibly) fresh copy of related entity and will either
 adjust it's DataSet or set the active record.
 
-Actions
-=======
+## Actions
 
 Since NoSQL databases will always have some specific features, Agile Data uses
 the concept of 'action' to map into vendor-specific operations.
 
-Aggregation actions
--------------------
+### Aggregation actions
 
 SQL implements methods such as sum(), count() or max() that can offer you some
 basic aggregation without grouping. This type of aggregation provides some
@@ -531,8 +511,7 @@ Expression is a special type of read-only Field that uses sub-query or a more
 complex SQL expression instead of a physical field. (See :ref:`Expressions` and
 :ref:`References`)
 
-Field-reference actions
------------------------
+### Field-reference actions
 
 Field referencing allows you to fetch a specific field from related model::
 
@@ -552,8 +531,7 @@ also build manually::
 
     $m->addExpression('country', $m->refLink('country_id')->action('field', ['name']));
 
-Advanced Use of Actions
------------------------
+### Advanced Use of Actions
 
 Actions prove to be very useful in various situations. For instance, if you are
 looking to add a new user::
@@ -577,8 +555,7 @@ you could do this::
 This way it will not execute any code, but instead it will provide expression
 that will then be used to lookup ID of 'UK' when inserting data into SQL table.
 
-Expressions
-===========
+## Expressions
 
 Expressions that are defined based on Actions (such as aggregate or field-reference)
 will continue to work even without SQL (although might be more performance-expensive),
@@ -591,9 +568,7 @@ however if you're stuck with SQL you can use free-form pattern-based expressions
     $m->addExpression('balance', ['expr' => '[total_purchase] + [total_paid]']);
     $m->export(['name', 'balance']);
 
-
-Conclusion
-==========
+## Conclusion
 
 You should now be familiar with the basics of Agile Data. To find more
 information on specific topics, use the rest of the documentation.

@@ -1,9 +1,6 @@
-
 .. _Persistence\Csv:
 
-============================
-Loading and Saving CSV Files
-============================
+# Loading and Saving CSV Files
 
 .. php:class:: Persistence\Csv
 
@@ -17,8 +14,7 @@ of `Persistence\Csv` are limited to the following actions:
 - listing/iterating
 - adding a new record
 
-Setting Up
-==========
+## Setting Up
 
 When creating new persistence you must provide a valid URL for
 the file that might be stored either on a local system or
@@ -30,8 +26,7 @@ actually opened unless you perform load/save operation::
     $u = new Model_User($p);
     $u = $u->tryLoadAny(); // actually opens file and finds first record
 
-Exporting and Importing data from CSV
-=====================================
+## Exporting and Importing data from CSV
 
 You can take a model that is loaded from other persistence and save
 it into CSV like this. The next example demonstrates a basic functionality

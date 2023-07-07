@@ -1,14 +1,10 @@
-
 .. _Fields:
 
 .. php:namespace:: Atk4\Data
 
 .. php:class:: Field
 
-
-=====
-Field
-=====
+# Field
 
 Field represents a model `property` that can hold information about your entity.
 In Agile Data we call it a Field, to distinguish it from object properties. Fields
@@ -34,8 +30,7 @@ can set and read value of that field::
 Just like you can reuse :php:class:`Model` to access multiple data records,
 :php:class:`Field` object will be reused also.
 
-Purpose of Field
-================
+## Purpose of Field
 
 Implementation of Field in Agile Data is a very powerful and distinctive feature.
 While :php:attr:`Model::data` store your field values, the job of :php:class:`Field`
@@ -45,8 +40,7 @@ on how to store or present it.
 The implementation of Fields is tightly integrated with :php:class:`Model` and
 :php:class:`Persistence`.
 
-Field Type
-----------
+### Field Type
 
 .. php:attr:: type
 
@@ -97,8 +91,7 @@ Those are responsible for converting PHP native types to persistence specific
 formats as defined in fields. Those methods will also change name of the field
 if needed (see Field::actual)
 
-Basic Properties
-----------------
+### Basic Properties
 
 Fields have properties, which define its behaviour. Some properties apply on how
 the values are handled or restrictions on interaction, other values can even
@@ -233,8 +226,7 @@ See also :php:method:`Model::setNull`.
 
 Get the value of the field. Same as $model->get($fieldName);
 
-UI Presentation
----------------
+### UI Presentation
 
 Agile Data does not deal directly with formatting your data for the user.
 There may be various items to consider, for instance the same date can be

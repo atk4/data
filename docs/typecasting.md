@@ -1,9 +1,6 @@
-
 .. _Typecasting:
 
-===========
-Typecasting
-===========
+# Typecasting
 
 Typecasting is evoked when you are attempting to save or load the record.
 Unlike strict types and normalization, typecasting is a persistence-specific
@@ -49,8 +46,7 @@ Some types such as `boolean` may support additional options like::
 
     $m->save(); // stores as "Yes" because of type-casting
 
-Value types
-===========
+## Value types
 
 Any type can have a value of `null`::
 
@@ -71,8 +67,8 @@ to normalize value::
     echo $m->get('age'); // 49 - normalization cast value to integer
     echo $m->get('name'); // 'John' - normalization trims value
 
-Undefined type
---------------
+### Undefined type
+
 If you do not set type for a field, Agile Data will not normalize and type-cast
 its value.
 
@@ -87,8 +83,7 @@ The same can be said about forms, which submit all their data through POST
 request that has no types, so undefined type fields should work relatively
 good with the standard setup of Agile Data + Agile Toolkit + SQL.
 
-Type of IDs
------------
+### Type of IDs
 
 Many databases will allow you to use different types for ID fields.
 In SQL the 'id' column will usually be "integer", but sometimes it can be of
@@ -96,8 +91,7 @@ a different type.
 
 The same applies for references ($m->hasOne()).
 
-Supported types
----------------
+### Supported types
 
 - 'string' - for storing short strings, such as name of a person. Normalize will trim the value.
 - 'text' - for storing long strings, suchas notes or description. Normalize will trim the value.
@@ -111,16 +105,13 @@ Supported types
 - 'json' - no normalization by default
 - 'object' - no normalization by default
 
-Types and UI
-------------
+### Types and UI
 
 UI framework such as Agile Toolkit will typically rely on field type information
 to properly present data for views (forms and tables) without you having to
 explicitly specify the `ui` property.
 
-
-Serialization
-=============
+## Serialization
 
 Some types cannot be stored natively. For example, generic objects and arrays
 have no native type in SQL database. This is where serialization feature is used.
@@ -132,8 +123,7 @@ Field may use serialization to further encode field value for the storage purpos
         'system' => true,
     ]);
 
-Array and Object types
-----------------------
+### Array and Object types
 
 Some types may require serialization for some persistencies, for instance types
 'json' and 'object' cannot be stored in SQL natively. `json` type can be used

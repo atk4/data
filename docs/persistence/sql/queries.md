@@ -2,9 +2,7 @@
 
 .. php:class:: Query
 
-=======
-Queries
-=======
+# Queries
 
 Query class represents your SQL query in-the-making. Once you create object of
 the Query class, call some of the methods listed below to modify your query. To
@@ -32,9 +30,7 @@ Quick Example::
 
     $name = $query->getOne();
 
-
-Method invocation principles
-============================
+## Method invocation principles
 
 Methods of Query are designed to be flexible and concise. Most methods have a
 variable number of arguments and some arguments can be skipped::
@@ -67,8 +63,7 @@ the `$query` properly.
 
 .. _query-modes:
 
-Query Modes
-===========
+## Query Modes
 
 When you create new Query it always start in "select" mode. You can switch
 query to a different mode using :php:meth:`mode`. f you don't switch the mode,
@@ -110,8 +105,7 @@ Otherwise an insert operation will be performed:
 
  - `insert into user (name, surname, revision) values ("John", "Smith", 1)`
 
-Chaining
-========
+## Chaining
 
 Majority of methods return `$this` when called, which makes it pretty
 convenient for you to chain calls by using `->fx()` multiple times as
@@ -121,8 +115,7 @@ You can also combine creation of the object with method chaining::
 
     $age = $c->dsql()->table('user')->where('id', 123)->field('age')->getOne();
 
-Using query as expression
-=========================
+## Using query as expression
 
 You can use query as expression where applicable. The query will get a special
 treatment where it will be surrounded in brackets. Here are few examples::
@@ -166,11 +159,9 @@ query:
         (select `date`, `amount` `credit` from `purchases`)
     ) `derivedTable`
 
-Modifying Select Query
-======================
+## Modifying Select Query
 
-Setting Table
--------------
+### Setting Table
 
 .. php:method:: table($table, $alias)
 
@@ -232,8 +223,7 @@ passing another :php:class:`Query` object::
 
 Method can be executed several times on the same Query object.
 
-Setting Fields
---------------
+### Setting Fields
 
 .. php:method:: field($fields, $alias = null)
 
@@ -289,8 +279,7 @@ used as aliases (if they are specified)::
 
 Method can be executed several times on the same Query object.
 
-Setting where and having clauses
---------------------------------
+### Setting where and having clauses
 
 .. php:method:: where($field, $operation, $value)
 
@@ -412,9 +401,7 @@ and renders its calls to where() method::
     having
         (`a` = :a or `b` = :b)
 
-
-Grouping results by field
--------------------------
+### Grouping results by field
 
 .. php:method:: group($field)
 
@@ -443,9 +430,7 @@ Few examples::
 
 Method can be executed several times on the same Query object.
 
-
-Concatenate group of values
----------------------------
+### Concatenate group of values
 
 .. php:method:: groupConcat($field, $separator = ',')
 
@@ -467,9 +452,7 @@ and overwrite this simple method to support expressions like this, for example:
 
     group_concat('phone' order by 'date' desc separator ';')
 
-
-Joining with other tables
--------------------------
+### Joining with other tables
 
 .. php:method:: join($foreignTable, $masterField, $joinKind)
 
@@ -555,9 +538,7 @@ For a more complex join conditions, you can pass second argument as expression::
     $q->table('user', 'u');
     $q->join('address a', $q->expr('a.name like u.pattern'));
 
-
-Use WITH cursors
-----------------
+### Use WITH cursors
 
 .. php:method:: with(Query $cursor, string $alias, ?array $fields = null, bool $recursive = false)
 
@@ -603,8 +584,7 @@ Use WITH cursors
         left join `q` on `q`.`emp` = `employees`.`id`
         left join `i` on `i`.`emp` = `employees`.`id`
 
-Limiting result-set
--------------------
+### Limiting result-set
 
 .. php:method:: limit($cnt, $shift)
 
@@ -622,8 +602,7 @@ Use this to limit your :php:class:`Query` result-set::
     $q->limit(5);
         // .. LIMIT 0, 5
 
-Ordering result-set
--------------------
+### Ordering result-set
 
 .. php:method:: order($order, $desc)
 
@@ -643,11 +622,9 @@ Use this to order your :php:class:`Query` result-set::
 
 Method can be executed several times on the same Query object.
 
-Insert and Replace query
-========================
+## Insert and Replace query
 
-Set value to a field
---------------------
+### Set value to a field
 
 .. php:method:: set($field, $value)
 
@@ -667,8 +644,7 @@ Example::
 
 Method can be executed several times on the same Query object.
 
-Set Insert Options
-------------------
+### Set Insert Options
 
 .. php:method:: option($option, $mode = 'select')
 
@@ -689,44 +665,33 @@ Other possibility is to set options for delete or insert::
 
 See your SQL capabilities for additional options (low_priority, delayed, high_priority, ignore)
 
-Update Query
-============
+## Update Query
 
-Set Conditions
---------------
+### Set Conditions
 
 Same syntax as for Select Query.
 
-Set value to a field
---------------------
+### Set value to a field
 
 Same syntax as for Insert Query.
 
-Other settings
---------------
+### Other settings
 
 Limit and Order are normally not included to avoid side-effects, but you can
 modify :php:attr:`$templateUpdate` to include those tags.
 
+## Delete Query
 
-Delete Query
-============
-
-Set Conditions
---------------
+### Set Conditions
 
 Same syntax as for Select Query.
 
-
-Other settings
---------------
+### Other settings
 
 Limit and Order are normally not included to avoid side-effects, but you can
 modify :php:attr:`$templateUpdate` to include those tags.
 
-
-Dropping attributes
-===================
+## Dropping attributes
 
 If you have called where() several times, there is a way to remove all the
 where clauses from the query and start from beginning:
@@ -745,10 +710,7 @@ Example::
 
     // where name = 'Peter'
 
-
-Other Methods
-=============
-
+## Other Methods
 
 .. php:method:: dsql($defaults)
 
@@ -819,9 +781,7 @@ Other Methods
     .. code-block:: sql
     case "status" when 'New' then "t2"."expose_new" when 'Used' then "t2"."expose_used" else null end
 
-
-Properties
-==========
+## Properties
 
 .. php:attr:: mode
 

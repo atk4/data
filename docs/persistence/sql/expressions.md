@@ -2,9 +2,7 @@
 
 .. php:class:: Expression
 
-===========
-Expressions
-===========
+# Expressions
 
 Expression class implements a flexible way for you to define any custom
 expression then execute it as-is or as a part of another query or expression.
@@ -52,8 +50,7 @@ Another uses for expressions could be:
  - vendor-specific queries - "describe table"
  - non-traditional constructions, UNIONS or SELECT INTO
 
-Properties, Arguments, Parameters
-=================================
+## Properties, Arguments, Parameters
 
 Be careful when using those similar terms as they refer to different things:
 
@@ -64,8 +61,7 @@ Be careful when using those similar terms as they refer to different things:
  - Parameters refer to the way of passing user values within a query
    `where id=:a` and are further explained below.
 
-Parameters
-----------
+### Parameters
 
 Because some values are un-safe to use in the query and can contain dangerous
 values they are kept outside of the SQL query string and are using
@@ -74,9 +70,7 @@ instead. DSQL can consist of multiple objects and each object may have
 some parameters. During `rendering`_ those parameters are joined together to
 produce one complete query.
 
-
-Creating Expression
-===================
+## Creating Expression
 
 ::
 
@@ -98,8 +92,7 @@ constructor::
 
 .. _expression-template:
 
-Expression Template
-===================
+## Expression Template
 
 When you create a template the first argument is the template. It will be stored
 in :php:attr:`$template` property. Template string can contain arguments in a
@@ -122,8 +115,7 @@ into constructor or you can specify arguments later::
     $expr['name'] = $name;
     $expr['surname'] = $surname;
 
-Nested expressions
-==================
+## Nested expressions
 
 Expressions can be nested several times::
 
@@ -139,8 +131,7 @@ When you include one query into another query, it will automatically take care
 of all user-defined parameters (such as value `18` above) which will make sure
 that SQL injections could not be introduced at any stage.
 
-Rendering
-=========
+## Rendering
 
 An expression can be rendered into a valid SQL code by calling render() method.
 The method will return an array with string and params.
@@ -150,9 +141,7 @@ The method will return an array with string and params.
     Converts :php:class:`Expression` object to an array with string and params.
     Parameters are replaced with :a, :b, etc.
 
-
-Executing Expressions
-=====================
+## Executing Expressions
 
 If your expression is a valid SQL query, (such as ```show databases```) you
 might want to execute it. Expression class offers you various ways to execute
@@ -232,8 +221,7 @@ Finally, you can pass connection class into :php:meth:`executeQuery` directly.
 
         $time = $connection->expr('NOW()')->getOne();
 
-Magic an Debug Methods
-======================
+## Magic an Debug Methods
 
 .. php:method:: __debugInfo()
 
@@ -253,9 +241,7 @@ formatted, install `sql-formatter`::
 
     composer require jdorn/sql-formatter
 
-
-Escaping Methods
-================
+## Escaping Methods
 
 The following methods are useful if you're building your own code for rendering
 parts of the query. You must not call them in normal circumstances.
@@ -302,8 +288,7 @@ parts of the query. You must not call them in normal circumstances.
 
 .. _properties:
 
-Other Properties
-================
+## Other Properties
 
 .. php:attr:: template
 

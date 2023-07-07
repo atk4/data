@@ -1,13 +1,8 @@
-
-===============
-Advanced Topics
-===============
+# Advanced Topics
 
 Agile Data allow you to implement various tricks.
 
-
-SubTypes
-========
+## SubTypes
 
 Disjoint subtypes is a concept where you give your database just a little bit of
 OOP by allowing to extend additional types without duplicating columns. For example,
@@ -37,8 +32,7 @@ There are however two difficulties here:
  1. sometimes you want to operate with specific sub-type.
  2. when iterating, you want to have appropriate class, not Transaction()
 
-Best practice for specifying relation type
-------------------------------------------
+### Best practice for specifying relation type
 
 Although there is no magic behind it, I recommend that you use the following
 code pattern when dealing with multiple types::
@@ -55,8 +49,7 @@ and the code would be clean. If you introduce new type, you would have to add
 extra line to your "Account" model, but it will not be impacting anything, so
 that should be pretty safe.
 
-Type substitution on loading
-----------------------------
+### Type substitution on loading
 
 Another technique is for ATK Data to replace your object when data is being
 loaded. You can treat "Transaction" class as a "shim"::
@@ -117,8 +110,7 @@ substitution::
     // however, for export, we don't need expensive substitution
     $transactionData = $account->ref('Transaction')->export();
 
-Audit Fields
-============
+## Audit Fields
 
 If you wish to have a certain field inside your models that will be automatically
 changed when the record is being updated, this can be easily implemented in
@@ -203,8 +195,7 @@ table.
 
 .. _soft_delete:
 
-Soft Delete
-===========
+## Soft Delete
 
 Most of the data frameworks provide some way to enable 'soft-delete' for tables
 as a core feature. Design of Agile Data makes it possible to implement soft-delete
@@ -311,8 +302,7 @@ them::
 
 Note that you can call $m->delete() still on any record to permanently delete it.
 
-Soft Delete that overrides default delete()
--------------------------------------------
+### Soft Delete that overrides default delete()
 
 In case you want $m->delete() to perform soft-delete for you - this can also be
 achieved through a pretty simple controller. In fact I'm reusing the one from
@@ -351,8 +341,7 @@ You can still access the deleted records::
 Calling delete() on the model with 'deleted_only' property will delete it
 permanently.
 
-Creating Unique Field
-=====================
+## Creating Unique Field
 
 Database can has UNIQUE constraint, but this does work if you use DataSet.
 For instance, you may be only able to create one 'Category' with name 'Book',
@@ -405,8 +394,7 @@ As expected - when you add a new model the new values are checked against
 existing records. You can also slightly modify the logic to make addCondition
 additive if you are verifying for the combination of matched fields.
 
-Using WITH cursors
-==================
+## Using WITH cursors
 
 Many SQL database engines support defining WITH cursors to use in select, update
 and even delete statements.
@@ -432,8 +420,7 @@ and even delete statements.
 
 .. note:: Supported since MySQL 8.x, MariaDB supported it earlier.
 
-Creating Many to Many relationship
-==================================
+## Creating Many to Many relationship
 
 Depending on the use-case many-to-many relationships can be implemented
 differently in Agile Data. I will be focusing on the practical approach.
@@ -442,8 +429,7 @@ My system has "Invoice" and "Payment" document and I'd like to introduce
 ('invoice_id', 'payment_id', and 'amount_closed').
 Here is what I need to do:
 
-1. Create Intermediate Entity - InvoicePayment
-----------------------------------------------
+### 1. Create Intermediate Entity - InvoicePayment
 
 Create new Model::
 
@@ -461,8 +447,7 @@ Create new Model::
         }
     }
 
-2. Update Invoice and Payment model
------------------------------------
+### 2. Update Invoice and Payment model
 
 Next we need to define reference. Inside Model_Invoice add::
 
@@ -484,9 +469,7 @@ Next we need to define reference. Inside Model_Invoice add::
 You'll have to do a similar change inside Payment model. The code for '$j->'
 have to be duplicated until we implement method Join->importModel().
 
-
-3. How to use
--------------
+### 3. How to use
 
 Here are some use-cases. First lets add payment to existing invoice. Obviously
 we cannot close amount that is bigger than invoice's total::
@@ -550,10 +533,7 @@ has a matching reference. Additionally it will allocate your payment towards
 multiple invoices. Finally if invoice is partially paid it will only allocate
 what is due.
 
-
-
-Creating Related Entity Lookup
-==============================
+## Creating Related Entity Lookup
 
 Sometimes when you add a record inside your model you want to specify some
 related records not through ID but through other means. For instance, when
@@ -633,8 +613,7 @@ differently from PHP's default behavior. See documentation for Model::isset
 This technique allows you to hide the complexity of the lookups and also embed
 the necessary queries inside your "insert" query.
 
-Fallback to default value
--------------------------
+### Fallback to default value
 
 You might wonder, with the lookup like that, how the default values will work?
 What if the user-specified entry is not found? Lets look at the code::
@@ -665,9 +644,7 @@ as a lookup query::
         $this->refModel('category_id')->addCondition('name', 'Other')
             ->action('field', ['id']);
 
-
-Inserting Hierarchical Data
-===========================
+## Inserting Hierarchical Data
 
 In this example I'll be building API that allows me to insert multi-model
 information. Here is usage example::
@@ -715,8 +692,7 @@ further manipulation, you can reload a clone::
         $entityCloned->save(['status' => 'paid']);
     }
 
-Related Record Conditioning
-===========================
+## Related Record Conditioning
 
 Sometimes you wish to extend one Model into another but related field type
 can also change. For example let's say we have Model_Invoice that extends
@@ -771,8 +747,7 @@ In this case the payment_invoice_id will be set to ID of any payment by client
         $m->save();
     }
 
-Narrowing Down Existing References
-==================================
+## Narrowing Down Existing References
 
 Agile Data allow you to define multiple references between same entities, but
 sometimes that can be quite useful. Consider adding this inside your Model_Contact::

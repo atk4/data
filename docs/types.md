@@ -1,15 +1,11 @@
-
 .. php:namespace:: Atk4\Data\Field
 
-==========
-Data Types
-==========
+# Data Types
 
 ATK Data framework implements a consistent and extensible type system with the
 following goals:
 
-Type specification
-==================
+## Type specification
 
  - Provide list of out-of-the-box types, such as "percentage"
  - Provide list of classes such as :php:class:`Fraction`
@@ -30,8 +26,7 @@ it in human-readable format, however in some cases, if you plan on using ATK UI,
 you would have to create a custom decorators/FormField to properly read and
 present your type value. See :php:attr:`\\Atk4\\Ui\\Field::ui`.
 
-Persistence mechanics and Serialization
-=======================================
+## Persistence mechanics and Serialization
 
 All type values can be specified as primitives. For example `DateTime` object
 class is associated with the `type=time` will be converted into string with
@@ -46,8 +41,7 @@ and simply use this::
 
     $model->addField('selection', ['type' => 'json']);
 
-Field configuration
-===================
+## Field configuration
 
 Fields can be further configured. For numeric fields it's possible to provide
 precision. For instance, when user specifies `'type' => 'atk4_money'` it is represented
@@ -62,8 +56,7 @@ Although some configuration of the field may appear irrelevant (prefix/postfix)
 to operations with data from inside PHP, those properties can be used by
 ATK UI or data export routines to properly input or display values.
 
-Typecasting
-===========
+## Typecasting
 
 ATK Data uses PHP native types and classes. For example, 'time' type is using
 DateTime object.
@@ -73,8 +66,7 @@ value accordingly. Type-casting can be persistence-specific, for instance,
 when storing "datetime" into SQL, the ISO format will be used, but when displayed
 to the user a regional format is used instead.
 
-Supported Types
-===============
+## Supported Types
 
 ATK Data prior to 1.5 supports the following types:
 

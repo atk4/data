@@ -1,6 +1,4 @@
-====================================
-Introduction to Architectural Design
-====================================
+# Introduction to Architectural Design
 
 Layering is one of the most common techniques that software designers use to
 break apart a complicated software system. A modern application would have
@@ -47,9 +45,7 @@ Once you learn the concept behind Agile Data, you'll be able to write "Domain ob
 of your application with ease through a readable code and without impact on your
 application performance or feature restrictions.
 
-
-The Domain Layer Scope
-=======================
+## The Domain Layer Scope
 
 Agile Data is a framework that will allow you to define your Domain objects
 and will map them into database of your choice.
@@ -57,9 +53,7 @@ and will map them into database of your choice.
 You can use Agile Data with SQL (PDO-compatible) vendors, NoSQL (MongoDB) or
 memory Arrays. Support for other database vendors can be added through add-ons.
 
-
-The Danger of Raw Queries
--------------------------
+### The Danger of Raw Queries
 
 If you still think that writing SQL queries is the most efficient way to work
 with database, you are probably not considering other disadvantages of this
@@ -75,8 +69,7 @@ approach:
 There are more problems such as difficulty in unit-testing your Domain object
 code.
 
-Purity levels of Domain code
-----------------------------
+### Purity levels of Domain code
 
 Agile Data focuses on creating "patterns" that can live in "Domain" layer.
 There are three levels of code "purity":
@@ -108,9 +101,7 @@ Agile Data offers you ability to move as much code as possible to the level with
 highest "purity", but even if you have to write chunk of SQL code, you can do
 it without compromising cross-vendor compatibility.
 
-
-Domain Logic
-============
+## Domain Logic
 
 When dealing with Domain logic, you work with a single object.
 
@@ -121,8 +112,7 @@ of those objects.
 
 All of those model properties are "declared".
 
-Domain Models
--------------
+### Domain Models
 
 Congratulations, you have just designed a model layer of your application.
 Remember that it had nothing to do with your database structure, right?
@@ -149,8 +139,7 @@ A code to declare a model::
     {
     }
 
-Domain Model Methods
---------------------
+### Domain Model Methods
 
 Next we need to write down various "functions" your application would have to
 perform and attribute those to individual models. At the same time think
@@ -179,9 +168,7 @@ At this stage you should not think about "saving" your entries. Think of your
 objects as if they would forever exist in your memory. Also don't bother with
 basic actions such as adding new order or deleting order.
 
-
-Domain Model Fields
--------------------
+### Domain Model Fields
 
 Our next step is to define object fields (or properties). Remember that
 inheritance is at play here so you can take advantage of OOP:
@@ -226,8 +213,7 @@ Code to access field values::
 
     $order->set('amount', 1200.2);
 
-Domain Model Relationship
--------------------------
+### Domain Model Relationship
 
 Next - references. Think how those objects relate to each-other. Think in terms
 of "specific object" and not database relations. Client has many Orders. Order
@@ -265,10 +251,7 @@ Code (add inside `init()`)::
         }
     }
 
-
-
-Persistence backed Domain Logic
-===============================
+## Persistence backed Domain Logic
 
 Once we establish that Model object and set its persistence layer, we can start
 accessing it.
@@ -281,9 +264,8 @@ Here is the code::
     $order->setPersistence($db); // same as $order = new Model_Order($db)
     // $order is associated with specific persistence layer $db
 
+### ID Field
 
-ID Field
---------
 Each object is stored with some unique identifier, so you can load and store
 object if you know it's ID::
 
@@ -291,15 +273,11 @@ object if you know it's ID::
     $order->set('amount', 1200.2);
     $order->save();
 
-
-Persistence-specific Code
-=========================
+## Persistence-specific Code
 
 Finally, some code may rely on specific features of your persistence layer.
 
-
-Domain Model Expressions
-------------------------
+### Domain Model Expressions
 
 A final addition to our Domain Model are expressions. Those are the "formulas"
 where the value cannot be changed directly, but is actually derived from other
@@ -342,8 +320,7 @@ Code::
         }
     }
 
-Persistence Hooks
------------------
+### Persistence Hooks
 
 Hooks can help you perform operations when object is being persisted::
 
@@ -365,10 +342,7 @@ Hooks can help you perform operations when object is being persisted::
         }
     }
 
-
-
-DataSet Declaration
-===================
+## DataSet Declaration
 
 So far we have only looked at a single record - one User or one Order. In
 practice our application must operate with multiple records.
@@ -416,8 +390,7 @@ At this point, I'll jump ahead a bit and will show you an alternative code::
 It will have same effect as the code above, but will perform operation of
 adding up all order amounts inside the database and save you a lot of CPU cycles.
 
-Domain Conditions
-=================
+## Domain Conditions
 
 If your database has 3 clients - 'Joe', 'Bill', and 'Steve' then the DataSet of
 "Client" has 3 records.
@@ -447,9 +420,7 @@ And again it's much more effective to do this on database side::
                 ->fx0(['sum', 'amount'])
                 ->getOne();
 
-
-Related DataSets
-================
+## Related DataSets
 
 Next, let's look on the orders of specific user. How would you load orders of a
 specific user.
@@ -482,8 +453,7 @@ After `ref()` is executed, you have a new DataSet with a condition based on
 user sub-query. The actual implementation may be different depending on vendor,
 but Agile Data will prefer not to fetch list of "user_id"s without need.
 
-Domain Model Actions
---------------------
+### Domain Model Actions
 
 Persistence layer in Agile Data uses intelligent mapping of your Domain Logic
 into DatabaseVendor-specific operations.
@@ -551,9 +521,8 @@ for your model, but not a specific one.
 As long as your Domain Model is restricted to generic Domain Model Actions, it
 will not violate SRP (Single Responsibility Principle)
 
+### Unique Features of Persistence Layer
 
-Unique Features of Persistence Layer
-------------------------------------
 More often thannot, your application is designed and built with a specific
 persistence layer in mind. If you are using SQL database, you want to
 

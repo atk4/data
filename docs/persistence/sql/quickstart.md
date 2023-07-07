@@ -1,14 +1,10 @@
 .. _quickstart:
 
-==========
-Quickstart
-==========
+# Quickstart
 
 When working with DSQL you need to understand the following basic concepts:
 
-
-Basic Concepts
-==============
+## Basic Concepts
 
 Expression (see :ref:`expr`)
     :php:class:`Expression` object, represents a part of a SQL query. It can
@@ -29,8 +25,7 @@ Connection
     for your comfort there is a :php:class:`Connection` class with very little
     overhead.
 
-Getting Started
-===============
+## Getting Started
 
 We will start by looking at the :php:class:`Query` building, because you do
 not need a database to create a query::
@@ -123,8 +118,8 @@ Using DSQL in higher level ORM libraries and frameworks allows them to focus on
 defining the database logic, while DSQL can perform the heavy-lifting of query
 building and execution.
 
-Creating Objects and PDO
-========================
+## Creating Objects and PDO
+
 DSQL classes does not need database connection for most of it's work. Once you
 create new instance of :ref:`Expression <expr>` or :ref:`Query <query>` you can
 perform operation and finally call :php:meth:`Expression::render()` to get the
@@ -165,9 +160,7 @@ problems::
 The above code will work even though SQLite does not support truncate. That's
 because DSQL takes care of this.
 
-
-Query Building
-==============
+## Query Building
 
 Each Query object represents a query to the database in-the-making.
 Calling methods such as :php:meth:`Query::table` or :php:meth:`Query::where`
@@ -178,8 +171,7 @@ query or use it inside another query.
 Some unusual statements can be easily added by customizing template for specific
 query and we will look into examples in :ref:`extending_query`
 
-Query Mode
-==========
+## Query Mode
 
 When you create a new :php:class:`Query` object, it is going to be a *SELECT*
 query by default. If you wish to execute ``update`` operation instead, you
@@ -205,8 +197,7 @@ perform the action::
 
 .. _fething-result:
 
-Fetching Result
-===============
+## Fetching Result
 
 When you are selecting data from your database, DSQL will prepare and execute
 statement for you. Depending on the connection, there may be some magic

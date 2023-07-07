@@ -3,8 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to DSQL's documentation!
-================================
+## Welcome to DSQL's documentation!
 
 Contents:
 
@@ -21,10 +20,7 @@ Contents:
     advanced
     extensions
 
-
-
-Indices and tables
-==================
+## Indices and tables
 
 * :ref:`genindex`
 * :ref:`modindex`

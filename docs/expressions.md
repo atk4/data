@@ -1,9 +1,6 @@
-
 .. _Expressions:
 
-===========
-Expressions
-===========
+# Expressions
 
 .. php:class:: Model
 
@@ -37,8 +34,7 @@ The query using during load() will look like this:
         (`total_net`+`total_vat`) `total_gross`
     from `invoice`',
 
-Defining Expression
--------------------
+### Defining Expression
 
 The simplest format to define expression is by simply passing a string. The
 argument is executed through Model::expr() which automatically substitutes
@@ -56,8 +52,7 @@ expression string (for safety)
 
 You can also use expressions to pass a select action for a specific field::
 
-No-table Model Expression
--------------------------
+### No-table Model Expression
 
 Agile Data allows you to define a model without table. While this may have
 no purpose initially, it does come in handy in some cases, when you need to
@@ -97,8 +92,7 @@ Of course you can also use a DSQL for this::
 
 You can decide for yourself based on circumstances.
 
-Expression Callback
--------------------
+### Expression Callback
 
 You can use a callback method when defining expression::
 
@@ -106,8 +100,7 @@ You can use a callback method when defining expression::
         return '[total_net] + [total_vat]';
     }, 'type' => 'float']);
 
-Model Reloading after Save
---------------------------
+### Model Reloading after Save
 
 When you add SQL Expressions into your model, that means that some of the fields
 might be out of sync and you might need your SQL to recalculate those expressions.

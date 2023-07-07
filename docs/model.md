@@ -1,9 +1,6 @@
-
 .. _Model:
 
-=====
-Model
-=====
+# Model
 
 .. php:class:: Model
 
@@ -48,9 +45,7 @@ Reference patterns, Action types.
 I suggest you to read the next section to make sure you fully understand the Model and its role
 in ATK Data.
 
-
-Understanding Model
-===================
+## Understanding Model
 
 Please understand that Model in ATK Data is unlike models in other data frameworks. The
 Model class can be seen as a "gateway" between your code and many other features of ATK Data.
@@ -64,8 +59,8 @@ Methods `addField` and `hasMany` will ultimately create and link model with a co
 `Field` object and `Reference` object. Those classes contain the logic, but in 95% of the use-cases,
 you will not have to dive deep into them.
 
-Model object = Data Set
------------------------
+### Model object = Data Set
+
 From the moment when you create instance of your model class, it represents a DataSet - set of records
 that share some common traits::
 
@@ -87,8 +82,8 @@ operations on Model are mutating (meaning that in example above `$allUsers` will
 and in fact, `$allUsers` and `$maleUsers` will reference same object. Use `clone` if you do not wish
 to affect `$allUsers`.
 
-Model object = meta information
--------------------------------
+### Model object = meta information
+
 By design, Model object does not have direct knowledge of higher level objects or specific
 implementations. Still - Model will be a good place to deposit some meta-information::
 
@@ -97,9 +92,8 @@ implementations. Still - Model will be a good place to deposit some meta-informa
 Model and Field class will simply store the "ui" property which may (or may not) be used by ATK UI
 component or some add-on.
 
+### Domain vs Persistence
 
-Domain vs Persistence
----------------------
 When you declare a model Field you can also store some persistence-related meta-information::
 
     // override how your persistence formats date field
@@ -117,9 +111,8 @@ When you declare a model Field you can also store some persistence-related meta-
 Model also has a property `$table`, which indicate name of default table/collection/file to be
 used by persistence. (Name of property is decided to avoid beginner confusion)
 
+### Good naming for a Model
 
-Good naming for a Model
------------------------
 Some parts of this documentation were created years ago and may use class notation: `Model_User`.
 We actually recommend you to use namespaces instead::
 
@@ -145,9 +138,7 @@ and is a most efficient way to specify related class name.
 You way also use `new Invoice()` there but be sure not to specify any argument, unless you intend
 to use cross-persistence referencing (this is further explained in Advanced section)
 
-
-Initialization
-==============
+## Initialization
 
 .. php:method:: init
 
@@ -189,8 +180,8 @@ which are associated with said persistence::
 
     $invoice = new Invoice($db);
 
-Fields
-------
+### Fields
+
 Each model field is represented by a Field object::
 
     $model->addField('name');
@@ -303,9 +294,8 @@ This can also be useful for calculating relative times::
         }
     }
 
+### Actions
 
-Actions
--------
 Another common thing to define inside :php:meth:`Model::init()` would be
 a user invocable actions::
 
@@ -345,8 +335,8 @@ passwords to be generated and sent to the users::
 
 Read more about :php:class:`Model\UserAction`
 
-Hooks
------
+### Hooks
+
 Hooks (behaviours) can allow you to define callbacks which would trigger
 when data is loaded, saved, deleted etc. Hooks are typically defined in
 :php:meth:`Model::init()` but will be executed accordingly.
@@ -382,9 +372,8 @@ Other Uses
 
 Other uses for model hooks are explained in :ref:`Hooks`
 
+### Inheritance
 
-Inheritance
------------
 ATK Data models are really good for structuring hierarchically. Here is example::
 
     class VipUser extends User
@@ -408,9 +397,7 @@ This introduces a new business object, which is a sub-set of User. The new class
 inherit all the fields, methods and actions of "User" class but will introduce one new
 action - `send_gift`.
 
-
-Associating Model with Database
-===============================
+## Associating Model with Database
 
 After talking extensively about model definition, lets discuss how model is associated
 with persistence. In the most basic form, model is associated with persistence like this::
@@ -461,9 +448,7 @@ Creates a duplicate of a current model and associate new copy with a specified
 persistence. This method is useful for moving model data from one persistence
 to another.
 
-
-Populating Data
-===============
+## Populating Data
 
 .. php:method:: insert($row)
 
@@ -489,10 +474,7 @@ Populating Data
     tables as needed. If you wish to access tables directly, you'll have to look
     into Persistence::insert($m, $data);
 
-
-
-Working with selective fields
-=============================
+## Working with selective fields
 
 When you normally work with your model then all fields are available and will be
 loaded / saved. You may, however, specify that you wish to load only a sub-set
@@ -511,8 +493,7 @@ of fields.
 
 .. _Active Record:
 
-Setting and Getting active record data
-======================================
+## Setting and Getting active record data
 
 When your record is loaded from database, record data is stored inside the $data
 property:
@@ -637,8 +618,7 @@ Full example::
 
     Verify and convert first argument got get / set;
 
-Title Field, ID Field and Model Caption
-=======================================
+## Title Field, ID Field and Model Caption
 
 Those are three properties that you can specify in the model or pass it through
 defaults::
@@ -653,8 +633,7 @@ or as defaults::
 
 .. _idField:
 
-ID Field
---------
+### ID Field
 
 .. php:attr:: idField
 
@@ -666,8 +645,7 @@ ID Field
 
 .. _titleField:
 
-Title Field
------------
+### Title Field
 
 .. php:attr:: titleField
 
@@ -692,8 +670,7 @@ Title Field
 
 .. _caption:
 
-Model Caption
--------------
+### Model Caption
 
 .. php:attr:: caption
 
@@ -704,9 +681,7 @@ Model Caption
     Returns model caption. If caption is not set, then try to generate one from
     model class name.
 
-
-Setting limit and sort order
-============================
+## Setting limit and sort order
 
 .. php:method:: public setLimit($count, $offset = null)
 

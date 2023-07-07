@@ -1,9 +1,6 @@
-
 .. _connect:
 
-==========
-Connection
-==========
+# Connection
 
 DSQL supports various database vendors natively but also supports 3rd party
 extensions.

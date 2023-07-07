@@ -1,6 +1,4 @@
-========
-Overview
-========
+# Overview
 
 Agile Data is a unique SQL/NoSQL access library that promotes correct Business
 Logic design in your PHP application and implements database access in a
@@ -9,8 +7,7 @@ flexible and scalable way.
 .. image:: images/presentation.png
     :target: https://www.youtube.com/watch?v=XUXZI7123B8
 
-Simple to learn
-===============
+## Simple to learn
 
 We have designed Agile Data to be very friendly for those who started programming
 recently and teach them correct patterns through clever architectural design.
@@ -21,8 +18,7 @@ applications, but the true power of Agile Data is realized when it's paired with
 Agile UI or Agile API projects.
 (https://github.com/atk4/ui, https://github.com/atk4/api).
 
-Not a traditional ORM
-=====================
+## Not a traditional ORM
 
 Agile Data implementation has several significant differences to a traditional
 ORM (Hibernate / Doctrine style). I will discuss those in more detail further in
@@ -38,9 +34,7 @@ pattern:
 To find out more, how Agile Data compares to other PHP data mappers and ORM frameworks, see
 https://medium.com/@romaninsh/objectively-comparing-orm-dal-libraries-e4f095de80b5
 
-
-Concern Separation
-==================
+## Concern Separation
 
 Design of Agile Data follows principle of "concern separation", but all of the
 basic functionality is divided into 3 major areas:
@@ -57,8 +51,7 @@ work with your DataSets.
 
 If you have worked with other ORMs, read the following sections to avoid confusion:
 
-Class: Field
-------------
+### Class: Field
 
  - Represent logical data column (e.g. "date_of_birth")
  - Stores column meta-information (e.g. ['type' => 'date', 'caption' => 'Birth Date'])
@@ -69,8 +62,7 @@ Class: Field
     or presentation detail (:php:attr:`Field::ui`). Field class does not interpret
     the value, it only stores it.
 
-Class: Model
-------------
+### Class: Model
 
  - Represent logical Data Set (e.g. Active Users)
  - Stores data location and criteria
@@ -86,8 +78,7 @@ Class: Model
 .. note:: Unlike ORMs Model instances are never created during iterating. Also,
     in most cases, you never instantiate multiple instances of a model class.
 
-Class: Persistence
-------------------
+### Class: Persistence
 
  - Represent external data storage (e.g. MySQL database)
  - Stores connection information
@@ -95,10 +86,7 @@ Class: Persistence
  - Type-casts standard data types into vendor-specific format
  - Documentation: :php:class:`Persistence`
 
-
-
-Code Layers
-===========
+## Code Layers
 
 How is code::
 
@@ -125,8 +113,7 @@ execute no more than 3-4 requests per page even for highly complex data pages
 
 Next I'll show you how code from different "code layers" may look like:
 
-Domain-Model Code
------------------
+### Domain-Model Code
 
 Code is unaware of physical location of your data or which persistence are you
 using::
@@ -153,8 +140,7 @@ A typical method of your model class will be written in "domain-model" code.
     capabilities of persistence. The above example executes a total of 2 queries
     if used with SQL database.
 
-Persistence-specific code
--------------------------
+### Persistence-specific code
 
 This is a type of code which may change if you decide to switch from one
 persistence to another. For example, this is how you would define `gross` field
@@ -188,8 +174,7 @@ you want it to work with NoSQL, then your solution might be::
         });
     }
 
-Generic Persistence-code
-------------------------
+### Generic Persistence-code
 
 A final type of code is also persistence-specific, but it is agnostic to your
 data-model. The example would be implementation of aggregation with "GROUP BY"
@@ -207,10 +192,7 @@ order to use grouping with Agile Data, your code would be::
         'total' => ['expr' => 'sum([amount])'], // can specify any field here
     ]);
 
-
-
-Persistence Scaling
-===================
+## Persistence Scaling
 
 Although in most cases you would be executing operation against SQL persistence,
 Agile Data makes it very easy to use models with a simpler persistencies.

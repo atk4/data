@@ -1,16 +1,11 @@
-
-================
-Fetching results
-================
+# Fetching results
 
 .. php:class:: Model
 
 Model linked to a persistence is your "window" into DataSet and you get several
 ways which allow you to fetch the data.
 
-
-Iterate through model data
-==========================
+## Iterate through model data
 
 .. php:method:: getIterator()
 
@@ -42,8 +37,8 @@ other calculation or validations.
 .. note:: changing query parameter during iteration will has no effect until you
     finish iterating.
 
-Keeping models
---------------
+### Keeping models
+
 If you wish to preserve the objects that you have loaded (not recommended as they
 will consume memory), you can do it like this::
 
@@ -52,9 +47,7 @@ will consume memory), you can do it like this::
         $cat[$id] = clone $c;
     }
 
-
-Raw Data Fetching
------------------
+### Raw Data Fetching
 
 .. php:method:: getRawIterator()
 
@@ -76,8 +69,7 @@ you and server-side expressions executed that are embedded in the query.
 
 By default - `onlyFields` will be presented as well as system fields.
 
-Fetching data through action
-----------------------------
+### Fetching data through action
 
 You can invoke and iterate action (particularly SQL) to fetch the data::
 
@@ -87,9 +79,7 @@ You can invoke and iterate action (particularly SQL) to fetch the data::
 
 This has the identical behavior to $m->getRawIterator();
 
-
-Comparison of various ways of fetching
-======================================
+## Comparison of various ways of fetching
 
 - getIterator - action(select), [ fetches row, set ID/Data, call afterLoad hook,
   yields model ], unloads data

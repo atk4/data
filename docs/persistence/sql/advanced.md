@@ -1,17 +1,15 @@
-===============
-Advanced Topics
-===============
+# Advanced Topics
 
 DSQL has huge capabilities in terms of extending. This chapter explains just
 some of the ways how you can extend this already incredibly powerful library.
 
-Advanced Connections
-====================
+## Advanced Connections
+
 :php:class:`Connection` is incredibly lightweight and powerful in DSQL.
 The class tries to get out of your way as much as possible.
 
-Using DSQL without Connection
------------------------------
+### Using DSQL without Connection
+
 You can use :php:class:`Query` and :php:class:`Expression` without connection
 at all. Simply create expression::
 
@@ -36,9 +34,8 @@ The :php:meth:`Expression::execute` is a convenient way to prepare query,
 bind all parameters and get `Doctrine\DBAL\Result`, but if you wish to do it manually,
 see `Manual Query Execution`_.
 
+### Using in Existing Framework
 
-Using in Existing Framework
----------------------------
 If you use DSQL inside another framework, it's possible that there is already
 a PDO object which you can use. In Laravel you can optimize some of your queries
 by switching to DSQL::
@@ -76,8 +73,7 @@ namespace and wish to use it.
 
 .. _extending_query:
 
-Extending Query Class
-=====================
+## Extending Query Class
 
 You can add support for new database vendors by creating your own
 :php:class:`Query` class.
@@ -109,8 +105,8 @@ on the connection::
 
 .. _new_vendor:
 
-Adding new vendor support through extension
--------------------------------------------
+### Adding new vendor support through extension
+
 If you think that more people can benefit from your custom query class, you can
 create a separate add-on with it's own namespace. Let's say you have created
 `myname/dsql-myvendor`.
@@ -136,8 +132,7 @@ If you would like that your vendor support be bundled with DSQL, you should
 contact copyright@agiletoolkit.org after your external class has been around
 and received some traction.
 
-Adding New Query Modes
-----------------------
+### Adding New Query Modes
 
 By Default DSQL comes with the following :ref:`query-modes`:
 
@@ -182,8 +177,7 @@ Then to use your new statement, you can do::
 
     $c->dsql()->file('abc.csv')->loadData();
 
-Manual Query Execution
-======================
+## Manual Query Execution
 
 If you are not satisfied with :php:meth:`Expression::execute` you can execute
 query yourself.
@@ -193,10 +187,8 @@ query yourself.
 3. set result fetch mode and parameters;
 4. execute() your statement
 
+## Exception Class
 
-
-Exception Class
-===============
 DSQL slightly extends and improves :php:class:`Exception` class
 
 .. php:class:: Exception

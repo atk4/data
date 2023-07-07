@@ -1,11 +1,8 @@
-
 .. _Joins:
 
 .. php:namespace:: Atk4\Data\Model
 
-=================================
-Model from multiple joined tables
-=================================
+# Model from multiple joined tables
 
 .. php:class:: Join
 
@@ -14,8 +11,7 @@ in the database. Your database may want to split up logical information into
 tables for various reasons, such as to avoid repetition or to better optimize
 indexes.
 
-Join Basics
-===========
+## Join Basics
 
 Agile Data allows you to map multiple table fields into a single business model
 by using joins::
@@ -53,8 +49,7 @@ When saving the record, Joins will automatically record data correctly:
     @join_c = last_insert_id();
     insert into user (username, contact_id) values ($, @join_c)
 
-Strong and Weak joins
----------------------
+### Strong and Weak joins
 
 When you are joining tables, then by default a strong join is used. That means
 that both records are not-nullable and when adding records, they will both be added
@@ -79,9 +74,7 @@ After this you will have the following fields in your model:
 - country_name [readOnly]
 - default_currency [readOnly]
 
-
-Join relationship definitions
------------------------------
+### Join relationship definitions
 
 When defining joins, you need to outline two fields that must match. In our
 earlier examples, we the master table was "user" that contained reference to
@@ -115,8 +108,7 @@ There are more options that you can pass inside join(), but those are
 vendor-specific and you'll have to look into documentation for sql\Join and
 mongo\Join respectfully.
 
-Method Proxying
----------------
+### Method Proxying
 
 Once your join is defined, you can call several methods on the join objects, that
 will create fields, other joins or expressions but those would be associated
@@ -156,9 +148,7 @@ with a foreign table.
 
     Not yet implemented !
 
-
-Create and Delete behavior
---------------------------
+### Create and Delete behavior
 
 Updating joined records are simple, but when it comes to creation and deletion,
 there are some conditions. First we look at dependency. If master table contains
@@ -198,10 +188,7 @@ record first, however you can specify a different value for "reverse".
 Sometimes it's also sensible to set deleteBehaviour = ignore and perform your
 own delete operation yourself.
 
-
-
-Implementation Detail
----------------------
+### Implementation Detail
 
 Joins are implemented like this:
 
@@ -219,8 +206,7 @@ Joins are implemented like this:
 
 .. php:class:: Join\Sql
 
-SQL-specific joins
-==================
+## SQL-specific joins
 
 When your model is associated with SQL-capable driver, then instead of using
 `Join` class, the `Join\\Sql` is used instead. This class is designed to improve
@@ -229,8 +215,7 @@ loading technique, because SQL vendors can query multiple tables simultaneously.
 Vendors that cannot do JOINs will have to implement compatibility by pulling
 data from collections in a correct order.
 
-Implementation Details
-----------------------
+### Implementation Details
 
 - although some SQL vendors allow update .. join .. syntax, this will not be
   used. That is done to ensure better compatibility.
@@ -240,8 +225,7 @@ Implementation Details
 - strong join can potentially reduce your data-set as it exclude table rows
   that cannot be matched with foreign table row.
 
-Specifying complex ON logic
----------------------------
+### Specifying complex ON logic
 
 When you're dealing with SQL drivers, you can specify `\Atk4\Data\Persistence\Sql\Expression` for your
 "on" clause::

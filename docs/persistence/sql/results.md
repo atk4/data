@@ -1,6 +1,4 @@
-=======
-Results
-=======
+# Results
 
 When query is executed by :php:class:`Connection` or
 `PDO <http://php.net/manual/en/pdo.query.php>`_, it will return an object that

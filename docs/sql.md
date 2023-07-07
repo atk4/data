@@ -1,17 +1,13 @@
-
 .. _SQL:
 
-==============
-SQL Extensions
-==============
+# SQL Extensions
 
 Databases that support SQL language can use :php:class:`Persistence\Sql`.
 This driver will format queries to the database using SQL language.
 
 In addition to normal operations you can extend and customize various queries.
 
-Default Model Classes
-=====================
+## Default Model Classes
 
 When using `Persistence\Sql` model building will use different classes for fields,
 expressions, joins etc:
@@ -21,9 +17,7 @@ expressions, joins etc:
  - addExpression - :php:class:`SqlExpressionField` (define expression through DSQL)
  - join - :php:class:`Join\Sql` (join tables query-time)
 
-
-SQL Field
----------
+### SQL Field
 
 .. php:class:: FieldSql
 
@@ -45,8 +39,7 @@ SQL Field
                 'birth_year' => $m->getField('birth_year'),
             ]);
 
-SQL Reference
--------------
+### SQL Reference
 
 .. php:class:: Reference\HasOneSql
 
@@ -131,8 +124,7 @@ SQL Reference
 
     Returns new field object.
 
-Expressions
------------
+### Expressions
 
 .. php:class:: SqlExpressionField
 
@@ -156,8 +148,7 @@ Expression will map into the SQL code, but will perform as read-only field other
 Adding expressions to model will make it automatically reload itself after save
 as default behavior, see :php:attr:`Model::reloadAfterSave`.
 
-Transactions
-============
+## Transactions
 
 .. php:class:: Persistence\Sql
 
@@ -184,8 +175,7 @@ of various blocks. If any exception is raised within the block, then transaction
 will be automatically rolled back. The return of atomic() is same as return of
 user-defined callback.
 
-Custom Expressions
-==================
+## Custom Expressions
 
 .. php:method:: expr
 
@@ -211,9 +201,7 @@ field expressions will be automatically substituted. Here is long / short format
 
 This method is automatically used by :php:class:`SqlExpressionField`.
 
-
-Actions
-=======
+## Actions
 
 The most basic action you can use with SQL persistence is 'select'::
 
@@ -222,9 +210,7 @@ The most basic action you can use with SQL persistence is 'select'::
 Action is implemented by DSQL library, that is further documented at
 http://dsql.readthedocs.io (See section Queries).
 
-
-Action: select
---------------
+### Action: select
 
 This action returns a basic select query. You may pass one argument - array
 containing list of fields::
@@ -237,8 +223,7 @@ them yourself)::
     $action = $model->action('select', [false]);
     $action->field('count(*)', 'c);
 
-Action: count
--------------
+### Action: count
 
 Returns query for `count(*)`::
 
@@ -253,8 +238,7 @@ You can also specify alias::
     $data = $action->getRow();
     $cnt = $data->get('cc');
 
-Action: field
--------------
+### Action: field
 
 Get query for a specific field::
 
@@ -266,8 +250,7 @@ You can also specify alias::
     $action = $model->action('field', ['age', 'alias' => 'the_age']]);
     $age = $action->limit(1)->getRow()['the_age'];
 
-Action: fx
-----------
+### Action: fx
 
 Executes single-argument SQL function on field::
 
@@ -277,8 +260,7 @@ Executes single-argument SQL function on field::
 This method also supports alias. Use of alias is handy if you are using those
 actions as part of other query (e.g. UNION)
 
-Stored Procedures
-=================
+## Stored Procedures
 
 SQL servers allow to create and use stored procedures and there are several ways
 to invoke them:
@@ -303,8 +285,7 @@ to the following:
     - Performance and scalability.
     - When to refactor away stored procedures.
 
-Compatibility Warning
----------------------
+### Compatibility Warning
 
 Agile Data is designed to be cross-database agnostic. That means you should be
 able to swap your SQL to NoSQL or RestAPI at any moment. My relying on stored
@@ -324,8 +305,7 @@ Or define your pure model, then extend it to add SQL capabilities. Note that
 using single model with cross-persistencies should still be possible, so you
 should be able to retrieve model data from stored procedure then cache it.
 
-as a Model method
------------------
+### as a Model method
 
 You should be familiar with http://dsql.readthedocs.io/en/develop/expressions.html.
 
@@ -385,8 +365,7 @@ Here is another example using PHP generator::
         }
     }
 
-as a Model Field
-----------------
+### as a Model Field
 
 .. important:: Not all SQL vendors may support this approach.
 
@@ -415,9 +394,7 @@ This should translate into SQL query::
 
 where once again, stored function is hidden.
 
-
-as an Action
-------------
+### as an Action
 
 .. important:: Not all SQL vendors may support this approach.
 
@@ -459,8 +436,7 @@ you can significantly affect the query building of an SQL model::
         }
     }
 
-as a Temporary Table
---------------------
+### as a Temporary Table
 
 A most convenient (although inefficient) way for stored procedures is to place
 output data inside a temporary table. You can perform an actual call to stored
@@ -486,9 +462,7 @@ procedure inside Model::init() then set $table property to a temporary table::
         }
     }
 
-
-as an Model Source
-------------------
+### as an Model Source
 
 .. important:: Not all SQL vendors may support this approach.
 

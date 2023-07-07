@@ -1,17 +1,13 @@
-
 .. _SQL:
 
-==================
-Static Persistence
-==================
+# Static Persistence
 
 .. php:class:: Persistence\Static_
 
 Static Persistence extends :php:class:`Persistence\Array_` to implement
 a user-friendly way of specifying data through an array.
 
-Usage
-=====
+## Usage
 
 This is most useful when working with "sample" code, where you want to see your
 results quick::
@@ -47,10 +43,7 @@ populate fields for the model and will even attempt to deduce field types.
 Currently it recognizes integer, date, boolean, float, array and object types.
 Other fields will appear as-is.
 
-
-
-Saving Records
---------------
+### Saving Records
 
 Models that you specify against static persistence will not be marked as
 "Read Only" (:php:attr:`Model::readOnly`), and you will be allowed to save

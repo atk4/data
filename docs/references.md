@@ -1,9 +1,6 @@
-
 .. _References:
 
-==========
-References
-==========
+# References
 
 .. php:class:: Model
 
@@ -48,8 +45,7 @@ Argument $defaults will be passed to the new model that will be used to create
 referenced model. This will not work if you have specified reference as existing
 model that has a persistence set. (See Reference::getModel())
 
-Persistence
------------
+### Persistence
 
 Agile Data supports traversal between persistencies. The code above does not
 explicitly assign database to Model_Order. But what if destination model does
@@ -76,8 +72,7 @@ be retrieved from memory.
 
 .. note:: This is not implemented as of 1.1.0, see https://github.com/atk4/data/issues/158
 
-Safety and Performance
-----------------------
+### Safety and Performance
 
 When using ref() on hasMany reference, it will always return a fresh clone of
 the model. You can perform actions on the clone and next time you execute ref()
@@ -96,9 +91,7 @@ If you are worried about performance you can keep 2 models in memory::
     Agile Data discourages you from using this and instead offers you many
     other tools: field importing, model joins, field actions and refLink().
 
-
-hasMany Reference
-=================
+## hasMany Reference
 
 .. php:method:: hasMany($link, ['model' => $model]);
 
@@ -110,9 +103,7 @@ There are several ways how to link models with hasMany::
         return new Model_Order();
     }]);
 
-
-Dealing with many-to-many references
-------------------------------------
+### Dealing with many-to-many references
 
 It is possible to perform reference through an 3rd party table::
 
@@ -131,8 +122,7 @@ Now you can fetch all the payments associated with the invoice through::
 
     $paymentsForInvoice1 = $i->load(1)->ref('Payments');
 
-Dealing with NON-ID fields
---------------------------
+### Dealing with NON-ID fields
 
 Sometimes you have to use non-ID references. For example, we might have two models
 describing list of currencies and for each currency we might have historic rates
@@ -154,9 +144,7 @@ This will produce the following query:
     where currency_code in
         (select code form currency where is_convertible = 1)
 
-
-Concatenating Fields
---------------------
+### Concatenating Fields
 
 You may want to display want to list your related entities by concatenating. For example::
 
@@ -166,8 +154,7 @@ You may want to display want to list your related entities by concatenating. For
 This will create a new field for your user, ``tags`` which will contain all comma-separated
 tag names.
 
-Add Aggregate Fields
---------------------
+### Add Aggregate Fields
 
 Reference hasMany makes it a little simpler for you to define an aggregate fields::
 
@@ -204,8 +191,7 @@ You can also specify a type yourself::
 Aggregate fields are always declared read-only, and if you try to
 change them (`$m->set('paid_amount', 123);`), you will receive exception.
 
-Available Aggregation Functions
--------------------------------
+### Available Aggregation Functions
 
 The mathematical aggregate `sum` will automatically
 default to 0 if no respective rows were provided. The default SQL behaviour is to
@@ -219,8 +205,7 @@ null.
 
 When you specify `'aggregate' => 'count'` field defaults to `*`.
 
-Aggregate Expressions
----------------------
+### Aggregate Expressions
 
 Sometimes you want to use a more complex formula, and you may do so by specifying
 expression into 'aggregate'::
@@ -249,8 +234,7 @@ or 'field'::
 
 .. note:: as of 1.3.4 count's field defaults to `*` - no need to specify explicitly.
 
-hasMany / refLink / refModel
-============================
+## hasMany / refLink / refModel
 
 .. php:method:: refLink($link)
 
@@ -287,8 +271,7 @@ There are many situations when you need to get referenced model instead of
 reference itself. In such case refModel() comes in as handy shortcut of doing
 `$model->refLink($link)->getModel()`.
 
-hasOne reference
-================
+## hasOne reference
 
 .. php:method:: hasOne($link, ['model' => $model])
 
@@ -306,17 +289,14 @@ This reference is similar to hasMany, but it does behave slightly different.
 Also this reference will define a system new field ``user_id`` if you haven't
 done so already.
 
-
-Traversing loaded model
------------------------
+### Traversing loaded model
 
 If your ``$o`` model is loaded, then traversing into user will also load the user,
 because we specifically know the ID of that user. No conditions will be set::
 
     echo $o->load(3)->ref('user_id')['name']; // will show name of the user, of order #3
 
-Traversing DataSet
-------------------
+### Traversing DataSet
 
 If your model is not loaded then using ref() will traverse by conditioning
 DataSet of the user model::
@@ -346,8 +326,7 @@ By passing options to hasOne() you can also differentiate field name::
 You can also use ``theirField`` if you need non-id matching (see example above
 for hasMany()).
 
-Importing Fields
-----------------
+### Importing Fields
 
 You can import some fields from related model. For example if you have list
 of invoices, and each invoice contains "currency_id", but in order to get the
@@ -388,8 +367,7 @@ Above, all ``address_`` fields are copied with the same name, however field
     fields are also marked as "read-only" and attempt to change them will result
     in exception.
 
-Importing hasOne Title
-----------------------
+### Importing hasOne Title
 
 When you are using hasOne() in most cases the referenced object will be addressed
 through "ID" but will have a human-readable field as well. In the example above
@@ -425,8 +403,7 @@ explicitly::
     $i->hasOne('currency_id', ['model' => [Currency::class]])
         ->addTitle(['field' => 'currency_name']);
 
-User-defined Reference
-======================
+## User-defined Reference
 
 .. php:method:: addReference($link, $callback)
 
@@ -458,8 +435,7 @@ No condition will be applied by default so it's all up to you::
         }
     }]);
 
-Reference Discovery
-===================
+## Reference Discovery
 
 You can call :php:meth:`Model::getReferences()` to fetch all the references of a model::
 
@@ -486,8 +462,7 @@ exists in model::
         $reference = $model->getReference('owner_id');
     }
 
-Deep traversal
-==============
+## Deep traversal
 
 When operating with data-sets you can define references that use deep traversal::
 
@@ -508,9 +483,7 @@ and traversal will encapsulate sub-queries resulting in a query like this:
         (select address_id from user where id in
             (select user_id from order where id = 1 ))
 
-
-Reference Aliases
-=================
+## Reference Aliases
 
 When related entity relies on the same table it is possible to run into problem
 when SQL is confused about which table to use.
@@ -574,8 +547,7 @@ Loading model like that can produce a pretty sophisticated query:
         ) `child_age`, `pp`.`id` `_i`
     from `item` `pp`left join `item2` as `pp_i` on `pp_i`.`item_id` = `pp`.`id`
 
-Various ways to specify options
--------------------------------
+### Various ways to specify options
 
 When calling `hasOne()->addFields()` there are various ways to pass options:
 
@@ -594,9 +566,7 @@ When calling `hasOne()->addFields()` there are various ways to pass options:
 - `addFields(['dob', 'dod'], ['type' => 'date'])` - passing defaults for multiple
   fields
 
-
-References with New Records
-===========================
+## References with New Records
 
 Agile Data takes extra care to help you link your new records with new related
 entities.
@@ -651,8 +621,7 @@ populate $m->get('contact_id') field and the final $m->save() will also store th
 ID setting is implemented through a basic hook. Related model will have afterSave
 hook, which will update address_id field of the $m.
 
-Reference Classes
-=================
+## Reference Classes
 
 References are implemented through several classes:
 

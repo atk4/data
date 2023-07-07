@@ -1,12 +1,9 @@
-
 .. _DataSet:
 .. _conditions:
 
 .. php:namespace:: Atk4\Data
 
-======================
-Conditions and DataSet
-======================
+# Conditions and DataSet
 
 .. php:class:: Model
 
@@ -28,8 +25,7 @@ narrow down set of "loadable" records by introducing a condition::
 Conditions serve important role and must be used to intelligently restrict
 logically accessible data for a model before you attempt the loading.
 
-Basic Usage
-===========
+## Basic Usage
 
 .. php:method:: addCondition($field, $operator = null, $value = null)
 
@@ -48,8 +44,7 @@ to preserve the state of your model, you need to use clone::
     $m = $m->load(1); // success
     $girls = $girls->load(1); // exception
 
-Operations
-----------
+### Operations
 
 Most database drivers will support the following additional operations::
 
@@ -66,8 +61,7 @@ When you use 'in' or 'not in' you should pass value as array::
     $m = new Model_User($db, 'user');
     $girlsOrBoys = (clone $m)->addCondition('gender', 'in', ['F', 'M']);
 
-Multiple Conditions
--------------------
+### Multiple Conditions
 
 You can set multiple conditions on the same field even if they are contradicting::
 
@@ -85,8 +79,7 @@ Normally, however, you would use a different fields::
 
 You can have as many conditions as you like.
 
-Adding OR Conditions
---------------------
+### Adding OR Conditions
 
 In Agile Data all conditions are additive. This is done for security - no matter
 what condition you are adding, it will not allow you to circumvent previously
@@ -115,8 +108,7 @@ This rather unusual condition will show user records who have registered on same
 date when they were born OR if they were born on 10th. (This is really silly
 condition, please don't judge, if you have a better example, I'd love to hear).
 
-Defining your classes
----------------------
+### Defining your classes
 
 Although I have used in-line addition of the arguments, normally you would want
 to set those conditions inside the init() method of your model::
@@ -134,14 +126,12 @@ to set those conditions inside the init() method of your model::
 
 Note that the field 'gender' should be defined inside Model_User::init().
 
-Vendor-dependent logic
-======================
+## Vendor-dependent logic
 
 There are many other ways to set conditions, but you must always check if they
 are supported by the driver that you are using.
 
-Field Matching
---------------
+### Field Matching
 
 Supported by: SQL   (planned for Array, Mongo)
 
@@ -151,9 +141,7 @@ Usage::
 
 Will perform a match between two fields.
 
-
-Expression Matching
--------------------
+### Expression Matching
 
 Supported by: SQL   (planned for Array)
 
@@ -164,9 +152,7 @@ Usage::
 Allow you to define an arbitrary expression to be used with fields. Values
 inside [blah] should correspond to field names.
 
-
-SQL Expression Matching
------------------------
+### SQL Expression Matching
 
 .. php:method:: expr($template, $arguments = [])
 
@@ -187,9 +173,7 @@ Usage::
 
 Allow you to define an arbitrary expression using SQL language.
 
-
-Custom Parameters in Expressions
---------------------------------
+### Custom Parameters in Expressions
 
 Supported by: SQL
 
@@ -226,9 +210,7 @@ where the other 20 is passed through parameter. Refer to
 http://dsql.readthedocs.io/en/develop/expressions.html for full documentation
 on expressions.
 
-
-Expression as first argument
-----------------------------
+### Expression as first argument
 
 Supported by: SQL, (Planned: Array, Mongo)
 
@@ -238,13 +220,9 @@ to the $value::
 
     $m->addCondition($m->getField('name'), '!=', $this->getField('surname'));
 
+## Advanced Usage
 
-Advanced Usage
-==============
-
-
-Model Scope
------------
+### Model Scope
 
 Using the Model::addCondition method is the basic way to limit the model scope of records. Under the hood
 Agile Data utilizes a special set of classes (Condition and Scope) to apply the conditions as filters on records retrieved.
@@ -367,8 +345,7 @@ Converts the condition object to human readable words. Condition must be assigne
     // results in 'Contact where Name is John'
     (new Condition('name', 'John'))->toWords($contactModel);
 
-Conditions on Referenced Models
--------------------------------
+### Conditions on Referenced Models
 
 Agile Data allows for adding conditions on related models for retrieval of type 'model has references where'.
 

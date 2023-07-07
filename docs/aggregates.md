@@ -1,9 +1,6 @@
-
 .. _Aggregates:
 
-================
-Model Aggregates
-================
+# Model Aggregates
 
 .. php:namespace:: Atk4\Data\Model
 
@@ -11,8 +8,7 @@ Model Aggregates
 
 In order to create model aggregates the AggregateModel model needs to be used:
 
-Grouping
---------
+### Grouping
 
 AggregateModel model can be used for grouping::
 
