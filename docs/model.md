@@ -606,10 +606,10 @@ When you modify active record, it keeps the original value in the $dirty array:
 
     Returns one of the following:
 
-     - If value was set() to the field, this value is returned
-     - If field was loaded from database, return original value
-     - if field had default set, returns default
-     - returns null.
+    - If value was set() to the field, this value is returned
+    - If field was loaded from database, return original value
+    - if field had default set, returns default
+    - returns null.
 
 .. php:method:: isset
 

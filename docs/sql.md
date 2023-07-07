@@ -12,10 +12,10 @@ In addition to normal operations you can extend and customize various queries.
 When using `Persistence\Sql` model building will use different classes for fields,
 expressions, joins etc:
 
- - addField - :php:class:`FieldSql` (field can be used as part of DSQL Expression)
- - hasOne - :php:class:`Reference\HasOneSql` (allow importing fields)
- - addExpression - :php:class:`SqlExpressionField` (define expression through DSQL)
- - join - :php:class:`Join\Sql` (join tables query-time)
+- addField - :php:class:`FieldSql` (field can be used as part of DSQL Expression)
+- hasOne - :php:class:`Reference\HasOneSql` (allow importing fields)
+- addExpression - :php:class:`SqlExpressionField` (define expression through DSQL)
+- join - :php:class:`Join\Sql` (join tables query-time)
 
 ### SQL Field
 
@@ -292,18 +292,18 @@ to invoke them:
 
 Agile Data has various ways to deal with above scenarios:
 
-    1. Custom expression through DSQL
-    2. Model Method
-    3. Model Field
-    4. Model Source
+1. Custom expression through DSQL
+2. Model Method
+3. Model Field
+4. Model Source
 
 Here I'll try to look into each of those approaches but closely pay attention
 to the following:
 
-    - Abstraction and concern separation.
-    - Security and protecting against injection.
-    - Performance and scalability.
-    - When to refactor away stored procedures.
+- Abstraction and concern separation.
+- Security and protecting against injection.
+- Performance and scalability.
+- When to refactor away stored procedures.
 
 ### Compatibility Warning
 

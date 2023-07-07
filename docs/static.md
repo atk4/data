@@ -25,9 +25,9 @@ Lets unwrap the example:
 
 Constructor accepts array as an argument, but the array could be in various forms::
 
- - can be array of strings ['one', 'two']
- - can be array of hashes. First hash will be examined to pick up fields
- - can be array of arrays. Will name columns as 'field1', 'field2', 'field3'.
+- can be array of strings ['one', 'two']
+- can be array of hashes. First hash will be examined to pick up fields
+- can be array of arrays. Will name columns as 'field1', 'field2', 'field3'.
 
 If you are using any fields without keys (numeric keys) it's important that all
 your records have same number of elements.

@@ -50,22 +50,22 @@ $query->where($query->expr(
 
 Another uses for expressions could be:
 
- - Sub-Queries
- - SQL functions, e.g. IF, CASE
- - nested AND / OR clauses
- - vendor-specific queries - "describe table"
- - non-traditional constructions, UNIONS or SELECT INTO
+- Sub-Queries
+- SQL functions, e.g. IF, CASE
+- nested AND / OR clauses
+- vendor-specific queries - "describe table"
+- non-traditional constructions, UNIONS or SELECT INTO
 
 ## Properties, Arguments, Parameters
 
 Be careful when using those similar terms as they refer to different things:
 
- - Properties refer to object properties, e.g. `$expr->template`,
-   see :ref:`properties`
- - Arguments refer to template arguments, e.g. `select * from [table]`,
-   see :ref:`expression-template`
- - Parameters refer to the way of passing user values within a query
-   `where id=:a` and are further explained below.
+- Properties refer to object properties, e.g. `$expr->template`,
+  see :ref:`properties`
+- Arguments refer to template arguments, e.g. `select * from [table]`,
+  see :ref:`expression-template`
+- Parameters refer to the way of passing user values within a query
+  `where id=:a` and are further explained below.
 
 ### Parameters
 
@@ -110,8 +110,8 @@ When you create a template the first argument is the template. It will be stored
 in :php:attr:`$template` property. Template string can contain arguments in a
 square brackets:
 
- - `coalesce([], [])` is same as `coalesce([0], [1])`
- - `coalesce([one], [two])`
+- `coalesce([], [])` is same as `coalesce([0], [1])`
+- `coalesce([one], [two])`
 
 Arguments can be specified immediately through an array as a second argument
 into constructor or you can specify arguments later:

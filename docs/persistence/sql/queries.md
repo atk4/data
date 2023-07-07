@@ -47,8 +47,8 @@ you can bypass the escaping.
 
 There are 2 types of escaping:
 
- * :php:meth:`Expression::escapeIdentifier()`. Used for field and table names. Surrounds name with *`*.
- * :php:meth:`Expression::escapeParam()`. Will convert value into parameter and replace with *:a*
+* :php:meth:`Expression::escapeIdentifier()`. Used for field and table names. Surrounds name with *`*.
+* :php:meth:`Expression::escapeParam()`. Will convert value into parameter and replace with *:a*
 
 In the next example $a is escaped but $b is parameterized:
 
@@ -104,15 +104,15 @@ if ($row) {
 
 The example above will perform a select query first:
 
- - `select id from user where id = 123`
+- `select id from user where id = 123`
 
 If a single row can be retrieved, then the update will be performed:
 
- - `update user set name = "John", surname = "Smith", revision = revision + 1 where id = 123`
+- `update user set name = "John", surname = "Smith", revision = revision + 1 where id = 123`
 
 Otherwise an insert operation will be performed:
 
- - `insert into user (name, surname, revision) values ("John", "Smith", 1)`
+- `insert into user (name, surname, revision) values ("John", "Smith", 1)`
 
 ## Chaining
 

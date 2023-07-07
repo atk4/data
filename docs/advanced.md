@@ -33,8 +33,8 @@ $account->hasMany('Transactions', ['model' => [Transaction::class]]);
 
 There are however two difficulties here:
 
- 1. sometimes you want to operate with specific sub-type.
- 2. when iterating, you want to have appropriate class, not Transaction()
+1. sometimes you want to operate with specific sub-type.
+2. when iterating, you want to have appropriate class, not Transaction()
 
 ### Best practice for specifying relation type
 

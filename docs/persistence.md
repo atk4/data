@@ -225,9 +225,9 @@ Validation in application always depends on business logic.
 For example, if you want `age` field to be above `14` for the user registration
 you may have to ask yourself some questions:
 
- - Can user store `12` inside a age field?
- - If yes, Can user persist age with value of `12`?
- - If yes, Can user complete registration with age of `12`?
+- Can user store `12` inside a age field?
+- If yes, Can user persist age with value of `12`?
+- If yes, Can user complete registration with age of `12`?
 
 If 12 cannot be stored at all, then exception would be generated during set(),
 before you even get a chance to look at other fields.
@@ -296,8 +296,8 @@ protected function init(): void
 There are more work to be done until Field_Currency could be a valid field, but
 I wanted to draw your attention to the use of field flags:
 
- - system flag is used to hide `balance_amount` and `balance_currency_id` in UI.
- - neverPersist flag is used because there are no `balance` column in persistence.
+- system flag is used to hide `balance_amount` and `balance_currency_id` in UI.
+- neverPersist flag is used because there are no `balance` column in persistence.
 
 ### Dates and Time
 
@@ -710,11 +710,11 @@ Actions can be grouped by their result. Some action will be executed and will
 not produce any results. Others will respond with either one value or multiple
 rows of data.
 
- - no results
- - single value
- - single row
- - single column
- - array of hashes
+- no results
+- single value
+- single row
+- single column
+- array of hashes
 
 Action can be executed at any time and that will return an expected result:
 
@@ -762,7 +762,7 @@ echo $a(); // same as $a->getOne();
 
 Currently only read-only actions are supported by `Persistence\\Sql`:
 
- - select - produces query that returns DataSet (array of hashes)
+- select - produces query that returns DataSet (array of hashes)
 
 There are ability to execute aggregation functions:
 

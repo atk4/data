@@ -141,7 +141,7 @@ create a separate add-on with it's own namespace. Let's say you have created
    dsql/tests/db/* works with your database.
 
 Finally:
- - Submit pull request for only the Connection class and docs/extensions.rst.
+- Submit pull request for only the Connection class and docs/extensions.rst.
 
 
 If you would like that your vendor support be bundled with DSQL, you should
@@ -152,12 +152,12 @@ and received some traction.
 
 By Default DSQL comes with the following :ref:`query-modes`:
 
- - select
- - delete
- - insert
- - replace
- - update
- - truncate
+- select
+- delete
+- insert
+- replace
+- update
+- truncate
 
 You can add new mode if you wish. Let's look at how to add a MySQL specific
 query "LOAD DATA INFILE":

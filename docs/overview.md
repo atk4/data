@@ -25,11 +25,11 @@ ORM (Hibernate / Doctrine style). I will discuss those in more detail further in
 documentation, however it's important to note the reason of not following ORM
 pattern:
 
- - More suitable for mapping remote databases
- - Give developer control over generated queries
- - Better support for Persistence-specific features (e.g. SQL expressions)
- - True many-to-many deep traversal and avoiding (explicit eager pre-loading)
- - Better aggregation abstraction
+- More suitable for mapping remote databases
+- Give developer control over generated queries
+- Better support for Persistence-specific features (e.g. SQL expressions)
+- True many-to-many deep traversal and avoiding (explicit eager pre-loading)
+- Better aggregation abstraction
 
 To find out more, how Agile Data compares to other PHP data mappers and ORM frameworks, see
 https://medium.com/@romaninsh/objectively-comparing-orm-dal-libraries-e4f095de80b5
@@ -39,9 +39,9 @@ https://medium.com/@romaninsh/objectively-comparing-orm-dal-libraries-e4f095de80
 Design of Agile Data follows principle of "concern separation", but all of the
 basic functionality is divided into 3 major areas:
 
- - Fields (or Columns)
- - DataSets (or Rows)
- - Databases (or Persistencies)
+- Fields (or Columns)
+- DataSets (or Rows)
+- Databases (or Persistencies)
 
 Each of the above corresponds to a PHP class, which may use composition principle
 to hide implementation details.
@@ -53,10 +53,10 @@ If you have worked with other ORMs, read the following sections to avoid confusi
 
 ### Class: Field
 
- - Represent logical data column (e.g. "date_of_birth")
- - Stores column meta-information (e.g. ['type' => 'date', 'caption' => 'Birth Date'])
- - Handles value normalization
- - Documentation: :php:class:`Field`
+- Represent logical data column (e.g. "date_of_birth")
+- Stores column meta-information (e.g. ['type' => 'date', 'caption' => 'Birth Date'])
+- Handles value normalization
+- Documentation: :php:class:`Field`
 
 .. note:: Meta-information may be a persistence detail, (:php:attr:`Field::actual`)
     or presentation detail (:php:attr:`Field::ui`). Field class does not interpret
@@ -64,12 +64,12 @@ If you have worked with other ORMs, read the following sections to avoid confusi
 
 ### Class: Model
 
- - Represent logical Data Set (e.g. Active Users)
- - Stores data location and criteria
- - Stores list of Fields
- - Stores individual row
- - Handle operations over single or all records from Data Set
- - Documentation: :php:class:`Model`
+- Represent logical Data Set (e.g. Active Users)
+- Stores data location and criteria
+- Stores list of Fields
+- Stores individual row
+- Handle operations over single or all records from Data Set
+- Documentation: :php:class:`Model`
 
 .. note:: Model object is defined in such a way to contain enough information to
     fully provide all information for generic UI, or generic API, and generic
@@ -80,11 +80,11 @@ If you have worked with other ORMs, read the following sections to avoid confusi
 
 ### Class: Persistence
 
- - Represent external data storage (e.g. MySQL database)
- - Stores connection information
- - Translate single or multi-record operations into vendor-specific language
- - Type-casts standard data types into vendor-specific format
- - Documentation: :php:class:`Persistence`
+- Represent external data storage (e.g. MySQL database)
+- Stores connection information
+- Translate single or multi-record operations into vendor-specific language
+- Type-casts standard data types into vendor-specific format
+- Documentation: :php:class:`Persistence`
 
 ## Code Layers
 

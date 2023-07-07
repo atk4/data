@@ -231,9 +231,9 @@ Other Parameters
 Apart from the main 3 pieces of "state" your Model holds there can also be
 some other parameters such as:
 
- - order
- - limit
- - onlyFields
+- order
+- limit
+- onlyFields
 
 You can also define your own parameters like this:
 

@@ -7,9 +7,9 @@ following goals:
 
 ## Type specification
 
- - Provide list of out-of-the-box types, such as "percentage"
- - Provide list of classes such as :php:class:`Fraction`
- - Mechanism to find corresponding class configuration based on selected type
+- Provide list of out-of-the-box types, such as "percentage"
+- Provide list of classes such as :php:class:`Fraction`
+- Mechanism to find corresponding class configuration based on selected type
 
 Specifying one of supported types will ensure that your field format is
 recognized universally, can be stored, loaded, presented to user through UI
@@ -78,36 +78,36 @@ to the user a regional format is used instead.
 
 ATK Data prior to 1.5 supports the following types:
 
- - string
- - boolean
- - integer ([':php:class:`Number`', 'precision' => 0])
- - money ([':php:class:`Number`', 'prefix' => '€', 'precision' => 2])
- - float ([':php:class:`Number`', 'type' => 'float'])
- - date ([':php:class:`DateTime`'])
- - datetime ([':php:class:`DateTime`'])
- - time ([':php:class:`DateTime`'])
- - password ([':php:class:`Password`])
- - array
- - object
+- string
+- boolean
+- integer ([':php:class:`Number`', 'precision' => 0])
+- money ([':php:class:`Number`', 'prefix' => '€', 'precision' => 2])
+- float ([':php:class:`Number`', 'type' => 'float'])
+- date ([':php:class:`DateTime`'])
+- datetime ([':php:class:`DateTime`'])
+- time ([':php:class:`DateTime`'])
+- password ([':php:class:`Password`])
+- array
+- object
 
 In ATK Data the number of supported types has been extended with:
 
- - percent (34.2%) ([':php:class:`Number`', 'format' => fn ($v) => $v * 100, 'postfix' => '%'])
- - rating (3 out of 5) ([':php:class:`Number`', 'max' => 5, 'precision' => 0])
- - uuid (xxxxxxxx-xxxx-...) ([':php:class:`Number`', 'base' => 16, 'mask' => '########-##..'])
- - hex (number with base 16) ([':php:class:`Number`', 'base' => 16])
- - ip (123.2.44.1) ([':php:class:`Number`', 'base' => 256, 'mask' => '#.#.#.#'])
- - ipv6 ([':php:class:`Number`', 'base' => 16', 'mask' => '####:####:..']);
- - model (used for containment)
- - fraction (5/7) ([':php:class:`Fraction`'])
+- percent (34.2%) ([':php:class:`Number`', 'format' => fn ($v) => $v * 100, 'postfix' => '%'])
+- rating (3 out of 5) ([':php:class:`Number`', 'max' => 5, 'precision' => 0])
+- uuid (xxxxxxxx-xxxx-...) ([':php:class:`Number`', 'base' => 16, 'mask' => '########-##..'])
+- hex (number with base 16) ([':php:class:`Number`', 'base' => 16])
+- ip (123.2.44.1) ([':php:class:`Number`', 'base' => 256, 'mask' => '#.#.#.#'])
+- ipv6 ([':php:class:`Number`', 'base' => 16', 'mask' => '####:####:..']);
+- model (used for containment)
+- fraction (5/7) ([':php:class:`Fraction`'])
 
 Additionally there is a support for
 
- - distance ([':php:class:`Units`', 'scale' => ['m' => 1, 'km' => 1000, 'mm' => 0.001])
- - duration
- - mass
- - area
- - volume
+- distance ([':php:class:`Units`', 'scale' => ['m' => 1, 'km' => 1000, 'mm' => 0.001])
+- duration
+- mass
+- area
+- volume
 
 All measurements are implemented with :php:class:`Units` and can be further extended:
 

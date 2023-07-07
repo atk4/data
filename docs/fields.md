@@ -58,9 +58,9 @@ var_dump($model->get('age')); // int(123)
 
 Agile Data defines some basic types to make sure that values:
 
- - can be safely stored and manipulated.
- - can be saved (Persistence)
- - can be presented to user (UI)
+- can be safely stored and manipulated.
+- can be saved (Persistence)
+- can be presented to user (UI)
 
 A good example would be a `date` type:
 
@@ -90,8 +90,8 @@ You can specify unsupported type too. It will be untouched by Agile Data so you
 would have to implement your own handling of a new type.
 
 Persistence implements two methods:
- - :php:meth:`Persistence::typecastSaveRow()`
- - :php:meth:`Persistence::typecastLoadRow()`
+- :php:meth:`Persistence::typecastSaveRow()`
+- :php:meth:`Persistence::typecastLoadRow()`
 
 Those are responsible for converting PHP native types to persistence specific
 formats as defined in fields. Those methods will also change name of the field
@@ -156,9 +156,9 @@ Set this to true for field that may not contain "empty" value.
 You can't use NULL or any value that is considered empty/false by PHP.
 Some examples that are not allowed are:
 
- - empty string ''
- - 0 numerical value or 0.0
- - boolean false
+- empty string ''
+- 0 numerical value or 0.0
+- boolean false
 
 Example:
 

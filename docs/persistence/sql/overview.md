@@ -8,20 +8,20 @@ a part of other query.
 
 ## Goals of DSQL
 
- - simple and concise syntax
- - consistently scalable (e.g. 5 levels of sub-queries, 10 with joins and 15
-   parameters? no problem)
- - "One Query" paradigm
- - support for PDO vendors as well as NoSQL databases (with query language
-   similar to SQL)
- - small code footprint (over 50% less than competing frameworks)
- - free, licensed under MIT
- - no dependencies
- - follows design paradigms:
-     - "[PHP the Agile way](https://github.com/atk4/dsql/wiki/PHP-the-Agile-way)"
-     - "[Functional ORM](https://github.com/atk4/dsql/wiki/Functional-ORM)"
-     - "[Open to extend](https://github.com/atk4/dsql/wiki/Open-to-Extend)"
-     - "[Vendor Transparency](https://github.com/atk4/dsql/wiki/Vendor-Transparency)"
+- simple and concise syntax
+- consistently scalable (e.g. 5 levels of sub-queries, 10 with joins and 15
+  parameters? no problem)
+- "One Query" paradigm
+- support for PDO vendors as well as NoSQL databases (with query language
+  similar to SQL)
+- small code footprint (over 50% less than competing frameworks)
+- free, licensed under MIT
+- no dependencies
+- follows design paradigms:
+  - "[PHP the Agile way](https://github.com/atk4/dsql/wiki/PHP-the-Agile-way)"
+  - "[Functional ORM](https://github.com/atk4/dsql/wiki/Functional-ORM)"
+  - "[Open to extend](https://github.com/atk4/dsql/wiki/Open-to-Extend)"
+  - "[Vendor Transparency](https://github.com/atk4/dsql/wiki/Vendor-Transparency)"
 
 ## DSQL by example
 
@@ -45,9 +45,9 @@ The above code will execute the following query:
 DSQL can also execute queries with multiple sub-queries, joins, expressions
 grouping, ordering, unions as well as queries on result-set.
 
- - See :ref:`quickstart` if you would like to start learning DSQL.
- - See https://github.com/atk4/dsql-primer for various working
-   examples of using DSQL with a real data-set.
+- See :ref:`quickstart` if you would like to start learning DSQL.
+- See https://github.com/atk4/dsql-primer for various working
+  examples of using DSQL with a real data-set.
 
 ## DSQL is Part of Agile Toolkit
 
