@@ -156,19 +156,21 @@ as default behavior, see :php:attr:`Model::reloadAfterSave`.
 
 This method allows you to execute code within a 'START TRANSACTION / COMMIT' block::
 
-    class Invoice
+```
+class Invoice
+{
+    public function applyPayment(Payment $p)
     {
-        public function applyPayment(Payment $p)
-        {
-            $this->getModel()->getPersistence()->atomic(function () use ($p) {
-                $this->set('paid', true);
-                $this->save();
+        $this->getModel()->getPersistence()->atomic(function () use ($p) {
+            $this->set('paid', true);
+            $this->save();
 
-                $p->set('applied', true);
-                $p->save();
-            });
-        }
+            $p->set('applied', true);
+            $p->save();
+        });
     }
+}
+```
 
 Callback format of this method allows a more intuitive syntax and nested execution
 of various blocks. If any exception is raised within the block, then transaction
@@ -190,14 +192,16 @@ There is, however, one difference. Expression class requires all named arguments
 to be specified. Use of Model::expr() allows you to specify field names and those
 field expressions will be automatically substituted. Here is long / short format::
 
-    $q = $connection->expr('[age] + [birth_year]', [
-            'age' => $m->getField('age'),
-            'birth_year' => $m->getField('birth_year'),
-        ]);
+```
+$q = $connection->expr('[age] + [birth_year]', [
+        'age' => $m->getField('age'),
+        'birth_year' => $m->getField('birth_year'),
+    ]);
 
-    // identical to
+// identical to
 
-    $q = $m->expr('[age] + [birth_year']);
+$q = $m->expr('[age] + [birth_year']);
+```
 
 This method is automatically used by :php:class:`SqlExpressionField`.
 
@@ -205,7 +209,9 @@ This method is automatically used by :php:class:`SqlExpressionField`.
 
 The most basic action you can use with SQL persistence is 'select'::
 
-    $action = $model->action('select');
+```
+$action = $model->action('select');
+```
 
 Action is implemented by DSQL library, that is further documented at
 http://dsql.readthedocs.io (See section Queries).
@@ -215,47 +221,61 @@ http://dsql.readthedocs.io (See section Queries).
 This action returns a basic select query. You may pass one argument - array
 containing list of fields::
 
-    $action = $model->action('select', ['name', 'surname']);
+```
+$action = $model->action('select', ['name', 'surname']);
+```
 
 Passing false will not include any fields into select (so that you can include
 them yourself)::
 
-    $action = $model->action('select', [false]);
-    $action->field('count(*)', 'c);
+```
+$action = $model->action('select', [false]);
+$action->field('count(*)', 'c);
+```
 
 ### Action: count
 
 Returns query for `count(*)`::
 
-    $action = $model->action('count');
-    $cnt = $action->getOne();
-    // for materialized count use:
-    $cnt = $model->executeCountQuery();
+```
+$action = $model->action('count');
+$cnt = $action->getOne();
+// for materialized count use:
+$cnt = $model->executeCountQuery();
+```
 
 You can also specify alias::
 
-    $action = $model->action('count', ['alias' => 'cc']);
-    $data = $action->getRow();
-    $cnt = $data->get('cc');
+```
+$action = $model->action('count', ['alias' => 'cc']);
+$data = $action->getRow();
+$cnt = $data->get('cc');
+```
 
 ### Action: field
 
 Get query for a specific field::
 
-    $action = $model->action('field', ['age']);
-    $age = $action->limit(1)->getOne();
+```
+$action = $model->action('field', ['age']);
+$age = $action->limit(1)->getOne();
+```
 
 You can also specify alias::
 
-    $action = $model->action('field', ['age', 'alias' => 'the_age']]);
-    $age = $action->limit(1)->getRow()['the_age'];
+```
+$action = $model->action('field', ['age', 'alias' => 'the_age']]);
+$age = $action->limit(1)->getRow()['the_age'];
+```
 
 ### Action: fx
 
 Executes single-argument SQL function on field::
 
-    $action = $model->action('fx', ['avg', 'age']);
-    $ageAvg = $action->getOne();
+```
+$action = $model->action('fx', ['avg', 'age']);
+$ageAvg = $action->getOne();
+```
 
 This method also supports alias. Use of alias is handy if you are using those
 actions as part of other query (e.g. UNION)
@@ -297,9 +317,11 @@ will loose ability to use the same model with non-sql persistencies.
 
 Sometimes you can fence the code like this::
 
-    if ($this->getPersistence() instanceof \Atk4\Data\Persistence\Sql) {
-        .. sql code ..
-    }
+```
+if ($this->getPersistence() instanceof \Atk4\Data\Persistence\Sql) {
+    .. sql code ..
+}
+```
 
 Or define your pure model, then extend it to add SQL capabilities. Note that
 using single model with cross-persistencies should still be possible, so you
@@ -311,59 +333,67 @@ You should be familiar with http://dsql.readthedocs.io/en/develop/expressions.ht
 
 In short this should allow you to build and execute any SQL statement::
 
-    $this->expr('call get_nominal_sheet([], [], \'2014-10-01\', \'2015-09-30\', 0)', [
-        $this->getApp()->system->getId(),
-        $this->getApp()->system['contractor_id'],
-    ])->executeQuery();
+```
+$this->expr('call get_nominal_sheet([], [], \'2014-10-01\', \'2015-09-30\', 0)', [
+    $this->getApp()->system->getId(),
+    $this->getApp()->system['contractor_id'],
+])->executeQuery();
+```
 
 Depending on the statement you can also use your statement to retrieve data::
 
-    $data = $this->expr('call get_client_report_data([client_id])', [
-        'client_id' => $clientId,
-    ])->getRows();
+```
+$data = $this->expr('call get_client_report_data([client_id])', [
+    'client_id' => $clientId,
+])->getRows();
+```
 
 This can be handy if you wish to create a method for your Model to abstract away
 the data::
 
-    class Client extends \Atk4\Data\Model
+```
+class Client extends \Atk4\Data\Model
+{
+    protected function init(): void
     {
-        protected function init(): void
-        {
-            ...
-        }
-
-        public function getReportData($arg)
-        {
-            $this->assertIsLoaded();
-
-            return $this->expr('call get_client_report_data([client_id], [arg])', [
-                'arg' => $arg,
-                'client_id' => $clientId,
-            ])->getRows();
-        }
+        ...
     }
+
+    public function getReportData($arg)
+    {
+        $this->assertIsLoaded();
+
+        return $this->expr('call get_client_report_data([client_id], [arg])', [
+            'arg' => $arg,
+            'client_id' => $clientId,
+        ])->getRows();
+    }
+}
+```
 
 Here is another example using PHP generator::
 
-    class Client extends \Atk4\Data\Model
+```
+class Client extends \Atk4\Data\Model
+{
+    protected function init(): void
     {
-        protected function init(): void
-        {
-            ...
-        }
+        ...
+    }
 
-        public function fetchReportData($arg)
-        {
-            $this->assertIsLoaded();
+    public function fetchReportData($arg)
+    {
+        $this->assertIsLoaded();
 
-            foreach ($this->expr('call get_client_report_data([client_id], [arg])', [
-                'arg' => $arg,
-                'client_id' => $clientId,
-            ]) as $row) {
-                yield $row;
-            }
+        foreach ($this->expr('call get_client_report_data([client_id], [arg])', [
+            'arg' => $arg,
+            'client_id' => $clientId,
+        ]) as $row) {
+            yield $row;
         }
     }
+}
+```
 
 ### as a Model Field
 
@@ -373,24 +403,28 @@ Here is another example using PHP generator::
 any expression for your field query. You can use SQL stored function for data
 fetching like this::
 
-    class Category extends \Atk4\Data\Model
+```
+class Category extends \Atk4\Data\Model
+{
+    public $table = 'category';
+
+    protected function init(): void
     {
-        public $table = 'category';
+        parent::init();
 
-        protected function init(): void
-        {
-            parent::init();
+        $this->hasOne('parent_id', ['model' => [self::class]]);
+        $this->addField('name');
 
-            $this->hasOne('parent_id', ['model' => [self::class]]);
-            $this->addField('name');
-
-            $this->addExpression('path', ['expr' => 'get_path([id])']);
-        }
+        $this->addExpression('path', ['expr' => 'get_path([id])']);
     }
+}
+```
 
 This should translate into SQL query::
 
-    select parent_id, name, get_path(id) from category;
+```
+select parent_id, name, get_path(id) from category;
+```
 
 where once again, stored function is hidden.
 
@@ -402,39 +436,41 @@ Method :php:meth:`Persistence\Sql::action` and :php:meth:`Model::action`
 generates queries for most of model operations.  By re-defining this method,
 you can significantly affect the query building of an SQL model::
 
-    class CompanyProfit extends \Atk4\Data\Model
+```
+class CompanyProfit extends \Atk4\Data\Model
+{
+    public $companyId; // inject company ID, which will act as a condition/argument
+    public bool $readOnly = true; // instructs rest of the app, that this model is read-only
+
+    protected function init(): void
     {
-        public $companyId; // inject company ID, which will act as a condition/argument
-        public bool $readOnly = true; // instructs rest of the app, that this model is read-only
+        parent::init();
 
-        protected function init(): void
-        {
-            parent::init();
-
-            $this->addField('date_period');
-            $this->addField('profit');
-        }
-
-        public function action(string $mode, array $args = [])
-        {
-            if ($mode == 'select') {
-                // must return DSQL object here
-                return $this->expr('call get_company_profit([company_id])', [
-                    'company_id' => $this->companyId,
-                ]);
-            }
-
-            if ($mode == 'count') {
-                // optionally - expression for counting data rows, for pagination support
-                return $this->expr('select count(*) from (call get_company_profit([company_id]))', [
-                    'company_id' => $this->companyId,
-                ]);
-            }
-
-            throw (new \Atk4\Data\Exception('You may only perform "select" or "count" action on this model'))
-                ->addMoreInfo('action', $mode);
-        }
+        $this->addField('date_period');
+        $this->addField('profit');
     }
+
+    public function action(string $mode, array $args = [])
+    {
+        if ($mode == 'select') {
+            // must return DSQL object here
+            return $this->expr('call get_company_profit([company_id])', [
+                'company_id' => $this->companyId,
+            ]);
+        }
+
+        if ($mode == 'count') {
+            // optionally - expression for counting data rows, for pagination support
+            return $this->expr('select count(*) from (call get_company_profit([company_id]))', [
+                'company_id' => $this->companyId,
+            ]);
+        }
+
+        throw (new \Atk4\Data\Exception('You may only perform "select" or "count" action on this model'))
+            ->addMoreInfo('action', $mode);
+    }
+}
+```
 
 ### as a Temporary Table
 
@@ -442,25 +478,27 @@ A most convenient (although inefficient) way for stored procedures is to place
 output data inside a temporary table. You can perform an actual call to stored
 procedure inside Model::init() then set $table property to a temporary table::
 
-    class NominalReport extends \Atk4\Data\Model
+```
+class NominalReport extends \Atk4\Data\Model
+{
+    public $table = 'temp_nominal_sheet';
+    public bool $readOnly = true; // instructs rest of the app, that this model is read-only
+
+    protected function init(): void
     {
-        public $table = 'temp_nominal_sheet';
-        public bool $readOnly = true; // instructs rest of the app, that this model is read-only
+        parent::init();
 
-        protected function init(): void
-        {
-            parent::init();
+        $res = $this->expr('call get_nominal_sheet([], [], \'2014-10-01\', \'2015-09-30\', 0)', [
+            $this->getApp()->system->getId(),
+            $this->getApp()->system['contractor_id'],
+        ])->executeQuery();
 
-            $res = $this->expr('call get_nominal_sheet([], [], \'2014-10-01\', \'2015-09-30\', 0)', [
-                $this->getApp()->system->getId(),
-                $this->getApp()->system['contractor_id'],
-            ])->executeQuery();
-
-            $this->addField('date', ['type' => 'date']);
-            $this->addField('items', ['type' => 'integer']);
-            ...
-        }
+        $this->addField('date', ['type' => 'date']);
+        $this->addField('items', ['type' => 'integer']);
+        ...
     }
+}
+```
 
 ### as an Model Source
 
@@ -468,21 +506,23 @@ procedure inside Model::init() then set $table property to a temporary table::
 
 Technically you can also specify expression as a $table property of your model::
 
-    class ClientReport extends \Atk4\Data\Model
+```
+class ClientReport extends \Atk4\Data\Model
+{
+    public $table; // will be set in init()
+    public bool $readOnly = true; // instructs rest of the app, that this model is read-only
+
+    protected function init(): void
     {
-        public $table; // will be set in init()
-        public bool $readOnly = true; // instructs rest of the app, that this model is read-only
+        parent::init();
 
-        protected function init(): void
-        {
-            parent::init();
+        $this->init = $this->expr('call get_report_data()');
 
-            $this->init = $this->expr('call get_report_data()');
-
-            $this->addField('date', ['type' => 'date']);
-            $this->addField('items', ['type' => 'integer']);
-            ...
-        }
+        $this->addField('date', ['type' => 'date']);
+        $this->addField('items', ['type' => 'integer']);
+        ...
     }
+}
+```
 
 Technically this will give you `select date, items from (call get_report_data())`.

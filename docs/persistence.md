@@ -26,14 +26,18 @@ etc, but it will always remain linked with that same persistence.
 
 Create your persistence object first::
 
-    $db = \Atk4\Data\Persistence::connect($dsn);
+```
+$db = \Atk4\Data\Persistence::connect($dsn);
+```
 
 There are two ways to link your model up with the persistence::
 
-    $m = new Model_Invoice($db);
+```
+$m = new Model_Invoice($db);
 
-    $m = new Model_Invoice();
-    $m->setPersistence($db);
+$m = new Model_Invoice();
+$m->setPersistence($db);
+```
 
 .. php:method:: load
 
@@ -85,17 +89,21 @@ There are two ways to link your model up with the persistence::
 When you add a new record with save(), insert() or import, you can specify ID
 explicitly::
 
-    $m->set('id', 123);
-    $m->save();
+```
+$m->set('id', 123);
+$m->save();
 
-    // or $m->insert(['Record with ID=123', 'id' => 123']);
+// or $m->insert(['Record with ID=123', 'id' => 123']);
+```
 
 However if you change the ID for record that was loaded, then your database
 record will also have its ID changed. Here is example::
 
-    $m = $m->load(123);
-    $m->setId(321);
-    $m->save();
+```
+$m = $m->load(123);
+$m->setId(321);
+$m->save();
+```
 
 After this your database won't have a record with ID 123 anymore.
 
@@ -108,21 +116,25 @@ more useful types.
 Agile Data ensures that regardless of the selected database, types are converted
 correctly for saving and restored as they were when loading::
 
-    $m->addField('is_admin', ['type' => 'boolean']);
-    $m->set('is_admin', false);
-    $m->save();
+```
+$m->addField('is_admin', ['type' => 'boolean']);
+$m->set('is_admin', false);
+$m->save();
 
-    // SQL database will actually store `0`
+// SQL database will actually store `0`
 
-    $m = $m->load();
+$m = $m->load();
 
-    $m->get('is_admin'); // converted back to `false`
+$m->get('is_admin'); // converted back to `false`
+```
 
 Behind a two simple lines might be a long path for the value. The various
 components are essential and as developer you must understand the full sequence::
 
-    $m->set('is_admin', false);
-    $m->save();
+```
+$m->set('is_admin', false);
+$m->save();
+```
 
 ### Strict Types an Normalization
 
@@ -133,33 +145,41 @@ Calling "set()" or using array-access to set the value will start by casting
 the value to an appropriate data-type. If it is impossible to cast the value,
 then exception will be generated::
 
-    $m->set('is_admin', '1'); // OK, but stores as `true`
+```
+$m->set('is_admin', '1'); // OK, but stores as `true`
 
-    $m->set('is_admin', 123); // throws exception.
+$m->set('is_admin', 123); // throws exception.
+```
 
 It's not only the 'type' property, but 'enum' can also imply restrictions::
 
-    $m->addField('access_type', ['enum' => ['readOnly', 'full']]);
+```
+$m->addField('access_type', ['enum' => ['readOnly', 'full']]);
 
-    $m->set('access_type', 'full'); // OK
-    $m->set('access_type', 'half-full'); // Exception
+$m->set('access_type', 'full'); // OK
+$m->set('access_type', 'half-full'); // Exception
+```
 
 There are also non-trivial types in Agile Data::
 
-    $m->addField('salary', ['type' => 'atk4_money']);
-    $m->set('salary', 20); // converts to '20.00 EUR'
+```
+$m->addField('salary', ['type' => 'atk4_money']);
+$m->set('salary', 20); // converts to '20.00 EUR'
 
-    $m->addField('date', ['type' => 'date']);
-    $m->set('date', time()); // converts to DateTime class
+$m->addField('date', ['type' => 'date']);
+$m->set('date', time()); // converts to DateTime class
+```
 
 Finally, you may create your own custom field types that follow a more
 complex logic::
 
-    $m->add(new Field_Currency(), 'balance');
-    $m->set('balance', 12_200.0);
+```
+$m->add(new Field_Currency(), 'balance');
+$m->set('balance', 12_200.0);
 
-    // May transparently work with 2 columns: 'balance_amount' and
-    // 'balance_currency_id' for example.
+// May transparently work with 2 columns: 'balance_amount' and
+// 'balance_currency_id' for example.
+```
 
 Loaded/saved data are always normalized unless the field value normalization
 is intercepted a hook.
@@ -167,27 +187,33 @@ is intercepted a hook.
 Final field flag that is worth mentioning is called :php:attr:`Field::readOnly`
 and if set, then value of a field may not be modified directly::
 
-    $m->addField('ref_no', ['readOnly' => true]);
-    $m = $m->load(123);
+```
+$m->addField('ref_no', ['readOnly' => true]);
+$m = $m->load(123);
 
-    $m->get('ref_no'); // perfect for reading field that is populated by trigger.
+$m->get('ref_no'); // perfect for reading field that is populated by trigger.
 
-    $m->set('ref_no', 'foo'); // exception
+$m->set('ref_no', 'foo'); // exception
+```
 
 Note that `readOnly` can still have a default value::
 
-    $m->addField('created', [
-        'readOnly' => true,
-        'type' => 'datetime',
-        'default' => new DateTime(),
-    ]);
+```
+$m->addField('created', [
+    'readOnly' => true,
+    'type' => 'datetime',
+    'default' => new DateTime(),
+]);
 
-    $m->save(); // stores creation time just fine and also will loade it.
+$m->save(); // stores creation time just fine and also will loade it.
+```
 
 
 .. note:: If you have been following our "Domain" vs "Persistence" then you can
-    probably see that all of the above functionality described in this section
-    apply only to the "Domain" model.
+```
+probably see that all of the above functionality described in this section
+apply only to the "Domain" model.
+```
 
 ### Typecasting
 
@@ -225,8 +251,10 @@ to find more information on how to integrate them.
 
 Lets talk more about this currency field::
 
-    $m->add(new Field_Currency(), 'balance');
-    $m->set('balance', 12_200.0);
+```
+$m->add(new Field_Currency(), 'balance');
+$m->set('balance', 12_200.0);
+```
 
 It may be designed to split up the value by using two fields in the database:
 `balance_amount` and `balance_currency_id`.
@@ -242,27 +270,29 @@ of References.
 Your init() method for a Field_Currency might look like this::
 
 
-    protected function init(): void
-    {
-        parent::init();
+```
+protected function init(): void
+{
+    parent::init();
 
-        $this->neverPersist = true;
+    $this->neverPersist = true;
 
-        $f = $this->shortName; // balance
+    $f = $this->shortName; // balance
 
-        $this->getOwner()->addField(
-            $f . '_amount',
-            ['type' => 'atk4_money', 'system' => true]
-        );
+    $this->getOwner()->addField(
+        $f . '_amount',
+        ['type' => 'atk4_money', 'system' => true]
+    );
 
-        $this->getOwner()->hasOne(
-            $f . '_currency_id',
-            [
-                $this->currency_model ?? new Currency(),
-                'system' => true,
-            ]
-        );
-    }
+    $this->getOwner()->hasOne(
+        $f . '_currency_id',
+        [
+            $this->currency_model ?? new Currency(),
+            'system' => true,
+        ]
+    );
+}
+```
 
 There are more work to be done until Field_Currency could be a valid field, but
 I wanted to draw your attention to the use of field flags:
@@ -344,7 +374,9 @@ take values of 123 and write it on top of 124?
 
 Here is how::
 
-    $m->load(123)->duplicate()->setId(124)->save();
+```
+$m->load(123)->duplicate()->setId(124)->save();
+```
 
 Now the record 124 will be replaced with the data taken from record 123.
 For SQL that means calling 'replace into x'.
@@ -380,26 +412,30 @@ We have a model 'Order' with a field 'ref', which must be unique within
 the context of a client. However, orders are also stored in a 'Basket'.
 Consider the following code::
 
-    $basket->ref('Order')->insert(['ref' => 123]);
+```
+$basket->ref('Order')->insert(['ref' => 123]);
+```
 
 You need to verify that the specific client wouldn't have another order with
 this ref, how do you do it?
 
 Start by creating a beforeSave handler for Order::
 
-    $this->onHookShort(Model::HOOK_BEFORE_SAVE, function () {
-        if ($this->isDirty('ref')) {
-            $m = (new static())
-                ->addCondition('client_id', $this->get('client_id')) // same client
-                ->addCondition($this->idField, '!=', $this->getId()) // has another order
-                ->tryLoadBy('ref', $this->get('ref')) // with same ref
-            if ($m !== null) {
-                throw (new Exception('Order with ref already exists for this client'))
-                    ->addMoreInfo('client', $this->get('client_id'))
-                    ->addMoreInfo('ref', $this->get('ref'))
-            }
+```
+$this->onHookShort(Model::HOOK_BEFORE_SAVE, function () {
+    if ($this->isDirty('ref')) {
+        $m = (new static())
+            ->addCondition('client_id', $this->get('client_id')) // same client
+            ->addCondition($this->idField, '!=', $this->getId()) // has another order
+            ->tryLoadBy('ref', $this->get('ref')) // with same ref
+        if ($m !== null) {
+            throw (new Exception('Order with ref already exists for this client'))
+                ->addMoreInfo('client', $this->get('client_id'))
+                ->addMoreInfo('ref', $this->get('ref'))
         }
-    });
+    }
+});
+```
 
 So to review, we used newInstance() to create new copy of a current model. It
 is important to note that newInstance() is using get_class($this) to determine
@@ -411,11 +447,13 @@ In this use case you are having a model 'Order', but you have introduced the
 option to archive your orders. The method `archive()` is supposed to mark order
 as archived and return that order back. Here is the usage pattern::
 
-    $o->addCondition('is_archived', false); // to restrict loading of archived orders
-    $o = $o->load(123);
-    $archive = $o->archive();
-    $archive->set('note', $archive->get('note') . "\nArchived on $date.");
-    $archive->save();
+```
+$o->addCondition('is_archived', false); // to restrict loading of archived orders
+$o = $o->load(123);
+$archive = $o->archive();
+$archive->set('note', $archive->get('note') . "\nArchived on $date.");
+$archive->save();
+```
 
 With Agile Data API building it's quite common to create a method that does not
 actually persist the model.
@@ -428,31 +466,35 @@ of the result-set.
 There are two approaches to deal with this problem. The first involves disabling
 after-save reloading::
 
-    public function archive()
-    {
-        $this->reloadAfterSave = false;
-        $this->set('is_archived', true);
+```
+public function archive()
+{
+    $this->reloadAfterSave = false;
+    $this->set('is_archived', true);
 
-        return $this;
-    }
+    return $this;
+}
+```
 
 After-save reloading would fail due to `is_archived = false` condition so
 disabling reload is a hack to get your record into the database safely.
 
 The other, more appropriate option is to re-use a vanilla Order record::
 
-    public function archive()
-    {
-        $this->save(); // just to be sure, no dirty stuff is left over
+```
+public function archive()
+{
+    $this->save(); // just to be sure, no dirty stuff is left over
 
-        $archive = new static();
-        $archive = $archive->load($this->getId());
-        $archive->set('is_archived', true);
+    $archive = new static();
+    $archive = $archive->load($this->getId());
+    $archive->set('is_archived', true);
 
-        $this->unload(); // active record is no longer accessible
+    $this->unload(); // active record is no longer accessible
 
-        return $archive;
-    }
+    return $archive;
+}
+```
 
 ## Working with Multiple Persistencies
 
@@ -483,47 +525,11 @@ You can use several designs. I will create a method inside my application class
 to load records from two persistencies that are stored inside properties of my
 application::
 
-    public function loadQuick($class, $id)
-    {
-        // first, try to load it from MemCache
-        $m = (clone $class)->setPersistence($this->mdb)->tryLoad($id);
-
-        if ($m === null) {
-            // fall-back to load from SQL
-            $m = $this->sql->add(clone $class)->load($id);
-
-            // store into MemCache too
-            $m = $m->withPersistence($this->mdb)->save();
-        }
-
-        $m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
-            $m->withPersistence($this->sql)->save();
-        });
-
-        $m->onHook(Model::HOOK_BEFORE_DELETE, function (Model $m) {
-            $m->withPersistence($this->sql)->delete();
-        });
-
-        return $m;
-    }
-
-The above logic provides a simple caching framework for all of your models.
-To use it with any model::
-
-    $m = $app->loadQuick(new Order(), 123);
-
-    $m->set('completed', true);
-    $m->save();
-
-To look in more details into the actual method, I have broken it down into chunks::
-
-    // first, try to load it from MemCache:
+```
+public function loadQuick($class, $id)
+{
+    // first, try to load it from MemCache
     $m = (clone $class)->setPersistence($this->mdb)->tryLoad($id);
-
-The $class will be an uninitialized instance of a model (although you can also
-use a string). It will first be associated with the MemCache DB persistence and
-we will attempt to load a corresponding ID. Next, if no record is found in the
-cache::
 
     if ($m === null) {
         // fall-back to load from SQL
@@ -533,13 +539,6 @@ cache::
         $m = $m->withPersistence($this->mdb)->save();
     }
 
-Load the record from the SQL database and store it into $m. Next, save $m into
-the MemCache persistence by replacing (or creating new) record. The `$m` at the
-end will be associated with the MemCache persistence for consistency with cached
-records.
-The last two hooks are in order to replicate any changes into the SQL database
-also::
-
     $m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
         $m->withPersistence($this->sql)->save();
     });
@@ -547,6 +546,59 @@ also::
     $m->onHook(Model::HOOK_BEFORE_DELETE, function (Model $m) {
         $m->withPersistence($this->sql)->delete();
     });
+
+    return $m;
+}
+```
+
+The above logic provides a simple caching framework for all of your models.
+To use it with any model::
+
+```
+$m = $app->loadQuick(new Order(), 123);
+
+$m->set('completed', true);
+$m->save();
+```
+
+To look in more details into the actual method, I have broken it down into chunks::
+
+```
+// first, try to load it from MemCache:
+$m = (clone $class)->setPersistence($this->mdb)->tryLoad($id);
+```
+
+The $class will be an uninitialized instance of a model (although you can also
+use a string). It will first be associated with the MemCache DB persistence and
+we will attempt to load a corresponding ID. Next, if no record is found in the
+cache::
+
+```
+if ($m === null) {
+    // fall-back to load from SQL
+    $m = $this->sql->add(clone $class)->load($id);
+
+    // store into MemCache too
+    $m = $m->withPersistence($this->mdb)->save();
+}
+```
+
+Load the record from the SQL database and store it into $m. Next, save $m into
+the MemCache persistence by replacing (or creating new) record. The `$m` at the
+end will be associated with the MemCache persistence for consistency with cached
+records.
+The last two hooks are in order to replicate any changes into the SQL database
+also::
+
+```
+$m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
+    $m->withPersistence($this->sql)->save();
+});
+
+$m->onHook(Model::HOOK_BEFORE_DELETE, function (Model $m) {
+    $m->withPersistence($this->sql)->delete();
+});
+```
 
 I have too note that withPersistence() transfers the dirty flags into a new
 model, so SQL record will be updated with the record that you have modified only.
@@ -563,16 +615,18 @@ In theory you can use hooks (that have option to cancel default action) to
 create a comprehensive system-wide solution, I'll illustrate how this can be
 done with a single record::
 
-    $m = new Order($readReplica);
+```
+$m = new Order($readReplica);
 
-    $m->set('completed', true);
+$m->set('completed', true);
 
-    $m->withPersistence($writeReplica)->save();
-    $dirtyRef = &$m->getDirtyRef();
-    $dirtyRef = [];
+$m->withPersistence($writeReplica)->save();
+$dirtyRef = &$m->getDirtyRef();
+$dirtyRef = [];
 
-    // Possibly the update is delayed
-    // $m->reload();
+// Possibly the update is delayed
+// $m->reload();
+```
 
 By changing 'completed' field value, it creates a dirty field inside `$m`,
 which will be saved inside a `$writeReplica`. Although the proper approach
@@ -582,26 +636,32 @@ replica may not propagate to read replica, you can simply reset the dirty flags.
 If you need further optimization, make sure `reloadAfterSave` is disabled
 for the write replica::
 
-    $m->withPersistence($writeReplica)->setDefaults(['reloadAfterSave' => false])->save();
+```
+$m->withPersistence($writeReplica)->setDefaults(['reloadAfterSave' => false])->save();
+```
 
 or use::
 
-    $m->withPersistence($writeReplica)->saveAndUnload();
+```
+$m->withPersistence($writeReplica)->saveAndUnload();
+```
 
 ### Archive Copies into different persistence
 
 If you wish that every time you save your model the copy is also stored inside
 some other database (for archive purposes) you can implement it like this::
 
-    $m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
-        $arc = $this->withPersistence($m->getApp()->archive_db);
+```
+$m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
+    $arc = $this->withPersistence($m->getApp()->archive_db);
 
-        // add some audit fields
-        $arc->addField('original_id', ['type' => 'integer'])->set($this->getId());
-        $arc->addField('saved_by')->set($this->getApp()->user);
+    // add some audit fields
+    $arc->addField('original_id', ['type' => 'integer'])->set($this->getId());
+    $arc->addField('saved_by')->set($this->getApp()->user);
 
-        $arc->saveAndUnload();
-    });
+    $arc->saveAndUnload();
+});
+```
 
 ### Store a specific record
 
@@ -609,13 +669,15 @@ If you are using authentication mechanism to log a user in and you wish to
 store his details into Session, so that you don't have to reload every time,
 you can implement it like this::
 
-    if (!isset($_SESSION['ad'])) {
-        $_SESSION['ad'] = []; // initialize
-    }
+```
+if (!isset($_SESSION['ad'])) {
+    $_SESSION['ad'] = []; // initialize
+}
 
-    $sess = new \Atk4\Data\Persistence\Array_($_SESSION['ad']);
-    $loggedUser = new User($sess);
-    $loggedUser = $loggedUser->load('active_user');
+$sess = new \Atk4\Data\Persistence\Array_($_SESSION['ad']);
+$loggedUser = new User($sess);
+$loggedUser = $loggedUser->load('active_user');
+```
 
 This would load the user data from Array located inside a local session. There
 is no point storing multiple users, so I'm using id='active_user' for the only
@@ -623,10 +685,12 @@ user record that I'm going to store there.
 
 How to add record inside session, e.g. log the user in? Here is the code::
 
-    $u = new User($db);
-    $u = $u->load(123);
+```
+$u = new User($db);
+$u = $u->load(123);
 
-    $u->withPersistence($sess)->save();
+$u->withPersistence($sess)->save();
+```
 
 .. _Action:
 
@@ -655,24 +719,30 @@ rows of data.
 
 Action can be executed at any time and that will return an expected result::
 
-    $m = Model_Invoice();
-    $val = (int) $m->action('count')->getOne(); // same as $val = $m->executeCountQuery()
+```
+$m = Model_Invoice();
+$val = (int) $m->action('count')->getOne(); // same as $val = $m->executeCountQuery()
+```
 
 Most actions are sufficiently smart to understand what type of result you are
 expecting, so you can have the following code::
 
-    $m = Model_Invoice();
-    $val = $m->action('count')();
+```
+$m = Model_Invoice();
+$val = $m->action('count')();
+```
 
 When used inside the same Persistence, sometimes actions can be used without
 executing::
 
-    $m = Model_Product($db);
-    $m->addCondition('name', $productName);
-    $action = $m->action('getOne', ['id']);
+```
+$m = Model_Product($db);
+$m->addCondition('name', $productName);
+$action = $m->action('getOne', ['id']);
 
-    $m = Model_Invoice($db);
-    $m->insert(['qty' => 20, 'product_id' => $action]);
+$m = Model_Invoice($db);
+$m->insert(['qty' => 20, 'product_id' => $action]);
+```
 
 Insert operation will check if you are using same persistence.
 If the persistence object is different, it will execute action and will use
@@ -683,9 +753,11 @@ of queries issued.
 
 The default action type can be set when executing action, for example::
 
-    $a = $m->action('field', 'user', 'getOne');
+```
+$a = $m->action('field', 'user', 'getOne');
 
-    echo $a(); // same as $a->getOne();
+echo $a(); // same as $a->getOne();
+```
 
 ### SQL Actions
 
@@ -695,19 +767,25 @@ Currently only read-only actions are supported by `Persistence\\Sql`:
 
 There are ability to execute aggregation functions::
 
-    echo $m->action('fx', ['max', 'salary'])->getOne();
+```
+echo $m->action('fx', ['max', 'salary'])->getOne();
+```
 
 and finally you can also use count::
 
-    echo $m->executeCountQuery(); // same as echo $m->action('count')->getOne()
+```
+echo $m->executeCountQuery(); // same as echo $m->action('count')->getOne()
+```
 
 ### SQL Actions on Linked Records
 
 In conjunction with Model::refLink() you can produce expressions for creating
 sub-selects. The functionality is nicely wrapped inside HasMany::addField()::
 
-    $client->hasMany('Invoice')
-        ->addField('total_gross', ['aggregate' => 'sum', 'field' => 'gross']);
+```
+$client->hasMany('Invoice')
+    ->addField('total_gross', ['aggregate' => 'sum', 'field' => 'gross']);
+```
 
 This operation is actually consisting of 3 following operations::
 
@@ -721,13 +799,15 @@ This operation is actually consisting of 3 following operations::
 
 Here is a way how to intervene with the process::
 
-    $client->hasMany('Invoice');
-    $client->addExpression('last_sale', ['expr' => function (Model $m) {
-        return $m->refLink('Invoice')
-            ->setOrder('date desc')
-            ->setLimit(1)
-            ->action('field', ['total_gross'], 'getOne');
-    }, 'type' => 'float']);
+```
+$client->hasMany('Invoice');
+$client->addExpression('last_sale', ['expr' => function (Model $m) {
+    return $m->refLink('Invoice')
+        ->setOrder('date desc')
+        ->setLimit(1)
+        ->action('field', ['total_gross'], 'getOne');
+}, 'type' => 'float']);
+```
 
 The code above uses refLink and also creates expression, but it tweaks
 the action used.

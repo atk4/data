@@ -6,21 +6,23 @@ Typecasting is evoked when you are attempting to save or load the record.
 Unlike strict types and normalization, typecasting is a persistence-specific
 operation. Here is the sequence and sample::
 
-    $m->addField('birthday', ['type' => 'date']);
-    // type has a number of pre-defined values. Using 'date'
-    // instructs AD that we will be using it for staring dates
-    // through 'DateTime' class.
+```
+$m->addField('birthday', ['type' => 'date']);
+// type has a number of pre-defined values. Using 'date'
+// instructs AD that we will be using it for staring dates
+// through 'DateTime' class.
 
-    $m->set('birthday', 'Jan 1 1960');
-    // If non-compatible value is provided, it will be converted
-    // into a proper date through Normalization process. After
-    // this line value of 'birthday' field will be DateTime.
+$m->set('birthday', 'Jan 1 1960');
+// If non-compatible value is provided, it will be converted
+// into a proper date through Normalization process. After
+// this line value of 'birthday' field will be DateTime.
 
-    $m->save();
-    // At this point typecasting converts the "DateTime" value
-    // into UTC date-time representation for SQL or "MongoDate"
-    // type if you're persisting with MongoDB. This does not affect
-    // value of a model field.
+$m->save();
+// At this point typecasting converts the "DateTime" value
+// into UTC date-time representation for SQL or "MongoDate"
+// type if you're persisting with MongoDB. This does not affect
+// value of a model field.
+```
 
 Typecasting is necessary to save the values inside the database and restore
 them back just as they were before. When modifying a record, typecasting will
@@ -36,36 +38,42 @@ loaded correctly.
 
 Some types such as `boolean` may support additional options like::
 
-    $m->addField('is_married', [
-        'type' => 'boolean',
-        'enum' => ['No', 'Yes'],
-    ]);
+```
+$m->addField('is_married', [
+    'type' => 'boolean',
+    'enum' => ['No', 'Yes'],
+]);
 
-    $m->set('is_married', 'Yes'); // normalizes into true
-    $m->set('is_married', true); // better way because no need to normalize
+$m->set('is_married', 'Yes'); // normalizes into true
+$m->set('is_married', true); // better way because no need to normalize
 
-    $m->save(); // stores as "Yes" because of type-casting
+$m->save(); // stores as "Yes" because of type-casting
+```
 
 ## Value types
 
 Any type can have a value of `null`::
 
-    $m->set('is_married', null);
-    if (!$m->get('is_married')) {
-        // either null or false
-    }
+```
+$m->set('is_married', null);
+if (!$m->get('is_married')) {
+    // either null or false
+}
+```
 
 If value is passed which is not compatible with field type, Agile Data will try
 to normalize value::
 
-    $m->addField('age', ['type' => 'integer']);
-    $m->addField('name', ['type' => 'string']);
+```
+$m->addField('age', ['type' => 'integer']);
+$m->addField('name', ['type' => 'string']);
 
-    $m->set('age', '49.8');
-    $m->set('name', '       John');
+$m->set('age', '49.8');
+$m->set('name', '       John');
 
-    echo $m->get('age'); // 49 - normalization cast value to integer
-    echo $m->get('name'); // 'John' - normalization trims value
+echo $m->get('age'); // 49 - normalization cast value to integer
+echo $m->get('name'); // 'John' - normalization trims value
+```
 
 ### Undefined type
 
@@ -118,10 +126,12 @@ have no native type in SQL database. This is where serialization feature is used
 
 Field may use serialization to further encode field value for the storage purpose::
 
-    $this->addField('private_key', [
-        'type' => 'object',
-        'system' => true,
-    ]);
+```
+$this->addField('private_key', [
+    'type' => 'object',
+    'system' => true,
+]);
+```
 
 ### Array and Object types
 

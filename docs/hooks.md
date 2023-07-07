@@ -47,14 +47,16 @@ rolled back.
 The next code snippet demonstrates a basic usage of a `beforeSave` hook.
 This one will update field values just before record is saved::
 
-    $m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
-        $m->set('name', strtoupper($m->get('name')));
-        $m->set('surname', strtoupper($m->get('surname')));
-    });
+```
+$m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
+    $m->set('name', strtoupper($m->get('name')));
+    $m->set('surname', strtoupper($m->get('surname')));
+});
 
-    $m->insert(['name' => 'John', 'surname' => 'Smith']);
+$m->insert(['name' => 'John', 'surname' => 'Smith']);
 
-    // Will save into DB:  ['name' => 'JOHN', 'surname' => 'SMITH'];
+// Will save into DB:  ['name' => 'JOHN', 'surname' => 'SMITH'];
+```
 
 ### Arguments
 
@@ -71,19 +73,23 @@ of the model.
 You can also break all "before" hooks which will result in cancellation of the
 original action::
 
-    $m->breakHook(false);
+```
+$m->breakHook(false);
+```
 
 If you break beforeSave, then the save operation will not take place, although
 model will assume the operation was successful.
 
 You can also break beforeLoad hook which can be used to skip rows::
 
-    $model->onHook(Model::HOOK_AFTER_LOAD, function (Model $m) {
-        if ($m->get('date') < $m->date_from) {
-            $m->breakHook(false); // will not yield such data row
-        }
-        // otherwise yields data row
-    });
+```
+$model->onHook(Model::HOOK_AFTER_LOAD, function (Model $m) {
+    if ($m->get('date') < $m->date_from) {
+        $m->breakHook(false); // will not yield such data row
+    }
+    // otherwise yields data row
+});
+```
 
 This will also prevent data from being loaded. If you return false from
 afterLoad hook, then record which we just loaded will be instantly unloaded.
@@ -127,11 +133,13 @@ of save.
 
 You may actually drop validation exception inside save, insert or update hooks::
 
-    $m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
-        if ($m->get('name') === 'Yagi') {
-            throw new \Atk4\Data\ValidationException(['name' => "We don't serve like you"]);
-        }
-    });
+```
+$m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
+    if ($m->get('name') === 'Yagi') {
+        throw new \Atk4\Data\ValidationException(['name' => "We don't serve like you"]);
+    }
+});
+```
 
 ### Loading, Deleting
 
@@ -178,16 +186,18 @@ In some cases you want to prevent default actions from executing.
 Suppose you want to check 'memcache' before actually loading the record from
 the database. Here is how you can implement this functionality::
 
-    $m->onHook(Model::HOOK_BEFORE_LOAD, function (Model $m, $id) {
-        $data = $m->getApp()->cacheFetch($m->table, $id);
-        if ($data) {
-            $dataRef = &$m->getDataRef();
-            $dataRef = $data;
-            $m->setId($id);
+```
+$m->onHook(Model::HOOK_BEFORE_LOAD, function (Model $m, $id) {
+    $data = $m->getApp()->cacheFetch($m->table, $id);
+    if ($data) {
+        $dataRef = &$m->getDataRef();
+        $dataRef = $data;
+        $m->setId($id);
 
-            $m->breakHook($m);
-        }
-    });
+        $m->breakHook($m);
+    }
+});
+```
 
 $app property is injected through your $db object and is passed around to all
 the models. This hook, if successful, will prevent further execution of other
@@ -204,20 +214,24 @@ This can be used in various situations.
 
 Save information into auditLog about failure:
 
-    $m->onHook(Model::HOOK_ROLLBACK, function (Model $m) {
-        $m->auditLog->registerFailure();
-    });
+```
+$m->onHook(Model::HOOK_ROLLBACK, function (Model $m) {
+    $m->auditLog->registerFailure();
+});
+```
 
 Upgrade schema:
 
-    use Atk4\Data\Persistence\Sql\Exception as SqlException;
+```
+use Atk4\Data\Persistence\Sql\Exception as SqlException;
 
-    $m->onHook(Model::HOOK_ROLLBACK, function (Model $m, \Throwable $exception) {
-        if ($exception instanceof SqlException) {
-            $m->schema->upgrade();
-            $m->breakHook(false); // exception will not be thrown
-        }
-    });
+$m->onHook(Model::HOOK_ROLLBACK, function (Model $m, \Throwable $exception) {
+    if ($exception instanceof SqlException) {
+        $m->schema->upgrade();
+        $m->breakHook(false); // exception will not be thrown
+    }
+});
+```
 
 In first example we will register failure in audit log, but afterwards still throw exception.
 In second example we will upgrade model schema and will not throw exception at all because we

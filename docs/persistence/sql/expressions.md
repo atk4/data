@@ -11,32 +11,38 @@ properly.
 
 Quick Example::
 
-    $query->where('time', $query->expr(
-        'between "[]" and "[]"',
-        [$fromTime, $toTime]
-    ));
+```
+$query->where('time', $query->expr(
+    'between "[]" and "[]"',
+    [$fromTime, $toTime]
+));
 
-    // Produces: .. where `time` between :a and :b
+// Produces: .. where `time` between :a and :b
+```
 
 Another use of expression is to supply field instead of value and vice versa::
 
-    $query->where($query->expr(
-        '[] between time_from and time_to',
-        [$time]
-    ));
+```
+$query->where($query->expr(
+    '[] between time_from and time_to',
+    [$time]
+));
 
-    // Produces: where :a between time_from and time_to
+// Produces: where :a between time_from and time_to
+```
 
 Yet another curious use for the DSQL library is if you have certain object in
 your ORM implementing :php:class:`Expressionable` interface. Then you can also
 use it within expressions::
 
-    $query->where($query->expr(
-        '[] between [] and []',
-        [$time, $model->getElement('time_form'), $model->getElement('time_to')]
-    ));
+```
+$query->where($query->expr(
+    '[] between [] and []',
+    [$time, $model->getElement('time_form'), $model->getElement('time_to')]
+));
 
-    // Produces: where :a between `time_from` and `time_to`
+// Produces: where :a between `time_from` and `time_to`
+```
 
 .. todo::
     add more info or more precise example of Expressionable interface usage.
@@ -74,19 +80,25 @@ produce one complete query.
 
 ::
 
-    $expr = $connection->expr('NOW()');
+```
+$expr = $connection->expr('NOW()');
+```
 
 You can also use :php:meth:`expr()` method to create expression, in which case
 you do not have to define "use" block::
 
-    $query->where('time', '>', $query->expr('NOW()'));
+```
+$query->where('time', '>', $query->expr('NOW()'));
 
-    // Produces: .. where `time` > NOW()
+// Produces: .. where `time` > NOW()
+```
 
 You can specify some of the expression properties through first argument of the
 constructor::
 
-    $expr = $connection->expr(['template' => 'NOW()']);
+```
+$expr = $connection->expr(['template' => 'NOW()']);
+```
 
 :ref:`Scroll down <properties>` for full list of properties.
 
@@ -104,28 +116,32 @@ square brackets:
 Arguments can be specified immediately through an array as a second argument
 into constructor or you can specify arguments later::
 
-    $expr = $connection->expr(
-        'coalesce([name], [surname])',
-        ['name' => $name, 'surname' => $surname]
-    );
+```
+$expr = $connection->expr(
+    'coalesce([name], [surname])',
+    ['name' => $name, 'surname' => $surname]
+);
 
-    // is the same as
+// is the same as
 
-    $expr = $connection->expr('coalesce([name], [surname])');
-    $expr['name'] = $name;
-    $expr['surname'] = $surname;
+$expr = $connection->expr('coalesce([name], [surname])');
+$expr['name'] = $name;
+$expr['surname'] = $surname;
+```
 
 ## Nested expressions
 
 Expressions can be nested several times::
 
-    $age = $connection->expr('coalesce([age], [default_age])');
-    $age['age'] = $connection->expr("year(now()) - year(birth_date)");
-    $age['default_age'] = 18;
+```
+$age = $connection->expr('coalesce([age], [default_age])');
+$age['age'] = $connection->expr("year(now()) - year(birth_date)");
+$age['default_age'] = 18;
 
-    $query->table('user')->field($age, 'calculated_age');
+$query->table('user')->field($age, 'calculated_age');
 
-    // select coalesce(year(now()) - year(birth_date), :a) `calculated_age` from `user`
+// select coalesce(year(now()) - year(birth_date), :a) `calculated_age` from `user`
+```
 
 When you include one query into another query, it will automatically take care
 of all user-defined parameters (such as value `18` above) which will make sure
@@ -149,12 +165,16 @@ your expression. Before you do, however, you need to have :php:attr:`$connection
 property set. (See `Connecting to Database` on more details). In short the
 following code will connect your expression with the database::
 
-    $expr = $connection->expr();
+```
+$expr = $connection->expr();
+```
 
 If you are looking to use connection :php:class:`Query` class, you may want to
 consider using a proper vendor-specific subclass::
 
-    $query = new \Atk4\Data\Persistence\Sql\Mysql\Query('connection' => $connection);
+```
+$query = new \Atk4\Data\Persistence\Sql\Mysql\Query('connection' => $connection);
+```
 
 Finally, you can pass connection class into :php:meth:`executeQuery` directly.
 
@@ -239,7 +259,9 @@ Finally, you can pass connection class into :php:meth:`executeQuery` directly.
 In order for HTML parsing to work and to make your debug queries better
 formatted, install `sql-formatter`::
 
-    composer require jdorn/sql-formatter
+```
+composer require jdorn/sql-formatter
+```
 
 ## Escaping Methods
 
@@ -253,8 +275,10 @@ parts of the query. You must not call them in normal circumstances.
   If specified :php:class:`Query` is in "select" mode, then it's automatically
   placed inside brackets::
 
-    $query->consume('first_name'); // `first_name`
-    $query->consume($otherQuery); // will merge parameters and return string
+```
+$query->consume('first_name'); // `first_name`
+$query->consume($otherQuery); // will merge parameters and return string
+```
 
 .. php:method:: escapeIdentifier($sqlCode)
 
@@ -272,10 +296,12 @@ parts of the query. You must not call them in normal circumstances.
 
   Will do nothing if it finds "*", "`" or "(" character in `$sqlCode`::
 
-    $query->escapeIdentifierSoft('first_name'); // `first_name`
-    $query->escapeIdentifierSoft('first.name'); // `first`.`name`
-    $query->escapeIdentifierSoft('(2 + 2)'); // (2 + 2)
-    $query->escapeIdentifierSoft('*'); // *
+```
+$query->escapeIdentifierSoft('first_name'); // `first_name`
+$query->escapeIdentifierSoft('first.name'); // `first`.`name`
+$query->escapeIdentifierSoft('(2 + 2)'); // (2 + 2)
+$query->escapeIdentifierSoft('*'); // *
+```
 
 .. php:method:: escapeParam($value)
 

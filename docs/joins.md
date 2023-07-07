@@ -16,11 +16,13 @@ indexes.
 Agile Data allows you to map multiple table fields into a single business model
 by using joins::
 
-    $user->addField('username');
-    $jContact = $user->join('contact');
-    $jContact->addField('address');
-    $jContact->addField('county');
-    $jContact->hasOne('Country');
+```
+$user->addField('username');
+$jContact = $user->join('contact');
+$jContact->addField('address');
+$jContact->addField('county');
+$jContact->hasOne('Country');
+```
 
 This code will load data from two tables simultaneously and if you do change any
 of those fields they will be update in their respective tables. With SQL the
@@ -38,8 +40,10 @@ load query would look like this:
 If driver is unable to query both tables simultaneously, then it will load one
 record first, then load other record and will collect fields together::
 
-    $user = $user->load($id);
-    $contact = $contact->load($user->get('contact_id'));
+```
+$user = $user->load($id);
+$contact = $contact->load($user->get('contact_id'));
+```
 
 When saving the record, Joins will automatically record data correctly:
 
@@ -59,12 +63,14 @@ Weak join is used if you do not really want to modify the other table.
 For example it can be used to pull country information based on user.country_id
 but you wouldn't want that adding a new user would create a new country::
 
-    $user->addField('username');
-    $user->addField('country_id', ['type' => 'integer']);
-    $jCountry = $user->join('country', ['weak' => true, 'prefix' => 'country_']);
-    $jCountry->addField('code');
-    $jCountry->addField('name');
-    $jCountry->addField('default_currency', ['prefix' => false]);
+```
+$user->addField('username');
+$user->addField('country_id', ['type' => 'integer']);
+$jCountry = $user->join('country', ['weak' => true, 'prefix' => 'country_']);
+$jCountry->addField('code');
+$jCountry->addField('name');
+$jCountry->addField('default_currency', ['prefix' => false]);
+```
 
 After this you will have the following fields in your model:
 
@@ -81,7 +87,9 @@ earlier examples, we the master table was "user" that contained reference to
 "contact". The condition would look like this ``user.contact_id=contact.id``.
 In some cases, however, a relation should be reversed::
 
-    $jContact = $user->join('contact.user_id');
+```
+$jContact = $user->join('contact.user_id');
+```
 
 This will result in the following join condition: ``user.id=contact.user_id``.
 The first argument to join defines both the table that we need to join and
@@ -94,13 +102,15 @@ and ID is supplied. You can pass option 'masterField' to the join() which will
 specify which field to be used for matching. By default the field is calculated
 like this: foreignTable . '_id'. Here is usage example::
 
-    $user->addField('username');
-    $jCreditCard = $user->join('credit_card', [
-        'prefix' => 'cc_',
-        'masterField' => 'default_credit_card_id',
-    ]);
-    $jCreditCard->addField('integer'); // creates cc_number
-    $jCreditCard->addField('name'); // creates cc_name
+```
+$user->addField('username');
+$jCreditCard = $user->join('credit_card', [
+    'prefix' => 'cc_',
+    'masterField' => 'default_credit_card_id',
+]);
+$jCreditCard->addField('integer'); // creates cc_number
+$jCreditCard->addField('name'); // creates cc_name
+```
 
 Master field can also be specified as an object of a Field class.
 
@@ -230,10 +240,12 @@ data from collections in a correct order.
 When you're dealing with SQL drivers, you can specify `\Atk4\Data\Persistence\Sql\Expression` for your
 "on" clause::
 
-    $stats = $user->join('stats', [
-        'on' => $user->expr('year({}) = _st.year'),
-        'foreignAlias' => '_st',
-    ]);
+```
+$stats = $user->join('stats', [
+    'on' => $user->expr('year({}) = _st.year'),
+    'foreignAlias' => '_st',
+]);
+```
 
 You can also specify ``'on' => false`` then the ON clause will not be used at all
 and you'll have to add additional where() condition yourself.

@@ -123,21 +123,23 @@ Remember that it had nothing to do with your database structure, right?
 
 A code to declare a model::
 
-    class Model_User extends \Atk4\Data\Model
-    {
-    }
+```
+class Model_User extends \Atk4\Data\Model
+{
+}
 
-    class Model_Client extends Model_User
-    {
-    }
+class Model_Client extends Model_User
+{
+}
 
-    class Model_Admin extends Model_User
-    {
-    }
+class Model_Admin extends Model_User
+{
+}
 
-    class Model_Order extends \Atk4\Data\Model
-    {
-    }
+class Model_Order extends \Atk4\Data\Model
+{
+}
+```
 
 ### Domain Model Methods
 
@@ -156,13 +158,15 @@ about object inheritance.
 
 Code::
 
-    class Model_Client extends Model_User
+```
+class Model_Client extends Model_User
+{
+    public function sendPasswordReminder()
     {
-        public function sendPasswordReminder()
-        {
-            mail($this->get('email'), 'Your password is: ' . $this->get('password'));
-        }
+        mail($this->get('email'), 'Your password is: ' . $this->get('password'));
     }
+}
+```
 
 At this stage you should not think about "saving" your entries. Think of your
 objects as if they would forever exist in your memory. Also don't bother with
@@ -197,21 +201,25 @@ behavior.
 
 Code to declare fields::
 
-    class Model_Order extends \Atk4\Data\Model
+```
+class Model_Order extends \Atk4\Data\Model
+{
+    protected function init(): void
     {
-        protected function init(): void
-        {
-            parent::init();
+        parent::init();
 
-            $this->addField('description');
-            $this->addField('amount')->type('atk4_money');
-            $this->addField('is_paid')->type('boolean');
-        }
+        $this->addField('description');
+        $this->addField('amount')->type('atk4_money');
+        $this->addField('is_paid')->type('boolean');
     }
+}
+```
 
 Code to access field values::
 
-    $order->set('amount', 1200.2);
+```
+$order->set('amount', 1200.2);
+```
 
 ### Domain Model Relationship
 
@@ -229,27 +237,29 @@ work from a specific record, but more on that later.
 
 Code (add inside `init()`)::
 
-    class Model_Client extends Model_User
+```
+class Model_Client extends Model_User
+{
+    protected function init(): void
     {
-        protected function init(): void
-        {
-            parent::init();
+        parent::init();
 
-            $this->hasMany('Order', ['model' => [Model_Order::class]]);
-        }
+        $this->hasMany('Order', ['model' => [Model_Order::class]]);
     }
+}
 
-    class Model_Order extends \Atk4\Data\Model
+class Model_Order extends \Atk4\Data\Model
+{
+    protected function init(): void
     {
-        protected function init(): void
-        {
-            parent::init();
+        parent::init();
 
-            $this->hasOne('Client', ['model' => [Model_Client::class]]);
+        $this->hasOne('Client', ['model' => [Model_Client::class]]);
 
-            // addField declarations
-        }
+        // addField declarations
     }
+}
+```
 
 ## Persistence backed Domain Logic
 
@@ -257,21 +267,25 @@ Once we establish that Model object and set its persistence layer, we can start
 accessing it.
 Here is the code::
 
-    $order = new Model_Order();
-    // $order is not linked with persistence
+```
+$order = new Model_Order();
+// $order is not linked with persistence
 
-    $order = new Model_Order();
-    $order->setPersistence($db); // same as $order = new Model_Order($db)
-    // $order is associated with specific persistence layer $db
+$order = new Model_Order();
+$order->setPersistence($db); // same as $order = new Model_Order($db)
+// $order is associated with specific persistence layer $db
+```
 
 ### ID Field
 
 Each object is stored with some unique identifier, so you can load and store
 object if you know it's ID::
 
-    $order = $order->load(20);
-    $order->set('amount', 1200.2);
-    $order->save();
+```
+$order = $order->load(20);
+$order->set('amount', 1200.2);
+$order->save();
+```
 
 ## Persistence-specific Code
 
@@ -304,43 +318,47 @@ This is, however, a good point for you to write the initial batch of the code.
 
 Code::
 
-    class Model_User extends \Atk4\Data\Model
+```
+class Model_User extends \Atk4\Data\Model
+{
+    protected function init(): void
     {
-        protected function init(): void
-        {
-            parent::init();
+        parent::init();
 
-            $this->addField('password');
-            $this->addField('password_change_date');
+        $this->addField('password');
+        $this->addField('password_change_date');
 
-            $this->addExpression('is_password_expired', [
-                'expr' => '[password_change_date] < (NOW() - INTERVAL 1 MONTH)',
-                'type' => 'boolean',
-            ]);
-        }
+        $this->addExpression('is_password_expired', [
+            'expr' => '[password_change_date] < (NOW() - INTERVAL 1 MONTH)',
+            'type' => 'boolean',
+        ]);
     }
+}
+```
 
 ### Persistence Hooks
 
 Hooks can help you perform operations when object is being persisted::
 
 
-    class Model_User extends \Atk4\Data\Model
+```
+class Model_User extends \Atk4\Data\Model
+{
+    protected function init(): void
     {
-        protected function init(): void
-        {
-            parent::init();
+        parent::init();
 
-            // add fields here
+        // add fields here
 
-            $this->onHookShort(Model::HOOK_BEFORE_SAVE, function () {
-                if ($this->isDirty('password')) {
-                    $this->set('password', encrypt_password($this->get('password')));
-                    $this->set('password_change_date', $this->expr('now()'));
-                }
-            });
-        }
+        $this->onHookShort(Model::HOOK_BEFORE_SAVE, function () {
+            if ($this->isDirty('password')) {
+                $this->set('password', encrypt_password($this->get('password')));
+                $this->set('password_change_date', $this->expr('now()'));
+            }
+        });
     }
+}
+```
 
 ## DataSet Declaration
 
@@ -351,8 +369,10 @@ practice our application must operate with multiple records.
 DataSet is an object that represents collection of Domain model records that
 are persisted::
 
-    $order = new Model_Order($db);
-    $order = $order->load(10);
+```
+$order = new Model_Order($db);
+$order = $order->load(10);
+```
 
 In scenario above we loaded a specific record. Agile Data does not create a
 separate object when loading, instead the same object is re-used. This is done
@@ -362,30 +382,36 @@ So in the code above `$order` is not created for the record, but it can load
 any record from the DataSet. Think of it as a "window" into a large table of
 Orders::
 
-    $sum = 0;
-    $order = new Model_Order($db);
-    $order = $order->load(10);
-    $sum += $order->get('amount');
+```
+$sum = 0;
+$order = new Model_Order($db);
+$order = $order->load(10);
+$sum += $order->get('amount');
 
-    $order = $order->load(11);
-    $sum += $order->get('amount');
+$order = $order->load(11);
+$sum += $order->get('amount');
 
-    $order = $order->load(13);
-    $sum += $order->get('amount');
+$order = $order->load(13);
+$sum += $order->get('amount');
+```
 
 You can iterate over the DataSet::
 
-    $sum = 0;
-    foreach (new Model_Order($db) as $order) {
-        $sum += $order->get('amount');
-    }
+```
+$sum = 0;
+foreach (new Model_Order($db) as $order) {
+    $sum += $order->get('amount');
+}
+```
 
 You must remember that the code above will only create a single object and
 iterating it will simply make it load different values.
 
 At this point, I'll jump ahead a bit and will show you an alternative code::
 
-    $sum = (new Model_Order($db))->fx0(['sum', 'amount'])->getOne();
+```
+$sum = (new Model_Order($db))->fx0(['sum', 'amount'])->getOne();
+```
 
 It will have same effect as the code above, but will perform operation of
 adding up all order amounts inside the database and save you a lot of CPU cycles.
@@ -399,26 +425,32 @@ DataSet concept lives in "Domain Logic" therefore you can use it safely without
 worrying that you will introduce unnecessary bindings into persistence and break
 single-purpose principle of your objects::
 
-    foreach ($clients as $client) {
-        // echo $client->get('name') . "\n";
-    }
+```
+foreach ($clients as $client) {
+    // echo $client->get('name') . "\n";
+}
+```
 
 The above is a Domain Model code. It will iterate through the DataSet of
 "Clients" and output 3 names. You can also "narrow down" your DataSet by adding
 a restriction::
 
-    $sum = 0;
-    foreach ((new Model_Order($db))->addCondition('is_paid', true) as $order) {
-        $sum += $order->get('amount');
-    }
+```
+$sum = 0;
+foreach ((new Model_Order($db))->addCondition('is_paid', true) as $order) {
+    $sum += $order->get('amount');
+}
+```
 
 And again it's much more effective to do this on database side::
 
 
-    $sum = (new Model_Order($db))
-                ->addCondition('is_paid', true)
-                ->fx0(['sum', 'amount'])
-                ->getOne();
+```
+$sum = (new Model_Order($db))
+            ->addCondition('is_paid', true)
+            ->fx0(['sum', 'amount'])
+            ->getOne();
+```
 
 ## Related DataSets
 
@@ -429,7 +461,9 @@ with condition on user_id. We can't do that, because "query", "table" and
 "user_id" are persistence details and we must keep them outside of business logic.
 Other ORM solution give you something like this::
 
-    $arrayOfOrders = $user->orders();
+```
+$arrayOfOrders = $user->orders();
+```
 
 Unfortunately this has practical performance implications and scalability
 constraints. What if your user is having millions of orders? Even with
@@ -438,10 +472,12 @@ lazy-loading, you will be operating with million "id" records.
 Agile Data implements traversal as a simple operation that converts one DataSet
 into another::
 
-    $userModel->addCondition('is_vip', true);
-    $vipOrders = $userModel->ref('Order');
+```
+$userModel->addCondition('is_vip', true);
+$vipOrders = $userModel->ref('Order');
 
-    $sum = $vipOrders->fx0(['sum', 'amount'])->getOne();
+$sum = $vipOrders->fx0(['sum', 'amount'])->getOne();
+```
 
 The implementation of `ref()` is pretty powerful - $userModel can address 3
 users in the database and only 2 of those users are VIP. Typical ORM would
@@ -461,7 +497,9 @@ into DatabaseVendor-specific operations.
 To continue my example from above, I'll use a query method to calculate number
 of orders placed by VIP clients::
 
-    $vipOrderCount = $vipOrders->fx(['count'])->getOne();
+```
+$vipOrderCount = $vipOrders->fx(['count'])->getOne();
+```
 
 This code will attempt to execute a single-query only, however the ability to
 optimize your request relies on the capabilities of database vendor.
@@ -474,35 +512,41 @@ The actual database operation(s) might look like this on SQL database:
 
 While with MongoDB, the query could be different::
 
-    $ids = collections.client.find({'is_vip': true}).field('id');
+```
+$ids = collections.client.find({'is_vip': true}).field('id');
 
-    return collections.order.find({'user_id': $ids}).count();
+return collections.order.find({'user_id': $ids}).count();
+```
 
 Finally the code above will work even if you use a simple Array as a data source::
 
-    $db = new \Atk4\Data\Persistence\Array_([
-        'client' => [
-            [
-                'name' => 'Joe',
-                'email' => 'joe@yahoo.com',
-                'Orders' => [
-                    ['amount' => 10],
-                    ['amount' => 20],
-                ],
-            ],
-            [
-                'name' => 'Bill',
-                'email' => 'bill@yahoo.com',
-                'Orders' => [
-                    ['amount' => 35],
-                ],
+```
+$db = new \Atk4\Data\Persistence\Array_([
+    'client' => [
+        [
+            'name' => 'Joe',
+            'email' => 'joe@yahoo.com',
+            'Orders' => [
+                ['amount' => 10],
+                ['amount' => 20],
             ],
         ],
-    ]);
+        [
+            'name' => 'Bill',
+            'email' => 'bill@yahoo.com',
+            'Orders' => [
+                ['amount' => 35],
+            ],
+        ],
+    ],
+]);
+```
 
 So getting back to the operation above, lets look at it in more details::
 
-    $vipOrderCount = $vipOrders->fx(['count'])->getOne();
+```
+$vipOrderCount = $vipOrders->fx(['count'])->getOne();
+```
 
 While "$vipOrders" is actually a DataSet, executing count() will cross you over
 into persistence layer. However this method is returning a new object, which is then

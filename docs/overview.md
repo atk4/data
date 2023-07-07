@@ -90,11 +90,15 @@ If you have worked with other ORMs, read the following sections to avoid confusi
 
 How is code::
 
-    select name from user where id = 1
+```
+select name from user where id = 1
+```
 
 is different to the code?::
 
-    $user->load(1)->get('name');
+```
+$user->load(1)->get('name');
+```
 
 While both achieve similar things, the SQL-like code is what we call
 "persistence-specific" code. The second example is "domain model" code. The job
@@ -118,17 +122,19 @@ Next I'll show you how code from different "code layers" may look like:
 Code is unaware of physical location of your data or which persistence are you
 using::
 
-    $user = new User($db);
+```
+$user = new User($db);
 
-    $user = $user->load(20); // load specific user record into PHP
-    echo $user->get('name') . ': '; // access field values
+$user = $user->load(20); // load specific user record into PHP
+echo $user->get('name') . ': '; // access field values
 
-    $gross = $user->ref('Invoice')
-        ->addCondition('status', 'due')
-        ->ref('Lines')
-        ->action('sum', 'gross')
-        ->getOne();
-                                // get sum of all gross fields for due invoices
+$gross = $user->ref('Invoice')
+    ->addCondition('status', 'due')
+    ->ref('Lines')
+    ->action('sum', 'gross')
+    ->getOne();
+                            // get sum of all gross fields for due invoices
+```
 
 Another important aspect of Domain-model code is that fields such as `gross` or
 `name` can be either a physical values in the database or can be mapped to
@@ -146,15 +152,19 @@ This is a type of code which may change if you decide to switch from one
 persistence to another. For example, this is how you would define `gross` field
 for SQL::
 
-    $model->addExpression('gross', ['expr' => '[net] + [vat]']);
+```
+$model->addExpression('gross', ['expr' => '[net] + [vat]']);
+```
 
 If your persistence does not support expressions (e.g. you are using Redis or
 MongoDB), you would need to define the field differently::
 
-    $model->addField('gross');
-    $model->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
-        $m->set('gross', $m->get('net') + $m->get('vat'));
-    });
+```
+$model->addField('gross');
+$model->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
+    $m->set('gross', $m->get('net') + $m->get('vat'));
+});
+```
 
 When you use persistence-specific code, you must be aware that it will not map
 into persistencies that does not support features you have used.
@@ -163,16 +173,18 @@ In most cases that is OK as if you prefer to stay with same database type, for
 instance, the above expression will still be usable with any SQL vendor, but if
 you want it to work with NoSQL, then your solution might be::
 
-    if ($model->hasMethod('addExpression')) {
-        // method is injected by Persistence
-        $model->addExpression('gross', ['expr' => '[net] + [vat]']);
-    } else {
-        // persistence does not support expressions
-        $model->addField('gross');
-        $model->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
-            $m->set('gross', $m->get('net') + $m->get('vat'));
-        });
-    }
+```
+if ($model->hasMethod('addExpression')) {
+    // method is injected by Persistence
+    $model->addExpression('gross', ['expr' => '[net] + [vat]']);
+} else {
+    // persistence does not support expressions
+    $model->addField('gross');
+    $model->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
+        $m->set('gross', $m->get('net') + $m->get('vat'));
+    });
+}
+```
 
 ### Generic Persistence-code
 
@@ -185,12 +197,14 @@ https://github.com/atk4/report/blob/develop/src/GroupModel.php
 This code is specific to SQL databases, but can be used with any Model, so in
 order to use grouping with Agile Data, your code would be::
 
-    $aggregate = new AggregateModel(new Sale($db));
-    $aggregate->setGroupBy(['contractor_to', 'type'], [ // groups by 2 columns
-        'c' => ['expr' => 'count(*)'], // defines aggregate formulas for fields
-        'qty' => ['expr' => 'sum([])'], // [] refers back to qty
-        'total' => ['expr' => 'sum([amount])'], // can specify any field here
-    ]);
+```
+$aggregate = new AggregateModel(new Sale($db));
+$aggregate->setGroupBy(['contractor_to', 'type'], [ // groups by 2 columns
+    'c' => ['expr' => 'count(*)'], // defines aggregate formulas for fields
+    'qty' => ['expr' => 'sum([])'], // [] refers back to qty
+    'total' => ['expr' => 'sum([amount])'], // can specify any field here
+]);
+```
 
 ## Persistence Scaling
 
@@ -200,53 +214,63 @@ Agile Data makes it very easy to use models with a simpler persistencies.
 For example, consider you want to output a "table" to the user using HTML by
 using Agile UI::
 
-    $table = \Atk4\Ui\Table::addTo($app);
+```
+$table = \Atk4\Ui\Table::addTo($app);
 
-    $table->setModel(new User($db));
+$table->setModel(new User($db));
 
-    echo $table->render();
+echo $table->render();
+```
 
 Class `\\Atk4\\Ui\\Table` here is designed to work with persistencies and models -
 it will populate columns of correct type, fetch data, calculate totals if needed.
 But what if you have your data inside an array?
 You can use :php:class:`Persistence\Static_` for that::
 
-    $table = \Atk4\Ui\Table::addTo($app);
+```
+$table = \Atk4\Ui\Table::addTo($app);
 
-    $table->setModel(new User(new Persistence\Static_([
-        ['name' => 'John', 'is_admin' => false, 'salary' => 34_400.0],
-        ['name' => 'Peter', 'is_admin' => false, 'salary' => 42_720.0],
-    ])));
+$table->setModel(new User(new Persistence\Static_([
+    ['name' => 'John', 'is_admin' => false, 'salary' => 34_400.0],
+    ['name' => 'Peter', 'is_admin' => false, 'salary' => 42_720.0],
+])));
 
-    echo $table->render();
+echo $table->render();
+```
 
 Even if you don't have a model, you can use Static persistence with Generic
 model class to display VAT breakdown table::
 
-    $table = \Atk4\Ui\Table::addTo($app);
+```
+$table = \Atk4\Ui\Table::addTo($app);
 
-    $table->setModel(new Model(new Persistence\Static_([
-        ['VAT_rate' => '12.0%', 'VAT' => 36.0, 'Net' => 300.0],
-        ['VAT_rate' => '10.0%', 'VAT' => 52.0, 'Net' => 520.0],
-    ])));
+$table->setModel(new Model(new Persistence\Static_([
+    ['VAT_rate' => '12.0%', 'VAT' => 36.0, 'Net' => 300.0],
+    ['VAT_rate' => '10.0%', 'VAT' => 52.0, 'Net' => 520.0],
+])));
 
-    echo $table->render();
+echo $table->render();
+```
 
 It can be made even simpler::
 
-    $table = \Atk4\Ui\Table::addTo($app);
+```
+$table = \Atk4\Ui\Table::addTo($app);
 
-    $table->setModel(new Model(new Persistence\Static_([
-        'John',
-        'Peter',
-    ])));
+$table->setModel(new Model(new Persistence\Static_([
+    'John',
+    'Peter',
+])));
 
-    echo $table->render();
+echo $table->render();
+```
 
 Agile UI even offers a wrapper for static persistence::
 
-    $table = \Atk4\Ui\Table::addTo($app);
+```
+$table = \Atk4\Ui\Table::addTo($app);
 
-    $table->setSource([ 'John', 'Peter' ]);
+$table->setSource([ 'John', 'Peter' ]);
 
-    echo $table->render();
+echo $table->render();
+```

@@ -13,7 +13,9 @@ unions but only if the database server supports those operations.
 
 Developer would normally create a declaration like this::
 
-    $user->hasMany('Order')->addField('total', ['aggregate' => 'sum']);
+```
+$user->hasMany('Order')->addField('total', ['aggregate' => 'sum']);
+```
 
 It is up to Agile Data to decide what's the most efficient way to implement
 the aggregation. Currently only SQL persistence is capable of constructing
@@ -96,36 +98,42 @@ to do so.
 It might be handy to use in-line definition of a model. Try the following
 inside console::
 
-    $m = new Model($db, 'contact_info');
-    $m->addField('address_1');
-    $m->addField('address_2');
-    $m->addCondition('address_1', '!=', null);
-    $m = $m->loadAny();
-    $m->get();
-    $m->executeCountQuery(); // same as ((int) $m->action('count')->getOne())
+```
+$m = new Model($db, 'contact_info');
+$m->addField('address_1');
+$m->addField('address_2');
+$m->addCondition('address_1', '!=', null);
+$m = $m->loadAny();
+$m->get();
+$m->executeCountQuery(); // same as ((int) $m->action('count')->getOne())
+```
 
 Next, exit and create file `src/Model_ContactInfo.php`::
 
-    <?php
-    class Model_ContactInfo extends Model
+```
+<?php
+class Model_ContactInfo extends Model
+{
+    public $table = 'contact_info';
+
+    protected function init(): void
     {
-        public $table = 'contact_info';
+        parent::init();
 
-        protected function init(): void
-        {
-            parent::init();
-
-            $this->addField('address_1');
-            $this->addField('address_2');
-            $this->addCondition('address_1', '!=', null);
-        }
+        $this->addField('address_1');
+        $this->addField('address_2');
+        $this->addCondition('address_1', '!=', null);
     }
+}
+```
 
 Save, exit and run console again. You can now type this::
 
-    $m = new Model_ContactInfo($db);
-    $m = $m->loadAny();
-    $m->get();
+```
+$m = new Model_ContactInfo($db);
+$m = $m->loadAny();
+$m->get();
+```
 
 .. note:: Should the "addCondition" be located inside model definition or
     inside your inline code? To answer this question - think - would
@@ -165,15 +173,17 @@ it cannot be removed for safety reasons.
 Suppose you have a method that converts DataSet into JSON. Ability to add
 conditions is your way to specify which records to operate on::
 
-    public function myexport(\Atk4\Data\Model $m, array $fields = null)
-    {
-        return json_encode($m->export($fields));
-    }
+```
+public function myexport(\Atk4\Data\Model $m, array $fields = null)
+{
+    return json_encode($m->export($fields));
+}
 
-    $m = new Model_User($db);
-    $m->addCondition('country_id', '2');
+$m = new Model_User($db);
+$m->addCondition('country_id', '2');
 
-    myexport($m, ['id', 'username', 'country_id']);
+myexport($m, ['id', 'username', 'country_id']);
+```
 
 If you want to temporarily add conditions, then you can either clone the model
 or use :php:meth:`Model::tryLoadBy`.
@@ -184,13 +194,15 @@ Active Record
 Active Record is a third essential piece of information that your model stores.
 You can load / unload records like this::
 
-    $m = new Model_User($db);
-    $m = $m->loadAny();
+```
+$m = new Model_User($db);
+$m = $m->loadAny();
 
-    $m->get(); // inside console, this will show you what's inside your model
+$m->get(); // inside console, this will show you what's inside your model
 
-    $m->set('email', 'test@example.com');
-    $m->save();
+$m->set('email', 'test@example.com');
+$m->save();
+```
 
 You can call `$m->isLoaded()` to see if there is active record and `$m->getId()` will
 store the ID of active record. You can also un-load the record with `$m->unload()`.
@@ -201,14 +213,16 @@ to save unloaded model, it will create a new record.
 Model may use some default values in order to make sure that your record will
 be saved inside DataSet::
 
-    $m = new Model_User($db);
-    $m->addCondition('country_id', 2);
-    $m->set('username', 'peter');
-    $m->save();
+```
+$m = new Model_User($db);
+$m->addCondition('country_id', 2);
+$m->set('username', 'peter');
+$m->save();
 
-    $m->get(); // will show country_id as 2
-    $m->set('country_id', 3);
-    $m->save(); // will generate exception because model you try to save doesn't match conditions set
+$m->get(); // will show country_id as 2
+$m->set('country_id', 3);
+$m->save(); // will generate exception because model you try to save doesn't match conditions set
+```
 
 
 Other Parameters
@@ -223,9 +237,11 @@ some other parameters such as:
 
 You can also define your own parameters like this::
 
-    $m = new Model_User($db, ['audit' => false]);
+```
+$m = new Model_User($db, ['audit' => false]);
 
-    $m->audit
+$m->audit
+```
 
 This can be used internally for all sorts of decisions for model behavior.
 
@@ -234,34 +250,38 @@ This can be used internally for all sorts of decisions for model behavior.
 It's time to create the first Model. Open `src/Model_User.php` which should look
 like this::
 
-    <?php
-    class Model_User extends Model
+```
+<?php
+class Model_User extends Model
+{
+    public $table = 'user';
+
+    protected function init(): void
     {
-        public $table = 'user';
+        parent::init();
 
-        protected function init(): void
-        {
-            parent::init();
+        $this->addField('username');
+        $this->addField('email');
 
-            $this->addField('username');
-            $this->addField('email');
-
-            $j = $this->join('contact_info', 'contact_info_id');
-            $j->addField('address_1');
-            $j->addField('address_2');
-            $j->addField('address_3');
-            $j->hasOne('country_id', 'Country');
-        }
+        $j = $this->join('contact_info', 'contact_info_id');
+        $j->addField('address_1');
+        $j->addField('address_2');
+        $j->addField('address_3');
+        $j->hasOne('country_id', 'Country');
     }
+}
+```
 
 Extend either the base Model class or one of your existing classes (like
 Model_Client). Define $table property unless it is already defined by parent
 class. All the properties defined inside your model class are considered
 "default" you can re-define them when you create model instances::
 
-    $m = new Model_User($db, 'user2'); // will use a different table
+```
+$m = new Model_User($db, 'user2'); // will use a different table
 
-    $m = new Model_User($db, ['table' => 'user2']); // same
+$m = new Model_User($db, ['table' => 'user2']); // same
+```
 
 .. note:: If you're trying those lines, you will also have to
     create this new table inside your MySQL database::
@@ -272,15 +292,19 @@ As I mentioned - :php:meth:`Model::init` is called when model is associated
 with persistence. You could create model and associate it with persistence
 later::
 
-    $m = new Model_User();
+```
+$m = new Model_User();
 
-    $m->setPersistence($db); // calls $m->invokeInit()
+$m->setPersistence($db); // calls $m->invokeInit()
+```
 
 You cannot add conditions just yet, although you can pass in some of the defaults::
 
-    $m = new Model_User(null, ['table' => 'user2']);
+```
+$m = new Model_User(null, ['table' => 'user2']);
 
-    $m->setPersistence($db); // will use table user2
+$m->setPersistence($db); // will use table user2
+```
 
 ### Adding Fields
 
@@ -302,9 +326,11 @@ The Join object defines a relationship between the master :php:attr:`Model::tabl
 and some other table inside persistence domain. It makes sure relationship is
 maintained when objects are saved / loaded::
 
-    $j = $this->join('contact_info', 'contact_info_id');
-    $j->addField('address_1');
-    $j->addField('address_2');
+```
+$j = $this->join('contact_info', 'contact_info_id');
+$j->addField('address_1');
+$j->addField('address_2');
+```
 
 That means that your business model will contain 'address_1' and 'address_2'
 fields, but when it comes to storing those values, they will be sent into a
@@ -312,10 +338,12 @@ different database table and the records will be automatically linked.
 
 Lets once again load up the console for some exercises::
 
-    $m = new Model_User($db);
+```
+$m = new Model_User($db);
 
-    $m = $m->loadBy('username', 'john');
-    $m->get();
+$m = $m->loadBy('username', 'john');
+$m->get();
+```
 
 At this point you'll see that address has also been loaded for the user.
 Agile Data makes management of related records transparent. In fact you can
@@ -338,35 +366,41 @@ database engine.
 To make things simple, console has already created persistence inside variable
 `$db`. Load up `console.php` in your editor to look at how persistence is set up::
 
-    $app->db = Persistence::connect($dsn, $user, $pass);
+```
+$app->db = Persistence::connect($dsn, $user, $pass);
+```
 
 The `$dsn` can also be using the PEAR-style DSN format, such as:
 "mysql://user:pass@db/host", in which case you do not need to specify $user and $pass.
 
 For some persistence classes, you should use constructor directly::
 
-    $array = [];
-    $array[1] = ['name' => 'John'];
-    $array[2] = ['name' => 'Peter'];
+```
+$array = [];
+$array[1] = ['name' => 'John'];
+$array[2] = ['name' => 'Peter'];
 
-    $db = new Persistence\Array_($array);
-    $m = new Model($db);
-    $m->addField('name');
-    $m = $m->load(2);
-    echo $m->get('name'); // Peter
+$db = new Persistence\Array_($array);
+$m = new Model($db);
+$m->addField('name');
+$m = $m->load(2);
+echo $m->get('name'); // Peter
+```
 
 There are several Persistence classes that deal with different data sources.
 Lets load up our console and try out a different persistence::
 
-    $a = ['user' => [], 'contact_info' => []];
-    $ar = new Persistence\Array_($a);
-    $m = new Model_User($ar);
-    $m->set('username', 'test');
-    $m->set('address_1', 'street');
+```
+$a = ['user' => [], 'contact_info' => []];
+$ar = new Persistence\Array_($a);
+$m = new Model_User($ar);
+$m->set('username', 'test');
+$m->set('address_1', 'street');
 
-    $m->save();
+$m->save();
 
-    var_dump($a); // shows you stored data
+var_dump($a); // shows you stored data
+```
 
 This time our Model_User logic has worked pretty well with Array-only
 persistence logic.
@@ -392,13 +426,17 @@ optionally specify which fields are used for conditioning.
 Launch up console again and let's create reference between 'User' and 'System'.
 As per our database design - one user can have multiple 'system' records::
 
-    $m = new Model_User($db);
-    $m->hasMany('System');
+```
+$m = new Model_User($db);
+$m->hasMany('System');
+```
 
 Next you can load a specific user and traverse into System model::
 
-    $m = $m->loadBy('username', 'john');
-    $s = $m->ref('System');
+```
+$m = $m->loadBy('username', 'john');
+$s = $m->ref('System');
+```
 
 Unlike most ORM and ActiveRecord implementations today - instead of returning
 array of objects, :php:meth:`Model::ref()` actually returns another Model to
@@ -409,26 +447,32 @@ Your Active Record was user john and after traversal you get a model with DataSe
 corresponding to all Systems that belong to user john. You can use the following
 to see number of records in DataSet or export DataSet::
 
-    $s->isLoaded();
-    $s->executeCountQuery();
-    $s->export();
-    $s->action('count')->getDebugQuery();
+```
+$s->isLoaded();
+$s->executeCountQuery();
+$s->export();
+$s->action('count')->getDebugQuery();
+```
 
 ### Many to Many
 
 Agile Data also supports another type of traversal - 'DataSet to DataSet' or
 Many to Many::
 
-    $c = $m->ref('System')->ref('Client');
+```
+$c = $m->ref('System')->ref('Client');
+```
 
 This will create a Model_Client instance with a DataSet corresponding to all
 the Clients that are contained in all of the Systems that belong to user john.
 You can examine the this model further::
 
-    $c->isLoaded();
-    $c->executeCountQuery();
-    $c->export();
-    $c->action('count')->getDebugQuery();
+```
+$c->isLoaded();
+$c->executeCountQuery();
+$c->export();
+$c->action('count')->getDebugQuery();
+```
 
 By looking at the code - both MtM and OtM references are defined with 'hasMany'.
 The only difference is the loaded() state of the source model.
@@ -439,14 +483,18 @@ Calling ref()->ref() is also called Deep Traversal.
 
 The third and final reference traversal type is "Active Record to Active Record"::
 
-    $cc = $m->ref('country_id');
+```
+$cc = $m->ref('country_id');
+```
 
 This results in an instance of Model_Country with Active Record set to the
 country of user john::
 
-    $cc->isLoaded();
-    $cc->getId();
-    $cc->get();
+```
+$cc->isLoaded();
+$cc->getId();
+$cc->get();
+```
 
 ### Implementation of References
 
@@ -479,26 +527,32 @@ SQL implements methods such as sum(), count() or max() that can offer you some
 basic aggregation without grouping. This type of aggregation provides some
 specific value from a data-set. SQL persistence implements some of the operations::
 
-    $m = new Model_Invoice($db);
-    $m->executeCountQuery();
-    $m->action('fx', ['sum', 'total'])->getOne();
-    $m->action('fx', ['max', 'shipping'])->getOne();
+```
+$m = new Model_Invoice($db);
+$m->executeCountQuery();
+$m->action('fx', ['sum', 'total'])->getOne();
+$m->action('fx', ['max', 'shipping'])->getOne();
+```
 
 Aggregation actions can be used in Expressions with hasMany references and they
 can be brought into the original model as fields::
 
-    $m = new Model_Client($db);
-    $m->getReference('Invoice')->addField('max_delivery', ['aggregate' => 'max', 'field' => 'shipping']);
-    $m->getReference('Payment')->addField('total_paid', ['aggregate' => 'sum', 'field' => 'amount']);
-    $m->export(['name', 'max_delivery', 'total_paid']);
+```
+$m = new Model_Client($db);
+$m->getReference('Invoice')->addField('max_delivery', ['aggregate' => 'max', 'field' => 'shipping']);
+$m->getReference('Payment')->addField('total_paid', ['aggregate' => 'sum', 'field' => 'amount']);
+$m->export(['name', 'max_delivery', 'total_paid']);
+```
 
 The above code is more concise and can be used together with reference declaration,
 although this is how it works::
 
-    $m = new Model_Client($db);
-    $m->addExpression('max_delivery', ['expr' => $m->refLink('Invoice')->action('fx', ['max', 'shipping'])]);
-    $m->addExpression('total_paid', ['expr' => $m->refLink('Payment')->action('fx', ['sum', 'amount'])]);
-    $m->export(['name', 'max_delivery', 'total_paid']);
+```
+$m = new Model_Client($db);
+$m->addExpression('max_delivery', ['expr' => $m->refLink('Invoice')->action('fx', ['max', 'shipping'])]);
+$m->addExpression('total_paid', ['expr' => $m->refLink('Payment')->action('fx', ['sum', 'amount'])]);
+$m->export(['name', 'max_delivery', 'total_paid']);
+```
 
 In this example calling refLink is similar to traversing reference but instead
 of calculating DataSet based on Active Record or DataSet it references the actual
@@ -515,42 +569,52 @@ complex SQL expression instead of a physical field. (See :ref:`Expressions` and
 
 Field referencing allows you to fetch a specific field from related model::
 
-    $m = new Model_Country($db);
-    $m->action('field', ['name'])->get();
-    $m->action('field', ['name'])->getDebugQuery();
+```
+$m = new Model_Country($db);
+$m->action('field', ['name'])->get();
+$m->action('field', ['name'])->getDebugQuery();
+```
 
 This is useful with hasMany references::
 
-    $m = new Model_User($db);
-    $m->getReference('country_id')->addField('country', 'name');
-    $m = $m->loadAny();
-    $m->get(); // look for 'country' field
+```
+$m = new Model_User($db);
+$m->getReference('country_id')->addField('country', 'name');
+$m = $m->loadAny();
+$m->get(); // look for 'country' field
+```
 
 hasMany::addField() again is a short-cut for creating expression, which you can
 also build manually::
 
-    $m->addExpression('country', $m->refLink('country_id')->action('field', ['name']));
+```
+$m->addExpression('country', $m->refLink('country_id')->action('field', ['name']));
+```
 
 ### Advanced Use of Actions
 
 Actions prove to be very useful in various situations. For instance, if you are
 looking to add a new user::
 
-    $m = new Model_User($db);
-    $m->set('username', 'peter');
-    $m->set('address_1', 'street 49');
-    $m->set('country', 'UK');
-    $m->save();
+```
+$m = new Model_User($db);
+$m->set('username', 'peter');
+$m->set('address_1', 'street 49');
+$m->set('country', 'UK');
+$m->save();
+```
 
 Normally this would not work, because country is read-only expression, however
 if you wish to avoid creating an intermediate select to determine ID for 'UK',
 you could do this::
 
-    $m = new Model_User($db);
-    $m->set('username', 'peter');
-    $m->set('address_1', 'street 49');
-    $m->set('country_id', (new Model_Country($db))->addCondition('name', 'UK')->action('field', ['id']));
-    $m->save();
+```
+$m = new Model_User($db);
+$m->set('username', 'peter');
+$m->set('address_1', 'street 49');
+$m->set('country_id', (new Model_Country($db))->addCondition('name', 'UK')->action('field', ['id']));
+$m->save();
+```
 
 This way it will not execute any code, but instead it will provide expression
 that will then be used to lookup ID of 'UK' when inserting data into SQL table.
@@ -561,12 +625,14 @@ Expressions that are defined based on Actions (such as aggregate or field-refere
 will continue to work even without SQL (although might be more performance-expensive),
 however if you're stuck with SQL you can use free-form pattern-based expressions::
 
-    $m = new Model_Client($db);
-    $m->getReference('Invoice')->addField('total_purchase', ['aggregate' => 'sum', 'field' => 'total']);
-    $m->getReference('Payment')->addField('total_paid', ['aggregate' => 'sum', 'field' => 'amount']);
+```
+$m = new Model_Client($db);
+$m->getReference('Invoice')->addField('total_purchase', ['aggregate' => 'sum', 'field' => 'total']);
+$m->getReference('Payment')->addField('total_paid', ['aggregate' => 'sum', 'field' => 'amount']);
 
-    $m->addExpression('balance', ['expr' => '[total_purchase] + [total_paid]']);
-    $m->export(['name', 'balance']);
+$m->addExpression('balance', ['expr' => '[total_purchase] + [total_paid]']);
+$m->export(['name', 'balance']);
+```
 
 ## Conclusion
 

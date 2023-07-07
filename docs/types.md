@@ -15,11 +15,15 @@ Specifying one of supported types will ensure that your field format is
 recognized universally, can be stored, loaded, presented to user through UI
 inside a Table or Form and can be exported through RestAPI::
 
-    $this->addField('is_vip', ['type' => 'boolean']);
+```
+$this->addField('is_vip', ['type' => 'boolean']);
+```
 
 We also allow use of custom Field implementation::
 
-    $this->addField('encrypted_password', new \Atk4\Data\Field\PasswordField());
+```
+$this->addField('encrypted_password', new \Atk4\Data\Field\PasswordField());
+```
 
 A properly implemented type will still be able to offer some means to present
 it in human-readable format, however in some cases, if you plan on using ATK UI,
@@ -39,7 +43,9 @@ incompatible database/persistence.
 Serialization abilities allow us to get rid of many arbitrary types such as "array_json"
 and simply use this::
 
-    $model->addField('selection', ['type' => 'json']);
+```
+$model->addField('selection', ['type' => 'json']);
+```
 
 ## Field configuration
 
@@ -50,7 +56,9 @@ as `['Number', 'precision' => 2, 'prefix' => '€']`
 Not only this allows us make a flexible and re-usable functionality for fields,
 but also allows for an easy way to override::
 
-    $model->addField('salary', ['type' => 'atk4_money', 'precision' => 4']);
+```
+$model->addField('salary', ['type' => 'atk4_money', 'precision' => 4']);
+```
 
 Although some configuration of the field may appear irrelevant (prefix/postfix)
 to operations with data from inside PHP, those properties can be used by
@@ -103,10 +111,12 @@ Additionally there is a support for
 
 All measurements are implemented with :php:class:`Units` and can be further extended::
 
-    $model->addField('speed', ['Units', 'postfix' => '/s', 'scale' => ['m' => 1, 'km' => 1000]]);
-    $model->set('speed', '30km/s');
+```
+$model->addField('speed', ['Units', 'postfix' => '/s', 'scale' => ['m' => 1, 'km' => 1000]]);
+$model->set('speed', '30km/s');
 
-    echo $model->get('speed'); // 30000
-    echo $model->getField('speed')->format(); // 30 km/s
-    echo $model->getField('speed')->format('m'); // 30000 m/s
+echo $model->get('speed'); // 30000
+echo $model->getField('speed')->format(); // 30 km/s
+echo $model->getField('speed')->format('m'); // 30000 m/s
+```
 

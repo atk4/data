@@ -13,22 +13,30 @@ The class tries to get out of your way as much as possible.
 You can use :php:class:`Query` and :php:class:`Expression` without connection
 at all. Simply create expression::
 
-    $expr = new Mysql\Expression('show tables like []', ['foo%']);
+```
+$expr = new Mysql\Expression('show tables like []', ['foo%']);
+```
 
 or query::
 
-    $query = (new Mysql\Query())->table('user')->where('id', 1);
+```
+$query = (new Mysql\Query())->table('user')->where('id', 1);
+```
 
 When it's time to execute you can specify your Connection manually::
 
-    $rows = $expr->getRows($connection);
-    foreach ($rows as $row) {
-        echo json_encode($row) . "\n";
-    }
+```
+$rows = $expr->getRows($connection);
+foreach ($rows as $row) {
+    echo json_encode($row) . "\n";
+}
+```
 
 With queries you might need to select mode first::
 
-    $stmt = $query->mode('delete')->executeStatement($connection);
+```
+$stmt = $query->mode('delete')->executeStatement($connection);
+```
 
 The :php:meth:`Expression::execute` is a convenient way to prepare query,
 bind all parameters and get `Doctrine\DBAL\Result`, but if you wish to do it manually,
@@ -40,14 +48,16 @@ If you use DSQL inside another framework, it's possible that there is already
 a PDO object which you can use. In Laravel you can optimize some of your queries
 by switching to DSQL::
 
-    $c = new Connection(['connection' => $pdo]);
+```
+$c = new Connection(['connection' => $pdo]);
 
-    $userIds = $c->dsql()->table('expired_users')->field('user_id');
-    $c->dsql()->table('user')->where('id', 'in', $userIds)->set('active', 0)->mode('update')->executeStatement();
+$userIds = $c->dsql()->table('expired_users')->field('user_id');
+$c->dsql()->table('user')->where('id', 'in', $userIds)->set('active', 0)->mode('update')->executeStatement();
 
-    // Native Laravel Database Query Builder
-    // $userIds = DB::table('expired_users')->lists('user_id');
-    // DB::table('user')->whereIn('id', $userIds)->update(['active', 0]);
+// Native Laravel Database Query Builder
+// $userIds = DB::table('expired_users')->lists('user_id');
+// DB::table('user')->whereIn('id', $userIds)->update(['active', 0]);
+```
 
 The native query builder in the example above populates $userIds with array from
 `expired_users` table, then creates second query, which is an update. With
@@ -66,7 +76,9 @@ results too.
 If you are creating :php:class:`Connection` through constructor, you may have
 to explicitly specify property :php:attr:`Connection::queryClass`::
 
-    $c = new Connection(['connection' => $pdo, 'queryClass' => Atk4\Data\Persistence\Sql\Sqlite\Query::class]);
+```
+$c = new Connection(['connection' => $pdo, 'queryClass' => Atk4\Data\Persistence\Sql\Sqlite\Query::class]);
+```
 
 This is also useful, if you have created your own Query class in a different
 namespace and wish to use it.
@@ -79,29 +91,33 @@ You can add support for new database vendors by creating your own
 :php:class:`Query` class.
 Let's say you want to add support for new SQL vendor::
 
-    class Query_MyVendor extends Atk4\Data\Persistence\Sql\Query
-    {
-        protected string $identifierEscapeChar = '"';
-        protected string $expressionClass = Expression_MyVendor::class;
+```
+class Query_MyVendor extends Atk4\Data\Persistence\Sql\Query
+{
+    protected string $identifierEscapeChar = '"';
+    protected string $expressionClass = Expression_MyVendor::class;
 
-        // truncate is done differently by this vendor
-        protected string $templateTruncate = 'delete [from] [table]';
+    // truncate is done differently by this vendor
+    protected string $templateTruncate = 'delete [from] [table]';
 
-        // also join is not supported
-        public function join(
-            $foreignTable,
-            $masterField = null,
-            $joinKind = null,
-            $foreignAlias = null
-        ) {
-            throw new Atk4\Data\Persistence\Sql\Exception('Join is not supported by the database');
-        }
+    // also join is not supported
+    public function join(
+        $foreignTable,
+        $masterField = null,
+        $joinKind = null,
+        $foreignAlias = null
+    ) {
+        throw new Atk4\Data\Persistence\Sql\Exception('Join is not supported by the database');
     }
+}
+```
 
 Now that our custom query class is complete, we would like to use it by default
 on the connection::
 
-    $c = \Atk4\Data\Persistence\Sql\Connection::connect($dsn, $user, $pass, ['queryClass' => 'Query_MyVendor']);
+```
+$c = \Atk4\Data\Persistence\Sql\Connection::connect($dsn, $user, $pass, ['queryClass' => 'Query_MyVendor']);
+```
 
 .. _new_vendor:
 
@@ -153,29 +169,33 @@ query "LOAD DATA INFILE":
 
 So to implement our task, you might need a class like this::
 
-    use \Atk4\Data\Persistence\Sql\Exception;
+```
+use \Atk4\Data\Persistence\Sql\Exception;
 
-    class QueryMysqlCustom extends \Atk4\Data\Persistence\Sql\Mysql\Query
+class QueryMysqlCustom extends \Atk4\Data\Persistence\Sql\Mysql\Query
+{
+    protected string $templateLoadData = 'load data local infile [file] into table [table]';
+
+    public function file($file)
     {
-        protected string $templateLoadData = 'load data local infile [file] into table [table]';
-
-        public function file($file)
-        {
-            if (!is_readable($file)) {
-                throw Exception(['File is not readable', 'file' => $file]);
-            }
-            $this['file'] = $file;
+        if (!is_readable($file)) {
+            throw Exception(['File is not readable', 'file' => $file]);
         }
-
-        public function loadData(): array
-        {
-            return $this->mode('loadData')->getRows();
-        }
+        $this['file'] = $file;
     }
+
+    public function loadData(): array
+    {
+        return $this->mode('loadData')->getRows();
+    }
+}
+```
 
 Then to use your new statement, you can do::
 
-    $c->dsql()->file('abc.csv')->loadData();
+```
+$c->dsql()->file('abc.csv')->loadData();
+```
 
 ## Manual Query Execution
 
@@ -207,10 +227,12 @@ be possible. You also risk injection or expose some sensitive data to the user.
 
 Usage::
 
-    throw new Atk4\Data\Persistence\Sql\Exception('Hello');
+```
+throw new Atk4\Data\Persistence\Sql\Exception('Hello');
 
-    throw (new Atk4\Data\Persistence\Sql\Exception('File is not readable'))
-        ->addMoreInfo('file', $file);
+throw (new Atk4\Data\Persistence\Sql\Exception('File is not readable'))
+    ->addMoreInfo('file', $file);
+```
 
 When displayed to the user the exception will hide parameter for $file, but you
 still can get it if you really need it:

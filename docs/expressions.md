@@ -16,14 +16,16 @@ corresponds to an expression:
 
 Example will calculate "total_gross" by adding up values for "net" and "vat"::
 
-    $m = new Model_Invoice($db);
-    $m->addField('total_net');
-    $m->addField('total_vat');
-    $m->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]']);
+```
+$m = new Model_Invoice($db);
+$m->addField('total_net');
+$m->addField('total_vat');
+$m->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]']);
 
-    $m = $m->load(1);
+$m = $m->load(1);
 
-    echo $m->get('total_gross');
+echo $m->get('total_gross');
+```
 
 The query using during load() will look like this:
 
@@ -42,9 +44,11 @@ values for the other fields including other expressions.
 
 There are other ways how you can specify expression::
 
-    $m->addExpression('total_gross', [
-        'expr' => $m->expr('[total_net] + [total_vat] + [fee]', ['fee' => $fee]),
-    ]);
+```
+$m->addExpression('total_gross', [
+    'expr' => $m->expr('[total_net] + [total_vat] + [fee]', ['fee' => $fee]),
+]);
+```
 
 This format allow you to supply additional parameters inside expression.
 You should always use parameters instead of appending values inside your
@@ -59,10 +63,12 @@ no purpose initially, it does come in handy in some cases, when you need to
 unite a few statistical queries. Let's start by looking a at a very basic
 example::
 
-    $m = new Model($db, ['table' => false]);
-    $m->addExpression('now', ['expr' => 'now()']);
-    $m = $m->loadAny();
-    echo $m->get('now');
+```
+$m = new Model($db, ['table' => false]);
+$m->addExpression('now', ['expr' => 'now()']);
+$m = $m->loadAny();
+echo $m->get('now');
+```
 
 In this example the query will look like this:
 
@@ -75,20 +81,24 @@ actually use consistently throughout the system. The real benefit from this
 can be gained when you need to pull various statistical values from your
 database at once::
 
-    $m = new Model($db, ['table' => false]);
-    $m->addExpression('total_orders', ['expr' => (new Model_Order($db))->action('count')]);
-    $m->addExpression('total_payments', ['expr' => (new Model_Payment($db))->action('count')]);
-    $m->addExpression('total_received', ['expr' => (new Model_Payment($db))->action('fx0', ['sum', 'amount'])]);
+```
+$m = new Model($db, ['table' => false]);
+$m->addExpression('total_orders', ['expr' => (new Model_Order($db))->action('count')]);
+$m->addExpression('total_payments', ['expr' => (new Model_Payment($db))->action('count')]);
+$m->addExpression('total_received', ['expr' => (new Model_Payment($db))->action('fx0', ['sum', 'amount'])]);
 
-    $data = $m->loadOne()->get();
+$data = $m->loadOne()->get();
+```
 
 Of course you can also use a DSQL for this::
 
-    $q = $db->dsql();
-    $q->field(new Model_Order($db)->action('count'), 'total_orders');
-    $q->field(new Model_Payment($db)->action('count'), 'total_orders');
-    $q->field(new Model_Payment($db)->action('fx0', ['sum', 'amount']), 'total_received');
-    $data = $q->getRow();
+```
+$q = $db->dsql();
+$q->field(new Model_Order($db)->action('count'), 'total_orders');
+$q->field(new Model_Payment($db)->action('count'), 'total_orders');
+$q->field(new Model_Payment($db)->action('fx0', ['sum', 'amount']), 'total_received');
+$data = $q->getRow();
+```
 
 You can decide for yourself based on circumstances.
 
@@ -96,9 +106,11 @@ You can decide for yourself based on circumstances.
 
 You can use a callback method when defining expression::
 
-    $m->addExpression('total_gross', ['expr' => function (Model $m, Expression $q) {
-        return '[total_net] + [total_vat]';
-    }, 'type' => 'float']);
+```
+$m->addExpression('total_gross', ['expr' => function (Model $m, Expression $q) {
+    return '[total_net] + [total_vat]';
+}, 'type' => 'float']);
+```
 
 ### Model Reloading after Save
 
@@ -108,28 +120,30 @@ might be out of sync and you might need your SQL to recalculate those expression
 To simplify your life, Agile Data implements smart model reloading. Consider
 the following model::
 
-    class Model_Math extends \Atk4\Data\Model
+```
+class Model_Math extends \Atk4\Data\Model
+{
+    public $table = 'math';
+
+    protected function init(): void
     {
-        public $table = 'math';
+        parent::init();
 
-        protected function init(): void
-        {
-            parent::init();
+        $this->addField('a');
+        $this->addField('b');
 
-            $this->addField('a');
-            $this->addField('b');
-
-            $this->addExpression('sum', ['expr' => '[a] + [b]']);
-        }
+        $this->addExpression('sum', ['expr' => '[a] + [b]']);
     }
+}
 
-    $m = new Model_Math($db);
-    $m->set('a', 4);
-    $m->set('b', 6);
+$m = new Model_Math($db);
+$m->set('a', 4);
+$m->set('b', 6);
 
-    $m->save();
+$m->save();
 
-    echo $m->get('sum');
+echo $m->get('sum');
+```
 
 When $m->save() is executed, Agile Data will perform reloading of the model.
 This is to ensure that expression 'sum' would be re-calculated for the values of
@@ -138,16 +152,18 @@ This is to ensure that expression 'sum' would be re-calculated for the values of
 Reload after save will only be executed if you have defined any expressions
 inside your model, however you can affect this behavior::
 
-    $m = new Model_Math($db, ['reloadAfterSave' => false]);
-    $m->set('a', 4);
-    $m->set('b', 6);
+```
+$m = new Model_Math($db, ['reloadAfterSave' => false]);
+$m->set('a', 4);
+$m->set('b', 6);
 
-    $m->save();
+$m->save();
 
-    echo $m->get('sum'); // outputs null
+echo $m->get('sum'); // outputs null
 
-    $m->reload();
-    echo $m->get('sum'); // outputs 10
+$m->reload();
+echo $m->get('sum'); // outputs 10
+```
 
 Now it requires an explicit reload for your model to fetch the result. There
 is another scenario when your database defines default fields:
@@ -158,35 +174,39 @@ is another scenario when your database defines default fields:
 
 Then try the following code::
 
-    class Model_Math extends \Atk4\Data\Model
+```
+class Model_Math extends \Atk4\Data\Model
+{
+    public $table = 'math';
+
+    protected function init(): void
     {
-        public $table = 'math';
+        parent::init();
 
-        protected function init(): void
-        {
-            parent::init();
-
-            $this->addField('a');
-            $this->addField('b');
-        }
+        $this->addField('a');
+        $this->addField('b');
     }
+}
 
-    $m = new Model_Math($db);
-    $m->set('a', 4);
+$m = new Model_Math($db);
+$m->set('a', 4);
 
-    $m->save();
+$m->save();
 
-    echo $m->get('a')+$m->get('b');
+echo $m->get('a')+$m->get('b');
+```
 
 This will output 4, because model didn't reload itself due to lack of any
 expressions. This time you can explicitly enable reload after save::
 
-    $m = new Model_Math($db, ['reloadAfterSave' => true]);
-    $m->set('a', 4);
+```
+$m = new Model_Math($db, ['reloadAfterSave' => true]);
+$m->set('a', 4);
 
-    $m->save();
+$m->save();
 
-    echo $m->get('a')+$m->get('b'); // outputs 14
+echo $m->get('a')+$m->get('b'); // outputs 14
+```
 
 .. note:: If your model is using reloadAfterSave, but you wish to insert
     data without additional query - use :php:meth:`Model::insert()` or

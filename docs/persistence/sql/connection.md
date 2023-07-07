@@ -13,7 +13,9 @@ Connection class is handy to have if you plan on building and executing
 queries in your application. It's more appropriate to store
 connection in a global variable or global class::
 
-    $app->db = Atk4\Data\Persistence\Sql\Connection::connect($dsn, $user, $pass, $defaults);
+```
+$app->db = Atk4\Data\Persistence\Sql\Connection::connect($dsn, $user, $pass, $defaults);
+```
 
 
 .. php:staticmethod:: connect($dsn, $user = null, $password = null, $defaults = [])
@@ -31,11 +33,13 @@ connection in a global variable or global class::
 This should allow you to access this class from anywhere and generate either
 new Query or Expression class::
 
-    $query = $app->db->dsql();
+```
+$query = $app->db->dsql();
 
-    // or
+// or
 
-    $expr = $app->db->expr('show tables');
+$expr = $app->db->expr('show tables');
+```
 
 
 .. php:method:: expr($template, $arguments)
@@ -55,11 +59,13 @@ new Query or Expression class::
 
 Here is how you can use all of this together::
 
-    $dsn = 'mysql:host=localhost;port=3307;dbname=testdb';
+```
+$dsn = 'mysql:host=localhost;port=3307;dbname=testdb';
 
-    $connection = Atk4\Data\Persistence\Sql\Connection::connect($dsn, 'root', 'root');
+$connection = Atk4\Data\Persistence\Sql\Connection::connect($dsn, 'root', 'root');
 
-    echo 'Time now is: ' . $connection->expr('select now()');
+echo 'Time now is: ' . $connection->expr('select now()');
+```
 
 :php:meth:`connect` will determine appropriate class that can be used for this
 DSN string. This can be a PDO class or it may try to use a 3rd party connection
