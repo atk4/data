@@ -121,7 +121,7 @@ Remember that it had nothing to do with your database structure, right?
  - Order
  - Admin
 
-A code to declare a model::
+A code to declare a model:
 
 ```
 class Model_User extends \Atk4\Data\Model
@@ -156,7 +156,7 @@ about object inheritance.
    - showAuditLog()
  - Order
 
-Code::
+Code:
 
 ```
 class Model_Client extends Model_User
@@ -199,7 +199,7 @@ Those decisions are made by the framework and will simplify your life, however
 if you want to do things differently, you will still be able to override default
 behavior.
 
-Code to declare fields::
+Code to declare fields:
 
 ```
 class Model_Order extends \Atk4\Data\Model
@@ -215,7 +215,7 @@ class Model_Order extends \Atk4\Data\Model
 }
 ```
 
-Code to access field values::
+Code to access field values:
 
 ```
 $order->set('amount', 1200.2);
@@ -235,7 +235,7 @@ has one Client.
 There are no "many-to-many" relationship in Domain Model because relationships
 work from a specific record, but more on that later.
 
-Code (add inside `init()`)::
+Code (add inside `init()`):
 
 ```
 class Model_Client extends Model_User
@@ -265,7 +265,7 @@ class Model_Order extends \Atk4\Data\Model
 
 Once we establish that Model object and set its persistence layer, we can start
 accessing it.
-Here is the code::
+Here is the code:
 
 ```
 $order = new Model_Order();
@@ -279,7 +279,7 @@ $order->setPersistence($db); // same as $order = new Model_Order($db)
 ### ID Field
 
 Each object is stored with some unique identifier, so you can load and store
-object if you know it's ID::
+object if you know it's ID:
 
 ```
 $order = $order->load(20);
@@ -316,7 +316,7 @@ are using or how we can ensure that expressions will operate.
 
 This is, however, a good point for you to write the initial batch of the code.
 
-Code::
+Code:
 
 ```
 class Model_User extends \Atk4\Data\Model
@@ -338,8 +338,7 @@ class Model_User extends \Atk4\Data\Model
 
 ### Persistence Hooks
 
-Hooks can help you perform operations when object is being persisted::
-
+Hooks can help you perform operations when object is being persisted:
 
 ```
 class Model_User extends \Atk4\Data\Model
@@ -367,7 +366,7 @@ practice our application must operate with multiple records.
 
 
 DataSet is an object that represents collection of Domain model records that
-are persisted::
+are persisted:
 
 ```
 $order = new Model_Order($db);
@@ -380,7 +379,7 @@ to preserve some memory.
 
 So in the code above `$order` is not created for the record, but it can load
 any record from the DataSet. Think of it as a "window" into a large table of
-Orders::
+Orders:
 
 ```
 $sum = 0;
@@ -395,7 +394,7 @@ $order = $order->load(13);
 $sum += $order->get('amount');
 ```
 
-You can iterate over the DataSet::
+You can iterate over the DataSet:
 
 ```
 $sum = 0;
@@ -407,7 +406,7 @@ foreach (new Model_Order($db) as $order) {
 You must remember that the code above will only create a single object and
 iterating it will simply make it load different values.
 
-At this point, I'll jump ahead a bit and will show you an alternative code::
+At this point, I'll jump ahead a bit and will show you an alternative code:
 
 ```
 $sum = (new Model_Order($db))->fx0(['sum', 'amount'])->getOne();
@@ -423,7 +422,7 @@ If your database has 3 clients - 'Joe', 'Bill', and 'Steve' then the DataSet of
 
 DataSet concept lives in "Domain Logic" therefore you can use it safely without
 worrying that you will introduce unnecessary bindings into persistence and break
-single-purpose principle of your objects::
+single-purpose principle of your objects:
 
 ```
 foreach ($clients as $client) {
@@ -433,7 +432,7 @@ foreach ($clients as $client) {
 
 The above is a Domain Model code. It will iterate through the DataSet of
 "Clients" and output 3 names. You can also "narrow down" your DataSet by adding
-a restriction::
+a restriction:
 
 ```
 $sum = 0;
@@ -442,8 +441,7 @@ foreach ((new Model_Order($db))->addCondition('is_paid', true) as $order) {
 }
 ```
 
-And again it's much more effective to do this on database side::
-
+And again it's much more effective to do this on database side:
 
 ```
 $sum = (new Model_Order($db))
@@ -459,7 +457,7 @@ specific user.
 Depending on your past experience you might think about "querying" Order table
 with condition on user_id. We can't do that, because "query", "table" and
 "user_id" are persistence details and we must keep them outside of business logic.
-Other ORM solution give you something like this::
+Other ORM solution give you something like this:
 
 ```
 $arrayOfOrders = $user->orders();
@@ -470,7 +468,7 @@ constraints. What if your user is having millions of orders? Even with
 lazy-loading, you will be operating with million "id" records.
 
 Agile Data implements traversal as a simple operation that converts one DataSet
-into another::
+into another:
 
 ```
 $userModel->addCondition('is_vip', true);
@@ -495,7 +493,7 @@ Persistence layer in Agile Data uses intelligent mapping of your Domain Logic
 into DatabaseVendor-specific operations.
 
 To continue my example from above, I'll use a query method to calculate number
-of orders placed by VIP clients::
+of orders placed by VIP clients:
 
 ```
 $vipOrderCount = $vipOrders->fx(['count'])->getOne();
@@ -510,7 +508,7 @@ The actual database operation(s) might look like this on SQL database:
     select count(*) from `order` where user_id in
         (select id from user where type = "user" and is_vip = 1)
 
-While with MongoDB, the query could be different::
+While with MongoDB, the query could be different:
 
 ```
 $ids = collections.client.find({'is_vip': true}).field('id');
@@ -518,7 +516,7 @@ $ids = collections.client.find({'is_vip': true}).field('id');
 return collections.order.find({'user_id': $ids}).count();
 ```
 
-Finally the code above will work even if you use a simple Array as a data source::
+Finally the code above will work even if you use a simple Array as a data source:
 
 ```
 $db = new \Atk4\Data\Persistence\Array_([
@@ -542,7 +540,7 @@ $db = new \Atk4\Data\Persistence\Array_([
 ]);
 ```
 
-So getting back to the operation above, lets look at it in more details::
+So getting back to the operation above, lets look at it in more details:
 
 ```
 $vipOrderCount = $vipOrders->fx(['count'])->getOne();

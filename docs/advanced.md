@@ -9,7 +9,7 @@ OOP by allowing to extend additional types without duplicating columns. For exam
 if you are implementing "Account" and "Transaction" models. You may want to have
 multiple transaction types. Some of those types would even require additional
 fields. The pattern suggest you should add a new table "transaction_transfer" and
-store extra fields there. In your code::
+store extra fields there. In your code:
 
 ```
 class Transaction_Transfer extends Transaction
@@ -25,7 +25,7 @@ class Transaction_Transfer extends Transaction
 ```
 
 As you implement single Account and multiple Transaction types, you want to relate
-both::
+both:
 
 ```
 $account->hasMany('Transactions', ['model' => [Transaction::class]]);
@@ -39,7 +39,7 @@ There are however two difficulties here:
 ### Best practice for specifying relation type
 
 Although there is no magic behind it, I recommend that you use the following
-code pattern when dealing with multiple types::
+code pattern when dealing with multiple types:
 
 ```
 $account->hasMany('Transactions', ['model' => [Transaction::class]]);
@@ -47,7 +47,7 @@ $account->hasMany('Transactions:Deposit', ['model' => [Transaction\Deposit::clas
 $account->hasMany('Transactions:Transfer', ['model' => [Transaction\Transfer::class]]);
 ```
 
-You can then use type-specific reference::
+You can then use type-specific reference:
 
 ```
 $account->ref('Transaction:Deposit')->insert(['amount' => 10]);
@@ -60,7 +60,7 @@ that should be pretty safe.
 ### Type substitution on loading
 
 Another technique is for ATK Data to replace your object when data is being
-loaded. You can treat "Transaction" class as a "shim"::
+loaded. You can treat "Transaction" class as a "shim":
 
 ```
 $obj = $account->ref('Transactions')->load(123);
@@ -72,7 +72,7 @@ record for 'Transaction' should be loaded first and then, if necessary,
 replaced with the correct class transparently, so that the code above
 would work without a change.
 
-Another scenario which could benefit by type substitution would be::
+Another scenario which could benefit by type substitution would be:
 
 ```
 foreach ($account->ref('Transactions') as $tr) {
@@ -81,7 +81,7 @@ foreach ($account->ref('Transactions') as $tr) {
 ```
 
 ATK Data allow class substitution during load and iteration by breaking "afterLoad"
-hook. Place the following inside Transaction::init()::
+hook. Place the following inside Transaction::init():
 
 ```
 $this->onHookShort(Model::HOOK_AFTER_LOAD, function () {
@@ -96,7 +96,7 @@ $this->onHookShort(Model::HOOK_AFTER_LOAD, function () {
 ```
 
 You would need to implement method "getClassName" which would return DESIRED class
-of the record. Finally to help with performance, you can implement a switch::
+of the record. Finally to help with performance, you can implement a switch:
 
 ```
 public $typeSubstitution = false;
@@ -116,7 +116,7 @@ protected function init(): void
 ```
 
 Now, every time you iterate (or load) you can decide if you want to invoke type
-substitution::
+substitution:
 
 ```
 foreach ($account->ref('Transactions', ['typeSubstitution' => true]) as $tr) {
@@ -141,7 +141,7 @@ I will be looking to create the following fields:
 - created_by_user_id
 - updated_by_user_id
 
-To implement the above, I'll create a new class::
+To implement the above, I'll create a new class:
 
 ```
 class ControllerAudit
@@ -157,8 +157,7 @@ class ControllerAudit
 TrackableTrait means that I'll be able to add this object inside model with
 ``$model->add(new ControllerAudit())`` and that will automatically populate
 $owner, and $app values (due to AppScopeTrait) as well as execute init() method,
-which I want to define like this::
-
+which I want to define like this:
 
 ```
 protected function init(): void
@@ -190,7 +189,7 @@ protected function init(): void
 ```
 
 In order to add your defined behavior to the model. The first check actually
-allows you to define models that will bypass audit altogether::
+allows you to define models that will bypass audit altogether:
 
 ```
 $u1 = new Model_User($db); // Model_User::init() includes audit
@@ -227,7 +226,7 @@ through external controller. There may be a 3rd party controller for comprehensi
 soft-delete, but in this section I'll explain how you can easily build your own
 soft-delete controller for Agile Data (for educational purposes).
 
-Start by creating a class::
+Start by creating a class:
 
 ```
 class ControllerSoftDelete
@@ -294,7 +293,7 @@ This implementation of soft-delete can be turned off by setting model's property
 'deleted_only' to true (if you want to recover a record).
 
 When active, a new field will be defined 'is_deleted' and a new dynamic method
-will be added into a model, allowing you to do this::
+will be added into a model, allowing you to do this:
 
 ```
 $m = new Model_Invoice($db);
@@ -322,7 +321,7 @@ records outside of DataSet in the future).
 After softDelete active record is unloaded, mimicking behavior of delete().
 
 It's also possible for you to easily look at deleted records and even restore
-them::
+them:
 
 ```
 $m = new Model_Invoice($db, ['deleted_only' => true]);
@@ -336,7 +335,7 @@ Note that you can call $m->delete() still on any record to permanently delete it
 
 In case you want $m->delete() to perform soft-delete for you - this can also be
 achieved through a pretty simple controller. In fact I'm reusing the one from
-before and just slightly modifying it::
+before and just slightly modifying it:
 
 ```
 class ControllerSoftDelete2 extends ControllerSoftDelete
@@ -364,7 +363,7 @@ of creating softDelete() it overrides the delete() method through a hook.
 It will still call 'afterDelete' to mimic the behavior of regular delete() after
 the record is marked as deleted and unloaded.
 
-You can still access the deleted records::
+You can still access the deleted records:
 
 ```
 $m = new Model_Invoice($db, ['deleted_only' => true]);
@@ -383,7 +382,7 @@ but what if there is a soft-deleted record with same name or record that belongs
 to another user?
 
 With Agile Data you can create controller that will ensure that certain fields
-inside your model are unique::
+inside your model are unique:
 
 ```
 class ControllerUniqueFields
@@ -467,7 +466,7 @@ Here is what I need to do:
 
 ### 1. Create Intermediate Entity - InvoicePayment
 
-Create new Model::
+Create new Model:
 
 ```
 class Model_InvoicePayment extends \Atk4\Data\Model
@@ -487,7 +486,7 @@ class Model_InvoicePayment extends \Atk4\Data\Model
 
 ### 2. Update Invoice and Payment model
 
-Next we need to define reference. Inside Model_Invoice add::
+Next we need to define reference. Inside Model_Invoice add:
 
 ```
 $this->hasMany('InvoicePayment');
@@ -512,7 +511,7 @@ have to be duplicated until we implement method Join->importModel().
 ### 3. How to use
 
 Here are some use-cases. First lets add payment to existing invoice. Obviously
-we cannot close amount that is bigger than invoice's total::
+we cannot close amount that is bigger than invoice's total:
 
 ```
 $i->ref('Payment')->insert([
@@ -523,7 +522,7 @@ $i->ref('Payment')->insert([
 ```
 
 Having some calculated fields for the invoice is handy. I'm adding `total_payments`
-that shows how much amount is closed and `amount_due`::
+that shows how much amount is closed and `amount_due`:
 
 ```
 // define field to see closed amount on invoice
@@ -534,8 +533,7 @@ $this->addExpression('amount_due', ['expr' => '[total] - coalesce([total_payment
 
 Note that I'm using coalesce because without InvoicePayments the aggregate sum
 will return NULL. Finally let's build allocation method, that allocates new
-payment towards a most suitable invoice::
-
+payment towards a most suitable invoice:
 
 ```
 // add to Model_Payment
@@ -585,7 +583,7 @@ Sometimes when you add a record inside your model you want to specify some
 related records not through ID but through other means. For instance, when
 adding invoice, I want to make it possible to specify 'Category' through the
 name, not only category_id. First, let me illustrate how can I do that with
-category_id::
+category_id:
 
 ```
 class Model_Invoice extends \Atk4\Data\Model
@@ -607,7 +605,7 @@ $m->insert(['total' => 20, 'client_id' => 402, 'category_id' => 6]);
 ```
 
 So in situations when client_id and category_id is not known (such as import or
-API call) this approach will require us to perform 2 extra queries::
+API call) this approach will require us to perform 2 extra queries:
 
 ```
 $m = new Model_Invoice($db);
@@ -619,7 +617,7 @@ $m->insert([
 ```
 
 The ideal way would be to create some "non-persistable" fields that can be used
-to make things easier::
+to make things easier:
 
 ```
 $m = new Model_Invoice($db);
@@ -630,7 +628,7 @@ $m->insert([
 ]);
 ```
 
-Here is how to add them. First you need to create fields::
+Here is how to add them. First you need to create fields:
 
 ```
 $this->addField('client_code', ['neverPersist' => true]);
@@ -639,7 +637,7 @@ $this->addField('category', ['neverPersist' => true]);
 ```
 
 I have declared those fields with `neverPersist` so they will never be used by
-persistence layer to load or save anything. Next I need a beforeSave handler::
+persistence layer to load or save anything. Next I need a beforeSave handler:
 
 ```
 $this->onHookShort(Model::HOOK_BEFORE_SAVE, function () {
@@ -672,7 +670,7 @@ the necessary queries inside your "insert" query.
 ### Fallback to default value
 
 You might wonder, with the lookup like that, how the default values will work?
-What if the user-specified entry is not found? Lets look at the code::
+What if the user-specified entry is not found? Lets look at the code:
 
 ```
 if ($m->_isset('category') && !$m->_isset('category_id')) {
@@ -683,7 +681,7 @@ if ($m->_isset('category') && !$m->_isset('category_id')) {
 ```
 
 So if category with a name is not found, then sub-query will return "NULL".
-If you wish to use a different value instead, you can create an expression::
+If you wish to use a different value instead, you can create an expression:
 
 ```
 if ($m->_isset('category') && !$m->_isset('category_id')) {
@@ -697,7 +695,7 @@ if ($m->_isset('category') && !$m->_isset('category_id')) {
 ```
 
 The beautiful thing about this approach is that default can also be defined
-as a lookup query::
+as a lookup query:
 
 ```
 $this->hasOne('category_id', 'Model_Category');
@@ -709,7 +707,7 @@ $this->getField('category_id')->default =
 ## Inserting Hierarchical Data
 
 In this example I'll be building API that allows me to insert multi-model
-information. Here is usage example::
+information. Here is usage example:
 
 ```
 $invoice->insert([
@@ -729,7 +727,7 @@ $invoice->insert([
 Not only 'insert' but 'set' and 'save' should be able to use those fields for
 'payment' and 'lines', so we need to first define those as 'neverPersist'.
 If you curious about client lookup by-name, I have explained it in the previous
-section. Add this into your Invoice Model::
+section. Add this into your Invoice Model:
 
 ```
 $this->addField('payment', ['neverPersist' => true]);
@@ -737,7 +735,7 @@ $this->addField('lines', ['neverPersist' => true]);
 ```
 
 Next both payment and lines need to be added after invoice is actually created,
-so::
+so:
 
 ```
 $this->onHookShort(Model::HOOK_AFTER_SAVE, function (bool $isUpdate) {
@@ -752,7 +750,7 @@ $this->onHookShort(Model::HOOK_AFTER_SAVE, function (bool $isUpdate) {
 ```
 
 You should never call save() inside afterSave hook, but if you wish to do some
-further manipulation, you can reload a clone::
+further manipulation, you can reload a clone:
 
 ```
 $entityCloned = clone $entity;
@@ -770,27 +768,27 @@ Model_Document and we also have Model_Client that extends Model_Contact.
 
 In theory Document's 'contact_id' can be any Contact, however when you create
 'Model_Invoice' you wish that 'contact_id' allow only Clients. First, lets
-define Model_Document::
+define Model_Document:
 
 ```
 $this->hasOne('client_id', 'Model_Contact');
 ```
 
 One option here is to move 'Model_Contact' into model property, which will be
-different for the extended class::
+different for the extended class:
 
 ```
 $this->hasOne('client_id', ['model' => [$this->client_class]]);
 ```
 
-Alternatively you can replace model in the init() method of Model_Invoice::
+Alternatively you can replace model in the init() method of Model_Invoice:
 
 ```
 $this->getReference('client_id')->model = 'Model_Client';
 ```
 
 You can also use array here if you wish to pass additional information into
-related model::
+related model:
 
 ```
 $this->getReference('client_id')->model = ['Model_Client', 'no_audit' => true];
@@ -802,7 +800,7 @@ with deleted clients.
 The final use case is when some value inside the existing model should be
 passed into the related model. Let's say we have 'Model_Invoice' and we want to
 add 'payment_invoice_id' that points to 'Model_Payment'. However we want this
-field only to offer payments made by the same client. Inside Model_Invoice add::
+field only to offer payments made by the same client. Inside Model_Invoice add:
 
 ```
 $this->hasOne('client_id', 'Client');
@@ -820,7 +818,7 @@ $m->set('payment_invoice_id', $m->ref('payment_invoice_id')->loadOne()->getId())
 ```
 
 In this case the payment_invoice_id will be set to ID of any payment by client
-123. There also may be some better uses::
+123. There also may be some better uses:
 
 ```
 foreach ($cl->ref('Invoice') as $m) {
@@ -832,7 +830,7 @@ foreach ($cl->ref('Invoice') as $m) {
 ## Narrowing Down Existing References
 
 Agile Data allow you to define multiple references between same entities, but
-sometimes that can be quite useful. Consider adding this inside your Model_Contact::
+sometimes that can be quite useful. Consider adding this inside your Model_Contact:
 
 ```
 $this->hasMany('Invoice', 'Model_Invoice');
@@ -842,7 +840,7 @@ $this->hasMany('OverdueInvoice', ['model' => function (self $m) {
 ```
 
 This way if you extend your class into 'Model_Client' and modify the 'Invoice'
-reference to use different model::
+reference to use different model:
 
 ```
 $this->getReference('Invoice')->model = 'Model_Invoice_Sale';

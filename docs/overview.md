@@ -88,13 +88,13 @@ If you have worked with other ORMs, read the following sections to avoid confusi
 
 ## Code Layers
 
-How is code::
+How is code:
 
 ```
 select name from user where id = 1
 ```
 
-is different to the code?::
+is different to the code?:
 
 ```
 $user->load(1)->get('name');
@@ -120,7 +120,7 @@ Next I'll show you how code from different "code layers" may look like:
 ### Domain-Model Code
 
 Code is unaware of physical location of your data or which persistence are you
-using::
+using:
 
 ```
 $user = new User($db);
@@ -150,14 +150,14 @@ A typical method of your model class will be written in "domain-model" code.
 
 This is a type of code which may change if you decide to switch from one
 persistence to another. For example, this is how you would define `gross` field
-for SQL::
+for SQL:
 
 ```
 $model->addExpression('gross', ['expr' => '[net] + [vat]']);
 ```
 
 If your persistence does not support expressions (e.g. you are using Redis or
-MongoDB), you would need to define the field differently::
+MongoDB), you would need to define the field differently:
 
 ```
 $model->addField('gross');
@@ -171,7 +171,7 @@ into persistencies that does not support features you have used.
 
 In most cases that is OK as if you prefer to stay with same database type, for
 instance, the above expression will still be usable with any SQL vendor, but if
-you want it to work with NoSQL, then your solution might be::
+you want it to work with NoSQL, then your solution might be:
 
 ```
 if ($model->hasMethod('addExpression')) {
@@ -195,7 +195,7 @@ feature in SQL.
 https://github.com/atk4/report/blob/develop/src/GroupModel.php
 
 This code is specific to SQL databases, but can be used with any Model, so in
-order to use grouping with Agile Data, your code would be::
+order to use grouping with Agile Data, your code would be:
 
 ```
 $aggregate = new AggregateModel(new Sale($db));
@@ -212,7 +212,7 @@ Although in most cases you would be executing operation against SQL persistence,
 Agile Data makes it very easy to use models with a simpler persistencies.
 
 For example, consider you want to output a "table" to the user using HTML by
-using Agile UI::
+using Agile UI:
 
 ```
 $table = \Atk4\Ui\Table::addTo($app);
@@ -225,7 +225,7 @@ echo $table->render();
 Class `\\Atk4\\Ui\\Table` here is designed to work with persistencies and models -
 it will populate columns of correct type, fetch data, calculate totals if needed.
 But what if you have your data inside an array?
-You can use :php:class:`Persistence\Static_` for that::
+You can use :php:class:`Persistence\Static_` for that:
 
 ```
 $table = \Atk4\Ui\Table::addTo($app);
@@ -239,7 +239,7 @@ echo $table->render();
 ```
 
 Even if you don't have a model, you can use Static persistence with Generic
-model class to display VAT breakdown table::
+model class to display VAT breakdown table:
 
 ```
 $table = \Atk4\Ui\Table::addTo($app);
@@ -252,7 +252,7 @@ $table->setModel(new Model(new Persistence\Static_([
 echo $table->render();
 ```
 
-It can be made even simpler::
+It can be made even simpler:
 
 ```
 $table = \Atk4\Ui\Table::addTo($app);
@@ -265,7 +265,7 @@ $table->setModel(new Model(new Persistence\Static_([
 echo $table->render();
 ```
 
-Agile UI even offers a wrapper for static persistence::
+Agile UI even offers a wrapper for static persistence:
 
 ```
 $table = \Atk4\Ui\Table::addTo($app);

@@ -20,7 +20,7 @@ mapping into persistence-logic.
 
 Field represents a `property` of your business entity or `column` if you think
 of your data in a tabular way. Once you have defined Field for your Model, you
-can set and read value of that field::
+can set and read value of that field:
 
 ```
 $model->addField('name');
@@ -47,7 +47,7 @@ The implementation of Fields is tightly integrated with :php:class:`Model` and
 .. php:attr:: type
 
 
-Probably a most useful quality of Field is that it has a clear type::
+Probably a most useful quality of Field is that it has a clear type:
 
 ```
 $model->addField('age', ['type' => 'integer']);
@@ -62,7 +62,7 @@ Agile Data defines some basic types to make sure that values:
  - can be saved (Persistence)
  - can be presented to user (UI)
 
-A good example would be a `date` type::
+A good example would be a `date` type:
 
 ```
 $model->addField('birth', ['type' => 'date']);
@@ -102,7 +102,7 @@ if needed (see Field::actual)
 Fields have properties, which define its behaviour. Some properties apply on how
 the values are handled or restrictions on interaction, other values can even
 help with data visualization. For example if :php:attr:`Field::enum` is used
-with Agile UI form, it will be displayed as radio button or a drop-down::
+with Agile UI form, it will be displayed as radio button or a drop-down:
 
 ```
 $model->addField('gender', ['enum' => ['F', 'M']]);
@@ -140,7 +140,7 @@ for these values.
 
 Set this to false if field value must NOT be NULL. Attempting to set field
 value to "NULL" will result in exception.
-Example::
+Example:
 
 ```
 $model->set('age', 0);
@@ -160,7 +160,7 @@ Some examples that are not allowed are:
  - 0 numerical value or 0.0
  - boolean false
 
-Example::
+Example:
 
 ```
 $model->set('age', 0); // exception
@@ -223,7 +223,7 @@ before executing save().
 If you do not set non-null value to a not-nullable field, save() will fail with
 exception.
 
-Example::
+Example:
 
 ```
 $model['age'] = 0;

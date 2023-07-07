@@ -14,7 +14,7 @@ indexes.
 ## Join Basics
 
 Agile Data allows you to map multiple table fields into a single business model
-by using joins::
+by using joins:
 
 ```
 $user->addField('username');
@@ -38,7 +38,7 @@ load query would look like this:
     where u.id = $id
 
 If driver is unable to query both tables simultaneously, then it will load one
-record first, then load other record and will collect fields together::
+record first, then load other record and will collect fields together:
 
 ```
 $user = $user->load($id);
@@ -61,7 +61,7 @@ and linked.
 
 Weak join is used if you do not really want to modify the other table.
 For example it can be used to pull country information based on user.country_id
-but you wouldn't want that adding a new user would create a new country::
+but you wouldn't want that adding a new user would create a new country:
 
 ```
 $user->addField('username');
@@ -85,7 +85,7 @@ After this you will have the following fields in your model:
 When defining joins, you need to outline two fields that must match. In our
 earlier examples, we the master table was "user" that contained reference to
 "contact". The condition would look like this ``user.contact_id=contact.id``.
-In some cases, however, a relation should be reversed::
+In some cases, however, a relation should be reversed:
 
 ```
 $jContact = $user->join('contact.user_id');
@@ -100,7 +100,7 @@ Reverse joins are saved in the opposite order - primary table will be saved
 first and when id of a primary table is known, foreign table record is stored
 and ID is supplied. You can pass option 'masterField' to the join() which will
 specify which field to be used for matching. By default the field is calculated
-like this: foreignTable . '_id'. Here is usage example::
+like this: foreignTable . '_id'. Here is usage example:
 
 ```
 $user->addField('username');
@@ -238,7 +238,7 @@ data from collections in a correct order.
 ### Specifying complex ON logic
 
 When you're dealing with SQL drivers, you can specify `\Atk4\Data\Persistence\Sql\Expression` for your
-"on" clause::
+"on" clause:
 
 ```
 $stats = $user->join('stats', [

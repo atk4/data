@@ -14,7 +14,7 @@ corresponds to an expression:
 
 .. php:method:: addExpression($name, $seed);
 
-Example will calculate "total_gross" by adding up values for "net" and "vat"::
+Example will calculate "total_gross" by adding up values for "net" and "vat":
 
 ```
 $m = new Model_Invoice($db);
@@ -42,7 +42,7 @@ The simplest format to define expression is by simply passing a string. The
 argument is executed through Model::expr() which automatically substitutes
 values for the other fields including other expressions.
 
-There are other ways how you can specify expression::
+There are other ways how you can specify expression:
 
 ```
 $m->addExpression('total_gross', [
@@ -61,7 +61,7 @@ You can also use expressions to pass a select action for a specific field::
 Agile Data allows you to define a model without table. While this may have
 no purpose initially, it does come in handy in some cases, when you need to
 unite a few statistical queries. Let's start by looking a at a very basic
-example::
+example:
 
 ```
 $m = new Model($db, ['table' => false]);
@@ -79,7 +79,7 @@ In this example the query will look like this:
 so that ``$m->getId()`` will always be 1 which will make it a model that you can
 actually use consistently throughout the system. The real benefit from this
 can be gained when you need to pull various statistical values from your
-database at once::
+database at once:
 
 ```
 $m = new Model($db, ['table' => false]);
@@ -90,7 +90,7 @@ $m->addExpression('total_received', ['expr' => (new Model_Payment($db))->action(
 $data = $m->loadOne()->get();
 ```
 
-Of course you can also use a DSQL for this::
+Of course you can also use a DSQL for this:
 
 ```
 $q = $db->dsql();
@@ -104,7 +104,7 @@ You can decide for yourself based on circumstances.
 
 ### Expression Callback
 
-You can use a callback method when defining expression::
+You can use a callback method when defining expression:
 
 ```
 $m->addExpression('total_gross', ['expr' => function (Model $m, Expression $q) {
@@ -118,7 +118,7 @@ When you add SQL Expressions into your model, that means that some of the fields
 might be out of sync and you might need your SQL to recalculate those expressions.
 
 To simplify your life, Agile Data implements smart model reloading. Consider
-the following model::
+the following model:
 
 ```
 class Model_Math extends \Atk4\Data\Model
@@ -150,7 +150,7 @@ This is to ensure that expression 'sum' would be re-calculated for the values of
 4 and 6 so the final line will output a desired result - 10;
 
 Reload after save will only be executed if you have defined any expressions
-inside your model, however you can affect this behavior::
+inside your model, however you can affect this behavior:
 
 ```
 $m = new Model_Math($db, ['reloadAfterSave' => false]);
@@ -172,7 +172,7 @@ is another scenario when your database defines default fields:
 
     alter table math change b b int default 10;
 
-Then try the following code::
+Then try the following code:
 
 ```
 class Model_Math extends \Atk4\Data\Model
@@ -197,7 +197,7 @@ echo $m->get('a')+$m->get('b');
 ```
 
 This will output 4, because model didn't reload itself due to lack of any
-expressions. This time you can explicitly enable reload after save::
+expressions. This time you can explicitly enable reload after save:
 
 ```
 $m = new Model_Math($db, ['reloadAfterSave' => true]);

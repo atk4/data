@@ -28,14 +28,14 @@ Connection
 ## Getting Started
 
 We will start by looking at the :php:class:`Query` building, because you do
-not need a database to create a query::
+not need a database to create a query:
 
 ```
 $query = $connection->dsql();
 ```
 
 Once you have a query object, you can add parameters by calling some of it's
-methods::
+methods:
 
 ```
 $query
@@ -44,7 +44,7 @@ $query
     ->field('count(*)');
 ```
 
-Finally you can get the data::
+Finally you can get the data:
 
 ```
 $count = $query->getOne();
@@ -64,7 +64,7 @@ DSQL does not resolve conflicts between similarly named tables, but it gives you
 all the options to use aliases.
 
 The next example might be a bit too complex for you, but still read through and
-try to understand what each section does to your base query::
+try to understand what each section does to your base query:
 
 ```
 // Establish a query looking for a maximum salary
@@ -142,7 +142,7 @@ $q = (new Query())->table('user')->where('id', 1)->field('name');
 
 When used in application you would typically generate queries with the
 purpose of executing them, which makes it very useful to create a
-:php:class:`Connection` object. The usage changes slightly::
+:php:class:`Connection` object. The usage changes slightly:
 
 ```
 $c = Atk4\Data\Persistence\Sql\Connection::connect($dsn, $user, $password);
@@ -159,7 +159,7 @@ There are more ways to create connection, see `Advanced Connections`_ section.
 The format of the ``$dsn`` is the same as with for
 `DBAL connection <https://www.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/configuration.html>`_.
 If you need to execute query that is not supported by DSQL, you should always
-use expressions::
+use expressions:
 
 ```
 $tables = $c->expr('show tables like []', [$likeStr])->getRows();
@@ -167,7 +167,7 @@ $tables = $c->expr('show tables like []', [$likeStr])->getRows();
 
 DSQL classes are mindful about your SQL vendor and it's quirks, so when you're
 building sub-queries with :php:meth:`Query::dsql`, you can avoid some nasty
-problems::
+problems:
 
 ```
 $sqliteConnection->dsql()->table('user')->mode('truncate')->executeStatement();
@@ -193,7 +193,7 @@ When you create a new :php:class:`Query` object, it is going to be a *SELECT*
 query by default. If you wish to execute ``update`` operation instead, you
 cam simply call :php:meth:`Query::mode` to change it. For more information
 see :ref:`query-modes`.
-You can actually perform multiple operations::
+You can actually perform multiple operations:
 
 ```
 $q = $c->dsql()->table('employee')->where('emp_no', 1234);
@@ -202,7 +202,7 @@ $q->mode('delete')->executeStatement();
 ```
 
 A good practice is to re-use the same query object before you branch out and
-perform the action::
+perform the action:
 
 ```
 $q = $c->dsql()->table('employee')->where('emp_no', 1234);
@@ -221,7 +221,7 @@ if ($confirmed) {
 
 When you are selecting data from your database, DSQL will prepare and execute
 statement for you. Depending on the connection, there may be some magic
-involved, but once the query is executed, you can start streaming your data::
+involved, but once the query is executed, you can start streaming your data:
 
 ```
 foreach ($query->table('employee')->where('dep_no', 123) as $employee) {

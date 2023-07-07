@@ -10,14 +10,14 @@ In order to create model aggregates the AggregateModel model needs to be used:
 
 ### Grouping
 
-AggregateModel model can be used for grouping::
+AggregateModel model can be used for grouping:
 
 ```
 $aggregate = new AggregateModel($orders)->setGroupBy(['country_id']);
 ```
 
 `$aggregate` above is a new object that is most appropriate for the model's persistence and which can be manipulated
-in various ways to fine-tune aggregation. Below is one sample use::
+in various ways to fine-tune aggregation. Below is one sample use:
 
 ```
 $aggregate = new AggregateModel($orders);
@@ -33,7 +33,7 @@ $aggregate->setGroupBy(['country_id'], [
 // ..
 ```
 
-Below is how opening balance can be built::
+Below is how opening balance can be built:
 
 ```
 $ledger = new GeneralLedger($db);

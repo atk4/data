@@ -8,7 +8,7 @@
 .. php:class:: Model
 
 When model is associated with the database, you can specify a default table
-either explicitly or through a $table property inside a model::
+either explicitly or through a $table property inside a model:
 
 ```
 $m = new Model_User($db, 'user');
@@ -18,7 +18,7 @@ echo $m->get('gender'); // "M"
 
 
 Following this line, you can load ANY record from the table. It's possible to
-narrow down set of "loadable" records by introducing a condition::
+narrow down set of "loadable" records by introducing a condition:
 
 ```
 $m = new Model_User($db, 'user');
@@ -34,7 +34,7 @@ logically accessible data for a model before you attempt the loading.
 .. php:method:: addCondition($field, $operator = null, $value = null)
 
 There are many ways to execute addCondition. The most basic one that will be
-supported by all the drivers consists of 2 arguments or if operator is '='::
+supported by all the drivers consists of 2 arguments or if operator is '=':
 
 ```
 $m->addCondition('gender', 'F');
@@ -42,7 +42,7 @@ $m->addCondition('gender', '=', 'F'); // exactly same
 ```
 
 Once you add a condition, you can't get rid of it, so if you want
-to preserve the state of your model, you need to use clone::
+to preserve the state of your model, you need to use clone:
 
 ```
 $m = new Model_User($db, 'user');
@@ -58,7 +58,7 @@ Most database drivers will support the following additional operations::
 
     >, <, >=, <=, !=, in, not in, like, not like, regexp, not regexp
 
-The operation must be specified as second argument::
+The operation must be specified as second argument:
 
 ```
 $m = new Model_User($db, 'user');
@@ -66,7 +66,7 @@ $girls = (clone $m)->addCondition('gender', 'F');
 $notGirls = (clone $m)->addCondition('gender', '!=', 'F');
 ```
 
-When you use 'in' or 'not in' you should pass value as array::
+When you use 'in' or 'not in' you should pass value as array:
 
 ```
 $m = new Model_User($db, 'user');
@@ -75,7 +75,7 @@ $girlsOrBoys = (clone $m)->addCondition('gender', 'in', ['F', 'M']);
 
 ### Multiple Conditions
 
-You can set multiple conditions on the same field even if they are contradicting::
+You can set multiple conditions on the same field even if they are contradicting:
 
 ```
 $m = new Model_User($db, 'user');
@@ -84,7 +84,7 @@ $noone = (clone $m)
     ->addCondition('gender', 'M');
 ```
 
-Normally, however, you would use a different fields::
+Normally, however, you would use a different fields:
 
 ```
 $m = new Model_User($db, 'user');
@@ -102,7 +102,7 @@ what condition you are adding, it will not allow you to circumvent previously
 added condition.
 
 You can, however, add condition that contains multiple clauses joined with OR
-operator::
+operator:
 
 ```
 $m->addCondition(Model\Scope::createOr(
@@ -114,13 +114,13 @@ $m->addCondition(Model\Scope::createOr(
 This will add condition that will match against records with either
 name=John OR surname=Smith.
 If you are building multiple conditions against the same field, you can use this
-format::
+format:
 
 ```
 $m->addCondition('name', ['John', 'Joe']);
 ```
 
-For all other cases you can implement them with :php:meth:`Model::expr`::
+For all other cases you can implement them with :php:meth:`Model::expr`:
 
 ```
 $m->addCondition($m->expr('(day([birth_date]) = day([registration_date]) or day([birth_date]) = [])', 10));
@@ -133,8 +133,7 @@ condition, please don't judge, if you have a better example, I'd love to hear).
 ### Defining your classes
 
 Although I have used in-line addition of the arguments, normally you would want
-to set those conditions inside the init() method of your model::
-
+to set those conditions inside the init() method of your model:
 
 ```
 class Model_Girl extends Model_User
@@ -159,7 +158,7 @@ are supported by the driver that you are using.
 
 Supported by: SQL   (planned for Array, Mongo)
 
-Usage::
+Usage:
 
 ```
 $m->addCondition('name', $m->getField('surname'));
@@ -171,7 +170,7 @@ Will perform a match between two fields.
 
 Supported by: SQL   (planned for Array)
 
-Usage::
+Usage:
 
 ```
 $m->addCondition($m->expr('[name] > [surname]');
@@ -195,7 +194,7 @@ inside [blah] should correspond to field names.
 
 Supported by: SQL
 
-Usage::
+Usage:
 
 ```
 $m->addCondition($m->expr('[age] between [min_age] and [max_age]'));
@@ -207,7 +206,7 @@ Allow you to define an arbitrary expression using SQL language.
 
 Supported by: SQL
 
-Usage::
+Usage:
 
 ```
 $m->addCondition(
@@ -217,8 +216,7 @@ $m->addCondition(
 ```
 
 Allow you to pass parameters into expressions. Those can be nested and consist
-of objects as well as actions::
-
+of objects as well as actions:
 
 ```
 $m->addCondition(
@@ -250,7 +248,7 @@ Supported by: SQL, (Planned: Array, Mongo)
 
 The $field of addCondition() can be passed as either an expression or any
 object implementing Atk4\Data\Persistence\Sql\Expressionable interface. Same logic applies
-to the $value::
+to the $value:
 
 ```
 $m->addCondition($m->getField('name'), '!=', $this->getField('surname'));
@@ -266,7 +264,7 @@ These classes can be used directly and independently from Model class.
 
 .. php:method:: scope()
 
-This method provides access to the model scope enabling conditions to be added::
+This method provides access to the model scope enabling conditions to be added:
 
 ```
 $contact->scope()->addCondition($condition); // adding condition to a model
@@ -278,7 +276,7 @@ Scope object has a single defined junction (AND or OR) and can contain multiple 
 This makes creating Model scopes with deep nested conditions possible,
 e.g ((Name like 'ABC%' and Country = 'US') or (Name like 'CDE%' and (Country = 'DE' or Surname = 'XYZ')))
 
-Scope can be created using new Scope() statement from an array or joining Condition objects or condition arguments arrays::
+Scope can be created using new Scope() statement from an array or joining Condition objects or condition arguments arrays:
 
 ```
 // $condition1 will be used as nested condition
@@ -306,7 +304,7 @@ $scope = Scope::createOr($scope1, $scope3);
 ```
 
 
-Scope is an independent object not related to any model. Applying scope to model is using the Model::scope()->add($condition) method::
+Scope is an independent object not related to any model. Applying scope to model is using the Model::scope()->add($condition) method:
 
 ```
 $contact->scope()->add($condition); // adding condition to a model
@@ -315,7 +313,7 @@ $contact->scope()->add($conditionXYZ); // adding more conditions
 
 .. php:method:: __construct($nestedConditions = [], $junction = Scope::AND);
 
-Creates a Scope object from an array::
+Creates a Scope object from an array:
 
 ```
 // below will create 2 conditions and nest them in a compound conditions with AND junction
@@ -328,7 +326,7 @@ $scope1 = new Scope([
 .. php:method:: negate();
 
 Negate method has behind the full map of conditions so any condition object can be negated, e.g negating '>=' results in '<', etc.
-For compound conditionss this method is using De Morgan's laws, e.g::
+For compound conditionss this method is using De Morgan's laws, e.g:
 
 ```
 // using $scope1 defined above
@@ -379,7 +377,7 @@ If $value is omitted as argument then $operator is considered as $value and '=' 
 
 .. php:method:: negate();
 
-Negates the condition, e.g::
+Negates the condition, e.g:
 
 ```
 // results in "name != 'John'"
@@ -388,7 +386,7 @@ $condition = (new Condition('name', 'John'))->negate();
 
 .. php:method:: toWords(Model $model = null);
 
-Converts the condition object to human readable words. Condition must be assigned to a model or model argument provided::
+Converts the condition object to human readable words. Condition must be assigned to a model or model argument provided:
 
 ```
 // results in 'Contact where Name is John'
@@ -400,7 +398,7 @@ Converts the condition object to human readable words. Condition must be assigne
 Agile Data allows for adding conditions on related models for retrieval of type 'model has references where'.
 
 Setting conditions on references can be done utilizing the Model::refLink method but there is a shorthand format
-directly integrated with addCondition method using "/" to chain the reference names::
+directly integrated with addCondition method using "/" to chain the reference names:
 
 ```
 $contact->addCondition('company/country', 'US');
@@ -410,7 +408,7 @@ This will limit the $contact model to those whose company is in US.
 'company' is the name of the reference in $contact model and 'country' is a field in the referenced model.
 
 If a condition must be set directly on the existence or number of referenced records the special symbol "#" can be
-utilized to indicate the condition is on the number of records::
+utilized to indicate the condition is on the number of records:
 
 ```
 $contact->addCondition('company/tickets/#', '>', 3);

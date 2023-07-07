@@ -4,7 +4,7 @@
 
 Typecasting is evoked when you are attempting to save or load the record.
 Unlike strict types and normalization, typecasting is a persistence-specific
-operation. Here is the sequence and sample::
+operation. Here is the sequence and sample:
 
 ```
 $m->addField('birthday', ['type' => 'date']);
@@ -36,7 +36,7 @@ You must remember that type-casting is a two-way operation. If you are
 introducing your own types, you will need to make sure they can be saved and
 loaded correctly.
 
-Some types such as `boolean` may support additional options like::
+Some types such as `boolean` may support additional options like:
 
 ```
 $m->addField('is_married', [
@@ -52,7 +52,7 @@ $m->save(); // stores as "Yes" because of type-casting
 
 ## Value types
 
-Any type can have a value of `null`::
+Any type can have a value of `null`:
 
 ```
 $m->set('is_married', null);
@@ -62,7 +62,7 @@ if (!$m->get('is_married')) {
 ```
 
 If value is passed which is not compatible with field type, Agile Data will try
-to normalize value::
+to normalize value:
 
 ```
 $m->addField('age', ['type' => 'integer']);
@@ -124,7 +124,7 @@ explicitly specify the `ui` property.
 Some types cannot be stored natively. For example, generic objects and arrays
 have no native type in SQL database. This is where serialization feature is used.
 
-Field may use serialization to further encode field value for the storage purpose::
+Field may use serialization to further encode field value for the storage purpose:
 
 ```
 $this->addField('private_key', [

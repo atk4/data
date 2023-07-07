@@ -11,7 +11,7 @@ For current status on database support see: :ref:`databases`.
 
 Connection class is handy to have if you plan on building and executing
 queries in your application. It's more appropriate to store
-connection in a global variable or global class::
+connection in a global variable or global class:
 
 ```
 $app->db = Atk4\Data\Persistence\Sql\Connection::connect($dsn, $user, $pass, $defaults);
@@ -31,7 +31,7 @@ $app->db = Atk4\Data\Persistence\Sql\Connection::connect($dsn, $user, $pass, $de
 
 
 This should allow you to access this class from anywhere and generate either
-new Query or Expression class::
+new Query or Expression class:
 
 ```
 $query = $app->db->dsql();
@@ -57,7 +57,7 @@ $expr = $app->db->expr('show tables');
     :returns: new Query
 
 
-Here is how you can use all of this together::
+Here is how you can use all of this together:
 
 ```
 $dsn = 'mysql:host=localhost;port=3307;dbname=testdb';

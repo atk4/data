@@ -9,7 +9,7 @@ ways which allow you to fetch the data.
 
 .. php:method:: getIterator()
 
-Create your persistence object first then iterate it::
+Create your persistence object first then iterate it:
 
 ```
 $db = \Atk4\Data\Persistence::connect($dsn);
@@ -22,7 +22,7 @@ foreach ($m as $id => $item) {
 
 You must be aware that $item will actually be same as $m and will point to the model.
 The model, however, will have the data loaded for you, so you can call methods for
-each iteration like this::
+each iteration like this:
 
 ```
 foreach ($m as $item) {
@@ -44,7 +44,7 @@ other calculation or validations.
 ### Keeping models
 
 If you wish to preserve the objects that you have loaded (not recommended as they
-will consume memory), you can do it like this::
+will consume memory), you can do it like this:
 
 ```
 $cat = [];
@@ -58,7 +58,7 @@ foreach (new Model_Category($db) as $id => $c) {
 .. php:method:: getRawIterator()
 
 If you do not care about the hooks and simply wish to get the data, you can fetch
-it::
+it:
 
 ```
 foreach ($m->getRawIterator() as $row) {
@@ -79,7 +79,7 @@ By default - `onlyFields` will be presented as well as system fields.
 
 ### Fetching data through action
 
-You can invoke and iterate action (particularly SQL) to fetch the data::
+You can invoke and iterate action (particularly SQL) to fetch the data:
 
 ```
 foreach ($m->action('select') as $row) {

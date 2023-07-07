@@ -154,7 +154,7 @@ as default behavior, see :php:attr:`Model::reloadAfterSave`.
 
 .. php:method:: atomic
 
-This method allows you to execute code within a 'START TRANSACTION / COMMIT' block::
+This method allows you to execute code within a 'START TRANSACTION / COMMIT' block:
 
 ```
 class Invoice
@@ -190,7 +190,7 @@ http://dsql.readthedocs.io/en/stable/expressions.html
 
 There is, however, one difference. Expression class requires all named arguments
 to be specified. Use of Model::expr() allows you to specify field names and those
-field expressions will be automatically substituted. Here is long / short format::
+field expressions will be automatically substituted. Here is long / short format:
 
 ```
 $q = $connection->expr('[age] + [birth_year]', [
@@ -207,7 +207,7 @@ This method is automatically used by :php:class:`SqlExpressionField`.
 
 ## Actions
 
-The most basic action you can use with SQL persistence is 'select'::
+The most basic action you can use with SQL persistence is 'select':
 
 ```
 $action = $model->action('select');
@@ -219,14 +219,14 @@ http://dsql.readthedocs.io (See section Queries).
 ### Action: select
 
 This action returns a basic select query. You may pass one argument - array
-containing list of fields::
+containing list of fields:
 
 ```
 $action = $model->action('select', ['name', 'surname']);
 ```
 
 Passing false will not include any fields into select (so that you can include
-them yourself)::
+them yourself):
 
 ```
 $action = $model->action('select', [false]);
@@ -235,7 +235,7 @@ $action->field('count(*)', 'c);
 
 ### Action: count
 
-Returns query for `count(*)`::
+Returns query for `count(*)`:
 
 ```
 $action = $model->action('count');
@@ -244,7 +244,7 @@ $cnt = $action->getOne();
 $cnt = $model->executeCountQuery();
 ```
 
-You can also specify alias::
+You can also specify alias:
 
 ```
 $action = $model->action('count', ['alias' => 'cc']);
@@ -254,14 +254,14 @@ $cnt = $data->get('cc');
 
 ### Action: field
 
-Get query for a specific field::
+Get query for a specific field:
 
 ```
 $action = $model->action('field', ['age']);
 $age = $action->limit(1)->getOne();
 ```
 
-You can also specify alias::
+You can also specify alias:
 
 ```
 $action = $model->action('field', ['age', 'alias' => 'the_age']]);
@@ -270,7 +270,7 @@ $age = $action->limit(1)->getRow()['the_age'];
 
 ### Action: fx
 
-Executes single-argument SQL function on field::
+Executes single-argument SQL function on field:
 
 ```
 $action = $model->action('fx', ['avg', 'age']);
@@ -315,7 +315,7 @@ We do have our legacy applications to maintain, so Stored Procedures and SQL
 extensions are here to stay. By making your Model rely on those extensions you
 will loose ability to use the same model with non-sql persistencies.
 
-Sometimes you can fence the code like this::
+Sometimes you can fence the code like this:
 
 ```
 if ($this->getPersistence() instanceof \Atk4\Data\Persistence\Sql) {
@@ -331,7 +331,7 @@ should be able to retrieve model data from stored procedure then cache it.
 
 You should be familiar with http://dsql.readthedocs.io/en/develop/expressions.html.
 
-In short this should allow you to build and execute any SQL statement::
+In short this should allow you to build and execute any SQL statement:
 
 ```
 $this->expr('call get_nominal_sheet([], [], \'2014-10-01\', \'2015-09-30\', 0)', [
@@ -340,7 +340,7 @@ $this->expr('call get_nominal_sheet([], [], \'2014-10-01\', \'2015-09-30\', 0)',
 ])->executeQuery();
 ```
 
-Depending on the statement you can also use your statement to retrieve data::
+Depending on the statement you can also use your statement to retrieve data:
 
 ```
 $data = $this->expr('call get_client_report_data([client_id])', [
@@ -349,7 +349,7 @@ $data = $this->expr('call get_client_report_data([client_id])', [
 ```
 
 This can be handy if you wish to create a method for your Model to abstract away
-the data::
+the data:
 
 ```
 class Client extends \Atk4\Data\Model
@@ -371,7 +371,7 @@ class Client extends \Atk4\Data\Model
 }
 ```
 
-Here is another example using PHP generator::
+Here is another example using PHP generator:
 
 ```
 class Client extends \Atk4\Data\Model
@@ -401,7 +401,7 @@ class Client extends \Atk4\Data\Model
 
 :php:meth:`Model::addExpression` is a SQL extension that allow you to define
 any expression for your field query. You can use SQL stored function for data
-fetching like this::
+fetching like this:
 
 ```
 class Category extends \Atk4\Data\Model
@@ -420,7 +420,7 @@ class Category extends \Atk4\Data\Model
 }
 ```
 
-This should translate into SQL query::
+This should translate into SQL query:
 
 ```
 select parent_id, name, get_path(id) from category;
@@ -434,7 +434,7 @@ where once again, stored function is hidden.
 
 Method :php:meth:`Persistence\Sql::action` and :php:meth:`Model::action`
 generates queries for most of model operations.  By re-defining this method,
-you can significantly affect the query building of an SQL model::
+you can significantly affect the query building of an SQL model:
 
 ```
 class CompanyProfit extends \Atk4\Data\Model
@@ -476,7 +476,7 @@ class CompanyProfit extends \Atk4\Data\Model
 
 A most convenient (although inefficient) way for stored procedures is to place
 output data inside a temporary table. You can perform an actual call to stored
-procedure inside Model::init() then set $table property to a temporary table::
+procedure inside Model::init() then set $table property to a temporary table:
 
 ```
 class NominalReport extends \Atk4\Data\Model
@@ -504,7 +504,7 @@ class NominalReport extends \Atk4\Data\Model
 
 .. important:: Not all SQL vendors may support this approach.
 
-Technically you can also specify expression as a $table property of your model::
+Technically you can also specify expression as a $table property of your model:
 
 ```
 class ClientReport extends \Atk4\Data\Model

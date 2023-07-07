@@ -11,7 +11,7 @@ The distinctive goal for Agile Data is ability to "execute" complex operations
 on the database server directly, such as aggregation, sub-queries, joins and
 unions but only if the database server supports those operations.
 
-Developer would normally create a declaration like this::
+Developer would normally create a declaration like this:
 
 ```
 $user->hasMany('Order')->addField('total', ['aggregate' => 'sum']);
@@ -96,7 +96,7 @@ While it is advisable to create each entity in its own class, you do not have
 to do so.
 
 It might be handy to use in-line definition of a model. Try the following
-inside console::
+inside console:
 
 ```
 $m = new Model($db, 'contact_info');
@@ -108,7 +108,7 @@ $m->get();
 $m->executeCountQuery(); // same as ((int) $m->action('count')->getOne())
 ```
 
-Next, exit and create file `src/Model_ContactInfo.php`::
+Next, exit and create file `src/Model_ContactInfo.php`:
 
 ```
 <?php
@@ -127,7 +127,7 @@ class Model_ContactInfo extends Model
 }
 ```
 
-Save, exit and run console again. You can now type this::
+Save, exit and run console again. You can now type this:
 
 ```
 $m = new Model_ContactInfo($db);
@@ -171,7 +171,7 @@ which records model can load (make active) and save. Once the condition is added
 it cannot be removed for safety reasons.
 
 Suppose you have a method that converts DataSet into JSON. Ability to add
-conditions is your way to specify which records to operate on::
+conditions is your way to specify which records to operate on:
 
 ```
 public function myexport(\Atk4\Data\Model $m, array $fields = null)
@@ -192,7 +192,7 @@ Active Record
 ^^^^^^^^^^^^^
 
 Active Record is a third essential piece of information that your model stores.
-You can load / unload records like this::
+You can load / unload records like this:
 
 ```
 $m = new Model_User($db);
@@ -211,7 +211,7 @@ By default no records are loaded and if you modify some field and attempt
 to save unloaded model, it will create a new record.
 
 Model may use some default values in order to make sure that your record will
-be saved inside DataSet::
+be saved inside DataSet:
 
 ```
 $m = new Model_User($db);
@@ -235,7 +235,7 @@ some other parameters such as:
  - limit
  - onlyFields
 
-You can also define your own parameters like this::
+You can also define your own parameters like this:
 
 ```
 $m = new Model_User($db, ['audit' => false]);
@@ -248,7 +248,7 @@ This can be used internally for all sorts of decisions for model behavior.
 ## Getting Started
 
 It's time to create the first Model. Open `src/Model_User.php` which should look
-like this::
+like this:
 
 ```
 <?php
@@ -275,7 +275,7 @@ class Model_User extends Model
 Extend either the base Model class or one of your existing classes (like
 Model_Client). Define $table property unless it is already defined by parent
 class. All the properties defined inside your model class are considered
-"default" you can re-define them when you create model instances::
+"default" you can re-define them when you create model instances:
 
 ```
 $m = new Model_User($db, 'user2'); // will use a different table
@@ -290,7 +290,7 @@ $m = new Model_User($db, ['table' => 'user2']); // same
 
 As I mentioned - :php:meth:`Model::init` is called when model is associated
 with persistence. You could create model and associate it with persistence
-later::
+later:
 
 ```
 $m = new Model_User();
@@ -298,7 +298,7 @@ $m = new Model_User();
 $m->setPersistence($db); // calls $m->invokeInit()
 ```
 
-You cannot add conditions just yet, although you can pass in some of the defaults::
+You cannot add conditions just yet, although you can pass in some of the defaults:
 
 ```
 $m = new Model_User(null, ['table' => 'user2']);
@@ -324,7 +324,7 @@ your field, but it also participates in some field-related activity.
 Similarly, :php:meth:`Model::join()` creates a Join object and stores it in $j.
 The Join object defines a relationship between the master :php:attr:`Model::table`
 and some other table inside persistence domain. It makes sure relationship is
-maintained when objects are saved / loaded::
+maintained when objects are saved / loaded:
 
 ```
 $j = $this->join('contact_info', 'contact_info_id');
@@ -336,7 +336,7 @@ That means that your business model will contain 'address_1' and 'address_2'
 fields, but when it comes to storing those values, they will be sent into a
 different database table and the records will be automatically linked.
 
-Lets once again load up the console for some exercises::
+Lets once again load up the console for some exercises:
 
 ```
 $m = new Model_User($db);
@@ -364,7 +364,7 @@ database engine.
 ### Understanding Persistence
 
 To make things simple, console has already created persistence inside variable
-`$db`. Load up `console.php` in your editor to look at how persistence is set up::
+`$db`. Load up `console.php` in your editor to look at how persistence is set up:
 
 ```
 $app->db = Persistence::connect($dsn, $user, $pass);
@@ -373,7 +373,7 @@ $app->db = Persistence::connect($dsn, $user, $pass);
 The `$dsn` can also be using the PEAR-style DSN format, such as:
 "mysql://user:pass@db/host", in which case you do not need to specify $user and $pass.
 
-For some persistence classes, you should use constructor directly::
+For some persistence classes, you should use constructor directly:
 
 ```
 $array = [];
@@ -388,7 +388,7 @@ echo $m->get('name'); // Peter
 ```
 
 There are several Persistence classes that deal with different data sources.
-Lets load up our console and try out a different persistence::
+Lets load up our console and try out a different persistence:
 
 ```
 $a = ['user' => [], 'contact_info' => []];
@@ -424,14 +424,14 @@ optionally specify which fields are used for conditioning.
 ### One to Many
 
 Launch up console again and let's create reference between 'User' and 'System'.
-As per our database design - one user can have multiple 'system' records::
+As per our database design - one user can have multiple 'system' records:
 
 ```
 $m = new Model_User($db);
 $m->hasMany('System');
 ```
 
-Next you can load a specific user and traverse into System model::
+Next you can load a specific user and traverse into System model:
 
 ```
 $m = $m->loadBy('username', 'john');
@@ -445,7 +445,7 @@ is called "Active Record to DataSet" or One to Many.
 
 Your Active Record was user john and after traversal you get a model with DataSet
 corresponding to all Systems that belong to user john. You can use the following
-to see number of records in DataSet or export DataSet::
+to see number of records in DataSet or export DataSet:
 
 ```
 $s->isLoaded();
@@ -457,7 +457,7 @@ $s->action('count')->getDebugQuery();
 ### Many to Many
 
 Agile Data also supports another type of traversal - 'DataSet to DataSet' or
-Many to Many::
+Many to Many:
 
 ```
 $c = $m->ref('System')->ref('Client');
@@ -465,7 +465,7 @@ $c = $m->ref('System')->ref('Client');
 
 This will create a Model_Client instance with a DataSet corresponding to all
 the Clients that are contained in all of the Systems that belong to user john.
-You can examine the this model further::
+You can examine the this model further:
 
 ```
 $c->isLoaded();
@@ -481,14 +481,14 @@ Calling ref()->ref() is also called Deep Traversal.
 
 ### One to One
 
-The third and final reference traversal type is "Active Record to Active Record"::
+The third and final reference traversal type is "Active Record to Active Record":
 
 ```
 $cc = $m->ref('country_id');
 ```
 
 This results in an instance of Model_Country with Active Record set to the
-country of user john::
+country of user john:
 
 ```
 $cc->isLoaded();
@@ -525,7 +525,7 @@ the concept of 'action' to map into vendor-specific operations.
 
 SQL implements methods such as sum(), count() or max() that can offer you some
 basic aggregation without grouping. This type of aggregation provides some
-specific value from a data-set. SQL persistence implements some of the operations::
+specific value from a data-set. SQL persistence implements some of the operations:
 
 ```
 $m = new Model_Invoice($db);
@@ -535,7 +535,7 @@ $m->action('fx', ['max', 'shipping'])->getOne();
 ```
 
 Aggregation actions can be used in Expressions with hasMany references and they
-can be brought into the original model as fields::
+can be brought into the original model as fields:
 
 ```
 $m = new Model_Client($db);
@@ -545,7 +545,7 @@ $m->export(['name', 'max_delivery', 'total_paid']);
 ```
 
 The above code is more concise and can be used together with reference declaration,
-although this is how it works::
+although this is how it works:
 
 ```
 $m = new Model_Client($db);
@@ -567,7 +567,7 @@ complex SQL expression instead of a physical field. (See :ref:`Expressions` and
 
 ### Field-reference actions
 
-Field referencing allows you to fetch a specific field from related model::
+Field referencing allows you to fetch a specific field from related model:
 
 ```
 $m = new Model_Country($db);
@@ -575,7 +575,7 @@ $m->action('field', ['name'])->get();
 $m->action('field', ['name'])->getDebugQuery();
 ```
 
-This is useful with hasMany references::
+This is useful with hasMany references:
 
 ```
 $m = new Model_User($db);
@@ -585,7 +585,7 @@ $m->get(); // look for 'country' field
 ```
 
 hasMany::addField() again is a short-cut for creating expression, which you can
-also build manually::
+also build manually:
 
 ```
 $m->addExpression('country', $m->refLink('country_id')->action('field', ['name']));
@@ -594,7 +594,7 @@ $m->addExpression('country', $m->refLink('country_id')->action('field', ['name']
 ### Advanced Use of Actions
 
 Actions prove to be very useful in various situations. For instance, if you are
-looking to add a new user::
+looking to add a new user:
 
 ```
 $m = new Model_User($db);
@@ -606,7 +606,7 @@ $m->save();
 
 Normally this would not work, because country is read-only expression, however
 if you wish to avoid creating an intermediate select to determine ID for 'UK',
-you could do this::
+you could do this:
 
 ```
 $m = new Model_User($db);
@@ -623,7 +623,7 @@ that will then be used to lookup ID of 'UK' when inserting data into SQL table.
 
 Expressions that are defined based on Actions (such as aggregate or field-reference)
 will continue to work even without SQL (although might be more performance-expensive),
-however if you're stuck with SQL you can use free-form pattern-based expressions::
+however if you're stuck with SQL you can use free-form pattern-based expressions:
 
 ```
 $m = new Model_Client($db);

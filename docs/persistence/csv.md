@@ -19,7 +19,7 @@ of `Persistence\Csv` are limited to the following actions:
 When creating new persistence you must provide a valid URL for
 the file that might be stored either on a local system or
 use a remote file scheme (ftp://...). The file will not be
-actually opened unless you perform load/save operation::
+actually opened unless you perform load/save operation:
 
 ```
 $p = new Persistence\Csv('myfile.csv');
@@ -32,7 +32,7 @@ $u = $u->tryLoadAny(); // actually opens file and finds first record
 
 You can take a model that is loaded from other persistence and save
 it into CSV like this. The next example demonstrates a basic functionality
-of SQL database export to CSV file::
+of SQL database export to CSV file:
 
 ```
 $db = new Persistence\Sql($connection);
@@ -46,7 +46,7 @@ foreach (new Model_User($db) as $m) {
 ```
 
 Theoretically you can do few things to tweak this process. You can specify
-which fields you would like to see in the CSV::
+which fields you would like to see in the CSV:
 
 ```
 foreach (new Model_User($db) as $m) {
@@ -56,7 +56,7 @@ foreach (new Model_User($db) as $m) {
 }
 ```
 
-Additionally if you want to use a different column titles, you can::
+Additionally if you want to use a different column titles, you can:
 
 ```
 foreach (new Model_User($db) as $m) {
@@ -72,7 +72,7 @@ stored in any particular format.
 
 The examples above also create object on each iteration, that may appear as
 a performance inefficiency. This can be solved by re-using Csv model through
-iterations::
+iterations:
 
 ```
 $m = new Model_User($db);
@@ -85,7 +85,7 @@ foreach ($m as $mCsv) {
 }
 ```
 
-This code can be further simplified if you use import() method::
+This code can be further simplified if you use import() method:
 
 ```
 $m = new Model_User($db);
@@ -95,7 +95,7 @@ $mCsv->getField('name')->actual = 'First Name';
 $mCsv->import($m);
 ```
 
-Naturally you can also move data in the other direction::
+Naturally you can also move data in the other direction:
 
 ```
 $m = new Model_User($db);

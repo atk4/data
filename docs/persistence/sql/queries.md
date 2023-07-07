@@ -20,8 +20,7 @@ query will act.
 Once the query is defined, you can either use it inside another query or
 expression or you can execute it in exchange for result set.
 
-Quick Example::
-
+Quick Example:
 
 ```
 $query = $c->dsql();
@@ -35,7 +34,7 @@ $name = $query->getOne();
 ## Method invocation principles
 
 Methods of Query are designed to be flexible and concise. Most methods have a
-variable number of arguments and some arguments can be skipped::
+variable number of arguments and some arguments can be skipped:
 
 ```
 $query->where('id', 123);
@@ -51,7 +50,7 @@ There are 2 types of escaping:
  * :php:meth:`Expression::escapeIdentifier()`. Used for field and table names. Surrounds name with *`*.
  * :php:meth:`Expression::escapeParam()`. Will convert value into parameter and replace with *:a*
 
-In the next example $a is escaped but $b is parameterized::
+In the next example $a is escaped but $b is parameterized:
 
 ```
 $query->where('a', 'b');
@@ -60,7 +59,7 @@ $query->where('a', 'b');
 ```
 
 If you want to switch places and execute *where "b" = `a`*, then you can resort
-to Expressions::
+to Expressions:
 
 ```
 $query->where($c->expr('{} = []', ['b', 'a']));
@@ -78,7 +77,7 @@ query to a different mode using :php:meth:`mode`. f you don't switch the mode,
 your Query remains in select mode and you can fetch results from it anytime.
 
 The pattern of defining arguments for your Query and then executing allow you
-to re-use your query efficiently::
+to re-use your query efficiently:
 
 ```
 $data = ['name' => 'John', 'surname' => 'Smith']
@@ -121,7 +120,7 @@ Majority of methods return `$this` when called, which makes it pretty
 convenient for you to chain calls by using `->fx()` multiple times as
 illustrated in last example.
 
-You can also combine creation of the object with method chaining::
+You can also combine creation of the object with method chaining:
 
 ```
 $age = $c->dsql()->table('user')->where('id', 123)->field('age')->getOne();
@@ -130,7 +129,7 @@ $age = $c->dsql()->table('user')->where('id', 123)->field('age')->getOne();
 ## Using query as expression
 
 You can use query as expression where applicable. The query will get a special
-treatment where it will be surrounded in brackets. Here are few examples::
+treatment where it will be surrounded in brackets. Here are few examples:
 
 ```
 $q = $c->dsql()
@@ -143,7 +142,7 @@ $q2 = $c->dsql()
 $q->getRows();
 ```
 
-This query will perform `select name from (select * from employee)`::
+This query will perform `select name from (select * from employee)`:
 
 ```
 $q1 = $c->dsql()
@@ -193,7 +192,7 @@ an alias. You can specify multiple tables at the same time by using comma or
 array (although you won't be able to use the alias there).
 Using keys in your array will also specify the aliases.
 
-Basic Examples::
+Basic Examples:
 
 ```
 $c->dsql()->table('user');
@@ -218,7 +217,7 @@ $c->dsql()->table(['u' => 'user', 's' => 'salary']);
 
 Inside your query table names and aliases will always be surrounded by backticks.
 If you want to use a more complex expression, use :php:class:`Expression` as
-table::
+table:
 
 ```
 $c->dsql()->table(
@@ -229,7 +228,7 @@ $c->dsql()->table(
 ```
 
 Finally, you can also specify a different query instead of table, by simply
-passing another :php:class:`Query` object::
+passing another :php:class:`Query` object:
 
 ```
 $subQuery = $c->dsql();
@@ -259,7 +258,7 @@ Method can be executed several times on the same Query object.
     :param string $alias: Optionally specify alias of field in resulting query
     :returns: $this
 
-Basic Examples::
+Basic Examples:
 
 ```
 $query = new Query();
@@ -286,7 +285,7 @@ $query->field(['name' => 'employee.first_name']);
 
 If the first parameter of field() method contains non-alphanumeric values
 such as spaces or brackets, then field() will assume that you're passing an
-expression::
+expression:
 
 ```
 $query->field('now()');
@@ -295,7 +294,7 @@ $query->field('now()', 'time_now');
 ```
 
 You may also pass array as first argument. In such case array keys will be
-used as aliases (if they are specified)::
+used as aliases (if they are specified):
 
 ```
 $query->field(['time_now' => 'now()', 'time_created']);
@@ -344,7 +343,7 @@ even null (specifying null is not the same as omitting this argument).
 This argument will always be parameterized unless you pass expression.
 If you specify array, all elements will be parametrized individually.
 
-Starting with the basic examples::
+Starting with the basic examples:
 
 ```
 $q->where('id', 1);
@@ -363,14 +362,14 @@ $q->where('id', [1, 2]); // renders as id in (1, 2)
 
 You may call where() multiple times, and conditions are always additive (uses AND).
 The easiest way to supply OR condition is to specify multiple conditions
-through array::
+through array:
 
 ```
 $q->where([['name', 'like', '%john%'], ['surname', 'like', '%john%']]);
     // .. WHERE `name` like '%john%' OR `surname` like '%john%'
 ```
 
-You can also mix and match with expressions and strings::
+You can also mix and match with expressions and strings:
 
 ```
 $q->where([['name', 'like', '%john%'], 'surname is null']);
@@ -392,7 +391,7 @@ There is a more flexible way to use OR arguments:
     Returns new Query object with method "where()". When rendered all clauses
     are joined with "OR".
 
-Here is a sophisticated example::
+Here is a sophisticated example:
 
 ```
 $q = $c->dsql();
@@ -425,7 +424,7 @@ The above code will result in the following query:
         (`a` = :a or `b` = :b or (`a` = :c and `b` = :d))
 
 Technically orExpr() generates a yet another object that is composed
-and renders its calls to where() method::
+and renders its calls to where() method:
 
 ```
 $q->having(
@@ -456,7 +455,7 @@ accept expressions. You can call `group()` with one or several comma-separated
 fields as a parameter or you can specify them in array. Additionally you can
 mix that with :php:class:`Expression` or :php:class:`Expressionable` objects.
 
-Few examples::
+Few examples:
 
 ```
 $q->group('gender');
@@ -511,7 +510,7 @@ group_concat('phone' order by 'date' desc separator ';')
 
 When joining with a different table, the results will be stacked by the SQL
 server so that fields from both tables are available. The first argument can
-specify the table to join, but may contain more information::
+specify the table to join, but may contain more information:
 
 ```
 $q->join('address'); // address.id = address_id
@@ -524,7 +523,7 @@ $q->join('address.user_id'); // address.user_id = id
     // JOIN `address` ON `address`.`user_id`=`id`
 ```
 
-You can also pass array as a first argument, to join multiple tables::
+You can also pass array as a first argument, to join multiple tables:
 
 ```
 $q->table('user u');
@@ -541,7 +540,7 @@ The above code will join 3 tables using the following query syntax:
         preferences on preferences.id = u.preferences_id
 
 However normally you would have `user_id` field defined in your supplementary
-tables so you need a different syntax::
+tables so you need a different syntax:
 
 ```
 $q->table('user u');
@@ -553,7 +552,7 @@ $q->join([
 ```
 
 The second argument to join specifies which existing table/field is
-used in `on` condition::
+used in `on` condition:
 
 ```
 $q->table('user u');
@@ -566,7 +565,7 @@ previous examples where join was done on "address_id", and "credit_card_id".
 If you have specified field explicitly in the foreign field, then the "on" field
 is set to "id", like in the example above.
 
-You can specify both fields like this::
+You can specify both fields like this:
 
 ```
 $q->table('employees');
@@ -575,7 +574,7 @@ $q->join('salaries.emp_no', 'emp_no');
 
 If you only specify field like this, then it will be automatically prefixed with
 the name or alias of your main table. If you have specified multiple tables,
-this won't work and you'll have to define name of the table explicitly::
+this won't work and you'll have to define name of the table explicitly:
 
 ```
 $q->table('user u');
@@ -591,7 +590,7 @@ Method can be executed several times on the same Query object.
 Joining on expression
 `````````````````````
 
-For a more complex join conditions, you can pass second argument as expression::
+For a more complex join conditions, you can pass second argument as expression:
 
 ```
 $q->table('user', 'u');
@@ -654,7 +653,7 @@ $q->join('address a', $q->expr('a.name like u.pattern'));
     :param int $shift: offset, how many rows to skip
     :returns: $this
 
-Use this to limit your :php:class:`Query` result-set::
+Use this to limit your :php:class:`Query` result-set:
 
 ```
 $q->limit(5, 10);
@@ -675,7 +674,7 @@ $q->limit(5);
     :param int $desc: pass true to sort descending
     :returns: $this
 
-Use this to order your :php:class:`Query` result-set::
+Use this to order your :php:class:`Query` result-set:
 
 ```
 $q->order('name'); // .. order by name
@@ -698,7 +697,7 @@ Method can be executed several times on the same Query object.
     :param mixed  $value: value or expression
     :returns: $this
 
-Example::
+Example:
 
 ```
 $q->table('user')->set('name', 'john')->mode('insert')->executeStatement();
@@ -714,7 +713,7 @@ Method can be executed several times on the same Query object.
 
 .. php:method:: option($option, $mode = 'select')
 
-It is possible to add arbitrary options for the query. For example this will fetch unique user birthdays::
+It is possible to add arbitrary options for the query. For example this will fetch unique user birthdays:
 
 ```
 $q->table('user');
@@ -723,7 +722,7 @@ $q->field('birthday');
 $birthdays = $q->getRows();
 ```
 
-Other possibility is to set options for delete or insert::
+Other possibility is to set options for delete or insert:
 
 ```
 $q->option('delayed', 'insert');
@@ -770,7 +769,7 @@ where clauses from the query and start from beginning:
 
     :param string $tag: part of the query to delete/reset.
 
-Example::
+Example:
 
 ```
 $q

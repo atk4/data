@@ -24,13 +24,13 @@ etc, but it will always remain linked with that same persistence.
 
 ## Associating with Persistence
 
-Create your persistence object first::
+Create your persistence object first:
 
 ```
 $db = \Atk4\Data\Persistence::connect($dsn);
 ```
 
-There are two ways to link your model up with the persistence::
+There are two ways to link your model up with the persistence:
 
 ```
 $m = new Model_Invoice($db);
@@ -87,7 +87,7 @@ $m->setPersistence($db);
 ### Inserting Record with a specific ID
 
 When you add a new record with save(), insert() or import, you can specify ID
-explicitly::
+explicitly:
 
 ```
 $m->set('id', 123);
@@ -97,7 +97,7 @@ $m->save();
 ```
 
 However if you change the ID for record that was loaded, then your database
-record will also have its ID changed. Here is example::
+record will also have its ID changed. Here is example:
 
 ```
 $m = $m->load(123);
@@ -114,7 +114,7 @@ etc. There are more advanced types such as DateTime. Finally user may introduce
 more useful types.
 
 Agile Data ensures that regardless of the selected database, types are converted
-correctly for saving and restored as they were when loading::
+correctly for saving and restored as they were when loading:
 
 ```
 $m->addField('is_admin', ['type' => 'boolean']);
@@ -129,7 +129,7 @@ $m->get('is_admin'); // converted back to `false`
 ```
 
 Behind a two simple lines might be a long path for the value. The various
-components are essential and as developer you must understand the full sequence::
+components are essential and as developer you must understand the full sequence:
 
 ```
 $m->set('is_admin', false);
@@ -143,7 +143,7 @@ your model fields, the type will be enforced.
 
 Calling "set()" or using array-access to set the value will start by casting
 the value to an appropriate data-type. If it is impossible to cast the value,
-then exception will be generated::
+then exception will be generated:
 
 ```
 $m->set('is_admin', '1'); // OK, but stores as `true`
@@ -151,7 +151,7 @@ $m->set('is_admin', '1'); // OK, but stores as `true`
 $m->set('is_admin', 123); // throws exception.
 ```
 
-It's not only the 'type' property, but 'enum' can also imply restrictions::
+It's not only the 'type' property, but 'enum' can also imply restrictions:
 
 ```
 $m->addField('access_type', ['enum' => ['readOnly', 'full']]);
@@ -160,7 +160,7 @@ $m->set('access_type', 'full'); // OK
 $m->set('access_type', 'half-full'); // Exception
 ```
 
-There are also non-trivial types in Agile Data::
+There are also non-trivial types in Agile Data:
 
 ```
 $m->addField('salary', ['type' => 'atk4_money']);
@@ -171,7 +171,7 @@ $m->set('date', time()); // converts to DateTime class
 ```
 
 Finally, you may create your own custom field types that follow a more
-complex logic::
+complex logic:
 
 ```
 $m->add(new Field_Currency(), 'balance');
@@ -185,7 +185,7 @@ Loaded/saved data are always normalized unless the field value normalization
 is intercepted a hook.
 
 Final field flag that is worth mentioning is called :php:attr:`Field::readOnly`
-and if set, then value of a field may not be modified directly::
+and if set, then value of a field may not be modified directly:
 
 ```
 $m->addField('ref_no', ['readOnly' => true]);
@@ -196,7 +196,7 @@ $m->get('ref_no'); // perfect for reading field that is populated by trigger.
 $m->set('ref_no', 'foo'); // exception
 ```
 
-Note that `readOnly` can still have a default value::
+Note that `readOnly` can still have a default value:
 
 ```
 $m->addField('created', [
@@ -249,7 +249,7 @@ to find more information on how to integrate them.
 
 ### Multi-column fields
 
-Lets talk more about this currency field::
+Lets talk more about this currency field:
 
 ```
 $m->add(new Field_Currency(), 'balance');
@@ -267,8 +267,7 @@ of application.
 Finally, even though we are storing "id" for the currency we want to make use
 of References.
 
-Your init() method for a Field_Currency might look like this::
-
+Your init() method for a Field_Currency might look like this:
 
 ```
 protected function init(): void
@@ -372,7 +371,7 @@ to perform operations that may affect other records.
 Assuming you have 2 different records in your database: 123 and 124, how can you
 take values of 123 and write it on top of 124?
 
-Here is how::
+Here is how:
 
 ```
 $m->load(123)->duplicate()->setId(124)->save();
@@ -410,7 +409,7 @@ This can be used in conjunction to escape data-set.
 
 We have a model 'Order' with a field 'ref', which must be unique within
 the context of a client. However, orders are also stored in a 'Basket'.
-Consider the following code::
+Consider the following code:
 
 ```
 $basket->ref('Order')->insert(['ref' => 123]);
@@ -419,7 +418,7 @@ $basket->ref('Order')->insert(['ref' => 123]);
 You need to verify that the specific client wouldn't have another order with
 this ref, how do you do it?
 
-Start by creating a beforeSave handler for Order::
+Start by creating a beforeSave handler for Order:
 
 ```
 $this->onHookShort(Model::HOOK_BEFORE_SAVE, function () {
@@ -445,7 +444,7 @@ the class.
 
 In this use case you are having a model 'Order', but you have introduced the
 option to archive your orders. The method `archive()` is supposed to mark order
-as archived and return that order back. Here is the usage pattern::
+as archived and return that order back. Here is the usage pattern:
 
 ```
 $o->addCondition('is_archived', false); // to restrict loading of archived orders
@@ -464,7 +463,7 @@ of that, saving record as archived may cause exception as it is now outside
 of the result-set.
 
 There are two approaches to deal with this problem. The first involves disabling
-after-save reloading::
+after-save reloading:
 
 ```
 public function archive()
@@ -479,7 +478,7 @@ public function archive()
 After-save reloading would fail due to `is_archived = false` condition so
 disabling reload is a hack to get your record into the database safely.
 
-The other, more appropriate option is to re-use a vanilla Order record::
+The other, more appropriate option is to re-use a vanilla Order record:
 
 ```
 public function archive()
@@ -523,7 +522,7 @@ simple.
 
 You can use several designs. I will create a method inside my application class
 to load records from two persistencies that are stored inside properties of my
-application::
+application:
 
 ```
 public function loadQuick($class, $id)
@@ -552,7 +551,7 @@ public function loadQuick($class, $id)
 ```
 
 The above logic provides a simple caching framework for all of your models.
-To use it with any model::
+To use it with any model:
 
 ```
 $m = $app->loadQuick(new Order(), 123);
@@ -561,7 +560,7 @@ $m->set('completed', true);
 $m->save();
 ```
 
-To look in more details into the actual method, I have broken it down into chunks::
+To look in more details into the actual method, I have broken it down into chunks:
 
 ```
 // first, try to load it from MemCache:
@@ -571,7 +570,7 @@ $m = (clone $class)->setPersistence($this->mdb)->tryLoad($id);
 The $class will be an uninitialized instance of a model (although you can also
 use a string). It will first be associated with the MemCache DB persistence and
 we will attempt to load a corresponding ID. Next, if no record is found in the
-cache::
+cache:
 
 ```
 if ($m === null) {
@@ -588,7 +587,7 @@ the MemCache persistence by replacing (or creating new) record. The `$m` at the
 end will be associated with the MemCache persistence for consistency with cached
 records.
 The last two hooks are in order to replicate any changes into the SQL database
-also::
+also:
 
 ```
 $m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
@@ -613,7 +612,7 @@ replica, except for certain changes.
 
 In theory you can use hooks (that have option to cancel default action) to
 create a comprehensive system-wide solution, I'll illustrate how this can be
-done with a single record::
+done with a single record:
 
 ```
 $m = new Order($readReplica);
@@ -634,13 +633,13 @@ would be to reload the `$m`, if there is chance that your update to a write
 replica may not propagate to read replica, you can simply reset the dirty flags.
 
 If you need further optimization, make sure `reloadAfterSave` is disabled
-for the write replica::
+for the write replica:
 
 ```
 $m->withPersistence($writeReplica)->setDefaults(['reloadAfterSave' => false])->save();
 ```
 
-or use::
+or use:
 
 ```
 $m->withPersistence($writeReplica)->saveAndUnload();
@@ -649,7 +648,7 @@ $m->withPersistence($writeReplica)->saveAndUnload();
 ### Archive Copies into different persistence
 
 If you wish that every time you save your model the copy is also stored inside
-some other database (for archive purposes) you can implement it like this::
+some other database (for archive purposes) you can implement it like this:
 
 ```
 $m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
@@ -667,7 +666,7 @@ $m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
 
 If you are using authentication mechanism to log a user in and you wish to
 store his details into Session, so that you don't have to reload every time,
-you can implement it like this::
+you can implement it like this:
 
 ```
 if (!isset($_SESSION['ad'])) {
@@ -683,7 +682,7 @@ This would load the user data from Array located inside a local session. There
 is no point storing multiple users, so I'm using id='active_user' for the only
 user record that I'm going to store there.
 
-How to add record inside session, e.g. log the user in? Here is the code::
+How to add record inside session, e.g. log the user in? Here is the code:
 
 ```
 $u = new User($db);
@@ -717,7 +716,7 @@ rows of data.
  - single column
  - array of hashes
 
-Action can be executed at any time and that will return an expected result::
+Action can be executed at any time and that will return an expected result:
 
 ```
 $m = Model_Invoice();
@@ -725,7 +724,7 @@ $val = (int) $m->action('count')->getOne(); // same as $val = $m->executeCountQu
 ```
 
 Most actions are sufficiently smart to understand what type of result you are
-expecting, so you can have the following code::
+expecting, so you can have the following code:
 
 ```
 $m = Model_Invoice();
@@ -733,7 +732,7 @@ $val = $m->action('count')();
 ```
 
 When used inside the same Persistence, sometimes actions can be used without
-executing::
+executing:
 
 ```
 $m = Model_Product($db);
@@ -751,7 +750,7 @@ result instead.
 Being able to embed actions inside next query allows Agile Data to reduce number
 of queries issued.
 
-The default action type can be set when executing action, for example::
+The default action type can be set when executing action, for example:
 
 ```
 $a = $m->action('field', 'user', 'getOne');
@@ -765,13 +764,13 @@ Currently only read-only actions are supported by `Persistence\\Sql`:
 
  - select - produces query that returns DataSet (array of hashes)
 
-There are ability to execute aggregation functions::
+There are ability to execute aggregation functions:
 
 ```
 echo $m->action('fx', ['max', 'salary'])->getOne();
 ```
 
-and finally you can also use count::
+and finally you can also use count:
 
 ```
 echo $m->executeCountQuery(); // same as echo $m->action('count')->getOne()
@@ -780,7 +779,7 @@ echo $m->executeCountQuery(); // same as echo $m->action('count')->getOne()
 ### SQL Actions on Linked Records
 
 In conjunction with Model::refLink() you can produce expressions for creating
-sub-selects. The functionality is nicely wrapped inside HasMany::addField()::
+sub-selects. The functionality is nicely wrapped inside HasMany::addField():
 
 ```
 $client->hasMany('Invoice')
@@ -797,7 +796,7 @@ This operation is actually consisting of 3 following operations::
 
 3. Expression is created with name 'total_gross' that uses Action.
 
-Here is a way how to intervene with the process::
+Here is a way how to intervene with the process:
 
 ```
 $client->hasMany('Invoice');

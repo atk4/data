@@ -45,7 +45,7 @@ rolled back.
 ### Example with beforeSave
 
 The next code snippet demonstrates a basic usage of a `beforeSave` hook.
-This one will update field values just before record is saved::
+This one will update field values just before record is saved:
 
 ```
 $m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
@@ -71,7 +71,7 @@ of the model.
 ### Interrupting
 
 You can also break all "before" hooks which will result in cancellation of the
-original action::
+original action:
 
 ```
 $m->breakHook(false);
@@ -80,7 +80,7 @@ $m->breakHook(false);
 If you break beforeSave, then the save operation will not take place, although
 model will assume the operation was successful.
 
-You can also break beforeLoad hook which can be used to skip rows::
+You can also break beforeLoad hook which can be used to skip rows:
 
 ```
 $model->onHook(Model::HOOK_AFTER_LOAD, function (Model $m) {
@@ -131,7 +131,7 @@ You might consider "save" to be a higher level hook, as beforeSave is called
 pretty early on during saving the record and afterSave is called at the very end
 of save.
 
-You may actually drop validation exception inside save, insert or update hooks::
+You may actually drop validation exception inside save, insert or update hooks:
 
 ```
 $m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
@@ -184,7 +184,7 @@ For some examples, see :ref:`soft_delete`
 
 In some cases you want to prevent default actions from executing.
 Suppose you want to check 'memcache' before actually loading the record from
-the database. Here is how you can implement this functionality::
+the database. Here is how you can implement this functionality:
 
 ```
 $m->onHook(Model::HOOK_BEFORE_LOAD, function (Model $m, $id) {

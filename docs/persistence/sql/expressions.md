@@ -9,7 +9,7 @@ expression then execute it as-is or as a part of another query or expression.
 Expression is supported anywhere in DSQL to allow you to express SQL syntax
 properly.
 
-Quick Example::
+Quick Example:
 
 ```
 $query->where('time', $query->expr(
@@ -20,7 +20,7 @@ $query->where('time', $query->expr(
 // Produces: .. where `time` between :a and :b
 ```
 
-Another use of expression is to supply field instead of value and vice versa::
+Another use of expression is to supply field instead of value and vice versa:
 
 ```
 $query->where($query->expr(
@@ -33,7 +33,7 @@ $query->where($query->expr(
 
 Yet another curious use for the DSQL library is if you have certain object in
 your ORM implementing :php:class:`Expressionable` interface. Then you can also
-use it within expressions::
+use it within expressions:
 
 ```
 $query->where($query->expr(
@@ -78,14 +78,14 @@ produce one complete query.
 
 ## Creating Expression
 
-::
+:
 
 ```
 $expr = $connection->expr('NOW()');
 ```
 
 You can also use :php:meth:`expr()` method to create expression, in which case
-you do not have to define "use" block::
+you do not have to define "use" block:
 
 ```
 $query->where('time', '>', $query->expr('NOW()'));
@@ -94,7 +94,7 @@ $query->where('time', '>', $query->expr('NOW()'));
 ```
 
 You can specify some of the expression properties through first argument of the
-constructor::
+constructor:
 
 ```
 $expr = $connection->expr(['template' => 'NOW()']);
@@ -114,7 +114,7 @@ square brackets:
  - ``coalesce([one], [two])``
 
 Arguments can be specified immediately through an array as a second argument
-into constructor or you can specify arguments later::
+into constructor or you can specify arguments later:
 
 ```
 $expr = $connection->expr(
@@ -131,7 +131,7 @@ $expr['surname'] = $surname;
 
 ## Nested expressions
 
-Expressions can be nested several times::
+Expressions can be nested several times:
 
 ```
 $age = $connection->expr('coalesce([age], [default_age])');
@@ -163,14 +163,14 @@ If your expression is a valid SQL query, (such as ```show databases```) you
 might want to execute it. Expression class offers you various ways to execute
 your expression. Before you do, however, you need to have :php:attr:`$connection`
 property set. (See `Connecting to Database` on more details). In short the
-following code will connect your expression with the database::
+following code will connect your expression with the database:
 
 ```
 $expr = $connection->expr();
 ```
 
 If you are looking to use connection :php:class:`Query` class, you may want to
-consider using a proper vendor-specific subclass::
+consider using a proper vendor-specific subclass:
 
 ```
 $query = new \Atk4\Data\Persistence\Sql\Mysql\Query('connection' => $connection);
@@ -257,7 +257,7 @@ Finally, you can pass connection class into :php:meth:`executeQuery` directly.
     This method will use HTML formatting if argument is passed.
 
 In order for HTML parsing to work and to make your debug queries better
-formatted, install `sql-formatter`::
+formatted, install `sql-formatter`:
 
 ```
 composer require jdorn/sql-formatter
@@ -273,7 +273,7 @@ parts of the query. You must not call them in normal circumstances.
   Makes `$sqlCode` part of `$this` expression. Argument may be either a string
   (which will be escaped) or another :php:class:`Expression` or :php:class:`Query`.
   If specified :php:class:`Query` is in "select" mode, then it's automatically
-  placed inside brackets::
+  placed inside brackets:
 
 ```
 $query->consume('first_name'); // `first_name`
@@ -294,7 +294,7 @@ $query->consume($otherQuery); // will merge parameters and return string
 
   It will smartly escape table.field type of strings resulting in `table`.`field`.
 
-  Will do nothing if it finds "*", "`" or "(" character in `$sqlCode`::
+  Will do nothing if it finds "*", "`" or "(" character in `$sqlCode`:
 
 ```
 $query->escapeIdentifierSoft('first_name'); // `first_name`

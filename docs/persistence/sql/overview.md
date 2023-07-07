@@ -25,7 +25,7 @@ a part of other query.
 
 ## DSQL by example
 
-The simplest way to explain DSQL is by example::
+The simplest way to explain DSQL is by example:
 
 ```
 $query = $connection->dsql();
@@ -94,7 +94,7 @@ You can specify DSQL as a project or module dependency in composer.json:
         }
     }
 
-After installing, you need to require Composer's autoloader in your PHP file::
+After installing, you need to require Composer's autoloader in your PHP file:
 
 ```
 require 'vendor/autoload.php';

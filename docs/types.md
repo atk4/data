@@ -13,13 +13,13 @@ following goals:
 
 Specifying one of supported types will ensure that your field format is
 recognized universally, can be stored, loaded, presented to user through UI
-inside a Table or Form and can be exported through RestAPI::
+inside a Table or Form and can be exported through RestAPI:
 
 ```
 $this->addField('is_vip', ['type' => 'boolean']);
 ```
 
-We also allow use of custom Field implementation::
+We also allow use of custom Field implementation:
 
 ```
 $this->addField('encrypted_password', new \Atk4\Data\Field\PasswordField());
@@ -41,7 +41,7 @@ which can use JSON or standard serialize() method to store object inside
 incompatible database/persistence.
 
 Serialization abilities allow us to get rid of many arbitrary types such as "array_json"
-and simply use this::
+and simply use this:
 
 ```
 $model->addField('selection', ['type' => 'json']);
@@ -54,7 +54,7 @@ precision. For instance, when user specifies `'type' => 'atk4_money'` it is repr
 as `['Number', 'precision' => 2, 'prefix' => '€']`
 
 Not only this allows us make a flexible and re-usable functionality for fields,
-but also allows for an easy way to override::
+but also allows for an easy way to override:
 
 ```
 $model->addField('salary', ['type' => 'atk4_money', 'precision' => 4']);
@@ -109,7 +109,7 @@ Additionally there is a support for
  - area
  - volume
 
-All measurements are implemented with :php:class:`Units` and can be further extended::
+All measurements are implemented with :php:class:`Units` and can be further extended:
 
 ```
 $model->addField('speed', ['Units', 'postfix' => '/s', 'scale' => ['m' => 1, 'km' => 1000]]);

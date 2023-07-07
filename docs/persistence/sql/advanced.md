@@ -11,19 +11,19 @@ The class tries to get out of your way as much as possible.
 ### Using DSQL without Connection
 
 You can use :php:class:`Query` and :php:class:`Expression` without connection
-at all. Simply create expression::
+at all. Simply create expression:
 
 ```
 $expr = new Mysql\Expression('show tables like []', ['foo%']);
 ```
 
-or query::
+or query:
 
 ```
 $query = (new Mysql\Query())->table('user')->where('id', 1);
 ```
 
-When it's time to execute you can specify your Connection manually::
+When it's time to execute you can specify your Connection manually:
 
 ```
 $rows = $expr->getRows($connection);
@@ -32,7 +32,7 @@ foreach ($rows as $row) {
 }
 ```
 
-With queries you might need to select mode first::
+With queries you might need to select mode first:
 
 ```
 $stmt = $query->mode('delete')->executeStatement($connection);
@@ -46,7 +46,7 @@ see `Manual Query Execution`_.
 
 If you use DSQL inside another framework, it's possible that there is already
 a PDO object which you can use. In Laravel you can optimize some of your queries
-by switching to DSQL::
+by switching to DSQL:
 
 ```
 $c = new Connection(['connection' => $pdo]);
@@ -74,7 +74,7 @@ results too.
         id in (SELECT user_id from expired_users)
 
 If you are creating :php:class:`Connection` through constructor, you may have
-to explicitly specify property :php:attr:`Connection::queryClass`::
+to explicitly specify property :php:attr:`Connection::queryClass`:
 
 ```
 $c = new Connection(['connection' => $pdo, 'queryClass' => Atk4\Data\Persistence\Sql\Sqlite\Query::class]);
@@ -89,7 +89,7 @@ namespace and wish to use it.
 
 You can add support for new database vendors by creating your own
 :php:class:`Query` class.
-Let's say you want to add support for new SQL vendor::
+Let's say you want to add support for new SQL vendor:
 
 ```
 class Query_MyVendor extends Atk4\Data\Persistence\Sql\Query
@@ -113,7 +113,7 @@ class Query_MyVendor extends Atk4\Data\Persistence\Sql\Query
 ```
 
 Now that our custom query class is complete, we would like to use it by default
-on the connection::
+on the connection:
 
 ```
 $c = \Atk4\Data\Persistence\Sql\Connection::connect($dsn, $user, $pass, ['queryClass' => 'Query_MyVendor']);
@@ -167,7 +167,7 @@ query "LOAD DATA INFILE":
 3. Re-use existing methods/template tags if you can.
 4. Create _render method if your tag rendering is complex.
 
-So to implement our task, you might need a class like this::
+So to implement our task, you might need a class like this:
 
 ```
 use \Atk4\Data\Persistence\Sql\Exception;
@@ -191,7 +191,7 @@ class QueryMysqlCustom extends \Atk4\Data\Persistence\Sql\Mysql\Query
 }
 ```
 
-Then to use your new statement, you can do::
+Then to use your new statement, you can do:
 
 ```
 $c->dsql()->file('abc.csv')->loadData();
@@ -225,7 +225,7 @@ be possible. You also risk injection or expose some sensitive data to the user.
     :param string|array $message: Describes the problem
     :param int          $code:    Error code
 
-Usage::
+Usage:
 
 ```
 throw new Atk4\Data\Persistence\Sql\Exception('Hello');

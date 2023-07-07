@@ -10,7 +10,7 @@ a user-friendly way of specifying data through an array.
 ## Usage
 
 This is most useful when working with "sample" code, where you want to see your
-results quick::
+results quick:
 
 ```
 $table->setModel(new Model(new Persistence\Static_([
