@@ -63,7 +63,8 @@ Action (see :ref:`Action`)
 
 ### Persistence Domain vs Business Domain
 
-.. image:: images/bd-vs-pd.png
+:::{image} images/bd-vs-pd.png
+:::
 
 It is very important to understand that there are two "domains" when it comes
 to your data. If you have used ORM, ActiveRecord or QueryBuilders, you will be
@@ -135,10 +136,12 @@ $m = $m->loadAny();
 $m->get();
 ```
 
-.. note:: Should the "addCondition" be located inside model definition or
-    inside your inline code? To answer this question - think - would
-    Model_ContactInfo have application without the condition? If yes then
-    either use addCondition in-line or create 2 classes.
+:::{note}
+Should the "addCondition" be located inside model definition or
+inside your inline code? To answer this question - think - would
+Model_ContactInfo have application without the condition? If yes then
+either use addCondition in-line or create 2 classes.
+:::
 
 ### Model State
 
@@ -283,10 +286,13 @@ $m = new Model_User($db, 'user2'); // will use a different table
 $m = new Model_User($db, ['table' => 'user2']); // same
 ```
 
-.. note:: If you're trying those lines, you will also have to
-    create this new table inside your MySQL database::
-
-        create table user2 as select * from user
+:::{note}
+If you're trying those lines, you will also have to
+create this new table inside your MySQL database::
+```
+create table user2 as select * from user
+```
+:::
 
 As I mentioned - :php:meth:`Model::init` is called when model is associated
 with persistence. You could create model and associate it with persistence
@@ -404,17 +410,21 @@ var_dump($a); // shows you stored data
 This time our Model_User logic has worked pretty well with Array-only
 persistence logic.
 
-.. note:: Persisting into Array or MongoDB are not fully functional as of 1.0
-    version. We plan to expand this functionality soon, see our development
-    [roadmap](https://github.com/atk4/data#roadmap).
+:::{note}
+Persisting into Array or MongoDB are not fully functional as of 1.0
+version. We plan to expand this functionality soon, see our development
+[roadmap](https://github.com/atk4/data#roadmap).
+:::
 
 ## References between Models
 
 Your application normally uses multiple business entities and they can be
 related to each-other.
 
-.. warning:: Do not mix-up business model references with database relations
-    (foreign keys).
+:::{warning}
+Do not mix-up business model references with database relations
+(foreign keys).
+:::
 
 References are defined by calling :php:meth:`Model::hasOne()` or
 :php:meth:`Model::hasMany()`. You always specify destination model and you can

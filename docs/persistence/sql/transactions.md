@@ -48,6 +48,8 @@ It is recommended to always use atomic() in your code.
 
 
 
-.. warning:: If you roll-back internal transaction and commit external
-    transaction, then result might be unpredictable.
-    Please discuss this https://github.com/atk4/dsql/issues/89
+:::{warning}
+If you roll-back internal transaction and commit external
+transaction, then result might be unpredictable.
+Please discuss this https://github.com/atk4/dsql/issues/89
+:::

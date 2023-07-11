@@ -15,5 +15,6 @@ In most cases developers will expect your generator to return sequence
 of id => hash representing a key/value result set.
 
 
-.. todo::
+:::{todo}
 write more
+:::

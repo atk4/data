@@ -4,8 +4,9 @@ Agile Data is a unique SQL/NoSQL access library that promotes correct Business
 Logic design in your PHP application and implements database access in a
 flexible and scalable way.
 
-.. image:: images/presentation.png
-    :target: https://www.youtube.com/watch?v=XUXZI7123B8
+:::{image} images/presentation.png
+:target: https://www.youtube.com/watch?v=XUXZI7123B8
+:::
 
 ## Simple to learn
 
@@ -58,9 +59,11 @@ If you have worked with other ORMs, read the following sections to avoid confusi
 - Handles value normalization
 - Documentation: :php:class:`Field`
 
-.. note:: Meta-information may be a persistence detail, (:php:attr:`Field::actual`)
-    or presentation detail (:php:attr:`Field::ui`). Field class does not interpret
-    the value, it only stores it.
+:::{note}
+Meta-information may be a persistence detail, (:php:attr:`Field::actual`)
+or presentation detail (:php:attr:`Field::ui`). Field class does not interpret
+the value, it only stores it.
+:::
 
 ### Class: Model
 
@@ -71,12 +74,16 @@ If you have worked with other ORMs, read the following sections to avoid confusi
 - Handle operations over single or all records from Data Set
 - Documentation: :php:class:`Model`
 
-.. note:: Model object is defined in such a way to contain enough information to
-    fully provide all information for generic UI, or generic API, and generic
-    persistence implementations.
+:::{note}
+Model object is defined in such a way to contain enough information to
+fully provide all information for generic UI, or generic API, and generic
+persistence implementations.
+:::
 
-.. note:: Unlike ORMs Model instances are never created during iterating. Also,
-    in most cases, you never instantiate multiple instances of a model class.
+:::{note}
+Unlike ORMs Model instances are never created during iterating. Also,
+in most cases, you never instantiate multiple instances of a model class.
+:::
 
 ### Class: Persistence
 
@@ -142,9 +149,11 @@ expressions (such as `vat`+`net`).
 
 A typical method of your model class will be written in "domain-model" code.
 
-.. note:: the actual execution and number of queries may vary based on
-    capabilities of persistence. The above example executes a total of 2 queries
-    if used with SQL database.
+:::{note}
+the actual execution and number of queries may vary based on
+capabilities of persistence. The above example executes a total of 2 queries
+if used with SQL database.
+:::
 
 ### Persistence-specific code
 

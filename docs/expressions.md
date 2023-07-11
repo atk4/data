@@ -208,6 +208,8 @@ $m->save();
 echo $m->get('a')+$m->get('b'); // outputs 14
 ```
 
-.. note:: If your model is using reloadAfterSave, but you wish to insert
-    data without additional query - use :php:meth:`Model::insert()` or
-    :php:meth:`Model::import()`.
+:::{note}
+If your model is using reloadAfterSave, but you wish to insert
+data without additional query - use :php:meth:`Model::insert()` or
+:php:meth:`Model::import()`.
+:::

@@ -44,8 +44,9 @@ $query->where($query->expr(
 // Produces: where :a between `time_from` and `time_to`
 ```
 
-.. todo::
-    add more info or more precise example of Expressionable interface usage.
+:::{todo}
+add more info or more precise example of Expressionable interface usage.
+:::
 
 
 Another uses for expressions could be:
@@ -187,9 +188,9 @@ Finally, you can pass connection class into :php:meth:`executeQuery` directly.
 
     returns `Doctrine\DBAL\Result`.
 
-.. todo::
-
-    Complete this when ResultSet and Connection are implemented
+:::{todo}
+Complete this when ResultSet and Connection are implemented
+:::
 
 
 .. php:method:: expr($template, $arguments)

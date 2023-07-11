@@ -314,9 +314,11 @@ $this->addCalculatedField('interest', ['expr' => function (self $m) {
 }, 'type' => 'float']);
 ```
 
-.. important:: always use argument `$m` instead of `$this` inside your callbacks. If model is to be
-   cloned, the code relying on `$this` would reference original model, but the code using
-   `$m` will properly address the model which triggered the callback.
+:::{important}
+always use argument `$m` instead of `$this` inside your callbacks. If model is to be
+cloned, the code relying on `$this` would reference original model, but the code using
+`$m` will properly address the model which triggered the callback.
+:::
 
 This can also be useful for calculating relative times:
 

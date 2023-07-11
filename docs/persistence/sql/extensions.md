@@ -16,9 +16,9 @@ PostgreSQL  Untested  pgsql:   native, PDO
 
  ========= ======== ============
 
-.. note::
-
-  Most PDO vendors should work out of the box
+:::{note}
+Most PDO vendors should work out of the box
+:::
 
 ### 3rd party vendor support
 

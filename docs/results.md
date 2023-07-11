@@ -30,16 +30,20 @@ foreach ($m as $item) {
 }
 ```
 
-.. warning:: Currently ATK Data does not create new copy of your model object for
-    every row. Instead the same object is re-used, simply $item->getDataRef() is modified
-    by the iterator. For new users this may be surprising that $item is the same
-    object through the iterator, but for now it's the most CPU-efficient way.
+:::{warning}
+Currently ATK Data does not create new copy of your model object for
+every row. Instead the same object is re-used, simply $item->getDataRef() is modified
+by the iterator. For new users this may be surprising that $item is the same
+object through the iterator, but for now it's the most CPU-efficient way.
+:::
 
 Additionally model will execute necessary after-load hooks that might trigger some
 other calculation or validations.
 
-.. note:: changing query parameter during iteration will has no effect until you
-    finish iterating.
+:::{note}
+changing query parameter during iteration will has no effect until you
+finish iterating.
+:::
 
 ### Keeping models
 

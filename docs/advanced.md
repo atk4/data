@@ -453,7 +453,9 @@ from `contact`
     join `inv` on `inv`.`contact_id`=`contact`.`id`
 ```
 
-.. note:: Supported since MySQL 8.x, MariaDB supported it earlier.
+:::{note}
+Supported since MySQL 8.x, MariaDB supported it earlier.
+:::
 
 ## Creating Many to Many relationship
 

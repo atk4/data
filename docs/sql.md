@@ -397,7 +397,9 @@ class Client extends \Atk4\Data\Model
 
 ### as a Model Field
 
-.. important:: Not all SQL vendors may support this approach.
+:::{important}
+Not all SQL vendors may support this approach.
+:::
 
 :php:meth:`Model::addExpression` is a SQL extension that allow you to define
 any expression for your field query. You can use SQL stored function for data
@@ -430,7 +432,9 @@ where once again, stored function is hidden.
 
 ### as an Action
 
-.. important:: Not all SQL vendors may support this approach.
+:::{important}
+Not all SQL vendors may support this approach.
+:::
 
 Method :php:meth:`Persistence\Sql::action` and :php:meth:`Model::action`
 generates queries for most of model operations.  By re-defining this method,
@@ -502,7 +506,9 @@ class NominalReport extends \Atk4\Data\Model
 
 ### as an Model Source
 
-.. important:: Not all SQL vendors may support this approach.
+:::{important}
+Not all SQL vendors may support this approach.
+:::
 
 Technically you can also specify expression as a $table property of your model:
 

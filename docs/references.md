@@ -76,7 +76,9 @@ select * from order where user_id in ($ids)
 Since we are using `$dbArrayCache`, then field values will actually
 be retrieved from memory.
 
-.. note:: This is not implemented as of 1.1.0, see https://github.com/atk4/data/issues/158
+:::{note}
+This is not implemented as of 1.1.0, see https://github.com/atk4/data/issues/158
+:::
 
 ### Safety and Performance
 
@@ -95,9 +97,11 @@ foreach ($order as $o) {
 }
 ```
 
-.. warning:: This code is seriously flawed and is called "N+1 Problem".
-    Agile Data discourages you from using this and instead offers you many
-    other tools: field importing, model joins, field actions and refLink().
+:::{warning}
+This code is seriously flawed and is called "N+1 Problem".
+Agile Data discourages you from using this and instead offers you many
+other tools: field importing, model joins, field actions and refLink().
+:::
 
 ## hasMany Reference
 
@@ -268,7 +272,9 @@ or 'field':
 ->addField('paid_amount', ['aggregate' => 'count', 'field' => new \Atk4\Data\Persistence\Sql\Expression('*')]);
 ```
 
-.. note:: as of 1.3.4 count's field defaults to `*` - no need to specify explicitly.
+:::{note}
+as of 1.3.4 count's field defaults to `*` - no need to specify explicitly.
+:::
 
 ## hasMany / refLink / refModel
 
@@ -411,11 +417,12 @@ $u->hasOne('address_id', ['model' => $a])
 Above, all `address_` fields are copied with the same name, however field
 'notes' from Address model will be called 'address_notes' inside user model.
 
-.. important::
-    When importing fields, they will preserve type, e.g. if you are importing
-    'date' then the type of your imported field will also be date. Imported
-    fields are also marked as "read-only" and attempt to change them will result
-    in exception.
+:::{important}
+When importing fields, they will preserve type, e.g. if you are importing
+'date' then the type of your imported field will also be date. Imported
+fields are also marked as "read-only" and attempt to change them will result
+in exception.
+:::
 
 ### Importing hasOne Title
 

@@ -209,7 +209,9 @@ $m->save(); // stores creation time just fine and also will loade it.
 ```
 
 
-.. note:: If you have been following our "Domain" vs "Persistence" then you can
+:::{note}
+If you have been following our "Domain" vs "Persistence" then you can
+:::
 ```
 probably see that all of the above functionality described in this section
 apply only to the "Domain" model.
@@ -301,7 +303,9 @@ I wanted to draw your attention to the use of field flags:
 
 ### Dates and Time
 
-.. todo:: this section might need cleanup
+:::{todo}
+this section might need cleanup
+:::
 
 There are 3 datetime formats supported:
 
@@ -380,13 +384,13 @@ $m->load(123)->duplicate()->setId(124)->save();
 Now the record 124 will be replaced with the data taken from record 123.
 For SQL that means calling 'replace into x'.
 
-.. warning::
+:::{warning}
+There is no special treatment for joins() when duplicating records, so your
+new record will end up referencing the same joined record. If the join is
+reverse then your new record may not load.
 
-    There is no special treatment for joins() when duplicating records, so your
-    new record will end up referencing the same joined record. If the join is
-    reverse then your new record may not load.
-
-    This will be properly addressed in a future version of Agile Data.
+This will be properly addressed in a future version of Agile Data.
+:::
 
 ## Working with Multiple DataSets
 
@@ -503,12 +507,12 @@ want to store the record inside a different database. As we are looking into
 use-cases, you should keep in mind that with Agile Data Persistence can be
 pretty much anything including 'RestAPI', 'File', 'Memcache' or 'MongoDB'.
 
-.. important::
-
-    Instance of a model can be associated with a single persistence only. Once
-    it is associated, it stays like that. To store a model data into a different
-    persistence, a new instance of your model will be created and then associated
-    with a new persistence.
+:::{important}
+Instance of a model can be associated with a single persistence only. Once
+it is associated, it stays like that. To store a model data into a different
+persistence, a new instance of your model will be created and then associated
+with a new persistence.
+:::
 
 
 .. php:method:: withPersistence($persistence)
