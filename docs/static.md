@@ -2,7 +2,8 @@
 
 # Static Persistence
 
-.. php:class:: Persistence\Static_
+:::{php:class} Persistence\Static_
+:::
 
 Static Persistence extends :php:class:`Persistence\Array_` to implement
 a user-friendly way of specifying data through an array.
@@ -21,7 +22,8 @@ $table->setModel(new Model(new Persistence\Static_([
 
 Lets unwrap the example:
 
-.. php:method:: __construct
+:::{php:method} __construct
+:::
 
 Constructor accepts array as an argument, but the array could be in various forms::
 

@@ -1,8 +1,10 @@
 .. _Fields:
 
-.. php:namespace:: Atk4\Data
+:::{php:namespace} Atk4\Data
+:::
 
-.. php:class:: Field
+:::{php:class} Field
+:::
 
 # Field
 
@@ -15,7 +17,8 @@ persistence sets the property _defaultSeedAddField which should correspond
 to a field object that has enough capabilities for performing field-specific
 mapping into persistence-logic.
 
-.. php:class:: Field
+:::{php:class} Field
+:::
 
 
 Field represents a `property` of your business entity or `column` if you think
@@ -44,7 +47,8 @@ The implementation of Fields is tightly integrated with :php:class:`Model` and
 
 ### Field Type
 
-.. php:attr:: type
+:::{php:attr} type
+:::
 
 
 Probably a most useful quality of Field is that it has a clear type:
@@ -119,24 +123,28 @@ even if you don't use UI.
 This allows you to define your data fields once and have those rules respected
 everywhere in your app - in your manual code, in UI and in API.
 
-.. php:attr:: default
+:::{php:attr} default
+:::
 
 When no value is specified for a field, default value is used when inserting.
 This value will also appear pre-filled inside a Form.
 
-.. php:attr:: enum
+:::{php:attr} enum
+:::
 
 Specifies array containing all the possible options for the value.
 You can set only to one of the values (loosely typed comparison is used).
 
-.. php:attr:: values
+:::{php:attr} values
+:::
 
 Specifies array containing all the possible options for the value.
 Similar with $enum, but difference is that this array is a hash array so
 array keys will be used as values and array values will be used as titles
 for these values.
 
-.. php:attr:: nullable
+:::{php:attr} nullable
+:::
 
 Set this to false if field value must NOT be NULL. Attempting to set field
 value to "NULL" will result in exception.
@@ -150,7 +158,8 @@ $model->set('age', null); // exception
 ```
 
 
-.. php:attr:: required
+:::{php:attr} required
+:::
 
 Set this to true for field that may not contain "empty" value.
 You can't use NULL or any value that is considered empty/false by PHP.
@@ -169,21 +178,25 @@ $model->set('age', null); // exception
 ```
 
 
-.. php:attr:: readOnly
+:::{php:attr} readOnly
+:::
 
 Modifying field that is read-only through set() methods (or array access) will
 result in exception. :php:class:`SqlExpressionField` is read-only by default.
 
-.. php:attr:: actual
+:::{php:attr} actual
+:::
 
 Specify name of the Table Row Field under which field will be persisted.
 
-.. php:attr:: join
+:::{php:attr} join
+:::
 
 This property will point to :php:class:`Join` object if field is associated
 with a joined table row.
 
-.. php:attr:: system
+:::{php:attr} system
+:::
 
 System flag is intended for fields that are important to have inside hooks
 or some core logic of a model. System fields will always be appended to
@@ -192,29 +205,34 @@ or grids (see :php:meth:`Field::isVisible`, :php:meth:`Field::isEditable`).
 
 Adding condition on a field will also make it system.
 
-.. php:attr:: neverPersist
+:::{php:attr} neverPersist
+:::
 
 Field will never be loaded or saved into persistence. You can use this flag
 for fields that physically are not located in the database, yet you want to see
 this field in beforeSave hooks.
 
-.. php:attr:: neverSave
+:::{php:attr} neverSave
+:::
 
 This field will be loaded normally, but will not be saved in a database.
 Unlike "readOnly" which has a similar effect, you can still change the value
 of this field. It will simply be ignored on save. You can create some logic in
 beforeSave hook to read this value.
 
-.. php:attr:: ui
+:::{php:attr} ui
+:::
 
 This field contains certain arguments that may be needed by the UI layer to know
 if user should be allowed to edit this field.
 
-.. php:method:: set
+:::{php:method} set
+:::
 
 Set the value of the field. Same as $model->set($fieldName, $value);
 
-.. php:method:: setNull
+:::{php:method} setNull
+:::
 
 Set field value to NULL. This will bypass "nullable" and "required" checks and
 should only be used if you are planning to set a different value to the field
@@ -236,7 +254,8 @@ $model->save(); // still getting exception here
 
 See also :php:method:`Model::setNull`.
 
-.. php:method:: get
+:::{php:method} get
+:::
 
 Get the value of the field. Same as $model->get($fieldName);
 
@@ -252,16 +271,19 @@ Agile Data does not regulate the :php:attr:`Field::ui` property and different
 UI frameworks may use it differently.
 
 
-.. php:method:: isEditable
+:::{php:method} isEditable
+:::
 
 Returns true if UI should render this field as editable and include inside
 forms by default.
 
-.. php:method:: isVisible
+:::{php:method} isVisible
+:::
 
 Returns true if UI should render this field in Grid and other readOnly display
 views by default.
 
-.. php:method:: isHidden
+:::{php:method} isHidden
+:::
 
 Returns true if UI should not render this field in views.

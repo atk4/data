@@ -1,13 +1,15 @@
 # Fetching results
 
-.. php:class:: Model
+:::{php:class} Model
+:::
 
 Model linked to a persistence is your "window" into DataSet and you get several
 ways which allow you to fetch the data.
 
 ## Iterate through model data
 
-.. php:method:: getIterator()
+:::{php:method} getIterator()
+:::
 
 Create your persistence object first then iterate it:
 
@@ -59,7 +61,8 @@ foreach (new Model_Category($db) as $id => $c) {
 
 ### Raw Data Fetching
 
-.. php:method:: getRawIterator()
+:::{php:method} getRawIterator()
+:::
 
 If you do not care about the hooks and simply wish to get the data, you can fetch
 it:
@@ -73,7 +76,8 @@ foreach ($m->getRawIterator() as $row) {
 The $row will also contain value for "id" and it's up to you to find it yourself
 if you need it.
 
-.. php:method:: export()
+:::{php:method} export()
+:::
 
 Will fetch and output array of hashes which will represent entirety of data-set.
 Similarly to other methods, this will have the data mapped into your fields for

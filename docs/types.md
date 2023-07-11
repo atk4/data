@@ -1,4 +1,5 @@
-.. php:namespace:: Atk4\Data\Field
+:::{php:namespace} Atk4\Data\Field
+:::
 
 # Data Types
 

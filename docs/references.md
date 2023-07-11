@@ -2,9 +2,11 @@
 
 # References
 
-.. php:class:: Model
+:::{php:class} Model
+:::
 
-.. php:method:: ref($link, $details = []);
+:::{php:method} ref($link, $details = []);
+:::
 
 Models can relate one to another. The logic of traversing references, however,
 is slightly different to the traditional ORM implementation, because in Agile
@@ -105,7 +107,8 @@ other tools: field importing, model joins, field actions and refLink().
 
 ## hasMany Reference
 
-.. php:method:: hasMany($link, ['model' => $model]);
+:::{php:method} hasMany($link, ['model' => $model]);
+:::
 
 There are several ways how to link models with hasMany:
 
@@ -278,7 +281,8 @@ as of 1.3.4 count's field defaults to `*` - no need to specify explicitly.
 
 ## hasMany / refLink / refModel
 
-.. php:method:: refLink($link)
+:::{php:method} refLink($link)
+:::
 
 Normally ref() will return a usable model back to you, however if you use refLink then
 the conditioning will be done differently. refLink is useful when defining
@@ -309,7 +313,8 @@ from user
 where is_vip = 1
 ```
 
-.. php:method:: refModel($link)
+:::{php:method} refModel($link)
+:::
 
 There are many situations when you need to get referenced model instead of
 reference itself. In such case refModel() comes in as handy shortcut of doing
@@ -317,9 +322,9 @@ reference itself. In such case refModel() comes in as handy shortcut of doing
 
 ## hasOne reference
 
-.. php:method:: hasOne($link, ['model' => $model])
-
-    $model can be an array containing options: [$model, ...]
+:::{php:method} hasOne($link, ['model' => $model])
+$model can be an array containing options: [$model, ...]
+:::
 
 
 This reference allows you to attach a related model to a foreign key:
@@ -470,7 +475,8 @@ $i->hasOne('currency_id', ['model' => [Currency::class]])
 
 ## User-defined Reference
 
-.. php:method:: addReference($link, $callback)
+:::{php:method} addReference($link, $callback)
+:::
 
 Sometimes you would want to have a different type of relation between models,
 so with `addReference` you can define whatever reference you want:
@@ -720,42 +726,42 @@ hook, which will update address_id field of the $m.
 
 References are implemented through several classes:
 
-.. php:class:: Reference\HasOne
+:::{php:class} Reference\HasOne
+Defines generic reference, that is typically created by :php:meth:`Model::addReference`
+:::
 
-    Defines generic reference, that is typically created by :php:meth:`Model::addReference`
+:::{php:attr} tableAlias
+Alias for related table. Because multiple references can point to the same
+table, ability to have unique alias is pretty good.
 
-.. php:attr:: tableAlias
+You don't have to change this property, it is generated automatically.
+:::
 
-    Alias for related table. Because multiple references can point to the same
-    table, ability to have unique alias is pretty good.
+:::{php:attr} link
+What should we pass into owner->ref() to get through to this reference.
+Each reference has a unique identifier, although it's stored
+in Model's elements as '#ref-xx'.
+:::
 
-    You don't have to change this property, it is generated automatically.
+:::{php:attr} model
+May store reference to related model, depending on implementation.
+:::
 
-.. php:attr:: link
+:::{php:attr} ourField
+This is an optional property which can be used by your implementation
+to store field-level relationship based on a common field matching.
+:::
 
-    What should we pass into owner->ref() to get through to this reference.
-    Each reference has a unique identifier, although it's stored
-    in Model's elements as '#ref-xx'.
+:::{php:attr} their_filed
+This is an optional property which can be used by your implementation
+to store field-level relationship based on a common field matching.
+:::
 
-.. php:attr:: model
+:::{php:method} getModel
+Returns referenced model without conditions.
+:::
 
-    May store reference to related model, depending on implementation.
-
-.. php:attr:: ourField
-
-    This is an optional property which can be used by your implementation
-    to store field-level relationship based on a common field matching.
-
-.. php:attr:: their_filed
-
-    This is an optional property which can be used by your implementation
-    to store field-level relationship based on a common field matching.
-
-.. php:method:: getModel
-
-    Returns referenced model without conditions.
-
-.. php:method:: ref
-
-    Returns referenced model WITH conditions. (if possible)
+:::{php:method} ref
+Returns referenced model WITH conditions. (if possible)
+:::
 

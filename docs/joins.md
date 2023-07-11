@@ -1,10 +1,12 @@
 .. _Joins:
 
-.. php:namespace:: Atk4\Data\Model
+:::{php:namespace} Atk4\Data\Model
+:::
 
 # Model from multiple joined tables
 
-.. php:class:: Join
+:::{php:class} Join
+:::
 
 Sometimes model logically contains information that is stored in various places
 in the database. Your database may want to split up logical information into
@@ -125,38 +127,38 @@ will create fields, other joins or expressions but those would be associated
 with a foreign table.
 
 
-.. php:method:: addField
+:::{php:method} addField
+same as :php:meth:`Model::addField` but associates field with foreign table.
+:::
 
-    same as :php:meth:`Model::addField` but associates field with foreign table.
+:::{php:method} join
+same as :php:meth:`Model::join` but links new table with this foreign table.
+:::
 
-.. php:method:: join
+:::{php:method} hasOne
+same as :php:meth:`Model::hasOne` but reference ID field will be associated
+with foreign table.
+:::
 
-    same as :php:meth:`Model::join` but links new table with this foreign table.
+:::{php:method} hasMany
+same as :php:meth:`Model::hasMany` but condition for related model will be
+based on foreign table field and :php:attr:`Reference::theirField` will be
+set to $foreignTable . '_id'.
+:::
 
-.. php:method:: hasOne
+:::{php:method} containsOne
+same as :php:meth:`Model::hasOne` but the data will be stored in
+a field inside foreign table.
 
-    same as :php:meth:`Model::hasOne` but reference ID field will be associated
-    with foreign table.
+Not yet implemented !
+:::
 
-.. php:method:: hasMany
+:::{php:method} containsMany
+same as :php:meth:`Model::hasMany` but the data will be stored in
+a field inside foreign table.
 
-    same as :php:meth:`Model::hasMany` but condition for related model will be
-    based on foreign table field and :php:attr:`Reference::theirField` will be
-    set to $foreignTable . '_id'.
-
-.. php:method:: containsOne
-
-    same as :php:meth:`Model::hasOne` but the data will be stored in
-    a field inside foreign table.
-
-    Not yet implemented !
-
-.. php:method:: containsMany
-
-    same as :php:meth:`Model::hasMany` but the data will be stored in
-    a field inside foreign table.
-
-    Not yet implemented !
+Not yet implemented !
+:::
 
 ### Create and Delete behavior
 
@@ -214,7 +216,8 @@ Joins are implemented like this:
   value of the foreign field will be set to null.
 
 
-.. php:class:: Join\Sql
+:::{php:class} Join\Sql
+:::
 
 ## SQL-specific joins
 

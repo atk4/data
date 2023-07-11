@@ -2,7 +2,8 @@
 
 # Loading and Saving (Persistence)
 
-.. php:class:: Model
+:::{php:class} Model
+:::
 
 Model object represents your real-life business objects such as "Invoice" or "Client".
 The rest of your application works with "Model" objects only and have no knowledge of
@@ -39,50 +40,60 @@ $m = new Model_Invoice();
 $m->setPersistence($db);
 ```
 
-.. php:method:: load
+:::{php:method} load
+Load active record from the DataSet::
 
-    Load active record from the DataSet::
+```
+$m = $m->load(10);
+echo $m->get('name');
+```
 
-        $m = $m->load(10);
-        echo $m->get('name');
+If record not found, will throw exception.
+:::
 
-    If record not found, will throw exception.
+:::{php:method} save($data = [])
+Store active record back into DataSet. If record wasn't loaded, store it as
+a new record::
 
-.. php:method:: save($data = [])
+```
+$m = $m->load(10);
+$m->set('name', 'John');
+$m->save();
+```
 
-    Store active record back into DataSet. If record wasn't loaded, store it as
-    a new record::
+You can pass argument to save() to set() and save()::
 
-        $m = $m->load(10);
-        $m->set('name', 'John');
-        $m->save();
+```
+$m->unload();
+$m->save(['name' => 'John']);
+```
+:::
 
-    You can pass argument to save() to set() and save()::
+:::{php:method} tryLoad
+Same as load() but will return null if record is not found::
 
-        $m->unload();
-        $m->save(['name' => 'John']);
+```
+$m = $m->tryLoad(10);
+```
+:::
 
-.. php:method:: tryLoad
+:::{php:method} unload
+Remove active record and restore model to default state::
 
-    Same as load() but will return null if record is not found::
+```
+$m = $m->load(10);
+$m->unload();
 
-        $m = $m->tryLoad(10);
+$m->set('name', 'New User');
+$m->save(); // creates new user
+```
+:::
 
-.. php:method:: unload
-
-    Remove active record and restore model to default state::
-
-        $m = $m->load(10);
-        $m->unload();
-
-        $m->set('name', 'New User');
-        $m->save(); // creates new user
-
-.. php:method:: delete($id = null)
-
-    Remove current record from DataSet. You can optionally pass ID if you wish
-    to delete a different record. If you pass ID of a currently loaded record,
-    it will be unloaded.
+:::{php:method} delete($id = null)
+Remove current record from DataSet. You can optionally pass ID if you wish
+to delete a different record. If you pass ID of a currently loaded record,
+it will be unloaded.
+:::
 
 ### Inserting Record with a specific ID
 
@@ -326,23 +337,23 @@ Process which converts field values in native PHP format to/from
 database-specific formats is called _`typecasting`. Persistence driver
 implements a necessary type-casting through the following two methods:
 
-.. php:method:: typecastLoadRow($model, $row);
+:::{php:method} typecastLoadRow($model, $row);
+Convert persistence-specific row of data to PHP-friendly row of data.
+:::
 
-    Convert persistence-specific row of data to PHP-friendly row of data.
-
-.. php:method:: typecastSaveRow($model, $row);
-
-    Convert native PHP-native row of data into persistence-specific.
+:::{php:method} typecastSaveRow($model, $row);
+Convert native PHP-native row of data into persistence-specific.
+:::
 
 Row persisting may rely on additional methods, such as:
 
-.. php:method:: typecastLoadField(Field $field, $value);
+:::{php:method} typecastLoadField(Field $field, $value);
+Convert persistence-specific row of data to PHP-friendly row of data.
+:::
 
-    Convert persistence-specific row of data to PHP-friendly row of data.
-
-.. php:method:: typecastSaveField(Field $field, $value);
-
-    Convert native PHP-native row of data into persistence-specific.
+:::{php:method} typecastSaveField(Field $field, $value);
+Convert native PHP-native row of data into persistence-specific.
+:::
 
 ## Duplicating and Replacing Records
 
@@ -352,23 +363,25 @@ to perform operations that may affect other records.
 
 ### Create copy of existing record
 
-.. php:method:: duplicate($id = null)
+:::{php:method} duplicate($id = null)
+Normally, active record stores "id", but when you call duplicate() it
+forgets current ID and as result it will be inserted as new record when you
+execute `save()` next time.
 
-    Normally, active record stores "id", but when you call duplicate() it
-    forgets current ID and as result it will be inserted as new record when you
-    execute `save()` next time.
+If you pass the `$id` parameter, then the new record will be saved under
+a new ID::
 
-    If you pass the `$id` parameter, then the new record will be saved under
-    a new ID::
+```
+// Assume DB with only one record with ID = 123
 
-        // Assume DB with only one record with ID = 123
+// Load and duplicate that record
+$m->load(123)->duplicate()->save();
 
-        // Load and duplicate that record
-        $m->load(123)->duplicate()->save();
-
-        // Now you have 2 records:
-        // one with ID = 123 and another with ID = {next db generated id}
-        echo $m->executeCountQuery();
+// Now you have 2 records:
+// one with ID = 123 and another with ID = {next db generated id}
+echo $m->executeCountQuery();
+```
+:::
 
 ### Duplicate then save under a new ID
 
@@ -407,7 +420,8 @@ If you decide to create new instance, it will provide a `vanilla` copy of model
 without any in-line modifications.
 This can be used in conjunction to escape data-set.
 
-.. php:method:: newInstance($class = null, $options = [])
+:::{php:method} newInstance($class = null, $options = [])
+:::
 
 ### Looking for duplicates
 
@@ -515,7 +529,8 @@ with a new persistence.
 :::
 
 
-.. php:method:: withPersistence($persistence)
+:::{php:method} withPersistence($persistence)
+:::
 
 ### Creating Cache with Memcache
 
@@ -703,10 +718,10 @@ Action is a multi-row operation that will affect all the records inside DataSet.
 Actions will not affect records outside of DataSet (records that do not match
 conditions)
 
-.. php:method:: action($action, $args = [])
-
-    Prepares a special object representing "action" of a persistence layer based
-    around your current model.
+:::{php:method} action($action, $args = [])
+Prepares a special object representing "action" of a persistence layer based
+around your current model.
+:::
 
 ### Action Types
 

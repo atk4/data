@@ -1,11 +1,13 @@
 .. _DataSet:
 .. _conditions:
 
-.. php:namespace:: Atk4\Data
+:::{php:namespace} Atk4\Data
+:::
 
 # Conditions and DataSet
 
-.. php:class:: Model
+:::{php:class} Model
+:::
 
 When model is associated with the database, you can specify a default table
 either explicitly or through a $table property inside a model:
@@ -31,7 +33,8 @@ logically accessible data for a model before you attempt the loading.
 
 ## Basic Usage
 
-.. php:method:: addCondition($field, $operator = null, $value = null)
+:::{php:method} addCondition($field, $operator = null, $value = null)
+:::
 
 There are many ways to execute addCondition. The most basic one that will be
 supported by all the drivers consists of 2 arguments or if operator is '=':
@@ -181,14 +184,16 @@ inside [blah] should correspond to field names.
 
 ### SQL Expression Matching
 
-.. php:method:: expr($template, $arguments = [])
+:::{php:method} expr($template, $arguments = [])
+Basically is a wrapper to create DSQL Expression, however this will find any
+usage of identifiers inside the template that do not have a corresponding
+value inside $arguments and replace it with the field:
 
-    Basically is a wrapper to create DSQL Expression, however this will find any
-    usage of identifiers inside the template that do not have a corresponding
-    value inside $arguments and replace it with the field::
-
-        $m->expr('[age] > 20'); // same as
-        $m->expr('[age] > 20', ['age' => $m->getField('age')); // same as
+```
+$m->expr('[age] > 20'); // same as
+$m->expr('[age] > 20', ['age' => $m->getField('age')); // same as
+```
+:::
 
 
 
@@ -262,7 +267,8 @@ Using the Model::addCondition method is the basic way to limit the model scope o
 Agile Data utilizes a special set of classes (Condition and Scope) to apply the conditions as filters on records retrieved.
 These classes can be used directly and independently from Model class.
 
-.. php:method:: scope()
+:::{php:method} scope()
+:::
 
 This method provides access to the model scope enabling conditions to be added:
 
@@ -270,7 +276,8 @@ This method provides access to the model scope enabling conditions to be added:
 $contact->scope()->addCondition($condition); // adding condition to a model
 ```
 
-.. php:class:: Scope
+:::{php:class} Scope
+:::
 
 Scope object has a single defined junction (AND or OR) and can contain multiple nested Condition and/or Scope objects referred to as nested conditions.
 This makes creating Model scopes with deep nested conditions possible,
@@ -311,7 +318,8 @@ $contact->scope()->add($condition); // adding condition to a model
 $contact->scope()->add($conditionXYZ); // adding more conditions
 ```
 
-.. php:method:: __construct($nestedConditions = [], $junction = Scope::AND);
+:::{php:method:: __construct($nestedConditions = [], $junction = Scope::AND);
+:::
 
 Creates a Scope object from an array:
 
@@ -323,7 +331,8 @@ $scope1 = new Scope([
 ]);
 ```
 
-.. php:method:: negate();
+:::{php:method} negate();
+:::
 
 Negate method has behind the full map of conditions so any condition object can be negated, e.g negating '>=' results in '<', etc.
 For compound conditionss this method is using De Morgan's laws, e.g:
@@ -334,38 +343,47 @@ For compound conditionss this method is using De Morgan's laws, e.g:
 $scope1->negate();
 ```
 
-.. php:method:: createAnd(...$conditions);
+:::{php:method} createAnd(...$conditions);
+:::
 
 Merge $conditions using AND as junction. Returns the resulting Scope object.
 
-.. php:method:: createOr(...$conditions);
+:::{php:method} createOr(...$conditions);
+:::
 
 Merge $conditions using OR as junction. Returns the resulting Scope object.
 
-.. php:method:: simplify();
+:::{php:method} simplify();
+:::
 
 Peels off single nested conditions. Useful for converting (((field = value))) to field = value.
 
-.. php:method:: clear();
+:::{php:method} clear();
+:::
 
 Clears the condition from nested conditions.
 
-.. php:method:: isOr();
+:::{php:method} isOr();
+:::
 
 Checks if scope components are joined by OR
 
-.. php:method:: isAnd();
+:::{php:method} isAnd();
+:::
 
 Checks if scope components are joined by AND
 
-.. php:namespace:: Atk4\Data\Model\Scope
+:::{php:namespace} Atk4\Data\Model\Scope
+:::
 
-.. php:class:: Condition
+:::{php:class} Condition
+:::
 
 Condition represents a simple condition in a form [field, operation, value], similar to the functionality of the
 Model::addCondition method
 
-.. php:method:: __construct($key, $operator = null, $value = null);
+:::{php:method} __construct($key, $operator = null, $value = null);
+:::
 
 Creates condition object based on provided arguments. It acts similar to Model::addCondition
 
@@ -375,7 +393,8 @@ $value can be Field object, Expression object, array (interpreted as 'any of the
 
 If $value is omitted as argument then $operator is considered as $value and '=' is used as operator
 
-.. php:method:: negate();
+:::{php:method} negate();
+:::
 
 Negates the condition, e.g:
 
@@ -384,7 +403,8 @@ Negates the condition, e.g:
 $condition = (new Condition('name', 'John'))->negate();
 ```
 
-.. php:method:: toWords(Model $model = null);
+:::{php:method} toWords(Model $model = null);
+:::
 
 Converts the condition object to human readable words. Condition must be assigned to a model or model argument provided:
 

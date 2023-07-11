@@ -7,7 +7,8 @@ extensions.
 For current status on database support see: :ref:`databases`.
 
 
-.. php:class:: Connection
+:::{php:class} Connection
+:::
 
 Connection class is handy to have if you plan on building and executing
 queries in your application. It's more appropriate to store
@@ -18,16 +19,16 @@ $app->db = Atk4\Data\Persistence\Sql\Connection::connect($dsn, $user, $pass, $de
 ```
 
 
-.. php:staticmethod:: connect($dsn, $user = null, $password = null, $defaults = [])
+:::{php:staticmethod} connect($dsn, $user = null, $password = null, $defaults = [])
+Determine which Connection class should be used for specified $dsn,
+establish connection to DB by creating new object of this connection class and return.
 
-    Determine which Connection class should be used for specified $dsn,
-    establish connection to DB by creating new object of this connection class and return.
-
-    :param string $dsn: DSN, see https://www.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/configuration.html
-    :param string $user: username
-    :param string $password: password
-    :param array  $defaults: Other default properties for connection class.
-    :returns: new Connection
+:param string $dsn: DSN, see https://www.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/configuration.html
+:param string $user: username
+:param string $password: password
+:param array  $defaults: Other default properties for connection class.
+:returns: new Connection
+:::
 
 
 This should allow you to access this class from anywhere and generate either
@@ -42,19 +43,19 @@ $expr = $app->db->expr('show tables');
 ```
 
 
-.. php:method:: expr($template, $arguments)
+:::{php:method} expr($template, $arguments)
+Creates new Expression class and sets :php:attr:`Expression::connection`.
 
-    Creates new Expression class and sets :php:attr:`Expression::connection`.
+:param array  $arguments: Other default properties for connection class.
+:returns: new Expression
+:::
 
-    :param array  $arguments: Other default properties for connection class.
-    :returns: new Expression
+:::{php:method} dsql($defaults)
+Creates new Query class and sets :php:attr:`Query::connection`.
 
-.. php:method:: dsql($defaults)
-
-    Creates new Query class and sets :php:attr:`Query::connection`.
-
-    :param array  $defaults: Other default properties for connection class.
-    :returns: new Query
+:param array  $defaults: Other default properties for connection class.
+:returns: new Query
+:::
 
 
 Here is how you can use all of this together:
@@ -74,26 +75,26 @@ class.
 Connection class is also responsible for executing queries. This is only used
 if you connect to vendor that does not use PDO.
 
-.. php:method:: execute(Expression $expr): \Doctrine\DBAL\Result
+:::{php:method} execute(Expression $expr): \Doctrine\DBAL\Result
+Creates new Expression class and sets :php:attr:`Expression::connection`.
 
-    Creates new Expression class and sets :php:attr:`Expression::connection`.
+:param Expression  $expr: Expression (or query) to execute
+:returns: `Doctrine\DBAL\Result`
+:::
 
-    :param Expression  $expr: Expression (or query) to execute
-    :returns: `Doctrine\DBAL\Result`
+:::{php:method} registerConnectionClass($connectionClass, $connectionType)
+Adds connection class to the registry for resolving in Connection::resolveConnectionClass method.
 
-.. php:method:: registerConnectionClass($connectionClass, $connectionType)
-
-    Adds connection class to the registry for resolving in Connection::resolveConnectionClass method.
-
-    :param string $connectionType Alias of the connection
-    :param string $connectionClass The connection class to be used for the diver type
+:param string $connectionType Alias of the connection
+:param string $connectionClass The connection class to be used for the diver type
+:::
 
 Developers can register custom classes to handle driver types using the `Connection::registerConnectionClass` method::
 
    Connection::registerConnectionClass(Custom\MySQL\Connection::class, 'pdo_mysql');
 
-.. php:method:: connectDbalConnection(array $dsn)
-
-   The method should establish connection with DB and return the underlying connection object used by
-   the `Connection` class. By default PDO is used but the method can be overridden to return custom object to be
-   used for connection to DB.
+:::{php:method} connectDbalConnection(array $dsn)
+The method should establish connection with DB and return the underlying connection object used by
+the `Connection` class. By default PDO is used but the method can be overridden to return custom object to be
+used for connection to DB.
+:::

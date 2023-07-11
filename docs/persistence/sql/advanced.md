@@ -211,19 +211,20 @@ query yourself.
 
 DSQL slightly extends and improves :php:class:`Exception` class
 
-.. php:class:: Exception
+:::{php:class} Exception
+:::
 
 The main goal of the new exception is to be able to accept additional
 information in addition to the message. We realize that often $e->getMessage()
 will be localized, but if you stick some variables in there, this will no longer
 be possible. You also risk injection or expose some sensitive data to the user.
 
-.. php:method:: __construct($message, $code)
+:::{php:method} __construct($message, $code)
+Create new exception
 
-    Create new exception
-
-    :param string|array $message: Describes the problem
-    :param int          $code:    Error code
+:param string|array $message: Describes the problem
+:param int          $code:    Error code
+:::
 
 Usage:
 
@@ -237,11 +238,11 @@ throw (new Atk4\Data\Persistence\Sql\Exception('File is not readable'))
 When displayed to the user the exception will hide parameter for $file, but you
 still can get it if you really need it:
 
-.. php:method:: getParams()
+:::{php:method} getParams()
+Return additional parameters, that might be helpful to find error.
 
-    Return additional parameters, that might be helpful to find error.
-
-    :returns: array
+:returns: array
+:::
 
 Any DSQL-related code must always throw Atk4\Data\Persistence\Sql\Exception. Query-related
 errors will generate PDO exceptions. If you use a custom connection and doing

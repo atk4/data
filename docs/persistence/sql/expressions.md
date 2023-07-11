@@ -1,6 +1,7 @@
 .. _expr:
 
-.. php:class:: Expression
+:::{php:class} Expression
+:::
 
 # Expressions
 
@@ -153,10 +154,10 @@ that SQL injections could not be introduced at any stage.
 An expression can be rendered into a valid SQL code by calling render() method.
 The method will return an array with string and params.
 
-.. php:method:: render()
-
-    Converts :php:class:`Expression` object to an array with string and params.
-    Parameters are replaced with :a, :b, etc.
+:::{php:method} render()
+Converts :php:class:`Expression` object to an array with string and params.
+Parameters are replaced with :a, :b, etc.
+:::
 
 ## Executing Expressions
 
@@ -179,83 +180,91 @@ $query = new \Atk4\Data\Persistence\Sql\Mysql\Query('connection' => $connection)
 
 Finally, you can pass connection class into :php:meth:`executeQuery` directly.
 
-.. php:method:: executeQuery($connection = null)
+:::{php:method} executeQuery($connection = null)
+Executes expression using current database connection or the one you
+specify as the argument::
 
-    Executes expression using current database connection or the one you
-    specify as the argument::
+```
+$stmt = $expr->executeQuery($connection);
 
-        $stmt = $expr->executeQuery($connection);
-
-    returns `Doctrine\DBAL\Result`.
+returns `Doctrine\DBAL\Result`.
+```
+:::
 
 :::{todo}
 Complete this when ResultSet and Connection are implemented
 :::
 
 
-.. php:method:: expr($template, $arguments)
+:::{php:method} expr($template, $arguments)
+Creates a new :php:class:`Expression` object that will inherit current
+:php:attr:`$connection` property. Also if you are creating a
+vendor-specific expression/query support, this method must return
+instance of your own version of Expression class.
 
-    Creates a new :php:class:`Expression` object that will inherit current
-    :php:attr:`$connection` property. Also if you are creating a
-    vendor-specific expression/query support, this method must return
-    instance of your own version of Expression class.
+The main principle here is that the new object must be capable of working
+with database connection.
+:::
 
-    The main principle here is that the new object must be capable of working
-    with database connection.
+:::{php:method} getRows()
+Executes expression and return whole result-set in form of array of hashes::
 
-.. php:method:: getRows()
+```
+$data = $connection->expr('show databases')->getRows();
+echo json_encode($data);
+```
 
-    Executes expression and return whole result-set in form of array of hashes::
+The output would be
 
-        $data = $connection->expr('show databases')->getRows();
-        echo json_encode($data);
-
-    The output would be
-
-    .. code-block:: json
-
-        [
-            { "Database": "mydb1" },
-            { "Database": "mysql" },
-            { "Database": "test" },
-        ]
+```json
+[
+    { "Database": "mydb1" },
+    { "Database": "mysql" },
+    { "Database": "test" },
+]
+```
+:::
 
 
-.. php:method:: getRow()
+:::{php:method} getRow()
+Executes expression and returns first row of data from result-set as a hash::
 
-    Executes expression and returns first row of data from result-set as a hash::
+```
+$data = $connection->expr('SELECT @@global.time_zone, @@session.time_zone')->getRow()
 
-        $data = $connection->expr('SELECT @@global.time_zone, @@session.time_zone')->getRow()
+echo json_encode($data);
+```
 
-        echo json_encode($data);
+The output would be
 
-    The output would be
+```json
+{ "@@global.time_zone": "SYSTEM", "@@session.time_zone": "SYSTEM" }
+```
+:::
 
-    .. code-block:: json
+:::{php:method} getOne()
+Executes expression and return first value of first row of data from
+result-set::
 
-        { "@@global.time_zone": "SYSTEM", "@@session.time_zone": "SYSTEM" }
-
-.. php:method:: getOne()
-
-    Executes expression and return first value of first row of data from
-    result-set::
-
-        $time = $connection->expr('NOW()')->getOne();
+```
+$time = $connection->expr('NOW()')->getOne();
+```
+:::
 
 ## Magic an Debug Methods
 
-.. php:method:: __debugInfo()
+:::{php:method} __debugInfo()
+This method is used to prepare a sensible information about your query
+when you are executing `var_dump($expr)`. The output will be HTML-safe.
+:::
 
-    This method is used to prepare a sensible information about your query
-    when you are executing `var_dump($expr)`. The output will be HTML-safe.
+:::{php:method} getDebugQuery()
+Outputs query as a string by placing parameters into their respective
+places. The parameters will be escaped, but you should still avoid using
+generated query as it can potentially make you vulnerable to SQL injection.
 
-.. php:method:: getDebugQuery()
-
-    Outputs query as a string by placing parameters into their respective
-    places. The parameters will be escaped, but you should still avoid using
-    generated query as it can potentially make you vulnerable to SQL injection.
-
-    This method will use HTML formatting if argument is passed.
+This method will use HTML formatting if argument is passed.
+:::
 
 In order for HTML parsing to work and to make your debug queries better
 formatted, install `sql-formatter`:
@@ -269,33 +278,33 @@ composer require jdorn/sql-formatter
 The following methods are useful if you're building your own code for rendering
 parts of the query. You must not call them in normal circumstances.
 
-.. php:method::consume($expression, string $escapeMode = self::ESCAPE_PARAM)
-
-  Makes `$sqlCode` part of `$this` expression. Argument may be either a string
-  (which will be escaped) or another :php:class:`Expression` or :php:class:`Query`.
-  If specified :php:class:`Query` is in "select" mode, then it's automatically
-  placed inside brackets:
+:::{php:method::consume($expression, string $escapeMode = self} ESCAPE_PARAM)
+Makes `$sqlCode` part of `$this` expression. Argument may be either a string
+(which will be escaped) or another :php:class:`Expression` or :php:class:`Query`.
+If specified :php:class:`Query` is in "select" mode, then it's automatically
+placed inside brackets:
+:::
 
 ```
 $query->consume('first_name'); // `first_name`
 $query->consume($otherQuery); // will merge parameters and return string
 ```
 
-.. php:method:: escapeIdentifier($sqlCode)
+:::{php:method} escapeIdentifier($sqlCode)
+Always surrounds `$sql code` with back-ticks.
 
-  Always surrounds `$sql code` with back-ticks.
+This escaping method is automatically used for `{...}` expression template tags .
+:::
 
-  This escaping method is automatically used for `{...}` expression template tags .
+:::{php:method} escapeIdentifierSoft($sqlCode)
+Surrounds `$sql code` with back-ticks.
 
-.. php:method:: escapeIdentifierSoft($sqlCode)
+This escaping method is automatically used for `{{...}}` expression template tags .
 
-  Surrounds `$sql code` with back-ticks.
+It will smartly escape table.field type of strings resulting in `table`.`field`.
 
-  This escaping method is automatically used for `{{...}}` expression template tags .
-
-  It will smartly escape table.field type of strings resulting in `table`.`field`.
-
-  Will do nothing if it finds "*", "`" or "(" character in `$sqlCode`:
+Will do nothing if it finds "*", "`" or "(" character in `$sqlCode`:
+:::
 
 ```
 $query->escapeIdentifierSoft('first_name'); // `first_name`
@@ -304,37 +313,37 @@ $query->escapeIdentifierSoft('(2 + 2)'); // (2 + 2)
 $query->escapeIdentifierSoft('*'); // *
 ```
 
-.. php:method:: escapeParam($value)
+:::{php:method} escapeParam($value)
+Converts value into parameter and returns reference. Used only during query
+rendering. Consider using :php:meth:`consume()` instead, which will also
+handle nested expressions properly.
 
-    Converts value into parameter and returns reference. Used only during query
-    rendering. Consider using :php:meth:`consume()` instead, which will also
-    handle nested expressions properly.
-
-    This escaping method is automatically used for `[...]` expression template tags .
+This escaping method is automatically used for `[...]` expression template tags .
+:::
 
 
 .. _properties:
 
 ## Other Properties
 
-.. php:attr:: template
+:::{php:attr} template
+Template which is used when rendering.
+You can set this with either `$connection->expr('show tables')`
+or `$connection->expr(['show tables'])`
+or `$connection->expr(['template' => 'show tables'])`.
+:::
 
-    Template which is used when rendering.
-    You can set this with either `$connection->expr('show tables')`
-    or `$connection->expr(['show tables'])`
-    or `$connection->expr(['template' => 'show tables'])`.
+:::{php:attr} connection
+DB connection object.
+:::
 
-.. php:attr:: connection
+:::{php:attr} paramBase
+Normally parameters are named :a, :b, :c. You can specify a different
+param base such as :param_00 and it will be automatically increased
+into :param_01 etc.
+:::
 
-    DB connection object.
-
-.. php:attr:: paramBase
-
-    Normally parameters are named :a, :b, :c. You can specify a different
-    param base such as :param_00 and it will be automatically increased
-    into :param_01 etc.
-
-.. php:attr:: debug
-
-    If true, then next call of :php:meth:`execute` will `echo` results
-    of :php:meth:`getDebugQuery`.
+:::{php:attr} debug
+If true, then next call of :php:meth:`execute` will `echo` results
+of :php:meth:`getDebugQuery`.
+:::

@@ -19,140 +19,169 @@ expressions, joins etc:
 
 ### SQL Field
 
-.. php:class:: FieldSql
+:::{php:class} FieldSql
+:::
 
-.. php:attr:: actual
+:::{php:attr} actual
+:php:class:`Persistence\Sql` supports field name mapping. Your field could
+have different column name in your schema::
 
-    :php:class:`Persistence\Sql` supports field name mapping. Your field could
-    have different column name in your schema::
+```
+$this->addField('name', ['actual' => 'first_name']);
+```
 
-        $this->addField('name', ['actual' => 'first_name']);
+This will apply to load / save operations as well as query mapping.
+:::
 
-    This will apply to load / save operations as well as query mapping.
+:::{php:method} getDsqlExpression
+SQL Fields can be used inside other SQL expressions::
 
-.. php:method:: getDsqlExpression
-
-    SQL Fields can be used inside other SQL expressions::
-
-        $q = $connection->expr('[age] + [birth_year]', [
-                'age' => $m->getField('age'),
-                'birth_year' => $m->getField('birth_year'),
-            ]);
+```
+$q = $connection->expr('[age] + [birth_year]', [
+    'age' => $m->getField('age'),
+    'birth_year' => $m->getField('birth_year'),
+]);
+```
+:::
 
 ### SQL Reference
 
-.. php:class:: Reference\HasOneSql
+:::{php:class} Reference\HasOneSql
+Extends :php:class:`Reference\HasOne`
+:::
 
-    Extends :php:class:`Reference\HasOne`
+:::{php:method} addField
+Allows importing field from a referenced model::
 
-.. php:method:: addField
+```
+$model->hasOne('country_id', ['model' => [Country::class]])
+    ->addField('country_name', 'name');
+```
 
-    Allows importing field from a referenced model::
+Second argument could be array containing additional settings for the field::
 
-        $model->hasOne('country_id', ['model' => [Country::class]])
-            ->addField('country_name', 'name');
+```
+$model->hasOne('account_id', ['model' => [Account::class]])
+    ->addField('account_balance', ['balance', 'type' => 'atk4_money']);
+```
 
-    Second argument could be array containing additional settings for the field::
+Returns new field object.
+:::
 
-        $model->hasOne('account_id', ['model' => [Account::class]])
-            ->addField('account_balance', ['balance', 'type' => 'atk4_money']);
+:::{php:method} addFields
+Allows importing multiple fields::
 
-    Returns new field object.
+```
+$model->hasOne('country_id', ['model' => [Country::class]])
+    ->addFields(['country_name', 'country_code']);
+```
 
-.. php:method:: addFields
+You can specify defaults to be applied on all fields::
 
-    Allows importing multiple fields::
+```
+$model->hasOne('account_id', ['model' => [Account::class]])
+    ->addFields([
+        'opening_balance',
+        'balance',
+    ], ['type' => 'atk4_money']);
+```
 
-        $model->hasOne('country_id', ['model' => [Country::class]])
-            ->addFields(['country_name', 'country_code']);
+You can also specify aliases::
 
-    You can specify defaults to be applied on all fields::
+```
+$model->hasOne('account_id', ['model' => [Account::class]])
+    ->addFields([
+        'opening_balance',
+        'account_balance' => 'balance',
+    ], ['type' => 'atk4_money']);
+```
 
-        $model->hasOne('account_id', ['model' => [Account::class]])
-            ->addFields([
-                'opening_balance',
-                'balance',
-            ], ['type' => 'atk4_money']);
+If you need to pass more details to individual field, you can also use sub-array::
 
-    You can also specify aliases::
+```
+$model->hasOne('account_id', ['model' => [Account::class]])
+    ->addFields([
+    [
+        ['opening_balance', 'caption' => 'The Opening Balance'],
+        'account_balance' => 'balance',
+    ], ['type' => 'atk4_money']);
+```
 
-        $model->hasOne('account_id', ['model' => [Account::class]])
-            ->addFields([
-                'opening_balance',
-                'account_balance' => 'balance',
-            ], ['type' => 'atk4_money']);
+Returns $this.
+:::
 
-    If you need to pass more details to individual field, you can also use sub-array::
+:::{php:method} ref
+While similar to :php:meth:`Reference\HasOne::ref` this implementation
+implements deep traversal::
 
-        $model->hasOne('account_id', ['model' => [Account::class]])
-            ->addFields([
-            [
-                ['opening_balance', 'caption' => 'The Opening Balance'],
-                'account_balance' => 'balance',
-            ], ['type' => 'atk4_money']);
+```
+$countryModel = $customerModel->addCondition('is_vip', true)
+    ->ref('country_id'); // $model was not loaded!
+```
+:::
 
-    Returns $this.
+:::{php:method} refLink
+Creates a model for related entity with applied condition referencing field
+of a current model through SQL expression rather then value. This is usable
+if you are creating sub-queries.
+:::
 
-.. php:method:: ref
+:::{php:method} addTitle
+Similar to addField, but will import "title" field and will come up with
+good name for it::
 
-    While similar to :php:meth:`Reference\HasOne::ref` this implementation
-    implements deep traversal::
+```
+$model->hasOne('country_id', ['model' => [Country::class]])
+    ->addTitle();
 
-        $countryModel = $customerModel->addCondition('is_vip', true)
-            ->ref('country_id'); // $model was not loaded!
+// creates 'country' field as sub-query for country.name
+```
 
-.. php:method:: refLink
+You may pass defaults::
 
-    Creates a model for related entity with applied condition referencing field
-    of a current model through SQL expression rather then value. This is usable
-    if you are creating sub-queries.
+```
+$model->hasOne('country_id', ['model' => [Country::class]])
+    ->addTitle(['caption' => 'Country Name']);
+```
 
-.. php:method:: addTitle
-
-    Similar to addField, but will import "title" field and will come up with
-    good name for it::
-
-        $model->hasOne('country_id', ['model' => [Country::class]])
-            ->addTitle();
-
-        // creates 'country' field as sub-query for country.name
-
-    You may pass defaults::
-
-        $model->hasOne('country_id', ['model' => [Country::class]])
-            ->addTitle(['caption' => 'Country Name']);
-
-    Returns new field object.
+Returns new field object.
+:::
 
 ### Expressions
 
-.. php:class:: SqlExpressionField
-
-    Extends :php:class:`FieldSql`
+:::{php:class} SqlExpressionField
+Extends :php:class:`FieldSql`
+:::
 
 Expression will map into the SQL code, but will perform as read-only field otherwise.
 
-.. php:attr:: expr
+:::{php:attr} expr
+Stores expression that you define through DSQL expression::
 
-    Stores expression that you define through DSQL expression::
+```
+$model->addExpression('age', ['expr' => 'year(now()) - [birth_year]']);
+// tag [birth_year] will be automatically replaced by respective model field
+```
+:::
 
-        $model->addExpression('age', ['expr' => 'year(now()) - [birth_year]']);
-        // tag [birth_year] will be automatically replaced by respective model field
+:::{php:method} getDsqlExpression
+SQL Expressions can be used inside other SQL expressions::
 
-.. php:method:: getDsqlExpression
-
-    SQL Expressions can be used inside other SQL expressions::
-
-        $model->addExpression('can_buy_alcohol', ['expr' => 'if([age] > 25, 1, 0)', 'type' => 'boolean']);
+```
+$model->addExpression('can_buy_alcohol', ['expr' => 'if([age] > 25, 1, 0)', 'type' => 'boolean']);
+```
+:::
 
 Adding expressions to model will make it automatically reload itself after save
 as default behavior, see :php:attr:`Model::reloadAfterSave`.
 
 ## Transactions
 
-.. php:class:: Persistence\Sql
+:::{php:class} Persistence\Sql
+:::
 
-.. php:method:: atomic
+:::{php:method} atomic
+:::
 
 This method allows you to execute code within a 'START TRANSACTION / COMMIT' block:
 
@@ -179,11 +208,11 @@ user-defined callback.
 
 ## Custom Expressions
 
-.. php:method:: expr
-
-    This method is also injected into the model, that is associated with
-    `Persistence\Sql` so the most convenient way to use this method is by calling
-    `$model->expr('foo')`.
+:::{php:method} expr
+This method is also injected into the model, that is associated with
+`Persistence\Sql` so the most convenient way to use this method is by calling
+`$model->expr('foo')`.
+:::
 
 This method is quite similar to \Atk4\Data\Persistence\Sql\Query::expr() method explained here:
 http://dsql.readthedocs.io/en/stable/expressions.html
