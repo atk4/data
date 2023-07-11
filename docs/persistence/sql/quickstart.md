@@ -105,22 +105,22 @@ foreach ($salary as $row) {
 
 The above query resulting code will look like this:
 
-.. code-block:: sql
+```sql
+SELECT
+    `emp_no`,
+    max(salary) `max_salary`,
+    TimeStampDiff(month, from_date, to_date) `months`
+FROM
+    `salary`
+JOIN
+    `employees` on `employees`.`emp_id` = `salary`.`emp_id`
+WHERE
+    `salary`.`emp_no` in(select `id` from `employees` where `birth_date` = :a)
+GROUP BY `emp_no`
+ORDER BY max_salary desc
 
-    SELECT
-        `emp_no`,
-        max(salary) `max_salary`,
-        TimeStampDiff(month, from_date, to_date) `months`
-    FROM
-        `salary`
-    JOIN
-        `employees` on `employees`.`emp_id` = `salary`.`emp_id`
-    WHERE
-        `salary`.`emp_no` in(select `id` from `employees` where `birth_date` = :a)
-    GROUP BY `emp_no`
-    ORDER BY max_salary desc
-
-    :a = "1961-05-02"
+:a = "1961-05-02"
+```
 
 Using DSQL in higher level ORM libraries and frameworks allows them to focus on
 defining the database logic, while DSQL can perform the heavy-lifting of query

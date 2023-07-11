@@ -28,14 +28,14 @@ This code will load data from two tables simultaneously and if you do change any
 of those fields they will be update in their respective tables. With SQL the
 load query would look like this:
 
-.. code-block:: sql
-
-    select
-        u.username, c.address, c.county, c.country_id
-        (select name from country where country.id = c.country_id) country
-    from user u
-    join contact c on c.id = u.contact_id
-    where u.id = $id
+```sql
+select
+    u.username, c.address, c.county, c.country_id
+    (select name from country where country.id = c.country_id) country
+from user u
+join contact c on c.id = u.contact_id
+where u.id = $id
+```
 
 If driver is unable to query both tables simultaneously, then it will load one
 record first, then load other record and will collect fields together:
@@ -47,11 +47,11 @@ $contact = $contact->load($user->get('contact_id'));
 
 When saving the record, Joins will automatically record data correctly:
 
-.. code-block:: sql
-
-    insert into contact (address, county, country_id) values ($, $, $);
-    @join_c = last_insert_id();
-    insert into user (username, contact_id) values ($, @join_c)
+```sql
+insert into contact (address, county, country_id) values ($, $, $);
+@join_c = last_insert_id();
+insert into user (username, contact_id) values ($, @join_c)
+```
 
 ### Strong and Weak joins
 

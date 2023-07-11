@@ -503,10 +503,10 @@ This code will attempt to execute a single-query only, however the ability to
 optimize your request relies on the capabilities of database vendor.
 The actual database operation(s) might look like this on SQL database:
 
-.. code-block:: sql
-
-    select count(*) from `order` where user_id in
-        (select id from user where type = "user" and is_vip = 1)
+```sql
+select count(*) from `order` where user_id in
+    (select id from user where type = "user" and is_vip = 1)
+```
 
 While with MongoDB, the query could be different:
 

@@ -64,14 +64,14 @@ The native query builder in the example above populates $userIds with array from
 DSQL we have accomplished same thing with a single query and without fetching
 results too.
 
-.. code-block:: sql
-
-    UPDATE
-        user
-    SET
-        active = 0
-    WHERE
-        id in (SELECT user_id from expired_users)
+```sql
+UPDATE
+    user
+SET
+    active = 0
+WHERE
+    id in (SELECT user_id from expired_users)
+```
 
 If you are creating :php:class:`Connection` through constructor, you may have
 to explicitly specify property :php:attr:`Connection::queryClass`:

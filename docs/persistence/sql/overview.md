@@ -37,10 +37,10 @@ echo 'Employees born on May 2, 1961: ' . $query->getOne();
 
 The above code will execute the following query:
 
-.. code-block:: sql
-
-    select count(*) from `salary` where `birth_date` = :a
-        :a = "1961-05-02"
+```sql
+select count(*) from `salary` where `birth_date` = :a
+    :a = "1961-05-02"
+```
 
 DSQL can also execute queries with multiple sub-queries, joins, expressions
 grouping, ordering, unions as well as queries on result-set.
@@ -78,21 +78,21 @@ for PHP that allows you to declare the dependencies your project has and it
 automatically installs them into your project.
 
 
-.. code-block:: bash
-
-    # Install Composer
-    curl -sS https://getcomposer.org/installer | php
-    php composer.phar require atk4/dsql
+```bash
+# Install Composer
+curl -sS https://getcomposer.org/installer | php
+php composer.phar require atk4/dsql
+```
 
 You can specify DSQL as a project or module dependency in composer.json:
 
-.. code-block:: js
-
-    {
-        "require": {
-            "atk4/dsql": "*"
-        }
+```json
+{
+    "require": {
+        "atk4/dsql": "*"
     }
+}
+```
 
 After installing, you need to require Composer's autoloader in your PHP file:
 
@@ -132,27 +132,27 @@ and how to use it to it's full potential.
 In order to contribute, you'll need to checkout the source from GitHub and
 install DSQL dependencies using Composer:
 
-.. code-block:: bash
-
-    git clone https://github.com/atk4/dsql.git
-    cd dsql && curl -s http://getcomposer.org/installer | php && ./composer.phar install --dev
+```bash
+git clone https://github.com/atk4/dsql.git
+cd dsql && curl -s http://getcomposer.org/installer | php && ./composer.phar install --dev
+```
 
 DSQL is unit tested with PHPUnit. Run the tests using the Makefile:
 
-.. code-block:: bash
-
-    make tests
+```bash
+make tests
+```
 
 There are also vendor-specific test-scripts which will require you to
 set database. To run them:
 
-.. code-block:: bash
+```bash
+# All unit tests including SQLite database engine tests
+phpunit --config phpunit.xml
 
-    # All unit tests including SQLite database engine tests
-    phpunit --config phpunit.xml
-
-    # MySQL database engine tests
-    phpunit --config phpunit-mysql.xml
+# MySQL database engine tests
+phpunit --config phpunit-mysql.xml
+```
 
 Look inside these the .xml files for further information and connection details.
 

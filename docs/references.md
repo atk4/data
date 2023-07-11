@@ -39,11 +39,11 @@ Condition on the base model will be carried over to the orders and you will
 only be able to access orders that belong to VIP users. The query for loading
 order will look like this:
 
-.. code-block:: sql
-
-    select * from order where user_id in (
-        select id from user where is_vip = 1
-    ) limit 1
+```sql
+select * from order where user_id in (
+    select id from user where is_vip = 1
+) limit 1
+```
 
 Argument $defaults will be passed to the new model that will be used to create
 referenced model. This will not work if you have specified reference as existing
@@ -68,10 +68,10 @@ $ordersForVips = $m->ref('Orders');
 Now that a different databases are used, the queries can no longer be
 joined so Agile Data will carry over list of IDs instead:
 
-.. code-block:: sql
-
-    $ids = select id from user where is_vip = 1
-    select * from order where user_id in ($ids)
+```sql
+$ids = select id from user where is_vip = 1
+select * from order where user_id in ($ids)
+```
 
 Since we are using `$dbArrayCache`, then field values will actually
 be retrieved from memory.
@@ -154,11 +154,11 @@ $e = $c->ref('Exchanges');
 
 This will produce the following query:
 
-.. code-block:: sql
-
-    select * from exchange
-    where currency_code in
-        (select code form currency where is_convertible = 1)
+```sql
+select * from exchange
+where currency_code in
+    (select code form currency where is_convertible = 1)
+```
 
 ### Concatenating Fields
 
@@ -289,19 +289,19 @@ $m->addExpression('sum_amount')->set($sum);
 
 The refLink would define a condition on a query like this:
 
-.. code-block:: sql
-
-    select * from `order` where user_id = `user`.id
+```sql
+select * from `order` where user_id = `user`.id
+```
 
 And it will not be viable on its own, however if you use it inside a sub-query,
 then it now makes sense for generating expression:
 
-.. code-block:: sql
-
-    select
-        (select sum(amount) from `order` where user_id = `user`.id) sum_amount
-    from user
-    where is_vip = 1
+```sql
+select
+    (select sum(amount) from `order` where user_id = `user`.id) sum_amount
+from user
+where is_vip = 1
+```
 
 .. php:method:: refModel($link)
 
@@ -355,10 +355,10 @@ $u = $u->loadAny(); // will load some user who has at least one failed order
 The important point here is that no additional queries are generated in the
 process and the loadAny() will look like this:
 
-.. code-block:: sql
-
-    select * from user where id in
-        (select user_id from order where status = 'failed')
+```sql
+select * from user where id in
+    (select user_id from order where status = 'failed')
+```
 
 By passing options to hasOne() you can also differentiate field name:
 
@@ -553,20 +553,20 @@ echo $o->addCondition('id', 1)->ref('user_id')->ref('address_id')->loadAny()['ad
 Here `addCondition('id', 1)` will only set a condition without actually loading the record
 and traversal will encapsulate sub-queries resulting in a query like this:
 
-.. code-block:: sql
-
-    select * from address where id in
-        (select address_id from user where id in
-            (select user_id from order where id = 1 ))
+```sql
+select * from address where id in
+    (select address_id from user where id in
+        (select user_id from order where id = 1 ))
+```
 
 ## Reference Aliases
 
 When related entity relies on the same table it is possible to run into problem
 when SQL is confused about which table to use.
 
-.. code-block:: sql
-
-    select name, (select name from item where item.parent_id = item.id) parent_name from item
+```sql
+select name, (select name from item where item.parent_id = item.id) parent_name from item
+```
 
 To avoid this problem Agile Data will automatically alias tables in sub-queries.
 Here is how it works:
@@ -614,20 +614,20 @@ class Model_Item3 extends \Atk4\Data\Model
 
 Loading model like that can produce a pretty sophisticated query:
 
-.. code-block:: sql
-
-    select
-        `pp`.`id`, `pp`.`name`, `pp`.`age`, `pp_i`.`parent_item_id`,
-        (select `parent`.`name`
-        from `item` `parent`
-        left join `item2` as `parent_i` on `parent_i`.`item_id` = `parent`.`id`
-        where `parent`.`id` = `pp_i`.`parent_item_id`
-        ) `parent_item`,
-        (select sum(`child`.`age`) from `item` `child`
-        left join `item2` as `child_i` on `child_i`.`item_id` = `child`.`id`
-        where `child_i`.`parent_item_id` = `pp`.`id`
-        ) `child_age`, `pp`.`id` `_i`
-    from `item` `pp`left join `item2` as `pp_i` on `pp_i`.`item_id` = `pp`.`id`
+```sql
+select
+    `pp`.`id`, `pp`.`name`, `pp`.`age`, `pp_i`.`parent_item_id`,
+    (select `parent`.`name`
+    from `item` `parent`
+    left join `item2` as `parent_i` on `parent_i`.`item_id` = `parent`.`id`
+    where `parent`.`id` = `pp_i`.`parent_item_id`
+    ) `parent_item`,
+    (select sum(`child`.`age`) from `item` `child`
+    left join `item2` as `child_i` on `child_i`.`item_id` = `child`.`id`
+    where `child_i`.`parent_item_id` = `pp`.`id`
+    ) `child_age`, `pp`.`id` `_i`
+from `item` `pp`left join `item2` as `pp_i` on `pp_i`.`item_id` = `pp`.`id`
+```
 
 ### Various ways to specify options
 

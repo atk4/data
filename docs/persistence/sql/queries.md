@@ -167,12 +167,12 @@ $q->getRows();
 This query will perform union between 2 table selects resulting in the following
 query:
 
-.. code-block:: sql
-
-    select `date`, `debit`, `credit` from (
-        (select `date`, `amount` `debit` from `sales`) union
-        (select `date`, `amount` `credit` from `purchases`)
-    ) `derivedTable`
+```sql
+select `date`, `debit`, `credit` from (
+    (select `date`, `amount` `debit` from `sales`) union
+    (select `date`, `amount` `credit` from `purchases`)
+) `derivedTable`
+```
 
 ## Modifying Select Query
 
@@ -413,15 +413,15 @@ $q->where(
 
 The above code will result in the following query:
 
-.. code-block:: sql
-
-    select
-        `name`
-    from
-        `employee`
-    where
-        deleted = 0 and
-        (`a` = :a or `b` = :b or (`a` = :c and `b` = :d))
+```sql
+select
+    `name`
+from
+    `employee`
+where
+    deleted = 0 and
+    (`a` = :a or `b` = :b or (`a` = :c and `b` = :d))
+```
 
 Technically orExpr() generates a yet another object that is composed
 and renders its calls to where() method:
@@ -435,10 +435,10 @@ $q->having(
 );
 ```
 
-.. code-block:: sql
-
-    having
-        (`a` = :a or `b` = :b)
+```sql
+having
+    (`a` = :a or `b` = :b)
+```
 
 ### Grouping results by field
 
@@ -532,12 +532,12 @@ $q->join(['a' => 'address', 'c' => 'credit_card', 'preferences']);
 
 The above code will join 3 tables using the following query syntax:
 
-.. code-block:: sql
-
-    join
-        address as a on a.id = u.address_id
-        credit_card as c on c.id = u.credit_card_id
-        preferences on preferences.id = u.preferences_id
+```sql
+join
+    address as a on a.id = u.address_id
+    credit_card as c on c.id = u.credit_card_id
+    preferences on preferences.id = u.preferences_id
+```
 
 However normally you would have `user_id` field defined in your supplementary
 tables so you need a different syntax:
@@ -633,15 +633,15 @@ $q->join('address a', $q->expr('a.name like u.pattern'));
 
     This generates SQL below:
 
-.. code-block:: sql
-
-    with
-        `q` (`emp`, `quoted`) as (select `emp_id`, sum(`total_net`) from `quotes` group by `emp_id`),
-        `i` (`emp`, `invoiced`) as (select `emp_id`, sum(`total_net`) from `invoices` group by `emp_id`)
-    select `name`, `salary`, `q`.`quoted`, `i`.`invoiced`
-    from `employees`
-        left join `q` on `q`.`emp` = `employees`.`id`
-        left join `i` on `i`.`emp` = `employees`.`id`
+```sql
+with
+    `q` (`emp`, `quoted`) as (select `emp_id`, sum(`total_net`) from `quotes` group by `emp_id`),
+    `i` (`emp`, `invoiced`) as (select `emp_id`, sum(`total_net`) from `invoices` group by `emp_id`)
+select `name`, `salary`, `q`.`quoted`, `i`.`invoiced`
+from `employees`
+    left join `q` on `q`.`emp` = `employees`.`id`
+    left join `i` on `i`.`emp` = `employees`.`id`
+```
 
 ### Limiting result-set
 

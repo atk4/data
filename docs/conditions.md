@@ -230,13 +230,13 @@ $m->addCondition(
 
 This will result in the following condition:
 
-.. code-block:: sql
-
-    WHERE
-        `age` between
-            (select min(`age`) from `user`)
-            and
-            (20 + :a)
+```sql
+WHERE
+    `age` between
+        (select min(`age`) from `user`)
+        and
+        (20 + :a)
+```
 
 where the other 20 is passed through parameter. Refer to
 http://dsql.readthedocs.io/en/develop/expressions.html for full documentation

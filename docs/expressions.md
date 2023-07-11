@@ -29,12 +29,12 @@ echo $m->get('total_gross');
 
 The query using during load() will look like this:
 
-.. code-block:: sql
-
-    select
-        `id`, `total_net`, `total_vat`,
-        (`total_net`+`total_vat`) `total_gross`
-    from `invoice`',
+```sql
+select
+    `id`, `total_net`, `total_vat`,
+    (`total_net`+`total_vat`) `total_gross`
+from `invoice`',
+```
 
 ### Defining Expression
 
@@ -72,9 +72,9 @@ echo $m->get('now');
 
 In this example the query will look like this:
 
-.. code-block:: sql
-
-    select (1) `id`, (now()) `now` limit 1
+```sql
+select (1) `id`, (now()) `now` limit 1
+```
 
 so that `$m->getId()` will always be 1 which will make it a model that you can
 actually use consistently throughout the system. The real benefit from this
@@ -168,9 +168,9 @@ echo $m->get('sum'); // outputs 10
 Now it requires an explicit reload for your model to fetch the result. There
 is another scenario when your database defines default fields:
 
-.. code-block:: sql
-
-    alter table math change b b int default 10;
+```sql
+alter table math change b b int default 10;
+```
 
 Then try the following code:
 

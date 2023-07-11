@@ -444,14 +444,14 @@ and even delete statements.
     $contacts->addCteModel('inv', $invoices);
     $contacts->join('inv.cid');
 
-.. code-block:: sql
-
-    with
-        `inv` as (select `contact_id`, `ref_no`, `total_net` from `invoice`)
-    select
-        *
-    from `contact`
-        join `inv` on `inv`.`contact_id`=`contact`.`id`
+```sql
+with
+    `inv` as (select `contact_id`, `ref_no`, `total_net` from `invoice`)
+select
+    *
+from `contact`
+    join `inv` on `inv`.`contact_id`=`contact`.`id`
+```
 
 .. note:: Supported since MySQL 8.x, MariaDB supported it earlier.
 
