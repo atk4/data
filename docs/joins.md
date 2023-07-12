@@ -222,7 +222,7 @@ Joins are implemented like this:
 ## SQL-specific joins
 
 When your model is associated with SQL-capable driver, then instead of using
-`Join` class, the `Join\\Sql` is used instead. This class is designed to improve
+`Join` class, the `Join\Sql` is used instead. This class is designed to improve
 loading technique, because SQL vendors can query multiple tables simultaneously.
 
 Vendors that cannot do JOINs will have to implement compatibility by pulling

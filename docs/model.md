@@ -489,7 +489,7 @@ $m = $m->load(1);
 echo $m->get('name'); // peter
 ```
 
-See :php:class:`Persistence\\Static_`
+See :php:class:`Persistence\Static_`
 
 :::{php:attr} persistence
 :::

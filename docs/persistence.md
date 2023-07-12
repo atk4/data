@@ -779,7 +779,7 @@ echo $a(); // same as $a->getOne();
 
 ### SQL Actions
 
-Currently only read-only actions are supported by `Persistence\\Sql`:
+Currently only read-only actions are supported by `Persistence\Sql`:
 
 - select - produces query that returns DataSet (array of hashes)
 
