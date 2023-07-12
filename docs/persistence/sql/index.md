@@ -7,18 +7,19 @@
 
 Contents:
 
-.. toctree::
-    :maxdepth: 3
+:::{toctree}
+:maxdepth: 3
 
-    overview
-    quickstart
-    connection
-    expressions
-    queries
-    results
-    transactions
-    advanced
-    extensions
+overview
+quickstart
+connection
+expressions
+queries
+results
+transactions
+advanced
+extensions
+:::
 
 ## Indices and tables
 
