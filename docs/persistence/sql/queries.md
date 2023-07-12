@@ -828,7 +828,9 @@ Argument $what can be 'table' or 'field'.
 :::{php:method} caseExpr($operand)
 Returns new Query object with CASE template.
 You can pass operand as parameter to create SQL like
+```
 CASE <operand> WHEN <expression> THEN <expression> END type of SQL statement.
+```
 :::
 
 :::{php:method} caseWhen($when, $then)
