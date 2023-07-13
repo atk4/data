@@ -126,7 +126,6 @@ Once your join is defined, you can call several methods on the join objects, tha
 will create fields, other joins or expressions but those would be associated
 with a foreign table.
 
-
 :::{php:method} addField
 same as :php:meth:`Model::addField` but associates field with foreign table.
 :::
@@ -215,7 +214,6 @@ Joins are implemented like this:
   are using reverse join, then foreign table record will not be updated, but
   value of the foreign field will be set to null.
 
-
 :::{php:class} Join\Sql
 :::
 
@@ -258,9 +256,7 @@ for all fields. It will default to `'_' . $this->foreignTable`. Agile Data will
 also resolve situations when multiple tables have same first character so the
 prefixes will be named '_c', '_c_2', '_c_3' etc.
 
-
 Additional arguments accepted by SQL joins are:
 
 - 'kind' - will be "inner" for strong join and "left" for weak join, but you can
   specify other kind of join, for example, "right"'.
-

@@ -6,7 +6,6 @@ DSQL supports various database vendors natively but also supports 3rd party
 extensions.
 For current status on database support see: :ref:`databases`.
 
-
 :::{php:class} Connection
 :::
 
@@ -17,7 +16,6 @@ connection in a global variable or global class:
 ```
 $app->db = Atk4\Data\Persistence\Sql\Connection::connect($dsn, $user, $pass, $defaults);
 ```
-
 
 :::{php:staticmethod} connect($dsn, $user = null, $password = null, $defaults = [])
 Determine which Connection class should be used for specified $dsn,
@@ -30,7 +28,6 @@ establish connection to DB by creating new object of this connection class and r
 :returns: new Connection
 :::
 
-
 This should allow you to access this class from anywhere and generate either
 new Query or Expression class:
 
@@ -41,7 +38,6 @@ $query = $app->db->dsql();
 
 $expr = $app->db->expr('show tables');
 ```
-
 
 :::{php:method} expr($template, $arguments)
 Creates new Expression class and sets :php:attr:`Expression::connection`.
@@ -56,7 +52,6 @@ Creates new Query class and sets :php:attr:`Query::connection`.
 :param array  $defaults: Other default properties for connection class.
 :returns: new Query
 :::
-
 
 Here is how you can use all of this together:
 

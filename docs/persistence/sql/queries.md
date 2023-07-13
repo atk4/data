@@ -330,7 +330,6 @@ Adds HAVING condition to your query.
 :returns: $this
 :::
 
-
 Both methods use identical call interface. They support one, two or three
 argument calls.
 

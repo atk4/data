@@ -268,7 +268,6 @@ $book->hasMany('Pages', ['model' => [Page::class]])
     ]);
 ```
 
-
 or 'field':
 
 ```
@@ -326,7 +325,6 @@ reference itself. In such case refModel() comes in as handy shortcut of doing
 $model can be an array containing options: [$model, ...]
 :::
 
-
 This reference allows you to attach a related model to a foreign key:
 
 ```
@@ -358,7 +356,6 @@ DataSet of the user model:
 $o->unload(); // just to be sure!
 $o->addCondition('status', 'failed');
 $u = $o->ref('user_id');
-
 
 $u = $u->loadAny(); // will load some user who has at least one failed order
 ```
@@ -397,7 +394,6 @@ $c = new Model_Currency($db);
 $i->hasOne('currency_id', ['model' => $c])
     ->addField('currency_name', 'name');
 ```
-
 
 This code also resolves problem with a duplicate 'name' field. Since you might have
 a 'name' field inside 'Invoice' already, you can name the field 'currency_name'
@@ -764,4 +760,3 @@ Returns referenced model without conditions.
 :::{php:method} ref
 Returns referenced model WITH conditions. (if possible)
 :::
-

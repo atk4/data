@@ -14,7 +14,6 @@ The only requirement for such an object is that it has to be a
 In most cases developers will expect your generator to return sequence
 of id => hash representing a key/value result set.
 
-
 :::{todo}
 write more
 :::

@@ -96,7 +96,6 @@ $salary
     ->join('employees.emp_id', 'emp_id')
     ->field('employees.first_name');
 
-
 // Finally, fetch result
 foreach ($salary as $row) {
     echo 'Data: ' . json_encode($row) . "\n";
@@ -213,7 +212,6 @@ if ($confirmed) {
     echo 'Are you sure you want to delete ' . $q->field('count(*)') . ' employees?';
 }
 ```
-
 
 .. _fething-result:
 

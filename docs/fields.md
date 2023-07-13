@@ -20,7 +20,6 @@ mapping into persistence-logic.
 :::{php:class} Field
 :::
 
-
 Field represents a `property` of your business entity or `column` if you think
 of your data in a tabular way. Once you have defined Field for your Model, you
 can set and read value of that field:
@@ -49,7 +48,6 @@ The implementation of Fields is tightly integrated with :php:class:`Model` and
 
 :::{php:attr} type
 :::
-
 
 Probably a most useful quality of Field is that it has a clear type:
 
@@ -157,7 +155,6 @@ $model->save();
 $model->set('age', null); // exception
 ```
 
-
 :::{php:attr} required
 :::
 
@@ -176,7 +173,6 @@ $model->set('age', 0); // exception
 
 $model->set('age', null); // exception
 ```
-
 
 :::{php:attr} readOnly
 :::
@@ -251,7 +247,6 @@ $model->getField('age')->setNull(); // no exception
 $model->save(); // still getting exception here
 ```
 
-
 See also :php:method:`Model::setNull`.
 
 :::{php:method} get
@@ -269,7 +264,6 @@ The UI framework such as Agile Toolkit can make use of the :php:attr:`Field::ui`
 property to allow user to define default formats or input parsing rules, but
 Agile Data does not regulate the :php:attr:`Field::ui` property and different
 UI frameworks may use it differently.
-
 
 :::{php:method} isEditable
 :::

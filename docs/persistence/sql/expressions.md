@@ -49,7 +49,6 @@ $query->where($query->expr(
 add more info or more precise example of Expressionable interface usage.
 :::
 
-
 Another uses for expressions could be:
 
 - Sub-Queries
@@ -195,7 +194,6 @@ returns `Doctrine\DBAL\Result`.
 Complete this when ResultSet and Connection are implemented
 :::
 
-
 :::{php:method} expr($template, $arguments)
 Creates a new :php:class:`Expression` object that will inherit current
 :php:attr:`$connection` property. Also if you are creating a
@@ -224,7 +222,6 @@ The output would be
 ]
 ```
 :::
-
 
 :::{php:method} getRow()
 Executes expression and returns first row of data from result-set as a hash::
@@ -320,7 +317,6 @@ handle nested expressions properly.
 
 This escaping method is automatically used for `[...]` expression template tags .
 :::
-
 
 .. _properties:
 

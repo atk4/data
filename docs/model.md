@@ -267,7 +267,6 @@ $m->addFields([
 ]);
 ```
 
-
 Read-only Fields
 ^^^^^^^^^^^^^^^^
 Although you may make any field read-only:
@@ -301,7 +300,6 @@ $product->addExpression('total', ['expr' => 'if ([is_discounted], ([amount] + [v
 $product->addCondition('total', '<', 10);
 // filter products that cost less than 10.0 (including discount)
 ```
-
 
 For the times when you are not working with SQL persistence, you can calculate field in PHP.
 
@@ -425,7 +423,6 @@ $model->saveAndUnload(); // all good
 $model->set('name', 'C#');
 $model->saveAndUnload(); // exception here
 ```
-
 
 Other Uses
 ^^^^^^^^^^
@@ -635,7 +632,6 @@ $m->set('name', 'Other Name');
 $m->_isset('name'); // returns true
 :::
 
-
 :::{php:method} isDirty
 Return true if one or multiple fields contain unsaved changes (dirty)::
 
@@ -660,7 +656,6 @@ Returns true if a field with a corresponding name exists.
 :::{php:method} getField($field)
 Finds a field with a corresponding name. Throws exception if field not found.
 :::
-
 
 Full example:
 
@@ -715,7 +710,6 @@ or as defaults:
 ```
 $m = new MyModel($db, ['titleField' => 'full_name']);
 ```
-
 
 .. _idField:
 

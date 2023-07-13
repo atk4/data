@@ -33,7 +33,6 @@ The common problems when trying to simplify mapping of domain logic include:
   - Domain objects are often restricted by database schema
   - Difficult to use Domain objects without database connection (e.g. in Unit Tests)
 
-
 Agile Data implements a fresh concepts that separates your Domain from persistence
 cleanly yet manages to solve problems mentioned above.
 
@@ -364,7 +363,6 @@ class Model_User extends \Atk4\Data\Model
 So far we have only looked at a single record - one User or one Order. In
 practice our application must operate with multiple records.
 
-
 DataSet is an object that represents collection of Domain model records that
 are persisted:
 
@@ -568,14 +566,7 @@ will not violate SRP (Single Responsibility Principle)
 More often thannot, your application is designed and built with a specific
 persistence layer in mind. If you are using SQL database, you want to
 
-
 _to be continued_
-
-
-
-
-
-
 
 Before we talk "databases", we must outline a few challenges:
 

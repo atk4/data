@@ -12,7 +12,6 @@ It is recommended to always use atomic() in your code.
 :::{php:class} Connection
 :::
 
-
 :::{php:method} atomic($callback)
 Execute callback within the SQL transaction. If callback encounters an
 exception, whole transaction will be automatically rolled back::
@@ -48,8 +47,6 @@ ever use this method.
 Roll-back the transaction, however if :php:meth:`Connection::beginTransaction`
 was executed more than once, will only decrease transaction depth.
 :::
-
-
 
 :::{warning}
 If you roll-back internal transaction and commit external

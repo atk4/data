@@ -219,7 +219,6 @@ $m->addField('created', [
 $m->save(); // stores creation time just fine and also will loade it.
 ```
 
-
 :::{note}
 If you have been following our "Domain" vs "Persistence" then you can
 :::
@@ -527,7 +526,6 @@ it is associated, it stays like that. To store a model data into a different
 persistence, a new instance of your model will be created and then associated
 with a new persistence.
 :::
-
 
 :::{php:method} withPersistence($persistence)
 :::
@@ -841,4 +839,3 @@ SQL actions apply the following:
 - count:  init, field, conditions, hook,
 - field:  init, field, conditions
 - fx:     init, field, conditions
-

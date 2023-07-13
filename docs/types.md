@@ -120,4 +120,3 @@ echo $model->get('speed'); // 30000
 echo $model->getField('speed')->format(); // 30 km/s
 echo $model->getField('speed')->format('m'); // 30000 m/s
 ```
-

@@ -108,5 +108,3 @@ $m->import($mCsv);
 ```
 
 Only the last line changes and the data will now flow in the other direction.
-
-

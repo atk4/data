@@ -143,7 +143,6 @@ create a separate add-on with it's own namespace. Let's say you have created
 Finally:
 - Submit pull request for only the Connection class and docs/extensions.rst.
 
-
 If you would like that your vendor support be bundled with DSQL, you should
 contact copyright@agiletoolkit.org after your external class has been around
 and received some traction.

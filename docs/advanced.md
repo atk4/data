@@ -123,7 +123,6 @@ foreach ($account->ref('Transactions', ['typeSubstitution' => true]) as $tr) {
     $tr->verify(); // verify() method can be overloaded!
 }
 
-
 // however, for export, we don't need expensive substitution
 $transactionData = $account->ref('Transaction')->export();
 ```
@@ -849,4 +848,3 @@ $this->getReference('Invoice')->model = 'Model_Invoice_Sale';
 ```
 
 The 'OverdueInvoice' reference will be also properly adjusted.
-

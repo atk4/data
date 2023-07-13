@@ -18,7 +18,6 @@ $m = $m->load(1);
 echo $m->get('gender'); // "M"
 ```
 
-
 Following this line, you can load ANY record from the table. It's possible to
 narrow down set of "loadable" records by introducing a condition:
 
@@ -195,8 +194,6 @@ $m->expr('[age] > 20', ['age' => $m->getField('age')); // same as
 ```
 :::
 
-
-
 Supported by: SQL
 
 Usage:
@@ -309,7 +306,6 @@ $scope3 = Scope::createAnd($condition5, $scope2);
 // $scope is created using OR as junction and $scope1 and $scope3 as nested conditions
 $scope = Scope::createOr($scope1, $scope3);
 ```
-
 
 Scope is an independent object not related to any model. Applying scope to model is using the Model::scope()->add($condition) method:
 
@@ -437,5 +433,3 @@ $contact->addCondition('company/tickets/#', '>', 3);
 This will limit the $contact model to those whose company have more than 3 tickets.
 'company' and 'tickets' are the name of the chained references ('company' is a reference in the $contact model and
 'tickets' is a reference in Company model)
-
-

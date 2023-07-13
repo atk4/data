@@ -46,4 +46,3 @@ $ledger->setGroupBy(['nominal_id'], [
     'opening_balance' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
 ]);
 ```
-

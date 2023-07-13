@@ -78,7 +78,6 @@ The recommended way to install DSQL is with
 for PHP that allows you to declare the dependencies your project has and it
 automatically installs them into your project.
 
-
 ```bash
 # Install Composer
 curl -sS https://getcomposer.org/installer | php

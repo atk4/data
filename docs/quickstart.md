@@ -165,7 +165,6 @@ by creating another instance of the same class and copying data over.
 You must however remember that any fields that you have added in-line will
 not be recreated.
 
-
 DataSet (Conditions)
 ^^^^^^^^^^^^^^^^^^^^
 
@@ -226,7 +225,6 @@ $m->get(); // will show country_id as 2
 $m->set('country_id', 3);
 $m->save(); // will generate exception because model you try to save doesn't match conditions set
 ```
-
 
 Other Parameters
 ^^^^^^^^^^^^^^^^

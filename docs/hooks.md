@@ -171,7 +171,6 @@ For some examples, see :ref:`soft_delete`
   - beforeUpdateQuery [sql only] (query)
   - afterUpdateQuery (query, affectedRows)
 
-
 - afterUpdate [only if existing record, model is reloaded]
 - afterInsert [only if new record, model not reloaded yet]
 
