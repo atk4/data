@@ -15,7 +15,10 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinxcontrib.phpdomain',
     #'sphinxcontrib_phpautodoc',
+    'myst_parser',
 ]
+
+myst_enable_extensions = ['colon_fence', 'linkify']
 
 source_suffix = '.md'
 
