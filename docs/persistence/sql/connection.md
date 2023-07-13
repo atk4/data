@@ -24,7 +24,7 @@ establish connection to DB by creating new object of this connection class and r
 :param string $dsn: DSN, see https://www.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/configuration.html
 :param string $user: username
 :param string $password: password
-:param array  $defaults: Other default properties for connection class.
+:param array $defaults: Other default properties for connection class.
 :returns: new Connection
 :::
 
@@ -42,14 +42,14 @@ $expr = $app->db->expr('show tables');
 :::{php:method} expr($template, $arguments)
 Creates new Expression class and sets :php:attr:`Expression::connection`.
 
-:param array  $arguments: Other default properties for connection class.
+:param array $arguments: Other default properties for connection class.
 :returns: new Expression
 :::
 
 :::{php:method} dsql($defaults)
 Creates new Query class and sets :php:attr:`Query::connection`.
 
-:param array  $defaults: Other default properties for connection class.
+:param array $defaults: Other default properties for connection class.
 :returns: new Query
 :::
 
@@ -73,7 +73,7 @@ if you connect to vendor that does not use PDO.
 :::{php:method} execute(Expression $expr): \Doctrine\DBAL\Result
 Creates new Expression class and sets :php:attr:`Expression::connection`.
 
-:param Expression  $expr: Expression (or query) to execute
+:param Expression $expr: Expression (or query) to execute
 :returns: `Doctrine\DBAL\Result`
 :::
 

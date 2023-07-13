@@ -319,16 +319,16 @@ this section might need cleanup
 
 There are 3 datetime formats supported:
 
--  date: Converts into YYYY-MM-DD using UTC timezone for SQL. Defaults
-   to DateTime() class in PHP, but supports string input (parsed as date
-   in a current timezone) or unix timestamp.
--  time: converts into HH:MM:SS using UTC timezone for storing in SQL.
-   Defaults to DateTime() class in PHP, but supports string input
-   (parsed as date in current timezone) or unix timestamp. Will discard
-   date from timestamp.
--  datetime: stores both date and time. Uses UTC in DB. Defaults to
-   DateTime() class in PHP. Supports string input parsed by strtotime()
-   or unix timestamp.
+- date: Converts into YYYY-MM-DD using UTC timezone for SQL. Defaults
+  to DateTime() class in PHP, but supports string input (parsed as date
+  in a current timezone) or unix timestamp.
+- time: converts into HH:MM:SS using UTC timezone for storing in SQL.
+  Defaults to DateTime() class in PHP, but supports string input
+  (parsed as date in current timezone) or unix timestamp. Will discard
+  date from timestamp.
+- datetime: stores both date and time. Uses UTC in DB. Defaults to
+  DateTime() class in PHP. Supports string input parsed by strtotime()
+  or unix timestamp.
 
 ### Customizations
 
@@ -836,6 +836,6 @@ SQL actions apply the following:
 - update: init, mode, conditions, limit, order, hook
 - delete: init, mode, conditions
 - select: init, fields, conditions, limit, order, hook
-- count:  init, field, conditions, hook,
-- field:  init, field, conditions
-- fx:     init, field, conditions
+- count: init, field, conditions, hook,
+- field: init, field, conditions
+- fx: init, field, conditions

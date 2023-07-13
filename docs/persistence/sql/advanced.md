@@ -222,7 +222,7 @@ be possible. You also risk injection or expose some sensitive data to the user.
 Create new exception
 
 :param string|array $message: Describes the problem
-:param int          $code:    Error code
+:param int $code: Error code
 :::
 
 Usage:

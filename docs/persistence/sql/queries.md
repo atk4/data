@@ -504,8 +504,8 @@ group_concat('phone' order by 'date' desc separator ';')
 Join results with additional table using "JOIN" statement in your query.
 
 :param string|array $foreignTable: table to join (may include field and alias)
-:param mixed  $masterField:  main field (and table) to join on or Expression
-:param string $joinKind:     'left' (default), 'inner', 'right' etc - which join type to use
+:param mixed $masterField: main field (and table) to join on or Expression
+:param string $joinKind: 'left' (default), 'inner', 'right' etc - which join type to use
 :returns: $this
 :::
 
@@ -696,7 +696,7 @@ Method can be executed several times on the same Query object.
 Assigns value to the field during insert.
 
 :param string $field: name of the field
-:param mixed  $value: value or expression
+:param mixed $value: value or expression
 :returns: $this
 :::
 

@@ -158,7 +158,7 @@ are supported by the driver that you are using.
 
 ### Field Matching
 
-Supported by: SQL   (planned for Array, Mongo)
+Supported by: SQL (planned for Array, Mongo)
 
 Usage:
 
@@ -170,7 +170,7 @@ Will perform a match between two fields.
 
 ### Expression Matching
 
-Supported by: SQL   (planned for Array)
+Supported by: SQL (planned for Array)
 
 Usage:
 
