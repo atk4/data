@@ -13,7 +13,7 @@ include:
 - ability to collect response from callbacks
 - ability to break hooks (will stop any other hook execution)
 
-:php:ref:`Model` implements hook trait and defines various hooks which will allow
+{php:ref}`Model` implements hook trait and defines various hooks which will allow
 you to execute code before or after various operations, such as save, load etc.
 
 ## Model Operation Hooks
@@ -30,7 +30,7 @@ the same transaction:
 - begin transaction
 - beforeSave hook
 - actual save
-- reload (see :php:attr:`Model::reloadAfterSave`)
+- reload (see {php:attr}`Model::reloadAfterSave`)
 - afterSave hook
 - commit transaction
 
@@ -94,12 +94,12 @@ $model->onHook(Model::HOOK_AFTER_LOAD, function (Model $m) {
 This will also prevent data from being loaded. If you return false from
 afterLoad hook, then record which we just loaded will be instantly unloaded.
 This can be helpful in some cases, although you should still use
-:php:meth:`Model::addCondition` where possible as it is much more efficient.
+{php:meth}`Model::addCondition` where possible as it is much more efficient.
 
 ### Insert/Update Hooks
 
 Insert/Update are triggered from inside save() method but are based on current
-state of :php:meth:`Model::isLoaded`:
+state of {php:meth}`Model::isLoaded`:
 
 - beforeInsert($m, &$data) (creating new records only)
 - afterInsert($m, $id)
@@ -115,9 +115,9 @@ hooks, only by altering $data.
 
 afterInsert will receive either $id of new record or null if model couldn't
 provide ID field. Also, afterInsert is actually called before reloading is done
-(when :php:attr:`Model::reloadAfterSave` is set).
+(when {php:attr}`Model::reloadAfterSave` is set).
 
-For some examples, see :ref:`soft_delete`
+For some examples, see {ref}`soft_delete`
 
 ### beforeSave, afterSave Hook
 
@@ -157,7 +157,7 @@ A good place to clean-up delete related records would be inside afterDelete,
 although if your database consistency requires those related records to be
 cleaned up first, use beforeDelete instead.
 
-For some examples, see :ref:`soft_delete`
+For some examples, see {ref}`soft_delete`
 
 ### Hook execution sequence
 
@@ -204,7 +204,7 @@ beforeLoad hooks and by specifying argument as 'false' it will also prevent call
 to $persistence for actual loading of the data.
 
 Similarly you can prevent deletion if you wish to implement
-:ref:`soft-delete` or stop insert/modify from occurring.
+{ref}`soft-delete` or stop insert/modify from occurring.
 
 ### onRollback Hook
 

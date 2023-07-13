@@ -30,16 +30,16 @@ If you wish to try out some examples in this guide, you will need the following:
 
 ## Core Concepts
 
-Business Model (see :ref:`Model`)
-    You define business logic inside your own classes that extend :php:class:`Model`.
+Business Model (see {ref}`Model`)
+    You define business logic inside your own classes that extend {php:class}`Model`.
     Each class you create represent one business entity.
 
     Model has 3 major characteristic: Business Logic definition, DataSet mapping
     and Active Record.
 
-    See: :php:class:`Model`
+    See: {php:class}`Model`
 
-Persistence (see :ref:`Persistence`)
+Persistence (see {ref}`Persistence`)
     Object representing a connection to database. Linking your Business Model
     to a persistence allows you to load/save individual records as well as
     execute multi-record operations (Actions)
@@ -48,15 +48,15 @@ Persistence (see :ref:`Persistence`)
     possible to switch from one persistence to another and compensate for the
     feature differences without major refactoring.
 
-DataSet (see :ref:`DataSet`)
+DataSet (see {ref}`DataSet`)
     A set of physical records stored on your database server that correspond
     to the Business Model.
 
-Active Record (see :ref:`Active Record`)
+Active Record (see {ref}`Active Record`)
     Model can load individual record from DataSet, work with it and save it back
     into DataSet. While the record is loaded, we call it an Active Record.
 
-Action (see :ref:`Action`)
+Action (see {ref}`Action`)
     Operation that Model performs on all of DataSet records without loading
     them individually. Actions have 3 main purposes: data aggregation,
     referencing and multi-record operations.
@@ -153,12 +153,12 @@ Persistence
 ^^^^^^^^^^^
 
 When you create instance of a model (`new Model()`) you need to specify
-:php:class:`Persistence` as a parameter. If you don't you can still use
-the model, but it won't be able to :php:meth:`Model::load()` or
-:php:meth:`Model::save()` data.
+{php:class}`Persistence` as a parameter. If you don't you can still use
+the model, but it won't be able to {php:meth}`Model::load()` or
+{php:meth}`Model::save()` data.
 
 Once model is associated with one persistence, you cannot re-associate it.
-Method :php:meth:`Model::init()` will be executed only after persistence is
+Method {php:meth}`Model::init()` will be executed only after persistence is
 known, so that method may make some decisions based on chosen persistence.
 If you need to store model inside a different persistence, this is achieved
 by creating another instance of the same class and copying data over.
@@ -188,7 +188,7 @@ myexport($m, ['id', 'username', 'country_id']);
 ```
 
 If you want to temporarily add conditions, then you can either clone the model
-or use :php:meth:`Model::tryLoadBy`.
+or use {php:meth}`Model::tryLoadBy`.
 
 Active Record
 ^^^^^^^^^^^^^
@@ -286,13 +286,14 @@ $m = new Model_User($db, ['table' => 'user2']); // same
 
 :::{note}
 If you're trying those lines, you will also have to
-create this new table inside your MySQL database::
+create this new table inside your MySQL database:
+
 ```
 create table user2 as select * from user
 ```
 :::
 
-As I mentioned - :php:meth:`Model::init` is called when model is associated
+As I mentioned - {php:meth}`Model::init` is called when model is associated
 with persistence. You could create model and associate it with persistence
 later:
 
@@ -312,21 +313,21 @@ $m->setPersistence($db); // will use table user2
 
 ### Adding Fields
 
-Methods :php:meth:`Model::addField()` and :php:meth:`Model::addFields()` can
+Methods {php:meth}`Model::addField()` and {php:meth}`Model::addFields()` can
 declare model fields. You need to declare them before you are able to use.
 You might think that some SQL reverse-engineering could be good at this point,
 but this would mimic your business logic after your presentation logic, while
 the whole point of Agile Data is to separate them, so you should, at least
 initially, avoid using generators.
 
-In practice, :php:meth:`Model::addField()` creates a new 'Field' object and then
+In practice, {php:meth}`Model::addField()` creates a new 'Field' object and then
 links it up to your model. This object is used to store some information about
 your field, but it also participates in some field-related activity.
 
 ### Table Joins
 
-Similarly, :php:meth:`Model::join()` creates a Join object and stores it in $j.
-The Join object defines a relationship between the master :php:attr:`Model::table`
+Similarly, {php:meth}`Model::join()` creates a Join object and stores it in $j.
+The Join object defines a relationship between the master {php:attr}`Model::table`
 and some other table inside persistence domain. It makes sure relationship is
 maintained when objects are saved / loaded:
 
@@ -424,8 +425,8 @@ Do not mix-up business model references with database relations
 (foreign keys).
 :::
 
-References are defined by calling :php:meth:`Model::hasOne()` or
-:php:meth:`Model::hasMany()`. You always specify destination model and you can
+References are defined by calling {php:meth}`Model::hasOne()` or
+{php:meth}`Model::hasMany()`. You always specify destination model and you can
 optionally specify which fields are used for conditioning.
 
 ### One to Many
@@ -446,7 +447,7 @@ $s = $m->ref('System');
 ```
 
 Unlike most ORM and ActiveRecord implementations today - instead of returning
-array of objects, :php:meth:`Model::ref()` actually returns another Model to
+array of objects, {php:meth}`Model::ref()` actually returns another Model to
 you, however it will add one extra Condition. This type of reference traversal
 is called "Active Record to DataSet" or One to Many.
 
@@ -505,21 +506,21 @@ $cc->get();
 
 ### Implementation of References
 
-When reference is added using :php:meth:`Model::hasOne()` or :php:meth:`Model::hasMany()`,
-the new object is created and added into Model of class :php:class:`Reference\HasMany`
-or :php:class:`Reference\HasOne` (or :php:class:`Reference\HasOneSql` in case you
+When reference is added using {php:meth}`Model::hasOne()` or {php:meth}`Model::hasMany()`,
+the new object is created and added into Model of class {php:class}`Reference\HasMany`
+or {php:class}`Reference\HasOne` (or {php:class}`Reference\HasOneSql` in case you
 use SQL database). The object itself is quite simple and you can fetch it from
 the model if you keep the return value of hasOne() / hasMany() or call
-:php:meth:`Model::getReference()` with the same identifier later on.
-You can also use :php:meth:`Model::hasReference()` to check if reference exists in model.
+{php:meth}`Model::getReference()` with the same identifier later on.
+You can also use {php:meth}`Model::hasReference()` to check if reference exists in model.
 
-Calling :php:meth:`Model::ref()` will proxy into the ref() method of reference
+Calling {php:meth}`Model::ref()` will proxy into the ref() method of reference
 object which will in turn figure out what to do.
 
-Additionally you can call :php:meth:`Model::addField()` on the reference model
+Additionally you can call {php:meth}`Model::addField()` on the reference model
 that will bring one or several fields from related model into your current model.
 
-Finally this reference object contains method :php:meth:`Reference::getModel()`
+Finally this reference object contains method {php:meth}`Reference::getModel()`
 which will produce a (possibly) fresh copy of related entity and will either
 adjust it's DataSet or set the active record.
 
@@ -569,8 +570,8 @@ max/sum for the specific record of Client and those calculation are used inside
 an Expression().
 
 Expression is a special type of read-only Field that uses sub-query or a more
-complex SQL expression instead of a physical field. (See :ref:`Expressions` and
-:ref:`References`)
+complex SQL expression instead of a physical field. (See {ref}`Expressions` and
+{ref}`References`)
 
 ### Field-reference actions
 

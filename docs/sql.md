@@ -2,7 +2,7 @@
 
 # SQL Extensions
 
-Databases that support SQL language can use :php:class:`Persistence\Sql`.
+Databases that support SQL language can use {php:class}`Persistence\Sql`.
 This driver will format queries to the database using SQL language.
 
 In addition to normal operations you can extend and customize various queries.
@@ -12,10 +12,10 @@ In addition to normal operations you can extend and customize various queries.
 When using `Persistence\Sql` model building will use different classes for fields,
 expressions, joins etc:
 
-- addField - :php:class:`FieldSql` (field can be used as part of DSQL Expression)
-- hasOne - :php:class:`Reference\HasOneSql` (allow importing fields)
-- addExpression - :php:class:`SqlExpressionField` (define expression through DSQL)
-- join - :php:class:`Join\Sql` (join tables query-time)
+- addField - {php:class}`FieldSql` (field can be used as part of DSQL Expression)
+- hasOne - {php:class}`Reference\HasOneSql` (allow importing fields)
+- addExpression - {php:class}`SqlExpressionField` (define expression through DSQL)
+- join - {php:class}`Join\Sql` (join tables query-time)
 
 ### SQL Field
 
@@ -23,8 +23,8 @@ expressions, joins etc:
 :::
 
 :::{php:attr} actual
-:php:class:`Persistence\Sql` supports field name mapping. Your field could
-have different column name in your schema::
+{php:class}`Persistence\Sql` supports field name mapping. Your field could
+have different column name in your schema:
 
 ```
 $this->addField('name', ['actual' => 'first_name']);
@@ -34,7 +34,7 @@ This will apply to load / save operations as well as query mapping.
 :::
 
 :::{php:method} getDsqlExpression
-SQL Fields can be used inside other SQL expressions::
+SQL Fields can be used inside other SQL expressions:
 
 ```
 $q = $connection->expr('[age] + [birth_year]', [
@@ -47,18 +47,18 @@ $q = $connection->expr('[age] + [birth_year]', [
 ### SQL Reference
 
 :::{php:class} Reference\HasOneSql
-Extends :php:class:`Reference\HasOne`
+Extends {php:class}`Reference\HasOne`
 :::
 
 :::{php:method} addField
-Allows importing field from a referenced model::
+Allows importing field from a referenced model:
 
 ```
 $model->hasOne('country_id', ['model' => [Country::class]])
     ->addField('country_name', 'name');
 ```
 
-Second argument could be array containing additional settings for the field::
+Second argument could be array containing additional settings for the field:
 
 ```
 $model->hasOne('account_id', ['model' => [Account::class]])
@@ -69,14 +69,14 @@ Returns new field object.
 :::
 
 :::{php:method} addFields
-Allows importing multiple fields::
+Allows importing multiple fields:
 
 ```
 $model->hasOne('country_id', ['model' => [Country::class]])
     ->addFields(['country_name', 'country_code']);
 ```
 
-You can specify defaults to be applied on all fields::
+You can specify defaults to be applied on all fields:
 
 ```
 $model->hasOne('account_id', ['model' => [Account::class]])
@@ -86,7 +86,7 @@ $model->hasOne('account_id', ['model' => [Account::class]])
     ], ['type' => 'atk4_money']);
 ```
 
-You can also specify aliases::
+You can also specify aliases:
 
 ```
 $model->hasOne('account_id', ['model' => [Account::class]])
@@ -96,7 +96,7 @@ $model->hasOne('account_id', ['model' => [Account::class]])
     ], ['type' => 'atk4_money']);
 ```
 
-If you need to pass more details to individual field, you can also use sub-array::
+If you need to pass more details to individual field, you can also use sub-array:
 
 ```
 $model->hasOne('account_id', ['model' => [Account::class]])
@@ -111,8 +111,8 @@ Returns $this.
 :::
 
 :::{php:method} ref
-While similar to :php:meth:`Reference\HasOne::ref` this implementation
-implements deep traversal::
+While similar to {php:meth}`Reference\HasOne::ref` this implementation
+implements deep traversal:
 
 ```
 $countryModel = $customerModel->addCondition('is_vip', true)
@@ -128,7 +128,7 @@ if you are creating sub-queries.
 
 :::{php:method} addTitle
 Similar to addField, but will import "title" field and will come up with
-good name for it::
+good name for it:
 
 ```
 $model->hasOne('country_id', ['model' => [Country::class]])
@@ -137,7 +137,7 @@ $model->hasOne('country_id', ['model' => [Country::class]])
 // creates 'country' field as sub-query for country.name
 ```
 
-You may pass defaults::
+You may pass defaults:
 
 ```
 $model->hasOne('country_id', ['model' => [Country::class]])
@@ -150,13 +150,13 @@ Returns new field object.
 ### Expressions
 
 :::{php:class} SqlExpressionField
-Extends :php:class:`FieldSql`
+Extends {php:class}`FieldSql`
 :::
 
 Expression will map into the SQL code, but will perform as read-only field otherwise.
 
 :::{php:attr} expr
-Stores expression that you define through DSQL expression::
+Stores expression that you define through DSQL expression:
 
 ```
 $model->addExpression('age', ['expr' => 'year(now()) - [birth_year]']);
@@ -165,7 +165,7 @@ $model->addExpression('age', ['expr' => 'year(now()) - [birth_year]']);
 :::
 
 :::{php:method} getDsqlExpression
-SQL Expressions can be used inside other SQL expressions::
+SQL Expressions can be used inside other SQL expressions:
 
 ```
 $model->addExpression('can_buy_alcohol', ['expr' => 'if([age] > 25, 1, 0)', 'type' => 'boolean']);
@@ -173,7 +173,7 @@ $model->addExpression('can_buy_alcohol', ['expr' => 'if([age] > 25, 1, 0)', 'typ
 :::
 
 Adding expressions to model will make it automatically reload itself after save
-as default behavior, see :php:attr:`Model::reloadAfterSave`.
+as default behavior, see {php:attr}`Model::reloadAfterSave`.
 
 ## Transactions
 
@@ -232,7 +232,7 @@ $q = $connection->expr('[age] + [birth_year]', [
 $q = $m->expr('[age] + [birth_year']);
 ```
 
-This method is automatically used by :php:class:`SqlExpressionField`.
+This method is automatically used by {php:class}`SqlExpressionField`.
 
 ## Actions
 
@@ -430,7 +430,7 @@ class Client extends \Atk4\Data\Model
 Not all SQL vendors may support this approach.
 :::
 
-:php:meth:`Model::addExpression` is a SQL extension that allow you to define
+{php:meth}`Model::addExpression` is a SQL extension that allow you to define
 any expression for your field query. You can use SQL stored function for data
 fetching like this:
 
@@ -465,7 +465,7 @@ where once again, stored function is hidden.
 Not all SQL vendors may support this approach.
 :::
 
-Method :php:meth:`Persistence\Sql::action` and :php:meth:`Model::action`
+Method {php:meth}`Persistence\Sql::action` and {php:meth}`Model::action`
 generates queries for most of model operations. By re-defining this method,
 you can significantly affect the query building of an SQL model:
 

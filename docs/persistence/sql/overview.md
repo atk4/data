@@ -45,7 +45,7 @@ select count(*) from `salary` where `birth_date` = :a
 DSQL can also execute queries with multiple sub-queries, joins, expressions
 grouping, ordering, unions as well as queries on result-set.
 
-- See :ref:`quickstart` if you would like to start learning DSQL.
+- See {ref}`quickstart` if you would like to start learning DSQL.
 - See https://github.com/atk4/dsql-primer for various working
   examples of using DSQL with a real data-set.
 
@@ -106,7 +106,7 @@ other best-practices for defining dependencies at
 
 ## Getting Started
 
-Continue reading :ref:`quickstart` where you will learn about basics of DSQL
+Continue reading {ref}`quickstart` where you will learn about basics of DSQL
 and how to use it to it's full potential.
 
 ## Contributing

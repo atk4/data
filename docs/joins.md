@@ -127,33 +127,33 @@ will create fields, other joins or expressions but those would be associated
 with a foreign table.
 
 :::{php:method} addField
-same as :php:meth:`Model::addField` but associates field with foreign table.
+same as {php:meth}`Model::addField` but associates field with foreign table.
 :::
 
 :::{php:method} join
-same as :php:meth:`Model::join` but links new table with this foreign table.
+same as {php:meth}`Model::join` but links new table with this foreign table.
 :::
 
 :::{php:method} hasOne
-same as :php:meth:`Model::hasOne` but reference ID field will be associated
+same as {php:meth}`Model::hasOne` but reference ID field will be associated
 with foreign table.
 :::
 
 :::{php:method} hasMany
-same as :php:meth:`Model::hasMany` but condition for related model will be
-based on foreign table field and :php:attr:`Reference::theirField` will be
+same as {php:meth}`Model::hasMany` but condition for related model will be
+based on foreign table field and {php:attr}`Reference::theirField` will be
 set to $foreignTable . '_id'.
 :::
 
 :::{php:method} containsOne
-same as :php:meth:`Model::hasOne` but the data will be stored in
+same as {php:meth}`Model::hasOne` but the data will be stored in
 a field inside foreign table.
 
 Not yet implemented !
 :::
 
 :::{php:method} containsMany
-same as :php:meth:`Model::hasMany` but the data will be stored in
+same as {php:meth}`Model::hasMany` but the data will be stored in
 a field inside foreign table.
 
 Not yet implemented !

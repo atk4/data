@@ -56,7 +56,7 @@ $girls = $girls->load(1); // exception
 
 ### Operations
 
-Most database drivers will support the following additional operations::
+Most database drivers will support the following additional operations:
 
     >, <, >=, <=, !=, in, not in, like, not like, regexp, not regexp
 
@@ -122,7 +122,7 @@ format:
 $m->addCondition('name', ['John', 'Joe']);
 ```
 
-For all other cases you can implement them with :php:meth:`Model::expr`:
+For all other cases you can implement them with {php:meth}`Model::expr`:
 
 ```
 $m->addCondition($m->expr('(day([birth_date]) = day([registration_date]) or day([birth_date]) = [])', 10));
@@ -314,7 +314,7 @@ $contact->scope()->add($condition); // adding condition to a model
 $contact->scope()->add($conditionXYZ); // adding more conditions
 ```
 
-:::{php:method:: __construct($nestedConditions = [], $junction = Scope::AND);
+:::{php:method} __construct($nestedConditions = [], $junction = Scope::AND);
 :::
 
 Creates a Scope object from an array:

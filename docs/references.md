@@ -10,7 +10,7 @@
 
 Models can relate one to another. The logic of traversing references, however,
 is slightly different to the traditional ORM implementation, because in Agile
-Data traversing also imposes :ref:`conditions`
+Data traversing also imposes {ref}`conditions`
 
 There are two basic types of references: hasOne() and hasMany(), but it's also
 possible to add other reference types. The basic ones are really easy to
@@ -510,31 +510,31 @@ $m->addReference('Archive', ['model' => function (Model $m) {
 
 ## Reference Discovery
 
-You can call :php:meth:`Model::getReferences()` to fetch all the references of a model:
+You can call {php:meth}`Model::getReferences()` to fetch all the references of a model:
 
 ```
 $references = $model->getReferences();
 $reference = $references['owner_id'];
 ```
 
-or if you know the reference you'd like to fetch, you can use :php:meth:`Model::getReference()`:
+or if you know the reference you'd like to fetch, you can use {php:meth}`Model::getReference()`:
 
 ```
 $reference = $model->getReference('owner_id');
 ```
 
-While :php:meth:`Model::ref()` returns a related model, :php:meth:`Model::getReference()`
+While {php:meth}`Model::ref()` returns a related model, {php:meth}`Model::getReference()`
 gives you the reference object itself so that you could perform some changes on it,
-such as import more fields with :php:meth:`Model::addField()`.
+such as import more fields with {php:meth}`Model::addField()`.
 
-Or you can use :php:meth:`Model::refModel()` which will simply return referenced
+Or you can use {php:meth}`Model::refModel()` which will simply return referenced
 model and you can do fancy things with it.
 
 ```
 $refModel = $model->refModel('owner_id');
 ```
 
-You can also use :php:meth:`Model::hasReference()` to check if particular reference
+You can also use {php:meth}`Model::hasReference()` to check if particular reference
 exists in model:
 
 ```
@@ -552,7 +552,7 @@ echo $o->load(1)->ref('user_id')->ref('address_id')['address_1'];
 ```
 
 The above example will actually perform 3 load operations, because as I have
-explained above, :php:meth:`Model::ref()` loads related model when called on
+explained above, {php:meth}`Model::ref()` loads related model when called on
 a loaded model. To perform a single query instead, you can use:
 
 ```
@@ -594,8 +594,8 @@ $item->hasMany('parent_item_id', ['model' => [Model_Item::class], 'tableAlias' =
     ->addField('parent', 'name');
 ```
 
-Additionally you can pass tableAlias as second argument into :php:meth:`Model::ref()`
-or :php:meth:`Model::refLink()`. This can help you in creating a recursive models
+Additionally you can pass tableAlias as second argument into {php:meth}`Model::ref()`
+or {php:meth}`Model::refLink()`. This can help you in creating a recursive models
 that relate to itself. Here is example:
 
 ```
@@ -723,7 +723,7 @@ hook, which will update address_id field of the $m.
 References are implemented through several classes:
 
 :::{php:class} Reference\HasOne
-Defines generic reference, that is typically created by :php:meth:`Model::addReference`
+Defines generic reference, that is typically created by {php:meth}`Model::addReference`
 :::
 
 :::{php:attr} tableAlias

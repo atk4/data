@@ -5,7 +5,7 @@ enhancements to the standard functionality of transactions in DSQL:
 
 1. You can start nested transactions.
 
-2. You can use :php:meth:`Connection::atomic()` which has a nicer syntax.
+2. You can use {php:meth}`Connection::atomic()` which has a nicer syntax.
 
 It is recommended to always use atomic() in your code.
 
@@ -14,7 +14,7 @@ It is recommended to always use atomic() in your code.
 
 :::{php:method} atomic($callback)
 Execute callback within the SQL transaction. If callback encounters an
-exception, whole transaction will be automatically rolled back::
+exception, whole transaction will be automatically rolled back:
 
 ```
 $c->atomic(function () use ($c) {
@@ -34,7 +34,7 @@ transaction depth.
 :::
 
 :::{php:method} commit
-Will commit transaction, however if :php:meth:`Connection::beginTransaction`
+Will commit transaction, however if {php:meth}`Connection::beginTransaction`
 was executed more than once, will only decrease transaction depth.
 :::
 
@@ -44,7 +44,7 @@ ever use this method.
 :::
 
 :::{php:method} rollBack
-Roll-back the transaction, however if :php:meth:`Connection::beginTransaction`
+Roll-back the transaction, however if {php:meth}`Connection::beginTransaction`
 was executed more than once, will only decrease transaction depth.
 :::
 

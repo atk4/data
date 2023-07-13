@@ -228,7 +228,7 @@ foreach (new User($db) as $user) {
 ```
 
 Instead, Field handles many very valuable operations which would otherwise fall on the
-shoulders of developer (Read more here :php:class:`Field`)
+shoulders of developer (Read more here {php:class}`Field`)
 
 :::{php:method} addField($name, $seed)
 :::
@@ -248,7 +248,7 @@ You may also specify your own Field implementation:
 $this->addField('amount_and_currency', [MyAmountCurrencyField::class]);
 ```
 
-Read more about :php:class:`Field`
+Read more about {php:class}`Field`
 
 :::{php:method} addFields(array $fields, $seed = [])
 :::
@@ -344,7 +344,7 @@ class MyModel extends Model
 
 ### Actions
 
-Another common thing to define inside :php:meth:`Model::init()` would be
+Another common thing to define inside {php:meth}`Model::init()` would be
 a user invocable actions:
 
 ```
@@ -387,13 +387,13 @@ passwords to be generated and sent to the users:
 Crud::addTo($app)->setModel(new User($app->db));
 ```
 
-Read more about :php:class:`Model\UserAction`
+Read more about {php:class}`Model\UserAction`
 
 ### Hooks
 
 Hooks (behaviours) can allow you to define callbacks which would trigger
 when data is loaded, saved, deleted etc. Hooks are typically defined in
-:php:meth:`Model::init()` but will be executed accordingly.
+{php:meth}`Model::init()` but will be executed accordingly.
 
 There are countless uses for hooks and even more opportunities to use
 hook by all sorts of extensions.
@@ -414,7 +414,7 @@ $this->onHookShort(Model::HOOK_VALIDATE, function () {
 });
 ```
 
-Now if you attempt to save object, you will receive :php:class:`ValidationException`:
+Now if you attempt to save object, you will receive {php:class}`ValidationException`:
 
 ```
 $model->set('name', 'Swift');
@@ -427,7 +427,7 @@ $model->saveAndUnload(); // exception here
 Other Uses
 ^^^^^^^^^^
 
-Other uses for model hooks are explained in :ref:`Hooks`
+Other uses for model hooks are explained in {ref}`Hooks`
 
 ### Inheritance
 
@@ -465,7 +465,7 @@ with persistence. In the most basic form, model is associated with persistence l
 $m = new User($db);
 ```
 
-If model was created without persistence :php:meth:`Model::init()` will not fire. You can
+If model was created without persistence {php:meth}`Model::init()` will not fire. You can
 explicitly associate model with persistence like this:
 
 ```
@@ -486,7 +486,7 @@ $m = $m->load(1);
 echo $m->get('name'); // peter
 ```
 
-See :php:class:`Persistence\Static_`
+See {php:class}`Persistence\Static_`
 
 :::{php:attr} persistence
 :::
@@ -523,7 +523,7 @@ to another.
 
 :::{php:method} insert($row)
 Inserts a new record into the database and returns $id. It does not affect
-currently loaded record and in practice would be similar to::
+currently loaded record and in practice would be similar to:
 
 ```
 $entity = $m->createEntity();
@@ -602,7 +602,7 @@ Only use this if you intend to set a correct value shortly after.
 :::
 
 :::{php:method} unset($field)
-Restore field value to it's original::
+Restore field value to it's original:
 
 ```
 $m->set('name', 'John');
@@ -625,7 +625,7 @@ Returns one of the following:
 :::
 
 :::{php:method} isset
-Return true if field contains unsaved changes (dirty)::
+Return true if field contains unsaved changes (dirty):
 
 $m->_isset('name'); // returns false
 $m->set('name', 'Other Name');
@@ -633,7 +633,7 @@ $m->_isset('name'); // returns true
 :::
 
 :::{php:method} isDirty
-Return true if one or multiple fields contain unsaved changes (dirty)::
+Return true if one or multiple fields contain unsaved changes (dirty):
 
 if ($m->isDirty(['name', 'surname'])) {
 $m->set('full_name', $m->get('name') . ' ' . $m->get('surname'));
@@ -737,7 +737,7 @@ If you don't have field 'name' but you want some other field to be title,
 you can specify that in the property. If titleField is not needed, set it
 to false or point towards a non-existent field.
 
-See: :php:meth::`hasOne::addTitle()`
+See {php:meth}`hasOne::addTitle()`
 :::
 
 :::{php:method} public getTitle
@@ -770,7 +770,7 @@ starting from $offset record.
 
 :::{php:method} public setOrder($field, $desc = null)
 Sets sorting order of returned data records. Here are some usage examples.
-All these syntaxes work the same::
+All these syntaxes work the same:
 
 ```
 $m->setOrder('name, salary desc');
@@ -786,7 +786,7 @@ $m->setOrder([ ['name'], ['salary desc'] ]);
 Keep in mind - `true` means `desc`, desc means descending. Otherwise it will be ascending order by default.
 
 You can also use \Atk4\Data\Persistence\Sql\Expression or array of expressions instead of field name here.
-Or even mix them together::
+Or even mix them together:
 
 ```
 $m->setOrder($m->expr('[net] * [vat]'));

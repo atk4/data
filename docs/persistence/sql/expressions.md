@@ -33,7 +33,7 @@ $query->where($query->expr(
 ```
 
 Yet another curious use for the DSQL library is if you have certain object in
-your ORM implementing :php:class:`Expressionable` interface. Then you can also
+your ORM implementing {php:class}`Expressionable` interface. Then you can also
 use it within expressions:
 
 ```
@@ -62,9 +62,9 @@ Another uses for expressions could be:
 Be careful when using those similar terms as they refer to different things:
 
 - Properties refer to object properties, e.g. `$expr->template`,
-  see :ref:`properties`
+  see {ref}`properties`
 - Arguments refer to template arguments, e.g. `select * from [table]`,
-  see :ref:`expression-template`
+  see {ref}`expression-template`
 - Parameters refer to the way of passing user values within a query
   `where id=:a` and are further explained below.
 
@@ -85,7 +85,7 @@ produce one complete query.
 $expr = $connection->expr('NOW()');
 ```
 
-You can also use :php:meth:`expr()` method to create expression, in which case
+You can also use {php:meth}`expr()` method to create expression, in which case
 you do not have to define "use" block:
 
 ```
@@ -101,14 +101,14 @@ constructor:
 $expr = $connection->expr(['template' => 'NOW()']);
 ```
 
-:ref:`Scroll down <properties>` for full list of properties.
+{ref}`Scroll down <properties>` for full list of properties.
 
 .. _expression-template:
 
 ## Expression Template
 
 When you create a template the first argument is the template. It will be stored
-in :php:attr:`$template` property. Template string can contain arguments in a
+in {php:attr}`$template` property. Template string can contain arguments in a
 square brackets:
 
 - `coalesce([], [])` is same as `coalesce([0], [1])`
@@ -154,7 +154,7 @@ An expression can be rendered into a valid SQL code by calling render() method.
 The method will return an array with string and params.
 
 :::{php:method} render()
-Converts :php:class:`Expression` object to an array with string and params.
+Converts {php:class}`Expression` object to an array with string and params.
 Parameters are replaced with :a, :b, etc.
 :::
 
@@ -162,7 +162,7 @@ Parameters are replaced with :a, :b, etc.
 
 If your expression is a valid SQL query, (such as ```show databases```) you
 might want to execute it. Expression class offers you various ways to execute
-your expression. Before you do, however, you need to have :php:attr:`$connection`
+your expression. Before you do, however, you need to have {php:attr}`$connection`
 property set. (See `Connecting to Database` on more details). In short the
 following code will connect your expression with the database:
 
@@ -170,18 +170,18 @@ following code will connect your expression with the database:
 $expr = $connection->expr();
 ```
 
-If you are looking to use connection :php:class:`Query` class, you may want to
+If you are looking to use connection {php:class}`Query` class, you may want to
 consider using a proper vendor-specific subclass:
 
 ```
 $query = new \Atk4\Data\Persistence\Sql\Mysql\Query('connection' => $connection);
 ```
 
-Finally, you can pass connection class into :php:meth:`executeQuery` directly.
+Finally, you can pass connection class into {php:meth}`executeQuery` directly.
 
 :::{php:method} executeQuery($connection = null)
 Executes expression using current database connection or the one you
-specify as the argument::
+specify as the argument:
 
 ```
 $stmt = $expr->executeQuery($connection);
@@ -195,8 +195,8 @@ Complete this when ResultSet and Connection are implemented
 :::
 
 :::{php:method} expr($template, $arguments)
-Creates a new :php:class:`Expression` object that will inherit current
-:php:attr:`$connection` property. Also if you are creating a
+Creates a new {php:class}`Expression` object that will inherit current
+{php:attr}`$connection` property. Also if you are creating a
 vendor-specific expression/query support, this method must return
 instance of your own version of Expression class.
 
@@ -205,7 +205,7 @@ with database connection.
 :::
 
 :::{php:method} getRows()
-Executes expression and return whole result-set in form of array of hashes::
+Executes expression and return whole result-set in form of array of hashes:
 
 ```
 $data = $connection->expr('show databases')->getRows();
@@ -224,7 +224,7 @@ The output would be
 :::
 
 :::{php:method} getRow()
-Executes expression and returns first row of data from result-set as a hash::
+Executes expression and returns first row of data from result-set as a hash:
 
 ```
 $data = $connection->expr('SELECT @@global.time_zone, @@session.time_zone')->getRow()
@@ -241,7 +241,7 @@ The output would be
 
 :::{php:method} getOne()
 Executes expression and return first value of first row of data from
-result-set::
+result-set:
 
 ```
 $time = $connection->expr('NOW()')->getOne();
@@ -277,8 +277,8 @@ parts of the query. You must not call them in normal circumstances.
 
 :::{php:method::consume($expression, string $escapeMode = self} ESCAPE_PARAM)
 Makes `$sqlCode` part of `$this` expression. Argument may be either a string
-(which will be escaped) or another :php:class:`Expression` or :php:class:`Query`.
-If specified :php:class:`Query` is in "select" mode, then it's automatically
+(which will be escaped) or another {php:class}`Expression` or {php:class}`Query`.
+If specified {php:class}`Query` is in "select" mode, then it's automatically
 placed inside brackets:
 :::
 
@@ -312,7 +312,7 @@ $query->escapeIdentifierSoft('*'); // *
 
 :::{php:method} escapeParam($value)
 Converts value into parameter and returns reference. Used only during query
-rendering. Consider using :php:meth:`consume()` instead, which will also
+rendering. Consider using {php:meth}`consume()` instead, which will also
 handle nested expressions properly.
 
 This escaping method is automatically used for `[...]` expression template tags .
@@ -340,6 +340,6 @@ into :param_01 etc.
 :::
 
 :::{php:attr} debug
-If true, then next call of :php:meth:`execute` will `echo` results
-of :php:meth:`getDebugQuery`.
+If true, then next call of {php:meth}`execute` will `echo` results
+of {php:meth}`getDebugQuery`.
 :::

@@ -1,6 +1,6 @@
 # Results
 
-When query is executed by :php:class:`Connection` or
+When query is executed by {php:class}`Connection` or
 [PDO](http://php.net/manual/en/pdo.query.php), it will return an object that
 can stream results back to you. The PDO class execution produces a
 `Doctrine\DBAL\Result`_ object which

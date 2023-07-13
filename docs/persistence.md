@@ -41,7 +41,7 @@ $m->setPersistence($db);
 ```
 
 :::{php:method} load
-Load active record from the DataSet::
+Load active record from the DataSet:
 
 ```
 $m = $m->load(10);
@@ -53,7 +53,7 @@ If record not found, will throw exception.
 
 :::{php:method} save($data = [])
 Store active record back into DataSet. If record wasn't loaded, store it as
-a new record::
+a new record:
 
 ```
 $m = $m->load(10);
@@ -61,7 +61,7 @@ $m->set('name', 'John');
 $m->save();
 ```
 
-You can pass argument to save() to set() and save()::
+You can pass argument to save() to set() and save():
 
 ```
 $m->unload();
@@ -70,7 +70,7 @@ $m->save(['name' => 'John']);
 :::
 
 :::{php:method} tryLoad
-Same as load() but will return null if record is not found::
+Same as load() but will return null if record is not found:
 
 ```
 $m = $m->tryLoad(10);
@@ -78,7 +78,7 @@ $m = $m->tryLoad(10);
 :::
 
 :::{php:method} unload
-Remove active record and restore model to default state::
+Remove active record and restore model to default state:
 
 ```
 $m = $m->load(10);
@@ -195,7 +195,7 @@ $m->set('balance', 12_200.0);
 Loaded/saved data are always normalized unless the field value normalization
 is intercepted a hook.
 
-Final field flag that is worth mentioning is called :php:attr:`Field::readOnly`
+Final field flag that is worth mentioning is called {php:attr}`Field::readOnly`
 and if set, then value of a field may not be modified directly:
 
 ```
@@ -222,6 +222,7 @@ $m->save(); // stores creation time just fine and also will loade it.
 :::{note}
 If you have been following our "Domain" vs "Persistence" then you can
 :::
+
 ```
 probably see that all of the above functionality described in this section
 apply only to the "Domain" model.
@@ -229,7 +230,7 @@ apply only to the "Domain" model.
 
 ### Typecasting
 
-For full documentation on type-casting see :ref:`typecasting`
+For full documentation on type-casting see {ref}`typecasting`
 
 ### Validation
 
@@ -368,7 +369,7 @@ forgets current ID and as result it will be inserted as new record when you
 execute `save()` next time.
 
 If you pass the `$id` parameter, then the new record will be saved under
-a new ID::
+a new ID:
 
 ```
 // Assume DB with only one record with ID = 123
@@ -803,7 +804,7 @@ $client->hasMany('Invoice')
     ->addField('total_gross', ['aggregate' => 'sum', 'field' => 'gross']);
 ```
 
-This operation is actually consisting of 3 following operations::
+This operation is actually consisting of 3 following operations:
 
 1. Related model is created and linked up using refLink that essentially places
    a condition between $client and $invoice assuming they will appear inside

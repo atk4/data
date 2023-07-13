@@ -434,7 +434,7 @@ Many SQL database engines support defining WITH cursors to use in select, update
 and even delete statements.
 
 :::{php:method} addCteModel(string $name, Model $model, bool $recursive = false)
-Agile toolkit data models also support these cursors. Usage is like this::
+Agile toolkit data models also support these cursors. Usage is like this:
 
 $invoices = new Invoice();
 

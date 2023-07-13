@@ -5,12 +5,12 @@ some of the ways how you can extend this already incredibly powerful library.
 
 ## Advanced Connections
 
-:php:class:`Connection` is incredibly lightweight and powerful in DSQL.
+{php:class}`Connection` is incredibly lightweight and powerful in DSQL.
 The class tries to get out of your way as much as possible.
 
 ### Using DSQL without Connection
 
-You can use :php:class:`Query` and :php:class:`Expression` without connection
+You can use {php:class}`Query` and {php:class}`Expression` without connection
 at all. Simply create expression:
 
 ```
@@ -38,7 +38,7 @@ With queries you might need to select mode first:
 $stmt = $query->mode('delete')->executeStatement($connection);
 ```
 
-The :php:meth:`Expression::execute` is a convenient way to prepare query,
+The {php:meth}`Expression::execute` is a convenient way to prepare query,
 bind all parameters and get `Doctrine\DBAL\Result`, but if you wish to do it manually,
 see `Manual Query Execution`_.
 
@@ -73,8 +73,8 @@ WHERE
     id in (SELECT user_id from expired_users)
 ```
 
-If you are creating :php:class:`Connection` through constructor, you may have
-to explicitly specify property :php:attr:`Connection::queryClass`:
+If you are creating {php:class}`Connection` through constructor, you may have
+to explicitly specify property {php:attr}`Connection::queryClass`:
 
 ```
 $c = new Connection(['connection' => $pdo, 'queryClass' => Atk4\Data\Persistence\Sql\Sqlite\Query::class]);
@@ -88,7 +88,7 @@ namespace and wish to use it.
 ## Extending Query Class
 
 You can add support for new database vendors by creating your own
-:php:class:`Query` class.
+{php:class}`Query` class.
 Let's say you want to add support for new SQL vendor:
 
 ```
@@ -133,7 +133,7 @@ create a separate add-on with it's own namespace. Let's say you have created
 3. Add a nice README file explaining all the quirks or extensions. Provide
    install instructions.
 4. Fork DSQL library.
-5. Modify :php:meth:`Connection::connect` to recognize your database identifier
+5. Modify {php:meth}`Connection::connect` to recognize your database identifier
    and refer to your namespace.
 6. Modify docs/extensions.rst to list name of your database and link to your
    repository / composer requirement.
@@ -149,7 +149,7 @@ and received some traction.
 
 ### Adding New Query Modes
 
-By Default DSQL comes with the following :ref:`query-modes`:
+By Default DSQL comes with the following {ref}`query-modes`:
 
 - select
 - delete
@@ -161,7 +161,7 @@ By Default DSQL comes with the following :ref:`query-modes`:
 You can add new mode if you wish. Let's look at how to add a MySQL specific
 query "LOAD DATA INFILE":
 
-1. Define new property inside your :php:class:`Query` class $templateLoadData.
+1. Define new property inside your {php:class}`Query` class $templateLoadData.
 2. Add public method allowing to specify necessary parameters.
 3. Re-use existing methods/template tags if you can.
 4. Create _render method if your tag rendering is complex.
@@ -198,17 +198,17 @@ $c->dsql()->file('abc.csv')->loadData();
 
 ## Manual Query Execution
 
-If you are not satisfied with :php:meth:`Expression::execute` you can execute
+If you are not satisfied with {php:meth}`Expression::execute` you can execute
 query yourself.
 
-1. :php:meth:`Expression::render` query, then send the 1st element into PDO::prepare();
+1. {php:meth}`Expression::render` query, then send the 1st element into PDO::prepare();
 2. use new $statement to bindValue with the contents of 2nd element;
 3. set result fetch mode and parameters;
 4. execute() your statement
 
 ## Exception Class
 
-DSQL slightly extends and improves :php:class:`Exception` class
+DSQL slightly extends and improves {php:class}`Exception` class
 
 :::{php:class} Exception
 :::

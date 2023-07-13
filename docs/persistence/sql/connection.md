@@ -4,7 +4,7 @@
 
 DSQL supports various database vendors natively but also supports 3rd party
 extensions.
-For current status on database support see: :ref:`databases`.
+For current status on database support see: {ref}`databases`.
 
 :::{php:class} Connection
 :::
@@ -40,14 +40,14 @@ $expr = $app->db->expr('show tables');
 ```
 
 :::{php:method} expr($template, $arguments)
-Creates new Expression class and sets :php:attr:`Expression::connection`.
+Creates new Expression class and sets {php:attr}`Expression::connection`.
 
 :param array $arguments: Other default properties for connection class.
 :returns: new Expression
 :::
 
 :::{php:method} dsql($defaults)
-Creates new Query class and sets :php:attr:`Query::connection`.
+Creates new Query class and sets {php:attr}`Query::connection`.
 
 :param array $defaults: Other default properties for connection class.
 :returns: new Query
@@ -63,7 +63,7 @@ $connection = Atk4\Data\Persistence\Sql\Connection::connect($dsn, 'root', 'root'
 echo 'Time now is: ' . $connection->expr('select now()');
 ```
 
-:php:meth:`connect` will determine appropriate class that can be used for this
+{php:meth}`connect` will determine appropriate class that can be used for this
 DSN string. This can be a PDO class or it may try to use a 3rd party connection
 class.
 
@@ -71,7 +71,7 @@ Connection class is also responsible for executing queries. This is only used
 if you connect to vendor that does not use PDO.
 
 :::{php:method} execute(Expression $expr): \Doctrine\DBAL\Result
-Creates new Expression class and sets :php:attr:`Expression::connection`.
+Creates new Expression class and sets {php:attr}`Expression::connection`.
 
 :param Expression $expr: Expression (or query) to execute
 :returns: `Doctrine\DBAL\Result`
@@ -84,7 +84,7 @@ Adds connection class to the registry for resolving in Connection::resolveConnec
 :param string $connectionClass The connection class to be used for the diver type
 :::
 
-Developers can register custom classes to handle driver types using the `Connection::registerConnectionClass` method::
+Developers can register custom classes to handle driver types using the `Connection::registerConnectionClass` method:
 
    Connection::registerConnectionClass(Custom\MySQL\Connection::class, 'pdo_mysql');
 

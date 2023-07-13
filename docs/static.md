@@ -5,7 +5,7 @@
 :::{php:class} Persistence\Static_
 :::
 
-Static Persistence extends :php:class:`Persistence\Array_` to implement
+Static Persistence extends {php:class}`Persistence\Array_` to implement
 a user-friendly way of specifying data through an array.
 
 ## Usage
@@ -25,7 +25,7 @@ Lets unwrap the example:
 :::{php:method} __construct
 :::
 
-Constructor accepts array as an argument, but the array could be in various forms::
+Constructor accepts array as an argument, but the array could be in various forms:
 
 - can be array of strings ['one', 'two']
 - can be array of hashes. First hash will be examined to pick up fields
@@ -50,6 +50,6 @@ Other fields will appear as-is.
 ### Saving Records
 
 Models that you specify against static persistence will not be marked as
-"Read Only" (:php:attr:`Model::readOnly`), and you will be allowed to save
+"Read Only" ({php:attr}`Model::readOnly`), and you will be allowed to save
 data back. The data will only be stored inside persistence object and will be
 discarded at the end of your PHP script.

@@ -56,7 +56,7 @@ This format allow you to supply additional parameters inside expression.
 You should always use parameters instead of appending values inside your
 expression string (for safety)
 
-You can also use expressions to pass a select action for a specific field::
+You can also use expressions to pass a select action for a specific field:
 
 ### No-table Model Expression
 
@@ -212,6 +212,6 @@ echo $m->get('a')+$m->get('b'); // outputs 14
 
 :::{note}
 If your model is using reloadAfterSave, but you wish to insert
-data without additional query - use :php:meth:`Model::insert()` or
-:php:meth:`Model::import()`.
+data without additional query - use {php:meth}`Model::insert()` or
+{php:meth}`Model::import()`.
 :::

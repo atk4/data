@@ -7,15 +7,15 @@
 
 Query class represents your SQL query in-the-making. Once you create object of
 the Query class, call some of the methods listed below to modify your query. To
-actually execute your query and start retrieving data, see :ref:`fetching-result`
+actually execute your query and start retrieving data, see {ref}`fetching-result`
 section.
 
-You should use :ref:`connect` if possible to create your query objects. All
+You should use {ref}`connect` if possible to create your query objects. All
 examples below are using `$c->dsql()` method which generates Query linked to
 your established database connection.
 
 Once you have a query object you can execute modifier methods such as
-:php:meth:`field()` or :php:meth:`table()` which will change the way how your
+{php:meth}`field()` or {php:meth}`table()` which will change the way how your
 query will act.
 
 Once the query is defined, you can either use it inside another query or
@@ -42,14 +42,14 @@ $query->where('id', 123);
 $query->where('id', '=', 123); // the same
 ```
 
-Most methods will accept :php:class:`Expression` or strings. Strings are
-escaped or quoted (depending on type of argument). By using :php:class:`Expression`
+Most methods will accept {php:class}`Expression` or strings. Strings are
+escaped or quoted (depending on type of argument). By using {php:class}`Expression`
 you can bypass the escaping.
 
 There are 2 types of escaping:
 
-* :php:meth:`Expression::escapeIdentifier()`. Used for field and table names. Surrounds name with *`*.
-* :php:meth:`Expression::escapeParam()`. Will convert value into parameter and replace with *:a*
+* {php:meth}`Expression::escapeIdentifier()`. Used for field and table names. Surrounds name with *`*.
+* {php:meth}`Expression::escapeParam()`. Will convert value into parameter and replace with *:a*
 
 In the next example $a is escaped but $b is parameterized:
 
@@ -74,7 +74,7 @@ the `$query` properly.
 ## Query Modes
 
 When you create new Query it always start in "select" mode. You can switch
-query to a different mode using :php:meth:`mode`. f you don't switch the mode,
+query to a different mode using {php:meth}`mode`. f you don't switch the mode,
 your Query remains in select mode and you can fetch results from it anytime.
 
 The pattern of defining arguments for your Query and then executing allow you
@@ -217,7 +217,7 @@ $c->dsql()->table(['u' => 'user', 's' => 'salary']);
 ```
 
 Inside your query table names and aliases will always be surrounded by backticks.
-If you want to use a more complex expression, use :php:class:`Expression` as
+If you want to use a more complex expression, use {php:class}`Expression` as
 table:
 
 ```
@@ -229,7 +229,7 @@ $c->dsql()->table(
 ```
 
 Finally, you can also specify a different query instead of table, by simply
-passing another :php:class:`Query` object:
+passing another {php:class}`Query` object:
 
 ```
 $subQuery = $c->dsql();
@@ -249,10 +249,10 @@ Method can be executed several times on the same Query object.
 
 :::{php:method} field($fields, $alias = null)
 Adds additional field that you would like to query. If never called, will
-default to :php:attr:`defaultField`, which normally is `*`.
+default to {php:attr}`defaultField`, which normally is `*`.
 
 This method has several call options. $field can be array of fields and
-also can be an :php:class:`Expression` or :php:class:`Query`
+also can be an {php:class}`Expression` or {php:class}`Query`
 
 :param string|array|object $fields: Specify list of fields to fetch
 :param string $alias: Optionally specify alias of field in resulting query
@@ -333,7 +333,7 @@ Adds HAVING condition to your query.
 Both methods use identical call interface. They support one, two or three
 argument calls.
 
-Pass string (field name), :php:class:`Expression` or even :php:class:`Query` as
+Pass string (field name), {php:class}`Expression` or even {php:class}`Query` as
 first argument.
 
 Operator can be specified through a second parameter - $operation. If unspecified,
@@ -445,7 +445,7 @@ having
 
 :::{php:method} group($field)
 Group by functionality. Simply pass either field name as string or
-:class:`Expression` object.
+{class}`Expression` object.
 
 :param mixed $field: field such as "name"
 :returns: $this
@@ -454,7 +454,7 @@ Group by functionality. Simply pass either field name as string or
 The "group by" clause in SQL query accepts one or several fields. It can also
 accept expressions. You can call `group()` with one or several comma-separated
 fields as a parameter or you can specify them in array. Additionally you can
-mix that with :php:class:`Expression` or :php:class:`Expressionable` objects.
+mix that with {php:class}`Expression` or {php:class}`Expressionable` objects.
 
 Few examples:
 
@@ -613,7 +613,7 @@ Did you know: you can use these cursors when joining your query to other tables.
 Keep in mind that if any of cursors added in your query will be recursive, then all cursors will
 be set recursive. That's how SQL want it to be.
 
-Example::
+Example:
 
 ```
 $quotes = $q->table('quotes')
@@ -656,7 +656,7 @@ Limit how many rows will be returned.
 :returns: $this
 :::
 
-Use this to limit your :php:class:`Query` result-set:
+Use this to limit your {php:class}`Query` result-set:
 
 ```
 $q->limit(5, 10);
@@ -677,7 +677,7 @@ multiple fields.
 :returns: $this
 :::
 
-Use this to order your :php:class:`Query` result-set:
+Use this to order your {php:class}`Query` result-set:
 
 ```
 $q->order('name'); // .. order by name
@@ -751,7 +751,7 @@ Same syntax as for Insert Query.
 ### Other settings
 
 Limit and Order are normally not included to avoid side-effects, but you can
-modify :php:attr:`$templateUpdate` to include those tags.
+modify {php:attr}`$templateUpdate` to include those tags.
 
 ## Delete Query
 
@@ -762,7 +762,7 @@ Same syntax as for Select Query.
 ### Other settings
 
 Limit and Order are normally not included to avoid side-effects, but you can
-modify :php:attr:`$templateUpdate` to include those tags.
+modify {php:attr}`$templateUpdate` to include those tags.
 
 ## Dropping attributes
 
@@ -793,7 +793,7 @@ to the same connection as the parent.
 :::
 
 :::{php:method} expr($template, $arguments)
-Method very similar to :php:method:`Connection::expr` but will return a
+Method very similar to {php:method}`Connection::expr` but will return a
 corresponding Expression class for this query.
 :::
 
@@ -803,7 +803,7 @@ Method will return current_timestamp(precision) sub-query.
 
 :::{php:method} option($option, $mode)
 Use this to set additional options for particular query mode.
-For example::
+For example:
 
 ```
 $q
@@ -819,7 +819,7 @@ $q->mode('insert')->executeStatement(); // insert ignore into `test` (`name`) va
 :::
 
 :::{php:method} _setArgs($what, $alias, $value)
-Internal method which sets value in :php:attr:`Expression::args` array.
+Internal method which sets value in {php:attr}`Expression::args` array.
 It doesn't allow duplicate aliases and throws Exception in such case.
 Argument $what can be 'table' or 'field'.
 :::
@@ -827,6 +827,7 @@ Argument $what can be 'table' or 'field'.
 :::{php:method} caseExpr($operand)
 Returns new Query object with CASE template.
 You can pass operand as parameter to create SQL like
+
 ```
 CASE <operand> WHEN <expression> THEN <expression> END type of SQL statement.
 ```
@@ -868,7 +869,7 @@ case "status" when 'New' then "t2"."expose_new" when 'Used' then "t2"."expose_us
 :::{php:attr} mode
 Query will use one of the predefined "templates". The mode will contain
 name of template used. Basically it's array key of $templates property.
-See :ref:`Query Modes`.
+See {ref}`Query Modes`.
 :::
 
 :::{php:attr} defaultField
@@ -876,25 +877,25 @@ If no fields are defined, this field is used.
 :::
 
 :::{php:attr} templateSelect
-Template for SELECT query. See :ref:`Query Modes`.
+Template for SELECT query. See {ref}`Query Modes`.
 :::
 
 :::{php:attr} templateInsert
-Template for INSERT query. See :ref:`Query Modes`.
+Template for INSERT query. See {ref}`Query Modes`.
 :::
 
 :::{php:attr} templateReplace
-Template for REPLACE query. See :ref:`Query Modes`.
+Template for REPLACE query. See {ref}`Query Modes`.
 :::
 
 :::{php:attr} templateUpdate
-Template for UPDATE query. See :ref:`Query Modes`.
+Template for UPDATE query. See {ref}`Query Modes`.
 :::
 
 :::{php:attr} templateDelete
-Template for DELETE query. See :ref:`Query Modes`.
+Template for DELETE query. See {ref}`Query Modes`.
 :::
 
 :::{php:attr} templateTruncate
-Template for TRUNCATE query. See :ref:`Query Modes`.
+Template for TRUNCATE query. See {ref}`Query Modes`.
 :::

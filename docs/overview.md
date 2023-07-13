@@ -57,11 +57,11 @@ If you have worked with other ORMs, read the following sections to avoid confusi
 - Represent logical data column (e.g. "date_of_birth")
 - Stores column meta-information (e.g. ['type' => 'date', 'caption' => 'Birth Date'])
 - Handles value normalization
-- Documentation: :php:class:`Field`
+- Documentation: {php:class}`Field`
 
 :::{note}
-Meta-information may be a persistence detail, (:php:attr:`Field::actual`)
-or presentation detail (:php:attr:`Field::ui`). Field class does not interpret
+Meta-information may be a persistence detail, ({php:attr}`Field::actual`)
+or presentation detail ({php:attr}`Field::ui`). Field class does not interpret
 the value, it only stores it.
 :::
 
@@ -72,7 +72,7 @@ the value, it only stores it.
 - Stores list of Fields
 - Stores individual row
 - Handle operations over single or all records from Data Set
-- Documentation: :php:class:`Model`
+- Documentation: {php:class}`Model`
 
 :::{note}
 Model object is defined in such a way to contain enough information to
@@ -91,7 +91,7 @@ in most cases, you never instantiate multiple instances of a model class.
 - Stores connection information
 - Translate single or multi-record operations into vendor-specific language
 - Type-casts standard data types into vendor-specific format
-- Documentation: :php:class:`Persistence`
+- Documentation: {php:class}`Persistence`
 
 ## Code Layers
 
@@ -234,7 +234,7 @@ echo $table->render();
 Class `\Atk4\Ui\Table` here is designed to work with persistencies and models -
 it will populate columns of correct type, fetch data, calculate totals if needed.
 But what if you have your data inside an array?
-You can use :php:class:`Persistence\Static_` for that:
+You can use {php:class}`Persistence\Static_` for that:
 
 ```
 $table = \Atk4\Ui\Table::addTo($app);

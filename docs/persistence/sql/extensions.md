@@ -32,4 +32,4 @@ Most PDO vendors should work out of the box
 
  ========= =========  ============================
 
-See :ref:`new_vendor` for more details on how to add support for your driver.
+See {ref}`new_vendor` for more details on how to add support for your driver.
