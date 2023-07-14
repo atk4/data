@@ -79,14 +79,13 @@ $salary
     ->table('salary')
     ->field(['emp_no', 'max_salary' => $eMaxSalary, 'months' => $eMonths])
     ->group('emp_no')
-    ->order('-max_salary')
+    ->order('-max_salary');
 
 // Define sub-query for employee "id" with certain birth-date
 $employees = $salary->dsql()
     ->table('employees')
     ->where('birth_date', '1961-05-02')
-    ->field('emp_no')
-    ;
+    ->field('emp_no');
 
 // Use sub-select to condition salaries
 $salary->where('emp_no', $employees);

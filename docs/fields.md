@@ -247,8 +247,6 @@ $model->getField('age')->setNull(); // no exception
 $model->save(); // still getting exception here
 ```
 
-See also {php:method}`Model::setNull`.
-
 :::{php:method} get
 :::
 
