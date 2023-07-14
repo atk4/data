@@ -80,8 +80,8 @@ Creates new Expression class and sets {php:attr}`Expression::connection`.
 :::{php:method} registerConnectionClass($connectionClass, $connectionType)
 Adds connection class to the registry for resolving in Connection::resolveConnectionClass method.
 
-:param string $connectionType Alias of the connection
-:param string $connectionClass The connection class to be used for the diver type
+:param string $connectionType: Alias of the connection
+:param string $connectionClass: The connection class to be used for the diver type
 :::
 
 Developers can register custom classes to handle driver types using the `Connection::registerConnectionClass` method:

@@ -310,16 +310,13 @@ Method can be executed several times on the same Query object.
 ### Setting where and having clauses
 
 :::{php:method} where($field, $operation, $value)
-:::
-
-```
 Adds WHERE condition to your query.
 
 :param mixed $field: field such as "name"
 :param mixed $operation: comparison operation such as ">" (optional)
 :param mixed $value: value or expression
 :returns: $this
-```
+:::
 
 :::{php:method} having($field, $operation, $value)
 Adds HAVING condition to your query.
@@ -478,8 +475,8 @@ Method can be executed several times on the same Query object.
 Quite often when you use `group by` in your queries you also would like to
 concatenate group of values.
 
-:param mixed $field Field name or object
-:param string $separator Optional separator to use. It's comma by default
+:param mixed $field: Field name or object
+:param string $separator: Optional separator to use. It's comma by default
 :::
 
 Different SQL engines have different syntax for doing this.
