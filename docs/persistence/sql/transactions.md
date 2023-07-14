@@ -4,7 +4,6 @@ When you work with the DSQL, you can work with transactions. There are 2
 enhancements to the standard functionality of transactions in DSQL:
 
 1. You can start nested transactions.
-
 2. You can use {php:meth}`Connection::atomic()` which has a nicer syntax.
 
 It is recommended to always use atomic() in your code.

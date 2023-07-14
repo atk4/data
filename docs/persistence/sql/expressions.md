@@ -79,8 +79,6 @@ produce one complete query.
 
 ## Creating Expression
 
-:
-
 ```
 $expr = $connection->expr('NOW()');
 ```
@@ -160,7 +158,7 @@ Parameters are replaced with :a, :b, etc.
 
 ## Executing Expressions
 
-If your expression is a valid SQL query, (such as ```show databases```) you
+If your expression is a valid SQL query, (such as `show databases`) you
 might want to execute it. Expression class offers you various ways to execute
 your expression. Before you do, however, you need to have {php:attr}`$connection`
 property set. (See `Connecting to Database` on more details). In short the
@@ -185,9 +183,9 @@ specify as the argument:
 
 ```
 $stmt = $expr->executeQuery($connection);
+```
 
 returns `Doctrine\DBAL\Result`.
-```
 :::
 
 :::{todo}
@@ -275,17 +273,17 @@ composer require jdorn/sql-formatter
 The following methods are useful if you're building your own code for rendering
 parts of the query. You must not call them in normal circumstances.
 
-:::{php:method::consume($expression, string $escapeMode = self} ESCAPE_PARAM)
+:::{php:method} consume($expression, string $escapeMode = self::ESCAPE_PARAM)
 Makes `$sqlCode` part of `$this` expression. Argument may be either a string
 (which will be escaped) or another {php:class}`Expression` or {php:class}`Query`.
 If specified {php:class}`Query` is in "select" mode, then it's automatically
 placed inside brackets:
-:::
 
 ```
 $query->consume('first_name'); // `first_name`
 $query->consume($otherQuery); // will merge parameters and return string
 ```
+:::
 
 :::{php:method} escapeIdentifier($sqlCode)
 Always surrounds `$sql code` with back-ticks.
@@ -301,7 +299,6 @@ This escaping method is automatically used for `{{...}}` expression template tag
 It will smartly escape table.field type of strings resulting in `table`.`field`.
 
 Will do nothing if it finds "*", "`" or "(" character in `$sqlCode`:
-:::
 
 ```
 $query->escapeIdentifierSoft('first_name'); // `first_name`
@@ -309,6 +306,7 @@ $query->escapeIdentifierSoft('first.name'); // `first`.`name`
 $query->escapeIdentifierSoft('(2 + 2)'); // (2 + 2)
 $query->escapeIdentifierSoft('*'); // *
 ```
+:::
 
 :::{php:method} escapeParam($value)
 Converts value into parameter and returns reference. Used only during query

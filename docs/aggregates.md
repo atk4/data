@@ -10,7 +10,7 @@
 
 In order to create model aggregates the AggregateModel model needs to be used:
 
-### Grouping
+## Grouping
 
 AggregateModel model can be used for grouping:
 

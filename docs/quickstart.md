@@ -25,7 +25,7 @@ aggregate sub-query.
 
 If you wish to try out some examples in this guide, you will need the following:
 
-- PHP 7.4 or above.
+- PHP 7.4 or above
 - any of supported database - Sqlite, MySQL/MariaDB, PostgreSQL, MSSQL or Oracle
 
 ## Core Concepts
@@ -150,8 +150,7 @@ When you create a new model object, you can change its state to perform
 various operations on your data. The state can be broken down into the
 following categories:
 
-Persistence
-^^^^^^^^^^^
+#### Persistence
 
 When you create instance of a model (`new Model()`) you need to specify
 {php:class}`Persistence` as a parameter. If you don't you can still use
@@ -166,8 +165,7 @@ by creating another instance of the same class and copying data over.
 You must however remember that any fields that you have added in-line will
 not be recreated.
 
-DataSet (Conditions)
-^^^^^^^^^^^^^^^^^^^^
+#### DataSet (Conditions)
 
 Model object may have one or several conditions applied. Conditions will limit
 which records model can load (make active) and save. Once the condition is added,
@@ -191,8 +189,7 @@ myexport($m, ['id', 'username', 'country_id']);
 If you want to temporarily add conditions, then you can either clone the model
 or use {php:meth}`Model::tryLoadBy`.
 
-Active Record
-^^^^^^^^^^^^^
+#### Active Record
 
 Active Record is a third essential piece of information that your model stores.
 You can load / unload records like this:
@@ -227,8 +224,7 @@ $m->set('country_id', 3);
 $m->save(); // will generate exception because model you try to save doesn't match conditions set
 ```
 
-Other Parameters
-^^^^^^^^^^^^^^^^
+#### Other Parameters
 
 Apart from the main 3 pieces of "state" your Model holds there can also be
 some other parameters such as:

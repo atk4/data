@@ -1,4 +1,4 @@
-## Agile Data Documentation
+# Agile Data Documentation
 
 Contents:
 
@@ -27,7 +27,7 @@ extensions
 persistence/csv
 :::
 
-## Indices and tables
+# Indices and tables
 
-* {ref}`genindex`
-* {ref}`search`
+- {ref}`genindex`
+- {ref}`search`

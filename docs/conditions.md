@@ -59,7 +59,9 @@ $girls = $girls->load(1); // exception
 
 Most database drivers will support the following additional operations:
 
-    >, <, >=, <=, !=, in, not in, like, not like, regexp, not regexp
+```
+>, <, >=, <=, !=, in, not in, like, not like, regexp, not regexp
+```
 
 The operation must be specified as second argument:
 

@@ -221,12 +221,9 @@ $m->save(); // stores creation time just fine and also will loade it.
 
 :::{note}
 If you have been following our "Domain" vs "Persistence" then you can
-:::
-
-```
 probably see that all of the above functionality described in this section
 apply only to the "Domain" model.
-```
+:::
 
 ### Typecasting
 

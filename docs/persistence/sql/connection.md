@@ -96,7 +96,9 @@ Adds connection class to the registry for resolving in Connection::resolveConnec
 
 Developers can register custom classes to handle driver types using the `Connection::registerConnectionClass` method:
 
-   Connection::registerConnectionClass(Custom\MySQL\Connection::class, 'pdo_mysql');
+```
+Connection::registerConnectionClass(Custom\MySQL\Connection::class, 'pdo_mysql');
+```
 
 :::{php:method} connectDbalConnection(array $dsn)
 The method should establish connection with DB and return the underlying connection object used by

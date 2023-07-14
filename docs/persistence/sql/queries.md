@@ -48,8 +48,8 @@ you can bypass the escaping.
 
 There are 2 types of escaping:
 
-* {php:meth}`Expression::escapeIdentifier()`. Used for field and table names. Surrounds name with *`*.
-* {php:meth}`Expression::escapeParam()`. Will convert value into parameter and replace with *:a*
+- {php:meth}`Expression::escapeIdentifier()`. Used for field and table names. Surrounds name with *`*.
+- {php:meth}`Expression::escapeParam()`. Will convert value into parameter and replace with *:a*
 
 In the next example $a is escaped but $b is parameterized:
 
@@ -497,7 +497,8 @@ That's why we have this method which will take care of this.
 
 ```
 $q->groupConcat('phone', ';');
-    // group_concat('phone', ';')
+
+// group_concat('phone', ';')
 ```
 
 If you need to add more parameters for this method, then you can extend this class
@@ -599,8 +600,7 @@ specify "inner", "straight" or any other join type that your database support.
 
 Method can be executed several times on the same Query object.
 
-Joining on expression
-`````````````````````
+#### Joining on expression
 
 For a more complex join conditions, you can pass second argument as expression:
 
@@ -882,6 +882,7 @@ $s = $this->q()->caseExpr('status')
 ```sql
 case "status" when 'New' then "t2"."expose_new" when 'Used' then "t2"."expose_used" else null end
 ```
+:::
 
 ## Properties
 

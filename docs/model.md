@@ -267,8 +267,8 @@ $m->addFields([
 ]);
 ```
 
-Read-only Fields
-^^^^^^^^^^^^^^^^
+#### Read-only Fields
+
 Although you may make any field read-only:
 
 ```
@@ -398,8 +398,7 @@ when data is loaded, saved, deleted etc. Hooks are typically defined in
 There are countless uses for hooks and even more opportunities to use
 hook by all sorts of extensions.
 
-Validation
-^^^^^^^^^^
+#### Validation
 
 Validation is an extensive topic, but the simplest use-case would be through
 a hook:
@@ -424,8 +423,7 @@ $model->set('name', 'C#');
 $model->saveAndUnload(); // exception here
 ```
 
-Other Uses
-^^^^^^^^^^
+#### Other Uses
 
 Other uses for model hooks are explained in {ref}`Hooks`
 
@@ -627,17 +625,21 @@ Returns one of the following:
 :::{php:method} isset
 Return true if field contains unsaved changes (dirty):
 
+```
 $m->_isset('name'); // returns false
 $m->set('name', 'Other Name');
 $m->_isset('name'); // returns true
+```
 :::
 
 :::{php:method} isDirty
 Return true if one or multiple fields contain unsaved changes (dirty):
 
+```
 if ($m->isDirty(['name', 'surname'])) {
-$m->set('full_name', $m->get('name') . ' ' . $m->get('surname'));
+    $m->set('full_name', $m->get('name') . ' ' . $m->get('surname'));
 }
+```
 
 When the code above is placed in beforeSave hook, it will only be executed
 when certain fields have been changed. If your recalculations are expensive,

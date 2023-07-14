@@ -436,11 +436,13 @@ and even delete statements.
 :::{php:method} addCteModel(string $name, Model $model, bool $recursive = false)
 Agile toolkit data models also support these cursors. Usage is like this:
 
+```
 $invoices = new Invoice();
 
 $contacts = new Contact();
 $contacts->addCteModel('inv', $invoices);
 $contacts->join('inv.cid');
+```
 :::
 
 ```sql

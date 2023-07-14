@@ -145,7 +145,7 @@ $gross = $user->ref('Invoice')
 
 Another important aspect of Domain-model code is that fields such as `gross` or
 `name` can be either a physical values in the database or can be mapped to
-expressions (such as `vat`+`net`).
+expressions (such as `vat + net`).
 
 A typical method of your model class will be written in "domain-model" code.
 
