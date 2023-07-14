@@ -69,7 +69,7 @@ layer, so be sure to look at the rest of the suite.
 
 #. PHP 5.5 and above
 
-.. _installation:
+(installation)=
 
 ## Installation
 

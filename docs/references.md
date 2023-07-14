@@ -1,4 +1,4 @@
-.. _References:
+(References)=
 
 # References
 

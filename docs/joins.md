@@ -1,4 +1,4 @@
-.. _Joins:
+(Joins)=
 
 :::{php:namespace} Atk4\Data\Model
 :::

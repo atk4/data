@@ -1,4 +1,4 @@
-.. _Model:
+(Model)=
 
 # Model
 
@@ -564,7 +564,7 @@ Null restore to full set of fields. This will also unload active record.
 Contains list of fields to be loaded / accessed.
 :::
 
-.. _Active Record:
+(Active_Record)=
 
 ## Setting and Getting active record data
 
@@ -711,7 +711,7 @@ or as defaults:
 $m = new MyModel($db, ['titleField' => 'full_name']);
 ```
 
-.. _idField:
+(idField)=
 
 ### ID Field
 
@@ -723,7 +723,7 @@ ID value of loaded entity cannot be changed. If you want to duplicate a record,
 you need to create a new entity and save it.
 :::
 
-.. _titleField:
+(titleField)=
 
 ### Title Field
 
@@ -748,7 +748,7 @@ Return title field value of currently loaded record.
 Returns array of title field values of all model records in format [id => title].
 :::
 
-.. _caption:
+(caption)=
 
 ### Model Caption
 

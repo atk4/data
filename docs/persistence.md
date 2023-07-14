@@ -1,4 +1,4 @@
-.. _Persistence:
+(Persistence)=
 
 # Loading and Saving (Persistence)
 
@@ -709,7 +709,7 @@ $u = $u->load(123);
 $u->withPersistence($sess)->save();
 ```
 
-.. _Action:
+(Action)=
 
 ## Actions
 

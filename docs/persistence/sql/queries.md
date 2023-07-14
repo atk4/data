@@ -1,4 +1,4 @@
-.. _query:
+(query)=
 
 :::{php:class} Query
 :::
@@ -69,7 +69,7 @@ $query->where($c->expr('{} = []', ['b', 'a']));
 Parameters which you specify into Expression will be preserved and linked into
 the `$query` properly.
 
-.. _query-modes:
+(query-modes)=
 
 ## Query Modes
 

@@ -1,4 +1,4 @@
-.. _SQL:
+(SQL)=
 
 # Static Persistence
 

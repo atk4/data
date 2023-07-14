@@ -1,4 +1,4 @@
-.. _databases:
+(databases)=
 
 ## Vendor support and Extensions
 

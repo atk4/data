@@ -1,4 +1,4 @@
-.. _quickstart:
+(quickstart)=
 
 # Quickstart
 
@@ -48,11 +48,12 @@ Persistence (see {ref}`Persistence`)
     possible to switch from one persistence to another and compensate for the
     feature differences without major refactoring.
 
+% TODO document entity and remove "DataSet"
 DataSet (see {ref}`DataSet`)
     A set of physical records stored on your database server that correspond
     to the Business Model.
 
-Active Record (see {ref}`Active Record`)
+Active Record (see {ref}`Active_Record`)
     Model can load individual record from DataSet, work with it and save it back
     into DataSet. While the record is loaded, we call it an Active Record.
 

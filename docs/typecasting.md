@@ -1,4 +1,4 @@
-.. _Typecasting:
+(Typecasting)=
 
 # Typecasting
 

@@ -1,4 +1,4 @@
-.. _Aggregates:
+(Aggregates)=
 
 # Model Aggregates
 

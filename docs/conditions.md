@@ -1,5 +1,6 @@
-.. _DataSet:
-.. _conditions:
+(DataSet)=
+
+(conditions)=
 
 :::{php:namespace} Atk4\Data
 :::

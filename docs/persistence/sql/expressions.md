@@ -1,4 +1,4 @@
-.. _expr:
+(expr)=
 
 :::{php:class} Expression
 :::
@@ -103,7 +103,7 @@ $expr = $connection->expr(['template' => 'NOW()']);
 
 {ref}`Scroll down <properties>` for full list of properties.
 
-.. _expression-template:
+(expression-template)=
 
 ## Expression Template
 
@@ -318,7 +318,7 @@ handle nested expressions properly.
 This escaping method is automatically used for `[...]` expression template tags .
 :::
 
-.. _properties:
+(properties)=
 
 ## Other Properties
 

@@ -215,7 +215,7 @@ after initial insert.
 If you wish, you can modify the code and insert historical records into other
 table.
 
-.. _soft_delete:
+(soft_delete)=
 
 ## Soft Delete
 

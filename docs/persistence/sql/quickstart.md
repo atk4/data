@@ -1,4 +1,4 @@
-.. _quickstart:
+(quickstart)=
 
 # Quickstart
 
@@ -213,7 +213,7 @@ if ($confirmed) {
 }
 ```
 
-.. _fething-result:
+(fething-result)=
 
 ## Fetching Result
 

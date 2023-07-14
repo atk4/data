@@ -83,7 +83,7 @@ $c = new Connection(['connection' => $pdo, 'queryClass' => Atk4\Data\Persistence
 This is also useful, if you have created your own Query class in a different
 namespace and wish to use it.
 
-.. _extending_query:
+(extending_query)=
 
 ## Extending Query Class
 
@@ -119,7 +119,7 @@ on the connection:
 $c = \Atk4\Data\Persistence\Sql\Connection::connect($dsn, $user, $pass, ['queryClass' => 'Query_MyVendor']);
 ```
 
-.. _new_vendor:
+(new_vendor)=
 
 ### Adding new vendor support through extension
 

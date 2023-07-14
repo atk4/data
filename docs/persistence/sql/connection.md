@@ -1,4 +1,4 @@
-.. _connect:
+(connect)=
 
 # Connection
 
