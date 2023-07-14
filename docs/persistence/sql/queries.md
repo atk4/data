@@ -182,9 +182,11 @@ select `date`, `debit`, `credit` from (
 :::{php:method} table($table, $alias)
 Specify a table to be used in a query.
 
+```{eval-rst}
 :param mixed $table: table such as "employees"
 :param mixed $alias: alias of table
 :returns: $this
+```
 :::
 
 This method can be invoked using different combinations of arguments.
@@ -254,9 +256,11 @@ default to {php:attr}`defaultField`, which normally is `*`.
 This method has several call options. $field can be array of fields and
 also can be an {php:class}`Expression` or {php:class}`Query`
 
+```{eval-rst}
 :param string|array|object $fields: Specify list of fields to fetch
 :param string $alias: Optionally specify alias of field in resulting query
 :returns: $this
+```
 :::
 
 Basic Examples:
@@ -312,19 +316,23 @@ Method can be executed several times on the same Query object.
 :::{php:method} where($field, $operation, $value)
 Adds WHERE condition to your query.
 
+```{eval-rst}
 :param mixed $field: field such as "name"
 :param mixed $operation: comparison operation such as ">" (optional)
 :param mixed $value: value or expression
 :returns: $this
+```
 :::
 
 :::{php:method} having($field, $operation, $value)
 Adds HAVING condition to your query.
 
+```{eval-rst}
 :param mixed $field: field such as "name"
 :param mixed $operation: comparison operation such as ">" (optional)
 :param mixed $value: value or expression
 :returns: $this
+```
 :::
 
 Both methods use identical call interface. They support one, two or three
@@ -444,8 +452,10 @@ having
 Group by functionality. Simply pass either field name as string or
 {class}`Expression` object.
 
+```{eval-rst}
 :param mixed $field: field such as "name"
 :returns: $this
+```
 :::
 
 The "group by" clause in SQL query accepts one or several fields. It can also
@@ -475,8 +485,10 @@ Method can be executed several times on the same Query object.
 Quite often when you use `group by` in your queries you also would like to
 concatenate group of values.
 
+```{eval-rst}
 :param mixed $field: Field name or object
 :param string $separator: Optional separator to use. It's comma by default
+```
 :::
 
 Different SQL engines have different syntax for doing this.
@@ -500,10 +512,12 @@ group_concat('phone' order by 'date' desc separator ';')
 :::{php:method} join($foreignTable, $masterField, $joinKind)
 Join results with additional table using "JOIN" statement in your query.
 
+```{eval-rst}
 :param string|array $foreignTable: table to join (may include field and alias)
 :param mixed $masterField: main field (and table) to join on or Expression
 :param string $joinKind: 'left' (default), 'inner', 'right' etc - which join type to use
 :returns: $this
+```
 :::
 
 When joining with a different table, the results will be stacked by the SQL
@@ -648,9 +662,11 @@ from `employees`
 :::{php:method} limit($cnt, $shift)
 Limit how many rows will be returned.
 
+```{eval-rst}
 :param int $cnt: number of rows to return
 :param int $shift: offset, how many rows to skip
 :returns: $this
+```
 :::
 
 Use this to limit your {php:class}`Query` result-set:
@@ -669,9 +685,11 @@ $q->limit(5);
 Orders query result-set in ascending or descending order by single or
 multiple fields.
 
+```{eval-rst}
 :param string $order: one or more field names, expression etc.
 :param int $desc: pass true to sort descending
 :returns: $this
+```
 :::
 
 Use this to order your {php:class}`Query` result-set:
@@ -692,9 +710,11 @@ Method can be executed several times on the same Query object.
 :::{php:method} set($field, $value)
 Assigns value to the field during insert.
 
+```{eval-rst}
 :param string $field: name of the field
 :param mixed $value: value or expression
 :returns: $this
+```
 :::
 
 Example:
@@ -767,7 +787,9 @@ If you have called where() several times, there is a way to remove all the
 where clauses from the query and start from beginning:
 
 :::{php:method} reset($tag)
+```{eval-rst}
 :param string $tag: part of the query to delete/reset.
+```
 :::
 
 Example:

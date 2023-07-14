@@ -221,8 +221,10 @@ be possible. You also risk injection or expose some sensitive data to the user.
 :::{php:method} __construct($message, $code)
 Create new exception
 
+```{eval-rst}
 :param string|array $message: Describes the problem
 :param int $code: Error code
+```
 :::
 
 Usage:
@@ -240,7 +242,9 @@ still can get it if you really need it:
 :::{php:method} getParams()
 Return additional parameters, that might be helpful to find error.
 
+```{eval-rst}
 :returns: array
+```
 :::
 
 Any DSQL-related code must always throw Atk4\Data\Persistence\Sql\Exception. Query-related
