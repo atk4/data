@@ -357,7 +357,7 @@ should give you some idea what kind of information is sent to the database.
 
 Adding Fields, Joins, Expressions and References creates more objects and
 'adds' them into Model (to better understand how Model can behave like a
-container for these objects, see [documentation on Agile Core Containers](http://agile-core.readthedocs.io/en/develop/container.html)).
+container for these objects, see [documentation on Agile Core Containers](https://agile-core.readthedocs.io/en/develop/container.html)).
 This architecture of Agile Data allows database persistence to implement
 different logic that will properly manipulate features of that specific
 database engine.

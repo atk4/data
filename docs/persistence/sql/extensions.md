@@ -28,7 +28,7 @@ Most PDO vendors should work out of the box
 
  ========= =========  
 
-# Connection_MyVendor   Full      myvendor:  http://github/test/myvendor
+# Connection_MyVendor   Full      myvendor:  https://github/test/myvendor
 
  ========= =========  ============================
 

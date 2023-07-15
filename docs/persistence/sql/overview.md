@@ -58,7 +58,7 @@ used in any PHP project, big or small.
 :alt: Agile Toolkit Stack
 :::
 
-DSQL is also a part of [Agile Toolkit](http://agiletoolkit.org/) framework and works best with
+DSQL is also a part of [Agile Toolkit](https://agiletoolkit.org/) framework and works best with
 [Agile Models](https://github.com/atk4/models). Your project may benefit from a higher-level data abstraction
 layer, so be sure to look at the rest of the suite.
 
@@ -71,7 +71,7 @@ layer, so be sure to look at the rest of the suite.
 ## Installation
 
 The recommended way to install DSQL is with
-[Composer](http://getcomposer.org). Composer is a dependency management tool
+[Composer](https://getcomposer.org). Composer is a dependency management tool
 for PHP that allows you to declare the dependencies your project has and it
 automatically installs them into your project.
 
@@ -99,7 +99,7 @@ require 'vendor/autoload.php';
 
 You can find out more on how to install Composer, configure auto-loading, and
 other best-practices for defining dependencies at
-[getcomposer.org](http://getcomposer.org).
+[getcomposer.org](https://getcomposer.org).
 
 ## Getting Started
 
@@ -131,7 +131,7 @@ install DSQL dependencies using Composer:
 
 ```bash
 git clone https://github.com/atk4/dsql.git
-cd dsql && curl -s http://getcomposer.org/installer | php && ./composer.phar install --dev
+cd dsql && curl -s https://getcomposer.org/installer | php && ./composer.phar install --dev
 ```
 
 DSQL is unit tested with PHPUnit. Run the tests using the Makefile:
@@ -157,7 +157,7 @@ Look inside these the .xml files for further information and connection details.
 
 We want to ensure that DSQL is a secure library for everyone. If you've
 discovered a security vulnerability in DSQL, we appreciate your help in
-disclosing it to us in a [responsible manner](http://en.wikipedia.org/wiki/Responsible_disclosure).
+disclosing it to us in a [responsible manner](https://en.wikipedia.org/wiki/Responsible_disclosure).
 
 Publicly disclosing a vulnerability can put the entire community at risk. If
 you've discovered a security concern, please email us at

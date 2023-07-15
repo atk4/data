@@ -244,7 +244,7 @@ WHERE
 ```
 
 where the other 20 is passed through parameter. Refer to
-http://dsql.readthedocs.io/en/develop/expressions.html for full documentation
+https://dsql.readthedocs.io/en/develop/expressions.html for full documentation
 on expressions.
 
 ### Expression as first argument
