@@ -58,7 +58,7 @@ used in any PHP project, big or small.
 :alt: Agile Toolkit Stack
 :::
 
-DSQL is also a part of [Agile Toolkit](https://agiletoolkit.org/) framework and works best with
+DSQL is also a part of [Agile Toolkit](https://atk4.org/) framework and works best with
 [Agile Models](https://github.com/atk4/models). Your project may benefit from a higher-level data abstraction
 layer, so be sure to look at the rest of the suite.
 

@@ -214,8 +214,7 @@ This method is also injected into the model, that is associated with
 `$model->expr('foo')`.
 :::
 
-This method is quite similar to \Atk4\Data\Persistence\Sql\Query::expr() method explained here:
-https://dsql.readthedocs.io/en/stable/expressions.html
+This method is quite similar to \Atk4\Data\Persistence\Sql\Query::expr() method.
 
 There is, however, one difference. Expression class requires all named arguments
 to be specified. Use of Model::expr() allows you to specify field names and those
@@ -241,9 +240,6 @@ The most basic action you can use with SQL persistence is 'select':
 ```
 $action = $model->action('select');
 ```
-
-Action is implemented by DSQL library, that is further documented at
-https://dsql.readthedocs.io (See section Queries).
 
 ### Action: select
 
@@ -357,8 +353,6 @@ using single model with cross-persistencies should still be possible, so you
 should be able to retrieve model data from stored procedure then cache it.
 
 ### as a Model method
-
-You should be familiar with https://dsql.readthedocs.io/en/develop/expressions.html.
 
 In short this should allow you to build and execute any SQL statement:
 

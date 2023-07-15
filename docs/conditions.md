@@ -243,9 +243,7 @@ WHERE
         (20 + :a)
 ```
 
-where the other 20 is passed through parameter. Refer to
-https://dsql.readthedocs.io/en/develop/expressions.html for full documentation
-on expressions.
+where the other 20 is passed through parameter.
 
 ### Expression as first argument
 

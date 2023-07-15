@@ -3,7 +3,7 @@
 # Hooks
 
 Hook is a mechanism for adding callbacks. The core features of Hook sub-system
-(explained in detail here https://agile-core.readthedocs.io/en/develop/hook.html)
+(explained in detail here https://atk4-core.readthedocs.io/en/develop/hook.html)
 include:
 
 - ability to define "spots" in PHP code, such as "beforeLoad".
