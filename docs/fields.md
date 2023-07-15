@@ -3,9 +3,6 @@
 
 (Fields)=
 
-:::{php:namespace} Atk4\Data
-:::
-
 :::{php:class} Field
 :::
 

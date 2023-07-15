@@ -1,9 +1,6 @@
 :::{php:namespace} Atk4\Data
 :::
 
-:::{php:namespace} Atk4\Data\Field
-:::
-
 # Data Types
 
 ATK Data framework implements a consistent and extensible type system with the
@@ -11,9 +8,7 @@ following goals:
 
 ## Type specification
 
-- Provide list of out-of-the-box types, such as "percentage"
-- Provide list of classes such as {php:class}`Fraction`
-- Mechanism to find corresponding class configuration based on selected type
+Mechanism to find corresponding class configuration based on selected type.
 
 Specifying one of supported types will ensure that your field format is
 recognized universally, can be stored, loaded, presented to user through UI
@@ -87,6 +82,6 @@ ATK Data supports the following types:
 - integer
 - float
 - atk4_money
-- date ({php:class}`DateTime`)
-- datetime ({php:class}`DateTime`)
-- time ({php:class}`DateTime`)
+- date ({php:class}`\DateTime`)
+- datetime ({php:class}`\DateTime`)
+- time ({php:class}`\DateTime`)

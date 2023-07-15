@@ -5,13 +5,7 @@
 
 (conditions)=
 
-:::{php:namespace} Atk4\Data
-:::
-
 # Conditions and DataSet
-
-:::{php:class} Model
-:::
 
 When model is associated with the database, you can specify a default table
 either explicitly or through a $table property inside a model:
@@ -277,7 +271,7 @@ This method provides access to the model scope enabling conditions to be added:
 $contact->scope()->addCondition($condition); // adding condition to a model
 ```
 
-:::{php:class} Scope
+:::{php:class} Model_i_Scope
 :::
 
 Scope object has a single defined junction (AND or OR) and can contain multiple nested Condition and/or Scope objects referred to as nested conditions.
@@ -373,10 +367,7 @@ Checks if scope components are joined by OR
 
 Checks if scope components are joined by AND
 
-:::{php:namespace} Atk4\Data\Model\Scope
-:::
-
-:::{php:class} Condition
+:::{php:class} Model_i_Scope_i_Condition
 :::
 
 Condition represents a simple condition in a form [field, operation, value], similar to the functionality of the

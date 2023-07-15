@@ -5,10 +5,7 @@
 
 # Model Aggregates
 
-:::{php:namespace} Atk4\Data\Model
-:::
-
-:::{php:class} AggregateModel
+:::{php:class} Model_i_AggregateModel
 :::
 
 In order to create model aggregates the AggregateModel model needs to be used:

@@ -3,12 +3,9 @@
 
 (Joins)=
 
-:::{php:namespace} Atk4\Data\Model
-:::
-
 # Model from multiple joined tables
 
-:::{php:class} Join
+:::{php:class} Model_i_Join
 :::
 
 Sometimes model logically contains information that is stored in various places
@@ -222,13 +219,13 @@ Joins are implemented like this:
   are using reverse join, then foreign table record will not be updated, but
   value of the foreign field will be set to null.
 
-:::{php:class} Join\Sql
+:::{php:class} Persistence_i_Sql_i_Join
 :::
 
 ## SQL-specific joins
 
 When your model is associated with SQL-capable driver, then instead of using
-`Join` class, the `Join\Sql` is used instead. This class is designed to improve
+`Join` class, the `Persistence\Sql\Join` is used instead. This class is designed to improve
 loading technique, because SQL vendors can query multiple tables simultaneously.
 
 Vendors that cannot do JOINs will have to implement compatibility by pulling
@@ -246,7 +243,7 @@ data from collections in a correct order.
 
 ### Specifying complex ON logic
 
-When you're dealing with SQL drivers, you can specify `\Atk4\Data\Persistence\Sql\Expression` for your
+When you're dealing with SQL drivers, you can specify `Persistence\Sql\Expression` for your
 "on" clause:
 
 ```
