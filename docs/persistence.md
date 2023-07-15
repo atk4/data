@@ -331,7 +331,7 @@ There are 3 datetime formats supported:
 ### Customizations
 
 Process which converts field values in native PHP format to/from
-database-specific formats is called _`typecasting`. Persistence driver
+database-specific formats is called {ref}`typecasting`. Persistence driver
 implements a necessary type-casting through the following two methods:
 
 :::{php:method} typecastLoadRow($model, $row);
@@ -806,9 +806,7 @@ This operation is actually consisting of 3 following operations:
 1. Related model is created and linked up using refLink that essentially places
    a condition between $client and $invoice assuming they will appear inside
    same query.
-
 2. Action is created from $invoice using 'fx' and requested method / field.
-
 3. Expression is created with name 'total_gross' that uses Action.
 
 Here is a way how to intervene with the process:

@@ -566,7 +566,9 @@ will not violate SRP (Single Responsibility Principle)
 More often thannot, your application is designed and built with a specific
 persistence layer in mind. If you are using SQL database, you want to
 
-_to be continued_
+:::{todo}
+to be continued
+:::
 
 Before we talk "databases", we must outline a few challenges:
 

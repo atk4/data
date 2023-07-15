@@ -40,7 +40,7 @@ $stmt = $query->mode('delete')->executeStatement($connection);
 
 The {php:meth}`Expression::execute` is a convenient way to prepare query,
 bind all parameters and get `Doctrine\DBAL\Result`, but if you wish to do it manually,
-see `Manual Query Execution`_.
+see [Manual Query Execution](#manual-query-execution).
 
 ### Using in Existing Framework
 
@@ -135,13 +135,11 @@ create a separate add-on with it's own namespace. Let's say you have created
 4. Fork DSQL library.
 5. Modify {php:meth}`Connection::connect` to recognize your database identifier
    and refer to your namespace.
-6. Modify docs/extensions.rst to list name of your database and link to your
+6. Modify docs/extensions.md to list name of your database and link to your
    repository / composer requirement.
 7. Copy phpunit-mysql.xml into phpunit-myvendor.xml and make sure that
    dsql/tests/db/* works with your database.
-
-Finally:
-- Submit pull request for only the Connection class and docs/extensions.rst.
+8. Submit pull request for only the Connection class and docs/extensions.md.
 
 If you would like that your vendor support be bundled with DSQL, you should
 contact copyright@agiletoolkit.org after your external class has been around

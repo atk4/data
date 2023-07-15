@@ -74,7 +74,7 @@ Because some values are un-safe to use in the query and can contain dangerous
 values they are kept outside of the SQL query string and are using
 [PDO's bindValue](https://www.php.net/manual/en/pdostatement.bindvalue.php)
 instead. DSQL can consist of multiple objects and each object may have
-some parameters. During `rendering`_ those parameters are joined together to
+some parameters. During [rendering](#rendering) those parameters are joined together to
 produce one complete query.
 
 ## Creating Expression

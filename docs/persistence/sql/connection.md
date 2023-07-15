@@ -89,8 +89,8 @@ Creates new Expression class and sets {php:attr}`Expression::connection`.
 Adds connection class to the registry for resolving in Connection::resolveConnectionClass method.
 
 ```{eval-rst}
-:param string $connectionType: Alias of the connection
 :param string $connectionClass: The connection class to be used for the diver type
+:param string $connectionType: Alias of the connection
 ```
 :::
 

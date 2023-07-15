@@ -34,7 +34,7 @@ the same transaction:
 - afterSave hook
 - commit transaction
 
- In case of error:
+In case of error:
 
 - do rollback
 - call onRollback hook

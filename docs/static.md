@@ -41,7 +41,7 @@ Alternative it will check key "title".
 
 If neither are present you can still manually specify title field for your model.
 
-Finally, static persistence (unlike :php:class:Persistence\Array_) will automatically
+Finally, static persistence (unlike {php:class}`Persistence\Array_`) will automatically
 populate fields for the model and will even attempt to deduce field types.
 
 Currently it recognizes integer, date, boolean, float, array and object types.

@@ -170,19 +170,24 @@ of master id.
 
 When it comes to deleting record, there are three possible conditions:
 
-1. [delete_behaviour = cascade, reverse = false]
+1. `[delete_behaviour = cascade, reverse = false]`
+
    If we are using strong join and master table contains ID of foreign table,
    then foreign master table record is deleted first. Foreign table record is
    deleted after. This is done to avoid error with foreign constraints.
-2. [deleteBehaviour = cascade, reverse = true]
+
+2. `[deleteBehaviour = cascade, reverse = true]`
+
    If we are using strong join and foreign table contains ID of master table,
    then foreign table record is deleted first followed by the master table record.
 
-3. [deleteBehaviour = ignore, reverse = false]
+3. `[deleteBehaviour = ignore, reverse = false]`
+
    If we are using weak join and the master table contains ID of foreign table,
    then master table is deleted first. Foreign table record is not deleted.
 
-4. [deleteBehaviour = setnull, reverse = true]
+4. `[deleteBehaviour = setnull, reverse = true]`
+
    If we are using weak join and foreign table contains ID of master table,
    then foreign table is updated to set ID of master table to NULL first.
    Then the master table record is deleted.

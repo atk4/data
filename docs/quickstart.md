@@ -30,37 +30,42 @@ If you wish to try out some examples in this guide, you will need the following:
 
 ## Core Concepts
 
-Business Model (see {ref}`Model`)
-    You define business logic inside your own classes that extend {php:class}`Model`.
-    Each class you create represent one business entity.
+- Business Model (see {ref}`Model`)
 
-    Model has 3 major characteristic: Business Logic definition, DataSet mapping
-    and Active Record.
+  You define business logic inside your own classes that extend {php:class}`Model`.
+  Each class you create represent one business entity.
 
-    See: {php:class}`Model`
+  Model has 3 major characteristic: Business Logic definition, DataSet mapping
+  and Active Record.
 
-Persistence (see {ref}`Persistence`)
-    Object representing a connection to database. Linking your Business Model
-    to a persistence allows you to load/save individual records as well as
-    execute multi-record operations (Actions)
+  See: {php:class}`Model`
 
-    For developer, persistence should be a secondary concern, after all it is
-    possible to switch from one persistence to another and compensate for the
-    feature differences without major refactoring.
+- Persistence (see {ref}`Persistence`)
+
+  Object representing a connection to database. Linking your Business Model
+  to a persistence allows you to load/save individual records as well as
+  execute multi-record operations (Actions)
+
+  For developer, persistence should be a secondary concern, after all it is
+  possible to switch from one persistence to another and compensate for the
+  feature differences without major refactoring.
 
 % TODO document entity and remove "DataSet"
-DataSet (see {ref}`DataSet`)
-    A set of physical records stored on your database server that correspond
-    to the Business Model.
+- DataSet (see {ref}`DataSet`)
 
-Active Record (see {ref}`Active_Record`)
-    Model can load individual record from DataSet, work with it and save it back
-    into DataSet. While the record is loaded, we call it an Active Record.
+  A set of physical records stored on your database server that correspond
+  to the Business Model.
 
-Action (see {ref}`Action`)
-    Operation that Model performs on all of DataSet records without loading
-    them individually. Actions have 3 main purposes: data aggregation,
-    referencing and multi-record operations.
+- Active Record (see {ref}`Active_Record`)
+
+  Model can load individual record from DataSet, work with it and save it back
+  into DataSet. While the record is loaded, we call it an Active Record.
+
+- Action (see {ref}`Action`)
+
+  Operation that Model performs on all of DataSet records without loading
+  them individually. Actions have 3 main purposes: data aggregation,
+  referencing and multi-record operations.
 
 ### Persistence Domain vs Business Domain
 

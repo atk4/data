@@ -48,8 +48,8 @@ you can bypass the escaping.
 
 There are 2 types of escaping:
 
-- {php:meth}`Expression::escapeIdentifier()`. Used for field and table names. Surrounds name with *`*.
-- {php:meth}`Expression::escapeParam()`. Will convert value into parameter and replace with *:a*
+- {php:meth}`Expression::escapeIdentifier()`. Used for field and table names. Surrounds name with `` ` ``.
+- {php:meth}`Expression::escapeParam()`. Will convert value into parameter and replace with `:a`
 
 In the next example $a is escaped but $b is parameterized:
 
@@ -59,7 +59,7 @@ $query->where('a', 'b');
 // where `a` = "b"
 ```
 
-If you want to switch places and execute *where "b" = `a`*, then you can resort
+If you want to switch places and execute `where "b" = 'a'`, then you can resort
 to Expressions:
 
 ```
@@ -812,7 +812,7 @@ to the same connection as the parent.
 :::
 
 :::{php:method} expr($template, $arguments)
-Method very similar to {php:method}`Connection::expr` but will return a
+Method very similar to {php:meth}`Connection::expr` but will return a
 corresponding Expression class for this query.
 :::
 

@@ -51,7 +51,7 @@ Argument $defaults will be passed to the new model that will be used to create
 referenced model. This will not work if you have specified reference as existing
 model that has a persistence set. (See Reference::getModel())
 
-### Persistence
+## Persistence
 
 Agile Data supports traversal between persistencies. The code above does not
 explicitly assign database to Model_Order. But what if destination model does
@@ -82,7 +82,7 @@ be retrieved from memory.
 This is not implemented as of 1.1.0, see https://github.com/atk4/data/issues/158
 :::
 
-### Safety and Performance
+## Safety and Performance
 
 When using ref() on hasMany reference, it will always return a fresh clone of
 the model. You can perform actions on the clone and next time you execute ref()
@@ -638,7 +638,7 @@ select
 from `item` `pp`left join `item2` as `pp_i` on `pp_i`.`item_id` = `pp`.`id`
 ```
 
-### Various ways to specify options
+## Various ways to specify options
 
 When calling `hasOne()->addFields()` there are various ways to pass options:
 
