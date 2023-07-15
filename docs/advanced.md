@@ -1,3 +1,6 @@
+:::{php:namespace} Atk4\Data
+:::
+
 # Advanced Topics
 
 Agile Data allow you to implement various tricks.

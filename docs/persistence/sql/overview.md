@@ -1,3 +1,6 @@
+:::{php:namespace} Atk4\Data
+:::
+
 # Overview
 
 DSQL is a dynamic SQL query builder. You can write multi-vendor queries in PHP

@@ -1,3 +1,6 @@
+:::{php:namespace} Atk4\Data
+:::
+
 :::{php:namespace} Atk4\Data\Field
 :::
 

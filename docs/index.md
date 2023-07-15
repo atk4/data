@@ -1,3 +1,6 @@
+:::{php:namespace} Atk4\Data
+:::
+
 # Agile Data Documentation
 
 Contents:

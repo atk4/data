@@ -1,3 +1,6 @@
+:::{php:namespace} Atk4\Data
+:::
+
 # Introduction to Architectural Design
 
 Layering is one of the most common techniques that software designers use to

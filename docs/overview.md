@@ -1,3 +1,6 @@
+:::{php:namespace} Atk4\Data
+:::
+
 # Overview
 
 Agile Data is a unique SQL/NoSQL access library that promotes correct Business

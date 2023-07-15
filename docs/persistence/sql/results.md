@@ -1,3 +1,6 @@
+:::{php:namespace} Atk4\Data
+:::
+
 # Results
 
 When query is executed by {php:class}`Connection` or

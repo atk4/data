@@ -1,3 +1,6 @@
+:::{php:namespace} Atk4\Data
+:::
+
 # Transactions
 
 When you work with the DSQL, you can work with transactions. There are 2

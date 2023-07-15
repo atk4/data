@@ -1,3 +1,6 @@
+:::{php:namespace} Atk4\Data
+:::
+
 (Persistence)=
 
 # Loading and Saving (Persistence)

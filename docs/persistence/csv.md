@@ -1,3 +1,6 @@
+:::{php:namespace} Atk4\Data
+:::
+
 (Persistence_Csv)=
 
 # Loading and Saving CSV Files

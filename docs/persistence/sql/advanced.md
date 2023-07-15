@@ -1,3 +1,6 @@
+:::{php:namespace} Atk4\Data
+:::
+
 # Advanced Topics
 
 DSQL has huge capabilities in terms of extending. This chapter explains just
