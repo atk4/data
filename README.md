@@ -25,7 +25,7 @@ Yes and no.
 
 Agile Data is data persistence framework - like ORM it helps you escape raw SQL. Unlike ORM, it maps objects into "data set" and not "data record". Operating with data sets offers higher level of abstraction:
 
-``` php
+```php
 $vipClientModel = (new Client($db))->addCondition('is_vip', true);
 
 // express total for all VIP client invoices. The value of the variable is an object
@@ -41,13 +41,13 @@ In other ORM the similar implementation would be either [slow, clumsy, limited o
 
 Agile Toolkit is a low-code framework. Once you have defined your business object, it can be associated with a UI widget:
 
-``` php
+```php
 Crud::addTo($app)->setModel(new Client($db), ['name', 'surname'], ['edit', 'archive']);
 ```
 
 or with an API end-point:
 
-``` php
+```php
 $api->rest('/clients', new Client($db));
 ```
 
@@ -61,13 +61,13 @@ Regardless of how your model is constructed and what database backend is used, i
 
 Designed for medium to large PHP applications and frameworks, ATK Data is a clean implementation of Data Mapper that will:
 
--   Make your application really database-agnostic. SQL? NoSQL? RestAPI? Cache? Load and store your data with any of these, without refactoring your code.
--   Execute more on the server. Agile Data converts query logic into server-specific language (e.g. SQL) then delivers you the exact data rows / columns which you need from a single statement, no matter how complex.
--   Data architecture transparency. As your database structure change, your application code does not need to be refactored. Replace fields with expressions, denormalize/normalize data, join and merge tables. Only update your application in a single place.
--   Extensions. "[Audit](https://github.com/atk4/audit)" - transparently record all edits, updates and deletes with "Undo" support.
--   [Out of the box UI](https://github.com/atk4/ui). Who wants to build Admin systems today? Tens of professional components: [Crud](http://ui.agiletoolkit.org/demos/crud.php), [Grid](http://ui.agiletoolkit.org/demos/grid.php), [Form](http://ui.agiletoolkit.org/demos/form3.php) as well as add-ons like [Charts](https://github.com/atk4/chart)  can be added to your PHP app with 3-lines of code.
--   RestAPI server for Agile Data is currently under development.
--   Agile Data and all extensions mentioned above are licensed under MIT and are free to use.
+- Make your application really database-agnostic. SQL? NoSQL? RestAPI? Cache? Load and store your data with any of these, without refactoring your code.
+- Execute more on the server. Agile Data converts query logic into server-specific language (e.g. SQL) then delivers you the exact data rows / columns which you need from a single statement, no matter how complex.
+- Data architecture transparency. As your database structure change, your application code does not need to be refactored. Replace fields with expressions, denormalize/normalize data, join and merge tables. Only update your application in a single place.
+- Extensions. "[Audit](https://github.com/atk4/audit)" - transparently record all edits, updates and deletes with "Undo" support.
+- [Out of the box UI](https://github.com/atk4/ui). Who wants to build Admin systems today? Tens of professional components: [Crud](http://ui.agiletoolkit.org/demos/crud.php), [Grid](http://ui.agiletoolkit.org/demos/grid.php), [Form](http://ui.agiletoolkit.org/demos/form3.php) as well as add-ons like [Charts](https://github.com/atk4/chart) can be added to your PHP app with 3-lines of code.
+- RestAPI server for Agile Data is currently under development.
+- Agile Data and all extensions mentioned above are licensed under MIT and are free to use.
 
 Since the initial introduction of Agile Data back in [2016](https://www.reddit.com/r/PHP/comments/5ftpxg/thank_you_reddit_you_helped_me_create_something/) our group of early-adopters used it in large production PHP projects. **It is time for you to try Agile Data today**.
 
@@ -77,8 +77,8 @@ Watch [Quick Start](http://agile-data.readthedocs.io/en/develop/quickstart.html)
 
 ATK Data relies on ATK Core and can be greatly complimented by ATK UI:
 
--   [Agile Core](http://agile-core.readthedocs.io/en/develop/) - documents various low-level traits and features such as Containers, Hooks or Exceptions ([PDF](https://media.readthedocs.org/pdf/agile-core/develop/agile-core.pdf))
--   [Agile UI](http://agile-ui.readthedocs.io/en/latest/) - documents optional UI components and how to build Web App with them. ([PDF](http://readthedocs.org/projects/agile-ui/downloads/pdf/latest/))
+- [Agile Core](http://agile-core.readthedocs.io/en/develop/) - documents various low-level traits and features such as Containers, Hooks or Exceptions ([PDF](https://media.readthedocs.org/pdf/agile-core/develop/agile-core.pdf))
+- [Agile UI](http://agile-ui.readthedocs.io/en/latest/) - documents optional UI components and how to build Web App with them. ([PDF](http://readthedocs.org/projects/agile-ui/downloads/pdf/latest/))
 
 ## When to use Agile Data?
 
@@ -92,11 +92,11 @@ Most of the ORM (including the one you are probably using now) suffer from one f
 
 As a result the UI layer cannot simply discover how your Invoice relate to the Client. This makes YOU write a lot of glue code - performing query and feeding data into the UI layer.
 
->    *With most ORMs you cannot design an generic Crud or Form which would work with ANY model. As a result server-side rendering becoming more extinct in the face of Client-side frameworks.*
+> *With most ORMs you cannot design an generic Crud or Form which would work with ANY model. As a result server-side rendering becoming more extinct in the face of Client-side frameworks.*
 
 Agile Data addresses this balance. For the presentation logic you can use tools such as [Agile UI](https://github.com/atk4/ui), that consists of generic Crud, Form implementations or other modules which accept the Model protocol of Agile Data:
 
-``` php
+```php
 $presentation->setModel($businessModel);
 ```
 
@@ -106,7 +106,7 @@ This now re-shifts the balance and makes it possible to implement any generic UI
 
 It's important to note, that glue may also interact with the model preparing it for a specific use-case:
 
-``` php
+```php
 $grid = new \Atk4\Ui\Table();
 $data = new Order($db);
 $data->addCondition('is_new', true);
@@ -124,7 +124,7 @@ Agile Data was designed in a way where all of your code can rely ONLY on model o
 
 This next example builds a complex "Job Profitability Report" by only relying on Model logic:
 
-``` php
+```php
 class JobReport extends Job
 {
     protected function init(): void
@@ -176,12 +176,12 @@ class JobReport extends Job
 
 Your Report Model:
 
--   moves query logic to the database (SQL)
--   is still a model, so compatible with all UI Components and extensions
+- moves query logic to the database (SQL)
+- is still a model, so compatible with all UI Components and extensions
 
 In order to output results on HTML table:
 
-``` php
+```php
 $grid = new \Atk4\Ui\Grid();
 $data = new JobReport($db);
 $grid->setModel($data);
@@ -191,7 +191,7 @@ $html = $grid->render();
 
 Or if you want to display them as a Chart using https://github.com/atk4/chart
 
-``` php
+```php
 $chart = new \Atk4\Chart\BarChart();
 $data = new JobReport($db);
 
@@ -215,13 +215,13 @@ In both cases you end up executing **just one** SQL query.
 
 One of the best benefits of Agile Data is ability to refactor database structure in a way which will not impact your application entirely. This severely simplifies your Q/A cycle and reduce cost of application maintenance. As example lets look at the following scenario:
 
->   The existing application calculates the profits based on a SQL formula, but the insane amount of data makes the calculation slow. The solution is to add a "profits" field which value would be automatically updated.
+> The existing application calculates the profits based on a SQL formula, but the insane amount of data makes the calculation slow. The solution is to add a "profits" field which value would be automatically updated.
 
 Agile Data gives you all the tools to do this in a few steps:
 
--   Update your Model definition by replacing "expression" with a regular field.
--   Create a "migrator" script which calculates expression using [action](http://agile-data.readthedocs.io/en/develop/quickstart.html#actions).
--   Change model behaviors adding Model Hook (afterSave) to re-calculate "profit" within same ACID transaction.
+- Update your Model definition by replacing "expression" with a regular field.
+- Create a "migrator" script which calculates expression using [action](http://agile-data.readthedocs.io/en/develop/quickstart.html#actions).
+- Change model behaviors adding Model Hook (afterSave) to re-calculate "profit" within same ACID transaction.
 
 This will not break the rest of your applications - UI, RestAPI or Reports will continue to work, but faster.
 
@@ -251,9 +251,9 @@ Because our team have implemented Agile Data, we have trained experts who can of
 
 Agile Data (and in some cases Agile UI) have been integrated by community with other popular frameworks:
 
--   Laravel: https://github.com/atk4/laravel-ad
--   Wordpress: https://github.com/ibelar/atk-wordpress
--   More integrations wanted!
+- Laravel: https://github.com/atk4/laravel-ad
+- Wordpress: https://github.com/ibelar/atk-wordpress
+- More integrations wanted!
 
 ## Q&A
 
@@ -303,7 +303,7 @@ Agile Data implements various advanced database access patterns such as Active R
 
 You get to manipulate your objects first before query is invoked. The next code snippet will work with your existing database of Clients, Orders and Order Lines and will query total amount of all orders placed by VIP clients. Looking at the resulting query you will notice an implementation detail - Line total is not stored physically inside the database but is rather expressed as multiplication of price and quantity:
 
-``` php
+```php
 $m = new Client($db);
 echo $m->addCondition('vip', true)
     ->ref('Order')->ref('Line')->action('fx', ['sum', 'total'])->getOne();
@@ -311,7 +311,7 @@ echo $m->addCondition('vip', true)
 
 Resulting Query will always use parametric variables if vendor driver supports them (such as PDO):
 
-``` sql
+```sql
 select sum(`price`*`qty`) from `order_line` `O_L` where `order_id` in (
     select `id` from `order` `O` where `client_id` in (
         select `id` from `client` where `vip` = :a
@@ -327,7 +327,7 @@ All of the above does not add complexity to your business logic code. You don't 
 
 My next example demonstrates how simple and clean your code looks when you store new Order data:
 
-``` php
+```php
 $m = new Client($db);
 $m->loadBy('name', 'Pear Company');
 $m->ref('Order')
@@ -340,10 +340,10 @@ $m->ref('Order')
 
 Resulting queries (I have removed back-ticks and parametric variables for readability) use a consise syntax and demonstrate some of the "behind-the-scenes" logic:
 
--   New order must belong to the Company. Also company must not be soft-deleted.
--   `delivery` is stored in field `delivery_date`, also the DateTime type is mapped into SQL-friendly date.
--   `order_id` is automatically used with Lines.
--   `category_id` can be looked up directly inside the INSERT (standard feature of SQL reference fields).
+- New order must belong to the Company. Also company must not be soft-deleted.
+- `delivery` is stored in field `delivery_date`, also the DateTime type is mapped into SQL-friendly date.
+- `order_id` is automatically used with Lines.
+- `category_id` can be looked up directly inside the INSERT (standard feature of SQL reference fields).
 
 ```sql
 select id, name from client where name = 'Pear Company' and is_deleted = 0;
@@ -360,7 +360,7 @@ If you have enjoyed those examples and would like to try them yourself, continue
 
 Agile Data uses vendor-independent and lightweight `Model` class to describe your business entities:
 
-``` php
+```php
 class Client extends \Atk4\Data\Model
 {
     public $table = 'client';
@@ -377,20 +377,20 @@ class Client extends \Atk4\Data\Model
 }
 ```
 
--   Documentation: http://agile-data.readthedocs.io/en/develop/model.html
--   Examples: https://github.com/atk4/data-primer/tree/master/src
+- Documentation: http://agile-data.readthedocs.io/en/develop/model.html
+- Examples: https://github.com/atk4/data-primer/tree/master/src
 
 ### Introducing Actions
 
  ![mapping](docs/images/mapping.png)
 
-Anything related to a Model (Field, Condition, Reference) is an object that lives in the realm of "Domain Model" inside PHP memory. When you  `save()`, frameworks generates an "Action" that will actually update your SQL table, invoke RestAPI request or write that file to disk.
+Anything related to a Model (Field, Condition, Reference) is an object that lives in the realm of "Domain Model" inside PHP memory. When you `save()`, frameworks generates an "Action" that will actually update your SQL table, invoke RestAPI request or write that file to disk.
 
 Each persistence implements actions differently. SQL is probably the most full-featured one:
 
 ![GitHub release](docs/images/action.gif)
 
--   Documentation: http://agile-data.readthedocs.io/en/develop/quickstart.html?highlight=action#actions
+- Documentation: http://agile-data.readthedocs.io/en/develop/quickstart.html?highlight=action#actions
 
 ### Introducing Expressions
 
@@ -398,7 +398,7 @@ Smart Fields in Agile Toolkit are represented as objects. Because of inheritance
 
 ![GitHub release](docs/images/expression.gif)
 
--   Documentation: http://agile-data.readthedocs.io/en/develop/expressions.html
+- Documentation: http://agile-data.readthedocs.io/en/develop/expressions.html
 
 ### Introducing References
 
@@ -408,7 +408,7 @@ Agile Data takes a different approach by introducing "References". It allow you 
 
 ![GitHub release](docs/images/import-field.gif)
 
--   Documentation: http://agile-data.readthedocs.io/en/develop/references.html
+- Documentation: http://agile-data.readthedocs.io/en/develop/references.html
 
 ### Model Conditions and DataSets
 
@@ -418,7 +418,7 @@ Once condition is defined, it will appear in actions and will also restrict you 
 
 ![GitHub release](docs/images/reference-magic.gif)
 
--   Documentation: http://agile-data.readthedocs.io/en/develop/conditions.html
+- Documentation: http://agile-data.readthedocs.io/en/develop/conditions.html
 
 ### Build Reports inside Domain Model
 
@@ -445,7 +445,7 @@ records will be linked up correctly.
 
 The best part about joins is that you can add them to your existing model for specific queries. Some extensions can even do that.
 
--   Documentation: http://agile-data.readthedocs.io/en/develop/joins.html
+- Documentation: http://agile-data.readthedocs.io/en/develop/joins.html
 
 ### Deep Model Traversal
 
@@ -460,7 +460,7 @@ Agile Data can answer with a query or with a result.
 
 ![GitHub release](docs/images/deep-traversal.gif)
 
--   Documentation: http://agile-data.readthedocs.io/en/develop/references.html#traversing-dataset
+- Documentation: http://agile-data.readthedocs.io/en/develop/references.html#traversing-dataset
 
 ## Advanced Features and Extensions
 
@@ -488,7 +488,7 @@ if you need.
 
 And guess what - should your model be saved into NoSQL database, the domain-level hooks will be executed, but SQL-specific ones will not.
 
--   Documentation: http://agile-data.readthedocs.io/en/develop/hooks.html
+- Documentation: http://agile-data.readthedocs.io/en/develop/hooks.html
 
 ### Extensions
 
@@ -509,8 +509,7 @@ More details on extensions: http://www.agiletoolkit.org/data/extensions
 
 If you wonder how those advanced features may impact performance of loading and saving data, there is another pleasant surprise. Loading, saving, iterating and deleting records do not create new in-memory objects:
 
-
-``` php
+```php
 foreach ($client->ref('Project') as $project) {
     echo $project->get('name') . "\n";
 }
@@ -529,13 +528,13 @@ When ORM promise you "security" they don't really extend it to the cases where y
 
 Agile Data provides a universal support for Expressions and each expression have support for `escaping` and `parameters`. My next example will add scope filtering the countries by their length. Automatic parameters will ensure that any nastiness will be properly escaped:
 
-``` php
+```php
 $country->addCondition($country->expr('length([name]) = []', [$_GET['len']]));
 ```
 
 Resulting query is:
 
-``` php
+```php
 where length(`name`) = :a
 ```
 
@@ -556,12 +555,10 @@ Regardless of what's inside the `$_POST`, the new record will have `client_id = 
 
 Finally, the following is also possible:
 
-``` php
+```php
 $client->addCondition('is_vip');
 $client->ref('Order')->insert($_POST);
 ```
-
-
 
 Regardless of the content of the POST data, the order can only be created for the VIP client. Even if you perform a multi-row operation such as `action('select')` or `action('fx')` it will only apply to records that match all of the conditions.
 
@@ -571,14 +568,14 @@ Those security measures are there to protect you against human errors. We think 
 
 Start by installing Agile Data through composer:
 
-``` bash
+```bash
 composer require atk4/data
-composer g require psy/psysh:@stable  # optional, but handy for debugging!
+composer g require psy/psysh:@stable # optional, but handy for debugging!
 ```
 
 Define your first model class:
 
-``` php
+```php
 namespace my;
 
 class User extends \Atk4\Data\Model
@@ -600,7 +597,7 @@ class User extends \Atk4\Data\Model
 
 Next create `console.php`:
 
-``` php
+```php
 <?php
 
 require __DIR__ . '/vendor/autoload.php';
@@ -617,7 +614,7 @@ $ php console.php
 
 Now you can explore. Try typing:
 
-``` php
+```php
 > $m = new \my\User($db);
 > $m->loadBy('email', 'example@example.com')
 > $m->get()
@@ -642,7 +639,7 @@ DSQL tries to do things differently:
 
 DSQL Is Simple and Powerful
 
-``` php
+```php
 $query = $connection->dsql();
 $query->table('employees')
     ->where('birth_date', '1961-05-02')
@@ -652,7 +649,7 @@ echo 'Employees born on May 2, 1961: ' . $query->getOne();
 
 If the basic query is not fun, how about more complex one?
 
-``` php
+```php
 // establish a query looking for a maximum salary
 $salary = $connection->dsql();
 
@@ -681,7 +678,6 @@ $salary
     ->join('employees.emp_id', 'emp_id')
     ->field('employees.first_name');
 
-
 // finally, fetch result
 foreach ($salary as $row) {
     echo 'Data: ' . json_encode($row) . "\n";
@@ -690,7 +686,7 @@ foreach ($salary as $row) {
 
 This builds and executes a single query that looks like this:
 
-``` sql
+```sql
 SELECT
     `emp_no`,
     max(salary) `max_salary`,
