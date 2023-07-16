@@ -315,7 +315,7 @@ $contact->scope()->add($condition); // adding condition to a model
 $contact->scope()->add($conditionXYZ); // adding more conditions
 ```
 
-:::{php:method} __construct($nestedConditions = [], $junction = Scope::AND);
+:::{php:method} __construct($nestedConditions = [], $junction = Scope::AND)
 :::
 
 Creates a Scope object from an array:
@@ -328,7 +328,7 @@ $scope1 = new Scope([
 ]);
 ```
 
-:::{php:method} negate();
+:::{php:method} negate()
 :::
 
 Negate method has behind the full map of conditions so any condition object can be negated, e.g negating '>=' results in '<', etc.
@@ -340,32 +340,32 @@ For compound conditionss this method is using De Morgan's laws, e.g:
 $scope1->negate();
 ```
 
-:::{php:method} createAnd(...$conditions);
+:::{php:method} createAnd(...$conditions)
 :::
 
 Merge $conditions using AND as junction. Returns the resulting Scope object.
 
-:::{php:method} createOr(...$conditions);
+:::{php:method} createOr(...$conditions)
 :::
 
 Merge $conditions using OR as junction. Returns the resulting Scope object.
 
-:::{php:method} simplify();
+:::{php:method} simplify()
 :::
 
 Peels off single nested conditions. Useful for converting (((field = value))) to field = value.
 
-:::{php:method} clear();
+:::{php:method} clear()
 :::
 
 Clears the condition from nested conditions.
 
-:::{php:method} isOr();
+:::{php:method} isOr()
 :::
 
 Checks if scope components are joined by OR
 
-:::{php:method} isAnd();
+:::{php:method} isAnd()
 :::
 
 Checks if scope components are joined by AND
@@ -376,7 +376,7 @@ Checks if scope components are joined by AND
 Condition represents a simple condition in a form [field, operation, value], similar to the functionality of the
 Model::addCondition method
 
-:::{php:method} __construct($key, $operator = null, $value = null);
+:::{php:method} __construct($key, $operator = null, $value = null)
 :::
 
 Creates condition object based on provided arguments. It acts similar to Model::addCondition
@@ -387,7 +387,7 @@ $value can be Field object, Expression object, array (interpreted as 'any of the
 
 If $value is omitted as argument then $operator is considered as $value and '=' is used as operator
 
-:::{php:method} negate();
+:::{php:method} negate()
 :::
 
 Negates the condition, e.g:
@@ -397,7 +397,7 @@ Negates the condition, e.g:
 $condition = (new Condition('name', 'John'))->negate();
 ```
 
-:::{php:method} toWords(Model $model = null);
+:::{php:method} toWords(Model $model = null)
 :::
 
 Converts the condition object to human readable words. Condition must be assigned to a model or model argument provided:

@@ -8,7 +8,7 @@
 :::{php:class} Model
 :::
 
-:::{php:method} ref($link, $details = []);
+:::{php:method} ref($link, $details = [])
 :::
 
 Models can relate one to another. The logic of traversing references, however,
@@ -110,7 +110,7 @@ other tools: field importing, model joins, field actions and refLink().
 
 ## hasMany Reference
 
-:::{php:method} hasMany($link, ['model' => $model]);
+:::{php:method} hasMany($link, ['model' => $model])
 :::
 
 There are several ways how to link models with hasMany:

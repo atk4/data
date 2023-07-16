@@ -16,7 +16,7 @@ use result as an output.
 Expressions solve this problem by adding a read-only field to your model that
 corresponds to an expression:
 
-:::{php:method} addExpression($name, $seed);
+:::{php:method} addExpression($name, $seed)
 :::
 
 Example will calculate "total_gross" by adding up values for "net" and "vat":

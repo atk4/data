@@ -337,21 +337,21 @@ Process which converts field values in native PHP format to/from
 database-specific formats is called {ref}`typecasting`. Persistence driver
 implements a necessary type-casting through the following two methods:
 
-:::{php:method} typecastLoadRow($model, $row);
+:::{php:method} typecastLoadRow($model, $row)
 Convert persistence-specific row of data to PHP-friendly row of data.
 :::
 
-:::{php:method} typecastSaveRow($model, $row);
+:::{php:method} typecastSaveRow($model, $row)
 Convert native PHP-native row of data into persistence-specific.
 :::
 
 Row persisting may rely on additional methods, such as:
 
-:::{php:method} typecastLoadField(Field $field, $value);
+:::{php:method} typecastLoadField(Field $field, $value)
 Convert persistence-specific row of data to PHP-friendly row of data.
 :::
 
-:::{php:method} typecastSaveField(Field $field, $value);
+:::{php:method} typecastSaveField(Field $field, $value)
 Convert native PHP-native row of data into persistence-specific.
 :::
 
