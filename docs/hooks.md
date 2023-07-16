@@ -1,9 +1,6 @@
-
 .. _Hooks:
 
-=====
-Hooks
-=====
+# Hooks
 
 Hook is a mechanism for adding callbacks. The core features of Hook sub-system
 (explained in detail here http://agile-core.readthedocs.io/en/develop/hook.html)
@@ -19,8 +16,7 @@ include:
 :php:ref:`Model` implements hook trait and defines various hooks which will allow
 you to execute code before or after various operations, such as save, load etc.
 
-Model Operation Hooks
-=====================
+## Model Operation Hooks
 
 All of model operations (adding, updating, loading and deleting) have two
 hooks - one that executes before operation and another that executes after.
@@ -46,23 +42,23 @@ the same transaction:
 If your afterSave hook creates exception, then the entire operation will be
 rolled back.
 
-Example with beforeSave
------------------------
+### Example with beforeSave
 
 The next code snippet demonstrates a basic usage of a `beforeSave` hook.
-This one will update field values just before record is saved::
+This one will update field values just before record is saved:
 
-    $m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
-        $m->set('name', strtoupper($m->get('name')));
-        $m->set('surname', strtoupper($m->get('surname')));
-    });
+```
+$m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
+    $m->set('name', strtoupper($m->get('name')));
+    $m->set('surname', strtoupper($m->get('surname')));
+});
 
-    $m->insert(['name' => 'John', 'surname' => 'Smith']);
+$m->insert(['name' => 'John', 'surname' => 'Smith']);
 
-    // Will save into DB:  ['name' => 'JOHN', 'surname' => 'SMITH'];
+// Will save into DB:  ['name' => 'JOHN', 'surname' => 'SMITH'];
+```
 
-Arguments
----------
+### Arguments
 
 When you define a callback, then you'll receive reference to model from all the
 hooks.
@@ -72,33 +68,35 @@ otherwise you can run into problems with cloned models.
 Callbacks does non expect anything to be returned, but you can modify fields
 of the model.
 
-Interrupting
-------------
+### Interrupting
 
 You can also break all "before" hooks which will result in cancellation of the
-original action::
+original action:
 
-    $m->breakHook(false);
+```
+$m->breakHook(false);
+```
 
 If you break beforeSave, then the save operation will not take place, although
 model will assume the operation was successful.
 
-You can also break beforeLoad hook which can be used to skip rows::
+You can also break beforeLoad hook which can be used to skip rows:
 
-    $model->onHook(Model::HOOK_AFTER_LOAD, function (Model $m) {
-        if ($m->get('date') < $m->date_from) {
-            $m->breakHook(false); // will not yield such data row
-        }
-        // otherwise yields data row
-    });
+```
+$model->onHook(Model::HOOK_AFTER_LOAD, function (Model $m) {
+    if ($m->get('date') < $m->date_from) {
+        $m->breakHook(false); // will not yield such data row
+    }
+    // otherwise yields data row
+});
+```
 
 This will also prevent data from being loaded. If you return false from
 afterLoad hook, then record which we just loaded will be instantly unloaded.
 This can be helpful in some cases, although you should still use
 :php:meth:`Model::addCondition` where possible as it is much more efficient.
 
-Insert/Update Hooks
--------------------
+### Insert/Update Hooks
 
 Insert/Update are triggered from inside save() method but are based on current
 state of :php:meth:`Model::isLoaded`:
@@ -121,8 +119,7 @@ provide ID field. Also, afterInsert is actually called before reloading is done
 
 For some examples, see :ref:`soft_delete`
 
-beforeSave, afterSave Hook
---------------------------
+### beforeSave, afterSave Hook
 
 A good place to hook is beforeSave as it will be fired when adding new records
 or modifying existing ones:
@@ -134,16 +131,17 @@ You might consider "save" to be a higher level hook, as beforeSave is called
 pretty early on during saving the record and afterSave is called at the very end
 of save.
 
-You may actually drop validation exception inside save, insert or update hooks::
+You may actually drop validation exception inside save, insert or update hooks:
 
-    $m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
-        if ($m->get('name') === 'Yagi') {
-            throw new \Atk4\Data\ValidationException(['name' => "We don't serve like you"]);
-        }
-    });
+```
+$m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
+    if ($m->get('name') === 'Yagi') {
+        throw new \Atk4\Data\ValidationException(['name' => "We don't serve like you"]);
+    }
+});
+```
 
-Loading, Deleting
------------------
+### Loading, Deleting
 
 Those are relatively simple hooks:
 
@@ -161,9 +159,7 @@ cleaned up first, use beforeDelete instead.
 
 For some examples, see :ref:`soft_delete`
 
-
-Hook execution sequence
------------------------
+### Hook execution sequence
 
 - beforeSave
 
@@ -184,23 +180,24 @@ Hook execution sequence
 
 - afterSave (bool $isUpdate) [after insert or update, model is reloaded]
 
-How to prevent actions
-----------------------
+### How to prevent actions
 
 In some cases you want to prevent default actions from executing.
 Suppose you want to check 'memcache' before actually loading the record from
-the database. Here is how you can implement this functionality::
+the database. Here is how you can implement this functionality:
 
-    $m->onHook(Model::HOOK_BEFORE_LOAD, function (Model $m, $id) {
-        $data = $m->getApp()->cacheFetch($m->table, $id);
-        if ($data) {
-            $dataRef = &$m->getDataRef();
-            $dataRef = $data;
-            $m->setId($id);
+```
+$m->onHook(Model::HOOK_BEFORE_LOAD, function (Model $m, $id) {
+    $data = $m->getApp()->cacheFetch($m->table, $id);
+    if ($data) {
+        $dataRef = &$m->getDataRef();
+        $dataRef = $data;
+        $m->setId($id);
 
-            $m->breakHook($m);
-        }
-    });
+        $m->breakHook($m);
+    }
+});
+```
 
 $app property is injected through your $db object and is passed around to all
 the models. This hook, if successful, will prevent further execution of other
@@ -210,44 +207,42 @@ to $persistence for actual loading of the data.
 Similarly you can prevent deletion if you wish to implement
 :ref:`soft-delete` or stop insert/modify from occurring.
 
-
-onRollback Hook
----------------
+### onRollback Hook
 
 This hook is executed right after transaction fails and rollback is done.
 This can be used in various situations.
 
 Save information into auditLog about failure:
 
-    $m->onHook(Model::HOOK_ROLLBACK, function (Model $m) {
-        $m->auditLog->registerFailure();
-    });
+```
+$m->onHook(Model::HOOK_ROLLBACK, function (Model $m) {
+    $m->auditLog->registerFailure();
+});
+```
 
 Upgrade schema:
 
-    use Atk4\Data\Persistence\Sql\Exception as SqlException;
+```
+use Atk4\Data\Persistence\Sql\Exception as SqlException;
 
-    $m->onHook(Model::HOOK_ROLLBACK, function (Model $m, \Throwable $exception) {
-        if ($exception instanceof SqlException) {
-            $m->schema->upgrade();
-            $m->breakHook(false); // exception will not be thrown
-        }
-    });
+$m->onHook(Model::HOOK_ROLLBACK, function (Model $m, \Throwable $exception) {
+    if ($exception instanceof SqlException) {
+        $m->schema->upgrade();
+        $m->breakHook(false); // exception will not be thrown
+    }
+});
+```
 
 In first example we will register failure in audit log, but afterwards still throw exception.
 In second example we will upgrade model schema and will not throw exception at all because we
 break hook and return false boolean value.
 
-
-
-Persistence Hooks
-=================
+## Persistence Hooks
 
 Persistence has a few spots which it actually executes through $model->hook(),
 so depending on where you save the data, there are some more hooks available.
 
-Persistence\Sql
----------------
+### Persistence\Sql
 
 Those hooks can be used to affect queries before they are executed.
 None of these are breakable:
@@ -271,11 +266,7 @@ It can be used to enhance queries generated by "action" for:
  - "field"
  - "fx" or "fx0"
 
-
-
-Other Hooks:
-============
-
+## Other Hooks:
 
 .. todo: The following hooks need documentation:
 

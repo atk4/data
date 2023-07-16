@@ -1,9 +1,6 @@
-
 .. _Persistence\Csv:
 
-============================
-Loading and Saving CSV Files
-============================
+# Loading and Saving CSV Files
 
 .. php:class:: Persistence\Csv
 
@@ -17,85 +14,97 @@ of `Persistence\Csv` are limited to the following actions:
 - listing/iterating
 - adding a new record
 
-Setting Up
-==========
+## Setting Up
 
 When creating new persistence you must provide a valid URL for
 the file that might be stored either on a local system or
 use a remote file scheme (ftp://...). The file will not be
-actually opened unless you perform load/save operation::
+actually opened unless you perform load/save operation:
 
-    $p = new Persistence\Csv('myfile.csv');
+```
+$p = new Persistence\Csv('myfile.csv');
 
-    $u = new Model_User($p);
-    $u = $u->tryLoadAny(); // actually opens file and finds first record
+$u = new Model_User($p);
+$u = $u->tryLoadAny(); // actually opens file and finds first record
+```
 
-Exporting and Importing data from CSV
-=====================================
+## Exporting and Importing data from CSV
 
 You can take a model that is loaded from other persistence and save
 it into CSV like this. The next example demonstrates a basic functionality
-of SQL database export to CSV file::
+of SQL database export to CSV file:
 
-    $db = new Persistence\Sql($connection);
-    $csv = new Persistence\Csv('dump.csv');
+```
+$db = new Persistence\Sql($connection);
+$csv = new Persistence\Csv('dump.csv');
 
-    $m = new Model_User($db);
+$m = new Model_User($db);
 
-    foreach (new Model_User($db) as $m) {
-        $m->withPersistence($csv)->save();
-    }
+foreach (new Model_User($db) as $m) {
+    $m->withPersistence($csv)->save();
+}
+```
 
 Theoretically you can do few things to tweak this process. You can specify
-which fields you would like to see in the CSV::
+which fields you would like to see in the CSV:
 
-    foreach (new Model_User($db) as $m) {
-        $m->withPersistence($csv)
-            ->setOnlyFields(['id', 'name', 'password'])
-            ->save();
-    }
+```
+foreach (new Model_User($db) as $m) {
+    $m->withPersistence($csv)
+        ->setOnlyFields(['id', 'name', 'password'])
+        ->save();
+}
+```
 
-Additionally if you want to use a different column titles, you can::
+Additionally if you want to use a different column titles, you can:
 
-    foreach (new Model_User($db) as $m) {
-        $mCsv = $m->withPersistence($csv);
-        $mCsv->setOnlyFields(['id', 'name', 'password'])
-        $mCsv->getField('name')->actual = 'First Name';
-        $mCsv->save();
-    }
+```
+foreach (new Model_User($db) as $m) {
+    $mCsv = $m->withPersistence($csv);
+    $mCsv->setOnlyFields(['id', 'name', 'password'])
+    $mCsv->getField('name')->actual = 'First Name';
+    $mCsv->save();
+}
+```
 
 Like with any other persistence you can use typecasting if you want data to be
 stored in any particular format.
 
 The examples above also create object on each iteration, that may appear as
 a performance inefficiency. This can be solved by re-using Csv model through
-iterations::
+iterations:
 
-    $m = new Model_User($db);
-    $mCsv = $m->withPersistence($csv);
-    $mCsv->setOnlyFields(['id', 'name', 'password'])
-    $mCsv->getField('name')->actual = 'First Name';
+```
+$m = new Model_User($db);
+$mCsv = $m->withPersistence($csv);
+$mCsv->setOnlyFields(['id', 'name', 'password'])
+$mCsv->getField('name')->actual = 'First Name';
 
-    foreach ($m as $mCsv) {
-        $mCsv->save();
-    }
+foreach ($m as $mCsv) {
+    $mCsv->save();
+}
+```
 
-This code can be further simplified if you use import() method::
+This code can be further simplified if you use import() method:
 
-    $m = new Model_User($db);
-    $mCsv = $m->withPersistence($csv);
-    $mCsv->setOnlyFields(['id', 'name', 'password'])
-    $mCsv->getField('name')->actual = 'First Name';
-    $mCsv->import($m);
+```
+$m = new Model_User($db);
+$mCsv = $m->withPersistence($csv);
+$mCsv->setOnlyFields(['id', 'name', 'password'])
+$mCsv->getField('name')->actual = 'First Name';
+$mCsv->import($m);
+```
 
-Naturally you can also move data in the other direction::
+Naturally you can also move data in the other direction:
 
-    $m = new Model_User($db);
-    $mCsv = $m->withPersistence($csv);
-    $mCsv->setOnlyFields(['id', 'name', 'password'])
-    $mCsv->getField('name')->actual = 'First Name';
+```
+$m = new Model_User($db);
+$mCsv = $m->withPersistence($csv);
+$mCsv->setOnlyFields(['id', 'name', 'password'])
+$mCsv->getField('name')->actual = 'First Name';
 
-    $m->import($mCsv);
+$m->import($mCsv);
+```
 
 Only the last line changes and the data will now flow in the other direction.
 

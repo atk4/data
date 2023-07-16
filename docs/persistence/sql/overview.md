@@ -1,6 +1,4 @@
-========
-Overview
-========
+# Overview
 
 DSQL is a dynamic SQL query builder. You can write multi-vendor queries in PHP
 profiting from better security, clean syntax and most importantly – sub-query
@@ -8,9 +6,7 @@ support. With DSQL you stay in control of when queries are executed and what
 data is transmitted. DSQL is easily composable – build one query and use it as
 a part of other query.
 
-
-Goals of DSQL
-=============
+## Goals of DSQL
 
  - simple and concise syntax
  - consistently scalable (e.g. 5 levels of sub-queries, 10 with joins and 15
@@ -27,15 +23,17 @@ Goals of DSQL
      - "`Open to extend <https://github.com/atk4/dsql/wiki/Open-to-Extend>`_"
      - "`Vendor Transparency <https://github.com/atk4/dsql/wiki/Vendor-Transparency>`_"
 
-DSQL by example
-===============
-The simplest way to explain DSQL is by example::
+## DSQL by example
 
-    $query = $connection->dsql();
-    $query->table('employees')
-        ->where('birth_date', '1961-05-02')
-        ->field('count(*)');
-    echo 'Employees born on May 2, 1961: ' . $query->getOne();
+The simplest way to explain DSQL is by example:
+
+```
+$query = $connection->dsql();
+$query->table('employees')
+    ->where('birth_date', '1961-05-02')
+    ->field('count(*)');
+echo 'Employees born on May 2, 1961: ' . $query->getOne();
+```
 
 The above code will execute the following query:
 
@@ -51,9 +49,8 @@ grouping, ordering, unions as well as queries on result-set.
  - See https://github.com/atk4/dsql-primer for various working
    examples of using DSQL with a real data-set.
 
+## DSQL is Part of Agile Toolkit
 
-DSQL is Part of Agile Toolkit
-=============================
 DSQL is a stand-alone and lightweight library with no dependencies and can be
 used in any PHP project, big or small.
 
@@ -67,16 +64,13 @@ layer, so be sure to look at the rest of the suite.
 .. _Agile Toolkit: http://agiletoolkit.org/
 .. _Agile Models: https://github.com/atk4/models
 
-
-Requirements
-============
+## Requirements
 
 #. PHP 5.5 and above
 
 .. _installation:
 
-Installation
-============
+## Installation
 
 The recommended way to install DSQL is with
 `Composer <http://getcomposer.org>`_. Composer is a dependency management tool
@@ -100,26 +94,24 @@ You can specify DSQL as a project or module dependency in composer.json:
         }
     }
 
-After installing, you need to require Composer's autoloader in your PHP file::
+After installing, you need to require Composer's autoloader in your PHP file:
 
-    require 'vendor/autoload.php';
+```
+require 'vendor/autoload.php';
+```
 
 You can find out more on how to install Composer, configure auto-loading, and
 other best-practices for defining dependencies at
 `getcomposer.org <http://getcomposer.org>`_.
 
-
-Getting Started
-===============
+## Getting Started
 
 Continue reading :ref:`quickstart` where you will learn about basics of DSQL
 and how to use it to it's full potential.
 
-Contributing
-============
+## Contributing
 
-Guidelines
-----------
+### Guidelines
 
 1. DSQL utilizes PSR-1, PSR-2, PSR-4, and PSR-7.
 2. DSQL is meant to be lean and fast with very few dependencies. This means
@@ -129,16 +121,13 @@ Guidelines
 4. All pull requests must include relevant documentation or amend the existing
    documentation if necessary.
 
-Review and Approval
--------------------
+### Review and Approval
 
 1. All code must be submitted through pull requests on GitHub
 2. Any of the project managers may Merge your pull request, but it must not be
    the same person who initiated the pull request.
 
-
-Running the tests
------------------
+### Running the tests
 
 In order to contribute, you'll need to checkout the source from GitHub and
 install DSQL dependencies using Composer:
@@ -167,8 +156,7 @@ set database. To run them:
 
 Look inside these the .xml files for further information and connection details.
 
-Reporting a security vulnerability
-==================================
+## Reporting a security vulnerability
 
 We want to ensure that DSQL is a secure library for everyone. If you've
 discovered a security vulnerability in DSQL, we appreciate your help in

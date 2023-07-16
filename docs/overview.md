@@ -1,6 +1,4 @@
-========
-Overview
-========
+# Overview
 
 Agile Data is a unique SQL/NoSQL access library that promotes correct Business
 Logic design in your PHP application and implements database access in a
@@ -9,8 +7,7 @@ flexible and scalable way.
 .. image:: images/presentation.png
     :target: https://www.youtube.com/watch?v=XUXZI7123B8
 
-Simple to learn
-===============
+## Simple to learn
 
 We have designed Agile Data to be very friendly for those who started programming
 recently and teach them correct patterns through clever architectural design.
@@ -21,8 +18,7 @@ applications, but the true power of Agile Data is realized when it's paired with
 Agile UI or Agile API projects.
 (https://github.com/atk4/ui, https://github.com/atk4/api).
 
-Not a traditional ORM
-=====================
+## Not a traditional ORM
 
 Agile Data implementation has several significant differences to a traditional
 ORM (Hibernate / Doctrine style). I will discuss those in more detail further in
@@ -38,9 +34,7 @@ pattern:
 To find out more, how Agile Data compares to other PHP data mappers and ORM frameworks, see
 https://medium.com/@romaninsh/objectively-comparing-orm-dal-libraries-e4f095de80b5
 
-
-Concern Separation
-==================
+## Concern Separation
 
 Design of Agile Data follows principle of "concern separation", but all of the
 basic functionality is divided into 3 major areas:
@@ -57,8 +51,7 @@ work with your DataSets.
 
 If you have worked with other ORMs, read the following sections to avoid confusion:
 
-Class: Field
-------------
+### Class: Field
 
  - Represent logical data column (e.g. "date_of_birth")
  - Stores column meta-information (e.g. ['type' => 'date', 'caption' => 'Birth Date'])
@@ -69,8 +62,7 @@ Class: Field
     or presentation detail (:php:attr:`Field::ui`). Field class does not interpret
     the value, it only stores it.
 
-Class: Model
-------------
+### Class: Model
 
  - Represent logical Data Set (e.g. Active Users)
  - Stores data location and criteria
@@ -86,8 +78,7 @@ Class: Model
 .. note:: Unlike ORMs Model instances are never created during iterating. Also,
     in most cases, you never instantiate multiple instances of a model class.
 
-Class: Persistence
-------------------
+### Class: Persistence
 
  - Represent external data storage (e.g. MySQL database)
  - Stores connection information
@@ -95,18 +86,19 @@ Class: Persistence
  - Type-casts standard data types into vendor-specific format
  - Documentation: :php:class:`Persistence`
 
+## Code Layers
 
+How is code:
 
-Code Layers
-===========
+```
+select name from user where id = 1
+```
 
-How is code::
+is different to the code?:
 
-    select name from user where id = 1
-
-is different to the code?::
-
-    $user->load(1)->get('name');
+```
+$user->load(1)->get('name');
+```
 
 While both achieve similar things, the SQL-like code is what we call
 "persistence-specific" code. The second example is "domain model" code. The job
@@ -125,23 +117,24 @@ execute no more than 3-4 requests per page even for highly complex data pages
 
 Next I'll show you how code from different "code layers" may look like:
 
-Domain-Model Code
------------------
+### Domain-Model Code
 
 Code is unaware of physical location of your data or which persistence are you
-using::
+using:
 
-    $user = new User($db);
+```
+$user = new User($db);
 
-    $user = $user->load(20); // load specific user record into PHP
-    echo $user->get('name') . ': '; // access field values
+$user = $user->load(20); // load specific user record into PHP
+echo $user->get('name') . ': '; // access field values
 
-    $gross = $user->ref('Invoice')
-        ->addCondition('status', 'due')
-        ->ref('Lines')
-        ->action('sum', 'gross')
-        ->getOne();
-                                // get sum of all gross fields for due invoices
+$gross = $user->ref('Invoice')
+    ->addCondition('status', 'due')
+    ->ref('Lines')
+    ->action('sum', 'gross')
+    ->getOne();
+                            // get sum of all gross fields for due invoices
+```
 
 Another important aspect of Domain-model code is that fields such as `gross` or
 `name` can be either a physical values in the database or can be mapped to
@@ -153,43 +146,47 @@ A typical method of your model class will be written in "domain-model" code.
     capabilities of persistence. The above example executes a total of 2 queries
     if used with SQL database.
 
-Persistence-specific code
--------------------------
+### Persistence-specific code
 
 This is a type of code which may change if you decide to switch from one
 persistence to another. For example, this is how you would define `gross` field
-for SQL::
+for SQL:
 
-    $model->addExpression('gross', ['expr' => '[net] + [vat]']);
+```
+$model->addExpression('gross', ['expr' => '[net] + [vat]']);
+```
 
 If your persistence does not support expressions (e.g. you are using Redis or
-MongoDB), you would need to define the field differently::
+MongoDB), you would need to define the field differently:
 
-    $model->addField('gross');
-    $model->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
-        $m->set('gross', $m->get('net') + $m->get('vat'));
-    });
+```
+$model->addField('gross');
+$model->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
+    $m->set('gross', $m->get('net') + $m->get('vat'));
+});
+```
 
 When you use persistence-specific code, you must be aware that it will not map
 into persistencies that does not support features you have used.
 
 In most cases that is OK as if you prefer to stay with same database type, for
 instance, the above expression will still be usable with any SQL vendor, but if
-you want it to work with NoSQL, then your solution might be::
+you want it to work with NoSQL, then your solution might be:
 
-    if ($model->hasMethod('addExpression')) {
-        // method is injected by Persistence
-        $model->addExpression('gross', ['expr' => '[net] + [vat]']);
-    } else {
-        // persistence does not support expressions
-        $model->addField('gross');
-        $model->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
-            $m->set('gross', $m->get('net') + $m->get('vat'));
-        });
-    }
+```
+if ($model->hasMethod('addExpression')) {
+    // method is injected by Persistence
+    $model->addExpression('gross', ['expr' => '[net] + [vat]']);
+} else {
+    // persistence does not support expressions
+    $model->addField('gross');
+    $model->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
+        $m->set('gross', $m->get('net') + $m->get('vat'));
+    });
+}
+```
 
-Generic Persistence-code
-------------------------
+### Generic Persistence-code
 
 A final type of code is also persistence-specific, but it is agnostic to your
 data-model. The example would be implementation of aggregation with "GROUP BY"
@@ -198,73 +195,82 @@ feature in SQL.
 https://github.com/atk4/report/blob/develop/src/GroupModel.php
 
 This code is specific to SQL databases, but can be used with any Model, so in
-order to use grouping with Agile Data, your code would be::
+order to use grouping with Agile Data, your code would be:
 
-    $aggregate = new AggregateModel(new Sale($db));
-    $aggregate->setGroupBy(['contractor_to', 'type'], [ // groups by 2 columns
-        'c' => ['expr' => 'count(*)'], // defines aggregate formulas for fields
-        'qty' => ['expr' => 'sum([])'], // [] refers back to qty
-        'total' => ['expr' => 'sum([amount])'], // can specify any field here
-    ]);
+```
+$aggregate = new AggregateModel(new Sale($db));
+$aggregate->setGroupBy(['contractor_to', 'type'], [ // groups by 2 columns
+    'c' => ['expr' => 'count(*)'], // defines aggregate formulas for fields
+    'qty' => ['expr' => 'sum([])'], // [] refers back to qty
+    'total' => ['expr' => 'sum([amount])'], // can specify any field here
+]);
+```
 
-
-
-Persistence Scaling
-===================
+## Persistence Scaling
 
 Although in most cases you would be executing operation against SQL persistence,
 Agile Data makes it very easy to use models with a simpler persistencies.
 
 For example, consider you want to output a "table" to the user using HTML by
-using Agile UI::
+using Agile UI:
 
-    $table = \Atk4\Ui\Table::addTo($app);
+```
+$table = \Atk4\Ui\Table::addTo($app);
 
-    $table->setModel(new User($db));
+$table->setModel(new User($db));
 
-    echo $table->render();
+echo $table->render();
+```
 
 Class `\\Atk4\\Ui\\Table` here is designed to work with persistencies and models -
 it will populate columns of correct type, fetch data, calculate totals if needed.
 But what if you have your data inside an array?
-You can use :php:class:`Persistence\Static_` for that::
+You can use :php:class:`Persistence\Static_` for that:
 
-    $table = \Atk4\Ui\Table::addTo($app);
+```
+$table = \Atk4\Ui\Table::addTo($app);
 
-    $table->setModel(new User(new Persistence\Static_([
-        ['name' => 'John', 'is_admin' => false, 'salary' => 34_400.0],
-        ['name' => 'Peter', 'is_admin' => false, 'salary' => 42_720.0],
-    ])));
+$table->setModel(new User(new Persistence\Static_([
+    ['name' => 'John', 'is_admin' => false, 'salary' => 34_400.0],
+    ['name' => 'Peter', 'is_admin' => false, 'salary' => 42_720.0],
+])));
 
-    echo $table->render();
+echo $table->render();
+```
 
 Even if you don't have a model, you can use Static persistence with Generic
-model class to display VAT breakdown table::
+model class to display VAT breakdown table:
 
-    $table = \Atk4\Ui\Table::addTo($app);
+```
+$table = \Atk4\Ui\Table::addTo($app);
 
-    $table->setModel(new Model(new Persistence\Static_([
-        ['VAT_rate' => '12.0%', 'VAT' => 36.0, 'Net' => 300.0],
-        ['VAT_rate' => '10.0%', 'VAT' => 52.0, 'Net' => 520.0],
-    ])));
+$table->setModel(new Model(new Persistence\Static_([
+    ['VAT_rate' => '12.0%', 'VAT' => 36.0, 'Net' => 300.0],
+    ['VAT_rate' => '10.0%', 'VAT' => 52.0, 'Net' => 520.0],
+])));
 
-    echo $table->render();
+echo $table->render();
+```
 
-It can be made even simpler::
+It can be made even simpler:
 
-    $table = \Atk4\Ui\Table::addTo($app);
+```
+$table = \Atk4\Ui\Table::addTo($app);
 
-    $table->setModel(new Model(new Persistence\Static_([
-        'John',
-        'Peter',
-    ])));
+$table->setModel(new Model(new Persistence\Static_([
+    'John',
+    'Peter',
+])));
 
-    echo $table->render();
+echo $table->render();
+```
 
-Agile UI even offers a wrapper for static persistence::
+Agile UI even offers a wrapper for static persistence:
 
-    $table = \Atk4\Ui\Table::addTo($app);
+```
+$table = \Atk4\Ui\Table::addTo($app);
 
-    $table->setSource([ 'John', 'Peter' ]);
+$table->setSource([ 'John', 'Peter' ]);
 
-    echo $table->render();
+echo $table->render();
+```

@@ -1,14 +1,10 @@
-
 .. _Fields:
 
 .. php:namespace:: Atk4\Data
 
 .. php:class:: Field
 
-
-=====
-Field
-=====
+# Field
 
 Field represents a model `property` that can hold information about your entity.
 In Agile Data we call it a Field, to distinguish it from object properties. Fields
@@ -24,18 +20,19 @@ mapping into persistence-logic.
 
 Field represents a `property` of your business entity or `column` if you think
 of your data in a tabular way. Once you have defined Field for your Model, you
-can set and read value of that field::
+can set and read value of that field:
 
-    $model->addField('name');
-    $model->set('name', 'John');
+```
+$model->addField('name');
+$model->set('name', 'John');
 
-    echo $model->get('name'); // John
+echo $model->get('name'); // John
+```
 
 Just like you can reuse :php:class:`Model` to access multiple data records,
 :php:class:`Field` object will be reused also.
 
-Purpose of Field
-================
+## Purpose of Field
 
 Implementation of Field in Agile Data is a very powerful and distinctive feature.
 While :php:attr:`Model::data` store your field values, the job of :php:class:`Field`
@@ -45,18 +42,19 @@ on how to store or present it.
 The implementation of Fields is tightly integrated with :php:class:`Model` and
 :php:class:`Persistence`.
 
-Field Type
-----------
+### Field Type
 
 .. php:attr:: type
 
 
-Probably a most useful quality of Field is that it has a clear type::
+Probably a most useful quality of Field is that it has a clear type:
 
-    $model->addField('age', ['type' => 'integer']);
-    $model->set('age', '123');
+```
+$model->addField('age', ['type' => 'integer']);
+$model->set('age', '123');
 
-    var_dump($model->get('age')); // int(123)
+var_dump($model->get('age')); // int(123)
+```
 
 Agile Data defines some basic types to make sure that values:
 
@@ -64,12 +62,14 @@ Agile Data defines some basic types to make sure that values:
  - can be saved (Persistence)
  - can be presented to user (UI)
 
-A good example would be a `date` type::
+A good example would be a `date` type:
 
-    $model->addField('birth', ['type' => 'date']);
-    $model->set('birth', new DateTime('2014-01-10'));
+```
+$model->addField('birth', ['type' => 'date']);
+$model->set('birth', new DateTime('2014-01-10'));
 
-    $model->save();
+$model->save();
+```
 
 When used with SQL persistence the value will be automatically converted into a
 format preferred by the database `2014-10-01`. Because PHP has only a single
@@ -97,20 +97,21 @@ Those are responsible for converting PHP native types to persistence specific
 formats as defined in fields. Those methods will also change name of the field
 if needed (see Field::actual)
 
-Basic Properties
-----------------
+### Basic Properties
 
 Fields have properties, which define its behaviour. Some properties apply on how
 the values are handled or restrictions on interaction, other values can even
 help with data visualization. For example if :php:attr:`Field::enum` is used
-with Agile UI form, it will be displayed as radio button or a drop-down::
+with Agile UI form, it will be displayed as radio button or a drop-down:
 
-    $model->addField('gender', ['enum' => ['F', 'M']]);
+```
+$model->addField('gender', ['enum' => ['F', 'M']]);
 
-    // Agile UI code:
-    $app = new \Atk4\Ui\App('my app');
-    $app->initLayout('Centered');
-    Form::addTo($app)->setModel($model);
+// Agile UI code:
+$app = new \Atk4\Ui\App('my app');
+$app->initLayout('Centered');
+Form::addTo($app)->setModel($model);
+```
 
 You will also not be able to set value which is not one of the `enum` values
 even if you don't use UI.
@@ -139,12 +140,14 @@ for these values.
 
 Set this to false if field value must NOT be NULL. Attempting to set field
 value to "NULL" will result in exception.
-Example::
+Example:
 
-    $model->set('age', 0);
-    $model->save();
+```
+$model->set('age', 0);
+$model->save();
 
-    $model->set('age', null); // exception
+$model->set('age', null); // exception
+```
 
 
 .. php:attr:: required
@@ -157,11 +160,13 @@ Some examples that are not allowed are:
  - 0 numerical value or 0.0
  - boolean false
 
-Example::
+Example:
 
-    $model->set('age', 0); // exception
+```
+$model->set('age', 0); // exception
 
-    $model->set('age', null); // exception
+$model->set('age', null); // exception
+```
 
 
 .. php:attr:: readOnly
@@ -218,13 +223,15 @@ before executing save().
 If you do not set non-null value to a not-nullable field, save() will fail with
 exception.
 
-Example::
+Example:
 
-    $model['age'] = 0;
-    $model->save();
+```
+$model['age'] = 0;
+$model->save();
 
-    $model->getField('age')->setNull(); // no exception
-    $model->save(); // still getting exception here
+$model->getField('age')->setNull(); // no exception
+$model->save(); // still getting exception here
+```
 
 
 See also :php:method:`Model::setNull`.
@@ -233,8 +240,7 @@ See also :php:method:`Model::setNull`.
 
 Get the value of the field. Same as $model->get($fieldName);
 
-UI Presentation
----------------
+### UI Presentation
 
 Agile Data does not deal directly with formatting your data for the user.
 There may be various items to consider, for instance the same date can be

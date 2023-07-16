@@ -1,56 +1,63 @@
-===============
-Advanced Topics
-===============
+# Advanced Topics
 
 DSQL has huge capabilities in terms of extending. This chapter explains just
 some of the ways how you can extend this already incredibly powerful library.
 
-Advanced Connections
-====================
+## Advanced Connections
+
 :php:class:`Connection` is incredibly lightweight and powerful in DSQL.
 The class tries to get out of your way as much as possible.
 
-Using DSQL without Connection
------------------------------
+### Using DSQL without Connection
+
 You can use :php:class:`Query` and :php:class:`Expression` without connection
-at all. Simply create expression::
+at all. Simply create expression:
 
-    $expr = new Mysql\Expression('show tables like []', ['foo%']);
+```
+$expr = new Mysql\Expression('show tables like []', ['foo%']);
+```
 
-or query::
+or query:
 
-    $query = (new Mysql\Query())->table('user')->where('id', 1);
+```
+$query = (new Mysql\Query())->table('user')->where('id', 1);
+```
 
-When it's time to execute you can specify your Connection manually::
+When it's time to execute you can specify your Connection manually:
 
-    $rows = $expr->getRows($connection);
-    foreach ($rows as $row) {
-        echo json_encode($row) . "\n";
-    }
+```
+$rows = $expr->getRows($connection);
+foreach ($rows as $row) {
+    echo json_encode($row) . "\n";
+}
+```
 
-With queries you might need to select mode first::
+With queries you might need to select mode first:
 
-    $stmt = $query->mode('delete')->executeStatement($connection);
+```
+$stmt = $query->mode('delete')->executeStatement($connection);
+```
 
 The :php:meth:`Expression::execute` is a convenient way to prepare query,
 bind all parameters and get `Doctrine\DBAL\Result`, but if you wish to do it manually,
 see `Manual Query Execution`_.
 
+### Using in Existing Framework
 
-Using in Existing Framework
----------------------------
 If you use DSQL inside another framework, it's possible that there is already
 a PDO object which you can use. In Laravel you can optimize some of your queries
-by switching to DSQL::
+by switching to DSQL:
 
-    $c = new Connection(['connection' => $pdo]);
+```
+$c = new Connection(['connection' => $pdo]);
 
-    $userIds = $c->dsql()->table('expired_users')->field('user_id');
-    $c->dsql()->table('user')->where('id', 'in', $userIds)->set('active', 0)->mode('update')->executeStatement();
+$userIds = $c->dsql()->table('expired_users')->field('user_id');
+$c->dsql()->table('user')->where('id', 'in', $userIds)->set('active', 0)->mode('update')->executeStatement();
 
-    // Native Laravel Database Query Builder
-    // $userIds = DB::table('expired_users')->lists('user_id');
-    // DB::table('user')->whereIn('id', $userIds)->update(['active', 0]);
+// Native Laravel Database Query Builder
+// $userIds = DB::table('expired_users')->lists('user_id');
+// DB::table('user')->whereIn('id', $userIds)->update(['active', 0]);
+```
 
 The native query builder in the example above populates $userIds with array from
 `expired_users` table, then creates second query, which is an update. With
@@ -67,50 +74,55 @@ results too.
         id in (SELECT user_id from expired_users)
 
 If you are creating :php:class:`Connection` through constructor, you may have
-to explicitly specify property :php:attr:`Connection::queryClass`::
+to explicitly specify property :php:attr:`Connection::queryClass`:
 
-    $c = new Connection(['connection' => $pdo, 'queryClass' => Atk4\Data\Persistence\Sql\Sqlite\Query::class]);
+```
+$c = new Connection(['connection' => $pdo, 'queryClass' => Atk4\Data\Persistence\Sql\Sqlite\Query::class]);
+```
 
 This is also useful, if you have created your own Query class in a different
 namespace and wish to use it.
 
 .. _extending_query:
 
-Extending Query Class
-=====================
+## Extending Query Class
 
 You can add support for new database vendors by creating your own
 :php:class:`Query` class.
-Let's say you want to add support for new SQL vendor::
+Let's say you want to add support for new SQL vendor:
 
-    class Query_MyVendor extends Atk4\Data\Persistence\Sql\Query
-    {
-        protected string $identifierEscapeChar = '"';
-        protected string $expressionClass = Expression_MyVendor::class;
+```
+class Query_MyVendor extends Atk4\Data\Persistence\Sql\Query
+{
+    protected string $identifierEscapeChar = '"';
+    protected string $expressionClass = Expression_MyVendor::class;
 
-        // truncate is done differently by this vendor
-        protected string $templateTruncate = 'delete [from] [table]';
+    // truncate is done differently by this vendor
+    protected string $templateTruncate = 'delete [from] [table]';
 
-        // also join is not supported
-        public function join(
-            $foreignTable,
-            $masterField = null,
-            $joinKind = null,
-            $foreignAlias = null
-        ) {
-            throw new Atk4\Data\Persistence\Sql\Exception('Join is not supported by the database');
-        }
+    // also join is not supported
+    public function join(
+        $foreignTable,
+        $masterField = null,
+        $joinKind = null,
+        $foreignAlias = null
+    ) {
+        throw new Atk4\Data\Persistence\Sql\Exception('Join is not supported by the database');
     }
+}
+```
 
 Now that our custom query class is complete, we would like to use it by default
-on the connection::
+on the connection:
 
-    $c = \Atk4\Data\Persistence\Sql\Connection::connect($dsn, $user, $pass, ['queryClass' => 'Query_MyVendor']);
+```
+$c = \Atk4\Data\Persistence\Sql\Connection::connect($dsn, $user, $pass, ['queryClass' => 'Query_MyVendor']);
+```
 
 .. _new_vendor:
 
-Adding new vendor support through extension
--------------------------------------------
+### Adding new vendor support through extension
+
 If you think that more people can benefit from your custom query class, you can
 create a separate add-on with it's own namespace. Let's say you have created
 `myname/dsql-myvendor`.
@@ -136,8 +148,7 @@ If you would like that your vendor support be bundled with DSQL, you should
 contact copyright@agiletoolkit.org after your external class has been around
 and received some traction.
 
-Adding New Query Modes
-----------------------
+### Adding New Query Modes
 
 By Default DSQL comes with the following :ref:`query-modes`:
 
@@ -156,34 +167,37 @@ query "LOAD DATA INFILE":
 3. Re-use existing methods/template tags if you can.
 4. Create _render method if your tag rendering is complex.
 
-So to implement our task, you might need a class like this::
+So to implement our task, you might need a class like this:
 
-    use \Atk4\Data\Persistence\Sql\Exception;
+```
+use \Atk4\Data\Persistence\Sql\Exception;
 
-    class QueryMysqlCustom extends \Atk4\Data\Persistence\Sql\Mysql\Query
+class QueryMysqlCustom extends \Atk4\Data\Persistence\Sql\Mysql\Query
+{
+    protected string $templateLoadData = 'load data local infile [file] into table [table]';
+
+    public function file($file)
     {
-        protected string $templateLoadData = 'load data local infile [file] into table [table]';
-
-        public function file($file)
-        {
-            if (!is_readable($file)) {
-                throw Exception(['File is not readable', 'file' => $file]);
-            }
-            $this['file'] = $file;
+        if (!is_readable($file)) {
+            throw Exception(['File is not readable', 'file' => $file]);
         }
-
-        public function loadData(): array
-        {
-            return $this->mode('loadData')->getRows();
-        }
+        $this['file'] = $file;
     }
 
-Then to use your new statement, you can do::
+    public function loadData(): array
+    {
+        return $this->mode('loadData')->getRows();
+    }
+}
+```
 
-    $c->dsql()->file('abc.csv')->loadData();
+Then to use your new statement, you can do:
 
-Manual Query Execution
-======================
+```
+$c->dsql()->file('abc.csv')->loadData();
+```
+
+## Manual Query Execution
 
 If you are not satisfied with :php:meth:`Expression::execute` you can execute
 query yourself.
@@ -193,10 +207,8 @@ query yourself.
 3. set result fetch mode and parameters;
 4. execute() your statement
 
+## Exception Class
 
-
-Exception Class
-===============
 DSQL slightly extends and improves :php:class:`Exception` class
 
 .. php:class:: Exception
@@ -213,12 +225,14 @@ be possible. You also risk injection or expose some sensitive data to the user.
     :param string|array $message: Describes the problem
     :param int          $code:    Error code
 
-Usage::
+Usage:
 
-    throw new Atk4\Data\Persistence\Sql\Exception('Hello');
+```
+throw new Atk4\Data\Persistence\Sql\Exception('Hello');
 
-    throw (new Atk4\Data\Persistence\Sql\Exception('File is not readable'))
-        ->addMoreInfo('file', $file);
+throw (new Atk4\Data\Persistence\Sql\Exception('File is not readable'))
+    ->addMoreInfo('file', $file);
+```
 
 When displayed to the user the exception will hide parameter for $file, but you
 still can get it if you really need it:

@@ -35,9 +35,7 @@ use Atk4\Data\Persistence\Sql\Query;
  * @property Model $table
  *
  * @method Persistence\Sql getPersistence()
- *
- * @phpstan-method Expression expr(string $template, array<int|string, mixed> $arguments = []) forwards to Persistence\Sql::expr using $this as model
- *                                                                                             TODO use @method instead of @phpstan-method once PHP CS Fixer can finish without an exception
+ * @method Expression      expr(string $template, array<int|string, mixed> $arguments = []) forwards to Persistence\Sql::expr using $this as model
  */
 class AggregateModel extends Model
 {
