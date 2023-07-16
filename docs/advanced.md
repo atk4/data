@@ -1,3 +1,6 @@
+:::{php:namespace} Atk4\Data
+:::
+
 # Advanced Topics
 
 Agile Data allow you to implement various tricks.
@@ -33,8 +36,8 @@ $account->hasMany('Transactions', ['model' => [Transaction::class]]);
 
 There are however two difficulties here:
 
- 1. sometimes you want to operate with specific sub-type.
- 2. when iterating, you want to have appropriate class, not Transaction()
+1. sometimes you want to operate with specific sub-type.
+2. when iterating, you want to have appropriate class, not Transaction()
 
 ### Best practice for specifying relation type
 
@@ -123,7 +126,6 @@ foreach ($account->ref('Transactions', ['typeSubstitution' => true]) as $tr) {
     $tr->verify(); // verify() method can be overloaded!
 }
 
-
 // however, for export, we don't need expensive substitution
 $transactionData = $account->ref('Transaction')->export();
 ```
@@ -155,7 +157,7 @@ class ControllerAudit
 ```
 
 TrackableTrait means that I'll be able to add this object inside model with
-``$model->add(new ControllerAudit())`` and that will automatically populate
+`$model->add(new ControllerAudit())` and that will automatically populate
 $owner, and $app values (due to AppScopeTrait) as well as execute init() method,
 which I want to define like this:
 
@@ -209,14 +211,14 @@ Of course if the application is not defined, no default is set. This would be
 handy for unit tests where you could manually specify the value for this field.
 
 The last 2 fields (update_*) will be updated through a hook - beforeUpdate() and
-will provide the values to be saved during ``save()``. beforeUpdate() will not
+will provide the values to be saved during `save()`. beforeUpdate() will not
 be called when new record is inserted, so those fields will be left as "null"
 after initial insert.
 
 If you wish, you can modify the code and insert historical records into other
 table.
 
-.. _soft_delete:
+(soft_delete)=
 
 ## Soft Delete
 
@@ -434,26 +436,33 @@ additive if you are verifying for the combination of matched fields.
 Many SQL database engines support defining WITH cursors to use in select, update
 and even delete statements.
 
-.. php:method:: addCteModel(string $name, Model $model, bool $recursive = false)
+:::{php:class} Model
+:::
 
-    Agile toolkit data models also support these cursors. Usage is like this::
+:::{php:method} addCteModel(string $name, Model $model, bool $recursive = false)
+Agile toolkit data models also support these cursors. Usage is like this:
 
-    $invoices = new Invoice();
+```
+$invoices = new Invoice();
 
-    $contacts = new Contact();
-    $contacts->addCteModel('inv', $invoices);
-    $contacts->join('inv.cid');
+$contacts = new Contact();
+$contacts->addCteModel('inv', $invoices);
+$contacts->join('inv.cid');
+```
+:::
 
-.. code-block:: sql
+```sql
+with
+    `inv` as (select `contact_id`, `ref_no`, `total_net` from `invoice`)
+select
+    *
+from `contact`
+    join `inv` on `inv`.`contact_id`=`contact`.`id`
+```
 
-    with
-        `inv` as (select `contact_id`, `ref_no`, `total_net` from `invoice`)
-    select
-        *
-    from `contact`
-        join `inv` on `inv`.`contact_id`=`contact`.`id`
-
-.. note:: Supported since MySQL 8.x, MariaDB supported it earlier.
+:::{note}
+Supported since MySQL 8.x, MariaDB supported it earlier.
+:::
 
 ## Creating Many to Many relationship
 
@@ -847,4 +856,3 @@ $this->getReference('Invoice')->model = 'Model_Invoice_Sale';
 ```
 
 The 'OverdueInvoice' reference will be also properly adjusted.
-

@@ -1,11 +1,15 @@
+:::{php:namespace} Atk4\Data
+:::
+
 # Overview
 
 Agile Data is a unique SQL/NoSQL access library that promotes correct Business
 Logic design in your PHP application and implements database access in a
 flexible and scalable way.
 
-.. image:: images/presentation.png
-    :target: https://www.youtube.com/watch?v=XUXZI7123B8
+:::{image} images/presentation.png
+:target: https://www.youtube.com/watch?v=XUXZI7123B8
+:::
 
 ## Simple to learn
 
@@ -25,11 +29,11 @@ ORM (Hibernate / Doctrine style). I will discuss those in more detail further in
 documentation, however it's important to note the reason of not following ORM
 pattern:
 
- - More suitable for mapping remote databases
- - Give developer control over generated queries
- - Better support for Persistence-specific features (e.g. SQL expressions)
- - True many-to-many deep traversal and avoiding (explicit eager pre-loading)
- - Better aggregation abstraction
+- More suitable for mapping remote databases
+- Give developer control over generated queries
+- Better support for Persistence-specific features (e.g. SQL expressions)
+- True many-to-many deep traversal and avoiding (explicit eager pre-loading)
+- Better aggregation abstraction
 
 To find out more, how Agile Data compares to other PHP data mappers and ORM frameworks, see
 https://medium.com/@romaninsh/objectively-comparing-orm-dal-libraries-e4f095de80b5
@@ -39,9 +43,9 @@ https://medium.com/@romaninsh/objectively-comparing-orm-dal-libraries-e4f095de80
 Design of Agile Data follows principle of "concern separation", but all of the
 basic functionality is divided into 3 major areas:
 
- - Fields (or Columns)
- - DataSets (or Rows)
- - Databases (or Persistencies)
+- Fields (or Columns)
+- DataSets (or Rows)
+- Databases (or Persistencies)
 
 Each of the above corresponds to a PHP class, which may use composition principle
 to hide implementation details.
@@ -53,38 +57,44 @@ If you have worked with other ORMs, read the following sections to avoid confusi
 
 ### Class: Field
 
- - Represent logical data column (e.g. "date_of_birth")
- - Stores column meta-information (e.g. ['type' => 'date', 'caption' => 'Birth Date'])
- - Handles value normalization
- - Documentation: :php:class:`Field`
+- Represent logical data column (e.g. "date_of_birth")
+- Stores column meta-information (e.g. ['type' => 'date', 'caption' => 'Birth Date'])
+- Handles value normalization
+- Documentation: {php:class}`Field`
 
-.. note:: Meta-information may be a persistence detail, (:php:attr:`Field::actual`)
-    or presentation detail (:php:attr:`Field::ui`). Field class does not interpret
-    the value, it only stores it.
+:::{note}
+Meta-information may be a persistence detail, ({php:attr}`Field::actual`)
+or presentation detail ({php:attr}`Field::ui`). Field class does not interpret
+the value, it only stores it.
+:::
 
 ### Class: Model
 
- - Represent logical Data Set (e.g. Active Users)
- - Stores data location and criteria
- - Stores list of Fields
- - Stores individual row
- - Handle operations over single or all records from Data Set
- - Documentation: :php:class:`Model`
+- Represent logical Data Set (e.g. Active Users)
+- Stores data location and criteria
+- Stores list of Fields
+- Stores individual row
+- Handle operations over single or all records from Data Set
+- Documentation: {php:class}`Model`
 
-.. note:: Model object is defined in such a way to contain enough information to
-    fully provide all information for generic UI, or generic API, and generic
-    persistence implementations.
+:::{note}
+Model object is defined in such a way to contain enough information to
+fully provide all information for generic UI, or generic API, and generic
+persistence implementations.
+:::
 
-.. note:: Unlike ORMs Model instances are never created during iterating. Also,
-    in most cases, you never instantiate multiple instances of a model class.
+:::{note}
+Unlike ORMs Model instances are never created during iterating. Also,
+in most cases, you never instantiate multiple instances of a model class.
+:::
 
 ### Class: Persistence
 
- - Represent external data storage (e.g. MySQL database)
- - Stores connection information
- - Translate single or multi-record operations into vendor-specific language
- - Type-casts standard data types into vendor-specific format
- - Documentation: :php:class:`Persistence`
+- Represent external data storage (e.g. MySQL database)
+- Stores connection information
+- Translate single or multi-record operations into vendor-specific language
+- Type-casts standard data types into vendor-specific format
+- Documentation: {php:class}`Persistence`
 
 ## Code Layers
 
@@ -138,13 +148,15 @@ $gross = $user->ref('Invoice')
 
 Another important aspect of Domain-model code is that fields such as `gross` or
 `name` can be either a physical values in the database or can be mapped to
-expressions (such as `vat`+`net`).
+expressions (such as `vat + net`).
 
 A typical method of your model class will be written in "domain-model" code.
 
-.. note:: the actual execution and number of queries may vary based on
-    capabilities of persistence. The above example executes a total of 2 queries
-    if used with SQL database.
+:::{note}
+the actual execution and number of queries may vary based on
+capabilities of persistence. The above example executes a total of 2 queries
+if used with SQL database.
+:::
 
 ### Persistence-specific code
 
@@ -222,10 +234,10 @@ $table->setModel(new User($db));
 echo $table->render();
 ```
 
-Class `\\Atk4\\Ui\\Table` here is designed to work with persistencies and models -
+Class `\Atk4\Ui\Table` here is designed to work with persistencies and models -
 it will populate columns of correct type, fetch data, calculate totals if needed.
 But what if you have your data inside an array?
-You can use :php:class:`Persistence\Static_` for that:
+You can use {php:class}`Persistence_i_Static_` for that:
 
 ```
 $table = \Atk4\Ui\Table::addTo($app);

@@ -1,4 +1,7 @@
-.. _Typecasting:
+:::{php:namespace} Atk4\Data
+:::
+
+(Typecasting)=
 
 # Typecasting
 
@@ -69,7 +72,7 @@ $m->addField('age', ['type' => 'integer']);
 $m->addField('name', ['type' => 'string']);
 
 $m->set('age', '49.8');
-$m->set('name', '       John');
+$m->set('name', '    John');
 
 echo $m->get('age'); // 49 - normalization cast value to integer
 echo $m->get('name'); // 'John' - normalization trims value

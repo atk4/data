@@ -1,8 +1,12 @@
-.. _Persistence:
+:::{php:namespace} Atk4\Data
+:::
+
+(Persistence)=
 
 # Loading and Saving (Persistence)
 
-.. php:class:: Model
+:::{php:class} Model
+:::
 
 Model object represents your real-life business objects such as "Invoice" or "Client".
 The rest of your application works with "Model" objects only and have no knowledge of
@@ -39,50 +43,60 @@ $m = new Model_Invoice();
 $m->setPersistence($db);
 ```
 
-.. php:method:: load
+:::{php:method} load
+Load active record from the DataSet:
 
-    Load active record from the DataSet::
+```
+$m = $m->load(10);
+echo $m->get('name');
+```
 
-        $m = $m->load(10);
-        echo $m->get('name');
+If record not found, will throw exception.
+:::
 
-    If record not found, will throw exception.
+:::{php:method} save($data = [])
+Store active record back into DataSet. If record wasn't loaded, store it as
+a new record:
 
-.. php:method:: save($data = [])
+```
+$m = $m->load(10);
+$m->set('name', 'John');
+$m->save();
+```
 
-    Store active record back into DataSet. If record wasn't loaded, store it as
-    a new record::
+You can pass argument to save() to set() and save():
 
-        $m = $m->load(10);
-        $m->set('name', 'John');
-        $m->save();
+```
+$m->unload();
+$m->save(['name' => 'John']);
+```
+:::
 
-    You can pass argument to save() to set() and save()::
+:::{php:method} tryLoad
+Same as load() but will return null if record is not found:
 
-        $m->unload();
-        $m->save(['name' => 'John']);
+```
+$m = $m->tryLoad(10);
+```
+:::
 
-.. php:method:: tryLoad
+:::{php:method} unload
+Remove active record and restore model to default state:
 
-    Same as load() but will return null if record is not found::
+```
+$m = $m->load(10);
+$m->unload();
 
-        $m = $m->tryLoad(10);
+$m->set('name', 'New User');
+$m->save(); // creates new user
+```
+:::
 
-.. php:method:: unload
-
-    Remove active record and restore model to default state::
-
-        $m = $m->load(10);
-        $m->unload();
-
-        $m->set('name', 'New User');
-        $m->save(); // creates new user
-
-.. php:method:: delete($id = null)
-
-    Remove current record from DataSet. You can optionally pass ID if you wish
-    to delete a different record. If you pass ID of a currently loaded record,
-    it will be unloaded.
+:::{php:method} delete($id = null)
+Remove current record from DataSet. You can optionally pass ID if you wish
+to delete a different record. If you pass ID of a currently loaded record,
+it will be unloaded.
+:::
 
 ### Inserting Record with a specific ID
 
@@ -184,7 +198,7 @@ $m->set('balance', 12_200.0);
 Loaded/saved data are always normalized unless the field value normalization
 is intercepted a hook.
 
-Final field flag that is worth mentioning is called :php:attr:`Field::readOnly`
+Final field flag that is worth mentioning is called {php:attr}`Field::readOnly`
 and if set, then value of a field may not be modified directly:
 
 ```
@@ -208,16 +222,15 @@ $m->addField('created', [
 $m->save(); // stores creation time just fine and also will loade it.
 ```
 
-
-.. note:: If you have been following our "Domain" vs "Persistence" then you can
-```
+:::{note}
+If you have been following our "Domain" vs "Persistence" then you can
 probably see that all of the above functionality described in this section
 apply only to the "Domain" model.
-```
+:::
 
 ### Typecasting
 
-For full documentation on type-casting see :ref:`typecasting`
+For full documentation on type-casting see {ref}`typecasting`
 
 ### Validation
 
@@ -225,9 +238,9 @@ Validation in application always depends on business logic.
 For example, if you want `age` field to be above `14` for the user registration
 you may have to ask yourself some questions:
 
- - Can user store `12` inside a age field?
- - If yes, Can user persist age with value of `12`?
- - If yes, Can user complete registration with age of `12`?
+- Can user store `12` inside a age field?
+- If yes, Can user persist age with value of `12`?
+- If yes, Can user complete registration with age of `12`?
 
 If 12 cannot be stored at all, then exception would be generated during set(),
 before you even get a chance to look at other fields.
@@ -296,49 +309,51 @@ protected function init(): void
 There are more work to be done until Field_Currency could be a valid field, but
 I wanted to draw your attention to the use of field flags:
 
- - system flag is used to hide `balance_amount` and `balance_currency_id` in UI.
- - neverPersist flag is used because there are no `balance` column in persistence.
+- system flag is used to hide `balance_amount` and `balance_currency_id` in UI.
+- neverPersist flag is used because there are no `balance` column in persistence.
 
 ### Dates and Time
 
-.. todo:: this section might need cleanup
+:::{todo}
+this section might need cleanup
+:::
 
 There are 3 datetime formats supported:
 
--  date: Converts into YYYY-MM-DD using UTC timezone for SQL. Defaults
-   to DateTime() class in PHP, but supports string input (parsed as date
-   in a current timezone) or unix timestamp.
--  time: converts into HH:MM:SS using UTC timezone for storing in SQL.
-   Defaults to DateTime() class in PHP, but supports string input
-   (parsed as date in current timezone) or unix timestamp. Will discard
-   date from timestamp.
--  datetime: stores both date and time. Uses UTC in DB. Defaults to
-   DateTime() class in PHP. Supports string input parsed by strtotime()
-   or unix timestamp.
+- date: Converts into YYYY-MM-DD using UTC timezone for SQL. Defaults
+  to DateTime() class in PHP, but supports string input (parsed as date
+  in a current timezone) or unix timestamp.
+- time: converts into HH:MM:SS using UTC timezone for storing in SQL.
+  Defaults to DateTime() class in PHP, but supports string input
+  (parsed as date in current timezone) or unix timestamp. Will discard
+  date from timestamp.
+- datetime: stores both date and time. Uses UTC in DB. Defaults to
+  DateTime() class in PHP. Supports string input parsed by strtotime()
+  or unix timestamp.
 
 ### Customizations
 
 Process which converts field values in native PHP format to/from
-database-specific formats is called _`typecasting`. Persistence driver
+database-specific formats is called {ref}`typecasting`. Persistence driver
 implements a necessary type-casting through the following two methods:
 
-.. php:method:: typecastLoadRow($model, $row);
+:::{php:method} typecastLoadRow($model, $row)
+Convert persistence-specific row of data to PHP-friendly row of data.
+:::
 
-    Convert persistence-specific row of data to PHP-friendly row of data.
-
-.. php:method:: typecastSaveRow($model, $row);
-
-    Convert native PHP-native row of data into persistence-specific.
+:::{php:method} typecastSaveRow($model, $row)
+Convert native PHP-native row of data into persistence-specific.
+:::
 
 Row persisting may rely on additional methods, such as:
 
-.. php:method:: typecastLoadField(Field $field, $value);
+:::{php:method} typecastLoadField(Field $field, $value)
+Convert persistence-specific row of data to PHP-friendly row of data.
+:::
 
-    Convert persistence-specific row of data to PHP-friendly row of data.
-
-.. php:method:: typecastSaveField(Field $field, $value);
-
-    Convert native PHP-native row of data into persistence-specific.
+:::{php:method} typecastSaveField(Field $field, $value)
+Convert native PHP-native row of data into persistence-specific.
+:::
 
 ## Duplicating and Replacing Records
 
@@ -348,23 +363,25 @@ to perform operations that may affect other records.
 
 ### Create copy of existing record
 
-.. php:method:: duplicate($id = null)
+:::{php:method} duplicate($id = null)
+Normally, active record stores "id", but when you call duplicate() it
+forgets current ID and as result it will be inserted as new record when you
+execute `save()` next time.
 
-    Normally, active record stores "id", but when you call duplicate() it
-    forgets current ID and as result it will be inserted as new record when you
-    execute `save()` next time.
+If you pass the `$id` parameter, then the new record will be saved under
+a new ID:
 
-    If you pass the `$id` parameter, then the new record will be saved under
-    a new ID::
+```
+// Assume DB with only one record with ID = 123
 
-        // Assume DB with only one record with ID = 123
+// Load and duplicate that record
+$m->load(123)->duplicate()->save();
 
-        // Load and duplicate that record
-        $m->load(123)->duplicate()->save();
-
-        // Now you have 2 records:
-        // one with ID = 123 and another with ID = {next db generated id}
-        echo $m->executeCountQuery();
+// Now you have 2 records:
+// one with ID = 123 and another with ID = {next db generated id}
+echo $m->executeCountQuery();
+```
+:::
 
 ### Duplicate then save under a new ID
 
@@ -380,13 +397,13 @@ $m->load(123)->duplicate()->setId(124)->save();
 Now the record 124 will be replaced with the data taken from record 123.
 For SQL that means calling 'replace into x'.
 
-.. warning::
+:::{warning}
+There is no special treatment for joins() when duplicating records, so your
+new record will end up referencing the same joined record. If the join is
+reverse then your new record may not load.
 
-    There is no special treatment for joins() when duplicating records, so your
-    new record will end up referencing the same joined record. If the join is
-    reverse then your new record may not load.
-
-    This will be properly addressed in a future version of Agile Data.
+This will be properly addressed in a future version of Agile Data.
+:::
 
 ## Working with Multiple DataSets
 
@@ -403,7 +420,8 @@ If you decide to create new instance, it will provide a `vanilla` copy of model
 without any in-line modifications.
 This can be used in conjunction to escape data-set.
 
-.. php:method:: newInstance($class = null, $options = [])
+:::{php:method} newInstance($class = null, $options = [])
+:::
 
 ### Looking for duplicates
 
@@ -503,15 +521,15 @@ want to store the record inside a different database. As we are looking into
 use-cases, you should keep in mind that with Agile Data Persistence can be
 pretty much anything including 'RestAPI', 'File', 'Memcache' or 'MongoDB'.
 
-.. important::
+:::{important}
+Instance of a model can be associated with a single persistence only. Once
+it is associated, it stays like that. To store a model data into a different
+persistence, a new instance of your model will be created and then associated
+with a new persistence.
+:::
 
-    Instance of a model can be associated with a single persistence only. Once
-    it is associated, it stays like that. To store a model data into a different
-    persistence, a new instance of your model will be created and then associated
-    with a new persistence.
-
-
-.. php:method:: withPersistence($persistence)
+:::{php:method} withPersistence($persistence)
+:::
 
 ### Creating Cache with Memcache
 
@@ -691,7 +709,7 @@ $u = $u->load(123);
 $u->withPersistence($sess)->save();
 ```
 
-.. _Action:
+(Action)=
 
 ## Actions
 
@@ -699,10 +717,10 @@ Action is a multi-row operation that will affect all the records inside DataSet.
 Actions will not affect records outside of DataSet (records that do not match
 conditions)
 
-.. php:method:: action($action, $args = [])
-
-    Prepares a special object representing "action" of a persistence layer based
-    around your current model.
+:::{php:method} action($action, $args = [])
+Prepares a special object representing "action" of a persistence layer based
+around your current model.
+:::
 
 ### Action Types
 
@@ -710,11 +728,11 @@ Actions can be grouped by their result. Some action will be executed and will
 not produce any results. Others will respond with either one value or multiple
 rows of data.
 
- - no results
- - single value
- - single row
- - single column
- - array of hashes
+- no results
+- single value
+- single row
+- single column
+- array of hashes
 
 Action can be executed at any time and that will return an expected result:
 
@@ -760,9 +778,9 @@ echo $a(); // same as $a->getOne();
 
 ### SQL Actions
 
-Currently only read-only actions are supported by `Persistence\\Sql`:
+Currently only read-only actions are supported by `Persistence\Sql`:
 
- - select - produces query that returns DataSet (array of hashes)
+- select - produces query that returns DataSet (array of hashes)
 
 There are ability to execute aggregation functions:
 
@@ -786,14 +804,12 @@ $client->hasMany('Invoice')
     ->addField('total_gross', ['aggregate' => 'sum', 'field' => 'gross']);
 ```
 
-This operation is actually consisting of 3 following operations::
+This operation is actually consisting of 3 following operations:
 
 1. Related model is created and linked up using refLink that essentially places
    a condition between $client and $invoice assuming they will appear inside
    same query.
-
 2. Action is created from $invoice using 'fx' and requested method / field.
-
 3. Expression is created with name 'total_gross' that uses Action.
 
 Here is a way how to intervene with the process:
@@ -819,7 +835,6 @@ SQL actions apply the following:
 - update: init, mode, conditions, limit, order, hook
 - delete: init, mode, conditions
 - select: init, fields, conditions, limit, order, hook
-- count:  init, field, conditions, hook,
-- field:  init, field, conditions
-- fx:     init, field, conditions
-
+- count: init, field, conditions, hook,
+- field: init, field, conditions
+- fx: init, field, conditions

@@ -1,10 +1,14 @@
-.. _SQL:
+:::{php:namespace} Atk4\Data
+:::
+
+(Static)=
 
 # Static Persistence
 
-.. php:class:: Persistence\Static_
+:::{php:class} Persistence_i_Static_
+:::
 
-Static Persistence extends :php:class:`Persistence\Array_` to implement
+Static Persistence extends {php:class}`Persistence_i_Array_` to implement
 a user-friendly way of specifying data through an array.
 
 ## Usage
@@ -21,13 +25,14 @@ $table->setModel(new Model(new Persistence\Static_([
 
 Lets unwrap the example:
 
-.. php:method:: __construct
+:::{php:method} __construct
+:::
 
-Constructor accepts array as an argument, but the array could be in various forms::
+Constructor accepts array as an argument, but the array could be in various forms:
 
- - can be array of strings ['one', 'two']
- - can be array of hashes. First hash will be examined to pick up fields
- - can be array of arrays. Will name columns as 'field1', 'field2', 'field3'.
+- can be array of strings ['one', 'two']
+- can be array of hashes. First hash will be examined to pick up fields
+- can be array of arrays. Will name columns as 'field1', 'field2', 'field3'.
 
 If you are using any fields without keys (numeric keys) it's important that all
 your records have same number of elements.
@@ -39,7 +44,7 @@ Alternative it will check key "title".
 
 If neither are present you can still manually specify title field for your model.
 
-Finally, static persistence (unlike :php:class:Persistence\Array_) will automatically
+Finally, static persistence (unlike {php:class}`Persistence_i_Array_`) will automatically
 populate fields for the model and will even attempt to deduce field types.
 
 Currently it recognizes integer, date, boolean, float, array and object types.
@@ -48,6 +53,6 @@ Other fields will appear as-is.
 ### Saving Records
 
 Models that you specify against static persistence will not be marked as
-"Read Only" (:php:attr:`Model::readOnly`), and you will be allowed to save
+"Read Only" ({php:attr}`Model::readOnly`), and you will be allowed to save
 data back. The data will only be stored inside persistence object and will be
 discarded at the end of your PHP script.

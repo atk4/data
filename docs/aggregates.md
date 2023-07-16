@@ -1,14 +1,16 @@
-.. _Aggregates:
+:::{php:namespace} Atk4\Data
+:::
+
+(Aggregates)=
 
 # Model Aggregates
 
-.. php:namespace:: Atk4\Data\Model
-
-.. php:class:: AggregateModel
+:::{php:class} Model_i_AggregateModel
+:::
 
 In order to create model aggregates the AggregateModel model needs to be used:
 
-### Grouping
+## Grouping
 
 AggregateModel model can be used for grouping:
 
@@ -44,4 +46,3 @@ $ledger->setGroupBy(['nominal_id'], [
     'opening_balance' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
 ]);
 ```
-

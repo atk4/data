@@ -1,8 +1,12 @@
-.. _Model:
+:::{php:namespace} Atk4\Data
+:::
+
+(Model)=
 
 # Model
 
-.. php:class:: Model
+:::{php:class} Model
+:::
 
 Probably the most significant class in ATK Data - Model - acts as a Parent for all your
 entity classes:
@@ -156,7 +160,8 @@ to use cross-persistence referencing (this is further explained in Advanced sect
 
 ## Initialization
 
-.. php:method:: init
+:::{php:method} init
+:::
 
 Method init() will automatically be called when your Model is associated with
 Persistence object. It is commonly used to declare fields, conditions, relations, hooks and more:
@@ -226,9 +231,10 @@ foreach (new User($db) as $user) {
 ```
 
 Instead, Field handles many very valuable operations which would otherwise fall on the
-shoulders of developer (Read more here :php:class:`Field`)
+shoulders of developer (Read more here {php:class}`Field`)
 
-.. php:method:: addField($name, $seed)
+:::{php:method} addField($name, $seed)
+:::
 
 Creates a new field object inside your model (by default the class is 'Field').
 The fields are implemented on top of Containers from Agile Core.
@@ -245,9 +251,10 @@ You may also specify your own Field implementation:
 $this->addField('amount_and_currency', [MyAmountCurrencyField::class]);
 ```
 
-Read more about :php:class:`Field`
+Read more about {php:class}`Field`
 
-.. php:method:: addFields(array $fields, $seed = [])
+:::{php:method} addFields(array $fields, $seed = [])
+:::
 
 Creates multiple field objects in one method call. See multiple syntax examples:
 
@@ -263,9 +270,8 @@ $m->addFields([
 ]);
 ```
 
+#### Read-only Fields
 
-Read-only Fields
-^^^^^^^^^^^^^^^^
 Although you may make any field read-only:
 
 ```
@@ -274,7 +280,8 @@ $this->addField('name', ['readOnly' => true]);
 
 There are two methods for adding dynamically calculated fields.
 
-.. php:method:: addExpression($name, $seed)
+:::{php:method} addExpression($name, $seed)
+:::
 
 Defines a field as server-side expression (e.g. SQL):
 
@@ -297,10 +304,10 @@ $product->addCondition('total', '<', 10);
 // filter products that cost less than 10.0 (including discount)
 ```
 
-
 For the times when you are not working with SQL persistence, you can calculate field in PHP.
 
-.. php:method:: addCalculatedField($name, ['expr' => $callback])
+:::{php:method} addCalculatedField($name, ['expr' => $callback])
+:::
 
 Creates new field object inside your model. Field value will be automatically
 calculated by your callback method right after individual record is loaded by the model:
@@ -314,9 +321,11 @@ $this->addCalculatedField('interest', ['expr' => function (self $m) {
 }, 'type' => 'float']);
 ```
 
-.. important:: always use argument `$m` instead of `$this` inside your callbacks. If model is to be
-   cloned, the code relying on `$this` would reference original model, but the code using
-   `$m` will properly address the model which triggered the callback.
+:::{important}
+always use argument `$m` instead of `$this` inside your callbacks. If model is to be
+cloned, the code relying on `$this` would reference original model, but the code using
+`$m` will properly address the model which triggered the callback.
+:::
 
 This can also be useful for calculating relative times:
 
@@ -338,7 +347,7 @@ class MyModel extends Model
 
 ### Actions
 
-Another common thing to define inside :php:meth:`Model::init()` would be
+Another common thing to define inside {php:meth}`Model::init()` would be
 a user invocable actions:
 
 ```
@@ -381,19 +390,18 @@ passwords to be generated and sent to the users:
 Crud::addTo($app)->setModel(new User($app->db));
 ```
 
-Read more about :php:class:`Model\UserAction`
+Read more about {php:class}`Model_i_UserAction`
 
 ### Hooks
 
 Hooks (behaviours) can allow you to define callbacks which would trigger
 when data is loaded, saved, deleted etc. Hooks are typically defined in
-:php:meth:`Model::init()` but will be executed accordingly.
+{php:meth}`Model::init()` but will be executed accordingly.
 
 There are countless uses for hooks and even more opportunities to use
 hook by all sorts of extensions.
 
-Validation
-^^^^^^^^^^
+#### Validation
 
 Validation is an extensive topic, but the simplest use-case would be through
 a hook:
@@ -408,7 +416,7 @@ $this->onHookShort(Model::HOOK_VALIDATE, function () {
 });
 ```
 
-Now if you attempt to save object, you will receive :php:class:`ValidationException`:
+Now if you attempt to save object, you will receive {php:class}`ValidationException`:
 
 ```
 $model->set('name', 'Swift');
@@ -418,11 +426,9 @@ $model->set('name', 'C#');
 $model->saveAndUnload(); // exception here
 ```
 
+#### Other Uses
 
-Other Uses
-^^^^^^^^^^
-
-Other uses for model hooks are explained in :ref:`Hooks`
+Other uses for model hooks are explained in {ref}`Hooks`
 
 ### Inheritance
 
@@ -460,7 +466,7 @@ with persistence. In the most basic form, model is associated with persistence l
 $m = new User($db);
 ```
 
-If model was created without persistence :php:meth:`Model::init()` will not fire. You can
+If model was created without persistence {php:meth}`Model::init()` will not fire. You can
 explicitly associate model with persistence like this:
 
 ```
@@ -481,18 +487,21 @@ $m = $m->load(1);
 echo $m->get('name'); // peter
 ```
 
-See :php:class:`Persistence\\Static_`
+See {php:class}`Persistence_i_Static_`
 
-.. php:attr:: persistence
+:::{php:attr} persistence
+:::
 
 Refers to the persistence driver in use by current model. Calling certain
 methods such as save(), addCondition() or action() will rely on this property.
 
-.. php:attr:: persistenceData
+:::{php:attr} persistenceData
+:::
 
 DO NOT USE: Array containing arbitrary data by a specific persistence layer.
 
-.. php:attr:: table
+:::{php:attr} table
+:::
 
 If $table property is set, then your persistence driver will use it as default
 table / collection when loading data. If you omit the table, you should specify
@@ -504,7 +513,8 @@ $m = new User($db, 'user');
 
 This also overrides current table value.
 
-.. php:method:: withPersistence($persistence)
+:::{php:method} withPersistence($persistence)
+:::
 
 Creates a duplicate of a current model and associate new copy with a specified
 persistence. This method is useful for moving model data from one persistence
@@ -512,29 +522,31 @@ to another.
 
 ## Populating Data
 
-.. php:method:: insert($row)
+:::{php:method} insert($row)
+Inserts a new record into the database and returns $id. It does not affect
+currently loaded record and in practice would be similar to:
 
-    Inserts a new record into the database and returns $id. It does not affect
-    currently loaded record and in practice would be similar to::
+```
+$entity = $m->createEntity();
+$entity->setMulti($row);
+$entity->save();
 
-        $entity = $m->createEntity();
-        $entity->setMulti($row);
-        $entity->save();
+return $entity;
+```
 
-        return $entity;
+The main goal for insert() method is to be as fast as possible, while still
+performing data validation. After inserting method will return cloned model.
+:::
 
-    The main goal for insert() method is to be as fast as possible, while still
-    performing data validation. After inserting method will return cloned model.
+:::{php:method} import($data)
+Similar to insert() however works across array of rows. This method will
+not return any IDs or models and is optimized for importing large amounts
+of data.
 
-.. php:method:: import($data)
-
-    Similar to insert() however works across array of rows. This method will
-    not return any IDs or models and is optimized for importing large amounts
-    of data.
-
-    The method will still convert the data needed and operate with joined
-    tables as needed. If you wish to access tables directly, you'll have to look
-    into Persistence::insert($m, $data);
+The method will still convert the data needed and operate with joined
+tables as needed. If you wish to access tables directly, you'll have to look
+into Persistence::insert($m, $data);
+:::
 
 ## Working with selective fields
 
@@ -542,27 +554,27 @@ When you normally work with your model then all fields are available and will be
 loaded / saved. You may, however, specify that you wish to load only a sub-set
 of fields.
 
-.. php:method:: setOnlyFields($fields)
+:::{php:method} setOnlyFields($fields)
+Specify array of fields. Only those fields will be accessible and will be
+loaded / saved. Attempt to access any other field will result in exception.
 
-    Specify array of fields. Only those fields will be accessible and will be
-    loaded / saved. Attempt to access any other field will result in exception.
+Null restore to full set of fields. This will also unload active record.
+:::
 
-    Null restore to full set of fields. This will also unload active record.
+:::{php:attr} onlyFields
+Contains list of fields to be loaded / accessed.
+:::
 
-.. php:attr:: onlyFields
-
-    Contains list of fields to be loaded / accessed.
-
-.. _Active Record:
+(Active_Record)=
 
 ## Setting and Getting active record data
 
 When your record is loaded from database, record data is stored inside the $data
 property:
 
-.. php:attr:: data
-
-    Contains the data for an active record.
+:::{php:attr} data
+Contains the data for an active record.
+:::
 
 Model allows you to work with the data of single a record directly. You should
 use the following syntax when accessing fields of an active record:
@@ -576,75 +588,79 @@ $m->setMulti(['name' => 'John', 'surname' => 'Peter']);
 
 When you modify active record, it keeps the original value in the $dirty array:
 
-.. php:method:: set($field, $value)
+:::{php:method} set($field, $value)
+Set field to a specified value. The original value will be stored in
+$dirty property.
+:::
 
-    Set field to a specified value. The original value will be stored in
-    $dirty property.
+:::{php:method} setMulti($fields)
+Set multiple field values.
+:::
 
-.. php:method:: setMulti($fields)
+:::{php:method} setNull($field)
+Set value of a specified field to NULL, temporarily ignoring normalization routine.
+Only use this if you intend to set a correct value shortly after.
+:::
 
-    Set multiple field values.
+:::{php:method} unset($field)
+Restore field value to it's original:
 
-.. php:method:: setNull($field)
+```
+$m->set('name', 'John');
+echo $m->get('name'); // John
 
-    Set value of a specified field to NULL, temporarily ignoring normalization routine.
-    Only use this if you intend to set a correct value shortly after.
+$m->_unset('name');
+echo $m->get('name'); // Original value is shown
+```
 
-.. php:method:: unset($field)
+This will restore original value of the field.
+:::
 
-    Restore field value to it's original::
+:::{php:method} get
+Returns one of the following:
 
-        $m->set('name', 'John');
-        echo $m->get('name'); // John
+- If value was set() to the field, this value is returned
+- If field was loaded from database, return original value
+- if field had default set, returns default
+- returns null.
+:::
 
-        $m->_unset('name');
-        echo $m->get('name'); // Original value is shown
+:::{php:method} isset
+Return true if field contains unsaved changes (dirty):
 
-    This will restore original value of the field.
+```
+$m->_isset('name'); // returns false
+$m->set('name', 'Other Name');
+$m->_isset('name'); // returns true
+```
+:::
 
-.. php:method:: get
+:::{php:method} isDirty
+Return true if one or multiple fields contain unsaved changes (dirty):
 
-    Returns one of the following:
+```
+if ($m->isDirty(['name', 'surname'])) {
+    $m->set('full_name', $m->get('name') . ' ' . $m->get('surname'));
+}
+```
 
-     - If value was set() to the field, this value is returned
-     - If field was loaded from database, return original value
-     - if field had default set, returns default
-     - returns null.
+When the code above is placed in beforeSave hook, it will only be executed
+when certain fields have been changed. If your recalculations are expensive,
+it's pretty handy to rely on "dirty" fields to avoid some complex logic.
+:::
 
-.. php:method:: isset
+:::{php:attr} dirty
+Contains list of modified fields since last loading and their original
+values.
+:::
 
-    Return true if field contains unsaved changes (dirty)::
+:::{php:method} hasField($field)
+Returns true if a field with a corresponding name exists.
+:::
 
-        $m->_isset('name'); // returns false
-        $m->set('name', 'Other Name');
-        $m->_isset('name'); // returns true
-
-
-.. php:method:: isDirty
-
-    Return true if one or multiple fields contain unsaved changes (dirty)::
-
-        if ($m->isDirty(['name', 'surname'])) {
-            $m->set('full_name', $m->get('name') . ' ' . $m->get('surname'));
-        }
-
-    When the code above is placed in beforeSave hook, it will only be executed
-    when certain fields have been changed. If your recalculations are expensive,
-    it's pretty handy to rely on "dirty" fields to avoid some complex logic.
-
-.. php:attr:: dirty
-
-    Contains list of modified fields since last loading and their original
-    values.
-
-.. php:method:: hasField($field)
-
-    Returns true if a field with a corresponding name exists.
-
-.. php:method:: getField($field)
-
-    Finds a field with a corresponding name. Throws exception if field not found.
-
+:::{php:method} getField($field)
+Finds a field with a corresponding name. Throws exception if field not found.
+:::
 
 Full example:
 
@@ -680,9 +696,9 @@ echo $m->get('salary'); // 3000 (now in db)
 echo $m->_isset('salary'); // false
 ```
 
-.. php:method:: protected normalizeFieldName
-
-    Verify and convert first argument got get / set;
+:::{php:method} protected normalizeFieldName
+Verify and convert first argument got get / set;
+:::
 
 ## Title Field, ID Field and Model Caption
 
@@ -700,83 +716,86 @@ or as defaults:
 $m = new MyModel($db, ['titleField' => 'full_name']);
 ```
 
-
-.. _idField:
+(idField)=
 
 ### ID Field
 
-.. php:attr:: idField
+:::{php:attr} idField
+If your data storage uses field different than `id` to keep the ID of your
+records, then you can specify that in $idField property.
 
-    If your data storage uses field different than ``id`` to keep the ID of your
-    records, then you can specify that in $idField property.
+ID value of loaded entity cannot be changed. If you want to duplicate a record,
+you need to create a new entity and save it.
+:::
 
-    ID value of loaded entity cannot be changed. If you want to duplicate a record,
-    you need to create a new entity and save it.
-
-.. _titleField:
+(titleField)=
 
 ### Title Field
 
-.. php:attr:: titleField
+:::{php:attr} titleField
+This field by default is set to 'name' will act as a primary title field of
+your table. This is especially handy if you use model inside UI framework,
+which can automatically display value of your title field in the header,
+or inside drop-down.
 
-    This field by default is set to 'name' will act as a primary title field of
-    your table. This is especially handy if you use model inside UI framework,
-    which can automatically display value of your title field in the header,
-    or inside drop-down.
+If you don't have field 'name' but you want some other field to be title,
+you can specify that in the property. If titleField is not needed, set it
+to false or point towards a non-existent field.
 
-    If you don't have field 'name' but you want some other field to be title,
-    you can specify that in the property. If titleField is not needed, set it
-    to false or point towards a non-existent field.
+See {php:meth}`HasOne::addTitle()`
+:::
 
-    See: :php:meth::`hasOne::addTitle()`
+:::{php:method} public getTitle
+Return title field value of currently loaded record.
+:::
 
-.. php:method:: public getTitle
+:::{php:method} public getTitles
+Returns array of title field values of all model records in format [id => title].
+:::
 
-    Return title field value of currently loaded record.
-
-.. php:method:: public getTitles
-
-    Returns array of title field values of all model records in format [id => title].
-
-.. _caption:
+(caption)=
 
 ### Model Caption
 
-.. php:attr:: caption
+:::{php:attr} caption
+This is caption of your model. You can use it in your UI components.
+:::
 
-    This is caption of your model. You can use it in your UI components.
-
-.. php:method:: public getModelCaption
-
-    Returns model caption. If caption is not set, then try to generate one from
-    model class name.
+:::{php:method} public getModelCaption
+Returns model caption. If caption is not set, then try to generate one from
+model class name.
+:::
 
 ## Setting limit and sort order
 
-.. php:method:: public setLimit($count, $offset = null)
+:::{php:method} public setLimit($count, $offset = null)
+Sets limit on how many records to select. Will select only $count records
+starting from $offset record.
+:::
 
-    Sets limit on how many records to select. Will select only $count records
-    starting from $offset record.
+:::{php:method} public setOrder($field, $desc = null)
+Sets sorting order of returned data records. Here are some usage examples.
+All these syntaxes work the same:
 
-.. php:method:: public setOrder($field, $desc = null)
+```
+$m->setOrder('name, salary desc');
+$m->setOrder(['name', 'salary desc']);
+$m->setOrder(['name', 'salary' => true]);
+$m->setOrder(['name' => false, 'salary' => true]);
+$m->setOrder([ ['name'], ['salary', 'desc'] ]);
+$m->setOrder([ ['name'], ['salary', true] ]);
+$m->setOrder([ ['name'], ['salary desc'] ]);
+// and there can be many more similar combinations how to call this
+```
 
-    Sets sorting order of returned data records. Here are some usage examples.
-    All these syntaxes work the same::
+Keep in mind - `true` means `desc`, desc means descending. Otherwise it will be ascending order by default.
 
-        $m->setOrder('name, salary desc');
-        $m->setOrder(['name', 'salary desc']);
-        $m->setOrder(['name', 'salary' => true]);
-        $m->setOrder(['name' => false, 'salary' => true]);
-        $m->setOrder([ ['name'], ['salary', 'desc'] ]);
-        $m->setOrder([ ['name'], ['salary', true] ]);
-        $m->setOrder([ ['name'], ['salary desc'] ]);
-        // and there can be many more similar combinations how to call this
+You can also use \Atk4\Data\Persistence\Sql\Expression or array of expressions instead of field name here.
+Or even mix them together:
 
-    Keep in mind - `true` means `desc`, desc means descending. Otherwise it will be ascending order by default.
-
-    You can also use \Atk4\Data\Persistence\Sql\Expression or array of expressions instead of field name here.
-    Or even mix them together::
-
-        $m->setOrder($m->expr('[net] * [vat]'));
-        $m->setOrder([$m->expr('[net] * [vat]'), $m->expr('[closing] - [opening]')]);
-        $m->setOrder(['net', $m->expr('[net] * [vat]', 'ref_no')]);
+```
+$m->setOrder($m->expr('[net] * [vat]'));
+$m->setOrder([$m->expr('[net] * [vat]'), $m->expr('[closing] - [opening]')]);
+$m->setOrder(['net', $m->expr('[net] * [vat]', 'ref_no')]);
+```
+:::

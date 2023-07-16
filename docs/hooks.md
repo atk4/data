@@ -1,19 +1,22 @@
-.. _Hooks:
+:::{php:namespace} Atk4\Data
+:::
+
+(Hooks)=
 
 # Hooks
 
 Hook is a mechanism for adding callbacks. The core features of Hook sub-system
-(explained in detail here http://agile-core.readthedocs.io/en/develop/hook.html)
+(explained in detail here https://atk4-core.readthedocs.io/en/develop/hook.html)
 include:
 
- - ability to define "spots" in PHP code, such as "beforeLoad".
- - ability to add callbacks to be executed when PHP goes over the spot.
- - prioritization of callbacks
- - ability to pass arguments to callbacks
- - ability to collect response from callbacks
- - ability to break hooks (will stop any other hook execution)
+- ability to define "spots" in PHP code, such as "beforeLoad".
+- ability to add callbacks to be executed when PHP goes over the spot.
+- prioritization of callbacks
+- ability to pass arguments to callbacks
+- ability to collect response from callbacks
+- ability to break hooks (will stop any other hook execution)
 
-:php:ref:`Model` implements hook trait and defines various hooks which will allow
+{php:ref}`Model` implements hook trait and defines various hooks which will allow
 you to execute code before or after various operations, such as save, load etc.
 
 ## Model Operation Hooks
@@ -27,17 +30,17 @@ your `beforeSave` hook will be triggered.
 If database has transaction support, then hooks will be executed while inside
 the same transaction:
 
- - begin transaction
- - beforeSave hook
- - actual save
- - reload (see :php:attr:`Model::reloadAfterSave`)
- - afterSave hook
- - commit transaction
+- begin transaction
+- beforeSave hook
+- actual save
+- reload (see {php:attr}`Model::reloadAfterSave`)
+- afterSave hook
+- commit transaction
 
- In case of error:
+In case of error:
 
-  - do rollback
-  - call onRollback hook
+- do rollback
+- call onRollback hook
 
 If your afterSave hook creates exception, then the entire operation will be
 rolled back.
@@ -55,7 +58,7 @@ $m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
 
 $m->insert(['name' => 'John', 'surname' => 'Smith']);
 
-// Will save into DB:  ['name' => 'JOHN', 'surname' => 'SMITH'];
+// Will save into DB: ['name' => 'JOHN', 'surname' => 'SMITH'];
 ```
 
 ### Arguments
@@ -94,17 +97,17 @@ $model->onHook(Model::HOOK_AFTER_LOAD, function (Model $m) {
 This will also prevent data from being loaded. If you return false from
 afterLoad hook, then record which we just loaded will be instantly unloaded.
 This can be helpful in some cases, although you should still use
-:php:meth:`Model::addCondition` where possible as it is much more efficient.
+{php:meth}`Model::addCondition` where possible as it is much more efficient.
 
 ### Insert/Update Hooks
 
 Insert/Update are triggered from inside save() method but are based on current
-state of :php:meth:`Model::isLoaded`:
+state of {php:meth}`Model::isLoaded`:
 
- - beforeInsert($m, &$data) (creating new records only)
- - afterInsert($m, $id)
- - beforeUpdate($m, &$data) (updating existing records only. Not executed if model is not dirty)
- - afterUpdate($m)
+- beforeInsert($m, &$data) (creating new records only)
+- afterInsert($m, $id)
+- beforeUpdate($m, &$data) (updating existing records only. Not executed if model is not dirty)
+- afterUpdate($m)
 
 The $data argument will contain array of actual data (field => value) to be saved,
 which you can use to withdraw certain fields from actually being saved into the
@@ -115,17 +118,17 @@ hooks, only by altering $data.
 
 afterInsert will receive either $id of new record or null if model couldn't
 provide ID field. Also, afterInsert is actually called before reloading is done
-(when :php:attr:`Model::reloadAfterSave` is set).
+(when {php:attr}`Model::reloadAfterSave` is set).
 
-For some examples, see :ref:`soft_delete`
+For some examples, see {ref}`soft_delete`
 
 ### beforeSave, afterSave Hook
 
 A good place to hook is beforeSave as it will be fired when adding new records
 or modifying existing ones:
 
- - beforeSave($m) (saving existing or new records. Not executed if model is not dirty)
- - afterSave($m, $isUpdate) (same as above, $isUpdate is boolean true if it was update and false otherwise)
+- beforeSave($m) (saving existing or new records. Not executed if model is not dirty)
+- afterSave($m, $isUpdate) (same as above, $isUpdate is boolean true if it was update and false otherwise)
 
 You might consider "save" to be a higher level hook, as beforeSave is called
 pretty early on during saving the record and afterSave is called at the very end
@@ -145,38 +148,37 @@ $m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
 
 Those are relatively simple hooks:
 
- - beforeLoad($m, $id) ($m will be unloaded). Break for custom load or skip.
- - afterLoad($m). ($m will contain data). Break to unload and skip.
+- beforeLoad($m, $id) ($m will be unloaded). Break for custom load or skip.
+- afterLoad($m). ($m will contain data). Break to unload and skip.
 
 For the deletion it's pretty similar:
 
- - beforeDelete($m, $id). Unload and Break to preserve record.
- - afterDelete($m, $id).
+- beforeDelete($m, $id). Unload and Break to preserve record.
+- afterDelete($m, $id).
 
 A good place to clean-up delete related records would be inside afterDelete,
 although if your database consistency requires those related records to be
 cleaned up first, use beforeDelete instead.
 
-For some examples, see :ref:`soft_delete`
+For some examples, see {ref}`soft_delete`
 
 ### Hook execution sequence
 
 - beforeSave
 
-  - beforeInsert [only if insert]
-    - beforeInsertQuery [sql only] (query)
-    - afterInsertQuery (query, affectedRows)
+- beforeInsert [only if insert]
+  - beforeInsertQuery [sql only] (query)
+  - afterInsertQuery (query, affectedRows)
 
-  - beforeUpdate [only if update]
-    - beforeUpdateQuery [sql only] (query)
-    - afterUpdateQuery (query, affectedRows)
+- beforeUpdate [only if update]
+  - beforeUpdateQuery [sql only] (query)
+  - afterUpdateQuery (query, affectedRows)
 
+- afterUpdate [only if existing record, model is reloaded]
+- afterInsert [only if new record, model not reloaded yet]
 
-  - afterUpdate [only if existing record, model is reloaded]
-  - afterInsert [only if new record, model not reloaded yet]
-
-  - beforeUnload
-  - afterUnload
+- beforeUnload
+- afterUnload
 
 - afterSave (bool $isUpdate) [after insert or update, model is reloaded]
 
@@ -205,7 +207,7 @@ beforeLoad hooks and by specifying argument as 'false' it will also prevent call
 to $persistence for actual loading of the data.
 
 Similarly you can prevent deletion if you wish to implement
-:ref:`soft-delete` or stop insert/modify from occurring.
+{ref}`soft-delete` or stop insert/modify from occurring.
 
 ### onRollback Hook
 
@@ -247,29 +249,31 @@ so depending on where you save the data, there are some more hooks available.
 Those hooks can be used to affect queries before they are executed.
 None of these are breakable:
 
- - beforeUpdateQuery($m, Query $query)
- - afterUpdateQuery($m, Query $query, int $affectedRows). Executed before retrieving data.
- - beforeInsertQUery($m, Query $query)
- - afterInsertQuery($m, Query $query, int $affectedRows). Executed before retrieving data.
+- beforeUpdateQuery($m, Query $query)
+- afterUpdateQuery($m, Query $query, int $affectedRows). Executed before retrieving data.
+- beforeInsertQUery($m, Query $query)
+- afterInsertQuery($m, Query $query, int $affectedRows). Executed before retrieving data.
 
 The delete has only "before" hook:
 
- - beforeDeleteQuery($m, Query $query)
+- beforeDeleteQuery($m, Query $query)
 
-Finally for queries there is hook ``initSelectQuery($model, $query, $type)``.
+Finally for queries there is hook `initSelectQuery($model, $query, $type)`.
 It can be used to enhance queries generated by "action" for:
 
- - "count"
- - "update"
- - "delete"
- - "select"
- - "field"
- - "fx" or "fx0"
+- "count"
+- "update"
+- "delete"
+- "select"
+- "field"
+- "fx" or "fx0"
 
 ## Other Hooks:
 
-.. todo: The following hooks need documentation:
+:::{todo}
+The following hooks need documentation:
 
-    - onlyFields
-    - normalize
-    - afterAdd
+- onlyFields
+- normalize
+- afterAdd
+:::

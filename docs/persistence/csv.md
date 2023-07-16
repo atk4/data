@@ -1,8 +1,12 @@
-.. _Persistence\Csv:
+:::{php:namespace} Atk4\Data
+:::
+
+(Persistence_Csv)=
 
 # Loading and Saving CSV Files
 
-.. php:class:: Persistence\Csv
+:::{php:class} Persistence_i_Csv
+:::
 
 Agile Data can operate with CSV files for data loading, or saving. The capabilities
 of `Persistence\Csv` are limited to the following actions:
@@ -107,5 +111,3 @@ $m->import($mCsv);
 ```
 
 Only the last line changes and the data will now flow in the other direction.
-
-

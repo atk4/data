@@ -1,4 +1,5 @@
-.. php:namespace:: Atk4\Data\Field
+:::{php:namespace} Atk4\Data
+:::
 
 # Data Types
 
@@ -7,9 +8,7 @@ following goals:
 
 ## Type specification
 
- - Provide list of out-of-the-box types, such as "percentage"
- - Provide list of classes such as :php:class:`Fraction`
- - Mechanism to find corresponding class configuration based on selected type
+Mechanism to find corresponding class configuration based on selected type.
 
 Specifying one of supported types will ensure that your field format is
 recognized universally, can be stored, loaded, presented to user through UI
@@ -28,7 +27,7 @@ $this->addField('encrypted_password', new \Atk4\Data\Field\PasswordField());
 A properly implemented type will still be able to offer some means to present
 it in human-readable format, however in some cases, if you plan on using ATK UI,
 you would have to create a custom decorators/FormField to properly read and
-present your type value. See :php:attr:`\\Atk4\\Ui\\Field::ui`.
+present your type value. See {php:attr}`Field::ui`.
 
 ## Persistence mechanics and Serialization
 
@@ -76,47 +75,13 @@ to the user a regional format is used instead.
 
 ## Supported Types
 
-ATK Data prior to 1.5 supports the following types:
+ATK Data supports the following types:
 
- - string
- - boolean
- - integer ([':php:class:`Number`', 'precision' => 0])
- - money ([':php:class:`Number`', 'prefix' => '€', 'precision' => 2])
- - float ([':php:class:`Number`', 'type' => 'float'])
- - date ([':php:class:`DateTime`'])
- - datetime ([':php:class:`DateTime`'])
- - time ([':php:class:`DateTime`'])
- - password ([':php:class:`Password`])
- - array
- - object
-
-In ATK Data the number of supported types has been extended with:
-
- - percent (34.2%) ([':php:class:`Number`', 'format' => fn ($v) => $v * 100, 'postfix' => '%'])
- - rating (3 out of 5) ([':php:class:`Number`', 'max' => 5, 'precision' => 0])
- - uuid (xxxxxxxx-xxxx-...) ([':php:class:`Number`', 'base' => 16, 'mask' => '########-##..'])
- - hex (number with base 16) ([':php:class:`Number`', 'base' => 16])
- - ip (123.2.44.1) ([':php:class:`Number`', 'base' => 256, 'mask' => '#.#.#.#'])
- - ipv6 ([':php:class:`Number`', 'base' => 16', 'mask' => '####:####:..']);
- - model (used for containment)
- - fraction (5/7) ([':php:class:`Fraction`'])
-
-Additionally there is a support for
-
- - distance ([':php:class:`Units`', 'scale' => ['m' => 1, 'km' => 1000, 'mm' => 0.001])
- - duration
- - mass
- - area
- - volume
-
-All measurements are implemented with :php:class:`Units` and can be further extended:
-
-```
-$model->addField('speed', ['Units', 'postfix' => '/s', 'scale' => ['m' => 1, 'km' => 1000]]);
-$model->set('speed', '30km/s');
-
-echo $model->get('speed'); // 30000
-echo $model->getField('speed')->format(); // 30 km/s
-echo $model->getField('speed')->format('m'); // 30000 m/s
-```
-
+- string
+- boolean
+- integer
+- float
+- atk4_money
+- date ({php:class}`\DateTime`)
+- datetime ({php:class}`\DateTime`)
+- time ({php:class}`\DateTime`)

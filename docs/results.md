@@ -1,13 +1,18 @@
+:::{php:namespace} Atk4\Data
+:::
+
 # Fetching results
 
-.. php:class:: Model
+:::{php:class} Model
+:::
 
 Model linked to a persistence is your "window" into DataSet and you get several
 ways which allow you to fetch the data.
 
 ## Iterate through model data
 
-.. php:method:: getIterator()
+:::{php:method} getIterator()
+:::
 
 Create your persistence object first then iterate it:
 
@@ -30,16 +35,20 @@ foreach ($m as $item) {
 }
 ```
 
-.. warning:: Currently ATK Data does not create new copy of your model object for
-    every row. Instead the same object is re-used, simply $item->getDataRef() is modified
-    by the iterator. For new users this may be surprising that $item is the same
-    object through the iterator, but for now it's the most CPU-efficient way.
+:::{warning}
+Currently ATK Data does not create new copy of your model object for
+every row. Instead the same object is re-used, simply $item->getDataRef() is modified
+by the iterator. For new users this may be surprising that $item is the same
+object through the iterator, but for now it's the most CPU-efficient way.
+:::
 
 Additionally model will execute necessary after-load hooks that might trigger some
 other calculation or validations.
 
-.. note:: changing query parameter during iteration will has no effect until you
-    finish iterating.
+:::{note}
+changing query parameter during iteration will has no effect until you
+finish iterating.
+:::
 
 ### Keeping models
 
@@ -55,7 +64,8 @@ foreach (new Model_Category($db) as $id => $c) {
 
 ### Raw Data Fetching
 
-.. php:method:: getRawIterator()
+:::{php:method} getRawIterator()
+:::
 
 If you do not care about the hooks and simply wish to get the data, you can fetch
 it:
@@ -69,7 +79,8 @@ foreach ($m->getRawIterator() as $row) {
 The $row will also contain value for "id" and it's up to you to find it yourself
 if you need it.
 
-.. php:method:: export()
+:::{php:method} export()
+:::
 
 Will fetch and output array of hashes which will represent entirety of data-set.
 Similarly to other methods, this will have the data mapped into your fields for

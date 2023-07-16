@@ -1,14 +1,19 @@
-.. _References:
+:::{php:namespace} Atk4\Data
+:::
+
+(References)=
 
 # References
 
-.. php:class:: Model
+:::{php:class} Model
+:::
 
-.. php:method:: ref($link, $details = []);
+:::{php:method} ref($link, $details = [])
+:::
 
 Models can relate one to another. The logic of traversing references, however,
 is slightly different to the traditional ORM implementation, because in Agile
-Data traversing also imposes :ref:`conditions`
+Data traversing also imposes {ref}`conditions`
 
 There are two basic types of references: hasOne() and hasMany(), but it's also
 possible to add other reference types. The basic ones are really easy to
@@ -39,17 +44,17 @@ Condition on the base model will be carried over to the orders and you will
 only be able to access orders that belong to VIP users. The query for loading
 order will look like this:
 
-.. code-block:: sql
-
-    select * from order where user_id in (
-        select id from user where is_vip = 1
-    ) limit 1
+```sql
+select * from order where user_id in (
+    select id from user where is_vip = 1
+) limit 1
+```
 
 Argument $defaults will be passed to the new model that will be used to create
 referenced model. This will not work if you have specified reference as existing
 model that has a persistence set. (See Reference::getModel())
 
-### Persistence
+## Persistence
 
 Agile Data supports traversal between persistencies. The code above does not
 explicitly assign database to Model_Order. But what if destination model does
@@ -68,17 +73,19 @@ $ordersForVips = $m->ref('Orders');
 Now that a different databases are used, the queries can no longer be
 joined so Agile Data will carry over list of IDs instead:
 
-.. code-block:: sql
+```sql
+$ids = select id from user where is_vip = 1
+select * from order where user_id in ($ids)
+```
 
-    $ids = select id from user where is_vip = 1
-    select * from order where user_id in ($ids)
-
-Since we are using ``$dbArrayCache``, then field values will actually
+Since we are using `$dbArrayCache`, then field values will actually
 be retrieved from memory.
 
-.. note:: This is not implemented as of 1.1.0, see https://github.com/atk4/data/issues/158
+:::{note}
+This is not implemented as of 1.1.0, see https://github.com/atk4/data/issues/158
+:::
 
-### Safety and Performance
+## Safety and Performance
 
 When using ref() on hasMany reference, it will always return a fresh clone of
 the model. You can perform actions on the clone and next time you execute ref()
@@ -95,13 +102,16 @@ foreach ($order as $o) {
 }
 ```
 
-.. warning:: This code is seriously flawed and is called "N+1 Problem".
-    Agile Data discourages you from using this and instead offers you many
-    other tools: field importing, model joins, field actions and refLink().
+:::{warning}
+This code is seriously flawed and is called "N+1 Problem".
+Agile Data discourages you from using this and instead offers you many
+other tools: field importing, model joins, field actions and refLink().
+:::
 
 ## hasMany Reference
 
-.. php:method:: hasMany($link, ['model' => $model]);
+:::{php:method} hasMany($link, ['model' => $model])
+:::
 
 There are several ways how to link models with hasMany:
 
@@ -140,7 +150,7 @@ $paymentsForInvoice1 = $i->load(1)->ref('Payments');
 
 Sometimes you have to use non-ID references. For example, we might have two models
 describing list of currencies and for each currency we might have historic rates
-available. Both models will relate through ``currency.code = exchange.currency_code``:
+available. Both models will relate through `currency.code = exchange.currency_code`:
 
 ```
 $c = new Model_Currency();
@@ -154,11 +164,11 @@ $e = $c->ref('Exchanges');
 
 This will produce the following query:
 
-.. code-block:: sql
-
-    select * from exchange
-    where currency_code in
-        (select code form currency where is_convertible = 1)
+```sql
+select * from exchange
+where currency_code in
+    (select code form currency where is_convertible = 1)
+```
 
 ### Concatenating Fields
 
@@ -169,7 +179,7 @@ $user->hasMany('Tags', ['model' => [Tag::class]])
     ->addField('tags', ['concat' => ',', 'field' => 'name']);
 ```
 
-This will create a new field for your user, ``tags`` which will contain all comma-separated
+This will create a new field for your user, `tags` which will contain all comma-separated
 tag names.
 
 ### Add Aggregate Fields
@@ -184,7 +194,7 @@ $u->hasMany('Orders', ['model' => [Model_Order::class]])
 ```
 
 It's important to define aggregation functions here. This will add another field
-inside ``$m`` that will correspond to the sum of all the orders. Here is another
+inside `$m` that will correspond to the sum of all the orders. Here is another
 example:
 
 ```
@@ -261,18 +271,20 @@ $book->hasMany('Pages', ['model' => [Page::class]])
     ]);
 ```
 
-
 or 'field':
 
 ```
 ->addField('paid_amount', ['aggregate' => 'count', 'field' => new \Atk4\Data\Persistence\Sql\Expression('*')]);
 ```
 
-.. note:: as of 1.3.4 count's field defaults to `*` - no need to specify explicitly.
+:::{note}
+as of 1.3.4 count's field defaults to `*` - no need to specify explicitly.
+:::
 
 ## hasMany / refLink / refModel
 
-.. php:method:: refLink($link)
+:::{php:method} refLink($link)
+:::
 
 Normally ref() will return a usable model back to you, however if you use refLink then
 the conditioning will be done differently. refLink is useful when defining
@@ -289,21 +301,22 @@ $m->addExpression('sum_amount')->set($sum);
 
 The refLink would define a condition on a query like this:
 
-.. code-block:: sql
-
-    select * from `order` where user_id = `user`.id
+```sql
+select * from `order` where user_id = `user`.id
+```
 
 And it will not be viable on its own, however if you use it inside a sub-query,
 then it now makes sense for generating expression:
 
-.. code-block:: sql
+```sql
+select
+    (select sum(amount) from `order` where user_id = `user`.id) sum_amount
+from user
+where is_vip = 1
+```
 
-    select
-        (select sum(amount) from `order` where user_id = `user`.id) sum_amount
-    from user
-    where is_vip = 1
-
-.. php:method:: refModel($link)
+:::{php:method} refModel($link)
+:::
 
 There are many situations when you need to get referenced model instead of
 reference itself. In such case refModel() comes in as handy shortcut of doing
@@ -311,10 +324,9 @@ reference itself. In such case refModel() comes in as handy shortcut of doing
 
 ## hasOne reference
 
-.. php:method:: hasOne($link, ['model' => $model])
-
-    $model can be an array containing options: [$model, ...]
-
+:::{php:method} hasOne($link, ['model' => $model])
+$model can be an array containing options: [$model, ...]
+:::
 
 This reference allows you to attach a related model to a foreign key:
 
@@ -326,12 +338,12 @@ $o->hasOne('user_id', ['model' => $u]);
 ```
 
 This reference is similar to hasMany, but it does behave slightly different.
-Also this reference will define a system new field ``user_id`` if you haven't
+Also this reference will define a system new field `user_id` if you haven't
 done so already.
 
 ### Traversing loaded model
 
-If your ``$o`` model is loaded, then traversing into user will also load the user,
+If your `$o` model is loaded, then traversing into user will also load the user,
 because we specifically know the ID of that user. No conditions will be set:
 
 ```
@@ -348,17 +360,16 @@ $o->unload(); // just to be sure!
 $o->addCondition('status', 'failed');
 $u = $o->ref('user_id');
 
-
 $u = $u->loadAny(); // will load some user who has at least one failed order
 ```
 
 The important point here is that no additional queries are generated in the
 process and the loadAny() will look like this:
 
-.. code-block:: sql
-
-    select * from user where id in
-        (select user_id from order where status = 'failed')
+```sql
+select * from user where id in
+    (select user_id from order where status = 'failed')
+```
 
 By passing options to hasOne() you can also differentiate field name:
 
@@ -369,7 +380,7 @@ $o->hasOne('User', ['model' => $u, 'ourField' => 'user_id']);
 $o->load(1)->ref('User')['name'];
 ```
 
-You can also use ``theirField`` if you need non-id matching (see example above
+You can also use `theirField` if you need non-id matching (see example above
 for hasMany()).
 
 ### Importing Fields
@@ -386,7 +397,6 @@ $c = new Model_Currency($db);
 $i->hasOne('currency_id', ['model' => $c])
     ->addField('currency_name', 'name');
 ```
-
 
 This code also resolves problem with a duplicate 'name' field. Since you might have
 a 'name' field inside 'Invoice' already, you can name the field 'currency_name'
@@ -408,14 +418,15 @@ $u->hasOne('address_id', ['model' => $a])
     ]);
 ```
 
-Above, all ``address_`` fields are copied with the same name, however field
+Above, all `address_` fields are copied with the same name, however field
 'notes' from Address model will be called 'address_notes' inside user model.
 
-.. important::
-    When importing fields, they will preserve type, e.g. if you are importing
-    'date' then the type of your imported field will also be date. Imported
-    fields are also marked as "read-only" and attempt to change them will result
-    in exception.
+:::{important}
+When importing fields, they will preserve type, e.g. if you are importing
+'date' then the type of your imported field will also be date. Imported
+fields are also marked as "read-only" and attempt to change them will result
+in exception.
+:::
 
 ### Importing hasOne Title
 
@@ -463,7 +474,8 @@ $i->hasOne('currency_id', ['model' => [Currency::class]])
 
 ## User-defined Reference
 
-.. php:method:: addReference($link, $callback)
+:::{php:method} addReference($link, $callback)
+:::
 
 Sometimes you would want to have a different type of relation between models,
 so with `addReference` you can define whatever reference you want:
@@ -501,31 +513,31 @@ $m->addReference('Archive', ['model' => function (Model $m) {
 
 ## Reference Discovery
 
-You can call :php:meth:`Model::getReferences()` to fetch all the references of a model:
+You can call {php:meth}`Model::getReferences()` to fetch all the references of a model:
 
 ```
 $references = $model->getReferences();
 $reference = $references['owner_id'];
 ```
 
-or if you know the reference you'd like to fetch, you can use :php:meth:`Model::getReference()`:
+or if you know the reference you'd like to fetch, you can use {php:meth}`Model::getReference()`:
 
 ```
 $reference = $model->getReference('owner_id');
 ```
 
-While :php:meth:`Model::ref()` returns a related model, :php:meth:`Model::getReference()`
+While {php:meth}`Model::ref()` returns a related model, {php:meth}`Model::getReference()`
 gives you the reference object itself so that you could perform some changes on it,
-such as import more fields with :php:meth:`Model::addField()`.
+such as import more fields with {php:meth}`Model::addField()`.
 
-Or you can use :php:meth:`Model::refModel()` which will simply return referenced
+Or you can use {php:meth}`Model::refModel()` which will simply return referenced
 model and you can do fancy things with it.
 
 ```
 $refModel = $model->refModel('owner_id');
 ```
 
-You can also use :php:meth:`Model::hasReference()` to check if particular reference
+You can also use {php:meth}`Model::hasReference()` to check if particular reference
 exists in model:
 
 ```
@@ -543,30 +555,30 @@ echo $o->load(1)->ref('user_id')->ref('address_id')['address_1'];
 ```
 
 The above example will actually perform 3 load operations, because as I have
-explained above, :php:meth:`Model::ref()` loads related model when called on
+explained above, {php:meth}`Model::ref()` loads related model when called on
 a loaded model. To perform a single query instead, you can use:
 
 ```
 echo $o->addCondition('id', 1)->ref('user_id')->ref('address_id')->loadAny()['address_1'];
 ```
 
-Here ``addCondition('id', 1)`` will only set a condition without actually loading the record
+Here `addCondition('id', 1)` will only set a condition without actually loading the record
 and traversal will encapsulate sub-queries resulting in a query like this:
 
-.. code-block:: sql
-
-    select * from address where id in
-        (select address_id from user where id in
-            (select user_id from order where id = 1 ))
+```sql
+select * from address where id in
+    (select address_id from user where id in
+        (select user_id from order where id = 1 ))
+```
 
 ## Reference Aliases
 
 When related entity relies on the same table it is possible to run into problem
 when SQL is confused about which table to use.
 
-.. code-block:: sql
-
-    select name, (select name from item where item.parent_id = item.id) parent_name from item
+```sql
+select name, (select name from item where item.parent_id = item.id) parent_name from item
+```
 
 To avoid this problem Agile Data will automatically alias tables in sub-queries.
 Here is how it works:
@@ -576,7 +588,7 @@ $item->hasMany('parent_item_id', ['model' => [Model_Item::class]])
     ->addField('parent', 'name');
 ```
 
-When generating expression for 'parent', the sub-query will use alias ``pi``
+When generating expression for 'parent', the sub-query will use alias `pi`
 consisting of first letters in 'parent_item_id'. (except _id). You can actually
 specify a custom table alias if you want:
 
@@ -585,8 +597,8 @@ $item->hasMany('parent_item_id', ['model' => [Model_Item::class], 'tableAlias' =
     ->addField('parent', 'name');
 ```
 
-Additionally you can pass tableAlias as second argument into :php:meth:`Model::ref()`
-or :php:meth:`Model::refLink()`. This can help you in creating a recursive models
+Additionally you can pass tableAlias as second argument into {php:meth}`Model::ref()`
+or {php:meth}`Model::refLink()`. This can help you in creating a recursive models
 that relate to itself. Here is example:
 
 ```
@@ -614,37 +626,33 @@ class Model_Item3 extends \Atk4\Data\Model
 
 Loading model like that can produce a pretty sophisticated query:
 
-.. code-block:: sql
+```sql
+select
+    `pp`.`id`, `pp`.`name`, `pp`.`age`, `pp_i`.`parent_item_id`,
+    (select `parent`.`name`
+    from `item` `parent`
+    left join `item2` as `parent_i` on `parent_i`.`item_id` = `parent`.`id`
+    where `parent`.`id` = `pp_i`.`parent_item_id`
+    ) `parent_item`,
+    (select sum(`child`.`age`) from `item` `child`
+    left join `item2` as `child_i` on `child_i`.`item_id` = `child`.`id`
+    where `child_i`.`parent_item_id` = `pp`.`id`
+    ) `child_age`, `pp`.`id` `_i`
+from `item` `pp`left join `item2` as `pp_i` on `pp_i`.`item_id` = `pp`.`id`
+```
 
-    select
-        `pp`.`id`, `pp`.`name`, `pp`.`age`, `pp_i`.`parent_item_id`,
-        (select `parent`.`name`
-        from `item` `parent`
-        left join `item2` as `parent_i` on `parent_i`.`item_id` = `parent`.`id`
-        where `parent`.`id` = `pp_i`.`parent_item_id`
-        ) `parent_item`,
-        (select sum(`child`.`age`) from `item` `child`
-        left join `item2` as `child_i` on `child_i`.`item_id` = `child`.`id`
-        where `child_i`.`parent_item_id` = `pp`.`id`
-        ) `child_age`, `pp`.`id` `_i`
-    from `item` `pp`left join `item2` as `pp_i` on `pp_i`.`item_id` = `pp`.`id`
-
-### Various ways to specify options
+## Various ways to specify options
 
 When calling `hasOne()->addFields()` there are various ways to pass options:
 
 - `addFields(['name', 'dob'])` - no options are passed, use defaults. Note that
   reference will not fetch the type of foreign field due to performance consideration.
-
 - `addFields(['first_name' => 'name'])` - this indicates aliasing. Field `name`
   will be added as `first_name`.
-
 - `addFields([['dob', 'type' => 'date']])` - wrap inside array to pass options to
   field
-
 - `addFields(['the_date' => ['dob', 'type' => 'date']])` - combination of aliasing
   and options
-
 - `addFields(['dob', 'dod'], ['type' => 'date'])` - passing defaults for multiple
   fields
 
@@ -713,42 +721,41 @@ hook, which will update address_id field of the $m.
 
 References are implemented through several classes:
 
-.. php:class:: Reference\HasOne
+:::{php:class} Reference_i_HasOne
+Defines generic reference, that is typically created by {php:meth}`Model::addReference`
+:::
 
-    Defines generic reference, that is typically created by :php:meth:`Model::addReference`
+:::{php:attr} tableAlias
+Alias for related table. Because multiple references can point to the same
+table, ability to have unique alias is pretty good.
 
-.. php:attr:: tableAlias
+You don't have to change this property, it is generated automatically.
+:::
 
-    Alias for related table. Because multiple references can point to the same
-    table, ability to have unique alias is pretty good.
+:::{php:attr} link
+What should we pass into owner->ref() to get through to this reference.
+Each reference has a unique identifier, although it's stored
+in Model's elements as '#ref-xx'.
+:::
 
-    You don't have to change this property, it is generated automatically.
+:::{php:attr} model
+May store reference to related model, depending on implementation.
+:::
 
-.. php:attr:: link
+:::{php:attr} ourField
+This is an optional property which can be used by your implementation
+to store field-level relationship based on a common field matching.
+:::
 
-    What should we pass into owner->ref() to get through to this reference.
-    Each reference has a unique identifier, although it's stored
-    in Model's elements as '#ref-xx'.
+:::{php:attr} their_filed
+This is an optional property which can be used by your implementation
+to store field-level relationship based on a common field matching.
+:::
 
-.. php:attr:: model
+:::{php:method} getModel
+Returns referenced model without conditions.
+:::
 
-    May store reference to related model, depending on implementation.
-
-.. php:attr:: ourField
-
-    This is an optional property which can be used by your implementation
-    to store field-level relationship based on a common field matching.
-
-.. php:attr:: their_filed
-
-    This is an optional property which can be used by your implementation
-    to store field-level relationship based on a common field matching.
-
-.. php:method:: getModel
-
-    Returns referenced model without conditions.
-
-.. php:method:: ref
-
-    Returns referenced model WITH conditions. (if possible)
-
+:::{php:method} ref
+Returns referenced model WITH conditions. (if possible)
+:::

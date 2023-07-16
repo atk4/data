@@ -1,6 +1,6 @@
 # ATK Data - Data Model Abstraction for Agile Toolkit
 
-[Agile Toolkit](https://agiletoolkit.org/) is a Low Code framework written in PHP. Agile UI implement server side rendering engine and over 50 UI generic components for interacting with your Data Model.
+[Agile Toolkit](https://atk4.org/) is a Low Code framework written in PHP. Agile UI implement server side rendering engine and over 50 UI generic components for interacting with your Data Model.
 
 Agile Data is a framework for defining your "business layer" which is separate from your "presentation layer" and "persistence". Together with [Agile UI](https://github.com/atk4/ui) you can deliver user interface "out of the box" or with [Agile UI](https://github.com/atk4/api) - general-purpose API endpoints.
 
@@ -17,7 +17,7 @@ Agile Data is a framework for defining your "business layer" which is separate f
 [![GitHub release](https://img.shields.io/github/release/atk4/data.svg)](CHANGELOG.md)
 [![Code Climate](https://codeclimate.com/github/atk4/data/badges/gpa.svg)](https://codeclimate.com/github/atk4/data)
 
-Quick-Links: [Documentation](http://agile-data.readthedocs.io). [Namespaces](http://www.agiletoolkit.org/dox/namespaces.html). [Example](https://github.com/atk4/data-primer). [ATK UI](https://github.com/atk4/ui). [Forum](https://forum.agiletoolkit.org/). [Chat](https://gitter.im/atk4/atk4). [Commercial support](https://www.agiletoolkit.org/contact). [Udemy Course](https://www.udemy.com/web-apps-with-php-and-atk/).
+Quick-Links: [Documentation](https://atk4-data.readthedocs.io). [Example](https://github.com/atk4/data-primer). [ATK UI](https://github.com/atk4/ui). [Forum](https://forum.agiletoolkit.org/). [Commercial support](https://www.agiletoolkit.org/contact). [Udemy Course](https://www.udemy.com/web-apps-with-php-and-atk/).
 
 ## Is ATK Data similar to ORM?
 
@@ -65,7 +65,7 @@ Designed for medium to large PHP applications and frameworks, ATK Data is a clea
 - Execute more on the server. Agile Data converts query logic into server-specific language (e.g. SQL) then delivers you the exact data rows / columns which you need from a single statement, no matter how complex.
 - Data architecture transparency. As your database structure change, your application code does not need to be refactored. Replace fields with expressions, denormalize/normalize data, join and merge tables. Only update your application in a single place.
 - Extensions. "[Audit](https://github.com/atk4/audit)" - transparently record all edits, updates and deletes with "Undo" support.
-- [Out of the box UI](https://github.com/atk4/ui). Who wants to build Admin systems today? Tens of professional components: [Crud](http://ui.agiletoolkit.org/demos/crud.php), [Grid](http://ui.agiletoolkit.org/demos/grid.php), [Form](http://ui.agiletoolkit.org/demos/form3.php) as well as add-ons like [Charts](https://github.com/atk4/chart) can be added to your PHP app with 3-lines of code.
+- [Out of the box UI](https://github.com/atk4/ui). Who wants to build Admin systems today? Tens of professional components: [Crud](https://ui.atk4.org/demos/crud.php), [Grid](https://ui.atk4.org/demos/grid.php), [Form](https://ui.atk4.org/demos/form3.php) as well as add-ons like [Charts](https://github.com/atk4/chart) can be added to your PHP app with 3-lines of code.
 - RestAPI server for Agile Data is currently under development.
 - Agile Data and all extensions mentioned above are licensed under MIT and are free to use.
 
@@ -73,12 +73,12 @@ Since the initial introduction of Agile Data back in [2016](https://www.reddit.c
 
 ### Getting Started
 
-Watch [Quick Start](http://agile-data.readthedocs.io/en/develop/quickstart.html) or [Screencasts](https://www.youtube.com/watch?v=o16xwkFfnuA&t=182s&index=1&list=PLUUKFD-IBZWaaN_CnQuSP0iwWeHJxPXKS). There is also our [Official Udemy Course](https://forum.agiletoolkit.org/t/udemy-com-atk-course-early-access-limited-time-free/413) and [Full Documentation](http://agile-data.readthedocs.io) ([PDF](https://media.readthedocs.org/pdf/agile-data/develop/agile-data.pdf)).
+Watch [Quick Start](https://atk4-data.readthedocs.io/en/develop/quickstart.html) or [Screencasts](https://www.youtube.com/watch?v=o16xwkFfnuA&t=182s&index=1&list=PLUUKFD-IBZWaaN_CnQuSP0iwWeHJxPXKS). There is also our [Official Udemy Course](https://forum.agiletoolkit.org/t/udemy-com-atk-course-early-access-limited-time-free/413) and [Full Documentation](https://atk4-data.readthedocs.io/) ([PDF](https://atk4-data.readthedocs.io/_/downloads/en/develop/pdf/)).
 
 ATK Data relies on ATK Core and can be greatly complimented by ATK UI:
 
-- [Agile Core](http://agile-core.readthedocs.io/en/develop/) - documents various low-level traits and features such as Containers, Hooks or Exceptions ([PDF](https://media.readthedocs.org/pdf/agile-core/develop/agile-core.pdf))
-- [Agile UI](http://agile-ui.readthedocs.io/en/latest/) - documents optional UI components and how to build Web App with them. ([PDF](http://readthedocs.org/projects/agile-ui/downloads/pdf/latest/))
+- [Agile Core](https://atk4-core.readthedocs.io/) - documents various low-level traits and features such as Containers, Hooks or Exceptions ([PDF](https://atk4-core.readthedocs.io/_/downloads/en/develop/pdf/))
+- [Agile UI](https://atk4-ui.readthedocs.io/) - documents optional UI components and how to build Web App with them. ([PDF](https://atk4-ui.readthedocs.io/_/downloads/en/develop/pdf/))
 
 ## When to use Agile Data?
 
@@ -220,7 +220,7 @@ One of the best benefits of Agile Data is ability to refactor database structure
 Agile Data gives you all the tools to do this in a few steps:
 
 - Update your Model definition by replacing "expression" with a regular field.
-- Create a "migrator" script which calculates expression using [action](http://agile-data.readthedocs.io/en/develop/quickstart.html#actions).
+- Create a "migrator" script which calculates expression using [action](https://atk4-data.readthedocs.io/en/develop/quickstart.html#actions).
 - Change model behaviors adding Model Hook (afterSave) to re-calculate "profit" within same ACID transaction.
 
 This will not break the rest of your applications - UI, RestAPI or Reports will continue to work, but faster.
@@ -229,7 +229,7 @@ This will not break the rest of your applications - UI, RestAPI or Reports will 
 
 I explain some basic customization in the video: https://www.youtube.com/watch?v=s0Vh_WWtfEs&index=5&list=PLUUKFD-IBZWaaN_CnQuSP0iwWeHJxPXKS
 
-There is also "Advanced Topics" section in the documentation: http://agile-data.readthedocs.io/en/develop/advanced.html
+There is also "Advanced Topics" section in the documentation: https://atk4-data.readthedocs.io/en/develop/advanced.html
 
 #### Multi-System Applications
 
@@ -245,7 +245,7 @@ As usual - the rest of your application is not affected and you can even use mul
 
 #### Support
 
-Because our team have implemented Agile Data, we have trained experts who can offer commercial consultancy, training and support. Use our Contact form: http://www.agiletoolkit.org/contact for inquiries.
+Because our team have implemented Agile Data, we have trained experts who can offer commercial consultancy, training and support. Use our Contact form: https://www.agiletoolkit.org/contact for inquiries.
 
 ## Framework Integrations
 
@@ -261,17 +261,17 @@ Agile Data (and in some cases Agile UI) have been integrated by community with o
 
 While in most cases modern SQL sub-queries have comparable speed to JOIN, Agile Data's SQL persistence also implements "JOIN" support. Use of SubQueries is safer by default because it can imply conditions on a related entity.
 
-You can, however, [import fields through joins too](http://agile-data.readthedocs.io/en/develop/joins.html)
+You can, however, [import fields through joins too](https://atk4-data.readthedocs.io/en/develop/joins.html)
 
 #### Q: I don't like the `$book->set('field', 123)`, I prefer properties
 
 Agile Models are not Entities. They don't represent a single record, but rather a set of records. Which is why Model has some important properties: `$model->getId()`, `$model->getPersistence()` and `model->getDataRef()`.
 
-Read more on [working with individual data records](http://agile-data.readthedocs.io/en/develop/persistence.html).
+Read more on [working with individual data records](https://atk4-data.readthedocs.io/en/develop/persistence.html).
 
 #### Q: I do not like to use class `\Atk4\Data\Model` as a parent
 
-Class `Model` implements a lot of essential functionality. If you need a deeper explanation read my blog post: http://www.agiletoolkit.org/blog/why-should-you-extend-your-entity-class
+Class `Model` implements a lot of essential functionality. If you need a deeper explanation read my blog post: https://www.agiletoolkit.org/blog/why-should-you-extend-your-entity-class
 
 #### Q: Agile Data has small community
 
@@ -377,7 +377,7 @@ class Client extends \Atk4\Data\Model
 }
 ```
 
-- Documentation: http://agile-data.readthedocs.io/en/develop/model.html
+- Documentation: https://atk4-data.readthedocs.io/en/develop/model.html
 - Examples: https://github.com/atk4/data-primer/tree/master/src
 
 ### Introducing Actions
@@ -390,7 +390,7 @@ Each persistence implements actions differently. SQL is probably the most full-f
 
 ![GitHub release](docs/images/action.gif)
 
-- Documentation: http://agile-data.readthedocs.io/en/develop/quickstart.html?highlight=action#actions
+- Documentation: https://atk4-data.readthedocs.io/en/develop/quickstart.html?highlight=action#actions
 
 ### Introducing Expressions
 
@@ -398,7 +398,7 @@ Smart Fields in Agile Toolkit are represented as objects. Because of inheritance
 
 ![GitHub release](docs/images/expression.gif)
 
-- Documentation: http://agile-data.readthedocs.io/en/develop/expressions.html
+- Documentation: https://atk4-data.readthedocs.io/en/develop/expressions.html
 
 ### Introducing References
 
@@ -408,7 +408,7 @@ Agile Data takes a different approach by introducing "References". It allow you 
 
 ![GitHub release](docs/images/import-field.gif)
 
-- Documentation: http://agile-data.readthedocs.io/en/develop/references.html
+- Documentation: https://atk4-data.readthedocs.io/en/develop/references.html
 
 ### Model Conditions and DataSets
 
@@ -418,7 +418,7 @@ Once condition is defined, it will appear in actions and will also restrict you 
 
 ![GitHub release](docs/images/reference-magic.gif)
 
-- Documentation: http://agile-data.readthedocs.io/en/develop/conditions.html
+- Documentation: https://atk4-data.readthedocs.io/en/develop/conditions.html
 
 ### Build Reports inside Domain Model
 
@@ -445,7 +445,7 @@ records will be linked up correctly.
 
 The best part about joins is that you can add them to your existing model for specific queries. Some extensions can even do that.
 
-- Documentation: http://agile-data.readthedocs.io/en/develop/joins.html
+- Documentation: https://atk4-data.readthedocs.io/en/develop/joins.html
 
 ### Deep Model Traversal
 
@@ -460,7 +460,7 @@ Agile Data can answer with a query or with a result.
 
 ![GitHub release](docs/images/deep-traversal.gif)
 
-- Documentation: http://agile-data.readthedocs.io/en/develop/references.html#traversing-dataset
+- Documentation: https://atk4-data.readthedocs.io/en/develop/references.html#traversing-dataset
 
 ## Advanced Features and Extensions
 
@@ -477,7 +477,7 @@ If you pass a `$model` object inside any method, add-on or extension, it's possi
 
 With that, creating a Dynamic Form UI object that automatically includes Dropdown with list of allowed values is possible.
 
-In fact - we have already stared work on [Agile UI](http://github.com/atk4/ui) project!
+In fact - we have already stared work on [Agile UI](https://github.com/atk4/ui) project!
 
 ### Hooks
 
@@ -488,7 +488,7 @@ if you need.
 
 And guess what - should your model be saved into NoSQL database, the domain-level hooks will be executed, but SQL-specific ones will not.
 
-- Documentation: http://agile-data.readthedocs.io/en/develop/hooks.html
+- Documentation: https://atk4-data.readthedocs.io/en/develop/hooks.html
 
 ### Extensions
 
@@ -503,7 +503,7 @@ We are still working on our Extension library but we plan to include:
   stored in S3 (or other) but the references and meta-information remains in the database.
 - Soft-Delete, purge and undelete - several strategies, custom fields, permissions.
 
-More details on extensions: http://www.agiletoolkit.org/data/extensions
+More details on extensions: https://www.agiletoolkit.org/data/extensions
 
 ### Performance
 
@@ -707,12 +707,12 @@ ORDER BY max_salary desc
 
 In a universe with hundreds of [different PHP Crud implementations](https://codecanyon.net/category/php-scripts?utf8=✓&term=crud&as=0&referrer=search&view=list), we thought you might like to have an open-source Grid/Crud/Forms/Other UI library that is specifically designed for Agile Data.
 
-Please consider our other MIT-licensed project - [Agile UI](http://www.agiletoolkit.org/ui) to build something like this:
+Please consider our other MIT-licensed project - [Agile UI](https://atk4.org/) to build something like this:
 
 ![image](https://github.com/atk4/ui/raw/develop/docs/images/grid.png)
 
 ## Community and Support
 
 [![Gitter](https://img.shields.io/gitter/room/atk4/data.svg)](https://gitter.im/atk4/dataset?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Stack Overflow Community](https://img.shields.io/stackexchange/stackoverflow/t/atk4.svg)](http://stackoverflow.com/questions/ask?tags=atk4)
+[![Stack Overflow Community](https://img.shields.io/stackexchange/stackoverflow/t/atk4.svg)](https://stackoverflow.com/questions/ask?tags=atk4)
 [![Discord User forum](https://img.shields.io/badge/discord-User_Forum-green.svg)](https://forum.agiletoolkit.org/c/44)

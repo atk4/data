@@ -1,8 +1,12 @@
-.. _Expressions:
+:::{php:namespace} Atk4\Data
+:::
+
+(Expressions)=
 
 # Expressions
 
-.. php:class:: Model
+:::{php:class} Model
+:::
 
 You already know that you can define fields inside your Model with addField.
 While a regular field maps to physical field inside your database, sometimes you
@@ -12,7 +16,8 @@ use result as an output.
 Expressions solve this problem by adding a read-only field to your model that
 corresponds to an expression:
 
-.. php:method:: addExpression($name, $seed);
+:::{php:method} addExpression($name, $seed)
+:::
 
 Example will calculate "total_gross" by adding up values for "net" and "vat":
 
@@ -29,14 +34,14 @@ echo $m->get('total_gross');
 
 The query using during load() will look like this:
 
-.. code-block:: sql
+```sql
+select
+    `id`, `total_net`, `total_vat`,
+    (`total_net`+`total_vat`) `total_gross`
+from `invoice`',
+```
 
-    select
-        `id`, `total_net`, `total_vat`,
-        (`total_net`+`total_vat`) `total_gross`
-    from `invoice`',
-
-### Defining Expression
+## Defining Expression
 
 The simplest format to define expression is by simply passing a string. The
 argument is executed through Model::expr() which automatically substitutes
@@ -54,9 +59,9 @@ This format allow you to supply additional parameters inside expression.
 You should always use parameters instead of appending values inside your
 expression string (for safety)
 
-You can also use expressions to pass a select action for a specific field::
+You can also use expressions to pass a select action for a specific field:
 
-### No-table Model Expression
+## No-table Model Expression
 
 Agile Data allows you to define a model without table. While this may have
 no purpose initially, it does come in handy in some cases, when you need to
@@ -72,11 +77,11 @@ echo $m->get('now');
 
 In this example the query will look like this:
 
-.. code-block:: sql
+```sql
+select (1) `id`, (now()) `now` limit 1
+```
 
-    select (1) `id`, (now()) `now` limit 1
-
-so that ``$m->getId()`` will always be 1 which will make it a model that you can
+so that `$m->getId()` will always be 1 which will make it a model that you can
 actually use consistently throughout the system. The real benefit from this
 can be gained when you need to pull various statistical values from your
 database at once:
@@ -102,7 +107,7 @@ $data = $q->getRow();
 
 You can decide for yourself based on circumstances.
 
-### Expression Callback
+## Expression Callback
 
 You can use a callback method when defining expression:
 
@@ -112,7 +117,7 @@ $m->addExpression('total_gross', ['expr' => function (Model $m, Expression $q) {
 }, 'type' => 'float']);
 ```
 
-### Model Reloading after Save
+## Model Reloading after Save
 
 When you add SQL Expressions into your model, that means that some of the fields
 might be out of sync and you might need your SQL to recalculate those expressions.
@@ -168,9 +173,9 @@ echo $m->get('sum'); // outputs 10
 Now it requires an explicit reload for your model to fetch the result. There
 is another scenario when your database defines default fields:
 
-.. code-block:: sql
-
-    alter table math change b b int default 10;
+```sql
+alter table math change b b int default 10;
+```
 
 Then try the following code:
 
@@ -208,6 +213,8 @@ $m->save();
 echo $m->get('a')+$m->get('b'); // outputs 14
 ```
 
-.. note:: If your model is using reloadAfterSave, but you wish to insert
-    data without additional query - use :php:meth:`Model::insert()` or
-    :php:meth:`Model::import()`.
+:::{note}
+If your model is using reloadAfterSave, but you wish to insert
+data without additional query - use {php:meth}`Model::insert()` or
+{php:meth}`Model::import()`.
+:::

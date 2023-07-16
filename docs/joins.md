@@ -1,10 +1,12 @@
-.. _Joins:
+:::{php:namespace} Atk4\Data
+:::
 
-.. php:namespace:: Atk4\Data\Model
+(Joins)=
 
 # Model from multiple joined tables
 
-.. php:class:: Join
+:::{php:class} Model_i_Join
+:::
 
 Sometimes model logically contains information that is stored in various places
 in the database. Your database may want to split up logical information into
@@ -28,14 +30,14 @@ This code will load data from two tables simultaneously and if you do change any
 of those fields they will be update in their respective tables. With SQL the
 load query would look like this:
 
-.. code-block:: sql
-
-    select
-        u.username, c.address, c.county, c.country_id
-        (select name from country where country.id = c.country_id) country
-    from user u
-    join contact c on c.id = u.contact_id
-    where u.id = $id
+```sql
+select
+    u.username, c.address, c.county, c.country_id
+    (select name from country where country.id = c.country_id) country
+from user u
+join contact c on c.id = u.contact_id
+where u.id = $id
+```
 
 If driver is unable to query both tables simultaneously, then it will load one
 record first, then load other record and will collect fields together:
@@ -47,11 +49,11 @@ $contact = $contact->load($user->get('contact_id'));
 
 When saving the record, Joins will automatically record data correctly:
 
-.. code-block:: sql
-
-    insert into contact (address, county, country_id) values ($, $, $);
-    @join_c = last_insert_id();
-    insert into user (username, contact_id) values ($, @join_c)
+```sql
+insert into contact (address, county, country_id) values ($, $, $);
+@join_c = last_insert_id();
+insert into user (username, contact_id) values ($, @join_c)
+```
 
 ### Strong and Weak joins
 
@@ -84,14 +86,14 @@ After this you will have the following fields in your model:
 
 When defining joins, you need to outline two fields that must match. In our
 earlier examples, we the master table was "user" that contained reference to
-"contact". The condition would look like this ``user.contact_id=contact.id``.
+"contact". The condition would look like this `user.contact_id=contact.id`.
 In some cases, however, a relation should be reversed:
 
 ```
 $jContact = $user->join('contact.user_id');
 ```
 
-This will result in the following join condition: ``user.id=contact.user_id``.
+This will result in the following join condition: `user.id=contact.user_id`.
 The first argument to join defines both the table that we need to join and
 can optionally define the field in the foreign table. If field is set, we will
 assume that it's a reverse join.
@@ -124,39 +126,38 @@ Once your join is defined, you can call several methods on the join objects, tha
 will create fields, other joins or expressions but those would be associated
 with a foreign table.
 
+:::{php:method} addField
+same as {php:meth}`Model::addField` but associates field with foreign table.
+:::
 
-.. php:method:: addField
+:::{php:method} join
+same as {php:meth}`Model::join` but links new table with this foreign table.
+:::
 
-    same as :php:meth:`Model::addField` but associates field with foreign table.
+:::{php:method} hasOne
+same as {php:meth}`Model::hasOne` but reference ID field will be associated
+with foreign table.
+:::
 
-.. php:method:: join
+:::{php:method} hasMany
+same as {php:meth}`Model::hasMany` but condition for related model will be
+based on foreign table field and {php:attr}`Reference::theirField` will be
+set to $foreignTable . '_id'.
+:::
 
-    same as :php:meth:`Model::join` but links new table with this foreign table.
+:::{php:method} containsOne
+same as {php:meth}`Model::hasOne` but the data will be stored in
+a field inside foreign table.
 
-.. php:method:: hasOne
+Not yet implemented !
+:::
 
-    same as :php:meth:`Model::hasOne` but reference ID field will be associated
-    with foreign table.
+:::{php:method} containsMany
+same as {php:meth}`Model::hasMany` but the data will be stored in
+a field inside foreign table.
 
-.. php:method:: hasMany
-
-    same as :php:meth:`Model::hasMany` but condition for related model will be
-    based on foreign table field and :php:attr:`Reference::theirField` will be
-    set to $foreignTable . '_id'.
-
-.. php:method:: containsOne
-
-    same as :php:meth:`Model::hasOne` but the data will be stored in
-    a field inside foreign table.
-
-    Not yet implemented !
-
-.. php:method:: containsMany
-
-    same as :php:meth:`Model::hasMany` but the data will be stored in
-    a field inside foreign table.
-
-    Not yet implemented !
+Not yet implemented !
+:::
 
 ### Create and Delete behavior
 
@@ -169,19 +170,24 @@ of master id.
 
 When it comes to deleting record, there are three possible conditions:
 
-1. [delete_behaviour = cascade, reverse = false]
+1. `[delete_behaviour = cascade, reverse = false]`
+
    If we are using strong join and master table contains ID of foreign table,
    then foreign master table record is deleted first. Foreign table record is
    deleted after. This is done to avoid error with foreign constraints.
-2. [deleteBehaviour = cascade, reverse = true]
+
+2. `[deleteBehaviour = cascade, reverse = true]`
+
    If we are using strong join and foreign table contains ID of master table,
    then foreign table record is deleted first followed by the master table record.
 
-3. [deleteBehaviour = ignore, reverse = false]
+3. `[deleteBehaviour = ignore, reverse = false]`
+
    If we are using weak join and the master table contains ID of foreign table,
    then master table is deleted first. Foreign table record is not deleted.
 
-4. [deleteBehaviour = setnull, reverse = true]
+4. `[deleteBehaviour = setnull, reverse = true]`
+
    If we are using weak join and foreign table contains ID of master table,
    then foreign table is updated to set ID of master table to NULL first.
    Then the master table record is deleted.
@@ -213,13 +219,13 @@ Joins are implemented like this:
   are using reverse join, then foreign table record will not be updated, but
   value of the foreign field will be set to null.
 
-
-.. php:class:: Join\Sql
+:::{php:class} Persistence_i_Sql_i_Join
+:::
 
 ## SQL-specific joins
 
 When your model is associated with SQL-capable driver, then instead of using
-`Join` class, the `Join\\Sql` is used instead. This class is designed to improve
+`Join` class, the `Persistence\Sql\Join` is used instead. This class is designed to improve
 loading technique, because SQL vendors can query multiple tables simultaneously.
 
 Vendors that cannot do JOINs will have to implement compatibility by pulling
@@ -237,7 +243,7 @@ data from collections in a correct order.
 
 ### Specifying complex ON logic
 
-When you're dealing with SQL drivers, you can specify `\Atk4\Data\Persistence\Sql\Expression` for your
+When you're dealing with SQL drivers, you can specify `Persistence\Sql\Expression` for your
 "on" clause:
 
 ```
@@ -247,17 +253,15 @@ $stats = $user->join('stats', [
 ]);
 ```
 
-You can also specify ``'on' => false`` then the ON clause will not be used at all
+You can also specify `'on' => false` then the ON clause will not be used at all
 and you'll have to add additional where() condition yourself.
 
-``foreignAlias`` can be specified and will be used as table alias and prefix
-for all fields. It will default to ``'_' . $this->foreignTable``. Agile Data will
+`foreignAlias` can be specified and will be used as table alias and prefix
+for all fields. It will default to `'_' . $this->foreignTable`. Agile Data will
 also resolve situations when multiple tables have same first character so the
 prefixes will be named '_c', '_c_2', '_c_3' etc.
-
 
 Additional arguments accepted by SQL joins are:
 
 - 'kind' - will be "inner" for strong join and "left" for weak join, but you can
   specify other kind of join, for example, "right"'.
-

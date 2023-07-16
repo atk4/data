@@ -1,13 +1,16 @@
+:::{php:namespace} Atk4\Data
+:::
+
 # Introduction to Architectural Design
 
 Layering is one of the most common techniques that software designers use to
 break apart a complicated software system. A modern application would have
 three primary layers:
 
- - Presentation - Display of information (HTML generation, UI, API or CLI interface)
- - Domain - Logic that is the real point of the system
- - Data Source - Communication with databases, messaging systems, transaction
-   managers, other packages
+- Presentation - Display of information (HTML generation, UI, API or CLI interface)
+- Domain - Logic that is the real point of the system
+- Data Source - Communication with databases, messaging systems, transaction
+  managers, other packages
 
 A persistence mechanism is a way how you save the data from some kind of
 in-memory model to the database. Apart from data-bases modern system also use
@@ -20,19 +23,18 @@ in attempts to improve data access.
 
 The common problems when trying to simplify mapping of domain logic include:
 
- - Performance
-   - Traversing references where you deal with millions of related records
-   - Executing multi-row database operation
+- Performance
+  - Traversing references where you deal with millions of related records
+  - Executing multi-row database operation
 
- - Reduced features
-   - Inability to use vendor-specific features such as SQL expression syntax
-   - Derive calculations from multi-row sub-selects
-   - Tweak persistence-related operations
+- Reduced features
+  - Inability to use vendor-specific features such as SQL expression syntax
+  - Derive calculations from multi-row sub-selects
+  - Tweak persistence-related operations
 
- - Abstraction
-   - Domain objects are often restricted by database schema
-   - Difficult to use Domain objects without database connection (e.g. in Unit Tests)
-
+- Abstraction
+  - Domain objects are often restricted by database schema
+  - Difficult to use Domain objects without database connection (e.g. in Unit Tests)
 
 Agile Data implements a fresh concepts that separates your Domain from persistence
 cleanly yet manages to solve problems mentioned above.
@@ -59,12 +61,12 @@ If you still think that writing SQL queries is the most efficient way to work
 with database, you are probably not considering other disadvantages of this
 approach:
 
- - Parameters you specify to a query need to be escaped
- - Complex queries are more difficult to write and debug
- - Various parts of your application may want to change query (soft-delete add-on?)
- - Optimization in your database may impact your Domain logic and even presentation
- - Changing your database vendor or storing object data in cache is harder
- - Difficult to maintain code
+- Parameters you specify to a query need to be escaped
+- Complex queries are more difficult to write and debug
+- Various parts of your application may want to change query (soft-delete add-on?)
+- Optimization in your database may impact your Domain logic and even presentation
+- Changing your database vendor or storing object data in cache is harder
+- Difficult to maintain code
 
 There are more problems such as difficulty in unit-testing your Domain object
 code.
@@ -74,9 +76,9 @@ code.
 Agile Data focuses on creating "patterns" that can live in "Domain" layer.
 There are three levels of code "purity":
 
- - Implement patterns for working with for Domain objects.
- - Implement patterns for "persistence-backed" Domain objects.
- - Implement extensions for "persisting"
+- Implement patterns for working with for Domain objects.
+- Implement patterns for "persistence-backed" Domain objects.
+- Implement extensions for "persisting"
 
 Some of your code will focus on working with Domain object without any concern
 about "persistence". A good example is "Validation". When you Validate your
@@ -117,9 +119,9 @@ All of those model properties are "declared".
 Congratulations, you have just designed a model layer of your application.
 Remember that it had nothing to do with your database structure, right?
 
- - Client
- - Order
- - Admin
+- Client
+- Order
+- Admin
 
 A code to declare a model:
 
@@ -147,14 +149,14 @@ Next we need to write down various "functions" your application would have to
 perform and attribute those to individual models. At the same time think
 about object inheritance.
 
- - User
-   - sendPasswordReminder()
- - Client (extends User)
-   - register()
-   - checkout()
- - Admin (extends User)
-   - showAuditLog()
- - Order
+- User
+  - sendPasswordReminder()
+- Client (extends User)
+  - register()
+  - checkout()
+- Admin (extends User)
+  - showAuditLog()
+- Order
 
 Code:
 
@@ -177,14 +179,14 @@ basic actions such as adding new order or deleting order.
 Our next step is to define object fields (or properties). Remember that
 inheritance is at play here so you can take advantage of OOP:
 
- - User
-   - name, is_vip, email, password, password_change_date
- - Client
-   - phone
- - Admin
-   - permission_level
- - Order
-   - description, amount, is_paid
+- User
+  - name, is_vip, email, password, password_change_date
+- Client
+  - phone
+- Admin
+  - permission_level
+- Order
+  - description, amount, is_paid
 
 Those fields are not just mere "properties", but have more "meta" information
 behind them and that's why we call them "fields" and not "properties". A typical
@@ -227,10 +229,10 @@ Next - references. Think how those objects relate to each-other. Think in terms
 of "specific object" and not database relations. Client has many Orders. Order
 has one Client.
 
- - User
-   - hasMany(Client)
- - Client
-   - hasOne(User)
+- User
+  - hasMany(Client)
+- Client
+  - hasOne(User)
 
 There are no "many-to-many" relationship in Domain Model because relationships
 work from a specific record, but more on that later.
@@ -297,10 +299,10 @@ A final addition to our Domain Model are expressions. Those are the "formulas"
 where the value cannot be changed directly, but is actually derived from other
 values.
 
-  - User
-    - is_password_expired
-  - Client
-    - amount_due, total_order_amount
+- User
+  - is_password_expired
+- Client
+  - amount_due, total_order_amount
 
 Here field `is_password_expired` is the type of expression that is based on the
 field `password_change_date` and system date. In other words the value of this
@@ -363,7 +365,6 @@ class Model_User extends \Atk4\Data\Model
 
 So far we have only looked at a single record - one User or one Order. In
 practice our application must operate with multiple records.
-
 
 DataSet is an object that represents collection of Domain model records that
 are persisted:
@@ -445,9 +446,9 @@ And again it's much more effective to do this on database side:
 
 ```
 $sum = (new Model_Order($db))
-            ->addCondition('is_paid', true)
-            ->fx0(['sum', 'amount'])
-            ->getOne();
+    ->addCondition('is_paid', true)
+    ->fx0(['sum', 'amount'])
+    ->getOne();
 ```
 
 ## Related DataSets
@@ -503,10 +504,10 @@ This code will attempt to execute a single-query only, however the ability to
 optimize your request relies on the capabilities of database vendor.
 The actual database operation(s) might look like this on SQL database:
 
-.. code-block:: sql
-
-    select count(*) from `order` where user_id in
-        (select id from user where type = "user" and is_vip = 1)
+```sql
+select count(*) from `order` where user_id in
+    (select id from user where type = "user" and is_vip = 1)
+```
 
 While with MongoDB, the query could be different:
 
@@ -568,18 +569,13 @@ will not violate SRP (Single Responsibility Principle)
 More often thannot, your application is designed and built with a specific
 persistence layer in mind. If you are using SQL database, you want to
 
-
-_to be continued_
-
-
-
-
-
-
+:::{todo}
+to be continued
+:::
 
 Before we talk "databases", we must outline a few challenges:
 
- - our business model described above should work with various database vendors
- - we should be able to perform basic Unit tests on our domain logic
- - single vs multiple records
- - ..add more..
+- our business model described above should work with various database vendors
+- we should be able to perform basic Unit tests on our domain logic
+- single vs multiple records
+- ..add more..

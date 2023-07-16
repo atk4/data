@@ -1,20 +1,24 @@
-.. _query:
+:::{php:namespace} Atk4\Data\Persistence\Sql
+:::
 
-.. php:class:: Query
+(query)=
+
+:::{php:class} Query
+:::
 
 # Queries
 
 Query class represents your SQL query in-the-making. Once you create object of
 the Query class, call some of the methods listed below to modify your query. To
-actually execute your query and start retrieving data, see :ref:`fetching-result`
+actually execute your query and start retrieving data, see {ref}`fetching-result`
 section.
 
-You should use :ref:`connect` if possible to create your query objects. All
+You should use {ref}`connect` if possible to create your query objects. All
 examples below are using `$c->dsql()` method which generates Query linked to
 your established database connection.
 
 Once you have a query object you can execute modifier methods such as
-:php:meth:`field()` or :php:meth:`table()` which will change the way how your
+{php:meth}`field()` or {php:meth}`table()` which will change the way how your
 query will act.
 
 Once the query is defined, you can either use it inside another query or
@@ -41,14 +45,14 @@ $query->where('id', 123);
 $query->where('id', '=', 123); // the same
 ```
 
-Most methods will accept :php:class:`Expression` or strings. Strings are
-escaped or quoted (depending on type of argument). By using :php:class:`Expression`
+Most methods will accept {php:class}`Expression` or strings. Strings are
+escaped or quoted (depending on type of argument). By using {php:class}`Expression`
 you can bypass the escaping.
 
 There are 2 types of escaping:
 
- * :php:meth:`Expression::escapeIdentifier()`. Used for field and table names. Surrounds name with *`*.
- * :php:meth:`Expression::escapeParam()`. Will convert value into parameter and replace with *:a*
+- {php:meth}`Expression::escapeIdentifier()`. Used for field and table names. Surrounds name with `` ` ``.
+- {php:meth}`Expression::escapeParam()`. Will convert value into parameter and replace with `:a`
 
 In the next example $a is escaped but $b is parameterized:
 
@@ -58,7 +62,7 @@ $query->where('a', 'b');
 // where `a` = "b"
 ```
 
-If you want to switch places and execute *where "b" = `a`*, then you can resort
+If you want to switch places and execute `where "b" = 'a'`, then you can resort
 to Expressions:
 
 ```
@@ -68,12 +72,12 @@ $query->where($c->expr('{} = []', ['b', 'a']));
 Parameters which you specify into Expression will be preserved and linked into
 the `$query` properly.
 
-.. _query-modes:
+(query-modes)=
 
 ## Query Modes
 
 When you create new Query it always start in "select" mode. You can switch
-query to a different mode using :php:meth:`mode`. f you don't switch the mode,
+query to a different mode using {php:meth}`mode`. f you don't switch the mode,
 your Query remains in select mode and you can fetch results from it anytime.
 
 The pattern of defining arguments for your Query and then executing allow you
@@ -104,15 +108,15 @@ if ($row) {
 
 The example above will perform a select query first:
 
- - `select id from user where id = 123`
+- `select id from user where id = 123`
 
 If a single row can be retrieved, then the update will be performed:
 
- - `update user set name = "John", surname = "Smith", revision = revision + 1 where id = 123`
+- `update user set name = "John", surname = "Smith", revision = revision + 1 where id = 123`
 
 Otherwise an insert operation will be performed:
 
- - `insert into user (name, surname, revision) values ("John", "Smith", 1)`
+- `insert into user (name, surname, revision) values ("John", "Smith", 1)`
 
 ## Chaining
 
@@ -167,24 +171,26 @@ $q->getRows();
 This query will perform union between 2 table selects resulting in the following
 query:
 
-.. code-block:: sql
-
-    select `date`, `debit`, `credit` from (
-        (select `date`, `amount` `debit` from `sales`) union
-        (select `date`, `amount` `credit` from `purchases`)
-    ) `derivedTable`
+```sql
+select `date`, `debit`, `credit` from (
+    (select `date`, `amount` `debit` from `sales`) union
+    (select `date`, `amount` `credit` from `purchases`)
+) `derivedTable`
+```
 
 ## Modifying Select Query
 
 ### Setting Table
 
-.. php:method:: table($table, $alias)
+:::{php:method} table($table, $alias)
+Specify a table to be used in a query.
 
-    Specify a table to be used in a query.
-
-    :param mixed $table: table such as "employees"
-    :param mixed $alias: alias of table
-    :returns: $this
+```{eval-rst}
+:param mixed $table: table such as "employees"
+:param mixed $alias: alias of table
+:returns: $this
+```
+:::
 
 This method can be invoked using different combinations of arguments.
 Follow the principle of specifying the table first, and then optionally provide
@@ -216,7 +222,7 @@ $c->dsql()->table(['u' => 'user', 's' => 'salary']);
 ```
 
 Inside your query table names and aliases will always be surrounded by backticks.
-If you want to use a more complex expression, use :php:class:`Expression` as
+If you want to use a more complex expression, use {php:class}`Expression` as
 table:
 
 ```
@@ -228,7 +234,7 @@ $c->dsql()->table(
 ```
 
 Finally, you can also specify a different query instead of table, by simply
-passing another :php:class:`Query` object:
+passing another {php:class}`Query` object:
 
 ```
 $subQuery = $c->dsql();
@@ -246,17 +252,19 @@ Method can be executed several times on the same Query object.
 
 ### Setting Fields
 
-.. php:method:: field($fields, $alias = null)
+:::{php:method} field($fields, $alias = null)
+Adds additional field that you would like to query. If never called, will
+default to {php:attr}`defaultField`, which normally is `*`.
 
-    Adds additional field that you would like to query. If never called, will
-    default to :php:attr:`defaultField`, which normally is `*`.
+This method has several call options. $field can be array of fields and
+also can be an {php:class}`Expression` or {php:class}`Query`
 
-    This method has several call options. $field can be array of fields and
-    also can be an :php:class:`Expression` or :php:class:`Query`
-
-    :param string|array|object $fields: Specify list of fields to fetch
-    :param string $alias: Optionally specify alias of field in resulting query
-    :returns: $this
+```{eval-rst}
+:param string|array|object $fields: Specify list of fields to fetch
+:param string $alias: Optionally specify alias of field in resulting query
+:returns: $this
+```
+:::
 
 Basic Examples:
 
@@ -308,31 +316,32 @@ Method can be executed several times on the same Query object.
 
 ### Setting where and having clauses
 
-.. php:method:: where($field, $operation, $value)
-
-```
+:::{php:method} where($field, $operation, $value)
 Adds WHERE condition to your query.
 
+```{eval-rst}
 :param mixed $field: field such as "name"
 :param mixed $operation: comparison operation such as ">" (optional)
 :param mixed $value: value or expression
 :returns: $this
 ```
+:::
 
-.. php:method:: having($field, $operation, $value)
+:::{php:method} having($field, $operation, $value)
+Adds HAVING condition to your query.
 
-    Adds HAVING condition to your query.
-
-    :param mixed $field: field such as "name"
-    :param mixed $operation: comparison operation such as ">" (optional)
-    :param mixed $value: value or expression
-    :returns: $this
-
+```{eval-rst}
+:param mixed $field: field such as "name"
+:param mixed $operation: comparison operation such as ">" (optional)
+:param mixed $value: value or expression
+:returns: $this
+```
+:::
 
 Both methods use identical call interface. They support one, two or three
 argument calls.
 
-Pass string (field name), :php:class:`Expression` or even :php:class:`Query` as
+Pass string (field name), {php:class}`Expression` or even {php:class}`Query` as
 first argument.
 
 Operator can be specified through a second parameter - $operation. If unspecified,
@@ -381,15 +390,15 @@ $q->where([['name', 'like', '%john%'], $q->expr('surname is null')]);
 
 There is a more flexible way to use OR arguments:
 
-.. php:method:: orExpr()
+:::{php:method} orExpr()
+Returns new Query object with method "where()". When rendered all clauses
+are joined with "OR".
+:::
 
-    Returns new Query object with method "where()". When rendered all clauses
-    are joined with "OR".
-
-.. php:method:: andExpr()
-
-    Returns new Query object with method "where()". When rendered all clauses
-    are joined with "OR".
+:::{php:method} andExpr()
+Returns new Query object with method "where()". When rendered all clauses
+are joined with "OR".
+:::
 
 Here is a sophisticated example:
 
@@ -413,15 +422,15 @@ $q->where(
 
 The above code will result in the following query:
 
-.. code-block:: sql
-
-    select
-        `name`
-    from
-        `employee`
-    where
-        deleted = 0 and
-        (`a` = :a or `b` = :b or (`a` = :c and `b` = :d))
+```sql
+select
+    `name`
+from
+    `employee`
+where
+    deleted = 0 and
+    (`a` = :a or `b` = :b or (`a` = :c and `b` = :d))
+```
 
 Technically orExpr() generates a yet another object that is composed
 and renders its calls to where() method:
@@ -435,25 +444,27 @@ $q->having(
 );
 ```
 
-.. code-block:: sql
-
-    having
-        (`a` = :a or `b` = :b)
+```sql
+having
+    (`a` = :a or `b` = :b)
+```
 
 ### Grouping results by field
 
-.. php:method:: group($field)
+:::{php:method} group($field)
+Group by functionality. Simply pass either field name as string or
+{class}`Expression` object.
 
-    Group by functionality. Simply pass either field name as string or
-    :class:`Expression` object.
-
-    :param mixed $field: field such as "name"
-    :returns: $this
+```{eval-rst}
+:param mixed $field: field such as "name"
+:returns: $this
+```
+:::
 
 The "group by" clause in SQL query accepts one or several fields. It can also
 accept expressions. You can call `group()` with one or several comma-separated
 fields as a parameter or you can specify them in array. Additionally you can
-mix that with :php:class:`Expression` or :php:class:`Expressionable` objects.
+mix that with {php:class}`Expression` or {php:class}`Expressionable` objects.
 
 Few examples:
 
@@ -473,13 +484,15 @@ Method can be executed several times on the same Query object.
 
 ### Concatenate group of values
 
-.. php:method:: groupConcat($field, $separator = ',')
+:::{php:method} groupConcat($field, $separator = ',')
+Quite often when you use `group by` in your queries you also would like to
+concatenate group of values.
 
-    Quite often when you use `group by` in your queries you also would like to
-    concatenate group of values.
-
-    :param mixed $field Field name or object
-    :param string $separator Optional separator to use. It's comma by default
+```{eval-rst}
+:param mixed $field: Field name or object
+:param string $separator: Optional separator to use. It's comma by default
+```
+:::
 
 Different SQL engines have different syntax for doing this.
 In MySQL it's group_concat(), in Oracle it's listagg, but in PgSQL it's string_agg.
@@ -487,7 +500,8 @@ That's why we have this method which will take care of this.
 
 ```
 $q->groupConcat('phone', ';');
-    // group_concat('phone', ';')
+
+// group_concat('phone', ';')
 ```
 
 If you need to add more parameters for this method, then you can extend this class
@@ -499,14 +513,16 @@ group_concat('phone' order by 'date' desc separator ';')
 
 ### Joining with other tables
 
-.. php:method:: join($foreignTable, $masterField, $joinKind)
+:::{php:method} join($foreignTable, $masterField, $joinKind)
+Join results with additional table using "JOIN" statement in your query.
 
-    Join results with additional table using "JOIN" statement in your query.
-
-    :param string|array $foreignTable: table to join (may include field and alias)
-    :param mixed  $masterField:  main field (and table) to join on or Expression
-    :param string $joinKind:     'left' (default), 'inner', 'right' etc - which join type to use
-    :returns: $this
+```{eval-rst}
+:param string|array $foreignTable: table to join (may include field and alias)
+:param mixed $masterField: main field (and table) to join on or Expression
+:param string $joinKind: 'left' (default), 'inner', 'right' etc - which join type to use
+:returns: $this
+```
+:::
 
 When joining with a different table, the results will be stacked by the SQL
 server so that fields from both tables are available. The first argument can
@@ -532,12 +548,12 @@ $q->join(['a' => 'address', 'c' => 'credit_card', 'preferences']);
 
 The above code will join 3 tables using the following query syntax:
 
-.. code-block:: sql
-
-    join
-        address as a on a.id = u.address_id
-        credit_card as c on c.id = u.credit_card_id
-        preferences on preferences.id = u.preferences_id
+```sql
+join
+    address as a on a.id = u.address_id
+    credit_card as c on c.id = u.credit_card_id
+    preferences on preferences.id = u.preferences_id
+```
 
 However normally you would have `user_id` field defined in your supplementary
 tables so you need a different syntax:
@@ -587,8 +603,7 @@ specify "inner", "straight" or any other join type that your database support.
 
 Method can be executed several times on the same Query object.
 
-Joining on expression
-`````````````````````
+#### Joining on expression
 
 For a more complex join conditions, you can pass second argument as expression:
 
@@ -599,61 +614,65 @@ $q->join('address a', $q->expr('a.name like u.pattern'));
 
 ### Use WITH cursors
 
-.. php:method:: with(Query $cursor, string $alias, ?array $fields = null, bool $recursive = false)
+:::{php:method} with(Query $cursor, string $alias, ?array $fields = null, bool $recursive = false)
+If you want to add `WITH` cursor statement in your SQL, then use this method.
+First parameter defines sub-query to use. Second parameter defines alias of this cursor.
+By using third, optional argument you can set aliases for columns in cursor.
+And finally forth, optional argument set if cursors will be recursive or not.
 
-    If you want to add `WITH` cursor statement in your SQL, then use this method.
-    First parameter defines sub-query to use. Second parameter defines alias of this cursor.
-    By using third, optional argument you can set aliases for columns in cursor.
-    And finally forth, optional argument set if cursors will be recursive or not.
+You can add more than one cursor in your query.
 
-    You can add more than one cursor in your query.
+Did you know: you can use these cursors when joining your query to other tables. Just join cursor instead.
 
-    Did you know: you can use these cursors when joining your query to other tables. Just join cursor instead.
+Keep in mind that if any of cursors added in your query will be recursive, then all cursors will
+be set recursive. That's how SQL want it to be.
 
-    Keep in mind that if any of cursors added in your query will be recursive, then all cursors will
-    be set recursive. That's how SQL want it to be.
+Example:
 
-    Example::
+```
+$quotes = $q->table('quotes')
+    ->field('emp_id')
+    ->field($q->expr('sum([])', ['total_net']))
+    ->group('emp_id');
+$invoices = $q()->table('invoices')
+    ->field('emp_id')
+    ->field($q->expr('sum([])', ['total_net']))
+    ->group('emp_id');
+$employees = $q
+    ->with($quotes, 'q', ['emp', 'quoted'])
+    ->with($invoices, 'i', ['emp', 'invoiced'])
+    ->table('employees')
+    ->join('q.emp')
+    ->join('i.emp')
+    ->field(['name', 'salary', 'q.quoted', 'i.invoiced']);
+```
 
-    $quotes = $q->table('quotes')
-        ->field('emp_id')
-        ->field($q->expr('sum([])', ['total_net']))
-        ->group('emp_id');
-    $invoices = $q()->table('invoices')
-        ->field('emp_id')
-        ->field($q->expr('sum([])', ['total_net']))
-        ->group('emp_id');
-    $employees = $q
-        ->with($quotes, 'q', ['emp', 'quoted'])
-        ->with($invoices, 'i', ['emp', 'invoiced'])
-        ->table('employees')
-        ->join('q.emp')
-        ->join('i.emp')
-        ->field(['name', 'salary', 'q.quoted', 'i.invoiced']);
+This generates SQL below:
+:::
 
-    This generates SQL below:
-
-.. code-block:: sql
-
-    with
-        `q` (`emp`, `quoted`) as (select `emp_id`, sum(`total_net`) from `quotes` group by `emp_id`),
-        `i` (`emp`, `invoiced`) as (select `emp_id`, sum(`total_net`) from `invoices` group by `emp_id`)
-    select `name`, `salary`, `q`.`quoted`, `i`.`invoiced`
-    from `employees`
-        left join `q` on `q`.`emp` = `employees`.`id`
-        left join `i` on `i`.`emp` = `employees`.`id`
+```sql
+with
+    `q` (`emp`, `quoted`) as (select `emp_id`, sum(`total_net`) from `quotes` group by `emp_id`),
+    `i` (`emp`, `invoiced`) as (select `emp_id`, sum(`total_net`) from `invoices` group by `emp_id`)
+select `name`, `salary`, `q`.`quoted`, `i`.`invoiced`
+from `employees`
+    left join `q` on `q`.`emp` = `employees`.`id`
+    left join `i` on `i`.`emp` = `employees`.`id`
+```
 
 ### Limiting result-set
 
-.. php:method:: limit($cnt, $shift)
+:::{php:method} limit($cnt, $shift)
+Limit how many rows will be returned.
 
-    Limit how many rows will be returned.
+```{eval-rst}
+:param int $cnt: number of rows to return
+:param int $shift: offset, how many rows to skip
+:returns: $this
+```
+:::
 
-    :param int $cnt: number of rows to return
-    :param int $shift: offset, how many rows to skip
-    :returns: $this
-
-Use this to limit your :php:class:`Query` result-set:
+Use this to limit your {php:class}`Query` result-set:
 
 ```
 $q->limit(5, 10);
@@ -665,16 +684,18 @@ $q->limit(5);
 
 ### Ordering result-set
 
-.. php:method:: order($order, $desc)
+:::{php:method} order($order, $desc)
+Orders query result-set in ascending or descending order by single or
+multiple fields.
 
-    Orders query result-set in ascending or descending order by single or
-    multiple fields.
+```{eval-rst}
+:param string $order: one or more field names, expression etc.
+:param int $desc: pass true to sort descending
+:returns: $this
+```
+:::
 
-    :param string $order: one or more field names, expression etc.
-    :param int $desc: pass true to sort descending
-    :returns: $this
-
-Use this to order your :php:class:`Query` result-set:
+Use this to order your {php:class}`Query` result-set:
 
 ```
 $q->order('name'); // .. order by name
@@ -689,13 +710,15 @@ Method can be executed several times on the same Query object.
 
 ### Set value to a field
 
-.. php:method:: set($field, $value)
+:::{php:method} set($field, $value)
+Assigns value to the field during insert.
 
-    Assigns value to the field during insert.
-
-    :param string $field: name of the field
-    :param mixed  $value: value or expression
-    :returns: $this
+```{eval-rst}
+:param string $field: name of the field
+:param mixed $value: value or expression
+:returns: $this
+```
+:::
 
 Example:
 
@@ -711,7 +734,8 @@ Method can be executed several times on the same Query object.
 
 ### Set Insert Options
 
-.. php:method:: option($option, $mode = 'select')
+:::{php:method} option($option, $mode = 'select')
+:::
 
 It is possible to add arbitrary options for the query. For example this will fetch unique user birthdays:
 
@@ -747,7 +771,7 @@ Same syntax as for Insert Query.
 ### Other settings
 
 Limit and Order are normally not included to avoid side-effects, but you can
-modify :php:attr:`$templateUpdate` to include those tags.
+modify {php:attr}`$templateUpdate` to include those tags.
 
 ## Delete Query
 
@@ -758,16 +782,18 @@ Same syntax as for Select Query.
 ### Other settings
 
 Limit and Order are normally not included to avoid side-effects, but you can
-modify :php:attr:`$templateUpdate` to include those tags.
+modify {php:attr}`$templateUpdate` to include those tags.
 
 ## Dropping attributes
 
 If you have called where() several times, there is a way to remove all the
 where clauses from the query and start from beginning:
 
-.. php:method:: reset($tag)
-
-    :param string $tag: part of the query to delete/reset.
+:::{php:method} reset($tag)
+```{eval-rst}
+:param string $tag: part of the query to delete/reset.
+```
+:::
 
 Example:
 
@@ -783,107 +809,116 @@ $q
 
 ## Other Methods
 
-.. php:method:: dsql($defaults)
+:::{php:method} dsql($defaults)
+Use this instead of `new Query()` if you want to automatically bind query
+to the same connection as the parent.
+:::
 
-    Use this instead of `new Query()` if you want to automatically bind query
-    to the same connection as the parent.
+:::{php:method} expr($template, $arguments)
+Method very similar to {php:meth}`Connection::expr` but will return a
+corresponding Expression class for this query.
+:::
 
-.. php:method:: expr($template, $arguments)
+:::{php:method} exprNow($precision)
+Method will return current_timestamp(precision) sub-query.
+:::
 
-    Method very similar to :php:method:`Connection::expr` but will return a
-    corresponding Expression class for this query.
+:::{php:method} option($option, $mode)
+Use this to set additional options for particular query mode.
+For example:
 
-.. php:method:: exprNow($precision)
+```
+$q
+    ->table('test')
+    ->field('name')
+    ->set('name', 'John')
+    ->option('calc_found_rows') // for default select mode
+    ->option('ignore', 'insert') // for insert mode;
 
-    Method will return current_timestamp(precision) sub-query.
+$q->executeQuery(); // select calc_found_rows `name` from `test`
+$q->mode('insert')->executeStatement(); // insert ignore into `test` (`name`) values (`name` = 'John')
+```
+:::
 
-.. php:method:: option($option, $mode)
+:::{php:method} _setArgs($what, $alias, $value)
+Internal method which sets value in {php:attr}`Expression::args` array.
+It doesn't allow duplicate aliases and throws Exception in such case.
+Argument $what can be 'table' or 'field'.
+:::
 
-    Use this to set additional options for particular query mode.
-    For example::
+:::{php:method} caseExpr($operand)
+Returns new Query object with CASE template.
+You can pass operand as parameter to create SQL like
 
-    $q
-        ->table('test')
-        ->field('name')
-        ->set('name', 'John')
-        ->option('calc_found_rows') // for default select mode
-        ->option('ignore', 'insert') // for insert mode;
+```
+CASE <operand> WHEN <expression> THEN <expression> END type of SQL statement.
+```
+:::
 
-    $q->executeQuery(); // select calc_found_rows `name` from `test`
-    $q->mode('insert')->executeStatement(); // insert ignore into `test` (`name`) values (`name` = 'John')
+:::{php:method} caseWhen($when, $then)
+Set WHEN condition and THEN expression for CASE statement.
+:::
 
-.. php:method:: _setArgs($what, $alias, $value)
+:::{php:method} otherwise($else)
+Set ELSE expression for CASE statement.
 
-    Internal method which sets value in :php:attr:`Expression::args` array.
-    It doesn't allow duplicate aliases and throws Exception in such case.
-    Argument $what can be 'table' or 'field'.
+Few examples:
 
-.. php:method:: caseExpr($operand)
+```
+$s = $this->q()->caseExpr()
+    ->caseWhen(['status', 'New'], 't2.expose_new')
+    ->caseWhen(['status', 'like', '%Used%'], 't2.expose_used')
+    ->caseElse(null);
+```
 
-    Returns new Query object with CASE template.
-    You can pass operand as parameter to create SQL like
-    CASE <operand> WHEN <expression> THEN <expression> END type of SQL statement.
+```sql
+case when "status" = 'New' then "t2"."expose_new" when "status" like '%Used%' then "t2"."expose_used" else null end
+```
 
-.. php:method:: caseWhen($when, $then)
+```
+$s = $this->q()->caseExpr('status')
+    ->caseWhen('New', 't2.expose_new')
+    ->caseWhen('Used', 't2.expose_used')
+    ->caseElse(null);
+```
 
-    Set WHEN condition and THEN expression for CASE statement.
-
-.. php:method:: otherwise($else)
-
-    Set ELSE expression for CASE statement.
-
-    Few examples:
-
-    .. code-block:: php
-    $s = $this->q()->caseExpr()
-            ->caseWhen(['status', 'New'], 't2.expose_new')
-            ->caseWhen(['status', 'like', '%Used%'], 't2.expose_used')
-            ->caseElse(null);
-
-    .. code-block:: sql
-    case when "status" = 'New' then "t2"."expose_new" when "status" like '%Used%' then "t2"."expose_used" else null end
-
-    .. code-block:: php
-    $s = $this->q()->caseExpr('status')
-            ->caseWhen('New', 't2.expose_new')
-            ->caseWhen('Used', 't2.expose_used')
-            ->caseElse(null);
-
-    .. code-block:: sql
-    case "status" when 'New' then "t2"."expose_new" when 'Used' then "t2"."expose_used" else null end
+```sql
+case "status" when 'New' then "t2"."expose_new" when 'Used' then "t2"."expose_used" else null end
+```
+:::
 
 ## Properties
 
-.. php:attr:: mode
+:::{php:attr} mode
+Query will use one of the predefined "templates". The mode will contain
+name of template used. Basically it's array key of $templates property.
+See {ref}`Query Modes`.
+:::
 
-    Query will use one of the predefined "templates". The mode will contain
-    name of template used. Basically it's array key of $templates property.
-    See :ref:`Query Modes`.
+:::{php:attr} defaultField
+If no fields are defined, this field is used.
+:::
 
-.. php:attr:: defaultField
+:::{php:attr} templateSelect
+Template for SELECT query. See {ref}`Query Modes`.
+:::
 
-    If no fields are defined, this field is used.
+:::{php:attr} templateInsert
+Template for INSERT query. See {ref}`Query Modes`.
+:::
 
-.. php:attr:: templateSelect
+:::{php:attr} templateReplace
+Template for REPLACE query. See {ref}`Query Modes`.
+:::
 
-    Template for SELECT query. See :ref:`Query Modes`.
+:::{php:attr} templateUpdate
+Template for UPDATE query. See {ref}`Query Modes`.
+:::
 
-.. php:attr:: templateInsert
+:::{php:attr} templateDelete
+Template for DELETE query. See {ref}`Query Modes`.
+:::
 
-    Template for INSERT query. See :ref:`Query Modes`.
-
-.. php:attr:: templateReplace
-
-    Template for REPLACE query. See :ref:`Query Modes`.
-
-.. php:attr:: templateUpdate
-
-    Template for UPDATE query. See :ref:`Query Modes`.
-
-.. php:attr:: templateDelete
-
-    Template for DELETE query. See :ref:`Query Modes`.
-
-.. php:attr:: templateTruncate
-
-    Template for TRUNCATE query. See :ref:`Query Modes`.
+:::{php:attr} templateTruncate
+Template for TRUNCATE query. See {ref}`Query Modes`.
+:::
