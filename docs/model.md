@@ -390,7 +390,7 @@ passwords to be generated and sent to the users:
 Crud::addTo($app)->setModel(new User($app->db));
 ```
 
-Read more about {php:class}`Model_i_UserAction`
+Read more about {php:class}`Model\UserAction`
 
 ### Hooks
 
@@ -487,7 +487,7 @@ $m = $m->load(1);
 echo $m->get('name'); // peter
 ```
 
-See {php:class}`Persistence_i_Static_`
+See {php:class}`Persistence\Static_`
 
 :::{php:attr} persistence
 :::

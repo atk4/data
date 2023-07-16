@@ -5,7 +5,7 @@
 
 # Model from multiple joined tables
 
-:::{php:class} Model_i_Join
+:::{php:class} Model\Join
 :::
 
 Sometimes model logically contains information that is stored in various places
@@ -219,7 +219,7 @@ Joins are implemented like this:
   are using reverse join, then foreign table record will not be updated, but
   value of the foreign field will be set to null.
 
-:::{php:class} Persistence_i_Sql_i_Join
+:::{php:class} Persistence\Sql\Join
 :::
 
 ## SQL-specific joins

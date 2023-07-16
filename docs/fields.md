@@ -178,7 +178,7 @@ $model->set('age', null); // exception
 :::
 
 Modifying field that is read-only through set() methods (or array access) will
-result in exception. {php:class}`Field_i_SqlExpressionField` is read-only by default.
+result in exception. {php:class}`Field\SqlExpressionField` is read-only by default.
 
 :::{php:attr} actual
 :::

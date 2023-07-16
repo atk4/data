@@ -237,7 +237,7 @@ echo $table->render();
 Class `\Atk4\Ui\Table` here is designed to work with persistencies and models -
 it will populate columns of correct type, fetch data, calculate totals if needed.
 But what if you have your data inside an array?
-You can use {php:class}`Persistence_i_Static_` for that:
+You can use {php:class}`Persistence\Static_` for that:
 
 ```
 $table = \Atk4\Ui\Table::addTo($app);

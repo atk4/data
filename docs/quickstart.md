@@ -512,8 +512,8 @@ $cc->get();
 ### Implementation of References
 
 When reference is added using {php:meth}`Model::hasOne()` or {php:meth}`Model::hasMany()`,
-the new object is created and added into Model of class {php:class}`Reference_i_HasMany`
-or {php:class}`Reference_i_HasOne` (or {php:class}`Reference_i_HasOneSql` in case you
+the new object is created and added into Model of class {php:class}`Reference\HasMany`
+or {php:class}`Reference\HasOne` (or {php:class}`Reference\HasOneSql` in case you
 use SQL database). The object itself is quite simple and you can fetch it from
 the model if you keep the return value of hasOne() / hasMany() or call
 {php:meth}`Model::getReference()` with the same identifier later on.
