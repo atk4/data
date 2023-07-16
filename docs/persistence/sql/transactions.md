@@ -1,4 +1,4 @@
-:::{php:namespace} Atk4\Data
+:::{php:namespace} Atk4\Data\Persistence\Sql
 :::
 
 # Transactions
