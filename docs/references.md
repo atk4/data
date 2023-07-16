@@ -721,7 +721,7 @@ hook, which will update address_id field of the $m.
 
 References are implemented through several classes:
 
-:::{php:class} Reference\HasOne
+:::{php:class} Reference_i_HasOne
 Defines generic reference, that is typically created by {php:meth}`Model::addReference`
 :::
 

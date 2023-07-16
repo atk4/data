@@ -5,10 +5,10 @@
 
 # Static Persistence
 
-:::{php:class} Persistence\Static_
+:::{php:class} Persistence_i_Static_
 :::
 
-Static Persistence extends {php:class}`Persistence\Array_` to implement
+Static Persistence extends {php:class}`Persistence_i_Array_` to implement
 a user-friendly way of specifying data through an array.
 
 ## Usage
@@ -44,7 +44,7 @@ Alternative it will check key "title".
 
 If neither are present you can still manually specify title field for your model.
 
-Finally, static persistence (unlike {php:class}`Persistence\Array_`) will automatically
+Finally, static persistence (unlike {php:class}`Persistence_i_Array_`) will automatically
 populate fields for the model and will even attempt to deduce field types.
 
 Currently it recognizes integer, date, boolean, float, array and object types.

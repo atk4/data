@@ -7,6 +7,9 @@
 
 # Conditions and DataSet
 
+:::{php:class} Model
+:::
+
 When model is associated with the database, you can specify a default table
 either explicitly or through a $table property inside a model:
 

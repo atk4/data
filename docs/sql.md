@@ -5,28 +5,28 @@
 
 # SQL Extensions
 
-Databases that support SQL language can use {php:class}`Persistence\Sql`.
+Databases that support SQL language can use {php:class}`Persistence_i_Sql`.
 This driver will format queries to the database using SQL language.
 
 In addition to normal operations you can extend and customize various queries.
 
 ## Default Model Classes
 
-When using `Persistence\Sql` model building will use different classes for fields,
+When using {php:class}`Persistence_i_Sql` model building will use different classes for fields,
 expressions, joins etc:
 
-- addField - {php:class}`FieldSql` (field can be used as part of DSQL Expression)
-- hasOne - {php:class}`Reference\HasOneSql` (allow importing fields)
-- addExpression - {php:class}`SqlExpressionField` (define expression through DSQL)
-- join - {php:class}`Join\Sql` (join tables query-time)
+- addField - different class is no longer used/needed
+- hasOne - {php:class}`Reference_i_HasOneSql` (allow importing fields)
+- addExpression - {php:class}`Field_i_SqlExpressionField` (define expression through DSQL)
+- join - {php:class}`Persistence_i_Sql_i_Join` (join tables query-time)
 
 ### SQL Field
 
-:::{php:class} FieldSql
+:::{php:class} Field
 :::
 
 :::{php:attr} actual
-{php:class}`Persistence\Sql` supports field name mapping. Your field could
+{php:class}`Persistence_i_Sql` supports field name mapping. Your field could
 have different column name in your schema:
 
 ```
@@ -49,8 +49,8 @@ $q = $connection->expr('[age] + [birth_year]', [
 
 ### SQL Reference
 
-:::{php:class} Reference\HasOneSql
-Extends {php:class}`Reference\HasOne`
+:::{php:class} Reference_i_HasOneSql
+Extends {php:class}`Reference_i_HasOne`
 :::
 
 :::{php:method} addField
@@ -114,7 +114,7 @@ Returns $this.
 :::
 
 :::{php:method} ref
-While similar to {php:meth}`Reference\HasOne::ref` this implementation
+While similar to {php:meth}`Reference_i_HasOne::ref` this implementation
 implements deep traversal:
 
 ```
@@ -152,8 +152,8 @@ Returns new field object.
 
 ### Expressions
 
-:::{php:class} SqlExpressionField
-Extends {php:class}`FieldSql`
+:::{php:class} Field_i_SqlExpressionField
+Extends {php:class}`Field`
 :::
 
 Expression will map into the SQL code, but will perform as read-only field otherwise.
@@ -180,7 +180,7 @@ as default behavior, see {php:attr}`Model::reloadAfterSave`.
 
 ## Transactions
 
-:::{php:class} Persistence\Sql
+:::{php:class} Persistence_i_Sql
 :::
 
 :::{php:method} atomic
@@ -234,7 +234,7 @@ $q = $connection->expr('[age] + [birth_year]', [
 $q = $m->expr('[age] + [birth_year']);
 ```
 
-This method is automatically used by {php:class}`SqlExpressionField`.
+This method is automatically used by {php:class}`Field_i_SqlExpressionField`.
 
 ## Actions
 
@@ -462,7 +462,7 @@ where once again, stored function is hidden.
 Not all SQL vendors may support this approach.
 :::
 
-Method {php:meth}`Persistence\Sql::action` and {php:meth}`Model::action`
+Method {php:meth}`Persistence_i_Sql::action` and {php:meth}`Model::action`
 generates queries for most of model operations. By re-defining this method,
 you can significantly affect the query building of an SQL model:
 

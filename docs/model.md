@@ -390,7 +390,7 @@ passwords to be generated and sent to the users:
 Crud::addTo($app)->setModel(new User($app->db));
 ```
 
-Read more about {php:class}`Model\UserAction`
+Read more about {php:class}`Model_i_UserAction`
 
 ### Hooks
 
@@ -487,7 +487,7 @@ $m = $m->load(1);
 echo $m->get('name'); // peter
 ```
 
-See {php:class}`Persistence\Static_`
+See {php:class}`Persistence_i_Static_`
 
 :::{php:attr} persistence
 :::
@@ -742,7 +742,7 @@ If you don't have field 'name' but you want some other field to be title,
 you can specify that in the property. If titleField is not needed, set it
 to false or point towards a non-existent field.
 
-See {php:meth}`hasOne::addTitle()`
+See {php:meth}`HasOne::addTitle()`
 :::
 
 :::{php:method} public getTitle
