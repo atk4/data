@@ -482,14 +482,14 @@ class CompanyProfit extends \Atk4\Data\Model
 
     public function action(string $mode, array $args = [])
     {
-        if ($mode == 'select') {
+        if ($mode === 'select') {
             // must return DSQL object here
             return $this->expr('call get_company_profit([company_id])', [
                 'company_id' => $this->companyId,
             ]);
         }
 
-        if ($mode == 'count') {
+        if ($mode === 'count') {
             // optionally - expression for counting data rows, for pagination support
             return $this->expr('select count(*) from (call get_company_profit([company_id]))', [
                 'company_id' => $this->companyId,

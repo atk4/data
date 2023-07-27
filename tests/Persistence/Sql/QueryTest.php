@@ -680,9 +680,9 @@ class QueryTest extends TestCase
     }
 
     /**
-     * @return \Traversable<int, array<int, mixed>>
+     * @return iterable<list<mixed>>
      */
-    public function provideWhereUnsupportedOperatorCases(): \Traversable
+    public function provideWhereUnsupportedOperatorCases(): iterable
     {
         // unsupported operators
         yield ['<>', 2];

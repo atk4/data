@@ -109,9 +109,9 @@ class MigratorTest extends TestCase
     }
 
     /**
-     * @return \Traversable<int, array<int, mixed>>
+     * @return iterable<list<mixed>>
      */
-    public function provideCharacterTypeFieldCaseSensitivityCases(): \Traversable
+    public function provideCharacterTypeFieldCaseSensitivityCases(): iterable
     {
         yield ['string', false];
         yield ['binary', true];
@@ -240,9 +240,9 @@ class MigratorTest extends TestCase
     }
 
     /**
-     * @return \Traversable<int, array<int, mixed>>
+     * @return iterable<list<mixed>>
      */
-    public function provideCharacterTypeFieldLongCases(): \Traversable
+    public function provideCharacterTypeFieldLongCases(): iterable
     {
         yield ['binary', true, 0];
         yield ['text', false, 0];

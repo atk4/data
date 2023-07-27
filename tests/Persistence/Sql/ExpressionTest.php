@@ -140,9 +140,9 @@ class ExpressionTest extends TestCase
     }
 
     /**
-     * @return \Traversable<int, array<int, mixed>>
+     * @return iterable<list<mixed>>
      */
-    public function provideNoTemplatingInSqlStringCases(): \Traversable
+    public function provideNoTemplatingInSqlStringCases(): iterable
     {
         $testStrs = [];
         foreach (['\'', '"', '`'] as $enclosureChar) {

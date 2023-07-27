@@ -543,7 +543,7 @@ to load records from two persistencies that are stored inside properties of my
 application:
 
 ```
-public function loadQuick($class, $id)
+public function loadQuick(Model $class, $id)
 {
     // first, try to load it from MemCache
     $m = (clone $class)->setPersistence($this->mdb)->tryLoad($id);

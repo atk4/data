@@ -99,6 +99,9 @@ class StGenericTransaction extends Model
         });
     }
 
+    /**
+     * @return class-string<self>
+     */
     public function getClassName(): string
     {
         return __NAMESPACE__ . '\StTransaction_' . $this->get('type');
