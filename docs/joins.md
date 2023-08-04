@@ -30,7 +30,7 @@ This code will load data from two tables simultaneously and if you do change any
 of those fields they will be update in their respective tables. With SQL the
 load query would look like this:
 
-```sql
+```
 select
     u.username, c.address, c.county, c.country_id
     (select name from country where country.id = c.country_id) country
@@ -49,7 +49,7 @@ $contact = $contact->load($user->get('contact_id'));
 
 When saving the record, Joins will automatically record data correctly:
 
-```sql
+```
 insert into contact (address, county, country_id) values ($, $, $);
 @join_c = last_insert_id();
 insert into user (username, contact_id) values ($, @join_c)

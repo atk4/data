@@ -73,7 +73,7 @@ $ordersForVips = $m->ref('Orders');
 Now that a different databases are used, the queries can no longer be
 joined so Agile Data will carry over list of IDs instead:
 
-```sql
+```
 $ids = select id from user where is_vip = 1
 select * from order where user_id in ($ids)
 ```

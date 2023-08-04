@@ -63,8 +63,8 @@ If you have worked with other ORMs, read the following sections to avoid confusi
 - Documentation: {php:class}`Field`
 
 :::{note}
-Meta-information may be a persistence detail, ({php:attr}`Field::actual`)
-or presentation detail ({php:attr}`Field::ui`). Field class does not interpret
+Meta-information may be a persistence detail, ({php:attr}`Field::$actual`)
+or presentation detail ({php:attr}`Field::$ui`). Field class does not interpret
 the value, it only stores it.
 :::
 

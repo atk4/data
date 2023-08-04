@@ -332,7 +332,7 @@ your field, but it also participates in some field-related activity.
 ### Table Joins
 
 Similarly, {php:meth}`Model::join()` creates a Join object and stores it in $j.
-The Join object defines a relationship between the master {php:attr}`Model::table`
+The Join object defines a relationship between the master {php:attr}`Model::$table`
 and some other table inside persistence domain. It makes sure relationship is
 maintained when objects are saved / loaded:
 

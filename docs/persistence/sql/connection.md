@@ -20,7 +20,7 @@ connection in a global variable or global class:
 $app->db = Atk4\Data\Persistence\Sql\Connection::connect($dsn, $user, $pass, $defaults);
 ```
 
-:::{php:staticmethod} connect($dsn, $user = null, $password = null, $defaults = [])
+:::{php:method} static connect($dsn, $user = null, $password = null, $defaults = [])
 Determine which Connection class should be used for specified $dsn,
 establish connection to DB by creating new object of this connection class and return.
 
@@ -45,7 +45,7 @@ $expr = $app->db->expr('show tables');
 ```
 
 :::{php:method} expr($template, $arguments)
-Creates new Expression class and sets {php:attr}`Expression::connection`.
+Creates new Expression class and sets {php:attr}`Expression::$connection`.
 
 ```{eval-rst}
 :param array $arguments: Other default properties for connection class.
@@ -80,7 +80,7 @@ Connection class is also responsible for executing queries. This is only used
 if you connect to vendor that does not use PDO.
 
 :::{php:method} execute(Expression $expr): \Doctrine\DBAL\Result
-Creates new Expression class and sets {php:attr}`Expression::connection`.
+Creates new Expression class and sets {php:attr}`Expression::$connection`.
 
 ```{eval-rst}
 :param Expression $expr: Expression (or query) to execute
