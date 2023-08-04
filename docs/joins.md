@@ -141,7 +141,7 @@ with foreign table.
 
 :::{php:method} hasMany
 same as {php:meth}`Model::hasMany` but condition for related model will be
-based on foreign table field and {php:attr}`Reference::theirField` will be
+based on foreign table field and {php:attr}`Reference::$theirField` will be
 set to $foreignTable . '_id'.
 :::
 

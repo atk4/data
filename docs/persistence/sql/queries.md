@@ -841,7 +841,7 @@ $q->mode('insert')->executeStatement(); // insert ignore into `test` (`name`) va
 :::
 
 :::{php:method} _setArgs($what, $alias, $value)
-Internal method which sets value in {php:attr}`Expression::args` array.
+Internal method which sets value in {php:attr}`Expression::$args` array.
 It doesn't allow duplicate aliases and throws Exception in such case.
 Argument $what can be 'table' or 'field'.
 :::

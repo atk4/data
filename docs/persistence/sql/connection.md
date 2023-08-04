@@ -54,7 +54,7 @@ Creates new Expression class and sets {php:attr}`Expression::$connection`.
 :::
 
 :::{php:method} dsql($defaults)
-Creates new Query class and sets {php:attr}`Query::connection`.
+Creates new Query class and sets {php:attr}`Query::$connection`.
 
 ```{eval-rst}
 :param array $defaults: Other default properties for connection class.

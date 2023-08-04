@@ -176,7 +176,7 @@ $model->addExpression('can_buy_alcohol', ['expr' => 'if([age] > 25, 1, 0)', 'typ
 :::
 
 Adding expressions to model will make it automatically reload itself after save
-as default behavior, see {php:attr}`Model::reloadAfterSave`.
+as default behavior, see {php:attr}`Model::$reloadAfterSave`.
 
 ## Transactions
 

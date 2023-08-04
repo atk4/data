@@ -53,6 +53,6 @@ Other fields will appear as-is.
 ### Saving Records
 
 Models that you specify against static persistence will not be marked as
-"Read Only" ({php:attr}`Model::readOnly`), and you will be allowed to save
+"Read Only" ({php:attr}`Model::$readOnly`), and you will be allowed to save
 data back. The data will only be stored inside persistence object and will be
 discarded at the end of your PHP script.

@@ -77,7 +77,7 @@ WHERE
 ```
 
 If you are creating {php:class}`Connection` through constructor, you may have
-to explicitly specify property {php:attr}`Connection::queryClass`:
+to explicitly specify property {php:attr}`Connection::$queryClass`:
 
 ```
 $c = new Connection(['connection' => $pdo, 'queryClass' => Atk4\Data\Persistence\Sql\Sqlite\Query::class]);
