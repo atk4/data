@@ -86,7 +86,7 @@ class MigratorTest extends TestCase
     }
 
     /**
-     * @dataProvider providerCharacterTypeFieldCaseSensitivityData
+     * @dataProvider provideCharacterTypeFieldCaseSensitivityCases
      */
     public function testCharacterTypeFieldCaseSensitivity(string $type, bool $isBinary): void
     {
@@ -109,9 +109,9 @@ class MigratorTest extends TestCase
     }
 
     /**
-     * @return \Traversable<int, array<int, mixed>>
+     * @return iterable<list<mixed>>
      */
-    public function providerCharacterTypeFieldCaseSensitivityData(): \Traversable
+    public function provideCharacterTypeFieldCaseSensitivityCases(): iterable
     {
         yield ['string', false];
         yield ['binary', true];
@@ -145,7 +145,7 @@ class MigratorTest extends TestCase
     }
 
     /**
-     * @dataProvider providerCharacterTypeFieldLongData
+     * @dataProvider provideCharacterTypeFieldLongCases
      */
     public function testCharacterTypeFieldLong(string $type, bool $isBinary, int $length): void
     {
@@ -240,9 +240,9 @@ class MigratorTest extends TestCase
     }
 
     /**
-     * @return \Traversable<int, array<int, mixed>>
+     * @return iterable<list<mixed>>
      */
-    public function providerCharacterTypeFieldLongData(): \Traversable
+    public function provideCharacterTypeFieldLongCases(): iterable
     {
         yield ['binary', true, 0];
         yield ['text', false, 0];

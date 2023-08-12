@@ -544,7 +544,7 @@ class JoinSqlTest extends TestCase
             ], 'phone' => [ // each Contact hasOne phone
                 20 => ['id' => 20, 'number' => '+123'],
                 ['id' => 21, 'number' => '+456'],
-            ], 'token' => [ // each User hassMany Token
+            ], 'token' => [ // each User hashMany Token
                 30 => ['id' => 30, 'user_id' => 1, 'token' => 'ABC'],
                 ['id' => 31, 'user_id' => 1, 'token' => 'DEF'],
                 ['id' => 32, 'user_id' => 2, 'token' => 'GHI'],
@@ -653,7 +653,7 @@ class JoinSqlTest extends TestCase
         $user->addField('name');
         $j = $user->join('detail', [ // here we just set foreign table name without dot and foreignField
             'reverse' => true, // and set it as revers join
-            'foreignField' => 'my_user_id', // this is custome name so we have to set it here otherwise it will generate user_id
+            'foreignField' => 'my_user_id', // this is custom name so we have to set it here otherwise it will generate user_id
         ]);
         $j->addField('notes');
 

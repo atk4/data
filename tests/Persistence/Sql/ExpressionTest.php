@@ -132,7 +132,7 @@ class ExpressionTest extends TestCase
     /**
      * @param array<int|string, mixed> $exprArguments
      *
-     * @dataProvider provideNoTemplatingInSqlStringData
+     * @dataProvider provideNoTemplatingInSqlStringCases
      */
     public function testNoTemplatingInSqlString(string $expectedStr, string $exprTemplate, array $exprArguments): void
     {
@@ -140,9 +140,9 @@ class ExpressionTest extends TestCase
     }
 
     /**
-     * @return \Traversable<int, array<int, mixed>>
+     * @return iterable<list<mixed>>
      */
-    public function provideNoTemplatingInSqlStringData(): \Traversable
+    public function provideNoTemplatingInSqlStringCases(): iterable
     {
         $testStrs = [];
         foreach (['\'', '"', '`'] as $enclosureChar) {
@@ -352,7 +352,7 @@ class ExpressionTest extends TestCase
         unset($e['cat']);
         self::assertFalse(isset($e['cat']));
 
-        // testing absence of specific key in asignment
+        // testing absence of specific key in assignment
         $e = $this->e('[], []');
         $e[] = 'Hello';
         $e[] = 'World';

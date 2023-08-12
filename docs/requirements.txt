@@ -1,2 +1,5 @@
+sphinx<5
+sphinx-rtd-theme
 sphinxcontrib-phpdomain
-sphinx_rtd_theme
+myst-parser
+linkify-it-py

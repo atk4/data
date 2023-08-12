@@ -8,7 +8,6 @@ use Atk4\Data\Exception;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
-use Doctrine\DBAL\Types\Type;
 
 trait BinaryTypeCompatibilityTypecastTrait
 {

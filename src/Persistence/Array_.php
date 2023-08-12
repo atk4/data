@@ -123,7 +123,7 @@ class Array_ extends Persistence
     private function assertNoIdMismatch(Model $model, $idFromRow, $id): void
     {
         if ($idFromRow !== null && !$model->getField($model->idField)->compare($idFromRow, $id)) {
-            throw (new Exception('Row constains ID column, but it does not match the row ID'))
+            throw (new Exception('Row contains ID column, but it does not match the row ID'))
                 ->addMoreInfo('idFromKey', $id)
                 ->addMoreInfo('idFromData', $idFromRow);
         }

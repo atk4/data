@@ -271,12 +271,12 @@ class QueryTest extends TestCase
     }
 
     /**
-     * Requesting non-existant query mode should throw exception.
+     * Requesting non-existent query mode should throw exception.
      */
     public function testModeException1(): void
     {
         $this->expectException(Exception::class);
-        $this->q()->mode('non_existant_mode');
+        $this->q()->mode('non_existent_mode');
     }
 
     public function testTableReturnThis(): void
@@ -517,9 +517,9 @@ class QueryTest extends TestCase
             ->field('date')
             ->field('debit')
             ->field('credit')
-            ->table($u, 'derrivedTable');
+            ->table($u, 'derivedTable');
         self::assertSame(
-            'select "date", "debit", "credit" from ((select "date", "amount" "debit", 0 "credit" from "sales") union (select "date", 0 "debit", "amount" "credit" from "purchases")) "derrivedTable"',
+            'select "date", "debit", "credit" from ((select "date", "amount" "debit", 0 "credit" from "sales") union (select "date", 0 "debit", "amount" "credit" from "purchases")) "derivedTable"',
             $q->render()[0]
         );
 
@@ -539,9 +539,9 @@ class QueryTest extends TestCase
             ->field('date')
             ->field('debit')
             ->field('credit')
-            ->table($u, 'derrivedTable');
+            ->table($u, 'derivedTable');
         self::assertSame(
-            'select "date", "debit", "credit" from (select "date", "amount" "debit", 0 "credit" from "sales" union select "date", 0 "debit", "amount" "credit" from "purchases") "derrivedTable"',
+            'select "date", "debit", "credit" from (select "date", "amount" "debit", 0 "credit" from "sales" union select "date", 0 "debit", "amount" "credit" from "purchases") "derivedTable"',
             $q->render()[0]
         );
     }
@@ -668,7 +668,7 @@ class QueryTest extends TestCase
     /**
      * @param mixed $value
      *
-     * @dataProvider provideWhereUnsupportedOperatorData
+     * @dataProvider provideWhereUnsupportedOperatorCases
      */
     public function testWhereUnsupportedOperator(string $operator, $value): void
     {
@@ -680,9 +680,9 @@ class QueryTest extends TestCase
     }
 
     /**
-     * @return \Traversable<int, array<int, mixed>>
+     * @return iterable<list<mixed>>
      */
-    public function provideWhereUnsupportedOperatorData(): \Traversable
+    public function provideWhereUnsupportedOperatorCases(): iterable
     {
         // unsupported operators
         yield ['<>', 2];
@@ -720,7 +720,7 @@ class QueryTest extends TestCase
             'where "id" not in (:a, :b)',
             $this->q('[where]')->where('id', 'not in', [1, 2])->render()[0]
         );
-        // speacial treatment for empty array values
+        // special treatment for empty array values
         self::assertSame(
             'where 1 = 0',
             $this->q('[where]')->where('id', 'in', [])->render()[0]
