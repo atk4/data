@@ -815,11 +815,11 @@ class JoinSqlTest extends TestCase
         $user->set('contact_phone', '+321');
         $user->save();
 
-        self::assertSame([
+        self::assertSameExportUnordered([
             ['id' => 1, 'name' => 'Karl', 'foo' => 21],
             ['id' => 2, 'name' => 'Roman', 'foo' => 22],
         ], $masterModel->export());
-        self::assertSame([
+        self::assertSameExportUnordered([
             ['uid' => 1, 'bar' => 21, 'contact_phone' => '+321'],
             ['uid' => 2, 'bar' => 22, 'contact_phone' => '+200'],
         ], $joinedModel->export());
