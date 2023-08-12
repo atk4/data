@@ -20,7 +20,7 @@ use Atk4\Data\Persistence\Array_\Db\Table;
  */
 class Array_ extends Persistence
 {
-    /** @var array */
+    /** @var array<string, array<int|string, mixed>> */
     private $seedData;
 
     /** @var array<string, Table> */
@@ -35,6 +35,9 @@ class Array_ extends Persistence
     /** @var string */
     protected $lastInsertIdTable;
 
+    /**
+     * @param array<int|string, mixed> $data
+     */
     public function __construct(array $data = [])
     {
         $this->seedData = $data;
@@ -72,11 +75,11 @@ class Array_ extends Persistence
             if ($field->hasJoin()) {
                 $join = $field->getJoin();
                 $joinTableName = \Closure::bind(function () use ($join) {
-                    return $join->foreign_table;
+                    return $join->foreignTable;
                 }, null, Array_\Join::class)();
                 if (isset($this->seedData[$joinTableName])) {
                     $dummyJoinModel = new Model($this, ['table' => $joinTableName]);
-                    $this->add($dummyJoinModel);
+                    $dummyJoinModel->setPersistence($this);
                 }
             }
         }
@@ -90,6 +93,8 @@ class Array_ extends Persistence
     }
 
     /**
+     * @return array<mixed, array<string, mixed>>
+     *
      * @deprecated TODO temporary for these:
      *             - https://github.com/atk4/data/blob/90ab68ac063b8fc2c72dcd66115f1bd3f70a3a92/src/Reference/ContainsOne.php#L119
      *             - https://github.com/atk4/data/blob/90ab68ac063b8fc2c72dcd66115f1bd3f70a3a92/src/Reference/ContainsMany.php#L66
@@ -97,13 +102,15 @@ class Array_ extends Persistence
      */
     public function getRawDataByTable(Model $model, string $table): array
     {
+        $model->assertIsModel();
+
         if (!is_object($model->table)) {
             $this->seedData($model);
         }
 
         $rows = [];
         foreach ($this->data[$table]->getRows() as $row) {
-            $rows[$row->getValue($model->id_field)] = $row->getData();
+            $rows[$row->getValue($model->idField)] = $row->getData();
         }
 
         return $rows;
@@ -115,20 +122,21 @@ class Array_ extends Persistence
      */
     private function assertNoIdMismatch(Model $model, $idFromRow, $id): void
     {
-        if ($idFromRow !== null && !$model->getField($model->id_field)->compare($idFromRow, $id)) {
-            throw (new Exception('Row constains ID column, but it does not match the row ID'))
+        if ($idFromRow !== null && !$model->getField($model->idField)->compare($idFromRow, $id)) {
+            throw (new Exception('Row contains ID column, but it does not match the row ID'))
                 ->addMoreInfo('idFromKey', $id)
                 ->addMoreInfo('idFromData', $idFromRow);
         }
     }
 
     /**
-     * @param mixed $id
+     * @param array<string, mixed> $rowData
+     * @param mixed                $id
      */
     private function saveRow(Model $model, array $rowData, $id): void
     {
-        if ($model->id_field) {
-            $idField = $model->getField($model->id_field);
+        if ($model->idField) {
+            $idField = $model->getField($model->idField);
             $id = $idField->normalize($id);
             $idColumnName = $idField->getPersistenceName();
             if (array_key_exists($idColumnName, $rowData)) {
@@ -158,15 +166,13 @@ class Array_ extends Persistence
         }
     }
 
+    /**
+     * @param array<string, mixed> $defaults
+     */
     public function add(Model $model, array $defaults = []): void
     {
-        if (isset($defaults[0])) {
-            $model->table = $defaults[0];
-            unset($defaults[0]);
-        }
-
         $defaults = array_merge([
-            '_default_seed_join' => [Array_\Join::class],
+            '_defaultSeedJoin' => [Array_\Join::class],
         ], $defaults);
 
         parent::add($model, $defaults);
@@ -177,28 +183,34 @@ class Array_ extends Persistence
             $model->table = 'data';
         }
 
-        if ($model->id_field && $model->hasField($model->id_field)) {
-            $f = $model->getField($model->id_field);
-            if ($f->type === null) {
-                $f->type = 'integer';
-            }
-        }
-
         if (!is_object($model->table)) {
             $this->seedData($model);
         }
     }
 
+    /**
+     * @return array<string, string>
+     */
     private function getPersistenceNameToNameMap(Model $model): array
     {
         return array_flip(array_map(fn (Field $f) => $f->getPersistenceName(), $model->getFields()));
     }
 
+    /**
+     * @param array<string, mixed> $rowDataRaw
+     *
+     * @return array<string, mixed>
+     */
     private function filterRowDataOnlyModelFields(Model $model, array $rowDataRaw): array
     {
         return array_intersect_key($rowDataRaw, $this->getPersistenceNameToNameMap($model));
     }
 
+    /**
+     * @param array<string, mixed> $row
+     *
+     * @return array<string, mixed>
+     */
     private function remapLoadRow(Model $model, array $row): array
     {
         $rowRemapped = [];
@@ -212,6 +224,8 @@ class Array_ extends Persistence
 
     public function tryLoad(Model $model, $id): ?array
     {
+        $model->assertIsModel();
+
         if ($id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY) {
             $action = $this->action($model, 'select');
 
@@ -226,7 +240,7 @@ class Array_ extends Persistence
                     ->addMoreInfo('id', null);
             }
 
-            $idRaw = reset($rowsRaw)[$model->id_field];
+            $idRaw = reset($rowsRaw)[$model->idField];
 
             $row = $this->tryLoad($model, $idRaw);
 
@@ -236,7 +250,7 @@ class Array_ extends Persistence
         if (is_object($model->table)) {
             $action = $this->action($model, 'select');
             $condition = new Model\Scope\Condition('', $id);
-            $condition->key = $model->getField($model->id_field);
+            $condition->key = $model->getField($model->idField);
             $condition->setOwner($model->createEntity()); // TODO needed for typecasting to apply
             $action->filter($condition);
 
@@ -262,7 +276,7 @@ class Array_ extends Persistence
     {
         $this->seedData($model);
 
-        $idRaw = $dataRaw[$model->id_field] ?? $this->generateNewId($model);
+        $idRaw = $dataRaw[$model->idField] ?? $this->generateNewId($model);
 
         $this->saveRow($model, $dataRaw, $idRaw);
 
@@ -292,7 +306,7 @@ class Array_ extends Persistence
     {
         $this->seedData($model);
 
-        $type = $model->id_field ? $model->getField($model->id_field)->type : 'integer';
+        $type = $model->idField ? $model->getField($model->idField)->type : 'integer';
 
         switch ($type) {
             case 'integer':
@@ -329,6 +343,9 @@ class Array_ extends Persistence
         return $this->lastInsertIdByTable[$this->lastInsertIdTable] ?? null;
     }
 
+    /**
+     * @return \Traversable<array<string, mixed>>
+     */
     public function prepareIterator(Model $model): \Traversable
     {
         return $model->action('select')->generator; // @phpstan-ignore-line
@@ -336,13 +353,17 @@ class Array_ extends Persistence
 
     /**
      * Export all DataSet.
+     *
+     * @param array<int, string>|null $fields
+     *
+     * @return array<int, array<string, mixed>>
      */
     public function export(Model $model, array $fields = null, bool $typecast = true): array
     {
         $data = $model->action('select', [$fields])->getRows();
 
         if ($typecast) {
-            $data = array_map(function ($row) use ($model) {
+            $data = array_map(function (array $row) use ($model) {
                 return $this->typecastLoadRow($model, $row);
             }, $data);
         }
@@ -352,6 +373,8 @@ class Array_ extends Persistence
 
     /**
      * Typecast data and return Action of data array.
+     *
+     * @param array<int, string>|null $fields
      */
     public function initAction(Model $model, array $fields = null): Action
     {
@@ -364,7 +387,7 @@ class Array_ extends Persistence
 
             $rows = [];
             foreach ($table->getRows() as $row) {
-                $rows[$row->getValue($model->getField($model->id_field)->getPersistenceName())] = $row->getData();
+                $rows[$row->getValue($model->getField($model->idField)->getPersistenceName())] = $row->getData();
             }
         }
 
@@ -373,7 +396,7 @@ class Array_ extends Persistence
         }
 
         if ($fields !== null) {
-            $rows = array_map(function ($row) use ($fields) {
+            $rows = array_map(function (array $row) use ($fields) {
                 return array_intersect_key($row, array_flip($fields));
             }, $rows);
         }
@@ -387,13 +410,13 @@ class Array_ extends Persistence
     protected function setLimitOrder(Model $model, Action $action): void
     {
         // first order by
-        if ($model->order) {
+        if (count($model->order) > 0) {
             $action->order($model->order);
         }
 
         // then set limit
-        if ($model->limit && ($model->limit[0] || $model->limit[1])) {
-            $action->limit($model->limit[0] ?? 0, $model->limit[1] ?? 0);
+        if ($model->limit[0] !== null || $model->limit[1] !== 0) {
+            $action->limit($model->limit[0] ?? \PHP_INT_MAX, $model->limit[1]);
         }
     }
 
@@ -405,9 +428,9 @@ class Array_ extends Persistence
         $scope = $model->getModel(true)->scope();
 
         // add entity ID to scope to allow easy traversal
-        if ($model->isEntity() && $model->id_field && $model->getId() !== null) {
+        if ($model->isEntity() && $model->idField && $model->getId() !== null) {
             $scope = new Model\Scope([$scope]);
-            $scope->addCondition($model->getField($model->id_field), $model->getId());
+            $scope->addCondition($model->getField($model->idField), $model->getId());
         }
 
         $action->filter($scope);
@@ -416,7 +439,9 @@ class Array_ extends Persistence
     /**
      * Various actions possible here, mostly for compatibility with SQLs.
      *
-     * @return mixed
+     * @param array<mixed> $args
+     *
+     * @return Action
      */
     public function action(Model $model, string $type, array $args = [])
     {
@@ -458,7 +483,7 @@ class Array_ extends Persistence
             case 'fx':
             case 'fx0':
                 if (!isset($args[0]) || !isset($args[1])) {
-                    throw (new Exception('fx action needs 2 arguments, eg: ["sum", "amount"]'))
+                    throw (new Exception('fx action needs 2 arguments, eg: [\'sum\', \'amount\']'))
                         ->addMoreInfo('action', $type);
                 }
 

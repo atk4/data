@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests\Persistence;
 
 use Atk4\Core\Phpunit\TestCase;
+use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 
@@ -17,12 +18,12 @@ class StaticTest extends TestCase
         // default title field
         $m = new Model($p);
         $m = $m->load(2);
-        $this->assertSame('world', $m->get('name'));
+        self::assertSame('world', $m->get('name'));
 
         // custom title field and try loading from same static twice
-        $m = new Model($p); // , ['title_field' => 'foo']);
+        $m = new Model($p); // , ['titleField' => 'foo']);
         $m = $m->load(2);
-        $this->assertSame('world', $m->get('name')); // still 'name' here not 'foo'
+        self::assertSame('world', $m->get('name')); // still 'name' here not 'foo'
     }
 
     public function testArrayOfArrays(): void
@@ -32,9 +33,9 @@ class StaticTest extends TestCase
 
         $m = $m->load(2);
 
-        $this->assertSame('world', $m->get('name'));
-        $this->assertSame('xy', $m->get('field1'));
-        $this->assertFalse($m->get('field2'));
+        self::assertSame('world', $m->get('name'));
+        self::assertSame('xy', $m->get('field1'));
+        self::assertFalse($m->get('field2'));
     }
 
     public function testArrayOfHashes(): void
@@ -44,27 +45,30 @@ class StaticTest extends TestCase
 
         $m = $m->load(2);
 
-        $this->assertSame('world', $m->get('foo'));
+        self::assertSame('world', $m->get('foo'));
     }
 
     public function testIdArg(): void
     {
-        $p = new Persistence\Static_([['id' => 20, 'foo' => 'hello'], ['id' => 21, 'foo' => 'world']]);
+        $p = new Persistence\Static_([
+            ['id' => 20, 'foo' => 'hello'],
+            ['id' => 21, 'foo' => 'world'],
+        ]);
         $m = new Model($p);
 
         $m = $m->load(21);
 
-        $this->assertSame('world', $m->get('foo'));
+        self::assertSame('world', $m->get('foo'));
     }
 
     public function testIdKey(): void
     {
-        $p = new Persistence\Static_([20 => ['foo' => 'hello'], 21 => ['foo' => 'world']]);
+        $p = new Persistence\Static_([20 => ['foo' => 'hello'], ['foo' => 'world']]);
         $m = new Model($p);
 
         $m = $m->load(21);
 
-        $this->assertSame('world', $m->get('foo'));
+        self::assertSame('world', $m->get('foo'));
     }
 
     public function testZeroIdAllowed(): void
@@ -75,22 +79,22 @@ class StaticTest extends TestCase
             {
                 parent::init();
 
+                $this->getField('id')->nullable = false;
                 $this->getField('id')->required = false;
-                $this->getField('id')->mandatory = true;
             }
         };
 
-        $this->assertSame('hello', $m->load(0)->get('name'));
-        $this->assertSame('world', $m->load(1)->get('name'));
+        self::assertSame('hello', $m->load(0)->get('name'));
+        self::assertSame('world', $m->load(1)->get('name'));
     }
 
     public function testZeroIdNotAllowed(): void
     {
         $p = new Persistence\Static_(['hello', 'world']);
 
-        $this->expectException(\Atk4\Data\Exception::class);
+        $this->expectException(Exception::class);
         $this->expectExceptionMessage('Must not be a zero');
-        $m = new Model($p);
+        new Model($p);
     }
 
     public function testEmpty(): void
@@ -99,7 +103,7 @@ class StaticTest extends TestCase
         $m = new Model($p);
 
         $m = $m->tryLoadAny();
-        $this->assertNull($m);
+        self::assertNull($m);
     }
 
     public function testCustomField(): void
@@ -107,26 +111,26 @@ class StaticTest extends TestCase
         $p = new Persistence\Static_([1 => ['foo' => 'hello'], ['foo' => 'world']]);
         $m = new StaticTestModel($p);
 
-        $this->assertSame('custom field', $m->getField('foo')->caption);
+        self::assertSame('custom field', $m->getField('foo')->caption);
 
         $p = new Persistence\Static_([1 => ['foo' => 'hello', 'bar' => 'world']]);
         $m = new StaticTestModel($p);
-        $this->assertSame('foo', $m->title_field);
+        self::assertSame('foo', $m->titleField);
     }
 
     public function testTitleOrName(): void
     {
         $p = new Persistence\Static_([1 => ['foo' => 'hello', 'bar' => 'world']]);
         $m = new Model($p);
-        $this->assertSame('foo', $m->title_field);
+        self::assertSame('foo', $m->titleField);
 
         $p = new Persistence\Static_([1 => ['foo' => 'hello', 'name' => 'x']]);
         $m = new Model($p);
-        $this->assertSame('name', $m->title_field);
+        self::assertSame('name', $m->titleField);
 
         $p = new Persistence\Static_([1 => ['foo' => 'hello', 'title' => 'x']]);
         $m = new Model($p);
-        $this->assertSame('title', $m->title_field);
+        self::assertSame('title', $m->titleField);
     }
 
     public function testFieldTypes(): void
@@ -144,18 +148,18 @@ class StaticTest extends TestCase
         ]]);
         $m = new Model($p);
 
-        $this->assertSame('integer', $m->getField('id')->type);
-        $this->assertSame('integer', $m->getField('test_int')->type);
-        $this->assertSame('float', $m->getField('test_float')->type);
-        // $this->assertSame('datetime', $m->getField('test_date')->type);
-        // $this->assertSame('json', $m->getField('test_array')->type);
-        // $this->assertSame('object', $m->getField('test_object')->type);
+        self::assertSame('integer', $m->getField('id')->type);
+        self::assertSame('integer', $m->getField('test_int')->type);
+        self::assertSame('float', $m->getField('test_float')->type);
+        // self::assertSame('datetime', $m->getField('test_date')->type);
+        // self::assertSame('json', $m->getField('test_array')->type);
+        // self::assertSame('object', $m->getField('test_object')->type);
 
         // string is default type
-        $this->assertSame('string', $m->getField('name')->type);
-        $this->assertSame('string', $m->getField('test_str_1')->type);
-        $this->assertSame('string', $m->getField('test_str_2')->type);
-        $this->assertSame('string', $m->getField('test_str_3')->type);
+        self::assertSame('string', $m->getField('name')->type);
+        self::assertSame('string', $m->getField('test_str_1')->type);
+        self::assertSame('string', $m->getField('test_str_2')->type);
+        self::assertSame('string', $m->getField('test_str_3')->type);
     }
 
     public function testFieldTypesBasicInteger(): void
@@ -163,8 +167,8 @@ class StaticTest extends TestCase
         $p = new Persistence\Static_([1 => 'hello', 'world']);
         $m = new Model($p);
 
-        $this->assertSame('integer', $m->getField('id')->type);
-        $this->assertSame('string', $m->getField('name')->type);
+        self::assertSame('integer', $m->getField('id')->type);
+        self::assertSame('string', $m->getField('name')->type);
     }
 
     public function testFieldTypesBasicString(): void
@@ -172,14 +176,32 @@ class StaticTest extends TestCase
         $p = new Persistence\Static_(['test' => 'hello', 10 => 'world']);
         $m = new Model($p);
 
-        $this->assertSame('string', $m->getField('id')->type);
-        $this->assertSame('string', $m->getField('name')->type);
+        self::assertSame('string', $m->getField('id')->type);
+        self::assertSame('string', $m->getField('name')->type);
+    }
+
+    public function testFieldTypesIntegerNullFirst(): void
+    {
+        $p = new Persistence\Static_([1 => ['foo' => null], 2 => ['foo' => 1], 3 => ['foo' => null]]);
+        $m = new Model($p);
+
+        self::assertSame('integer', $m->getField('id')->type);
+        self::assertSame('integer', $m->getField('foo')->type);
+    }
+
+    public function testFieldTypesBasicIntegerNullFirst(): void
+    {
+        $p = new Persistence\Static_([1 => null, 2 => 1, 3 => null]);
+        $m = new Model($p);
+
+        self::assertSame('integer', $m->getField('id')->type);
+        self::assertSame('integer', $m->getField('name')->type);
     }
 }
 
 class StaticTestModel extends Model
 {
-    public $title_field = 'foo';
+    public ?string $titleField = 'foo';
 
     protected function init(): void
     {

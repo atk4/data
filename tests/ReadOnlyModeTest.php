@@ -8,9 +8,6 @@ use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 
-/**
- * Tests cases when model have to work with data that does not have ID field.
- */
 class ReadOnlyModeTest extends TestCase
 {
     /** @var Model */
@@ -23,13 +20,13 @@ class ReadOnlyModeTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
-                2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
+                ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
             ],
         ]);
 
-        $this->m = new Model($this->db, ['table' => 'user', 'read_only' => true]);
-
-        $this->m->addFields(['name', 'gender']);
+        $this->m = new Model($this->db, ['table' => 'user', 'readOnly' => true]);
+        $this->m->addField('name');
+        $this->m->addField('gender');
     }
 
     /**
@@ -38,70 +35,57 @@ class ReadOnlyModeTest extends TestCase
     public function testBasic(): void
     {
         $this->m->setOrder('name', 'asc');
-        $m = $this->m->tryLoadAny();
-        $this->assertSame('John', $m->get('name'));
+        $m = $this->m->loadAny();
+        self::assertSame('John', $m->get('name'));
 
         $this->m->order = [];
         $this->m->setOrder('name', 'desc');
-        $m = $this->m->tryLoadAny();
-        $this->assertSame('Sue', $m->get('name'));
+        $m = $this->m->loadAny();
+        self::assertSame('Sue', $m->get('name'));
 
-        $this->assertEquals([1 => 'John', 2 => 'Sue'], $this->m->getTitles());
+        self::assertSame([2 => 'Sue', 1 => 'John'], $this->m->getTitles());
     }
 
-    /**
-     * Read only model can be loaded just fine.
-     */
     public function testLoad(): void
     {
         $m = $this->m->load(1);
-        $this->assertTrue($m->isLoaded());
+        self::assertTrue($m->isLoaded());
     }
 
-    /**
-     * Model cannot be saved.
-     */
-    public function testLoadSave(): void
-    {
-        $m = $this->m->load(1);
-        $m->set('name', 'X');
-        $this->expectException(Exception::class);
-        $m->save();
-    }
-
-    /**
-     * Insert should fail too.
-     */
     public function testInsert(): void
     {
         $this->expectException(Exception::class);
         $this->m->insert(['name' => 'Joe']);
     }
 
-    /**
-     * Different attempt that should also fail.
-     */
-    public function testSave1(): void
+    public function testSave(): void
     {
-        $m = $this->m->tryLoadAny();
+        $m = $this->m->load(1);
+        $m->set('name', 'X');
+
+        $this->expectException(Exception::class);
+        $m->save();
+    }
+
+    public function testSaveAndUnload(): void
+    {
+        $m = $this->m->loadAny();
+
         $this->expectException(Exception::class);
         $m->saveAndUnload();
     }
 
-    /**
-     * Conditions should work fine.
-     */
     public function testLoadBy(): void
     {
         $m = $this->m->loadBy('name', 'Sue');
-        $this->assertSame('Sue', $m->get('name'));
+        self::assertSame('Sue', $m->get('name'));
     }
 
     public function testLoadCondition(): void
     {
         $this->m->addCondition('name', 'Sue');
         $m = $this->m->loadAny();
-        $this->assertSame('Sue', $m->get('name'));
+        self::assertSame('Sue', $m->get('name'));
     }
 
     public function testFailDelete1(): void

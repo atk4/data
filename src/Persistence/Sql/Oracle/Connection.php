@@ -10,11 +10,12 @@ use Doctrine\DBAL\Event\Listeners\OracleSessionInit;
 
 class Connection extends BaseConnection
 {
-    protected $query_class = Query::class;
+    protected string $expressionClass = Expression::class;
+    protected string $queryClass = Query::class;
 
     protected static function createDbalEventManager(): EventManager
     {
-        $evm = new EventManager();
+        $evm = parent::createDbalEventManager();
 
         // setup connection globalization to use standard datetime format incl. microseconds support
         // and make comparison of character types case insensitive
@@ -37,7 +38,7 @@ class Connection extends BaseConnection
     public function lastInsertId(string $sequence = null): string
     {
         if ($sequence) {
-            return $this->dsql()->field($this->expr('{}.CURRVAL', [$sequence]))->getOne();
+            return $this->dsql()->field($this->expr('{{}}.CURRVAL', [$sequence]))->getOne();
         }
 
         return parent::lastInsertId($sequence);

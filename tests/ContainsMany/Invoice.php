@@ -7,8 +7,6 @@ namespace Atk4\Data\Tests\ContainsMany;
 use Atk4\Data\Model;
 
 /**
- * Invoice model.
- *
  * @property string $ref_no              @Atk4\Field()
  * @property float  $amount              @Atk4\Field()
  * @property Line   $lines               @Atk4\RefMany()
@@ -23,7 +21,7 @@ class Invoice extends Model
     {
         parent::init();
 
-        $this->title_field = $this->fieldName()->ref_no;
+        $this->titleField = $this->fieldName()->ref_no;
 
         $this->addField($this->fieldName()->ref_no, ['required' => true]);
         $this->addField($this->fieldName()->amount, ['type' => 'atk4_money']);

@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Model;
 
+use Atk4\Core\Exception as CoreException;
 use Atk4\Core\Factory;
+use Atk4\Data\Exception;
+use Atk4\Data\Model;
 
 trait UserActionsTrait
 {
-    /** @var string|array Default class for addUserAction(). */
-    public $_default_seed_action = [UserAction::class];
+    /** @var array<mixed> The seed used by addUserAction() method. */
+    protected $_defaultSeedUserAction = [UserAction::class];
 
     /** @var array<string, UserAction> Collection of user actions - using key as action system name */
     protected $userActions = [];
@@ -18,23 +21,20 @@ trait UserActionsTrait
      * Register new user action for this model. By default UI will allow users to trigger actions
      * from UI.
      *
-     * @param array|\Closure $defaults
+     * @template T of Model
+     *
+     * @param array<mixed>|\Closure(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $seed
      */
-    public function addUserAction(string $name, $defaults = []): UserAction
+    public function addUserAction(string $name, $seed = []): UserAction
     {
         $this->assertIsModel();
 
-        if ($defaults instanceof \Closure) {
-            $defaults = ['callback' => $defaults];
+        if ($seed instanceof \Closure) {
+            $seed = ['callback' => $seed];
         }
 
-        if (!isset($defaults['caption'])) {
-            $defaults['caption'] = $this->readableCaption($name);
-        }
-
-        /** @var UserAction $action */
-        $action = Factory::factory($this->_default_seed_action, $defaults);
-
+        $seed = Factory::mergeSeeds($seed, $this->_defaultSeedUserAction);
+        $action = UserAction::fromSeed($seed);
         $this->_addIntoCollection($name, $action, 'userActions');
 
         return $action;
@@ -75,7 +75,7 @@ trait UserActionsTrait
     {
         $this->assertIsModel();
 
-        return array_filter($this->userActions, function ($action) use ($appliesTo) {
+        return array_filter($this->userActions, function (UserAction $action) use ($appliesTo) {
             return !$action->system && ($appliesTo === null || $action->appliesTo === $appliesTo);
         });
     }
@@ -89,7 +89,13 @@ trait UserActionsTrait
             $this->addUserActionFromModel($name, $this->getModel()->getUserAction($name));
         }
 
-        return $this->_getFromCollection($name, 'userActions');
+        try {
+            return $this->_getFromCollection($name, 'userActions');
+        } catch (CoreException $e) {
+            throw (new Exception('User action is not defined'))
+                ->addMoreInfo('model', $this)
+                ->addMoreInfo('userAction', $name);
+        }
     }
 
     /**
@@ -133,14 +139,18 @@ trait UserActionsTrait
             'fields' => true,
             'modifier' => UserAction::MODIFIER_UPDATE,
             'appliesTo' => UserAction::APPLIES_TO_SINGLE_RECORD,
-            'callback' => 'save',
+            'callback' => function (Model $entity) {
+                $entity->assertIsLoaded();
+
+                return $entity->save();
+            },
         ]);
 
         $this->addUserAction('delete', [
             'appliesTo' => UserAction::APPLIES_TO_SINGLE_RECORD,
             'modifier' => UserAction::MODIFIER_DELETE,
-            'callback' => function ($model) {
-                return $model->delete();
+            'callback' => function (Model $entity) {
+                return $entity->delete();
             },
         ]);
 
@@ -150,7 +160,9 @@ trait UserActionsTrait
             'modifier' => UserAction::MODIFIER_READ,
             'fields' => true,
             'system' => true, // don't show by default
-            'args' => ['intent' => 'string'],
+            'args' => [
+                'intent' => ['type' => 'string'],
+            ],
         ]);
     }
 }

@@ -29,14 +29,15 @@ class Field implements Expressionable
 
     // {{{ Core functionality
 
+    /**
+     * @param array<string, mixed> $defaults
+     */
     public function __construct(array $defaults = [])
     {
-        foreach ($defaults as $key => $val) {
-            if (is_array($val)) {
-                $this->{$key} = array_replace_recursive(is_array($this->{$key} ?? null) ? $this->{$key} : [], $val);
-            } else {
-                $this->{$key} = $val;
-            }
+        $this->setDefaults($defaults);
+
+        if (!(new \ReflectionProperty($this, 'type'))->isInitialized($this)) {
+            $this->type = 'string';
         }
     }
 
@@ -52,24 +53,31 @@ class Field implements Expressionable
         return $this->_setOwner($owner);
     }
 
+    /**
+     * @param array<string, mixed> $properties
+     */
     public function setDefaults(array $properties, bool $passively = false): self
     {
         $this->_setDefaults($properties, $passively);
 
-        $this->getTypeObject(); // assert type exists
+        // assert type exists
+        if (isset($properties['type'])) {
+            if ($this->type === 'array') { // remove in v5.1
+                throw new Exception('Atk4 "array" type is no longer supported, originally, it serialized value to JSON, to keep this behaviour, use "json" type');
+            }
+
+            Type::getType($this->type);
+        }
 
         return $this;
     }
 
-    public function getTypeObject(): Type
-    {
-        if ($this->type === 'array') { // remove in 2022-mar
-            throw new Exception('Atk4 "array" type is no longer supported, originally, it serialized value to JSON, to keep this behaviour, use "json" type');
-        }
-
-        return Type::getType($this->type ?? 'string');
-    }
-
+    /**
+     * @template T of Model
+     *
+     * @param \Closure(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
+     * @param array<int, mixed>                                                                        $args
+     */
     protected function onHookToOwnerEntity(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->shortName; // use static function to allow this object to be GCed
@@ -95,8 +103,8 @@ class Field implements Expressionable
      */
     private function normalizeUsingTypecast($value)
     {
-        $persistence = $this->issetOwner() && $this->getOwner()->persistence !== null
-            ? $this->getOwner()->persistence
+        $persistence = $this->issetOwner() && $this->getOwner()->issetPersistence()
+            ? $this->getOwner()->getPersistence()
             : new class() extends Persistence {
                 public function __construct()
                 {
@@ -130,8 +138,6 @@ class Field implements Expressionable
      */
     public function normalize($value)
     {
-        $this->getTypeObject(); // assert type exists
-
         try {
             if ($this->issetOwner() && $this->getOwner()->hook(Model::HOOK_NORMALIZE, [$this, $value]) === false) {
                 return $value;
@@ -139,23 +145,22 @@ class Field implements Expressionable
 
             if (is_string($value)) {
                 switch ($this->type) {
-                    case null:
                     case 'string':
-                        $value = trim(str_replace(["\r", "\n"], '', $value)); // remove all line-ends and trim
+                        $value = trim(preg_replace('~\r?\n|\r|\s~', ' ', $value)); // remove all line-ends and trim
 
                         break;
                     case 'text':
-                        $value = rtrim(str_replace(["\r\n", "\r"], "\n", $value)); // normalize line-ends to LF and rtrim
+                        $value = rtrim(preg_replace('~\r?\n|\r~', "\n", $value)); // normalize line-ends to LF and rtrim
 
                         break;
                     case 'boolean':
                     case 'integer':
-                        $value = preg_replace('/\s+|[,`\']/', '', $value);
+                        $value = preg_replace('~\s+|[,`\']~', '', $value);
 
                         break;
                     case 'float':
                     case 'atk4_money':
-                        $value = preg_replace('/\s+|[,`\'](?=.*\.)/', '', $value);
+                        $value = preg_replace('~\s+|[`\']|,(?=.*\.)~', '', $value);
 
                         break;
                 }
@@ -175,18 +180,13 @@ class Field implements Expressionable
                 }
             } elseif ($value !== null) {
                 switch ($this->type) {
-                    case null:
                     case 'string':
                     case 'text':
                     case 'integer':
                     case 'float':
                     case 'atk4_money':
                         if (is_bool($value)) {
-                            if ($this->type === 'boolean') {
-                                $value = $value ? '1' : '0';
-                            } else {
-                                throw new Exception('Must not be boolean type');
-                            }
+                            throw new Exception('Must not be boolean type');
                         } elseif (is_int($value)) {
                             $value = (string) $value;
                         } elseif (is_float($value)) {
@@ -202,7 +202,7 @@ class Field implements Expressionable
             $value = $this->normalizeUsingTypecast($value);
 
             if ($value === null) {
-                if ($this->required || $this->mandatory) {
+                if (!$this->nullable || $this->required) {
                     throw new Exception('Must not be null');
                 }
 
@@ -214,16 +214,15 @@ class Field implements Expressionable
             }
 
             switch ($this->type) {
-                case null:
                 case 'string':
                 case 'text':
-                    if ($this->required && empty($value)) {
+                    if ($this->required && !$value) {
                         throw new Exception('Must not be empty');
                     }
 
                     break;
                 case 'boolean':
-                    if ($this->required && empty($value)) {
+                    if ($this->required && !$value) {
                         throw new Exception('Must be true');
                     }
 
@@ -231,7 +230,7 @@ class Field implements Expressionable
                 case 'integer':
                 case 'float':
                 case 'atk4_money':
-                    if ($this->required && empty($value)) {
+                    if ($this->required && !$value) {
                         throw new Exception('Must not be a zero');
                     }
 
@@ -259,15 +258,13 @@ class Field implements Expressionable
             }
 
             if ($this->enum) {
-                if ($value === null || $value === '') {
+                if ($value === '') {
                     $value = null;
                 } elseif (!in_array($value, $this->enum, true)) {
                     throw new Exception('Value is not one of the allowed values: ' . implode(', ', $this->enum));
                 }
-            }
-
-            if ($this->values) {
-                if ($value === null || $value === '') {
+            } elseif ($this->values) {
+                if ($value === '') {
                     $value = null;
                 } elseif ((!is_string($value) && !is_int($value)) || !array_key_exists($value, $this->values)) {
                     throw new Exception('Value is not one of the allowed values: ' . implode(', ', array_keys($this->values)));
@@ -281,19 +278,9 @@ class Field implements Expressionable
                 $messages[] = $e->getMessage();
             } while ($e = $e->getPrevious());
 
-            throw (new ValidationException([$this->shortName => implode(': ', $messages)], $this->getOwner()))
+            throw (new ValidationException([$this->shortName => implode(': ', $messages)], $this->issetOwner() ? $this->getOwner() : null))
                 ->addMoreInfo('field', $this);
         }
-    }
-
-    /**
-     * Casts field value to string.
-     *
-     * @param mixed $value
-     */
-    public function toString($value): string
-    {
-        return (string) $this->typecastSaveField($value, true);
     }
 
     /**
@@ -341,24 +328,22 @@ class Field implements Expressionable
      */
     private function typecastSaveField($value, bool $allowGenericPersistence = false)
     {
-        $persistence = $this->getOwner()->persistence;
-        if ($persistence === null) {
-            if ($allowGenericPersistence) {
-                $persistence = new class() extends Persistence {
-                    public function __construct()
-                    {
-                    }
-                };
-            } else {
-                $this->getOwner()->assertHasPersistence();
-            }
+        if (!$this->getOwner()->issetPersistence() && $allowGenericPersistence) {
+            $persistence = new class() extends Persistence {
+                public function __construct()
+                {
+                }
+            };
+        } else {
+            $this->getOwner()->assertHasPersistence();
+            $persistence = $this->getOwner()->getPersistence();
         }
 
         return $persistence->typecastSaveField($this, $value);
     }
 
     /**
-     * @param mixed|void $value
+     * @param mixed $value
      */
     private function getValueForCompare($value): ?string
     {
@@ -382,16 +367,23 @@ class Field implements Expressionable
      */
     public function compare($value, $value2): bool
     {
+        if ($value === $value2) { // optimization only
+            return true;
+        }
+
         // TODO, see https://stackoverflow.com/questions/48382457/mysql-json-column-change-array-order-after-saving
         // at least MySQL sorts the JSON keys if stored natively
         return $this->getValueForCompare($value) === $this->getValueForCompare($value2);
     }
 
-    public function getReference(): ?Reference
+    public function hasReference(): bool
     {
-        return $this->referenceLink !== null
-            ? $this->getOwner()->getRef($this->referenceLink)
-            : null;
+        return $this->referenceLink !== null;
+    }
+
+    public function getReference(): Reference
+    {
+        return $this->getOwner()->getReference($this->referenceLink);
     }
 
     public function getPersistenceName(): string
@@ -416,11 +408,12 @@ class Field implements Expressionable
      *
      * @param string|null $operator one of Scope\Condition operators
      * @param mixed       $value    the condition value to be handled
+     *
+     * @return array{$this, string, mixed}
      */
     public function getQueryArguments($operator, $value): array
     {
         $typecastField = $this;
-        $allowArray = true;
         if (in_array($operator, [
             Scope\Condition::OPERATOR_LIKE,
             Scope\Condition::OPERATOR_NOT_LIKE,
@@ -428,14 +421,13 @@ class Field implements Expressionable
             Scope\Condition::OPERATOR_NOT_REGEXP,
         ], true)) {
             $typecastField = new self(['type' => 'string']);
-            $typecastField->setOwner(new Model($this->getOwner()->persistence, ['table' => false]));
+            $typecastField->setOwner(new Model($this->getOwner()->getPersistence(), ['table' => false]));
             $typecastField->shortName = $this->shortName;
-            $allowArray = false;
         }
 
         if ($value instanceof Persistence\Array_\Action) { // needed to pass hintable tests
             $v = $value;
-        } elseif (is_array($value) && $allowArray) {
+        } elseif (is_array($value)) {
             $v = array_map(fn ($value) => $typecastField->typecastSaveField($value), $value);
         } else {
             $v = $typecastField->typecastSaveField($value);
@@ -453,7 +445,7 @@ class Field implements Expressionable
      */
     public function isEditable(): bool
     {
-        return $this->ui['editable'] ?? !$this->read_only && !$this->never_persist && !$this->system;
+        return $this->ui['editable'] ?? !$this->readOnly && !$this->neverPersist && !$this->system;
     }
 
     /**
@@ -489,24 +481,27 @@ class Field implements Expressionable
     public function getDsqlExpression(Expression $expression): Expression
     {
         $this->getOwner()->assertHasPersistence();
-        if (!$this->getOwner()->persistence instanceof Persistence\Sql) {
+        if (!$this->getOwner()->getPersistence() instanceof Persistence\Sql) {
             throw (new Exception('Field must have SQL persistence if it is used as part of expression'))
-                ->addMoreInfo('persistence', $this->getOwner()->persistence ?? null);
+                ->addMoreInfo('persistence', $this->getOwner()->getPersistence());
         }
 
-        return $this->getOwner()->persistence->getFieldSqlExpression($this, $expression);
+        return $this->getOwner()->getPersistence()->getFieldSqlExpression($this, $expression);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function __debugInfo(): array
     {
         $arr = [
-            'ownerClass' => get_class($this->getOwner()),
+            'ownerClass' => $this->issetOwner() ? get_class($this->getOwner()) : null,
             'shortName' => $this->shortName,
             'type' => $this->type,
         ];
 
         foreach ([
-            'actual', 'system', 'never_persist', 'never_save', 'read_only', 'ui', 'joinName',
+            'actual', 'neverPersist', 'neverSave', 'system', 'readOnly', 'ui', 'joinName',
         ] as $key) {
             if ($this->{$key} !== null) {
                 $arr[$key] = $this->{$key};

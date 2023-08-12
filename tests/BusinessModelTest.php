@@ -20,11 +20,11 @@ class BusinessModelTest extends TestCase
         $m->addField('name');
 
         $f = $m->getField('name');
-        $this->assertSame('name', $f->shortName);
+        self::assertSame('name', $f->shortName);
 
         $m->addField('surname', new Field());
         $f = $m->getField('surname');
-        $this->assertSame('surname', $f->shortName);
+        self::assertSame('surname', $f->shortName);
     }
 
     public function testFieldAccess(): void
@@ -35,19 +35,20 @@ class BusinessModelTest extends TestCase
         $m = $m->createEntity();
 
         $m->set('name', 5);
-        $this->assertSame('5', $m->get('name'));
+        self::assertSame('5', $m->get('name'));
 
         $m->set('surname', 'Bilbo');
-        $this->assertSame('5', $m->get('name'));
-        $this->assertSame('Bilbo', $m->get('surname'));
+        self::assertSame('5', $m->get('name'));
+        self::assertSame('Bilbo', $m->get('surname'));
 
-        $this->assertSame(['name' => '5', 'surname' => 'Bilbo'], $m->get());
+        self::assertSame(['name' => '5', 'surname' => 'Bilbo'], $m->get());
     }
 
     public function testNoFieldException(): void
     {
         $m = new Model();
         $m = $m->createEntity();
+
         $this->expectException(Exception::class);
         $m->set('name', 5);
     }
@@ -61,66 +62,66 @@ class BusinessModelTest extends TestCase
         $dirtyRef = &$m->getDirtyRef();
         $dataRef = ['name' => 5];
         $m->set('name', 5);
-        $this->assertSame([], $m->getDirtyRef());
+        self::assertSame([], $m->getDirtyRef());
 
         $m->set('name', 10);
-        $this->assertSame(['name' => 5], $m->getDirtyRef());
+        self::assertSame(['name' => 5], $m->getDirtyRef());
 
         $m->set('name', 15);
-        $this->assertSame(['name' => 5], $m->getDirtyRef());
+        self::assertSame(['name' => 5], $m->getDirtyRef());
 
         $m->set('name', 5);
-        $this->assertSame([], $m->getDirtyRef());
+        self::assertSame([], $m->getDirtyRef());
 
         $m->set('name', '5');
-        $this->assertSame([], $m->getDirtyRef());
+        self::assertSame([], $m->getDirtyRef());
 
         $m->set('name', '6');
-        $this->assertSame(['name' => '5'], $m->getDirtyRef());
+        self::assertSame(['name' => '5'], $m->getDirtyRef());
         $m->set('name', '5');
-        $this->assertSame([], $m->getDirtyRef());
+        self::assertSame([], $m->getDirtyRef());
 
         $m->set('name', '5.0');
-        $this->assertSame(['name' => '5'], $m->getDirtyRef());
+        self::assertSame(['name' => '5'], $m->getDirtyRef());
 
         $dirtyRef = [];
         $dataRef = ['name' => ''];
         $m->set('name', '');
-        $this->assertSame([], $m->getDirtyRef());
+        self::assertSame([], $m->getDirtyRef());
 
         $dataRef = ['name' => '5'];
         $m->set('name', 5);
-        $this->assertSame([], $m->getDirtyRef());
+        self::assertSame([], $m->getDirtyRef());
         $m->set('name', 6);
-        $this->assertSame(['name' => '5'], $m->getDirtyRef());
+        self::assertSame(['name' => '5'], $m->getDirtyRef());
         $m->set('name', 5);
-        $this->assertSame([], $m->getDirtyRef());
+        self::assertSame([], $m->getDirtyRef());
         $m->set('name', '5');
-        $this->assertSame([], $m->getDirtyRef());
+        self::assertSame([], $m->getDirtyRef());
 
         $dataRef = ['name' => 4.28];
         $m->set('name', '4.28');
-        $this->assertSame([], $m->getDirtyRef());
+        self::assertSame([], $m->getDirtyRef());
         $m->set('name', '5.28');
-        $this->assertSame(['name' => 4.28], $m->getDirtyRef());
+        self::assertSame(['name' => 4.28], $m->getDirtyRef());
         $m->set('name', 4.28);
-        $this->assertSame([], $m->getDirtyRef());
+        self::assertSame([], $m->getDirtyRef());
 
         // now with defaults
         $m = new Model();
-        $f = $m->addField('name', ['default' => 'John']);
+        $m->addField('name', ['default' => 'John']);
         $m = $m->createEntity();
-        $this->assertSame('John', $f->default);
+        self::assertSame('John', $m->getField('name')->default);
 
-        $this->assertSame('John', $m->get('name'));
+        self::assertSame('John', $m->get('name'));
 
         $m->set('name', null);
-        $this->assertSame(['name' => 'John'], $m->getDirtyRef());
-        $this->assertSame(['name' => null], $m->getDataRef());
-        $this->assertNull($m->get('name'));
+        self::assertSame(['name' => 'John'], $m->getDirtyRef());
+        self::assertSame(['name' => null], $m->getDataRef());
+        self::assertNull($m->get('name'));
 
         $m->_unset('name');
-        $this->assertSame('John', $m->get('name'));
+        self::assertSame('John', $m->get('name'));
     }
 
     public function testDefaultInit(): void
@@ -129,10 +130,8 @@ class BusinessModelTest extends TestCase
         $m = new Model($p);
         $m = $m->createEntity();
 
-        $this->assertNotNull($m->getField('id'));
-
         $m->set('id', 20);
-        $this->assertEquals(20, $m->getId());
+        self::assertSame(20, $m->getId());
     }
 
     public function testException1(): void
@@ -158,7 +157,7 @@ class BusinessModelTest extends TestCase
         $m->getModel()->setOnlyFields(null);
 
         $m->set('name', 5);
-        $this->assertSame('5', $m->get('name'));
+        self::assertSame('5', $m->get('name'));
     }
 
     public function testSetTitle(): void
@@ -167,10 +166,10 @@ class BusinessModelTest extends TestCase
         $m->addField('name');
         $m = $m->createEntity();
         $m->set('name', 'foo');
-        $this->assertSame('foo', $m->get('name'));
+        self::assertSame('foo', $m->get('name'));
 
         $m->set('name', 'baz');
-        $this->assertSame('baz', $m->get('name'));
+        self::assertSame('baz', $m->get('name'));
     }
 
     /**
@@ -180,6 +179,7 @@ class BusinessModelTest extends TestCase
     {
         $m = new Model();
         $m = $m->createEntity();
+
         $this->expectException(\Error::class);
         $m->set(0, 'foo'); // @phpstan-ignore-line
     }
@@ -188,6 +188,7 @@ class BusinessModelTest extends TestCase
     {
         $m = new Model();
         $m = $m->createEntity();
+
         $this->expectException(Exception::class);
         $m->set('3', 'foo');
     }
@@ -196,6 +197,7 @@ class BusinessModelTest extends TestCase
     {
         $m = new Model();
         $m = $m->createEntity();
+
         $this->expectException(Exception::class);
         $m->set('3b', 'foo');
     }
@@ -204,6 +206,7 @@ class BusinessModelTest extends TestCase
     {
         $m = new Model();
         $m = $m->createEntity();
+
         $this->expectException(Exception::class);
         $m->set('', 'foo');
     }
@@ -213,7 +216,7 @@ class BusinessModelTest extends TestCase
         $p = new Persistence\Array_();
         $c = new Client($p);
         $c = $c->createEntity();
-        $this->assertEquals(10, $c->get('order'));
+        self::assertSame(10, $c->get('order'));
     }
 
     public function testNormalize(): void
@@ -225,13 +228,13 @@ class BusinessModelTest extends TestCase
         $m = $m->createEntity();
 
         $m->set('name', '');
-        $this->assertSame('', $m->get('name'));
+        self::assertSame('', $m->get('name'));
 
         $m->set('age', '');
-        $this->assertNull($m->get('age'));
+        self::assertNull($m->get('age'));
 
         $m->set('data', '');
-        $this->assertSame('', $m->get('data'));
+        self::assertSame('', $m->get('data'));
     }
 
     public function testExampleFromDoc(): void
@@ -241,21 +244,21 @@ class BusinessModelTest extends TestCase
         $m->addField('salary', ['type' => 'integer', 'default' => 1000]);
         $m = $m->createEntity();
 
-        $this->assertSame(1000, $m->get('salary'));
-        $this->assertFalse($m->_isset('salary'));
+        self::assertSame(1000, $m->get('salary'));
+        self::assertFalse($m->_isset('salary'));
 
-        // Next we load record from $db
+        // next we load record from $db
         $dataRef = &$m->getDataRef();
         $dataRef = ['salary' => 2000];
-        $this->assertSame(2000, $m->get('salary'));
-        $this->assertFalse($m->_isset('salary'));
+        self::assertSame(2000, $m->get('salary'));
+        self::assertFalse($m->_isset('salary'));
 
         $m->set('salary', 3000);
-        $this->assertSame(3000, $m->get('salary'));
-        $this->assertTrue($m->_isset('salary'));
+        self::assertSame(3000, $m->get('salary'));
+        self::assertTrue($m->_isset('salary'));
 
         $m->_unset('salary');
-        $this->assertSame(2000, $m->get('salary'));
-        $this->assertFalse($m->_isset('salary'));
+        self::assertSame(2000, $m->get('salary'));
+        self::assertFalse($m->_isset('salary'));
     }
 }

@@ -9,9 +9,6 @@ use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 
-/**
- * Tests cases when model have to work with data that does not have ID field.
- */
 class ModelWithoutIdTest extends TestCase
 {
     /** @var Model */
@@ -24,13 +21,13 @@ class ModelWithoutIdTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
-                2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
+                ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
             ],
         ]);
 
-        $this->m = new Model($this->db, ['table' => 'user', 'id_field' => false]);
-
-        $this->m->addFields(['name', 'gender']);
+        $this->m = new Model($this->db, ['table' => 'user', 'idField' => false]);
+        $this->m->addField('name');
+        $this->m->addField('gender');
     }
 
     /**
@@ -39,34 +36,36 @@ class ModelWithoutIdTest extends TestCase
     public function testBasic(): void
     {
         $this->m->setOrder('name', 'asc');
-        $m = $this->m->tryLoadAny();
-        $this->assertSame('John', $m->get('name'));
+        $m = $this->m->loadAny();
+        self::assertSame('John', $m->get('name'));
 
         $this->m->order = [];
         $this->m->setOrder('name', 'desc');
-        $m = $this->m->tryLoadAny();
-        $this->assertSame('Sue', $m->get('name'));
+        $m = $this->m->loadAny();
+        self::assertSame('Sue', $m->get('name'));
 
         $names = [];
         foreach ($this->m as $row) {
             $names[] = $row->get('name');
         }
-        $this->assertSame(['Sue', 'John'], $names);
+        self::assertSame(['Sue', 'John'], $names);
     }
 
     public function testGetIdException(): void
     {
         $m = $this->m->loadAny();
+
         $this->expectException(Exception::class);
-        $this->expectErrorMessage('ID field is not defined');
+        $this->expectExceptionMessage('ID field is not defined');
         $m->getId();
     }
 
     public function testSetIdException(): void
     {
         $m = $this->m->createEntity();
+
         $this->expectException(Exception::class);
-        $this->expectErrorMessage('ID field is not defined');
+        $this->expectExceptionMessage('ID field is not defined');
         $m->setId(1);
     }
 
@@ -82,11 +81,11 @@ class ModelWithoutIdTest extends TestCase
     public function testInsert(): void
     {
         if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            $this->markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
+            self::markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
         }
 
         $this->m->insert(['name' => 'Joe']);
-        $this->assertSame(3, $this->m->executeCountQuery());
+        self::assertSame(3, $this->m->executeCountQuery());
     }
 
     /**
@@ -95,13 +94,13 @@ class ModelWithoutIdTest extends TestCase
     public function testSave1(): void
     {
         if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            $this->markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
+            self::markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
         }
 
-        $m = $this->m->tryLoadAny();
+        $m = $this->m->loadAny();
         $m->saveAndUnload();
 
-        $this->assertSame(3, $this->m->executeCountQuery());
+        self::assertSame(3, $this->m->executeCountQuery());
     }
 
     /**
@@ -110,29 +109,26 @@ class ModelWithoutIdTest extends TestCase
     public function testSave2(): void
     {
         if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            $this->markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
+            self::markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
         }
 
-        $m = $this->m->tryLoadAny();
+        $m = $this->m->loadAny();
         $m->save();
 
-        $this->assertSame(3, $this->m->executeCountQuery());
+        self::assertSame(3, $this->m->executeCountQuery());
     }
 
-    /**
-     * Conditions should work fine.
-     */
     public function testLoadBy(): void
     {
         $m = $this->m->loadBy('name', 'Sue');
-        $this->assertSame('Sue', $m->get('name'));
+        self::assertSame('Sue', $m->get('name'));
     }
 
     public function testLoadCondition(): void
     {
         $this->m->addCondition('name', 'Sue');
         $m = $this->m->loadAny();
-        $this->assertSame('Sue', $m->get('name'));
+        self::assertSame('Sue', $m->get('name'));
     }
 
     public function testFailDelete1(): void

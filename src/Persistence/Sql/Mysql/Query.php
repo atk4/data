@@ -10,14 +10,15 @@ class Query extends BaseQuery
 {
     use ExpressionTrait;
 
-    protected $escape_char = '`';
+    protected string $identifierEscapeChar = '`';
+    protected string $expressionClass = Expression::class;
 
-    protected $expression_class = Expression::class;
+    protected array $supportedOperators = ['=', '!=', '<', '>', '<=', '>=', 'like', 'not like', 'in', 'not in', 'regexp', 'not regexp'];
 
-    protected $template_update = 'update [table][join] set [set] [where]';
+    protected string $templateUpdate = 'update [table][join] set [set] [where]';
 
-    public function groupConcat($field, string $delimiter = ',')
+    public function groupConcat($field, string $separator = ',')
     {
-        return $this->expr('group_concat({} separator \'' . str_replace('\'', '\'\'', $delimiter) . '\')', [$field]);
+        return $this->expr('group_concat({} separator ' . $this->escapeStringLiteral($separator) . ')', [$field]);
     }
 }

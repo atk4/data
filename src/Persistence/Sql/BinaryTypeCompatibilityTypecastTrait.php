@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Atk4\Data\Persistence\Sql;
 
 use Atk4\Data\Exception;
-use Atk4\Data\Field;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
-use Doctrine\DBAL\Types\Type;
 
 trait BinaryTypeCompatibilityTypecastTrait
 {
@@ -50,7 +48,7 @@ trait BinaryTypeCompatibilityTypecastTrait
         return $res;
     }
 
-    private function binaryTypeIsEncodeNeeded(Type $type): bool
+    private function binaryTypeIsEncodeNeeded(string $type): bool
     {
         // binary values for PostgreSQL and MSSQL databases are stored natively, but we need
         // to encode first to hold the binary type info for PDO parameter type binding
@@ -58,8 +56,9 @@ trait BinaryTypeCompatibilityTypecastTrait
         $platform = $this->getDatabasePlatform();
         if ($platform instanceof PostgreSQLPlatform
             || $platform instanceof SQLServerPlatform
-            || $platform instanceof OraclePlatform) {
-            if (in_array($type->getName(), ['binary', 'blob'], true)) {
+            || $platform instanceof OraclePlatform
+        ) {
+            if (in_array($type, ['binary', 'blob'], true)) {
                 return true;
             }
         }
@@ -67,29 +66,19 @@ trait BinaryTypeCompatibilityTypecastTrait
         return false;
     }
 
-    public function typecastSaveField(Field $field, $value)
+    /**
+     * @param scalar $value
+     */
+    private function binaryTypeIsDecodeNeeded(string $type, $value): bool
     {
-        $value = parent::typecastSaveField($field, $value);
-
-        if ($value !== null && $this->binaryTypeIsEncodeNeeded($field->getTypeObject())) {
-            $value = $this->binaryTypeValueEncode($value);
-        }
-
-        return $value;
-    }
-
-    public function typecastLoadField(Field $field, $value)
-    {
-        $value = parent::typecastLoadField($field, $value);
-
-        if ($value !== null && $this->binaryTypeIsEncodeNeeded($field->getTypeObject())) {
+        if ($this->binaryTypeIsEncodeNeeded($type)) {
             // always decode for Oracle platform to assert the value is always encoded,
             // on other platforms, binary values are stored natively
             if ($this->getDatabasePlatform() instanceof OraclePlatform || $this->binaryTypeValueIsEncoded($value)) {
-                $value = $this->binaryTypeValueDecode($value);
+                return true;
             }
         }
 
-        return $value;
+        return false;
     }
 }

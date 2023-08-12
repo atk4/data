@@ -36,7 +36,8 @@ class CsvTest extends TestCase
     }
 
     /**
-     * @param resource $fileHandle
+     * @param resource             $fileHandle
+     * @param array<string, mixed> $defaults
      */
     protected function makeCsvPersistence($fileHandle, array $defaults = []): Persistence\Csv
     {
@@ -45,11 +46,13 @@ class CsvTest extends TestCase
             private $handleUnloaded;
 
             /**
-             * @param resource $fileHandle
+             * @param resource             $fileHandle
+             * @param array<string, mixed> $defaults
              */
             public function __construct($fileHandle, array $defaults)
             {
                 parent::__construct('', $defaults);
+
                 $this->handleUnloaded = $fileHandle;
             }
 
@@ -69,6 +72,9 @@ class CsvTest extends TestCase
         };
     }
 
+    /**
+     * @param array<int, array<string, string>> $data
+     */
     protected function setDb(array $data): void
     {
         ftruncate($this->file, 0);
@@ -80,6 +86,9 @@ class CsvTest extends TestCase
         ftruncate($this->file2, 0);
     }
 
+    /**
+     * @return array<int, array<string, string>>
+     */
     protected function getDb(): array
     {
         fseek($this->file, 0);
@@ -101,7 +110,7 @@ class CsvTest extends TestCase
 
         $this->setDb($data);
         $data2 = $this->getDb();
-        $this->assertSame($data, $data2);
+        self::assertSame($data, $data2);
     }
 
     public function testLoadAny(): void
@@ -119,8 +128,8 @@ class CsvTest extends TestCase
         $m->addField('surname');
         $m = $m->loadAny();
 
-        $this->assertSame('John', $m->get('name'));
-        $this->assertSame('Smith', $m->get('surname'));
+        self::assertSame('John', $m->get('name'));
+        self::assertSame('Smith', $m->get('surname'));
     }
 
     public function testLoadAnyException(): void
@@ -140,11 +149,11 @@ class CsvTest extends TestCase
         $mm = $m->loadAny();
         $mm = $m->loadAny();
 
-        $this->assertSame('Sarah', $mm->get('name'));
-        $this->assertSame('Jones', $mm->get('surname'));
+        self::assertSame('Sarah', $mm->get('name'));
+        self::assertSame('Jones', $mm->get('surname'));
 
         $mm = $m->tryLoadAny();
-        $this->assertNull($mm);
+        self::assertNull($mm);
     }
 
     public function testLoadByIdNotSupportedException(): void
@@ -158,8 +167,9 @@ class CsvTest extends TestCase
 
         $p = $this->makeCsvPersistence($this->file);
         $m = new Model($p);
+
         $this->expectException(Exception::class);
-        $m = $m->tryLoad(1);
+        $m->tryLoad(1);
     }
 
     public function testPersistenceCopy(): void
@@ -180,7 +190,7 @@ class CsvTest extends TestCase
 
         // TODO should be not needed after https://github.com/atk4/data/pull/690 is merged
         // Exception: Csv persistence does not support other than LOAD ANY mode
-        $m2->reload_after_save = false;
+        $m2->reloadAfterSave = false;
 
         foreach ($m as $row) {
             $m2->createEntity()->save($row->get());
@@ -188,15 +198,12 @@ class CsvTest extends TestCase
 
         fseek($this->file, 0);
         fseek($this->file2, 0);
-        $this->assertSame(
+        self::assertSame(
             stream_get_contents($this->file),
             stream_get_contents($this->file2)
         );
     }
 
-    /**
-     * Test export.
-     */
     public function testExport(): void
     {
         $data = [
@@ -210,12 +217,12 @@ class CsvTest extends TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $this->assertSame([
+        self::assertSame([
             ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
             ['id' => 2, 'name' => 'Sarah', 'surname' => 'Jones'],
         ], $m->export());
 
-        $this->assertSame([
+        self::assertSame([
             ['surname' => 'Smith'],
             ['surname' => 'Jones'],
         ], $m->export(['surname']));

@@ -91,7 +91,7 @@ class StGenericTransaction extends Model
         $this->onHookShort(Model::HOOK_AFTER_LOAD, function () {
             if (static::class !== $this->getClassName()) {
                 $cl = $this->getClassName();
-                $cl = new $cl($this->persistence);
+                $cl = new $cl($this->getModel()->getPersistence());
                 $cl = $cl->load($this->getId());
 
                 $this->breakHook($cl);
@@ -99,6 +99,9 @@ class StGenericTransaction extends Model
         });
     }
 
+    /**
+     * @return class-string<self>
+     */
     public function getClassName(): string
     {
         return __NAMESPACE__ . '\StTransaction_' . $this->get('type');
@@ -127,6 +130,7 @@ class StTransaction_TransferOut extends StGenericTransaction
     protected function init(): void
     {
         parent::init();
+
         $this->hasOne('link_id', ['model' => [StTransaction_TransferIn::class]]);
 
         // $this->join('transaction', 'linked_transaction');
@@ -140,20 +144,17 @@ class StTransaction_TransferIn extends StGenericTransaction
     protected function init(): void
     {
         parent::init();
+
         $this->hasOne('link_id', ['model' => [StTransaction_TransferOut::class]]);
     }
 }
 
-/**
- * Implements various tests for deep copying objects.
- */
 class SubTypesTest extends TestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
 
-        // populate database for our three models
         $this->createMigrator(new StAccount($this->db))->create();
         $this->createMigrator(new StTransaction_TransferOut($this->db))->create();
     }
@@ -166,17 +167,34 @@ class SubTypesTest extends TestCase
         $inheritance->transferTo($current, 500);
         $current->withdraw(350);
 
-        $this->assertInstanceOf(StTransaction_Ob::class, $inheritance->ref('Transactions')->load(1));
-        $this->assertInstanceOf(StTransaction_TransferOut::class, $inheritance->ref('Transactions')->load(2));
-        $this->assertInstanceOf(StTransaction_TransferIn::class, $current->ref('Transactions')->load(3));
-        $this->assertInstanceOf(StTransaction_Withdrawal::class, $current->ref('Transactions')->load(4));
+        self::assertInstanceOf(StTransaction_Ob::class, $inheritance->ref('Transactions')->load(1));
+        self::assertInstanceOf(StTransaction_TransferOut::class, $inheritance->ref('Transactions')->load(2));
+        self::assertInstanceOf(StTransaction_TransferIn::class, $current->ref('Transactions')->load(3));
+        self::assertInstanceOf(StTransaction_Withdrawal::class, $current->ref('Transactions')->load(4));
 
-        $classes = [];
-        foreach ($current->ref('Transactions') as $tr) {
-            $classes[] = get_class($tr);
-        }
-        sort($classes);
+        $assertClassesFx = function (array $expectedClasses) use ($current): void {
+            $classes = [];
+            foreach ($current->ref('Transactions')->setOrder('id') as $tr) {
+                $classes[] = get_class($tr);
+            }
+            self::assertSame($expectedClasses, $classes);
+        };
 
-        $this->assertSame([StTransaction_TransferIn::class, StTransaction_Withdrawal::class], $classes);
+        $assertClassesFx([
+            StTransaction_TransferIn::class,
+            StTransaction_Withdrawal::class,
+        ]);
+
+        $current->deposit(50);
+        $current->deposit(50);
+        self::assertInstanceOf(StTransaction_Deposit::class, $current->ref('Transactions')->load(5));
+        self::assertInstanceOf(StTransaction_Deposit::class, $current->ref('Transactions')->load(5));
+
+        $assertClassesFx([
+            StTransaction_TransferIn::class,
+            StTransaction_Withdrawal::class,
+            StTransaction_Deposit::class,
+            StTransaction_Deposit::class,
+        ]);
     }
 }

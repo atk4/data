@@ -20,7 +20,6 @@
     "authors": [
         {
             "name": "Romans Malinovskis",
-            "email": "romans@agiletoolkit.org",
             "homepage": "https://nearly.guru/"
         },
         {
@@ -36,13 +35,13 @@
     "require": {
         "php": ">=7.4 <8.3",
         "atk4/core": "dev-develop",
-        "doctrine/dbal": "^3.3",
+        "doctrine/dbal": "~3.4.5",
         "mvorisek/atk4-hintable": "~1.9.0"
     },
     "require-release": {
         "php": ">=7.4 <8.3",
-        "atk4/core": "~3.2.0",
-        "doctrine/dbal": "^3.3",
+        "atk4/core": "~5.0.0",
+        "doctrine/dbal": "~3.4.5",
         "mvorisek/atk4-hintable": "~1.9.0"
     },
     "require-dev": {
@@ -52,7 +51,8 @@
         "phpstan/extension-installer": "^1.1",
         "phpstan/phpstan": "^1.6",
         "phpstan/phpstan-deprecation-rules": "^1.0",
-        "phpunit/phpunit": "^9.5.5"
+        "phpstan/phpstan-strict-rules": "^1.3",
+        "phpunit/phpunit": "^9.5.25"
     },
     "conflict": {
         "jdorn/sql-formatter": "<1.2.9"

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Model;
 
+use Atk4\Core\WarnDynamicPropertyTrait;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
 
@@ -13,6 +14,8 @@ use Atk4\Data\Model;
  */
 class EntityFieldPair
 {
+    use WarnDynamicPropertyTrait;
+
     /** @var TModel */
     private $entity;
     /** @var string */

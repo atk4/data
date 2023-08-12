@@ -29,24 +29,22 @@ abstract class Join
         setOwner as private _setOwner;
     }
 
-    /**
-     * Foreign model or WITH/CTE alias when used with SQL persistence.
-     *
-     * @var string
-     */
-    protected $foreign_table;
+    /** Foreign table or WITH/CTE alias when used with SQL persistence. */
+    protected string $foreignTable;
+
+    /** Alias for the joined table. */
+    public ?string $foreignAlias = null;
 
     /**
      * By default this will be either "inner" (for strong) or "left" for weak joins.
-     * You can specify your own type of join by passing ['kind' => 'right']
-     * as second argument to join().
+     * You can specify your own type of join like "right".
      *
      * @var string
      */
     protected $kind;
 
-    /** @var bool Weak join does not update foreign table. */
-    protected $weak = false;
+    /** Weak join does not update foreign table. */
+    protected bool $weak = false;
 
     /**
      * Normally the foreign table is saved first, then it's ID is used in the
@@ -60,54 +58,43 @@ abstract class Join
      * Then the ID connecting tables is stored in foreign table and the order
      * of saving and delete needs to be reversed. In this case $reverse
      * will be set to `true`. You can specify value of this property.
-     *
-     * @var bool
      */
-    protected $reverse;
+    protected bool $reverse = false;
 
     /**
      * Field to be used for matching inside master table.
-     * By default it's $foreign_table . '_id'.
-     *
-     * @var string
+     * By default it's $foreignTable . '_id'.
      */
-    protected $master_field;
+    public ?string $masterField = null;
 
     /**
      * Field to be used for matching in a foreign table.
      * By default it's 'id'.
-     *
-     * @var string
      */
-    protected $foreign_field;
-
-    /** @var string A short symbolic name that will be used as an alias for the joined table. */
-    public $foreign_alias;
+    public ?string $foreignField = null;
 
     /**
      * When $prefix is set, then all the fields generated through
      * our wrappers will be automatically prefixed inside the model.
-     *
-     * @var string
      */
-    protected $prefix = '';
+    protected string $prefix = '';
 
     /** @var mixed ID indexed by spl_object_id(entity) used by a joined table. */
     protected $idByOid;
 
     /** @var array<int, array<string, mixed>> Data indexed by spl_object_id(entity) which is populated here as the save/insert progresses. */
-    private $saveBufferByOid = [];
+    private array $saveBufferByOid = [];
 
-    public function __construct(string $foreignTable = null)
+    public function __construct(string $foreignTable)
     {
-        $this->foreign_table = $foreignTable;
+        $this->foreignTable = $foreignTable;
 
         // handle foreign table containing a dot - that will be reverse join
         // TODO this table split condition makes JoinArrayTest::testForeignFieldNameGuessTableWithSchema test
-        // quite unconsistent - drop it?
-        if (str_contains($this->foreign_table, '.')) {
-            // split by LAST dot in foreign_table name
-            [$this->foreign_table, $this->foreign_field] = preg_split('~\.+(?=[^.]+$)~', $this->foreign_table);
+        // quite inconsistent - drop it?
+        if (str_contains($this->foreignTable, '.')) {
+            // split by LAST dot in foreignTable name
+            [$this->foreignTable, $this->foreignField] = preg_split('~\.(?=[^.]+$)~', $this->foreignTable);
             $this->reverse = true;
         }
     }
@@ -118,21 +105,21 @@ abstract class Join
      */
     protected function createFakeForeignModel(): Model
     {
-        $fakeModel = new Model($this->getOwner()->persistence, [
-            'table' => $this->foreign_table,
+        $fakeModel = new Model($this->getOwner()->getPersistence(), [
+            'table' => $this->foreignTable,
         ]);
         foreach ($this->getOwner()->getFields() as $ownerField) {
-            if ($ownerField->hasJoin() && $ownerField->getJoin()->shortName === $this->shortName
-                && $ownerField->shortName !== $fakeModel->id_field
-                && $ownerField->shortName !== $this->foreign_field) {
-                $fakeModel->addField($ownerField->shortName, [
-                    'actual' => $ownerField->actual,
-                    'type' => $ownerField->type,
-                ]);
+            if ($ownerField->hasJoin() && $ownerField->getJoin()->shortName === $this->shortName) {
+                $ownerFieldPersistenceName = $ownerField->getPersistenceName();
+                if ($ownerFieldPersistenceName !== $fakeModel->idField && $ownerFieldPersistenceName !== $this->foreignField) {
+                    $fakeModel->addField($ownerFieldPersistenceName, [
+                        'type' => $ownerField->type,
+                    ]);
+                }
             }
         }
-        if ($fakeModel->id_field !== $this->foreign_field && $this->foreign_field !== null) {
-            $fakeModel->addField($this->foreign_field, ['type' => 'integer']);
+        if ($fakeModel->idField !== $this->foreignField && $this->foreignField !== null) {
+            $fakeModel->addField($this->foreignField, ['type' => 'integer']);
         }
 
         return $fakeModel;
@@ -141,11 +128,11 @@ abstract class Join
     public function getForeignModel(): Model
     {
         // TODO this should be removed in the future
-        if (!isset($this->getOwner()->with[$this->foreign_table])) {
+        if (!isset($this->getOwner()->cteModels[$this->foreignTable])) {
             return $this->createFakeForeignModel();
         }
 
-        return $this->getOwner()->with[$this->foreign_table]['model'];
+        return $this->getOwner()->cteModels[$this->foreignTable]['model'];
     }
 
     /**
@@ -160,6 +147,12 @@ abstract class Join
         return $this->_setOwner($owner);
     }
 
+    /**
+     * @template T of Model
+     *
+     * @param \Closure(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
+     * @param array<int, mixed>                                                                        $args
+     */
     protected function onHookToOwnerBoth(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->shortName; // use static function to allow this object to be GCed
@@ -179,6 +172,12 @@ abstract class Join
         );
     }
 
+    /**
+     * @template T of Model
+     *
+     * @param \Closure(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
+     * @param array<int, mixed>                                                                        $args
+     */
     protected function onHookToOwnerEntity(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->shortName; // use static function to allow this object to be GCed
@@ -208,49 +207,49 @@ abstract class Join
     }
 
     /**
-     * Will use either foreign_alias or create #join_<table>.
+     * Will use either foreignAlias or #join-<table>.
      */
     public function getDesiredName(): string
     {
-        return '#join_' . $this->foreign_table;
+        return '#join-' . ($this->foreignAlias ?? $this->foreignTable);
     }
 
     protected function init(): void
     {
         $this->_init();
 
-        $this->getForeignModel(); // assert valid foreign_table
+        $this->getForeignModel(); // assert valid foreignTable
 
-        // owner model should have id_field set
-        $id_field = $this->getOwner()->id_field;
-        if (!$id_field) {
-            throw (new Exception('Joins owner model should have id_field set'))
+        // owner model should have idField set
+        $idField = $this->getOwner()->idField;
+        if (!$idField) {
+            throw (new Exception('Join owner model must have idField set'))
                 ->addMoreInfo('model', $this->getOwner());
         }
 
         if ($this->reverse === true) {
-            if ($this->master_field && $this->master_field !== $id_field) { // TODO not implemented yet, see https://github.com/atk4/data/issues/803
+            if ($this->masterField && $this->masterField !== $idField) { // TODO not implemented yet, see https://github.com/atk4/data/issues/803
                 throw (new Exception('Joining tables on non-id fields is not implemented yet'))
-                    ->addMoreInfo('master_field', $this->master_field)
-                    ->addMoreInfo('id_field', $id_field);
+                    ->addMoreInfo('masterField', $this->masterField)
+                    ->addMoreInfo('idField', $idField);
             }
 
-            if (!$this->master_field) {
-                $this->master_field = $id_field;
+            if (!$this->masterField) {
+                $this->masterField = $idField;
             }
 
-            if (!$this->foreign_field) {
-                $this->foreign_field = preg_replace('~^.+?\.~', '', $this->getModelTableString($this->getOwner())) . '_' . $id_field;
+            if (!$this->foreignField) {
+                $this->foreignField = preg_replace('~^.+\.~s', '', $this->getModelTableString($this->getOwner())) . '_' . $idField;
             }
         } else {
             $this->reverse = false;
 
-            if (!$this->master_field) {
-                $this->master_field = $this->foreign_table . '_' . $id_field;
+            if (!$this->masterField) {
+                $this->masterField = $this->foreignTable . '_' . $idField;
             }
 
-            if (!$this->foreign_field) {
-                $this->foreign_field = $id_field;
+            if (!$this->foreignField) {
+                $this->foreignField = $idField;
             }
         }
 
@@ -279,14 +278,21 @@ abstract class Join
         }
     }
 
+    private function getJoinNameFromShortName(): string
+    {
+        return str_starts_with($this->shortName, '#join-') ? substr($this->shortName, 6) : null;
+    }
+
     /**
      * Adding field into join will automatically associate that field
      * with this join. That means it won't be loaded from $table, but
      * form the join instead.
+     *
+     * @param array<mixed> $seed
      */
     public function addField(string $name, array $seed = []): Field
     {
-        $seed['joinName'] = $this->shortName;
+        $seed['joinName'] = $this->getJoinNameFromShortName();
 
         return $this->getOwner()->addField($this->prefix . $name, $seed);
     }
@@ -294,17 +300,20 @@ abstract class Join
     /**
      * Adds multiple fields.
      *
+     * @param array<string, array<mixed>>|array<int, string> $fields
+     * @param array<mixed>                                   $seed
+     *
      * @return $this
      */
-    public function addFields(array $fields = [], array $defaults = [])
+    public function addFields(array $fields = [], array $seed = [])
     {
-        foreach ($fields as $name => $seed) {
-            if (is_int($name)) {
-                $name = $seed;
-                $seed = [];
+        foreach ($fields as $k => $v) {
+            if (is_int($k)) {
+                $k = $v;
+                $v = [];
             }
 
-            $this->addField($name, Factory::mergeSeeds($seed, $defaults));
+            $this->addField($k, Factory::mergeSeeds($v, $seed));
         }
 
         return $this;
@@ -317,7 +326,7 @@ abstract class Join
      */
     public function join(string $foreignTable, array $defaults = []): self
     {
-        $defaults['joinName'] = $this->shortName;
+        $defaults['joinName'] = $this->getJoinNameFromShortName();
 
         return $this->getOwner()->join($foreignTable, $defaults);
     }
@@ -329,7 +338,7 @@ abstract class Join
      */
     public function leftJoin(string $foreignTable, array $defaults = []): self
     {
-        $defaults['joinName'] = $this->shortName;
+        $defaults['joinName'] = $this->getJoinNameFromShortName();
 
         return $this->getOwner()->leftJoin($foreignTable, $defaults);
     }
@@ -337,17 +346,21 @@ abstract class Join
     /**
      * Creates reference based on a field from the join.
      *
+     * @param array<string, mixed> $defaults
+     *
      * @return Reference\HasOne
      */
     public function hasOne(string $link, array $defaults = [])
     {
-        $defaults['joinName'] = $this->shortName;
+        $defaults['joinName'] = $this->getJoinNameFromShortName();
 
         return $this->getOwner()->hasOne($link, $defaults);
     }
 
     /**
      * Creates reference based on the field from the join.
+     *
+     * @param array<string, mixed> $defaults
      *
      * @return Reference\HasMany
      */
@@ -356,60 +369,35 @@ abstract class Join
         return $this->getOwner()->hasMany($link, $defaults);
     }
 
-    /**
-     * Wrapper for containsOne that will associate field
-     * with join.
-     *
-     * @todo NOT IMPLEMENTED !
-     *
-     * @return ???
-     */
     /*
-    public function containsOne(Model $model, array $defaults = [])
+    /**
+     * Wrapper for ContainsOne that will associate field with join.
+     *
+     * @TODO NOT IMPLEMENTED!
+     *
+     * @param array<string, mixed> $defaults
+     *
+     * @return Reference\ContainsOne
+     *X/
+    public function containsOne(string $link, array $defaults = []) // : Reference
     {
-        if (is_string($defaults[0])) {
-            $defaults[0] = $this->addField($defaults[0], ['system' => true]);
-        }
+        $defaults['joinName'] = $this->getJoinNameFromShortName();
 
-        return parent::containsOne($model, $defaults);
+        return $this->getOwner()->containsOne($link, $defaults);
     }
-    */
 
     /**
-     * Wrapper for containsMany that will associate field
-     * with join.
+     * Wrapper for ContainsMany that will associate field with join.
      *
-     * @todo NOT IMPLEMENTED !
+     * @TODO NOT IMPLEMENTED!
      *
-     * @return ???
-     */
-    /*
-    public function containsMany(Model $model, array $defaults = [])
+     * @param array<string, mixed> $defaults
+     *
+     * @return Reference\ContainsMany
+     *X/
+    public function containsMany(string $link, array $defaults = []) // : Reference
     {
-        if (is_string($defaults[0])) {
-            $defaults[0] = $this->addField($defaults[0], ['system' => true]);
-        }
-
-        return parent::containsMany($model, $defaults);
-    }
-    */
-
-    /**
-     * Will iterate through this model by pulling
-     *  - fields
-     *  - references
-     *  - conditions.
-     *
-     * and then will apply them locally. If you think that any fields
-     * could clash, then use ['prefix' => 'm2'] which will be pre-pended
-     * to all the fields. Conditions will be automatically mapped.
-     *
-     * @todo NOT IMPLEMENTED !
-     */
-    /*
-    public function importModel(Model $model, array $defaults = [])
-    {
-        // not implemented yet !!!
+        return $this->getOwner()->containsMany($link, $defaults);
     }
     */
 
@@ -463,12 +451,19 @@ abstract class Join
     }
 
     /**
+     * @return array<string, mixed>
+     *
      * @internal should be not used outside atk4/data
      */
-    protected function getAndUnsetSaveBuffer(Model $entity): array
+    protected function getReindexAndUnsetSaveBuffer(Model $entity): array
     {
-        $res = $this->saveBufferByOid[spl_object_id($entity)];
+        $resOur = $this->saveBufferByOid[spl_object_id($entity)];
         $this->unsetSaveBuffer($entity);
+
+        $res = [];
+        foreach ($resOur as $k => $v) {
+            $res[$this->getOwner()->getField($k)->getPersistenceName()] = $v;
+        }
 
         return $res;
     }
@@ -503,6 +498,9 @@ abstract class Join
 
     abstract public function afterLoad(Model $entity): void;
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function beforeInsert(Model $entity, array &$data): void
     {
         if ($this->weak) {
@@ -511,26 +509,26 @@ abstract class Join
 
         $model = $this->getOwner();
 
-        // the value for the master_field is set, so we are going to use existing record anyway
-        if ($model->hasField($this->master_field) && $entity->get($this->master_field) !== null) {
+        // the value for the masterField is set, so we are going to use existing record anyway
+        if ($entity->get($this->masterField) !== null) {
             return;
         }
 
         $foreignModel = $this->getForeignModel();
         $foreignEntity = $foreignModel->createEntity()
-            ->setMulti($this->getAndUnsetSaveBuffer($entity))
-            /* ->set($this->foreign_field, null) */;
+            ->setMulti($this->getReindexAndUnsetSaveBuffer($entity))
+            /* ->set($this->foreignField, null) */;
         $foreignEntity->save();
 
         $this->setId($entity, $foreignEntity->getId());
 
         if ($this->hasJoin()) {
-            $this->getJoin()->setSaveBufferValue($entity, $this->master_field, $this->getId($entity));
+            $this->getJoin()->setSaveBufferValue($entity, $this->masterField, $this->getId($entity));
         } else {
-            $data[$this->master_field] = $this->getId($entity);
+            $data[$this->masterField] = $this->getId($entity);
         }
 
-        // $entity->set($this->master_field, $this->getId($entity)); // TODO needed? from array persistence
+        // $entity->set($this->masterField, $this->getId($entity)); // TODO needed? from array persistence
     }
 
     public function afterInsert(Model $entity): void
@@ -541,17 +539,20 @@ abstract class Join
 
         $id = $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId();
         $this->assertReferenceIdNotNull($id);
-        $this->setSaveBufferValue($entity, $this->foreign_field, $id); // TODO needed? from array persistence
+        // $this->setSaveBufferValue($entity, $this->masterField, $id); // TODO needed? from array persistence
 
         $foreignModel = $this->getForeignModel();
         $foreignEntity = $foreignModel->createEntity()
-            ->setMulti($this->getAndUnsetSaveBuffer($entity))
-            ->set($this->foreign_field, $id);
+            ->setMulti($this->getReindexAndUnsetSaveBuffer($entity))
+            ->set($this->foreignField, $id);
         $foreignEntity->save();
 
         $this->setId($entity, $entity->getId()); // TODO why is this here? it seems to be not needed
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function beforeUpdate(Model $entity, array &$data): void
     {
         if ($this->weak) {
@@ -563,11 +564,11 @@ abstract class Join
         }
 
         $foreignModel = $this->getForeignModel();
-        $foreignId = $this->reverse ? $entity->getId() : $entity->get($this->master_field);
+        $foreignId = $this->reverse ? $entity->getId() : $entity->get($this->masterField);
         $this->assertReferenceIdNotNull($foreignId);
-        $saveBuffer = $this->getAndUnsetSaveBuffer($entity);
+        $saveBuffer = $this->getReindexAndUnsetSaveBuffer($entity);
         $foreignModel->atomic(function () use ($foreignModel, $foreignId, $saveBuffer) {
-            $foreignModel = (clone $foreignModel)->addCondition($this->foreign_field, $foreignId);
+            $foreignModel = (clone $foreignModel)->addCondition($this->foreignField, $foreignId);
             foreach ($foreignModel as $foreignEntity) {
                 $foreignEntity->setMulti($saveBuffer);
                 $foreignEntity->save();
@@ -584,10 +585,10 @@ abstract class Join
         }
 
         $foreignModel = $this->getForeignModel();
-        $foreignId = $this->reverse ? $entity->getId() : $entity->get($this->master_field);
+        $foreignId = $this->reverse ? $entity->getId() : $entity->get($this->masterField);
         $this->assertReferenceIdNotNull($foreignId);
         $foreignModel->atomic(function () use ($foreignModel, $foreignId) {
-            $foreignModel = (clone $foreignModel)->addCondition($this->foreign_field, $foreignId);
+            $foreignModel = (clone $foreignModel)->addCondition($this->foreignField, $foreignId);
             foreach ($foreignModel as $foreignEntity) {
                 $foreignEntity->delete();
             }

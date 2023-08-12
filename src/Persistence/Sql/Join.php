@@ -10,30 +10,23 @@ use Atk4\Data\Persistence;
 class Join extends Model\Join
 {
     /**
-     * By default we create ON expression ourselves, but if you want to specify
-     * it, use the 'on' property.
+     * By default we create ON expression ourselves, but it can be specific explicitly.
      *
      * @var Expressionable|string|null
      */
     protected $on;
 
-    /**
-     * Will use either foreign_alias or create #join_<table>.
-     */
-    public function getDesiredName(): string
-    {
-        return '_' . ($this->foreign_alias ?: $this->foreign_table);
-    }
-
     protected function init(): void
     {
         parent::init();
 
-        $this->getOwner()->persistence_data['use_table_prefixes'] = true; // TODO thus mutates the owner model!
+        // TODO thus mutates the owner model!
+        $this->getOwner()->persistenceData['use_table_prefixes'] = true;
 
         // our short name will be unique
-        if (!$this->foreign_alias) {
-            $this->foreign_alias = ($this->getOwner()->table_alias ?: '') . $this->shortName;
+        // TODO this should be removed, short name is not guaranteed to be unique with nested model/query
+        if ($this->foreignAlias === null) {
+            $this->foreignAlias = ($this->getOwner()->tableAlias ?? '') . '_' . (str_starts_with($this->shortName, '#join-') ? substr($this->shortName, 6) : $this->shortName);
         }
 
         // Master field indicates ID of the joined item. In the past it had to be
@@ -41,12 +34,12 @@ class Join extends Model\Join
         // so you can use expressions or fields inside joined entities.
         // If string specified here does not point to an existing model field
         // a new basic field is inserted and marked hidden.
-        if (!$this->reverse && !$this->getOwner()->hasField($this->master_field)) {
+        if (!$this->reverse && !$this->getOwner()->hasField($this->masterField)) {
             $owner = $this->hasJoin() ? $this->getJoin() : $this->getOwner();
 
-            $field = $owner->addField($this->master_field, ['system' => true, 'read_only' => true]);
+            $field = $owner->addField($this->masterField, ['type' => 'integer', 'system' => true, 'readOnly' => true]);
 
-            $this->master_field = $field->shortName;
+            $this->masterField = $field->shortName;
         }
     }
 
@@ -65,33 +58,31 @@ class Join extends Model\Join
         // if ON is set, we don't have to worry about anything
         if ($this->on) {
             $query->join(
-                $this->foreign_table,
+                $this->foreignTable,
                 $this->on instanceof Expressionable ? $this->on : $this->getOwner()->expr($this->on),
                 $this->kind,
-                $this->foreign_alias
+                $this->foreignAlias
             );
 
             return;
         }
 
         $query->join(
-            $this->foreign_table,
+            $this->foreignTable,
             $this->getOwner()->expr('{{}}.{} = {}', [
-                ($this->foreign_alias ?: $this->foreign_table),
-                $this->foreign_field,
-                $this->getOwner()->getField($this->master_field),
+                $this->foreignAlias ?? $this->foreignTable,
+                $this->foreignField,
+                $this->getOwner()->getField($this->masterField),
             ]),
             $this->kind,
-            $this->foreign_alias
+            $this->foreignAlias
         );
 
         /*
         if ($this->reverse) {
-            $query->field([$this->shortName => (
-                $this->join ?: ($model->table_alias ?: $model->table) . '.' . $this->master_field
-            )]);
+            $query->field([$this->shortName => $this->join ?? ($model->tableAlias ?? $model->table) . '.' . $this->masterField]);
         } else {
-            $query->field([$this->shortName => $this->foreign_alias . '.' . $this->foreign_field]);
+            $query->field([$this->shortName => $this->foreignAlias . '.' . $this->foreignField]);
         }
         */
     }

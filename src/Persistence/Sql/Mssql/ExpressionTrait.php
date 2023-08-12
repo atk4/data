@@ -8,28 +8,13 @@ use Doctrine\DBAL\Exception\DriverException;
 
 trait ExpressionTrait
 {
-    private function fixOpenEscapeChar(string $v): string
-    {
-        return preg_replace('~(?:\'(?:\'\'|\\\\\'|[^\'])*\')?+\K\]([^\[\]\'"(){}]*?)\]~s', '[$1]', $v);
-    }
-
-    protected function escapeIdentifier(string $value): string
-    {
-        return $this->fixOpenEscapeChar(parent::escapeIdentifier($value));
-    }
-
-    protected function escapeIdentifierSoft(string $value): string
-    {
-        return $this->fixOpenEscapeChar(parent::escapeIdentifierSoft($value));
-    }
-
     public function render(): array
     {
         [$sql, $params] = parent::render();
 
-        // convert all SQL strings to NVARCHAR, eg 'text' to N'text'
-        $sql = preg_replace_callback('~(^|.)(\'(?:\'\'|\\\\\'|[^\'])*\')~s', function ($matches) {
-            return $matches[1] . (!in_array($matches[1], ['N', '\'', '\\'], true) ? 'N' : '') . $matches[2];
+        // convert all string literals to NVARCHAR, eg. 'text' to N'text'
+        $sql = preg_replace_callback('~N?\'(?:\'\'|\\\\\'|[^\'])*+\'~s', function ($matches) {
+            return (substr($matches[0], 0, 1) === 'N' ? '' : 'N') . $matches[0];
         }, $sql);
 
         return [$sql, $params];
@@ -41,11 +26,11 @@ trait ExpressionTrait
     }
 
     /**
-     * Fix exception throwing for MSSQL TRY/CATCH SQL (for Query::$template_insert).
+     * Fix exception throwing for MSSQL TRY/CATCH SQL (for Query::$templateInsert).
      *
      * Remove once https://github.com/microsoft/msphpsql/issues/1387 is fixed and released.
      */
-    public function execute(object $connection = null, bool $fromExecuteStatement = null)
+    protected function _execute(?object $connection, bool $fromExecuteStatement)
     {
         $templateStr = preg_replace('~^\s*begin\s+(.+?)\s+end\s*$~is', '$1', $this->template ?? 'select...'); // @phpstan-ignore-line
         if (preg_match('~^(.*?)begin\s+try(.+?)end\s+try\s+begin\s+catch(.+)end\s+catch(.*?)$~is', $templateStr, $matches)) {
@@ -55,7 +40,7 @@ trait ExpressionTrait
                     ? $template
                     : 'BEGIN' . "\n" . $template . "\n" . 'END';
 
-                return $thisCloned->execute($connection, $fromExecuteStatement);
+                return $thisCloned->_execute($connection, $fromExecuteStatement);
             };
 
             $templateBefore = trim($matches[1]);
@@ -64,15 +49,15 @@ trait ExpressionTrait
 
             $expectedInsertTemplate = <<<'EOF'
                 begin try
-                  insert[option] into [table_noalias] ([set_fields]) values ([set_values]);
+                  insert[option] into [tableNoalias] ([setFields]) values ([setValues]);
                 end try begin catch
                   if ERROR_NUMBER() = 544 begin
-                    set IDENTITY_INSERT [table_noalias] on;
+                    set IDENTITY_INSERT [tableNoalias] on;
                     begin try
-                      insert[option] into [table_noalias] ([set_fields]) values ([set_values]);
-                      set IDENTITY_INSERT [table_noalias] off;
+                      insert[option] into [tableNoalias] ([setFields]) values ([setValues]);
+                      set IDENTITY_INSERT [tableNoalias] off;
                     end try begin catch
-                      set IDENTITY_INSERT [table_noalias] off;
+                      set IDENTITY_INSERT [tableNoalias] off;
                       throw;
                     end catch
                   end else begin
@@ -86,10 +71,10 @@ trait ExpressionTrait
                     $eDriver = $e->getPrevious();
                     if ($eDriver !== null && $eDriver instanceof DriverException && $eDriver->getCode() === 544) {
                         try {
-                            return $executeFx('set IDENTITY_INSERT [table_noalias] on;' . "\n"
-                                . 'insert[option] into [table_noalias] ([set_fields]) values ([set_values]);');
+                            return $executeFx('set IDENTITY_INSERT [tableNoalias] on;' . "\n"
+                                . 'insert[option] into [tableNoalias] ([setFields]) values ([setValues]);');
                         } finally {
-                            $executeFx('set IDENTITY_INSERT [table_noalias] off;');
+                            $executeFx('set IDENTITY_INSERT [tableNoalias] off;');
                         }
                     }
 
@@ -106,6 +91,6 @@ trait ExpressionTrait
             }
         }
 
-        return parent::execute($connection, $fromExecuteStatement);
+        return parent::_execute($connection, $fromExecuteStatement);
     }
 }

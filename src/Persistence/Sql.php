@@ -14,6 +14,7 @@ use Atk4\Data\Persistence\Sql\Exception as SqlException;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Query;
+use Atk4\Data\Reference\HasOneSql;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Driver\Connection as DbalDriverConnection;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
@@ -25,60 +26,58 @@ class Sql extends Persistence
 {
     use Sql\BinaryTypeCompatibilityTypecastTrait;
 
-    /** @const string */
     public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelectQuery';
-    /** @const string */
     public const HOOK_BEFORE_INSERT_QUERY = self::class . '@beforeInsertQuery';
-    /** @const string */
     public const HOOK_AFTER_INSERT_QUERY = self::class . '@afterInsertQuery';
-    /** @const string */
     public const HOOK_BEFORE_UPDATE_QUERY = self::class . '@beforeUpdateQuery';
-    /** @const string */
     public const HOOK_AFTER_UPDATE_QUERY = self::class . '@afterUpdateQuery';
-    /** @const string */
     public const HOOK_BEFORE_DELETE_QUERY = self::class . '@beforeDeleteQuery';
-    /** @const string */
     public const HOOK_AFTER_DELETE_QUERY = self::class . '@afterDeleteQuery';
 
-    /** @var Connection Connection object. */
-    public $connection;
+    /** @var Connection */
+    private $_connection;
 
-    /** @var array Default class when adding new field. */
-    public $_default_seed_addField; // no custom seed needed
+    /** @var array<mixed> Default class when adding new field. */
+    protected $_defaultSeedAddField; // no custom seed needed
 
-    /** @var array Default class when adding hasOne field. */
-    public $_default_seed_hasOne = [\Atk4\Data\Reference\HasOneSql::class];
+    /** @var array<mixed> Default class when adding Expression field. */
+    protected $_defaultSeedAddExpression = [SqlExpressionField::class];
 
-    /** @var array Default class when adding hasMany field. */
-    public $_default_seed_hasMany; // no custom seed needed
+    /** @var array<mixed> Default class when adding hasOne field. */
+    protected $_defaultSeedHasOne = [HasOneSql::class];
 
-    /** @var array Default class when adding Expression field. */
-    public $_default_seed_addExpression = [SqlExpressionField::class];
+    /** @var array<mixed> Default class when adding hasMany field. */
+    protected $_defaultSeedHasMany; // no custom seed needed
 
-    /** @var array Default class when adding join. */
-    public $_default_seed_join = [Sql\Join::class];
+    /** @var array<mixed> Default class when adding join. */
+    protected $_defaultSeedJoin = [Sql\Join::class];
 
     /**
-     * @param Connection|string|array|DbalConnection|DbalDriverConnection $connection
-     * @param string                                                      $user
-     * @param string                                                      $password
-     * @param array                                                       $args
+     * @param Connection|string|array<string, string>|DbalConnection|DbalDriverConnection $connection
+     * @param string                                                                      $user
+     * @param string                                                                      $password
+     * @param array<string, mixed>                                                        $defaults
      */
-    public function __construct($connection, $user = null, $password = null, $args = [])
+    public function __construct($connection, $user = null, $password = null, $defaults = [])
     {
         if ($connection instanceof Connection) {
-            $this->connection = $connection;
+            $this->_connection = $connection;
 
             return;
         }
 
         // attempt to connect
-        $this->connection = Connection::connect(
+        $this->_connection = Connection::connect(
             $connection,
             $user,
             $password,
-            $args
+            $defaults
         );
+    }
+
+    public function getConnection(): Connection
+    {
+        return $this->_connection;
     }
 
     /**
@@ -88,44 +87,27 @@ class Sql extends Persistence
     {
         parent::disconnect();
 
-        $this->connection = null; // @phpstan-ignore-line
+        $this->_connection = null; // @phpstan-ignore-line
     }
 
-    /**
-     * Returns Query instance.
-     */
-    public function dsql(): Query
-    {
-        return $this->connection->dsql();
-    }
-
-    /**
-     * Atomic executes operations within one begin/end transaction, so if
-     * the code inside callback will fail, then all of the transaction
-     * will be also rolled back.
-     *
-     * @return mixed
-     */
     public function atomic(\Closure $fx)
     {
-        return $this->connection->atomic($fx);
+        return $this->getConnection()->atomic($fx);
     }
 
     public function getDatabasePlatform(): AbstractPlatform
     {
-        return $this->connection->getDatabasePlatform();
+        return $this->getConnection()->getDatabasePlatform();
     }
 
     public function add(Model $model, array $defaults = []): void
     {
-        // Use our own classes for fields, references and expressions unless
-        // $defaults specify them otherwise.
         $defaults = array_merge([
-            '_default_seed_addField' => $this->_default_seed_addField,
-            '_default_seed_hasOne' => $this->_default_seed_hasOne,
-            '_default_seed_hasMany' => $this->_default_seed_hasMany,
-            '_default_seed_addExpression' => $this->_default_seed_addExpression,
-            '_default_seed_join' => $this->_default_seed_join,
+            '_defaultSeedAddField' => $this->_defaultSeedAddField,
+            '_defaultSeedAddExpression' => $this->_defaultSeedAddExpression,
+            '_defaultSeedHasOne' => $this->_defaultSeedHasOne,
+            '_defaultSeedHasMany' => $this->_defaultSeedHasMany,
+            '_defaultSeedJoin' => $this->_defaultSeedJoin,
         ], $defaults);
 
         parent::add($model, $defaults);
@@ -137,65 +119,61 @@ class Sql extends Persistence
 
         // When we work without table, we can't have any IDs
         if ($model->table === false) {
-            $model->removeField($model->id_field);
-            $model->addExpression($model->id_field, ['expr' => '-1', 'type' => 'integer']);
+            $model->removeField($model->idField);
+            $model->addExpression($model->idField, ['expr' => '-1', 'type' => 'integer']);
         }
     }
 
-    /**
-     * Initialize persistence.
-     */
     protected function initPersistence(Model $model): void
     {
         $model->addMethod('expr', static function (Model $m, ...$args) {
-            $m->assertIsModel();
-
-            return $m->persistence->expr($m, ...$args);
+            return $m->getPersistence()->expr($m, ...$args);
         });
         $model->addMethod('dsql', static function (Model $m, ...$args) {
-            $m->assertIsModel();
-
-            return $m->persistence->dsql($m, ...$args); // @phpstan-ignore-line
+            return $m->getPersistence()->dsql($m, ...$args); // @phpstan-ignore-line
         });
         $model->addMethod('exprNow', static function (Model $m, ...$args) {
-            $m->assertIsModel();
-
-            return $m->persistence->exprNow($m, ...$args);
+            return $m->getPersistence()->exprNow($m, ...$args);
         });
     }
 
     /**
      * Creates new Expression object from expression string.
      *
-     * @param mixed $expr
+     * @param array<int|string, mixed> $arguments
      */
-    public function expr(Model $model, $expr, array $args = []): Expression
+    public function expr(Model $model, string $template, array $arguments = []): Expression
     {
-        if (!is_string($expr)) {
-            return $this->connection->expr($expr, $args);
-        }
         preg_replace_callback(
-            '/\[[a-z0-9_]*\]|{[a-z0-9_]*}/i',
-            function ($matches) use (&$args, $model) {
+            '~\[\w*\]|\{\w*\}~',
+            function ($matches) use ($model, &$arguments) {
                 $identifier = substr($matches[0], 1, -1);
-                if ($identifier && !isset($args[$identifier])) {
-                    $args[$identifier] = $model->getField($identifier);
+                if ($identifier !== '' && !isset($arguments[$identifier])) {
+                    $arguments[$identifier] = $model->getField($identifier);
                 }
 
                 return $matches[0];
             },
-            $expr
+            $template
         );
 
-        return $this->connection->expr($expr, $args);
+        return $this->getConnection()->expr($template, $arguments);
     }
 
     /**
-     * Creates new Query object with current_timestamp(precision) expression.
+     * Creates new Query object with current time expression.
      */
     public function exprNow(int $precision = null): Expression
     {
-        return $this->connection->dsql()->exprNow($precision);
+        return $this->getConnection()->dsql()->exprNow($precision);
+    }
+
+    /**
+     * Creates new Query object.
+     */
+    public function dsql(): Query
+    {
+        return $this->getConnection()->dsql();
     }
 
     /**
@@ -203,12 +181,12 @@ class Sql extends Persistence
      */
     public function initQuery(Model $model): Query
     {
-        $query = $model->persistence_data['dsql'] = $this->dsql();
+        $query = $this->dsql();
 
         if ($model->table) {
             $query->table(
                 is_object($model->table) ? $model->table->action('select') : $model->table,
-                $model->table_alias ?? (is_object($model->table) ? '_tm' : null)
+                $model->tableAlias ?? (is_object($model->table) ? '_tm' : null)
             );
         }
 
@@ -217,33 +195,11 @@ class Sql extends Persistence
         return $query;
     }
 
-    /**
-     * Initializes WITH cursors.
-     */
     public function initWithCursors(Model $model, Query $query): void
     {
-        $with = $model->with;
-        if (count($with) === 0) {
-            return;
-        }
-
-        foreach ($with as $alias => ['model' => $withModel, 'mapping' => $withMapping, 'recursive' => $withRecursive]) {
-            // prepare field names
-            $fieldsFrom = $fieldsTo = [];
-            foreach ($withMapping as $from => $to) {
-                $fieldsFrom[] = is_int($from) ? $to : $from;
-                $fieldsTo[] = $to;
-            }
-
-            // prepare sub-query
-            if ($fieldsFrom) {
-                $withModel->setOnlyFields($fieldsFrom); // TODO this mutates model state
-            }
-            // 2nd parameter here strictly define which fields should be selected
-            // as result system fields will not be added if they are not requested
-            $subQuery = $withModel->action('select', [$fieldsFrom]);
-
-            $query->with($subQuery, $alias, $fieldsTo ?: null, $withRecursive);
+        foreach ($model->cteModels as $withAlias => ['model' => $withModel, 'recursive' => $withRecursive]) {
+            $subQuery = $withModel->action('select');
+            $query->with($subQuery, $withAlias, null, $withRecursive);
         }
     }
 
@@ -258,12 +214,12 @@ class Sql extends Persistence
     /**
      * Adds model fields in Query.
      *
-     * @param array|null $fields
+     * @param array<int, string>|null $fields
      */
-    public function initQueryFields(Model $model, Query $query, $fields = null): void
+    public function initQueryFields(Model $model, Query $query, array $fields = null): void
     {
         // init fields
-        if (is_array($fields)) {
+        if ($fields !== null) {
             // Set of fields is strictly defined for purposes of export,
             // so we will ignore even system fields.
             foreach ($fields as $fieldName) {
@@ -275,7 +231,7 @@ class Sql extends Persistence
             // Add requested fields first
             foreach ($model->onlyFields as $fieldName) {
                 $field = $model->getField($fieldName);
-                if ($field->never_persist) {
+                if ($field->neverPersist) {
                     continue;
                 }
                 $this->initField($query, $field);
@@ -284,7 +240,7 @@ class Sql extends Persistence
 
             // now add system fields, if they were not added
             foreach ($model->getFields() as $fieldName => $field) {
-                if ($field->never_persist) {
+                if ($field->neverPersist) {
                     continue;
                 }
                 if ($field->system && !isset($addedFields[$fieldName])) {
@@ -293,7 +249,7 @@ class Sql extends Persistence
             }
         } else {
             foreach ($model->getFields() as $fieldName => $field) {
-                if ($field->never_persist) {
+                if ($field->neverPersist) {
                     continue;
                 }
                 $this->initField($query, $field);
@@ -312,45 +268,39 @@ class Sql extends Persistence
         }
 
         // set order
-        if (count($model->order) > 0) {
-            foreach ($model->order as $order) {
-                $isDesc = strtolower($order[1]) === 'desc';
+        foreach ($model->order as $order) {
+            $isDesc = strtolower($order[1]) === 'desc';
 
-                if ($order[0] instanceof Expressionable) {
-                    $query->order($order[0], $isDesc);
-                } elseif (is_string($order[0])) {
-                    $query->order($model->getField($order[0]), $isDesc);
-                } else {
-                    throw (new Exception('Unsupported order parameter'))
-                        ->addMoreInfo('model', $model)
-                        ->addMoreInfo('field', $order[0]);
-                }
+            if ($order[0] instanceof Expressionable) {
+                $query->order($order[0], $isDesc);
+            } else {
+                $query->order($model->getField($order[0]), $isDesc);
             }
         }
     }
 
     /**
-     * Will apply $model->scope() conditions onto $query.
+     * Will apply model scope/conditions onto $query.
      */
     public function initQueryConditions(Model $model, Query $query): void
     {
         $this->_initQueryConditions($query, $model->getModel(true)->scope());
 
         // add entity ID to scope to allow easy traversal
-        if ($model->isEntity() && $model->id_field && $model->getId() !== null) {
-            $query->group($model->getField($model->id_field));
+        if ($model->isEntity() && $model->idField && $model->getId() !== null) {
+            $query->group($model->getField($model->idField));
             $this->fixMssqlOracleMissingFieldsInGroup($model, $query);
-            $query->having($model->getField($model->id_field), $model->getId());
+            $query->having($model->getField($model->idField), $model->getId());
         }
     }
 
     private function fixMssqlOracleMissingFieldsInGroup(Model $model, Query $query): void
     {
-        if (($this->getDatabasePlatform() instanceof SQLServerPlatform
-                || $this->getDatabasePlatform() instanceof OraclePlatform)) {
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform
+                || $this->getDatabasePlatform() instanceof OraclePlatform) {
             $isIdFieldInGroup = false;
             foreach ($query->args['group'] ?? [] as $v) {
-                if ($model->id_field && $v === $model->getField($model->id_field)) {
+                if ($model->idField && $v === $model->getField($model->idField)) {
                     $isIdFieldInGroup = true;
 
                     break;
@@ -392,6 +342,8 @@ class Sql extends Persistence
     }
 
     /**
+     * @param array<mixed> $args
+     *
      * @return Query
      */
     public function action(Model $model, string $type, array $args = [])
@@ -436,8 +388,8 @@ class Sql extends Persistence
                 $this->fixMssqlOracleMissingFieldsInGroup($model, $query);
 
                 if ($model->isEntity() && $model->isLoaded()) {
-                    $idRaw = $this->typecastSaveField($model->getField($model->id_field), $model->getId());
-                    $query->where($model->getField($model->id_field), $idRaw);
+                    $idRaw = $this->typecastSaveField($model->getField($model->idField), $model->getId());
+                    $query->where($model->getField($model->idField), $idRaw);
                 }
 
                 return $query;
@@ -450,20 +402,25 @@ class Sql extends Persistence
                 [$fx, $field] = $args;
                 $field = is_string($field) ? $model->getField($field) : $field;
 
-                if ($type === 'fx') {
-                    $expr = "{$fx}([])";
-                } else {
-                    $expr = "coalesce({$fx}([]), 0)";
-                }
-
                 $query = $this->action($model, 'select', [[]]);
 
-                if (isset($args['alias'])) {
-                    $query->reset('field')->field($query->expr($expr, [$field]), $args['alias']);
-                } elseif ($field instanceof SqlExpressionField) {
-                    $query->reset('field')->field($query->expr($expr, [$field]), $fx . '_' . $field->shortName);
+                if ($fx === 'concat') {
+                    $expr = $query->groupConcat($field, $args['concatSeparator']);
                 } else {
-                    $query->reset('field')->field($query->expr($expr, [$field]));
+                    $expr = $query->expr(
+                        $type === 'fx'
+                            ? $fx . '([])'
+                            : 'coalesce(' . $fx . '([]), 0)',
+                        [$field]
+                    );
+                }
+
+                if (isset($args['alias'])) {
+                    $query->reset('field')->field($expr, $args['alias']);
+                } elseif ($field instanceof SqlExpressionField) {
+                    $query->reset('field')->field($expr, $fx . '_' . $field->shortName);
+                } else {
+                    $query->reset('field')->field($expr);
                 }
                 $this->fixMssqlOracleMissingFieldsInGroup($model, $query);
 
@@ -476,18 +433,20 @@ class Sql extends Persistence
 
     public function tryLoad(Model $model, $id): ?array
     {
+        $model->assertIsModel();
+
         $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
 
         $query = $model->action('select');
 
         if (!$noId) {
-            if (!$model->id_field) {
-                throw (new Exception('Unable to load field by "id" when Model->id_field is not defined'))
+            if (!$model->idField) {
+                throw (new Exception('Unable to load field by "id" when Model->idField is not defined'))
                     ->addMoreInfo('id', $id);
             }
 
-            $idRaw = $this->typecastSaveField($model->getField($model->id_field), $id);
-            $query->where($model->getField($model->id_field), $idRaw);
+            $idRaw = $this->typecastSaveField($model->getField($model->idField), $id);
+            $query->where($model->getField($model->idField), $idRaw);
         }
         $query->limit(
             min($id === self::ID_LOAD_ANY ? 1 : 2, $query->args['limit']['cnt'] ?? \PHP_INT_MAX),
@@ -502,7 +461,7 @@ class Sql extends Persistence
             } elseif (count($rowsRaw) !== 1) {
                 throw (new Exception('Ambiguous conditions, more than one record can be loaded'))
                     ->addMoreInfo('model', $model)
-                    ->addMoreInfo('id_field', $model->id_field)
+                    ->addMoreInfo('idField', $model->idField)
                     ->addMoreInfo('id', $noId ? null : $id);
             }
             $data = $this->typecastLoadRow($model, $rowsRaw[0]);
@@ -512,10 +471,11 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
-        if ($model->id_field && !isset($data[$model->id_field])) {
-            throw (new Exception('Model uses "id_field" but it was not available in the database'))
+        if ($model->idField && !isset($data[$model->idField])) {
+            // TODO detect even an ID change here!
+            throw (new Exception('Model uses "idField" but it was not available in the database'))
                 ->addMoreInfo('model', $model)
-                ->addMoreInfo('id_field', $model->id_field)
+                ->addMoreInfo('idField', $model->idField)
                 ->addMoreInfo('id', $noId ? null : $id)
                 ->addMoreInfo('data', $data);
         }
@@ -525,13 +485,17 @@ class Sql extends Persistence
 
     /**
      * Export all DataSet.
+     *
+     * @param array<int, string>|null $fields
+     *
+     * @return array<int, array<string, mixed>>
      */
     public function export(Model $model, array $fields = null, bool $typecast = true): array
     {
         $data = $model->action('select', [$fields])->getRows();
 
         if ($typecast) {
-            $data = array_map(function ($row) use ($model) {
+            $data = array_map(function (array $row) use ($model) {
                 return $this->typecastLoadRow($model, $row);
             }, $data);
         }
@@ -539,6 +503,9 @@ class Sql extends Persistence
         return $data;
     }
 
+    /**
+     * @return \Traversable<array<string, mixed>>
+     */
     public function prepareIterator(Model $model): \Traversable
     {
         $export = $model->action('select');
@@ -552,6 +519,23 @@ class Sql extends Persistence
         }
     }
 
+    /**
+     * @param mixed $idRaw
+     */
+    private function assertExactlyOneRecordUpdated(Model $model, $idRaw, int $affectedRows, string $operation): void
+    {
+        if ($affectedRows !== 1) {
+            throw (new Exception(ucfirst($operation) . ' failed, exactly 1 row was expected to be affected'))
+                ->addMoreInfo('model', $model)
+                ->addMoreInfo('scope', $model->scope()->toWords())
+                ->addMoreInfo('idRaw', $idRaw)
+                ->addMoreInfo('affectedRows', $affectedRows);
+        }
+    }
+
+    /**
+     * @param array<scalar|Expressionable|null> $dataRaw
+     */
     protected function insertRaw(Model $model, array $dataRaw)
     {
         $insert = $this->initQuery($model);
@@ -559,17 +543,20 @@ class Sql extends Persistence
 
         $insert->setMulti($dataRaw);
 
+        $model->hook(self::HOOK_BEFORE_INSERT_QUERY, [$insert]);
+
         try {
-            $model->hook(self::HOOK_BEFORE_INSERT_QUERY, [$insert]);
             $c = $insert->executeStatement();
         } catch (SqlException $e) {
             throw (new Exception('Unable to execute insert query', 0, $e))
                 ->addMoreInfo('model', $model)
-                ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
+                ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
-        if ($model->id_field) {
-            $idRaw = $dataRaw[$model->getField($model->id_field)->getPersistenceName()] ?? null;
+        $this->assertExactlyOneRecordUpdated($model, null, $c, 'insert');
+
+        if ($model->idField) {
+            $idRaw = $dataRaw[$model->getField($model->idField)->getPersistenceName()] ?? null;
             if ($idRaw === null) {
                 $idRaw = $this->lastInsertId($model);
             }
@@ -577,11 +564,14 @@ class Sql extends Persistence
             $idRaw = '';
         }
 
-        $model->hook(self::HOOK_AFTER_INSERT_QUERY, [$insert, $c]);
+        $model->hook(self::HOOK_AFTER_INSERT_QUERY, [$insert]);
 
         return $idRaw;
     }
 
+    /**
+     * @param array<scalar|Expressionable|null> $dataRaw
+     */
     protected function updateRaw(Model $model, $idRaw, array $dataRaw): void
     {
         $update = $this->initQuery($model);
@@ -589,7 +579,7 @@ class Sql extends Persistence
 
         // only apply fields that has been modified
         $update->setMulti($dataRaw);
-        $update->where($model->getField($model->id_field)->getPersistenceName(), $idRaw);
+        $update->where($model->getField($model->idField)->getPersistenceName(), $idRaw);
 
         $model->hook(self::HOOK_BEFORE_UPDATE_QUERY, [$update]);
 
@@ -598,37 +588,19 @@ class Sql extends Persistence
         } catch (SqlException $e) {
             throw (new Exception('Unable to update due to query error', 0, $e))
                 ->addMoreInfo('model', $model)
-                ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
+                ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
-        if ($model->id_field) {
-            $newIdRaw = $dataRaw[$model->getField($model->id_field)->getPersistenceName()] ?? null;
-            if ($newIdRaw !== null && $model->getDirtyRef()[$model->id_field]) {
-                // ID was changed
-                // TODO this cannot work with entity
-                $model->setId($this->typecastLoadField($model->getField($model->id_field), $newIdRaw));
-            }
-        }
+        $this->assertExactlyOneRecordUpdated($model, $idRaw, $c, 'update');
 
-        $model->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update, $c]);
-
-        // if any rows were updated in database, and we had expressions, reload
-        if ($model->reload_after_save && $c > 0) {
-            $d = $model->getDirtyRef();
-            $model->reload();
-            \Closure::bind(function () use ($model) {
-                $model->dirtyAfterReload = $model->getDirtyRef();
-            }, null, Model::class)();
-            $dirtyRef = &$model->getDirtyRef();
-            $dirtyRef = $d;
-        }
+        $model->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update]);
     }
 
     protected function deleteRaw(Model $model, $idRaw): void
     {
         $delete = $this->initQuery($model);
         $delete->mode('delete');
-        $delete->where($model->getField($model->id_field)->getPersistenceName(), $idRaw);
+        $delete->where($model->getField($model->idField)->getPersistenceName(), $idRaw);
         $model->hook(self::HOOK_BEFORE_DELETE_QUERY, [$delete]);
 
         try {
@@ -636,20 +608,44 @@ class Sql extends Persistence
         } catch (SqlException $e) {
             throw (new Exception('Unable to delete due to query error', 0, $e))
                 ->addMoreInfo('model', $model)
-                ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
+                ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
-        $model->hook(self::HOOK_AFTER_DELETE_QUERY, [$delete, $c]);
+        $this->assertExactlyOneRecordUpdated($model, $idRaw, $c, 'delete');
+
+        $model->hook(self::HOOK_AFTER_DELETE_QUERY, [$delete]);
+    }
+
+    public function typecastSaveField(Field $field, $value)
+    {
+        $value = parent::typecastSaveField($field, $value);
+
+        if ($value !== null && $this->binaryTypeIsEncodeNeeded($field->type)) {
+            $value = $this->binaryTypeValueEncode($value);
+        }
+
+        return $value;
+    }
+
+    public function typecastLoadField(Field $field, $value)
+    {
+        $value = parent::typecastLoadField($field, $value);
+
+        if ($value !== null && $this->binaryTypeIsDecodeNeeded($field->type, $value)) {
+            $value = $this->binaryTypeValueDecode($value);
+        }
+
+        return $value;
     }
 
     public function getFieldSqlExpression(Field $field, Expression $expression): Expression
     {
-        if (isset($field->getOwner()->persistence_data['use_table_prefixes'])) {
+        if (isset($field->getOwner()->persistenceData['use_table_prefixes'])) {
             $mask = '{{}}.{}';
             $prop = [
                 $field->hasJoin()
-                    ? ($field->getJoin()->foreign_alias ?: $field->getJoin()->shortName)
-                    : ($field->getOwner()->table_alias ?? (is_object($field->getOwner()->table) ? '_tm' : $field->getOwner()->table)),
+                    ? ($field->getJoin()->foreignAlias ?? $field->getJoin()->shortName)
+                    : ($field->getOwner()->tableAlias ?? (is_object($field->getOwner()->table) ? '_tm' : $field->getOwner()->table)),
                 $field->getPersistenceName(),
             ];
         } else {
@@ -678,15 +674,15 @@ class Sql extends Persistence
         // PostgreSQL and Oracle DBAL platforms use sequence internally for PK autoincrement,
         // use default name if not set explicitly
         $sequenceName = null;
-        if ($this->connection->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            $sequenceName = $this->connection->getDatabasePlatform()->getIdentitySequenceName(
+        if ($this->getConnection()->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            $sequenceName = $this->getConnection()->getDatabasePlatform()->getIdentitySequenceName(
                 $model->table,
-                $model->getField($model->id_field)->getPersistenceName()
+                $model->getField($model->idField)->getPersistenceName()
             );
-        } elseif ($this->connection->getDatabasePlatform() instanceof OraclePlatform) {
+        } elseif ($this->getConnection()->getDatabasePlatform() instanceof OraclePlatform) {
             $sequenceName = $model->table . '_SEQ';
         }
 
-        return $this->connection->lastInsertId($sequenceName);
+        return $this->getConnection()->lastInsertId($sequenceName);
     }
 }

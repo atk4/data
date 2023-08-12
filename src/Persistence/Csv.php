@@ -38,8 +38,7 @@ class Csv extends Persistence
 
     /**
      * Mode of operation. 'r' for reading and 'w' for writing.
-     * If you manually set this operation, it will be used
-     * for file opening.
+     * If you manually set this operation, it will be used for file opening.
      *
      * @var string
      */
@@ -47,16 +46,17 @@ class Csv extends Persistence
 
     /** @var string Delimiter in CSV file. */
     public $delimiter = ',';
-
     /** @var string Enclosure in CSV file. */
     public $enclosure = '"';
-
     /** @var string Escape character in CSV file. */
-    public $escape_char = '\\';
+    public $escapeChar = '\\';
 
-    /** @var array|null Array of field names. */
-    public $header;
+    /** @var array<int, string>|null Array of field names. */
+    public ?array $header = null;
 
+    /**
+     * @param array<string, mixed> $defaults
+     */
     public function __construct(string $file, array $defaults = [])
     {
         $this->file = $file;
@@ -69,8 +69,6 @@ class Csv extends Persistence
     }
 
     /**
-     * Open CSV file.
-     *
      * Override this method and open handle yourself if you want to
      * reposition or load some extra columns on the top.
      *
@@ -88,9 +86,6 @@ class Csv extends Persistence
         }
     }
 
-    /**
-     * Close CSV file.
-     */
     public function closeFile(): void
     {
         if ($this->handle) {
@@ -102,25 +97,33 @@ class Csv extends Persistence
 
     /**
      * Returns one line of CSV file as array.
+     *
+     * @return ($reindexWithHeader is true ? array<string, string> : array<int, string>)|null
      */
-    public function getLine(): ?array
+    public function getLine(bool $reindexWithHeader): ?array
     {
-        $data = fgetcsv($this->handle, 0, $this->delimiter, $this->enclosure, $this->escape_char);
+        $data = fgetcsv($this->handle, 0, $this->delimiter, $this->enclosure, $this->escapeChar);
         if ($data === false) {
             return null;
         }
 
         ++$this->line;
 
+        if ($reindexWithHeader) {
+            $data = array_combine($this->header, $data);
+        }
+
         return $data;
     }
 
     /**
      * Writes array as one record to CSV file.
+     *
+     * @param array<int, string> $data
      */
     public function putLine(array $data): void
     {
-        $ok = fputcsv($this->handle, $data, $this->delimiter, $this->enclosure, $this->escape_char);
+        $ok = fputcsv($this->handle, $data, $this->delimiter, $this->enclosure, $this->escapeChar);
         if ($ok === false) {
             throw new Exception('Cannot write to CSV file');
         }
@@ -134,7 +137,7 @@ class Csv extends Persistence
     {
         $this->openFile('r');
 
-        $header = $this->getLine();
+        $header = $this->getLine(false);
         --$this->line; // because we don't want to count header line
 
         $this->initializeHeader($header);
@@ -150,7 +153,7 @@ class Csv extends Persistence
 
         $header = [];
         foreach (array_keys($model->getFields()) as $name) {
-            if ($model->id_field && $name === $model->id_field) {
+            if ($model->idField && $name === $model->idField) {
                 continue;
             }
 
@@ -163,51 +166,22 @@ class Csv extends Persistence
     }
 
     /**
-     * Remembers $this->header so that the data can be
-     * easier mapped.
+     * Remembers $this->header so that the data can be easier mapped.
+     *
+     * @param array<int, string> $header
      */
     public function initializeHeader(array $header): void
     {
         // removes forbidden symbols from header (field names)
-        $this->header = array_map(function ($name) {
-            return preg_replace('/[^a-z0-9_-]+/i', '_', $name);
+        $this->header = array_map(function (string $name): string {
+            return preg_replace('~[^a-z0-9_-]+~i', '_', $name);
         }, $header);
-    }
-
-    /**
-     * Typecasting when load data row.
-     */
-    public function typecastLoadRow(Model $model, array $row): array
-    {
-        $id = null;
-        if ($model->id_field) {
-            if (isset($row[$model->id_field])) {
-                // temporary remove id field
-                $id = $row[$model->id_field];
-                unset($row[$model->id_field]);
-            } else {
-                $id = null;
-            }
-        }
-
-        $row = array_combine($this->header, $row);
-        if ($model->id_field && $id !== null) {
-            $row[$model->id_field] = $id;
-        }
-
-        foreach ($row as $key => $value) {
-            if ($value === null) {
-                continue;
-            }
-
-            $row[$key] = $this->typecastLoadField($model->getField($key), $value);
-        }
-
-        return $row;
     }
 
     public function tryLoad(Model $model, $id): ?array
     {
+        $model->assertIsModel();
+
         if ($id !== self::ID_LOAD_ANY) {
             throw new Exception('CSV Persistence does not support other than LOAD ANY mode'); // @TODO
         }
@@ -222,19 +196,22 @@ class Csv extends Persistence
             $this->loadHeader();
         }
 
-        $data = $this->getLine();
+        $data = $this->getLine(true);
         if ($data === null) {
             return null;
         }
 
         $data = $this->typecastLoadRow($model, $data);
-        if ($model->id_field) {
-            $data[$model->id_field] = $this->line;
+        if ($model->idField) {
+            $data[$model->idField] = $this->line;
         }
 
         return $data;
     }
 
+    /**
+     * @return \Traversable<array<string, mixed>>
+     */
     public function prepareIterator(Model $model): \Traversable
     {
         if (!$this->mode) {
@@ -248,13 +225,14 @@ class Csv extends Persistence
         }
 
         while (true) {
-            $data = $this->getLine();
+            $data = $this->getLine(true);
             if ($data === null) {
                 break;
             }
+
             $data = $this->typecastLoadRow($model, $data);
-            if ($model->id_field) {
-                $data[$model->id_field] = $this->line;
+            if ($model->idField) {
+                $data[$model->idField] = $this->line;
             }
 
             yield $data;
@@ -274,26 +252,28 @@ class Csv extends Persistence
         }
 
         $line = [];
-
         foreach ($this->header as $name) {
             $line[] = $dataRaw[$name];
         }
 
         $this->putLine($line);
 
-        return $model->id_field ? $dataRaw[$model->id_field] : null;
+        return $model->idField ? $dataRaw[$model->idField] : null;
     }
 
     /**
      * Export all DataSet.
+     *
+     * @param array<int, string>|null $fields
+     *
+     * @return array<int, array<string, mixed>>
      */
     public function export(Model $model, array $fields = null): array
     {
         $data = [];
-
-        foreach ($model as $row) {
-            $rowData = $row->get();
-            $data[] = $fields !== null ? array_intersect_key($rowData, array_flip($fields)) : $rowData;
+        foreach ($model as $entity) {
+            $entityData = $entity->get();
+            $data[] = $fields !== null ? array_intersect_key($entityData, array_flip($fields)) : $entityData;
         }
 
         // need to close file otherwise file pointer is at the end of file

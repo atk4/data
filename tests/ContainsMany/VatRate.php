@@ -7,8 +7,6 @@ namespace Atk4\Data\Tests\ContainsMany;
 use Atk4\Data\Model;
 
 /**
- * VAT rate model.
- *
  * @property string $name @Atk4\Field()
  * @property int    $rate @Atk4\Field()
  */

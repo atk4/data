@@ -7,8 +7,6 @@ namespace Atk4\Data\Tests\ContainsMany;
 use Atk4\Data\Model;
 
 /**
- * Invoice lines model.
- *
  * @property VatRate   $vat_rate_id       @Atk4\RefOne()
  * @property float     $price             @Atk4\Field()
  * @property float     $qty               @Atk4\Field()
@@ -36,7 +34,7 @@ class Line extends Model
         // each line can have multiple discounts and calculate total of these discounts
         $this->containsMany($this->fieldName()->discounts, ['model' => [Discount::class]]);
 
-        $this->addCalculatedField($this->fieldName()->discounts_percent, ['expr' => function ($m) {
+        $this->addCalculatedField($this->fieldName()->discounts_percent, ['expr' => function (self $m) {
             $total = 0;
             foreach ($m->discounts as $d) {
                 $total += $d->percent;

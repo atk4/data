@@ -11,6 +11,7 @@ use Atk4\Core\Factory;
 use Atk4\Core\HookTrait;
 use Atk4\Core\NameTrait;
 use Doctrine\DBAL\Platforms;
+use Doctrine\DBAL\Types\Type;
 
 abstract class Persistence
 {
@@ -22,24 +23,22 @@ abstract class Persistence
     use HookTrait;
     use NameTrait;
 
-    /** @const string */
     public const HOOK_AFTER_ADD = self::class . '@afterAdd';
 
-    /** @const string */
-    public const ID_LOAD_ONE = self::class . '@idLoadOne';
-    /** @const string */
-    public const ID_LOAD_ANY = self::class . '@idLoadAny';
+    public const ID_LOAD_ONE = self::class . '@idLoadOne-qZ5TJwMVJ4LzVhuN';
+    public const ID_LOAD_ANY = self::class . '@idLoadAny-qZ5TJwMVJ4LzVhuN';
 
-    /** @var bool internal only, prevent recursion */
-    private $typecastSaveSkipNormalize = false;
+    /** @internal prevent recursion */
+    private bool $typecastSaveSkipNormalize = false;
 
     /**
      * Connects database.
      *
-     * @param string|array $dsn Format as PDO DSN or use "mysql://user:pass@host/db;option=blah",
-     *                          leaving user and password arguments = null
+     * @param string|array<string, string> $dsn      Format as PDO DSN or use "mysql://user:pass@host/db;option=blah",
+     *                                               leaving user and password arguments = null
+     * @param array<string, mixed>         $defaults
      */
-    public static function connect($dsn, string $user = null, string $password = null, array $args = []): self
+    public static function connect($dsn, string $user = null, string $password = null, array $defaults = []): self
     {
         // parse DSN string
         $dsn = Persistence\Sql\Connection::normalizeDsn($dsn, $user, $password);
@@ -52,7 +51,7 @@ abstract class Persistence
             case 'pdo_sqlsrv':
             case 'pdo_oci':
             case 'oci8':
-                $persistence = new Persistence\Sql($dsn, $dsn['user'] ?? null, $dsn['password'] ?? null, $args);
+                $persistence = new Persistence\Sql($dsn, $dsn['user'] ?? null, $dsn['password'] ?? null, $defaults);
 
                 return $persistence;
             default:
@@ -70,18 +69,18 @@ abstract class Persistence
 
     /**
      * Associate model with the data driver.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function add(Model $model, array $defaults = []): void
     {
-        Factory::factory($model, $defaults);
-
-        if ($model->persistence !== null) {
-            throw new Exception('Persistence already set');
+        if ($model->issetPersistence() || $model->persistenceData !== []) {
+            throw new \Error('Persistence::add() cannot be called directly, use Model::setPersistence() instead');
         }
 
-        $model->persistence = $this;
-        $model->persistence_data = [];
+        Factory::factory($model, $defaults);
         $this->initPersistence($model);
+        $model->setPersistence($this);
 
         // invokes Model::init()
         // model is not added to elements as it does not implement TrackableTrait trait
@@ -104,6 +103,8 @@ abstract class Persistence
      * persistencies will support atomic operations, so by default we just
      * don't do anything.
      *
+     * @param \Closure(): mixed $fx
+     *
      * @return mixed
      */
     public function atomic(\Closure $fx)
@@ -120,6 +121,8 @@ abstract class Persistence
      * Tries to load data record, but will not fail if record can't be loaded.
      *
      * @param mixed $id
+     *
+     * @return array<string, mixed>|null
      */
     public function tryLoad(Model $model, $id): ?array
     {
@@ -130,18 +133,22 @@ abstract class Persistence
      * Loads a record from model and returns a associative array.
      *
      * @param mixed $id
+     *
+     * @return array<string, mixed>
      */
     public function load(Model $model, $id): array
     {
+        $model->assertIsModel();
+
         $data = $this->tryLoad($model, $id);
 
         if (!$data) {
             $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
 
-            throw (new Exception($noId ? 'No record was found' : 'Record with specified ID was not found', 404))
+            throw (new Exception($noId ? 'No record was found' : 'Record with specified ID was not found'))
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('id', $noId ? null : $id)
-                ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
+                ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
         return $data;
@@ -150,12 +157,16 @@ abstract class Persistence
     /**
      * Inserts record in database and returns new record ID.
      *
+     * @param array<string, mixed> $data
+     *
      * @return mixed
      */
     public function insert(Model $model, array $data)
     {
-        if ($model->id_field && array_key_exists($model->id_field, $data) && $data[$model->id_field] === null) {
-            unset($data[$model->id_field]);
+        $model->assertIsModel();
+
+        if ($model->idField && array_key_exists($model->idField, $data) && $data[$model->idField] === null) {
+            unset($data[$model->idField]);
         }
 
         $dataRaw = $this->typecastSaveRow($model, $data);
@@ -163,15 +174,15 @@ abstract class Persistence
 
         if (is_object($model->table)) {
             $innerInsertId = $model->table->insert($this->typecastLoadRow($model->table, $dataRaw));
-            if (!$model->id_field) {
+            if (!$model->idField) {
                 return false;
             }
 
-            $idField = $model->getField($model->id_field);
+            $idField = $model->getField($model->idField);
             $insertId = $this->typecastLoadField(
                 $idField,
-                $idField->getPersistenceName() === $model->table->id_field
-                    ? $this->typecastSaveField($model->table->getField($model->table->id_field), $innerInsertId)
+                $idField->getPersistenceName() === $model->table->idField
+                    ? $this->typecastSaveField($model->table->getField($model->table->idField), $innerInsertId)
                     : $dataRaw[$idField->getPersistenceName()]
             );
 
@@ -179,16 +190,18 @@ abstract class Persistence
         }
 
         $idRaw = $this->insertRaw($model, $dataRaw);
-        if (!$model->id_field) {
+        if (!$model->idField) {
             return false;
         }
 
-        $id = $this->typecastLoadField($model->getField($model->id_field), $idRaw);
+        $id = $this->typecastLoadField($model->getField($model->idField), $idRaw);
 
         return $id;
     }
 
     /**
+     * @param array<scalar|null> $dataRaw
+     *
      * @return mixed
      */
     protected function insertRaw(Model $model, array $dataRaw)
@@ -199,14 +212,17 @@ abstract class Persistence
     /**
      * Updates record in database.
      *
-     * @param mixed $id
+     * @param mixed                $id
+     * @param array<string, mixed> $data
      */
     public function update(Model $model, $id, array $data): void
     {
-        $idRaw = $model->id_field ? $this->typecastSaveField($model->getField($model->id_field), $id) : null;
+        $model->assertIsModel();
+
+        $idRaw = $model->idField ? $this->typecastSaveField($model->getField($model->idField), $id) : null;
         unset($id);
-        if ($idRaw === null || (array_key_exists($model->id_field, $data) && $data[$model->id_field] === null)) {
-            throw new Exception('Unable to update record: Model id_field is not set');
+        if ($idRaw === null || (array_key_exists($model->idField, $data) && $data[$model->idField] === null)) {
+            throw new Exception('Unable to update record: Model idField is not set');
         }
 
         $dataRaw = $this->typecastSaveRow($model, $data);
@@ -217,11 +233,11 @@ abstract class Persistence
         }
 
         if (is_object($model->table)) {
-            $idPersistenceName = $model->getField($model->id_field)->getPersistenceName();
+            $idPersistenceName = $model->getField($model->idField)->getPersistenceName();
             $innerId = $this->typecastLoadField($model->table->getField($idPersistenceName), $idRaw);
-            $innerModel = $model->table->loadBy($idPersistenceName, $innerId);
+            $innerEntity = $model->table->loadBy($idPersistenceName, $innerId);
 
-            $innerModel->save($this->typecastLoadRow($model->table, $dataRaw));
+            $innerEntity->saveAndUnload($this->typecastLoadRow($model->table, $dataRaw));
 
             return;
         }
@@ -230,7 +246,8 @@ abstract class Persistence
     }
 
     /**
-     * @param mixed $idRaw
+     * @param mixed              $idRaw
+     * @param array<scalar|null> $dataRaw
      */
     protected function updateRaw(Model $model, $idRaw, array $dataRaw): void
     {
@@ -244,18 +261,20 @@ abstract class Persistence
      */
     public function delete(Model $model, $id): void
     {
-        $idRaw = $model->id_field ? $this->typecastSaveField($model->getField($model->id_field), $id) : null;
+        $model->assertIsModel();
+
+        $idRaw = $model->idField ? $this->typecastSaveField($model->getField($model->idField), $id) : null;
         unset($id);
         if ($idRaw === null) {
-            throw new Exception('Unable to delete record: Model id_field is not set');
+            throw new Exception('Unable to delete record: Model idField is not set');
         }
 
         if (is_object($model->table)) {
-            $idPersistenceName = $model->getField($model->id_field)->getPersistenceName();
+            $idPersistenceName = $model->getField($model->idField)->getPersistenceName();
             $innerId = $this->typecastLoadField($model->table->getField($idPersistenceName), $idRaw);
-            $innerModel = $model->table->loadBy($idPersistenceName, $innerId);
+            $innerEntity = $model->table->loadBy($idPersistenceName, $innerId);
 
-            $innerModel->delete();
+            $innerEntity->delete();
 
             return;
         }
@@ -275,6 +294,8 @@ abstract class Persistence
      * Will convert one row of data from native PHP types into
      * persistence types. This will also take care of the "actual"
      * field keys.
+     *
+     * @param array<string, mixed> $row
      *
      * @return array<scalar|Persistence\Sql\Expressionable|null>
      */
@@ -362,7 +383,7 @@ abstract class Persistence
     {
         if ($value === null) {
             return null;
-        } elseif (!is_scalar($value)) {
+        } elseif (!is_scalar($value)) { // @phpstan-ignore-line
             throw new Exception('Unexpected non-scalar value');
         }
 
@@ -390,7 +411,7 @@ abstract class Persistence
 
         // native DBAL DT types have no microseconds support
         if (in_array($field->type, ['datetime', 'date', 'time'], true)
-            && str_starts_with(get_class($field->getTypeObject()), 'Doctrine\DBAL\Types\\')) {
+            && str_starts_with(get_class(Type::getType($field->type)), 'Doctrine\DBAL\Types\\')) {
             if ($value === '') {
                 return null;
             } elseif (!$value instanceof \DateTimeInterface) {
@@ -408,7 +429,7 @@ abstract class Persistence
             return $value;
         }
 
-        $res = $field->getTypeObject()->convertToDatabaseValue($value, $this->getDatabasePlatform());
+        $res = Type::getType($field->type)->convertToDatabaseValue($value, $this->getDatabasePlatform());
         if (is_resource($res) && get_resource_type($res) === 'stream') {
             $res = stream_get_contents($res);
         }
@@ -420,7 +441,7 @@ abstract class Persistence
      * This is the actual field typecasting, which you can override in your
      * persistence to implement necessary typecasting.
      *
-     * @param scalar|null $value
+     * @param scalar $value
      *
      * @return mixed
      */
@@ -433,7 +454,7 @@ abstract class Persistence
 
         // native DBAL DT types have no microseconds support
         if (in_array($field->type, ['datetime', 'date', 'time'], true)
-            && str_starts_with(get_class($field->getTypeObject()), 'Doctrine\DBAL\Types\\')) {
+            && str_starts_with(get_class(Type::getType($field->type)), 'Doctrine\DBAL\Types\\')) {
             $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'][$field->type];
             if (str_contains($value, '.')) { // time possibly with microseconds, otherwise invalid format
                 $format = preg_replace('~(?<=H:i:s)(?![. ]*u)~', '.u', $format);
@@ -455,7 +476,7 @@ abstract class Persistence
             return $value;
         }
 
-        $res = $field->getTypeObject()->convertToPHPValue($value, $this->getDatabasePlatform());
+        $res = Type::getType($field->type)->convertToPHPValue($value, $this->getDatabasePlatform());
         if (is_resource($res) && get_resource_type($res) === 'stream') {
             $res = stream_get_contents($res);
         }

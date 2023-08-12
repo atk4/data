@@ -11,6 +11,9 @@ use Atk4\Data\Persistence;
 
 class JoinArrayTest extends TestCase
 {
+    /**
+     * @return array<string, array<mixed, mixed>>
+     */
     private function getInternalPersistenceData(Persistence\Array_ $db): array
     {
         $data = [];
@@ -33,25 +36,25 @@ class JoinArrayTest extends TestCase
         $m = new Model($db, ['table' => 'user']);
 
         $j = $m->join('contact');
-        $this->assertFalse($this->getProtected($j, 'reverse'));
-        $this->assertSame('contact_id', $this->getProtected($j, 'master_field'));
-        $this->assertSame('id', $this->getProtected($j, 'foreign_field'));
+        self::assertFalse($this->getProtected($j, 'reverse'));
+        self::assertSame('contact_id', $this->getProtected($j, 'masterField'));
+        self::assertSame('id', $this->getProtected($j, 'foreignField'));
 
         $j = $m->join('contact2.test_id');
-        $this->assertTrue($this->getProtected($j, 'reverse'));
-        $this->assertSame('id', $this->getProtected($j, 'master_field'));
-        $this->assertSame('test_id', $this->getProtected($j, 'foreign_field'));
+        self::assertTrue($this->getProtected($j, 'reverse'));
+        self::assertSame('id', $this->getProtected($j, 'masterField'));
+        self::assertSame('test_id', $this->getProtected($j, 'foreignField'));
 
-        $j = $m->join('contact3', ['master_field' => 'test_id']);
-        $this->assertFalse($this->getProtected($j, 'reverse'));
-        $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
-        $this->assertSame('id', $this->getProtected($j, 'foreign_field'));
+        $j = $m->join('contact3', ['masterField' => 'test_id']);
+        self::assertFalse($this->getProtected($j, 'reverse'));
+        self::assertSame('test_id', $this->getProtected($j, 'masterField'));
+        self::assertSame('id', $this->getProtected($j, 'foreignField'));
 
         $this->expectException(Exception::class); // TODO not implemented yet, see https://github.com/atk4/data/issues/803
-        $j = $m->join('contact4.foo_id', ['master_field' => 'test_id', 'reverse' => true]);
-        $this->assertTrue($this->getProtected($j, 'reverse'));
-        $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
-        $this->assertSame('foo_id', $this->getProtected($j, 'foreign_field'));
+        $j = $m->join('contact4.foo_id', ['masterField' => 'test_id', 'reverse' => true]);
+        // self::assertTrue($this->getProtected($j, 'reverse'));
+        // self::assertSame('test_id', $this->getProtected($j, 'masterField'));
+        // self::assertSame('foo_id', $this->getProtected($j, 'foreignField'));
     }
 
     public function testJoinException(): void
@@ -60,59 +63,59 @@ class JoinArrayTest extends TestCase
         $m = new Model($db, ['table' => 'user']);
 
         $this->expectException(Exception::class);
-        $j = $m->join('contact.foo_id', ['master_field' => 'test_id']);
+        $m->join('contact.foo_id', ['masterField' => 'test_id']);
     }
 
     public function testJoinSaving1(): void
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
-        $m_u = new Model($db, ['table' => 'user']);
-        $m_u->addField('contact_id', ['type' => 'integer']);
-        $m_u->addField('name');
-        $j = $m_u->join('contact');
+        $user = new Model($db, ['table' => 'user']);
+        $user->addField('name');
+        $user->addField('contact_id', ['type' => 'integer']);
+        $j = $user->join('contact');
         $j->addField('contact_phone');
 
-        $m_u2 = $m_u->createEntity();
-        $m_u2->set('name', 'John');
-        $m_u2->set('contact_phone', '+123');
-        $m_u2->save();
+        $user2 = $user->createEntity();
+        $user2->set('name', 'John');
+        $user2->set('contact_phone', '+123');
+        $user2->save();
 
-        $this->assertEquals([
+        self::assertSame([
             'user' => [1 => ['name' => 'John', 'contact_id' => 1]],
             'contact' => [1 => ['contact_phone' => '+123']],
         ], $this->getInternalPersistenceData($db));
 
-        $m_u2->unload();
-        $m_u2 = $m_u->createEntity();
-        $m_u2->set('name', 'Peter');
-        $m_u2->set('contact_id', 1);
-        $m_u2->save();
+        $user2->unload();
+        $user2 = $user->createEntity();
+        $user2->set('name', 'Peter');
+        $user2->set('contact_id', 1);
+        $user2->save();
 
-        $this->assertEquals([
+        self::assertSame([
             'user' => [
                 1 => ['name' => 'John', 'contact_id' => 1],
-                2 => ['name' => 'Peter', 'contact_id' => 1],
+                ['name' => 'Peter', 'contact_id' => 1],
             ],
             'contact' => [
                 1 => ['contact_phone' => '+123'],
             ],
         ], $this->getInternalPersistenceData($db));
 
-        $m_u2->unload();
-        $m_u2 = $m_u->createEntity();
-        $m_u2->set('name', 'Joe');
-        $m_u2->set('contact_phone', '+321');
-        $m_u2->save();
+        $user2->unload();
+        $user2 = $user->createEntity();
+        $user2->set('name', 'Joe');
+        $user2->set('contact_phone', '+321');
+        $user2->save();
 
-        $this->assertEquals([
+        self::assertSame([
             'user' => [
                 1 => ['name' => 'John', 'contact_id' => 1],
-                2 => ['name' => 'Peter', 'contact_id' => 1],
-                3 => ['name' => 'Joe', 'contact_id' => 2],
+                ['name' => 'Peter', 'contact_id' => 1],
+                ['name' => 'Joe', 'contact_id' => 2],
             ],
             'contact' => [
                 1 => ['contact_phone' => '+123'],
-                2 => ['contact_phone' => '+321'],
+                ['contact_phone' => '+321'],
             ],
         ], $this->getInternalPersistenceData($db));
     }
@@ -120,55 +123,55 @@ class JoinArrayTest extends TestCase
     public function testJoinSaving2(): void
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
-        $m_u = new Model($db, ['table' => 'user']);
-        $m_u->addField('name');
-        $j = $m_u->join('contact.test_id');
+        $user = new Model($db, ['table' => 'user']);
+        $user->addField('name');
+        $j = $user->join('contact.test_id');
         $j->addField('contact_phone');
         $j->addField('test_id', ['type' => 'integer']);
 
-        $m_u2 = $m_u->createEntity();
-        $m_u2->set('name', 'John');
-        $m_u2->set('contact_phone', '+123');
-        $m_u2->save();
+        $user2 = $user->createEntity();
+        $user2->set('name', 'John');
+        $user2->set('contact_phone', '+123');
+        $user2->save();
 
-        $this->assertEquals([
+        self::assertSame([
             'user' => [1 => ['name' => 'John']],
-            'contact' => [1 => ['test_id' => 1, 'contact_phone' => '+123']],
+            'contact' => [1 => ['contact_phone' => '+123', 'test_id' => 1]],
         ], $this->getInternalPersistenceData($db));
 
-        $m_u2->unload();
-        $m_u2 = $m_u->createEntity();
-        $m_u2->set('name', 'Peter');
-        $m_u2->save();
-        $this->assertEquals([
+        $user2->unload();
+        $user2 = $user->createEntity();
+        $user2->set('name', 'Peter');
+        $user2->save();
+        self::assertSame([
             'user' => [
                 1 => ['name' => 'John'],
-                2 => ['name' => 'Peter'],
+                ['name' => 'Peter'],
             ],
             'contact' => [
-                1 => ['test_id' => 1, 'contact_phone' => '+123'],
-                2 => ['test_id' => 2, 'contact_phone' => null],
+                1 => ['contact_phone' => '+123', 'test_id' => 1],
+                ['contact_phone' => null, 'test_id' => 2],
             ],
         ], $this->getInternalPersistenceData($db));
 
-        $m_c = new Model($db, ['table' => 'contact']);
-        $m_c = $m_c->load(2);
-        $m_c->delete();
+        $contact = new Model($db, ['table' => 'contact']);
+        $contact = $contact->load(2);
+        $contact->delete();
 
-        $m_u2->unload();
-        $m_u2 = $m_u->createEntity();
-        $m_u2->set('name', 'Sue');
-        $m_u2->set('contact_phone', '+444');
-        $m_u2->save();
-        $this->assertEquals([
+        $user2->unload();
+        $user2 = $user->createEntity();
+        $user2->set('name', 'Sue');
+        $user2->set('contact_phone', '+444');
+        $user2->save();
+        self::assertSame([
             'user' => [
                 1 => ['name' => 'John'],
-                2 => ['name' => 'Peter'],
-                3 => ['name' => 'Sue'],
+                ['name' => 'Peter'],
+                ['name' => 'Sue'],
             ],
             'contact' => [
-                1 => ['test_id' => 1, 'contact_phone' => '+123'],
-                3 => ['test_id' => 3, 'contact_phone' => '+444'],
+                1 => ['contact_phone' => '+123', 'test_id' => 1],
+                3 => ['contact_phone' => '+444', 'test_id' => 3],
             ],
         ], $this->getInternalPersistenceData($db));
     }
@@ -176,81 +179,88 @@ class JoinArrayTest extends TestCase
     public function testJoinSaving3(): void
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
-        $m_u = new Model($db, ['table' => 'user']);
-        $m_u->addField('name');
-        $m_u->addField('test_id', ['type' => 'integer']);
-        $j = $m_u->join('contact', ['master_field' => 'test_id']);
+        $user = new Model($db, ['table' => 'user']);
+        $user->addField('name');
+        $user->addField('test_id', ['type' => 'integer']);
+        $j = $user->join('contact', ['masterField' => 'test_id']);
         $j->addField('contact_phone');
-        $m_u = $m_u->createEntity();
+        $user = $user->createEntity();
 
-        $m_u->set('name', 'John');
-        $m_u->set('contact_phone', '+123');
+        $user->set('name', 'John');
+        $user->set('contact_phone', '+123');
 
-        $m_u->save();
+        $user->save();
 
-        $this->assertEquals([
-            'user' => [1 => ['test_id' => 1, 'name' => 'John']],
+        self::assertSame([
+            'user' => [1 => ['name' => 'John', 'test_id' => 1]],
             'contact' => [1 => ['contact_phone' => '+123']],
         ], $this->getInternalPersistenceData($db));
     }
 
-    /*public function testJoinSaving4(): void
+    /* Joining tables on non-id fields is not implemented yet
+    public function testJoinSaving4(): void
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
-        $m_u = new Model($db, ['table' => 'user']);
-        $m_u->addField('name');
-        $m_u->addField('code');
-        $j = $m_u->join('contact.code', ['master_field' => 'code']);
+        $user = new Model($db, ['table' => 'user']);
+        $user->addField('name');
+        $user->addField('code');
+        $j = $user->join('contact.code', ['masterField' => 'code']);
         $j->addField('contact_phone');
-        $m_u = $m_u->createEntity();
+        $user = $user->createEntity();
 
-        $m_u->set('name', 'John');
-        $m_u->set('code', 'C28');
-        $m_u->set('contact_phone', '+123');
+        $user->set('name', 'John');
+        $user->set('code', 'C28');
+        $user->set('contact_phone', '+123');
 
-        $m_u->save();
+        $user->save();
 
-        $this->assertEquals([
-            'user' => [1 => ['id' => 1, 'code' => 'C28', 'name' => 'John']],
-            'contact' => [1 => ['id' => 1, 'code' => 'C28', 'contact_phone' => '+123']],
+        self::assertSame([
+            'user' => [
+                1 => ['id' => 1, 'code' => 'C28', 'name' => 'John'],
+            ],
+            'contact' => [
+                1 => ['id' => 1, 'code' => 'C28', 'contact_phone' => '+123'],
+            ],
         ], $this->getInternalPersistenceData($db));
-    }*/
+    }
+    */
 
     public function testJoinLoading(): void
     {
         $db = new Persistence\Array_([
             'user' => [
                 1 => ['name' => 'John', 'contact_id' => 1],
-                2 => ['name' => 'Peter', 'contact_id' => 1],
-                3 => ['name' => 'Joe', 'contact_id' => 2],
+                ['name' => 'Peter', 'contact_id' => 1],
+                ['name' => 'Joe', 'contact_id' => 2],
             ],
             'contact' => [
                 1 => ['contact_phone' => '+123'],
-                2 => ['contact_phone' => '+321'],
+                ['contact_phone' => '+321'],
             ],
         ]);
-        $m_u = new Model($db, ['table' => 'user']);
-        $m_u->addField('contact_id', ['type' => 'integer']);
-        $m_u->addField('name');
-        $j = $m_u->join('contact');
+
+        $user = new Model($db, ['table' => 'user']);
+        $user->addField('contact_id', ['type' => 'integer']);
+        $user->addField('name');
+        $j = $user->join('contact');
         $j->addField('contact_phone');
 
-        $m_u2 = $m_u->load(1);
-        $this->assertSame([
+        $user2 = $user->load(1);
+        self::assertSame([
             'id' => 1, 'contact_id' => 1, 'name' => 'John', 'contact_phone' => '+123',
-        ], $m_u2->get());
+        ], $user2->get());
 
-        $m_u2 = $m_u->load(3);
-        $this->assertSame([
+        $user2 = $user->load(3);
+        self::assertSame([
             'id' => 3, 'contact_id' => 2, 'name' => 'Joe', 'contact_phone' => '+321',
-        ], $m_u2->get());
+        ], $user2->get());
 
-        $m_u2 = $m_u2->unload();
-        $this->assertSame([
+        $user2 = $user2->unload();
+        self::assertSame([
             'id' => null, 'contact_id' => null, 'name' => null, 'contact_phone' => null,
-        ], $m_u2->get());
+        ], $user2->get());
 
-        $this->assertNull($m_u->tryLoad(4));
+        self::assertNull($user->tryLoad(4));
     }
 
     public function testJoinUpdate(): void
@@ -258,70 +268,71 @@ class JoinArrayTest extends TestCase
         $db = new Persistence\Array_([
             'user' => [
                 1 => ['name' => 'John', 'contact_id' => 1],
-                2 => ['name' => 'Peter', 'contact_id' => 1],
-                3 => ['name' => 'Joe', 'contact_id' => 2],
+                ['name' => 'Peter', 'contact_id' => 1],
+                ['name' => 'Joe', 'contact_id' => 2],
             ],
             'contact' => [
                 1 => ['contact_phone' => '+123'],
-                2 => ['contact_phone' => '+321'],
+                ['contact_phone' => '+321'],
             ],
         ]);
-        $m_u = new Model($db, ['table' => 'user']);
-        $m_u->addField('contact_id', ['type' => 'integer']);
-        $m_u->addField('name');
-        $j = $m_u->join('contact');
+
+        $user = new Model($db, ['table' => 'user']);
+        $user->addField('contact_id', ['type' => 'integer']);
+        $user->addField('name');
+        $j = $user->join('contact');
         $j->addField('contact_phone');
 
-        $m_u2 = $m_u->load(1);
-        $m_u2->set('name', 'John 2');
-        $m_u2->set('contact_phone', '+555');
-        $m_u2->save();
+        $user2 = $user->load(1);
+        $user2->set('name', 'John 2');
+        $user2->set('contact_phone', '+555');
+        $user2->save();
 
-        $this->assertSame([
+        self::assertSame([
             'user' => [
                 1 => ['name' => 'John 2', 'contact_id' => 1],
-                2 => ['name' => 'Peter', 'contact_id' => 1],
-                3 => ['name' => 'Joe', 'contact_id' => 2],
+                ['name' => 'Peter', 'contact_id' => 1],
+                ['name' => 'Joe', 'contact_id' => 2],
             ],
             'contact' => [
                 1 => ['contact_phone' => '+555'],
-                2 => ['contact_phone' => '+321'],
+                ['contact_phone' => '+321'],
             ],
         ], $this->getInternalPersistenceData($db));
 
-        $m_u2 = $m_u->load(3);
-        $m_u2->set('name', 'XX');
-        $m_u2->set('contact_phone', '+999');
-        $m_u2->save();
+        $user2 = $user->load(3);
+        $user2->set('name', 'XX');
+        $user2->set('contact_phone', '+999');
+        $user2->save();
 
-        $this->assertSame([
+        self::assertSame([
             'user' => [
                 1 => ['name' => 'John 2', 'contact_id' => 1],
-                2 => ['name' => 'Peter', 'contact_id' => 1],
-                3 => ['name' => 'XX', 'contact_id' => 2],
+                ['name' => 'Peter', 'contact_id' => 1],
+                ['name' => 'XX', 'contact_id' => 2],
             ],
             'contact' => [
                 1 => ['contact_phone' => '+555'],
-                2 => ['contact_phone' => '+999'],
+                ['contact_phone' => '+999'],
             ],
         ], $this->getInternalPersistenceData($db));
 
-        $m_u2 = $m_u->createEntity();
-        $m_u2->set('name', 'YYY');
-        $m_u2->set('contact_phone', '+777');
-        $m_u2->save();
+        $user2 = $user->createEntity();
+        $user2->set('name', 'YYY');
+        $user2->set('contact_phone', '+777');
+        $user2->save();
 
-        $this->assertEquals([
+        self::assertSame([
             'user' => [
                 1 => ['name' => 'John 2', 'contact_id' => 1],
-                2 => ['name' => 'Peter', 'contact_id' => 1],
-                3 => ['name' => 'XX', 'contact_id' => 2],
-                4 => ['name' => 'YYY', 'contact_id' => 3],
+                ['name' => 'Peter', 'contact_id' => 1],
+                ['name' => 'XX', 'contact_id' => 2],
+                ['name' => 'YYY', 'contact_id' => 3],
             ],
             'contact' => [
                 1 => ['contact_phone' => '+555'],
-                2 => ['contact_phone' => '+999'],
-                3 => ['contact_phone' => '+777'],
+                ['contact_phone' => '+999'],
+                ['contact_phone' => '+777'],
             ],
         ], $this->getInternalPersistenceData($db));
     }
@@ -331,34 +342,35 @@ class JoinArrayTest extends TestCase
         $db = new Persistence\Array_([
             'user' => [
                 1 => ['name' => 'John 2', 'contact_id' => 1],
-                2 => ['name' => 'Peter', 'contact_id' => 1],
-                3 => ['name' => 'XX', 'contact_id' => 2],
-                4 => ['name' => 'YYY', 'contact_id' => 3],
+                ['name' => 'Peter', 'contact_id' => 1],
+                ['name' => 'XX', 'contact_id' => 2],
+                ['name' => 'YYY', 'contact_id' => 3],
             ],
             'contact' => [
                 1 => ['contact_phone' => '+555'],
-                2 => ['contact_phone' => '+999'],
-                3 => ['contact_phone' => '+777'],
+                ['contact_phone' => '+999'],
+                ['contact_phone' => '+777'],
             ],
         ]);
-        $m_u = new Model($db, ['table' => 'user']);
-        $m_u->addField('contact_id', ['type' => 'integer']);
-        $m_u->addField('name');
-        $j = $m_u->join('contact');
+
+        $user = new Model($db, ['table' => 'user']);
+        $user->addField('contact_id', ['type' => 'integer']);
+        $user->addField('name');
+        $j = $user->join('contact');
         $j->addField('contact_phone');
 
-        $m_u = $m_u->load(1);
-        $m_u->delete();
+        $user = $user->load(1);
+        $user->delete();
 
-        $this->assertSame([
+        self::assertSame([
             'user' => [
                 2 => ['name' => 'Peter', 'contact_id' => 1],
-                3 => ['name' => 'XX', 'contact_id' => 2],
-                4 => ['name' => 'YYY', 'contact_id' => 3],
+                ['name' => 'XX', 'contact_id' => 2],
+                ['name' => 'YYY', 'contact_id' => 3],
             ],
             'contact' => [
                 2 => ['contact_phone' => '+999'],
-                3 => ['contact_phone' => '+777'],
+                ['contact_phone' => '+777'],
             ],
         ], $this->getInternalPersistenceData($db));
     }
@@ -368,21 +380,23 @@ class JoinArrayTest extends TestCase
         $db = new Persistence\Array_([
             'user' => [
                 2 => ['name' => 'Peter', 'contact_id' => 1],
-                3 => ['name' => 'XX', 'contact_id' => 2],
-                4 => ['name' => 'YYY', 'contact_id' => 3],
+                ['name' => 'XX', 'contact_id' => 2],
+                ['name' => 'YYY', 'contact_id' => 3],
             ],
             'contact' => [
                 2 => ['contact_phone' => '+999'],
-                3 => ['contact_phone' => '+777'],
+                ['contact_phone' => '+777'],
             ],
         ]);
-        $m_u = new Model($db, ['table' => 'user']);
-        $m_u->addField('contact_id', ['type' => 'integer']);
-        $m_u->addField('name');
-        $j = $m_u->join('contact');
+
+        $user = new Model($db, ['table' => 'user']);
+        $user->addField('contact_id', ['type' => 'integer']);
+        $user->addField('name');
+        $j = $user->join('contact');
         $j->addField('contact_phone');
+
         $this->expectException(Exception::class);
-        $m_u = $m_u->load(2);
+        $user->load(2);
     }
 
     public function testForeignFieldNameGuessTableWithSchema(): void
@@ -391,13 +405,13 @@ class JoinArrayTest extends TestCase
 
         $m = new Model($db, ['table' => 'db.user']);
         $j = $m->join('contact');
-        $this->assertFalse($this->getProtected($j, 'reverse'));
-        $this->assertSame('contact_id', $this->getProtected($j, 'master_field'));
-        $this->assertSame('id', $this->getProtected($j, 'foreign_field'));
+        self::assertFalse($this->getProtected($j, 'reverse'));
+        self::assertSame('contact_id', $this->getProtected($j, 'masterField'));
+        self::assertSame('id', $this->getProtected($j, 'foreignField'));
 
         $j = $m->join('contact2', ['reverse' => true]);
-        $this->assertTrue($this->getProtected($j, 'reverse'));
-        $this->assertSame('id', $this->getProtected($j, 'master_field'));
-        $this->assertSame('user_id', $this->getProtected($j, 'foreign_field'));
+        self::assertTrue($this->getProtected($j, 'reverse'));
+        self::assertSame('id', $this->getProtected($j, 'masterField'));
+        self::assertSame('user_id', $this->getProtected($j, 'foreignField'));
     }
 }

@@ -17,120 +17,117 @@ use Atk4\Data\Model;
 class Static_ extends Array_
 {
     /** @var string This will be the title field for the model. */
-    public $titleForModel;
+    public $titleFieldForModel;
 
-    /** @var array<string, array> Populate the following fields for the model. */
+    /** @var array<string, array<mixed>> Populate the following fields for the model. */
     public $fieldsForModel = [];
 
     /**
-     * Constructor. Can pass array of data in parameters.
-     *
-     * @param array $data Static data in one of supported formats
+     * @param array<int|string, mixed> $data
      */
-    public function __construct(array $data = null)
+    public function __construct(array $data = [])
     {
-        // chomp off first row, we will use it to deduct fields
-        $row1 = reset($data);
+        if (count($data) > 0 && !is_array(reset($data))) {
+            $dataOrig = $data;
+            $data = [];
+            foreach ($dataOrig as $k => $v) {
+                $data[] = ['id' => $k, 'name' => $v];
+            }
+        }
 
-        if (!is_array($row1)) {
-            // convert array of strings into array of hashes
-            $allKeysInt = true;
-            foreach ($data as $k => $str) {
-                $data[$k] = ['name' => $str];
-
-                if (!is_int($k)) {
-                    $allKeysInt = false;
+        // detect types from values
+        $fieldTypes = [];
+        foreach ($data as $row) {
+            foreach ($row as $k => $v) {
+                if (isset($fieldTypes[$k])) {
+                    continue;
                 }
+
+                if (is_bool($v)) {
+                    $fieldType = 'boolean';
+                } elseif (is_int($v)) {
+                    $fieldType = 'integer';
+                } elseif (is_float($v)) {
+                    $fieldType = 'float';
+                } elseif ($v instanceof \DateTimeInterface) {
+                    $fieldType = 'datetime';
+                } elseif (is_array($v)) {
+                    $fieldType = 'json';
+                } elseif (is_object($v)) {
+                    $fieldType = 'object';
+                } elseif ($v !== null) {
+                    $fieldType = 'string';
+                } else {
+                    $fieldType = null;
+                }
+
+                $fieldTypes[$k] = $fieldType;
             }
-            unset($str);
-
-            $this->titleForModel = 'name';
-            $this->fieldsForModel = [
-                'id' => ['type' => $allKeysInt ? 'integer' : 'string'],
-                'name' => ['type' => 'string'], // TODO type should be guessed as well
-            ];
-
-            parent::__construct($data);
-
-            return;
+        }
+        foreach ($fieldTypes as $k => $fieldType) {
+            if ($fieldType === null) {
+                $fieldTypes[$k] = 'string';
+            }
         }
 
-        if (isset($row1['name'])) {
-            $this->titleForModel = 'name';
-        } elseif (isset($row1['title'])) {
-            $this->titleForModel = 'title';
+        if (isset($fieldTypes['name'])) {
+            $this->titleFieldForModel = 'name';
+        } elseif (isset($fieldTypes['title'])) {
+            $this->titleFieldForModel = 'title';
         }
 
-        $key_override = [];
-        $def_types = [];
-        $must_override = false;
+        $defTypes = [];
+        $keyOverride = [];
+        $mustOverride = false;
+        foreach ($fieldTypes as $k => $fieldType) {
+            $defTypes[$k] = ['type' => $fieldType];
 
-        foreach ($row1 as $key => $value) {
             // id information present, use it instead
-            if ($key === 'id') {
-                $must_override = true;
-            }
-
-            // try to detect type of field by its value
-            if (is_bool($value)) {
-                $def_types[] = ['type' => 'boolean'];
-            } elseif (is_int($value)) {
-                $def_types[] = ['type' => 'integer'];
-            } elseif (is_float($value)) {
-                $def_types[] = ['type' => 'float'];
-            } elseif ($value instanceof \DateTimeInterface) {
-                $def_types[] = ['type' => 'datetime'];
-            } elseif (is_array($value)) {
-                $def_types[] = ['type' => 'json'];
-            } elseif (is_object($value)) {
-                $def_types[] = ['type' => 'object'];
-            } else {
-                $def_types[] = ['type' => 'string'];
+            if ($k === 'id') {
+                $mustOverride = true;
             }
 
             // if title is not set, use first key
-            if (!$this->titleForModel) {
-                if (is_int($key)) {
-                    $key_override[] = 'name';
-                    $this->titleForModel = 'name';
-                    $must_override = true;
+            if (!$this->titleFieldForModel) {
+                if (is_int($k)) {
+                    $keyOverride[$k] = 'name';
+                    $this->titleFieldForModel = 'name';
+                    $mustOverride = true;
 
                     continue;
                 }
 
-                $this->titleForModel = $key;
+                $this->titleFieldForModel = $k;
             }
 
-            if (is_int($key)) {
-                $key_override[] = 'field' . $key;
-                $must_override = true;
-
-                continue;
+            if (is_int($k)) {
+                $keyOverride[$k] = 'field' . $k;
+                $mustOverride = true;
+            } else {
+                $keyOverride[$k] = $k;
             }
-
-            $key_override[] = $key;
         }
 
-        if ($must_override) {
-            $data2 = [];
-
-            foreach ($data as $key => $row) {
-                $row = array_combine($key_override, $row);
+        if ($mustOverride) {
+            $dataOrig = $data;
+            $data = [];
+            foreach ($dataOrig as $k => $row) {
+                $row = array_combine($keyOverride, $row);
                 if (isset($row['id'])) {
-                    $key = $row['id'];
+                    $k = $row['id'];
                 }
-                $data2[$key] = $row;
+                $data[$k] = $row;
             }
-            $data = $data2;
         }
 
-        $this->fieldsForModel = array_combine($key_override, $def_types);
+        $this->fieldsForModel = array_combine($keyOverride, $defTypes);
+
         parent::__construct($data);
     }
 
     public function add(Model $model, array $defaults = []): void
     {
-        if ($model->id_field && !$model->hasField($model->id_field)) {
+        if ($model->idField && !$model->hasField($model->idField)) {
             // init model, but prevent array persistence data seeding, id field with correct type must be setup first
             \Closure::bind(function () use ($model, $defaults) {
                 $hadData = true;
@@ -146,10 +143,12 @@ class Static_ extends Array_
                     }
                 }
             }, $this, Array_::class)();
-            $model->persistence = null;
+            \Closure::bind(function () use ($model) {
+                $model->_persistence = null;
+            }, null, Model::class)();
 
-            if (isset($this->fieldsForModel[$model->id_field])) {
-                $model->getField($model->id_field)->type = $this->fieldsForModel[$model->id_field]['type'];
+            if (isset($this->fieldsForModel[$model->idField])) {
+                $model->getField($model->idField)->type = $this->fieldsForModel[$model->idField]['type'];
             }
         }
         $this->addMissingFieldsToModel($model);
@@ -162,8 +161,8 @@ class Static_ extends Array_
      */
     protected function addMissingFieldsToModel(Model $model): void
     {
-        if ($this->titleForModel) {
-            $model->title_field = $this->titleForModel;
+        if ($this->titleFieldForModel) {
+            $model->titleField = $this->titleFieldForModel;
         }
 
         foreach ($this->fieldsForModel as $field => $def) {

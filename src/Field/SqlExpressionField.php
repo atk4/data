@@ -17,44 +17,23 @@ class SqlExpressionField extends Field
         init as private _init;
     }
 
+    public bool $neverSave = true;
+    public bool $readOnly = true;
+
     /** @var \Closure(object, Expression): (string|Expressionable)|string|Expressionable Used expression. */
     public $expr;
-
-    /** @var bool Expressions are always read_only. */
-    public $read_only = true;
 
     /** @var string Specifies how to aggregate this. */
     public $aggregate;
 
-    /** @var string Aggregation by concatenation. */
-    public $concat;
+    /** @var string */
+    public $concatSeparator;
 
     /** @var Reference\HasMany|null When defining as aggregate, this will point to relation object. */
-    public $aggregate_relation;
+    public $aggregateRelation;
 
     /** @var string Specifies which field to use. */
     public $field;
-
-    protected function init(): void
-    {
-        $this->_init();
-
-        if ($this->getOwner()->reload_after_save === null) {
-            $this->getOwner()->reload_after_save = true;
-        }
-
-        if ($this->concat) {
-            $this->onHookToOwnerEntity(Model::HOOK_AFTER_SAVE, \Closure::fromCallable([$this, 'afterSave']));
-        }
-    }
-
-    /**
-     * Possibly that user will attempt to insert values here. If that is the case, then
-     * we would need to inject it into related hasMany relationship.
-     */
-    public function afterSave(Model $entity): void
-    {
-    }
 
     /**
      * Should this field use alias?

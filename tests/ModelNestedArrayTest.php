@@ -11,14 +11,14 @@ use Atk4\Data\Schema\TestCase;
 
 class ModelNestedArrayTest extends TestCase
 {
-    /** @var array */
-    public $hookLog = [];
+    /** @var array<array{string, string, 2?: array<int, mixed>}> */
+    public array $hookLog = [];
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->db->connection->connection()->close();
+        $this->getConnection()->getConnection()->close();
 
         $this->db = new Persistence\Array_([
             'user' => [
@@ -80,10 +80,10 @@ class ModelNestedArrayTest extends TestCase
             'testCaseWeakRef' => \WeakReference::create($this),
             'testModelAlias' => 'inner',
             'table' => 'user',
-            'id_field' => '_id',
+            'idField' => '_id',
         ]);
         $mInner->removeField('_id');
-        $mInner->id_field = 'uid';
+        $mInner->idField = 'uid';
         $mInner->addField('uid', ['actual' => '_id', 'type' => 'integer']);
         $mInner->addField('name');
         $mInner->addField('y', ['actual' => '_birthday', 'type' => 'date']);
@@ -95,7 +95,7 @@ class ModelNestedArrayTest extends TestCase
             'table' => $mInner,
         ]);
         $m->removeField('id');
-        $m->id_field = 'birthday';
+        $m->idField = 'birthday';
         $m->addField('name');
         $m->addField('birthday', ['actual' => 'y', 'type' => 'date']);
 
@@ -106,12 +106,12 @@ class ModelNestedArrayTest extends TestCase
     {
         $m = $this->createTestModel();
 
-        $this->assertSameExportUnordered([
+        self::assertSameExportUnordered([
             1 => ['name' => 'John', 'birthday' => new \DateTime('1980-2-1 UTC')],
             ['name' => 'Sue', 'birthday' => new \DateTime('2005-4-3 UTC')],
         ], $m->export());
 
-        $this->assertSame([], $this->hookLog);
+        self::assertSame([], $this->hookLog);
     }
 
     public function testInsert(): void
@@ -124,7 +124,7 @@ class ModelNestedArrayTest extends TestCase
                 'birthday' => new \DateTime('2000-6-1'),
             ])->save();
 
-        $this->assertSame([
+        self::assertSame([
             ['main', '>>>'],
             ['main', Model::HOOK_VALIDATE, ['save']],
             ['main', Model::HOOK_BEFORE_SAVE, [false]],
@@ -145,10 +145,10 @@ class ModelNestedArrayTest extends TestCase
             ['main', '<<<'],
         ], $this->hookLog);
 
-        $this->assertSame(4, $m->table->loadBy('name', 'Karl')->getId());
-        $this->assertSameExportUnordered([[new \DateTime('2000-6-1 UTC')]], [[$entity->getId()]]);
+        self::assertSame(4, $m->table->loadBy('name', 'Karl')->getId());
+        self::assertSameExportUnordered([[new \DateTime('2000-6-1 UTC')]], [[$entity->getId()]]);
 
-        $this->assertSameExportUnordered([
+        self::assertSameExportUnordered([
             1 => ['name' => 'John', 'birthday' => new \DateTime('1980-2-1 UTC')],
             ['name' => 'Sue', 'birthday' => new \DateTime('2005-4-3 UTC')],
             4 => ['name' => 'Karl', 'birthday' => new \DateTime('2000-6-1 UTC')],
@@ -160,14 +160,10 @@ class ModelNestedArrayTest extends TestCase
         $m = $this->createTestModel();
 
         $m->load(new \DateTime('2005-4-3'))
-            ->setMulti([
-                'name' => 'Sue', // no change
-            ])->save()
-            ->setMulti([
-                'name' => 'Susan',
-            ])->save();
+            ->set('name', 'Sue')->save() // no change
+            ->set('name', 'Susan')->save();
 
-        $this->assertSame([
+        self::assertSame([
             ['main', Model::HOOK_BEFORE_LOAD, [\DateTime::class]],
             ['main', Model::HOOK_AFTER_LOAD, []],
 
@@ -189,12 +185,20 @@ class ModelNestedArrayTest extends TestCase
             ['inner', Model::HOOK_AFTER_UPDATE, [['name' => 'Susan']]],
             ['inner', Model::HOOK_AFTER_SAVE, [true]],
             ['inner', '<<<'],
+            ['inner', Model::HOOK_BEFORE_UNLOAD, []],
+            ['inner', Model::HOOK_AFTER_UNLOAD, []],
             ['main', Model::HOOK_AFTER_UPDATE, [['name' => 'Susan']]],
+
+            ['main', Model::HOOK_BEFORE_UNLOAD, []],
+            ['main', Model::HOOK_AFTER_UNLOAD, []],
+            ['main', Model::HOOK_BEFORE_LOAD, [\DateTime::class]],
+            ['main', Model::HOOK_AFTER_LOAD, []],
+
             ['main', Model::HOOK_AFTER_SAVE, [true]],
             ['main', '<<<'],
         ], $this->hookLog);
 
-        $this->assertSameExportUnordered([
+        self::assertSameExportUnordered([
             1 => ['name' => 'John', 'birthday' => new \DateTime('1980-2-1 UTC')],
             ['name' => 'Susan', 'birthday' => new \DateTime('2005-4-3 UTC')],
         ], $m->export());
@@ -206,7 +210,7 @@ class ModelNestedArrayTest extends TestCase
 
         $m->delete(new \DateTime('2005-4-3'));
 
-        $this->assertSame([
+        self::assertSame([
             ['main', Model::HOOK_BEFORE_LOAD, [\DateTime::class]],
             ['main', Model::HOOK_AFTER_LOAD, []],
 
@@ -226,7 +230,7 @@ class ModelNestedArrayTest extends TestCase
             ['main', Model::HOOK_AFTER_UNLOAD, []],
         ], $this->hookLog);
 
-        $this->assertSameExportUnordered([
+        self::assertSameExportUnordered([
             1 => ['name' => 'John', 'birthday' => new \DateTime('1980-2-1 UTC')],
         ], $m->export());
     }

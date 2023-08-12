@@ -1,44 +1,43 @@
+includes:
+    - phar://phpstan.phar/conf/bleedingEdge.neon
+
 parameters:
     level: 6
     paths:
         - ./
     excludePaths:
-        - cache/
-        - build/
         - vendor/
-
-    # TODO review once we drop PHP 7.x support
-    treatPhpDocTypesAsCertain: false
-
-    # some extra rules
-    checkAlwaysTrueCheckTypeFunctionCall: true
-    checkAlwaysTrueInstanceof: true
-    checkAlwaysTrueStrictComparison: true
-    checkExplicitMixedMissingReturn: true
-    checkFunctionNameCase: true
-    # TODO checkMissingClosureNativeReturnTypehintRule: true
-    reportMaybesInMethodSignatures: true
-    reportStaticMethodSignatures: true
-    checkTooWideReturnTypesInProtectedAndPublicMethods: true
-    checkMissingIterableValueType: false # TODO
 
     ignoreErrors:
         - '~^Unsafe usage of new static\(\)\.$~'
 
-        -
-            message: '~^Call to deprecated method getRawDataByTable\(\) of class Atk4\\Data\\Persistence\\Array_:~'
-            path: '*'
-            count: 2
+        # relax strict rules
+        - '~^Only booleans are allowed in .+, .+ given( on the (left|right) side)?\.~'
+        - '~^Variable (static )?(property access|method call) on .+\.~'
 
         # fix https://github.com/phpstan/phpstan-deprecation-rules/issues/52 and https://github.com/phpstan/phpstan/issues/6444
         -
-            message: '~^Call to method (getVarcharTypeDeclarationSQL|getClobTypeDeclarationSQL|getCreateTableSQL)\(\) of deprecated class Doctrine\\DBAL\\Platforms\\(SQLServerPlatform|AbstractPlatform):\nUse.+instead\.$~'
+            message: '~^Call to method (getVarcharTypeDeclarationSQL|getClobTypeDeclarationSQL|getCreateTableSQL|getCurrentDatabaseExpression|initializeDoctrineTypeMappings)\(\) of deprecated class Doctrine\\DBAL\\Platforms\\(PostgreSQLPlatform|SQLServerPlatform|AbstractPlatform):\nUse.+instead\.$~'
+            path: '*'
+            count: 5
+        # https://github.com/phpstan/phpstan-deprecation-rules/issues/75
+        -
+            message: '~^Call to deprecated method getVarcharTypeDeclarationSQL\(\) of class AnonymousClass\w+:\nUse \{@link getStringTypeDeclarationSQL\(\)\} instead\.$~'
+            path: '*'
+            count: 1
+
+        # AbstractPlatform::getIdentitySequenceName() method is deprecated in DBAL 3.4+,
+        # in DBAL 4.0 OraclePlatform::getIdentitySequenceName() is protected and
+        # PostgreSQLPlatform::getIdentitySequenceName() is removed:
+        # https://github.com/doctrine/dbal/blob/3.5.1/src/Platforms/PostgreSQLPlatform.php#L611
+        # https://github.com/doctrine/dbal/blob/4.0.0-beta1/src/Platforms/PostgreSQLPlatform.php#L297
+        -
+            message: '~^Call to deprecated method getIdentitySequenceName\(\) of class Doctrine\\DBAL\\Platforms\\(PostgreSQLPlatform|OraclePlatform)\.$~'
             path: '*'
             count: 3
 
         # TODO these rules are generated, this ignores should be fixed in the code
         # for src/Schema/TestCase.php
-        - '~^Access to an undefined property Atk4\\Data\\Persistence::\$connection\.$~'
         - '~^Call to an undefined method Atk4\\Data\\Persistence::dsql\(\)\.$~'
         # for src/Field/SqlExpressionField.php
         - '~^Call to an undefined method Atk4\\Data\\Model::expr\(\)\.$~'

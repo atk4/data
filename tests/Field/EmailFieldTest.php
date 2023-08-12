@@ -17,19 +17,19 @@ class EmailFieldTest extends TestCase
         $m->addField('email', [EmailField::class]);
         $entity = $m->createEntity();
 
-        $this->assertNull($entity->get('email'));
+        self::assertNull($entity->get('email'));
 
         // normal value
         $entity->set('email', 'foo@example.com');
-        $this->assertSame('foo@example.com', $entity->get('email'));
+        self::assertSame('foo@example.com', $entity->get('email'));
 
         // null value
         $entity->set('email', null);
-        $this->assertNull($entity->get('email'));
+        self::assertNull($entity->get('email'));
 
         // padding, spacing etc removed
         $entity->set('email', " \t " . 'foo@example.com ' . " \n ");
-        $this->assertSame('foo@example.com', $entity->get('email'));
+        self::assertSame('foo@example.com', $entity->get('email'));
 
         // no domain - go to hell :)
         $this->expectException(ValidationException::class);
@@ -40,29 +40,32 @@ class EmailFieldTest extends TestCase
     public function testEmailValidateDns(): void
     {
         $m = new Model();
-        $m->addField('email', [EmailField::class, 'dns_check' => true]);
-        $m->addField('email_idn', [EmailField::class, 'dns_check' => true]);
+        $m->addField('email', [EmailField::class, 'dnsCheck' => true]);
         $entity = $m->createEntity();
 
         $entity->set('email', ' foo@gmail.com');
+        self::assertSame('foo@gmail.com', $entity->get('email'));
 
-        $entity->set('email_idn', 'test@háčkyčárky.cz'); // official IDN test domain
-        $this->assertSame('test@háčkyčárky.cz', $entity->get('email_idn'));
+        $entity->set('email', ' foo@mail.co.uk');
+        self::assertSame('foo@mail.co.uk', $entity->get('email'));
+
+        $entity->set('email', 'test@háčkyčárky.cz'); // official IDN test domain
+        self::assertSame('test@háčkyčárky.cz', $entity->get('email'));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('domain does not exist');
-        $entity->set('email', ' foo@lrcanoetuhasnotdusantotehusontehuasntddaontehudnouhtd.com');
+        $entity->set('email', 'test@háčkyčárky2.cz');
     }
 
     public function testEmailWithName(): void
     {
         $m = new Model();
         $m->addField('email', [EmailField::class]);
-        $m->addField('email_name', [EmailField::class, 'allow_name' => true]);
+        $m->addField('email_name', [EmailField::class, 'allowName' => true]);
         $entity = $m->createEntity();
 
         $entity->set('email_name', 'Žlutý Kůň <me3@❤.com>');
-        $this->assertSame('Žlutý Kůň <me3@❤.com>', $entity->get('email_name'));
+        self::assertSame('Žlutý Kůň <me3@❤.com>', $entity->get('email_name'));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('format is invalid');

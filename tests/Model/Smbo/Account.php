@@ -17,7 +17,7 @@ class Account extends Model
         $this->addField('name');
 
         $this->hasMany('Payment', ['model' => [Payment::class]])
-            ->addField('balance', ['aggregate' => 'sum', 'field' => 'amount']);
+            ->addField('balance', ['aggregate' => 'sum', 'field' => 'amount', 'type' => 'atk4_money']);
     }
 
     /**
@@ -25,7 +25,7 @@ class Account extends Model
      */
     public function transfer(self $a, float $amount): Transfer
     {
-        $t = new Transfer($this->persistence, ['detached' => true]);
+        $t = new Transfer($this->getModel()->getPersistence(), ['detached' => true]);
         $t = $t->createEntity();
         $t->set('account_id', $this->getId());
 

@@ -67,13 +67,14 @@ class ValidationTest extends TestCase
         $m->set('name', 'john');
         $m->set('domain', 'gmail.com');
         $m->save();
-        $this->assertTrue(true); // no exception
+        self::assertSame('john', $m->get('name'));
     }
 
     public function testValidate2(): void
     {
         $m = $this->m->createEntity();
         $m->set('name', 'Python');
+
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Snakes');
         $m->save();
@@ -84,6 +85,7 @@ class ValidationTest extends TestCase
         $m = $this->m->createEntity();
         $m->set('name', 'Python');
         $m->set('domain', 'example.com');
+
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Multiple');
         $m->save();
@@ -95,12 +97,13 @@ class ValidationTest extends TestCase
         try {
             $m->set('name', 'Python');
             $m->set('domain', 'example.com');
-            $m->save();
-            $this->fail('Expected exception');
-        } catch (\Atk4\Data\ValidationException $e) {
-            $this->assertSame('This domain is reserved for examples only', $e->getParams()['errors']['domain']);
 
-            return;
+            $this->expectException(ValidationException::class);
+            $m->save();
+        } catch (ValidationException $e) {
+            self::assertSame('This domain is reserved for examples only', $e->getParams()['errors']['domain']);
+
+            throw $e;
         }
     }
 
@@ -115,11 +118,10 @@ class ValidationTest extends TestCase
         $m->save();
     }
 
-    public function testValidateHook(): void
+    public function testValidateHook1(): void
     {
         $m = $this->m->createEntity();
-
-        $m->onHook(Model::HOOK_VALIDATE, static function ($m) {
+        $m->onHook(Model::HOOK_VALIDATE, static function (Model $m) {
             if ($m->get('name') === 'C#') {
                 return ['name' => 'No sharp objects allowed'];
             }
@@ -130,19 +132,38 @@ class ValidationTest extends TestCase
 
         try {
             $m->set('name', 'C#');
+
+            $this->expectException(ValidationException::class);
             $m->save();
-            $this->fail('Expected exception');
-        } catch (\Atk4\Data\ValidationException $e) {
-            $this->assertSame('No sharp objects allowed', $e->errors['name']);
+        } catch (ValidationException $e) {
+            self::assertSame('No sharp objects allowed', $e->errors['name']);
+
+            throw $e;
         }
+    }
+
+    public function testValidateHook2(): void
+    {
+        $m = $this->m->createEntity();
+        $m->onHook(Model::HOOK_VALIDATE, static function (Model $m) {
+            if ($m->get('name') === 'C#') {
+                return ['name' => 'No sharp objects allowed'];
+            }
+        });
+
+        $m->set('name', 'Swift');
+        $m->save();
 
         try {
             $m->set('name', 'Python');
             $m->set('domain', 'example.com');
+
+            $this->expectException(ValidationException::class);
             $m->save();
-            $this->fail('Expected exception');
-        } catch (\Atk4\Data\ValidationException $e) {
-            $this->assertCount(2, $e->errors);
+        } catch (ValidationException $e) {
+            self::assertCount(2, $e->errors);
+
+            throw $e;
         }
     }
 }

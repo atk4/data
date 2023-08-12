@@ -23,7 +23,7 @@ class TransactionTest extends TestCase
         $m->addField('name');
         $m = $m->load(2);
 
-        $m->onHook(Model::HOOK_AFTER_SAVE, static function ($m) {
+        $m->onHook(Model::HOOK_AFTER_SAVE, static function () {
             throw new \Exception('Awful thing happened');
         });
         $m->set('name', 'XXX');
@@ -33,7 +33,7 @@ class TransactionTest extends TestCase
         } catch (\Exception $e) {
         }
 
-        $this->assertSame('Sue', $this->getDb()['item'][2]['name']);
+        self::assertSame('Sue', $this->getDb()['item'][2]['name']);
 
         $m->onHook(Model::HOOK_AFTER_DELETE, static function (Model $model) {
             throw new \Exception('Awful thing happened');
@@ -44,7 +44,7 @@ class TransactionTest extends TestCase
         } catch (\Exception $e) {
         }
 
-        $this->assertSame('Sue', $this->getDb()['item'][2]['name']);
+        self::assertSame('Sue', $this->getDb()['item'][2]['name']);
     }
 
     public function testBeforeSaveHook(): void
@@ -59,18 +59,18 @@ class TransactionTest extends TestCase
         $m = new Model($this->db, ['table' => 'item']);
         $m->addField('name');
         $testCase = $this;
-        $m->onHookShort(Model::HOOK_BEFORE_SAVE, static function (bool $isUpdate) use ($testCase) {
-            $testCase->assertFalse($isUpdate);
+        $m->onHookShort(Model::HOOK_BEFORE_SAVE, static function (bool $isUpdate) {
+            self::assertFalse($isUpdate);
         });
         $m->createEntity()->save(['name' => 'Foo']);
 
         // test update
         $m = new Model($this->db, ['table' => 'item']);
         $m->addField('name');
-        $m->onHookShort(Model::HOOK_AFTER_SAVE, static function (bool $isUpdate) use ($testCase) {
-            $testCase->assertTrue($isUpdate);
+        $m->onHookShort(Model::HOOK_AFTER_SAVE, static function (bool $isUpdate) {
+            self::assertTrue($isUpdate);
         });
-        $m = $m->loadBy('name', 'John')->save(['name' => 'Foo']);
+        $m->loadBy('name', 'John')->save(['name' => 'Foo']);
     }
 
     public function testAfterSaveHook(): void
@@ -85,18 +85,18 @@ class TransactionTest extends TestCase
         $m = new Model($this->db, ['table' => 'item']);
         $m->addField('name');
         $testCase = $this;
-        $m->onHookShort(Model::HOOK_AFTER_SAVE, static function (bool $isUpdate) use ($testCase) {
-            $testCase->assertFalse($isUpdate);
+        $m->onHookShort(Model::HOOK_AFTER_SAVE, static function (bool $isUpdate) {
+            self::assertFalse($isUpdate);
         });
         $m->createEntity()->save(['name' => 'Foo']);
 
         // test update
         $m = new Model($this->db, ['table' => 'item']);
         $m->addField('name');
-        $m->onHookShort(Model::HOOK_AFTER_SAVE, static function (bool $isUpdate) use ($testCase) {
-            $testCase->assertTrue($isUpdate);
+        $m->onHookShort(Model::HOOK_AFTER_SAVE, static function (bool $isUpdate) {
+            self::assertTrue($isUpdate);
         });
-        $m = $m->loadBy('name', 'John')->save(['name' => 'Foo']);
+        $m->loadBy('name', 'John')->save(['name' => 'Foo']);
     }
 
     public function testOnRollbackHook(): void
@@ -112,10 +112,10 @@ class TransactionTest extends TestCase
         $m->addField('name');
         $m->addField('foo');
 
-        $hook_called = false;
+        $hookCalled = false;
         $values = [];
-        $m->onHook(Model::HOOK_ROLLBACK, static function (Model $model, \Exception $e) use (&$hook_called, &$values) {
-            $hook_called = true;
+        $m->onHook(Model::HOOK_ROLLBACK, static function (Model $model, \Exception $e) use (&$hookCalled, &$values) {
+            $hookCalled = true;
             $values = $model->get(); // model field values are still the same no matter we rolled back
             $model->breakHook(false); // if we break hook and return false then exception is not thrown, but rollback still happens
         });
@@ -125,7 +125,7 @@ class TransactionTest extends TestCase
         $m->setMulti(['name' => 'Jane', 'foo' => 'bar']);
         $m->save();
 
-        $this->assertTrue($hook_called);
-        $this->assertSame($m->get(), $values);
+        self::assertTrue($hookCalled);
+        self::assertSame($m->get(), $values);
     }
 }

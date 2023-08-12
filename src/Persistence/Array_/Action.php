@@ -10,16 +10,19 @@ use Atk4\Data\Model;
 
 /**
  * Returned by Model::action(). Compatible with DSQL to a certain point as it implements
- * specific actions such as getOne() or getRows().
+ * specific methods such as getOne() or getRows().
  */
 class Action
 {
-    /** @var \Iterator */
+    /** @var \Iterator<int, array<string, mixed>> */
     public $generator;
 
-    /** @var \Closure[] hack for GC for PHP 8.1.3 or older */
-    private $_filterFxs = [];
+    /** @var list<\Closure(array<string, mixed>): bool> hack for GC for PHP 8.1.3 or older */
+    private array $_filterFxs = [];
 
+    /**
+     * @param array<int, array<string, mixed>> $data
+     */
     public function __construct(array $data)
     {
         $this->generator = new \ArrayIterator($data);
@@ -71,7 +74,7 @@ class Action
             case 'SUM':
                 $result = array_sum($column);
 
-            break;
+                break;
             case 'AVG':
                 $column = $coalesce ? $column : array_filter($column, function ($value) {
                     return $value !== null;
@@ -79,27 +82,29 @@ class Action
 
                 $result = array_sum($column) / count($column);
 
-            break;
+                break;
             case 'MAX':
                 $result = max($column);
 
-            break;
+                break;
             case 'MIN':
                 $result = min($column);
 
-            break;
+                break;
             default:
                 throw (new Exception('Array persistence driver action unsupported format'))
                     ->addMoreInfo('action', $fx);
         }
 
-        $this->generator = new \ArrayIterator([[$result]]);
+        $this->generator = new \ArrayIterator([['v' => $result]]);
 
         return $this;
     }
 
     /**
      * Checks if $row matches $condition.
+     *
+     * @param array<string, mixed> $row
      */
     protected function match(array $row, Model\Scope\AbstractScope $condition): bool
     {
@@ -124,9 +129,8 @@ class Action
             return $this->evaluateIf($row[$field->shortName] ?? null, $operator, $value);
         } elseif ($condition instanceof Model\Scope) { // nested conditions
             $matches = [];
-
             foreach ($condition->getNestedConditions() as $nestedCondition) {
-                $matches[] = $subMatch = (bool) $this->match($row, $nestedCondition);
+                $matches[] = $subMatch = $this->match($row, $nestedCondition);
 
                 // do not check all conditions if any match required
                 if ($condition->isOr() && $subMatch) {
@@ -161,38 +165,37 @@ class Action
             case '=':
                 $result = is_array($v2) ? $this->evaluateIf($v1, 'IN', $v2) : $v1 === $v2;
 
-            break;
+                break;
             case '>':
                 $result = $v1 > $v2;
 
-            break;
+                break;
             case '>=':
                 $result = $v1 >= $v2;
 
-            break;
+                break;
             case '<':
                 $result = $v1 < $v2;
 
-            break;
+                break;
             case '<=':
                 $result = $v1 <= $v2;
 
-            break;
+                break;
             case '!=':
-            case '<>':
                 $result = !$this->evaluateIf($v1, '=', $v2);
 
-            break;
+                break;
             case 'LIKE':
-                $pattern = str_ireplace('%', '(.*?)', preg_quote($v2));
+                $pattern = str_ireplace('%', '(.*?)', preg_quote($v2, '~'));
 
-                $result = (bool) preg_match('/^' . $pattern . '$/', (string) $v1);
+                $result = (bool) preg_match('~^' . $pattern . '$~', (string) $v1);
 
-            break;
+                break;
             case 'NOT LIKE':
                 $result = !$this->evaluateIf($v1, 'LIKE', $v2);
 
-            break;
+                break;
             case 'IN':
                 $result = false;
                 foreach ($v2 as $v2Item) { // TODO flatten rows, this looses column names!
@@ -203,19 +206,19 @@ class Action
                     }
                 }
 
-            break;
+                break;
             case 'NOT IN':
                 $result = !$this->evaluateIf($v1, 'IN', $v2);
 
-            break;
+                break;
             case 'REGEXP':
                 $result = (bool) preg_match('/' . $v2 . '/', $v1);
 
-            break;
+                break;
             case 'NOT REGEXP':
                 $result = !$this->evaluateIf($v1, 'REGEXP', $v2);
 
-            break;
+                break;
             default:
                 throw (new Exception('Unsupported operator'))
                     ->addMoreInfo('operator', $operator);
@@ -226,6 +229,8 @@ class Action
 
     /**
      * Applies sorting on Iterator.
+     *
+     * @param array<int, array{string, 'asc'|'desc'}> $fields
      *
      * @return $this
      */
@@ -269,7 +274,7 @@ class Action
      */
     public function count()
     {
-        $this->generator = new \ArrayIterator([[iterator_count($this->generator)]]);
+        $this->generator = new \ArrayIterator([['v' => iterator_count($this->generator)]]);
 
         return $this;
     }
@@ -282,13 +287,15 @@ class Action
     public function exists()
     {
         $this->generator->rewind();
-        $this->generator = new \ArrayIterator([[$this->generator->valid() ? 1 : 0]]);
+        $this->generator = new \ArrayIterator([['v' => $this->generator->valid() ? 1 : 0]]);
 
         return $this;
     }
 
     /**
      * Return all data inside array.
+     *
+     * @return array<int, array<string, mixed>>
      */
     public function getRows(): array
     {
@@ -297,6 +304,8 @@ class Action
 
     /**
      * Return one row of data.
+     *
+     * @return array<string, mixed>|null
      */
     public function getRow(): ?array
     {

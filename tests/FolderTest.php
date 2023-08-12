@@ -14,10 +14,11 @@ class Folder extends Model
     protected function init(): void
     {
         parent::init();
+
         $this->addField('name');
 
-        $this->hasMany('SubFolder', ['model' => [self::class], 'their_field' => 'parent_id'])
-            ->addField('count', ['aggregate' => 'count', 'field' => $this->persistence->expr($this, '*')]);
+        $this->hasMany('SubFolder', ['model' => [self::class], 'theirField' => 'parent_id'])
+            ->addField('count', ['aggregate' => 'count', 'field' => $this->getPersistence()->expr($this, '*')]);
 
         $this->hasOne('parent_id', ['model' => [self::class]])
             ->addTitle();
@@ -45,9 +46,10 @@ class FolderTest extends TestCase
         ]);
 
         $f = new Folder($this->db);
+        $this->createMigrator()->createForeignKey($f->getReference('SubFolder'));
         $f = $f->load(4);
 
-        $this->assertSame([
+        self::assertSame([
             'id' => 4,
             'name' => 'My Projects',
             'count' => '3',

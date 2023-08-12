@@ -13,25 +13,26 @@ use Atk4\Data\Reference;
  */
 trait ReferencesTrait
 {
-    /** @var array The seed used by addRef() method. */
-    public $_default_seed_addRef = [Reference::class];
+    /** @var array<mixed> The seed used by addReference() method. */
+    protected $_defaultSeedAddReference = [Reference::class];
 
-    /** @var array The seed used by hasOne() method. */
-    public $_default_seed_hasOne = [Reference\HasOne::class];
+    /** @var array<mixed> The seed used by hasOne() method. */
+    protected $_defaultSeedHasOne = [Reference\HasOne::class];
 
-    /** @var array The seed used by hasMany() method. */
-    public $_default_seed_hasMany = [Reference\HasMany::class];
+    /** @var array<mixed> The seed used by hasMany() method. */
+    protected $_defaultSeedHasMany = [Reference\HasMany::class];
 
-    /** @var array The seed used by containsOne() method. */
-    public $_default_seed_containsOne = [Reference\ContainsOne::class];
+    /** @var array<mixed> The seed used by containsOne() method. */
+    protected $_defaultSeedContainsOne = [Reference\ContainsOne::class];
 
-    /** @var array The seed used by containsMany() method. */
-    public $_default_seed_containsMany = [Reference\ContainsMany::class];
+    /** @var array<mixed> The seed used by containsMany() method. */
+    protected $_defaultSeedContainsMany = [Reference\ContainsMany::class];
 
     /**
-     * @param array<string, mixed> $defaults Properties which we will pass to Reference object constructor
+     * @param array<mixed>         $seed
+     * @param array<string, mixed> $defaults
      */
-    protected function _addRef(array $seed, string $link, array $defaults = []): Reference
+    protected function _addReference(array $seed, string $link, array $defaults = []): Reference
     {
         $this->assertIsModel();
 
@@ -39,7 +40,8 @@ trait ReferencesTrait
 
         $reference = Reference::fromSeed($seed, $defaults);
 
-        if ($this->hasElement($name = $reference->getDesiredName())) {
+        $name = $reference->getDesiredName();
+        if ($this->hasElement($name)) {
             throw (new Exception('Reference with such name already exists'))
                 ->addMoreInfo('name', $name)
                 ->addMoreInfo('link', $link);
@@ -52,111 +54,125 @@ trait ReferencesTrait
 
     /**
      * Add generic relation. Provide your own call-back that will return the model.
+     *
+     * @param array<string, mixed> $defaults
      */
-    public function addRef(string $link, array $defaults): Reference
+    public function addReference(string $link, array $defaults): Reference
     {
-        return $this->_addRef($this->_default_seed_addRef, $link, $defaults);
+        return $this->_addReference($this->_defaultSeedAddReference, $link, $defaults);
     }
 
     /**
      * Add hasOne reference.
      *
+     * @param array<string, mixed> $defaults
+     *
      * @return Reference\HasOne|Reference\HasOneSql
      */
     public function hasOne(string $link, array $defaults = []) // : Reference
     {
-        return $this->_addRef($this->_default_seed_hasOne, $link, $defaults); // @phpstan-ignore-line
+        // @phpstan-ignore-next-line https://github.com/phpstan/phpstan/issues/9022
+        return $this->_addReference($this->_defaultSeedHasOne, $link, $defaults); // @phpstan-ignore-line
     }
 
     /**
      * Add hasMany reference.
      *
+     * @param array<string, mixed> $defaults
+     *
      * @return Reference\HasMany
      */
     public function hasMany(string $link, array $defaults = []) // : Reference
     {
-        return $this->_addRef($this->_default_seed_hasMany, $link, $defaults); // @phpstan-ignore-line
+        // @phpstan-ignore-next-line https://github.com/phpstan/phpstan/issues/9022
+        return $this->_addReference($this->_defaultSeedHasMany, $link, $defaults); // @phpstan-ignore-line
     }
 
     /**
      * Add containsOne reference.
      *
+     * @param array<string, mixed> $defaults
+     *
      * @return Reference\ContainsOne
      */
     public function containsOne(string $link, array $defaults = []) // : Reference
     {
-        return $this->_addRef($this->_default_seed_containsOne, $link, $defaults); // @phpstan-ignore-line
+        // @phpstan-ignore-next-line https://github.com/phpstan/phpstan/issues/9022
+        return $this->_addReference($this->_defaultSeedContainsOne, $link, $defaults); // @phpstan-ignore-line
     }
 
     /**
      * Add containsMany reference.
      *
+     * @param array<string, mixed> $defaults
+     *
      * @return Reference\ContainsMany
      */
     public function containsMany(string $link, array $defaults = []) // : Reference
     {
-        return $this->_addRef($this->_default_seed_containsMany, $link, $defaults); // @phpstan-ignore-line
+        // @phpstan-ignore-next-line https://github.com/phpstan/phpstan/issues/9022
+        return $this->_addReference($this->_defaultSeedContainsMany, $link, $defaults); // @phpstan-ignore-line
     }
 
-    /**
-     * Returns true if reference exists.
-     */
-    public function hasRef(string $link): bool
+    public function hasReference(string $link): bool
     {
-        return $this->getModel(true)->hasElement('#ref_' . $link);
+        return $this->getModel(true)->hasElement('#ref-' . $link);
     }
 
-    /**
-     * Returns the reference.
-     */
-    public function getRef(string $link): Reference
+    public function getReference(string $link): Reference
     {
         $this->assertIsModel();
 
-        return $this->getElement('#ref_' . $link);
+        return $this->getElement('#ref-' . $link);
     }
 
     /**
-     * Returns all references.
-     *
      * @return array<string, Reference>
      */
-    public function getRefs(): array
+    public function getReferences(): array
     {
         $this->assertIsModel();
 
-        $refs = [];
-        foreach (array_keys($this->elements) as $k) {
-            if (str_starts_with($k, '#ref_')) {
-                $link = substr($k, strlen('#ref_'));
-                $refs[$link] = $this->getRef($link);
+        $res = [];
+        foreach ($this->elements as $k => $v) {
+            if (str_starts_with($k, '#ref-')) {
+                $link = substr($k, strlen('#ref-'));
+                $res[$link] = $this->getReference($link);
+            } elseif ($v instanceof Reference) {
+                throw new \Error('Unexpected Reference index');
             }
         }
 
-        return $refs;
+        return $res;
     }
 
     /**
      * Traverse to related model.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function ref(string $link, array $defaults = []): Model
     {
-        return $this->getModel(true)->getRef($link)->ref($this, $defaults);
+        return $this->getModel(true)->getReference($link)->ref($this, $defaults);
     }
 
     /**
      * Return related model.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function refModel(string $link, array $defaults = []): Model
     {
-        return $this->getModel(true)->getRef($link)->refModel($this, $defaults);
+        return $this->getModel(true)->getReference($link)->refModel($this, $defaults);
     }
 
     /**
      * Returns model that can be used for generating sub-query actions.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function refLink(string $link, array $defaults = []): Model
     {
-        return $this->getModel(true)->getRef($link)->refLink($this, $defaults);
+        return $this->getModel(true)->getReference($link)->refLink($this, $defaults);
     }
 }

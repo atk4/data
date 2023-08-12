@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Util;
 
-class DeepCopyException extends \Atk4\Data\Exception
+use Atk4\Data\Exception;
+
+class DeepCopyException extends Exception
 {
     /**
      * @return $this

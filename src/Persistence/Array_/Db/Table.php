@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Persistence\Array_\Db;
 
 use Atk4\Data\Exception;
+use Atk4\Data\Model;
 
 class Table
 {
@@ -20,6 +21,9 @@ class Table
         $this->tableName = $tableName;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function __debugInfo(): array
     {
         return [
@@ -34,7 +38,7 @@ class Table
      */
     protected function assertValidIdentifier($name): void
     {
-        if (!is_string($name) || !$name || is_numeric($name)) {
+        if (!is_string($name) || $name === '' || is_numeric($name)) { // @phpstan-ignore-line
             throw (new Exception('Name must be a non-empty non-numeric string'))
                 ->addMoreInfo('name', $name);
         }
@@ -183,10 +187,10 @@ class Table
      *
      * @param mixed $idRaw
      */
-    public function getRowById(\Atk4\Data\Model $model, $idRaw): ?Row
+    public function getRowById(Model $model, $idRaw): ?Row
     {
         foreach ($this->getRows() as $row) {
-            if ($row->getValue($model->getField($model->id_field)->getPersistenceName()) === $idRaw) {
+            if ($row->getValue($model->getField($model->idField)->getPersistenceName()) === $idRaw) {
                 return $row;
             }
         }

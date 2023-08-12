@@ -31,11 +31,11 @@ class Reference
     /**
      * Use this alias for related entity by default. This can help you
      * if you create sub-queries or joins to separate this from main
-     * table. The table_alias will be uniquely generated.
+     * table. The tableAlias will be uniquely generated.
      *
      * @var string
      */
-    protected $table_alias;
+    protected $tableAlias;
 
     /**
      * What should we pass into owner->ref() to get through to this reference.
@@ -52,25 +52,27 @@ class Reference
      * then used inside getModel() to fully populate and associate with
      * persistence.
      *
-     * @var Model|\Closure(object, static, array): Model|array
+     * @var Model|\Closure(object, static, array<string, mixed>): Model|array<mixed>
      */
     public $model;
 
     /**
      * This is an optional property which can be used by your implementation
      * to store field-level relationship based on a common field matching.
-     *
-     * @var string
      */
-    protected $our_field;
+    protected ?string $ourField = null;
 
     /**
      * This is an optional property which can be used by your implementation
      * to store field-level relationship based on a common field matching.
-     *
-     * @var string|null
      */
-    protected $their_field;
+    protected ?string $theirField = null;
+
+    /**
+     * Database our/their field types must always match, but DBAL types can be different in theory,
+     * set this to false when the DBAL types are intentionally different.
+     */
+    public bool $checkTheirType = true;
 
     /**
      * Caption of the referenced model. Can be used in UI components, for example.
@@ -108,9 +110,9 @@ class Reference
         }
     }
 
-    protected function getOurFieldName(): string
+    public function getOurFieldName(): string
     {
-        return $this->our_field ?: $this->getOurModel(null)->id_field;
+        return $this->ourField ?? $this->getOurModel(null)->idField;
     }
 
     final protected function getOurField(): Field
@@ -128,9 +130,15 @@ class Reference
 
     public function getTheirFieldName(Model $theirModel = null): string
     {
-        return $this->their_field ?? ($theirModel ?? Model::assertInstanceOf($this->model))->id_field;
+        return $this->theirField ?? ($theirModel ?? Model::assertInstanceOf($this->model))->idField;
     }
 
+    /**
+     * @template T of Model
+     *
+     * @param \Closure(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
+     * @param array<int, mixed>                                                                        $args
+     */
     protected function onHookToOurModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->shortName; // use static function to allow this object to be GCed
@@ -146,10 +154,14 @@ class Reference
         );
     }
 
+    /**
+     * @param \Closure(Model, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
+     * @param array<int, mixed>                                                                            $args
+     */
     protected function onHookToTheirModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         if ($model->ownerReference !== null && $model->ownerReference !== $this) {
-            throw new Exception('Model owner reference unexpectedly already set');
+            throw new Exception('Model owner reference is unexpectedly already set');
         }
         $model->ownerReference = $this;
         $getThisFx = static function (Model $model) {
@@ -173,11 +185,11 @@ class Reference
     }
 
     /**
-     * Will use #ref_<link>.
+     * Will use #ref-<link>.
      */
     public function getDesiredName(): string
     {
-        return '#ref_' . $this->link;
+        return '#ref-' . $this->link;
     }
 
     public function getOurModel(?Model $ourModel): Model
@@ -196,11 +208,13 @@ class Reference
      * necessary conditions.
      *
      * IMPORTANT: the returned model must be a fresh clone or freshly built from a seed
+     *
+     * @param array<string, mixed> $defaults
      */
     public function createTheirModel(array $defaults = []): Model
     {
-        // set table_alias
-        $defaults['table_alias'] ??= $this->table_alias;
+        // set tableAlias
+        $defaults['tableAlias'] ??= $this->tableAlias;
 
         // if model is Closure, then call the closure and it should return a model
         if ($this->model instanceof \Closure) {
@@ -223,29 +237,50 @@ class Reference
 
         $this->addToPersistence($theirModel, $defaults);
 
+        if ($this->checkTheirType) {
+            $ourField = $this->getOurField();
+            $theirField = $theirModel->getField($this->getTheirFieldName($theirModel));
+            if ($theirField->type !== $ourField->type) {
+                throw (new Exception('Reference type mismatch'))
+                    ->addMoreInfo('ourField', $ourField)
+                    ->addMoreInfo('ourFieldType', $ourField->type)
+                    ->addMoreInfo('theirField', $theirField)
+                    ->addMoreInfo('theirFieldType', $theirField->type);
+            }
+        }
+
         return $theirModel;
     }
 
     protected function initTableAlias(): void
     {
-        if (!$this->table_alias) {
+        if (!$this->tableAlias) {
             $ourModel = $this->getOurModel(null);
 
             $aliasFull = $this->link;
-            $alias = preg_replace('~_(' . preg_quote($ourModel->id_field ?? '', '~') . '|id)$~', '', $aliasFull);
+            $alias = preg_replace('~_(' . preg_quote($ourModel->idField !== false ? $ourModel->idField : '', '~') . '|id)$~', '', $aliasFull);
             $alias = preg_replace('~([0-9a-z]?)[0-9a-z]*[^0-9a-z]*~i', '$1', $alias);
-            if ($ourModel->table_alias !== null) {
-                $aliasFull = $ourModel->table_alias . '_' . $aliasFull;
-                $alias = preg_replace('~^_(.+)_[0-9a-f]{12}$~', '$1', $ourModel->table_alias) . '_' . $alias;
+            if ($ourModel->tableAlias !== null) {
+                $aliasFull = $ourModel->tableAlias . '_' . $aliasFull;
+                $alias = preg_replace('~^_(.+)_[0-9a-f]{12}$~', '$1', $ourModel->tableAlias) . '_' . $alias;
             }
-            $this->table_alias = '_' . $alias . '_' . substr(md5($aliasFull), 0, 12);
+            $this->tableAlias = '_' . $alias . '_' . substr(md5($aliasFull), 0, 12);
         }
     }
 
+    /**
+     * @param array<string, mixed> $defaults
+     */
     protected function addToPersistence(Model $theirModel, array $defaults = []): void
     {
-        if (!$theirModel->persistence && $persistence = $this->getDefaultPersistence($theirModel)) {
-            $persistence->add($theirModel, $defaults);
+        if (!$theirModel->issetPersistence()) {
+            $persistence = $this->getDefaultPersistence($theirModel);
+            if ($persistence !== false) {
+                $theirModel->setDefaults($defaults);
+                $theirModel->setPersistence($persistence);
+            }
+        } elseif ($defaults !== []) {
+            // TODO this seems dangerous
         }
 
         // set model caption
@@ -266,16 +301,18 @@ class Reference
         // this is useful for ContainsOne/Many implementation in case when you have
         // SQL_Model->containsOne()->hasOne() structure to get back to SQL persistence
         // from Array persistence used in ContainsOne model
-        if ($ourModel->containedInEntity && $ourModel->containedInEntity->persistence) {
-            return $ourModel->containedInEntity->persistence;
+        if ($ourModel->containedInEntity && $ourModel->containedInEntity->getModel()->issetPersistence()) {
+            return $ourModel->containedInEntity->getModel()->getPersistence();
         }
 
-        return $ourModel->persistence ?: false;
+        return $ourModel->issetPersistence() ? $ourModel->getPersistence() : false;
     }
 
     /**
      * Returns referenced model without any extra conditions. However other
      * relationship types may override this to imply conditions.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function ref(Model $ourModel, array $defaults = []): Model
     {
@@ -286,28 +323,26 @@ class Reference
      * Returns referenced model without any extra conditions. Ever when extended
      * must always respond with Model that does not look into current record
      * or scope.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function refModel(Model $ourModel, array $defaults = []): Model
     {
         return $this->createTheirModel($defaults);
     }
 
-    /** @var array<int|string, string> List of properties to show in var_dump. */
-    protected $__debug_fields = ['link', 'model', 'our_field', 'their_field'];
-
     /**
-     * Returns array with useful debug info for var_dump.
+     * @return array<string, mixed>
      */
     public function __debugInfo(): array
     {
-        $arr = [];
-        foreach ($this->__debug_fields as $k => $v) {
-            $k = is_int($k) ? $v : $k;
-            if ($this->{$v} !== null) {
-                $arr[$k] = $this->{$v};
+        $res = [];
+        foreach (['link', 'model', 'ourField', 'theirField'] as $k) {
+            if ($this->{$k} !== null) {
+                $res[$k] = $this->{$k};
             }
         }
 
-        return $arr;
+        return $res;
     }
 }

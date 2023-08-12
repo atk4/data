@@ -7,8 +7,11 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
+use Doctrine\DBAL\Types as DbalTypes;
 
 /**
  * Tests that condition is applied when traversing hasMany
@@ -22,43 +25,47 @@ class ReferenceSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
-                2 => ['id' => 2, 'name' => 'Peter'],
-                3 => ['id' => 3, 'name' => 'Joe'],
+                ['id' => 2, 'name' => 'Peter'],
+                ['id' => 3, 'name' => 'Joe'],
             ],
             'order' => [
-                ['amount' => '20', 'user_id' => 1],
-                ['amount' => '15', 'user_id' => 2],
-                ['amount' => '5', 'user_id' => 1],
-                ['amount' => '3', 'user_id' => 1],
-                ['amount' => '8', 'user_id' => 3],
+                ['amount' => 20, 'user_id' => 1],
+                ['amount' => 15, 'user_id' => 2],
+                ['amount' => 5, 'user_id' => 1],
+                ['amount' => 3, 'user_id' => 1],
+                ['amount' => 8, 'user_id' => 3],
             ],
         ]);
 
-        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
-        $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount', 'user_id']);
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name');
+
+        $o = new Model($this->db, ['table' => 'order']);
+        $o->addField('amount', ['type' => 'integer']);
+        $o->addField('user_id', ['type' => 'integer']);
 
         $u->hasMany('Orders', ['model' => $o]);
 
         $oo = $u->load(1)->ref('Orders');
-        $ooo = $oo->tryLoad(1);
-        $this->assertEquals(20, $ooo->get('amount'));
+        $ooo = $oo->load(1);
+        self::assertSame(20, $ooo->get('amount'));
         $ooo = $oo->tryLoad(2);
-        $this->assertNull($ooo);
-        $ooo = $oo->tryLoad(3);
-        $this->assertEquals(5, $ooo->get('amount'));
+        self::assertNull($ooo);
+        $ooo = $oo->load(3);
+        self::assertSame(5, $ooo->get('amount'));
 
         $oo = $u->load(2)->ref('Orders');
         $ooo = $oo->tryLoad(1);
-        $this->assertNull($ooo);
-        $ooo = $oo->tryLoad(2);
-        $this->assertEquals(15, $ooo->get('amount'));
+        self::assertNull($ooo);
+        $ooo = $oo->load(2);
+        self::assertSame(15, $ooo->get('amount'));
         $ooo = $oo->tryLoad(3);
-        $this->assertNull($ooo);
+        self::assertNull($ooo);
 
         $oo = $u->addCondition('id', '>', '1')->ref('Orders');
 
         $this->assertSameSql(
-            'select "id", "amount", "user_id" from "order" "_O_7442e29d7d53" where "user_id" in (select "id" from "user" where "id" > :a)',
+            'select `id`, `amount`, `user_id` from `order` `_O_7442e29d7d53` where `user_id` in (select `id` from `user` where `id` > :a)',
             $oo->action('select')->render()[0]
         );
     }
@@ -68,13 +75,17 @@ class ReferenceSqlTest extends TestCase
      */
     public function testLink(): void
     {
-        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
-        $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount', 'user_id']);
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name');
+
+        $o = new Model($this->db, ['table' => 'order']);
+        $o->addField('amount');
+        $o->addField('user_id', ['type' => 'integer']);
 
         $u->hasMany('Orders', ['model' => $o]);
 
         $this->assertSameSql(
-            'select "id", "amount", "user_id" from "order" "_O_7442e29d7d53" where "user_id" = "user"."id"',
+            'select `id`, `amount`, `user_id` from `order` `_O_7442e29d7d53` where `user_id` = `user`.`id`',
             $u->refLink('Orders')->action('select')->render()[0]
         );
     }
@@ -94,44 +105,60 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
-        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'currency']);
-        $c = (new Model($this->db, ['table' => 'currency']))->addFields(['currency', 'name']);
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name');
+        $u->addField('currency');
 
-        $u->hasMany('cur', ['model' => $c, 'our_field' => 'currency', 'their_field' => 'currency']);
+        $c = new Model($this->db, ['table' => 'currency']);
+        $c->addField('currency');
+        $c->addField('name');
+
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            $serverVersion = $this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
+            if (preg_match('~^5\.6~', $serverVersion)) {
+                self::markTestIncomplete('TODO MySQL 5.6: Unique key exceed max key (767 bytes) length');
+            }
+        }
+        $this->markTestIncompleteWhenCreateUniqueIndexIsNotSupportedByPlatform();
+
+        $u->hasOne('cur', ['model' => $c, 'ourField' => 'currency', 'theirField' => 'currency']);
+        $this->createMigrator()->createForeignKey($u->getReference('cur'));
 
         $cc = $u->load(1)->ref('cur');
-        $cc = $cc->tryLoadOne();
-        $this->assertSame('Euro', $cc->get('name'));
+        self::assertSame('Euro', $cc->get('name'));
 
         $cc = $u->load(2)->ref('cur');
-        $cc = $cc->tryLoadOne();
-        $this->assertSame('Pound', $cc->get('name'));
+        self::assertSame('Pound', $cc->get('name'));
     }
 
     public function testLink2(): void
     {
-        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'currency_code']);
-        $c = (new Model($this->db, ['table' => 'currency']))->addFields(['code', 'name']);
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name');
+        $u->addField('currency_code');
 
-        $u->hasMany('cur', ['model' => $c, 'our_field' => 'currency_code', 'their_field' => 'code']);
+        $c = new Model($this->db, ['table' => 'currency']);
+        $c->addField('code');
+        $c->addField('name');
+
+        $u->hasMany('cur', ['model' => $c, 'ourField' => 'currency_code', 'theirField' => 'code']);
 
         $this->assertSameSql(
-            'select "id", "code", "name" from "currency" "_c_b5fddf1ef601" where "code" = "user"."currency_code"',
+            'select `id`, `code`, `name` from `currency` `_c_b5fddf1ef601` where `code` = `user`.`currency_code`',
             $u->refLink('cur')->action('select')->render()[0]
         );
     }
 
     /**
-     * Tests that condition defined on the parent model is retained when traversing
-     * through hasMany.
+     * Tests that condition defined on the parent model is retained when traversing through hasMany.
      */
     public function testBasicOne(): void
     {
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
-                2 => ['id' => 2, 'name' => 'Peter'],
-                3 => ['id' => 3, 'name' => 'Joe'],
+                ['id' => 2, 'name' => 'Peter'],
+                ['id' => 3, 'name' => 'Joe'],
             ],
             'order' => [
                 ['amount' => '20', 'user_id' => 1],
@@ -142,21 +169,24 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
-        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
-        $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name');
+
+        $o = new Model($this->db, ['table' => 'order']);
+        $o->addField('amount');
 
         $o->hasOne('user_id', ['model' => $u]);
 
-        $this->assertSame('John', $o->load(1)->ref('user_id')->get('name'));
-        $this->assertSame('Peter', $o->load(2)->ref('user_id')->get('name'));
-        $this->assertSame('John', $o->load(3)->ref('user_id')->get('name'));
-        $this->assertSame('Joe', $o->load(5)->ref('user_id')->get('name'));
+        self::assertSame('John', $o->load(1)->ref('user_id')->get('name'));
+        self::assertSame('Peter', $o->load(2)->ref('user_id')->get('name'));
+        self::assertSame('John', $o->load(3)->ref('user_id')->get('name'));
+        self::assertSame('Joe', $o->load(5)->ref('user_id')->get('name'));
 
         $o->addCondition('amount', '>', 6);
         $o->addCondition('amount', '<', 9);
 
         $this->assertSameSql(
-            'select "id", "name" from "user" "_u_e8701ad48ba0" where "id" in (select "user_id" from "order" where ("amount" > :a and "amount" < :b))',
+            'select `id`, `name` from `user` `_u_e8701ad48ba0` where `id` in (select `user_id` from `order` where (`amount` > :a and `amount` < :b))',
             $o->ref('user_id')->action('select')->render()[0]
         );
     }
@@ -169,8 +199,8 @@ class ReferenceSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'date' => '2001-01-02'],
-                2 => ['id' => 2, 'name' => 'Peter', 'date' => '2004-08-20'],
-                3 => ['id' => 3, 'name' => 'Joe', 'date' => '2005-08-20'],
+                ['id' => 2, 'name' => 'Peter', 'date' => '2004-08-20'],
+                ['id' => 3, 'name' => 'Joe', 'date' => '2005-08-20'],
             ],
             'order' => [
                 ['amount' => '20', 'user_id' => 1],
@@ -181,27 +211,38 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
-        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'date' => ['type' => 'date']]);
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name');
+        $u->addField('date', ['type' => 'date']);
 
-        $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
-        $o->hasOne('user_id', ['model' => $u])->addFields(['username' => 'name', ['date', 'type' => 'date']]);
+        $o = new Model($this->db, ['table' => 'order']);
+        $o->addField('amount');
+        $o->hasOne('user_id', ['model' => $u])->addFields([
+            'username' => 'name',
+            ['date', 'type' => 'date'],
+        ]);
 
-        $this->assertSame('John', $o->load(1)->get('username'));
-        $this->assertEquals(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('date'));
+        self::assertSame('John', $o->load(1)->get('username'));
+        self::{'assertEquals'}(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('date'));
 
-        $this->assertSame('Peter', $o->load(2)->get('username'));
-        $this->assertSame('John', $o->load(3)->get('username'));
-        $this->assertSame('Joe', $o->load(5)->get('username'));
+        self::assertSame('Peter', $o->load(2)->get('username'));
+        self::assertSame('John', $o->load(3)->get('username'));
+        self::assertSame('Joe', $o->load(5)->get('username'));
 
         // few more tests
-        $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
-        $o->hasOne('user_id', ['model' => $u])->addFields(['username' => 'name', 'thedate' => ['date', 'type' => 'date']]);
-        $this->assertSame('John', $o->load(1)->get('username'));
-        $this->assertEquals(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('thedate'));
+        $o = new Model($this->db, ['table' => 'order']);
+        $o->addField('amount');
+        $o->hasOne('user_id', ['model' => $u])->addFields([
+            'username' => 'name',
+            'thedate' => ['date', 'type' => 'date'],
+        ]);
+        self::assertSame('John', $o->load(1)->get('username'));
+        self::{'assertEquals'}(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('thedate'));
 
-        $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
-        $o->hasOne('user_id', ['model' => $u])->addFields(['date'], ['type' => 'date']);
-        $this->assertEquals(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('date'));
+        $o = new Model($this->db, ['table' => 'order']);
+        $o->addField('amount');
+        $o->hasOne('user_id', ['model' => $u])->addField('date', null, ['type' => 'date']);
+        self::{'assertEquals'}(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('date'));
     }
 
     public function testRelatedExpression(): void
@@ -211,8 +252,8 @@ class ReferenceSqlTest extends TestCase
         $this->setDb([
             'invoice' => [
                 1 => ['id' => 1, 'ref_no' => 'INV203'],
-                2 => ['id' => 2, 'ref_no' => 'INV204'],
-                3 => ['id' => 3, 'ref_no' => 'INV205'],
+                ['id' => 2, 'ref_no' => 'INV204'],
+                ['id' => 3, 'ref_no' => 'INV205'],
             ],
             'invoice_line' => [
                 ['total_net' => ($n = 10), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 1],
@@ -223,16 +264,150 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
-        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['ref_no']);
-        $l = (new Model($this->db, ['table' => 'invoice_line']))->addFields(['invoice_id', 'total_net', 'total_vat', 'total_gross']);
-        $i->hasMany('line', ['model' => $l]);
+        $i = new Model($this->db, ['table' => 'invoice']);
+        $i->addField('ref_no');
 
+        $l = new Model($this->db, ['table' => 'invoice_line']);
+        $l->addField('invoice_id', ['type' => 'integer']);
+        $l->addField('total_net');
+        $l->addField('total_vat');
+        $l->addField('total_gross');
+
+        $i->hasMany('line', ['model' => $l]);
         $i->addExpression('total_net', ['expr' => $i->refLink('line')->action('fx', ['sum', 'total_net'])]);
 
         $this->assertSameSql(
-            'select "id", "ref_no", (select sum("total_net") from "invoice_line" "_l_6438c669e0d0" where "invoice_id" = "invoice"."id") "total_net" from "invoice"',
+            'select `id`, `ref_no`, (select sum(`total_net`) from `invoice_line` `_l_6438c669e0d0` where `invoice_id` = `invoice`.`id`) `total_net` from `invoice`',
             $i->action('select')->render()[0]
         );
+    }
+
+    public function testReferenceWithObjectId(): void
+    {
+        $this->setDb([
+            'file' => [
+                1 => ['id' => 1, 'name' => 'a.txt', 'parentDirectoryId' => null],
+                ['id' => 2, 'name' => 'u', 'parentDirectoryId' => null],
+                ['id' => 3, 'name' => 'v', 'parentDirectoryId' => 2],
+                ['id' => 4, 'name' => 'w', 'parentDirectoryId' => 2],
+                ['id' => 5, 'name' => 'b.txt', 'parentDirectoryId' => 2],
+                ['id' => 6, 'name' => 'c.txt', 'parentDirectoryId' => 3],
+                ['id' => 7, 'name' => 'd.txt', 'parentDirectoryId' => 2],
+                ['id' => 8, 'name' => 'e.txt', 'parentDirectoryId' => 4],
+            ],
+        ]);
+
+        $integerWrappedType = new class() extends DbalTypes\Type {
+            /**
+             * TODO: Remove once DBAL 3.x support is dropped.
+             */
+            public function getName(): string
+            {
+                return self::class;
+            }
+
+            public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform): string
+            {
+                return DbalTypes\Type::getType(DbalTypes\Types::INTEGER)->getSQLDeclaration($fieldDeclaration, $platform);
+            }
+
+            public function convertToDatabaseValue($value, AbstractPlatform $platform): ?int
+            {
+                if ($value === null) {
+                    return null;
+                }
+
+                return DbalTypes\Type::getType('integer')->convertToDatabaseValue($value->getValue(), $platform);
+            }
+
+            public function convertToPHPValue($value, AbstractPlatform $platform): ?object
+            {
+                if ($value === null) {
+                    return null;
+                }
+
+                return new class(DbalTypes\Type::getType('integer')->convertToPHPValue($value, $platform)) {
+                    private int $id;
+
+                    public function __construct(int $id)
+                    {
+                        $this->id = $id;
+                    }
+
+                    public function getValue(): int
+                    {
+                        return $this->id;
+                    }
+                };
+            }
+        };
+        $integerWrappedTypeName = $integerWrappedType->getName(); // @phpstan-ignore-line
+
+        DbalTypes\Type::addType($integerWrappedTypeName, get_class($integerWrappedType));
+        try {
+            $file = new Model($this->db, ['table' => 'file']);
+            $file->getField('id')->type = $integerWrappedTypeName;
+            $file->addField('name');
+            $file->hasOne('parentDirectory', [
+                'model' => $file,
+                'type' => $integerWrappedTypeName,
+                'ourField' => 'parentDirectoryId',
+            ]);
+            $file->hasMany('childFiles', [
+                'model' => $file,
+                'theirField' => 'parentDirectoryId',
+            ]);
+
+            $fileEntity = $file->loadBy('name', 'v')->ref('childFiles')->createEntity();
+            self::assertSame(3, $fileEntity->get('parentDirectoryId')->getValue());
+            $fileEntity->save(['name' => 'x']);
+            self::assertSame(9, $fileEntity->get('id')->getValue());
+
+            $fileEntity = $fileEntity->ref('childFiles')->createEntity();
+            self::assertSame(9, $fileEntity->get('parentDirectoryId')->getValue());
+            $fileEntity->save(['name' => 'y.txt']);
+
+            $createWrappedIntegerFx = function (int $v) use ($integerWrappedType): object {
+                return $integerWrappedType->convertToPHPValue($v, $this->getDatabasePlatform());
+            };
+
+            self::{'assertEquals'}([
+                ['id' => $createWrappedIntegerFx(10), 'name' => 'y.txt', 'parentDirectoryId' => $createWrappedIntegerFx(9)],
+            ], $fileEntity->getModel()->export());
+            self::assertSame([], $fileEntity->ref('childFiles')->export());
+
+            $fileEntity = $fileEntity->ref('parentDirectory');
+            self::{'assertEquals'}([
+                ['id' => $createWrappedIntegerFx(9), 'name' => 'x', 'parentDirectoryId' => $createWrappedIntegerFx(3)],
+            ], $fileEntity->getModel()->export());
+            self::{'assertEquals'}([
+                ['id' => $createWrappedIntegerFx(10), 'name' => 'y.txt', 'parentDirectoryId' => $createWrappedIntegerFx(9)],
+            ], $fileEntity->ref('childFiles')->export());
+
+            $fileEntity = $fileEntity->ref('parentDirectory');
+            self::{'assertEquals'}([
+                ['id' => $createWrappedIntegerFx(3), 'name' => 'v', 'parentDirectoryId' => $createWrappedIntegerFx(2)],
+            ], $fileEntity->getModel()->export());
+            self::{'assertEquals'}([
+                ['id' => $createWrappedIntegerFx(6), 'name' => 'c.txt', 'parentDirectoryId' => $createWrappedIntegerFx(3)],
+                ['id' => $createWrappedIntegerFx(9), 'name' => 'x', 'parentDirectoryId' => $createWrappedIntegerFx(3)],
+            ], $fileEntity->ref('childFiles')->export());
+            self::{'assertEquals'}([
+                ['id' => $createWrappedIntegerFx(6), 'name' => 'c.txt', 'parentDirectoryId' => $createWrappedIntegerFx(3)],
+                ['id' => $createWrappedIntegerFx(8), 'name' => 'e.txt', 'parentDirectoryId' => $createWrappedIntegerFx(4)],
+                ['id' => $createWrappedIntegerFx(9), 'name' => 'x', 'parentDirectoryId' => $createWrappedIntegerFx(3)],
+            ], $fileEntity->ref('parentDirectory')->ref('childFiles')->ref('childFiles')->export());
+
+            $fileEntity = $fileEntity->ref('parentDirectory');
+            self::{'assertEquals'}([
+                ['id' => $createWrappedIntegerFx(2), 'name' => 'u', 'parentDirectoryId' => null],
+            ], $fileEntity->getModel()->export());
+        } finally {
+            \Closure::bind(function () use ($integerWrappedTypeName) {
+                $dbalTypeRegistry = DbalTypes\Type::getTypeRegistry();
+                unset($dbalTypeRegistry->instances[$integerWrappedTypeName]);
+            }, null, DbalTypes\TypeRegistry::class)();
+        }
     }
 
     public function testAggregateHasMany(): void
@@ -242,8 +417,8 @@ class ReferenceSqlTest extends TestCase
         $this->setDb([
             'invoice' => [
                 1 => ['id' => 1, 'ref_no' => 'INV203'],
-                2 => ['id' => 2, 'ref_no' => 'INV204'],
-                3 => ['id' => 3, 'ref_no' => 'INV205'],
+                ['id' => 2, 'ref_no' => 'INV204'],
+                ['id' => 3, 'ref_no' => 'INV205'],
             ],
             'invoice_line' => [
                 ['total_net' => ($n = 10), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 1],
@@ -254,30 +429,31 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
-        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['ref_no']);
-        $l = (new Model($this->db, ['table' => 'invoice_line']))->addFields([
-            'invoice_id',
-            'total_net' => ['type' => 'atk4_money'],
-            'total_vat' => ['type' => 'atk4_money'],
-            'total_gross' => ['type' => 'atk4_money'],
+        $i = new Model($this->db, ['table' => 'invoice']);
+        $i->addField('ref_no');
+
+        $l = new Model($this->db, ['table' => 'invoice_line']);
+        $l->addField('invoice_id', ['type' => 'integer']);
+        $l->addField('total_net', ['type' => 'atk4_money']);
+        $l->addField('total_vat', ['type' => 'atk4_money']);
+        $l->addField('total_gross', ['type' => 'atk4_money']);
+
+        $i->hasMany('line', ['model' => $l])->addFields([
+            'total_net' => ['aggregate' => 'sum'],
+            'total_vat' => ['aggregate' => 'sum', 'type' => 'atk4_money'],
+            'total_gross' => ['aggregate' => 'sum', 'type' => 'atk4_money'],
         ]);
-        $i->hasMany('line', ['model' => $l])
-            ->addFields([
-                'total_vat' => ['aggregate' => 'sum', 'type' => 'atk4_money'],
-                'total_net' => ['aggregate' => 'sum'],
-                'total_gross' => ['aggregate' => 'sum'],
-            ]);
         $i = $i->load('1');
 
         // type was set explicitly
-        $this->assertSame('atk4_money', $i->getField('total_vat')->type);
+        self::assertSame('atk4_money', $i->getField('total_vat')->type);
 
         // type was not set and is not inherited
-        $this->assertNull($i->getField('total_net')->type);
+        self::assertSame('string', $i->getField('total_net')->type);
 
-        $this->assertEquals(40, $i->get('total_net'));
-        $this->assertEquals(9.2, $i->get('total_vat'));
-        $this->assertEquals(49.2, $i->get('total_gross'));
+        self::assertSame(40.0, (float) $i->get('total_net'));
+        self::assertSame(9.2, $i->get('total_vat'));
+        self::assertSame(49.2, $i->get('total_gross'));
 
         $i->ref('line')->import([
             ['total_net' => ($n = 1), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1))],
@@ -285,18 +461,18 @@ class ReferenceSqlTest extends TestCase
         ]);
         $i->reload();
 
-        $this->assertEquals($n = 43, $i->get('total_net'));
-        $this->assertEquals($n * $vat, $i->get('total_vat'));
-        $this->assertEquals($n * ($vat + 1), $i->get('total_gross'));
+        self::assertSame($n = 43.0, (float) $i->get('total_net'));
+        self::assertSame($n * $vat, $i->get('total_vat'));
+        self::assertSame($n * ($vat + 1), $i->get('total_gross'));
 
         $i->ref('line')->import([
             ['total_net' => null, 'total_vat' => null, 'total_gross' => 1],
         ]);
         $i->reload();
 
-        $this->assertEquals($n = 43, $i->get('total_net'));
-        $this->assertEquals($n * $vat, $i->get('total_vat'));
-        $this->assertEquals($n * ($vat + 1) + 1, $i->get('total_gross'));
+        self::assertSame($n = 43.0, (float) $i->get('total_net'));
+        self::assertSame($n * $vat, $i->get('total_vat'));
+        self::assertSame($n * ($vat + 1) + 1, $i->get('total_gross'));
     }
 
     public function testOtherAggregates(): void
@@ -306,8 +482,8 @@ class ReferenceSqlTest extends TestCase
         $this->setDb([
             'list' => [
                 1 => ['id' => 1, 'name' => 'Meat'],
-                2 => ['id' => 2, 'name' => 'Veg'],
-                3 => ['id' => 3, 'name' => 'Fruit'],
+                ['id' => 2, 'name' => 'Veg'],
+                ['id' => 3, 'name' => 'Fruit'],
             ],
             'item' => [
                 ['name' => 'Apple', 'code' => 'ABC', 'list_id' => 3],
@@ -331,39 +507,44 @@ class ReferenceSqlTest extends TestCase
             return 'SUM(' . $v . ')';
         };
 
-        $l = (new Model($this->db, ['table' => 'list']))->addFields(['name']);
-        $i = (new Model($this->db, ['table' => 'item']))->addFields(['list_id', 'name', 'code']);
-        $l->hasMany('Items', ['model' => $i])
-            ->addFields([
-                'items_name' => ['aggregate' => 'count', 'field' => 'name'],
-                'items_code' => ['aggregate' => 'count', 'field' => 'code'], // counts only not-null values
-                'items_star' => ['aggregate' => 'count'], // no field set, counts all rows with count(*)
-                'items_c:' => ['concat' => '::', 'field' => 'name'],
-                'items_c-' => ['aggregate' => $i->dsql()->groupConcat($i->expr('[name]'), '-')],
-                'len' => ['aggregate' => $i->expr($buildSumWithIntegerCastSqlFx($buildLengthSqlFx('[name]')))], // TODO cast should be implicit when using "aggregate", sandpit http://sqlfiddle.com/#!17/0d2c0/3
-                'len2' => ['expr' => $buildSumWithIntegerCastSqlFx($buildLengthSqlFx('[name]'))],
-                'chicken5' => ['expr' => $buildSumWithIntegerCastSqlFx('[]'), 'args' => ['5']],
-            ]);
+        $l = new Model($this->db, ['table' => 'list']);
+        $l->addField('name');
+
+        $i = new Model($this->db, ['table' => 'item']);
+        $i->addField('list_id', ['type' => 'integer']);
+        $i->addField('name');
+        $i->addField('code');
+
+        $l->hasMany('Items', ['model' => $i])->addFields([
+            'items_name' => ['aggregate' => 'count', 'field' => 'name', 'type' => 'integer'],
+            'items_code' => ['aggregate' => 'count', 'field' => 'code', 'type' => 'integer'], // counts only not-null values
+            'items_star' => ['aggregate' => 'count', 'type' => 'integer'], // no field set, counts all rows with count(*)
+            'items_c:' => ['concat' => '::', 'field' => 'name'],
+            'items_c-' => ['aggregate' => $i->dsql()->groupConcat($i->expr('[name]'), '-')],
+            'len' => ['aggregate' => $i->expr($buildSumWithIntegerCastSqlFx($buildLengthSqlFx('[name]'))), 'type' => 'integer'], // TODO cast should be implicit when using "aggregate", sandpit http://sqlfiddle.com/#!17/0d2c0/3
+            'len2' => ['expr' => $buildSumWithIntegerCastSqlFx($buildLengthSqlFx('[name]')), 'type' => 'integer'],
+            'chicken5' => ['expr' => $buildSumWithIntegerCastSqlFx('[]'), 'args' => ['5'], 'type' => 'integer'],
+        ]);
 
         $ll = $l->load(1);
-        $this->assertEquals(2, $ll->get('items_name')); // 2 not-null values
-        $this->assertEquals(1, $ll->get('items_code')); // only 1 not-null value
-        $this->assertEquals(2, $ll->get('items_star')); // 2 rows in total
-        $this->assertSame($ll->get('items_c:') === 'Pork::Chicken' ? 'Pork::Chicken' : 'Chicken::Pork', $ll->get('items_c:'));
-        $this->assertSame($ll->get('items_c-') === 'Pork-Chicken' ? 'Pork-Chicken' : 'Chicken-Pork', $ll->get('items_c-'));
-        $this->assertEquals(strlen('Chicken') + strlen('Pork'), $ll->get('len'));
-        $this->assertEquals(strlen('Chicken') + strlen('Pork'), $ll->get('len2'));
-        $this->assertEquals(10, $ll->get('chicken5'));
+        self::assertSame(2, $ll->get('items_name')); // 2 not-null values
+        self::assertSame(1, $ll->get('items_code')); // only 1 not-null value
+        self::assertSame(2, $ll->get('items_star')); // 2 rows in total
+        self::assertSame($ll->get('items_c:') === 'Pork::Chicken' ? 'Pork::Chicken' : 'Chicken::Pork', $ll->get('items_c:'));
+        self::assertSame($ll->get('items_c-') === 'Pork-Chicken' ? 'Pork-Chicken' : 'Chicken-Pork', $ll->get('items_c-'));
+        self::assertSame(strlen('Chicken') + strlen('Pork'), $ll->get('len'));
+        self::assertSame(strlen('Chicken') + strlen('Pork'), $ll->get('len2'));
+        self::assertSame(10, $ll->get('chicken5'));
 
         $ll = $l->load(2);
-        $this->assertEquals(0, $ll->get('items_name'));
-        $this->assertEquals(0, $ll->get('items_code'));
-        $this->assertEquals(0, $ll->get('items_star'));
-        $this->assertEquals('', $ll->get('items_c:'));
-        $this->assertEquals('', $ll->get('items_c-'));
-        $this->assertNull($ll->get('len'));
-        $this->assertNull($ll->get('len2'));
-        $this->assertNull($ll->get('chicken5'));
+        self::assertSame(0, $ll->get('items_name'));
+        self::assertSame(0, $ll->get('items_code'));
+        self::assertSame(0, $ll->get('items_star'));
+        self::assertNull($ll->get('items_c:'));
+        self::assertNull($ll->get('items_c-'));
+        self::assertNull($ll->get('len'));
+        self::assertNull($ll->get('len2'));
+        self::assertNull($ll->get('chicken5'));
     }
 
     protected function setupDbForTraversing(): Model
@@ -384,14 +565,17 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
-        $user = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'company_id']);
+        $user = new Model($this->db, ['table' => 'user']);
+        $user->addField('name');
+        $user->addField('company_id', ['type' => 'integer']);
 
-        $company = (new Model($this->db, ['table' => 'company']))->addFields(['name']);
+        $company = new Model($this->db, ['table' => 'company']);
+        $company->addField('name');
 
-        $user->hasOne('Company', ['model' => $company, 'our_field' => 'company_id', 'their_field' => 'id']);
+        $user->hasOne('Company', ['model' => $company, 'ourField' => 'company_id', 'theirField' => 'id']);
 
         $order = new Model($this->db, ['table' => 'order']);
-        $order->addField('company_id');
+        $order->addField('company_id', ['type' => 'integer']);
         $order->addField('description');
         $order->addField('amount', ['default' => 20, 'type' => 'float']);
 
@@ -405,15 +589,15 @@ class ReferenceSqlTest extends TestCase
         $user = $this->setupDbForTraversing();
         $userEntity = $user->load(1);
 
-        $this->assertSameExportUnordered([
-            ['id' => 1, 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
-            ['id' => 3, 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
+        self::assertSameExportUnordered([
+            ['id' => 1, 'company_id' => 1, 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
+            ['id' => 3, 'company_id' => 1, 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
         ], $userEntity->ref('Company')->ref('Orders')->export());
 
-        $this->assertSameExportUnordered([
-            ['id' => 1, 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
-            ['id' => 2, 'company_id' => '2', 'description' => 'Zoe Company Order', 'amount' => 10.0],
-            ['id' => 3, 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
+        self::assertSameExportUnordered([
+            ['id' => 1, 'company_id' => 1, 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
+            ['id' => 2, 'company_id' => 2, 'description' => 'Zoe Company Order', 'amount' => 10.0],
+            ['id' => 3, 'company_id' => 1, 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
         ], $userEntity->getModel()->ref('Company')->ref('Orders')->export());
     }
 
@@ -423,13 +607,13 @@ class ReferenceSqlTest extends TestCase
         $userEntity = $user->createEntity();
 
         $companyEntity = $userEntity->ref('Company');
-        $this->assertFalse($companyEntity->isLoaded());
+        self::assertFalse($companyEntity->isLoaded());
     }
 
     public function testUnloadedEntityTraversingHasOneEx(): void
     {
         $user = $this->setupDbForTraversing();
-        $user->getRef('Company')->setDefaults(['our_field' => 'id']);
+        $user->getReference('Company')->setDefaults(['ourField' => 'id']);
         $userEntity = $user->createEntity();
 
         $this->expectException(Exception::class);
@@ -462,40 +646,40 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
-        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
-        $c = (new Model($this->db, ['table' => 'contact']))->addFields(['address']);
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name');
+
+        $c = new Model($this->db, ['table' => 'contact']);
+        $c->addField('address');
 
         $u->hasOne('contact_id', ['model' => $c])
             ->addField('address');
 
         $uu = $u->load(1);
-        $this->assertSame('John contact', $uu->get('address'));
-        $this->assertSame('John contact', $uu->ref('contact_id')->get('address'));
+        self::assertSame('John contact', $uu->get('address'));
+        self::assertSame('John contact', $uu->ref('contact_id')->get('address'));
 
         $uu = $u->load(2);
-        $this->assertNull($uu->get('address'));
-        $this->assertNull($uu->get('contact_id'));
-        $this->assertNull($uu->ref('contact_id')->get('address'));
+        self::assertNull($uu->get('address'));
+        self::assertNull($uu->get('contact_id'));
+        self::assertNull($uu->ref('contact_id')->get('address'));
 
         $uu = $u->load(3);
-        $this->assertSame('Joe contact', $uu->get('address'));
-        $this->assertSame('Joe contact', $uu->ref('contact_id')->get('address'));
+        self::assertSame('Joe contact', $uu->get('address'));
+        self::assertSame('Joe contact', $uu->ref('contact_id')->get('address'));
 
         $uu = $u->load(2);
         $uu->ref('contact_id')->save(['address' => 'Peters new contact']);
 
-        $this->assertNotNull($uu->get('contact_id'));
-        $this->assertSame('Peters new contact', $uu->ref('contact_id')->get('address'));
+        self::assertNotNull($uu->get('contact_id'));
+        self::assertSame('Peters new contact', $uu->ref('contact_id')->get('address'));
 
         $uu->save()->reload();
-        $this->assertSame('Peters new contact', $uu->ref('contact_id')->get('address'));
-        $this->assertSame('Peters new contact', $uu->get('address'));
+        self::assertSame('Peters new contact', $uu->ref('contact_id')->get('address'));
+        self::assertSame('Peters new contact', $uu->get('address'));
     }
 
-    /**
-     * test case hasOne::our_key == owner::id_field.
-     */
-    public function testIdFieldReferenceOurFieldCase(): void
+    public function testHasOneIdFieldAsOurField(): void
     {
         $this->setDb([
             'player' => [
@@ -509,31 +693,33 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
-        $p = (new Model($this->db, ['table' => 'player']))->addFields(['name']);
-
         $s = (new Model($this->db, ['table' => 'stadium']));
-        $s->addFields(['name']);
-        $s->hasOne('player_id', ['model' => $p]);
+        $s->addField('name');
+        $s->addField('player_id', ['type' => 'integer']);
 
-        $p->hasOne('Stadium', ['model' => $s, 'our_field' => 'id', 'their_field' => 'player_id']);
+        $this->markTestIncompleteWhenCreateUniqueIndexIsNotSupportedByPlatform();
 
-        $p = $p->load(2);
-        $p->ref('Stadium')->getModel()->import([['name' => 'Nou camp nou']]);
-        $this->assertSame('Nou camp nou', $p->ref('Stadium')->get('name'));
-        $this->assertSame(2, $p->ref('Stadium')->get('player_id'));
+        $p = new Model($this->db, ['table' => 'player']);
+        $p->addField('name');
+        $p->delete(2);
+        $p->hasOne('Stadium', ['model' => $s, 'ourField' => 'id', 'theirField' => 'player_id']);
+        $this->createMigrator()->createForeignKey($p->getReference('Stadium'));
+
+        $s->createEntity()->save(['name' => 'Nou camp nou', 'player_id' => 4]);
+        $pEntity = $p->createEntity()->save(['name' => 'Ivan']);
+
+        self::assertSame('Nou camp nou', $pEntity->ref('Stadium')->get('name'));
+        self::assertSame(4, $pEntity->ref('Stadium')->get('player_id'));
     }
 
     public function testModelProperty(): void
     {
         $user = new Model($this->db, ['table' => 'user']);
-        $user->hasMany('Orders', ['model' => [Model::class, 'table' => 'order'], 'their_field' => 'id']);
+        $user->hasMany('Orders', ['model' => [Model::class, 'table' => 'order'], 'theirField' => 'id']);
         $o = $user->ref('Orders');
-        $this->assertSame('order', $o->table);
+        self::assertSame('order', $o->table);
     }
 
-    /**
-     * Few tests to test Reference\HasOneSql addTitle() method.
-     */
     public function testAddTitle(): void
     {
         $this->setDb([
@@ -546,25 +732,29 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
-        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
-        $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name');
+
+        $o = new Model($this->db, ['table' => 'order']);
+        $o->addField('amount');
 
         // by default not set
         $o->hasOne('user_id', ['model' => $u]);
-        $this->assertSame($o->getField('user_id')->isVisible(), true);
+        self::assertSame($o->getField('user_id')->isVisible(), true);
 
-        $o->getRef('user_id')->addTitle();
-        $this->assertTrue($o->hasField('user'));
-        $this->assertSame($o->getField('user')->isVisible(), true);
-        $this->assertSame($o->getField('user_id')->isVisible(), false);
+        $o->getReference('user_id')->addTitle();
+        self::assertTrue($o->hasField('user'));
+        self::assertSame($o->getField('user')->isVisible(), true);
+        self::assertSame($o->getField('user_id')->isVisible(), false);
 
         // if it is set manually then it will not be changed
-        $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
+        $o = new Model($this->db, ['table' => 'order']);
+        $o->addField('amount');
         $o->hasOne('user_id', ['model' => $u]);
         $o->getField('user_id')->ui['visible'] = true;
-        $o->getRef('user_id')->addTitle();
+        $o->getReference('user_id')->addTitle();
 
-        $this->assertSame($o->getField('user_id')->isVisible(), true);
+        self::assertSame($o->getField('user_id')->isVisible(), true);
     }
 
     /**
@@ -576,84 +766,114 @@ class ReferenceSqlTest extends TestCase
         $dbData = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'last_name' => 'Doe'],
-                2 => ['id' => 2, 'name' => 'Peter', 'last_name' => 'Foo'],
-                3 => ['id' => 3, 'name' => 'Goofy', 'last_name' => 'Goo'],
+                ['id' => 2, 'name' => 'Peter', 'last_name' => 'Foo'],
+                ['id' => 3, 'name' => 'Goofy', 'last_name' => 'Goo'],
             ],
             'order' => [
                 1 => ['id' => 1, 'user_id' => 1],
-                2 => ['id' => 2, 'user_id' => 2],
-                3 => ['id' => 3, 'user_id' => 1],
+                ['id' => 2, 'user_id' => 2],
+                ['id' => 3, 'user_id' => 1],
             ],
         ];
 
-        // restore DB
         $this->setDb($dbData);
 
-        // with default title_field='name'
-        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'last_name']);
+        // with default titleField='name'
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name');
+        $u->addField('last_name');
+
         $o = (new Model($this->db, ['table' => 'order']));
         $o->hasOne('user_id', ['model' => $u])->addTitle();
 
-        // change order user by changing title_field value
+        // change order user by changing titleField value
         $o = $o->load(1);
+        self::assertSame(1, $o->get('user_id'));
+        $o->set('user_id', null);
+        $o->save();
         $o->set('user', 'Peter');
-        $this->assertEquals(1, $o->get('user_id'));
+        self::assertNull($o->get('user_id'));
         $o->save();
-        $this->assertEquals(2, $o->get('user_id')); // user_id changed to Peters ID
-        $o->reload();
-        $this->assertEquals(2, $o->get('user_id')); // and it's really saved like that
+        self::assertSame(2, $o->get('user_id'));
 
-        // restore DB
+        $this->dropCreatedDb();
         $this->setDb($dbData);
 
-        // with custom title_field='last_name'
-        $u = (new Model($this->db, ['table' => 'user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
+        // with custom titleField='last_name'
+        $u = new Model($this->db, ['table' => 'user', 'titleField' => 'last_name']);
+        $u->addField('name');
+        $u->addField('last_name');
+
         $o = (new Model($this->db, ['table' => 'order']));
         $o->hasOne('user_id', ['model' => $u])->addTitle();
 
-        // change order user by changing title_field value
+        // change order user by changing titleField value
         $o = $o->load(1);
+        self::assertSame(1, $o->get('user_id'));
+        $o->set('user_id', null);
+        $o->save();
         $o->set('user', 'Foo');
-        $this->assertEquals(1, $o->get('user_id'));
+        self::assertNull($o->get('user_id'));
         $o->save();
-        $this->assertEquals(2, $o->get('user_id')); // user_id changed to Peters ID
-        $o->reload();
-        $this->assertEquals(2, $o->get('user_id')); // and it's really saved like that
+        self::assertSame(2, $o->get('user_id'));
 
-        // restore DB
+        $this->dropCreatedDb();
         $this->setDb($dbData);
 
-        // with custom title_field='last_name' and custom link name
-        $u = (new Model($this->db, ['table' => 'user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
-        $o = (new Model($this->db, ['table' => 'order']));
-        $o->hasOne('my_user', ['model' => $u, 'our_field' => 'user_id'])->addTitle();
+        // with custom titleField='last_name' and custom link name
+        $u = new Model($this->db, ['table' => 'user', 'titleField' => 'last_name']);
+        $u->addField('name');
+        $u->addField('last_name');
 
-        // change order user by changing ref field value
+        $o = (new Model($this->db, ['table' => 'order']));
+        $o->hasOne('my_user', ['model' => $u, 'ourField' => 'user_id'])->addTitle();
+
+        // change order user by changing reference field value
         $o = $o->load(1);
+        self::assertSame(1, $o->get('user_id'));
+        $o->set('user_id', null);
+        $o->save();
         $o->set('my_user', 'Foo');
-        $this->assertEquals(1, $o->get('user_id'));
+        self::assertNull($o->get('user_id'));
         $o->save();
-        $this->assertEquals(2, $o->get('user_id')); // user_id changed to Peters ID
-        $o->reload();
-        $this->assertEquals(2, $o->get('user_id')); // and it's really saved like that
+        self::assertSame(2, $o->get('user_id'));
 
-        // restore DB
+        $this->dropCreatedDb();
         $this->setDb($dbData);
 
-        // with custom title_field='last_name' and custom link name
-        $u = (new Model($this->db, ['table' => 'user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
-        $o = (new Model($this->db, ['table' => 'order']));
-        $o->hasOne('my_user', ['model' => $u, 'our_field' => 'user_id'])->addTitle();
+        // with custom titleField='last_name' and custom link name
+        $u = new Model($this->db, ['table' => 'user', 'titleField' => 'last_name']);
+        $u->addField('name');
+        $u->addField('last_name');
 
-        // change order user by changing ref field value
+        $o = (new Model($this->db, ['table' => 'order']));
+        $o->hasOne('my_user', ['model' => $u, 'ourField' => 'user_id'])->addTitle();
+
+        // change order user by changing ref field and titleField value - same
         $o = $o->load(1);
-        $o->set('my_user', 'Foo'); // user_id=2
-        $o->set('user_id', 3);     // user_id=3 (this will take precedence)
-        $this->assertEquals(3, $o->get('user_id'));
+        self::assertSame(1, $o->get('user_id'));
+        $o->set('user_id', null);
         $o->save();
-        $this->assertEquals(3, $o->get('user_id')); // user_id changed to Goofy ID
-        $o->reload();
-        $this->assertEquals(3, $o->get('user_id')); // and it's really saved like that
+        $o->set('my_user', 'Foo'); // user_id = 2
+        $o->set('user_id', 2);
+        self::assertSame(2, $o->get('user_id'));
+        $o->save();
+        self::assertSame(2, $o->get('user_id'));
+
+        $this->dropCreatedDb();
+        $this->setDb($dbData);
+
+        // change order user by changing ref field and titleField value - mismatched
+        $o = $o->getModel()->load(1);
+        self::assertSame(1, $o->get('user_id'));
+        $o->set('user_id', null);
+        $o->save();
+        $o->set('my_user', 'Foo'); // user_id = 2
+        $o->set('user_id', 3);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Imported field was changed to an unexpected value');
+        $o->save();
     }
 
     /**
@@ -662,48 +882,48 @@ class ReferenceSqlTest extends TestCase
      */
     public function testHasOneReferenceCaption(): void
     {
-        // restore DB
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'last_name' => 'Doe'],
-                2 => ['id' => 2, 'name' => 'Peter', 'last_name' => 'Foo'],
-                3 => ['id' => 3, 'name' => 'Goofy', 'last_name' => 'Goo'],
+                ['id' => 2, 'name' => 'Peter', 'last_name' => 'Foo'],
+                ['id' => 3, 'name' => 'Goofy', 'last_name' => 'Goo'],
             ],
             'order' => [
                 1 => ['id' => 1, 'user_id' => 1],
-                2 => ['id' => 2, 'user_id' => 2],
-                3 => ['id' => 3, 'user_id' => 1],
+                ['id' => 2, 'user_id' => 2],
+                ['id' => 3, 'user_id' => 1],
             ],
         ]);
-        $u = (new Model($this->db, ['table' => 'user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
 
-        // Test : Now the caption is null and is generated from field name
-        $this->assertSame('Last Name', $u->getField('last_name')->getCaption());
+        $u = new Model($this->db, ['table' => 'user', 'titleField' => 'last_name']);
+        $u->addField('name');
+        $u->addField('last_name');
+
+        // now the caption is null and is generated from field name
+        self::assertSame('Last Name', $u->getField('last_name')->getCaption());
 
         $u->getField('last_name')->caption = 'Surname';
 
-        // Test : Now the caption is not null and the value is returned
-        $this->assertSame('Surname', $u->getField('last_name')->getCaption());
+        // now the caption is not null and the value is returned
+        self::assertSame('Surname', $u->getField('last_name')->getCaption());
 
         $o = (new Model($this->db, ['table' => 'order']));
-        $order_user_ref = $o->hasOne('my_user', ['model' => $u, 'our_field' => 'user_id']);
-        $order_user_ref->addField('user_last_name', 'last_name');
+        $orderUserRef = $o->hasOne('my_user', ['model' => $u, 'ourField' => 'user_id']);
+        $orderUserRef->addField('user_last_name', 'last_name');
 
-        $referenced_caption = $o->getField('user_last_name')->getCaption();
+        $referencedCaption = $o->getField('user_last_name')->getCaption();
 
-        // Test : $field->caption for the field 'last_name' is defined in referenced model (User)
+        // Test: $field->caption for the field 'last_name' is defined in referenced model (User)
         // When Order add field from Referenced model User
         // caption will be passed to Order field user_last_name
-        $this->assertSame('Surname', $referenced_caption);
+        self::assertSame('Surname', $referencedCaption);
     }
 
     /**
-     * HasOne: Test if field type is taken from referenced Model if not set in HasOne::addField().
-     * Test if field type is set in HasOne::addField(), it has priority.
+     * Test if field type is taken from referenced Model if not set in HasOne::addField().
      */
     public function testHasOneReferenceType(): void
     {
-        // restore DB
         $this->setDb([
             'user' => [
                 1 => [
@@ -718,19 +938,23 @@ class ReferenceSqlTest extends TestCase
                 1 => ['id' => 1, 'user_id' => 1],
             ],
         ]);
-        $user = (new Model($this->db, ['table' => 'user']))
-            ->addFields(['name', 'last_name', 'some_number', 'some_other_number']);
+
+        $user = new Model($this->db, ['table' => 'user']);
+        $user->addField('name');
+        $user->addField('last_name');
+        $user->addField('some_number');
+        $user->addField('some_other_number');
         $user->getField('some_number')->type = 'integer';
         $user->getField('some_other_number')->type = 'integer';
         $order = (new Model($this->db, ['table' => 'order']));
-        $order_UserRef = $order->hasOne('my_user', ['model' => $user, 'our_field' => 'user_id']);
+        $orderUserRef = $order->hasOne('my_user', ['model' => $user, 'ourField' => 'user_id']);
 
         // no type set in defaults, should pull type integer from user model
-        $order_UserRef->addField('some_number');
-        $this->assertSame('integer', $order->getField('some_number')->type);
+        $orderUserRef->addField('some_number');
+        self::assertSame('integer', $order->getField('some_number')->type);
 
         // set type in defaults, this should have higher priority than type set in Model
-        $order_UserRef->addField('some_other_number', null, ['type' => 'string']);
-        $this->assertSame('string', $order->getField('some_other_number')->type);
+        $orderUserRef->addField('some_other_number', null, ['type' => 'string']);
+        self::assertSame('string', $order->getField('some_other_number')->type);
     }
 }

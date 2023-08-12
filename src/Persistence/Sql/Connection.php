@@ -6,14 +6,16 @@ namespace Atk4\Data\Persistence\Sql;
 
 use Atk4\Core\DiContainerTrait;
 use Doctrine\Common\EventManager;
+use Doctrine\DBAL\Configuration as DbalConfiguration;
 use Doctrine\DBAL\Connection as DbalConnection;
+use Doctrine\DBAL\ConnectionException as DbalConnectionException;
+use Doctrine\DBAL\Driver as DbalDriver;
 use Doctrine\DBAL\Driver\Connection as DbalDriverConnection;
+use Doctrine\DBAL\Driver\Middleware as DbalMiddleware;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
-use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Result as DbalResult;
+use Doctrine\DBAL\Schema\AbstractSchemaManager;
 
 /**
  * Class for establishing and maintaining connection with your database.
@@ -22,14 +24,13 @@ abstract class Connection
 {
     use DiContainerTrait;
 
-    /** @var string Query classname */
-    protected $query_class = Query::class;
-
-    /** @var string Expression classname */
-    protected $expression_class = Expression::class;
+    /** @var class-string<Expression> */
+    protected string $expressionClass;
+    /** @var class-string<Query> */
+    protected string $queryClass;
 
     /** @var DbalConnection */
-    protected $connection;
+    private $_connection;
 
     /** @var array<string, class-string<self>> */
     protected static $connectionClassRegistry = [
@@ -43,27 +44,24 @@ abstract class Connection
     ];
 
     /**
-     * Specifying $properties to constructors will override default
-     * property values of this class.
-     *
-     * @param array $properties
+     * @param array<string, mixed> $defaults
      */
-    public function __construct($properties = [])
+    public function __construct(array $defaults = [])
     {
-        if (!is_array($properties)) {
-            throw (new Exception('Invalid properties for "new Connection()". Did you mean to call Connection::connect()?'))
-                ->addMoreInfo('properties', $properties);
-        }
-
-        $this->setDefaults($properties);
+        $this->setDefaults($defaults);
     }
 
     public function __destruct()
     {
         // needed for DBAL connection to be released immeditelly
-        if ($this->connection !== null) {
-            $this->connection->close();
+        if ($this->_connection !== null) {
+            $this->getConnection()->close();
         }
+    }
+
+    public function getConnection(): DbalConnection
+    {
+        return $this->_connection;
     }
 
     /**
@@ -72,11 +70,11 @@ abstract class Connection
      *
      * Returns normalized DSN as array ['driver', 'host', 'user', 'password', 'dbname', 'charset', ...].
      *
-     * @param array|string $dsn
-     * @param string       $user     Optional username, this takes precedence over dsn string
-     * @param string       $password Optional password, this takes precedence over dsn string
+     * @param array<string, string>|string $dsn
+     * @param string                       $user     Optional username, this takes precedence over dsn string
+     * @param string                       $password Optional password, this takes precedence over dsn string
      *
-     * @return array
+     * @return array<string, string>
      */
     public static function normalizeDsn($dsn, $user = null, $password = null)
     {
@@ -86,14 +84,15 @@ abstract class Connection
         }
         if (isset($dsn['dsn'])) {
             if (str_contains($dsn['dsn'], '://')) {
-                $parsed = array_filter(parse_url($dsn['dsn']));
+                /** @var array<string, string> https://github.com/phpstan/phpstan/issues/8638 */
+                $parsed = array_filter(parse_url($dsn['dsn'])); // @phpstan-ignore-line
                 $dsn['dsn'] = str_replace('-', '_', $parsed['scheme']) . ':';
                 unset($parsed['scheme']);
                 foreach ($parsed as $k => $v) {
-                    if ($k === 'pass') { // @phpstan-ignore-line phpstan bug
+                    if ($k === 'pass') {
                         unset($parsed[$k]);
                         $k = 'password';
-                    } elseif ($k === 'path') { // @phpstan-ignore-line phpstan bug
+                    } elseif ($k === 'path') {
                         unset($parsed[$k]);
                         $k = 'dbname';
                         $v = preg_replace('~^/~', '', $v);
@@ -154,7 +153,7 @@ abstract class Connection
      * Adds connection class to the registry for resolving in Connection::resolve method.
      *
      * Can be used as:
-     *   Connection::registerConnection(MySQL\Connection::class, 'pdo_mysql')
+     * Connection::registerConnection(MySQL\Connection::class, 'pdo_mysql')
      *
      * @param class-string<self> $connectionClass
      */
@@ -181,14 +180,12 @@ abstract class Connection
     /**
      * Connect to database and return connection class.
      *
-     * @param string|array|DbalConnection|DbalDriverConnection $dsn
-     * @param string|null                                      $user
-     * @param string|null                                      $password
-     * @param array                                            $args
-     *
-     * @return Connection
+     * @param string|array<string, string>|DbalConnection|DbalDriverConnection $dsn
+     * @param string|null                                                      $user
+     * @param string|null                                                      $password
+     * @param array<string, mixed>                                             $defaults
      */
-    public static function connect($dsn, $user = null, $password = null, $args = [])
+    public static function connect($dsn, $user = null, $password = null, $defaults = []): self
     {
         if ($dsn instanceof DbalConnection) {
             $driverName = self::getDriverNameFromDbalDriverConnection($dsn->getWrappedConnection()); // @phpstan-ignore-line https://github.com/doctrine/dbal/issues/5199
@@ -205,9 +202,10 @@ abstract class Connection
             $dbalConnection = $connectionClass::connectFromDbalDriverConnection($dbalDriverConnection);
         }
 
-        return new $connectionClass(array_merge([
-            'connection' => $dbalConnection,
-        ], $args));
+        $connection = new $connectionClass($defaults);
+        $connection->_connection = $dbalConnection;
+
+        return $connection;
     }
 
     /**
@@ -218,7 +216,7 @@ abstract class Connection
         $driver = $connection->getNativeConnection();
 
         if ($driver instanceof \PDO) {
-            return 'pdo_' . $driver->getAttribute(\PDO::ATTR_DRIVER_NAME); // @phpstan-ignore-line
+            return 'pdo_' . $driver->getAttribute(\PDO::ATTR_DRIVER_NAME);
         } elseif ($driver instanceof \mysqli) {
             return 'mysqli';
         } elseif (is_resource($driver) && get_resource_type($driver) === 'oci8 connection') {
@@ -228,11 +226,29 @@ abstract class Connection
         return null; // @phpstan-ignore-line
     }
 
+    protected static function createDbalConfiguration(): DbalConfiguration
+    {
+        $dbalConfiguration = new DbalConfiguration();
+        $dbalConfiguration->setMiddlewares([
+            new class() implements DbalMiddleware {
+                public function wrap(DbalDriver $driver): DbalDriver
+                {
+                    return new DbalDriverMiddleware($driver);
+                }
+            },
+        ]);
+
+        return $dbalConfiguration;
+    }
+
     protected static function createDbalEventManager(): EventManager
     {
         return new EventManager();
     }
 
+    /**
+     * @param array<string, string> $dsn
+     */
     protected static function connectFromDsn(array $dsn): DbalDriverConnection
     {
         $dsn = static::normalizeDsn($dsn);
@@ -243,8 +259,8 @@ abstract class Connection
         }
 
         $dbalConnection = DriverManager::getConnection(
-            $dsn,
-            null,
+            $dsn, // @phpstan-ignore-line
+            (static::class)::createDbalConfiguration(),
             (static::class)::createDbalEventManager()
         );
 
@@ -253,75 +269,45 @@ abstract class Connection
 
     protected static function connectFromDbalDriverConnection(DbalDriverConnection $dbalDriverConnection): DbalConnection
     {
-        $dbalConnection = DriverManager::getConnection([
-            'driver' => self::getDriverNameFromDbalDriverConnection($dbalDriverConnection),
-        ], null, (static::class)::createDbalEventManager());
+        $dbalConnection = DriverManager::getConnection(
+            ['driver' => self::getDriverNameFromDbalDriverConnection($dbalDriverConnection)],
+            (static::class)::createDbalConfiguration(),
+            (static::class)::createDbalEventManager()
+        );
         \Closure::bind(function () use ($dbalConnection, $dbalDriverConnection): void {
             $dbalConnection->_conn = $dbalDriverConnection;
         }, null, \Doctrine\DBAL\Connection::class)();
-
-        if ($dbalConnection->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            \Closure::bind(function () use ($dbalConnection) {
-                $dbalConnection->platform = new class() extends \Doctrine\DBAL\Platforms\PostgreSQL94Platform { // @phpstan-ignore-line
-                    use Postgresql\PlatformTrait;
-                };
-            }, null, DbalConnection::class)();
-        }
-
-        if ($dbalConnection->getDatabasePlatform() instanceof SQLServerPlatform) {
-            \Closure::bind(function () use ($dbalConnection) {
-                $dbalConnection->platform = new class() extends \Doctrine\DBAL\Platforms\SQLServer2012Platform { // @phpstan-ignore-line
-                    use Mssql\PlatformTrait;
-                };
-            }, null, DbalConnection::class)();
-        }
-
-        if ($dbalConnection->getDatabasePlatform() instanceof OraclePlatform) {
-            \Closure::bind(function () use ($dbalConnection) {
-                $dbalConnection->platform = new class() extends OraclePlatform {
-                    use Oracle\PlatformTrait;
-                };
-            }, null, DbalConnection::class)();
-        }
 
         return $dbalConnection;
     }
 
     /**
-     * Returns new Query object with connection already set.
+     * Create new Expression with connection already set.
      *
-     * @param string|array $properties
+     * @param string|array<string, mixed> $template
+     * @param array<mixed>                $arguments
      */
-    public function dsql($properties = []): Query
+    public function expr($template = [], array $arguments = []): Expression
     {
-        $c = $this->query_class;
-        $q = new $c($properties);
-        $q->connection = $this;
-
-        return $q;
-    }
-
-    /**
-     * Returns Expression object with connection already set.
-     *
-     * @param string|array $properties
-     * @param array        $arguments
-     */
-    public function expr($properties = [], $arguments = null): Expression
-    {
-        $c = $this->expression_class;
-        $e = new $c($properties, $arguments);
+        $class = $this->expressionClass;
+        $e = new $class($template, $arguments);
         $e->connection = $this;
 
         return $e;
     }
 
     /**
-     * @return DbalConnection
+     * Create new Query with connection already set.
+     *
+     * @param string|array<string, mixed> $defaults
      */
-    public function connection()
+    public function dsql($defaults = []): Query
     {
-        return $this->connection;
+        $class = $this->queryClass;
+        $q = new $class($defaults);
+        $q->connection = $this;
+
+        return $q;
     }
 
     /**
@@ -329,11 +315,11 @@ abstract class Connection
      */
     public function executeQuery(Expression $expr): DbalResult
     {
-        if ($this->connection === null) {
+        if ($this->_connection === null) {
             throw new Exception('DBAL connection is not set');
         }
 
-        return $expr->executeQuery($this->connection);
+        return $expr->executeQuery($this->getConnection());
     }
 
     /**
@@ -343,11 +329,11 @@ abstract class Connection
      */
     public function executeStatement(Expression $expr): int
     {
-        if ($this->connection === null) {
+        if ($this->_connection === null) {
             throw new Exception('DBAL connection is not set');
         }
 
-        return $expr->executeStatement($this->connection);
+        return $expr->executeStatement($this->getConnection());
     }
 
     /**
@@ -355,19 +341,20 @@ abstract class Connection
      * the code inside callback will fail, then all of the transaction
      * will be also rolled back.
      *
-     * @param mixed ...$args
+     * @param \Closure(mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
+     * @param mixed                                                                                 ...$fxArgs
      *
      * @return mixed
      */
-    public function atomic(\Closure $fx, ...$args)
+    public function atomic(\Closure $fx, ...$fxArgs)
     {
         $this->beginTransaction();
         try {
-            $res = $fx(...$args);
+            $res = $fx(...$fxArgs);
             $this->commit();
 
             return $res;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->rollBack();
 
             throw $e;
@@ -393,8 +380,8 @@ abstract class Connection
     public function beginTransaction(): void
     {
         try {
-            $this->connection->beginTransaction();
-        } catch (\Doctrine\DBAL\ConnectionException $e) {
+            $this->getConnection()->beginTransaction();
+        } catch (DbalConnectionException $e) {
             throw new Exception('Begin transaction failed', 0, $e);
         }
     }
@@ -407,7 +394,7 @@ abstract class Connection
      */
     public function inTransaction(): bool
     {
-        return $this->connection->isTransactionActive();
+        return $this->getConnection()->isTransactionActive();
     }
 
     /**
@@ -420,8 +407,8 @@ abstract class Connection
     public function commit(): void
     {
         try {
-            $this->connection->commit();
-        } catch (\Doctrine\DBAL\ConnectionException $e) {
+            $this->getConnection()->commit();
+        } catch (DbalConnectionException $e) {
             throw new Exception('Commit failed', 0, $e);
         }
     }
@@ -432,8 +419,8 @@ abstract class Connection
     public function rollBack(): void
     {
         try {
-            $this->connection->rollBack();
-        } catch (\Doctrine\DBAL\ConnectionException $e) {
+            $this->getConnection()->rollBack();
+        } catch (DbalConnectionException $e) {
             throw new Exception('Rollback failed', 0, $e);
         }
     }
@@ -445,13 +432,21 @@ abstract class Connection
      */
     public function lastInsertId(string $sequence = null): string
     {
-        $res = $this->connection()->lastInsertId($sequence);
+        $res = $this->getConnection()->lastInsertId($sequence);
 
         return is_int($res) ? (string) $res : $res;
     }
 
     public function getDatabasePlatform(): AbstractPlatform
     {
-        return $this->connection->getDatabasePlatform();
+        return $this->getConnection()->getDatabasePlatform();
+    }
+
+    /**
+     * @phpstan-return AbstractSchemaManager<AbstractPlatform>
+     */
+    public function createSchemaManager(): AbstractSchemaManager
+    {
+        return $this->getConnection()->createSchemaManager();
     }
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests\Persistence\Sql\WithDb;
 
 use Atk4\Data\Model;
-use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Exception;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Query;
@@ -13,14 +12,9 @@ use Atk4\Data\Schema\TestCase;
 
 class TransactionTest extends TestCase
 {
-    /** @var Connection */
-    protected $c;
-
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->c = $this->db->connection;
 
         $model = new Model($this->db, ['table' => 'employee']);
         $model->addField('name');
@@ -38,14 +32,11 @@ class TransactionTest extends TestCase
     }
 
     /**
-     * @param mixed  $table
-     * @param string $alias
+     * @param string|Expression $table
      */
-    private function q($table = null, string $alias = null): Query
+    protected function q($table = null, string $alias = null): Query
     {
-        $q = $this->c->dsql();
-
-        // add table to query if specified
+        $q = $this->getConnection()->dsql();
         if ($table !== null) {
             $q->table($table, $alias);
         }
@@ -57,44 +48,47 @@ class TransactionTest extends TestCase
     {
         // try to commit when not in transaction
         $this->expectException(Exception::class);
-        $this->c->commit();
+        $this->getConnection()->commit();
     }
 
     public function testCommitException2(): void
     {
+        $this->getConnection()->beginTransaction();
+        $this->getConnection()->commit();
+
         // try to commit when not in transaction anymore
-        $this->c->beginTransaction();
-        $this->c->commit();
         $this->expectException(Exception::class);
-        $this->c->commit();
+        $this->getConnection()->commit();
     }
 
     public function testRollbackException1(): void
     {
         // try to rollback when not in transaction
         $this->expectException(Exception::class);
-        $this->c->rollBack();
+        $this->getConnection()->rollBack();
     }
 
     public function testRollbackException2(): void
     {
+        $this->getConnection()->beginTransaction();
+        $this->getConnection()->rollBack();
+
         // try to rollback when not in transaction anymore
-        $this->c->beginTransaction();
-        $this->c->rollBack();
         $this->expectException(Exception::class);
-        $this->c->rollBack();
+        $this->getConnection()->rollBack();
     }
 
     /**
      * Tests simple and nested transactions.
+     * TODO split this test.
      */
     public function testTransactions(): void
     {
         // truncate table, prepare
         $this->q('employee')->mode('truncate')->executeStatement();
-        $this->assertSame(
+        self::assertSame(
             '0',
-            $this->q('employee')->field(new Expression('count(*)'))->getOne()
+            $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
         );
 
         // without transaction, ignoring exceptions
@@ -109,30 +103,30 @@ class TransactionTest extends TestCase
             // ignore
         }
 
-        $this->assertSame(
+        self::assertSame(
             '1',
-            $this->q('employee')->field(new Expression('count(*)'))->getOne()
+            $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
         );
 
         // 1-level transaction: begin, insert, 2, rollback, 1
-        $this->c->beginTransaction();
+        $this->getConnection()->beginTransaction();
         $this->q('employee')
             ->setMulti(['id' => 3, 'name' => 'John', 'surname' => 'Doe', 'retired' => true])
             ->mode('insert')->executeStatement();
-        $this->assertSame(
+        self::assertSame(
             '2',
-            $this->q('employee')->field(new Expression('count(*)'))->getOne()
+            $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
         );
 
-        $this->c->rollBack();
-        $this->assertSame(
+        $this->getConnection()->rollBack();
+        self::assertSame(
             '1',
-            $this->q('employee')->field(new Expression('count(*)'))->getOne()
+            $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
         );
 
         // atomic method, rolls back everything inside atomic() callback in case of exception
         try {
-            $this->c->atomic(function () {
+            $this->getConnection()->atomic(function () {
                 $this->q('employee')
                     ->setMulti(['id' => 3, 'name' => 'John', 'surname' => 'Doe', 'retired' => true])
                     ->mode('insert')->executeStatement();
@@ -144,20 +138,20 @@ class TransactionTest extends TestCase
             // ignore
         }
 
-        $this->assertSame(
+        self::assertSame(
             '1',
-            $this->q('employee')->field(new Expression('count(*)'))->getOne()
+            $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
         );
 
         // atomic method, nested atomic transaction, rolls back everything
         try {
-            $this->c->atomic(function () {
+            $this->getConnection()->atomic(function () {
                 $this->q('employee')
                     ->setMulti(['id' => 3, 'name' => 'John', 'surname' => 'Doe', 'retired' => true])
                     ->mode('insert')->executeStatement();
 
                 // success, in, fail, out, fail
-                $this->c->atomic(function () {
+                $this->getConnection()->atomic(function () {
                     $this->q('employee')
                         ->setMulti(['id' => 4, 'name' => 'John', 'surname' => 'Doe', 'retired' => true])
                         ->mode('insert')->executeStatement();
@@ -174,20 +168,20 @@ class TransactionTest extends TestCase
             // ignore
         }
 
-        $this->assertSame(
+        self::assertSame(
             '1',
-            $this->q('employee')->field(new Expression('count(*)'))->getOne()
+            $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
         );
 
         // atomic method, nested atomic transaction, rolls back everything
         try {
-            $this->c->atomic(function () {
+            $this->getConnection()->atomic(function () {
                 $this->q('employee')
                     ->setMulti(['id' => 3, 'name' => 'John', 'surname' => 'Doe', 'retired' => true])
                     ->mode('insert')->executeStatement();
 
                 // success, in, success, out, fail
-                $this->c->atomic(function () {
+                $this->getConnection()->atomic(function () {
                     $this->q('employee')
                         ->setMulti(['id' => 4, 'name' => 'John', 'surname' => 'Doe', 'retired' => true])
                         ->mode('insert')->executeStatement();
@@ -201,20 +195,20 @@ class TransactionTest extends TestCase
             // ignore
         }
 
-        $this->assertSame(
+        self::assertSame(
             '1',
-            $this->q('employee')->field(new Expression('count(*)'))->getOne()
+            $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
         );
 
         // atomic method, nested atomic transaction, rolls back everything
         try {
-            $this->c->atomic(function () {
+            $this->getConnection()->atomic(function () {
                 $this->q('employee')
                     ->setMulti(['id' => 3, 'name' => 'John', 'surname' => 'Doe', 'retired' => true])
                     ->mode('insert')->executeStatement();
 
                 // success, in, fail, out, catch exception
-                $this->c->atomic(function () {
+                $this->getConnection()->atomic(function () {
                     $this->q('employee')
                         ->setMulti(['id' => 4, 'FOO' => 'bar', 'name' => 'John', 'surname' => 'Doe', 'retired' => true])
                         ->mode('insert')->executeStatement();
@@ -228,14 +222,14 @@ class TransactionTest extends TestCase
             // ignore
         }
 
-        $this->assertSame(
+        self::assertSame(
             '1',
-            $this->q('employee')->field(new Expression('count(*)'))->getOne()
+            $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
         );
 
         // atomic method, success - commit
         try {
-            $this->c->atomic(function () {
+            $this->getConnection()->atomic(function () {
                 $this->q('employee')
                     ->setMulti(['id' => 3, 'name' => 'John', 'surname' => 'Doe', 'retired' => true])
                     ->mode('insert')->executeStatement();
@@ -244,36 +238,32 @@ class TransactionTest extends TestCase
             // ignore
         }
 
-        $this->assertSame(
+        self::assertSame(
             '2',
-            $this->q('employee')->field(new Expression('count(*)'))->getOne()
+            $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
         );
     }
 
-    /**
-     * Tests inTransaction().
-     */
     public function testInTransaction(): void
     {
-        // inTransaction tests
-        $this->assertFalse(
-            $this->c->inTransaction()
+        self::assertFalse(
+            $this->getConnection()->inTransaction()
         );
 
-        $this->c->beginTransaction();
-        $this->assertTrue(
-            $this->c->inTransaction()
+        $this->getConnection()->beginTransaction();
+        self::assertTrue(
+            $this->getConnection()->inTransaction()
         );
 
-        $this->c->rollBack();
-        $this->assertFalse(
-            $this->c->inTransaction()
+        $this->getConnection()->rollBack();
+        self::assertFalse(
+            $this->getConnection()->inTransaction()
         );
 
-        $this->c->beginTransaction();
-        $this->c->commit();
-        $this->assertFalse(
-            $this->c->inTransaction()
+        $this->getConnection()->beginTransaction();
+        $this->getConnection()->commit();
+        self::assertFalse(
+            $this->getConnection()->inTransaction()
         );
     }
 }

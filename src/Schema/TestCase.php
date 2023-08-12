@@ -7,13 +7,12 @@ namespace Atk4\Data\Schema;
 use Atk4\Core\Phpunit\TestCase as BaseTestCase;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
-use Doctrine\DBAL\Logging\SQLLogger;
+use Atk4\Data\Persistence\Sql\Expression;
+use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
-use Doctrine\DBAL\Schema\AbstractSchemaManager;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -23,79 +22,75 @@ abstract class TestCase extends BaseTestCase
     /** @var bool If true, SQL queries are dumped. */
     public $debug = false;
 
-    /** @var Migrator[] */
-    private $createdMigrators = [];
+    /** @var array<int, Migrator> */
+    private array $createdMigrators = [];
 
     /**
-     * Setup test database.
+     * @return static|null
      */
+    public static function getTestFromBacktrace()
+    {
+        foreach (debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS | \DEBUG_BACKTRACE_PROVIDE_OBJECT) as $frame) {
+            if (($frame['object'] ?? null) instanceof static) {
+                return $frame['object'];
+            }
+        }
+
+        return null;
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->db = Persistence::connect($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD']);
-
-        if ($this->db->getDatabasePlatform() instanceof MySQLPlatform) {
-            $this->db->connection->expr(
-                'SET SESSION auto_increment_increment = 1, SESSION auto_increment_offset = 1'
-            )->executeStatement();
-        }
-
-        $this->db->connection->connection()->getConfiguration()->setSQLLogger(
-            null ?? new class($this) implements SQLLogger { // @phpstan-ignore-line
-                /** @var \WeakReference<TestCase> */
-                private $testCaseWeakRef;
-
-                public function __construct(TestCase $testCase)
-                {
-                    $this->testCaseWeakRef = \WeakReference::create($testCase);
-                }
-
-                public function startQuery($sql, array $params = null, array $types = null): void
-                {
-                    if (!$this->testCaseWeakRef->get()->debug) {
-                        return;
-                    }
-
-                    echo "\n" . $sql . "\n" . (is_array($params) ? print_r(array_map(function ($v) {
-                        if (is_string($v) && strlen($v) > 4096) {
-                            $v = '*long string* (length: ' . strlen($v) . ' bytes, sha256: ' . hash('sha256', $v) . ')';
-                        }
-
-                        return $v;
-                    }, $params), true) : '') . "\n\n";
-                }
-
-                public function stopQuery(): void
-                {
-                }
-            }
-        );
+        $this->db = new TestSqlPersistence();
     }
 
     protected function tearDown(): void
     {
-        foreach ($this->createdMigrators as $migrator) {
-            foreach ($migrator->getCreatedTableNames() as $t) {
-                (clone $migrator)->table($t)->dropIfExists();
-            }
+        $debugOrig = $this->debug;
+        try {
+            $this->debug = false;
+            $this->dropCreatedDb();
+        } finally {
+            $this->debug = $debugOrig;
         }
-        $this->createdMigrators = [];
 
         parent::tearDown();
     }
 
+    protected function getConnection(): Persistence\Sql\Connection
+    {
+        return $this->db->getConnection(); // @phpstan-ignore-line
+    }
+
     protected function getDatabasePlatform(): AbstractPlatform
     {
-        return $this->db->connection->getDatabasePlatform();
+        return $this->getConnection()->getDatabasePlatform();
     }
 
     /**
-     * @phpstan-return AbstractSchemaManager<AbstractPlatform>
+     * @param array<int|string, scalar|null>      $params
+     * @param array<int|string, ParameterType::*> $types
      */
-    protected function createSchemaManager(): AbstractSchemaManager
+    protected function logQuery(string $sql, array $params, array $types): void
     {
-        return $this->db->connection->connection()->createSchemaManager();
+        if (!$this->debug) {
+            return;
+        }
+
+        $exprNoRender = new class($sql, $params) extends Expression {
+            public function render(): array
+            {
+                return [$this->template, $this->args['custom']];
+            }
+        };
+        $sqlWithParams = $exprNoRender->getDebugQuery();
+        if (substr($sqlWithParams, -1) !== ';') {
+            $sqlWithParams .= ';';
+        }
+
+        echo "\n" . $sqlWithParams . "\n\n";
     }
 
     private function convertSqlFromSqlite(string $sql): string
@@ -103,14 +98,14 @@ abstract class TestCase extends BaseTestCase
         $platform = $this->getDatabasePlatform();
 
         $convertedSql = preg_replace_callback(
-            '~\'(?:[^\'\\\\]+|\\\\.)*\'|"(?:[^"\\\\]+|\\\\.)*"|:(\w+)~s',
+            '~\'(?:[^\'\\\\]+|\\\\.)*+\'|`(?:[^`\\\\]+|\\\\.)*+`|:(\w+)~s',
             function ($matches) use ($platform) {
                 if (isset($matches[1])) {
                     return ':' . ($platform instanceof OraclePlatform ? 'xxaaa' : '') . $matches[1];
                 }
 
                 $str = substr(preg_replace('~\\\\(.)~s', '$1', $matches[0]), 1, -1);
-                if (substr($matches[0], 0, 1) === '"') {
+                if (substr($matches[0], 0, 1) === '`') {
                     return $platform->quoteSingleIdentifier($str);
                 }
 
@@ -120,7 +115,7 @@ abstract class TestCase extends BaseTestCase
         );
 
         if ($platform instanceof SqlitePlatform && $convertedSql !== $sql) {
-            $this->assertSame($sql, $convertedSql);
+            self::assertSame($sql, $convertedSql);
         }
 
         return $convertedSql;
@@ -128,14 +123,14 @@ abstract class TestCase extends BaseTestCase
 
     protected function assertSameSql(string $expectedSqliteSql, string $actualSql, string $message = ''): void
     {
-        $this->assertSame($this->convertSqlFromSqlite($expectedSqliteSql), $actualSql, $message);
+        self::assertSame($this->convertSqlFromSqlite($expectedSqliteSql), $actualSql, $message);
     }
 
     /**
      * @param mixed $a
      * @param mixed $b
      */
-    private function compareExportUnorderedValue($a, $b): int
+    private static function compareExportUnorderedValue($a, $b): int
     {
         if ($a === $b) {
             return 0;
@@ -180,17 +175,17 @@ abstract class TestCase extends BaseTestCase
 
             if ($is2d) {
                 if (array_is_list($a) && array_is_list($b)) {
-                    usort($a, fn ($a, $b) => $this->compareExportUnorderedValue($a, $b));
-                    usort($b, fn ($a, $b) => $this->compareExportUnorderedValue($a, $b));
+                    usort($a, fn ($a, $b) => self::compareExportUnorderedValue($a, $b));
+                    usort($b, fn ($a, $b) => self::compareExportUnorderedValue($a, $b));
                 } else {
-                    uasort($a, fn ($a, $b) => $this->compareExportUnorderedValue($a, $b));
-                    uasort($b, fn ($a, $b) => $this->compareExportUnorderedValue($a, $b));
+                    uasort($a, fn ($a, $b) => self::compareExportUnorderedValue($a, $b));
+                    uasort($b, fn ($a, $b) => self::compareExportUnorderedValue($a, $b));
                 }
             }
 
             if (array_keys($a) === array_keys($b)) {
                 foreach ($a as $k => $v) {
-                    $cmp = $this->compareExportUnorderedValue($v, $b[$k]);
+                    $cmp = self::compareExportUnorderedValue($v, $b[$k]);
                     if ($cmp !== 0) {
                         return $cmp;
                     }
@@ -207,76 +202,78 @@ abstract class TestCase extends BaseTestCase
      * Same as self::assertSame() except:
      * - 2D arrays (rows) are recursively compared without any order
      * - objects implementing DateTimeInterface are compared by formatted output.
+     *
+     * @param array<mixed, mixed> $expected
+     * @param array<mixed, mixed> $actual
      */
-    protected function assertSameExportUnordered(array $expected, array $actual, string $message = ''): void
+    protected static function assertSameExportUnordered(array $expected, array $actual, string $message = ''): void
     {
-        if ($this->compareExportUnorderedValue($expected, $actual) === 0) {
-            $this->assertTrue(true);
+        if (self::compareExportUnorderedValue($expected, $actual) === 0) {
+            self::assertTrue(true); // @phpstan-ignore-line
 
             return;
         }
 
-        $this->assertSame($expected, $actual, $message);
+        self::assertSame($expected, $actual, $message);
     }
 
     public function createMigrator(Model $model = null): Migrator
     {
-        $migrator = new Migrator($model ?: $this->db);
+        $migrator = new Migrator($model ?? $this->db);
         $this->createdMigrators[] = $migrator;
 
         return $migrator;
     }
 
     /**
-     * Sets database into a specific test.
+     * @param array<string, array<int|'_', array<string, mixed>>> $dbData
      */
     public function setDb(array $dbData, bool $importData = true): void
     {
-        // create tables
         foreach ($dbData as $tableName => $data) {
             $migrator = $this->createMigrator()->table($tableName);
 
-            // drop table if already created but only if it was created during this test
-            foreach ($this->createdMigrators as $migr) {
-                if ($migr->connection === $this->db->connection) {
-                    foreach ($migr->getCreatedTableNames() as $t) {
-                        if ($t === $tableName) {
-                            $migrator->drop();
-
-                            break 2;
-                        }
-                    }
-                }
-            }
-
-            $firstRow = current($data);
-            $idColumnName = null;
-            if ($firstRow) {
-                $idColumnName = isset($firstRow['_id']) ? '_id' : 'id';
-                $migrator->id($idColumnName);
-
-                foreach ($firstRow as $field => $row) {
-                    if ($field === $idColumnName) {
+            $fieldTypes = [];
+            foreach ($data as $row) {
+                foreach ($row as $k => $v) {
+                    if (isset($fieldTypes[$k])) {
                         continue;
                     }
 
-                    if (is_bool($row)) {
+                    if (is_bool($v)) {
                         $fieldType = 'boolean';
-                    } elseif (is_int($row)) {
+                    } elseif (is_int($v)) {
                         $fieldType = 'integer';
-                    } elseif (is_float($row)) {
+                    } elseif (is_float($v)) {
                         $fieldType = 'float';
-                    } elseif ($row instanceof \DateTimeInterface) {
+                    } elseif ($v instanceof \DateTimeInterface) {
                         $fieldType = 'datetime';
-                    } else {
+                    } elseif ($v !== null) {
                         $fieldType = 'string';
+                    } else {
+                        $fieldType = null;
                     }
 
-                    $migrator->field($field, ['type' => $fieldType]);
+                    $fieldTypes[$k] = $fieldType;
+                }
+            }
+            foreach ($fieldTypes as $k => $fieldType) {
+                if ($fieldType === null) {
+                    $fieldTypes[$k] = 'string';
+                }
+            }
+            $idColumnName = isset($fieldTypes['_id']) ? '_id' : 'id';
+
+            // create table
+            $migrator->id($idColumnName, isset($fieldTypes[$idColumnName]) ? ['type' => $fieldTypes[$idColumnName]] : []);
+            foreach ($fieldTypes as $k => $fieldType) {
+                if ($k === $idColumnName) {
+                    continue;
                 }
 
-                $migrator->create();
+                $migrator->field($k, ['type' => $fieldType]);
             }
+            $migrator->create();
 
             // import data
             if ($importData) {
@@ -304,7 +301,9 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * Return database data.
+     * @param array<int, string>|null $tableNames
+     *
+     * @return array<string, array<int, array<string, mixed>>>
      */
     public function getDb(array $tableNames = null, bool $noId = false): array
     {
@@ -330,6 +329,12 @@ abstract class TestCase extends BaseTestCase
                     $idColumnName = isset($row['_id']) ? '_id' : 'id';
                 }
 
+                foreach ($row as $k => $v) {
+                    if (preg_match('~(?:^|_)id$~', $k) && $v === (string) (int) $v) {
+                        $row[$k] = (int) $v;
+                    }
+                }
+
                 if ($noId) {
                     unset($row[$idColumnName]);
                     $res[] = $row;
@@ -338,9 +343,34 @@ abstract class TestCase extends BaseTestCase
                 }
             }
 
+            if (!$noId) {
+                ksort($res);
+            }
+
             $resAll[$table] = $res;
         }
 
         return $resAll;
+    }
+
+    public function dropCreatedDb(): void
+    {
+        while (count($this->createdMigrators) > 0) {
+            $migrator = array_pop($this->createdMigrators);
+            foreach ($migrator->getCreatedTableNames() as $t) {
+                (clone $migrator)->table($t)->dropIfExists(true);
+            }
+        }
+    }
+
+    public function markTestIncompleteWhenCreateUniqueIndexIsNotSupportedByPlatform(): void
+    {
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+            // https://github.com/doctrine/dbal/issues/5507
+            self::markTestIncomplete('TODO MSSQL: DBAL must setup unique index without WHERE clause');
+        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            // https://github.com/doctrine/dbal/issues/5508
+            self::markTestIncomplete('TODO Oracle: DBAL must setup unique index on table column too');
+        }
     }
 }

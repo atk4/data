@@ -13,17 +13,17 @@ class Join extends Model\Join
     public function afterLoad(Model $entity): void
     {
         // we need to collect ID
-        $this->setId($entity, $entity->getDataRef()[$this->master_field]);
+        $this->setId($entity, $entity->getDataRef()[$this->masterField]);
         if ($this->getId($entity) === null) {
             return;
         }
 
         try {
-            $data = Persistence\Array_::assertInstanceOf($this->getOwner()->persistence)
+            $data = Persistence\Array_::assertInstanceOf($this->getOwner()->getPersistence())
                 ->load($this->createFakeForeignModel(), $this->getId($entity));
         } catch (Exception $e) {
             throw (new Exception('Unable to load joined record', $e->getCode(), $e))
-                ->addMoreInfo('table', $this->foreign_table)
+                ->addMoreInfo('table', $this->foreignTable)
                 ->addMoreInfo('id', $this->getId($entity));
         }
         $dataRef = &$entity->getDataRef();

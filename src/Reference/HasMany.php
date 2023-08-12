@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Reference;
 
+use Atk4\Core\Factory;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
@@ -22,15 +23,15 @@ class HasMany extends Reference
 
     public function getTheirFieldName(Model $theirModel = null): string
     {
-        if ($this->their_field) {
-            return $this->their_field;
+        if ($this->theirField) {
+            return $this->theirField;
         }
 
         // this is pure guess, verify if such field exist, otherwise throw
         // TODO probably remove completely in the future
         $ourModel = $this->getOurModel(null);
-        $theirFieldName = preg_replace('~^.+?\.~', '', $this->getModelTableString($ourModel)) . '_' . $ourModel->id_field;
-        if (!$this->createTheirModel()->hasField($theirFieldName)) {
+        $theirFieldName = preg_replace('~^.+\.~s', '', $this->getModelTableString($ourModel)) . '_' . $ourModel->idField;
+        if (!($theirModel ?? $this->createTheirModel())->hasField($theirFieldName)) {
             throw (new Exception('Their model does not contain fallback field'))
                 ->addMoreInfo('their_fallback_field', $theirFieldName);
         }
@@ -48,8 +49,8 @@ class HasMany extends Reference
         $ourModel = $this->getOurModel($ourModel);
 
         if ($ourModel->isEntity()) {
-            $res = $this->our_field
-                ? $ourModel->get($this->our_field)
+            $res = $this->ourField
+                ? $ourModel->get($this->ourField)
                 : $ourModel->getId();
             $this->assertReferenceValueNotNull($res);
 
@@ -70,9 +71,9 @@ class HasMany extends Reference
         // TODO horrible hack to render the field with a table prefix,
         // find a solution how to wrap the field inside custom Field (without owner?)
         $ourModelCloned = clone $this->getOurModel(null);
-        $ourModelCloned->persistence_data['use_table_prefixes'] = true;
+        $ourModelCloned->persistenceData['use_table_prefixes'] = true;
 
-        return $ourModelCloned->getRef($this->link)->getOurField();
+        return $ourModelCloned->getReference($this->link)->getOurField();
     }
 
     /**
@@ -90,6 +91,8 @@ class HasMany extends Reference
 
     /**
      * Creates model that can be used for generating sub-query actions.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function refLink(?Model $ourModel, array $defaults = []): Model
     {
@@ -104,8 +107,9 @@ class HasMany extends Reference
     }
 
     /**
-     * Adds field as expression to our model.
-     * Used in aggregate strategy.
+     * Adds field as expression to our model. Used in aggregate strategy.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function addField(string $fieldName, array $defaults = []): Field
     {
@@ -115,15 +119,15 @@ class HasMany extends Reference
                 ->addMoreInfo('defaults', $defaults);
         }
 
-        $defaults['aggregate_relation'] = $this;
+        $defaults['aggregateRelation'] = $this;
 
         $alias = $defaults['field'] ?? null;
         $field = $alias ?? $fieldName;
 
         if (isset($defaults['concat'])) {
-            $defaults['aggregate'] = $this->getOurModel(null)->dsql()->groupConcat($field, $defaults['concat']);
-            $defaults['read_only'] = false;
-            $defaults['never_save'] = true;
+            $defaults['aggregate'] = 'concat';
+            $defaults['concatSeparator'] = $defaults['concat'];
+            unset($defaults['concat']);
         }
 
         if (isset($defaults['expr'])) {
@@ -150,7 +154,12 @@ class HasMany extends Reference
             };
         } else {
             $fx = function () use ($defaults, $field) {
-                return $this->refLink(null)->action('fx', [$defaults['aggregate'], $field]);
+                $args = [$defaults['aggregate'], $field];
+                if ($defaults['aggregate'] === 'concat') {
+                    $args['concatSeparator'] = $defaults['concatSeparator'];
+                }
+
+                return $this->refLink(null)->action('fx', $args);
             };
         }
 
@@ -160,19 +169,20 @@ class HasMany extends Reference
     /**
      * Adds multiple fields.
      *
-     * @see addField()
+     * @param array<string, array<mixed>>|array<int, string> $fields
+     * @param array<mixed>                                   $defaults
      *
      * @return $this
      */
-    public function addFields(array $fields = [])
+    public function addFields(array $fields = [], array $defaults = [])
     {
-        foreach ($fields as $name => $seed) {
-            if (is_int($name)) {
-                $name = $seed;
-                $seed = [];
+        foreach ($fields as $k => $v) {
+            if (is_int($k)) {
+                $k = $v;
+                $v = [];
             }
 
-            $this->addField($name, $seed);
+            $this->addField($k, Factory::mergeSeeds($v, $defaults));
         }
 
         return $this;

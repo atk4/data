@@ -18,20 +18,20 @@ class PasswordFieldTest extends TestCase
         $field = PasswordField::assertInstanceOf($m->getField('p'));
         $entity = $m->createEntity();
 
-        $this->assertNull($entity->get('p'));
+        self::assertNull($entity->get('p'));
 
         $field->setPassword($entity, 'myPassword');
-        $this->assertIsString($entity->get('p'));
-        $this->assertNotSame('myPassword', $entity->get('p'));
-        $this->assertFalse($field->verifyPassword($entity, 'badPassword'));
-        $this->assertTrue($field->verifyPassword($entity, 'myPassword'));
+        self::assertIsString($entity->get('p'));
+        self::assertNotSame('myPassword', $entity->get('p'));
+        self::assertFalse($field->verifyPassword($entity, 'badPassword'));
+        self::assertTrue($field->verifyPassword($entity, 'myPassword'));
 
         // password is always normalized using string type
-        $this->assertTrue($field->verifyPassword($entity, 'myPassword '));
-        $this->assertFalse($field->verifyPassword($entity, 'myPassword .'));
+        self::assertTrue($field->verifyPassword($entity, 'myPassword '));
+        self::assertFalse($field->verifyPassword($entity, 'myPassword .'));
 
         $field->set($entity, null);
-        $this->assertNull($entity->get('p'));
+        self::assertNull($entity->get('p'));
     }
 
     public function testInvalidPasswordAlreadyHashed(): void
@@ -47,8 +47,8 @@ class PasswordFieldTest extends TestCase
     {
         $field = new PasswordField();
         $pwd = 'žlutý__';
-        $this->assertTrue(mb_strlen($pwd) < $field->minLength);
-        $this->assertTrue(strlen($pwd) >= $field->minLength);
+        self::assertTrue(mb_strlen($pwd) < $field->minLength);
+        self::assertTrue(strlen($pwd) >= $field->minLength);
 
         $this->expectException(Exception::class);
         $field->hashPassword($pwd);
@@ -58,14 +58,14 @@ class PasswordFieldTest extends TestCase
     {
         $field = new PasswordField();
         $pwd = 'myPassword';
-        $this->assertFalse($field->hashPasswordIsHashed($pwd));
+        self::assertFalse($field->hashPasswordIsHashed($pwd));
         $hash = $field->hashPassword($pwd);
-        $this->assertTrue($field->hashPasswordIsHashed($hash));
+        self::assertTrue($field->hashPasswordIsHashed($hash));
 
         $field->minLength = 50;
 
         // minLength is ignored for verify
-        $this->assertTrue($field->hashPasswordVerify($hash, $pwd . ' '));
+        self::assertTrue($field->hashPasswordVerify($hash, $pwd . ' '));
 
         // but checked when password is being hashed
         $this->expectException(Exception::class);
@@ -75,9 +75,13 @@ class PasswordFieldTest extends TestCase
     public function testInvalidPasswordCntrlChar(): void
     {
         $field = new PasswordField();
+        $pwd = 'myPassword' . "\t" . 'x';
+        $hash = $field->hashPassword($pwd);
+        self::assertTrue($field->hashPasswordIsHashed($hash));
+        self::assertTrue($field->hashPasswordVerify($hash, str_replace("\t", ' ', $pwd)));
 
         $this->expectException(Exception::class);
-        $field->hashPassword('myPassword' . "\t" . 'x');
+        $field->hashPassword('myPassword' . "\x07" . 'x');
     }
 
     public function testSetUnhashedException(): void
@@ -107,11 +111,9 @@ class PasswordFieldTest extends TestCase
         $field = new PasswordField();
 
         $pwd = $field->generatePassword();
-        $this->assertIsString($pwd);
-        $this->assertSame(8, strlen($pwd));
+        self::assertSame(8, strlen($pwd));
 
         $pwd = $field->generatePassword(50);
-        $this->assertIsString($pwd);
-        $this->assertSame(50, strlen($pwd));
+        self::assertSame(50, strlen($pwd));
     }
 }

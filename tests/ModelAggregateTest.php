@@ -19,7 +19,7 @@ class ModelAggregateTest extends TestCase
         $this->setDb([
             'client' => [
                 // allow of migrator to create all columns
-                ['name' => 'Vinny', 'surname' => null, 'order' => null],
+                ['name' => 'Vinny', 'surname' => null, 'order' => 21],
                 ['name' => 'Zoe'],
             ],
             'invoice' => [
@@ -46,7 +46,7 @@ class ModelAggregateTest extends TestCase
     protected function createInvoice(): Model\Invoice
     {
         $invoice = new Model\Invoice($this->db);
-        $invoice->getRef('client_id')->addTitle();
+        $invoice->getReference('client_id')->addTitle();
 
         return $invoice;
     }
@@ -64,7 +64,7 @@ class ModelAggregateTest extends TestCase
             'c' => ['expr' => 'count(*)', 'type' => 'integer'],
         ]);
 
-        $this->assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['client_id' => 1, 'c' => 2],
             ['client_id' => 2, 'c' => 1],
         ], $aggregate->export());
@@ -80,7 +80,7 @@ class ModelAggregateTest extends TestCase
         ]);
         self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
-        $this->assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['client' => 'Vinny', 'client_id' => 1, 'c' => 2],
             ['client' => 'Zoe', 'client_id' => 2, 'c' => 1],
         ], $aggregate->export());
@@ -96,7 +96,7 @@ class ModelAggregateTest extends TestCase
         ]);
         self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
-        $this->assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['client' => 'Vinny', 'client_id' => 1, 'amount' => 19.0],
             ['client' => 'Zoe', 'client_id' => 2, 'amount' => 4.0],
         ], $aggregate->export());
@@ -115,28 +115,30 @@ class ModelAggregateTest extends TestCase
         ]);
         self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
-        $this->assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'min' => 4.0, 'max' => 15.0, 'amount' => 19.0],
             ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'min' => 4.0, 'max' => 4.0, 'amount' => 4.0],
         ], $aggregate->export());
     }
 
-    public function testGroupSelectExpr(): void
+    public function testGroupSelectExpression(): void
     {
         $aggregate = $this->createInvoiceAggregate();
+        $aggregate->table->getReference('client_id')->addField('order'); // @phpstan-ignore-line
         $aggregate->addField('client');
 
         $aggregate->setGroupBy(['client_id'], [
             's' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
+            'sum_hasone' => ['expr' => 'sum([order])', 'type' => 'integer'],
         ]);
         self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
         $aggregate->addExpression('double', ['expr' => '[s] + [amount]', 'type' => 'atk4_money']);
 
-        $this->assertSameExportUnordered([
-            ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'amount' => 19.0, 'double' => 38.0],
-            ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
+        self::assertSameExportUnordered([
+            ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'amount' => 19.0, 'sum_hasone' => 42, 'double' => 38.0],
+            ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'amount' => 4.0, 'sum_hasone' => null, 'double' => 8.0],
         ], $aggregate->export());
     }
 
@@ -154,7 +156,7 @@ class ModelAggregateTest extends TestCase
 
         $aggregate->addExpression('double', ['expr' => '[s] + [amount]', 'type' => 'atk4_money']);
 
-        $this->assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['client' => 'Vinny', 'client_id' => 1, 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
             ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
         ], $aggregate->export());
@@ -179,7 +181,7 @@ class ModelAggregateTest extends TestCase
             $this->getDatabasePlatform() instanceof SqlitePlatform ? $aggregate->expr('10') : 10
         );
 
-        $this->assertSame([
+        self::assertSame([
             ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'amount' => 19.0, 'double' => 38.0],
         ], $aggregate->export());
     }
@@ -202,7 +204,7 @@ class ModelAggregateTest extends TestCase
             $this->getDatabasePlatform() instanceof SqlitePlatform ? $aggregate->expr('38') : 38
         );
 
-        $this->assertSame([
+        self::assertSame([
             ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'amount' => 19.0, 'double' => 38.0],
         ], $aggregate->export());
     }
@@ -221,7 +223,7 @@ class ModelAggregateTest extends TestCase
         $aggregate->addExpression('double', ['expr' => '[s] + [amount]', 'type' => 'atk4_money']);
         $aggregate->addCondition('client_id', 2);
 
-        $this->assertSame([
+        self::assertSame([
             ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
         ], $aggregate->export());
     }
@@ -241,7 +243,7 @@ class ModelAggregateTest extends TestCase
         $scope = Scope::createAnd(new Condition('client_id', 2), new Condition('amount', $numExpr));
         $aggregate->addCondition($scope);
 
-        $this->assertSame([
+        self::assertSame([
             ['client' => 'Zoe', 'client_id' => 2, 'amount' => 4.0],
         ], $aggregate->export());
     }
@@ -258,10 +260,10 @@ class ModelAggregateTest extends TestCase
 
         $aggregate->hasOne('client_id', ['model' => [Model\Invoice::class]]);
 
-        $this->assertSame(1, $aggregate->loadBy('client', 'Vinny')->ref('client_id')->id);
-        $this->assertSame(2, $aggregate->loadBy('client', 'Zoe')->ref('client_id')->id);
+        self::assertSame(1, $aggregate->loadBy('client', 'Vinny')->ref('client_id')->id);
+        self::assertSame(2, $aggregate->loadBy('client', 'Zoe')->ref('client_id')->id);
         $aggregate->table->addCondition('client', 'Zoe');
-        $this->assertSame(2, $aggregate->ref('client_id')->loadOne()->id);
+        self::assertSame(2, $aggregate->ref('client_id')->loadOne()->id);
     }
 
     public function testGroupOrderSql(): void
@@ -277,7 +279,7 @@ class ModelAggregateTest extends TestCase
         $aggregate->setOrder('client_id', 'asc');
 
         $this->assertSameSql(
-            'select "client", "client_id", sum("amount") "amount" from (select "id", "client_id", "name", "amount", (select "name" from "client" "_c_2bfe9d72a4aa" where "id" = "invoice"."client_id") "client" from "invoice") "_tm" group by "client_id", "client" order by "client_id"',
+            'select `client`, `client_id`, sum(`amount`) `amount` from (select `id`, `client_id`, `name`, `amount`, (select `name` from `client` `_c_2bfe9d72a4aa` where `id` = `invoice`.`client_id`) `client` from `invoice`) `_tm` group by `client_id`, `client` order by `client_id`',
             $aggregate->action('select')->render()[0]
         );
 
@@ -285,7 +287,7 @@ class ModelAggregateTest extends TestCase
         $aggregate->removeField('client');
         $aggregate->groupByFields = array_diff($aggregate->groupByFields, ['client']);
         $this->assertSameSql(
-            'select "client_id", sum("amount") "amount" from (select "id", "client_id", "name", "amount", (select "name" from "client" "_c_2bfe9d72a4aa" where "id" = "invoice"."client_id") "client" from "invoice") "_tm" group by "client_id" order by "client_id"',
+            'select `client_id`, sum(`amount`) `amount` from (select `id`, `client_id`, `name`, `amount`, (select `name` from `client` `_c_2bfe9d72a4aa` where `id` = `invoice`.`client_id`) `client` from `invoice`) `_tm` group by `client_id` order by `client_id`',
             $aggregate->action('select')->render()[0]
         );
     }
@@ -302,7 +304,7 @@ class ModelAggregateTest extends TestCase
         $aggregate->setLimit(1);
         $aggregate->setOrder('client_id', 'asc');
 
-        $this->assertSame([
+        self::assertSame([
             ['client' => 'Vinny', 'client_id' => 1, 'amount' => 19.0],
         ], $aggregate->export());
     }
@@ -319,7 +321,7 @@ class ModelAggregateTest extends TestCase
         $aggregate->setLimit(2, 1);
         $aggregate->setOrder('client_id', 'asc');
 
-        $this->assertSame([
+        self::assertSame([
             ['client' => 'Zoe', 'client_id' => 2, 'amount' => 4.0],
         ], $aggregate->export());
     }
@@ -335,7 +337,7 @@ class ModelAggregateTest extends TestCase
         self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
         $this->assertSameSql(
-            'select count(*) from ((select 1 from (select "id", "client_id", "name", "amount", (select "name" from "client" "_c_2bfe9d72a4aa" where "id" = "invoice"."client_id") "client" from "invoice") "_tm" group by "client_id", "client")) "_tc"',
+            'select count(*) from ((select 1 from (select `id`, `client_id`, `name`, `amount`, (select `name` from `client` `_c_2bfe9d72a4aa` where `id` = `invoice`.`client_id`) `client` from `invoice`) `_tm` group by `client_id`, `client`)) `_tc`',
             $aggregate->action('count')->render()[0]
         );
     }
@@ -343,13 +345,15 @@ class ModelAggregateTest extends TestCase
     public function testAggregateFieldExpressionSql(): void
     {
         $aggregate = $this->createInvoiceAggregate();
+        $aggregate->table->getReference('client_id')->addField('order'); // @phpstan-ignore-line
 
         $aggregate->setGroupBy([$aggregate->expr('{}', ['abc'])], [
             'xyz' => ['expr' => 'sum([amount])'],
+            'sum_hasone' => ['expr' => 'sum([order])', 'type' => 'integer'],
         ]);
 
         $this->assertSameSql(
-            'select sum("amount") "xyz" from (select "id", "client_id", "name", "amount", (select "name" from "client" "_c_2bfe9d72a4aa" where "id" = "invoice"."client_id") "client" from "invoice") "_tm" group by "abc"',
+            'select sum(`amount`) `xyz`, sum(`order`) `sum_hasone` from (select `id`, `client_id`, `name`, `amount`, (select `name` from `client` `_c_2bfe9d72a4aa` where `id` = `invoice`.`client_id`) `client`, (select `order` from `client` `_c_2bfe9d72a4aa` where `id` = `invoice`.`client_id`) `order` from `invoice`) `_tm` group by `abc`',
             $aggregate->action('select')->render()[0]
         );
     }

@@ -8,8 +8,10 @@ use Atk4\Core\ReadableCaptionTrait;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
+use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Expressionable;
+use Atk4\Data\Persistence\Sql\Sqlite\Expression as SqliteExpression;
 
 class Condition extends AbstractScope
 {
@@ -18,7 +20,7 @@ class Condition extends AbstractScope
     /** @var string|Field|Expressionable */
     public $key;
 
-    /** @var string */
+    /** @var string|null */
     public $operator;
 
     /** @var mixed */
@@ -100,7 +102,7 @@ class Condition extends AbstractScope
             throw new Exception('Only Scope can contain another conditions');
         } elseif ($key instanceof Field) { // for BC
             $key = $key->shortName;
-        } elseif (!is_string($key) && !($key instanceof Expressionable)) {
+        } elseif (!is_string($key) && !$key instanceof Expressionable) { // @phpstan-ignore-line
             throw new Exception('Field must be a string or an instance of Expressionable');
         }
 
@@ -114,7 +116,7 @@ class Condition extends AbstractScope
 
         if ($operator === null) {
             // at least MSSQL database always requires an operator
-            if (!($key instanceof Expressionable)) {
+            if (!$key instanceof Expressionable) {
                 throw new Exception('Operator must be specified');
             }
         } else {
@@ -149,11 +151,13 @@ class Condition extends AbstractScope
     {
         $model = $this->getModel();
         if ($model !== null) {
-            // if we have a definitive scalar value for a field
-            // sets it as default value for field and locks it
+            // if we have a definitive equal condition set the value as default value for field
             // new records will automatically get this value assigned for the field
-            // @todo: consider this when condition is part of OR scope
-            if ($this->operator === self::OPERATOR_EQUALS && !is_object($this->value) && !is_array($this->value)) {
+            // TODO: fix when condition is part of OR scope
+            if ($this->operator === self::OPERATOR_EQUALS && !is_array($this->value)
+                && !$this->value instanceof Expressionable
+                && !$this->value instanceof Persistence\Array_\Action // needed to pass hintable tests
+            ) {
                 // key containing '/' means chained references and it is handled in toQueryArguments method
                 $field = $this->key;
                 if (is_string($field) && !str_contains($field, '/')) {
@@ -163,14 +167,19 @@ class Condition extends AbstractScope
                 // TODO Model/field should not be mutated, see:
                 // https://github.com/atk4/data/issues/662
                 // for now, do not set default at least for PK/ID
-                if ($field instanceof Field && $field->shortName !== $field->getOwner()->id_field) {
+                if ($field instanceof Field && $field->shortName !== $field->getOwner()->idField) {
                     $field->system = true;
-                    $field->default = $this->value;
+                    $fakePersistence = new Persistence\Array_();
+                    $valueCloned = $fakePersistence->typecastLoadField($field, $fakePersistence->typecastSaveField($field, $this->value));
+                    $field->default = $valueCloned;
                 }
             }
         }
     }
 
+    /**
+     * @return array<0|1|2, mixed>
+     */
     public function toQueryArguments(): array
     {
         if ($this->isEmpty()) {
@@ -196,6 +205,7 @@ class Condition extends AbstractScope
                         $refModel = $refModel->refLink($link);
                         $refModels[] = $refModel;
                     }
+                    unset($refModel);
 
                     foreach (array_reverse($refModels) as $refModel) {
                         if ($field === '#') {
@@ -253,7 +263,7 @@ class Condition extends AbstractScope
     public function clear()
     {
         $this->key = null; // @phpstan-ignore-line
-        $this->operator = null; // @phpstan-ignore-line
+        $this->operator = null;
         $this->value = null;
 
         return $this;
@@ -261,11 +271,11 @@ class Condition extends AbstractScope
 
     public function negate()
     {
-        if ($this->operator && isset(self::$operators[$this->operator]['negate'])) {
+        if (isset(self::$operators[$this->operator]['negate'])) {
             $this->operator = self::$operators[$this->operator]['negate'];
         } else {
             throw (new Exception('Negation of condition is not supported for this operator'))
-                ->addMoreInfo('operator', $this->operator ?: 'no operator');
+                ->addMoreInfo('operator', $this->operator ?? 'no operator');
         }
 
         return $this;
@@ -273,7 +283,9 @@ class Condition extends AbstractScope
 
     public function toWords(Model $model = null): string
     {
-        $model = $model ?: $this->getModel();
+        if ($model === null) {
+            $model = $this->getModel();
+        }
 
         if ($model === null) {
             throw new Exception('Condition must be associated with Model to convert to words');
@@ -283,7 +295,7 @@ class Condition extends AbstractScope
         $operator = $this->operatorToWords();
         $value = $this->valueToWords($model, $this->value);
 
-        return trim("{$key} {$operator} {$value}");
+        return trim($key . ' ' . $operator . ' ' . $value);
     }
 
     protected function keyToWords(Model $model): string
@@ -300,7 +312,7 @@ class Condition extends AbstractScope
                 $field = array_pop($references);
 
                 foreach ($references as $link) {
-                    $words[] = "that has reference {$this->readableCaption($link)}";
+                    $words[] = 'that has reference ' . $this->readableCaption($link);
 
                     $model = $model->refLink($link);
                 }
@@ -341,12 +353,12 @@ class Condition extends AbstractScope
         }
 
         if (is_array($value)) {
-            $ret = [];
+            $res = [];
             foreach ($value as $v) {
-                $ret[] = $this->valueToWords($model, $v);
+                $res[] = $this->valueToWords($model, $v);
             }
 
-            return implode(' or ', $ret);
+            return implode(' or ', $res);
         }
 
         if (is_object($value)) {
@@ -355,7 +367,7 @@ class Condition extends AbstractScope
             }
 
             if ($value instanceof Expressionable) {
-                return 'expression \'' . $value->getDsqlExpression(new Expression())->getDebugQuery() . '\'';
+                return 'expression \'' . $value->getDsqlExpression(new SqliteExpression())->getDebugQuery() . '\'';
             }
 
             return 'object ' . print_r($value, true);
@@ -381,7 +393,7 @@ class Condition extends AbstractScope
 
         // use the referenced model title if such exists
         $title = null;
-        if ($field instanceof Field && $field->getReference() !== null) {
+        if ($field instanceof Field && $field->hasReference()) {
             // make sure we set the value in the Model
             $model = $model->isEntity() ? clone $model : $model->createEntity();
             $model->set($field->shortName, $value);

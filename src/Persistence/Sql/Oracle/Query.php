@@ -12,9 +12,10 @@ class Query extends BaseQuery
 {
     use ExpressionTrait;
 
-    protected $paramBase = 'xxaaaa';
+    protected string $paramBase = 'xxaaaa';
 
-    protected $expression_class = Expression::class;
+    protected string $identifierEscapeChar = '"';
+    protected string $expressionClass = Expression::class;
 
     public function render(): array
     {
@@ -31,7 +32,7 @@ class Query extends BaseQuery
         return parent::render();
     }
 
-    protected function _sub_render_condition(array $row): string
+    protected function _subrenderCondition(array $row): string
     {
         if (count($row) === 2) {
             [$field, $value] = $row;
@@ -47,13 +48,13 @@ class Query extends BaseQuery
         }
 
         if (count($row) >= 2 && $field instanceof Field
-            && in_array($field->getTypeObject()->getName(), ['text', 'blob'], true)) {
-            if ($field->getTypeObject()->getName() === 'text') {
+            && in_array($field->type, ['text', 'blob'], true)) {
+            if ($field->type === 'text') {
                 $field = $this->expr('LOWER([])', [$field]);
                 $value = $this->expr('LOWER([])', [$value]);
             }
 
-            if (in_array($cond, ['=', '!=', '<>'], true)) {
+            if (in_array($cond, ['=', '!='], true)) {
                 $row = [$this->expr('dbms_lob.compare([], [])', [$field, $value]), $cond, 0];
             } else {
                 throw (new Exception('Unsupported CLOB/BLOB field operator'))
@@ -62,10 +63,10 @@ class Query extends BaseQuery
             }
         }
 
-        return parent::_sub_render_condition($row);
+        return parent::_subrenderCondition($row);
     }
 
-    public function _render_limit(): ?string
+    protected function _renderLimit(): ?string
     {
         if (!isset($this->args['limit'])) {
             return null;
@@ -78,9 +79,9 @@ class Query extends BaseQuery
             . ' fetch next ' . $cnt . ' rows only';
     }
 
-    public function groupConcat($field, string $delimiter = ',')
+    public function groupConcat($field, string $separator = ',')
     {
-        return $this->expr('listagg({field}, []) within group (order by {field})', ['field' => $field, $delimiter]);
+        return $this->expr('listagg({field}, []) within group (order by {field})', ['field' => $field, $separator]);
     }
 
     public function exists()

@@ -8,6 +8,6 @@ use Atk4\Data\Persistence\Sql\Connection as BaseConnection;
 
 class Connection extends BaseConnection
 {
-    protected $query_class = Query::class;
-    protected $expression_class = Expression::class;
+    protected string $expressionClass = Expression::class;
+    protected string $queryClass = Query::class;
 }

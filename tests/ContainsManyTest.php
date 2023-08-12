@@ -18,22 +18,15 @@ use Atk4\Data\Tests\ContainsMany\VatRate;
  *     - hasOne(VatRate, SQL)
  *     - containsMany(Discount)
  */
-
-/**
- * ATK Data has support of containsOne / containsMany.
- * Basically data model can contain other data models with one or many records.
- */
 class ContainsManyTest extends TestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
 
-        // populate database for our models
         $this->createMigrator(new VatRate($this->db))->create();
         $this->createMigrator(new Invoice($this->db))->create();
 
-        // fill in some default values
         $m = new VatRate($this->db);
         $m->import([
             [
@@ -63,17 +56,14 @@ class ContainsManyTest extends TestCase
         ]);
     }
 
-    /**
-     * Test caption of referenced model.
-     */
     public function testModelCaption(): void
     {
         $i = new Invoice($this->db);
 
         // test caption of containsMany reference
-        $this->assertSame('My Invoice Lines', $i->getField($i->fieldName()->lines)->getCaption());
-        $this->assertSame('My Invoice Lines', $i->refModel($i->fieldName()->lines)->getModelCaption());
-        $this->assertSame('My Invoice Lines', $i->lines->getModelCaption());
+        self::assertSame('My Invoice Lines', $i->getField($i->fieldName()->lines)->getCaption());
+        self::assertSame('My Invoice Lines', $i->refModel($i->fieldName()->lines)->getModelCaption());
+        self::assertSame('My Invoice Lines', $i->lines->getModelCaption());
     }
 
     public function testContainsMany(): void
@@ -81,11 +71,10 @@ class ContainsManyTest extends TestCase
         $i = new Invoice($this->db);
         $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
 
-        $this->assertSame(Line::class, get_class($i->getModel()->lines));
+        self::assertSame(Line::class, get_class($i->getModel()->lines));
 
         // now let's add some lines
         $l = $i->lines;
-        $this->assertNotNull($l);
         $rows = [
             1 => [
                 $l->fieldName()->id => 1,
@@ -95,7 +84,7 @@ class ContainsManyTest extends TestCase
                 $l->fieldName()->discounts => null,
                 $l->fieldName()->add_date => new \DateTime('2019-01-01'),
             ],
-            2 => [
+            [
                 $l->fieldName()->id => 2,
                 $l->fieldName()->vat_rate_id => 2,
                 $l->fieldName()->price => 15,
@@ -103,7 +92,7 @@ class ContainsManyTest extends TestCase
                 $l->fieldName()->discounts => null,
                 $l->fieldName()->add_date => new \DateTime('2019-01-01'),
             ],
-            3 => [
+            [
                 $l->fieldName()->id => 3,
                 $l->fieldName()->vat_rate_id => 1,
                 $l->fieldName()->price => 40,
@@ -118,11 +107,11 @@ class ContainsManyTest extends TestCase
         }
 
         // reload invoice just in case
-        $this->assertSameExportUnordered($rows, $i->lines->export());
+        self::assertSameExportUnordered($rows, $i->lines->export());
         $i->reload();
-        $this->assertSameExportUnordered($rows, $i->lines->export());
+        self::assertSameExportUnordered($rows, $i->lines->export());
         $i = $i->getModel()->load($i->getId());
-        $this->assertSameExportUnordered($rows, $i->lines->export());
+        self::assertSameExportUnordered($rows, $i->lines->export());
 
         // now let's delete line with id=2 and add one more line
         $i->lines
@@ -151,7 +140,7 @@ class ContainsManyTest extends TestCase
                 $l->fieldName()->discounts => null,
                 $l->fieldName()->add_date => new \DateTime('2019-01-01'),
             ],
-            4 => [
+            [
                 $l->fieldName()->id => 4,
                 $l->fieldName()->vat_rate_id => 2,
                 $l->fieldName()->price => 50,
@@ -160,24 +149,21 @@ class ContainsManyTest extends TestCase
                 $l->fieldName()->add_date => new \DateTime('2019-01-01'),
             ],
         ];
-        $this->assertSameExportUnordered($rows, $i->lines->export());
+        self::assertSameExportUnordered($rows, $i->lines->export());
 
         // try hasOne reference
         $v = $i->lines->load(4)->vat_rate_id;
-        $this->assertSame(15, $v->rate);
+        self::assertSame(15, $v->rate);
 
         // test expression fields
         $v = $i->lines->load(4);
-        $this->assertSame(50 * 3 * (1 + 15 / 100), $v->total_gross);
+        self::assertSame(50 * 3 * (1 + 15 / 100), $v->total_gross);
 
         // and what about calculated field?
         $i->reload(); // we need to reload invoice for changes in lines to be recalculated
-        $this->assertSame(10 * 2 * (1 + 21 / 100) + 40 * 1 * (1 + 21 / 100) + 50 * 3 * (1 + 15 / 100), $i->total_gross); // = 245.1
+        self::assertSame(10 * 2 * (1 + 21 / 100) + 40 * 1 * (1 + 21 / 100) + 50 * 3 * (1 + 15 / 100), $i->total_gross); // = 245.1
     }
 
-    /**
-     * Nested containsMany tests.
-     */
     public function testNestedContainsMany(): void
     {
         $i = new Invoice($this->db);
@@ -194,7 +180,7 @@ class ContainsManyTest extends TestCase
                 $l->fieldName()->qty => 2,
                 $l->fieldName()->add_date => new \DateTime('2019-06-01'),
             ],
-            2 => [
+            [
                 $l->fieldName()->id => 2,
                 $l->fieldName()->vat_rate_id => 2,
                 $l->fieldName()->price => 15,
@@ -227,13 +213,13 @@ class ContainsManyTest extends TestCase
         $i->reload();
 
         // ok, so now let's test
-        $this->assertSameExportUnordered([
+        self::assertSameExportUnordered([
             1 => [
                 $l->discounts->fieldName()->id => 1,
                 $l->discounts->fieldName()->percent => 5,
                 $l->discounts->fieldName()->valid_till => new \DateTime('2019-07-15'),
             ],
-            2 => [
+            [
                 $l->discounts->fieldName()->id => 2,
                 $l->discounts->fieldName()->percent => 10,
                 $l->discounts->fieldName()->valid_till => new \DateTime('2019-07-30'),
@@ -241,19 +227,20 @@ class ContainsManyTest extends TestCase
         ], $i->lines->load(1)->discounts->export());
 
         // is total_gross correctly calculated?
-        $this->assertSame(10 * 2 * (1 + 21 / 100) + 15 * 5 * (1 + 15 / 100), $i->total_gross); // =110.45
+        self::assertSame(10 * 2 * (1 + 21 / 100) + 15 * 5 * (1 + 15 / 100), $i->total_gross); // =110.45
 
         // do we also correctly calculate discounts from nested containsMany?
-        $this->assertSame(24.2 * 15 / 100 + 86.25 * 20 / 100, $i->discounts_total_sum); // =20.88
+        self::assertSame(24.2 * 15 / 100 + 86.25 * 20 / 100, $i->discounts_total_sum); // =20.88
 
         // let's test how it all looks in persistence without typecasting
-        $exp_lines = $i->getModel()->setOrder($i->fieldName()->id)->export(null, null, false)[0][$i->fieldName()->lines];
+        $exportLines = $i->getModel()->setOrder($i->fieldName()->id)
+            ->export(null, null, false)[0][$i->fieldName()->lines];
         $formatDtForCompareFunc = function (\DateTimeInterface $dt): string {
             $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC')); // @phpstan-ignore-line
 
             return $dt->format('Y-m-d H:i:s.u');
         };
-        $this->assertJsonStringEqualsJsonString(
+        self::assertJsonStringEqualsJsonString(
             json_encode([
                 1 => [
                     $i->lines->fieldName()->id => 1,
@@ -267,14 +254,14 @@ class ContainsManyTest extends TestCase
                             $i->lines->discounts->fieldName()->percent => 5,
                             $i->lines->discounts->fieldName()->valid_till => $formatDtForCompareFunc(new \DateTime('2019-07-15')),
                         ],
-                        2 => [
+                        [
                             $i->lines->discounts->fieldName()->id => 2,
                             $i->lines->discounts->fieldName()->percent => 10,
                             $i->lines->discounts->fieldName()->valid_till => $formatDtForCompareFunc(new \DateTime('2019-07-30')),
                         ],
                     ]),
                 ],
-                2 => [
+                [
                     $i->lines->fieldName()->id => 2,
                     $i->lines->fieldName()->vat_rate_id => 2,
                     $i->lines->fieldName()->price => '15',
@@ -289,7 +276,7 @@ class ContainsManyTest extends TestCase
                     ]),
                 ],
             ]),
-            $exp_lines
+            $exportLines
         );
     }
 

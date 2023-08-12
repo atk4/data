@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
-use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 
@@ -20,14 +19,14 @@ class LimitOrderTest extends TestCase
             ],
         ]);
 
-        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
-        $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]']);
-        $i->getField($i->id_field)->system = false;
-        $i->id_field = null;
+        $i = new Model($this->db, ['table' => 'invoice', 'idField' => false]);
+        $i->addField('total_net', ['type' => 'integer']);
+        $i->addField('total_vat', ['type' => 'integer']);
+        $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]', 'type' => 'integer']);
 
         $i->setOrder('total_net');
         $i->setOnlyFields(['total_net']);
-        $this->assertEquals([
+        self::assertSame([
             ['total_net' => 10],
             ['total_net' => 15],
             ['total_net' => 20],
@@ -44,15 +43,15 @@ class LimitOrderTest extends TestCase
             ],
         ]);
 
-        $ii = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
-        $ii->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]']);
-        $ii->getField($ii->id_field)->system = false;
-        $ii->id_field = null;
+        $ii = new Model($this->db, ['table' => 'invoice', 'idField' => false]);
+        $ii->addField('total_net', ['type' => 'integer']);
+        $ii->addField('total_vat', ['type' => 'integer']);
+        $ii->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]', 'type' => 'integer']);
 
         $i = clone $ii;
         $i->setOrder(['total_net' => 'desc', 'total_gross' => 'desc']);
         $i->setOnlyFields(['total_net', 'total_gross']);
-        $this->assertEquals([
+        self::assertSame([
             ['total_net' => 15, 'total_gross' => 19],
             ['total_net' => 10, 'total_gross' => 15],
             ['total_net' => 10, 'total_gross' => 14],
@@ -61,7 +60,7 @@ class LimitOrderTest extends TestCase
         $i = clone $ii;
         $i->setOrder(['total_net' => 'desc', 'total_gross']);
         $i->setOnlyFields(['total_net', 'total_gross']);
-        $this->assertEquals([
+        self::assertSame([
             ['total_net' => 15, 'total_gross' => 19],
             ['total_net' => 10, 'total_gross' => 14],
             ['total_net' => 10, 'total_gross' => 15],
@@ -70,7 +69,7 @@ class LimitOrderTest extends TestCase
         $i = clone $ii;
         $i->setOrder(['total_net' => 'desc', 'total_gross']);
         $i->setOnlyFields(['total_net', 'total_vat']);
-        $this->assertEquals([
+        self::assertSame([
             ['total_net' => 15, 'total_vat' => 4],
             ['total_net' => 10, 'total_vat' => 4],
             ['total_net' => 10, 'total_vat' => 5],
@@ -79,7 +78,7 @@ class LimitOrderTest extends TestCase
         $i = clone $ii;
         $i->setOrder(['total_gross' => 'desc', 'total_net']);
         $i->setOnlyFields(['total_net', 'total_vat']);
-        $this->assertEquals([
+        self::assertSame([
             ['total_net' => 15, 'total_vat' => 4],
             ['total_net' => 10, 'total_vat' => 5],
             ['total_net' => 10, 'total_vat' => 4],
@@ -96,15 +95,15 @@ class LimitOrderTest extends TestCase
             ],
         ]);
 
-        $ii = (new Model($this->db, ['table' => 'invoice']))->addFields(['net', 'vat']);
-        $ii->getField($ii->id_field)->system = false;
-        $ii->id_field = null;
+        $ii = new Model($this->db, ['table' => 'invoice', 'idField' => false]);
+        $ii->addField('net', ['type' => 'integer']);
+        $ii->addField('vat', ['type' => 'integer']);
 
         // pass parameters as array elements [field, order]
         $i = clone $ii;
         $i->setOrder([['net', 'desc'], ['vat']]);
         $i->setOnlyFields(['net', 'vat']);
-        $this->assertEquals([
+        self::assertSame([
             ['net' => 15, 'vat' => 4],
             ['net' => 10, 'vat' => 4],
             ['net' => 10, 'vat' => 5],
@@ -114,7 +113,7 @@ class LimitOrderTest extends TestCase
         $i = clone $ii;
         $i->setOrder(['net' => 'desc', 'vat' => 'asc']);
         $i->setOnlyFields(['net', 'vat']);
-        $this->assertEquals([
+        self::assertSame([
             ['net' => 15, 'vat' => 4],
             ['net' => 10, 'vat' => 4],
             ['net' => 10, 'vat' => 5],
@@ -124,7 +123,7 @@ class LimitOrderTest extends TestCase
         $i = clone $ii;
         $i->setOrder(['net' => 'desc', 'vat']); // and you can even mix them (see 'vat' is a value not a key here)
         $i->setOnlyFields(['net', 'vat']);
-        $this->assertEquals([
+        self::assertSame([
             ['net' => 15, 'vat' => 4],
             ['net' => 10, 'vat' => 4],
             ['net' => 10, 'vat' => 5],
@@ -142,14 +141,15 @@ class LimitOrderTest extends TestCase
         ]);
 
         // order by expression field
-        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['code', 'net', 'vat']);
-        $i->addExpression('gross', ['expr' => '[net] + [vat]']);
-        $i->getField($i->id_field)->system = false;
-        $i->id_field = null;
+        $i = new Model($this->db, ['table' => 'invoice', 'idField' => false]);
+        $i->addField('code');
+        $i->addField('net', ['type' => 'integer']);
+        $i->addField('vat', ['type' => 'integer']);
+        $i->addExpression('gross', ['expr' => '[net] + [vat]', 'type' => 'integer']);
 
         $i->setOrder('gross');
         $i->setOnlyFields(['gross']);
-        $this->assertEquals([
+        self::assertSame([
             ['gross' => 14],
             ['gross' => 15],
             ['gross' => 19],
@@ -159,7 +159,7 @@ class LimitOrderTest extends TestCase
         $i->order = []; // reset
         $i->setOrder($i->expr('[net] * [vat]'));
         $i->setOnlyFields(['code']);
-        $this->assertSame([
+        self::assertSame([
             ['code' => 'B'], // 10 * 4 = 40
             ['code' => 'A'], // 10 * 5 = 50
             ['code' => 'C'], // 15 * 4 = 60
@@ -169,7 +169,7 @@ class LimitOrderTest extends TestCase
         $i->order = []; // reset
         $i->setOrder($i->expr('[net] * [vat] desc'));
         $i->setOnlyFields(['code']);
-        $this->assertSame([
+        self::assertSame([
             ['code' => 'C'], // 15 * 4 = 60
             ['code' => 'A'], // 10 * 5 = 50
             ['code' => 'B'], // 10 * 4 = 40
@@ -179,7 +179,7 @@ class LimitOrderTest extends TestCase
         $i->order = []; // reset
         $i->setOrder($i->expr('[net] * [vat]'), 'desc');
         $i->setOnlyFields(['code']);
-        $this->assertSame([
+        self::assertSame([
             ['code' => 'C'], // 15 * 4 = 60
             ['code' => 'A'], // 10 * 5 = 50
             ['code' => 'B'], // 10 * 4 = 40
@@ -189,17 +189,14 @@ class LimitOrderTest extends TestCase
         $i->order = []; // reset
         $i->setOrder(['vat', $i->expr('[net] * [vat]')]);
         $i->setOnlyFields(['code']);
-        $this->assertSame([
+        self::assertSame([
             ['code' => 'B'], // 4, 10 * 4 = 40
             ['code' => 'C'], // 4, 15 * 4 = 60
             ['code' => 'A'], // 5, 10 * 5 = 50
         ], $i->export());
     }
 
-    /**
-     * Unsupported order parameter.
-     */
-    public function testExceptionUnsupportedOrderParam(): void
+    public function testOrderByUnsupportedParamException(): void
     {
         $this->setDb([
             'invoice' => [
@@ -207,10 +204,12 @@ class LimitOrderTest extends TestCase
             ],
         ]);
 
-        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['net']);
+        $i = new Model($this->db, ['table' => 'invoice']);
+        $i->addField('net', ['type' => 'integer']);
         $i->setOrder(new \DateTime()); // @phpstan-ignore-line
-        $this->expectException(Exception::class);
-        $i->export(); // executes query and throws exception because of DateTime object
+
+        $this->expectException(\TypeError::class);
+        $i->export();
     }
 
     public function testLimit(): void
@@ -223,14 +222,14 @@ class LimitOrderTest extends TestCase
             ],
         ]);
 
-        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
-        $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]']);
-        $i->getField($i->id_field)->system = false;
-        $i->id_field = null;
+        $i = new Model($this->db, ['table' => 'invoice', 'idField' => false]);
+        $i->addField('total_net', ['type' => 'integer']);
+        $i->addField('total_vat', ['type' => 'integer']);
+        $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]', 'type' => 'integer']);
 
         $i->setOrder('total_net');
         $i->setOnlyFields(['total_net']);
-        $this->assertEquals([
+        self::assertSame([
             ['total_net' => 10],
             ['total_net' => 15],
             ['total_net' => 20],
@@ -239,21 +238,21 @@ class LimitOrderTest extends TestCase
         $ii = $i;
         $i = clone $ii;
         $i->setLimit(2);
-        $this->assertEquals([
+        self::assertSame([
             ['total_net' => 10],
             ['total_net' => 15],
         ], $i->export());
 
         $i = clone $ii;
         $i->setLimit(2, 1);
-        $this->assertEquals([
+        self::assertSame([
             ['total_net' => 15],
             ['total_net' => 20],
         ], $i->export());
 
         $i = clone $ii;
         $i->setLimit(null, 1);
-        $this->assertEquals([
+        self::assertSame([
             ['total_net' => 15],
             ['total_net' => 20],
         ], $i->export());
@@ -269,32 +268,33 @@ class LimitOrderTest extends TestCase
             ],
         ]);
 
-        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net']);
+        $i = new Model($this->db, ['table' => 'invoice']);
+        $i->addField('total_net', ['type' => 'integer']);
         $i->setOrder('total_net');
 
-        $this->assertEquals(10, $i->loadAny()->get('total_net'));
+        self::assertSame(10, $i->loadAny()->get('total_net'));
         $i->setLimit(2);
-        $this->assertEquals(10, $i->loadAny()->get('total_net'));
+        self::assertSame(10, $i->loadAny()->get('total_net'));
 
         $i->setLimit(2, 2);
-        $this->assertEquals(20, $i->loadAny()->get('total_net'));
-        $this->assertEquals(20, $i->loadOne()->get('total_net'));
+        self::assertSame(20, $i->loadAny()->get('total_net'));
+        self::assertSame(20, $i->loadOne()->get('total_net'));
 
         $i->setLimit(1);
-        $this->assertEquals(10, $i->loadAny()->get('total_net'));
-        $this->assertEquals(10, $i->loadOne()->get('total_net'));
+        self::assertSame(10, $i->loadAny()->get('total_net'));
+        self::assertSame(10, $i->loadOne()->get('total_net'));
         $i->setLimit(1, 1);
-        $this->assertEquals(15, $i->loadAny()->get('total_net'));
-        $this->assertEquals(15, $i->loadOne()->get('total_net'));
+        self::assertSame(15, $i->loadAny()->get('total_net'));
+        self::assertSame(15, $i->loadOne()->get('total_net'));
         $i->setLimit(1, 2);
-        $this->assertEquals(20, $i->loadAny()->get('total_net'));
-        $this->assertEquals(20, $i->loadOne()->get('total_net'));
+        self::assertSame(20, $i->loadAny()->get('total_net'));
+        self::assertSame(20, $i->loadOne()->get('total_net'));
         $i->setLimit(1, 3);
-        $this->assertNull($i->tryLoadAny());
-        $this->assertNull($i->tryLoadOne());
+        self::assertNull($i->tryLoadAny());
+        self::assertNull($i->tryLoadOne());
 
         $i->setLimit(0);
-        $this->assertNull($i->tryLoadAny());
-        $this->assertNull($i->tryLoadOne());
+        self::assertNull($i->tryLoadAny());
+        self::assertNull($i->tryLoadOne());
     }
 }

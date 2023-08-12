@@ -7,8 +7,6 @@ namespace Atk4\Data\Tests\ContainsOne;
 use Atk4\Data\Model;
 
 /**
- * DoorCode model.
- *
  * @property string    $code       @Atk4\Field()
  * @property \DateTime $valid_till @Atk4\Field()
  */

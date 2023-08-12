@@ -12,6 +12,6 @@ class Client extends User
     {
         parent::init();
 
-        $this->addField('order', ['default' => '10']);
+        $this->addField('order', ['type' => 'integer', 'default' => 10]);
     }
 }
