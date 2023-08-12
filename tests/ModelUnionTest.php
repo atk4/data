@@ -131,11 +131,11 @@ class ModelUnionTest extends TestCase
     public function testActions2(): void
     {
         $transaction = $this->createTransaction();
-        $this->assertSame('5', $transaction->action('count')->getOne());
-        $this->assertSame(37.0, (float) $transaction->action('fx', ['sum', 'amount'])->getOne());
+        self::assertSame('5', $transaction->action('count')->getOne());
+        self::assertSame(37.0, (float) $transaction->action('fx', ['sum', 'amount'])->getOne());
 
         $transaction = $this->createSubtractInvoiceTransaction();
-        $this->assertSame(-9.0, (float) $transaction->action('fx', ['sum', 'amount'])->getOne());
+        self::assertSame(-9.0, (float) $transaction->action('fx', ['sum', 'amount'])->getOne());
     }
 
     public function testSubAction1(): void
@@ -153,14 +153,14 @@ class ModelUnionTest extends TestCase
         $client = $this->createClient();
 
         // There are total of 2 clients
-        $this->assertSame('2', $client->action('count')->getOne());
+        self::assertSame('2', $client->action('count')->getOne());
 
         // Client with ID=1 has invoices for 19
-        $this->assertSame(19.0, (float) $client->load(1)->ref('Invoice')->action('fx', ['sum', 'amount'])->getOne());
+        self::assertSame(19.0, (float) $client->load(1)->ref('Invoice')->action('fx', ['sum', 'amount'])->getOne());
 
         $transaction = $this->createTransaction();
 
-        $this->assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['client_id' => 1, 'name' => 'chair purchase', 'amount' => 4.0],
             ['client_id' => 1, 'name' => 'table purchase', 'amount' => 15.0],
             ['client_id' => 2, 'name' => 'chair purchase', 'amount' => 4.0],
@@ -171,7 +171,7 @@ class ModelUnionTest extends TestCase
         // Transaction is UnionModel Model
         $client->hasMany('Transaction', ['model' => $transaction]);
 
-        $this->assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['client_id' => 1, 'name' => 'chair purchase', 'amount' => 4.0],
             ['client_id' => 1, 'name' => 'table purchase', 'amount' => 15.0],
             ['client_id' => 1, 'name' => 'prepay', 'amount' => 10.0],
@@ -181,7 +181,7 @@ class ModelUnionTest extends TestCase
 
         $transaction = $this->createSubtractInvoiceTransaction();
 
-        $this->assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['client_id' => 1, 'name' => 'chair purchase', 'amount' => -4.0],
             ['client_id' => 1, 'name' => 'table purchase', 'amount' => -15.0],
             ['client_id' => 2, 'name' => 'chair purchase', 'amount' => -4.0],
@@ -192,7 +192,7 @@ class ModelUnionTest extends TestCase
         // Transaction is UnionModel Model
         $client->hasMany('Transaction', ['model' => $transaction]);
 
-        $this->assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['client_id' => 1, 'name' => 'chair purchase', 'amount' => -4.0],
             ['client_id' => 1, 'name' => 'table purchase', 'amount' => -15.0],
             ['client_id' => 1, 'name' => 'prepay', 'amount' => 10.0],
@@ -244,7 +244,7 @@ class ModelUnionTest extends TestCase
         ]);
         $transactionAggregate->setOrder('name');
 
-        $this->assertSame([
+        self::assertSame([
             ['name' => 'chair purchase', 'amount' => 8.0],
             ['name' => 'full pay', 'amount' => 4.0],
             ['name' => 'prepay', 'amount' => 10.0],
@@ -263,7 +263,7 @@ class ModelUnionTest extends TestCase
         ]);
         $transactionAggregate->setOrder('name');
 
-        $this->assertSame([
+        self::assertSame([
             ['name' => 'chair purchase', 'amount' => -8.0],
             ['name' => 'full pay', 'amount' => 4.0],
             ['name' => 'prepay', 'amount' => 10.0],
@@ -297,7 +297,7 @@ class ModelUnionTest extends TestCase
             $this->markTestIncomplete('TODO MSSQL: Constant value column seem not supported (Invalid column name \'type\')');
         }
 
-        $this->assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['type' => 'invoice', 'amount' => 23.0],
             ['type' => 'payment', 'amount' => 14.0],
         ], $transactionAggregate->export(['type', 'amount']));
@@ -312,7 +312,7 @@ class ModelUnionTest extends TestCase
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
 
-        $this->assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['type' => 'invoice', 'amount' => -23.0],
             ['type' => 'payment', 'amount' => 14.0],
         ], $transactionAggregate->export(['type', 'amount']));
@@ -324,15 +324,15 @@ class ModelUnionTest extends TestCase
         $client->hasMany('tr', ['model' => $this->createTransaction()]);
 
         if (\PHP_MAJOR_VERSION >= 7) { // always true, TODO aggregate on reference is broken
-            $this->assertTrue(true);
+            self::assertTrue(true);
 
             return;
         }
 
-        $this->assertSame(19.0, (float) $client->load(1)->ref('Invoice')->action('fx', ['sum', 'amount'])->getOne());
-        $this->assertSame(10.0, (float) $client->load(1)->ref('Payment')->action('fx', ['sum', 'amount'])->getOne());
+        self::assertSame(19.0, (float) $client->load(1)->ref('Invoice')->action('fx', ['sum', 'amount'])->getOne());
+        self::assertSame(10.0, (float) $client->load(1)->ref('Payment')->action('fx', ['sum', 'amount'])->getOne());
 
-        $this->assertSame(29.0, (float) $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->getOne());
+        self::assertSame(29.0, (float) $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->getOne());
 
         $this->assertSameSql(
             'select sum("val") from (select sum("amount") "val" from "invoice" where "client_id" = :a UNION ALL select sum("amount") "val" from "payment" where "client_id" = :b) "_t_e7d707a26e7f"',
@@ -342,9 +342,9 @@ class ModelUnionTest extends TestCase
         $client = $this->createClient();
         $client->hasMany('tr', ['model' => $this->createSubtractInvoiceTransaction()]);
 
-        $this->assertSame(19.0, (float) $client->load(1)->ref('Invoice')->action('fx', ['sum', 'amount'])->getOne());
-        $this->assertSame(10.0, (float) $client->load(1)->ref('Payment')->action('fx', ['sum', 'amount'])->getOne());
-        $this->assertSame(-9.0, (float) $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->getOne());
+        self::assertSame(19.0, (float) $client->load(1)->ref('Invoice')->action('fx', ['sum', 'amount'])->getOne());
+        self::assertSame(10.0, (float) $client->load(1)->ref('Payment')->action('fx', ['sum', 'amount'])->getOne());
+        self::assertSame(-9.0, (float) $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->getOne());
 
         $this->assertSameSql(
             'select sum("val") from (select sum(-"amount") "val" from "invoice" where "client_id" = :a UNION ALL select sum("amount") "val" from "payment" where "client_id" = :b) "_t_e7d707a26e7f"',
@@ -365,7 +365,7 @@ class ModelUnionTest extends TestCase
             // TODO failing on all DBs expect Sqlite, MySQL uses "semi-joins" for this type of query which does not support UNION
             // and therefore it complains about "client"."id" field, see:
             // http://stackoverflow.com/questions/8326815/mysql-field-from-union-subselect#comment10267696_8326815
-            $this->assertTrue(true);
+            self::assertTrue(true);
 
             return;
         }
@@ -381,7 +381,7 @@ class ModelUnionTest extends TestCase
         $transaction = $this->createSubtractInvoiceTransaction();
         $transaction->addCondition('amount', '<', 0);
 
-        $this->assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['client_id' => 1, 'name' => 'chair purchase', 'amount' => -4.0],
             ['client_id' => 1, 'name' => 'table purchase', 'amount' => -15.0],
             ['client_id' => 2, 'name' => 'chair purchase', 'amount' => -4.0],
@@ -393,7 +393,7 @@ class ModelUnionTest extends TestCase
         $transaction = $this->createSubtractInvoiceTransaction();
         $transaction->addCondition('client_id', '>', 1);
 
-        $this->assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['client_id' => 2, 'name' => 'chair purchase', 'amount' => -4.0],
             ['client_id' => 2, 'name' => 'full pay', 'amount' => 4.0],
         ], $transaction->export());
@@ -404,7 +404,7 @@ class ModelUnionTest extends TestCase
         $transaction = $this->createSubtractInvoiceTransaction();
         $transaction->addCondition('amount', '>', 5, true);
 
-        $this->assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['client_id' => 1, 'name' => 'prepay', 'amount' => 10.0],
         ], $transaction->export());
     }
@@ -414,7 +414,7 @@ class ModelUnionTest extends TestCase
         $transaction = $this->createSubtractInvoiceTransaction();
         $transaction->addCondition('amount', '<', -10, true);
 
-        $this->assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['client_id' => 1, 'name' => 'table purchase', 'amount' => -15.0],
         ], $transaction->export());
     }
@@ -424,7 +424,7 @@ class ModelUnionTest extends TestCase
         $transaction = $this->createSubtractInvoiceTransaction();
         $transaction->addCondition($transaction->expr('{} > 5', ['amount']));
 
-        $this->assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['client_id' => 1, 'name' => 'prepay', 'amount' => 10.0],
         ], $transaction->export());
     }
@@ -437,7 +437,7 @@ class ModelUnionTest extends TestCase
         $transaction = $this->createSubtractInvoiceTransaction();
         $transaction->nestedInvoice->addCondition('amount', 4);
 
-        $this->assertSameExportUnordered([
+        self::assertSameExportUnordered([
             ['client_id' => 1, 'name' => 'chair purchase', 'amount' => -4.0],
             ['client_id' => 2, 'name' => 'chair purchase', 'amount' => -4.0],
             ['client_id' => 1, 'name' => 'prepay', 'amount' => 10.0],
