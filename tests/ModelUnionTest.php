@@ -56,8 +56,8 @@ class ModelUnionTest extends TestCase
     {
         $transaction = $this->createSubtractInvoiceTransaction();
 
-        $this->assertSameSql('"amount"', $transaction->expr('[]', [$transaction->getFieldExpr($transaction->nestedInvoice, 'amount')])->render()[0]);
-        $this->assertSameSql('-"amount"', $transaction->expr('[]', [$transaction->getFieldExpr($transaction->nestedInvoice, 'amount', '-[]')])->render()[0]);
+        $this->assertSameSql('`amount`', $transaction->expr('[]', [$transaction->getFieldExpr($transaction->nestedInvoice, 'amount')])->render()[0]);
+        $this->assertSameSql('-`amount`', $transaction->expr('[]', [$transaction->getFieldExpr($transaction->nestedInvoice, 'amount', '-[]')])->render()[0]);
         $this->assertSameSql('-NULL', $transaction->expr('[]', [$transaction->getFieldExpr($transaction->nestedInvoice, 'blah', '-[]')])->render()[0]);
     }
 
@@ -66,17 +66,17 @@ class ModelUnionTest extends TestCase
         $transaction = $this->createTransaction();
 
         $this->assertSameSql(
-            'select "name" "name" from "invoice" UNION ALL select "name" "name" from "payment"',
+            'select `name` `name` from `invoice` UNION ALL select `name` `name` from `payment`',
             $transaction->getSubQuery(['name'])->render()[0]
         );
 
         $this->assertSameSql(
-            'select "name" "name", "amount" "amount" from "invoice" UNION ALL select "name" "name", "amount" "amount" from "payment"',
+            'select `name` `name`, `amount` `amount` from `invoice` UNION ALL select `name` `name`, `amount` `amount` from `payment`',
             $transaction->getSubQuery(['name', 'amount'])->render()[0]
         );
 
         $this->assertSameSql(
-            'select "name" "name" from "invoice" UNION ALL select "name" "name" from "payment"',
+            'select `name` `name` from `invoice` UNION ALL select `name` `name` from `payment`',
             $transaction->getSubQuery(['name'])->render()[0]
         );
     }
@@ -91,7 +91,7 @@ class ModelUnionTest extends TestCase
         $transaction->addField('type');
 
         $this->assertSameSql(
-            'select (\'invoice\') "type", "amount" "amount" from "invoice" UNION ALL select NULL "type", "amount" "amount" from "payment"',
+            'select (\'invoice\') `type`, `amount` `amount` from `invoice` UNION ALL select NULL `type`, `amount` `amount` from `payment`',
             $transaction->getSubQuery(['type', 'amount'])->render()[0]
         );
     }
@@ -101,29 +101,29 @@ class ModelUnionTest extends TestCase
         $transaction = $this->createTransaction();
 
         $this->assertSameSql(
-            'select "client_id", "name", "amount" from (select "client_id" "client_id", "name" "name", "amount" "amount" from "invoice" UNION ALL select "client_id" "client_id", "name" "name", "amount" "amount" from "payment") "_tu"',
+            'select `client_id`, `name`, `amount` from (select `client_id` `client_id`, `name` `name`, `amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_tu`',
             $transaction->action('select')->render()[0]
         );
 
         $this->assertSameSql(
-            'select "name" from (select "name" "name" from "invoice" UNION ALL select "name" "name" from "payment") "_tu"',
+            'select `name` from (select `name` `name` from `invoice` UNION ALL select `name` `name` from `payment`) `_tu`',
             $transaction->action('field', ['name'])->render()[0]
         );
 
         $this->assertSameSql(
-            'select sum("cnt") from (select count(*) "cnt" from "invoice" UNION ALL select count(*) "cnt" from "payment") "_tu"',
+            'select sum(`cnt`) from (select count(*) `cnt` from `invoice` UNION ALL select count(*) `cnt` from `payment`) `_tu`',
             $transaction->action('count')->render()[0]
         );
 
         $this->assertSameSql(
-            'select sum("val") from (select sum("amount") "val" from "invoice" UNION ALL select sum("amount") "val" from "payment") "_tu"',
+            'select sum(`val`) from (select sum(`amount`) `val` from `invoice` UNION ALL select sum(`amount`) `val` from `payment`) `_tu`',
             $transaction->action('fx', ['sum', 'amount'])->render()[0]
         );
 
         $transaction = $this->createSubtractInvoiceTransaction();
 
         $this->assertSameSql(
-            'select sum("val") from (select sum(-"amount") "val" from "invoice" UNION ALL select sum("amount") "val" from "payment") "_tu"',
+            'select sum(`val`) from (select sum(-`amount`) `val` from `invoice` UNION ALL select sum(`amount`) `val` from `payment`) `_tu`',
             $transaction->action('fx', ['sum', 'amount'])->render()[0]
         );
     }
@@ -143,7 +143,7 @@ class ModelUnionTest extends TestCase
         $transaction = $this->createSubtractInvoiceTransaction();
 
         $this->assertSameSql(
-            'select sum(-"amount") from "invoice" UNION ALL select sum("amount") from "payment"',
+            'select sum(-`amount`) from `invoice` UNION ALL select sum(`amount`) from `payment`',
             $transaction->getSubAction('fx', ['sum', 'amount'])->render()[0]
         );
     }
@@ -209,7 +209,7 @@ class ModelUnionTest extends TestCase
         ]);
 
         $this->assertSameSql(
-            'select "name", sum("amount") "amount" from (select "client_id", "name", "amount" from (select "client_id" "client_id", "name" "name", "amount" "amount" from "invoice" UNION ALL select "client_id" "client_id", "name" "name", "amount" "amount" from "payment") "_tu") "_tm" group by "name"',
+            'select `name`, sum(`amount`) `amount` from (select `client_id`, `name`, `amount` from (select `client_id` `client_id`, `name` `name`, `amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_tu`) `_tm` group by `name`',
             $transactionAggregate->action('select', [['name', 'amount']])->render()[0]
         );
 
@@ -221,7 +221,7 @@ class ModelUnionTest extends TestCase
         ]);
 
         $this->assertSameSql(
-            'select "name", sum("amount") "amount" from (select "client_id", "name", "amount" from (select "client_id" "client_id", "name" "name", -"amount" "amount" from "invoice" UNION ALL select "client_id" "client_id", "name" "name", "amount" "amount" from "payment") "_tu") "_tm" group by "name"',
+            'select `name`, sum(`amount`) `amount` from (select `client_id`, `name`, `amount` from (select `client_id` `client_id`, `name` `name`, -`amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_tu`) `_tm` group by `name`',
             $transactionAggregate->action('select', [['name', 'amount']])->render()[0]
         );
     }
@@ -289,7 +289,7 @@ class ModelUnionTest extends TestCase
 
         // TODO subselects should not select "client" and "name" fields
         $this->assertSameSql(
-            'select "type", sum("amount") "amount" from (select "client_id", "name", "amount", "type" from (select "client_id" "client_id", "name" "name", "amount" "amount", (\'invoice\') "type" from "invoice" UNION ALL select "client_id" "client_id", "name" "name", "amount" "amount", (\'payment\') "type" from "payment") "_tu") "_tm" group by "type"',
+            'select `type`, sum(`amount`) `amount` from (select `client_id`, `name`, `amount`, `type` from (select `client_id` `client_id`, `name` `name`, `amount` `amount`, (\'invoice\') `type` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount`, (\'payment\') `type` from `payment`) `_tu`) `_tm` group by `type`',
             $transactionAggregate->action('select')->render()[0]
         );
 
@@ -335,7 +335,7 @@ class ModelUnionTest extends TestCase
         self::assertSame(29.0, (float) $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->getOne());
 
         $this->assertSameSql(
-            'select sum("val") from (select sum("amount") "val" from "invoice" where "client_id" = :a UNION ALL select sum("amount") "val" from "payment" where "client_id" = :b) "_t_e7d707a26e7f"',
+            'select sum(`val`) from (select sum(`amount`) `val` from `invoice` where `client_id` = :a UNION ALL select sum(`amount`) `val` from `payment` where `client_id` = :b) `_t_e7d707a26e7f`',
             $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->render()[0]
         );
 
@@ -347,7 +347,7 @@ class ModelUnionTest extends TestCase
         self::assertSame(-9.0, (float) $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->getOne());
 
         $this->assertSameSql(
-            'select sum("val") from (select sum(-"amount") "val" from "invoice" where "client_id" = :a UNION ALL select sum("amount") "val" from "payment" where "client_id" = :b) "_t_e7d707a26e7f"',
+            'select sum(`val`) from (select sum(-`amount`) `val` from `invoice` where `client_id` = :a UNION ALL select sum(`amount`) `val` from `payment` where `client_id` = :b) `_t_e7d707a26e7f`',
             $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->render()[0]
         );
     }
@@ -363,7 +363,7 @@ class ModelUnionTest extends TestCase
                 || $this->getDatabasePlatform() instanceof SQLServerPlatform
                 || $this->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\OraclePlatform) {
             // TODO failing on all DBs expect Sqlite, MySQL uses "semi-joins" for this type of query which does not support UNION
-            // and therefore it complains about "client"."id" field, see:
+            // and therefore it complains about `client`.`id` field, see:
             // http://stackoverflow.com/questions/8326815/mysql-field-from-union-subselect#comment10267696_8326815
             self::assertTrue(true);
 
@@ -371,7 +371,7 @@ class ModelUnionTest extends TestCase
         }
 
         $this->assertSameSql(
-            'select "id", "name", "surname", "order", (select coalesce(sum("val"), 0) from (select coalesce(sum("amount"), 0) "val" from "invoice" UNION ALL select coalesce(sum("amount"), 0) "val" from "payment") "_t_e7d707a26e7f" where "client_id" = "client"."id") "balance" from "client" group by "id" having "id" = :a',
+            'select `id`, `name`, `surname`, `order`, (select coalesce(sum(`val`), 0) from (select coalesce(sum(`amount`), 0) `val` from `invoice` UNION ALL select coalesce(sum(`amount`), 0) `val` from `payment`) `_t_e7d707a26e7f` where `client_id` = `client`.`id`) `balance` from `client` group by `id` having `id` = :a',
             $client->load(1)->action('select')->render()[0]
         );
     }
