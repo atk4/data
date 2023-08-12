@@ -294,7 +294,7 @@ class ModelUnionTest extends TestCase
         );
 
         if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            $this->markTestIncomplete('TODO MSSQL: Constant value column seem not supported (Invalid column name \'type\')');
+            self::markTestIncomplete('TODO MSSQL: Constant value column seem not supported (Invalid column name \'type\')');
         }
 
         self::assertSameExportUnordered([
