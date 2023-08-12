@@ -659,6 +659,15 @@ class QueryTest extends TestCase
         $this->q('[where]')->where('a', '!=', new \DateTime());
     }
 
+    public function testWhereNoOperatorWithArrayException(): void
+    {
+        $q = $this->q('[where]')->where('a', [1, 2]);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unsupported operator for array value');
+        $q->render();
+    }
+
     /**
      * @param mixed $value
      *

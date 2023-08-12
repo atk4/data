@@ -449,7 +449,7 @@ class ArrayTest extends TestCase
         ], $m->action('select')->getRows());
 
         $m->scope()->clear();
-        $m->addCondition('code', [11, 12]);
+        $m->addCondition('code', 'IN', [11, 12]);
         self::assertSame([
             $dbDataCountries[1],
             $dbDataCountries[2],
@@ -461,13 +461,6 @@ class ArrayTest extends TestCase
 
         $m->scope()->clear();
         $m->addCondition('code', 'NOT IN', [11, 12, 13, 14, 15, 16, 17]);
-        self::assertSame([
-            $dbDataCountries[8],
-            $dbDataCountries[9],
-        ], $m->action('select')->getRows());
-
-        $m->scope()->clear();
-        $m->addCondition('code', '!=', [11, 12, 13, 14, 15, 16, 17]);
         self::assertSame([
             $dbDataCountries[8],
             $dbDataCountries[9],

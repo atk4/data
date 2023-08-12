@@ -169,7 +169,7 @@ class Action
 
         switch (strtoupper($operator)) {
             case '=':
-                $result = is_array($v2) ? $this->evaluateIf($v1, 'IN', $v2) : $v1 === $v2;
+                $result = $v1 === $v2;
 
                 break;
             case '>':
