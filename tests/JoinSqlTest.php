@@ -815,11 +815,11 @@ class JoinSqlTest extends TestCase
         $user->set('contact_phone', '+321');
         $user->save();
 
-        static::assertSame([
+        self::assertSame([
             ['id' => 1, 'name' => 'Karl', 'foo' => 21],
             ['id' => 2, 'name' => 'Roman', 'foo' => 22],
         ], $masterModel->export());
-        static::assertSame([
+        self::assertSame([
             ['uid' => 1, 'bar' => 21, 'contact_phone' => '+321'],
             ['uid' => 2, 'bar' => 22, 'contact_phone' => '+200'],
         ], $joinedModel->export());
@@ -831,7 +831,7 @@ class JoinSqlTest extends TestCase
 
         $user->delete(1);
 
-        static::assertNull($masterModel->tryLoad(1));
-        static::assertNull($joinedModel->tryLoad(1));
+        self::assertNull($masterModel->tryLoad(1));
+        self::assertNull($joinedModel->tryLoad(1));
     }
 }
