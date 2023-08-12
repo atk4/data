@@ -27,22 +27,19 @@ use Atk4\Data\Persistence\Sql\Query;
  */
 class UnionModel extends Model
 {
-    /** @const string */
     public const HOOK_INIT_UNION_SELECT_QUERY = self::class . '@initUnionSelectQuery';
 
-    /** @var bool UnionModel should always be read-only */
-    public $read_only = true;
+    /** UnionModel should always be read-only */
+    public bool $readOnly = true;
 
     /**
-     * UnionModel normally does not have ID field. Setting this to null will
+     * UnionModel normally does not have ID field. Setting this to false will
      * disable various per-id operations, such as load().
      *
      * If you can define unique ID field, you can specify it inside your
      * union model.
-     *
-     * @var string|null
      */
-    public $id_field;
+    public $idField = false;
 
     /** @var array<array{0: Model, 1: array}> */
     public $union = [];
@@ -77,7 +74,7 @@ class UnionModel extends Model
      */
     public function addNestedModel(Model $model, array $fieldMap = []): Model
     {
-        $this->persistence->add($model); // TODO this must be removed
+        $model->setPersistence($this->getpersistence()); // TODO this must be removed
 
         $this->union[] = [$model, $fieldMap];
 
@@ -149,12 +146,12 @@ class UnionModel extends Model
                 // get list of available fields
                 $fields = $this->onlyFields ?: array_keys($this->getFields());
                 foreach ($fields as $k => $field) {
-                    if ($this->getField($field)->never_persist) {
+                    if ($this->getField($field)->neverPersist) {
                         unset($fields[$k]);
                     }
                 }
                 $subquery = $this->getSubQuery($fields);
-                $query = parent::action($mode, $args)->reset('table')->table($subquery, $this->table_alias ?? $this->table);
+                $query = parent::action($mode, $args)->reset('table')->table($subquery, $this->tableAlias ?? $this->table);
 
                 $this->hook(self::HOOK_INIT_UNION_SELECT_QUERY, [$query]);
 
@@ -190,7 +187,7 @@ class UnionModel extends Model
         }
 
         $query = parent::action($mode, $args)
-            ->reset('table')->table($subquery, $this->table_alias ?? $this->table);
+            ->reset('table')->table($subquery, $this->tableAlias ?? $this->table);
 
         return $query;
     }
@@ -200,7 +197,7 @@ class UnionModel extends Model
      */
     private function createUnionQuery(array $subqueries): Query
     {
-        $unionQuery = $this->persistence->dsql();
+        $unionQuery = $this->getPersistence()->dsql();
         $unionQuery->mode = 'union_all';
         \Closure::bind(function () use ($unionQuery, $subqueries) {
             $unionQuery->template = implode(' UNION ALL ', array_fill(0, count($subqueries), '[]'));
@@ -230,7 +227,7 @@ class UnionModel extends Model
 
                     $field = $this->getField($fieldName);
 
-                    if ($field->hasJoin() || $field->never_persist) {
+                    if ($field->hasJoin() || $field->neverPersist) {
                         continue;
                     }
 
@@ -250,7 +247,7 @@ class UnionModel extends Model
                 }
             }
 
-            $query = $this->persistence->action($nestedModel, 'select', [[]]);
+            $query = $this->getPersistence()->action($nestedModel, 'select', [[]]);
             $query->wrapInParentheses = false;
 
             foreach ($queryFieldExpressions as $fAlias => $fExpr) {

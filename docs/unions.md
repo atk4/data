@@ -82,8 +82,8 @@ The key of the field map array must match the UnionModel field. The value is an 
 This format can also be used to reverse sign on amounts. When we are creating "Transactions", then invoices would be
 subtracted from the amount, while payments will be added::
 
-   $nestedPayment = $m_uni->addNestedModel(new Invoice(), ['amount' => '-[amount]']);
-   $nestedInvoice = $m_uni->addNestedModel(new Payment(), ['description' => '[note]']);
+   $nestedPayment = $mUnion->addNestedModel(new Invoice(), ['amount' => '-[amount]']);
+   $nestedInvoice = $mUnion->addNestedModel(new Payment(), ['description' => '[note]']);
    $unionPaymentInvoice->addField('description');
 
 Should more flexibility be needed, more expressions (or fields) can be added directly to nested models::
