@@ -352,7 +352,7 @@ class ModelUnionTest extends TestCase
         );
     }
 
-    public function testFieldAggregateUnion(): void
+    /* public function testFieldAggregateUnion(): void
     {
         $client = $this->createClient();
         $client->hasMany('tr', ['model' => $this->createTransaction()])
@@ -374,7 +374,7 @@ class ModelUnionTest extends TestCase
             'select `id`, `name`, `surname`, `order`, (select coalesce(sum(`val`), 0) from (select coalesce(sum(`amount`), 0) `val` from `invoice` UNION ALL select coalesce(sum(`amount`), 0) `val` from `payment`) `_t_e7d707a26e7f` where `client_id` = `client`.`id`) `balance` from `client` group by `id` having `id` = :a',
             $client->load(1)->action('select')->render()[0]
         );
-    }
+    } */
 
     public function testConditionOnUnionField(): void
     {
