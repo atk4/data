@@ -30,6 +30,21 @@ trait SchemaManagerTrait
         }
     }
 
+    // fix collations unescape for SqliteSchemaManager::parseColumnCollationFromSQL() method
+    // https://github.com/doctrine/dbal/issues/6129
+
+    protected function _getPortableTableColumnList($table, $database, $tableColumns)
+    {
+        $res = parent::_getPortableTableColumnList($table, $database, $tableColumns);
+        foreach ($res as $column) {
+            if ($column->hasPlatformOption('collation')) {
+                $column->setPlatformOption('collation', $this->unquoteTableIdentifier($column->getPlatformOption('collation')));
+            }
+        }
+
+        return $res;
+    }
+
     // fix quoted table name support for private SqliteSchemaManager::getCreateTableSQL() method
     // https://github.com/doctrine/dbal/blob/3.3.7/src/Schema/SqliteSchemaManager.php#L539
     // TODO submit a PR with fixed SqliteSchemaManager to DBAL
