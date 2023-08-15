@@ -10,7 +10,7 @@ use Atk4\Data\Model\Scope;
 use Atk4\Data\Model\Scope\Condition;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
-use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 
 class SCountry extends Model
 {
@@ -184,7 +184,7 @@ class ScopeTest extends TestCase
         $condition = new Condition('country_id', 2);
         self::assertSame('Country ID is equal to 2 (\'Latvia\')', $condition->toWords($user));
 
-        if ($this->getDatabasePlatform() instanceof SqlitePlatform || $this->getDatabasePlatform() instanceof MySQLPlatform) {
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform || $this->getDatabasePlatform() instanceof MySQLPlatform) {
             $condition = new Condition('name', $user->expr('[surname]'));
             self::assertSame('Name is equal to expression \'`surname`\'', $condition->toWords($user));
         }
@@ -319,7 +319,7 @@ class ScopeTest extends TestCase
         $user->addCondition('Tickets/user/country_id/Users/#', '>', 1);
         $user->addCondition('Tickets/user/country_id/Users/#', '>=', 2);
         $user->addCondition('Tickets/user/country_id/Users/country_id/Users/#', '>', 1);
-        if (!$this->getDatabasePlatform() instanceof SqlitePlatform) {
+        if (!$this->getDatabasePlatform() instanceof SQLitePlatform) {
             // not supported because of limitation/issue in Sqlite, the generated query fails
             // with error: "parser stack overflow"
             $user->addCondition('Tickets/user/country_id/Users/country_id/Users/name', '!=', null); // should be always true
