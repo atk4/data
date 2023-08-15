@@ -36,7 +36,7 @@ parameters:
             path: '*'
             count: 3
 
-        # TODO for DBAL 4.x upgrade
+        # TODO for DBAL 4.0 upgrade
         - 
             message: '~^Instantiation of deprecated class Doctrine\\DBAL\\Event\\Listeners\\OracleSessionInit:\nUse \{@see \\Doctrine\\DBAL\\Driver\\OCI8\\Middleware\\InitializeSession\} instead\.$~'
             path: 'src/Persistence/Sql/Oracle/Connection.php'
