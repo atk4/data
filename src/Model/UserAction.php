@@ -126,12 +126,13 @@ class UserAction
      */
     public function execute(...$args)
     {
+        $passEntity = false;
         if ($this->callback === null) {
             $fx = \Closure::fromCallable([$this->getEntity(), $this->shortName]);
         } elseif (is_string($this->callback)) {
             $fx = \Closure::fromCallable([$this->getEntity(), $this->callback]);
         } else {
-            array_unshift($args, $this->getEntity());
+            $passEntity = true;
             $fx = $this->callback;
         }
 
@@ -139,6 +140,10 @@ class UserAction
 
         try {
             $this->validateBeforeExecute();
+
+            if ($passEntity) {
+                array_unshift($args, $this->getEntity());
+            }
 
             return $this->atomic === false
                 ? $fx(...$args)
@@ -193,14 +198,27 @@ class UserAction
      */
     public function preview(...$args)
     {
+        $passEntity = false;
         if (is_string($this->preview)) {
             $fx = \Closure::fromCallable([$this->getEntity(), $this->preview]);
         } else {
-            array_unshift($args, $this->getEntity());
+            $passEntity = true;
             $fx = $this->preview;
         }
 
-        return $fx(...$args);
+        try {
+            $this->validateBeforeExecute();
+
+            if ($passEntity) {
+                array_unshift($args, $this->getEntity());
+            }
+
+            return $fx(...$args);
+        } catch (CoreException $e) {
+            $e->addMoreInfo('action', $this);
+
+            throw $e;
+        }
     }
 
     /**
