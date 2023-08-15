@@ -157,7 +157,7 @@ class UserAction
         }
 
         // Verify that model fields wouldn't be too dirty
-        if (is_array($this->fields)) {
+        if (!is_bool($this->fields)) {
             $tooDirty = array_diff(array_keys($this->getEntity()->getDirtyRef()), $this->fields);
 
             if ($tooDirty) {
@@ -166,9 +166,6 @@ class UserAction
                     ->addMoreInfo('dirty', array_keys($this->getEntity()->getDirtyRef()))
                     ->addMoreInfo('permitted', $this->fields);
             }
-        } elseif (!is_bool($this->fields)) { // @phpstan-ignore-line
-            throw (new Exception('Argument `fields` for the user action must be either array or boolean'))
-                ->addMoreInfo('fields', $this->fields);
         }
 
         // Verify some records scope cases

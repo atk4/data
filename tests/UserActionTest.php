@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
-use Atk4\Core\Exception as CoreException;
+use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Schema\TestCase;
@@ -108,6 +108,17 @@ class UserActionTest extends TestCase
         self::assertSame($customClass, get_class($client->getUserAction('foo')));
     }
 
+    public function testExecuteUndefinedMethodException(): void
+    {
+        $client = new UaClient($this->pers);
+        $client->addUserAction('new_client');
+        $client = $client->load(1);
+
+        $this->expectException(\Error::class);
+        $this->expectExceptionMessage('Call to undefined method');
+        $client->executeUserAction('new_client');
+    }
+
     public function testPreview(): void
     {
         $client = new UaClient($this->pers);
@@ -116,12 +127,13 @@ class UserActionTest extends TestCase
         });
 
         $client = $client->load(1);
+
         self::assertSame('John', $client->getUserAction('say_name')->execute());
 
-        $client->getUserAction('say_name')->preview = function (UaClient $m, string $arg) {
+        $client->getUserAction('say_name')->preview = function (UaClient $m) {
             return 'will say ' . $m->get('name');
         };
-        self::assertSame('will say John', $client->getUserAction('say_name')->preview('x'));
+        self::assertSame('will say John', $client->getUserAction('say_name')->preview());
 
         $client->getModel()->addUserAction('also_backup', ['callback' => 'backupClients']);
         self::assertSame('backs up all clients', $client->getUserAction('also_backup')->execute());
@@ -132,55 +144,49 @@ class UserActionTest extends TestCase
         self::assertSame('Also Backup UaClient', $client->getUserAction('also_backup')->getDescription());
     }
 
-    public function testAppliesTo1(): void
+    public function testAppliesToSingleRecordNotLoadedException(): void
     {
         $client = new UaClient($this->pers);
         $client = $client->createEntity();
 
+        $this->expectException(Exception::class);
         $this->expectExceptionMessage('load existing record');
         $client->executeUserAction('sendReminder');
     }
 
-    public function testAppliesTo2(): void
+    public function testAppliesToNoRecordsLoadedRecordException(): void
     {
         $client = new UaClient($this->pers);
         $client->addUserAction('new_client', ['appliesTo' => Model\UserAction::APPLIES_TO_NO_RECORDS]);
         $client = $client->load(1);
 
+        $this->expectException(Exception::class);
         $this->expectExceptionMessage('can be executed on non-existing record');
         $client->executeUserAction('new_client');
     }
 
-    public function testAppliesTo3(): void
-    {
-        $client = new UaClient($this->pers);
-        $client->addUserAction('new_client', ['appliesTo' => Model\UserAction::APPLIES_TO_NO_RECORDS, 'atomic' => false]);
-        $client = $client->createEntity();
-
-        $this->expectExceptionMessage('undefined method');
-        $client->executeUserAction('new_client');
-    }
-
-    public function testException1(): void
+    public function testNotDefinedException(): void
     {
         $client = new UaClient($this->pers);
 
-        $this->expectException(CoreException::class);
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('User action is not defined');
         $client->getUserAction('non_existent_action');
     }
 
-    public function testDisabled1(): void
+    public function testDisabledBoolException(): void
     {
         $client = new UaClient($this->pers);
         $client = $client->load(1);
 
         $client->getUserAction('sendReminder')->enabled = false;
 
+        $this->expectException(Exception::class);
         $this->expectExceptionMessage('disabled');
         $client->getUserAction('sendReminder')->execute();
     }
 
-    public function testDisabled2(): void
+    public function testDisabledClosureException(): void
     {
         $client = new UaClient($this->pers);
         $client = $client->load(1);
@@ -194,6 +200,7 @@ class UserActionTest extends TestCase
             return false;
         };
 
+        $this->expectException(Exception::class);
         $this->expectExceptionMessage('disabled');
         $client->getUserAction('sendReminder')->execute();
     }
@@ -211,7 +218,7 @@ class UserActionTest extends TestCase
         self::assertSame('Peter', $client->get('name'));
     }
 
-    public function testFieldsTooDirty1(): void
+    public function testFieldsTooDirtyException(): void
     {
         $client = new UaClient($this->pers);
         $client->addUserAction('change_details', ['callback' => 'save', 'fields' => ['name']]);
@@ -222,21 +229,8 @@ class UserActionTest extends TestCase
         $client->set('name', 'Peter');
         $client->set('reminder_sent', true);
 
+        $this->expectException(Exception::class);
         $this->expectExceptionMessage('dirty fields');
-        $client->getUserAction('change_details')->execute();
-    }
-
-    public function testFieldsIncorrect(): void
-    {
-        $client = new UaClient($this->pers);
-        $client->addUserAction('change_details', ['callback' => 'save', 'fields' => 'whops_forgot_brackets']);
-
-        $client = $client->load(1);
-
-        self::assertNotSame('Peter', $client->get('name'));
-        $client->set('name', 'Peter');
-
-        $this->expectExceptionMessage('must be either array or boolean');
         $client->getUserAction('change_details')->execute();
     }
 
