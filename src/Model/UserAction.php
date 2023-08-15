@@ -32,14 +32,14 @@ class UserAction
     public const APPLIES_TO_MULTIPLE_RECORDS = 'multiple'; // e.g. delete
     public const APPLIES_TO_ALL_RECORDS = 'all'; // e.g. truncate
 
-    /** @var string by default action is for a single record */
-    public $appliesTo = self::APPLIES_TO_SINGLE_RECORD;
-
     /** Defining action modifier */
     public const MODIFIER_CREATE = 'create'; // create new record(s)
     public const MODIFIER_UPDATE = 'update'; // update existing record(s)
     public const MODIFIER_DELETE = 'delete'; // delete record(s)
     public const MODIFIER_READ = 'read'; // just read, does not modify record(s)
+
+    /** @var string by default action is for a single record */
+    public $appliesTo = self::APPLIES_TO_SINGLE_RECORD;
 
     /** @var string How this action interact with record */
     public $modifier;
@@ -74,26 +74,28 @@ class UserAction
     /** @var bool Atomic action will automatically begin transaction before and commit it after completing. */
     public $atomic = true;
 
+    private function _getOwner(): Model
+    {
+        return $this->getOwner(); // @phpstan-ignore-line;
+    }
+
     public function isOwnerEntity(): bool
     {
-        /** @var Model */
-        $owner = $this->getOwner(); // @phpstan-ignore-line
+        $owner = $this->_getOwner();
 
         return $owner->isEntity();
     }
 
     public function getModel(): Model
     {
-        /** @var Model */
-        $owner = $this->getOwner(); // @phpstan-ignore-line
+        $owner = $this->_getOwner();
 
         return $owner->getModel(true);
     }
 
     public function getEntity(): Model
     {
-        /** @var Model */
-        $owner = $this->getOwner(); // @phpstan-ignore-line
+        $owner = $this->_getOwner();
         $owner->assertIsEntity();
 
         return $owner;
@@ -104,8 +106,7 @@ class UserAction
      */
     public function getActionForEntity(Model $entity): self
     {
-        /** @var Model */
-        $owner = $this->getOwner(); // @phpstan-ignore-line
+        $owner = $this->_getOwner();
 
         $entity->assertIsEntity($owner);
         foreach ($owner->getUserActions() as $name => $action) {
@@ -126,13 +127,13 @@ class UserAction
      */
     public function execute(...$args)
     {
-        $passEntity = false;
+        $passOwner = false;
         if ($this->callback === null) {
-            $fx = \Closure::fromCallable([$this->getEntity(), $this->shortName]);
+            $fx = \Closure::fromCallable([$this->_getOwner(), $this->shortName]);
         } elseif (is_string($this->callback)) {
-            $fx = \Closure::fromCallable([$this->getEntity(), $this->callback]);
+            $fx = \Closure::fromCallable([$this->_getOwner(), $this->callback]);
         } else {
-            $passEntity = true;
+            $passOwner = true;
             $fx = $this->callback;
         }
 
@@ -141,13 +142,13 @@ class UserAction
         try {
             $this->validateBeforeExecute();
 
-            if ($passEntity) {
-                array_unshift($args, $this->getEntity());
+            if ($passOwner) {
+                array_unshift($args, $this->_getOwner());
             }
 
             return $this->atomic === false
                 ? $fx(...$args)
-                : $this->getModel()->atomic(static fn () => $fx(...$args));
+                : $this->_getOwner()->atomic(static fn () => $fx(...$args));
         } catch (CoreException $e) {
             $e->addMoreInfo('action', $this);
 
@@ -157,11 +158,11 @@ class UserAction
 
     protected function validateBeforeExecute(): void
     {
-        if ($this->enabled === false || ($this->enabled instanceof \Closure && ($this->enabled)($this->getEntity()) === false)) {
+        if ($this->enabled === false || ($this->enabled instanceof \Closure && ($this->enabled)($this->_getOwner()) === false)) {
             throw new Exception('User action is disabled');
         }
 
-        if (!is_bool($this->fields)) {
+        if (!is_bool($this->fields) && $this->fields !== []) {
             $dirtyFields = array_keys($this->getEntity()->getDirtyRef());
             $tooDirtyFields = array_diff($dirtyFields, $this->fields);
 
@@ -186,6 +187,11 @@ class UserAction
                 }
 
                 break;
+            case self::APPLIES_TO_MULTIPLE_RECORDS:
+            case self::APPLIES_TO_ALL_RECORDS:
+                $this->_getOwner()->assertIsModel();
+
+                break;
         }
     }
 
@@ -198,19 +204,19 @@ class UserAction
      */
     public function preview(...$args)
     {
-        $passEntity = false;
+        $passOwner = false;
         if (is_string($this->preview)) {
-            $fx = \Closure::fromCallable([$this->getEntity(), $this->preview]);
+            $fx = \Closure::fromCallable([$this->_getOwner(), $this->preview]);
         } else {
-            $passEntity = true;
+            $passOwner = true;
             $fx = $this->preview;
         }
 
         try {
             $this->validateBeforeExecute();
 
-            if ($passEntity) {
-                array_unshift($args, $this->getEntity());
+            if ($passOwner) {
+                array_unshift($args, $this->_getOwner());
             }
 
             return $fx(...$args);
@@ -245,7 +251,7 @@ class UserAction
         } elseif ($this->confirmation === true) {
             $confirmation = 'Are you sure you wish to execute '
                 . $this->getCaption()
-                . ($this->getEntity()->getTitle() ? ' using ' . $this->getEntity()->getTitle() : '')
+                . ($this->isOwnerEntity() && $this->getEntity()->getTitle() ? ' using ' . $this->getEntity()->getTitle() : '')
                 . '?';
 
             return $confirmation;

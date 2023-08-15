@@ -85,7 +85,7 @@ class UserActionTest extends TestCase
         $client->unload();
 
         // test system action
-        $act2 = $client->getUserAction('backupClients');
+        $act2 = $client->getModel()->getUserAction('backupClients');
 
         // action takes no arguments. If it would, we should be able to find info about those
         self::assertSame([], $act2->args);
@@ -151,6 +151,16 @@ class UserActionTest extends TestCase
         $this->expectException(\TypeError::class);
         $this->expectExceptionMessage('Expected entity, but instance is a model');
         $client->executeUserAction('sendReminder');
+    }
+
+    public function testAppliesToAllRecordsEntityException(): void
+    {
+        $client = new UaClient($this->pers);
+        $client = $client->load(1);
+
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Expected model, but instance is an entity');
+        $client->executeUserAction('backupClients');
     }
 
     public function testAppliesToSingleRecordNotLoadedException(): void
