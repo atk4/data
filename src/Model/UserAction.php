@@ -153,33 +153,31 @@ class UserAction
     protected function validateBeforeExecute(): void
     {
         if ($this->enabled === false || ($this->enabled instanceof \Closure && ($this->enabled)($this->getEntity()) === false)) {
-            throw new Exception('This action is disabled');
+            throw new Exception('User action is disabled');
         }
 
-        // Verify that model fields wouldn't be too dirty
         if (!is_bool($this->fields)) {
-            $tooDirty = array_diff(array_keys($this->getEntity()->getDirtyRef()), $this->fields);
+            $dirtyFields = array_keys($this->getEntity()->getDirtyRef());
+            $tooDirtyFields = array_diff($dirtyFields, $this->fields);
 
-            if ($tooDirty) {
-                throw (new Exception('Calling user action on a Model with dirty fields that are not allowed by this action'))
-                    ->addMoreInfo('too_dirty', $tooDirty)
-                    ->addMoreInfo('dirty', array_keys($this->getEntity()->getDirtyRef()))
-                    ->addMoreInfo('permitted', $this->fields);
+            if ($tooDirtyFields !== []) {
+                throw (new Exception('User action cannot be executed as unrelated fields are dirty'))
+                    ->addMoreInfo('tooDirtyFields', $tooDirtyFields)
+                    ->addMoreInfo('otherDirtyFields', array_diff($dirtyFields, $tooDirtyFields));
             }
         }
 
-        // Verify some records scope cases
         switch ($this->appliesTo) {
             case self::APPLIES_TO_NO_RECORDS:
                 if ($this->getEntity()->isLoaded()) {
-                    throw (new Exception('This user action can be executed on non-existing record only'))
+                    throw (new Exception('User action can be executed on new entity only'))
                         ->addMoreInfo('id', $this->getEntity()->getId());
                 }
 
                 break;
             case self::APPLIES_TO_SINGLE_RECORD:
                 if (!$this->getEntity()->isLoaded()) {
-                    throw new Exception('This user action requires you to load existing record first');
+                    throw new Exception('User action can be executed on loaded entity only');
                 }
 
                 break;
