@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Persistence\Sql;
 
 use Atk4\Core\DiContainerTrait;
-use Doctrine\Common\EventManager;
-use Doctrine\DBAL\Configuration as DbalConfiguration;
+use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\ConnectionException as DbalConnectionException;
 use Doctrine\DBAL\Driver as DbalDriver;
@@ -226,10 +225,10 @@ abstract class Connection
         return null; // @phpstan-ignore-line
     }
 
-    protected static function createDbalConfiguration(): DbalConfiguration
+    protected static function createDbalConfiguration(): Configuration
     {
-        $dbalConfiguration = new DbalConfiguration();
-        $dbalConfiguration->setMiddlewares([
+        $configuration = new Configuration();
+        $configuration->setMiddlewares([
             new class() implements DbalMiddleware {
                 public function wrap(DbalDriver $driver): DbalDriver
                 {
@@ -238,12 +237,7 @@ abstract class Connection
             },
         ]);
 
-        return $dbalConfiguration;
-    }
-
-    protected static function createDbalEventManager(): EventManager
-    {
-        return new EventManager();
+        return $configuration;
     }
 
     /**
@@ -260,8 +254,7 @@ abstract class Connection
 
         $dbalConnection = DriverManager::getConnection(
             $dsn, // @phpstan-ignore-line
-            (static::class)::createDbalConfiguration(),
-            (static::class)::createDbalEventManager()
+            (static::class)::createDbalConfiguration()
         );
 
         return $dbalConnection->getWrappedConnection(); // @phpstan-ignore-line https://github.com/doctrine/dbal/issues/5199
@@ -271,8 +264,7 @@ abstract class Connection
     {
         $dbalConnection = DriverManager::getConnection(
             ['driver' => self::getDriverNameFromDbalDriverConnection($dbalDriverConnection)],
-            (static::class)::createDbalConfiguration(),
-            (static::class)::createDbalEventManager()
+            (static::class)::createDbalConfiguration()
         );
         \Closure::bind(function () use ($dbalConnection, $dbalDriverConnection): void {
             $dbalConnection->_conn = $dbalDriverConnection;
