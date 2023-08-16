@@ -67,7 +67,7 @@ class UserAction
     public $system = false;
 
     /** @var array<string, array<string, mixed>|Model> Argument definition. */
-    public $args = [];
+    public $args = []; // TODO test with positional, named and Model arguments
 
     /** @var array<int, string>|bool Specify which fields may be dirty when invoking action. APPLIES_TO_NO_RECORDS|APPLIES_TO_SINGLE_RECORD scopes for adding/modifying */
     public $fields = [];
