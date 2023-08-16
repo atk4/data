@@ -36,7 +36,7 @@ parameters:
             path: '*'
             count: 3
 
-        # TODO for DBAL 4.0 upgrade
+        # FC for DBAL 4.0, remove once DBAL 3.x support is dropped
         - 
             message: '~^Class Doctrine\\DBAL\\Platforms\\SqlitePlatform referenced with incorrect case: Doctrine\\DBAL\\Platforms\\SQLitePlatform\.$~'
             path: '*'
