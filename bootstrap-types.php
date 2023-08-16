@@ -10,7 +10,8 @@ use Atk4\Data\Type\Types;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Types as DbalTypes;
 
-// force Doctrine\DBAL\Platforms\SQLitePlatform class load as in DBAL 3.x named as Doctrine\DBAL\Platforms\SqlitePlatform
+// force Doctrine\DBAL\Platforms\SQLitePlatform class load as in DBAL 3.x it is named with a different case
+// remove once DBAL 3.x support is dropped
 new SqlitePlatform();
 
 DbalTypes\Type::addType(Types::LOCAL_OBJECT, LocalObjectType::class);
