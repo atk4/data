@@ -36,15 +36,11 @@ parameters:
             path: '*'
             count: 3
 
-        # TODO for DBAL 4.0 upgrade
+        # FC for DBAL 4.0, remove once DBAL 3.x support is dropped
         - 
-            message: '~^Instantiation of deprecated class Doctrine\\DBAL\\Event\\Listeners\\OracleSessionInit:\nUse \{@see \\Doctrine\\DBAL\\Driver\\OCI8\\Middleware\\InitializeSession\} instead\.$~'
-            path: 'src/Persistence/Sql/Oracle/Connection.php'
-            count: 1
-        - 
-            message: '~^(Fetching deprecated class constant postConnect of class Doctrine\\DBAL\\Events\.|Fetching class constant postConnect of deprecated class Doctrine\\DBAL\\Events\.|Parameter \$args of method postConnect\(\) in anonymous class has typehint with deprecated class Doctrine\\DBAL\\Event\\ConnectionEventArgs\.)$~'
-            path: 'src/Persistence/Sql/Sqlite/Connection.php'
-            count: 3
+            message: '~^Class Doctrine\\DBAL\\Platforms\\SqlitePlatform referenced with incorrect case: Doctrine\\DBAL\\Platforms\\SQLitePlatform\.$~'
+            path: '*'
+            count: 33
 
         # TODO these rules are generated, this ignores should be fixed in the code
         # for src/Schema/TestCase.php

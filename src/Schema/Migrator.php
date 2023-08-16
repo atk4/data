@@ -20,7 +20,7 @@ use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
-use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Schema\AbstractAsset;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
@@ -253,7 +253,7 @@ class Migrator
         }
 
         if (in_array($type, ['string', 'text'], true)) {
-            if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
+            if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
                 $column->setPlatformOption('collation', 'NOCASE');
             }
         }

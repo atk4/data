@@ -10,7 +10,7 @@ use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 
 class Model_Rate extends Model
 {
@@ -508,7 +508,7 @@ class RandomTest extends TestCase
 
     public function testTableWithSchema(): void
     {
-        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
             $userSchema = 'db1';
             $docSchema = 'db2';
             $runWithDb = false;

@@ -8,13 +8,13 @@ use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Connection;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 
 class DummyConnection extends Connection
 {
     public function getDatabasePlatform(): AbstractPlatform
     {
-        return new class() extends SqlitePlatform {
+        return new class() extends SQLitePlatform {
             public function getName()
             {
                 return 'dummy';
@@ -27,7 +27,7 @@ class DummyConnection2 extends Connection
 {
     public function getDatabasePlatform(): AbstractPlatform
     {
-        return new class() extends SqlitePlatform {
+        return new class() extends SQLitePlatform {
             public function getName()
             {
                 return 'dummy2';

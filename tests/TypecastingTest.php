@@ -8,7 +8,7 @@ use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 
 class TypecastingTest extends TestCase
 {
@@ -116,7 +116,7 @@ class TypecastingTest extends TestCase
         $m->load(2)->set('float', 8.202343767574732)->save();
         // pdo_sqlite in truncating float, see https://github.com/php/php-src/issues/8510
         // fixed since PHP 8.1, but if converted in SQL to string explicitly, the result is still rounded to 15 significant digits
-        if (!$this->getDatabasePlatform() instanceof SqlitePlatform || \PHP_VERSION_ID >= 80100) {
+        if (!$this->getDatabasePlatform() instanceof SQLitePlatform || \PHP_VERSION_ID >= 80100) {
             self::assertSame(8.202343767574732, $m->load(2)->get('float'));
         }
     }

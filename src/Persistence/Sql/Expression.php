@@ -11,7 +11,7 @@ use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
-use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Result as DbalResult;
 
@@ -287,9 +287,9 @@ abstract class Expression implements Expressionable, \ArrayAccess
                     $sqlLeft = 'CAST(' . $sqlLeft . ' AS NVARCHAR(MAX))';
                 }
 
-                return ($platform instanceof SqlitePlatform ? '(' : 'CONCAT(')
+                return ($platform instanceof SQLitePlatform ? '(' : 'CONCAT(')
                     . $sqlLeft
-                    . ($platform instanceof SqlitePlatform ? ' || ' : ', ')
+                    . ($platform instanceof SQLitePlatform ? ' || ' : ', ')
                     . $buildConcatSqlFx($partsRight)
                     . ')';
             }

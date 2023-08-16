@@ -17,7 +17,7 @@ use Doctrine\DBAL\Exception\TableNotFoundException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
-use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Query as DbalQuery;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
@@ -28,8 +28,8 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
 {
     protected function replaceDatabasePlatform(AbstractPlatform $platform): AbstractPlatform
     {
-        if ($platform instanceof SqlitePlatform) {
-            $platform = new class() extends SqlitePlatform {
+        if ($platform instanceof SQLitePlatform) {
+            $platform = new class() extends SQLitePlatform {
                 use Sqlite\PlatformTrait;
             };
         } elseif ($platform instanceof PostgreSQLPlatform) {
@@ -64,7 +64,7 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
      */
     public function getSchemaManager(DbalConnection $connection, AbstractPlatform $platform): AbstractSchemaManager
     {
-        if ($platform instanceof SqlitePlatform) {
+        if ($platform instanceof SQLitePlatform) {
             return new class($connection, $platform) extends SqliteSchemaManager { // @phpstan-ignore-line
                 use Sqlite\SchemaManagerTrait;
             };
