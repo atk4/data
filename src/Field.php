@@ -227,6 +227,10 @@ class Field implements Expressionable
 
             return $value;
         } catch (\Exception $e) {
+            if ($e instanceof \ErrorException) {
+                throw $e;
+            }
+
             $messages = [];
             do {
                 $messages[] = $e->getMessage();
