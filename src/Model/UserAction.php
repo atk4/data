@@ -167,7 +167,7 @@ class UserAction
             $tooDirtyFields = array_diff($dirtyFields, $this->fields);
 
             if ($tooDirtyFields !== []) {
-                throw (new Exception('User action cannot be executed as unrelated fields are dirty'))
+                throw (new Exception('User action cannot be executed when unrelated fields are dirty'))
                     ->addMoreInfo('tooDirtyFields', $tooDirtyFields)
                     ->addMoreInfo('otherDirtyFields', array_diff($dirtyFields, $tooDirtyFields));
             }

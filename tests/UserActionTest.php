@@ -249,7 +249,7 @@ class UserActionTest extends TestCase
         $client->set('reminder_sent', true);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('User action cannot be executed as unrelated fields are dirty');
+        $this->expectExceptionMessage('User action cannot be executed when unrelated fields are dirty');
         $client->getUserAction('change_details')->execute();
     }
 
