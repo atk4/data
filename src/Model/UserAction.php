@@ -162,7 +162,7 @@ class UserAction
             throw new Exception('User action is disabled');
         }
 
-        if (!is_bool($this->fields) && $this->fields !== []) {
+        if (!is_bool($this->fields) && $this->isOwnerEntity()) {
             $dirtyFields = array_keys($this->getEntity()->getDirtyRef());
             $tooDirtyFields = array_diff($dirtyFields, $this->fields);
 

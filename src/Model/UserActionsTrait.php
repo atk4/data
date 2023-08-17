@@ -155,7 +155,7 @@ trait UserActionsTrait
         ]);
 
         $this->addUserAction('validate', [
-            // 'appliesTo' => any!
+            // 'appliesTo' => any entity!
             'description' => 'Provided with modified values will validate them but will not save',
             'modifier' => UserAction::MODIFIER_READ,
             'fields' => true,
