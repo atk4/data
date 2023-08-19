@@ -140,7 +140,7 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
                     if ($convertedException instanceof DatabaseObjectNotFoundException) {
                         $exception = self::getUnconvertedException($convertedException);
                         $exceptionMessageLc = strtolower($exception->getMessage());
-                        if (str_contains($exceptionMessageLc, 'cannot drop the table')) {
+                        if (str_contains($exceptionMessageLc, 'cannot drop the table') && !$convertedException instanceof TableNotFoundException) {
                             return new TableNotFoundException($exception, $query);
                         }
                     }
