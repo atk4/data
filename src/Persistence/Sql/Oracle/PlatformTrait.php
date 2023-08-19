@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Atk4\Data\Persistence\Sql\Oracle;
 
 use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Schema\AbstractAsset;
+use Doctrine\DBAL\Schema\Index;
 use Doctrine\DBAL\Schema\Sequence;
+use Doctrine\DBAL\Schema\Table;
+use Doctrine\DBAL\Schema\UniqueConstraint;
 
 trait PlatformTrait
 {
@@ -99,6 +103,32 @@ trait PlatformTrait
         )->render()[0];
 
         return $sqls;
+    }
+
+    public function getCreateIndexSQL(Index $index, $table)
+    {
+        // workaround https://github.com/doctrine/dbal/issues/5508
+        // no side effect on multiple null values or DBAL index list observed
+        if ($index->isUnique()) {
+            $uniqueConstraint = new UniqueConstraint(
+                '0.0',
+                ['0.0'],
+                $index->getFlags(),
+                $index->getOptions()
+            );
+            \Closure::bind(function () use ($index, $uniqueConstraint) {
+                $uniqueConstraint->_name = $index->_name;
+                $uniqueConstraint->_namespace = $index->_namespace;
+                $uniqueConstraint->_quoted = $index->_quoted;
+                $uniqueConstraint->columns = $index->_columns;
+            }, null, AbstractAsset::class)();
+
+            $tableName = $table instanceof Table ? $table->getQuotedName($this) : $table;
+
+            return $this->getCreateUniqueConstraintSQL($uniqueConstraint, $tableName);
+        }
+
+        return parent::getCreateIndexSQL($index, $table);
     }
 
     public function getListDatabasesSQL(): string
