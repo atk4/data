@@ -66,7 +66,7 @@ class MigratorFkTest extends TestCase
         $this->createMigrator($client)->create();
         self::assertSame([], $this->listTableIndexes('client'));
 
-        $this->createMigrator($client)->createIndex($client->getField('name'), false);
+        $this->createMigrator($client)->createIndex([$client->getField('name')], false);
         self::assertSame([[['name'], false]], $this->listTableIndexes('client'));
 
         $client->insert(['name' => 'Michael']);
@@ -99,7 +99,7 @@ class MigratorFkTest extends TestCase
             }
         }
 
-        $this->createMigrator($client)->createIndex($client->getField('name'), true);
+        $this->createMigrator($client)->createIndex([$client->getField('name')], true);
         self::assertSame([[['name'], true]], $this->listTableIndexes('client'));
 
         $client->insert(['name' => 'Michael']);
