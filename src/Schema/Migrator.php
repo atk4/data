@@ -426,8 +426,15 @@ class Migrator
         $indexes = $this->createSchemaManager()->listTableIndexes($this->fixTableNameForListMethod($table));
         $fieldPersistenceNames = array_map(fn ($field) => $field->getPersistenceName(), $fields);
         foreach ($indexes as $index) {
-            if ($index->getUnquotedColumns() === $fieldPersistenceNames && (!$requireUnique || $index->isUnique())) {
-                return true;
+            $indexPersistenceNames = $index->getUnquotedColumns();
+            if ($requireUnique) {
+                if ($indexPersistenceNames === $fieldPersistenceNames && $index->isUnique()) {
+                    return true;
+                }
+            } else {
+                if (array_slice($indexPersistenceNames, 0, count($fieldPersistenceNames)) === $fieldPersistenceNames) {
+                    return true;
+                }
             }
         }
 

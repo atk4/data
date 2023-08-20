@@ -65,9 +65,16 @@ class MigratorFkTest extends TestCase
 
         $this->createMigrator($client)->create();
         self::assertSame([], $this->listTableIndexes('client'));
+        self::assertTrue($this->createMigrator()->isIndexExists([$client->getField('id')], false));
+        self::assertTrue($this->createMigrator()->isIndexExists([$client->getField('id')], true));
+        self::assertFalse($this->createMigrator()->isIndexExists([$client->getField('name')], false));
 
-        $this->createMigrator($client)->createIndex([$client->getField('name')], false);
+        $this->createMigrator()->createIndex([$client->getField('name')], false);
         self::assertSame([[['name'], false]], $this->listTableIndexes('client'));
+        self::assertTrue($this->createMigrator()->isIndexExists([$client->getField('name')], false));
+        self::assertFalse($this->createMigrator()->isIndexExists([$client->getField('name')], true));
+        self::assertFalse($this->createMigrator()->isIndexExists([$client->getField('id'), $client->getField('name')], false));
+        self::assertFalse($this->createMigrator()->isIndexExists([$client->getField('name'), $client->getField('id')], false));
 
         $client->insert(['name' => 'Michael']);
         $client->insert(['name' => 'Denise']);
@@ -90,7 +97,6 @@ class MigratorFkTest extends TestCase
         $client->addField('name');
 
         $this->createMigrator($client)->create();
-        self::assertSame([], $this->listTableIndexes('client'));
 
         if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
             $serverVersion = $this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
@@ -99,8 +105,12 @@ class MigratorFkTest extends TestCase
             }
         }
 
-        $this->createMigrator($client)->createIndex([$client->getField('name')], true);
+        $this->createMigrator()->createIndex([$client->getField('name')], true);
         self::assertSame([[['name'], true]], $this->listTableIndexes('client'));
+        self::assertTrue($this->createMigrator()->isIndexExists([$client->getField('name')], false));
+        self::assertTrue($this->createMigrator()->isIndexExists([$client->getField('name')], true));
+        self::assertFalse($this->createMigrator()->isIndexExists([$client->getField('id'), $client->getField('name')], false));
+        self::assertFalse($this->createMigrator()->isIndexExists([$client->getField('name'), $client->getField('id')], false));
 
         $client->insert(['name' => 'Michael']);
         $client->insert(['name' => 'Denise']);
@@ -123,6 +133,32 @@ class MigratorFkTest extends TestCase
 
             throw $e;
         }
+    }
+
+    public function testCreateIndexMultipleFields(): void
+    {
+        $client = new Model($this->db, ['table' => 'client']);
+        $client->addField('a');
+        $client->addField('b');
+
+        $this->createMigrator($client)->create();
+        self::assertSame([], $this->listTableIndexes('client'));
+
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            $serverVersion = $this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
+            if (preg_match('~^5\.6~', $serverVersion)) {
+                self::markTestIncomplete('TODO MySQL 5.6: Unique key exceed max key (767 bytes) length');
+            }
+        }
+
+        $this->createMigrator($client)->createIndex([$client->getField('a'), $client->getField('b')], true);
+        self::assertSame([[['a', 'b'], true]], $this->listTableIndexes('client'));
+        self::assertTrue($this->createMigrator()->isIndexExists([$client->getField('a'), $client->getField('b')], false));
+        self::assertTrue($this->createMigrator()->isIndexExists([$client->getField('a'), $client->getField('b')], true));
+        self::assertTrue($this->createMigrator()->isIndexExists([$client->getField('a')], false));
+        self::assertFalse($this->createMigrator()->isIndexExists([$client->getField('a')], true));
+        self::assertFalse($this->createMigrator()->isIndexExists([$client->getField('b')], false));
+        self::assertFalse($this->createMigrator()->isIndexExists([$client->getField('b'), $client->getField('a')], false));
     }
 
     public function testForeignKeyViolation(): void
