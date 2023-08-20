@@ -7,6 +7,7 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 
 class JoinSqlTest extends TestCase
@@ -356,23 +357,35 @@ class JoinSqlTest extends TestCase
         $user->addField('contact_id', ['type' => 'integer']);
         $user->addField('name');
         $j = $user->join('contact');
-        // TODO persist order is broken $this->createMigrator()->createForeignKey($j);
+        $this->createMigrator()->createForeignKey($j);
         $j->addField('contact_phone');
 
-        $user = $user->load(1);
+        $user = $user->load(3);
         $user->delete();
 
         self::assertSame([
             'user' => [
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
-                ['id' => 4, 'name' => 'YYY', 'contact_id' => 3],
+                1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
+                ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
+                4 => ['id' => 4, 'name' => 'YYY', 'contact_id' => 3],
             ],
             'contact' => [
-                2 => ['id' => 2, 'contact_phone' => '+999'],
-                ['id' => 3, 'contact_phone' => '+777'],
+                1 => ['id' => 1, 'contact_phone' => '+555'],
+                3 => ['id' => 3, 'contact_phone' => '+777'],
             ],
         ], $this->getDb());
+
+        $user = $user->getModel()->load(1);
+
+        $this->expectException(Exception::class);
+        try {
+            $user->delete();
+        } catch (Exception $e) {
+            $dbalException = $e->getPrevious()->getPrevious();
+            self::assertInstanceOf(ForeignKeyConstraintViolationException::class, $dbalException);
+
+            throw $e;
+        }
     }
 
     public function testDoubleSaveHook(): void
