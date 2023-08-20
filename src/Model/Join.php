@@ -74,6 +74,12 @@ abstract class Join
     public ?string $foreignField = null;
 
     /**
+     * Field to be used as foreign model ID field.
+     * By default it's 'id'.
+     */
+    public ?string $foreignIdField = null;
+
+    /**
      * When $prefix is set, then all the fields generated through
      * our wrappers will be automatically prefixed inside the model.
      */
@@ -107,6 +113,7 @@ abstract class Join
     {
         $fakeModel = new Model($this->getOwner()->getPersistence(), [
             'table' => $this->foreignTable,
+            'idField' => $this->foreignIdField,
         ]);
         foreach ($this->getOwner()->getFields() as $ownerField) {
             if ($ownerField->hasJoin() && $ownerField->getJoin()->shortName === $this->shortName) {

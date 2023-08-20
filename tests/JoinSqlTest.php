@@ -40,7 +40,8 @@ class JoinSqlTest extends TestCase
         self::assertTrue($m->hasJoin('contact2'));
         self::assertFalse($m->hasJoin('contact8'));
 
-        $this->expectException(Exception::class); // TODO not implemented yet, see https://github.com/atk4/data/issues/803
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Joining tables on non-id fields is not implemented yet'); // https://github.com/atk4/data/issues/803
         $j4 = $m->join('contact4.foo_id', ['masterField' => 'test_id', 'reverse' => true]);
         // self::assertTrue($this->getProtected($j4, 'reverse'));
         // self::assertSame('test_id', $this->getProtected($j4, 'masterField'));
@@ -52,6 +53,7 @@ class JoinSqlTest extends TestCase
         $m = new Model($this->db, ['table' => 'user']);
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Joining tables on non-id fields is not implemented yet');
         $m->join('contact.foo_id', ['masterField' => 'test_id']);
     }
 
@@ -761,5 +763,79 @@ class JoinSqlTest extends TestCase
                 ['id' => 3, 'amount' => 222, $userForeignIdFieldName => 4],
             ],
         ], $this->getDb());
+    }
+
+    /**
+     * @param array<string, mixed> $joinDefaults
+     *
+     * @return array{ Model, Model, Model }
+     */
+    protected function setupJoinWithNonDefaultForeignIdField(array $joinDefaults = []): array
+    {
+        $masterModel = new Model($this->db, ['table' => 'user']);
+        $masterModel->addField('name');
+        $masterModel->addField('foo', ['type' => 'integer']);
+
+        $joinedModel = new Model($this->db, ['table' => 'contact', 'idField' => 'uid']);
+        $joinedModel->addField('bar', ['type' => 'integer']);
+        $joinedModel->addField('contact_phone');
+
+        $this->createMigrator($masterModel)->create();
+        $this->createMigrator($joinedModel)->create();
+
+        $masterModel->import([
+            ['id' => 1, 'name' => 'John', 'foo' => 21],
+            ['id' => 2, 'name' => 'Roman', 'foo' => 22],
+        ]);
+
+        $joinedModel->import([
+            ['uid' => 1, 'bar' => 22, 'contact_phone' => '+123'],
+            ['uid' => 2, 'bar' => 21, 'contact_phone' => '+200'],
+        ]);
+
+        $user = new Model($this->db, ['table' => 'user']);
+        $user->addField('name');
+        $j = $user->join('contact', array_merge([
+            'masterField' => 'foo',
+            'foreignField' => 'bar',
+            'foreignIdField' => 'uid',
+        ], $joinDefaults));
+        $this->createMigrator()->createForeignKey($j);
+        $j->addField('contact_phone');
+
+        return [$masterModel, $joinedModel, $user];
+    }
+
+    public function testJoinCustomForeignIdFieldSaving(): void
+    {
+        [$masterModel, $joinedModel, $user] = $this->setupJoinWithNonDefaultForeignIdField();
+
+        $user = $user->load(1);
+        $user->set('name', 'Karl');
+        $user->set('contact_phone', '+321');
+        $user->save();
+
+        self::assertSameExportUnordered([
+            ['id' => 1, 'name' => 'Karl', 'foo' => 21],
+            ['id' => 2, 'name' => 'Roman', 'foo' => 22],
+        ], $masterModel->export());
+        self::assertSameExportUnordered([
+            ['uid' => 1, 'bar' => 22, 'contact_phone' => '+123'],
+            ['uid' => 2, 'bar' => 21, 'contact_phone' => '+321'],
+        ], $joinedModel->export());
+    }
+
+    public function testJoinCustomForeignIdFieldDelete(): void
+    {
+        [$masterModel, $joinedModel, $user] = $this->setupJoinWithNonDefaultForeignIdField();
+
+        $user->delete(1);
+
+        self::assertSameExportUnordered([
+            ['id' => 2, 'name' => 'Roman', 'foo' => 22],
+        ], $masterModel->export());
+        self::assertSameExportUnordered([
+            ['uid' => 1, 'bar' => 22, 'contact_phone' => '+123'],
+        ], $joinedModel->export());
     }
 }
