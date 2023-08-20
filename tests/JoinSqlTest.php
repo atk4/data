@@ -40,8 +40,8 @@ class JoinSqlTest extends TestCase
         self::assertTrue($m->hasJoin('contact2'));
         self::assertFalse($m->hasJoin('contact8'));
 
-        $this->expectException(Exception::class); // TODO not implemented yet, see https://github.com/atk4/data/issues/803
-        $this->expectExceptionMessage('Joining tables on non-id fields is not implemented yet');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Joining tables on non-id fields is not implemented yet'); // https://github.com/atk4/data/issues/803
         $j4 = $m->join('contact4.foo_id', ['masterField' => 'test_id', 'reverse' => true]);
         // self::assertTrue($this->getProtected($j4, 'reverse'));
         // self::assertSame('test_id', $this->getProtected($j4, 'masterField'));
@@ -770,7 +770,7 @@ class JoinSqlTest extends TestCase
      *
      * @return array{ Model, Model, Model }
      */
-    protected function joinCustomForeignIdFieldSetup(array $joinDefaults = []): array
+    protected function setupJoinWithNonDefaultForeignIdField(array $joinDefaults = []): array
     {
         $masterModel = new Model($this->db, ['table' => 'user']);
         $masterModel->addField('name');
@@ -789,8 +789,8 @@ class JoinSqlTest extends TestCase
         ]);
 
         $joinedModel->import([
-            ['uid' => 1, 'bar' => 21, 'contact_phone' => '+123'],
-            ['uid' => 2, 'bar' => 22, 'contact_phone' => '+200'],
+            ['uid' => 1, 'bar' => 22, 'contact_phone' => '+123'],
+            ['uid' => 2, 'bar' => 21, 'contact_phone' => '+200'],
         ]);
 
         $user = new Model($this->db, ['table' => 'user']);
@@ -808,7 +808,7 @@ class JoinSqlTest extends TestCase
 
     public function testJoinCustomForeignIdFieldSaving(): void
     {
-        [$masterModel, $joinedModel, $user] = $this->joinCustomForeignIdFieldSetup();
+        [$masterModel, $joinedModel, $user] = $this->setupJoinWithNonDefaultForeignIdField();
 
         $user = $user->load(1);
         $user->set('name', 'Karl');
@@ -820,18 +820,22 @@ class JoinSqlTest extends TestCase
             ['id' => 2, 'name' => 'Roman', 'foo' => 22],
         ], $masterModel->export());
         self::assertSameExportUnordered([
-            ['uid' => 1, 'bar' => 21, 'contact_phone' => '+321'],
-            ['uid' => 2, 'bar' => 22, 'contact_phone' => '+200'],
+            ['uid' => 1, 'bar' => 22, 'contact_phone' => '+123'],
+            ['uid' => 2, 'bar' => 21, 'contact_phone' => '+321'],
         ], $joinedModel->export());
     }
 
     public function testJoinCustomForeignIdFieldDelete(): void
     {
-        [$masterModel, $joinedModel, $user] = $this->joinCustomForeignIdFieldSetup();
+        [$masterModel, $joinedModel, $user] = $this->setupJoinWithNonDefaultForeignIdField();
 
         $user->delete(1);
 
-        self::assertNull($masterModel->tryLoad(1));
-        self::assertNull($joinedModel->tryLoad(1));
+        self::assertSameExportUnordered([
+            ['id' => 2, 'name' => 'Roman', 'foo' => 22],
+        ], $masterModel->export());
+        self::assertSameExportUnordered([
+            ['uid' => 1, 'bar' => 22, 'contact_phone' => '+123'],
+        ], $joinedModel->export());
     }
 }
