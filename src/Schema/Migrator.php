@@ -450,6 +450,17 @@ class Migrator
         $table = reset($fields)->getOwner()->table;
 
         $platform = $this->getDatabasePlatform();
+
+        $mssqlNullable = null;
+        if ($platform instanceof SQLServerPlatform) {
+            $mssqlNullable = false;
+            foreach ($fields as $field) {
+                if ($field->nullable && !$field->required) {
+                    $mssqlNullable = true;
+                }
+            }
+        }
+
         $index = new Index(
             \Closure::bind(function () use ($table, $fields) {
                 return (new Identifier(''))->_generateIdentifierName([
@@ -458,7 +469,9 @@ class Migrator
                 ], 'uniq');
             }, null, Identifier::class)(),
             array_map(fn ($field) => $platform->quoteSingleIdentifier($field->getPersistenceName()), $fields),
-            $isUnique
+            $isUnique,
+            false,
+            $mssqlNullable === false ? ['atk4-not-null'] : []
         );
 
         $this->createSchemaManager()->createIndex($index, $platform->quoteIdentifier($table));
@@ -475,11 +488,19 @@ class Migrator
         $localField = $this->resolvePersistenceField($localField);
         $foreignField = $this->resolvePersistenceField($foreignField);
 
+        $platform = $this->getDatabasePlatform();
+
         if (!$this->isIndexExists([$foreignField], true)) {
-            $this->createIndex([$foreignField], true);
+            if ($foreignField->nullable && !$foreignField->required && $platform instanceof SQLServerPlatform) {
+                $foreignFieldForIndex = clone $foreignField;
+                $foreignFieldForIndex->nullable = false;
+            } else {
+                $foreignFieldForIndex = $foreignField;
+            }
+
+            $this->createIndex([$foreignFieldForIndex], true);
         }
 
-        $platform = $this->getDatabasePlatform();
         $foreignKey = new ForeignKeyConstraint(
             [$platform->quoteSingleIdentifier($localField->getPersistenceName())],
             '0.0',
