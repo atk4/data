@@ -74,9 +74,8 @@ abstract class Join
     public ?string $foreignField = null;
 
     /**
-     * Custom definition if $idField for of ForeignModel
-     * By Default ForeignModel idField is equal to 'id'
-     * To be used when the joined table doesn't have a field named 'id'.
+     * Field to be used as foreign model ID field.
+     * By default it's 'id'.
      */
     public ?string $foreignIdField = null;
 
