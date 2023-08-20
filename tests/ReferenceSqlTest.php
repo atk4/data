@@ -119,7 +119,6 @@ class ReferenceSqlTest extends TestCase
                 self::markTestIncomplete('TODO MySQL 5.6: Unique key exceed max key (767 bytes) length');
             }
         }
-        $this->markTestIncompleteWhenCreateUniqueIndexIsNotSupportedByPlatform();
 
         $u->hasOne('cur', ['model' => $c, 'ourField' => 'currency', 'theirField' => 'currency']);
         $this->createMigrator()->createForeignKey($u->getReference('cur'));
@@ -696,8 +695,6 @@ class ReferenceSqlTest extends TestCase
         $s = (new Model($this->db, ['table' => 'stadium']));
         $s->addField('name');
         $s->addField('player_id', ['type' => 'integer']);
-
-        $this->markTestIncompleteWhenCreateUniqueIndexIsNotSupportedByPlatform();
 
         $p = new Model($this->db, ['table' => 'player']);
         $p->addField('name');

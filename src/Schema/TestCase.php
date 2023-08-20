@@ -362,15 +362,4 @@ abstract class TestCase extends BaseTestCase
             }
         }
     }
-
-    public function markTestIncompleteWhenCreateUniqueIndexIsNotSupportedByPlatform(): void
-    {
-        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            // https://github.com/doctrine/dbal/issues/5507
-            self::markTestIncomplete('TODO MSSQL: DBAL must setup unique index without WHERE clause');
-        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            // https://github.com/doctrine/dbal/issues/5508
-            self::markTestIncomplete('TODO Oracle: DBAL must setup unique index on table column too');
-        }
-    }
 }
