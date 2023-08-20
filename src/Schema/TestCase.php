@@ -10,6 +10,7 @@ use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Expression;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
@@ -359,6 +360,16 @@ abstract class TestCase extends BaseTestCase
             $migrator = array_pop($this->createdMigrators);
             foreach ($migrator->getCreatedTableNames() as $t) {
                 (clone $migrator)->table($t)->dropIfExists(true);
+            }
+        }
+    }
+
+    protected function markTestIncompleteOnMySQL56PlatformAsCreateUniqueStringIndexHasLengthLimit(): void
+    {
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            $serverVersion = $this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
+            if (preg_match('~^5\.6~', $serverVersion)) {
+                self::markTestIncomplete('TODO MySQL 5.6: Unique key exceed max key (767 bytes) length');
             }
         }
     }
