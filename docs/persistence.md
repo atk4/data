@@ -198,7 +198,7 @@ $m->set('balance', 12_200.0);
 Loaded/saved data are always normalized unless the field value normalization
 is intercepted a hook.
 
-Final field flag that is worth mentioning is called {php:attr}`Field::readOnly`
+Final field flag that is worth mentioning is called {php:attr}`Field::$readOnly`
 and if set, then value of a field may not be modified directly:
 
 ```

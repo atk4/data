@@ -33,7 +33,7 @@ the same transaction:
 - begin transaction
 - beforeSave hook
 - actual save
-- reload (see {php:attr}`Model::reloadAfterSave`)
+- reload (see {php:attr}`Model::$reloadAfterSave`)
 - afterSave hook
 - commit transaction
 
@@ -118,7 +118,7 @@ hooks, only by altering $data.
 
 afterInsert will receive either $id of new record or null if model couldn't
 provide ID field. Also, afterInsert is actually called before reloading is done
-(when {php:attr}`Model::reloadAfterSave` is set).
+(when {php:attr}`Model::$reloadAfterSave` is set).
 
 For some examples, see {ref}`soft_delete`
 

@@ -37,8 +37,8 @@ The query using during load() will look like this:
 ```sql
 select
     `id`, `total_net`, `total_vat`,
-    (`total_net`+`total_vat`) `total_gross`
-from `invoice`',
+    (`total_net` + `total_vat`) `total_gross`
+from `invoice`
 ```
 
 ## Defining Expression

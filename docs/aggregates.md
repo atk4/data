@@ -5,7 +5,7 @@
 
 # Model Aggregates
 
-:::{php:class} Model_i_AggregateModel
+:::{php:class} Model\AggregateModel
 :::
 
 In order to create model aggregates the AggregateModel model needs to be used:

@@ -254,7 +254,7 @@ Method can be executed several times on the same Query object.
 
 :::{php:method} field($fields, $alias = null)
 Adds additional field that you would like to query. If never called, will
-default to {php:attr}`defaultField`, which normally is `*`.
+default to {php:attr}`Query::$defaultField`, which normally is `*`.
 
 This method has several call options. $field can be array of fields and
 also can be an {php:class}`Expression` or {php:class}`Query`
@@ -771,7 +771,7 @@ Same syntax as for Insert Query.
 ### Other settings
 
 Limit and Order are normally not included to avoid side-effects, but you can
-modify {php:attr}`$templateUpdate` to include those tags.
+modify {php:attr}`Query::$templateUpdate` to include those tags.
 
 ## Delete Query
 
@@ -782,7 +782,7 @@ Same syntax as for Select Query.
 ### Other settings
 
 Limit and Order are normally not included to avoid side-effects, but you can
-modify {php:attr}`$templateUpdate` to include those tags.
+modify {php:attr}`Query::$templateUpdate` to include those tags.
 
 ## Dropping attributes
 
@@ -841,7 +841,7 @@ $q->mode('insert')->executeStatement(); // insert ignore into `test` (`name`) va
 :::
 
 :::{php:method} _setArgs($what, $alias, $value)
-Internal method which sets value in {php:attr}`Expression::args` array.
+Internal method which sets value in {php:attr}`Expression::$args` array.
 It doesn't allow duplicate aliases and throws Exception in such case.
 Argument $what can be 'table' or 'field'.
 :::

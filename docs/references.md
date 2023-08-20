@@ -73,7 +73,7 @@ $ordersForVips = $m->ref('Orders');
 Now that a different databases are used, the queries can no longer be
 joined so Agile Data will carry over list of IDs instead:
 
-```sql
+```
 $ids = select id from user where is_vip = 1
 select * from order where user_id in ($ids)
 ```
@@ -721,7 +721,7 @@ hook, which will update address_id field of the $m.
 
 References are implemented through several classes:
 
-:::{php:class} Reference_i_HasOne
+:::{php:class} Reference\HasOne
 Defines generic reference, that is typically created by {php:meth}`Model::addReference`
 :::
 
