@@ -7,7 +7,7 @@ namespace Atk4\Data\Tests\Schema;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
-use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 
 class TestCaseTest extends TestCase
 {
@@ -37,7 +37,7 @@ class TestCaseTest extends TestCase
             ob_end_clean();
         }
 
-        if (!$this->getDatabasePlatform() instanceof SqlitePlatform && !$this->getDatabasePlatform() instanceof MySQLPlatform) {
+        if (!$this->getDatabasePlatform() instanceof SQLitePlatform && !$this->getDatabasePlatform() instanceof MySQLPlatform) {
             return;
         }
 

@@ -20,7 +20,7 @@ use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
-use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Schema\AbstractAsset;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
@@ -253,7 +253,7 @@ class Migrator
         }
 
         if (in_array($type, ['string', 'text'], true)) {
-            if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
+            if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
                 $column->setPlatformOption('collation', 'NOCASE');
             }
         }
@@ -415,37 +415,66 @@ class Migrator
         return $platform->quoteSingleIdentifier($tableName);
     }
 
-    public function isIndexExists(Field $field, bool $requireUnique): bool
+    /**
+     * @param list<Field> $fields
+     */
+    public function isIndexExists(array $fields, bool $requireUnique): bool
     {
-        $field = $this->resolvePersistenceField($field);
+        $fields = array_map(fn ($field) => $this->resolvePersistenceField($field), $fields);
+        $table = reset($fields)->getOwner()->table;
 
-        $indexes = $this->createSchemaManager()->listTableIndexes($this->fixTableNameForListMethod($field->getOwner()->table));
+        $indexes = $this->createSchemaManager()->listTableIndexes($this->fixTableNameForListMethod($table));
+        $fieldPersistenceNames = array_map(fn ($field) => $field->getPersistenceName(), $fields);
         foreach ($indexes as $index) {
-            if ($index->getUnquotedColumns() === [$field->getPersistenceName()] && (!$requireUnique || $index->isUnique())) {
-                return true;
+            $indexPersistenceNames = $index->getUnquotedColumns();
+            if ($requireUnique) {
+                if ($indexPersistenceNames === $fieldPersistenceNames && $index->isUnique()) {
+                    return true;
+                }
+            } else {
+                if (array_slice($indexPersistenceNames, 0, count($fieldPersistenceNames)) === $fieldPersistenceNames) {
+                    return true;
+                }
             }
         }
 
         return false;
     }
 
-    public function createIndex(Field $field, bool $isUnique): void
+    /**
+     * @param list<Field> $fields
+     */
+    public function createIndex(array $fields, bool $isUnique): void
     {
-        $field = $this->resolvePersistenceField($field);
+        $fields = array_map(fn ($field) => $this->resolvePersistenceField($field), $fields);
+        $table = reset($fields)->getOwner()->table;
 
         $platform = $this->getDatabasePlatform();
+
+        $mssqlNullable = null;
+        if ($platform instanceof SQLServerPlatform) {
+            $mssqlNullable = false;
+            foreach ($fields as $field) {
+                if ($field->nullable && !$field->required) {
+                    $mssqlNullable = true;
+                }
+            }
+        }
+
         $index = new Index(
-            \Closure::bind(function () use ($field) {
+            \Closure::bind(function () use ($table, $fields) {
                 return (new Identifier(''))->_generateIdentifierName([
-                    $field->getOwner()->table,
-                    $field->getPersistenceName(),
+                    $table,
+                    ...array_map(fn ($field) => $field->getPersistenceName(), $fields),
                 ], 'uniq');
             }, null, Identifier::class)(),
-            [$platform->quoteSingleIdentifier($field->getPersistenceName())],
-            $isUnique
+            array_map(fn ($field) => $platform->quoteSingleIdentifier($field->getPersistenceName()), $fields),
+            $isUnique,
+            false,
+            $mssqlNullable === false ? ['atk4-not-null'] : []
         );
 
-        $this->createSchemaManager()->createIndex($index, $platform->quoteIdentifier($field->getOwner()->table));
+        $this->createSchemaManager()->createIndex($index, $platform->quoteIdentifier($table));
     }
 
     /**
@@ -459,11 +488,19 @@ class Migrator
         $localField = $this->resolvePersistenceField($localField);
         $foreignField = $this->resolvePersistenceField($foreignField);
 
-        if (!$this->isIndexExists($foreignField, true)) {
-            $this->createIndex($foreignField, true);
+        $platform = $this->getDatabasePlatform();
+
+        if (!$this->isIndexExists([$foreignField], true)) {
+            if ($foreignField->nullable && !$foreignField->required && $platform instanceof SQLServerPlatform) {
+                $foreignFieldForIndex = clone $foreignField;
+                $foreignFieldForIndex->nullable = false;
+            } else {
+                $foreignFieldForIndex = $foreignField;
+            }
+
+            $this->createIndex([$foreignFieldForIndex], true);
         }
 
-        $platform = $this->getDatabasePlatform();
         $foreignKey = new ForeignKeyConstraint(
             [$platform->quoteSingleIdentifier($localField->getPersistenceName())],
             '0.0',

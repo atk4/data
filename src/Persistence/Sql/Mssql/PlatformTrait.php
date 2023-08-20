@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Mssql;
 
+use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Schema\Index;
+
 trait PlatformTrait
 {
     public function getVarcharTypeDeclarationSQL(array $column)
@@ -38,6 +41,18 @@ trait PlatformTrait
         }
 
         return parent::getCurrentDatabaseExpression();
+    }
+
+    public function getCreateIndexSQL(Index $index, $table)
+    {
+        // workaround https://github.com/doctrine/dbal/issues/5507
+        // no side effect on DBAL index list observed, but multiple null values cannot be inserted
+        // the only, very complex, solution would be using intermediate view
+        // SQL Server should be fixed to allow FK creation when there is an unique index
+        // with "WHERE xxx IS NOT NULL" as FK does not restrict NULL values anyway
+        return $index->hasFlag('atk4-not-null')
+            ? AbstractPlatform::getCreateIndexSQL($index, $table)
+            : parent::getCreateIndexSQL($index, $table);
     }
 
     // SQL Server DBAL platform has buggy identifier escaping, fix until fixed officially, see:

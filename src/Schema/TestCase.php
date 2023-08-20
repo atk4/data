@@ -11,7 +11,7 @@ use Atk4\Data\Persistence\Sql\Expression;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 abstract class TestCase extends BaseTestCase
@@ -114,7 +114,7 @@ abstract class TestCase extends BaseTestCase
             $sql
         );
 
-        if ($platform instanceof SqlitePlatform && $convertedSql !== $sql) {
+        if ($platform instanceof SQLitePlatform && $convertedSql !== $sql) {
             self::assertSame($sql, $convertedSql);
         }
 

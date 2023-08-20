@@ -8,7 +8,7 @@ use Atk4\Data\Model\AggregateModel;
 use Atk4\Data\Model\Scope;
 use Atk4\Data\Model\Scope\Condition;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 
 class ModelAggregateTest extends TestCase
 {
@@ -178,7 +178,7 @@ class ModelAggregateTest extends TestCase
             'double',
             '>',
             // TODO Sqlite bind param does not work, expr needed, even if casted to float with DBAL type (comparison works only if casted to/bind as int)
-            $this->getDatabasePlatform() instanceof SqlitePlatform ? $aggregate->expr('10') : 10
+            $this->getDatabasePlatform() instanceof SQLitePlatform ? $aggregate->expr('10') : 10
         );
 
         self::assertSame([
@@ -201,7 +201,7 @@ class ModelAggregateTest extends TestCase
         $aggregate->addCondition(
             'double',
             // TODO Sqlite bind param does not work, expr needed, even if casted to float with DBAL type (comparison works only if casted to/bind as int)
-            $this->getDatabasePlatform() instanceof SqlitePlatform ? $aggregate->expr('38') : 38
+            $this->getDatabasePlatform() instanceof SQLitePlatform ? $aggregate->expr('38') : 38
         );
 
         self::assertSame([
@@ -239,7 +239,7 @@ class ModelAggregateTest extends TestCase
         self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
         // TODO Sqlite bind param does not work, expr needed, even if casted to float with DBAL type (comparison works only if casted to/bind as int)
-        $numExpr = $this->getDatabasePlatform() instanceof SqlitePlatform ? $aggregate->expr('4') : 4;
+        $numExpr = $this->getDatabasePlatform() instanceof SQLitePlatform ? $aggregate->expr('4') : 4;
         $scope = Scope::createAnd(new Condition('client_id', 2), new Condition('amount', $numExpr));
         $aggregate->addCondition($scope);
 
