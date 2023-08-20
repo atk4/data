@@ -415,37 +415,53 @@ class Migrator
         return $platform->quoteSingleIdentifier($tableName);
     }
 
-    public function isIndexExists(Field $field, bool $requireUnique): bool
+    /**
+     * @param list<Field> $fields
+     */
+    public function isIndexExists(array $fields, bool $requireUnique): bool
     {
-        $field = $this->resolvePersistenceField($field);
+        $fields = array_map(fn ($field) => $this->resolvePersistenceField($field), $fields);
+        $table = reset($fields)->getOwner()->table;
 
-        $indexes = $this->createSchemaManager()->listTableIndexes($this->fixTableNameForListMethod($field->getOwner()->table));
+        $indexes = $this->createSchemaManager()->listTableIndexes($this->fixTableNameForListMethod($table));
+        $fieldPersistenceNames = array_map(fn ($field) => $field->getPersistenceName(), $fields);
         foreach ($indexes as $index) {
-            if ($index->getUnquotedColumns() === [$field->getPersistenceName()] && (!$requireUnique || $index->isUnique())) {
-                return true;
+            $indexPersistenceNames = $index->getUnquotedColumns();
+            if ($requireUnique) {
+                if ($indexPersistenceNames === $fieldPersistenceNames && $index->isUnique()) {
+                    return true;
+                }
+            } else {
+                if (array_slice($indexPersistenceNames, 0, count($fieldPersistenceNames)) === $fieldPersistenceNames) {
+                    return true;
+                }
             }
         }
 
         return false;
     }
 
-    public function createIndex(Field $field, bool $isUnique): void
+    /**
+     * @param list<Field> $fields
+     */
+    public function createIndex(array $fields, bool $isUnique): void
     {
-        $field = $this->resolvePersistenceField($field);
+        $fields = array_map(fn ($field) => $this->resolvePersistenceField($field), $fields);
+        $table = reset($fields)->getOwner()->table;
 
         $platform = $this->getDatabasePlatform();
         $index = new Index(
-            \Closure::bind(function () use ($field) {
+            \Closure::bind(function () use ($table, $fields) {
                 return (new Identifier(''))->_generateIdentifierName([
-                    $field->getOwner()->table,
-                    $field->getPersistenceName(),
+                    $table,
+                    ...array_map(fn ($field) => $field->getPersistenceName(), $fields),
                 ], 'uniq');
             }, null, Identifier::class)(),
-            [$platform->quoteSingleIdentifier($field->getPersistenceName())],
+            array_map(fn ($field) => $platform->quoteSingleIdentifier($field->getPersistenceName()), $fields),
             $isUnique
         );
 
-        $this->createSchemaManager()->createIndex($index, $platform->quoteIdentifier($field->getOwner()->table));
+        $this->createSchemaManager()->createIndex($index, $platform->quoteIdentifier($table));
     }
 
     /**
@@ -459,8 +475,8 @@ class Migrator
         $localField = $this->resolvePersistenceField($localField);
         $foreignField = $this->resolvePersistenceField($foreignField);
 
-        if (!$this->isIndexExists($foreignField, true)) {
-            $this->createIndex($foreignField, true);
+        if (!$this->isIndexExists([$foreignField], true)) {
+            $this->createIndex([$foreignField], true);
         }
 
         $platform = $this->getDatabasePlatform();

@@ -6,13 +6,11 @@ namespace Atk4\Data\Persistence\Sql;
 
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Driver\API\ExceptionConverter;
-use Doctrine\DBAL\Driver\API\SQLite\ExceptionConverter as SqliteExceptionConverter;
 use Doctrine\DBAL\Driver\API\SQLSrv\ExceptionConverter as SQLServerExceptionConverter;
 use Doctrine\DBAL\Driver\Exception as DbalDriverException;
 use Doctrine\DBAL\Driver\Middleware\AbstractDriverMiddleware;
 use Doctrine\DBAL\Exception\DatabaseObjectNotFoundException;
 use Doctrine\DBAL\Exception\DriverException as DbalDriverConvertedException;
-use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\DBAL\Exception\TableNotFoundException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
@@ -116,22 +114,7 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
     public function getExceptionConverter(): ExceptionConverter
     {
         $exceptionConverter = parent::getExceptionConverter();
-        if ($exceptionConverter instanceof SqliteExceptionConverter) {
-            $exceptionConverter = $this->createExceptionConvertorMiddleware(
-                $exceptionConverter,
-                function (DbalDriverConvertedException $convertedException, ?DbalQuery $query): DbalDriverConvertedException {
-                    // fix FK violation exception conversion
-                    // https://github.com/doctrine/dbal/issues/5496
-                    $exception = self::getUnconvertedException($convertedException);
-                    $exceptionMessageLc = strtolower($exception->getMessage());
-                    if (str_contains($exceptionMessageLc, 'integrity constraint violation')) {
-                        return new ForeignKeyConstraintViolationException($exception, $query);
-                    }
-
-                    return $convertedException;
-                }
-            );
-        } elseif ($exceptionConverter instanceof SQLServerExceptionConverter) {
+        if ($exceptionConverter instanceof SQLServerExceptionConverter) {
             $exceptionConverter = $this->createExceptionConvertorMiddleware(
                 $exceptionConverter,
                 function (DbalDriverConvertedException $convertedException, ?DbalQuery $query): DbalDriverConvertedException {
@@ -140,7 +123,7 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
                     if ($convertedException instanceof DatabaseObjectNotFoundException) {
                         $exception = self::getUnconvertedException($convertedException);
                         $exceptionMessageLc = strtolower($exception->getMessage());
-                        if (str_contains($exceptionMessageLc, 'cannot drop the table')) {
+                        if (str_contains($exceptionMessageLc, 'cannot drop the table') && !$convertedException instanceof TableNotFoundException) {
                             return new TableNotFoundException($exception, $query);
                         }
                     }
