@@ -81,10 +81,5 @@ class Join extends Model\Join
 
     public function afterLoad(Model $entity): void
     {
-        // we need to collect ID
-        if (isset($entity->getDataRef()[$this->shortName])) {
-            $this->setId($entity, $entity->getDataRef()[$this->shortName]);
-            unset($entity->getDataRef()[$this->shortName]);
-        }
     }
 }
