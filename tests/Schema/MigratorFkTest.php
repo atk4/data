@@ -10,7 +10,6 @@ use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Schema\ForeignKeyConstraint;
 use Doctrine\DBAL\Schema\Index;
@@ -99,12 +98,7 @@ class MigratorFkTest extends TestCase
 
         $this->createMigrator($client)->create();
 
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-            $serverVersion = $this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
-            if (preg_match('~^5\.6~', $serverVersion)) {
-                self::markTestIncomplete('TODO MySQL 5.6: Unique key exceed max key (767 bytes) length');
-            }
-        }
+        $this->markTestIncompleteOnMySQL56PlatformAsCreateUniqueStringIndexHasLengthLimit();
 
         $this->createMigrator()->createIndex([$client->getField('name')], true);
         self::assertSame([[['name'], true]], $this->listTableIndexes('client'));
@@ -145,12 +139,7 @@ class MigratorFkTest extends TestCase
         $this->createMigrator($client)->create();
         self::assertSame([], $this->listTableIndexes('client'));
 
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-            $serverVersion = $this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
-            if (preg_match('~^5\.6~', $serverVersion)) {
-                self::markTestIncomplete('TODO MySQL 5.6: Unique key exceed max key (767 bytes) length');
-            }
-        }
+        $this->markTestIncompleteOnMySQL56PlatformAsCreateUniqueStringIndexHasLengthLimit();
 
         $this->createMigrator($client)->createIndex([$client->getField('a'), $client->getField('b')], true);
         self::assertSame([[['a', 'b'], true]], $this->listTableIndexes('client'));
@@ -246,12 +235,7 @@ class MigratorFkTest extends TestCase
         $currency->insert(['code' => 'USD', 'name' => 'United States dollar']);
         $currency->insert(['code' => 'CZK', 'name' => 'Česká koruna']);
 
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-            $serverVersion = $this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
-            if (preg_match('~^5\.6~', $serverVersion)) {
-                self::markTestIncomplete('TODO MySQL 5.6: Unique key exceed max key (767 bytes) length');
-            }
-        }
+        $this->markTestIncompleteOnMySQL56PlatformAsCreateUniqueStringIndexHasLengthLimit();
 
         $this->createMigrator()->createForeignKey([$price->getField('currency'), $currency->getField('code')]);
 

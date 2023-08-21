@@ -10,6 +10,7 @@ use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Expression;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
@@ -363,14 +364,13 @@ abstract class TestCase extends BaseTestCase
         }
     }
 
-    public function markTestIncompleteWhenCreateUniqueIndexIsNotSupportedByPlatform(): void
+    protected function markTestIncompleteOnMySQL56PlatformAsCreateUniqueStringIndexHasLengthLimit(): void
     {
-        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            // https://github.com/doctrine/dbal/issues/5507
-            self::markTestIncomplete('TODO MSSQL: DBAL must setup unique index without WHERE clause');
-        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            // https://github.com/doctrine/dbal/issues/5508
-            self::markTestIncomplete('TODO Oracle: DBAL must setup unique index on table column too');
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            $serverVersion = $this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
+            if (preg_match('~^5\.6~', $serverVersion)) {
+                self::markTestIncomplete('TODO MySQL 5.6: Unique key exceed max key (767 bytes) length');
+            }
         }
     }
 }

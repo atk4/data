@@ -77,22 +77,5 @@ class Join extends Model\Join
             $this->kind,
             $this->foreignAlias
         );
-
-        /*
-        if ($this->reverse) {
-            $query->field([$this->shortName => $this->join ?? ($model->tableAlias ?? $model->table) . '.' . $this->masterField]);
-        } else {
-            $query->field([$this->shortName => $this->foreignAlias . '.' . $this->foreignField]);
-        }
-        */
-    }
-
-    public function afterLoad(Model $entity): void
-    {
-        // we need to collect ID
-        if (isset($entity->getDataRef()[$this->shortName])) {
-            $this->setId($entity, $entity->getDataRef()[$this->shortName]);
-            unset($entity->getDataRef()[$this->shortName]);
-        }
     }
 }

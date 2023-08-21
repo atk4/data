@@ -8,7 +8,6 @@ use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Types as DbalTypes;
@@ -113,13 +112,7 @@ class ReferenceSqlTest extends TestCase
         $c->addField('currency');
         $c->addField('name');
 
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-            $serverVersion = $this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
-            if (preg_match('~^5\.6~', $serverVersion)) {
-                self::markTestIncomplete('TODO MySQL 5.6: Unique key exceed max key (767 bytes) length');
-            }
-        }
-        $this->markTestIncompleteWhenCreateUniqueIndexIsNotSupportedByPlatform();
+        $this->markTestIncompleteOnMySQL56PlatformAsCreateUniqueStringIndexHasLengthLimit();
 
         $u->hasOne('cur', ['model' => $c, 'ourField' => 'currency', 'theirField' => 'currency']);
         $this->createMigrator()->createForeignKey($u->getReference('cur'));
@@ -696,8 +689,6 @@ class ReferenceSqlTest extends TestCase
         $s = (new Model($this->db, ['table' => 'stadium']));
         $s->addField('name');
         $s->addField('player_id', ['type' => 'integer']);
-
-        $this->markTestIncompleteWhenCreateUniqueIndexIsNotSupportedByPlatform();
 
         $p = new Model($this->db, ['table' => 'player']);
         $p->addField('name');

@@ -270,6 +270,7 @@ abstract class Join
 
     protected function initJoinHooks(): void
     {
+        $this->onHookToOwnerEntity(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
         $this->onHookToOwnerEntity(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
 
         if ($this->reverse) {
@@ -280,8 +281,6 @@ abstract class Join
             $this->onHookToOwnerEntity(Model::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']), [], -5);
             $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']), [], -5);
             $this->onHookToOwnerEntity(Model::HOOK_AFTER_DELETE, \Closure::fromCallable([$this, 'doDelete']));
-
-            $this->onHookToOwnerEntity(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
         }
     }
 
@@ -462,7 +461,7 @@ abstract class Join
      *
      * @internal should be not used outside atk4/data
      */
-    protected function getReindexAndUnsetSaveBuffer(Model $entity): array
+    protected function getReindexedDataAndUnsetSaveBuffer(Model $entity): array
     {
         $resOur = $this->saveBufferByOid[spl_object_id($entity)];
         $this->unsetSaveBuffer($entity);
@@ -497,13 +496,15 @@ abstract class Join
         $this->saveBufferByOid[spl_object_id($entity)][$fieldName] = $value;
     }
 
+    public function afterLoad(Model $entity): void
+    {
+    }
+
     protected function afterUnload(Model $entity): void
     {
         $this->unsetId($entity);
         $this->unsetSaveBuffer($entity);
     }
-
-    abstract public function afterLoad(Model $entity): void;
 
     /**
      * @param array<string, mixed> $data
@@ -523,7 +524,7 @@ abstract class Join
 
         $foreignModel = $this->getForeignModel();
         $foreignEntity = $foreignModel->createEntity()
-            ->setMulti($this->getReindexAndUnsetSaveBuffer($entity))
+            ->setMulti($this->getReindexedDataAndUnsetSaveBuffer($entity))
             /* ->set($this->foreignField, null) */;
         $foreignEntity->save();
 
@@ -550,7 +551,7 @@ abstract class Join
 
         $foreignModel = $this->getForeignModel();
         $foreignEntity = $foreignModel->createEntity()
-            ->setMulti($this->getReindexAndUnsetSaveBuffer($entity))
+            ->setMulti($this->getReindexedDataAndUnsetSaveBuffer($entity))
             ->set($this->foreignField, $id);
         $foreignEntity->save();
 
@@ -573,7 +574,7 @@ abstract class Join
         $foreignModel = $this->getForeignModel();
         $foreignId = $this->reverse ? $entity->getId() : $entity->get($this->masterField);
         $this->assertReferenceIdNotNull($foreignId);
-        $saveBuffer = $this->getReindexAndUnsetSaveBuffer($entity);
+        $saveBuffer = $this->getReindexedDataAndUnsetSaveBuffer($entity);
         $foreignModel->atomic(function () use ($foreignModel, $foreignId, $saveBuffer) {
             $foreignModel = (clone $foreignModel)->addCondition($this->foreignField, $foreignId);
             foreach ($foreignModel as $foreignEntity) {
