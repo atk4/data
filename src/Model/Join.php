@@ -271,16 +271,26 @@ abstract class Join
     protected function initJoinHooks(): void
     {
         $this->onHookToOwnerEntity(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
-        $this->onHookToOwnerEntity(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
+
+        $createHookFxWithCleanup = function (string $methodName): \Closure {
+            return function (Model $entity, &...$args) use ($methodName): void {
+                try {
+                    $this->{$methodName}($entity, ...$args);
+                } finally {
+                    $this->unsetId($entity);
+                    $this->unsetSaveBuffer($entity);
+                }
+            };
+        };
 
         if ($this->reverse) {
-            $this->onHookToOwnerEntity(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']), [], -5);
-            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']), [], -5);
-            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'doDelete']), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_INSERT, $createHookFxWithCleanup('afterInsert'), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, $createHookFxWithCleanup('beforeUpdate'), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_DELETE, $createHookFxWithCleanup('doDelete'), [], -5);
         } else {
-            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']), [], -5);
-            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']), [], -5);
-            $this->onHookToOwnerEntity(Model::HOOK_AFTER_DELETE, \Closure::fromCallable([$this, 'doDelete']));
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_INSERT, $createHookFxWithCleanup('beforeInsert'), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, $createHookFxWithCleanup('beforeUpdate'), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_DELETE, $createHookFxWithCleanup('doDelete'));
         }
     }
 
@@ -461,7 +471,7 @@ abstract class Join
      *
      * @internal should be not used outside atk4/data
      */
-    protected function getReindexedDataAndUnsetSaveBuffer(Model $entity): array
+    protected function getAndUnsetReindexedSaveBuffer(Model $entity): array
     {
         $resOur = $this->saveBufferByOid[spl_object_id($entity)];
         $this->unsetSaveBuffer($entity);
@@ -500,12 +510,6 @@ abstract class Join
     {
     }
 
-    protected function afterUnload(Model $entity): void
-    {
-        $this->unsetId($entity);
-        $this->unsetSaveBuffer($entity);
-    }
-
     /**
      * @param array<string, mixed> $data
      */
@@ -524,7 +528,7 @@ abstract class Join
 
         $foreignModel = $this->getForeignModel();
         $foreignEntity = $foreignModel->createEntity()
-            ->setMulti($this->getReindexedDataAndUnsetSaveBuffer($entity))
+            ->setMulti($this->getAndUnsetReindexedSaveBuffer($entity))
             /* ->set($this->foreignField, null) */;
         $foreignEntity->save();
 
@@ -551,11 +555,9 @@ abstract class Join
 
         $foreignModel = $this->getForeignModel();
         $foreignEntity = $foreignModel->createEntity()
-            ->setMulti($this->getReindexedDataAndUnsetSaveBuffer($entity))
+            ->setMulti($this->getAndUnsetReindexedSaveBuffer($entity))
             ->set($this->foreignField, $id);
         $foreignEntity->save();
-
-        $this->setId($entity, $entity->getId()); // TODO why is this here? it seems to be not needed
     }
 
     /**
@@ -574,7 +576,7 @@ abstract class Join
         $foreignModel = $this->getForeignModel();
         $foreignId = $this->reverse ? $entity->getId() : $entity->get($this->masterField);
         $this->assertReferenceIdNotNull($foreignId);
-        $saveBuffer = $this->getReindexedDataAndUnsetSaveBuffer($entity);
+        $saveBuffer = $this->getAndUnsetReindexedSaveBuffer($entity);
         $foreignModel->atomic(function () use ($foreignModel, $foreignId, $saveBuffer) {
             $foreignModel = (clone $foreignModel)->addCondition($this->foreignField, $foreignId);
             foreach ($foreignModel as $foreignEntity) {
@@ -582,8 +584,6 @@ abstract class Join
                 $foreignEntity->save();
             }
         });
-
-        // $this->setId($entity, ??); // TODO needed? from array persistence
     }
 
     public function doDelete(Model $entity): void
@@ -601,7 +601,5 @@ abstract class Join
                 $foreignEntity->delete();
             }
         });
-
-        $this->unsetId($entity); // TODO needed? from array persistence
     }
 }
