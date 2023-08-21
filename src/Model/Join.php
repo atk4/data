@@ -461,7 +461,7 @@ abstract class Join
      *
      * @internal should be not used outside atk4/data
      */
-    protected function getReindexAndUnsetSaveBuffer(Model $entity): array
+    protected function getReindexedDataAndUnsetSaveBuffer(Model $entity): array
     {
         $resOur = $this->saveBufferByOid[spl_object_id($entity)];
         $this->unsetSaveBuffer($entity);
@@ -522,7 +522,7 @@ abstract class Join
 
         $foreignModel = $this->getForeignModel();
         $foreignEntity = $foreignModel->createEntity()
-            ->setMulti($this->getReindexAndUnsetSaveBuffer($entity))
+            ->setMulti($this->getReindexedDataAndUnsetSaveBuffer($entity))
             /* ->set($this->foreignField, null) */;
         $foreignEntity->save();
 
@@ -549,7 +549,7 @@ abstract class Join
 
         $foreignModel = $this->getForeignModel();
         $foreignEntity = $foreignModel->createEntity()
-            ->setMulti($this->getReindexAndUnsetSaveBuffer($entity))
+            ->setMulti($this->getReindexedDataAndUnsetSaveBuffer($entity))
             ->set($this->foreignField, $id);
         $foreignEntity->save();
 
@@ -572,7 +572,7 @@ abstract class Join
         $foreignModel = $this->getForeignModel();
         $foreignId = $this->reverse ? $entity->getId() : $entity->get($this->masterField);
         $this->assertReferenceIdNotNull($foreignId);
-        $saveBuffer = $this->getReindexAndUnsetSaveBuffer($entity);
+        $saveBuffer = $this->getReindexedDataAndUnsetSaveBuffer($entity);
         $foreignModel->atomic(function () use ($foreignModel, $foreignId, $saveBuffer) {
             $foreignModel = (clone $foreignModel)->addCondition($this->foreignField, $foreignId);
             foreach ($foreignModel as $foreignEntity) {
