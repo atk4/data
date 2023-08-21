@@ -271,6 +271,7 @@ abstract class Join
     protected function initJoinHooks(): void
     {
         $this->onHookToOwnerEntity(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
+        $this->onHookToOwnerEntity(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
 
         if ($this->reverse) {
             $this->onHookToOwnerEntity(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']), [], -5);
@@ -280,8 +281,6 @@ abstract class Join
             $this->onHookToOwnerEntity(Model::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']), [], -5);
             $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']), [], -5);
             $this->onHookToOwnerEntity(Model::HOOK_AFTER_DELETE, \Closure::fromCallable([$this, 'doDelete']));
-
-            $this->onHookToOwnerEntity(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
         }
     }
 

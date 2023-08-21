@@ -82,6 +82,10 @@ class JoinSqlTest extends TestCase
 
         $user2->save();
 
+        self::assertSame(1, $user2->getId());
+        self::assertSame('John', $user2->get('name'));
+        self::assertSame('+123', $user2->get('contact_phone'));
+
         self::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
@@ -129,6 +133,10 @@ class JoinSqlTest extends TestCase
         $user2->set('name', 'John');
         $user2->set('contact_phone', '+123');
         $user2->save();
+
+        self::assertSame(1, $user2->getId());
+        self::assertSame('John', $user2->get('name'));
+        self::assertSame('+123', $user2->get('contact_phone'));
 
         self::assertSame([
             'user' => [
