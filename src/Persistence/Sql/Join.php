@@ -78,8 +78,4 @@ class Join extends Model\Join
             $this->foreignAlias
         );
     }
-
-    public function afterLoad(Model $entity): void
-    {
-    }
 }

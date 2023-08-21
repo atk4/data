@@ -14,19 +14,18 @@ class Join extends Model\Join
     {
         $model = $this->getOwner();
 
-        // we need to collect ID
-        $this->setId($entity, $entity->getDataRef()[$this->masterField]);
-        if ($this->getId($entity) === null) {
+        $foreignId = $entity->getDataRef()[$this->masterField];
+        if ($foreignId === null) {
             return;
         }
 
         try {
             $foreignData = Persistence\Array_::assertInstanceOf($model->getPersistence())
-                ->load($this->createFakeForeignModel(), $this->getId($entity));
+                ->load($this->createFakeForeignModel(), $foreignId);
         } catch (Exception $e) {
             throw (new Exception('Unable to load joined record', $e->getCode(), $e))
                 ->addMoreInfo('table', $this->foreignTable)
-                ->addMoreInfo('id', $this->getId($entity));
+                ->addMoreInfo('id', $foreignId);
         }
 
         $dataRef = &$entity->getDataRef();

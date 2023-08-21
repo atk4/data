@@ -502,7 +502,9 @@ abstract class Join
         $this->unsetSaveBuffer($entity);
     }
 
-    abstract public function afterLoad(Model $entity): void;
+    public function afterLoad(Model $entity): void
+    {
+    }
 
     /**
      * @param array<string, mixed> $data
