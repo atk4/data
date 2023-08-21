@@ -519,8 +519,6 @@ abstract class Join
             return;
         }
 
-        $model = $this->getOwner();
-
         // the value for the masterField is set, so we are going to use existing record anyway
         if ($entity->get($this->masterField) !== null) {
             return;
