@@ -21,7 +21,7 @@ class Join extends Model\Join
         }
 
         try {
-            $data = Persistence\Array_::assertInstanceOf($model->getPersistence())
+            $foreignData = Persistence\Array_::assertInstanceOf($model->getPersistence())
                 ->load($this->createFakeForeignModel(), $this->getId($entity));
         } catch (Exception $e) {
             throw (new Exception('Unable to load joined record', $e->getCode(), $e))
@@ -32,7 +32,7 @@ class Join extends Model\Join
         $dataRef = &$entity->getDataRef();
         foreach ($model->getFields() as $field) {
             if ($field->hasJoin() && $field->getJoin()->shortName === $this->shortName) {
-                $dataRef[$field->shortName] = $data[$field->shortName]; // TODO fix self::$prefix support and actual support, unify as much as possible with SQL
+                $dataRef[$field->shortName] = $foreignData[$field->getPersistenceName()];
             }
         }
     }
