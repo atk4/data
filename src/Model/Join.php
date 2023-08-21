@@ -270,8 +270,8 @@ abstract class Join
 
     protected function initJoinHooks(): void
     {
-        $this->onHookToOwnerEntity(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
         $this->onHookToOwnerEntity(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
+        $this->onHookToOwnerEntity(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
 
         if ($this->reverse) {
             $this->onHookToOwnerEntity(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']), [], -5);
@@ -496,14 +496,14 @@ abstract class Join
         $this->saveBufferByOid[spl_object_id($entity)][$fieldName] = $value;
     }
 
+    public function afterLoad(Model $entity): void
+    {
+    }
+
     protected function afterUnload(Model $entity): void
     {
         $this->unsetId($entity);
         $this->unsetSaveBuffer($entity);
-    }
-
-    public function afterLoad(Model $entity): void
-    {
     }
 
     /**
