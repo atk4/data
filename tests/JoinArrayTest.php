@@ -383,7 +383,7 @@ class JoinArrayTest extends TestCase
         ], $this->getInternalPersistenceData($db));
     }
 
-    public function testLoadMissing(): void
+    public function testLoadMissingException(): void
     {
         $db = new Persistence\Array_([
             'user' => [
@@ -404,6 +404,7 @@ class JoinArrayTest extends TestCase
         $j->addField('contact_phone');
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unable to load joined record');
         $user->load(2);
     }
 
