@@ -527,7 +527,7 @@ abstract class Join
         $foreignModel = $this->getForeignModel();
         $foreignEntity = $foreignModel->createEntity()
             ->setMulti($this->getAndUnsetReindexedSaveBuffer($entity))
-            /* ->set($this->foreignField, null) */;
+            ->setNull($this->foreignField);
         $foreignEntity->save();
 
         $this->setId($entity, $foreignEntity->getId());
