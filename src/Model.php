@@ -88,7 +88,7 @@ class Model implements \IteratorAggregate
     // {{{ Properties of the class
 
     /** @var static|null not-null if and only if this instance is an entity */
-    private $_model;
+    private ?self $_model = null;
 
     /** @var mixed once set, loading a different ID will result in an error */
     private $_entityId;
@@ -222,13 +222,11 @@ class Model implements \IteratorAggregate
      * If this model is "contained into" another entity by using ContainsOne
      * or ContainsMany reference, then this property will contain reference
      * to owning entity.
-     *
-     * @var Model|null
      */
-    public $containedInEntity;
+    public ?self $containedInEntity = null;
 
-    /** @var Reference Only for Reference class */
-    public $ownerReference;
+    /** Only for Reference class */
+    public ?Reference $ownerReference = null;
 
     // }}}
 
