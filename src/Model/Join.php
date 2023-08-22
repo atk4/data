@@ -451,14 +451,6 @@ abstract class Join
     }
 
     /**
-     * @internal should be not used outside atk4/data
-     */
-    protected function unsetSaveBuffer(Model $entity): void
-    {
-        unset($this->saveBufferByOid[spl_object_id($entity)]);
-    }
-
-    /**
      * @param mixed $value
      */
     public function setSaveBufferValue(Model $entity, string $fieldName, $value): void
@@ -470,6 +462,14 @@ abstract class Join
         }
 
         $this->saveBufferByOid[spl_object_id($entity)][$fieldName] = $value;
+    }
+
+    /**
+     * @internal should be not used outside atk4/data
+     */
+    protected function unsetSaveBuffer(Model $entity): void
+    {
+        unset($this->saveBufferByOid[spl_object_id($entity)]);
     }
 
     protected function afterLoad(Model $entity): void
