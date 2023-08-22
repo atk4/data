@@ -472,14 +472,14 @@ abstract class Join
         $this->saveBufferByOid[spl_object_id($entity)][$fieldName] = $value;
     }
 
-    public function afterLoad(Model $entity): void
+    protected function afterLoad(Model $entity): void
     {
     }
 
     /**
      * @param array<string, mixed> $data
      */
-    public function beforeInsert(Model $entity, array &$data): void
+    protected function beforeInsert(Model $entity, array &$data): void
     {
         if ($this->weak) {
             return;
@@ -506,7 +506,7 @@ abstract class Join
         }
     }
 
-    public function afterInsert(Model $entity): void
+    protected function afterInsert(Model $entity): void
     {
         if ($this->weak) {
             return;
@@ -525,7 +525,7 @@ abstract class Join
     /**
      * @param array<string, mixed> $data
      */
-    public function beforeUpdate(Model $entity, array &$data): void
+    protected function beforeUpdate(Model $entity, array &$data): void
     {
         if ($this->weak) {
             return;
@@ -548,7 +548,7 @@ abstract class Join
         });
     }
 
-    public function beforeDelete(Model $entity): void
+    protected function beforeDelete(Model $entity): void
     {
         if ($this->weak) {
             return;

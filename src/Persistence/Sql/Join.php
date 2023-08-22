@@ -53,7 +53,7 @@ class Join extends Model\Join
     /**
      * Before query is executed, this method will be called.
      */
-    public function initSelectQuery(Model $model, Query $query): void
+    protected function initSelectQuery(Model $model, Query $query): void
     {
         // if ON is set, we don't have to worry about anything
         if ($this->on) {
