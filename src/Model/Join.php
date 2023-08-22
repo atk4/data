@@ -547,7 +547,6 @@ abstract class Join
 
         $id = $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId();
         $this->assertReferenceIdNotNull($id);
-        // $this->setSaveBufferValue($entity, $this->masterField, $id); // TODO needed? from array persistence
 
         $foreignModel = $this->getForeignModel();
         $foreignEntity = $foreignModel->createEntity()
