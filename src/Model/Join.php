@@ -234,7 +234,7 @@ abstract class Join
                 ->addMoreInfo('model', $this->getOwner());
         }
 
-        if ($this->reverse === true) {
+        if ($this->reverse) {
             if ($this->masterField && $this->masterField !== $idField) { // TODO not implemented yet, see https://github.com/atk4/data/issues/803
                 throw (new Exception('Joining tables on non-id fields is not implemented yet'))
                     ->addMoreInfo('masterField', $this->masterField)
