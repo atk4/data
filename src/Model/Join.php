@@ -85,9 +85,6 @@ abstract class Join
      */
     protected string $prefix = '';
 
-    /** @var mixed ID indexed by spl_object_id(entity) used by a joined table. */
-    protected $idByOid;
-
     /** @var array<int, array<string, mixed>> Data indexed by spl_object_id(entity) which is populated here as the save/insert progresses. */
     private array $saveBufferByOid = [];
 
@@ -277,7 +274,6 @@ abstract class Join
                 try {
                     $this->{$methodName}($entity, ...$args);
                 } finally {
-                    $this->unsetId($entity);
                     $this->unsetSaveBuffer($entity);
                 }
             };
@@ -429,36 +425,6 @@ abstract class Join
     }
 
     /**
-     * @return mixed
-     *
-     * @internal should be not used outside atk4/data
-     */
-    protected function getId(Model $entity)
-    {
-        return $this->idByOid[spl_object_id($entity)];
-    }
-
-    /**
-     * @param mixed $id
-     *
-     * @internal should be not used outside atk4/data
-     */
-    protected function setId(Model $entity, $id): void
-    {
-        $this->assertReferenceIdNotNull($id);
-
-        $this->idByOid[spl_object_id($entity)] = $id;
-    }
-
-    /**
-     * @internal should be not used outside atk4/data
-     */
-    protected function unsetId(Model $entity): void
-    {
-        unset($this->idByOid[spl_object_id($entity)]);
-    }
-
-    /**
      * @internal should be not used outside atk4/data
      */
     protected function issetSaveBuffer(Model $entity): bool
@@ -530,12 +496,13 @@ abstract class Join
             ->setNull($this->foreignField);
         $foreignEntity->save();
 
-        $this->setId($entity, $foreignEntity->getId());
+        $foreignId = $foreignEntity->getId();
+        $this->assertReferenceIdNotNull($foreignId);
 
         if ($this->hasJoin()) {
-            $this->getJoin()->setSaveBufferValue($entity, $this->masterField, $this->getId($entity));
+            $this->getJoin()->setSaveBufferValue($entity, $this->masterField, $foreignId);
         } else {
-            $data[$this->masterField] = $this->getId($entity);
+            $data[$this->masterField] = $foreignId;
         }
     }
 
@@ -545,7 +512,7 @@ abstract class Join
             return;
         }
 
-        $id = $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId();
+        $id = $entity->getId();
         $this->assertReferenceIdNotNull($id);
 
         $foreignModel = $this->getForeignModel();
