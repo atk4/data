@@ -282,11 +282,11 @@ abstract class Join
         if ($this->reverse) {
             $this->onHookToOwnerEntity(Model::HOOK_AFTER_INSERT, $createHookFxWithCleanup('afterInsert'), [], -5);
             $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, $createHookFxWithCleanup('beforeUpdate'), [], -5);
-            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_DELETE, $createHookFxWithCleanup('doDelete'), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_DELETE, $createHookFxWithCleanup('beforeDelete'), [], -5);
         } else {
             $this->onHookToOwnerEntity(Model::HOOK_BEFORE_INSERT, $createHookFxWithCleanup('beforeInsert'), [], -5);
             $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, $createHookFxWithCleanup('beforeUpdate'), [], -5);
-            $this->onHookToOwnerEntity(Model::HOOK_AFTER_DELETE, $createHookFxWithCleanup('doDelete'));
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_DELETE, $createHookFxWithCleanup('beforeDelete'));
         }
     }
 
@@ -548,7 +548,7 @@ abstract class Join
         });
     }
 
-    public function doDelete(Model $entity): void
+    public function beforeDelete(Model $entity): void
     {
         if ($this->weak) {
             return;
