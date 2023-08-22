@@ -1550,7 +1550,7 @@ class Model implements \IteratorAggregate
                     }
                 }
 
-                // No save needed, nothing was changed
+                // no save needed, nothing was changed
                 if (count($data) === 0 && !$dirtyJoin) {
                     return $this;
                 }
@@ -1688,7 +1688,7 @@ class Model implements \IteratorAggregate
             $fields = [];
 
             if ($this->onlyFields !== null) {
-                // Add requested fields first
+                // add requested fields first
                 foreach ($this->onlyFields as $field) {
                     $fObject = $this->getField($field);
                     if ($fObject->neverPersist) {
@@ -1709,7 +1709,7 @@ class Model implements \IteratorAggregate
 
                 $fields = array_keys($fields);
             } else {
-                // Add all model fields
+                // add all model fields
                 foreach ($this->getFields() as $field => $fObject) {
                     if ($fObject->neverPersist) {
                         continue;
