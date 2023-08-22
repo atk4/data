@@ -537,8 +537,6 @@ abstract class Join
         } else {
             $data[$this->masterField] = $this->getId($entity);
         }
-
-        // $entity->set($this->masterField, $this->getId($entity)); // TODO needed? from array persistence
     }
 
     public function afterInsert(Model $entity): void
