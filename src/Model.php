@@ -346,7 +346,7 @@ class Model implements \IteratorAggregate
                 '_hookIndexCounter',
                 '_hookOrigThis',
 
-                'ownerReference', // should be removed once references/joins are non-entity
+                'ownerReference', // should be removed once references are non-entity
                 'userActions', // should be removed once user actions are non-entity
 
                 'containedInEntity',
