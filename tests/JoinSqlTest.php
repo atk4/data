@@ -642,12 +642,7 @@ class JoinSqlTest extends TestCase
 
         $user = new Model($this->db, ['table' => 'user']);
         $user->addField('name');
-        $j = $user->join('detail.my_user_id', [
-            // 'reverse' => true, // this will be reverse join by default
-            // also no need to set these (will be done automatically), but still let's do that for test sake
-            'masterField' => 'id',
-            'foreignField' => 'my_user_id',
-        ]);
+        $j = $user->join('detail.my_user_id'); // this will be reverse join by default
         $this->createMigrator()->createForeignKey($j);
         $j->addField('notes');
 
