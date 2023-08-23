@@ -1510,9 +1510,7 @@ class Model implements \IteratorAggregate
                         continue;
                     }
 
-                    if ($field->hasJoin()) {
-                        $field->getJoin()->setSaveBufferValue($this, $name, $value);
-                    } else {
+                    if (!$field->hasJoin()) {
                         $data[$name] = $value;
                     }
                 }
@@ -1542,7 +1540,6 @@ class Model implements \IteratorAggregate
 
                     if ($field->hasJoin()) {
                         $dirtyJoin = true;
-                        $field->getJoin()->setSaveBufferValue($this, $name, $value);
                     } else {
                         $data[$name] = $value;
                     }

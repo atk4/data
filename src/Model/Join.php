@@ -453,7 +453,7 @@ abstract class Join
     /**
      * @param mixed $value
      */
-    public function setSaveBufferValue(Model $entity, string $fieldName, $value): void
+    protected function setSaveBufferValue(Model $entity, string $fieldName, $value): void
     {
         $entity->assertIsEntity($this->getOwner());
 
@@ -476,6 +476,22 @@ abstract class Join
     {
     }
 
+    protected function initSaveBuffer(Model $entity, bool $fromUpdate): void
+    {
+        foreach ($entity->get() as $name => $value) {
+            $field = $entity->getField($name);
+            if (!$field->hasJoin() || $field->getJoin()->shortName !== $this->shortName || $field->readOnly || $field->neverPersist || $field->neverSave) {
+                continue;
+            }
+
+            if ($fromUpdate && !$entity->isDirty($name)) {
+                continue;
+            }
+
+            $field->getJoin()->setSaveBufferValue($entity, $name, $value);
+        }
+    }
+
     /**
      * @param array<string, mixed> $data
      */
@@ -484,6 +500,8 @@ abstract class Join
         if ($this->weak) {
             return;
         }
+
+        $this->initSaveBuffer($entity, false);
 
         // the value for the masterField is set, so we are going to use existing record anyway
         if ($entity->get($this->masterField) !== null) {
@@ -512,6 +530,8 @@ abstract class Join
             return;
         }
 
+        $this->initSaveBuffer($entity, false);
+
         $id = $entity->getId();
         $this->assertReferenceIdNotNull($id);
 
@@ -530,6 +550,8 @@ abstract class Join
         if ($this->weak) {
             return;
         }
+
+        $this->initSaveBuffer($entity, true);
 
         if (!$this->issetSaveBuffer($entity)) {
             return;
