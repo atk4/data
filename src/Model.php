@@ -1493,8 +1493,6 @@ class Model implements \IteratorAggregate
         $this->setMulti($data);
 
         return $this->atomic(function () {
-            $dirtyRef = &$this->getDirtyRef();
-
             $errors = $this->validate('save');
             if ($errors !== []) {
                 throw new ValidationException($errors, $this);
@@ -1532,13 +1530,15 @@ class Model implements \IteratorAggregate
             } else {
                 $data = [];
                 $dirtyJoin = false;
-                foreach ($dirtyRef as $name => $ignore) {
+                foreach ($this->get() as $name => $value) {
+                    if (!$this->isDirty($name)) {
+                        continue;
+                    }
+
                     $field = $this->getField($name);
                     if ($field->readOnly || $field->neverPersist || $field->neverSave) {
                         continue;
                     }
-
-                    $value = $this->get($name);
 
                     if ($field->hasJoin()) {
                         $dirtyJoin = true;
@@ -1561,6 +1561,7 @@ class Model implements \IteratorAggregate
                 $this->hook(self::HOOK_AFTER_UPDATE, [&$data]);
             }
 
+            $dirtyRef = &$this->getDirtyRef();
             $dirtyRef = [];
 
             if ($this->idField && $this->reloadAfterSave) {
