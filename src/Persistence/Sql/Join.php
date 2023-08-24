@@ -55,25 +55,19 @@ class Join extends Model\Join
      */
     protected function initSelectQuery(Model $model, Query $query): void
     {
-        // if ON is set, we don't have to worry about anything
         if ($this->on) {
-            $query->join(
-                $this->foreignTable,
-                $this->on instanceof Expressionable ? $this->on : $this->getOwner()->expr($this->on),
-                $this->kind,
-                $this->foreignAlias
-            );
-
-            return;
+            $onExpr = $this->on instanceof Expressionable ? $this->on : $this->getOwner()->expr($this->on);
+        } else {
+            $onExpr = $this->getOwner()->expr('{{}}.{} = {}', [
+                $this->foreignAlias ?? $this->foreignTable,
+                $this->foreignField,
+                $this->getOwner()->getField($this->masterField),
+            ]);
         }
 
         $query->join(
             $this->foreignTable,
-            $this->getOwner()->expr('{{}}.{} = {}', [
-                $this->foreignAlias ?? $this->foreignTable,
-                $this->foreignField,
-                $this->getOwner()->getField($this->masterField),
-            ]),
+            $onExpr,
             $this->kind,
             $this->foreignAlias
         );
