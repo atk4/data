@@ -246,8 +246,6 @@ abstract class Join
                 $this->foreignField = preg_replace('~^.+\.~s', '', $this->getModelTableString($this->getOwner())) . '_' . $idField;
             }
         } else {
-            $this->reverse = false;
-
             if (!$this->masterField) {
                 $this->masterField = $this->foreignTable . '_' . $idField;
             }
