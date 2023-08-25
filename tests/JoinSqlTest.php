@@ -17,17 +17,17 @@ class JoinSqlTest extends TestCase
         $m = new Model($this->db, ['table' => 'user']);
 
         $j1 = $m->join('contact');
-        self::assertFalse($this->getProtected($j1, 'reverse'));
+        self::assertFalse($j1->reverse);
         self::assertSame('contact_id', $this->getProtected($j1, 'masterField'));
         self::assertSame('id', $this->getProtected($j1, 'foreignField'));
 
         $j2 = $m->join('contact2.test_id');
-        self::assertTrue($this->getProtected($j2, 'reverse'));
+        self::assertTrue($j2->reverse);
         self::assertSame('id', $this->getProtected($j2, 'masterField'));
         self::assertSame('test_id', $this->getProtected($j2, 'foreignField'));
 
         $j3 = $m->join('contact3', ['masterField' => 'test_id']);
-        self::assertFalse($this->getProtected($j3, 'reverse'));
+        self::assertFalse($j3->reverse);
         self::assertSame('test_id', $this->getProtected($j3, 'masterField'));
         self::assertSame('id', $this->getProtected($j3, 'foreignField'));
 
@@ -44,7 +44,7 @@ class JoinSqlTest extends TestCase
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Joining tables on non-id fields is not implemented yet'); // https://github.com/atk4/data/issues/803
         $j4 = $m->join('contact4.foo_id', ['masterField' => 'test_id', 'reverse' => true]);
-        // self::assertTrue($this->getProtected($j4, 'reverse'));
+        // self::assertTrue($j4->reverse);
         // self::assertSame('test_id', $this->getProtected($j4, 'masterField'));
         // self::assertSame('foo_id', $this->getProtected($j4, 'foreignField'));
     }
@@ -520,21 +520,24 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
+        // TODO mimic testDoubleJoin test, but using join with reverse
         $user = new Model($this->db, ['table' => 'user']);
         $user->addField('contact_id', ['type' => 'integer']);
         $user->addField('name');
-        $j = $user->join('contact');
-        // TODO persist order is broken $this->createMigrator()->createForeignKey($j);
-        $j->addField('contact_phone');
-        $c = $j->join('country');
-        $this->createMigrator()->createForeignKey($c);
-        $c->addField('country_name', ['actual' => 'name']);
+        $jContact = $user->join('contact');
+        // TODO persist order is broken $this->createMigrator()->createForeignKey($jContact);
+        $jContact->addField('contact_phone');
+        $jCountry = $jContact->join('country');
+        $this->createMigrator()->createForeignKey($jCountry);
+        $jCountry->addField('country_name', ['actual' => 'name']);
 
         $user2 = $user->load(10);
         $user2->delete();
 
         $user = $user->loadBy('country_name', 'US');
         self::assertSame(30, $user->getId());
+
+        // TODO test save as in testDoubleJoin test
 
         self::assertSame([
             'user' => [
@@ -642,12 +645,7 @@ class JoinSqlTest extends TestCase
 
         $user = new Model($this->db, ['table' => 'user']);
         $user->addField('name');
-        $j = $user->join('detail.my_user_id', [
-            // 'reverse' => true, // this will be reverse join by default
-            // also no need to set these (will be done automatically), but still let's do that for test sake
-            'masterField' => 'id',
-            'foreignField' => 'my_user_id',
-        ]);
+        $j = $user->join('detail.my_user_id'); // this will be reverse join by default
         $this->createMigrator()->createForeignKey($j);
         $j->addField('notes');
 

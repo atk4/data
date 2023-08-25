@@ -88,7 +88,7 @@ class Model implements \IteratorAggregate
     // {{{ Properties of the class
 
     /** @var static|null not-null if and only if this instance is an entity */
-    private $_model;
+    private ?self $_model = null;
 
     /** @var mixed once set, loading a different ID will result in an error */
     private $_entityId;
@@ -222,13 +222,11 @@ class Model implements \IteratorAggregate
      * If this model is "contained into" another entity by using ContainsOne
      * or ContainsMany reference, then this property will contain reference
      * to owning entity.
-     *
-     * @var Model|null
      */
-    public $containedInEntity;
+    public ?self $containedInEntity = null;
 
-    /** @var Reference Only for Reference class */
-    public $ownerReference;
+    /** Only for Reference class */
+    public ?Reference $ownerReference = null;
 
     // }}}
 
@@ -346,7 +344,7 @@ class Model implements \IteratorAggregate
                 '_hookIndexCounter',
                 '_hookOrigThis',
 
-                'ownerReference', // should be removed once references/joins are non-entity
+                'ownerReference', // should be removed once references are non-entity
                 'userActions', // should be removed once user actions are non-entity
 
                 'containedInEntity',
@@ -1495,8 +1493,6 @@ class Model implements \IteratorAggregate
         $this->setMulti($data);
 
         return $this->atomic(function () {
-            $dirtyRef = &$this->getDirtyRef();
-
             $errors = $this->validate('save');
             if ($errors !== []) {
                 throw new ValidationException($errors, $this);
@@ -1514,9 +1510,7 @@ class Model implements \IteratorAggregate
                         continue;
                     }
 
-                    if ($field->hasJoin()) {
-                        $field->getJoin()->setSaveBufferValue($this, $name, $value);
-                    } else {
+                    if (!$field->hasJoin()) {
                         $data[$name] = $value;
                     }
                 }
@@ -1534,23 +1528,24 @@ class Model implements \IteratorAggregate
             } else {
                 $data = [];
                 $dirtyJoin = false;
-                foreach ($dirtyRef as $name => $ignore) {
+                foreach ($this->get() as $name => $value) {
+                    if (!array_key_exists($name, $this->getDirtyRef())) {
+                        continue;
+                    }
+
                     $field = $this->getField($name);
                     if ($field->readOnly || $field->neverPersist || $field->neverSave) {
                         continue;
                     }
 
-                    $value = $this->get($name);
-
                     if ($field->hasJoin()) {
                         $dirtyJoin = true;
-                        $field->getJoin()->setSaveBufferValue($this, $name, $value);
                     } else {
                         $data[$name] = $value;
                     }
                 }
 
-                // No save needed, nothing was changed
+                // no save needed, nothing was changed
                 if (count($data) === 0 && !$dirtyJoin) {
                     return $this;
                 }
@@ -1563,6 +1558,7 @@ class Model implements \IteratorAggregate
                 $this->hook(self::HOOK_AFTER_UPDATE, [&$data]);
             }
 
+            $dirtyRef = &$this->getDirtyRef();
             $dirtyRef = [];
 
             if ($this->idField && $this->reloadAfterSave) {
@@ -1688,7 +1684,7 @@ class Model implements \IteratorAggregate
             $fields = [];
 
             if ($this->onlyFields !== null) {
-                // Add requested fields first
+                // add requested fields first
                 foreach ($this->onlyFields as $field) {
                     $fObject = $this->getField($field);
                     if ($fObject->neverPersist) {
@@ -1709,7 +1705,7 @@ class Model implements \IteratorAggregate
 
                 $fields = array_keys($fields);
             } else {
-                // Add all model fields
+                // add all model fields
                 foreach ($this->getFields() as $field => $fObject) {
                     if ($fObject->neverPersist) {
                         continue;

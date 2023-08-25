@@ -44,7 +44,7 @@ abstract class Join
     protected $kind;
 
     /** Weak join does not update foreign table. */
-    protected bool $weak = false;
+    public bool $weak = false;
 
     /**
      * Normally the foreign table is saved first, then it's ID is used in the
@@ -59,7 +59,7 @@ abstract class Join
      * of saving and delete needs to be reversed. In this case $reverse
      * will be set to `true`. You can specify value of this property.
      */
-    protected bool $reverse = false;
+    public bool $reverse = false;
 
     /**
      * Field to be used for matching inside master table.
@@ -84,9 +84,6 @@ abstract class Join
      * our wrappers will be automatically prefixed inside the model.
      */
     protected string $prefix = '';
-
-    /** @var mixed ID indexed by spl_object_id(entity) used by a joined table. */
-    protected $idByOid;
 
     /** @var array<int, array<string, mixed>> Data indexed by spl_object_id(entity) which is populated here as the save/insert progresses. */
     private array $saveBufferByOid = [];
@@ -234,7 +231,7 @@ abstract class Join
                 ->addMoreInfo('model', $this->getOwner());
         }
 
-        if ($this->reverse === true) {
+        if ($this->reverse) {
             if ($this->masterField && $this->masterField !== $idField) { // TODO not implemented yet, see https://github.com/atk4/data/issues/803
                 throw (new Exception('Joining tables on non-id fields is not implemented yet'))
                     ->addMoreInfo('masterField', $this->masterField)
@@ -271,16 +268,25 @@ abstract class Join
     protected function initJoinHooks(): void
     {
         $this->onHookToOwnerEntity(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
-        $this->onHookToOwnerEntity(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
+
+        $createHookFxWithCleanup = function (string $methodName): \Closure {
+            return function (Model $entity, &...$args) use ($methodName): void {
+                try {
+                    $this->{$methodName}($entity, ...$args);
+                } finally {
+                    $this->unsetSaveBuffer($entity);
+                }
+            };
+        };
 
         if ($this->reverse) {
-            $this->onHookToOwnerEntity(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']), [], -5);
-            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']), [], -5);
-            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'doDelete']), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_INSERT, $createHookFxWithCleanup('afterInsert'), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, $createHookFxWithCleanup('beforeUpdate'), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_DELETE, $createHookFxWithCleanup('beforeDelete'), [], -5);
         } else {
-            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']), [], -5);
-            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']), [], -5);
-            $this->onHookToOwnerEntity(Model::HOOK_AFTER_DELETE, \Closure::fromCallable([$this, 'doDelete']));
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_INSERT, $createHookFxWithCleanup('beforeInsert'), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, $createHookFxWithCleanup('beforeUpdate'), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_DELETE, $createHookFxWithCleanup('beforeDelete'));
         }
     }
 
@@ -419,36 +425,6 @@ abstract class Join
     }
 
     /**
-     * @return mixed
-     *
-     * @internal should be not used outside atk4/data
-     */
-    protected function getId(Model $entity)
-    {
-        return $this->idByOid[spl_object_id($entity)];
-    }
-
-    /**
-     * @param mixed $id
-     *
-     * @internal should be not used outside atk4/data
-     */
-    protected function setId(Model $entity, $id): void
-    {
-        $this->assertReferenceIdNotNull($id);
-
-        $this->idByOid[spl_object_id($entity)] = $id;
-    }
-
-    /**
-     * @internal should be not used outside atk4/data
-     */
-    protected function unsetId(Model $entity): void
-    {
-        unset($this->idByOid[spl_object_id($entity)]);
-    }
-
-    /**
      * @internal should be not used outside atk4/data
      */
     protected function issetSaveBuffer(Model $entity): bool
@@ -461,7 +437,7 @@ abstract class Join
      *
      * @internal should be not used outside atk4/data
      */
-    protected function getReindexedDataAndUnsetSaveBuffer(Model $entity): array
+    protected function getAndUnsetReindexedSaveBuffer(Model $entity): array
     {
         $resOur = $this->saveBufferByOid[spl_object_id($entity)];
         $this->unsetSaveBuffer($entity);
@@ -475,17 +451,9 @@ abstract class Join
     }
 
     /**
-     * @internal should be not used outside atk4/data
-     */
-    protected function unsetSaveBuffer(Model $entity): void
-    {
-        unset($this->saveBufferByOid[spl_object_id($entity)]);
-    }
-
-    /**
      * @param mixed $value
      */
-    public function setSaveBufferValue(Model $entity, string $fieldName, $value): void
+    protected function setSaveBufferValue(Model $entity, string $fieldName, $value): void
     {
         $entity->assertIsEntity($this->getOwner());
 
@@ -496,26 +464,44 @@ abstract class Join
         $this->saveBufferByOid[spl_object_id($entity)][$fieldName] = $value;
     }
 
-    public function afterLoad(Model $entity): void
+    /**
+     * @internal should be not used outside atk4/data
+     */
+    protected function unsetSaveBuffer(Model $entity): void
+    {
+        unset($this->saveBufferByOid[spl_object_id($entity)]);
+    }
+
+    protected function afterLoad(Model $entity): void
     {
     }
 
-    protected function afterUnload(Model $entity): void
+    protected function initSaveBuffer(Model $entity, bool $fromUpdate): void
     {
-        $this->unsetId($entity);
-        $this->unsetSaveBuffer($entity);
+        foreach ($entity->get() as $name => $value) {
+            $field = $entity->getField($name);
+            if (!$field->hasJoin() || $field->getJoin()->shortName !== $this->shortName || $field->readOnly || $field->neverPersist || $field->neverSave) {
+                continue;
+            }
+
+            if ($fromUpdate && !$entity->isDirty($name)) {
+                continue;
+            }
+
+            $field->getJoin()->setSaveBufferValue($entity, $name, $value);
+        }
     }
 
     /**
      * @param array<string, mixed> $data
      */
-    public function beforeInsert(Model $entity, array &$data): void
+    protected function beforeInsert(Model $entity, array &$data): void
     {
         if ($this->weak) {
             return;
         }
 
-        $model = $this->getOwner();
+        $this->initSaveBuffer($entity, false);
 
         // the value for the masterField is set, so we are going to use existing record anyway
         if ($entity->get($this->masterField) !== null) {
@@ -524,48 +510,48 @@ abstract class Join
 
         $foreignModel = $this->getForeignModel();
         $foreignEntity = $foreignModel->createEntity()
-            ->setMulti($this->getReindexedDataAndUnsetSaveBuffer($entity))
-            /* ->set($this->foreignField, null) */;
+            ->setMulti($this->getAndUnsetReindexedSaveBuffer($entity))
+            ->setNull($this->foreignField);
         $foreignEntity->save();
 
-        $this->setId($entity, $foreignEntity->getId());
+        $foreignId = $foreignEntity->getId();
+        $this->assertReferenceIdNotNull($foreignId);
 
         if ($this->hasJoin()) {
-            $this->getJoin()->setSaveBufferValue($entity, $this->masterField, $this->getId($entity));
+            $this->getJoin()->setSaveBufferValue($entity, $this->masterField, $foreignId);
         } else {
-            $data[$this->masterField] = $this->getId($entity);
+            $data[$this->masterField] = $foreignId;
         }
-
-        // $entity->set($this->masterField, $this->getId($entity)); // TODO needed? from array persistence
     }
 
-    public function afterInsert(Model $entity): void
+    protected function afterInsert(Model $entity): void
     {
         if ($this->weak) {
             return;
         }
 
-        $id = $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId();
+        $this->initSaveBuffer($entity, false);
+
+        $id = $entity->getId();
         $this->assertReferenceIdNotNull($id);
-        // $this->setSaveBufferValue($entity, $this->masterField, $id); // TODO needed? from array persistence
 
         $foreignModel = $this->getForeignModel();
         $foreignEntity = $foreignModel->createEntity()
-            ->setMulti($this->getReindexedDataAndUnsetSaveBuffer($entity))
+            ->setMulti($this->getAndUnsetReindexedSaveBuffer($entity))
             ->set($this->foreignField, $id);
         $foreignEntity->save();
-
-        $this->setId($entity, $entity->getId()); // TODO why is this here? it seems to be not needed
     }
 
     /**
      * @param array<string, mixed> $data
      */
-    public function beforeUpdate(Model $entity, array &$data): void
+    protected function beforeUpdate(Model $entity, array &$data): void
     {
         if ($this->weak) {
             return;
         }
+
+        $this->initSaveBuffer($entity, true);
 
         if (!$this->issetSaveBuffer($entity)) {
             return;
@@ -574,7 +560,7 @@ abstract class Join
         $foreignModel = $this->getForeignModel();
         $foreignId = $this->reverse ? $entity->getId() : $entity->get($this->masterField);
         $this->assertReferenceIdNotNull($foreignId);
-        $saveBuffer = $this->getReindexedDataAndUnsetSaveBuffer($entity);
+        $saveBuffer = $this->getAndUnsetReindexedSaveBuffer($entity);
         $foreignModel->atomic(function () use ($foreignModel, $foreignId, $saveBuffer) {
             $foreignModel = (clone $foreignModel)->addCondition($this->foreignField, $foreignId);
             foreach ($foreignModel as $foreignEntity) {
@@ -582,11 +568,9 @@ abstract class Join
                 $foreignEntity->save();
             }
         });
-
-        // $this->setId($entity, ??); // TODO needed? from array persistence
     }
 
-    public function doDelete(Model $entity): void
+    protected function beforeDelete(Model $entity): void
     {
         if ($this->weak) {
             return;
@@ -601,7 +585,5 @@ abstract class Join
                 $foreignEntity->delete();
             }
         });
-
-        $this->unsetId($entity); // TODO needed? from array persistence
     }
 }

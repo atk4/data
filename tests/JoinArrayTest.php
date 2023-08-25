@@ -36,23 +36,23 @@ class JoinArrayTest extends TestCase
         $m = new Model($db, ['table' => 'user']);
 
         $j = $m->join('contact');
-        self::assertFalse($this->getProtected($j, 'reverse'));
+        self::assertFalse($j->reverse);
         self::assertSame('contact_id', $this->getProtected($j, 'masterField'));
         self::assertSame('id', $this->getProtected($j, 'foreignField'));
 
         $j = $m->join('contact2.test_id');
-        self::assertTrue($this->getProtected($j, 'reverse'));
+        self::assertTrue($j->reverse);
         self::assertSame('id', $this->getProtected($j, 'masterField'));
         self::assertSame('test_id', $this->getProtected($j, 'foreignField'));
 
         $j = $m->join('contact3', ['masterField' => 'test_id']);
-        self::assertFalse($this->getProtected($j, 'reverse'));
+        self::assertFalse($j->reverse);
         self::assertSame('test_id', $this->getProtected($j, 'masterField'));
         self::assertSame('id', $this->getProtected($j, 'foreignField'));
 
         $this->expectException(Exception::class); // TODO not implemented yet, see https://github.com/atk4/data/issues/803
         $j = $m->join('contact4.foo_id', ['masterField' => 'test_id', 'reverse' => true]);
-        // self::assertTrue($this->getProtected($j, 'reverse'));
+        // self::assertTrue($j->reverse);
         // self::assertSame('test_id', $this->getProtected($j, 'masterField'));
         // self::assertSame('foo_id', $this->getProtected($j, 'foreignField'));
     }
@@ -414,12 +414,12 @@ class JoinArrayTest extends TestCase
 
         $m = new Model($db, ['table' => 'db.user']);
         $j = $m->join('contact');
-        self::assertFalse($this->getProtected($j, 'reverse'));
+        self::assertFalse($j->reverse);
         self::assertSame('contact_id', $this->getProtected($j, 'masterField'));
         self::assertSame('id', $this->getProtected($j, 'foreignField'));
 
         $j = $m->join('contact2', ['reverse' => true]);
-        self::assertTrue($this->getProtected($j, 'reverse'));
+        self::assertTrue($j->reverse);
         self::assertSame('id', $this->getProtected($j, 'masterField'));
         self::assertSame('user_id', $this->getProtected($j, 'foreignField'));
     }
