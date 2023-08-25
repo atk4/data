@@ -44,7 +44,7 @@ abstract class Join
     protected $kind;
 
     /** Weak join does not update foreign table. */
-    protected bool $weak = false;
+    public bool $weak = false;
 
     /**
      * Normally the foreign table is saved first, then it's ID is used in the
@@ -59,7 +59,7 @@ abstract class Join
      * of saving and delete needs to be reversed. In this case $reverse
      * will be set to `true`. You can specify value of this property.
      */
-    protected bool $reverse = false;
+    public bool $reverse = false;
 
     /**
      * Field to be used for matching inside master table.

@@ -17,17 +17,17 @@ class JoinSqlTest extends TestCase
         $m = new Model($this->db, ['table' => 'user']);
 
         $j1 = $m->join('contact');
-        self::assertFalse($this->getProtected($j1, 'reverse'));
+        self::assertFalse($j1->reverse);
         self::assertSame('contact_id', $this->getProtected($j1, 'masterField'));
         self::assertSame('id', $this->getProtected($j1, 'foreignField'));
 
         $j2 = $m->join('contact2.test_id');
-        self::assertTrue($this->getProtected($j2, 'reverse'));
+        self::assertTrue($j2->reverse);
         self::assertSame('id', $this->getProtected($j2, 'masterField'));
         self::assertSame('test_id', $this->getProtected($j2, 'foreignField'));
 
         $j3 = $m->join('contact3', ['masterField' => 'test_id']);
-        self::assertFalse($this->getProtected($j3, 'reverse'));
+        self::assertFalse($j3->reverse);
         self::assertSame('test_id', $this->getProtected($j3, 'masterField'));
         self::assertSame('id', $this->getProtected($j3, 'foreignField'));
 
@@ -44,7 +44,7 @@ class JoinSqlTest extends TestCase
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Joining tables on non-id fields is not implemented yet'); // https://github.com/atk4/data/issues/803
         $j4 = $m->join('contact4.foo_id', ['masterField' => 'test_id', 'reverse' => true]);
-        // self::assertTrue($this->getProtected($j4, 'reverse'));
+        // self::assertTrue($j4->reverse);
         // self::assertSame('test_id', $this->getProtected($j4, 'masterField'));
         // self::assertSame('foo_id', $this->getProtected($j4, 'foreignField'));
     }

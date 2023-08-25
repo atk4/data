@@ -372,8 +372,7 @@ class Migrator
         } elseif ($relation instanceof Join) {
             $localField = $relation->getOwner()->getField($relation->masterField);
             $foreignField = $relation->getForeignModel()->getField($relation->foreignField);
-
-            if ($localField->shortName === 'id') { // TODO quick hack, detect direction based on kind/reverse here
+            if ($relation->reverse) {
                 [$localField, $foreignField] = [$foreignField, $localField];
             }
         } else {
