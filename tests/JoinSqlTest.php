@@ -520,21 +520,24 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
+        // TODO mimic testDoubleJoin test, but using join with reverse
         $user = new Model($this->db, ['table' => 'user']);
         $user->addField('contact_id', ['type' => 'integer']);
         $user->addField('name');
-        $j = $user->join('contact');
-        // TODO persist order is broken $this->createMigrator()->createForeignKey($j);
-        $j->addField('contact_phone');
-        $c = $j->join('country');
-        $this->createMigrator()->createForeignKey($c);
-        $c->addField('country_name', ['actual' => 'name']);
+        $jContact = $user->join('contact');
+        // TODO persist order is broken $this->createMigrator()->createForeignKey($jContact);
+        $jContact->addField('contact_phone');
+        $jCountry = $jContact->join('country');
+        $this->createMigrator()->createForeignKey($jCountry);
+        $jCountry->addField('country_name', ['actual' => 'name']);
 
         $user2 = $user->load(10);
         $user2->delete();
 
         $user = $user->loadBy('country_name', 'US');
         self::assertSame(30, $user->getId());
+
+        // TODO test save as in testDoubleJoin test
 
         self::assertSame([
             'user' => [
