@@ -5,13 +5,49 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests;
 
 use Atk4\Data\Exception;
+use Atk4\Data\Field;
 use Atk4\Data\Model;
+use Atk4\Data\Model\Join;
+use Atk4\Data\Reference;
+use Atk4\Data\Schema\Migrator;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 
 class JoinSqlTest extends TestCase
 {
+    /**
+     * @param Reference|Join $relation
+     */
+    protected function assertMigratorResolveRelation(string $expectedLocalField, string $expectedForeignField, $relation, bool $resolveToPersistence = null): void
+    {
+        if ($resolveToPersistence === null) {
+            $this->assertMigratorResolveRelation($expectedLocalField, $expectedForeignField, $relation, false);
+            $this->assertMigratorResolveRelation($expectedLocalField, $expectedForeignField, $relation, true);
+
+            return;
+        }
+
+        $migrator = $this->createMigrator();
+        [$localField, $foreignField] = \Closure::bind(fn () => $migrator->resolveRelationDirection($relation), null, Migrator::class)();
+
+        $resolveToPersistenceFx = function (Field $field) use ($migrator): Field {
+            return \Closure::bind(fn () => $migrator->resolvePersistenceField($field), null, Migrator::class)();
+        };
+
+        $fieldToStrFx = function (Field $field): string {
+            return $field->getOwner()->table . '.' . $field->shortName;
+        };
+
+        self::assertSame([
+            'local' => $expectedLocalField,
+            'foreign' => $expectedForeignField,
+        ], [
+            'local' => $fieldToStrFx($resolveToPersistence ? $resolveToPersistenceFx($localField) : $localField),
+            'foreign' => $fieldToStrFx($resolveToPersistence ? $resolveToPersistenceFx($foreignField) : $foreignField),
+        ]);
+    }
+
     public function testDirection(): void
     {
         $m = new Model($this->db, ['table' => 'user']);
@@ -73,6 +109,7 @@ class JoinSqlTest extends TestCase
         $user->addField('contact_id', ['type' => 'integer']);
         $user->addField('name');
         $j = $user->join('contact');
+        $this->assertMigratorResolveRelation('user.contact_id', 'contact.id', $j);
         $this->createMigrator()->createForeignKey($j);
         $j->addField('contact_phone');
 
@@ -126,6 +163,7 @@ class JoinSqlTest extends TestCase
         $user = new Model($this->db, ['table' => 'user']);
         $user->addField('name');
         $j = $user->join('contact.test_id');
+        $this->assertMigratorResolveRelation('contact.test_id', 'user.id', $j);
         $this->createMigrator()->createForeignKey($j);
         $j->addField('contact_phone');
 
@@ -436,7 +474,7 @@ class JoinSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 10 => ['id' => 10, 'name' => 'John 2', 'contact_id' => 100],
-                20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
+                // prevent FK violation 20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
                 30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
                 40 => ['id' => 40, 'name' => 'YYY', 'contact_id' => 300],
             ],
@@ -456,9 +494,11 @@ class JoinSqlTest extends TestCase
         $user->addField('contact_id', ['type' => 'integer']);
         $user->addField('name');
         $jContact = $user->join('contact');
-        // TODO persist order is broken $this->createMigrator()->createForeignKey($jContact);
+        $this->assertMigratorResolveRelation('user.contact_id', 'contact.id', $jContact);
+        $this->createMigrator()->createForeignKey($jContact);
         $jContact->addField('contact_phone');
         $jCountry = $jContact->join('country');
+        $this->assertMigratorResolveRelation('contact.country_id', 'country.id', $jCountry);
         $this->createMigrator()->createForeignKey($jCountry);
         $jCountry->addField('country_name', ['actual' => 'name']);
 
@@ -479,7 +519,6 @@ class JoinSqlTest extends TestCase
 
         self::assertSame([
             'user' => [
-                20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
                 30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
                 40 => ['id' => 40, 'name' => 'YYY', 'contact_id' => 300],
                 ['id' => 41, 'name' => 'new', 'contact_id' => 301],
@@ -523,9 +562,11 @@ class JoinSqlTest extends TestCase
         $user->addField('contact_id', ['type' => 'integer']);
         $user->addField('name');
         $jContact = $user->join('contact');
+        $this->assertMigratorResolveRelation('user.contact_id', 'contact.id', $jContact);
         // TODO persist order is broken $this->createMigrator()->createForeignKey($jContact);
         $jContact->addField('contact_phone');
         $jCountry = $jContact->join('country');
+        $this->assertMigratorResolveRelation('contact.country_id', 'country.id', $jCountry);
         $this->createMigrator()->createForeignKey($jCountry);
         $jCountry->addField('country_name', ['actual' => 'name']);
 
@@ -593,6 +634,8 @@ class JoinSqlTest extends TestCase
         $phone = new Model($this->db, ['table' => 'phone']);
         $phone->addField('number');
         $refOne = $j->hasOne('phone_id', ['model' => $phone]); // hasOne on JOIN
+        $this->assertMigratorResolveRelation('user.phone_id', 'phone.id', $refOne, false);
+        $this->assertMigratorResolveRelation('contact.phone_id', 'phone.id', $refOne, true);
         $this->createMigrator()->createForeignKey($refOne);
         $refOne->addField('number');
 

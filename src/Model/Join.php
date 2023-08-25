@@ -101,6 +101,24 @@ abstract class Join
     }
 
     /**
+     * @internal should be not used outside atk4/data, for Migrator only
+     */
+    public function getMasterField(): Field
+    {
+        if (!$this->hasJoin()) {
+            return $this->getOwner()->getField($this->masterField);
+        }
+
+        // TODO this should be not needed in the future
+        $fakeModel = new Model($this->getOwner()->getPersistence(), [
+            'table' => $this->getJoin()->foreignTable,
+            'idField' => $this->masterField,
+        ]);
+
+        return $fakeModel->getField($this->masterField);
+    }
+
+    /**
      * Create fake foreign model, in the future, this method should be removed
      * in favor of always requiring an object model.
      */

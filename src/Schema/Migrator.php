@@ -370,7 +370,7 @@ class Migrator
             $localField = $relation->createTheirModel()->getField($relation->getTheirFieldName());
             $foreignField = $relation->getOwner()->getField($relation->getOurFieldName());
         } elseif ($relation instanceof Join) {
-            $localField = $relation->getOwner()->getField($relation->masterField);
+            $localField = $relation->getMasterField();
             $foreignField = $relation->getForeignModel()->getField($relation->foreignField);
             if ($relation->reverse) {
                 [$localField, $foreignField] = [$foreignField, $localField];
