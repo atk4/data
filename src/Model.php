@@ -1529,7 +1529,7 @@ class Model implements \IteratorAggregate
                 $data = [];
                 $dirtyJoin = false;
                 foreach ($this->get() as $name => $value) {
-                    if (!$this->isDirty($name)) {
+                    if (!array_key_exists($name, $this->getDirtyRef())) {
                         continue;
                     }
 
