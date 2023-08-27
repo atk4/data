@@ -58,7 +58,7 @@ class ModelNestedSqlTest extends TestCase
 
             public function hook(string $spot, array $args = [], HookBreaker &$brokenBy = null)
             {
-                if (!str_starts_with($spot, '__atk__method__') && $spot !== Model::HOOK_NORMALIZE) {
+                if (!str_starts_with($spot, '__atk4__dynamic_method__') && $spot !== Model::HOOK_NORMALIZE) {
                     $this->testCaseWeakRef->get()->hookLog[] = [$this->convertValueToLog($this), $spot, $this->convertValueToLog($args)];
                 }
 
