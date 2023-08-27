@@ -68,12 +68,10 @@ class SmboTransferTest extends TestCase
         $aa->save(['name' => 'AIB']);
         $aa->ref('Payment')->createEntity()->save(['amount' => 10]);
         $aa->ref('Payment')->createEntity()->save(['amount' => 20]);
-        $aa->unload();
 
         $aa = $a->createEntity();
         $aa->save(['name' => 'BOI']);
         $aa->ref('Payment')->createEntity()->save(['amount' => 30]);
-        $aa->unload();
 
         // create payment without link to account
         $p = new Payment($this->db);

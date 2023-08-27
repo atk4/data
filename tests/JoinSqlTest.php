@@ -147,7 +147,6 @@ class JoinSqlTest extends TestCase
             ],
         ], $this->getDb(['user', 'contact']));
 
-        $user2->unload();
         $user2 = $user->createEntity();
         $user2->set('name', 'Peter');
         $user2->save();
@@ -164,7 +163,6 @@ class JoinSqlTest extends TestCase
 
         $this->getConnection()->dsql()->table('contact')->where('id', 2)->mode('delete')->executeStatement();
 
-        $user2->unload();
         $user2 = $user->createEntity();
         $user2->set('name', 'Sue');
         $user2->set('contact_phone', '+444');
@@ -245,7 +243,7 @@ class JoinSqlTest extends TestCase
             'id' => 3, 'name' => 'Joe', 'contact_id' => 2, 'contact_phone' => '+321',
         ], $user2->get());
 
-        $user2 = $user2->unload();
+        $user2->unload();
         self::assertSame([
             'id' => null, 'name' => null, 'contact_id' => null, 'contact_phone' => null,
         ], $user2->get());
@@ -472,7 +470,7 @@ class JoinSqlTest extends TestCase
         $user2->set('country_name', 'USA');
         $user2->save();
 
-        $user2 = $user2->unload();
+        $user2->unload();
         self::assertFalse($user2->isLoaded());
 
         self::assertSame($user2->getModel()->getField('country_id')->getJoin(), $user2->getModel()->getField('contact_phone')->getJoin());
@@ -756,7 +754,7 @@ class JoinSqlTest extends TestCase
         ], $this->getDb());
 
         // insert
-        $user3 = $user->createEntity()->unload();
+        $user3 = $user->createEntity();
         $user3->set('name', 'Marvin');
         $user3->set('j1_phone', '+999');
         $user3->set('j2_salary', 222);
