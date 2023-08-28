@@ -311,6 +311,9 @@ abstract class Join
     public function addField(string $name, array $seed = []): Field
     {
         $seed['joinName'] = $this->getJoinNameFromShortName();
+        if ($this->prefix) {
+            $seed['actual'] ??= $name;
+        }
 
         return $this->getOwner()->addField($this->prefix . $name, $seed);
     }
