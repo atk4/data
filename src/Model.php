@@ -208,7 +208,7 @@ class Model implements \IteratorAggregate
      *
      * @var array<int, string>|null
      */
-    public $onlyFields;
+    public ?array $onlyFields = null;
 
     /**
      * Models that contain expressions will automatically reload after save.

@@ -38,10 +38,8 @@ abstract class Join
     /**
      * By default this will be either "inner" (for strong) or "left" for weak joins.
      * You can specify your own type of join like "right".
-     *
-     * @var string
      */
-    protected $kind;
+    protected ?string $kind = null;
 
     /** Weak join does not update foreign table. */
     public bool $weak = false;
@@ -122,7 +120,7 @@ abstract class Join
                 }
             }
         }
-        if ($fakeModel->idField !== $this->foreignField && $this->foreignField !== null) {
+        if ($fakeModel->idField !== $this->foreignField) {
             $fakeModel->addField($this->foreignField, ['type' => 'integer']);
         }
 
@@ -222,42 +220,34 @@ abstract class Join
     {
         $this->_init();
 
-        $this->getForeignModel(); // assert valid foreignTable
-
-        // owner model should have idField set
         $idField = $this->getOwner()->idField;
-        if (!$idField) {
+        if (!is_string($idField)) {
             throw (new Exception('Join owner model must have idField set'))
                 ->addMoreInfo('model', $this->getOwner());
         }
 
-        if ($this->reverse) {
-            if ($this->masterField && $this->masterField !== $idField) { // TODO not implemented yet, see https://github.com/atk4/data/issues/803
-                throw (new Exception('Joining tables on non-id fields is not implemented yet'))
-                    ->addMoreInfo('masterField', $this->masterField)
-                    ->addMoreInfo('idField', $idField);
-            }
-
-            if (!$this->masterField) {
-                $this->masterField = $idField;
-            }
-
-            if (!$this->foreignField) {
-                $this->foreignField = preg_replace('~^.+\.~s', '', $this->getModelTableString($this->getOwner())) . '_' . $idField;
-            }
-        } else {
-            if (!$this->masterField) {
-                $this->masterField = $this->foreignTable . '_' . $idField;
-            }
-
-            if (!$this->foreignField) {
-                $this->foreignField = $idField;
-            }
+        if ($this->masterField === null) {
+            $this->masterField = $this->reverse
+                ? $idField
+                : $this->foreignTable . '_' . $idField;
         }
 
-        // if kind is not specified, figure out join type
-        if (!$this->kind) {
+        if ($this->foreignField === null) {
+            $this->foreignField = $this->reverse
+                ? preg_replace('~^.+\.~s', '', $this->getModelTableString($this->getOwner())) . '_' . $idField
+                : $idField;
+        }
+
+        if ($this->kind === null) {
             $this->kind = $this->weak ? 'left' : 'inner';
+        }
+
+        $this->getForeignModel(); // assert valid foreignTable
+
+        if ($this->reverse && $this->masterField !== $idField) { // TODO not implemented yet, see https://github.com/atk4/data/issues/803
+            throw (new Exception('Joining tables on non-id fields is not implemented yet'))
+                ->addMoreInfo('masterField', $this->masterField)
+                ->addMoreInfo('idField', $idField);
         }
 
         $this->initJoinHooks();
