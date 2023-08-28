@@ -423,6 +423,21 @@ abstract class Join
     */
 
     /**
+     * @return list<self>
+     */
+    public function getReverseJoins(): array
+    {
+        $res = [];
+        foreach ($this->getOwner()->getJoins() as $join) {
+            if ($join->hasJoin() && $join->getJoin()->shortName === $this->shortName) {
+                $res[] = $join;
+            }
+        }
+
+        return $res;
+    }
+
+    /**
      * @param mixed $value
      */
     protected function assertReferenceIdNotNull($value): void
@@ -536,7 +551,7 @@ abstract class Join
             ->setNull($this->foreignField);
         $foreignEntity->save();
 
-        $foreignId = $foreignEntity->getId();
+        $foreignId = $foreignEntity->get($this->foreignField);
         $this->assertReferenceIdNotNull($foreignId);
 
         if ($this->hasJoin()) {
@@ -544,6 +559,16 @@ abstract class Join
         } else {
             $data[$this->masterField] = $foreignId;
         }
+    }
+
+    /**
+     * @param mixed $value
+     */
+    private function setEntityValueAfterUpdate(Model $entity, string $field, $value): void
+    {
+        $entity->getField($field); // assert field exists
+
+        $entity->getDataRef()[$field] = $value;
     }
 
     protected function afterInsert(Model $entity): void
@@ -554,7 +579,7 @@ abstract class Join
 
         $this->initSaveBuffer($entity, false);
 
-        $foreignId = $entity->getId();
+        $foreignId = $this->getForeignIdFromEntity($entity);
         $this->assertReferenceIdNotNull($foreignId);
 
         $foreignModel = $this->getForeignModel();
@@ -562,6 +587,11 @@ abstract class Join
             ->setMulti($this->getAndUnsetReindexedSaveBuffer($entity))
             ->set($this->foreignField, $foreignId);
         $foreignEntity->save();
+
+        foreach ($this->getReverseJoins() as $reverseJoin) {
+            // relies on https://github.com/atk4/data/blob/b3e9ea844e/src/Persistence/Sql/Join.php#L40
+            $this->setEntityValueAfterUpdate($entity, $reverseJoin->foreignField, $foreignEntity->get($this->masterField));
+        }
     }
 
     /**
@@ -580,7 +610,7 @@ abstract class Join
         }
 
         $foreignModel = $this->getForeignModel();
-        $foreignId = $this->reverse ? $entity->getId() : $entity->get($this->masterField);
+        $foreignId = $this->getForeignIdFromEntity($entity);
         $this->assertReferenceIdNotNull($foreignId);
         $saveBuffer = $this->getAndUnsetReindexedSaveBuffer($entity);
         $foreignModel->atomic(function () use ($foreignModel, $foreignId, $saveBuffer) {

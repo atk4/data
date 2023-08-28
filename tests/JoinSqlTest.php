@@ -575,21 +575,31 @@ class JoinSqlTest extends TestCase
 
         $country2 = $country->loadBy('user_name', 'XX');
         self::assertSame(2, $country2->getId());
+        $country2->set('user_name', 'XXx');
+        $country2->save();
 
-        // TODO test save as in testDoubleJoin test
+        $country2->unload();
+        self::assertFalse($country2->isLoaded());
+
+        self::assertSame($country2->getModel()->getField('contact_id')->getJoin(), $country2->getModel()->getField('contact_phone')->getJoin());
+
+        $country->createEntity()->save(['name' => 'LV', 'contact_phone' => '+000', 'user_name' => 'new']);
 
         self::assertSame([
             'user' => [
-                30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
+                30 => ['id' => 30, 'name' => 'XXx', 'contact_id' => 200],
                 40 => ['id' => 40, 'name' => 'YYY', 'contact_id' => 300],
+                ['id' => 41, 'name' => 'new', 'contact_id' => 301],
             ],
             'contact' => [
                 200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
                 300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
+                ['id' => 301, 'contact_phone' => '+000', 'country_id' => 6],
             ],
             'country' => [
                 2 => ['id' => 2, 'name' => 'US'],
                 5 => ['id' => 5, 'name' => 'India'],
+                ['id' => 6, 'name' => 'LV'],
             ],
         ], $this->getDb());
     }
