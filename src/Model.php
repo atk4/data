@@ -1419,15 +1419,15 @@ class Model implements \IteratorAggregate
      *
      * @return ($fromTryLoad is true ? static|null : static)
      */
-    private function _loadBy(bool $fromTryLoad, string $fieldName, $value)
+    private function _loadBy(bool $fromTryLoad, string $field, $value)
     {
         $this->assertIsModel();
 
-        if ($fieldName === $this->idField) { // optimization only
+        if ($field === $this->idField) { // optimization only
             return $this->{$fromTryLoad ? 'tryLoad' : 'load'}($value);
         }
 
-        $field = $this->getField($fieldName);
+        $field = $this->getField($field);
 
         $scopeBak = $this->scope;
         $systemBak = $field->system;
@@ -1445,27 +1445,27 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Load one record by condition. Will throw if more than one record exists.
+     * Load one record by additional condition. Will throw if more than one record exists.
      *
      * @param mixed $value
      *
      * @return static
      */
-    public function loadBy(string $fieldName, $value)
+    public function loadBy(string $field, $value)
     {
-        return $this->_loadBy(false, $fieldName, $value);
+        return $this->_loadBy(false, $field, $value);
     }
 
     /**
-     * Try to load one record by condition. Will throw if more than one record exists, but not if there is no record.
+     * Try to load one record by additional condition. Will throw if more than one record exists, but not if there is no record.
      *
      * @param mixed $value
      *
      * @return static|null
      */
-    public function tryLoadBy(string $fieldName, $value)
+    public function tryLoadBy(string $field, $value)
     {
-        return $this->_loadBy(true, $fieldName, $value);
+        return $this->_loadBy(true, $field, $value);
     }
 
     protected function validateEntityScope(): void
