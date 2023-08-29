@@ -437,6 +437,20 @@ class JoinSqlTest extends TestCase
         }
     }
 
+    public function testDangerousForeignTableUpdateException(): void
+    {
+        $user = new Model($this->db, ['table' => 'user']);
+        $j = $user->join('contact');
+        $j->addField('phone');
+
+        $user2 = $user->createEntity();
+        $user2->set('phone', '+555');
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Model is read-only');
+        $user2->save();
+    }
+
     public function testDoubleSaveHook(): void
     {
         $this->setDb([
