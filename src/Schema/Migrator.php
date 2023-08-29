@@ -49,10 +49,6 @@ class Migrator
      */
     public function __construct(object $source)
     {
-        if (func_num_args() > 1) {
-            throw new \Error();
-        }
-
         if ($source instanceof Connection) {
             $this->_connection = $source;
         } elseif ($source instanceof Persistence\Sql) {

@@ -1037,7 +1037,7 @@ class Model implements \IteratorAggregate
 
         // fields passed as array
         if (is_array($field)) {
-            if (func_num_args() > 1) {
+            if ('func_num_args'() > 1) {
                 throw (new Exception('If first argument is array, second argument must not be used'))
                     ->addMoreInfo('arg1', $field)
                     ->addMoreInfo('arg2', $direction);

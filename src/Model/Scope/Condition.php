@@ -106,7 +106,7 @@ class Condition extends AbstractScope
             throw new Exception('Field must be a string or an instance of Expressionable');
         }
 
-        if (func_num_args() === 2) {
+        if ('func_num_args'() === 2) {
             $value = $operator;
             $operator = self::OPERATOR_EQUALS;
         }
