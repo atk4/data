@@ -4,9 +4,9 @@ includes:
 parameters:
     level: 6
     paths:
-        - ./
+        - .
     excludePaths:
-        - vendor/
+        - vendor
 
     ignoreErrors:
         - '~^Unsafe usage of new static\(\)\.$~'
