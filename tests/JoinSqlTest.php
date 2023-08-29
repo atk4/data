@@ -541,7 +541,7 @@ class JoinSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 10 => ['id' => 10, 'name' => 'John 2', 'contact_id' => 100],
-                20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
+                // prevent ambiguous load condition 20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
                 30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
                 40 => ['id' => 40, 'name' => 'YYY', 'contact_id' => 300],
             ],
@@ -557,39 +557,39 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        // TODO mimic testDoubleJoin test, but using join with reverse
-        $user = new Model($this->db, ['table' => 'user']);
-        $user->addField('contact_id', ['type' => 'integer']);
-        $user->addField('name');
-        $jContact = $user->join('contact');
-        $this->assertMigratorResolveRelation('user.contact_id', 'contact.id', $jContact);
-        // TODO persist order is broken $this->createMigrator()->createForeignKey($jContact);
+        $country = new Model($this->db, ['table' => 'country']);
+        $country->addField('name');
+        $jContact = $country->join('contact.country_id');
+        $this->assertMigratorResolveRelation('contact.country_id', 'country.id', $jContact);
+        $this->createMigrator()->createForeignKey($jContact);
         $jContact->addField('contact_phone');
-        $jCountry = $jContact->join('country');
-        $this->assertMigratorResolveRelation('contact.country_id', 'country.id', $jCountry);
-        $this->createMigrator()->createForeignKey($jCountry);
-        $jCountry->addField('country_name', ['actual' => 'name']);
+        $jUser = $jContact->join('user.contact_id');
+        $this->assertMigratorResolveRelation('user.contact_id', 'contact.id', $jUser);
+        $this->createMigrator()->createForeignKey($jUser);
+        $jUser->addField('user_name', ['actual' => 'name']);
 
-        $user2 = $user->load(10);
-        $user2->delete();
+        $country2 = $country->load(1);
+        // TODO $country2->delete();
 
-        $user = $user->loadBy('country_name', 'US');
-        self::assertSame(30, $user->getId());
+        $country2 = $country->loadBy('user_name', 'XX');
+        self::assertSame(2, $country2->getId());
 
         // TODO test save as in testDoubleJoin test
 
         self::assertSame([
             'user' => [
-                20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
+                10 => ['id' => 10, 'name' => 'John 2', 'contact_id' => 100],
                 30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
                 40 => ['id' => 40, 'name' => 'YYY', 'contact_id' => 300],
             ],
             'contact' => [
+                100 => ['id' => 100, 'contact_phone' => '+555', 'country_id' => 1],
                 200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
                 300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
             ],
             'country' => [
-                2 => ['id' => 2, 'name' => 'US'],
+                1 => ['id' => 1, 'name' => 'UK'],
+                ['id' => 2, 'name' => 'US'],
                 5 => ['id' => 5, 'name' => 'India'],
             ],
         ], $this->getDb());

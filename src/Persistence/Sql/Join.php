@@ -61,7 +61,9 @@ class Join extends Model\Join
             $onExpr = $this->getOwner()->expr('{{}}.{} = {}', [
                 $this->foreignAlias ?? $this->foreignTable,
                 $this->foreignField,
-                $this->getOwner()->getField($this->masterField),
+                $this->hasJoin()
+                    ? $this->getOwner()->expr('{}.{}', [$this->getJoin()->foreignAlias, $this->masterField])
+                    : $this->getOwner()->getField($this->masterField),
             ]);
         }
 
