@@ -78,6 +78,7 @@ class JoinArrayTest extends TestCase
         $user2 = $user->createEntity();
         $user2->set('name', 'John');
         $user2->set('contact_phone', '+123');
+        $j->allowDangerousForeignTableUpdate = true;
         $user2->save();
 
         self::assertSame(1, $user2->getId());
@@ -134,6 +135,7 @@ class JoinArrayTest extends TestCase
         $user2 = $user->createEntity();
         $user2->set('name', 'John');
         $user2->set('contact_phone', '+123');
+        $j->allowDangerousForeignTableUpdate = true;
         $user2->save();
 
         self::assertSame(1, $user2->getId());
@@ -194,6 +196,7 @@ class JoinArrayTest extends TestCase
         $user = $user->createEntity();
         $user->set('name', 'John');
         $user->set('contact_phone', '+123');
+        $j->allowDangerousForeignTableUpdate = true;
         $user->save();
 
         self::assertSame([
@@ -216,6 +219,7 @@ class JoinArrayTest extends TestCase
         $user->set('name', 'John');
         $user->set('code', 'C28');
         $user->set('contact_phone', '+123');
+        $j->allowDangerousForeignTableUpdate = true;
         $user->save();
 
         self::assertSame([
@@ -290,6 +294,7 @@ class JoinArrayTest extends TestCase
         $user2 = $user->load(1);
         $user2->set('name', 'John 2');
         $user2->set('contact_phone', '+555');
+        $j->allowDangerousForeignTableUpdate = true;
         $user2->save();
 
         self::assertSame([
@@ -364,6 +369,7 @@ class JoinArrayTest extends TestCase
         $j->addField('contact_phone');
 
         $user = $user->load(1);
+        $j->allowDangerousForeignTableUpdate = true;
         $user->delete();
 
         self::assertSame([

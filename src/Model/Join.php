@@ -44,6 +44,9 @@ abstract class Join
     /** Weak join does not update foreign table. */
     public bool $weak = false;
 
+    /** Foreign table is updated using fake model and thus no regular foreign model hooks are invoked. */
+    public bool $allowDangerousForeignTableUpdate = false;
+
     /**
      * Normally the foreign table is saved first, then it's ID is used in the
      * primary table. When deleting, the primary table record is deleted first
@@ -127,6 +130,7 @@ abstract class Join
         $fakeModel = new Model($this->getOwner()->getPersistence(), [
             'table' => $this->foreignTable,
             'idField' => $this->foreignIdField,
+            'readOnly' => !$this->allowDangerousForeignTableUpdate,
         ]);
         foreach ($this->getOwner()->getFields() as $ownerField) {
             if ($ownerField->hasJoin() && $ownerField->getJoin()->shortName === $this->shortName) {
