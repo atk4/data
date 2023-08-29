@@ -571,7 +571,7 @@ class JoinSqlTest extends TestCase
 
         $country2 = $country->load(1);
         self::assertSame(['id' => 1, 'name' => 'UK', 'contact_phone' => '+555', 'contact_id' => 100, 'user_name' => 'John 2'], $country2->get());
-        // TODO $country2->delete();
+        $country2->delete();
 
         $country2 = $country->loadBy('user_name', 'XX');
         self::assertSame(2, $country2->getId());
@@ -580,18 +580,15 @@ class JoinSqlTest extends TestCase
 
         self::assertSame([
             'user' => [
-                10 => ['id' => 10, 'name' => 'John 2', 'contact_id' => 100],
                 30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
                 40 => ['id' => 40, 'name' => 'YYY', 'contact_id' => 300],
             ],
             'contact' => [
-                100 => ['id' => 100, 'contact_phone' => '+555', 'country_id' => 1],
                 200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
                 300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
             ],
             'country' => [
-                1 => ['id' => 1, 'name' => 'UK'],
-                ['id' => 2, 'name' => 'US'],
+                2 => ['id' => 2, 'name' => 'US'],
                 5 => ['id' => 5, 'name' => 'India'],
             ],
         ], $this->getDb());

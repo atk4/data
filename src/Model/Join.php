@@ -502,6 +502,19 @@ abstract class Join
     }
 
     /**
+     * @return mixed
+     */
+    private function getForeignIdFromEntity(Model $entity)
+    {
+        // relies on https://github.com/atk4/data/blob/b3e9ea844e/src/Persistence/Sql/Join.php#L40
+        $foreignId = $this->reverse
+            ? ($this->hasJoin() ? $entity->get($this->foreignField) : $entity->getId())
+            : $entity->get($this->masterField);
+
+        return $foreignId;
+    }
+
+    /**
      * @param array<string, mixed> $data
      */
     protected function beforeInsert(Model $entity, array &$data): void
@@ -586,7 +599,7 @@ abstract class Join
         }
 
         $foreignModel = $this->getForeignModel();
-        $foreignId = $this->reverse ? $entity->getId() : $entity->get($this->masterField);
+        $foreignId = $this->getForeignIdFromEntity($entity);
         $this->assertReferenceIdNotNull($foreignId);
         $foreignModel->atomic(function () use ($foreignModel, $foreignId) {
             $foreignModel = (clone $foreignModel)->addCondition($this->foreignField, $foreignId);
