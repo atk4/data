@@ -116,7 +116,6 @@ class JoinSqlTest extends TestCase
         $user2 = $user->createEntity();
         $user2->set('name', 'John');
         $user2->set('contact_phone', '+123');
-
         $user2->save();
 
         self::assertSame(1, $user2->getId());
@@ -188,6 +187,7 @@ class JoinSqlTest extends TestCase
         $user2 = $user->createEntity();
         $user2->set('name', 'Peter');
         $user2->save();
+
         self::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
@@ -205,6 +205,7 @@ class JoinSqlTest extends TestCase
         $user2->set('name', 'Sue');
         $user2->set('contact_phone', '+444');
         $user2->save();
+
         self::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
@@ -234,11 +235,10 @@ class JoinSqlTest extends TestCase
         $j = $user->join('contact', ['masterField' => 'test_id']);
         $this->createMigrator()->createForeignKey($j);
         $j->addField('contact_phone');
-        $user = $user->createEntity();
 
+        $user = $user->createEntity();
         $user->set('name', 'John');
         $user->set('contact_phone', '+123');
-
         $user->save();
 
         self::assertSame([
@@ -455,6 +455,7 @@ class JoinSqlTest extends TestCase
                 $m->save();
             }
         });
+
         $user = $user->createEntity();
         $user->set('name', 'John');
         $user->save();

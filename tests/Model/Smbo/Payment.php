@@ -21,7 +21,6 @@ class Payment extends Document
 
         $this->jPayment->addField('cheque_no');
         $this->jPayment->hasOne('account_id', ['model' => [Account::class]]);
-
         $this->jPayment->addField('misc_payment', ['type' => 'boolean']);
     }
 }

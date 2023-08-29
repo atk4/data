@@ -28,9 +28,7 @@ class Account extends Model
         $t = new Transfer($this->getModel()->getPersistence(), ['detached' => true]);
         $t = $t->createEntity();
         $t->set('account_id', $this->getId());
-
         $t->set('destination_account_id', $a->getId());
-
         $t->set('amount', -$amount);
 
         return $t;

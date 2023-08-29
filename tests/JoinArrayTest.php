@@ -148,6 +148,7 @@ class JoinArrayTest extends TestCase
         $user2 = $user->createEntity();
         $user2->set('name', 'Peter');
         $user2->save();
+
         self::assertSame([
             'user' => [
                 1 => ['name' => 'John'],
@@ -167,6 +168,7 @@ class JoinArrayTest extends TestCase
         $user2->set('name', 'Sue');
         $user2->set('contact_phone', '+444');
         $user2->save();
+
         self::assertSame([
             'user' => [
                 1 => ['name' => 'John'],
@@ -188,11 +190,10 @@ class JoinArrayTest extends TestCase
         $user->addField('test_id', ['type' => 'integer']);
         $j = $user->join('contact', ['masterField' => 'test_id']);
         $j->addField('contact_phone');
-        $user = $user->createEntity();
 
+        $user = $user->createEntity();
         $user->set('name', 'John');
         $user->set('contact_phone', '+123');
-
         $user->save();
 
         self::assertSame([
@@ -210,12 +211,11 @@ class JoinArrayTest extends TestCase
         $user->addField('code');
         $j = $user->join('contact.code', ['masterField' => 'code']);
         $j->addField('contact_phone');
-        $user = $user->createEntity();
 
+        $user = $user->createEntity();
         $user->set('name', 'John');
         $user->set('code', 'C28');
         $user->set('contact_phone', '+123');
-
         $user->save();
 
         self::assertSame([
