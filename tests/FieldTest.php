@@ -751,7 +751,7 @@ class FieldTest extends TestCase
         self::assertSame(['visible', 'not_editable'], array_keys($model->getFields('visible')));
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('not supported');
+        $this->expectExceptionMessage('Field filter is not supported');
         $model->getFields('foo');
     }
 

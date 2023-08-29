@@ -689,7 +689,7 @@ class Model implements \IteratorAggregate
                 ) {
                     return true;
                 } elseif (!in_array($f, ['system', 'not system', 'editable', 'visible'], true)) {
-                    throw (new Exception('Filter is not supported'))
+                    throw (new Exception('Field filter is not supported'))
                         ->addMoreInfo('filter', $f);
                 }
             }
@@ -1475,6 +1475,13 @@ class Model implements \IteratorAggregate
         }
     }
 
+    private function assertIsWriteable(): void
+    {
+        if ($this->readOnly) {
+            throw new Exception('Model is read-only');
+        }
+    }
+
     /**
      * Save record.
      *
@@ -1484,10 +1491,7 @@ class Model implements \IteratorAggregate
      */
     public function save(array $data = [])
     {
-        if ($this->readOnly) {
-            throw new Exception('Model is read-only');
-        }
-
+        $this->getModel()->assertIsWriteable();
         $this->getModel()->assertHasPersistence();
 
         $this->setMulti($data);
@@ -1807,10 +1811,7 @@ class Model implements \IteratorAggregate
             return $this;
         }
 
-        if ($this->readOnly) {
-            throw new Exception('Model is read-only');
-        }
-
+        $this->getModel()->assertIsWriteable();
         $this->getModel()->assertHasPersistence();
         $this->assertIsLoaded();
 
