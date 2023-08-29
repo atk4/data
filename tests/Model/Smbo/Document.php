@@ -15,7 +15,6 @@ class Document extends Model
         parent::init();
 
         $this->addField('doc_type', ['enum' => ['invoice', 'payment']]);
-
         $this->addField('amount', ['type' => 'atk4_money']);
     }
 }

@@ -55,6 +55,7 @@ class ReadOnlyModeTest extends TestCase
     public function testInsert(): void
     {
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Model is read-only');
         $this->m->insert(['name' => 'Joe']);
     }
 
@@ -64,6 +65,7 @@ class ReadOnlyModeTest extends TestCase
         $m->set('name', 'X');
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Model is read-only');
         $m->save();
     }
 
@@ -72,6 +74,7 @@ class ReadOnlyModeTest extends TestCase
         $m = $this->m->loadAny();
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Model is read-only');
         $m->saveAndUnload();
     }
 
@@ -91,6 +94,7 @@ class ReadOnlyModeTest extends TestCase
     public function testFailDelete1(): void
     {
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Model is read-only');
         $this->m->delete(1);
     }
 }

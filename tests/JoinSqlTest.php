@@ -5,13 +5,49 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests;
 
 use Atk4\Data\Exception;
+use Atk4\Data\Field;
 use Atk4\Data\Model;
+use Atk4\Data\Model\Join;
+use Atk4\Data\Reference;
+use Atk4\Data\Schema\Migrator;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 
 class JoinSqlTest extends TestCase
 {
+    /**
+     * @param Reference|Join $relation
+     */
+    protected function assertMigratorResolveRelation(string $expectedLocalField, string $expectedForeignField, $relation, bool $resolveToPersistence = null): void
+    {
+        if ($resolveToPersistence === null) {
+            $this->assertMigratorResolveRelation($expectedLocalField, $expectedForeignField, $relation, false);
+            $this->assertMigratorResolveRelation($expectedLocalField, $expectedForeignField, $relation, true);
+
+            return;
+        }
+
+        $migrator = $this->createMigrator();
+        [$localField, $foreignField] = \Closure::bind(fn () => $migrator->resolveRelationDirection($relation), null, Migrator::class)();
+
+        $resolveToPersistenceFx = function (Field $field) use ($migrator): Field {
+            return \Closure::bind(fn () => $migrator->resolvePersistenceField($field), null, Migrator::class)();
+        };
+
+        $fieldToStrFx = function (Field $field): string {
+            return $field->getOwner()->table . '.' . $field->shortName;
+        };
+
+        self::assertSame([
+            'local' => $expectedLocalField,
+            'foreign' => $expectedForeignField,
+        ], [
+            'local' => $fieldToStrFx($resolveToPersistence ? $resolveToPersistenceFx($localField) : $localField),
+            'foreign' => $fieldToStrFx($resolveToPersistence ? $resolveToPersistenceFx($foreignField) : $foreignField),
+        ]);
+    }
+
     public function testDirection(): void
     {
         $m = new Model($this->db, ['table' => 'user']);
@@ -73,13 +109,13 @@ class JoinSqlTest extends TestCase
         $user->addField('contact_id', ['type' => 'integer']);
         $user->addField('name');
         $j = $user->join('contact');
+        $this->assertMigratorResolveRelation('user.contact_id', 'contact.id', $j);
         $this->createMigrator()->createForeignKey($j);
         $j->addField('contact_phone');
 
         $user2 = $user->createEntity();
         $user2->set('name', 'John');
         $user2->set('contact_phone', '+123');
-
         $user2->save();
 
         self::assertSame(1, $user2->getId());
@@ -126,6 +162,7 @@ class JoinSqlTest extends TestCase
         $user = new Model($this->db, ['table' => 'user']);
         $user->addField('name');
         $j = $user->join('contact.test_id');
+        $this->assertMigratorResolveRelation('contact.test_id', 'user.id', $j);
         $this->createMigrator()->createForeignKey($j);
         $j->addField('contact_phone');
 
@@ -147,10 +184,10 @@ class JoinSqlTest extends TestCase
             ],
         ], $this->getDb(['user', 'contact']));
 
-        $user2->unload();
         $user2 = $user->createEntity();
         $user2->set('name', 'Peter');
         $user2->save();
+
         self::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
@@ -164,11 +201,11 @@ class JoinSqlTest extends TestCase
 
         $this->getConnection()->dsql()->table('contact')->where('id', 2)->mode('delete')->executeStatement();
 
-        $user2->unload();
         $user2 = $user->createEntity();
         $user2->set('name', 'Sue');
         $user2->set('contact_phone', '+444');
         $user2->save();
+
         self::assertSame([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
@@ -198,11 +235,10 @@ class JoinSqlTest extends TestCase
         $j = $user->join('contact', ['masterField' => 'test_id']);
         $this->createMigrator()->createForeignKey($j);
         $j->addField('contact_phone');
-        $user = $user->createEntity();
 
+        $user = $user->createEntity();
         $user->set('name', 'John');
         $user->set('contact_phone', '+123');
-
         $user->save();
 
         self::assertSame([
@@ -245,7 +281,7 @@ class JoinSqlTest extends TestCase
             'id' => 3, 'name' => 'Joe', 'contact_id' => 2, 'contact_phone' => '+321',
         ], $user2->get());
 
-        $user2 = $user2->unload();
+        $user2->unload();
         self::assertSame([
             'id' => null, 'name' => null, 'contact_id' => null, 'contact_phone' => null,
         ], $user2->get());
@@ -419,6 +455,7 @@ class JoinSqlTest extends TestCase
                 $m->save();
             }
         });
+
         $user = $user->createEntity();
         $user->set('name', 'John');
         $user->save();
@@ -438,7 +475,7 @@ class JoinSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 10 => ['id' => 10, 'name' => 'John 2', 'contact_id' => 100],
-                20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
+                // prevent FK violation 20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
                 30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
                 40 => ['id' => 40, 'name' => 'YYY', 'contact_id' => 300],
             ],
@@ -458,13 +495,16 @@ class JoinSqlTest extends TestCase
         $user->addField('contact_id', ['type' => 'integer']);
         $user->addField('name');
         $jContact = $user->join('contact');
-        // TODO persist order is broken $this->createMigrator()->createForeignKey($jContact);
+        $this->assertMigratorResolveRelation('user.contact_id', 'contact.id', $jContact);
+        $this->createMigrator()->createForeignKey($jContact);
         $jContact->addField('contact_phone');
         $jCountry = $jContact->join('country');
+        $this->assertMigratorResolveRelation('contact.country_id', 'country.id', $jCountry);
         $this->createMigrator()->createForeignKey($jCountry);
         $jCountry->addField('country_name', ['actual' => 'name']);
 
         $user2 = $user->load(10);
+        self::assertSame(['id' => 10, 'contact_id' => 100, 'name' => 'John 2', 'contact_phone' => '+555', 'country_id' => 1, 'country_name' => 'UK'], $user2->get());
         $user2->delete();
 
         $user2 = $user->loadBy('country_name', 'US');
@@ -472,7 +512,7 @@ class JoinSqlTest extends TestCase
         $user2->set('country_name', 'USA');
         $user2->save();
 
-        $user2 = $user2->unload();
+        $user2->unload();
         self::assertFalse($user2->isLoaded());
 
         self::assertSame($user2->getModel()->getField('country_id')->getJoin(), $user2->getModel()->getField('contact_phone')->getJoin());
@@ -481,7 +521,6 @@ class JoinSqlTest extends TestCase
 
         self::assertSame([
             'user' => [
-                20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
                 30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
                 40 => ['id' => 40, 'name' => 'YYY', 'contact_id' => 300],
                 ['id' => 41, 'name' => 'new', 'contact_id' => 301],
@@ -504,7 +543,7 @@ class JoinSqlTest extends TestCase
         $this->setDb([
             'user' => [
                 10 => ['id' => 10, 'name' => 'John 2', 'contact_id' => 100],
-                20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
+                // prevent ambiguous load condition 20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
                 30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
                 40 => ['id' => 40, 'name' => 'YYY', 'contact_id' => 300],
             ],
@@ -520,38 +559,48 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        // TODO mimic testDoubleJoin test, but using join with reverse
-        $user = new Model($this->db, ['table' => 'user']);
-        $user->addField('contact_id', ['type' => 'integer']);
-        $user->addField('name');
-        $jContact = $user->join('contact');
-        // TODO persist order is broken $this->createMigrator()->createForeignKey($jContact);
+        $country = new Model($this->db, ['table' => 'country']);
+        $country->addField('name');
+        $jContact = $country->join('contact.country_id');
+        $this->assertMigratorResolveRelation('contact.country_id', 'country.id', $jContact);
+        $this->createMigrator()->createForeignKey($jContact);
         $jContact->addField('contact_phone');
-        $jCountry = $jContact->join('country');
-        $this->createMigrator()->createForeignKey($jCountry);
-        $jCountry->addField('country_name', ['actual' => 'name']);
+        $jUser = $jContact->join('user.contact_id');
+        $this->assertMigratorResolveRelation('user.contact_id', 'contact.id', $jUser);
+        $this->createMigrator()->createForeignKey($jUser);
+        $jUser->addField('user_name', ['actual' => 'name']);
 
-        $user2 = $user->load(10);
-        $user2->delete();
+        $country2 = $country->load(1);
+        self::assertSame(['id' => 1, 'name' => 'UK', 'contact_phone' => '+555', 'contact_id' => 100, 'user_name' => 'John 2'], $country2->get());
+        $country2->delete();
 
-        $user = $user->loadBy('country_name', 'US');
-        self::assertSame(30, $user->getId());
+        $country2 = $country->loadBy('user_name', 'XX');
+        self::assertSame(2, $country2->getId());
+        $country2->set('user_name', 'XXx');
+        $country2->save();
 
-        // TODO test save as in testDoubleJoin test
+        $country2->unload();
+        self::assertFalse($country2->isLoaded());
+
+        self::assertSame($country2->getModel()->getField('contact_id')->getJoin(), $country2->getModel()->getField('contact_phone')->getJoin());
+
+        $country->createEntity()->save(['name' => 'LV', 'contact_phone' => '+000', 'user_name' => 'new']);
 
         self::assertSame([
             'user' => [
-                20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
-                30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
+                30 => ['id' => 30, 'name' => 'XXx', 'contact_id' => 200],
                 40 => ['id' => 40, 'name' => 'YYY', 'contact_id' => 300],
+                ['id' => 41, 'name' => 'new', 'contact_id' => 301],
             ],
             'contact' => [
                 200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
                 300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
+                ['id' => 301, 'contact_phone' => '+000', 'country_id' => 6],
             ],
             'country' => [
                 2 => ['id' => 2, 'name' => 'US'],
                 5 => ['id' => 5, 'name' => 'India'],
+                ['id' => 6, 'name' => 'LV'],
             ],
         ], $this->getDb());
     }
@@ -595,6 +644,8 @@ class JoinSqlTest extends TestCase
         $phone = new Model($this->db, ['table' => 'phone']);
         $phone->addField('number');
         $refOne = $j->hasOne('phone_id', ['model' => $phone]); // hasOne on JOIN
+        $this->assertMigratorResolveRelation('user.phone_id', 'phone.id', $refOne, false);
+        $this->assertMigratorResolveRelation('contact.phone_id', 'phone.id', $refOne, true);
         $this->createMigrator()->createForeignKey($refOne);
         $refOne->addField('number');
 
@@ -756,7 +807,7 @@ class JoinSqlTest extends TestCase
         ], $this->getDb());
 
         // insert
-        $user3 = $user->createEntity()->unload();
+        $user3 = $user->createEntity();
         $user3->set('name', 'Marvin');
         $user3->set('j1_phone', '+999');
         $user3->set('j2_salary', 222);

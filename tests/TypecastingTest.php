@@ -342,11 +342,9 @@ class TypecastingTest extends TestCase
         $m2 = $m->loadOne();
         self::assertTrue($m2->isLoaded());
         $d = $m2->get('date');
-        $m2->unload();
 
         $m2 = $m->loadBy('date', $d);
         self::assertTrue($m2->isLoaded());
-        $m2->unload();
 
         $m2 = $m->addCondition('date', $d)->loadOne();
         self::assertTrue($m2->isLoaded());

@@ -82,7 +82,6 @@ class UserActionTest extends TestCase
         self::assertTrue($client->get('reminder_sent'));
 
         self::assertSame('sent reminder to John', $res);
-        $client->unload();
 
         // test system action
         $act2 = $client->getModel()->getUserAction('backupClients');

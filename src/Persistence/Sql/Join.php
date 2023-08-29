@@ -29,17 +29,15 @@ class Join extends Model\Join
             $this->foreignAlias = ($this->getOwner()->tableAlias ?? '') . '_' . (str_starts_with($this->shortName, '#join-') ? substr($this->shortName, 6) : $this->shortName);
         }
 
-        // Master field indicates ID of the joined item. In the past it had to be
-        // defined as a physical field in the main table. Now it is a model field
-        // so you can use expressions or fields inside joined entities.
-        // If string specified here does not point to an existing model field
-        // a new basic field is inserted and marked hidden.
+        // TODO thus mutates the owner model/joins!
         if (!$this->reverse && !$this->getOwner()->hasField($this->masterField)) {
             $owner = $this->hasJoin() ? $this->getJoin() : $this->getOwner();
-
             $field = $owner->addField($this->masterField, ['type' => 'integer', 'system' => true, 'readOnly' => true]);
-
-            $this->masterField = $field->shortName;
+            $this->masterField = $field->shortName; // TODO thus mutates the join!
+        } elseif ($this->reverse && !$this->getOwner()->hasField($this->foreignField) && $this->hasJoin()) {
+            $owner = $this->getJoin();
+            $field = $owner->addField($this->foreignField, ['type' => 'integer', 'system' => true, 'readOnly' => true, 'actual' => $this->masterField]);
+            $this->foreignField = $field->shortName; // TODO thus mutates the join!
         }
     }
 
@@ -61,7 +59,9 @@ class Join extends Model\Join
             $onExpr = $this->getOwner()->expr('{{}}.{} = {}', [
                 $this->foreignAlias ?? $this->foreignTable,
                 $this->foreignField,
-                $this->getOwner()->getField($this->masterField),
+                $this->hasJoin()
+                    ? $this->getOwner()->expr('{}.{}', [$this->getJoin()->foreignAlias, $this->masterField])
+                    : $this->getOwner()->getField($this->masterField),
             ]);
         }
 

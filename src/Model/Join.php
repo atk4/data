@@ -38,10 +38,8 @@ abstract class Join
     /**
      * By default this will be either "inner" (for strong) or "left" for weak joins.
      * You can specify your own type of join like "right".
-     *
-     * @var string
      */
-    protected $kind;
+    protected ?string $kind = null;
 
     /** Weak join does not update foreign table. */
     public bool $weak = false;
@@ -103,6 +101,24 @@ abstract class Join
     }
 
     /**
+     * @internal should be not used outside atk4/data, for Migrator only
+     */
+    public function getMasterField(): Field
+    {
+        if (!$this->hasJoin()) {
+            return $this->getOwner()->getField($this->masterField);
+        }
+
+        // TODO this should be not needed in the future
+        $fakeModel = new Model($this->getOwner()->getPersistence(), [
+            'table' => $this->getJoin()->foreignTable,
+            'idField' => $this->masterField,
+        ]);
+
+        return $fakeModel->getField($this->masterField);
+    }
+
+    /**
      * Create fake foreign model, in the future, this method should be removed
      * in favor of always requiring an object model.
      */
@@ -122,7 +138,7 @@ abstract class Join
                 }
             }
         }
-        if ($fakeModel->idField !== $this->foreignField && $this->foreignField !== null) {
+        if ($fakeModel->idField !== $this->foreignField) {
             $fakeModel->addField($this->foreignField, ['type' => 'integer']);
         }
 
@@ -222,44 +238,34 @@ abstract class Join
     {
         $this->_init();
 
-        $this->getForeignModel(); // assert valid foreignTable
-
-        // owner model should have idField set
         $idField = $this->getOwner()->idField;
-        if (!$idField) {
+        if (!is_string($idField)) {
             throw (new Exception('Join owner model must have idField set'))
                 ->addMoreInfo('model', $this->getOwner());
         }
 
-        if ($this->reverse) {
-            if ($this->masterField && $this->masterField !== $idField) { // TODO not implemented yet, see https://github.com/atk4/data/issues/803
-                throw (new Exception('Joining tables on non-id fields is not implemented yet'))
-                    ->addMoreInfo('masterField', $this->masterField)
-                    ->addMoreInfo('idField', $idField);
-            }
-
-            if (!$this->masterField) {
-                $this->masterField = $idField;
-            }
-
-            if (!$this->foreignField) {
-                $this->foreignField = preg_replace('~^.+\.~s', '', $this->getModelTableString($this->getOwner())) . '_' . $idField;
-            }
-        } else {
-            $this->reverse = false;
-
-            if (!$this->masterField) {
-                $this->masterField = $this->foreignTable . '_' . $idField;
-            }
-
-            if (!$this->foreignField) {
-                $this->foreignField = $idField;
-            }
+        if ($this->masterField === null) {
+            $this->masterField = $this->reverse
+                ? $idField
+                : $this->foreignTable . '_' . $idField;
         }
 
-        // if kind is not specified, figure out join type
-        if (!$this->kind) {
+        if ($this->foreignField === null) {
+            $this->foreignField = $this->reverse
+                ? preg_replace('~^.+\.~s', '', $this->getModelTableString($this->getOwner())) . '_' . $idField
+                : $idField;
+        }
+
+        if ($this->kind === null) {
             $this->kind = $this->weak ? 'left' : 'inner';
+        }
+
+        $this->getForeignModel(); // assert valid foreignTable
+
+        if ($this->reverse && $this->masterField !== $idField) { // TODO not implemented yet, see https://github.com/atk4/data/issues/803
+            throw (new Exception('Joining tables on non-id fields is not implemented yet'))
+                ->addMoreInfo('masterField', $this->masterField)
+                ->addMoreInfo('idField', $idField);
         }
 
         $this->initJoinHooks();
@@ -280,13 +286,13 @@ abstract class Join
         };
 
         if ($this->reverse) {
-            $this->onHookToOwnerEntity(Model::HOOK_AFTER_INSERT, $createHookFxWithCleanup('afterInsert'), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_INSERT, $createHookFxWithCleanup('afterInsert'), [], 2);
             $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, $createHookFxWithCleanup('beforeUpdate'), [], -5);
-            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_DELETE, $createHookFxWithCleanup('beforeDelete'), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_DELETE, $createHookFxWithCleanup('afterDelete'), [], -5);
         } else {
             $this->onHookToOwnerEntity(Model::HOOK_BEFORE_INSERT, $createHookFxWithCleanup('beforeInsert'), [], -5);
             $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, $createHookFxWithCleanup('beforeUpdate'), [], -5);
-            $this->onHookToOwnerEntity(Model::HOOK_AFTER_DELETE, $createHookFxWithCleanup('beforeDelete'));
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_DELETE, $createHookFxWithCleanup('afterDelete'), [], 2);
         }
     }
 
@@ -305,6 +311,9 @@ abstract class Join
     public function addField(string $name, array $seed = []): Field
     {
         $seed['joinName'] = $this->getJoinNameFromShortName();
+        if ($this->prefix) {
+            $seed['actual'] ??= $name;
+        }
 
         return $this->getOwner()->addField($this->prefix . $name, $seed);
     }
@@ -414,6 +423,21 @@ abstract class Join
     */
 
     /**
+     * @return list<self>
+     */
+    public function getReverseJoins(): array
+    {
+        $res = [];
+        foreach ($this->getOwner()->getJoins() as $join) {
+            if ($join->hasJoin() && $join->getJoin()->shortName === $this->shortName) {
+                $res[] = $join;
+            }
+        }
+
+        return $res;
+    }
+
+    /**
      * @param mixed $value
      */
     protected function assertReferenceIdNotNull($value): void
@@ -493,6 +517,19 @@ abstract class Join
     }
 
     /**
+     * @return mixed
+     */
+    private function getForeignIdFromEntity(Model $entity)
+    {
+        // relies on https://github.com/atk4/data/blob/b3e9ea844e/src/Persistence/Sql/Join.php#L40
+        $foreignId = $this->reverse
+            ? ($this->hasJoin() ? $entity->get($this->foreignField) : $entity->getId())
+            : $entity->get($this->masterField);
+
+        return $foreignId;
+    }
+
+    /**
      * @param array<string, mixed> $data
      */
     protected function beforeInsert(Model $entity, array &$data): void
@@ -514,7 +551,7 @@ abstract class Join
             ->setNull($this->foreignField);
         $foreignEntity->save();
 
-        $foreignId = $foreignEntity->getId();
+        $foreignId = $foreignEntity->get($this->foreignField);
         $this->assertReferenceIdNotNull($foreignId);
 
         if ($this->hasJoin()) {
@@ -522,6 +559,16 @@ abstract class Join
         } else {
             $data[$this->masterField] = $foreignId;
         }
+    }
+
+    /**
+     * @param mixed $value
+     */
+    private function setEntityValueAfterUpdate(Model $entity, string $field, $value): void
+    {
+        $entity->getField($field); // assert field exists
+
+        $entity->getDataRef()[$field] = $value;
     }
 
     protected function afterInsert(Model $entity): void
@@ -532,14 +579,19 @@ abstract class Join
 
         $this->initSaveBuffer($entity, false);
 
-        $id = $entity->getId();
-        $this->assertReferenceIdNotNull($id);
+        $foreignId = $this->getForeignIdFromEntity($entity);
+        $this->assertReferenceIdNotNull($foreignId);
 
         $foreignModel = $this->getForeignModel();
         $foreignEntity = $foreignModel->createEntity()
             ->setMulti($this->getAndUnsetReindexedSaveBuffer($entity))
-            ->set($this->foreignField, $id);
+            ->set($this->foreignField, $foreignId);
         $foreignEntity->save();
+
+        foreach ($this->getReverseJoins() as $reverseJoin) {
+            // relies on https://github.com/atk4/data/blob/b3e9ea844e/src/Persistence/Sql/Join.php#L40
+            $this->setEntityValueAfterUpdate($entity, $reverseJoin->foreignField, $foreignEntity->get($this->masterField));
+        }
     }
 
     /**
@@ -558,7 +610,7 @@ abstract class Join
         }
 
         $foreignModel = $this->getForeignModel();
-        $foreignId = $this->reverse ? $entity->getId() : $entity->get($this->masterField);
+        $foreignId = $this->getForeignIdFromEntity($entity);
         $this->assertReferenceIdNotNull($foreignId);
         $saveBuffer = $this->getAndUnsetReindexedSaveBuffer($entity);
         $foreignModel->atomic(function () use ($foreignModel, $foreignId, $saveBuffer) {
@@ -570,14 +622,14 @@ abstract class Join
         });
     }
 
-    protected function beforeDelete(Model $entity): void
+    protected function afterDelete(Model $entity): void
     {
         if ($this->weak) {
             return;
         }
 
         $foreignModel = $this->getForeignModel();
-        $foreignId = $this->reverse ? $entity->getId() : $entity->get($this->masterField);
+        $foreignId = $this->getForeignIdFromEntity($entity);
         $this->assertReferenceIdNotNull($foreignId);
         $foreignModel->atomic(function () use ($foreignModel, $foreignId) {
             $foreignModel = (clone $foreignModel)->addCondition($this->foreignField, $foreignId);
