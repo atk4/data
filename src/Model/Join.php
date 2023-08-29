@@ -286,13 +286,13 @@ abstract class Join
         };
 
         if ($this->reverse) {
-            $this->onHookToOwnerEntity(Model::HOOK_AFTER_INSERT, $createHookFxWithCleanup('afterInsert'), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_INSERT, $createHookFxWithCleanup('afterInsert'), [], 2);
             $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, $createHookFxWithCleanup('beforeUpdate'), [], -5);
-            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_DELETE, $createHookFxWithCleanup('beforeDelete'), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_DELETE, $createHookFxWithCleanup('afterDelete'), [], -5);
         } else {
             $this->onHookToOwnerEntity(Model::HOOK_BEFORE_INSERT, $createHookFxWithCleanup('beforeInsert'), [], -5);
             $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, $createHookFxWithCleanup('beforeUpdate'), [], -5);
-            $this->onHookToOwnerEntity(Model::HOOK_AFTER_DELETE, $createHookFxWithCleanup('beforeDelete'));
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_DELETE, $createHookFxWithCleanup('afterDelete'), [], 2);
         }
     }
 
@@ -541,13 +541,13 @@ abstract class Join
 
         $this->initSaveBuffer($entity, false);
 
-        $id = $entity->getId();
-        $this->assertReferenceIdNotNull($id);
+        $foreignId = $entity->getId();
+        $this->assertReferenceIdNotNull($foreignId);
 
         $foreignModel = $this->getForeignModel();
         $foreignEntity = $foreignModel->createEntity()
             ->setMulti($this->getAndUnsetReindexedSaveBuffer($entity))
-            ->set($this->foreignField, $id);
+            ->set($this->foreignField, $foreignId);
         $foreignEntity->save();
     }
 
@@ -579,7 +579,7 @@ abstract class Join
         });
     }
 
-    protected function beforeDelete(Model $entity): void
+    protected function afterDelete(Model $entity): void
     {
         if ($this->weak) {
             return;

@@ -503,6 +503,7 @@ class JoinSqlTest extends TestCase
         $jCountry->addField('country_name', ['actual' => 'name']);
 
         $user2 = $user->load(10);
+        self::assertSame(['id' => 10, 'contact_id' => 100, 'name' => 'John 2', 'contact_phone' => '+555', 'country_id' => 1, 'country_name' => 'UK'], $user2->get());
         $user2->delete();
 
         $user2 = $user->loadBy('country_name', 'US');
@@ -569,6 +570,7 @@ class JoinSqlTest extends TestCase
         $jUser->addField('user_name', ['actual' => 'name']);
 
         $country2 = $country->load(1);
+        self::assertSame(['id' => 1, 'name' => 'UK', 'contact_phone' => '+555', 'contact_id' => 100, 'user_name' => 'John 2'], $country2->get());
         // TODO $country2->delete();
 
         $country2 = $country->loadBy('user_name', 'XX');
