@@ -116,6 +116,7 @@ class JoinSqlTest extends TestCase
         $user2 = $user->createEntity();
         $user2->set('name', 'John');
         $user2->set('contact_phone', '+123');
+        $j->allowDangerousForeignTableUpdate = true;
         $user2->save();
 
         self::assertSame(1, $user2->getId());
@@ -169,6 +170,7 @@ class JoinSqlTest extends TestCase
         $user2 = $user->createEntity();
         $user2->set('name', 'John');
         $user2->set('contact_phone', '+123');
+        $j->allowDangerousForeignTableUpdate = true;
         $user2->save();
 
         self::assertSame(1, $user2->getId());
@@ -239,6 +241,7 @@ class JoinSqlTest extends TestCase
         $user = $user->createEntity();
         $user->set('name', 'John');
         $user->set('contact_phone', '+123');
+        $j->allowDangerousForeignTableUpdate = true;
         $user->save();
 
         self::assertSame([
@@ -313,6 +316,7 @@ class JoinSqlTest extends TestCase
         $user2 = $user->load(1);
         $user2->set('name', 'John 2');
         $user2->set('contact_phone', '+555');
+        $j->allowDangerousForeignTableUpdate = true;
         $user2->save();
 
         self::assertSame([
@@ -405,6 +409,7 @@ class JoinSqlTest extends TestCase
         $j->addField('contact_phone');
 
         $user = $user->load(3);
+        $j->allowDangerousForeignTableUpdate = true;
         $user->delete();
 
         self::assertSame([
@@ -458,6 +463,7 @@ class JoinSqlTest extends TestCase
 
         $user = $user->createEntity();
         $user->set('name', 'John');
+        $j->allowDangerousForeignTableUpdate = true;
         $user->save();
 
         self::assertSame([
@@ -505,6 +511,8 @@ class JoinSqlTest extends TestCase
 
         $user2 = $user->load(10);
         self::assertSame(['id' => 10, 'contact_id' => 100, 'name' => 'John 2', 'contact_phone' => '+555', 'country_id' => 1, 'country_name' => 'UK'], $user2->get());
+        $jContact->allowDangerousForeignTableUpdate = true;
+        $jCountry->allowDangerousForeignTableUpdate = true;
         $user2->delete();
 
         $user2 = $user->loadBy('country_name', 'US');
@@ -572,6 +580,8 @@ class JoinSqlTest extends TestCase
 
         $country2 = $country->load(1);
         self::assertSame(['id' => 1, 'name' => 'UK', 'contact_phone' => '+555', 'contact_id' => 100, 'user_name' => 'John 2'], $country2->get());
+        $jContact->allowDangerousForeignTableUpdate = true;
+        $jUser->allowDangerousForeignTableUpdate = true;
         $country2->delete();
 
         $country2 = $country->loadBy('user_name', 'XX');
@@ -706,6 +716,7 @@ class JoinSqlTest extends TestCase
         self::assertSame(['id' => 20, 'name' => 'Peter', 'notes' => 'second note'], $m->get());
 
         // update loaded record
+        $j->allowDangerousForeignTableUpdate = true;
         $m->save(['name' => 'Mark', 'notes' => '2nd note']);
         $m = $user->load(20);
         self::assertSame(['id' => 20, 'name' => 'Mark', 'notes' => '2nd note'], $m->get());
@@ -726,6 +737,7 @@ class JoinSqlTest extends TestCase
         $j->addField('notes');
 
         // insert new record
+        $j->allowDangerousForeignTableUpdate = true;
         $m = $user->createEntity()->save(['name' => 'Olaf', 'notes' => '4th note']);
         $m = $user->load(22);
         self::assertSame(['id' => 22, 'name' => 'Olaf', 'notes' => '4th note'], $m->get());
@@ -741,6 +753,7 @@ class JoinSqlTest extends TestCase
         $j->addField('notes');
 
         // insert new record
+        $j->allowDangerousForeignTableUpdate = true;
         $m = $user->createEntity()->save(['name' => 'Chris', 'notes' => '5th note']);
         $m = $user->load(23);
         self::assertSame(['id' => 23, 'name' => 'Chris', 'notes' => '5th note'], $m->get());
@@ -788,6 +801,8 @@ class JoinSqlTest extends TestCase
         $user2->set('name', 'John 2');
         $user2->set('j1_phone', '+555');
         $user2->set('j2_salary', 111);
+        $j->allowDangerousForeignTableUpdate = true;
+        $j2->allowDangerousForeignTableUpdate = true;
         $user2->save();
 
         self::{'assertEquals'}([
@@ -869,6 +884,7 @@ class JoinSqlTest extends TestCase
             'foreignIdField' => 'uid',
         ], $joinDefaults));
         $this->createMigrator()->createForeignKey($j);
+        $j->allowDangerousForeignTableUpdate = true;
         $j->addField('contact_phone');
 
         return [$masterModel, $joinedModel, $user];
