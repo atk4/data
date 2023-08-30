@@ -69,8 +69,8 @@ class Scope extends Scope\AbstractScope
 
     /**
      * @param Scope\AbstractScope|array<int, mixed>|string|Expressionable $field
-     * @param string|mixed|null                                           $operator
-     * @param mixed|null                                                  $value
+     * @param string|mixed                                                $operator
+     * @param mixed                                                       $value
      *
      * @return $this
      */

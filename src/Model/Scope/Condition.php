@@ -93,8 +93,8 @@ class Condition extends AbstractScope
 
     /**
      * @param string|Expressionable $key
-     * @param string|mixed|null     $operator
-     * @param mixed|null            $value
+     * @param string|mixed          $operator
+     * @param mixed                 $value
      */
     public function __construct($key, $operator = null, $value = null)
     {
