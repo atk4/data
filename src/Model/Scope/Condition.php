@@ -129,9 +129,11 @@ class Condition extends AbstractScope
         }
 
         if (is_array($value)) {
-            if (array_filter($value, 'is_array')) {
-                throw (new Exception('Multi-dimensional array as condition value is not supported'))
-                    ->addMoreInfo('value', $value);
+            foreach ($value as $v) {
+                if (is_array($v)) {
+                    throw (new Exception('Multi-dimensional array as condition value is not supported'))
+                        ->addMoreInfo('value', $value);
+                }
             }
 
             if (!in_array($this->operator, [

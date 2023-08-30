@@ -45,7 +45,7 @@ class RootScope extends Model\Scope
 
     public function negate()
     {
-        throw new Exception('Model Scope cannot be negated!');
+        throw new Exception('Model scope cannot be negated');
     }
 
     /**

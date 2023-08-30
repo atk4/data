@@ -625,6 +625,7 @@ class ArrayTest extends TestCase
         ]);
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Must not be a zero');
         new Model($p);
     }
 
@@ -765,6 +766,7 @@ class ArrayTest extends TestCase
         $m->addField('name');
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unsupported action mode');
         $m->action('foo');
     }
 
@@ -775,6 +777,7 @@ class ArrayTest extends TestCase
         $m->addField('name');
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Array persistence driver action unsupported format');
         $m->action('fx', ['UNSUPPORTED', 'name']);
     }
 
@@ -785,6 +788,7 @@ class ArrayTest extends TestCase
         $m->addField('name');
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Operator must be specified');
         $m->addCondition('name');
     }
 
@@ -795,6 +799,7 @@ class ArrayTest extends TestCase
         $m->addField('name');
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Field must be a string or an instance of Expressionable');
         $m->addCondition(new Model(), 'like', '%o%');
     }
 
