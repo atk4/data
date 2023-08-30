@@ -20,7 +20,7 @@ trait PlatformTrait
         $diff = clone $diff;
         $diff->fromTable = clone $diff->fromTable;
         foreach ($diff->fromTable->getForeignKeys() as $foreignKey) {
-            \Closure::bind(function () use ($foreignKey) {
+            \Closure::bind(static function () use ($foreignKey) {
                 $foreignKey->_localColumnNames = $foreignKey->createIdentifierMap($foreignKey->getUnquotedLocalColumns());
             }, null, ForeignKeyConstraint::class)();
         }

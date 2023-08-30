@@ -29,13 +29,13 @@ class JoinSqlTest extends TestCase
         }
 
         $migrator = $this->createMigrator();
-        [$localField, $foreignField] = \Closure::bind(fn () => $migrator->resolveRelationDirection($relation), null, Migrator::class)();
+        [$localField, $foreignField] = \Closure::bind(static fn () => $migrator->resolveRelationDirection($relation), null, Migrator::class)();
 
-        $resolveToPersistenceFx = function (Field $field) use ($migrator): Field {
-            return \Closure::bind(fn () => $migrator->resolvePersistenceField($field), null, Migrator::class)();
+        $resolveToPersistenceFx = static function (Field $field) use ($migrator): Field {
+            return \Closure::bind(static fn () => $migrator->resolvePersistenceField($field), null, Migrator::class)();
         };
 
-        $fieldToStrFx = function (Field $field): string {
+        $fieldToStrFx = static function (Field $field): string {
             return $field->getOwner()->table . '.' . $field->shortName;
         };
 

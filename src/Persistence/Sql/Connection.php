@@ -266,7 +266,7 @@ abstract class Connection
             ['driver' => self::getDriverNameFromDbalDriverConnection($dbalDriverConnection)],
             (static::class)::createDbalConfiguration()
         );
-        \Closure::bind(function () use ($dbalConnection, $dbalDriverConnection): void {
+        \Closure::bind(static function () use ($dbalConnection, $dbalDriverConnection): void {
             $dbalConnection->_conn = $dbalDriverConnection;
         }, null, \Doctrine\DBAL\Connection::class)();
 

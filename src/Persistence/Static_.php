@@ -143,7 +143,7 @@ class Static_ extends Array_
                     }
                 }
             }, $this, Array_::class)();
-            \Closure::bind(function () use ($model) {
+            \Closure::bind(static function () use ($model) {
                 $model->_persistence = null;
             }, null, Model::class)();
 

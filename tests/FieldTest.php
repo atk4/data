@@ -492,7 +492,7 @@ class FieldTest extends TestCase
         $m = new Model($this->db, ['table' => 'invoice']);
         $m->addField('net', ['type' => 'atk4_money']);
         $m->addField('vat', ['type' => 'atk4_money']);
-        $m->addCalculatedField('total', ['expr' => function (Model $m) {
+        $m->addCalculatedField('total', ['expr' => static function (Model $m) {
             return $m->get('net') + $m->get('vat');
         }, 'type' => 'atk4_money']);
         $m->insert(['net' => 30, 'vat' => 8]);

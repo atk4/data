@@ -249,7 +249,7 @@ class Model implements \IteratorAggregate
      */
     public function __construct(Persistence $persistence = null, array $defaults = [])
     {
-        $this->scope = \Closure::bind(function () {
+        $this->scope = \Closure::bind(static function () {
             return new Model\Scope\RootScope();
         }, null, Model\Scope\RootScope::class)()
             ->setModel($this);
@@ -892,7 +892,7 @@ class Model implements \IteratorAggregate
 
         $field = $this->titleField && $this->hasField($this->titleField) ? $this->titleField : $this->idField;
 
-        return array_map(function (array $row) use ($field) {
+        return array_map(static function (array $row) use ($field) {
             return $row[$field];
         }, $this->export([$field], $this->idField));
     }
@@ -1632,7 +1632,7 @@ class Model implements \IteratorAggregate
         if (!$hasArrayValue) {
             $entity->_insert($row);
         } else {
-            $this->atomic(function () use ($entity, $row) {
+            $this->atomic(static function () use ($entity, $row) {
                 $entity->_insert($row);
             });
         }

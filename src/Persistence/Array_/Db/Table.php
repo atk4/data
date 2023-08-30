@@ -91,7 +91,7 @@ class Table
         $this->columnNames[$columnName] = $columnName;
 
         foreach ($this->getRows() as $row) {
-            \Closure::bind(function () use ($row, $columnName) {
+            \Closure::bind(static function () use ($row, $columnName) {
                 $row->initValue($columnName);
             }, null, $row)();
         }
@@ -132,7 +132,7 @@ class Table
         $that = $this;
         $columnNames = $this->getColumnNames();
         /** @var Row $row */
-        $row = \Closure::bind(function () use ($that, $rowClass, $columnNames) {
+        $row = \Closure::bind(static function () use ($that, $rowClass, $columnNames) {
             $row = new $rowClass($that);
             foreach ($columnNames as $columnName) {
                 $row->initValue($columnName);
@@ -155,7 +155,7 @@ class Table
 
     public function deleteRow(Row $row): void
     {
-        \Closure::bind(function () use ($row) {
+        \Closure::bind(static function () use ($row) {
             $row->beforeDelete();
         }, null, $row)();
 

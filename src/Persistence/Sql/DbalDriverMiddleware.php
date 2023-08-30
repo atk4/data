@@ -117,7 +117,7 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
         if ($exceptionConverter instanceof SQLServerExceptionConverter) {
             $exceptionConverter = $this->createExceptionConvertorMiddleware(
                 $exceptionConverter,
-                function (DbalDriverConvertedException $convertedException, ?DbalQuery $query): DbalDriverConvertedException {
+                static function (DbalDriverConvertedException $convertedException, ?DbalQuery $query): DbalDriverConvertedException {
                     // fix table not found exception conversion
                     // https://github.com/doctrine/dbal/pull/5492
                     if ($convertedException instanceof DatabaseObjectNotFoundException) {

@@ -116,7 +116,7 @@ trait PlatformTrait
                 $index->getFlags(),
                 $index->getOptions()
             );
-            \Closure::bind(function () use ($index, $uniqueConstraint) {
+            \Closure::bind(static function () use ($index, $uniqueConstraint) {
                 $uniqueConstraint->_name = $index->_name;
                 $uniqueConstraint->_namespace = $index->_namespace;
                 $uniqueConstraint->_quoted = $index->_quoted;

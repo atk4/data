@@ -121,7 +121,7 @@ class UserActionTest extends TestCase
     public function testPreview(): void
     {
         $client = new UaClient($this->pers);
-        $client->addUserAction('say_name', function (UaClient $m) {
+        $client->addUserAction('say_name', static function (UaClient $m) {
             return $m->get('name');
         });
 
@@ -129,7 +129,7 @@ class UserActionTest extends TestCase
 
         self::assertSame('John', $client->getUserAction('say_name')->execute());
 
-        $client->getUserAction('say_name')->preview = function (UaClient $m) {
+        $client->getUserAction('say_name')->preview = static function (UaClient $m) {
             return 'will say ' . $m->get('name');
         };
         self::assertSame('will say John', $client->getUserAction('say_name')->preview());
@@ -209,12 +209,12 @@ class UserActionTest extends TestCase
         $client = new UaClient($this->pers);
         $client = $client->load(1);
 
-        $client->getUserAction('sendReminder')->enabled = function (UaClient $m) {
+        $client->getUserAction('sendReminder')->enabled = static function (UaClient $m) {
             return true;
         };
         $client->getUserAction('sendReminder')->execute();
 
-        $client->getUserAction('sendReminder')->enabled = function (UaClient $m) {
+        $client->getUserAction('sendReminder')->enabled = static function (UaClient $m) {
             return false;
         };
 
@@ -267,7 +267,7 @@ class UserActionTest extends TestCase
         $action->confirmation = 'Are you sure?';
         self::assertSame('Are you sure?', $action->getConfirmation());
 
-        $action->confirmation = function (Model\UserAction $action) {
+        $action->confirmation = static function (Model\UserAction $action) {
             return 'Proceed with Test: ' . $action->getEntity()->getTitle();
         };
         self::assertSame('Proceed with Test: John', $action->getConfirmation());

@@ -235,7 +235,7 @@ class ContainsManyTest extends TestCase
         // let's test how it all looks in persistence without typecasting
         $exportLines = $i->getModel()->setOrder($i->fieldName()->id)
             ->export(null, null, false)[0][$i->fieldName()->lines];
-        $formatDtForCompareFx = function (\DateTimeInterface $dt): string {
+        $formatDtForCompareFx = static function (\DateTimeInterface $dt): string {
             $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC')); // @phpstan-ignore-line
 
             return $dt->format('Y-m-d H:i:s.u');

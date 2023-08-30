@@ -127,7 +127,7 @@ class ConnectionTest extends TestCase
 
     public function testConnectionRegistry(): void
     {
-        $registryBackup = \Closure::bind(fn () => Connection::$connectionClassRegistry, null, Connection::class)();
+        $registryBackup = \Closure::bind(static fn () => Connection::$connectionClassRegistry, null, Connection::class)();
         try {
             Connection::registerConnectionClass(DummyConnection::class, 'dummy');
             self::assertSame(DummyConnection::class, Connection::resolveConnectionClass('dummy'));
@@ -140,9 +140,9 @@ class ConnectionTest extends TestCase
             Connection::registerConnectionClass(DummyConnection2::class, 'dummy2');
             self::assertSame(DummyConnection2::class, Connection::resolveConnectionClass('dummy2'));
 
-            self::assertNotSame($registryBackup, \Closure::bind(fn () => Connection::$connectionClassRegistry, null, Connection::class)());
+            self::assertNotSame($registryBackup, \Closure::bind(static fn () => Connection::$connectionClassRegistry, null, Connection::class)());
         } finally {
-            \Closure::bind(fn () => Connection::$connectionClassRegistry = $registryBackup, null, Connection::class)();
+            \Closure::bind(static fn () => Connection::$connectionClassRegistry = $registryBackup, null, Connection::class)();
         }
     }
 

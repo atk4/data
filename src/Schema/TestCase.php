@@ -100,7 +100,7 @@ abstract class TestCase extends BaseTestCase
 
         $convertedSql = preg_replace_callback(
             '~\'(?:[^\'\\\\]+|\\\\.)*+\'|`(?:[^`\\\\]+|\\\\.)*+`|:(\w+)~s',
-            function ($matches) use ($platform) {
+            static function ($matches) use ($platform) {
                 if (isset($matches[1])) {
                     return ':' . ($platform instanceof OraclePlatform ? 'xxaaa' : '') . $matches[1];
                 }
@@ -176,11 +176,11 @@ abstract class TestCase extends BaseTestCase
 
             if ($is2d) {
                 if (array_is_list($a) && array_is_list($b)) {
-                    usort($a, fn ($a, $b) => self::compareExportUnorderedValue($a, $b));
-                    usort($b, fn ($a, $b) => self::compareExportUnorderedValue($a, $b));
+                    usort($a, static fn ($a, $b) => self::compareExportUnorderedValue($a, $b));
+                    usort($b, static fn ($a, $b) => self::compareExportUnorderedValue($a, $b));
                 } else {
-                    uasort($a, fn ($a, $b) => self::compareExportUnorderedValue($a, $b));
-                    uasort($b, fn ($a, $b) => self::compareExportUnorderedValue($a, $b));
+                    uasort($a, static fn ($a, $b) => self::compareExportUnorderedValue($a, $b));
+                    uasort($b, static fn ($a, $b) => self::compareExportUnorderedValue($a, $b));
                 }
             }
 

@@ -73,7 +73,7 @@ class ExpressionSqlTest extends TestCase
         $i = new Model($this->db, ['table' => 'invoice']);
         $i->addField('total_net', ['type' => 'integer']);
         $i->addField('total_vat', ['type' => 'float']);
-        $i->addExpression('total_gross', ['expr' => function () {
+        $i->addExpression('total_gross', ['expr' => static function () {
             return '[total_net] + [total_vat]';
         }, 'type' => 'float']);
 

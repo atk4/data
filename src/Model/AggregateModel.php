@@ -126,7 +126,7 @@ class AggregateModel extends Model
             case 'select':
                 $fields = $args[0] ?? array_unique(array_merge(
                     $this->onlyFields ?? array_keys($this->getFields()),
-                    array_filter($this->groupByFields, fn ($v) => !$v instanceof Expression)
+                    array_filter($this->groupByFields, static fn ($v) => !$v instanceof Expression)
                 ));
 
                 $query = parent::action($mode, [[]]);

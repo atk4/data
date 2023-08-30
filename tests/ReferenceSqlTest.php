@@ -396,7 +396,7 @@ class ReferenceSqlTest extends TestCase
                 ['id' => $createWrappedIntegerFx(2), 'name' => 'u', 'parentDirectoryId' => null],
             ], $fileEntity->getModel()->export());
         } finally {
-            \Closure::bind(function () use ($integerWrappedTypeName) {
+            \Closure::bind(static function () use ($integerWrappedTypeName) {
                 $dbalTypeRegistry = DbalTypes\Type::getTypeRegistry();
                 unset($dbalTypeRegistry->instances[$integerWrappedTypeName]);
             }, null, DbalTypes\TypeRegistry::class)();

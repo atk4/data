@@ -178,7 +178,7 @@ class RandomTest extends TestCase
 
         $p = new Persistence\Array_();
         $pAddCalled = false;
-        $p->onHookShort(Persistence::HOOK_AFTER_ADD, function (Model $mFromHook) use ($m, &$pAddCalled) {
+        $p->onHookShort(Persistence::HOOK_AFTER_ADD, static function (Model $mFromHook) use ($m, &$pAddCalled) {
             self::assertSame($m, $mFromHook);
             $pAddCalled = true;
         });
@@ -274,7 +274,7 @@ class RandomTest extends TestCase
 
         // default title field
         $m = new Model($p);
-        $m->addExpression('caps', ['expr' => function (Model $m) {
+        $m->addExpression('caps', ['expr' => static function (Model $m) {
             return strtoupper($m->get('name'));
         }]);
 

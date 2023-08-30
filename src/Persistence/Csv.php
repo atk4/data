@@ -173,7 +173,7 @@ class Csv extends Persistence
     public function initializeHeader(array $header): void
     {
         // removes forbidden symbols from header (field names)
-        $this->header = array_map(function (string $name): string {
+        $this->header = array_map(static function (string $name): string {
             return preg_replace('~[^a-z0-9_-]+~i', '_', $name);
         }, $header);
     }

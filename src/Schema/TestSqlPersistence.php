@@ -43,7 +43,7 @@ final class TestSqlPersistence extends Persistence\Sql
                             }
 
                             $test = TestCase::getTestFromBacktrace();
-                            \Closure::bind(fn () => $test->logQuery($sql, $params ?? [], $types ?? []), null, TestCase::class)(); // @phpstan-ignore-line
+                            \Closure::bind(static fn () => $test->logQuery($sql, $params ?? [], $types ?? []), null, TestCase::class)(); // @phpstan-ignore-line
                         }
 
                         public function stopQuery(): void

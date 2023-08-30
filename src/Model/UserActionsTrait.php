@@ -75,7 +75,7 @@ trait UserActionsTrait
     {
         $this->assertIsModel();
 
-        return array_filter($this->userActions, function (UserAction $action) use ($appliesTo) {
+        return array_filter($this->userActions, static function (UserAction $action) use ($appliesTo) {
             return !$action->system && ($appliesTo === null || $action->appliesTo === $appliesTo);
         });
     }
@@ -139,7 +139,7 @@ trait UserActionsTrait
             'fields' => true,
             'modifier' => UserAction::MODIFIER_UPDATE,
             'appliesTo' => UserAction::APPLIES_TO_SINGLE_RECORD,
-            'callback' => function (Model $entity) {
+            'callback' => static function (Model $entity) {
                 $entity->assertIsLoaded();
 
                 return $entity->save();
@@ -149,7 +149,7 @@ trait UserActionsTrait
         $this->addUserAction('delete', [
             'appliesTo' => UserAction::APPLIES_TO_SINGLE_RECORD,
             'modifier' => UserAction::MODIFIER_DELETE,
-            'callback' => function (Model $entity) {
+            'callback' => static function (Model $entity) {
                 return $entity->delete();
             },
         ]);

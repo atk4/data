@@ -146,7 +146,7 @@ class Sql extends Persistence
     {
         preg_replace_callback(
             '~\[\w*\]|\{\w*\}~',
-            function ($matches) use ($model, &$arguments) {
+            static function ($matches) use ($model, &$arguments) {
                 $identifier = substr($matches[0], 1, -1);
                 if ($identifier !== '' && !isset($arguments[$identifier])) {
                     $arguments[$identifier] = $model->getField($identifier);

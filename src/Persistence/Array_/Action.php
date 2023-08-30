@@ -76,7 +76,7 @@ class Action
 
                 break;
             case 'AVG':
-                $column = $coalesce ? $column : array_filter($column, function ($value) {
+                $column = $coalesce ? $column : array_filter($column, static function ($value) {
                     return $value !== null;
                 });
 

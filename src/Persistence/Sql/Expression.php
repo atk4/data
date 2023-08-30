@@ -243,8 +243,8 @@ abstract class Expression implements Expressionable, \ArrayAccess
         $platform = $this->connection->getDatabasePlatform();
         if ($platform instanceof PostgreSQLPlatform || $platform instanceof SQLServerPlatform) {
             $dummyPersistence = new Persistence\Sql($this->connection);
-            if (\Closure::bind(fn () => $dummyPersistence->binaryTypeValueIsEncoded($value), null, Persistence\Sql::class)()) {
-                $value = \Closure::bind(fn () => $dummyPersistence->binaryTypeValueDecode($value), null, Persistence\Sql::class)();
+            if (\Closure::bind(static fn () => $dummyPersistence->binaryTypeValueIsEncoded($value), null, Persistence\Sql::class)()) {
+                $value = \Closure::bind(static fn () => $dummyPersistence->binaryTypeValueDecode($value), null, Persistence\Sql::class)();
 
                 if ($platform instanceof PostgreSQLPlatform) {
                     return 'decode(\'' . bin2hex($value) . '\', \'hex\')';
@@ -277,7 +277,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
             $parts = ['\'\''];
         }
 
-        $buildConcatSqlFx = function (array $parts) use (&$buildConcatSqlFx, $platform): string {
+        $buildConcatSqlFx = static function (array $parts) use (&$buildConcatSqlFx, $platform): string {
             if (count($parts) > 1) {
                 $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
                 $partsRight = array_slice($parts, count($partsLeft));
@@ -452,7 +452,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
         $i = 0;
         $sql = preg_replace_callback(
             '~\'(?:\'\'|\\\\\'|[^\'])*+\'\K|(?:\?|:\w+)~s',
-            function ($matches) use ($params, &$i) {
+            static function ($matches) use ($params, &$i) {
                 if ($matches[0] === '') {
                     return '';
                 }
@@ -528,7 +528,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
             $j = 0;
             $sql = preg_replace_callback(
                 '~\'(?:\'\'|\\\\\'|[^\'])*+\'\K|(?:\?|:\w+)~s',
-                function ($matches) use ($params, &$numParams, &$i, &$j) {
+                static function ($matches) use ($params, &$numParams, &$i, &$j) {
                     if ($matches[0] === '') {
                         return '';
                     }
@@ -593,8 +593,8 @@ abstract class Expression implements Expressionable, \ArrayAccess
 
                     if ($platform instanceof PostgreSQLPlatform || $platform instanceof SQLServerPlatform) {
                         $dummyPersistence = new Persistence\Sql($this->connection);
-                        if (\Closure::bind(fn () => $dummyPersistence->binaryTypeValueIsEncoded($val), null, Persistence\Sql::class)()) {
-                            $val = \Closure::bind(fn () => $dummyPersistence->binaryTypeValueDecode($val), null, Persistence\Sql::class)();
+                        if (\Closure::bind(static fn () => $dummyPersistence->binaryTypeValueIsEncoded($val), null, Persistence\Sql::class)()) {
+                            $val = \Closure::bind(static fn () => $dummyPersistence->binaryTypeValueDecode($val), null, Persistence\Sql::class)();
                             $type = ParameterType::BINARY;
                         }
                     }

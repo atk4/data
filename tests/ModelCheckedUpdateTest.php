@@ -144,7 +144,7 @@ class ModelCheckedUpdateTest extends TestCase
         $m = $this->setupModelWithNameStartsWithJCondition();
 
         $entity3 = $m->load(3);
-        $entity3->onHook(Model::HOOK_BEFORE_UPDATE, function (Model $entity) {
+        $entity3->onHook(Model::HOOK_BEFORE_UPDATE, static function (Model $entity) {
             (clone $entity)->delete();
             self::assertSameExportUnordered([
                 ['id' => 1, 'name' => 'James'],
@@ -232,7 +232,7 @@ class ModelCheckedUpdateTest extends TestCase
         $m = $this->setupModelWithNameStartsWithJCondition();
 
         $entity3 = $m->load(3);
-        $entity3->onHook(Model::HOOK_BEFORE_DELETE, function (Model $entity) {
+        $entity3->onHook(Model::HOOK_BEFORE_DELETE, static function (Model $entity) {
             (clone $entity)->delete();
             self::assertSameExportUnordered([
                 ['id' => 1, 'name' => 'James'],
