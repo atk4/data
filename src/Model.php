@@ -990,9 +990,9 @@ class Model implements \IteratorAggregate
      * To use those, you should consult with documentation of your
      * persistence driver.
      *
-     * @param mixed $field
-     * @param mixed $operator
-     * @param mixed $value
+     * @param Model\Scope\AbstractScope|array<int, mixed>|string|Persistence\Sql\Expressionable             $field
+     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never) $operator
+     * @param ($operator is string ? mixed : never)                                                         $value
      *
      * @return $this
      */
