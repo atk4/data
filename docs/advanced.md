@@ -99,36 +99,7 @@ $this->onHookShort(Model::HOOK_AFTER_LOAD, function () {
 ```
 
 You would need to implement method "getClassName" which would return DESIRED class
-of the record. Finally to help with performance, you can implement a switch:
-
-```
-public $typeSubstitution = false;
-
-...
-
-protected function init(): void
-{
-    ...
-
-    if ($this->typeSubstitution) {
-        $this->onHook(Model::HOOK_AFTER_LOAD,
-            ...
-        )
-    }
-}
-```
-
-Now, every time you iterate (or load) you can decide if you want to invoke type
-substitution:
-
-```
-foreach ($account->ref('Transactions', ['typeSubstitution' => true]) as $tr) {
-    $tr->verify(); // verify() method can be overloaded!
-}
-
-// however, for export, we don't need expensive substitution
-$transactionData = $account->ref('Transaction')->export();
-```
+of the record.
 
 ## Audit Fields
 
