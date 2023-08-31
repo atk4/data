@@ -79,9 +79,9 @@ class Scope extends Scope\AbstractScope
         if ('func_num_args'() === 1 && $field instanceof Scope\AbstractScope) {
             $condition = $field;
         } elseif ('func_num_args'() === 1 && is_array($field)) {
-            $condition = static::createAnd(func_get_args());
+            $condition = static::createAnd('func_get_args'());
         } else {
-            $condition = new Scope\Condition(...func_get_args());
+            $condition = new Scope\Condition(...'func_get_args'());
         }
 
         $this->add($condition);
