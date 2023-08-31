@@ -1423,10 +1423,6 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsModel();
 
-        if ($field === $this->idField) { // optimization only
-            return $this->{$fromTryLoad ? 'tryLoad' : 'load'}($value);
-        }
-
         $field = $this->getField($field);
 
         $scopeBak = $this->scope;
