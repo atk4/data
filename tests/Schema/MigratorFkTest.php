@@ -26,7 +26,7 @@ class MigratorFkTest extends TestCase
         self::assertArrayHasKey('primary', $indexes);
         unset($indexes['primary']);
 
-        $res = array_map(function (Index $v) {
+        $res = array_map(static function (Index $v) {
             self::assertFalse($v->isPrimary());
 
             return [
@@ -46,7 +46,7 @@ class MigratorFkTest extends TestCase
     {
         $foreignKeys = $this->getConnection()->createSchemaManager()->listTableForeignKeys($localTable);
 
-        $res = array_map(function (ForeignKeyConstraint $v) {
+        $res = array_map(static function (ForeignKeyConstraint $v) {
             return [
                 $v->getUnquotedLocalColumns(),
                 $v->getForeignTableName(),

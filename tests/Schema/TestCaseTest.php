@@ -26,7 +26,7 @@ class TestCaseTest extends TestCase
 
             $this->debug = true;
 
-            $m->atomic(function () use ($m) {
+            $m->atomic(static function () use ($m) {
                 $m->insert(['name' => 'Ewa', 'int' => 1, 'float' => 1]);
             });
 
@@ -97,7 +97,7 @@ class TestCaseTest extends TestCase
                 ['name' => 'Steve', 'age' => '30'],
             ],
         ];
-        $dbDataWithId = array_map(function (array $rows) {
+        $dbDataWithId = array_map(static function (array $rows) {
             $rowsWithId = [];
             $id = 1;
             foreach ($rows as $row) {

@@ -74,7 +74,7 @@ class Array_ extends Persistence
         foreach ($model->getFields() as $field) {
             if ($field->hasJoin()) {
                 $join = $field->getJoin();
-                $joinTableName = \Closure::bind(function () use ($join) {
+                $joinTableName = \Closure::bind(static function () use ($join) {
                     return $join->foreignTable;
                 }, null, Array_\Join::class)();
                 if (isset($this->seedData[$joinTableName])) {
@@ -193,7 +193,7 @@ class Array_ extends Persistence
      */
     private function getPersistenceNameToNameMap(Model $model): array
     {
-        return array_flip(array_map(fn (Field $f) => $f->getPersistenceName(), $model->getFields()));
+        return array_flip(array_map(static fn (Field $f) => $f->getPersistenceName(), $model->getFields()));
     }
 
     /**
@@ -396,7 +396,7 @@ class Array_ extends Persistence
         }
 
         if ($fields !== null) {
-            $rows = array_map(function (array $row) use ($fields) {
+            $rows = array_map(static function (array $row) use ($fields) {
                 return array_intersect_key($row, array_flip($fields));
             }, $rows);
         }

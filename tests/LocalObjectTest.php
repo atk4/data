@@ -25,7 +25,7 @@ class LocalObjectTest extends TestCase
 
         $platform = $this->getDatabasePlatform();
 
-        return \Closure::bind(function () use ($type, $platform) {
+        return \Closure::bind(static function () use ($type, $platform) {
             // make sure handles are initialized
             $type->convertToDatabaseValue(new \stdClass(), $platform);
 

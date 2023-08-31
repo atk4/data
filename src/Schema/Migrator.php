@@ -49,10 +49,6 @@ class Migrator
      */
     public function __construct(object $source)
     {
-        if (func_num_args() > 1) {
-            throw new \Error();
-        }
-
         if ($source instanceof Connection) {
             $this->_connection = $source;
         } elseif ($source instanceof Persistence\Sql) {
@@ -100,7 +96,7 @@ class Migrator
      */
     protected function fixAbstractAssetName(AbstractAsset $abstractAsset, string $name): AbstractAsset
     {
-        \Closure::bind(function () use ($abstractAsset, $name) {
+        \Closure::bind(static function () use ($abstractAsset, $name) {
             $abstractAsset->_quoted = true;
             $lastDotPos = strrpos($name, '.');
             if ($lastDotPos !== false) {
@@ -189,7 +185,7 @@ class Migrator
             $dropTriggerSql = $this->getDatabasePlatform()
                 ->getDropAutoincrementSql($this->table->getQuotedName($this->getDatabasePlatform()))[1];
             try {
-                \Closure::bind(function () use ($schemaManager, $dropTriggerSql) {
+                \Closure::bind(static function () use ($schemaManager, $dropTriggerSql) {
                     $schemaManager->_execSql($dropTriggerSql);
                 }, null, AbstractSchemaManager::class)();
             } catch (DatabaseObjectNotFoundException $e) {
@@ -423,7 +419,7 @@ class Migrator
         $table = reset($fields)->getOwner()->table;
 
         $indexes = $this->createSchemaManager()->listTableIndexes($this->fixTableNameForListMethod($table));
-        $fieldPersistenceNames = array_map(fn ($field) => $field->getPersistenceName(), $fields);
+        $fieldPersistenceNames = array_map(static fn ($field) => $field->getPersistenceName(), $fields);
         foreach ($indexes as $index) {
             $indexPersistenceNames = $index->getUnquotedColumns();
             if ($requireUnique) {
@@ -461,13 +457,13 @@ class Migrator
         }
 
         $index = new Index(
-            \Closure::bind(function () use ($table, $fields) {
+            \Closure::bind(static function () use ($table, $fields) {
                 return (new Identifier(''))->_generateIdentifierName([
                     $table,
-                    ...array_map(fn ($field) => $field->getPersistenceName(), $fields),
+                    ...array_map(static fn ($field) => $field->getPersistenceName(), $fields),
                 ], 'uniq');
             }, null, Identifier::class)(),
-            array_map(fn ($field) => $platform->quoteSingleIdentifier($field->getPersistenceName()), $fields),
+            array_map(static fn ($field) => $platform->quoteSingleIdentifier($field->getPersistenceName()), $fields),
             $isUnique,
             false,
             $mssqlNullable === false ? ['atk4-not-null'] : []
@@ -506,7 +502,7 @@ class Migrator
             [$platform->quoteSingleIdentifier($foreignField->getPersistenceName())],
             // DBAL auto FK generator does not honor foreign table/columns
             // https://github.com/doctrine/dbal/pull/5490
-            \Closure::bind(function () use ($localField, $foreignField) {
+            \Closure::bind(static function () use ($localField, $foreignField) {
                 return (new Identifier(''))->_generateIdentifierName([
                     $localField->getOwner()->table,
                     $localField->getPersistenceName(),
@@ -516,7 +512,7 @@ class Migrator
             }, null, Identifier::class)()
         );
         $foreignTableIdentifier = $this->fixAbstractAssetName(new Identifier('0.0'), $foreignField->getOwner()->table);
-        \Closure::bind(fn () => $foreignKey->_foreignTableName = $foreignTableIdentifier, null, ForeignKeyConstraint::class)();
+        \Closure::bind(static fn () => $foreignKey->_foreignTableName = $foreignTableIdentifier, null, ForeignKeyConstraint::class)();
 
         $this->createSchemaManager()->createForeignKey($foreignKey, $platform->quoteIdentifier($localField->getOwner()->table));
     }

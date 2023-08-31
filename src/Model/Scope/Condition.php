@@ -93,8 +93,8 @@ class Condition extends AbstractScope
 
     /**
      * @param string|Expressionable $key
-     * @param string|mixed|null     $operator
-     * @param mixed|null            $value
+     * @param string|mixed          $operator
+     * @param mixed                 $value
      */
     public function __construct($key, $operator = null, $value = null)
     {
@@ -106,7 +106,7 @@ class Condition extends AbstractScope
             throw new Exception('Field must be a string or an instance of Expressionable');
         }
 
-        if (func_num_args() === 2) {
+        if ('func_num_args'() === 2) {
             $value = $operator;
             $operator = self::OPERATOR_EQUALS;
         }
@@ -129,9 +129,11 @@ class Condition extends AbstractScope
         }
 
         if (is_array($value)) {
-            if (array_filter($value, 'is_array')) {
-                throw (new Exception('Multi-dimensional array as condition value is not supported'))
-                    ->addMoreInfo('value', $value);
+            foreach ($value as $v) {
+                if (is_array($v)) {
+                    throw (new Exception('Multi-dimensional array as condition value is not supported'))
+                        ->addMoreInfo('value', $value);
+                }
             }
 
             if (!in_array($this->operator, [

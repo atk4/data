@@ -111,7 +111,7 @@ class Field implements Expressionable
                 }
             };
 
-        $persistenceSetSkipNormalizeFx = \Closure::bind(function (bool $value) use ($persistence) {
+        $persistenceSetSkipNormalizeFx = \Closure::bind(static function (bool $value) use ($persistence) {
             $persistence->typecastSaveSkipNormalize = $value;
         }, null, Persistence::class);
 
@@ -428,7 +428,7 @@ class Field implements Expressionable
         if ($value instanceof Persistence\Array_\Action) { // needed to pass hintable tests
             $v = $value;
         } elseif (is_array($value)) {
-            $v = array_map(fn ($value) => $typecastField->typecastSaveField($value), $value);
+            $v = array_map(static fn ($value) => $typecastField->typecastSaveField($value), $value);
         } else {
             $v = $typecastField->typecastSaveField($value);
         }

@@ -26,7 +26,7 @@ class Scope extends Scope\AbstractScope
     /**
      * Create a Scope from array of condition objects or condition arrays.
      *
-     * @param array<int, Scope\AbstractScope|string|Expressionable|array<mixed>> $nestedConditions
+     * @param array<int, Scope\AbstractScope|Expressionable|array<int, mixed>> $nestedConditions
      */
     public function __construct(array $nestedConditions = [], string $junction = self::AND)
     {
@@ -41,7 +41,7 @@ class Scope extends Scope\AbstractScope
             if ($nestedCondition instanceof Scope\AbstractScope) {
                 $condition = $nestedCondition;
             } else {
-                if (!is_array($nestedCondition)) {
+                if ($nestedCondition instanceof Expressionable) {
                     $nestedCondition = [$nestedCondition];
                 }
                 $condition = new Scope\Condition(...$nestedCondition);
@@ -69,16 +69,16 @@ class Scope extends Scope\AbstractScope
 
     /**
      * @param Scope\AbstractScope|array<int, mixed>|string|Expressionable $field
-     * @param string|mixed|null                                           $operator
-     * @param mixed|null                                                  $value
+     * @param string|mixed                                                $operator
+     * @param mixed                                                       $value
      *
      * @return $this
      */
     public function addCondition($field, $operator = null, $value = null)
     {
-        if (func_num_args() === 1 && $field instanceof Scope\AbstractScope) {
+        if ('func_num_args'() === 1 && $field instanceof Scope\AbstractScope) {
             $condition = $field;
-        } elseif (func_num_args() === 1 && is_array($field)) {
+        } elseif ('func_num_args'() === 1 && is_array($field)) {
             $condition = static::createAnd(func_get_args());
         } else {
             $condition = new Scope\Condition(...func_get_args());
@@ -194,7 +194,7 @@ class Scope extends Scope\AbstractScope
     }
 
     /**
-     * @param Scope\AbstractScope|string|Expressionable|array<mixed> ...$conditions
+     * @param Scope\AbstractScope|Expressionable|array<int, mixed> ...$conditions
      *
      * @return static
      */
@@ -204,7 +204,7 @@ class Scope extends Scope\AbstractScope
     }
 
     /**
-     * @param Scope\AbstractScope|string|Expressionable|array<mixed> ...$conditions
+     * @param Scope\AbstractScope|Expressionable|array<int, mixed> ...$conditions
      *
      * @return static
      */

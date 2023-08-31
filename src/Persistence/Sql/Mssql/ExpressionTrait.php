@@ -13,7 +13,7 @@ trait ExpressionTrait
         [$sql, $params] = parent::render();
 
         // convert all string literals to NVARCHAR, eg. 'text' to N'text'
-        $sql = preg_replace_callback('~N?\'(?:\'\'|\\\\\'|[^\'])*+\'~s', function ($matches) {
+        $sql = preg_replace_callback('~N?\'(?:\'\'|\\\\\'|[^\'])*+\'~s', static function ($matches) {
             return (substr($matches[0], 0, 1) === 'N' ? '' : 'N') . $matches[0];
         }, $sql);
 
@@ -67,7 +67,7 @@ trait ExpressionTrait
                 EOF;
 
             if ($templateBefore === '' && $templateAfter === '' && $templateStr === $expectedInsertTemplate) {
-                $executeCatchFx = function (\Exception $e) use ($executeFx) {
+                $executeCatchFx = static function (\Exception $e) use ($executeFx) {
                     $eDriver = $e->getPrevious();
                     if ($eDriver !== null && $eDriver instanceof DriverException && $eDriver->getCode() === 544) {
                         try {

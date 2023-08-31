@@ -172,7 +172,7 @@ class SubTypesTest extends TestCase
         self::assertInstanceOf(StTransaction_TransferIn::class, $current->ref('Transactions')->load(3));
         self::assertInstanceOf(StTransaction_Withdrawal::class, $current->ref('Transactions')->load(4));
 
-        $assertClassesFx = function (array $expectedClasses) use ($current): void {
+        $assertClassesFx = static function (array $expectedClasses) use ($current): void {
             $classes = [];
             foreach ($current->ref('Transactions')->setOrder('id') as $tr) {
                 $classes[] = get_class($tr);

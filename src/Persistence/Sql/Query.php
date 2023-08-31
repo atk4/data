@@ -431,7 +431,7 @@ abstract class Query extends Expression
     {
         // Number of passed arguments will be used to determine if arguments were specified or not
         if ($numArgs === null) {
-            $numArgs = func_num_args();
+            $numArgs = 'func_num_args'();
         }
 
         if (is_string($field) && preg_match('~([><!=]|(<!\w)(not|is|in|like))\s*$~i', $field)) {
@@ -482,7 +482,7 @@ abstract class Query extends Expression
      */
     public function having($field, $cond = null, $value = null)
     {
-        return $this->where($field, $cond, $value, 'having', func_num_args());
+        return $this->where($field, $cond, $value, 'having', 'func_num_args'());
     }
 
     /**

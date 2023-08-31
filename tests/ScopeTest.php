@@ -127,6 +127,7 @@ class ScopeTest extends TestCase
         $m->addField('name');
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Field is not defined');
         $m->addCondition('last_name', 'Smith');
     }
 
@@ -211,6 +212,7 @@ class ScopeTest extends TestCase
         $condition = new Condition('name', 'abc');
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Condition must be associated with Model to convert to words');
         $condition->toWords();
     }
 
@@ -219,6 +221,7 @@ class ScopeTest extends TestCase
         $country = new SCountry($this->db);
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Operator is not supported');
         $country->addCondition('name', '==', 'abc');
     }
 
@@ -227,6 +230,7 @@ class ScopeTest extends TestCase
         $condition = new Condition($this->getConnection()->expr('1 = 1'));
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Negation of condition is not supported for this operator');
         $condition->negate();
     }
 
@@ -235,6 +239,7 @@ class ScopeTest extends TestCase
         $country = new SCountry($this->db);
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Model scope cannot be negated');
         $country->scope()->negate();
     }
 
@@ -456,12 +461,14 @@ class ScopeTest extends TestCase
     public function testInvalid1(): void
     {
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Operator is not supported for array condition value');
         new Condition('name', '>', ['a', 'b']);
     }
 
     public function testInvalid2(): void
     {
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Multi-dimensional array as condition value is not supported');
         new Condition('name', ['a', 'b' => ['c']]);
     }
 }

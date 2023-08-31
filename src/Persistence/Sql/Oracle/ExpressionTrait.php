@@ -52,7 +52,7 @@ trait ExpressionTrait
         $parts = $this->splitLongString($value, 1000);
 
         $exprArgs = [];
-        $buildConcatExprFx = function (array $parts) use (&$buildConcatExprFx, &$exprArgs): string {
+        $buildConcatExprFx = static function (array $parts) use (&$buildConcatExprFx, &$exprArgs): string {
             if (count($parts) > 1) {
                 $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
                 $partsRight = array_slice($parts, count($partsLeft));
@@ -95,7 +95,7 @@ trait ExpressionTrait
                     [$exprSql, $exprParams] = $expr->render();
                     $sql = preg_replace_callback(
                         '~\'(?:\'\'|\\\\\'|[^\'])*+\'\K|:\w+~s',
-                        function ($matches) use ($exprParams, &$newParams, &$newParamBase) {
+                        static function ($matches) use ($exprParams, &$newParams, &$newParamBase) {
                             if ($matches[0] === '') {
                                 return '';
                             }

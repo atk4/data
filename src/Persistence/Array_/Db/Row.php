@@ -85,7 +85,7 @@ class Row
         }
 
         $that = $this;
-        \Closure::bind(function () use ($owner, $that, $newData) {
+        \Closure::bind(static function () use ($owner, $that, $newData) {
             $owner->beforeValuesSet($that, $newData);
         }, null, $owner)();
 
@@ -96,7 +96,7 @@ class Row
 
     protected function beforeDelete(): void
     {
-        $this->updateValues(array_map(function () {
+        $this->updateValues(array_map(static function () {
             return null;
         }, $this->data));
 

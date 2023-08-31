@@ -76,9 +76,9 @@ class Action
 
                 break;
             case 'AVG':
-                $column = $coalesce ? $column : array_filter($column, function ($value) {
-                    return $value !== null;
-                });
+                if (!$coalesce) { // TODO add tests and verify against SQL
+                    $column = array_filter($column, static fn ($v) => $v !== null);
+                }
 
                 $result = array_sum($column) / count($column);
 

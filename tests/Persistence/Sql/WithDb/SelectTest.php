@@ -190,7 +190,7 @@ class SelectTest extends TestCase
         // but returns [Peter, Jane] - in original order.
         // That's why we add usort here.
         $data = $this->q('employee')->field('id')->field('name')->getRows();
-        usort($data, function ($a, $b) {
+        usort($data, static function ($a, $b) {
             return $a['id'] - $b['id']; // @phpstan-ignore-line
         });
         self::assertSame([

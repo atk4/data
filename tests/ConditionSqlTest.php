@@ -69,7 +69,7 @@ class ConditionSqlTest extends TestCase
 
         $m = $m->load(1);
         self::assertSame('John', $m->get('name'));
-        \Closure::bind(function () use ($m) {
+        \Closure::bind(static function () use ($m) {
             $m->_entityId = 2;
         }, null, Model::class)();
 

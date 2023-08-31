@@ -126,7 +126,7 @@ class ContainsOneTest extends TestCase
         // let's test how it all looks in persistence without typecasting
         $exportAddr = $i->getModel()->setOrder('id')
             ->export(null, null, false)[0][$i->fieldName()->addr];
-        $formatDtForCompareFunc = function (\DateTimeInterface $dt): string {
+        $formatDtForCompareFx = static function (\DateTimeInterface $dt): string {
             $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC')); // @phpstan-ignore-line
 
             return $dt->format('Y-m-d H:i:s.u');
@@ -136,12 +136,12 @@ class ContainsOneTest extends TestCase
                 $i->addr->fieldName()->id => 1,
                 $i->addr->fieldName()->country_id => 2,
                 $i->addr->fieldName()->address => 'bar',
-                $i->addr->fieldName()->built_date => $formatDtForCompareFunc(new \DateTime('2019-01-01')),
+                $i->addr->fieldName()->built_date => $formatDtForCompareFx(new \DateTime('2019-01-01')),
                 $i->addr->fieldName()->tags => json_encode(['foo', 'bar']),
                 $i->addr->fieldName()->door_code => json_encode([
                     $i->addr->door_code->fieldName()->id => 1,
                     $i->addr->door_code->fieldName()->code => 'DEF',
-                    $i->addr->door_code->fieldName()->valid_till => $formatDtForCompareFunc(new \DateTime('2019-07-01')),
+                    $i->addr->door_code->fieldName()->valid_till => $formatDtForCompareFx(new \DateTime('2019-07-01')),
                 ]),
             ]),
             $exportAddr

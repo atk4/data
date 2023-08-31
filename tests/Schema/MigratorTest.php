@@ -198,7 +198,7 @@ class MigratorTest extends TestCase
 
         // functional test for Expression::escapeStringLiteral() method
         $strRaw = $model->getPersistence()->typecastSaveField($model->getField('v'), $str);
-        $strRawSql = \Closure::bind(function () use ($model, $strRaw) {
+        $strRawSql = \Closure::bind(static function () use ($model, $strRaw) {
             return $model->expr('')->escapeStringLiteral($strRaw);
         }, null, Expression::class)();
         $query = $this->getConnection()->dsql()
@@ -224,7 +224,7 @@ class MigratorTest extends TestCase
             }
 
             self::assertSame($length, mb_strlen($str));
-            $strSql = \Closure::bind(function () use ($model, $str) {
+            $strSql = \Closure::bind(static function () use ($model, $str) {
                 return $model->expr('')->escapeStringLiteral($str);
             }, null, Expression::class)();
             $query = $this->getConnection()->dsql()
