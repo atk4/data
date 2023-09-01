@@ -2,165 +2,167 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Model;
+namespace Atk4\Data\Model;
 
-use atk4\data\Model;
+use Atk4\Core\Exception as CoreException;
+use Atk4\Core\Factory;
+use Atk4\Data\Exception;
+use Atk4\Data\Model;
 
 trait UserActionsTrait
 {
-    /**
-     * Default class for addUserAction().
-     *
-     * @var string|array
-     */
-    public $_default_seed_action = [Model\UserAction::class];
+    /** @var array<mixed> The seed used by addUserAction() method. */
+    protected $_defaultSeedUserAction = [UserAction::class];
 
-    /**
-     * @var array Collection of user actions - using key as action system name
-     */
+    /** @var array<string, UserAction> Collection of user actions - using key as action system name */
     protected $userActions = [];
 
     /**
      * Register new user action for this model. By default UI will allow users to trigger actions
      * from UI.
      *
-     * @param string         $name     Action name
-     * @param array|callable $defaults
+     * @template T of Model
+     *
+     * @param array<mixed>|\Closure(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $seed
      */
-    public function addUserAction($name, $defaults = []): Model\UserAction
+    public function addUserAction(string $name, $seed = []): UserAction
     {
-        if (is_callable($defaults)) {
-            $defaults = ['callback' => $defaults];
+        $this->assertIsModel();
+
+        if ($seed instanceof \Closure) {
+            $seed = ['callback' => $seed];
         }
 
-        if (!isset($defaults['caption'])) {
-            $defaults['caption'] = $this->readableCaption($name);
-        }
-
-        /** @var Model\UserAction $action */
-        $action = $this->factory($this->_default_seed_action, $defaults);
-
+        $seed = Factory::mergeSeeds($seed, $this->_defaultSeedUserAction);
+        $action = UserAction::fromSeed($seed);
         $this->_addIntoCollection($name, $action, 'userActions');
 
         return $action;
     }
 
     /**
+     * Returns true if user action with a corresponding name exists.
+     */
+    public function hasUserAction(string $name): bool
+    {
+        if ($this->isEntity() && $this->getModel()->hasUserAction($name)) {
+            return true;
+        }
+
+        return $this->_hasInCollection($name, 'userActions');
+    }
+
+    private function addUserActionFromModel(string $name, UserAction $action): void
+    {
+        $this->assertIsEntity();
+        $action->getOwner()->assertIsModel(); // @phpstan-ignore-line
+
+        // clone action and store it in entity
+        $action = clone $action;
+        $action->unsetOwner();
+        $this->_addIntoCollection($name, $action, 'userActions');
+    }
+
+    /**
      * Returns list of actions for this model. Can filter actions by records they apply to.
      * It will also skip system user actions (where system === true).
      *
-     * @param string $appliesTo e.g. Model\UserAction::APPLIES_TO_ALL_RECORDS
+     * @param string $appliesTo e.g. UserAction::APPLIES_TO_ALL_RECORDS
+     *
+     * @return array<string, UserAction>
      */
-    public function getUserActions($appliesTo = null): array
+    public function getUserActions(string $appliesTo = null): array
     {
-        return array_filter($this->userActions, function ($action) use ($appliesTo) {
+        $this->assertIsModel();
+
+        return array_filter($this->userActions, static function (UserAction $action) use ($appliesTo) {
             return !$action->system && ($appliesTo === null || $action->appliesTo === $appliesTo);
         });
     }
 
     /**
-     * Returns true if user action with a corresponding name exists.
-     *
-     * @param string $name UserAction name
-     */
-    public function hasUserAction($name): bool
-    {
-        return $this->_hasInCollection($name, 'userActions');
-    }
-
-    /**
      * Returns one action object of this model. If action not defined, then throws exception.
-     *
-     * @param string $name Action name
      */
-    public function getUserAction($name): Model\UserAction
+    public function getUserAction(string $name): UserAction
     {
-        return $this->_getFromCollection($name, 'userActions');
+        if ($this->isEntity() && !$this->_hasInCollection($name, 'userActions') && $this->getModel()->hasUserAction($name)) {
+            $this->addUserActionFromModel($name, $this->getModel()->getUserAction($name));
+        }
+
+        try {
+            return $this->_getFromCollection($name, 'userActions');
+        } catch (CoreException $e) {
+            throw (new Exception('User action is not defined'))
+                ->addMoreInfo('model', $this)
+                ->addMoreInfo('userAction', $name);
+        }
     }
 
     /**
-     * Execute specified action with specified arguments.
-     *
-     * @param string $name UserAction name
-     */
-    public function executeUserAction($name, ...$args)
-    {
-        $this->getUserAction($name)->execute(...$args);
-    }
-
-    /**
-     * Remove specified action(s).
-     *
-     * @param string|array $name
+     * Remove specified action.
      *
      * @return $this
      */
-    public function removeUserAction($name)
+    public function removeUserAction(string $name)
     {
-        foreach ((array) $name as $action) {
-            $this->_removeFromCollection($action, 'userActions');
-        }
+        $this->assertIsModel();
+
+        $this->_removeFromCollection($name, 'userActions');
 
         return $this;
     }
 
     /**
-     * @deprecated use addUserAction instead - will be removed in dec-2020
+     * Execute specified action with specified arguments.
+     *
+     * @param mixed ...$args
+     *
+     * @return mixed
      */
-    public function addAction($name, $defaults = []): Model\UserAction
+    public function executeUserAction(string $name, ...$args)
     {
-        'trigger_error'('Method Model::addAction is deprecated. Use Model::addUserAction instead', E_USER_DEPRECATED);
-
-        return $this->addUserAction(...func_get_args());
+        return $this->getUserAction($name)->execute(...$args);
     }
 
-    /**
-     * @deprecated use getUserActions instead - will be removed in dec-2020
-     */
-    public function getActions($scope = null): array
+    protected function initUserActions(): void
     {
-        'trigger_error'('Method Model::getActions is deprecated. Use Model::getUserActions instead', E_USER_DEPRECATED);
+        // Declare our basic Crud actions for the model.
+        $this->addUserAction('add', [
+            'fields' => true,
+            'modifier' => UserAction::MODIFIER_CREATE,
+            'appliesTo' => UserAction::APPLIES_TO_NO_RECORDS,
+            'callback' => 'save',
+            'description' => 'Add ' . $this->getModelCaption(),
+        ]);
 
-        return $this->getUserActions(...func_get_args());
-    }
+        $this->addUserAction('edit', [
+            'fields' => true,
+            'modifier' => UserAction::MODIFIER_UPDATE,
+            'appliesTo' => UserAction::APPLIES_TO_SINGLE_RECORD,
+            'callback' => static function (Model $entity) {
+                $entity->assertIsLoaded();
 
-    /**
-     * @deprecated use hasUserAction instead - will be removed in dec-2020
-     */
-    public function hasAction($name): bool
-    {
-        'trigger_error'('Method Model::hasAction is deprecated. Use Model::hasUserAction instead', E_USER_DEPRECATED);
+                return $entity->save();
+            },
+        ]);
 
-        return $this->hasUserAction(...func_get_args());
-    }
+        $this->addUserAction('delete', [
+            'appliesTo' => UserAction::APPLIES_TO_SINGLE_RECORD,
+            'modifier' => UserAction::MODIFIER_DELETE,
+            'callback' => static function (Model $entity) {
+                return $entity->delete();
+            },
+        ]);
 
-    /**
-     * @deprecated use getUserAction instead - will be removed in dec-2020
-     */
-    public function getAction($name): Model\UserAction
-    {
-        'trigger_error'('Method Model::getAction is deprecated. Use Model::getUserAction instead', E_USER_DEPRECATED);
-
-        return $this->getUserAction(...func_get_args());
-    }
-
-    /**
-     * @deprecated use executeUserAction instead - will be removed in dec-2020
-     */
-    public function executeAction($name, ...$args)
-    {
-        'trigger_error'('Method Model::executeAction is deprecated. Use Model::executeUserAction instead', E_USER_DEPRECATED);
-
-        $this->executeUserAction(...func_get_args());
-    }
-
-    /**
-     * @deprecated use removeUserAction instead - will be removed in dec-2020
-     */
-    public function removeAction($name)
-    {
-        'trigger_error'('Method Model::removeAction is deprecated. Use Model::removeUserAction instead', E_USER_DEPRECATED);
-
-        return $this->removeUserAction(...func_get_args());
+        $this->addUserAction('validate', [
+            // 'appliesTo' => any entity!
+            'description' => 'Provided with modified values will validate them but will not save',
+            'modifier' => UserAction::MODIFIER_READ,
+            'fields' => true,
+            'system' => true, // don't show by default
+            'args' => [
+                'intent' => ['type' => 'string'],
+            ],
+        ]);
     }
 }

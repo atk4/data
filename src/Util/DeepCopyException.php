@@ -2,11 +2,16 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Util;
+namespace Atk4\Data\Util;
 
-class DeepCopyException extends \atk4\data\Exception
+use Atk4\Data\Exception;
+
+class DeepCopyException extends Exception
 {
-    public function addDepth($prefix)
+    /**
+     * @return $this
+     */
+    public function addDepth(string $prefix)
     {
         $this->addMoreInfo('depth', $prefix . ':' . $this->getParams()['depth']);
 

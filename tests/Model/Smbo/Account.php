@@ -2,32 +2,33 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\tests\Model\Smbo;
+namespace Atk4\Data\Tests\Model\Smbo;
 
-class Account extends \atk4\data\Model
+use Atk4\Data\Model;
+
+class Account extends Model
 {
     public $table = 'account';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
         $this->addField('name');
 
-        $this->hasMany('Payment', new Payment())
-            ->addField('balance', ['aggregate' => 'sum', 'field' => 'amount']);
+        $this->hasMany('Payment', ['model' => [Payment::class]])
+            ->addField('balance', ['aggregate' => 'sum', 'field' => 'amount', 'type' => 'atk4_money']);
     }
 
     /**
-     * create and return a trasnfer model.
+     * Create and return a transfer model.
      */
-    public function transfer(self $a, $amount)
+    public function transfer(self $a, float $amount): Transfer
     {
-        $t = new Transfer($this->persistence, ['detached' => true]);
-        $t->set('account_id', $this->id);
-
-        $t->set('destination_account_id', $a->id);
-
+        $t = new Transfer($this->getModel()->getPersistence(), ['detached' => true]);
+        $t = $t->createEntity();
+        $t->set('account_id', $this->getId());
+        $t->set('destination_account_id', $a->getId());
         $t->set('amount', -$amount);
 
         return $t;

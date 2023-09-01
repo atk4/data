@@ -2,104 +2,94 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\tests;
+namespace Atk4\Data\Tests;
 
-use atk4\data\Exception;
-use atk4\data\Model;
-use atk4\data\Persistence;
+use Atk4\Data\Exception;
+use Atk4\Data\Model;
+use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 
-class MyDate extends \DateTime
+class TypecastingTest extends TestCase
 {
-    public function __toString()
+    /** @var string */
+    private $defaultTzBackup;
+
+    protected function setUp(): void
     {
-        return $this->format('Y-m-d');
+        parent::setUp();
+
+        $this->defaultTzBackup = date_default_timezone_get();
     }
-}
 
-class MyTime extends \DateTime
-{
-    public function __toString()
+    protected function tearDown(): void
     {
-        return $this->format('H:i:s.u');
+        date_default_timezone_set($this->defaultTzBackup);
+
+        parent::tearDown();
     }
-}
 
-class MyDateTime extends \DateTime
-{
-    public function __toString()
+    public function testType(): void
     {
-        return $this->format('Y-m-d H:i:s.u');
-    }
-}
-
-/**
- * @coversDefaultClass \atk4\data\Model
- */
-class TypecastingTest extends \atk4\schema\PhpunitTestCase
-{
-    public function testType()
-    {
-        $a = [
+        $dbData = [
             'types' => [
                 [
                     'string' => 'foo',
                     'date' => '2013-02-20',
                     'datetime' => '2013-02-20 20:00:12.000000',
                     'time' => '12:00:50.000000',
-                    'boolean' => 1,
+                    'boolean' => true,
                     'integer' => '2940',
                     'money' => '8.20',
-                    'float' => '8.202343',
-                    'array' => '[1,2,3]',
+                    'float' => 8.20234376757473,
+                    'json' => '[1,2,3]',
                 ],
             ],
         ];
-        $this->setDb($a);
+        $this->setDb($dbData);
 
         date_default_timezone_set('Asia/Seoul');
 
-        $db = new Persistence\Sql($this->db->connection);
-
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('string', ['type' => 'string']);
         $m->addField('date', ['type' => 'date']);
         $m->addField('datetime', ['type' => 'datetime']);
         $m->addField('time', ['type' => 'time']);
         $m->addField('boolean', ['type' => 'boolean']);
-        $m->addField('money', ['type' => 'money']);
+        $m->addField('money', ['type' => 'atk4_money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('integer', ['type' => 'integer']);
-        $m->addField('array', ['type' => 'array']);
-        $m->load(1);
+        $m->addField('json', ['type' => 'json']);
+        $mm = $m->load(1);
 
-        $this->assertSame('foo', $m->get('string'));
-        $this->assertTrue($m->get('boolean'));
-        $this->assertSame(8.20, $m->get('money'));
-        $this->assertEquals(new \DateTime('2013-02-20'), $m->get('date'));
-        $this->assertEquals(new \DateTime('2013-02-20 20:00:12 UTC'), $m->get('datetime'));
-        $this->assertEquals(new \DateTime('1970-01-01 12:00:50'), $m->get('time'));
-        $this->assertSame(2940, $m->get('integer'));
-        $this->assertSame([1, 2, 3], $m->get('array'));
-        $this->assertSame(8.202343, $m->get('float'));
+        self::assertSame('foo', $mm->get('string'));
+        self::assertTrue($mm->get('boolean'));
+        self::assertSame(8.20, $mm->get('money'));
+        self::{'assertEquals'}(new \DateTime('2013-02-20 UTC'), $mm->get('date'));
+        self::{'assertEquals'}(new \DateTime('2013-02-20 20:00:12 UTC'), $mm->get('datetime'));
+        self::{'assertEquals'}(new \DateTime('1970-01-01 12:00:50 UTC'), $mm->get('time'));
+        self::assertSame(2940, $mm->get('integer'));
+        self::assertSame([1, 2, 3], $mm->get('json'));
+        self::assertSame(8.20234376757473, $mm->get('float'));
 
-        $m->duplicate()->save();
+        $m->createEntity()->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
 
-        $a = [
+        $dbData = [
             'types' => [
                 1 => [
-                    'id' => '1',
+                    'id' => 1,
                     'string' => 'foo',
                     'date' => '2013-02-20',
                     'datetime' => '2013-02-20 20:00:12.000000',
                     'time' => '12:00:50.000000',
                     'boolean' => 1,
                     'integer' => 2940,
-                    'money' => 8.20,
-                    'float' => 8.202343,
-                    'array' => '[1,2,3]',
+                    'money' => 8.2,
+                    'float' => 8.20234376757473,
+                    'json' => '[1,2,3]',
                 ],
-                2 => [
-                    'id' => '2',
+                [
+                    'id' => 2,
                     'string' => 'foo',
                     'date' => '2013-02-20',
                     'datetime' => '2013-02-20 20:00:12.000000',
@@ -107,27 +97,37 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
                     'boolean' => '1',
                     'integer' => '2940',
                     'money' => '8.2',
-                    'float' => '8.202343',
-                    'array' => '[1,2,3]',
+                    'float' => 8.20234376757473,
+                    'json' => '[1,2,3]',
                 ],
-            ], ];
-        $this->assertEquals($a, $this->getDb());
+            ],
+        ];
+        self::{'assertEquals'}($dbData, $this->getDb());
 
         [$first, $duplicate] = $m->export();
 
         unset($first['id']);
         unset($duplicate['id']);
 
-        $this->assertEquals($first, $duplicate);
+        self::assertSameExportUnordered([$first], [$duplicate]);
+
+        $m->load(2)->set('float', 8.20234376757474)->save();
+        self::assertSame(8.20234376757474, $m->load(2)->get('float'));
+        $m->load(2)->set('float', 8.202343767574732)->save();
+        // pdo_sqlite in truncating float, see https://github.com/php/php-src/issues/8510
+        // fixed since PHP 8.1, but if converted in SQL to string explicitly, the result is still rounded to 15 significant digits
+        if (!$this->getDatabasePlatform() instanceof SQLitePlatform || \PHP_VERSION_ID >= 80100) {
+            self::assertSame(8.202343767574732, $m->load(2)->get('float'));
+        }
     }
 
-    public function testEmptyValues()
+    public function testEmptyValues(): void
     {
-        if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
-        }
+        // Oracle always converts empty string to null
+        // see https://stackoverflow.com/questions/13278773/null-vs-empty-string-in-oracle#13278879
+        $emptyStringValue = $this->getDatabasePlatform() instanceof OraclePlatform ? null : '';
 
-        $a = [
+        $dbData = [
             'types' => [
                 1 => $row = [
                     'id' => 1,
@@ -140,18 +140,17 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
                     'integer' => '',
                     'money' => '',
                     'float' => '',
-                    'array' => '',
+                    'json' => '',
                     'object' => '',
+                    'local-object' => '',
                 ],
             ],
         ];
-        $this->setDb($a);
+        $this->setDb($dbData);
 
         date_default_timezone_set('Asia/Seoul');
 
-        $db = new Persistence\Sql($this->db->connection);
-
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('string', ['type' => 'string']);
         $m->addField('notype');
         $m->addField('date', ['type' => 'date']);
@@ -159,50 +158,56 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $m->addField('time', ['type' => 'time']);
         $m->addField('boolean', ['type' => 'boolean']);
         $m->addField('integer', ['type' => 'integer']);
-        $m->addField('money', ['type' => 'money']);
+        $m->addField('money', ['type' => 'atk4_money']);
         $m->addField('float', ['type' => 'float']);
-        $m->addField('array', ['type' => 'array']);
+        $m->addField('json', ['type' => 'json']);
         $m->addField('object', ['type' => 'object']);
-        $m->load(1);
+        $m->addField('local-object', ['type' => 'atk4_local_object']);
+        $mm = $m->load(1);
 
         // Only
-        $this->assertSame('', $m->get('string'));
-        $this->assertSame('', $m->get('notype'));
-        $this->assertNull($m->get('date'));
-        $this->assertNull($m->get('datetime'));
-        $this->assertNull($m->get('time'));
-        $this->assertNull($m->get('boolean'));
-        $this->assertNull($m->get('integer'));
-        $this->assertNull($m->get('money'));
-        $this->assertNull($m->get('float'));
-        $this->assertNull($m->get('array'));
-        $this->assertNull($m->get('object'));
+        self::assertSame($emptyStringValue, $mm->get('string'));
+        self::assertSame($emptyStringValue, $mm->get('notype'));
+        self::assertNull($mm->get('date'));
+        self::assertNull($mm->get('datetime'));
+        self::assertNull($mm->get('time'));
+        self::assertNull($mm->get('boolean'));
+        self::assertNull($mm->get('integer'));
+        self::assertNull($mm->get('money'));
+        self::assertNull($mm->get('float'));
+        self::assertNull($mm->get('json'));
+        self::assertNull($mm->get('object'));
+        self::assertNull($mm->get('local-object'));
 
         unset($row['id']);
-        $m->setMulti($row);
+        unset($row['local-object']);
+        $mm->setMulti($row);
 
-        $this->assertSame('', $m->get('string'));
-        $this->assertSame('', $m->get('notype'));
-        $this->assertNull($m->get('date'));
-        $this->assertNull($m->get('datetime'));
-        $this->assertNull($m->get('time'));
-        $this->assertNull($m->get('boolean'));
-        $this->assertNull($m->get('integer'));
-        $this->assertNull($m->get('money'));
-        $this->assertNull($m->get('float'));
-        $this->assertNull($m->get('array'));
-        $this->assertNull($m->get('object'));
-        $this->assertSame([], $m->dirty);
+        self::assertSame('', $mm->get('string'));
+        self::assertSame('', $mm->get('notype'));
+        self::assertNull($mm->get('date'));
+        self::assertNull($mm->get('datetime'));
+        self::assertNull($mm->get('time'));
+        self::assertNull($mm->get('boolean'));
+        self::assertNull($mm->get('integer'));
+        self::assertNull($mm->get('money'));
+        self::assertNull($mm->get('float'));
+        self::assertNull($mm->get('json'));
+        self::assertNull($mm->get('object'));
+        self::assertNull($mm->get('local-object'));
+        if (!$this->getDatabasePlatform() instanceof OraclePlatform) { // @TODO IMPORTANT we probably want to cast to string for Oracle on our own, so dirty array stay clean!
+            self::assertSame([], $mm->getDirtyRef());
+        }
 
-        $m->save();
-        $this->assertEquals($a, $this->getDb());
+        $mm->save();
+        self::{'assertEquals'}($dbData, $this->getDb());
 
-        $m->duplicate()->save();
+        $m->createEntity()->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
 
-        $a['types'][2] = [
+        $dbData['types'][2] = [
             'id' => 2,
-            'string' => '',
-            'notype' => '',
+            'string' => null,
+            'notype' => null,
             'date' => null,
             'datetime' => null,
             'time' => null,
@@ -210,426 +215,299 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
             'integer' => null,
             'money' => null,
             'float' => null,
-            'array' => null,
+            'json' => null,
             'object' => null,
+            'local-object' => null,
         ];
 
-        $this->assertEquals($a, $this->getDb());
+        self::{'assertEquals'}($dbData, $this->getDb());
     }
 
-    public function testTypecastNull()
+    public function testTypecastNull(): void
     {
-        if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
-        }
-
-        $a = [
+        $dbData = [
             'test' => [
-                1 => $row = ['id' => '1', 'a' => 1, 'b' => '', 'c' => null],
+                1 => $row = ['id' => 1, 'a' => '1', 'b' => '', 'c' => null],
             ],
         ];
-        $this->setDb($a);
-        $db = new Persistence\Sql($this->db->connection);
+        $this->setDb($dbData);
 
-        $m = new Model($db, ['table' => 'test']);
+        $m = new Model($this->db, ['table' => 'test']);
         $m->addField('a');
         $m->addField('b');
         $m->addField('c');
+        $m = $m->createEntity();
 
         unset($row['id']);
         $m->setMulti($row);
         $m->save();
 
-        $a['test'][2] = array_merge(['id' => '2'], $row);
+        $dbData['test'][2] = array_merge(['id' => 2], $row);
 
-        $this->assertEquals($a, $this->getDb());
+        self::{'assertEquals'}($dbData, $this->getDb());
     }
 
-    public function testTypeCustom1()
+    public function testTypeCustom1(): void
     {
-        $a = [
+        $dbData = [
             'types' => [
-                [
+                $row = [
                     'date' => '2013-02-20',
                     'datetime' => '2013-02-20 20:00:12.235689',
                     'time' => '12:00:50.235689',
-                    'b1' => 'Y',
-                    'b2' => 'N',
+                    'b1' => true,
+                    'b2' => false,
                     'integer' => '2940',
                     'money' => '8.20',
-                    'float' => '8.202343',
-                    'rot13' => 'uryyb jbeyq',
+                    'float' => 8.20234376757473,
                 ],
             ],
         ];
-        $this->setDb($a);
-        $db = new Persistence\Sql($this->db->connection);
+        $this->setDb($dbData);
 
         date_default_timezone_set('Asia/Seoul');
 
-        $m = new Model($db, ['table' => 'types']);
-
-        $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
-        $m->addField('datetime', ['type' => 'datetime', 'dateTimeClass' => MyDateTime::class]);
-        $m->addField('time', ['type' => 'time', 'dateTimeClass' => MyTime::class]);
-        $m->addField('b1', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
-        $m->addField('b2', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
-        $m->addField('money', ['type' => 'money']);
+        $m = new Model($this->db, ['table' => 'types']);
+        $m->addField('date', ['type' => 'date']);
+        $m->addField('datetime', ['type' => 'datetime']);
+        $m->addField('time', ['type' => 'time']);
+        $m->addField('b1', ['type' => 'boolean']);
+        $m->addField('b2', ['type' => 'boolean']);
+        $m->addField('money', ['type' => 'atk4_money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('integer', ['type' => 'integer']);
 
-        $rot = function ($v) {
-            return str_rot13($v);
-        };
+        $mm = $m->load(1);
 
-        $m->addField('rot13', ['typecast' => [$rot, $rot]]);
+        self::assertSame(1, $mm->getId());
+        self::assertSame(1, $mm->get('id'));
+        self::assertSame('2013-02-21 05:00:12.235689', $mm->get('datetime')->format('Y-m-d H:i:s.u'));
+        self::assertSame('2013-02-20', $mm->get('date')->format('Y-m-d'));
+        self::assertSame('12:00:50.235689', $mm->get('time')->format('H:i:s.u'));
 
-        $m->load(1);
+        self::assertTrue($mm->get('b1'));
+        self::assertFalse($mm->get('b2'));
 
-        $this->assertSame('hello world', $m->get('rot13'));
-        $this->assertSame(1, (int) $m->id);
-        $this->assertSame(1, (int) $m->get('id'));
-        $this->assertSame('2013-02-21 05:00:12.235689', (string) $m->get('datetime'));
-        $this->assertSame('2013-02-20', (string) $m->get('date'));
-        $this->assertSame('12:00:50.235689', (string) $m->get('time'));
+        $m->createEntity()->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
+        $m->delete(1);
 
-        $this->assertTrue($m->get('b1'));
-        $this->assertFalse($m->get('b2'));
+        unset($dbData['types'][0]);
+        $row['money'] = '8.2'; // no trailing zero is expected
+        $dbData['types'][2] = array_merge(['id' => '2'], $row);
 
-        $m->duplicate()->save()->delete(1);
+        self::{'assertEquals'}($dbData, $this->getDb());
+    }
 
-        $a = [
+    public function testLoad(): void
+    {
+        $this->setDb([
             'types' => [
-                2 => [
-                    'id' => '2',
-                    'date' => '2013-02-20',
-                    'datetime' => '2013-02-20 20:00:12.235689',
-                    'time' => '12:00:50.235689',
-                    'b1' => 'Y',
-                    'b2' => 'N',
-                    'integer' => '2940',
-                    'money' => '8.2', // here it will loose last zero and that's as expected
-                    'float' => '8.202343',
-                    'rot13' => 'uryyb jbeyq', // str_rot13(hello world)
-                ],
+                ['date' => '2013-02-20'],
             ],
-        ];
-        $this->assertEquals($a, $this->getDb());
+        ]);
+
+        $m = new Model($this->db, ['table' => 'types']);
+        $m->addField('date', ['type' => 'date']);
+
+        $m = $m->load(1);
+        self::assertInstanceOf(\DateTime::class, $m->get('date'));
     }
 
-    public function testTryLoad()
+    public function testLoadAny(): void
     {
-        $a = [
+        $this->setDb([
             'types' => [
-                [
-                    'date' => '2013-02-20',
-                ],
-            ], ];
-        $this->setDb($a);
-        $db = new Persistence\Sql($this->db->connection);
-
-        $m = new Model($db, ['table' => 'types']);
-
-        $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
-
-        $m->tryLoad(1);
-
-        $this->assertTrue($m->get('date') instanceof MyDate);
-    }
-
-    public function testTryLoadAny()
-    {
-        $a = [
-            'types' => [
-                [
-                    'date' => '2013-02-20',
-                ],
-            ], ];
-        $this->setDb($a);
-        $db = new Persistence\Sql($this->db->connection);
-
-        $m = new Model($db, ['table' => 'types']);
-
-        $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
-
-        $m->tryLoadAny();
-
-        $this->assertTrue($m->get('date') instanceof MyDate);
-    }
-
-    public function testTryLoadBy()
-    {
-        $a = [
-            'types' => [
-                [
-                    'date' => '2013-02-20',
-                ],
-            ], ];
-        $this->setDb($a);
-        $db = new Persistence\Sql($this->db->connection);
-
-        $m = new Model($db, ['table' => 'types']);
-
-        $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
-
-        $m->loadBy('id', 1);
-
-        $this->assertTrue($m->get('date') instanceof MyDate);
-    }
-
-    public function testLoadBy()
-    {
-        $a = [
-            'types' => [
-                [
-                    'date' => '2013-02-20',
-                ],
+                ['date' => '2013-02-20'],
             ],
-        ];
-        $this->setDb($a);
-        $db = new Persistence\Sql($this->db->connection);
+        ]);
 
-        $m = new Model($db, ['table' => 'types']);
-        $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
+        $m = new Model($this->db, ['table' => 'types']);
+        $m->addField('date', ['type' => 'date']);
 
-        $m->loadAny();
-        $this->assertTrue($m->loaded());
-        $d = $m->get('date');
-        $m->unload();
-
-        $m->loadBy('date', $d);
-        $this->assertTrue($m->loaded());
-        $m->unload();
-
-        $m->addCondition('date', $d)->loadAny();
-        $this->assertTrue($m->loaded());
+        $m = $m->loadAny();
+        self::assertInstanceOf(\DateTime::class, $m->get('date'));
     }
 
-    public function testTypecastBoolean()
+    public function testLoadBy(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, 'job');
-
-        $f = $m->addField('closed', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
-
-        $this->assertSame('N', $db->typecastSaveField($f, 'N'));
-    }
-
-    public function testTypecastTimezone()
-    {
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, 'event');
-        $dt = $m->addField('dt', ['type' => 'datetime', 'persist_timezone' => 'EEST']);
-        $d = $m->addField('d', ['type' => 'date', 'persist_timezone' => 'EEST']);
-        $t = $m->addField('t', ['type' => 'time', 'persist_timezone' => 'EEST']);
-
-        date_default_timezone_set('UTC');
-        $s = new \DateTime('Monday, 15-Aug-05 22:52:01 UTC');
-        $this->assertSame('2005-08-16 00:52:01.000000', $db->typecastSaveField($dt, $s));
-        $this->assertSame('2005-08-15', $db->typecastSaveField($d, $s));
-        $this->assertSame('22:52:01.000000', $db->typecastSaveField($t, $s));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $db->typecastLoadField($dt, '2005-08-16 00:52:01'));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $db->typecastLoadField($d, '2005-08-15'));
-        $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $db->typecastLoadField($t, '22:52:01'));
-
-        date_default_timezone_set('Asia/Tokyo');
-
-        $s = new \DateTime('Monday, 15-Aug-05 22:52:01 UTC');
-        $this->assertSame('2005-08-16 00:52:01.000000', $db->typecastSaveField($dt, $s));
-        $this->assertSame('2005-08-15', $db->typecastSaveField($d, $s));
-        $this->assertSame('22:52:01.000000', $db->typecastSaveField($t, $s));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $db->typecastLoadField($dt, '2005-08-16 00:52:01'));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $db->typecastLoadField($d, '2005-08-15'));
-        $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $db->typecastLoadField($t, '22:52:01'));
-
-        date_default_timezone_set('America/Los_Angeles');
-
-        $s = new \DateTime('Monday, 15-Aug-05 22:52:01'); // uses servers default timezone
-        $this->assertSame('2005-08-16 07:52:01.000000', $db->typecastSaveField($dt, $s));
-        $this->assertSame('2005-08-15', $db->typecastSaveField($d, $s));
-        $this->assertSame('22:52:01.000000', $db->typecastSaveField($t, $s));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 America/Los_Angeles'), $db->typecastLoadField($dt, '2005-08-16 07:52:01'));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $db->typecastLoadField($d, '2005-08-15'));
-        $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $db->typecastLoadField($t, '22:52:01'));
-    }
-
-    public function testTimestamp()
-    {
-        $sql_time = '2016-10-25 11:44:08';
-
-        $a = [
+        $this->setDb([
             'types' => [
-                [
-                    'date' => $sql_time,
-                ],
-            ], ];
-        $this->setDb($a);
-        $db = new Persistence\Sql($this->db->connection);
+                ['date' => '2013-02-20'],
+            ],
+        ]);
 
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
+        $m->addField('date', ['type' => 'date']);
+
+        $m2 = $m->loadOne();
+        self::assertTrue($m2->isLoaded());
+        $d = $m2->get('date');
+
+        $m2 = $m->loadBy('date', $d);
+        self::assertTrue($m2->isLoaded());
+
+        $m2 = $m->addCondition('date', $d)->loadOne();
+        self::assertTrue($m2->isLoaded());
+    }
+
+    public function testTimestamp(): void
+    {
+        $sqlTime = '2016-10-25 11:44:08';
+        $this->setDb([
+            'types' => [
+                ['date' => $sqlTime],
+            ],
+        ]);
+
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
-        $m->loadAny();
+        $m = $m->loadOne();
 
         // must respect 'actual'
-        $this->assertNotNull($m->get('ts'));
+        self::assertNotNull($m->get('ts'));
     }
 
-    public function testBadTimestamp()
+    public function testBadTimestamp(): void
     {
-        $sql_time = '20blah16-10-25 11:44:08';
-
-        $a = [
+        $sqlTime = '20blah16-10-25 11:44:08';
+        $this->setDb([
             'types' => [
-                [
-                    'date' => $sql_time,
-                ],
-            ], ];
-        $this->setDb($a);
-        $db = new Persistence\Sql($this->db->connection);
+                ['date' => $sqlTime],
+            ],
+        ]);
 
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
+
         $this->expectException(Exception::class);
-        $m->loadAny();
+        $m->loadOne();
     }
 
-    public function testDirtyTimestamp()
+    public function testDirtyTimestamp(): void
     {
-        $sql_time = '2016-10-25 11:44:08';
-
-        $a = [
+        $sqlTime = '2016-10-25 11:44:08';
+        $this->setDb([
             'types' => [
-                [
-                    'date' => $sql_time,
-                ],
-            ], ];
-        $this->setDb($a);
-        $db = new Persistence\Sql($this->db->connection);
+                ['date' => $sqlTime],
+            ],
+        ]);
 
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
-        $m->loadAny();
+        $m = $m->loadOne();
         $m->set('ts', clone $m->get('ts'));
 
-        $this->assertFalse($m->isDirty('ts'));
+        self::assertFalse($m->isDirty('ts'));
     }
 
-    public function testTimestampSave()
+    public function testTimestampSave(): void
     {
-        $a = [
+        $this->setDb([
             'types' => [
-                [
-                    'date' => '',
-                ],
-            ], ];
-        $this->setDb($a);
-        $db = new Persistence\Sql($this->db->connection);
+                ['date' => ''],
+            ],
+        ]);
 
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'date']);
-        $m->loadAny();
+        $m = $m->loadOne();
         $m->set('ts', new \DateTime('2012-02-30'));
         $m->save();
 
-        // stores valid date.
-        $this->assertEquals(['types' => [1 => ['id' => 1, 'date' => '2012-03-01']]], $this->getDb());
+        self::assertSame([
+            'types' => [
+                1 => ['id' => 1, 'date' => '2012-03-01'],
+            ],
+        ], $this->getDb());
     }
 
-    public function testIntegerSave()
+    public function testIntegerSave(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
-
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('i', ['type' => 'integer']);
+        $m = $m->createEntity();
 
-        $m->data['i'] = 1;
-        $this->assertSame([], $m->dirty);
+        $m->getDataRef()['i'] = 1;
+        self::assertSame([], $m->getDirtyRef());
 
         $m->set('i', '1');
-        $this->assertSame([], $m->dirty);
+        self::assertSame([], $m->getDirtyRef());
 
         $m->set('i', '2');
-        $this->assertSame(['i' => 1], $m->dirty);
+        self::assertSame(['i' => 1], $m->getDirtyRef());
 
         $m->set('i', '1');
-        $this->assertSame([], $m->dirty);
+        self::assertSame([], $m->getDirtyRef());
 
         // same test without type integer
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('i');
+        $m = $m->createEntity();
 
-        $m->data['i'] = 1;
-        $this->assertSame([], $m->dirty);
+        $m->getDataRef()['i'] = 1;
+        self::assertSame([], $m->getDirtyRef());
 
         $m->set('i', '1');
-        $this->assertSame(1, $m->dirty['i']);
+        self::assertSame([], $m->getDirtyRef());
 
         $m->set('i', '2');
-        $this->assertSame(1, $m->dirty['i']);
+        self::assertSame(['i' => 1], $m->getDirtyRef());
 
         $m->set('i', '1');
-        $this->assertSame(1, $m->dirty['i']);
+        self::assertSame([], $m->getDirtyRef());
 
         $m->set('i', 1);
-        $this->assertSame([], $m->dirty);
+        self::assertSame([], $m->getDirtyRef());
     }
 
-    public function testDirtyTime()
+    public function testDirtyTime(): void
     {
-        $sql_time = '11:44:08';
-        $sql_time_new = '12:34:56';
-
-        $a = [
+        $sqlTime = new \DateTime('11:44:08 GMT');
+        $sqlTimeNew = new \DateTime('12:34:56 GMT');
+        $this->setDb([
             'types' => [
-                [
-                    'date' => $sql_time,
-                ],
-            ], ];
-        $this->setDb($a);
-        $db = new Persistence\Sql($this->db->connection);
+                ['date' => $sqlTime->format('H:i:s')],
+            ],
+        ]);
 
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'time']);
-        $m->loadAny();
+        $m = $m->loadOne();
 
-        $m->set('ts', $sql_time_new);
-        $this->assertTrue($m->isDirty('ts'));
+        $m->set('ts', $sqlTimeNew);
+        self::assertTrue($m->isDirty('ts'));
 
-        $m->set('ts', $sql_time);
-        $this->assertFalse($m->isDirty('ts'));
+        $m->set('ts', $sqlTime);
+        self::assertFalse($m->isDirty('ts'));
 
-        $m->set('ts', $sql_time_new);
-        $this->assertTrue($m->isDirty('ts'));
+        $m->set('ts', $sqlTimeNew);
+        self::assertTrue($m->isDirty('ts'));
     }
 
-    public function testDirtyTimeAfterSave()
+    public function testDirtyTimeAfterSave(): void
     {
-        $sql_time = '11:44:08';
-        $sql_time_new = '12:34:56';
-
-        $a = [
+        $sqlTime = new \DateTime('11:44:08 GMT');
+        $sqlTimeNew = new \DateTime('12:34:56 GMT');
+        $this->setDb([
             'types' => [
-                [
-                    'date' => null,
-                ],
-            ], ];
-        $this->setDb($a);
-        $db = new Persistence\Sql($this->db->connection);
+                ['date' => null],
+            ],
+        ]);
 
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'time']);
-        $m->loadAny();
+        $m = $m->loadOne();
 
-        $m->set('ts', $sql_time);
-        $this->assertTrue($m->isDirty('ts'));
+        $m->set('ts', $sqlTime);
+        self::assertTrue($m->isDirty('ts'));
 
         $m->save();
         $m->reload();
 
-        $m->set('ts', $sql_time);
-        $this->assertFalse($m->isDirty('ts'));
+        $m->set('ts', $sqlTime);
+        self::assertFalse($m->isDirty('ts'));
 
-        $m->set('ts', $sql_time_new);
-        $this->assertTrue($m->isDirty('ts'));
+        $m->set('ts', $sqlTimeNew);
+        self::assertTrue($m->isDirty('ts'));
     }
 }

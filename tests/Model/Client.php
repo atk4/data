@@ -2,14 +2,16 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\tests\Model;
+namespace Atk4\Data\Tests\Model;
 
 class Client extends User
 {
-    public function init(): void
+    public $table = 'client';
+
+    protected function init(): void
     {
         parent::init();
 
-        $this->addField('order', ['default' => '10']);
+        $this->addField('order', ['type' => 'integer', 'default' => 10]);
     }
 }

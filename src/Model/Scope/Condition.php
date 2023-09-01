@@ -2,36 +2,28 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Model\Scope;
+namespace Atk4\Data\Model\Scope;
 
-use atk4\core\ReadableCaptionTrait;
-use atk4\data\Exception;
-use atk4\data\Field;
-use atk4\data\Model;
-use atk4\dsql\Expression;
-use atk4\dsql\Expressionable;
+use Atk4\Core\ReadableCaptionTrait;
+use Atk4\Data\Exception;
+use Atk4\Data\Field;
+use Atk4\Data\Model;
+use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\Sql\Expression;
+use Atk4\Data\Persistence\Sql\Expressionable;
+use Atk4\Data\Persistence\Sql\Sqlite\Expression as SqliteExpression;
 
 class Condition extends AbstractScope
 {
     use ReadableCaptionTrait;
 
-    /**
-     * Stores the condition key.
-     *
-     * @var string|Field|Expression
-     */
+    /** @var string|Field|Expressionable */
     public $key;
 
-    /**
-     * Stores the condition operator.
-     *
-     * @var string
-     */
+    /** @var string|null */
     public $operator;
 
-    /**
-     * Stores the condition value.
-     */
+    /** @var mixed */
     public $value;
 
     protected $system = false;
@@ -49,6 +41,7 @@ class Condition extends AbstractScope
     public const OPERATOR_REGEXP = 'REGEXP';
     public const OPERATOR_NOT_REGEXP = 'NOT REGEXP';
 
+    /** @var array<string, array<string, string>> */
     protected static $operators = [
         self::OPERATOR_EQUALS => [
             'negate' => self::OPERATOR_DOESNOT_EQUAL,
@@ -100,28 +93,22 @@ class Condition extends AbstractScope
         ],
     ];
 
-    protected static $skipValueTypecast = [
-        self::OPERATOR_LIKE,
-        self::OPERATOR_NOT_LIKE,
-        self::OPERATOR_REGEXP,
-        self::OPERATOR_NOT_REGEXP,
-    ];
-
+    /**
+     * @param string|Expressionable $key
+     * @param string|mixed          $operator
+     * @param mixed                 $value
+     */
     public function __construct($key, $operator = null, $value = null)
     {
         if ($key instanceof AbstractScope) {
             throw new Exception('Only Scope can contain another conditions');
+        } elseif ($key instanceof Field) { // for BC
+            $key = $key->shortName;
+        } elseif (!is_string($key) && !$key instanceof Expressionable) { // @phpstan-ignore-line
+            throw new Exception('Field must be a string or an instance of Expressionable');
         }
 
-        if (func_num_args() == 1 && is_bool($key)) {
-            if ($key) {
-                return;
-            }
-
-            $key = new Expression('false');
-        }
-
-        if (func_num_args() == 2) {
+        if ('func_num_args'() === 2) {
             $value = $operator;
             $operator = self::OPERATOR_EQUALS;
         }
@@ -129,12 +116,37 @@ class Condition extends AbstractScope
         $this->key = $key;
         $this->value = $value;
 
-        if ($operator !== null) {
-            $this->operator = strtoupper((string) $operator);
+        if ($operator === null) {
+            // at least MSSQL database always requires an operator
+            if (!$key instanceof Expressionable) {
+                throw new Exception('Operator must be specified');
+            }
+        } else {
+            $this->operator = strtoupper($operator);
 
             if (!array_key_exists($this->operator, self::$operators)) {
                 throw (new Exception('Operator is not supported'))
                     ->addMoreInfo('operator', $operator);
+            }
+        }
+
+        if (is_array($value)) {
+            foreach ($value as $v) {
+                if (is_array($v)) {
+                    throw (new Exception('Multi-dimensional array as condition value is not supported'))
+                        ->addMoreInfo('value', $value);
+                }
+            }
+
+            if (!in_array($this->operator, [
+                self::OPERATOR_EQUALS,
+                self::OPERATOR_IN,
+                self::OPERATOR_DOESNOT_EQUAL,
+                self::OPERATOR_NOT_IN,
+            ], true)) {
+                throw (new Exception('Operator is not supported for array condition value'))
+                    ->addMoreInfo('operator', $operator)
+                    ->addMoreInfo('value', $value);
             }
         }
     }
@@ -148,25 +160,34 @@ class Condition extends AbstractScope
 
     protected function onChangeModel(): void
     {
-        if ($model = $this->getModel()) {
-            // if we have a definitive scalar value for a field
-            // sets it as default value for field and locks it
+        $model = $this->getModel();
+        if ($model !== null) {
+            // if we have a definitive equal condition set the value as default value for field
             // new records will automatically get this value assigned for the field
-            // @todo: consider this when condition is part of OR scope
+            // TODO: fix when condition is part of OR scope
             if ($this->system && $this->setsDefiniteValue()) {
                 // key containing '/' means chained references and it is handled in toQueryArguments method
-                if (is_string($field = $this->key) && !str_contains($field, '/')) {
+                $field = $this->key;
+                if (is_string($field) && !str_contains($field, '/')) {
                     $field = $model->getField($field);
                 }
 
-                if ($field instanceof Field) {
+                // TODO Model/field should not be mutated, see:
+                // https://github.com/atk4/data/issues/662
+                // for now, do not set default at least for PK/ID
+                if ($field instanceof Field && $field->shortName !== $field->getOwner()->idField) {
                     $field->system = true;
-                    $field->default = $this->value;
+                    $fakePersistence = new Persistence\Array_();
+                    $valueCloned = $fakePersistence->typecastLoadField($field, $fakePersistence->typecastSaveField($field, $this->value));
+                    $field->default = $valueCloned;
                 }
             }
         }
     }
 
+    /**
+     * @return array<0|1|2, mixed>
+     */
     public function toQueryArguments(): array
     {
         if ($this->isEmpty()) {
@@ -177,7 +198,8 @@ class Condition extends AbstractScope
         $operator = $this->operator;
         $value = $this->value;
 
-        if ($model = $this->getModel()) {
+        $model = $this->getModel();
+        if ($model !== null) {
             if (is_string($field)) {
                 // shorthand for adding conditions on references
                 // use chained reference names separated by "/"
@@ -191,15 +213,29 @@ class Condition extends AbstractScope
                         $refModel = $refModel->refLink($link);
                         $refModels[] = $refModel;
                     }
+                    unset($refModel);
 
                     foreach (array_reverse($refModels) as $refModel) {
                         if ($field === '#') {
-                            $field = $value ? $refModel->action('count') : $refModel->action('exists');
+                            if (is_string($value) && $value === (string) (int) $value) {
+                                $value = (int) $value;
+                            }
+
+                            if ($value === 0) {
+                                $field = $refModel->action('exists');
+                                $value = false;
+                            } elseif ($value === 1 && $operator === self::OPERATOR_GREATER_EQUAL) {
+                                $field = $refModel->action('exists');
+                                $operator = self::OPERATOR_EQUALS;
+                                $value = true;
+                            } else {
+                                $field = $refModel->action('count');
+                            }
                         } else {
                             $refModel->addCondition($field, $operator, $value);
                             $field = $refModel->action('exists');
-                            $operator = null;
-                            $value = null;
+                            $operator = self::OPERATOR_EQUALS;
+                            $value = true;
                         }
                     }
                 } else {
@@ -207,10 +243,9 @@ class Condition extends AbstractScope
                 }
             }
 
-            // @todo: value is array
-            // convert the value using the typecasting of persistence
-            if ($field instanceof Field && $model->persistence && !in_array($operator, self::$skipValueTypecast, true)) {
-                $value = $model->persistence->typecastSaveField($field, $value);
+            // handle the query arguments using field
+            if ($field instanceof Field) {
+                [$field, $operator, $value] = $field->getQueryArguments($operator, $value);
             }
 
             // only expression contained in $field
@@ -243,18 +278,20 @@ class Condition extends AbstractScope
 
     public function clear()
     {
-        $this->key = $this->operator = $this->value = null;
+        $this->key = null; // @phpstan-ignore-line
+        $this->operator = null;
+        $this->value = null;
 
         return $this;
     }
 
     public function negate()
     {
-        if ($this->operator && isset(self::$operators[$this->operator]['negate'])) {
+        if (isset(self::$operators[$this->operator]['negate'])) {
             $this->operator = self::$operators[$this->operator]['negate'];
         } else {
             throw (new Exception('Negation of condition is not supported for this operator'))
-                ->addMoreInfo('operator', $this->operator ?: 'no operator');
+                ->addMoreInfo('operator', $this->operator ?? 'no operator');
         }
 
         return $this;
@@ -262,7 +299,9 @@ class Condition extends AbstractScope
 
     public function toWords(Model $model = null): string
     {
-        $model = $model ?: $this->getModel();
+        if ($model === null) {
+            $model = $this->getModel();
+        }
 
         if ($model === null) {
             throw new Exception('Condition must be associated with Model to convert to words');
@@ -272,14 +311,15 @@ class Condition extends AbstractScope
         $operator = $this->operatorToWords();
         $value = $this->valueToWords($model, $this->value);
 
-        return trim("{$key} {$operator} {$value}");
+        return trim($key . ' ' . $operator . ' ' . $value);
     }
 
     protected function keyToWords(Model $model): string
     {
         $words = [];
 
-        if (is_string($field = $this->key)) {
+        $field = $this->key;
+        if (is_string($field)) {
             if (str_contains($field, '/')) {
                 $references = explode('/', $field);
 
@@ -288,7 +328,7 @@ class Condition extends AbstractScope
                 $field = array_pop($references);
 
                 foreach ($references as $link) {
-                    $words[] = "that has reference {$this->readableCaption($link)}";
+                    $words[] = 'that has reference ' . $this->readableCaption($link);
 
                     $model = $model->refLink($link);
                 }
@@ -297,19 +337,18 @@ class Condition extends AbstractScope
 
                 if ($field === '#') {
                     $words[] = $this->operator ? 'number of records' : 'any referenced record exists';
-                    $field = null;
                 }
             }
 
-            if ($field !== null) {
+            if ($model->hasField($field)) {
                 $field = $model->getField($field);
             }
         }
 
         if ($field instanceof Field) {
             $words[] = $field->getCaption();
-        } elseif ($field instanceof Expression) {
-            $words[] = "expression '{$field->getDebugQuery()}'";
+        } elseif ($field instanceof Expressionable) {
+            $words[] = $this->valueToWords($model, $field);
         }
 
         return implode(' ', array_filter($words));
@@ -320,35 +359,39 @@ class Condition extends AbstractScope
         return $this->operator ? self::$operators[$this->operator]['label'] : '';
     }
 
+    /**
+     * @param mixed $value
+     */
     protected function valueToWords(Model $model, $value): string
     {
         if ($value === null) {
             return $this->operator ? 'empty' : '';
         }
 
-        if (is_array($values = $value)) {
-            $ret = [];
-            foreach ($values as $value) {
-                $ret[] = $this->valueToWords($model, $value);
+        if (is_array($value)) {
+            $res = [];
+            foreach ($value as $v) {
+                $res[] = $this->valueToWords($model, $v);
             }
 
-            return implode(' or ', $ret);
+            return implode(' or ', $res);
         }
 
         if (is_object($value)) {
             if ($value instanceof Field) {
-                return $value->owner->getModelCaption() . ' ' . $value->getCaption();
+                return $value->getOwner()->getModelCaption() . ' ' . $value->getCaption();
             }
 
-            if ($value instanceof Expression || $value instanceof Expressionable) {
-                return "expression '{$value->getDebugQuery()}'";
+            if ($value instanceof Expressionable) {
+                return 'expression \'' . $value->getDsqlExpression(new SqliteExpression())->getDebugQuery() . '\'';
             }
 
             return 'object ' . print_r($value, true);
         }
 
         // handling of scope on references
-        if (is_string($field = $this->key)) {
+        $field = $this->key;
+        if (is_string($field)) {
             if (str_contains($field, '/')) {
                 $references = explode('/', $field);
 
@@ -359,18 +402,35 @@ class Condition extends AbstractScope
                 }
             }
 
-            $field = $model->getField($field);
+            if ($model->hasField($field)) {
+                $field = $model->getField($field);
+            }
         }
 
         // use the referenced model title if such exists
-        if ($field && ($field->reference ?? false)) {
-            // make sure we set the value in the Model parent of the reference
-            // it should be same class as $model but $model might be a clone
-            $field->reference->owner->set($field->short_name, $value);
+        $title = null;
+        if ($field instanceof Field && $field->hasReference()) {
+            // make sure we set the value in the Model
+            $model = $model->isEntity() ? clone $model : $model->createEntity();
+            $model->set($field->shortName, $value);
 
-            $value = $field->reference->ref()->getTitle() ?: $value;
+            // then take the title
+            $title = $model->ref($field->getReference()->link)->getTitle();
+            if ($title === $value) {
+                $title = null;
+            }
         }
 
-        return "'" . (string) $value . "'";
+        if (is_bool($value)) {
+            $valueStr = $value ? 'true' : 'false';
+        } elseif (is_int($value)) {
+            $valueStr = (string) $value;
+        } elseif (is_float($value)) {
+            $valueStr = Expression::castFloatToString($value);
+        } else {
+            $valueStr = '\'' . (string) $value . '\'';
+        }
+
+        return $valueStr . ($title !== null ? ' (\'' . $title . '\')' : '');
     }
 }

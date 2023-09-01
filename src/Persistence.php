@@ -2,108 +2,91 @@
 
 declare(strict_types=1);
 
-namespace atk4\data;
+namespace Atk4\Data;
 
-/**
- * Persistence class.
- */
-class Persistence
+use Atk4\Core\ContainerTrait;
+use Atk4\Core\DiContainerTrait;
+use Atk4\Core\DynamicMethodTrait;
+use Atk4\Core\Factory;
+use Atk4\Core\HookTrait;
+use Atk4\Core\NameTrait;
+use Doctrine\DBAL\Platforms;
+use Doctrine\DBAL\Types\Type;
+
+abstract class Persistence
 {
-    use \atk4\core\ContainerTrait {
-        add as _add;
+    use ContainerTrait {
+        add as private _add;
     }
-    use \atk4\core\FactoryTrait;
-    use \atk4\core\HookTrait;
-    use \atk4\core\DynamicMethodTrait;
-    use \atk4\core\NameTrait;
-    use \atk4\core\DiContainerTrait;
+    use DiContainerTrait;
+    use DynamicMethodTrait;
+    use HookTrait;
+    use NameTrait;
 
-    /** @const string */
     public const HOOK_AFTER_ADD = self::class . '@afterAdd';
 
-    /** @var string Connection driver name, for example, mysql, pgsql, oci etc. */
-    public $driverType;
+    public const ID_LOAD_ONE = self::class . '@idLoadOne-qZ5TJwMVJ4LzVhuN';
+    public const ID_LOAD_ANY = self::class . '@idLoadAny-qZ5TJwMVJ4LzVhuN';
+
+    /** @internal prevent recursion */
+    private bool $typecastSaveSkipNormalize = false;
 
     /**
      * Connects database.
      *
-     * @param string $dsn      Format as PDO DSN or use "mysql://user:pass@host/db;option=blah", leaving user and password arguments = null
-     * @param string $user
-     * @param string $password
-     * @param array  $args
-     *
-     * @return Persistence
+     * @param string|array<string, string> $dsn      Format as PDO DSN or use "mysql://user:pass@host/db;option=blah",
+     *                                               leaving user and password arguments = null
+     * @param array<string, mixed>         $defaults
      */
-    public static function connect($dsn, $user = null, $password = null, $args = [])
+    public static function connect($dsn, string $user = null, string $password = null, array $defaults = []): self
     {
-        // Process DSN string
-        $dsn = \atk4\dsql\Connection::normalizeDsn($dsn, $user, $password);
+        // parse DSN string
+        $dsn = Persistence\Sql\Connection::normalizeDsn($dsn, $user, $password);
 
-        $driverType = strtolower($args['driver']/*BC compatibility*/ ?? $args['driverType'] ?? $dsn['driverType']);
+        switch ($dsn['driver']) {
+            case 'pdo_sqlite':
+            case 'pdo_mysql':
+            case 'mysqli':
+            case 'pdo_pgsql':
+            case 'pdo_sqlsrv':
+            case 'pdo_oci':
+            case 'oci8':
+                $persistence = new Persistence\Sql($dsn, $dsn['user'] ?? null, $dsn['password'] ?? null, $defaults);
 
-        switch ($driverType) {
-            case 'mysql':
-            case 'oci':
-            case 'oci12':
-                // Omitting UTF8 is always a bad problem, so unless it's specified we will do that
-                // to prevent nasty problems. This is un-tested on other databases, so moving it here.
-                // It gives problem with sqlite
-                if (strpos($dsn['dsn'], ';charset=') === false) {
-                    $dsn['dsn'] .= ';charset=utf8mb4';
-                }
-
-                // no break
-            case 'pgsql':
-            case 'dumper':
-            case 'counter':
-            case 'sqlite':
-                $db = new \atk4\data\Persistence\Sql($dsn['dsn'], $dsn['user'], $dsn['pass'], $args);
-                $db->driverType = $driverType;
-
-                return $db;
+                return $persistence;
             default:
-                throw (new Exception('Unable to determine persistence driver type from DSN'))
-                    ->addMoreInfo('dsn', $dsn['dsn']);
+                throw (new Exception('Unable to determine persistence driver type'))
+                    ->addMoreInfo('dsn', $dsn);
         }
     }
 
     /**
      * Disconnect from database explicitly.
      */
-    public function disconnect()
+    public function disconnect(): void
     {
     }
 
     /**
      * Associate model with the data driver.
+     *
+     * @param array<string, mixed> $defaults
      */
-    public function add(Model $m, array $defaults = []): Model
+    public function add(Model $model, array $defaults = []): void
     {
-        /*
-        if (isset($defaults[0])) {
-            $m->table = $defaults[0];
-            unset($defaults[0]);
-        }
-         */
-
-        $m = $this->factory($m, $defaults);
-
-        if ($m->persistence) {
-            if ($m->persistence === $this) {
-                return $m;
-            }
-
-            throw new Exception('Model is already related to another persistence');
+        if ($model->issetPersistence() || $model->persistenceData !== []) {
+            throw new \Error('Persistence::add() cannot be called directly, use Model::setPersistence() instead');
         }
 
-        $m->persistence = $this;
-        $m->persistence_data = [];
-        $this->initPersistence($m);
-        $m = $this->_add($m);
+        Factory::factory($model, $defaults);
+        $this->initPersistence($model);
+        $model->setPersistence($this);
 
-        $this->hook(self::HOOK_AFTER_ADD, [$m]);
+        // invokes Model::init()
+        // model is not added to elements as it does not implement TrackableTrait trait
+        $this->_add($model);
 
-        return $m;
+        $this->hook(self::HOOK_AFTER_ADD, [$model]);
     }
 
     /**
@@ -111,90 +94,218 @@ class Persistence
      * you can define additional methods or store additional data. This method
      * is executed before model's init().
      */
-    protected function initPersistence(Model $m)
+    protected function initPersistence(Model $m): void
     {
     }
 
     /**
      * Atomic executes operations within one begin/end transaction. Not all
-     * persistences will support atomic operations, so by default we just
+     * persistencies will support atomic operations, so by default we just
      * don't do anything.
      *
-     * @param callable $f
+     * @param \Closure(): mixed $fx
      *
      * @return mixed
      */
-    public function atomic($f)
+    public function atomic(\Closure $fx)
     {
-        return call_user_func($f);
+        return $fx();
+    }
+
+    public function getDatabasePlatform(): Platforms\AbstractPlatform
+    {
+        return new Persistence\GenericPlatform();
+    }
+
+    /**
+     * Tries to load data record, but will not fail if record can't be loaded.
+     *
+     * @param mixed $id
+     *
+     * @return array<string, mixed>|null
+     */
+    public function tryLoad(Model $model, $id): ?array
+    {
+        throw new Exception('Load is not supported');
+    }
+
+    /**
+     * Loads a record from model and returns a associative array.
+     *
+     * @param mixed $id
+     *
+     * @return array<string, mixed>
+     */
+    public function load(Model $model, $id): array
+    {
+        $model->assertIsModel();
+
+        $data = $this->tryLoad($model, $id);
+
+        if (!$data) {
+            $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
+
+            throw (new Exception($noId ? 'No record was found' : 'Record with specified ID was not found'))
+                ->addMoreInfo('model', $model)
+                ->addMoreInfo('id', $noId ? null : $id)
+                ->addMoreInfo('scope', $model->scope()->toWords());
+        }
+
+        return $data;
+    }
+
+    /**
+     * Inserts record in database and returns new record ID.
+     *
+     * @param array<string, mixed> $data
+     *
+     * @return mixed
+     */
+    public function insert(Model $model, array $data)
+    {
+        $model->assertIsModel();
+
+        if ($model->idField && array_key_exists($model->idField, $data) && $data[$model->idField] === null) {
+            unset($data[$model->idField]);
+        }
+
+        $dataRaw = $this->typecastSaveRow($model, $data);
+        unset($data);
+
+        if (is_object($model->table)) {
+            $innerInsertId = $model->table->insert($this->typecastLoadRow($model->table, $dataRaw));
+            if (!$model->idField) {
+                return false;
+            }
+
+            $idField = $model->getField($model->idField);
+            $insertId = $this->typecastLoadField(
+                $idField,
+                $idField->getPersistenceName() === $model->table->idField
+                    ? $this->typecastSaveField($model->table->getField($model->table->idField), $innerInsertId)
+                    : $dataRaw[$idField->getPersistenceName()]
+            );
+
+            return $insertId;
+        }
+
+        $idRaw = $this->insertRaw($model, $dataRaw);
+        if (!$model->idField) {
+            return false;
+        }
+
+        $id = $this->typecastLoadField($model->getField($model->idField), $idRaw);
+
+        return $id;
+    }
+
+    /**
+     * @param array<scalar|null> $dataRaw
+     *
+     * @return mixed
+     */
+    protected function insertRaw(Model $model, array $dataRaw)
+    {
+        throw new Exception('Insert is not supported');
+    }
+
+    /**
+     * Updates record in database.
+     *
+     * @param mixed                $id
+     * @param array<string, mixed> $data
+     */
+    public function update(Model $model, $id, array $data): void
+    {
+        $model->assertIsModel();
+
+        $idRaw = $model->idField ? $this->typecastSaveField($model->getField($model->idField), $id) : null;
+        unset($id);
+        if ($idRaw === null || (array_key_exists($model->idField, $data) && $data[$model->idField] === null)) {
+            throw new Exception('Unable to update record: Model idField is not set');
+        }
+
+        $dataRaw = $this->typecastSaveRow($model, $data);
+        unset($data);
+
+        if (count($dataRaw) === 0) {
+            return;
+        }
+
+        if (is_object($model->table)) {
+            $idPersistenceName = $model->getField($model->idField)->getPersistenceName();
+            $innerId = $this->typecastLoadField($model->table->getField($idPersistenceName), $idRaw);
+            $innerEntity = $model->table->loadBy($idPersistenceName, $innerId);
+
+            $innerEntity->saveAndUnload($this->typecastLoadRow($model->table, $dataRaw));
+
+            return;
+        }
+
+        $this->updateRaw($model, $idRaw, $dataRaw);
+    }
+
+    /**
+     * @param mixed              $idRaw
+     * @param array<scalar|null> $dataRaw
+     */
+    protected function updateRaw(Model $model, $idRaw, array $dataRaw): void
+    {
+        throw new Exception('Update is not supported');
+    }
+
+    /**
+     * Deletes record from database.
+     *
+     * @param mixed $id
+     */
+    public function delete(Model $model, $id): void
+    {
+        $model->assertIsModel();
+
+        $idRaw = $model->idField ? $this->typecastSaveField($model->getField($model->idField), $id) : null;
+        unset($id);
+        if ($idRaw === null) {
+            throw new Exception('Unable to delete record: Model idField is not set');
+        }
+
+        if (is_object($model->table)) {
+            $idPersistenceName = $model->getField($model->idField)->getPersistenceName();
+            $innerId = $this->typecastLoadField($model->table->getField($idPersistenceName), $idRaw);
+            $innerEntity = $model->table->loadBy($idPersistenceName, $innerId);
+
+            $innerEntity->delete();
+
+            return;
+        }
+
+        $this->deleteRaw($model, $idRaw);
+    }
+
+    /**
+     * @param mixed $idRaw
+     */
+    protected function deleteRaw(Model $model, $idRaw): void
+    {
+        throw new Exception('Delete is not supported');
     }
 
     /**
      * Will convert one row of data from native PHP types into
      * persistence types. This will also take care of the "actual"
-     * field keys. Example:.
+     * field keys.
      *
-     * In:
-     *  [
-     *    'name'=>' John Smith',
-     *    'age'=>30,
-     *    'password'=>'abc',
-     *    'is_married'=>true,
-     *  ]
+     * @param array<string, mixed> $row
      *
-     *  Out:
-     *   [
-     *     'first_name'=>'John Smith',
-     *     'age'=>30,
-     *     'is_married'=>1
-     *   ]
+     * @return array<scalar|Persistence\Sql\Expressionable|null>
      */
-    public function typecastSaveRow(Model $m, array $row): array
+    public function typecastSaveRow(Model $model, array $row): array
     {
         $result = [];
-        foreach ($row as $key => $value) {
-            // We have no knowledge of the field, it wasn't defined, so
-            // we will leave it as-is.
-            if (!$m->hasField($key)) {
-                $result[$key] = $value;
+        foreach ($row as $fieldName => $value) {
+            $field = $model->getField($fieldName);
 
-                continue;
-            }
-
-            // Look up field object
-            $f = $m->getField($key);
-
-            // Figure out the name of the destination field
-            $field = isset($f->actual) && $f->actual ? $f->actual : $key;
-
-            // check null values for mandatory fields
-            if ($value === null && $f->mandatory) {
-                throw new ValidationException([$key => 'Mandatory field value cannot be null']);
-            }
-
-            // Expression and null cannot be converted.
-            if (
-                $value instanceof \atk4\dsql\Expression ||
-                $value instanceof \atk4\dsql\Expressionable ||
-                $value === null
-            ) {
-                $result[$field] = $value;
-
-                continue;
-            }
-
-            // typecast if we explicitly want that or there is not serialization enabled
-            if ($f->typecast || ($f->typecast === null && $f->serialize === null)) {
-                $value = $this->typecastSaveField($f, $value);
-            }
-
-            // serialize if we explicitly want that
-            if ($f->serialize) {
-                $value = $this->serializeSaveField($f, $value);
-            }
-
-            // store converted value
-            $result[$field] = $value;
+            $result[$field->getPersistenceName()] = $this->typecastSaveField($field, $value);
         }
 
         return $result;
@@ -205,43 +316,20 @@ class Persistence
      * types to PHP native types.
      *
      * NOTE: Please DO NOT perform "actual" field mapping here, because data
-     * may be "aliased" from SQL persistences or mapped depending on persistence
+     * may be "aliased" from SQL persistencies or mapped depending on persistence
      * driver.
+     *
+     * @param array<string, scalar|null> $row
+     *
+     * @return array<string, mixed>
      */
-    public function typecastLoadRow(Model $m, array $row): array
+    public function typecastLoadRow(Model $model, array $row): array
     {
         $result = [];
-        foreach ($row as $key => $value) {
-            // We have no knowledge of the field, it wasn't defined, so
-            // we will leave it as-is.
-            if (!$m->hasField($key)) {
-                $result[$key] = $value;
+        foreach ($row as $fieldName => $value) {
+            $field = $model->getField($fieldName);
 
-                continue;
-            }
-
-            // Look up field object
-            $f = $m->getField($key);
-
-            // ignore null values
-            if ($value === null) {
-                $result[$key] = $value;
-
-                continue;
-            }
-
-            // serialize if we explicitly want that
-            if ($f->serialize) {
-                $value = $this->serializeLoadField($f, $value);
-            }
-
-            // typecast if we explicitly want that or there is not serialization enabled
-            if ($f->typecast || ($f->typecast === null && $f->serialize === null)) {
-                $value = $this->typecastLoadField($f, $value);
-            }
-
-            // store converted value
-            $result[$key] = $value;
+            $result[$fieldName] = $this->typecastLoadField($field, $value);
         }
 
         return $result;
@@ -253,26 +341,33 @@ class Persistence
      *
      * @param mixed $value
      *
-     * @return mixed
+     * @return scalar|Persistence\Sql\Expressionable|null
      */
-    public function typecastSaveField(Field $f, $value)
+    public function typecastSaveField(Field $field, $value)
     {
+        // SQL Expression cannot be converted
+        if ($value instanceof Persistence\Sql\Expressionable) {
+            return $value;
+        }
+
+        if (!$this->typecastSaveSkipNormalize) {
+            $value = $field->normalize($value);
+        }
+
+        if ($value === null) {
+            return null;
+        }
+
         try {
-            // use $f->typecast = [typecast_save_callback, typecast_load_callback]
-            if (is_array($f->typecast) && isset($f->typecast[0]) && is_callable($t = $f->typecast[0])) {
-                return $t($value, $f, $this);
+            $v = $this->_typecastSaveField($field, $value);
+            if ($v !== null && !is_scalar($v)) { // @phpstan-ignore-line
+                throw new Exception('Unexpected non-scalar value');
             }
 
-            // we respect null values
-            if ($value === null) {
-                return;
-            }
-
-            // run persistence-specific typecasting of field value
-            return $this->_typecastSaveField($f, $value);
+            return $v;
         } catch (\Exception $e) {
-            throw (new Exception('Unable to typecast field value on save', 0, $e))
-                ->addMoreInfo('field', $f->name);
+            throw (new Exception('Typecast save error', 0, $e))
+                ->addMoreInfo('field', $field->shortName);
         }
     }
 
@@ -280,34 +375,23 @@ class Persistence
      * Cast specific field value from the way how it's stored inside
      * persistence to a PHP format.
      *
-     * @param mixed $value
+     * @param scalar|null $value
      *
      * @return mixed
      */
-    public function typecastLoadField(Field $f, $value)
+    public function typecastLoadField(Field $field, $value)
     {
+        if ($value === null) {
+            return null;
+        } elseif (!is_scalar($value)) { // @phpstan-ignore-line
+            throw new Exception('Unexpected non-scalar value');
+        }
+
         try {
-            // use $f->typecast = [typecast_save_callback, typecast_load_callback]
-            if (is_array($f->typecast) && isset($f->typecast[1]) && is_callable($t = $f->typecast[1])) {
-                return $t($value, $f, $this);
-            }
-
-            // only string type fields can use empty string as legit value, for all
-            // other field types empty value is the same as no-value, nothing or null
-            if ($f->type && $f->type !== 'string' && $value === '') {
-                return;
-            }
-
-            // we respect null values
-            if ($value === null) {
-                return;
-            }
-
-            // run persistence-specific typecasting of field value
-            return $this->_typecastLoadField($f, $value);
+            return $this->_typecastLoadField($field, $value);
         } catch (\Exception $e) {
-            throw (new Exception('Unable to typecast field value on load', 0, $e))
-                ->addMoreInfo('field', $f->name);
+            throw (new Exception('Typecast parse error', 0, $e))
+                ->addMoreInfo('field', $field->shortName);
         }
     }
 
@@ -317,159 +401,84 @@ class Persistence
      *
      * @param mixed $value
      *
-     * @return mixed
+     * @return scalar|null
      */
-    public function _typecastSaveField(Field $f, $value)
+    protected function _typecastSaveField(Field $field, $value)
     {
-        return $value;
-    }
+        if (in_array($field->type, ['json', 'object'], true) && $value === '') { // TODO remove later
+            return null;
+        }
 
-    /**
-     * This is the actual field typecasting, which you can override in your
-     * persistence to implement necessary typecasting.
-     *
-     * @param mixed $value
-     *
-     * @return mixed
-     */
-    public function _typecastLoadField(Field $f, $value)
-    {
-        return $value;
-    }
-
-    /**
-     * Provided with a value, will perform field serialization.
-     * Can be used for the purposes of encryption or storing unsupported formats.
-     *
-     * @param mixed $value
-     *
-     * @return mixed
-     */
-    public function serializeSaveField(Field $f, $value)
-    {
-        try {
-            // use $f->serialize = [encode_callback, decode_callback]
-            if (is_array($f->serialize) && isset($f->serialize[0]) && is_callable($t = $f->serialize[0])) {
-                return $t($f, $value, $this);
+        // native DBAL DT types have no microseconds support
+        if (in_array($field->type, ['datetime', 'date', 'time'], true)
+            && str_starts_with(get_class(Type::getType($field->type)), 'Doctrine\DBAL\Types\\')) {
+            if ($value === '') {
+                return null;
+            } elseif (!$value instanceof \DateTimeInterface) {
+                throw new Exception('Must be instance of DateTimeInterface');
             }
 
-            // run persistence-specific serialization of field value
-            return $this->_serializeSaveField($f, $value);
-        } catch (\Exception $e) {
-            throw (new Exception('Unable to serialize field value on save', 0, $e))
-                ->addMoreInfo('field', $f->name);
-        }
-    }
-
-    /**
-     * Provided with a value, will perform field un-serialization.
-     * Can be used for the purposes of encryption or storing unsupported formats.
-     *
-     * @param mixed $value
-     *
-     * @return mixed
-     */
-    public function serializeLoadField(Field $f, $value)
-    {
-        try {
-            // use $f->serialize = [encode_callback, decode_callback]
-            if (is_array($f->serialize) && isset($f->serialize[1]) && is_callable($t = $f->serialize[1])) {
-                return $t($f, $value, $this);
+            if ($field->type === 'datetime') {
+                $value = new \DateTime($value->format('Y-m-d H:i:s.u'), $value->getTimezone());
+                $value->setTimezone(new \DateTimeZone('UTC'));
             }
 
-            // run persistence-specific un-serialization of field value
-            return $this->_serializeLoadField($f, $value);
-        } catch (\Exception $e) {
-            throw (new Exception('Unable to serialize field value on load', 0, $e))
-                ->addMoreInfo('field', $f->name);
-        }
-    }
+            $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s.u', 'time' => 'H:i:s.u'][$field->type];
+            $value = $value->format($format);
 
-    /**
-     * Override this to fine-tune serialization for your persistence.
-     *
-     * @param mixed $value
-     *
-     * @return mixed
-     */
-    public function _serializeSaveField(Field $f, $value)
-    {
-        switch ($f->serialize === true ? 'serialize' : $f->serialize) {
-        case 'serialize':
-            return serialize($value);
-        case 'json':
-            return $this->jsonEncode($f, $value);
-        case 'base64':
-            if (!is_string($value)) {
-                throw (new Exception('Field value can not be base64 encoded because it is not of string type'))
-                    ->addMoreInfo('field', $f)
-                    ->addMoreInfo('value', $value);
-            }
-
-            return base64_encode($value);
-        }
-    }
-
-    /**
-     * Override this to fine-tune un-serialization for your persistence.
-     *
-     * @param mixed $value
-     *
-     * @return mixed
-     */
-    public function _serializeLoadField(Field $f, $value)
-    {
-        switch ($f->serialize === true ? 'serialize' : $f->serialize) {
-        case 'serialize':
-            return unserialize($value);
-        case 'json':
-            return $this->jsonDecode($f, $value, $f->type === 'array');
-        case 'base64':
-            return base64_decode($value, true);
-        }
-    }
-
-    /**
-     * JSON decoding with proper error treatment.
-     *
-     * @return mixed
-     */
-    public function jsonDecode(Field $f, string $json, bool $assoc = true)
-    {
-        // constant supported only starting PHP 7.3
-        if (!defined('JSON_THROW_ON_ERROR')) {
-            define('JSON_THROW_ON_ERROR', 0);
+            return $value;
         }
 
-        $res = json_decode($json, $assoc, 512, JSON_THROW_ON_ERROR);
-        if (JSON_THROW_ON_ERROR === 0 && json_last_error() !== JSON_ERROR_NONE) {
-            throw (new Exception('There was error while decoding JSON'))
-                ->addMoreInfo('code', json_last_error())
-                ->addMoreInfo('error', json_last_error_msg());
+        $res = Type::getType($field->type)->convertToDatabaseValue($value, $this->getDatabasePlatform());
+        if (is_resource($res) && get_resource_type($res) === 'stream') {
+            $res = stream_get_contents($res);
         }
 
         return $res;
     }
 
     /**
-     * JSON encoding with proper error treatment.
+     * This is the actual field typecasting, which you can override in your
+     * persistence to implement necessary typecasting.
      *
-     * @param mixed $value
+     * @param scalar $value
      *
-     * @return string
+     * @return mixed
      */
-    public function jsonEncode(Field $f, $value)
+    protected function _typecastLoadField(Field $field, $value)
     {
-        // constant supported only starting PHP 7.3
-        if (!defined('JSON_THROW_ON_ERROR')) {
-            define('JSON_THROW_ON_ERROR', 0);
+        // TODO casting optionally to null should be handled by type itself solely
+        if ($value === '' && in_array($field->type, ['boolean', 'integer', 'float', 'datetime', 'date', 'time', 'json', 'object'], true)) {
+            return null;
         }
 
-        $res = json_encode($value, JSON_THROW_ON_ERROR, 512);
-        if (JSON_THROW_ON_ERROR === 0 && json_last_error() !== JSON_ERROR_NONE) {
-            throw (new Exception('There was error while encoding JSON'))
-                ->addMoreInfo('code', json_last_error())
-                ->addMoreInfo('error', json_last_error_msg());
+        // native DBAL DT types have no microseconds support
+        if (in_array($field->type, ['datetime', 'date', 'time'], true)
+            && str_starts_with(get_class(Type::getType($field->type)), 'Doctrine\DBAL\Types\\')) {
+            $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'][$field->type];
+            if (str_contains($value, '.')) { // time possibly with microseconds, otherwise invalid format
+                $format = preg_replace('~(?<=H:i:s)(?![. ]*u)~', '.u', $format);
+            }
+
+            $valueOrig = $value;
+            $value = \DateTime::createFromFormat('!' . $format, $value, new \DateTimeZone('UTC'));
+            if ($value === false) {
+                throw (new Exception('Incorrectly formatted datetime'))
+                    ->addMoreInfo('format', $format)
+                    ->addMoreInfo('value', $valueOrig)
+                    ->addMoreInfo('field', $field);
+            }
+
+            if ($field->type === 'datetime') {
+                $value->setTimezone(new \DateTimeZone(date_default_timezone_get()));
+            }
+
+            return $value;
+        }
+
+        $res = Type::getType($field->type)->convertToPHPValue($value, $this->getDatabasePlatform());
+        if (is_resource($res) && get_resource_type($res) === 'stream') {
+            $res = stream_get_contents($res);
         }
 
         return $res;

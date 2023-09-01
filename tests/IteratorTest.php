@@ -2,24 +2,22 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\tests;
+namespace Atk4\Data\Tests;
 
-use atk4\data\Exception;
-use atk4\data\Model;
-use atk4\data\Persistence;
+use Atk4\Data\Exception;
+use Atk4\Data\Model;
+use Atk4\Data\Schema\TestCase;
 
-/**
- * @coversDefaultClass \atk4\data\Model
- */
-class IteratorTest extends \atk4\schema\PhpunitTestCase
+class IteratorTest extends TestCase
 {
     /**
      * If first argument is array, then second argument should not be used.
      */
-    public function testException1()
+    public function testException1(): void
     {
         $m = new Model();
-        $m->addFields(['name', 'salary']);
+        $m->addField('name');
+        $m->addField('salary');
         $this->expectException(Exception::class);
         $m->setOrder(['name', 'salary'], 'desc');
     }
@@ -27,9 +25,10 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
     /**
      * Model is not associated with any database - persistence should be set.
      */
-    public function testException2()
+    public function testException2(): void
     {
         $m = new Model();
+
         $this->expectException(Exception::class);
         $m->tryLoad(1);
     }
@@ -37,9 +36,10 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
     /**
      * Model is not associated with any database - persistence should be set.
      */
-    public function testException3()
+    public function testException3(): void
     {
         $m = new Model();
+
         $this->expectException(Exception::class);
         $m->tryLoadAny();
     }
@@ -47,9 +47,10 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
     /**
      * Model is not associated with any database - persistence should be set.
      */
-    public function testException4()
+    public function testException4(): void
     {
         $m = new Model();
+
         $this->expectException(Exception::class);
         $m->load(1);
     }
@@ -57,9 +58,10 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
     /**
      * Model is not associated with any database - persistence should be set.
      */
-    public function testException5()
+    public function testException5(): void
     {
         $m = new Model();
+
         $this->expectException(Exception::class);
         $m->loadAny();
     }
@@ -67,39 +69,43 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
     /**
      * Model is not associated with any database - persistence should be set.
      */
-    public function testException6()
+    public function testException6(): void
     {
         $m = new Model();
-        $this->expectException(Exception::class);
+
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Expected entity, but instance is a model');
         $m->save();
     }
 
     /**
      * Model is not associated with any database - persistence should be set.
      */
-    public function testException7()
+    public function testException7(): void
     {
         $m = new Model();
+
         $this->expectException(Exception::class);
-        $m->action('insert');
+        $m->action('count');
     }
 
-    public function testBasic()
+    public function testBasic(): void
     {
-        $a = [
+        $this->setDb([
             'invoice' => [
                 ['total_net' => 10],
                 ['total_net' => 20],
                 ['total_net' => 15],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
-        $i->addExpression('total_gross', '[total_net]+[total_vat]');
+        $i = new Model($this->db, ['table' => 'invoice']);
+        $i->addField('total_net', ['type' => 'integer']);
+        $i->addField('total_vat', ['type' => 'integer']);
+        $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]', 'type' => 'integer']);
 
         $i->setOrder('total_net');
-        $i->onlyFields(['total_net']);
+        $i->setOnlyFields(['total_net']);
 
         $data = [];
         foreach ($i as $row) {
@@ -115,7 +121,7 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
             $data[] = $row->get();
         }
 
-        $this->assertEquals([
+        self::assertSame([
             ['total_net' => 10],
             ['total_net' => 15],
             ['total_net' => 20],
@@ -128,75 +134,77 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
         ], $data);
     }
 
-    public function testRawIterator()
+    public function testRawIterator(): void
     {
-        $a = [
+        $this->setDb([
             'invoice' => [
                 ['total_net' => 10],
                 ['total_net' => 20],
                 ['total_net' => 15],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
-        $i->addExpression('total_gross', '[total_net]+[total_vat]');
+        $i = new Model($this->db, ['table' => 'invoice']);
+        $i->addField('total_net', ['type' => 'integer']);
+        $i->addField('total_vat', ['type' => 'integer']);
+        $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]', 'type' => 'integer']);
 
         $i->setOrder('total_net');
-        $i->onlyFields(['total_net']);
+        $i->setOnlyFields(['total_net']);
 
         $data = [];
-        foreach ($i->rawIterator() as $row) {
+        foreach ($i->getRawIterator() as $row) {
             $data[] = $row;
 
             break;
         }
 
-        foreach ($i->rawIterator() as $row) {
+        foreach ($i->getRawIterator() as $row) {
             $data[] = $row;
             $i->setLimit(1);
         }
 
-        foreach ($i->rawIterator() as $row) {
+        foreach ($i->getRawIterator() as $row) {
             $data[] = $row;
         }
 
-        $this->assertEquals([
-            ['total_net' => 10, 'id' => 1],
+        self::assertSame([
+            ['total_net' => '10', 'id' => '1'],
 
-            ['total_net' => 10, 'id' => 1],
-            ['total_net' => 15, 'id' => 3],
-            ['total_net' => 20, 'id' => 2],
+            ['total_net' => '10', 'id' => '1'],
+            ['total_net' => '15', 'id' => '3'],
+            ['total_net' => '20', 'id' => '2'],
 
-            ['total_net' => 10, 'id' => 1], // affected by limit now
+            ['total_net' => '10', 'id' => '1'], // affected by limit now
         ], $data);
     }
 
-    public function testBasicId()
+    public function testBasicId(): void
     {
-        $a = [
+        $this->setDb([
             'invoice' => [
                 ['total_net' => 10],
                 ['total_net' => 20],
                 ['total_net' => 15],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
-        $i->addExpression('total_gross', '[total_net]+[total_vat]');
+        $i = new Model($this->db, ['table' => 'invoice']);
+        $i->addField('total_net', ['type' => 'integer']);
+        $i->addField('total_vat', ['type' => 'integer']);
+        $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]', 'type' => 'integer']);
 
         $i->setOrder('total_net');
-        $i->onlyFields(['total_net']);
+        $i->setOnlyFields(['total_net']);
 
         $data = [];
         foreach ($i as $id => $item) {
-            $data[$id] = clone $item;
+            $data[$id] = $item;
         }
 
-        $this->assertEquals(10, $data[1]->get('total_net'));
-        $this->assertEquals(20, $data[2]->get('total_net'));
-        $this->assertEquals(15, $data[3]->get('total_net'));
-        $this->assertNull($i->get('total_net'));
+        self::assertSame(10, $data[1]->get('total_net'));
+        self::assertSame(20, $data[2]->get('total_net'));
+        self::assertSame(15, $data[3]->get('total_net'));
+        self::assertNull($i->createEntity()->get('total_net'));
     }
 }

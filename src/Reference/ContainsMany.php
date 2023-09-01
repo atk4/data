@@ -2,70 +2,40 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Reference;
+namespace Atk4\Data\Reference;
 
-use atk4\data\Model;
-use atk4\data\Persistence;
+use Atk4\Data\Model;
+use Atk4\Data\Persistence;
 
-/**
- * ContainsMany reference.
- */
-class ContainsMany extends ContainsOne
+class ContainsMany extends ContainsBase
 {
-    /**
-     * Returns default persistence. It will be empty at this point.
-     *
-     * @see ref()
-     *
-     * @param Model $model Referenced model
-     *
-     * @return Persistence|false
-     */
-    protected function getDefaultPersistence($model)
+    protected function getDefaultPersistence(Model $theirModel): Persistence
     {
-        $ourModel = $this->getOurModel();
+        $ourModel = $this->getOurModelPassedToRefXxx();
 
-        // model should be loaded
-        /* Imants: it looks that this is not actually required - disabling
-        if (!$ourModel->loaded()) {
-            throw (new Exception('Model should be loaded!'))
-                ->addMoreInfo('model', get_class($ourModel));
-        }
-        */
-
-        // set data source of referenced array persistence
-        $rows = $ourModel->get($this->our_field) ?: [];
-        /*
-        foreach ($rows as $id=>$row) {
-            $rows[$id] = $ourModel->persistence->typecastLoadRow($ourModel, $row); // we need this typecasting because we set persistence data directly
-        }
-        */
-
-        return new Persistence\ArrayOfStrings([$this->table_alias => $rows ?: []]);
+        return new Persistence\Array_([
+            $this->tableAlias => $ourModel->isEntity() && $this->getOurFieldValue($ourModel) !== null ? $this->getOurFieldValue($ourModel) : [],
+        ]);
     }
 
-    /**
-     * Returns referenced model.
-     *
-     * @param array $defaults Properties
-     */
-    public function ref($defaults = []): Model
+    public function ref(Model $ourModel, array $defaults = []): Model
     {
-        $ourModel = $this->getOurModel();
+        $ourModel = $this->getOurModel($ourModel);
 
-        // get model
-        // will not use ID field (no, sorry, will have to use it)
-        $theirModel = $this->getTheirModel(array_merge($defaults, [
-            'contained_in_root_model' => $ourModel->contained_in_root_model ?: $ourModel,
-            //'id_field'              => false,
-            'table' => $this->table_alias,
+        $theirModel = $this->createTheirModel(array_merge($defaults, [
+            'containedInEntity' => $ourModel->isEntity() ? $ourModel : null,
+            'table' => $this->tableAlias,
         ]));
 
-        // set some hooks for ref_model
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
-            $theirModel->onHook($spot, function ($theirModel) {
-                $rows = $theirModel->persistence->getRawDataByTable($this->table_alias);
-                $this->getOurModel()->save([$this->our_field => $rows ?: null]);
+            $this->onHookToTheirModel($theirModel, $spot, function (Model $theirEntity) {
+                $ourModel = $this->getOurModel($theirEntity->containedInEntity);
+                $ourModel->assertIsEntity();
+
+                /** @var Persistence\Array_ */
+                $persistence = $theirEntity->getModel()->getPersistence();
+                $rows = $persistence->getRawDataByTable($theirEntity->getModel(), $this->tableAlias); // @phpstan-ignore-line
+                $ourModel->save([$this->getOurFieldName() => $rows !== [] ? $rows : null]);
             });
         }
 

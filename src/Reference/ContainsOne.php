@@ -2,132 +2,52 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Reference;
+namespace Atk4\Data\Reference;
 
-use atk4\data\Model;
-use atk4\data\Persistence;
-use atk4\data\Reference;
+use Atk4\Data\Model;
+use Atk4\Data\Persistence;
 
-/**
- * ContainsOne reference.
- */
-class ContainsOne extends Reference
+class ContainsOne extends ContainsBase
 {
-    /**
-     * Field type.
-     *
-     * @var string
-     */
-    public $type = 'array';
-
-    /**
-     * Is it system field?
-     *
-     * @var bool
-     */
-    public $system = true;
-
-    /**
-     * Array with UI flags like editable, visible and hidden.
-     *
-     * By default hasOne relation ID field should be editable in forms,
-     * but not visible in grids. UI should respect these flags.
-     *
-     * @var array
-     */
-    public $ui = [
-        'visible' => false, // not visible in UI Table, Grid and Crud
-        'editable' => true, // but should be editable in UI Form
-    ];
-
-    /**
-     * Required! We need table alias for internal use only.
-     *
-     * @var string
-     */
-    protected $table_alias = 'tbl';
-
-    /**
-     * Reference\ContainsOne will also add a field corresponding
-     * to 'our_field' unless it exists of course.
-     */
-    public function init(): void
+    protected function getDefaultPersistence(Model $theirModel): Persistence
     {
-        parent::init();
+        $ourModel = $this->getOurModelPassedToRefXxx();
 
-        if (!$this->our_field) {
-            $this->our_field = $this->link;
-        }
-
-        $ourModel = $this->getOurModel();
-
-        if (!$ourModel->hasElement($this->our_field)) {
-            $ourModel->addField($this->our_field, [
-                'type' => $this->type,
-                'reference' => $this,
-                'system' => $this->system,
-                'caption' => $this->caption, // it's ref models caption, but we can use it here for field too
-                'ui' => $this->ui,
-            ]);
-        }
+        return new Persistence\Array_([
+            $this->tableAlias => $ourModel->isEntity() && $this->getOurFieldValue($ourModel) !== null ? [1 => $this->getOurFieldValue($ourModel)] : [],
+        ]);
     }
 
-    /**
-     * Returns default persistence. It will be empty at this point.
-     *
-     * @see ref()
-     *
-     * @param Model $model Referenced model
-     *
-     * @return Persistence|false
-     */
-    protected function getDefaultPersistence($model)
+    public function ref(Model $ourModel, array $defaults = []): Model
     {
-        $ourModel = $this->getOurModel();
+        $ourModel = $this->getOurModel($ourModel);
 
-        // model should be loaded
-        /* Imants: it looks that this is not actually required - disabling
-        if (!$ourModel->loaded()) {
-            throw (new Exception('Model should be loaded!'))
-                ->addMoreInfo('model', get_class($ourModel));
-        }
-        */
-
-        // set data source of referenced array persistence
-        $row = $ourModel->get($this->our_field) ?: [];
-        //$row = $ourModel->persistence->typecastLoadRow($ourModel, $row); // we need this typecasting because we set persistence data directly
-
-        return new Persistence\ArrayOfStrings([$this->table_alias => $row ? [1 => $row] : []]);
-    }
-
-    /**
-     * Returns referenced model with loaded data record.
-     *
-     * @param array $defaults Properties
-     */
-    public function ref($defaults = []): Model
-    {
-        $ourModel = $this->getOurModel();
-
-        // get model
-        // will not use ID field
-        $theirModel = $this->getTheirModel(array_merge($defaults, [
-            'contained_in_root_model' => $ourModel->contained_in_root_model ?: $ourModel,
-            'id_field' => false,
-            'table' => $this->table_alias,
+        $theirModel = $this->createTheirModel(array_merge($defaults, [
+            'containedInEntity' => $ourModel->isEntity() ? $ourModel : null,
+            'table' => $this->tableAlias,
         ]));
 
-        // set some hooks for ref_model
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
-            $theirModel->onHook($spot, function ($theirModel) {
-                $row = $theirModel->persistence->getRawDataByTable($this->table_alias);
+            $this->onHookToTheirModel($theirModel, $spot, function (Model $theirEntity) {
+                $ourModel = $this->getOurModel($theirEntity->containedInEntity);
+                $ourModel->assertIsEntity();
+
+                /** @var Persistence\Array_ */
+                $persistence = $theirEntity->getModel()->getPersistence();
+                $row = $persistence->getRawDataByTable($theirEntity->getModel(), $this->tableAlias); // @phpstan-ignore-line
                 $row = $row ? array_shift($row) : null; // get first and only one record from array persistence
-                $this->getOurModel()->save([$this->our_field => $row]);
+                $ourModel->save([$this->getOurFieldName() => $row]);
             });
         }
 
-        // try to load any (actually only one possible) record
-        $theirModel->tryLoadAny();
+        if ($ourModel->isEntity()) {
+            $theirModelOrig = $theirModel;
+            $theirModel = $theirModel->tryLoadOne();
+
+            if ($theirModel === null) {
+                $theirModel = $theirModelOrig->createEntity();
+            }
+        }
 
         return $theirModel;
     }

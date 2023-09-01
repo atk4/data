@@ -2,110 +2,99 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\tests;
+namespace Atk4\Data\Tests;
 
-use atk4\data\Exception;
-use atk4\data\Model;
-use atk4\data\Persistence;
+use Atk4\Data\Exception;
+use Atk4\Data\Model;
+use Atk4\Data\Schema\TestCase;
 
-/**
- * @coversDefaultClass \atk4\data\Model
- *
- * Tests cases when model have to work with data that does not have ID field
- */
-class ReadOnlyModeTest extends \atk4\schema\PhpunitTestCase
+class ReadOnlyModeTest extends TestCase
 {
+    /** @var Model */
     public $m;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $a = [
+
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
-                2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
-            ], ];
-        $this->setDb($a);
+                ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
+            ],
+        ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $this->m = new Model($db, ['user', 'read_only' => true]);
-
-        $this->m->addFields(['name', 'gender']);
+        $this->m = new Model($this->db, ['table' => 'user', 'readOnly' => true]);
+        $this->m->addField('name');
+        $this->m->addField('gender');
     }
 
     /**
      * Basic operation should work just fine on model without ID.
      */
-    public function testBasic()
+    public function testBasic(): void
     {
-        $this->m->tryLoadAny();
-        $this->assertSame('John', $this->m->get('name'));
+        $this->m->setOrder('name', 'asc');
+        $m = $this->m->loadAny();
+        self::assertSame('John', $m->get('name'));
 
-        $this->m->setOrder('name desc');
-        $this->m->tryLoadAny();
-        $this->assertSame('Sue', $this->m->get('name'));
+        $this->m->order = [];
+        $this->m->setOrder('name', 'desc');
+        $m = $this->m->loadAny();
+        self::assertSame('Sue', $m->get('name'));
 
-        $this->assertEquals([1 => 'John', 2 => 'Sue'], $this->m->getTitles());
+        self::assertSame([2 => 'Sue', 1 => 'John'], $this->m->getTitles());
     }
 
-    /**
-     * Read only model can be loaded just fine.
-     */
-    public function testLoad()
+    public function testLoad(): void
     {
-        $this->m->load(1);
-        $this->assertTrue($this->m->loaded());
+        $m = $this->m->load(1);
+        self::assertTrue($m->isLoaded());
     }
 
-    /**
-     * Model cannot be saved.
-     */
-    public function testLoadSave()
-    {
-        $this->m->load(1);
-        $this->m->set('name', 'X');
-        $this->expectException(Exception::class);
-        $this->m->save();
-    }
-
-    /**
-     * Insert should fail too.
-     */
-    public function testInsert()
+    public function testInsert(): void
     {
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Model is read-only');
         $this->m->insert(['name' => 'Joe']);
     }
 
-    /**
-     * Different attempt that should also fail.
-     */
-    public function testSave1()
+    public function testSave(): void
     {
-        $this->m->tryLoadAny();
+        $m = $this->m->load(1);
+        $m->set('name', 'X');
+
         $this->expectException(Exception::class);
-        $this->m->saveAndUnload();
+        $this->expectExceptionMessage('Model is read-only');
+        $m->save();
     }
 
-    /**
-     * Conditions should work fine.
-     */
-    public function testLoadBy()
+    public function testSaveAndUnload(): void
     {
-        $this->m->loadBy('name', 'Sue');
-        $this->assertSame('Sue', $this->m->get('name'));
+        $m = $this->m->loadAny();
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Model is read-only');
+        $m->saveAndUnload();
     }
 
-    public function testLoadCondition()
+    public function testLoadBy(): void
+    {
+        $m = $this->m->loadBy('name', 'Sue');
+        self::assertSame('Sue', $m->get('name'));
+    }
+
+    public function testLoadCondition(): void
     {
         $this->m->addCondition('name', 'Sue');
-        $this->m->loadAny();
-        $this->assertSame('Sue', $this->m->get('name'));
+        $m = $this->m->loadAny();
+        self::assertSame('Sue', $m->get('name'));
     }
 
-    public function testFailDelete1()
+    public function testFailDelete1(): void
     {
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Model is read-only');
         $this->m->delete(1);
     }
 }

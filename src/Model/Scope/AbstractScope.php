@@ -2,30 +2,32 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Model\Scope;
+namespace Atk4\Data\Model\Scope;
 
-use atk4\core\InitializerTrait;
-use atk4\core\TrackableTrait;
-use atk4\data\Exception;
-use atk4\data\Model;
+use Atk4\Core\InitializerTrait;
+use Atk4\Core\TrackableTrait;
+use Atk4\Core\WarnDynamicPropertyTrait;
+use Atk4\Data\Exception;
+use Atk4\Data\Model;
 
 /**
- * @property Scope $owner
+ * @method Model\Scope getOwner()
  */
 abstract class AbstractScope
 {
     use InitializerTrait {
-        init as _init;
+        init as private _init;
     }
     use TrackableTrait;
+    use WarnDynamicPropertyTrait;
 
     /**
-     * Method is executed when the scope is added to parent scope using Scope::add
-     * $this->owner is the Scope object.
+     * Method is executed when the scope is added to parent scope using Scope::add().
      */
-    public function init(): void
+    protected function init(): void
     {
-        if (!$this->owner instanceof self) {
+        $owner = $this->getOwner();
+        if (!$owner instanceof self) { // @phpstan-ignore-line
             throw new Exception('Scope can only be added as element to scope');
         }
 
@@ -37,7 +39,7 @@ abstract class AbstractScope
         $this->onChangeModel();
     }
 
-    abstract protected function onChangeModel();
+    abstract protected function onChangeModel(): void;
 
     abstract protected function setSystem($system = true);
 
@@ -46,7 +48,7 @@ abstract class AbstractScope
      */
     public function getModel(): ?Model
     {
-        return $this->owner ? $this->owner->getModel() : null;
+        return $this->issetOwner() ? $this->getOwner()->getModel() : null;
     }
 
     /**
@@ -58,7 +60,7 @@ abstract class AbstractScope
 
     /**
      * Negate the scope object
-     * e.g from 'is' to 'is not'.
+     * e.g from '=' to '!='.
      *
      * @return static
      */
@@ -71,8 +73,6 @@ abstract class AbstractScope
 
     /**
      * Convert the scope to human readable words when applied on $model.
-     *
-     * @return bool
      */
     abstract public function toWords(Model $model = null): string;
 

@@ -2,38 +2,36 @@
 
 declare(strict_types=1);
 
-namespace atk4\data;
+namespace Atk4\Data;
 
-/**
- * Class description?
- */
 class ValidationException extends Exception
 {
-    /** @var array Array of errors */
-    public $errors = [];
+    /** @var array<string, string> */
+    public array $errors;
 
     /**
-     * @param array $errors Array of errors
-     * @param mixed $intent
+     * @param array<string, string> $errors
      *
      * @return \Exception
      */
-    public function __construct(array $errors, $model = null, $intent = null)
+    public function __construct(array $errors, Model $model = null)
     {
         if (count($errors) === 0) {
-            throw new Exception('Incorrect use of ValidationException, at least one error must be given');
+            throw new Exception('At least one error must be given');
         }
 
         $this->errors = $errors;
 
         if (count($errors) === 1) {
             parent::__construct(reset($errors));
-            $this->addMoreInfo('field', key($errors));
+
+            $this->addMoreInfo('field', array_key_first($errors));
         } else {
-            parent::__construct('Multiple unhandled validation errors');
-            $this->addMoreInfo('errors', $errors)
-                ->addMoreInfo('intent', $intent);
+            parent::__construct('Multiple validation errors');
+
+            $this->addMoreInfo('errors', $errors);
         }
+
         $this->addMoreInfo('model', $model);
     }
 }

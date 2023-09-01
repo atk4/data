@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\tests\Model;
+namespace Atk4\Data\Tests\Model;
 
 class Male extends Person
 {
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
+
         $this->addCondition('gender', 'M');
     }
 }

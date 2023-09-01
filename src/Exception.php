@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace atk4\data;
+namespace Atk4\Data;
 
-/**
- * Class description?
- */
-class Exception extends \atk4\core\Exception
+use Atk4\Core\Exception as BaseException;
+
+class Exception extends BaseException
 {
 }

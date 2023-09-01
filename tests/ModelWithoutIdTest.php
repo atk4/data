@@ -2,58 +2,74 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\tests;
+namespace Atk4\Data\Tests;
 
-use atk4\data\Exception;
-use atk4\data\Model;
-use atk4\data\Persistence;
+use Atk4\Data\Exception;
+use Atk4\Data\Model;
+use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 
-/**
- * @coversDefaultClass \atk4\data\Model
- *
- * Tests cases when model have to work with data that does not have ID field
- */
-class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
+class ModelWithoutIdTest extends TestCase
 {
+    /** @var Model */
     public $m;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $a = [
+
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
-                2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
-            ], ];
-        $this->setDb($a);
+                ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
+            ],
+        ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $this->m = new Model($db, ['user', 'id_field' => false]);
-
-        $this->m->addFields(['name', 'gender']);
+        $this->m = new Model($this->db, ['table' => 'user', 'idField' => false]);
+        $this->m->addField('name');
+        $this->m->addField('gender');
     }
 
     /**
      * Basic operation should work just fine on model without ID.
      */
-    public function testBasic()
+    public function testBasic(): void
     {
-        $this->m->tryLoadAny();
-        $this->assertSame('John', $this->m->get('name'));
+        $this->m->setOrder('name', 'asc');
+        $m = $this->m->loadAny();
+        self::assertSame('John', $m->get('name'));
 
-        $this->m->setOrder('name desc');
-        $this->m->tryLoadAny();
-        $this->assertSame('Sue', $this->m->get('name'));
+        $this->m->order = [];
+        $this->m->setOrder('name', 'desc');
+        $m = $this->m->loadAny();
+        self::assertSame('Sue', $m->get('name'));
 
-        $n = [];
+        $names = [];
         foreach ($this->m as $row) {
-            $n[] = $row->get('name');
-            $this->assertNull($row->id);
+            $names[] = $row->get('name');
         }
-        $this->assertSame(['Sue', 'John'], $n);
+        self::assertSame(['Sue', 'John'], $names);
     }
 
-    public function testFail1()
+    public function testGetIdException(): void
+    {
+        $m = $this->m->loadAny();
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('ID field is not defined');
+        $m->getId();
+    }
+
+    public function testSetIdException(): void
+    {
+        $m = $this->m->createEntity();
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('ID field is not defined');
+        $m->setId(1);
+    }
+
+    public function testFail1(): void
     {
         $this->expectException(Exception::class);
         $this->m->load(1);
@@ -62,86 +78,62 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
     /**
      * Inserting into model without ID should be OK.
      */
-    public function testInsert()
+    public function testInsert(): void
     {
-        if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            self::markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
         }
 
         $this->m->insert(['name' => 'Joe']);
-        $this->assertEquals(3, $this->m->action('count')->getOne());
+        self::assertSame(3, $this->m->executeCountQuery());
     }
 
     /**
      * Since no ID is set, a new record will be created if saving is attempted.
      */
-    public function testSave1()
+    public function testSave1(): void
     {
-        if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            self::markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
         }
 
-        $this->m->tryLoadAny();
-        $this->m->saveAndUnload();
+        $m = $this->m->loadAny();
+        $m->saveAndUnload();
 
-        $this->assertEquals(3, $this->m->action('count')->getOne());
+        self::assertSame(3, $this->m->executeCountQuery());
     }
 
     /**
      * Calling save will always create new record.
      */
-    public function testSave2()
+    public function testSave2(): void
     {
-        if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            self::markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
         }
 
-        $this->m->tryLoadAny();
-        $this->m->save();
+        $m = $this->m->loadAny();
+        $m->save();
 
-        $this->assertEquals(3, $this->m->action('count')->getOne());
+        self::assertSame(3, $this->m->executeCountQuery());
     }
 
-    /**
-     * Conditions should work fine.
-     */
-    public function testLoadBy()
+    public function testLoadBy(): void
     {
-        $this->m->loadBy('name', 'Sue');
-        $this->assertSame('Sue', $this->m->get('name'));
+        $m = $this->m->loadBy('name', 'Sue');
+        self::assertSame('Sue', $m->get('name'));
     }
 
-    public function testLoadCondition()
+    public function testLoadCondition(): void
     {
         $this->m->addCondition('name', 'Sue');
-        $this->m->loadAny();
-        $this->assertSame('Sue', $this->m->get('name'));
+        $m = $this->m->loadAny();
+        self::assertSame('Sue', $m->get('name'));
     }
 
-    public function testFailDelete1()
+    public function testFailDelete1(): void
     {
         $this->expectException(Exception::class);
         $this->m->delete(4);
-    }
-
-    /**
-     * Additional checks are done if ID is manually set.
-     */
-    public function testFailDelete2()
-    {
-        $this->m->id = 4;
-        $this->expectException(Exception::class);
-        $this->m->delete();
-    }
-
-    /**
-     * Additional checks are done if ID is manually set.
-     */
-    public function testFailUpdate()
-    {
-        $this->m->id = 1;
-        $this->m->set('name', 'foo');
-        $this->expectException(Exception::class);
-        $this->m->saveAndUnload();
     }
 }

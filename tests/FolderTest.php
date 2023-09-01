@@ -2,23 +2,25 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\tests;
+namespace Atk4\Data\Tests;
 
-use atk4\data\Persistence;
+use Atk4\Data\Model;
+use Atk4\Data\Schema\TestCase;
 
-class Folder extends \atk4\data\Model
+class Folder extends Model
 {
     public $table = 'folder';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
+
         $this->addField('name');
 
-        $this->hasMany('SubFolder', [new self(), 'their_field' => 'parent_id'])
-            ->addField('count', ['aggregate' => 'count', 'field' => $this->expr('*')]);
+        $this->hasMany('SubFolder', ['model' => [self::class], 'theirField' => 'parent_id'])
+            ->addField('count', ['aggregate' => 'count', 'field' => $this->getPersistence()->expr($this, '*')]);
 
-        $this->hasOne('parent_id', new self())
+        $this->hasOne('parent_id', ['model' => [self::class]])
             ->addTitle();
 
         $this->addField('is_deleted', ['type' => 'boolean']);
@@ -26,37 +28,34 @@ class Folder extends \atk4\data\Model
     }
 }
 
-/**
- * @coversDefaultClass \atk4\data\Model
- */
-class FolderTest extends \atk4\schema\PhpunitTestCase
+class FolderTest extends TestCase
 {
-    public function testRate()
+    public function testRate(): void
     {
-        $a = [
+        $this->setDb([
             'folder' => [
-                ['parent_id' => 1, 'is_deleted' => 0, 'name' => 'Desktop'],
-                ['parent_id' => 1, 'is_deleted' => 0, 'name' => 'My Documents'],
-                ['parent_id' => 1, 'is_deleted' => 0, 'name' => 'My Videos'],
-                ['parent_id' => 1, 'is_deleted' => 0, 'name' => 'My Projects'],
-                ['parent_id' => 4, 'is_deleted' => 0, 'name' => 'Agile Data'],
-                ['parent_id' => 4, 'is_deleted' => 0, 'name' => 'DSQL'],
-                ['parent_id' => 4, 'is_deleted' => 0, 'name' => 'Agile Toolkit'],
-                ['parent_id' => 4, 'is_deleted' => 1, 'name' => 'test-project'],
-            ], ];
-        $this->setDb($a);
+                ['parent_id' => 1, 'is_deleted' => false, 'name' => 'Desktop'],
+                ['parent_id' => 1, 'is_deleted' => false, 'name' => 'My Documents'],
+                ['parent_id' => 1, 'is_deleted' => false, 'name' => 'My Videos'],
+                ['parent_id' => 1, 'is_deleted' => false, 'name' => 'My Projects'],
+                ['parent_id' => 4, 'is_deleted' => false, 'name' => 'Agile Data'],
+                ['parent_id' => 4, 'is_deleted' => false, 'name' => 'DSQL'],
+                ['parent_id' => 4, 'is_deleted' => false, 'name' => 'Agile Toolkit'],
+                ['parent_id' => 4, 'is_deleted' => true, 'name' => 'test-project'],
+            ],
+        ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $f = new Folder($db);
-        $f->load(4);
+        $f = new Folder($this->db);
+        $this->createMigrator()->createForeignKey($f->getReference('SubFolder'));
+        $f = $f->load(4);
 
-        $this->assertEquals([
+        self::assertSame([
             'id' => 4,
             'name' => 'My Projects',
-            'count' => 3,
+            'count' => '3',
             'parent_id' => 1,
             'parent' => 'Desktop',
-            'is_deleted' => 0,
+            'is_deleted' => false,
         ], $f->get());
     }
 }

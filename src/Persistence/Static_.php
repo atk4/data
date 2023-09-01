@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Persistence;
+namespace Atk4\Data\Persistence;
 
-use atk4\data\Exception;
-use atk4\data\Model;
+use Atk4\Data\Model;
 
 /**
  * Implements a very basic array-access pattern:.
@@ -13,137 +12,157 @@ use atk4\data\Model;
  * $m = new Model(Persistence\Static_(['hello', 'world']));
  * $m->load(1);
  *
- * echo $m['name'];  // world
+ * echo $m->get('name'); // world
  */
 class Static_ extends Array_
 {
-    /**
-     * This will be the title field for the model.
-     *
-     * @var string
-     */
-    public $titleForModel;
+    /** @var string This will be the title field for the model. */
+    public $titleFieldForModel;
 
-    /**
-     * Populate the following fields for the model.
-     *
-     * @var array
-     */
+    /** @var array<string, array<mixed>> Populate the following fields for the model. */
     public $fieldsForModel = [];
 
     /**
-     * Constructor. Can pass array of data in parameters.
-     *
-     * @param array $data Static data in one of supported formats
+     * @param array<int|string, mixed> $data
      */
-    public function __construct($data = null)
+    public function __construct(array $data = [])
     {
-        if (!is_array($data)) {
-            throw (new Exception('Static data should be array of strings or array of hashes'))
-                ->addMoreInfo('data', $data);
-        }
-
-        // chomp off first row, we will use it to deduct fields
-        $row1 = reset($data);
-
-        $this->onHook(self::HOOK_AFTER_ADD, \Closure::fromCallable([$this, 'afterAdd']));
-
-        if (!is_array($row1)) {
-            // convert array of strings into array of hashes
-            foreach ($data as $k => $str) {
-                $data[$k] = ['id' => $k, 'name' => $str];
+        if (count($data) > 0 && !is_array(reset($data))) {
+            $dataOrig = $data;
+            $data = [];
+            foreach ($dataOrig as $k => $v) {
+                $data[] = ['id' => $k, 'name' => $v];
             }
-            unset($str);
-
-            $this->titleForModel = 'name';
-            $this->fieldsForModel = ['name' => []];
-
-            return parent::__construct($data);
         }
 
-        if (isset($row1['name'])) {
-            $this->titleForModel = 'name';
-        } elseif (isset($row1['title'])) {
-            $this->titleForModel = 'title';
+        // detect types from values
+        $fieldTypes = [];
+        foreach ($data as $row) {
+            foreach ($row as $k => $v) {
+                if (isset($fieldTypes[$k])) {
+                    continue;
+                }
+
+                if (is_bool($v)) {
+                    $fieldType = 'boolean';
+                } elseif (is_int($v)) {
+                    $fieldType = 'integer';
+                } elseif (is_float($v)) {
+                    $fieldType = 'float';
+                } elseif ($v instanceof \DateTimeInterface) {
+                    $fieldType = 'datetime';
+                } elseif (is_array($v)) {
+                    $fieldType = 'json';
+                } elseif (is_object($v)) {
+                    $fieldType = 'object';
+                } elseif ($v !== null) {
+                    $fieldType = 'string';
+                } else {
+                    $fieldType = null;
+                }
+
+                $fieldTypes[$k] = $fieldType;
+            }
+        }
+        foreach ($fieldTypes as $k => $fieldType) {
+            if ($fieldType === null) {
+                $fieldTypes[$k] = 'string';
+            }
         }
 
-        $key_override = [];
-        $def_types = [];
-        $must_override = false;
+        if (isset($fieldTypes['name'])) {
+            $this->titleFieldForModel = 'name';
+        } elseif (isset($fieldTypes['title'])) {
+            $this->titleFieldForModel = 'title';
+        }
 
-        foreach ($row1 as $key => $value) {
+        $defTypes = [];
+        $keyOverride = [];
+        $mustOverride = false;
+        foreach ($fieldTypes as $k => $fieldType) {
+            $defTypes[$k] = ['type' => $fieldType];
+
             // id information present, use it instead
-            if ($key === 'id') {
-                $must_override = true;
-            }
-
-            // try to detect type of field by its value
-            if (is_int($value)) {
-                $def_types[] = ['type' => 'integer'];
-            } elseif ($value instanceof \DateTime) {
-                $def_types[] = ['type' => 'datetime'];
-            } elseif (is_bool($value)) {
-                $def_types[] = ['type' => 'boolean'];
-            } elseif (is_float($value)) {
-                $def_types[] = ['type' => 'float'];
-            } elseif (is_array($value)) {
-                $def_types[] = ['type' => 'array'];
-            } elseif (is_object($value)) {
-                $def_types[] = ['type' => 'object'];
-            } else {
-                $def_types[] = [];
+            if ($k === 'id') {
+                $mustOverride = true;
             }
 
             // if title is not set, use first key
-            if (!$this->titleForModel) {
-                if (is_int($key)) {
-                    $key_override[] = 'name';
-                    $this->titleForModel = 'name';
-                    $must_override = true;
+            if (!$this->titleFieldForModel) {
+                if (is_int($k)) {
+                    $keyOverride[$k] = 'name';
+                    $this->titleFieldForModel = 'name';
+                    $mustOverride = true;
 
                     continue;
                 }
 
-                $this->titleForModel = $key;
+                $this->titleFieldForModel = $k;
             }
 
-            if (is_int($key)) {
-                $key_override[] = 'field' . $key;
-                $must_override = true;
-
-                continue;
+            if (is_int($k)) {
+                $keyOverride[$k] = 'field' . $k;
+                $mustOverride = true;
+            } else {
+                $keyOverride[$k] = $k;
             }
-
-            $key_override[] = $key;
         }
 
-        if ($must_override) {
-            $data2 = [];
-
-            foreach ($data as $key => $row) {
-                $row = array_combine($key_override, $row);
+        if ($mustOverride) {
+            $dataOrig = $data;
+            $data = [];
+            foreach ($dataOrig as $k => $row) {
+                $row = array_combine($keyOverride, $row);
                 if (isset($row['id'])) {
-                    $key = $row['id'];
+                    $k = $row['id'];
                 }
-                $data2[$key] = $row;
+                $data[$k] = $row;
             }
-            $data = $data2;
         }
 
-        $this->fieldsForModel = array_combine($key_override, $def_types);
+        $this->fieldsForModel = array_combine($keyOverride, $defTypes);
+
         parent::__construct($data);
+    }
+
+    public function add(Model $model, array $defaults = []): void
+    {
+        if ($model->idField && !$model->hasField($model->idField)) {
+            // init model, but prevent array persistence data seeding, id field with correct type must be setup first
+            \Closure::bind(function () use ($model, $defaults) {
+                $hadData = true;
+                if (!isset($this->data[$model->table])) {
+                    $hadData = false;
+                    $this->data[$model->table] = true;
+                }
+                try {
+                    parent::add($model, $defaults);
+                } finally {
+                    if (!$hadData) {
+                        unset($this->data[$model->table]);
+                    }
+                }
+            }, $this, Array_::class)();
+            \Closure::bind(static function () use ($model) {
+                $model->_persistence = null;
+            }, null, Model::class)();
+
+            if (isset($this->fieldsForModel[$model->idField])) {
+                $model->getField($model->idField)->type = $this->fieldsForModel[$model->idField]['type'];
+            }
+        }
+        $this->addMissingFieldsToModel($model);
+
+        parent::add($model, $defaults);
     }
 
     /**
      * Automatically adds missing model fields.
-     * Called from AfterAdd hook.
-     *
-     * @param Static_ $persistence
      */
-    public function afterAdd(self $persistence, Model $model)
+    protected function addMissingFieldsToModel(Model $model): void
     {
-        if ($persistence->titleForModel) {
-            $model->title_field = $persistence->titleForModel;
+        if ($this->titleFieldForModel) {
+            $model->titleField = $this->titleFieldForModel;
         }
 
         foreach ($this->fieldsForModel as $field => $def) {
@@ -151,7 +170,6 @@ class Static_ extends Array_
                 continue;
             }
 
-            // add new field
             $model->addField($field, $def);
         }
     }

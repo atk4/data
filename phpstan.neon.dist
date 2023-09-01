@@ -1,0 +1,69 @@
+includes:
+    - phar://phpstan.phar/conf/bleedingEdge.neon
+
+parameters:
+    level: 6
+    paths:
+        - .
+    excludePaths:
+        - vendor
+
+    ignoreErrors:
+        - '~^Unsafe usage of new static\(\)\.$~'
+
+        # relax strict rules
+        - '~^Only booleans are allowed in .+, .+ given( on the (left|right) side)?\.~'
+        - '~^Variable (static )?(property access|method call) on .+\.~'
+
+        # fix https://github.com/phpstan/phpstan-deprecation-rules/issues/52 and https://github.com/phpstan/phpstan/issues/6444
+        -
+            message: '~^Call to method (getVarcharTypeDeclarationSQL|getClobTypeDeclarationSQL|getCreateIndexSQL|getCreateTableSQL|getCurrentDatabaseExpression|initializeDoctrineTypeMappings)\(\) of deprecated class Doctrine\\DBAL\\Platforms\\(PostgreSQLPlatform|SQLServerPlatform|AbstractPlatform):\nUse.+instead\.$~'
+            path: '*'
+            count: 6
+        # https://github.com/phpstan/phpstan-deprecation-rules/issues/75
+        -
+            message: '~^Call to deprecated method getVarcharTypeDeclarationSQL\(\) of class AnonymousClass\w+:\nUse \{@link getStringTypeDeclarationSQL\(\)\} instead\.$~'
+            path: '*'
+            count: 1
+
+        # AbstractPlatform::getIdentitySequenceName() method is deprecated in DBAL 3.4+,
+        # in DBAL 4.0 OraclePlatform::getIdentitySequenceName() is protected and
+        # PostgreSQLPlatform::getIdentitySequenceName() is removed:
+        # https://github.com/doctrine/dbal/blob/3.5.1/src/Platforms/PostgreSQLPlatform.php#L611
+        # https://github.com/doctrine/dbal/blob/4.0.0-beta1/src/Platforms/PostgreSQLPlatform.php#L297
+        -
+            message: '~^Call to deprecated method getIdentitySequenceName\(\) of class Doctrine\\DBAL\\Platforms\\(PostgreSQLPlatform|OraclePlatform)\.$~'
+            path: '*'
+            count: 3
+
+        # FC for DBAL 4.0, remove once DBAL 3.x support is dropped
+        - 
+            message: '~^Class Doctrine\\DBAL\\Platforms\\SqlitePlatform referenced with incorrect case: Doctrine\\DBAL\\Platforms\\SQLitePlatform\.$~'
+            path: '*'
+            count: 33
+
+        # TODO these rules are generated, this ignores should be fixed in the code
+        # for src/Schema/TestCase.php
+        - '~^Call to an undefined method Atk4\\Data\\Persistence::dsql\(\)\.$~'
+        # for src/Field/SqlExpressionField.php
+        - '~^Call to an undefined method Atk4\\Data\\Model::expr\(\)\.$~'
+        # for src/Model.php
+        - '~^Call to an undefined method Atk4\\Data\\Persistence::export\(\)\.$~'
+        - '~^Call to an undefined method Atk4\\Data\\Persistence::prepareIterator\(\)\.$~'
+        - '~^Call to an undefined method Atk4\\Data\\Persistence::action\(\)\.$~'
+        # for src/Model/ReferencesTrait.php (in context of class Atk4\Data\Model)
+        - '~^Call to an undefined method Atk4\\Data\\Reference::refLink\(\)\.$~'
+        # for src/Persistence/Sql.php
+        - '~^Call to an undefined method Atk4\\Data\\Persistence::expr\(\)\.$~'
+        - '~^Call to an undefined method Atk4\\Data\\Persistence::exprNow\(\)\.$~'
+        # for src/Reference/HasMany.php
+        - '~^Call to an undefined method Atk4\\Data\\Model::dsql\(\)\.$~'
+        # for tests/FieldTest.php
+        - '~^Call to an undefined method Atk4\\Data\\Reference\\HasOne::addTitle\(\)\.$~'
+        # for tests/JoinSqlTest.php
+        - '~^Call to an undefined method Atk4\\Data\\Reference\\HasOne::addField\(\)\.$~'
+        # for tests/ReferenceSqlTest.php
+        - '~^Call to an undefined method Atk4\\Data\\Reference\\HasOne::addFields\(\)\.$~'
+        - '~^Call to an undefined method Atk4\\Data\\Reference::addTitle\(\)\.$~'
+        # for tests/ScopeTest.php
+        - '~^Call to an undefined method Atk4\\Data\\Tests\\SUser::expr\(\)\.$~'

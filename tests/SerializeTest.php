@@ -2,98 +2,79 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\tests;
+namespace Atk4\Data\Tests;
 
-use atk4\data\Exception;
-use atk4\data\Model;
-use atk4\data\Persistence;
+use Atk4\Data\Exception;
+use Atk4\Data\Model;
+use Atk4\Data\Schema\TestCase;
 
-class SerializeTest extends \atk4\schema\PhpunitTestCase
+class SerializeTest extends TestCase
 {
-    public function testBasicSerialize()
+    public function testBasicSerialize(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, 'job');
+        $m = new Model($this->db, ['table' => 'job']);
+        $m->addField('data', ['type' => 'object']);
 
-        $f = $m->addField('data', ['serialize' => 'serialize']);
-
-        $this->assertSame(
-            ['data' => 'a:1:{s:3:"foo";s:3:"bar";}'],
-            $db->typecastSaveRow(
+        self::assertSame(
+            ['data' => 'O:8:"stdClass":1:{s:3:"foo";s:3:"bar";}'],
+            $this->db->typecastSaveRow(
                 $m,
-                ['data' => ['foo' => 'bar']]
+                ['data' => (object) ['foo' => 'bar']]
             )
         );
-        $this->assertSame(
+        self::assertSame(
             ['data' => ['foo' => 'bar']],
-            $db->typecastLoadRow(
+            $this->db->typecastLoadRow(
                 $m,
                 ['data' => 'a:1:{s:3:"foo";s:3:"bar";}']
             )
         );
 
-        $f->serialize = 'json';
-        $f->type = 'array';
-        $this->assertSame(
+        $m->getField('data')->type = 'json';
+        self::assertSame(
             ['data' => '{"foo":"bar"}'],
-            $db->typecastSaveRow(
+            $this->db->typecastSaveRow(
                 $m,
                 ['data' => ['foo' => 'bar']]
             )
         );
-        $this->assertSame(
+        self::assertSame(
             ['data' => ['foo' => 'bar']],
-            $db->typecastLoadRow(
+            $this->db->typecastLoadRow(
                 $m,
                 ['data' => '{"foo":"bar"}']
             )
         );
     }
 
-    public function testSerializeErrorJson()
+    public function testSerializeErrorJson(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, 'job');
-
-        $f = $m->addField('data', ['type' => 'array', 'serialize' => 'json']);
+        $m = new Model($this->db, ['table' => 'job']);
+        $m->addField('data', ['type' => 'json']);
 
         $this->expectException(Exception::class);
-        $db->typecastLoadRow($m, ['data' => '{"foo":"bar" OPS']);
+        $this->db->typecastLoadRow($m, ['data' => '{"foo":"bar" OPS']);
     }
 
-    public function testSerializeErrorJson2()
+    public function testSerializeErrorJson2(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, 'job');
-
-        $f = $m->addField('data', ['type' => 'array', 'serialize' => 'json']);
+        $m = new Model($this->db, ['table' => 'job']);
+        $m->addField('data', ['type' => 'json']);
 
         // recursive array - json can't encode that
-        $a = [];
-        $a[] = &$a;
+        $dbData = [];
+        $dbData[] = &$dbData;
 
         $this->expectException(Exception::class);
-        $db->typecastSaveRow($m, ['data' => ['foo' => 'bar', 'recursive' => $a]]);
+        $this->db->typecastSaveRow($m, ['data' => ['foo' => 'bar', 'recursive' => $dbData]]);
     }
 
-    /*
-     * THIS IS NOT POSSIBLE BECAUSE unserialize() produces error
-     * and not exception
-     */
-
-    /*
-    public function testSerializeErrorSerialize()
+    public function testSerializeErrorSerialize(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, 'job');
+        $m = new Model($this->db, ['table' => 'job']);
+        $m->addField('data', ['type' => 'object']);
 
-        $f = $m->addField('data', ['serialize' => 'serialize']);
         $this->expectException(Exception::class);
-        $this->assertEquals(
-            ['data' => ['foo' => 'bar']]
-            , $db->typecastLoadRow($m,
-            ['data' => 'a:1:{s:3:"foo";s:3:"bar"; OPS']
-        ));
+        $this->db->typecastLoadRow($m, ['data' => 'a:1:{s:3:"foo";s:3:"bar"; OPS']);
     }
-     */
 }

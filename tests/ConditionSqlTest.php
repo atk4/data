@@ -2,437 +2,461 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\tests;
+namespace Atk4\Data\Tests;
 
-use atk4\data\Model;
+use Atk4\Data\Exception;
+use Atk4\Data\Model;
+use Atk4\Data\Schema\TestCase;
 
-/**
- * @coversDefaultClass \atk4\data\Model
- */
-class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
+class ConditionSqlTest extends TestCase
 {
-    public function testBasic()
+    public function testBasic(): void
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
-                2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
-            ], ];
-        $this->setDb($a);
+                ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
+            ],
+        ]);
 
-        $m = new Model($this->db, 'user');
-        $m->addFields(['name', 'gender']);
+        $m = new Model($this->db, ['table' => 'user']);
+        $m->addField('name');
+        $m->addField('gender');
 
-        $m->tryLoad(1);
-        $this->assertSame('John', $m->get('name'));
-        $m->tryLoad(2);
-        $this->assertSame('Sue', $m->get('name'));
+        $mm = $m->load(1);
+        self::assertSame('John', $mm->get('name'));
+        $mm = $m->load(2);
+        self::assertSame('Sue', $mm->get('name'));
 
         $mm = clone $m;
         $mm->addCondition('gender', 'M');
-        $mm->tryLoad(1);
-        $this->assertSame('John', $mm->get('name'));
-        $mm->tryLoad(2);
-        $this->assertNull($mm->get('name'));
-
-        if ($this->driverType === 'sqlite') {
-            $this->assertSame(
-                'select "id","name","gender" from "user" where "gender" = :a',
-                $mm->action('select')->render()
-            );
-        }
+        $mm2 = $mm->load(1);
+        self::assertSame('John', $mm2->get('name'));
+        $mm2 = $mm->tryLoad(2);
+        self::assertNull($mm2);
 
         $mm = clone $m;
-        $mm->withId(2); // = addCondition(id, 2)
-        $mm->tryLoad(1);
-        $this->assertNull($mm->get('name'));
-        $mm->tryLoad(2);
-        $this->assertSame('Sue', $mm->get('name'));
+        $mm->addCondition('id', 2);
+        $mm2 = $mm->tryLoad(1);
+        self::assertNull($mm2);
+        $mm2 = $mm->load(2);
+        self::assertSame('Sue', $mm2->get('name'));
     }
 
-    public function testNull()
+    public function testEntityNoScopeCloning(): void
     {
-        $a = [
+        $m = new Model($this->db, ['table' => 'user']);
+        $scope = $m->scope();
+        self::assertSame($scope, $m->createEntity()->getModel()->scope());
+
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Expected model, but instance is an entity');
+        $m->createEntity()->scope();
+    }
+
+    public function testEntityReloadWithDifferentIdException(): void
+    {
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
-                2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
-                3 => ['id' => 3, 'name' => 'Null1', 'gender' => null],
-                4 => ['id' => 4, 'name' => 'Null2', 'gender' => null],
-            ], ];
-        $this->setDb($a);
+                ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
+            ],
+        ]);
 
-        $m = new Model($this->db, 'user');
-        $m->addFields(['name', 'gender']);
+        $m = new Model($this->db, ['table' => 'user']);
+        $m->addField('name');
+        $m->addField('gender');
+
+        $m = $m->load(1);
+        self::assertSame('John', $m->get('name'));
+        \Closure::bind(static function () use ($m) {
+            $m->_entityId = 2;
+        }, null, Model::class)();
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Model instance is an entity, ID cannot be changed to a different one');
+        $m->reload();
+    }
+
+    public function testNull(): void
+    {
+        $this->setDb([
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
+                ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
+                ['id' => 3, 'name' => 'Null1', 'gender' => null],
+                ['id' => 4, 'name' => 'Null2', 'gender' => null],
+            ],
+        ]);
+
+        $m = new Model($this->db, ['table' => 'user']);
+        $m->addField('name');
+        $m->addField('gender');
 
         $m->addCondition('gender', null);
 
         $nullCount = 0;
         foreach ($m as $user) {
-            $this->assertNull($user->get('gender'));
-            $this->assertStringContainsString('Null', $user->get('name'));
+            self::assertNull($user->get('gender'));
+            self::assertStringContainsString('Null', $user->get('name'));
 
             ++$nullCount;
         }
 
-        $this->assertSame(2, $nullCount);
+        self::assertSame(2, $nullCount);
     }
 
-    public function testOperations()
+    public function testOperations(): void
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
-                2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
-            ], ];
-        $this->setDb($a);
+                ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
+            ],
+        ]);
 
-        $m = new Model($this->db, 'user');
-        $m->addFields(['name', 'gender']);
+        $m = new Model($this->db, ['table' => 'user']);
+        $m->addField('name');
+        $m->addField('gender');
 
-        $m->tryLoad(1);
-        $this->assertSame('John', $m->get('name'));
-        $m->tryLoad(2);
-        $this->assertSame('Sue', $m->get('name'));
+        $mm = $m->load(1);
+        self::assertSame('John', $mm->get('name'));
+        $mm = $m->load(2);
+        self::assertSame('Sue', $mm->get('name'));
 
         $mm = clone $m;
         $mm->addCondition('gender', 'M');
-        $mm->tryLoad(1);
-        $this->assertSame('John', $mm->get('name'));
-        $mm->tryLoad(2);
-        $this->assertNull($mm->get('name'));
+        $mm2 = $mm->load(1);
+        self::assertSame('John', $mm2->get('name'));
+        $mm2 = $mm->tryLoad(2);
+        self::assertNull($mm2);
 
         $mm = clone $m;
         $mm->addCondition('gender', '!=', 'M');
-        $mm->tryLoad(1);
-        $this->assertNull($mm->get('name'));
-        $mm->tryLoad(2);
-        $this->assertSame('Sue', $mm->get('name'));
+        $mm2 = $mm->tryLoad(1);
+        self::assertNull($mm2);
+        $mm2 = $mm->load(2);
+        self::assertSame('Sue', $mm2->get('name'));
 
         $mm = clone $m;
         $mm->addCondition('id', '>', 1);
-        $mm->tryLoad(1);
-        $this->assertNull($mm->get('name'));
-        $mm->tryLoad(2);
-        $this->assertSame('Sue', $mm->get('name'));
+        $mm2 = $mm->tryLoad(1);
+        self::assertNull($mm2);
+        $mm2 = $mm->load(2);
+        self::assertSame('Sue', $mm2->get('name'));
 
         $mm = clone $m;
         $mm->addCondition('id', 'in', [1, 3]);
-        $mm->tryLoad(1);
-        $this->assertSame('John', $mm->get('name'));
-        $mm->tryLoad(2);
-        $this->assertNull($mm->get('name'));
+        $mm2 = $mm->load(1);
+        self::assertSame('John', $mm2->get('name'));
+        $mm2 = $mm->tryLoad(2);
+        self::assertNull($mm2);
     }
 
-    public function testExpressions1()
+    public function testExpressions1(): void
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
-                2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
-            ], ];
-        $this->setDb($a);
+                ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
+            ],
+        ]);
 
-        $m = new Model($this->db, 'user');
-        $m->addFields(['name', 'gender']);
+        $m = new Model($this->db, ['table' => 'user']);
+        $m->addField('name');
+        $m->addField('gender');
 
-        $m->tryLoad(1);
-        $this->assertSame('John', $m->get('name'));
-        $m->tryLoad(2);
-        $this->assertSame('Sue', $m->get('name'));
+        $mm = $m->load(1);
+        self::assertSame('John', $mm->get('name'));
+        $mm = $m->load(2);
+        self::assertSame('Sue', $mm->get('name'));
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('[] > 1', [$mm->getField('id')]));
-        $mm->tryLoad(1);
-        $this->assertNull($mm->get('name'));
-        $mm->tryLoad(2);
-        $this->assertSame('Sue', $mm->get('name'));
+        $mm2 = $mm->tryLoad(1);
+        self::assertNull($mm2);
+        $mm2 = $mm->load(2);
+        self::assertSame('Sue', $mm2->get('name'));
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('[id] > 1'));
-        $mm->tryLoad(1);
-        $this->assertNull($mm->get('name'));
-        $mm->tryLoad(2);
-        $this->assertSame('Sue', $mm->get('name'));
+        $mm2 = $mm->tryLoad(1);
+        self::assertNull($mm2);
+        $mm2 = $mm->load(2);
+        self::assertSame('Sue', $mm2->get('name'));
     }
 
-    public function testExpressions2()
+    public function testExpressions2(): void
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'gender' => 'M'],
-                2 => ['id' => 2, 'name' => 'Sue', 'surname' => 'Sue', 'gender' => 'F'],
-            ], ];
-        $this->setDb($a);
+                ['id' => 2, 'name' => 'Sue', 'surname' => 'Sue', 'gender' => 'F'],
+            ],
+        ]);
 
-        $m = new Model($this->db, 'user');
-        $m->addFields(['name', 'gender', 'surname']);
+        $m = new Model($this->db, ['table' => 'user']);
+        $m->addField('name');
+        $m->addField('gender');
+        $m->addField('surname');
 
-        $m->tryLoad(1);
-        $this->assertSame('John', $m->get('name'));
-        $m->tryLoad(2);
-        $this->assertSame('Sue', $m->get('name'));
+        $mm = $m->load(1);
+        self::assertSame('John', $mm->get('name'));
+        $mm = $m->load(2);
+        self::assertSame('Sue', $mm->get('name'));
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('[name] = [surname]'));
-        $mm->tryLoad(1);
-        $this->assertNull($mm->get('name'));
-        $mm->tryLoad(2);
-        $this->assertSame('Sue', $mm->get('name'));
+        $mm2 = $mm->tryLoad(1);
+        self::assertNull($mm2);
+        $mm2 = $mm->load(2);
+        self::assertSame('Sue', $mm2->get('name'));
 
         $mm = clone $m;
         $mm->addCondition($m->getField('name'), $m->getField('surname'));
-        $mm->tryLoad(1);
-        $this->assertNull($mm->get('name'));
-        $mm->tryLoad(2);
-        $this->assertSame('Sue', $mm->get('name'));
+        $mm2 = $mm->tryLoad(1);
+        self::assertNull($mm2);
+        $mm2 = $mm->load(2);
+        self::assertSame('Sue', $mm2->get('name'));
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('[name] != [surname]'));
-        $mm->tryLoad(1);
-        $this->assertSame('John', $mm->get('name'));
-        $mm->tryLoad(2);
-        $this->assertNull($mm->get('name'));
+        $mm2 = $mm->load(1);
+        self::assertSame('John', $mm2->get('name'));
+        $mm2 = $mm->tryLoad(2);
+        self::assertNull($mm2);
 
         $mm = clone $m;
         $mm->addCondition($m->getField('name'), '!=', $m->getField('surname'));
-        $mm->tryLoad(1);
-        $this->assertSame('John', $mm->get('name'));
-        $mm->tryLoad(2);
-        $this->assertNull($mm->get('name'));
+        $mm2 = $mm->load(1);
+        self::assertSame('John', $mm2->get('name'));
+        $mm2 = $mm->tryLoad(2);
+        self::assertNull($mm2);
     }
 
-    public function testExpressionJoin()
+    public function testExpressionJoin(): void
     {
-        if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
-        }
-
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'gender' => 'M', 'contact_id' => 1],
-                2 => ['id' => 2, 'name' => 'Sue', 'surname' => 'Sue', 'gender' => 'F', 'contact_id' => 2],
-                3 => ['id' => 3, 'name' => 'Peter', 'surname' => 'Smith', 'gender' => 'M', 'contact_id' => 1],
-            ], 'contact' => [
+                ['id' => 2, 'name' => 'Sue', 'surname' => 'Sue', 'gender' => 'F', 'contact_id' => 2],
+                ['id' => 3, 'name' => 'Peter', 'surname' => 'Smith', 'gender' => 'M', 'contact_id' => 1],
+            ],
+            'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+123 smiths'],
-                2 => ['id' => 2, 'contact_phone' => '+321 sues'],
-            ], ];
-        $this->setDb($a);
+                ['id' => 2, 'contact_phone' => '+321 sues'],
+            ],
+        ]);
 
-        $m = new Model($this->db, 'user');
-        $m->addFields(['name', 'gender', 'surname']);
+        $m = new Model($this->db, ['table' => 'user']);
+        $m->addField('name');
+        $m->addField('gender');
+        $m->addField('surname');
 
         $m->join('contact')->addField('contact_phone');
 
-        $m->tryLoad(1);
-        $this->assertSame('John', $m->get('name'));
-        $this->assertSame('+123 smiths', $m->get('contact_phone'));
-        $m->tryLoad(2);
-        $this->assertSame('Sue', $m->get('name'));
-        $this->assertSame('+321 sues', $m->get('contact_phone'));
-        $m->tryLoad(3);
-        $this->assertSame('Peter', $m->get('name'));
-        $this->assertSame('+123 smiths', $m->get('contact_phone'));
+        $mm2 = $m->load(1);
+        self::assertSame('John', $mm2->get('name'));
+        self::assertSame('+123 smiths', $mm2->get('contact_phone'));
+        $mm2 = $m->load(2);
+        self::assertSame('Sue', $mm2->get('name'));
+        self::assertSame('+321 sues', $mm2->get('contact_phone'));
+        $mm2 = $m->load(3);
+        self::assertSame('Peter', $mm2->get('name'));
+        self::assertSame('+123 smiths', $mm2->get('contact_phone'));
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('[name] = [surname]'));
-        $mm->tryLoad(1);
-        $this->assertFalse($mm->loaded());
-        $mm->tryLoad(2);
-        $this->assertSame('Sue', $mm->get('name'));
-        $this->assertSame('+321 sues', $mm->get('contact_phone'));
-        $mm->tryLoad(3);
-        $this->assertFalse($mm->loaded());
+        $mm2 = $mm->tryLoad(1);
+        self::assertNull($mm2);
+        $mm2 = $mm->load(2);
+        self::assertSame('Sue', $mm2->get('name'));
+        self::assertSame('+321 sues', $mm2->get('contact_phone'));
+        $mm2 = $mm->tryLoad(3);
+        self::assertNull($mm2);
 
         $mm = clone $m;
-        $mm->addCondition($mm->expr('"+123 smiths" = [contact_phone]'));
-        $mm->tryLoad(1);
-        $this->assertSame('John', $mm->get('name'));
-        $this->assertSame('+123 smiths', $mm->get('contact_phone'));
-        $mm->tryLoad(2);
-        $this->assertNull($mm->get('name'));
-        $this->assertNull($mm->get('contact_phone'));
-        $mm->tryLoad(3);
-        $this->assertSame('Peter', $mm->get('name'));
-        $this->assertSame('+123 smiths', $mm->get('contact_phone'));
+        $mm->addCondition($mm->expr('\'+123 smiths\' = [contact_phone]'));
+        $mm2 = $mm->load(1);
+        self::assertSame('John', $mm2->get('name'));
+        self::assertSame('+123 smiths', $mm2->get('contact_phone'));
+        $mm2 = $mm->tryLoad(2);
+        self::assertNull($mm2);
+        $mm2 = $mm->load(3);
+        self::assertSame('Peter', $mm2->get('name'));
+        self::assertSame('+123 smiths', $mm2->get('contact_phone'));
     }
 
-    public function testArrayCondition()
+    public function testArrayCondition(): void
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
-                2 => ['id' => 2, 'name' => 'Johhny'],
-                3 => ['id' => 3, 'name' => 'Mary'],
-            ], ];
-        $this->setDb($a);
+                ['id' => 2, 'name' => 'Johhny'],
+                ['id' => 3, 'name' => 'Mary'],
+            ],
+        ]);
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->addCondition('name', ['John', 'Doe']);
-        $this->assertSame(1, count($m->export()));
+        self::assertCount(1, $m->export());
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->addCondition('name', 'in', ['Johhny', 'Doe', 'Mary']);
-        $this->assertSame(2, count($m->export()));
+        self::assertCount(2, $m->export());
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
-        $m->addCondition('name', []); // this should not fail, always should be false
-        $this->assertSame(0, count($m->export()));
+        $m->addCondition('name', []); // this should not fail, should be always false
+        self::assertCount(0, $m->export());
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
-        $m->addCondition('name', 'not in', []); // this should not fail, always should be true
-        $this->assertSame(3, count($m->export()));
+        $m->addCondition('name', 'not in', []); // this should not fail, should be always true
+        self::assertCount(3, $m->export());
     }
 
-    public function testDateCondition()
+    public function testDateCondition(): void
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'date' => '1981-12-08'],
-                2 => ['id' => 2, 'name' => 'Sue', 'date' => '1982-12-08'],
-            ], ];
-        $this->setDb($a);
+                ['id' => 2, 'name' => 'Sue', 'date' => '1982-12-08'],
+            ],
+        ]);
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->addField('date', ['type' => 'date']);
 
-        $m->tryLoadBy('date', new \DateTime('08-12-1982'));
-        $this->assertSame('Sue', $m->get('name'));
+        $m = $m->loadBy('date', new \DateTime('08-12-1982'));
+        self::assertSame('Sue', $m->get('name'));
     }
 
-    public function testDateCondition2()
+    public function testDateCondition2(): void
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'date' => '1981-12-08'],
-                2 => ['id' => 2, 'name' => 'Sue', 'date' => '1982-12-08'],
-            ], ];
-        $this->setDb($a);
+                ['id' => 2, 'name' => 'Sue', 'date' => '1982-12-08'],
+            ],
+        ]);
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->addField('date', ['type' => 'date']);
 
         $m->addCondition('date', new \DateTime('08-12-1982'));
-        $m->loadAny();
-        $this->assertSame('Sue', $m->get('name'));
-
-        $m->addCondition([['date', new \DateTime('08-12-1982')]]);
-        $m->loadAny();
-        $this->assertSame('Sue', $m->get('name'));
+        $m = $m->loadOne();
+        self::assertSame('Sue', $m->get('name'));
     }
 
-    public function testDateConditionFailure()
+    public function testDateConditionFailure(): void
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'date' => '1981-12-08'],
-                2 => ['id' => 2, 'name' => 'Sue', 'date' => '1982-12-08'],
-            ], ];
-        $this->setDb($a);
+                ['id' => 2, 'name' => 'Sue', 'date' => '1982-12-08'],
+            ],
+        ]);
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->addField('date', ['type' => 'date']);
 
-        $this->expectException(\atk4\dsql\Exception::class);
+        $this->expectException(Exception::class);
         $m->tryLoadBy('name', new \DateTime('08-12-1982'));
     }
 
-    /**
-     * Tests OR conditions.
-     */
-    public function testOrConditions()
+    public function testOrConditions(): void
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
-                2 => ['id' => 2, 'name' => 'Peter'],
-                3 => ['id' => 3, 'name' => 'Joe'],
+                ['id' => 2, 'name' => 'Peter'],
+                ['id' => 3, 'name' => 'Joe'],
             ],
-        ];
-        $this->setDb($a);
+        ]);
 
-        $u = (new Model($this->db, 'user'))->addFields(['name']);
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name');
 
-        $u->addCondition([
+        $u->addCondition(Model\Scope::createOr(
             ['name', 'John'],
             ['name', 'Peter'],
-        ]);
+        ));
 
-        $this->assertEquals(2, $u->action('count')->getOne());
+        self::assertSame(2, $u->executeCountQuery());
 
-        $u->addCondition([
+        $u->addCondition(Model\Scope::createOr(
             ['name', 'Peter'],
             ['name', 'Joe'],
-        ]);
-        $this->assertEquals(1, $u->action('count')->getOne());
+        ));
+        self::assertSame(1, $u->executeCountQuery());
     }
 
-    /**
-     * Test loadBy and tryLoadBy.
-     * They should set only temporary condition.
-     */
-    public function testLoadBy()
+    public function testLoadByRestoreCondition(): void
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
-                2 => ['id' => 2, 'name' => 'Peter'],
-                3 => ['id' => 3, 'name' => 'Joe'],
+                ['id' => 2, 'name' => 'Peter'],
+                ['id' => 3, 'name' => 'Joe'],
             ],
-        ];
-        $this->setDb($a);
+        ]);
 
-        $u = (new Model($this->db, 'user'))->addFields(['name']);
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name');
 
-        $u->loadBy('name', 'John');
-        $this->assertTrue($u->scope()->isEmpty());
-        $this->assertFalse($u->getField('name')->system); // should not set field as system
-        $this->assertNull($u->getField('name')->default); // should not set field default value
+        $u2 = $u->loadBy('name', 'John');
+        self::assertSame(['id' => 1, 'name' => 'John'], $u2->get());
+        self::assertTrue($u->scope()->isEmpty());
+        self::assertFalse($u->getField('name')->system); // should not set field as system
+        self::assertNull($u->getField('name')->default); // should not set field default value
 
-        $u->tryLoadBy('name', 'John');
-        $this->assertTrue($u->scope()->isEmpty());
-        $this->assertFalse($u->getField('name')->system); // should not set field as system
-        $this->assertNull($u->getField('name')->default); // should not set field default value
+        $u2 = $u->tryLoadBy('name', 'Joe');
+        self::assertSame(['id' => 3, 'name' => 'Joe'], $u2->get());
+        self::assertTrue($u->scope()->isEmpty());
+        self::assertFalse($u->getField('name')->system); // should not set field as system
+        self::assertNull($u->getField('name')->default); // should not set field default value
     }
 
-    /**
-     * Test LIKE condition.
-     */
-    public function testLikeCondition()
+    public function testLikeCondition(): void
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'active' => 1, 'created' => '2020-01-01 15:00:30'],
-                2 => ['id' => 2, 'name' => 'Peter', 'active' => 0, 'created' => '2019-05-20 12:13:14'],
-                3 => ['id' => 3, 'name' => 'Joe', 'active' => 1, 'created' => '2019-07-15 09:55:05'],
+                ['id' => 2, 'name' => 'Peter', 'active' => 0, 'created' => '2019-05-20 12:13:14'],
+                ['id' => 3, 'name' => 'Joe', 'active' => 1, 'created' => '2019-07-15 09:55:05'],
             ],
-        ];
-        $this->setDb($a);
+        ]);
 
-        $u = new Model($this->db, 'user');
+        $u = new Model($this->db, ['table' => 'user']);
         $u->addField('name', ['type' => 'string']);
         $u->addField('active', ['type' => 'boolean']);
         $u->addField('created', ['type' => 'datetime']);
 
+        $t = (clone $u)->addCondition('name', 'like', '%John%');
+        self::assertCount(1, $t->export());
+
+        $t = (clone $u)->addCondition('name', 'like', '%john%');
+        self::assertCount(1, $t->export());
+
         $t = (clone $u)->addCondition('created', 'like', '%19%');
-        $this->assertSame(2, count($t->export())); // only year 2019 records
+        self::assertCount(2, $t->export()); // only year 2019 records
 
         $t = (clone $u)->addCondition('active', 'like', '%1%');
-        $this->assertSame(2, count($t->export())); // only active records
+        self::assertCount(2, $t->export()); // only active records
 
         $t = (clone $u)->addCondition('active', 'like', '%0%');
-        $this->assertSame(1, count($t->export())); // only inactive records
+        self::assertCount(1, $t->export()); // only inactive records
 
         $t = (clone $u)->addCondition('active', 'like', '%999%');
-        $this->assertSame(0, count($t->export())); // bad value, so it will not match anything
+        self::assertCount(0, $t->export()); // bad value, so it will not match anything
 
         $t = (clone $u)->addCondition('active', 'like', '%ABC%');
-        $this->assertSame(0, count($t->export())); // bad value, so it will not match anything
+        self::assertCount(0, $t->export()); // bad value, so it will not match anything
     }
 }

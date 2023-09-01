@@ -2,14 +2,15 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Model;
+namespace Atk4\Data\Model;
 
-use atk4\core\ContainerTrait;
-use atk4\data\Exception;
-use atk4\data\Model;
+use Atk4\Core\ContainerTrait;
+use Atk4\Data\Exception;
+use Atk4\Data\Model;
+use Atk4\Data\Persistence\Sql\Expressionable;
 
 /**
- * @property Scope\AbstractScope[] $elements
+ * @property array<Scope\AbstractScope> $elements
  */
 class Scope extends Scope\AbstractScope
 {
@@ -19,17 +20,13 @@ class Scope extends Scope\AbstractScope
     public const OR = 'OR';
     public const AND = 'AND';
 
-    /**
-     * Junction to use in case more than one element.
-     *
-     * @var self::AND|self::OR
-     */
+    /** @var self::AND|self::OR Junction to use in case more than one element. */
     protected $junction = self::AND;
 
     /**
      * Create a Scope from array of condition objects or condition arrays.
      *
-     * @param Scope\AbstractScope[]|array[] $nestedConditions
+     * @param array<int, Scope\AbstractScope|Expressionable|array<int, mixed>> $nestedConditions
      */
     public function __construct(array $nestedConditions = [], string $junction = self::AND)
     {
@@ -44,7 +41,7 @@ class Scope extends Scope\AbstractScope
             if ($nestedCondition instanceof Scope\AbstractScope) {
                 $condition = $nestedCondition;
             } else {
-                if (!is_array($nestedCondition)) {
+                if ($nestedCondition instanceof Expressionable) {
                     $nestedCondition = [$nestedCondition];
                 }
                 $condition = new Scope\Condition(...$nestedCondition);
@@ -58,21 +55,30 @@ class Scope extends Scope\AbstractScope
     {
         foreach ($this->elements as $k => $nestedCondition) {
             $this->elements[$k] = clone $nestedCondition;
-            $this->elements[$k]->owner = $this;
-            $this->elements[$k]->short_name = $nestedCondition->short_name;
+            if ($this->elements[$k]->issetOwner()) {
+                $this->elements[$k]->unsetOwner();
+            }
+            $this->elements[$k]->setOwner($this);
+            $this->elements[$k]->shortName = $nestedCondition->shortName;
         }
-        $this->owner = null;
-        $this->short_name = null;
+        if ($this->issetOwner()) {
+            $this->unsetOwner();
+        }
+        $this->shortName = null; // @phpstan-ignore-line
     }
 
     /**
+     * @param Scope\AbstractScope|array<int, mixed>|string|Expressionable $field
+     * @param string|mixed                                                $operator
+     * @param mixed                                                       $value
+     *
      * @return $this
      */
     public function addCondition($field, $operator = null, $value = null)
     {
-        if (func_num_args() === 1 && $field instanceof Scope\AbstractScope) {
+        if ('func_num_args'() === 1 && $field instanceof Scope\AbstractScope) {
             $condition = $field;
-        } elseif (func_num_args() === 1 && is_array($field)) {
+        } elseif ('func_num_args'() === 1 && is_array($field)) {
             $condition = static::createAnd(func_get_args());
         } else {
             $condition = new Scope\Condition(...func_get_args());
@@ -95,7 +101,7 @@ class Scope extends Scope\AbstractScope
     /**
      * Return array of nested conditions.
      *
-     * @return Scope\AbstractScope[]
+     * @return array<Scope\AbstractScope>
      */
     public function getNestedConditions()
     {
@@ -161,7 +167,6 @@ class Scope extends Scope\AbstractScope
             return $this;
         }
 
-        /** @var Scope\AbstractScope $component */
         $component = reset($this->elements);
 
         return $component->simplify();
@@ -174,7 +179,7 @@ class Scope extends Scope\AbstractScope
      */
     public function negate()
     {
-        $this->junction = $this->junction == self::OR ? self::AND : self::OR;
+        $this->junction = $this->junction === self::OR ? self::AND : self::OR;
 
         foreach ($this->elements as $nestedCondition) {
             $nestedCondition->negate();
@@ -198,6 +203,8 @@ class Scope extends Scope\AbstractScope
     }
 
     /**
+     * @param Scope\AbstractScope|Expressionable|array<int, mixed> ...$conditions
+     *
      * @return static
      */
     public static function createAnd(...$conditions)
@@ -206,6 +213,8 @@ class Scope extends Scope\AbstractScope
     }
 
     /**
+     * @param Scope\AbstractScope|Expressionable|array<int, mixed> ...$conditions
+     *
      * @return static
      */
     public static function createOr(...$conditions)

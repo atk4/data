@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\tests;
+namespace Atk4\Data\Tests;
 
-use atk4\core\AtkPhpunit;
-use atk4\data\Model;
-use atk4\data\Persistence;
-use atk4\data\ValidationException;
+use Atk4\Core\Phpunit\TestCase;
+use Atk4\Data\Model;
+use Atk4\Data\Persistence;
+use Atk4\Data\ValidationException;
 
 class MyValidationModel extends Model
 {
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
@@ -19,7 +19,7 @@ class MyValidationModel extends Model
         $this->addField('domain');
     }
 
-    public function validate($intent = null): array
+    public function validate(string $intent = null): array
     {
         $errors = [];
         if ($this->get('name') === 'Python') {
@@ -35,21 +35,22 @@ class MyValidationModel extends Model
 
 class BadValidationModel extends Model
 {
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
         $this->addField('name');
     }
 
-    public function validate($intent = null): array
+    public function validate(string $intent = null): array
     {
-        return 'This should be array';
+        return 'This should be array'; // @phpstan-ignore-line
     }
 }
 
-class ValidationTests extends AtkPhpunit\TestCase
+class ValidationTest extends TestCase
 {
+    /** @var Model */
     public $m;
 
     protected function setUp(): void
@@ -60,81 +61,109 @@ class ValidationTests extends AtkPhpunit\TestCase
         $this->m = new MyValidationModel($p);
     }
 
-    public function testValidate1()
+    public function testValidate1(): void
     {
-        $this->m->set('name', 'john');
-        $this->m->set('domain', 'gmail.com');
-        $this->m->save();
-        $this->assertTrue(true); // no exception
+        $m = $this->m->createEntity();
+        $m->set('name', 'john');
+        $m->set('domain', 'gmail.com');
+        $m->save();
+        self::assertSame('john', $m->get('name'));
     }
 
-    public function testValidate2()
+    public function testValidate2(): void
     {
-        $this->m->set('name', 'Python');
+        $m = $this->m->createEntity();
+        $m->set('name', 'Python');
+
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Snakes');
-        $this->m->save();
+        $m->save();
     }
 
-    public function testValidate3()
+    public function testValidate3(): void
     {
-        $this->m->set('name', 'Python');
-        $this->m->set('domain', 'example.com');
+        $m = $this->m->createEntity();
+        $m->set('name', 'Python');
+        $m->set('domain', 'example.com');
+
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Multiple');
-        $this->m->save();
+        $m->save();
     }
 
-    public function testValidate4()
+    public function testValidate4(): void
     {
+        $m = $this->m->createEntity();
         try {
-            $this->m->set('name', 'Python');
-            $this->m->set('domain', 'example.com');
-            $this->m->save();
-            $this->fail('Expected exception');
-        } catch (\atk4\data\ValidationException $e) {
-            $this->assertSame('This domain is reserved for examples only', $e->getParams()['errors']['domain']);
+            $m->set('name', 'Python');
+            $m->set('domain', 'example.com');
 
-            return;
+            $this->expectException(ValidationException::class);
+            $m->save();
+        } catch (ValidationException $e) {
+            self::assertSame('This domain is reserved for examples only', $e->getParams()['errors']['domain']);
+
+            throw $e;
         }
     }
 
-    public function testValidate5()
+    public function testValidate5(): void
     {
         $p = new Persistence\Array_();
         $m = new BadValidationModel($p);
+        $m = $m->createEntity();
 
         $this->expectException(\TypeError::class);
         $m->set('name', 'john');
         $m->save();
     }
 
-    public function testValidateHook()
+    public function testValidateHook1(): void
     {
-        $this->m->onHook(Model::HOOK_VALIDATE, function ($m) {
+        $m = $this->m->createEntity();
+        $m->onHook(Model::HOOK_VALIDATE, static function (Model $m) {
             if ($m->get('name') === 'C#') {
                 return ['name' => 'No sharp objects allowed'];
             }
         });
 
-        $this->m->set('name', 'Swift');
-        $this->m->save();
+        $m->set('name', 'Swift');
+        $m->save();
 
         try {
-            $this->m->set('name', 'C#');
-            $this->m->save();
-            $this->fail('Expected exception');
-        } catch (\atk4\data\ValidationException $e) {
-            $this->assertSame('No sharp objects allowed', $e->errors['name']);
+            $m->set('name', 'C#');
+
+            $this->expectException(ValidationException::class);
+            $m->save();
+        } catch (ValidationException $e) {
+            self::assertSame('No sharp objects allowed', $e->errors['name']);
+
+            throw $e;
         }
+    }
+
+    public function testValidateHook2(): void
+    {
+        $m = $this->m->createEntity();
+        $m->onHook(Model::HOOK_VALIDATE, static function (Model $m) {
+            if ($m->get('name') === 'C#') {
+                return ['name' => 'No sharp objects allowed'];
+            }
+        });
+
+        $m->set('name', 'Swift');
+        $m->save();
 
         try {
-            $this->m->set('name', 'Python');
-            $this->m->set('domain', 'example.com');
-            $this->m->save();
-            $this->fail('Expected exception');
-        } catch (\atk4\data\ValidationException $e) {
-            $this->assertSame(2, count($e->errors));
+            $m->set('name', 'Python');
+            $m->set('domain', 'example.com');
+
+            $this->expectException(ValidationException::class);
+            $m->save();
+        } catch (ValidationException $e) {
+            self::assertCount(2, $e->errors);
+
+            throw $e;
         }
     }
 }
