@@ -26,7 +26,7 @@ class Condition extends AbstractScope
     /** @var mixed */
     public $value;
 
-    protected $system = false;
+    protected bool $system = false;
 
     public const OPERATOR_EQUALS = '=';
     public const OPERATOR_DOESNOT_EQUAL = '!=';
@@ -151,7 +151,7 @@ class Condition extends AbstractScope
         }
     }
 
-    protected function setSystem($system = true)
+    protected function setSystem(bool $system = true)
     {
         $this->system = $system;
 
@@ -165,7 +165,7 @@ class Condition extends AbstractScope
             // if we have a definitive equal condition set the value as default value for field
             // new records will automatically get this value assigned for the field
             // TODO: fix when condition is part of OR scope
-            if ($this->system && $this->setsDefiniteValue()) {
+            if ($this->system && $this->isDefiniteValue()) {
                 // key containing '/' means chained references and it is handled in toQueryArguments method
                 $field = $this->key;
                 if (is_string($field) && !str_contains($field, '/')) {
@@ -271,9 +271,11 @@ class Condition extends AbstractScope
     /**
      * Checks if condition sets a definitive scalar value for a field.
      */
-    protected function setsDefiniteValue(): bool
+    protected function isDefiniteValue(): bool
     {
-        return $this->operator === self::OPERATOR_EQUALS && !is_object($this->value) && !is_array($this->value);
+        return $this->operator === self::OPERATOR_EQUALS && !is_array($this->value)
+            && !$this->value instanceof Expressionable
+            && !$this->value instanceof Persistence\Array_\Action; // needed to pass hintable tests
     }
 
     public function clear()
