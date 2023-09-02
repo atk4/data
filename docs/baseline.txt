@@ -99,7 +99,7 @@ persistence/sql/quickstart.md: [phpdomain] Target #manual-query-execution not fo
 persistence/sql/quickstart.md: [phpdomain] Target #manual-query-execution not found
 persistence/sql/quickstart.md: [phpdomain] Target Atk4\Data\Persistence\Sql\Query::mode not found
 quickstart.md: [phpdomain] Target Atk4\Data\Persistence not found
-quickstart.md: [phpdomain] Target Atk4\Data\Model::tryLoadBy not found
+quickstart.md: [phpdomain] Target Atk4\Data\Model::loadBy not found
 quickstart.md: [phpdomain] Target Atk4\Data\Model::join not found
 quickstart.md: [phpdomain] Target Atk4\Data\Reference\HasMany not found
 quickstart.md: [phpdomain] Target Atk4\Data\Model::getReference not found
