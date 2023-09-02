@@ -1769,15 +1769,7 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * @return \Traversable<array<string, string|null>>
-     */
-    private function getRawIterator(): \Traversable
-    {
-        return $this->getPersistence()->prepareIterator($this);
-    }
-
-    /**
-     * Returns iterator (yield values).
+     * Create iterator (yield values).
      *
      * You can return false in afterLoad hook to prevent to yield this data row, example:
      * $model->onHook(self::HOOK_AFTER_LOAD, static function (Model $m) {
@@ -1791,31 +1783,72 @@ class Model implements \IteratorAggregate
      *
      * @return \Traversable<static>
      */
-    public function getIterator(): \Traversable
+    final public function getIterator(): \Traversable
     {
-        foreach ($this->getRawIterator() as $data) {
-            $entity = $this->createEntity();
+        return $this->createIteratorBy([]);
+    }
 
-            $dataRef = &$entity->getDataRef();
-            $dataRef = $this->getPersistence()->typecastLoadRow($this, $data);
-            if ($this->idField) {
-                $entity->setId($data[$this->idField], false);
+    /**
+     * Create iterator (yield values) by additional condition.
+     *
+     * @param AbstractScope|array<int, AbstractScope|Persistence\Sql\Expressionable|array{string|Persistence\Sql\Expressionable, 1?: mixed, 2?: mixed}>|string|Persistence\Sql\Expressionable $field
+     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never)                                                                                   $operator
+     * @param ($operator is string ? mixed : never)                                                                                                                                           $value
+     *
+     * @return \Traversable<static>
+     */
+    public function createIteratorBy($field, $operator = null, $value = null): \Traversable
+    {
+        $mutateScope = (!is_array($field) || count($field) > 0) || $operator !== null || $value !== null;
+
+        if ($mutateScope) {
+            $this->assertIsModel();
+
+            $scopeOrig = $this->scope;
+            $scopeRestored = false;
+            $fieldsBackup = $this->temporaryMutateScopeFieldsBackup();
+            $this->scope = clone $this->scope;
+        }
+        try {
+            if ($mutateScope) {
+                $this->addCondition(...'func_get_args'());
             }
 
-            $res = $entity->hook(self::HOOK_AFTER_LOAD);
-            if ($res === false) {
-                continue;
-            } elseif (is_object($res)) {
-                $res = (static::class)::assertInstanceOf($res);
-                $res->assertIsEntity();
-            } else {
-                $res = $entity;
-            }
+            foreach ($this->getPersistence()->prepareIterator($this) as $data) {
+                if ($mutateScope && !$scopeRestored) { // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/9685
+                    $scopeRestored = true;
+                    $this->scope = $scopeOrig;
+                    $this->temporaryMutateScopeFieldsRestore($fieldsBackup); // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/9685
+                }
+                $entity = $this->createEntity();
 
-            if ($res->getModel()->idField) {
-                yield $res->getId() => $res;
-            } else {
-                yield $res;
+                $dataRef = &$entity->getDataRef();
+                $dataRef = $this->getPersistence()->typecastLoadRow($this, $data);
+                if ($this->idField) {
+                    $entity->setId($data[$this->idField], false);
+                }
+
+                $res = $entity->hook(self::HOOK_AFTER_LOAD);
+                if ($res === false) {
+                    continue;
+                } elseif (is_object($res)) {
+                    $res = (static::class)::assertInstanceOf($res);
+                    $res->assertIsEntity();
+                } else {
+                    $res = $entity;
+                }
+
+                if ($res->getModel()->idField) {
+                    yield $res->getId() => $res;
+                } else {
+                    yield $res;
+                }
+            }
+        } finally {
+            if ($mutateScope && !$scopeRestored) { // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/9685
+                $scopeRestored = true;
+                $this->scope = $scopeOrig; // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/9685
+                $this->temporaryMutateScopeFieldsRestore($fieldsBackup); // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/9685
             }
         }
     }

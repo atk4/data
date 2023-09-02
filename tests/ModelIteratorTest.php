@@ -6,6 +6,7 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
+use Atk4\Data\Model\Scope;
 use Atk4\Data\Schema\TestCase;
 
 class ModelIteratorTest extends TestCase
@@ -161,5 +162,46 @@ class ModelIteratorTest extends TestCase
         self::assertSame(20, $data[2]->get('total_net'));
         self::assertSame(15, $data[3]->get('total_net'));
         self::assertNull($i->createEntity()->get('total_net'));
+    }
+
+    public function testCreateIteratorBy(): void
+    {
+        $this->setDb([
+            'invoice' => [
+                ['total_net' => 10],
+                ['total_net' => 20],
+                ['total_net' => 15],
+            ],
+        ]);
+
+        $i = new Model($this->db, ['table' => 'invoice']);
+        $i->addField('total_net', ['type' => 'integer']);
+
+        $i->setOrder('total_net');
+        $i->setOnlyFields(['total_net']);
+
+        self::assertSame([
+            1 => ['total_net' => 10],
+            3 => ['total_net' => 15],
+            2 => ['total_net' => 20],
+        ], array_map(static fn (Model $m) => $m->get(), iterator_to_array($i->createIteratorBy([]))));
+
+        self::assertSame([
+            2 => ['total_net' => 20],
+        ], array_map(static fn (Model $m) => $m->get(), iterator_to_array($i->createIteratorBy('total_net', 20))));
+
+        self::assertSame([
+            1 => ['total_net' => 10],
+            3 => ['total_net' => 15],
+        ], array_map(static fn (Model $m) => $m->get(), iterator_to_array($i->createIteratorBy('total_net', '!=', 20))));
+
+        self::assertSame([
+            1 => ['total_net' => 10],
+            2 => ['total_net' => 20],
+        ], array_map(static fn (Model $m) => $m->get(), iterator_to_array($i->createIteratorBy(Scope::createOr(['id', 1], ['total_net', 20])))));
+
+        self::assertSame([
+            3 => ['total_net' => 15],
+        ], array_map(static fn (Model $m) => $m->get(), iterator_to_array($i->createIteratorBy([['total_net', '>', 10], ['total_net', '<', 20]]))));
     }
 }
