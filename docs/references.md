@@ -482,7 +482,7 @@ so with `addReference` you can define whatever reference you want:
 
 ```
 $m->addReference('Archive', ['model' => function (Model $m) {
-    return $m->newInstance(null, ['table' => $m->table . '_archive']);
+    return new $m(null, ['table' => $m->table . '_archive']);
 }]);
 ```
 
@@ -500,7 +500,7 @@ No condition will be applied by default so it's all up to you:
 
 ```
 $m->addReference('Archive', ['model' => function (Model $m) {
-    $archive = $m->newInstance(null, ['table' => $m->table . '_archive']);
+    $archive = new $m(null, ['table' => $m->table . '_archive']);
 
     $m->addField('original_id', ['type' => 'integer']);
 
