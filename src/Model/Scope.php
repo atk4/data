@@ -6,6 +6,7 @@ namespace Atk4\Data\Model;
 
 use Atk4\Core\ContainerTrait;
 use Atk4\Data\Exception;
+use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Model\Scope\AbstractScope;
 use Atk4\Data\Persistence\Sql\Expressionable;
@@ -42,7 +43,7 @@ class Scope extends AbstractScope
             if ($nestedCondition instanceof AbstractScope) {
                 $condition = $nestedCondition;
             } else {
-                if ($nestedCondition instanceof Expressionable) {
+                if ($nestedCondition instanceof Expressionable && !$nestedCondition instanceof Field) {
                     $nestedCondition = [$nestedCondition];
                 }
                 $condition = new Scope\Condition(...$nestedCondition);
