@@ -17,9 +17,9 @@ class RootScope extends Model\Scope
     /** @var Model */
     protected $model;
 
-    protected function __construct(array $nestedConditions = [])
+    protected function __construct(array $conditions = [])
     {
-        parent::__construct($nestedConditions, self::AND);
+        parent::__construct($conditions, self::AND);
     }
 
     /**

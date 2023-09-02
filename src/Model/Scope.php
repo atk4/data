@@ -28,9 +28,9 @@ class Scope extends AbstractScope
     /**
      * Create a Scope from array of condition objects or condition arrays.
      *
-     * @param array<int, AbstractScope|Expressionable|array{string|Expressionable, 1?: mixed, 2?: mixed}> $nestedConditions
+     * @param array<int, AbstractScope|Expressionable|array{string|Expressionable, 1?: mixed, 2?: mixed}> $conditions
      */
-    public function __construct(array $nestedConditions = [], string $junction = self::AND)
+    public function __construct(array $conditions = [], string $junction = self::AND)
     {
         if (!in_array($junction, [self::OR, self::AND], true)) {
             throw (new Exception('Using invalid CompondCondition junction'))
@@ -39,14 +39,12 @@ class Scope extends AbstractScope
 
         $this->junction = $junction;
 
-        foreach ($nestedConditions as $nestedCondition) {
-            if ($nestedCondition instanceof AbstractScope) {
-                $condition = $nestedCondition;
-            } else {
-                if ($nestedCondition instanceof Expressionable && !$nestedCondition instanceof Field) {
-                    $nestedCondition = [$nestedCondition];
+        foreach ($conditions as $condition) {
+            if (!$condition instanceof AbstractScope) {
+                if ($condition instanceof Expressionable && !$condition instanceof Field) {
+                    $condition = [$condition];
                 }
-                $condition = new Scope\Condition(...$nestedCondition);
+                $condition = new Scope\Condition(...$condition);
             }
 
             $this->add($condition);
