@@ -1799,27 +1799,26 @@ class Model implements \IteratorAggregate
      */
     public function createIteratorBy($field, $operator = null, $value = null): \Traversable
     {
-        $mutateScope = (!is_array($field) || count($field) > 0) || $operator !== null || $value !== null;
+        $this->assertIsModel();
 
-        if ($mutateScope) {
-            $this->assertIsModel();
-
+        $scopeOrig = null;
+        if ((!is_array($field) || count($field) > 0) || $operator !== null || $value !== null) {
             $scopeOrig = $this->scope;
-            $scopeRestored = false;
             $fieldsBackup = $this->temporaryMutateScopeFieldsBackup();
             $this->scope = clone $this->scope;
         }
         try {
-            if ($mutateScope) {
+            if ($scopeOrig !== null) {
                 $this->addCondition(...'func_get_args'());
             }
 
             foreach ($this->getPersistence()->prepareIterator($this) as $data) {
-                if ($mutateScope && !$scopeRestored) { // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/9685
-                    $scopeRestored = true;
+                if ($scopeOrig !== null) {
                     $this->scope = $scopeOrig;
+                    $scopeOrig = null;
                     $this->temporaryMutateScopeFieldsRestore($fieldsBackup); // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/9685
                 }
+
                 $entity = $this->createEntity();
 
                 $dataRef = &$entity->getDataRef();
@@ -1845,9 +1844,9 @@ class Model implements \IteratorAggregate
                 }
             }
         } finally {
-            if ($mutateScope && !$scopeRestored) { // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/9685
-                $scopeRestored = true;
-                $this->scope = $scopeOrig; // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/9685
+            if ($scopeOrig !== null) {
+                $this->scope = $scopeOrig;
+                $scopeOrig = null;
                 $this->temporaryMutateScopeFieldsRestore($fieldsBackup); // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/9685
             }
         }
