@@ -992,9 +992,9 @@ class Model implements \IteratorAggregate
      * To use those, you should consult with documentation of your
      * persistence driver.
      *
-     * @param AbstractScope|array<int, mixed>|string|Persistence\Sql\Expressionable                         $field
-     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never) $operator
-     * @param ($operator is string ? mixed : never)                                                         $value
+     * @param AbstractScope|array<int, AbstractScope|Persistence\Sql\Expressionable|array{string|Persistence\Sql\Expressionable, 1?: mixed, 2?: mixed}>|string|Persistence\Sql\Expressionable $field
+     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never)                                                                                   $operator
+     * @param ($operator is string ? mixed : never)                                                                                                                                           $value
      *
      * @return $this
      */
@@ -1417,9 +1417,9 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * @param AbstractScope|array<int, mixed>|string|Persistence\Sql\Expressionable                         $field
-     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never) $operator
-     * @param ($operator is string ? mixed : never)                                                         $value
+     * @param AbstractScope|array<int, AbstractScope|Persistence\Sql\Expressionable|array{string|Persistence\Sql\Expressionable, 1?: mixed, 2?: mixed}>|string|Persistence\Sql\Expressionable $field
+     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never)                                                                                   $operator
+     * @param ($operator is string ? mixed : never)                                                                                                                                           $value
      *
      * @return ($fromTryLoad is true ? static|null : static)
      */
@@ -1453,9 +1453,9 @@ class Model implements \IteratorAggregate
     /**
      * Load one record by additional condition. Will throw if more than one record exists.
      *
-     * @param AbstractScope|array<int, mixed>|string|Persistence\Sql\Expressionable                         $field
-     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never) $operator
-     * @param ($operator is string ? mixed : never)                                                         $value
+     * @param AbstractScope|array<int, AbstractScope|Persistence\Sql\Expressionable|array{string|Persistence\Sql\Expressionable, 1?: mixed, 2?: mixed}>|string|Persistence\Sql\Expressionable $field
+     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never)                                                                                   $operator
+     * @param ($operator is string ? mixed : never)                                                                                                                                           $value
      *
      * @return static
      */
@@ -1467,9 +1467,9 @@ class Model implements \IteratorAggregate
     /**
      * Try to load one record by additional condition. Will throw if more than one record exists, but not if there is no record.
      *
-     * @param AbstractScope|array<int, mixed>|string|Persistence\Sql\Expressionable                         $field
-     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never) $operator
-     * @param ($operator is string ? mixed : never)                                                         $value
+     * @param AbstractScope|array<int, AbstractScope|Persistence\Sql\Expressionable|array{string|Persistence\Sql\Expressionable, 1?: mixed, 2?: mixed}>|string|Persistence\Sql\Expressionable $field
+     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never)                                                                                   $operator
+     * @param ($operator is string ? mixed : never)                                                                                                                                           $value
      *
      * @return static|null
      */

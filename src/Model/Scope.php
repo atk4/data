@@ -27,7 +27,7 @@ class Scope extends AbstractScope
     /**
      * Create a Scope from array of condition objects or condition arrays.
      *
-     * @param array<int, AbstractScope|Expressionable|array<int, mixed>> $nestedConditions
+     * @param array<int, AbstractScope|Expressionable|array{string|Expressionable, 1?: mixed, 2?: mixed}> $nestedConditions
      */
     public function __construct(array $nestedConditions = [], string $junction = self::AND)
     {
@@ -69,9 +69,9 @@ class Scope extends AbstractScope
     }
 
     /**
-     * @param AbstractScope|array<int, mixed>|string|Expressionable                         $field
-     * @param ($field is string|Expressionable ? ($value is null ? mixed : string) : never) $operator
-     * @param ($operator is string ? mixed : never)                                         $value
+     * @param AbstractScope|array<int, AbstractScope|Expressionable|array{string|Expressionable, 1?: mixed, 2?: mixed}>|string|Expressionable $field
+     * @param ($field is string|Expressionable ? ($value is null ? mixed : string) : never)                                                   $operator
+     * @param ($operator is string ? mixed : never)                                                                                           $value
      *
      * @return $this
      */
@@ -195,7 +195,7 @@ class Scope extends AbstractScope
     }
 
     /**
-     * @param AbstractScope|Expressionable|array<int, mixed> ...$conditions
+     * @param AbstractScope|Expressionable|array{string|Expressionable, 1?: mixed, 2?: mixed} ...$conditions
      *
      * @return static
      */
@@ -205,7 +205,7 @@ class Scope extends AbstractScope
     }
 
     /**
-     * @param AbstractScope|Expressionable|array<int, mixed> ...$conditions
+     * @param AbstractScope|Expressionable|array{string|Expressionable, 1?: mixed, 2?: mixed} ...$conditions
      *
      * @return static
      */
