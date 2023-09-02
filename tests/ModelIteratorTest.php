@@ -11,82 +11,59 @@ use Atk4\Data\Schema\TestCase;
 
 class ModelIteratorTest extends TestCase
 {
-    /**
-     * If first argument is array, then second argument should not be used.
-     */
-    public function testException1(): void
+    public function testSetOrderArrayWithAnotherArgumentException(): void
     {
         $m = new Model();
         $m->addField('name');
         $m->addField('salary');
+
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('If first argument is array, second argument must not be used');
         $m->setOrder(['name', 'salary'], 'desc');
     }
 
-    /**
-     * Model is not associated with any database - persistence should be set.
-     */
-    public function testException2(): void
+    public function testNoPersistenceTryLoadException(): void
     {
         $m = new Model();
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Model is not associated with a persistence');
         $m->tryLoad(1);
     }
 
-    /**
-     * Model is not associated with any database - persistence should be set.
-     */
-    public function testException3(): void
+    public function testNoPersistenceLoadException(): void
     {
         $m = new Model();
 
         $this->expectException(Exception::class);
-        $m->tryLoadAny();
-    }
-
-    /**
-     * Model is not associated with any database - persistence should be set.
-     */
-    public function testException4(): void
-    {
-        $m = new Model();
-
-        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Model is not associated with a persistence');
         $m->load(1);
     }
 
-    /**
-     * Model is not associated with any database - persistence should be set.
-     */
-    public function testException5(): void
+    public function testNoPersistenceTryLoadAnyException(): void
     {
         $m = new Model();
 
         $this->expectException(Exception::class);
-        $m->loadAny();
+        $this->expectExceptionMessage('Model is not associated with a persistence');
+        $m->tryLoadAny();
     }
 
-    /**
-     * Model is not associated with any database - persistence should be set.
-     */
-    public function testException6(): void
-    {
-        $m = new Model();
-
-        $this->expectException(\TypeError::class);
-        $this->expectExceptionMessage('Expected entity, but instance is a model');
-        $m->save();
-    }
-
-    /**
-     * Model is not associated with any database - persistence should be set.
-     */
-    public function testException7(): void
+    public function testNoPersistenceSaveException(): void
     {
         $m = new Model();
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Model is not associated with a persistence');
+        $m->createEntity()->save();
+    }
+
+    public function testNoPersistenceActionException(): void
+    {
+        $m = new Model();
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Model is not associated with a persistence');
         $m->action('count');
     }
 
