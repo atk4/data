@@ -190,11 +190,14 @@ class ModelIteratorTest extends TestCase
         $i = new Model($this->db, ['table' => 'invoice']);
         $i->addField('total_net', ['type' => 'integer']);
 
-        if (\PHP_MAJOR_VERSION === 7) {
-            $this->expectException(\Error::class);
-            $this->expectExceptionMessage('Only arrays and Traversables can be unpacked');
+        $this->expectException(\PHP_MAJOR_VERSION === 7 ? \Error::class : \TypeError::class);
+        $this->expectExceptionMessage('Only arrays and Traversables can be unpacked');
+        if (\PHP_MAJOR_VERSION === 7) { // remove once https://github.com/sebastianbergmann/phpunit/issues/5499 is fixed
+            $v = 1;
+            [...$v]; // @phpstan-ignore-line
+        } else {
+            iterator_to_array($i->createIteratorBy(['total_net', 10])); // @phpstan-ignore-line
         }
-        iterator_to_array($i->createIteratorBy(['total_net', 10])); // @phpstan-ignore-line
     }
 
     public function testCreateIteratorByAssociativeArrayException(): void
@@ -202,10 +205,8 @@ class ModelIteratorTest extends TestCase
         $i = new Model($this->db, ['table' => 'invoice']);
         $i->addField('total_net', ['type' => 'integer']);
 
-        if (\PHP_MAJOR_VERSION === 7) {
-            $this->expectException(\Error::class);
-            $this->expectExceptionMessage('Cannot unpack array with string keys');
-        }
+        $this->expectException(\Error::class);
+        $this->expectExceptionMessage(\PHP_MAJOR_VERSION === 7 ? 'Cannot unpack array with string keys' : 'Unknown named parameter $total_net');
         iterator_to_array($i->createIteratorBy([['total_net' => 10]])); // @phpstan-ignore-line
     }
 }
