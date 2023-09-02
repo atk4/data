@@ -1754,6 +1754,16 @@ class Model implements \IteratorAggregate
     /**
      * Returns iterator (yield values).
      *
+     * You can return false in afterLoad hook to prevent to yield this data row, example:
+     * $model->onHook(self::HOOK_AFTER_LOAD, static function (Model $m) {
+     *     if ($m->get('date') < $m->dateFrom) {
+     *         $m->breakHook(false);
+     *     }
+     * })
+     *
+     * You can also use breakHook() with specific object which will then be returned
+     * as a next iterator value.
+     *
      * @return \Traversable<static>
      */
     public function getIterator(): \Traversable
@@ -1766,16 +1776,6 @@ class Model implements \IteratorAggregate
             if ($this->idField) {
                 $thisCloned->setId($data[$this->idField], false);
             }
-
-            // you can return false in afterLoad hook to prevent to yield this data row, example:
-            // $model->onHook(self::HOOK_AFTER_LOAD, static function (Model $m) {
-            //     if ($m->get('date') < $m->date_from) {
-            //         $m->breakHook(false);
-            //     }
-            // })
-
-            // you can also use breakHook() with specific object which will then be returned
-            // as a next iterator value
 
             $res = $thisCloned->hook(self::HOOK_AFTER_LOAD);
             if ($res === false) {
