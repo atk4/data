@@ -184,4 +184,28 @@ class ModelIteratorTest extends TestCase
             3 => ['total_net' => 15],
         ], array_map(static fn (Model $m) => $m->get(), iterator_to_array($i->createIteratorBy([['total_net', '>', 10], ['total_net', '<', 20]]))));
     }
+
+    public function testCreateIteratorByOneLevelArrayException(): void
+    {
+        $i = new Model($this->db, ['table' => 'invoice']);
+        $i->addField('total_net', ['type' => 'integer']);
+
+        if (\PHP_MAJOR_VERSION === 7) {
+            $this->expectException(\Error::class);
+            $this->expectExceptionMessage('Only arrays and Traversables can be unpacked');
+        }
+        iterator_to_array($i->createIteratorBy(['total_net', 10])); // @phpstan-ignore-line
+    }
+
+    public function testCreateIteratorByAssociativeArrayException(): void
+    {
+        $i = new Model($this->db, ['table' => 'invoice']);
+        $i->addField('total_net', ['type' => 'integer']);
+
+        if (\PHP_MAJOR_VERSION === 7) {
+            $this->expectException(\Error::class);
+            $this->expectExceptionMessage('Cannot unpack array with string keys');
+        }
+        iterator_to_array($i->createIteratorBy([['total_net' => 10]])); // @phpstan-ignore-line
+    }
 }
