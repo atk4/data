@@ -1417,6 +1417,33 @@ class Model implements \IteratorAggregate
     }
 
     /**
+     * TODO https://github.com/atk4/data/issues/662.
+     *
+     * @return array<string, array{bool, mixed}>
+     */
+    private function temporaryMutateScopeFieldsBackup(): array
+    {
+        $res = [];
+        $fields = $this->getFields();
+        foreach ($fields as $k => $v) {
+            $res[$k] = [$v->system, $v->default];
+        }
+
+        return $res;
+    }
+
+    /**
+     * @param array<string, array{bool, mixed}> $backup
+     */
+    private function temporaryMutateScopeFieldsRestore(array $backup): void
+    {
+        $fields = $this->getFields();
+        foreach ($fields as $k => $v) {
+            [$v->system, $v->default] = $backup[$k];
+        }
+    }
+
+    /**
      * @param AbstractScope|array<int, AbstractScope|Persistence\Sql\Expressionable|array{string|Persistence\Sql\Expressionable, 1?: mixed, 2?: mixed}>|string|Persistence\Sql\Expressionable $field
      * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never)                                                                                   $operator
      * @param ($operator is string ? mixed : never)                                                                                                                                           $value
@@ -1428,14 +1455,7 @@ class Model implements \IteratorAggregate
         $this->assertIsModel();
 
         $scopeOrig = $this->scope;
-        $systemOrigs = [];
-        $defaultOrigs = [];
-        $fields = $this->getFields();
-        foreach ($fields as $k => $v) {
-            $systemOrigs[$k] = $v->system;
-            $defaultOrigs[$k] = $v->default;
-        }
-
+        $fieldsBackup = $this->temporaryMutateScopeFieldsBackup();
         $this->scope = clone $this->scope;
         try {
             $this->addCondition(...array_slice('func_get_args'(), 1));
@@ -1443,10 +1463,7 @@ class Model implements \IteratorAggregate
             return $this->{$fromTryLoad ? 'tryLoadOne' : 'loadOne'}();
         } finally {
             $this->scope = $scopeOrig;
-            foreach ($fields as $k => $v) {
-                $v->system = $systemOrigs[$k];
-                $v->default = $defaultOrigs[$k];
-            }
+            $this->temporaryMutateScopeFieldsRestore($fieldsBackup);
         }
     }
 
