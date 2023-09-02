@@ -16,6 +16,8 @@ use Atk4\Core\InitializerTrait;
 use Atk4\Core\ReadableCaptionTrait;
 use Atk4\Data\Field\CallbackField;
 use Atk4\Data\Field\SqlExpressionField;
+use Atk4\Data\Model\Scope\AbstractScope;
+use Atk4\Data\Model\Scope\RootScope;
 use Mvorisek\Atk4\Hintable\Data\HintableModelTrait;
 
 /**
@@ -123,7 +125,7 @@ class Model implements \IteratorAggregate
     /** @var array<string, mixed>|null Persistence store some custom information in here that may be useful for them. */
     public ?array $persistenceData = null;
 
-    /** @var Model\Scope\RootScope */
+    /** @var RootScope */
     private $scope;
 
     /** @var array{int|null, int} */
@@ -250,8 +252,8 @@ class Model implements \IteratorAggregate
     public function __construct(Persistence $persistence = null, array $defaults = [])
     {
         $this->scope = \Closure::bind(static function () {
-            return new Model\Scope\RootScope();
-        }, null, Model\Scope\RootScope::class)()
+            return new RootScope();
+        }, null, RootScope::class)()
             ->setModel($this);
 
         $this->setDefaults($defaults);
@@ -949,7 +951,7 @@ class Model implements \IteratorAggregate
     /**
      * Get the scope object of the Model.
      */
-    public function scope(): Model\Scope\RootScope
+    public function scope(): RootScope
     {
         $this->assertIsModel();
 
@@ -990,7 +992,7 @@ class Model implements \IteratorAggregate
      * To use those, you should consult with documentation of your
      * persistence driver.
      *
-     * @param Model\Scope\AbstractScope|array<int, mixed>|string|Persistence\Sql\Expressionable             $field
+     * @param AbstractScope|array<int, mixed>|string|Persistence\Sql\Expressionable                         $field
      * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never) $operator
      * @param ($operator is string ? mixed : never)                                                         $value
      *
@@ -1415,7 +1417,7 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * @param Model\Scope\AbstractScope|array<int, mixed>|string|Persistence\Sql\Expressionable             $field
+     * @param AbstractScope|array<int, mixed>|string|Persistence\Sql\Expressionable                         $field
      * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never) $operator
      * @param ($operator is string ? mixed : never)                                                         $value
      *
@@ -1451,7 +1453,7 @@ class Model implements \IteratorAggregate
     /**
      * Load one record by additional condition. Will throw if more than one record exists.
      *
-     * @param Model\Scope\AbstractScope|array<int, mixed>|string|Persistence\Sql\Expressionable             $field
+     * @param AbstractScope|array<int, mixed>|string|Persistence\Sql\Expressionable                         $field
      * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never) $operator
      * @param ($operator is string ? mixed : never)                                                         $value
      *
@@ -1465,7 +1467,7 @@ class Model implements \IteratorAggregate
     /**
      * Try to load one record by additional condition. Will throw if more than one record exists, but not if there is no record.
      *
-     * @param Model\Scope\AbstractScope|array<int, mixed>|string|Persistence\Sql\Expressionable             $field
+     * @param AbstractScope|array<int, mixed>|string|Persistence\Sql\Expressionable                         $field
      * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never) $operator
      * @param ($operator is string ? mixed : never)                                                         $value
      *

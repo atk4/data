@@ -7,12 +7,13 @@ namespace Atk4\Data\Model;
 use Atk4\Core\ContainerTrait;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
+use Atk4\Data\Model\Scope\AbstractScope;
 use Atk4\Data\Persistence\Sql\Expressionable;
 
 /**
- * @property array<Scope\AbstractScope> $elements
+ * @property array<AbstractScope> $elements
  */
-class Scope extends Scope\AbstractScope
+class Scope extends AbstractScope
 {
     use ContainerTrait;
 
@@ -26,7 +27,7 @@ class Scope extends Scope\AbstractScope
     /**
      * Create a Scope from array of condition objects or condition arrays.
      *
-     * @param array<int, Scope\AbstractScope|Expressionable|array<int, mixed>> $nestedConditions
+     * @param array<int, AbstractScope|Expressionable|array<int, mixed>> $nestedConditions
      */
     public function __construct(array $nestedConditions = [], string $junction = self::AND)
     {
@@ -38,7 +39,7 @@ class Scope extends Scope\AbstractScope
         $this->junction = $junction;
 
         foreach ($nestedConditions as $nestedCondition) {
-            if ($nestedCondition instanceof Scope\AbstractScope) {
+            if ($nestedCondition instanceof AbstractScope) {
                 $condition = $nestedCondition;
             } else {
                 if ($nestedCondition instanceof Expressionable) {
@@ -68,7 +69,7 @@ class Scope extends Scope\AbstractScope
     }
 
     /**
-     * @param Scope\AbstractScope|array<int, mixed>|string|Expressionable                   $field
+     * @param AbstractScope|array<int, mixed>|string|Expressionable                         $field
      * @param ($field is string|Expressionable ? ($value is null ? mixed : string) : never) $operator
      * @param ($operator is string ? mixed : never)                                         $value
      *
@@ -76,7 +77,7 @@ class Scope extends Scope\AbstractScope
      */
     public function addCondition($field, $operator = null, $value = null)
     {
-        if ('func_num_args'() === 1 && $field instanceof Scope\AbstractScope) {
+        if ('func_num_args'() === 1 && $field instanceof AbstractScope) {
             $condition = $field;
         } elseif ('func_num_args'() === 1 && is_array($field)) {
             $condition = static::createAnd(...$field);
@@ -92,7 +93,7 @@ class Scope extends Scope\AbstractScope
     /**
      * Return array of nested conditions.
      *
-     * @return array<Scope\AbstractScope>
+     * @return array<AbstractScope>
      */
     public function getNestedConditions()
     {
@@ -152,7 +153,7 @@ class Scope extends Scope\AbstractScope
         return $this;
     }
 
-    public function simplify(): Scope\AbstractScope
+    public function simplify(): AbstractScope
     {
         if (count($this->elements) !== 1) {
             return $this;
@@ -194,7 +195,7 @@ class Scope extends Scope\AbstractScope
     }
 
     /**
-     * @param Scope\AbstractScope|Expressionable|array<int, mixed> ...$conditions
+     * @param AbstractScope|Expressionable|array<int, mixed> ...$conditions
      *
      * @return static
      */
@@ -204,7 +205,7 @@ class Scope extends Scope\AbstractScope
     }
 
     /**
-     * @param Scope\AbstractScope|Expressionable|array<int, mixed> ...$conditions
+     * @param AbstractScope|Expressionable|array<int, mixed> ...$conditions
      *
      * @return static
      */
