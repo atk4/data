@@ -342,8 +342,14 @@ class TypecastingTest extends TestCase
         $m2 = $m->loadOne();
         self::assertTrue($m2->isLoaded());
         $d = $m2->get('date');
+        self::assertInstanceOf(\DateTime::class, $d);
+
+        $m->insert(['date' => new \DateTime()]);
 
         $m2 = $m->loadBy('date', $d);
+        self::assertTrue($m2->isLoaded());
+
+        $m2 = $m->loadBy([['date', $d], ['date', '=', $d]]);
         self::assertTrue($m2->isLoaded());
 
         $m2 = $m->addCondition('date', $d)->loadOne();

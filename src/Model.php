@@ -1415,53 +1415,65 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * @param mixed $value
+     * @param Model\Scope\AbstractScope|array<int, mixed>|string|Persistence\Sql\Expressionable             $field
+     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never) $operator
+     * @param ($operator is string ? mixed : never)                                                         $value
      *
      * @return ($fromTryLoad is true ? static|null : static)
      */
-    private function _loadBy(bool $fromTryLoad, string $field, $value)
+    private function _loadBy(bool $fromTryLoad, $field, $operator = null, $value = null)
     {
         $this->assertIsModel();
 
-        $field = $this->getField($field);
+        $scopeOrig = $this->scope;
+        $systemOrigs = [];
+        $defaultOrigs = [];
+        $fields = $this->getFields();
+        foreach ($fields as $k => $v) {
+            $systemOrigs[$k] = $v->system;
+            $defaultOrigs[$k] = $v->default;
+        }
 
-        $scopeBak = $this->scope;
-        $systemBak = $field->system;
-        $defaultBak = $field->default;
+        $this->scope = clone $this->scope;
         try {
-            $this->scope = clone $this->scope;
-            $this->addCondition($field, $value);
+            $this->addCondition(...array_slice('func_get_args'(), 1));
 
             return $this->{$fromTryLoad ? 'tryLoadOne' : 'loadOne'}();
         } finally {
-            $this->scope = $scopeBak;
-            $field->system = $systemBak;
-            $field->default = $defaultBak;
+            $this->scope = $scopeOrig;
+            foreach ($fields as $k => $v) {
+                $v->system = $systemOrigs[$k];
+                $v->default = $defaultOrigs[$k];
+            }
         }
     }
 
     /**
      * Load one record by additional condition. Will throw if more than one record exists.
      *
-     * @param mixed $value
+     * @param Model\Scope\AbstractScope|array<int, mixed>|string|Persistence\Sql\Expressionable             $field
+     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never) $operator
+     * @param ($operator is string ? mixed : never)                                                         $value
      *
      * @return static
      */
-    public function loadBy(string $field, $value)
+    public function loadBy($field, $operator = null, $value = null)
     {
-        return $this->_loadBy(false, $field, $value);
+        return $this->_loadBy(false, ...'func_get_args'());
     }
 
     /**
      * Try to load one record by additional condition. Will throw if more than one record exists, but not if there is no record.
      *
-     * @param mixed $value
+     * @param Model\Scope\AbstractScope|array<int, mixed>|string|Persistence\Sql\Expressionable             $field
+     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never) $operator
+     * @param ($operator is string ? mixed : never)                                                         $value
      *
      * @return static|null
      */
-    public function tryLoadBy(string $field, $value)
+    public function tryLoadBy($field, $operator = null, $value = null)
     {
-        return $this->_loadBy(true, $field, $value);
+        return $this->_loadBy(true, ...'func_get_args'());
     }
 
     protected function validateEntityScope(): void
