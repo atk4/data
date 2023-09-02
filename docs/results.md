@@ -32,14 +32,11 @@ finish iterating.
 
 ### Raw Data Fetching
 
-:::{php:method} getRawIterator()
-:::
-
 If you do not care about the hooks and simply wish to get the data, you can fetch
 it:
 
 ```
-foreach ($m->getRawIterator() as $row) {
+foreach ($m->getPersistence()->prepareIterator($m) as $row) {
     var_dump($row); // array
 }
 ```
@@ -61,16 +58,9 @@ By default - `onlyFields` will be presented as well as system fields.
 You can invoke and iterate action (particularly SQL) to fetch the data:
 
 ```
-foreach ($m->action('select') as $row) {
+foreach ($m->action('select')->getRowsIterator() as $row) {
     var_dump($row); // array
 }
 ```
 
-This has the identical behavior to $m->getRawIterator();
-
-## Comparison of various ways of fetching
-
-- getIterator - action(select), [ fetches row, set ID/Data, call afterLoad hook,
-  yields model ], unloads data
-- getRawIterator - action(select), [ fetches row, yields row ]
-- export - action(select), fetches all rows, returns all rows
+This has the identical behavior to `$m->getPersistence()->prepareIterator($m)`.

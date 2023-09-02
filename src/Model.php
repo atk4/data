@@ -1752,6 +1752,14 @@ class Model implements \IteratorAggregate
     }
 
     /**
+     * @return \Traversable<array<string, string|null>>
+     */
+    private function getRawIterator(): \Traversable
+    {
+        return $this->getPersistence()->prepareIterator($this);
+    }
+
+    /**
      * Returns iterator (yield values).
      *
      * You can return false in afterLoad hook to prevent to yield this data row, example:
@@ -1793,14 +1801,6 @@ class Model implements \IteratorAggregate
                 yield $res;
             }
         }
-    }
-
-    /**
-     * @return \Traversable<array<string, string|null>>
-     */
-    public function getRawIterator(): \Traversable
-    {
-        return $this->getPersistence()->prepareIterator($this);
     }
 
     /**

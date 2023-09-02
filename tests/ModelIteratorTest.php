@@ -134,51 +134,6 @@ class ModelIteratorTest extends TestCase
         ], $data);
     }
 
-    public function testRawIterator(): void
-    {
-        $this->setDb([
-            'invoice' => [
-                ['total_net' => 10],
-                ['total_net' => 20],
-                ['total_net' => 15],
-            ],
-        ]);
-
-        $i = new Model($this->db, ['table' => 'invoice']);
-        $i->addField('total_net', ['type' => 'integer']);
-        $i->addField('total_vat', ['type' => 'integer']);
-        $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]', 'type' => 'integer']);
-
-        $i->setOrder('total_net');
-        $i->setOnlyFields(['total_net']);
-
-        $data = [];
-        foreach ($i->getRawIterator() as $row) {
-            $data[] = $row;
-
-            break;
-        }
-
-        foreach ($i->getRawIterator() as $row) {
-            $data[] = $row;
-            $i->setLimit(1);
-        }
-
-        foreach ($i->getRawIterator() as $row) {
-            $data[] = $row;
-        }
-
-        self::assertSame([
-            ['total_net' => '10', 'id' => '1'],
-
-            ['total_net' => '10', 'id' => '1'],
-            ['total_net' => '15', 'id' => '3'],
-            ['total_net' => '20', 'id' => '2'],
-
-            ['total_net' => '10', 'id' => '1'], // affected by limit now
-        ], $data);
-    }
-
     public function testBasicId(): void
     {
         $this->setDb([
