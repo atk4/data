@@ -351,6 +351,20 @@ class ReferenceSqlTest extends TestCase
                 'theirField' => 'parentDirectoryId',
             ]);
 
+            $fileEntity = $file->loadBy('name', 'v');
+            self::assertSame(3, $fileEntity->getId()->getValue());
+            self::assertSame(3, $fileEntity->get('id')->getValue());
+            self::assertSame($fileEntity->getId(), $fileEntity->get('id'));
+
+            $c = 0;
+            unset($fileEntity);
+            foreach ($file as $id => $fileEntity) {
+                self::assertSame($fileEntity->getId()->getValue(), $id->getValue());
+                self::assertSame($fileEntity->getId(), $id);
+                ++$c;
+            }
+            self::assertSame(8, $c);
+
             $fileEntity = $file->loadBy('name', 'v')->ref('childFiles')->createEntity();
             self::assertSame(3, $fileEntity->get('parentDirectoryId')->getValue());
             $fileEntity->save(['name' => 'x']);

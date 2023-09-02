@@ -1824,7 +1824,7 @@ class Model implements \IteratorAggregate
                 $dataRef = &$entity->getDataRef();
                 $dataRef = $this->getPersistence()->typecastLoadRow($this, $data);
                 if ($this->idField) {
-                    $entity->setId($data[$this->idField], false);
+                    $entity->setId($dataRef[$this->idField], false);
                 }
 
                 $res = $entity->hook(self::HOOK_AFTER_LOAD);
