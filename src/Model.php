@@ -369,19 +369,19 @@ class Model implements \IteratorAggregate
         try {
             $this->_model = $this;
             $this->userActions = [];
-            $model = clone $this;
+            $entity = clone $this;
         } finally {
             $this->_model = null;
             $this->userActions = $userActionsBackup;
         }
-        $model->_entityId = null;
+        $entity->_entityId = null;
 
         // unset non-entity properties, they are magically remapped to the model when accessed
         foreach (array_keys($this->getModelOnlyProperties()) as $name) {
-            unset($model->{$name});
+            unset($entity->{$name});
         }
 
-        return $model;
+        return $entity;
     }
 
     /**
@@ -1769,22 +1769,22 @@ class Model implements \IteratorAggregate
     public function getIterator(): \Traversable
     {
         foreach ($this->getRawIterator() as $data) {
-            $thisCloned = $this->createEntity();
+            $entity = $this->createEntity();
 
-            $dataRef = &$thisCloned->getDataRef();
+            $dataRef = &$entity->getDataRef();
             $dataRef = $this->getPersistence()->typecastLoadRow($this, $data);
             if ($this->idField) {
-                $thisCloned->setId($data[$this->idField], false);
+                $entity->setId($data[$this->idField], false);
             }
 
-            $res = $thisCloned->hook(self::HOOK_AFTER_LOAD);
+            $res = $entity->hook(self::HOOK_AFTER_LOAD);
             if ($res === false) {
                 continue;
             } elseif (is_object($res)) {
                 $res = (static::class)::assertInstanceOf($res);
                 $res->assertIsEntity();
             } else {
-                $res = $thisCloned;
+                $res = $entity;
             }
 
             if ($res->getModel()->idField) {
