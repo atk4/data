@@ -190,14 +190,14 @@ class ModelIteratorTest extends TestCase
         $i = new Model($this->db, ['table' => 'invoice']);
         $i->addField('total_net', ['type' => 'integer']);
 
-        $this->expectException(\PHP_MAJOR_VERSION === 7 ? \Error::class : \TypeError::class);
-        $this->expectExceptionMessage('Only arrays and Traversables can be unpacked');
-        if (\PHP_MAJOR_VERSION === 7) { // remove once https://github.com/sebastianbergmann/phpunit/issues/5499 is fixed
-            $v = 1;
-            [...$v]; // @phpstan-ignore-line
+        if (\PHP_MAJOR_VERSION === 7) {
+            $this->expectWarning(); // @phpstan-ignore-line
+            $this->expectWarningMessage('Only arrays and Traversables can be unpacked'); // @phpstan-ignore-line
         } else {
-            iterator_to_array($i->createIteratorBy(['total_net', 10])); // @phpstan-ignore-line
+            $this->expectException(\TypeError::class);
+            $this->expectExceptionMessage('Only arrays and Traversables can be unpacked');
         }
+        iterator_to_array($i->createIteratorBy(['total_net', 10])); // @phpstan-ignore-line
     }
 
     public function testCreateIteratorByAssociativeArrayException(): void
