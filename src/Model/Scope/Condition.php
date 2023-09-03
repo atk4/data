@@ -92,9 +92,9 @@ class Condition extends AbstractScope
     ];
 
     /**
-     * @param string|Expressionable $key
-     * @param string|mixed          $operator
-     * @param mixed                 $value
+     * @param string|Expressionable                 $key
+     * @param ($value is null ? mixed : string)     $operator
+     * @param ($operator is string ? mixed : never) $value
      */
     public function __construct($key, $operator = null, $value = null)
     {
@@ -397,11 +397,11 @@ class Condition extends AbstractScope
         $title = null;
         if ($field instanceof Field && $field->hasReference()) {
             // make sure we set the value in the Model
-            $model = $model->isEntity() ? clone $model : $model->createEntity();
-            $model->set($field->shortName, $value);
+            $entity = $model->isEntity() ? clone $model : $model->createEntity();
+            $entity->set($field->shortName, $value);
 
             // then take the title
-            $title = $model->ref($field->getReference()->link)->getTitle();
+            $title = $entity->ref($field->getReference()->link)->getTitle();
             if ($title === $value) {
                 $title = null;
             }

@@ -6,7 +6,6 @@ model.md: WARNING: duplicate object description of Atk4\Data\Model, other instan
 model.md: WARNING: duplicate object description of Atk4\Data\Model::addExpression, other instance in /__w/data/data/docs/expressions.md
 persistence.md: WARNING: duplicate object description of Atk4\Data\Model, other instance in /__w/data/data/docs/model.md
 persistence.md: WARNING: duplicate object description of Atk4\Data\Model::withPersistence, other instance in /__w/data/data/docs/model.md
-persistence/sql/overview.md: WARNING: image file not readable: persistence/sql/images/agiletoolkit.png
 persistence/sql/transactions.md: WARNING: duplicate object description of Atk4\Data\Persistence\Sql\Connection, other instance in /__w/data/data/docs/persistence/sql/connection.md
 quickstart.md: WARNING: duplicate label quickstart, other instance in /__w/data/data/docs/persistence/sql/quickstart.md
 references.md: WARNING: duplicate object description of Atk4\Data\Model, other instance in /__w/data/data/docs/persistence.md
@@ -100,7 +99,7 @@ persistence/sql/quickstart.md: [phpdomain] Target #manual-query-execution not fo
 persistence/sql/quickstart.md: [phpdomain] Target #manual-query-execution not found
 persistence/sql/quickstart.md: [phpdomain] Target Atk4\Data\Persistence\Sql\Query::mode not found
 quickstart.md: [phpdomain] Target Atk4\Data\Persistence not found
-quickstart.md: [phpdomain] Target Atk4\Data\Model::tryLoadBy not found
+quickstart.md: [phpdomain] Target Atk4\Data\Model::loadBy not found
 quickstart.md: [phpdomain] Target Atk4\Data\Model::join not found
 quickstart.md: [phpdomain] Target Atk4\Data\Reference\HasMany not found
 quickstart.md: [phpdomain] Target Atk4\Data\Model::getReference not found

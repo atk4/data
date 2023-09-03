@@ -195,7 +195,7 @@ myexport($m, ['id', 'username', 'country_id']);
 ```
 
 If you want to temporarily add conditions, then you can either clone the model
-or use {php:meth}`Model::tryLoadBy`.
+or use {php:meth}`Model::loadBy`.
 
 #### Active Record
 

@@ -315,7 +315,7 @@ $contact->scope()->add($condition); // adding condition to a model
 $contact->scope()->add($conditionXYZ); // adding more conditions
 ```
 
-:::{php:method} __construct($nestedConditions = [], $junction = Scope::AND)
+:::{php:method} __construct($conditions = [], $junction = Scope::AND)
 :::
 
 Creates a Scope object from an array:

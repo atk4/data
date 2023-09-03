@@ -418,10 +418,6 @@ When you clone a model, the new copy will inherit pretty much all the conditions
 and any in-line modifications that you have applied on the original model.
 If you decide to create new instance, it will provide a `vanilla` copy of model
 without any in-line modifications.
-This can be used in conjunction to escape data-set.
-
-:::{php:method} newInstance($class = null, $options = [])
-:::
 
 ### Looking for duplicates
 
@@ -453,10 +449,6 @@ $this->onHookShort(Model::HOOK_BEFORE_SAVE, function () {
     }
 });
 ```
-
-So to review, we used newInstance() to create new copy of a current model. It
-is important to note that newInstance() is using get_class($this) to determine
-the class.
 
 ### Archiving Records
 

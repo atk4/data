@@ -370,7 +370,29 @@ class ConditionSqlTest extends TestCase
         $m->tryLoadBy('name', new \DateTime('08-12-1982'));
     }
 
-    public function testOrConditions(): void
+    public function testAndFromArrayCondition(): void
+    {
+        $this->setDb([
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John'],
+                ['id' => 2, 'name' => 'Peter'],
+                ['id' => 3, 'name' => 'Joe'],
+            ],
+        ]);
+
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name');
+
+        $u->addCondition([
+            ['name', 'like', 'J%'],
+            ['name', 'like', '%e%'],
+        ]);
+        self::assertSameExportUnordered([
+            ['id' => 3, 'name' => 'Joe'],
+        ], $u->export());
+    }
+
+    public function testOrCondition(): void
     {
         $this->setDb([
             'user' => [
@@ -387,7 +409,6 @@ class ConditionSqlTest extends TestCase
             ['name', 'John'],
             ['name', 'Peter'],
         ));
-
         self::assertSame(2, $u->executeCountQuery());
 
         $u->addCondition(Model\Scope::createOr(

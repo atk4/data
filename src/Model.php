@@ -16,6 +16,8 @@ use Atk4\Core\InitializerTrait;
 use Atk4\Core\ReadableCaptionTrait;
 use Atk4\Data\Field\CallbackField;
 use Atk4\Data\Field\SqlExpressionField;
+use Atk4\Data\Model\Scope\AbstractScope;
+use Atk4\Data\Model\Scope\RootScope;
 use Mvorisek\Atk4\Hintable\Data\HintableModelTrait;
 
 /**
@@ -123,7 +125,7 @@ class Model implements \IteratorAggregate
     /** @var array<string, mixed>|null Persistence store some custom information in here that may be useful for them. */
     public ?array $persistenceData = null;
 
-    /** @var Model\Scope\RootScope */
+    /** @var RootScope */
     private $scope;
 
     /** @var array{int|null, int} */
@@ -250,8 +252,8 @@ class Model implements \IteratorAggregate
     public function __construct(Persistence $persistence = null, array $defaults = [])
     {
         $this->scope = \Closure::bind(static function () {
-            return new Model\Scope\RootScope();
-        }, null, Model\Scope\RootScope::class)()
+            return new RootScope();
+        }, null, RootScope::class)()
             ->setModel($this);
 
         $this->setDefaults($defaults);
@@ -367,19 +369,19 @@ class Model implements \IteratorAggregate
         try {
             $this->_model = $this;
             $this->userActions = [];
-            $model = clone $this;
+            $entity = clone $this;
         } finally {
             $this->_model = null;
             $this->userActions = $userActionsBackup;
         }
-        $model->_entityId = null;
+        $entity->_entityId = null;
 
         // unset non-entity properties, they are magically remapped to the model when accessed
         foreach (array_keys($this->getModelOnlyProperties()) as $name) {
-            unset($model->{$name});
+            unset($entity->{$name});
         }
 
-        return $model;
+        return $entity;
     }
 
     /**
@@ -949,7 +951,7 @@ class Model implements \IteratorAggregate
     /**
      * Get the scope object of the Model.
      */
-    public function scope(): Model\Scope\RootScope
+    public function scope(): RootScope
     {
         $this->assertIsModel();
 
@@ -990,15 +992,15 @@ class Model implements \IteratorAggregate
      * To use those, you should consult with documentation of your
      * persistence driver.
      *
-     * @param mixed $field
-     * @param mixed $operator
-     * @param mixed $value
+     * @param AbstractScope|array<int, AbstractScope|Persistence\Sql\Expressionable|array{string|Persistence\Sql\Expressionable, 1?: mixed, 2?: mixed}>|string|Persistence\Sql\Expressionable $field
+     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never)                                                                                   $operator
+     * @param ($operator is string ? mixed : never)                                                                                                                                           $value
      *
      * @return $this
      */
     public function addCondition($field, $operator = null, $value = null)
     {
-        $this->scope()->addCondition(...func_get_args());
+        $this->scope()->addCondition(...'func_get_args'());
 
         return $this;
     }
@@ -1415,57 +1417,82 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * @param mixed $value
+     * TODO https://github.com/atk4/data/issues/662.
+     *
+     * @return array<string, array{bool, mixed}>
+     */
+    private function temporaryMutateScopeFieldsBackup(): array
+    {
+        $res = [];
+        $fields = $this->getFields();
+        foreach ($fields as $k => $v) {
+            $res[$k] = [$v->system, $v->default];
+        }
+
+        return $res;
+    }
+
+    /**
+     * @param array<string, array{bool, mixed}> $backup
+     */
+    private function temporaryMutateScopeFieldsRestore(array $backup): void
+    {
+        $fields = $this->getFields();
+        foreach ($fields as $k => $v) {
+            [$v->system, $v->default] = $backup[$k];
+        }
+    }
+
+    /**
+     * @param AbstractScope|array<int, AbstractScope|Persistence\Sql\Expressionable|array{string|Persistence\Sql\Expressionable, 1?: mixed, 2?: mixed}>|string|Persistence\Sql\Expressionable $field
+     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never)                                                                                   $operator
+     * @param ($operator is string ? mixed : never)                                                                                                                                           $value
      *
      * @return ($fromTryLoad is true ? static|null : static)
      */
-    private function _loadBy(bool $fromTryLoad, string $fieldName, $value)
+    private function _loadBy(bool $fromTryLoad, $field, $operator = null, $value = null)
     {
         $this->assertIsModel();
 
-        if ($fieldName === $this->idField) { // optimization only
-            return $this->{$fromTryLoad ? 'tryLoad' : 'load'}($value);
-        }
-
-        $field = $this->getField($fieldName);
-
-        $scopeBak = $this->scope;
-        $systemBak = $field->system;
-        $defaultBak = $field->default;
+        $scopeOrig = $this->scope;
+        $fieldsBackup = $this->temporaryMutateScopeFieldsBackup();
+        $this->scope = clone $this->scope;
         try {
-            $this->scope = clone $this->scope;
-            $this->addCondition($field, $value);
+            $this->addCondition(...array_slice('func_get_args'(), 1));
 
             return $this->{$fromTryLoad ? 'tryLoadOne' : 'loadOne'}();
         } finally {
-            $this->scope = $scopeBak;
-            $field->system = $systemBak;
-            $field->default = $defaultBak;
+            $this->scope = $scopeOrig;
+            $this->temporaryMutateScopeFieldsRestore($fieldsBackup);
         }
     }
 
     /**
-     * Load one record by condition. Will throw if more than one record exists.
+     * Load one record by additional condition. Will throw if more than one record exists.
      *
-     * @param mixed $value
+     * @param AbstractScope|array<int, AbstractScope|Persistence\Sql\Expressionable|array{string|Persistence\Sql\Expressionable, 1?: mixed, 2?: mixed}>|string|Persistence\Sql\Expressionable $field
+     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never)                                                                                   $operator
+     * @param ($operator is string ? mixed : never)                                                                                                                                           $value
      *
      * @return static
      */
-    public function loadBy(string $fieldName, $value)
+    public function loadBy($field, $operator = null, $value = null)
     {
-        return $this->_loadBy(false, $fieldName, $value);
+        return $this->_loadBy(false, ...'func_get_args'());
     }
 
     /**
-     * Try to load one record by condition. Will throw if more than one record exists, but not if there is no record.
+     * Try to load one record by additional condition. Will throw if more than one record exists, but not if there is no record.
      *
-     * @param mixed $value
+     * @param AbstractScope|array<int, AbstractScope|Persistence\Sql\Expressionable|array{string|Persistence\Sql\Expressionable, 1?: mixed, 2?: mixed}>|string|Persistence\Sql\Expressionable $field
+     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never)                                                                                   $operator
+     * @param ($operator is string ? mixed : never)                                                                                                                                           $value
      *
      * @return static|null
      */
-    public function tryLoadBy(string $fieldName, $value)
+    public function tryLoadBy($field, $operator = null, $value = null)
     {
-        return $this->_loadBy(true, $fieldName, $value);
+        return $this->_loadBy(true, ...'func_get_args'());
     }
 
     protected function validateEntityScope(): void
@@ -1742,55 +1769,87 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Returns iterator (yield values).
+     * Create iterator (yield values).
+     *
+     * You can return false in afterLoad hook to prevent to yield this data row, example:
+     * $model->onHook(self::HOOK_AFTER_LOAD, static function (Model $m) {
+     *     if ($m->get('date') < $m->dateFrom) {
+     *         $m->breakHook(false);
+     *     }
+     * })
+     *
+     * You can also use breakHook() with specific object which will then be returned
+     * as a next iterator value.
      *
      * @return \Traversable<static>
      */
-    public function getIterator(): \Traversable
+    final public function getIterator(): \Traversable
     {
-        foreach ($this->getRawIterator() as $data) {
-            $thisCloned = $this->createEntity();
-
-            $dataRef = &$thisCloned->getDataRef();
-            $dataRef = $this->getPersistence()->typecastLoadRow($this, $data);
-            if ($this->idField) {
-                $thisCloned->setId($data[$this->idField], false);
-            }
-
-            // you can return false in afterLoad hook to prevent to yield this data row, example:
-            // $model->onHook(self::HOOK_AFTER_LOAD, static function (Model $m) {
-            //     if ($m->get('date') < $m->date_from) {
-            //         $m->breakHook(false);
-            //     }
-            // })
-
-            // you can also use breakHook() with specific object which will then be returned
-            // as a next iterator value
-
-            $res = $thisCloned->hook(self::HOOK_AFTER_LOAD);
-            if ($res === false) {
-                continue;
-            } elseif (is_object($res)) {
-                $res = (static::class)::assertInstanceOf($res);
-                $res->assertIsEntity();
-            } else {
-                $res = $thisCloned;
-            }
-
-            if ($res->getModel()->idField) {
-                yield $res->getId() => $res;
-            } else {
-                yield $res;
-            }
-        }
+        return $this->createIteratorBy([]);
     }
 
     /**
-     * @return \Traversable<array<string, string|null>>
+     * Create iterator (yield values) by additional condition.
+     *
+     * @param AbstractScope|array<int, AbstractScope|Persistence\Sql\Expressionable|array{string|Persistence\Sql\Expressionable, 1?: mixed, 2?: mixed}>|string|Persistence\Sql\Expressionable $field
+     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never)                                                                                   $operator
+     * @param ($operator is string ? mixed : never)                                                                                                                                           $value
+     *
+     * @return \Traversable<static>
      */
-    public function getRawIterator(): \Traversable
+    public function createIteratorBy($field, $operator = null, $value = null): \Traversable
     {
-        return $this->getPersistence()->prepareIterator($this);
+        $this->assertIsModel();
+
+        $scopeOrig = null;
+        if ((!is_array($field) || count($field) > 0) || $operator !== null || $value !== null) {
+            $scopeOrig = $this->scope;
+            $fieldsBackup = $this->temporaryMutateScopeFieldsBackup();
+            $this->scope = clone $this->scope;
+        }
+        try {
+            if ($scopeOrig !== null) {
+                $this->addCondition(...'func_get_args'());
+            }
+
+            foreach ($this->getPersistence()->prepareIterator($this) as $data) {
+                if ($scopeOrig !== null) {
+                    $this->scope = $scopeOrig;
+                    $scopeOrig = null;
+                    $this->temporaryMutateScopeFieldsRestore($fieldsBackup); // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/9685
+                }
+
+                $entity = $this->createEntity();
+
+                $dataRef = &$entity->getDataRef();
+                $dataRef = $this->getPersistence()->typecastLoadRow($this, $data);
+                if ($this->idField) {
+                    $entity->setId($dataRef[$this->idField], false);
+                }
+
+                $res = $entity->hook(self::HOOK_AFTER_LOAD);
+                if ($res === false) {
+                    continue;
+                } elseif (is_object($res)) {
+                    $res = (static::class)::assertInstanceOf($res);
+                    $res->assertIsEntity();
+                } else {
+                    $res = $entity;
+                }
+
+                if ($res->getModel()->idField) {
+                    yield $res->getId() => $res;
+                } else {
+                    yield $res;
+                }
+            }
+        } finally {
+            if ($scopeOrig !== null) {
+                $this->scope = $scopeOrig;
+                $scopeOrig = null;
+                $this->temporaryMutateScopeFieldsRestore($fieldsBackup); // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/9685
+            }
+        }
     }
 
     /**
