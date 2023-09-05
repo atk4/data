@@ -317,7 +317,7 @@ abstract class Connection
     /**
      * Execute Expression by using this connection and return affected rows.
      *
-     * @phpstan-return int<0, max>
+     * @return int<0, max>
      */
     public function executeStatement(Expression $expr): int
     {
@@ -333,16 +333,17 @@ abstract class Connection
      * the code inside callback will fail, then all of the transaction
      * will be also rolled back.
      *
-     * @param \Closure(mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
-     * @param mixed                                                                                 ...$fxArgs
+     * @template T
      *
-     * @return mixed
+     * @param \Closure(): T $fx
+     *
+     * @return T
      */
-    public function atomic(\Closure $fx, ...$fxArgs)
+    public function atomic(\Closure $fx)
     {
         $this->beginTransaction();
         try {
-            $res = $fx(...$fxArgs);
+            $res = $fx();
             $this->commit();
 
             return $res;

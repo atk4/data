@@ -90,9 +90,9 @@ class Migrator
      *
      * @template T of AbstractAsset
      *
-     * @phpstan-param T $abstractAsset
+     * @param T $abstractAsset
      *
-     * @phpstan-return T
+     * @return T
      */
     protected function fixAbstractAssetName(AbstractAsset $abstractAsset, string $name): AbstractAsset
     {

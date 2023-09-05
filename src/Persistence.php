@@ -103,9 +103,11 @@ abstract class Persistence
      * persistencies will support atomic operations, so by default we just
      * don't do anything.
      *
-     * @param \Closure(): mixed $fx
+     * @template T
      *
-     * @return mixed
+     * @param \Closure(): T $fx
+     *
+     * @return T
      */
     public function atomic(\Closure $fx)
     {
