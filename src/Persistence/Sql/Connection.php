@@ -317,7 +317,7 @@ abstract class Connection
     /**
      * Execute Expression by using this connection and return affected rows.
      *
-     * @phpstan-return int<0, max>
+     * @return int<0, max>
      */
     public function executeStatement(Expression $expr): int
     {

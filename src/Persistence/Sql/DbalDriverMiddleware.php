@@ -58,7 +58,7 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
     }
 
     /**
-     * @phpstan-return AbstractSchemaManager<AbstractPlatform>
+     * @return AbstractSchemaManager<AbstractPlatform>
      */
     public function getSchemaManager(DbalConnection $connection, AbstractPlatform $platform): AbstractSchemaManager
     {

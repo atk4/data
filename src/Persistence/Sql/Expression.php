@@ -548,9 +548,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
     /**
      * @param DbalConnection|Connection $connection
      *
-     * @return DbalResult|int<0, max>
-     *
-     * @phpstan-return ($fromExecuteStatement is true ? int<0, max> : DbalResult)
+     * @return ($fromExecuteStatement is true ? int<0, max> : DbalResult)
      */
     protected function _execute(?object $connection, bool $fromExecuteStatement)
     {
@@ -651,7 +649,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
     /**
      * @param DbalConnection|Connection $connection
      *
-     * @phpstan-return int<0, max>
+     * @return int<0, max>
      */
     public function executeStatement(object $connection = null): int
     {
