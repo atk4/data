@@ -618,8 +618,7 @@ abstract class Join
         $this->assertReferenceIdNotNull($foreignId);
         $saveBuffer = $this->getAndUnsetReindexedSaveBuffer($entity);
         $foreignModel->atomic(function () use ($foreignModel, $foreignId, $saveBuffer) {
-            $foreignModel = (clone $foreignModel)->addCondition($this->foreignField, $foreignId);
-            foreach ($foreignModel as $foreignEntity) {
+            foreach ($foreignModel->createIteratorBy($this->foreignField, $foreignId) as $foreignEntity) {
                 $foreignEntity->setMulti($saveBuffer);
                 $foreignEntity->save();
             }
@@ -636,8 +635,7 @@ abstract class Join
         $foreignId = $this->getForeignIdFromEntity($entity);
         $this->assertReferenceIdNotNull($foreignId);
         $foreignModel->atomic(function () use ($foreignModel, $foreignId) {
-            $foreignModel = (clone $foreignModel)->addCondition($this->foreignField, $foreignId);
-            foreach ($foreignModel as $foreignEntity) {
+            foreach ($foreignModel->createIteratorBy($this->foreignField, $foreignId) as $foreignEntity) {
                 $foreignEntity->delete();
             }
         });
