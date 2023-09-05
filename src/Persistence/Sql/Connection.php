@@ -333,16 +333,15 @@ abstract class Connection
      * the code inside callback will fail, then all of the transaction
      * will be also rolled back.
      *
-     * @param \Closure(mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
-     * @param mixed                                                                                 ...$fxArgs
+     * @param \Closure(): mixed $fx
      *
      * @return mixed
      */
-    public function atomic(\Closure $fx, ...$fxArgs)
+    public function atomic(\Closure $fx)
     {
         $this->beginTransaction();
         try {
-            $res = $fx(...$fxArgs);
+            $res = $fx();
             $this->commit();
 
             return $res;
