@@ -1876,7 +1876,7 @@ class Model implements \IteratorAggregate
                 if ($res === false) {
                     continue;
                 } elseif (is_object($res)) {
-                    $res = (static::class)::assertInstanceOf($res);
+                    (static::class)::assertInstanceOf($res);
                     $res->assertIsEntity();
                 } else {
                     $res = $entity;
