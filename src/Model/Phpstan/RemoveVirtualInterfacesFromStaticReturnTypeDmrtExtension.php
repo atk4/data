@@ -10,6 +10,10 @@ use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Identifier;
 use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\SpecifiedTypes;
+use PHPStan\Analyser\TypeSpecifier;
+use PHPStan\Analyser\TypeSpecifierAwareExtension;
+use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\Dummy\ChangedTypeMethodReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -21,15 +25,17 @@ use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\MethodTypeSpecifyingExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\StaticMethodTypeSpecifyingExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
 /**
  * Modify return types by reresolving static/$this type with virtual interfaces removed.
  */
-class RemoveVirtualInterfacesFromStaticReturnTypeDmrtExtension implements DynamicMethodReturnTypeExtension, DynamicStaticMethodReturnTypeExtension
+class RemoveVirtualInterfacesFromStaticReturnTypeDmrtExtension implements DynamicMethodReturnTypeExtension, DynamicStaticMethodReturnTypeExtension, TypeSpecifierAwareExtension, MethodTypeSpecifyingExtension, StaticMethodTypeSpecifyingExtension
 {
     protected string $className;
     protected string $virtualInterfaceName;
@@ -45,14 +51,14 @@ class RemoveVirtualInterfacesFromStaticReturnTypeDmrtExtension implements Dynami
         return $this->className;
     }
 
-    public function isMethodSupported(MethodReflection $methodReflection): bool
+    public function isMethodSupported(MethodReflection $methodReflection, MethodCall $methodCall = null, TypeSpecifierContext $context = null): bool
     {
         return $methodReflection->getName() !== '__construct';
 //        return !$methodReflection instanceof \PHPStan\Reflection\Php\PhpMethodReflection/*$methodReflection instanceof ResolvedMethodReflection
 //            || $methodReflection instanceof UnionTypeMethodReflection*/; // TODO why not all?
     }
 
-    public function isStaticMethodSupported(MethodReflection $methodReflection): bool
+    public function isStaticMethodSupported(MethodReflection $methodReflection, StaticCall $methodCall = null, TypeSpecifierContext $context = null): bool
     {
         return $this->isMethodSupported($methodReflection);
     }
@@ -147,11 +153,7 @@ class RemoveVirtualInterfacesFromStaticReturnTypeDmrtExtension implements Dynami
     /**
      * @param MethodCall|StaticCall $methodCall
      */
-    public function getTypeFromMethodCall(
-        MethodReflection $methodReflection,
-        CallLike $methodCall,
-        Scope $scope
-    ): Type {
+    public function getTypeFromMethodCall(MethodReflection $methodReflection, CallLike $methodCall, Scope $scope): Type {
         // resolve static type and remove all virtual interfaces from it
         $calledOnOrigType = $this->getMethodCallScopeType($methodCall, $scope);
         $calledOnType = $this->removeVirtualInterfacesFromType($calledOnOrigType);
@@ -164,11 +166,37 @@ class RemoveVirtualInterfacesFromStaticReturnTypeDmrtExtension implements Dynami
         )->getReturnType();
     }
 
-    public function getTypeFromStaticMethodCall(
-        MethodReflection $methodReflection,
-        StaticCall $methodCall,
-        Scope $scope
-    ): Type {
+    public function getTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): Type {
         return $this->getTypeFromMethodCall($methodReflection, $methodCall, $scope);
+    }
+
+    protected TypeSpecifier $typeSpecifier;
+
+    public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void
+    {
+        $this->typeSpecifier = $typeSpecifier;
+    }
+
+    /**
+     * Implement https://github.com/phpstan/phpstan/issues/7385 until supported officially.
+     *
+     * @param MethodCall|StaticCall $methodCall
+     */
+    public function specifyTypes(MethodReflection $methodReflection, CallLike $methodCall, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
+    {
+        $calledOnType = $this->getMethodCallScopeType($methodCall, $scope);
+
+        if ($methodCall instanceof StaticCall) {
+            if ($methodReflection->getName() === 'assertInstanceOf' && isset($methodCall->getArgs()[0])) {
+                $expr = $methodCall->getArgs()[0]->value;
+                $type = TypeCombinator::intersect($scope->getType($expr), $calledOnType);
+
+                return $this->typeSpecifier->create($expr, $type, TypeSpecifierContext::createTruthy());
+            }
+        } else {
+            // $methodCall->class var
+        }
+
+        return new SpecifiedTypes();
     }
 }
