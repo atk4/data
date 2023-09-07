@@ -374,7 +374,10 @@ class Sql extends Persistence
                     throw (new Exception('This action requires one argument with field name'))
                         ->addMoreInfo('action', $type);
                 }
-                $field = is_string($args[0]) ? $model->getField($args[0]) : $args[0];
+                $field = $args[0];
+                if (is_string($field)) {
+                    $field = $model->getField($field);
+                }
 
                 $query = $this->action($model, 'select', [[]]);
 
@@ -400,7 +403,9 @@ class Sql extends Persistence
                         ->addMoreInfo('action', $type);
                 }
                 [$fx, $field] = $args;
-                $field = is_string($field) ? $model->getField($field) : $field;
+                if (is_string($field)) {
+                    $field = $model->getField($field);
+                }
 
                 $query = $this->action($model, 'select', [[]]);
 
