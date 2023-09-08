@@ -6,6 +6,4 @@ namespace Atk4\Data;
 
 use Atk4\Core\Exception as BaseException;
 
-class Exception extends BaseException
-{
-}
+class Exception extends BaseException {}

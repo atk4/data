@@ -63,9 +63,7 @@ abstract class Persistence
     /**
      * Disconnect from database explicitly.
      */
-    public function disconnect(): void
-    {
-    }
+    public function disconnect(): void {}
 
     /**
      * Associate model with the data driver.
@@ -94,9 +92,7 @@ abstract class Persistence
      * you can define additional methods or store additional data. This method
      * is executed before model's init().
      */
-    protected function initPersistence(Model $m): void
-    {
-    }
+    protected function initPersistence(Model $m): void {}
 
     /**
      * Atomic executes operations within one begin/end transaction. Not all

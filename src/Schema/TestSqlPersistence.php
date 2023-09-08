@@ -16,8 +16,7 @@ use Doctrine\DBAL\Platforms\MySQLPlatform;
 final class TestSqlPersistence extends Persistence\Sql
 {
     public function __construct() // @phpstan-ignore-line
-    {
-    }
+    {}
 
     public function getConnection(): Persistence\Sql\Connection
     {
@@ -46,9 +45,7 @@ final class TestSqlPersistence extends Persistence\Sql
                             \Closure::bind(static fn () => $test->logQuery($sql, $params ?? [], $types ?? []), null, TestCase::class)(); // @phpstan-ignore-line
                         }
 
-                        public function stopQuery(): void
-                        {
-                        }
+                        public function stopQuery(): void {}
                     }
                 );
             }
