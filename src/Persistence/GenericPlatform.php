@@ -19,9 +19,7 @@ class GenericPlatform extends Platforms\AbstractPlatform
         return 'atk4_data_generic';
     }
 
-    protected function initializeDoctrineTypeMappings(): void
-    {
-    }
+    protected function initializeDoctrineTypeMappings(): void {}
 
     protected function _getCommonIntegerTypeDeclarationSQL(array $columnDef): string
     {

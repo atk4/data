@@ -500,9 +500,7 @@ abstract class Join
         unset($this->saveBufferByOid[spl_object_id($entity)]);
     }
 
-    protected function afterLoad(Model $entity): void
-    {
-    }
+    protected function afterLoad(Model $entity): void {}
 
     protected function initSaveBuffer(Model $entity, bool $fromUpdate): void
     {

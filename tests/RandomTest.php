@@ -569,6 +569,4 @@ class RandomTest extends TestCase
     }
 }
 
-class CustomField extends Field
-{
-}
+class CustomField extends Field {}

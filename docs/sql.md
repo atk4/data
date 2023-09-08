@@ -525,12 +525,13 @@ class NominalReport extends \Atk4\Data\Model
 
         $this->addField('date', ['type' => 'date']);
         $this->addField('items', ['type' => 'integer']);
+
         ...
     }
 }
 ```
 
-### as an Model Source
+### as a Model Source
 
 :::{important}
 Not all SQL vendors may support this approach.
@@ -548,10 +549,11 @@ class ClientReport extends \Atk4\Data\Model
     {
         parent::init();
 
-        $this->init = $this->expr('call get_report_data()');
+        $this->table = $this->expr('call get_report_data()');
 
         $this->addField('date', ['type' => 'date']);
         $this->addField('items', ['type' => 'integer']);
+
         ...
     }
 }

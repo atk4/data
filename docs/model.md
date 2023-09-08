@@ -25,10 +25,9 @@ object you can load/unload individual records (See Single record Operations belo
 ```
 $m = new User($db);
 
-$m = $m->load(3);
-$m->set('note', 'just updating');
-$m->save();
-$m->unload();
+$entity = $m->load(3);
+$entity->set('note', 'just updating');
+$entity->save();
 
 $m = $m->load(8);
 ...

@@ -539,7 +539,9 @@ class ArrayTest extends TestCase
         $d = [];
         foreach ($model as $row) {
             $rowData = $row->get();
-            $rowData = $fields !== null ? array_intersect_key($rowData, array_flip($fields)) : $rowData;
+            if ($fields !== null) {
+                $rowData = array_intersect_key($rowData, array_flip($fields));
+            }
             $d[] = $rowData;
         }
 

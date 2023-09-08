@@ -106,9 +106,7 @@ class Field implements Expressionable
         $persistence = $this->issetOwner() && $this->getOwner()->issetPersistence()
             ? $this->getOwner()->getPersistence()
             : new class() extends Persistence {
-                public function __construct()
-                {
-                }
+                public function __construct() {}
             };
 
         $persistenceSetSkipNormalizeFx = \Closure::bind(static function (bool $value) use ($persistence) {
@@ -330,9 +328,7 @@ class Field implements Expressionable
     {
         if (!$this->getOwner()->issetPersistence() && $allowGenericPersistence) {
             $persistence = new class() extends Persistence {
-                public function __construct()
-                {
-                }
+                public function __construct() {}
             };
         } else {
             $this->getOwner()->assertHasPersistence();
