@@ -525,6 +525,7 @@ class NominalReport extends \Atk4\Data\Model
 
         $this->addField('date', ['type' => 'date']);
         $this->addField('items', ['type' => 'integer']);
+
         ...
     }
 }
@@ -552,6 +553,7 @@ class ClientReport extends \Atk4\Data\Model
 
         $this->addField('date', ['type' => 'date']);
         $this->addField('items', ['type' => 'integer']);
+
         ...
     }
 }
