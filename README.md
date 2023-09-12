@@ -2,7 +2,7 @@
 
 [Agile Toolkit](https://atk4.org/) is a Low Code framework written in PHP. Agile UI implement server side rendering engine and over 50 UI generic components for interacting with your Data Model.
 
-Agile Data is a framework for defining your "business layer" which is separate from your "presentation layer" and "persistence". Together with [Agile UI](https://github.com/atk4/ui) you can deliver user interface "out of the box" or with [Atk4\Api](https://github.com/atk4/api) - general-purpose API endpoints.
+Agile Data is a framework for defining your "business layer" which is separate from your "presentation layer" and "persistence". Together with [Agile UI](https://github.com/atk4/ui) you can deliver user interface "out of the box" or with [atk4/api](https://github.com/atk4/api) - general-purpose API endpoints.
 
 - Agile Data uses PHP to define your Business Objects, their properties and actions.
 - Agile Data works with SQL, NoSQL or external API sources.
@@ -17,7 +17,7 @@ Agile Data is a framework for defining your "business layer" which is separate f
 [![GitHub release](https://img.shields.io/github/release/atk4/data.svg)](CHANGELOG.md)
 [![Code Climate](https://codeclimate.com/github/atk4/data/badges/gpa.svg)](https://codeclimate.com/github/atk4/data)
 
-Quick-Links: [Documentation](https://atk4-data.readthedocs.io) | [Discord channel](https://discord.com/channels/657649422280425523) | [ATK UI](https://github.com/atk4/ui)
+Quick-Links: [Documentation](https://atk4-data.readthedocs.io) | [Discord channel](https://discord.gg/QVKSk2B) | [ATK UI](https://github.com/atk4/ui)
 
 ## Is ATK Data similar to ORM?
 
