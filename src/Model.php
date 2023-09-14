@@ -150,15 +150,16 @@ class Model implements \IteratorAggregate
 
     /**
      * After loading an active record from DataSet it will be stored in
-     * $data property and you can access it using get(). If you use
+     * $data property, and you can access it using get(). If you use
      * set() to change any of the data, the original value will be copied
      * here.
      *
      * If the value you set equal to the original value, then the key
      * in this array will be removed.
      *
-     * The $dirty data will be reset after you save() the data but it is
-     * still available to all before/after save handlers.
+     * Behaviour in Model::save():
+     * The $dirty data is available in all before save hook spots.
+     * After the actual save operation, $dirty is reset to an empty array.
      *
      * @var array<string, mixed>
      */
