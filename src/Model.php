@@ -157,10 +157,6 @@ class Model implements \IteratorAggregate
      * If the value you set equal to the original value, then the key
      * in this array will be removed.
      *
-     * Behaviour in Model::save():
-     * The $dirty data is available in all before save hook spots.
-     * After the actual save operation, $dirty is reset to an empty array.
-     *
      * @var array<string, mixed>
      */
     private array $dirty = [];
