@@ -87,8 +87,6 @@ class Model implements \IteratorAggregate
     protected const ID_LOAD_ONE = self::class . '@idLoadOne-h7axmDNBB3qVXjVv';
     protected const ID_LOAD_ANY = self::class . '@idLoadAny-h7axmDNBB3qVXjVv';
 
-    // {{{ Properties of the class
-
     /** @var static|null not-null if and only if this instance is an entity */
     private ?self $_model = null;
 
@@ -149,8 +147,8 @@ class Model implements \IteratorAggregate
     private array $data = [];
 
     /**
-     * After loading an active record from DataSet it will be stored in
-     * $data property, and you can access it using get(). If you use
+     * After loading an entity the data will be stored in
+     * $data property and you can access them using get(). If you use
      * set() to change any of the data, the original value will be copied
      * here.
      *
@@ -226,8 +224,6 @@ class Model implements \IteratorAggregate
 
     /** Only for Reference class */
     public ?Reference $ownerReference = null;
-
-    // }}}
 
     // {{{ Basic Functionality, field definition, set() and get()
 
@@ -943,7 +939,7 @@ class Model implements \IteratorAggregate
 
     // }}}
 
-    // {{{ DataSet logic
+    // {{{ Model logic
 
     /**
      * Get the scope object of the Model.
@@ -1942,10 +1938,6 @@ class Model implements \IteratorAggregate
         return $res;
     }
 
-    // }}}
-
-    // {{{ Expressions
-
     /**
      * Add expression field.
      *
@@ -1980,8 +1972,6 @@ class Model implements \IteratorAggregate
 
         return $field;
     }
-
-    // }}}
 
     public function __isset(string $name): bool
     {
