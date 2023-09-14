@@ -28,8 +28,7 @@ $m->save();
 ```
 
 Typecasting is necessary to save the values inside the database and restore
-them back just as they were before. When modifying a record, typecasting will
-only be invoked on the fields which were dirty.
+them back just as they were before.
 
 The purpose of a flexible typecasting system is to allow you to store your date
 in a compatible format or even fine-tune it to match your database settings
