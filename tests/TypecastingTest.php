@@ -165,7 +165,6 @@ class TypecastingTest extends TestCase
         $m->addField('local-object', ['type' => 'atk4_local_object']);
         $mm = $m->load(1);
 
-        // Only
         self::assertSame($emptyStringValue, $mm->get('string'));
         self::assertSame($emptyStringValue, $mm->get('notype'));
         self::assertNull($mm->get('date'));

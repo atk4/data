@@ -918,7 +918,7 @@ class ReferenceSqlTest extends TestCase
 
         $referencedCaption = $o->getField('user_last_name')->getCaption();
 
-        // Test: $field->caption for the field 'last_name' is defined in referenced model (User)
+        // $field->caption for the field 'last_name' is defined in referenced model (User)
         // When Order add field from Referenced model User
         // caption will be passed to Order field user_last_name
         self::assertSame('Surname', $referencedCaption);

@@ -27,7 +27,7 @@ class Transfer extends Payment
         $this->onHookShort(self::HOOK_BEFORE_SAVE, function () {
             // only for new records and when destination_account_id is set
             if ($this->get('destination_account_id') && !$this->getId()) {
-                // In this section we test if "clone" works ok
+                // in this section we test if "clone" works ok
 
                 $this->otherLegCreation = $m2 = clone $this;
                 $m2->set('account_id', $m2->get('destination_account_id'));

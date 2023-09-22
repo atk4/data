@@ -73,35 +73,35 @@ The next example might be a bit too complex for you, but still read through and
 try to understand what each section does to your base query:
 
 ```
-// Establish a query looking for a maximum salary
+// establish a query looking for a maximum salary
 $salary = $connection->dsql();
 
-// Create few expression objects
+// create few expression objects
 $eMaxSalary = $salary->expr('max(salary)');
 $eMonths = $salary->expr('TimeStampDiff(month, from_date, to_date)');
 
-// Configure our basic query
+// configure our basic query
 $salary
     ->table('salary')
     ->field(['emp_no', 'max_salary' => $eMaxSalary, 'months' => $eMonths])
     ->group('emp_no')
     ->order('-max_salary');
 
-// Define sub-query for employee "id" with certain birth-date
+// define sub-query for employee "id" with certain birth-date
 $employees = $salary->dsql()
     ->table('employees')
     ->where('birth_date', '1961-05-02')
     ->field('emp_no');
 
-// Use sub-select to condition salaries
+// use sub-select to condition salaries
 $salary->where('emp_no', $employees);
 
-// Join with another table for more data
+// join with another table for more data
 $salary
     ->join('employees.emp_id', 'emp_id')
     ->field('employees.first_name');
 
-// Finally, fetch result
+// finally, fetch result
 foreach ($salary as $row) {
     echo 'Data: ' . json_encode($row) . "\n";
 }

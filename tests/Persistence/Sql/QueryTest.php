@@ -172,7 +172,7 @@ class QueryTest extends TestCase
             'now()',
             $this->q('[field]')->field($this->e('now()'))->render()[0]
         );
-        // Usage of field aliases
+        // usage of field aliases
         self::assertSame(
             'now() "time"',
             $this->q('[field]')->field('now()', 'time')->render()[0]
@@ -523,9 +523,8 @@ class QueryTest extends TestCase
             $q->render()[0]
         );
 
-        // SQLite do not support (($q1) union ($q2)) syntax. Correct syntax is ($q1 union $q2) without additional braces
-        // Other SQL engines are more relaxed, but still these additional braces are not needed for union
-        // Let's test how to do that properly
+        // SQLite do not support (($q1) union ($q2)) syntax. Correct syntax is ($q1 union $q2) without additional braces,
+        // other SQL engines are more relaxed, but still these additional braces are not needed for union
         $q1->wrapInParentheses = false;
         $q2->wrapInParentheses = false;
         $u = $this->e('([] union [])', [$q1, $q2]);
@@ -1283,7 +1282,6 @@ class QueryTest extends TestCase
 
     public function testCaseExprNormal(): void
     {
-        // Test normal form
         $s = $this->q()->caseExpr()
             ->caseWhen(['status', 'New'], 't2.expose_new')
             ->caseWhen(['status', 'like', '%Used%'], 't2.expose_used')

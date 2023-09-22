@@ -117,7 +117,7 @@ class Sql extends Persistence
                 ->addMoreInfo('model', $model);
         }
 
-        // When we work without table, we can't have any IDs
+        // when we work without table, we can't have any IDs
         if ($model->table === false) {
             $model->removeField($model->idField);
             $model->addExpression($model->idField, ['expr' => '-1', 'type' => 'integer']);
@@ -220,15 +220,14 @@ class Sql extends Persistence
     {
         // init fields
         if ($fields !== null) {
-            // Set of fields is strictly defined for purposes of export,
-            // so we will ignore even system fields.
+            // set of fields is strictly defined, so we will ignore even system fields
             foreach ($fields as $fieldName) {
                 $this->initField($query, $model->getField($fieldName));
             }
         } elseif ($model->onlyFields !== null) {
             $addedFields = [];
 
-            // Add requested fields first
+            // add requested fields first
             foreach ($model->onlyFields as $fieldName) {
                 $field = $model->getField($fieldName);
                 if ($field->neverPersist) {
@@ -661,12 +660,12 @@ class Sql extends Persistence
             ];
         }
 
-        // If our Model has expr() method (inherited from Persistence\Sql) then use it
+        // if our Model has expr() method (inherited from Persistence\Sql) then use it
         if ($field->getOwner()->hasMethod('expr')) {
             return $field->getOwner()->expr($mask, $prop);
         }
 
-        // Otherwise call method from expression
+        // otherwise call method from expression
         return $expression->expr($mask, $prop);
     }
 

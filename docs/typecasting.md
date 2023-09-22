@@ -11,9 +11,9 @@ operation. Here is the sequence and sample:
 
 ```
 $m->addField('birthday', ['type' => 'date']);
-// type has a number of pre-defined values. Using 'date'
+// Type has a number of pre-defined values. Using 'date'
 // instructs AD that we will be using it for staring dates
-// through 'DateTime' class.
+// through DateTime class
 
 $m->set('birthday', 'Jan 1 1960');
 // If non-compatible value is provided, it will be converted

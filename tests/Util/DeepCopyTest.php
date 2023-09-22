@@ -179,7 +179,7 @@ class DeepCopyTest extends TestCase
         self::assertSame(108.9, $invoice->get('total'));
         self::assertSame(1, $invoice->getId());
 
-        // Note that we did not specify that 'client_id' should be copied, so same value here
+        // we did not specify that 'client_id' should be copied, so same value here
         self::assertSame($quote->get('client_id'), $invoice->get('client_id'));
         self::assertSame('John', $invoice->ref('client_id')->get('name'));
 
@@ -238,10 +238,10 @@ class DeepCopyTest extends TestCase
             ])
             ->copy();
 
-        // New client receives new ID, but also will have all the relevant records copied
+        // new client receives new ID, but also will have all the relevant records copied
         self::assertSame(3, $client3->getId());
 
-        // We should have one of each records for this new client
+        // we should have one of each records for this new client
         self::assertSame(1, $client3->ref('Invoices')->executeCountQuery());
         self::assertSame(1, $client3->ref('Quotes')->executeCountQuery());
         self::assertSame(1, $client3->ref('Payments')->executeCountQuery());
@@ -250,16 +250,16 @@ class DeepCopyTest extends TestCase
             self::markTestIncomplete('TODO MSSQL: Cannot perform an aggregate function on an expression containing an aggregate or a subquery');
         }
 
-        // We created invoice for 90 for client1, so after copying it should still be 90
+        // we created invoice for 90 for client1, so after copying it should still be 90
         self::assertSame(90.0, (float) $client3->ref('Quotes')->action('fx', ['sum', 'total'])->getOne());
 
-        // The total of the invoice we copied, should remain, it's calculated based on lines
+        // the total of the invoice we copied, should remain, it's calculated based on lines
         self::assertSame(108.9, (float) $client3->ref('Invoices')->action('fx', ['sum', 'total'])->getOne());
 
         // Payments by this clients should also be copied correctly
         self::assertSame(103.9, (float) $client3->ref('Payments')->action('fx', ['sum', 'amount'])->getOne());
 
-        // If copied payments are properly allocated against copied invoices, then due amount will be 5
+        // if copied payments are properly allocated against copied invoices, then due amount will be 5
         self::assertSame(5.0, (float) $client3->ref('Invoices')->action('fx', ['sum', 'due'])->getOne());
     }
 

@@ -164,7 +164,7 @@ class LookupSqlTest extends TestCase
         $cc->set('is_eu', true);
         $cc->save(['name' => 'Estonia', 'code' => 'ES']);
 
-        // is_eu will NOT BLEED into this record, because insert() does not make use of current model values.
+        // is_eu will NOT BLEED into this record, because insert() does not make use of current model values
         $c->insert(['name' => 'Korea', 'code' => 'KR']);
 
         // is_eu will NOT BLEED into Japan or Russia, because import() treats all records individually
@@ -384,13 +384,14 @@ class LookupSqlTest extends TestCase
         self::assertNull($user3->get('friend_names'));
 
         /* TODO - that's left for hasMTM implementation..., to be coming later
-        // Specifying hasMany here will perform input
+        // specifying hasMany here will perform input
         $c->insert(['Canada', 'Users' => ['Alain', ['Duncan', 'is_vip' => true]]]);
 
-        // Inserting Users into Latvia can also specify Friends. In this case Friend name will be looked up
+        // inserting Users into Latvia can also specify Friends
+        // in this case Friend name will be looked up
         $c->insert(['Latvia', 'Users' => ['Imants', ['Juris', 'friend_names' => 'Alain, Imants' TODO convert to array, we never split implicitly ]]]);
 
-        // Inserting This time explicitly specify friend attributes
+        // inserting This time explicitly specify friend attributes
         $c->insert(['UK', 'Users' => [
             ['Romans', 'Friends' => [
                 ['friend_id' => 1],
@@ -399,7 +400,7 @@ class LookupSqlTest extends TestCase
             ]],
         ]]);
 
-        // BTW - Alain should have 3 friends here
+        // Alain should have 3 friends here
         */
     }
 }

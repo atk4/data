@@ -57,7 +57,7 @@ $c = new Connection(['connection' => $pdo]);
 $userIds = $c->dsql()->table('expired_users')->field('user_id');
 $c->dsql()->table('user')->where('id', 'in', $userIds)->set('active', 0)->mode('update')->executeStatement();
 
-// Native Laravel Database Query Builder
+// native Laravel Database Query Builder
 // $userIds = DB::table('expired_users')->lists('user_id');
 // DB::table('user')->whereIn('id', $userIds)->update(['active', 0]);
 ```
