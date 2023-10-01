@@ -55,12 +55,12 @@ class SqlExpressionField extends Field
         }
 
         if (is_string($expr)) {
-            // If our Model has expr() method (inherited from Persistence\Sql) then use it
+            // if our Model has expr() method (inherited from Persistence\Sql) then use it
             if ($this->getOwner()->hasMethod('expr')) {
                 return $this->getOwner()->expr('([])', [$this->getOwner()->expr($expr)]);
             }
 
-            // Otherwise call it from expression itself
+            // otherwise call it from expression itself
             return $expression->expr('([])', [$expression->expr($expr)]);
         } elseif ($expr instanceof Expressionable && !$expr instanceof Expression) { // @phpstan-ignore-line
             return $expression->expr('[]', [$expr]);

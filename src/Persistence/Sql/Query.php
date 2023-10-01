@@ -429,7 +429,7 @@ abstract class Query extends Expression
      */
     public function where($field, $cond = null, $value = null, $kind = 'where', $numArgs = null)
     {
-        // Number of passed arguments will be used to determine if arguments were specified or not
+        // number of passed arguments will be used to determine if arguments were specified or not
         if ($numArgs === null) {
             $numArgs = 'func_num_args'();
         }

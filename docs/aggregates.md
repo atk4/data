@@ -32,7 +32,7 @@ $aggregate->setGroupBy(['country_id'], [
 
 // $aggregate will have following rows:
 // ['country' => 'UK', 'count' => 20, 'total_amount' => 123.2];
-// ..
+// ...
 ```
 
 Below is how opening balance can be built:

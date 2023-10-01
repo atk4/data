@@ -199,7 +199,7 @@ class DeepCopy
     protected function _copy(Model $source, Model $destination, array $references, array $exclusions, array $transforms): Model
     {
         try {
-            // Perhaps source was already copied, then simply load destination model and return
+            // perhaps source was already copied, then simply load destination model and return
             if (isset($this->mapping[$source->table]) && isset($this->mapping[$source->table][$source->getId()])) {
                 $this->debug('Skipping ' . get_class($source));
 
@@ -227,7 +227,7 @@ class DeepCopy
                 // if we still have id field, then remove it
                 unset($data[$source->idField]);
 
-                // Copy fields as they are
+                // copy fields as they are
                 $destination = $destination->createEntity();
                 foreach ($data as $key => $val) {
                     if ($destination->hasField($key) && $destination->getField($key)->isEditable()) {
@@ -237,7 +237,7 @@ class DeepCopy
             }
             $destination->hook(self::HOOK_AFTER_COPY, [$source]);
 
-            // Look for hasOne references that needs to be mapped. Make sure records can be mapped, or copy them
+            // make sure references with hasOne can be mapped or copy them
             foreach ($this->extractKeys($references) as $refKey => $refVal) {
                 $this->debug('Considering ' . $refKey);
 
@@ -284,18 +284,18 @@ class DeepCopy
                 }
             }
 
-            // Next copy our own data
+            // next copy our own data
             $destination->save();
 
-            // Store mapping
+            // store mapping
             $this->mapping[$source->table][$source->getId()] = $destination->getId();
             $this->debug(' .. copied ' . get_class($source) . ' ' . $source->getId() . ' ' . $destination->getId());
 
-            // Next look for hasMany relationships and copy those too
+            // next look for hasMany relationships and copy those too
 
             foreach ($this->extractKeys($references) as $refKey => $refVal) {
                 if ($source->hasReference($refKey) && $source->getModel(true)->getReference($refKey) instanceof HasMany) {
-                    // No mapping, will always copy
+                    // no mapping, will always copy
                     foreach ($source->ref($refKey) as $refModel) {
                         $this->_copy(
                             $refModel,

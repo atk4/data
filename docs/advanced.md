@@ -525,7 +525,7 @@ public function autoAllocate()
     // we are only interested in unpaid invoices
     $invoices->addCondition('amount_due', '>', 0);
 
-    // Prioritize older invoices
+    // prioritize older invoices
     $invoices->setOrder('date');
 
     while ($this->get('amount_due') > 0) {
@@ -542,11 +542,11 @@ public function autoAllocate()
             }
         }
 
-        // How much we can allocate to this invoice
+        // how much we can allocate to this invoice
         $alloc = min($this->get('amount_due'), $invoice->get('amount_due'))
         $this->ref('InvoicePayment')->insert(['amount_closed' => $alloc, 'invoice_id' => $invoice->getId()]);
 
-        // Reload ourselves to refresh amount_due
+        // reload ourselves to refresh amount_due
         $this->reload();
     }
 }

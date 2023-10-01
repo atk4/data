@@ -21,7 +21,7 @@ $query->where('time', $query->expr(
     [$fromTime, $toTime]
 ));
 
-// Produces: .. where `time` between :a and :b
+// produces: .. where `time` between :a and :b
 ```
 
 Another use of expression is to supply field instead of value and vice versa:
@@ -32,7 +32,7 @@ $query->where($query->expr(
     [$time]
 ));
 
-// Produces: where :a between time_from and time_to
+// produces: where :a between time_from and time_to
 ```
 
 Yet another curious use for the DSQL library is if you have certain object in
@@ -45,7 +45,7 @@ $query->where($query->expr(
     [$time, $model->getElement('time_form'), $model->getElement('time_to')]
 ));
 
-// Produces: where :a between `time_from` and `time_to`
+// produces: where :a between `time_from` and `time_to`
 ```
 
 :::{todo}
@@ -92,7 +92,7 @@ you do not have to define "use" block:
 ```
 $query->where('time', '>', $query->expr('NOW()'));
 
-// Produces: .. where `time` > NOW()
+// produces: .. where `time` > NOW()
 ```
 
 You can specify some of the expression properties through first argument of the

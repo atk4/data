@@ -201,15 +201,11 @@ class ExpressionTest extends TestCase
         $e2 = $this->e('[greeting]! How are you.', ['greeting' => $e1]);
         $e3 = $this->e('It is me again. [greeting]', ['greeting' => $e1]);
 
-        $s2 = $e2->render()[0]; // Hello :a! How are you.
-        $s3 = $e3->render()[0]; // It is me again. Hello :a
+        self::assertSame('Hello :a! How are you.', $e2->render()[0]);
+        self::assertSame('It is me again. Hello :a', $e3->render()[0]);
 
         $e4 = $this->e('[] and good night', [$e1]);
-        $s4 = $e4->render()[0]; // Hello :a and good night
-
-        self::assertSame('Hello :a! How are you.', $s2);
-        self::assertSame('It is me again. Hello :a', $s3);
-        self::assertSame('Hello :a and good night', $s4);
+        self::assertSame('Hello :a and good night', $e4->render()[0]);
     }
 
     public function testExpr(): void

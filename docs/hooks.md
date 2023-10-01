@@ -58,7 +58,7 @@ $m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
 
 $m->insert(['name' => 'John', 'surname' => 'Smith']);
 
-// Will save into DB: ['name' => 'JOHN', 'surname' => 'SMITH'];
+// will save into DB: ['name' => 'JOHN', 'surname' => 'SMITH']
 ```
 
 ### Arguments

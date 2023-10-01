@@ -457,7 +457,7 @@ modified:
 $i->set('currency', 'GBP');
 $i->save();
 
-// will update $i->get('currency_id') to the corresponding ID for currency with name GBP.
+// will update $i->get('currency_id') to the corresponding ID for currency with name GBP
 ```
 
 This behavior is awesome when you are importing large amounts of data, because

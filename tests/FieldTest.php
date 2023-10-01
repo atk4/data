@@ -325,9 +325,6 @@ class FieldTest extends TestCase
 
     public function testValues4(): void
     {
-        // PHP type control is really crappy...
-        // This test has no purpose but it stands testament
-        // to a weird behaviours of PHP
         $m = new Model();
         $m->addField('foo', ['values' => ['1a' => 'bar']]);
         $m = $m->createEntity();

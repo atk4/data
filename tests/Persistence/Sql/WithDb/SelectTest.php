@@ -185,18 +185,10 @@ class SelectTest extends TestCase
         // In SQLite replace is just like insert, it just checks if there is
         // duplicate key and if it is it deletes the row, and inserts the new
         // one, otherwise it just inserts.
-        // So order of records after REPLACE in SQLite will be [Jane, Peter]
-        // not [Peter, Jane] as in MySQL, which in theory does the same thing,
-        // but returns [Peter, Jane] - in original order.
-        // That's why we add usort here.
-        $data = $this->q('employee')->field('id')->field('name')->getRows();
-        usort($data, static function ($a, $b) {
-            return $a['id'] - $b['id']; // @phpstan-ignore-line
-        });
-        self::assertSame([
+        self::assertSameExportUnordered([
             ['id' => '1', 'name' => 'Peter'],
             ['id' => '2', 'name' => 'Jane'],
-        ], $data);
+        ], $this->q('employee')->field('id')->field('name')->getRows());
 
         // delete
         $this->q('employee')

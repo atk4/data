@@ -126,7 +126,7 @@ trait UserActionsTrait
 
     protected function initUserActions(): void
     {
-        // Declare our basic Crud actions for the model.
+        // declare our basic CRUD actions for the model
         $this->addUserAction('add', [
             'fields' => true,
             'modifier' => UserAction::MODIFIER_CREATE,
