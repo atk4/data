@@ -39,12 +39,6 @@ class Query extends BaseQuery
             $cond = '=';
         } elseif (count($row) >= 3) {
             [$field, $cond, $value] = $row;
-        } else {
-            // for phpstan only, remove else block once
-            // https://github.com/phpstan/phpstan/issues/6017 is fixed
-            $field = null;
-            $cond = null;
-            $value = null;
         }
 
         if (count($row) >= 2 && $field instanceof Field
