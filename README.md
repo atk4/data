@@ -2,7 +2,7 @@
 
 [Agile Toolkit](https://atk4.org/) is a Low Code framework written in PHP. Agile UI implement server side rendering engine and over 50 UI generic components for interacting with your Data Model.
 
-Agile Data is a framework for defining your "business layer" which is separate from your "presentation layer" and "persistence". Together with [Agile UI](https://github.com/atk4/ui) you can deliver user interface "out of the box" or with [Agile UI](https://github.com/atk4/api) - general-purpose API endpoints.
+Agile Data is a framework for defining your "business layer" which is separate from your "presentation layer" and "persistence". Together with [Agile UI](https://github.com/atk4/ui) you can deliver user interface "out of the box" or with [Agile API](https://github.com/atk4/api) - general-purpose API endpoints.
 
 - Agile Data uses PHP to define your Business Objects, their properties and actions.
 - Agile Data works with SQL, NoSQL or external API sources.
@@ -17,7 +17,7 @@ Agile Data is a framework for defining your "business layer" which is separate f
 [![GitHub release](https://img.shields.io/github/release/atk4/data.svg)](CHANGELOG.md)
 [![Code Climate](https://codeclimate.com/github/atk4/data/badges/gpa.svg)](https://codeclimate.com/github/atk4/data)
 
-Quick-Links: [Documentation](https://atk4-data.readthedocs.io). [Example](https://github.com/atk4/data-primer). [ATK UI](https://github.com/atk4/ui). [Forum](https://forum.agiletoolkit.org/). [Commercial support](https://www.agiletoolkit.org/contact). [Udemy Course](https://www.udemy.com/web-apps-with-php-and-atk/).
+Quick-Links: [Documentation](https://atk4-data.readthedocs.io) | [Discord channel](https://discord.gg/QVKSk2B) | [ATK UI](https://github.com/atk4/ui)
 
 ## Is ATK Data similar to ORM?
 
@@ -73,7 +73,7 @@ Since the initial introduction of Agile Data back in [2016](https://www.reddit.c
 
 ### Getting Started
 
-Watch [Quick Start](https://atk4-data.readthedocs.io/en/develop/quickstart.html) or [Screencasts](https://www.youtube.com/watch?v=o16xwkFfnuA&t=182s&index=1&list=PLUUKFD-IBZWaaN_CnQuSP0iwWeHJxPXKS). There is also our [Official Udemy Course](https://forum.agiletoolkit.org/t/udemy-com-atk-course-early-access-limited-time-free/413) and [Full Documentation](https://atk4-data.readthedocs.io/) ([PDF](https://atk4-data.readthedocs.io/_/downloads/en/develop/pdf/)).
+Watch [Quick Start](https://atk4-data.readthedocs.io/en/develop/quickstart.html) or [Screencasts](https://www.youtube.com/watch?v=o16xwkFfnuA&t=182s&index=1&list=PLUUKFD-IBZWaaN_CnQuSP0iwWeHJxPXKS). There is also [Full Documentation](https://atk4-data.readthedocs.io/) ([PDF](https://atk4-data.readthedocs.io/_/downloads/en/develop/pdf/)).
 
 ATK Data relies on ATK Core and can be greatly complimented by ATK UI:
 
