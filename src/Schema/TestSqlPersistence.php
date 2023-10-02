@@ -36,6 +36,12 @@ final class TestSqlPersistence extends Persistence\Sql
                     new class() implements SQLLogger {
                         public function startQuery($sql, array $params = null, array $types = null): void
                         {
+                            // log transaction savepoint operations only once
+                            // https://github.com/doctrine/dbal/blob/3.6.7/src/Connection.php#L1365
+                            if (preg_match('~^(?:SAVEPOINT|RELEASE SAVEPOINT|ROLLBACK TO SAVEPOINT|SAVE TRANSACTION|ROLLBACK TRANSACTION) DOCTRINE2_SAVEPOINT_\d+;?$~', $sql)) {
+                                return;
+                            }
+
                             // fix https://github.com/doctrine/dbal/issues/5525
                             if ($params !== null && $params !== [] && array_is_list($params)) {
                                 $params = array_combine(range(1, count($params)), $params);
