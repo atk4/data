@@ -766,14 +766,15 @@ abstract class Expression implements Expressionable, \ArrayAccess
      */
     public function getOne(): ?string
     {
-        $row = $this->getRow();
-        if ($row === null || count($row) === 0) {
+        $row = $this->executeQuery()->fetchAssociative();
+
+        if ($row === false || count($row) === 0) {
             throw (new Exception('Unable to fetch single cell of data'))
                 ->addMoreInfo('result', $row)
                 ->addMoreInfo('query', $this->getDebugQuery());
         }
 
-        return reset($row);
+        return $this->castGetValue(reset($row));
     }
 
     // }}}
