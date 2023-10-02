@@ -1640,16 +1640,16 @@ class Model implements \IteratorAggregate
     {
         $entity = $this->createEntity();
 
-        $hasArrayValue = false;
+        $hasRefs = false;
         foreach ($row as $v) {
             if (is_array($v)) {
-                $hasArrayValue = true;
+                $hasRefs = true;
 
                 break;
             }
         }
 
-        if (!$hasArrayValue) {
+        if (!$hasRefs) {
             $entity->_insert($row);
         } else {
             $this->atomic(static function () use ($entity, $row) {

@@ -56,6 +56,9 @@ class TestCaseTest extends TestCase
                 "START TRANSACTION";
 
 
+                "SAVEPOINT";
+
+
                 insert into `t` (`name`, `int`, `float`, `null`)
                 values
                   (
@@ -86,9 +89,9 @@ class TestCaseTest extends TestCase
                   and `id` = 1
                 EOF
             . $makeLimitSqlFx(2)
+            . ";\n\n"
+            . ($this->getDatabasePlatform()->supportsReleaseSavepoints() ? "\n\"RELEASE SAVEPOINT\";\n\n" : '')
             . <<<'EOF'
-                ;
-
 
                 "COMMIT";
 

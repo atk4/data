@@ -96,8 +96,6 @@ class TransactionTest extends TestCase
         $m->addField('name');
         $m->setOrder('id');
 
-        $this->getConnection()->getConnection()->setNestTransactionsWithSavepoints(true);
-
         $this->db->atomic(function () use ($m) {
             foreach ($m as $entity) {
                 $rollback = $entity->get('name') === 'Sue';
