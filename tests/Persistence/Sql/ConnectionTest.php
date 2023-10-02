@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests\Persistence\Sql;
 
 use Atk4\Core\Phpunit\TestCase;
+use Atk4\Data\Exception;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Connection;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
@@ -134,7 +135,8 @@ class ConnectionTest extends TestCase
             try {
                 Connection::resolveConnectionClass('dummy2');
                 self::assertFalse(true); // @phpstan-ignore-line
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
+                self::assertSame('Driver schema is not registered', $e->getMessage());
             }
 
             Connection::registerConnectionClass(DummyConnection2::class, 'dummy2');
@@ -146,10 +148,11 @@ class ConnectionTest extends TestCase
         }
     }
 
-    public function testMysqlFail(): void
+    public function testConnectInvalidHostException(): void
     {
         $this->expectException(\Exception::class);
-        Connection::connect('mysql:host=256.256.256.256'); // invalid host
+        $this->expectExceptionMessage('An exception occurred in the driver: php_network_getaddresses');
+        Connection::connect('mysql:host=256.256.256.256');
     }
 
     public function testException1(): void

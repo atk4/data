@@ -711,9 +711,13 @@ abstract class Expression implements Expressionable, \ArrayAccess
      */
     public function getRowsIterator(): \Traversable
     {
-        // DbalResult::iterateAssociative() is broken with streams with Oracle database
-        // https://github.com/doctrine/dbal/issues/5002
-        $iterator = $this->executeQuery()->iterateAssociative();
+        $result = $this->executeQuery();
+        if ($this->connection->getDatabasePlatform() instanceof SQLServerPlatform) {
+            // workaround MSSQL database limitation to allow to start transaction/savepoint in middle of result iteration
+            $iterator = $result->fetchAllAssociative();
+        } else {
+            $iterator = $result->iterateAssociative();
+        }
 
         foreach ($iterator as $row) {
             yield array_map(function ($v) {
@@ -729,18 +733,29 @@ abstract class Expression implements Expressionable, \ArrayAccess
      */
     public function getRows(): array
     {
-        // DbalResult::fetchAllAssociative() is broken with streams with Oracle database
-        // https://github.com/doctrine/dbal/issues/5002
         $result = $this->executeQuery();
 
-        $rows = [];
-        while (($row = $result->fetchAssociative()) !== false) {
-            $rows[] = array_map(function ($v) {
-                return $this->castGetValue($v);
-            }, $row);
+        if ($this->connection->getDatabasePlatform() instanceof OraclePlatform) {
+            // DbalResult::fetchAllAssociative() is broken with streams with Oracle database
+            // https://github.com/doctrine/dbal/issues/5002
+
+            $res = [];
+            while (($row = $result->fetchAssociative()) !== false) {
+                $res[] = array_map(function ($v) {
+                    return $this->castGetValue($v);
+                }, $row);
+            }
+
+            return $res;
         }
 
-        return $rows;
+        $rows = $result->fetchAllAssociative();
+
+        return array_map(function ($row) {
+            return array_map(function ($v) {
+                return $this->castGetValue($v);
+            }, $row);
+        }, $rows);
     }
 
     /**
@@ -766,14 +781,15 @@ abstract class Expression implements Expressionable, \ArrayAccess
      */
     public function getOne(): ?string
     {
-        $row = $this->getRow();
-        if ($row === null || count($row) === 0) {
-            throw (new Exception('Unable to fetch single cell of data for getOne from this query'))
+        $row = $this->executeQuery()->fetchAssociative();
+
+        if ($row === false || count($row) === 0) {
+            throw (new Exception('Unable to fetch single cell of data'))
                 ->addMoreInfo('result', $row)
                 ->addMoreInfo('query', $this->getDebugQuery());
         }
 
-        return reset($row);
+        return $this->castGetValue(reset($row));
     }
 
     // }}}

@@ -31,6 +31,7 @@ class TransactionTest extends TestCase
         try {
             $m->save();
         } catch (\Exception $e) {
+            self::assertSame('Awful thing happened', $e->getMessage());
         }
 
         self::assertSame('Sue', $this->getDb()['item'][2]['name']);
@@ -42,9 +43,43 @@ class TransactionTest extends TestCase
         try {
             $m->delete();
         } catch (\Exception $e) {
+            self::assertSame('Awful thing happened', $e->getMessage());
         }
 
         self::assertSame('Sue', $this->getDb()['item'][2]['name']);
+    }
+
+    public function testAtomicInMiddleOfResultIteration(): void
+    {
+        $this->setDb([
+            'item' => [
+                ['name' => 'John'],
+                ['name' => 'Sue'],
+                ['name' => 'Smith'],
+            ],
+        ]);
+
+        $m = new Model($this->db, ['table' => 'item']);
+        $m->addField('name');
+        $m->setOrder('id');
+
+        $connection = $this->getConnection();
+        $m->onHook(Model::HOOK_AFTER_SAVE, static function () use ($connection) {
+            self::assertTrue($connection->inTransaction());
+        });
+
+        self::assertFalse($connection->inTransaction());
+        foreach ($m as $entity) {
+            self::assertFalse($connection->inTransaction());
+            $entity->set('name', $entity->get('name') . ' 2');
+            $entity->save();
+        }
+
+        self::assertSame([
+            1 => ['id' => 1, 'name' => 'John 2'],
+            ['id' => 2, 'name' => 'Sue 2'],
+            ['id' => 3, 'name' => 'Smith 2'],
+        ], $this->getDb()['item']);
     }
 
     public function testBeforeSaveHook(): void

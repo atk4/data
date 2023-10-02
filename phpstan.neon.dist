@@ -37,10 +37,10 @@ parameters:
             count: 3
 
         # FC for DBAL 4.0, remove once DBAL 3.x support is dropped
-        - 
+        -
             message: '~^Class Doctrine\\DBAL\\Platforms\\SqlitePlatform referenced with incorrect case: Doctrine\\DBAL\\Platforms\\SQLitePlatform\.$~'
             path: '*'
-            count: 33
+            count: 31
 
         # TODO these rules are generated, this ignores should be fixed in the code
         # for src/Schema/TestCase.php

@@ -6,8 +6,9 @@ namespace Atk4\Data\Tests\Schema;
 
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
-use Doctrine\DBAL\Platforms\SQLitePlatform;
+use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class TestCaseTest extends TestCase
 {
@@ -37,53 +38,78 @@ class TestCaseTest extends TestCase
             ob_end_clean();
         }
 
-        if (!$this->getDatabasePlatform() instanceof SQLitePlatform && !$this->getDatabasePlatform() instanceof MySQLPlatform) {
-            return;
-        }
+        $makeLimitSqlFx = function (int $maxCount) {
+            if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+                return "\nlimit\n  " . $maxCount . ' offset 0';
+            } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+                return "\norder by\n  (\n    select\n      null\n  ) offset 0 rows fetch next " . $maxCount . ' rows only';
+            } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
+                return ' fetch next ' . $maxCount . ' rows only';
+            }
 
-        $this->assertSameSql(<<<'EOF'
+            return "\nlimit\n  0,\n  " . $maxCount;
+        };
 
-            "START TRANSACTION";
+        $this->assertSameSql(
+            <<<'EOF'
 
-
-            insert into `t` (`name`, `int`, `float`, `null`)
-            values
-              ('Ewa', 1, '1.0', NULL);
-
-
-            select
-              `id`,
-              `name`,
-              `int`,
-              `float`,
-              `null`
-            from
-              `t`
-            where
-              `int` > -1
-              and `id` = 1
-            limit
-              0,
-              2;
+                "START TRANSACTION";
 
 
-            "COMMIT";
+                insert into `t` (`name`, `int`, `float`, `null`)
+                values
+                  (
+                EOF
+            . ($this->getDatabasePlatform() instanceof OraclePlatform ? "\n    " : '')
+            . '\'Ewa\', 1, \'1.0\', NULL'
+            . ($this->getDatabasePlatform() instanceof OraclePlatform ? "\n  " : '')
+            . ");\n\n"
+            . ($this->getDatabasePlatform() instanceof OraclePlatform ? <<<'EOF'
+
+                select
+                  "t_SEQ".CURRVAL
+                from
+                  "DUAL";
+                EOF . "\n\n" : '')
+            . <<<'EOF'
+
+                select
+                  `id`,
+                  `name`,
+                  `int`,
+                  `float`,
+                  `null`
+                from
+                  `t`
+                where
+                  `int` > -1
+                  and `id` = 1
+                EOF
+            . $makeLimitSqlFx(2)
+            . <<<'EOF'
+                ;
 
 
-            select
-              `id`,
-              `name`,
-              `int`,
-              `float`,
-              `null`
-            from
-              `t`
-            where
-              `int` > -1
-            limit
-              0,
-              1;
-            EOF . "\n\n", $output);
+                "COMMIT";
+
+
+                select
+                  `id`,
+                  `name`,
+                  `int`,
+                  `float`,
+                  `null`
+                from
+                  `t`
+                where
+                  `int` > -1
+                EOF
+            . $makeLimitSqlFx(1)
+            . ";\n\n",
+            $this->getDatabasePlatform() instanceof SQLServerPlatform
+                ? str_replace('(\'Ewa\', 1, \'1.0\', NULL)', '(N\'Ewa\', 1, N\'1.0\', NULL)', $output)
+                : $output
+        );
     }
 
     public function testGetSetDropDb(): void
