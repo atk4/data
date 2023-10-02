@@ -9,6 +9,7 @@ use Atk4\Data\Persistence\Sql\Exception;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Exception\InvalidFieldNameException;
 
 class TransactionTest extends TestCase
 {
@@ -99,8 +100,8 @@ class TransactionTest extends TestCase
             $this->q('employee')
                 ->setMulti(['id' => 2, 'FOO' => 'bar', 'name' => 'Jane', 'surname' => 'Doe', 'retired' => false])
                 ->mode('insert')->executeStatement();
-        } catch (\Exception $e) {
-            // ignore
+        } catch (Exception $e) {
+            self::assertInstanceOf(InvalidFieldNameException::class, $e->getPrevious());
         }
 
         self::assertSame(
@@ -134,8 +135,8 @@ class TransactionTest extends TestCase
                     ->setMulti(['id' => 4, 'FOO' => 'bar', 'name' => 'Jane', 'surname' => 'Doe', 'retired' => false])
                     ->mode('insert')->executeStatement();
             });
-        } catch (\Exception $e) {
-            // ignore
+        } catch (Exception $e) {
+            self::assertInstanceOf(InvalidFieldNameException::class, $e->getPrevious());
         }
 
         self::assertSame(
@@ -164,8 +165,8 @@ class TransactionTest extends TestCase
                     ->setMulti(['id' => 6, 'FOO' => 'bar', 'name' => 'Jane', 'surname' => 'Doe', 'retired' => false])
                     ->mode('insert')->executeStatement();
             });
-        } catch (\Exception $e) {
-            // ignore
+        } catch (Exception $e) {
+            self::assertInstanceOf(InvalidFieldNameException::class, $e->getPrevious());
         }
 
         self::assertSame(
@@ -191,8 +192,8 @@ class TransactionTest extends TestCase
                     ->setMulti(['id' => 5, 'FOO' => 'bar', 'name' => 'Jane', 'surname' => 'Doe', 'retired' => false])
                     ->mode('insert')->executeStatement();
             });
-        } catch (\Exception $e) {
-            // ignore
+        } catch (Exception $e) {
+            self::assertInstanceOf(InvalidFieldNameException::class, $e->getPrevious());
         }
 
         self::assertSame(
@@ -218,8 +219,8 @@ class TransactionTest extends TestCase
                     ->setMulti(['id' => 5, 'name' => 'Jane', 'surname' => 'Doe', 'retired' => false])
                     ->mode('insert')->executeStatement();
             });
-        } catch (\Exception $e) {
-            // ignore
+        } catch (Exception $e) {
+            self::assertInstanceOf(InvalidFieldNameException::class, $e->getPrevious());
         }
 
         self::assertSame(
@@ -228,15 +229,11 @@ class TransactionTest extends TestCase
         );
 
         // atomic method, success - commit
-        try {
-            $this->getConnection()->atomic(function () {
-                $this->q('employee')
-                    ->setMulti(['id' => 3, 'name' => 'John', 'surname' => 'Doe', 'retired' => true])
-                    ->mode('insert')->executeStatement();
-            });
-        } catch (\Exception $e) {
-            // ignore
-        }
+        $this->getConnection()->atomic(function () {
+            $this->q('employee')
+                ->setMulti(['id' => 3, 'name' => 'John', 'surname' => 'Doe', 'retired' => true])
+                ->mode('insert')->executeStatement();
+        });
 
         self::assertSame(
             '2',
