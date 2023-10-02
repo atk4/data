@@ -160,10 +160,6 @@ class TransactionTest extends TestCase
                         ->setMulti(['id' => 5, 'FOO' => 'bar', 'name' => 'Jane', 'surname' => 'Doe', 'retired' => false])
                         ->mode('insert')->executeStatement();
                 });
-
-                $this->q('employee')
-                    ->setMulti(['id' => 6, 'FOO' => 'bar', 'name' => 'Jane', 'surname' => 'Doe', 'retired' => false])
-                    ->mode('insert')->executeStatement();
             });
         } catch (Exception $e) {
             self::assertInstanceOf(InvalidFieldNameException::class, $e->getPrevious());
@@ -214,10 +210,6 @@ class TransactionTest extends TestCase
                         ->setMulti(['id' => 4, 'FOO' => 'bar', 'name' => 'John', 'surname' => 'Doe', 'retired' => true])
                         ->mode('insert')->executeStatement();
                 });
-
-                $this->q('employee')
-                    ->setMulti(['id' => 5, 'name' => 'Jane', 'surname' => 'Doe', 'retired' => false])
-                    ->mode('insert')->executeStatement();
             });
         } catch (Exception $e) {
             self::assertInstanceOf(InvalidFieldNameException::class, $e->getPrevious());
