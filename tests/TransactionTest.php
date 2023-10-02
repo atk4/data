@@ -82,6 +82,47 @@ class TransactionTest extends TestCase
         ], $this->getDb()['item']);
     }
 
+    public function testAtomicWithRollbackToSavepoint(): void
+    {
+        $this->setDb([
+            'item' => [
+                ['name' => 'John'],
+                ['name' => 'Sue'],
+                ['name' => 'Smith'],
+            ],
+        ]);
+
+        $m = new Model($this->db, ['table' => 'item']);
+        $m->addField('name');
+        $m->setOrder('id');
+
+        $this->db->atomic(function () use ($m) {
+            foreach ($m as $entity) {
+                $rollback = $entity->get('name') === 'Sue';
+
+                try {
+                    $this->db->atomic(static function () use ($entity, $rollback) {
+                        $entity->set('name', $entity->get('name') . ' 2');
+                        $entity->save();
+
+                        if ($rollback) {
+                            throw new \Exception('Rollback to savepoint');
+                        }
+                    });
+                } catch (\Exception $e) {
+                    self::assertSame('Rollback to savepoint', $e->getMessage());
+                    self::assertTrue($rollback);
+                }
+            }
+        });
+
+        self::assertSame([
+            1 => ['id' => 1, 'name' => 'John 2'],
+            ['id' => 2, 'name' => 'Sue'],
+            ['id' => 3, 'name' => 'Smith 2'],
+        ], $this->getDb()['item']);
+    }
+
     public function testBeforeSaveHook(): void
     {
         $this->setDb([
