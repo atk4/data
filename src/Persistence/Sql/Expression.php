@@ -729,18 +729,29 @@ abstract class Expression implements Expressionable, \ArrayAccess
      */
     public function getRows(): array
     {
-        // DbalResult::fetchAllAssociative() is broken with streams with Oracle database
-        // https://github.com/doctrine/dbal/issues/5002
         $result = $this->executeQuery();
 
-        $rows = [];
-        while (($row = $result->fetchAssociative()) !== false) {
-            $rows[] = array_map(function ($v) {
-                return $this->castGetValue($v);
-            }, $row);
+        if ($this->connection->getDatabasePlatform() instanceof OraclePlatform) {
+            // DbalResult::fetchAllAssociative() is broken with streams with Oracle database
+            // https://github.com/doctrine/dbal/issues/5002
+
+            $res = [];
+            while (($row = $result->fetchAssociative()) !== false) {
+                $res[] = array_map(function ($v) {
+                    return $this->castGetValue($v);
+                }, $row);
+            }
+
+            return $res;
         }
 
-        return $rows;
+        $rows = $result->fetchAllAssociative();
+
+        return array_map(function ($row) {
+            return array_map(function ($v) {
+                return $this->castGetValue($v);
+            }, $row);
+        }, $rows);
     }
 
     /**
