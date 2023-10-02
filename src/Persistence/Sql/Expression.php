@@ -711,9 +711,13 @@ abstract class Expression implements Expressionable, \ArrayAccess
      */
     public function getRowsIterator(): \Traversable
     {
-        // DbalResult::iterateAssociative() is broken with streams with Oracle database
-        // https://github.com/doctrine/dbal/issues/5002
-        $iterator = $this->executeQuery()->iterateAssociative();
+        $result = $this->executeQuery();
+        if ($this->connection->getDatabasePlatform() instanceof SQLServerPlatform) {
+            // workaround MSSQL database limitation to allow to start transaction/savepoint in middle of result iteration
+            $iterator = $result->fetchAllAssociative();
+        } else {
+            $iterator = $result->iterateAssociative();
+        }
 
         foreach ($iterator as $row) {
             yield array_map(function ($v) {
