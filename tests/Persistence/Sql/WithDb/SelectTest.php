@@ -205,6 +205,7 @@ class SelectTest extends TestCase
         $q = $this->q('employee')->field('name');
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unable to fetch single cell of data');
         $q->getOne();
     }
 

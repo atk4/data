@@ -768,7 +768,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
     {
         $row = $this->getRow();
         if ($row === null || count($row) === 0) {
-            throw (new Exception('Unable to fetch single cell of data for getOne from this query'))
+            throw (new Exception('Unable to fetch single cell of data'))
                 ->addMoreInfo('result', $row)
                 ->addMoreInfo('query', $this->getDebugQuery());
         }
