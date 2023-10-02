@@ -199,7 +199,15 @@ class SelectTest extends TestCase
         ], $this->q('employee')->field('id')->field('name')->getRows());
     }
 
-    public function testEmptyGetOne(): void
+    public function testGetRowEmpty(): void
+    {
+        $this->q('employee')->mode('truncate')->executeStatement();
+        $q = $this->q('employee');
+
+        self::assertNull($q->getRow());
+    }
+
+    public function testGetOneEmptyException(): void
     {
         $this->q('employee')->mode('truncate')->executeStatement();
         $q = $this->q('employee')->field('name');
