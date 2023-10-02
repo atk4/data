@@ -31,6 +31,7 @@ class TransactionTest extends TestCase
         try {
             $m->save();
         } catch (\Exception $e) {
+            self::assertSame('Awful thing happened', $e->getMessage());
         }
 
         self::assertSame('Sue', $this->getDb()['item'][2]['name']);
@@ -42,6 +43,7 @@ class TransactionTest extends TestCase
         try {
             $m->delete();
         } catch (\Exception $e) {
+            self::assertSame('Awful thing happened', $e->getMessage());
         }
 
         self::assertSame('Sue', $this->getDb()['item'][2]['name']);
