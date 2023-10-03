@@ -38,10 +38,12 @@ class QueryTest extends TestCase
         };
 
         if (!(new \ReflectionProperty($query, 'connection'))->isInitialized($query)) {
-            $query->connection = new Persistence\Sql\Sqlite\Connection();
-            \Closure::bind(static function () use ($query) {
-                $query->connection->expressionClass = \Closure::bind(static fn () => $query->expressionClass, null, Query::class)();
-                $query->connection->queryClass = get_class($query);
+            $query->connection = \Closure::bind(static function () use ($query) {
+                $connection = new Persistence\Sql\Sqlite\Connection();
+                $connection->expressionClass = \Closure::bind(static fn () => $query->expressionClass, null, Query::class)();
+                $connection->queryClass = get_class($query);
+
+                return $connection;
             }, null, Connection::class)();
         }
 
@@ -69,7 +71,7 @@ class QueryTest extends TestCase
     {
         self::assertInstanceOf(Expression::class, $this->q()->expr('foo'));
 
-        $connection = new Mysql\Connection();
+        $connection = \Closure::bind(static fn () => new Mysql\Connection(), null, Connection::class)();
         $q = new Mysql\Query(['connection' => $connection]);
         self::assertSame(Mysql\Expression::class, get_class($q->expr('foo')));
         self::assertSame($connection, $q->expr('foo')->connection);
@@ -79,7 +81,7 @@ class QueryTest extends TestCase
     {
         self::assertInstanceOf(Query::class, $this->q()->dsql());
 
-        $connection = new Mysql\Connection();
+        $connection = \Closure::bind(static fn () => new Mysql\Connection(), null, Connection::class)();
         $q = new Mysql\Query(['connection' => $connection]);
         self::assertSame(Mysql\Query::class, get_class($q->dsql()));
         self::assertSame($connection, $q->dsql()->connection);

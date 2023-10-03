@@ -169,14 +169,8 @@ class ConnectionTest extends TestCase
 
     public function testException3(): void
     {
-        $this->expectException(\TypeError::class);
-        new Persistence\Sql\Sqlite\Connection('sqlite::memory'); // @phpstan-ignore-line
-    }
-
-    public function testException4(): void
-    {
-        $c = new Persistence\Sql\Sqlite\Connection();
-        $q = $c->expr('select (2 + 2)');
+        $connection = \Closure::bind(static fn () => new Persistence\Sql\Sqlite\Connection(), null, Connection::class)();
+        $q = $connection->expr('select (2 + 2)');
         self::assertSame('select (2 + 2)', $q->render()[0]);
 
         $this->expectException(Persistence\Sql\Exception::class);
