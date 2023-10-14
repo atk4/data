@@ -79,7 +79,17 @@ class FieldTest extends TestCase
         $m->set('foo', null);
     }
 
-    public function testRequiredEmptyStringException(): void
+    public function testRequiredNullException(): void
+    {
+        $m = new Model();
+        $m->addField('foo', ['required' => true]);
+        $m = $m->createEntity();
+
+        $this->expectException(ValidationException::class);
+        $m->set('foo', null);
+    }
+
+    public function testRequiredStringEmptyException(): void
     {
         $m = new Model();
         $m->addField('foo', ['required' => true]);
@@ -89,7 +99,7 @@ class FieldTest extends TestCase
         $m->set('foo', '');
     }
 
-    public function testRequiredEmptyBinaryException(): void
+    public function testRequiredBinaryEmptyException(): void
     {
         $m = new Model();
         $m->addField('foo', ['type' => 'binary', 'required' => true]);
@@ -101,14 +111,39 @@ class FieldTest extends TestCase
         $m->set('foo', '');
     }
 
-    public function testRequiredNullException(): void
+    public function testRequiredStringZeroException(): void
     {
         $m = new Model();
         $m->addField('foo', ['required' => true]);
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $m->set('foo', null);
+        $m->set('foo', '0');
+    }
+
+    /**
+     * @dataProvider provideRequiredNumericZeroExceptionCases
+     */
+    public function testRequiredNumericZeroException(string $type): void
+    {
+        $m = new Model();
+        $m->addField('foo', ['type' => $type, 'required' => true]);
+        $m = $m->createEntity();
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must not be a zero');
+        $m->set('foo', 0);
+    }
+
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public function provideRequiredNumericZeroExceptionCases(): iterable
+    {
+        yield ['integer'];
+        yield ['float'];
+        yield ['decimal'];
+        yield ['atk4_money'];
     }
 
     public function testNotNullableNullInsertException(): void
@@ -127,7 +162,7 @@ class FieldTest extends TestCase
         $m->insert(['surname' => 'qq']);
     }
 
-    public function testRequiredEmptyStringInsertException(): void
+    public function testRequiredStringEmptyInsertException(): void
     {
         $this->setDb([
             'user' => [

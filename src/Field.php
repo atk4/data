@@ -223,6 +223,7 @@ class Field implements Expressionable
                     break;
                 case 'integer':
                 case 'float':
+                case 'decimal':
                 case 'atk4_money':
                     if ($this->required && !$value) {
                         throw new Exception('Must not be a zero');
