@@ -199,7 +199,9 @@ class Field implements Expressionable
             $value = $this->normalizeUsingTypecast($value);
 
             if ($value === null) {
-                if (!$this->nullable || $this->required) {
+                if ($this->required) {
+                    throw new Exception('Must not be empty');
+                } elseif (!$this->nullable) {
                     throw new Exception('Must not be null');
                 }
 

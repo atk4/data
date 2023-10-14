@@ -88,7 +88,18 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must not be null');
+        $this->expectExceptionMessage('Must not be empty');
+        $m->set('foo', null);
+    }
+
+    public function testNotNullableAndRequiredNullException(): void
+    {
+        $m = new Model();
+        $m->addField('foo', ['nullable' => false, 'required' => true]);
+        $m = $m->createEntity();
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must not be empty');
         $m->set('foo', null);
     }
 
@@ -859,7 +870,7 @@ class FieldTest extends TestCase
         self::assertNull($m->get('c'));
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must not be null');
+        $this->expectExceptionMessage('Must not be empty');
         $m->set('c', null);
     }
 
