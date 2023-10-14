@@ -72,10 +72,12 @@ class FieldTest extends TestCase
         $m = new Model();
         $m->addField('foo', ['nullable' => false]);
         $m = $m->createEntity();
+
         $m->set('foo', 'abc');
         $m->set('foo', '');
 
         $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must not be null');
         $m->set('foo', null);
     }
 
@@ -86,6 +88,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must not be null');
         $m->set('foo', null);
     }
 
@@ -96,6 +99,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must not be empty');
         $m->set('foo', '');
     }
 
@@ -108,6 +112,7 @@ class FieldTest extends TestCase
         $m->set('foo', '0');
 
         $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must not be empty');
         $m->set('foo', '');
     }
 
@@ -118,6 +123,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must not be empty');
         $m->set('foo', '0');
     }
 
@@ -159,6 +165,7 @@ class FieldTest extends TestCase
         $m->addField('surname');
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Must not be null');
         $m->insert(['surname' => 'qq']);
     }
 
@@ -174,7 +181,8 @@ class FieldTest extends TestCase
         $m->addField('name', ['required' => true]);
         $m->addField('surname');
 
-        $this->expectException(Exception::class);
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must not be empty');
         $m->insert(['surname' => 'qq', 'name' => '']);
     }
 
@@ -191,7 +199,8 @@ class FieldTest extends TestCase
         $m->addField('surname');
         $m = $m->load(1);
 
-        $this->expectException(Exception::class);
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must not be null');
         $m->save(['name' => null]);
     }
 
@@ -262,17 +271,18 @@ class FieldTest extends TestCase
         );
     }
 
-    public function testReadOnly1(): void
+    public function testReadOnlyException(): void
     {
         $m = new Model();
         $m->addField('foo', ['readOnly' => true]);
         $m = $m->createEntity();
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Attempting to change read-only field');
         $m->set('foo', 'bar');
     }
 
-    public function testReadOnly2(): void
+    public function testReadOnlySetSameValue(): void
     {
         $m = new Model();
         $m->addField('foo', ['readOnly' => true, 'default' => 'abc']);
@@ -287,7 +297,8 @@ class FieldTest extends TestCase
         $m->addField('foo', ['enum' => ['foo', 'bar']]);
         $m = $m->createEntity();
 
-        $this->expectException(Exception::class);
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Value is not one of the allowed values: foo, bar');
         $m->set('foo', 'xx');
     }
 
@@ -323,7 +334,7 @@ class FieldTest extends TestCase
         $m->addField('foo', ['enum' => [1, 'bar']]);
         $m = $m->createEntity();
 
-        $this->expectException(Exception::class);
+        $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Must not be boolean type');
         $m->set('foo', true);
     }
@@ -344,7 +355,8 @@ class FieldTest extends TestCase
         $m->addField('foo', ['values' => ['foo', 'bar']]);
         $m = $m->createEntity();
 
-        $this->expectException(Exception::class);
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Value is not one of the allowed values: 0, 1');
         $m->set('foo', 4);
     }
 
@@ -367,7 +379,8 @@ class FieldTest extends TestCase
         $m->addField('foo', ['values' => [1 => 'bar']]);
         $m = $m->createEntity();
 
-        $this->expectException(Exception::class);
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Value is not one of the allowed values: 1');
         $m->set('foo', 'bar');
     }
 
@@ -484,6 +497,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Field is not defined');
         $m->set('baz', 'bar');
     }
 
@@ -844,7 +858,8 @@ class FieldTest extends TestCase
         self::assertNull($m->get('b'));
         self::assertNull($m->get('c'));
 
-        $this->expectException(Exception::class);
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must not be null');
         $m->set('c', null);
     }
 
@@ -878,6 +893,7 @@ class FieldTest extends TestCase
         self::assertNull($entityBarField->get());
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Must not be null');
         $entityBarField->set(null);
     }
 

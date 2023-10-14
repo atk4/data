@@ -7,6 +7,7 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
+use Atk4\Data\ValidationException;
 
 class ConditionSqlTest extends TestCase
 {
@@ -366,7 +367,8 @@ class ConditionSqlTest extends TestCase
         $m->addField('name');
         $m->addField('date', ['type' => 'date']);
 
-        $this->expectException(Exception::class);
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must be scalar');
         $m->tryLoadBy('name', new \DateTime('08-12-1982'));
     }
 
