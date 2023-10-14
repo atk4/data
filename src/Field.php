@@ -199,7 +199,9 @@ class Field implements Expressionable
             $value = $this->normalizeUsingTypecast($value);
 
             if ($value === null) {
-                if (!$this->nullable || $this->required) {
+                if ($this->required) {
+                    throw new Exception('Must not be empty');
+                } elseif (!$this->nullable) {
                     throw new Exception('Must not be null');
                 }
 
@@ -264,7 +266,7 @@ class Field implements Expressionable
             } elseif ($this->values) {
                 if ($value === '') {
                     $value = null;
-                } elseif ((!is_string($value) && !is_int($value)) || !array_key_exists($value, $this->values)) {
+                } elseif ((!is_string($value) && !is_int($value)) || !isset($this->values[$value])) {
                     throw new Exception('Value is not one of the allowed values: ' . implode(', ', array_keys($this->values)));
                 }
             }
