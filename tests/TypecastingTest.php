@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests;
 
 use Atk4\Data\Exception;
+use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
+use Doctrine\DBAL\Types as DbalTypes;
 
 class TypecastingTest extends TestCase
 {
@@ -140,6 +143,7 @@ class TypecastingTest extends TestCase
                     'integer' => '',
                     'money' => '',
                     'float' => '',
+                    'decimal' => '',
                     'json' => '',
                     'object' => '',
                     'local-object' => '',
@@ -160,6 +164,7 @@ class TypecastingTest extends TestCase
         $m->addField('integer', ['type' => 'integer']);
         $m->addField('money', ['type' => 'atk4_money']);
         $m->addField('float', ['type' => 'float']);
+        $m->addField('decimal', ['type' => 'decimal']);
         $m->addField('json', ['type' => 'json']);
         $m->addField('object', ['type' => 'object']);
         $m->addField('local-object', ['type' => 'atk4_local_object']);
@@ -174,6 +179,7 @@ class TypecastingTest extends TestCase
         self::assertNull($mm->get('integer'));
         self::assertNull($mm->get('money'));
         self::assertNull($mm->get('float'));
+        self::assertNull($mm->get('decimal'));
         self::assertNull($mm->get('json'));
         self::assertNull($mm->get('object'));
         self::assertNull($mm->get('local-object'));
@@ -191,6 +197,7 @@ class TypecastingTest extends TestCase
         self::assertNull($mm->get('integer'));
         self::assertNull($mm->get('money'));
         self::assertNull($mm->get('float'));
+        self::assertNull($mm->get('decimal'));
         self::assertNull($mm->get('json'));
         self::assertNull($mm->get('object'));
         self::assertNull($mm->get('local-object'));
@@ -214,6 +221,7 @@ class TypecastingTest extends TestCase
             'integer' => null,
             'money' => null,
             'float' => null,
+            'decimal' => null,
             'json' => null,
             'object' => null,
             'local-object' => null,
@@ -244,6 +252,44 @@ class TypecastingTest extends TestCase
         $dbData['test'][2] = array_merge(['id' => 2], $row);
 
         self::{'assertEquals'}($dbData, $this->getDb());
+    }
+
+    /**
+     * @param \Closure(): void $fx
+     */
+    protected function executeFxWithTemporaryType(string $name, DbalTypes\Type $type, \Closure $fx): void
+    {
+        $typeRegistry = DbalTypes\Type::getTypeRegistry();
+
+        $typeRegistry->register($name, $type);
+        try {
+            $fx();
+        } finally {
+            \Closure::bind(static function () use ($typeRegistry, $name) {
+                unset($typeRegistry->instances[$name]);
+            }, null, DbalTypes\TypeRegistry::class)();
+        }
+    }
+
+    public function testSaveFieldUnexpectedScalarException(): void
+    {
+        $this->executeFxWithTemporaryType('bad-datetime', new class() extends DbalTypes\DateTimeType {
+            public function convertToDatabaseValue($value, AbstractPlatform $platform): \DateTime // @phpstan-ignore-line
+            {
+                return $value;
+            }
+        }, function () {
+            $this->expectException(\TypeError::class);
+            $this->expectExceptionMessage('Unexpected non-scalar value');
+            $this->db->typecastSaveField(new Field(['type' => 'bad-datetime']), new \DateTime());
+        });
+    }
+
+    public function testLoadFieldUnexpectedScalarException(): void
+    {
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Unexpected non-scalar value');
+        $this->db->typecastLoadField(new Field(['type' => 'datetime']), new \DateTime()); // @phpstan-ignore-line
     }
 
     public function testTypeCustom1(): void

@@ -40,11 +40,11 @@ class TestCaseTest extends TestCase
 
         $makeLimitSqlFx = function (int $maxCount) {
             if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-                return "\nlimit\n  " . $maxCount . ' offset 0';
+                return "\nlimit\n  " . $maxCount . "\noffset\n  0";
             } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-                return "\norder by\n  (\n    select\n      null\n  ) offset 0 rows fetch next " . $maxCount . ' rows only';
+                return "\norder by\n  (\n    select\n      null\n  )\noffset\n  0 rows\nfetch\n  next " . $maxCount . ' rows only';
             } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-                return ' fetch next ' . $maxCount . ' rows only';
+                return "\nfetch\n  next " . $maxCount . ' rows only';
             }
 
             return "\nlimit\n  0,\n  " . $maxCount;

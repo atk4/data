@@ -153,6 +153,7 @@ class Field implements Expressionable
 
                         break;
                     case 'float':
+                    case 'decimal':
                     case 'atk4_money':
                         $value = preg_replace('~\s+|[`\']|,(?=.*\.)~', '', $value);
 
@@ -163,6 +164,7 @@ class Field implements Expressionable
                     case 'boolean':
                     case 'integer':
                     case 'float':
+                    case 'decimal':
                     case 'atk4_money':
                         if ($value === '') {
                             $value = null;
@@ -178,6 +180,7 @@ class Field implements Expressionable
                     case 'text':
                     case 'integer':
                     case 'float':
+                    case 'decimal':
                     case 'atk4_money':
                         if (is_bool($value)) {
                             throw new Exception('Must not be boolean type');
@@ -223,6 +226,7 @@ class Field implements Expressionable
                     break;
                 case 'integer':
                 case 'float':
+                case 'decimal':
                 case 'atk4_money':
                     if ($this->required && !$value) {
                         throw new Exception('Must not be a zero');

@@ -45,7 +45,7 @@ abstract class Connection
     /**
      * @param array<string, mixed> $defaults
      */
-    public function __construct(array $defaults = [])
+    protected function __construct(array $defaults = [])
     {
         $this->setDefaults($defaults);
     }
@@ -177,7 +177,7 @@ abstract class Connection
     }
 
     /**
-     * Connect to database and return connection class.
+     * Connect to database and return connection instance.
      *
      * @param string|array<string, string>|DbalConnection|DbalDriverConnection $dsn
      * @param string|null                                                      $user

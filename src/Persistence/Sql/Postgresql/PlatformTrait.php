@@ -82,9 +82,7 @@ trait PlatformTrait
 
         $pkSeqName = $this->getIdentitySequenceName($table->getName(), $pkColumn->getName());
 
-        $conn = new Connection();
-
-        $sqls[] = $conn->expr(
+        $sqls[] = (new Expression(
             // else branch should be maybe (because of concurrency) put into after update trigger
             // with pure nextval instead of setval with a loop like in Oracle trigger
             str_replace('[pk_seq]', '\'' . $pkSeqName . '\'', <<<'EOF'
@@ -111,9 +109,9 @@ trait PlatformTrait
                 'pk_seq' => $pkSeqName,
                 'trigger_func' => $table->getName() . '_AI_FUNC',
             ]
-        )->render()[0];
+        ))->render()[0];
 
-        $sqls[] = $conn->expr(
+        $sqls[] = (new Expression(
             <<<'EOF'
                 CREATE TRIGGER {trigger}
                     BEFORE INSERT OR UPDATE
@@ -126,7 +124,7 @@ trait PlatformTrait
                 'trigger' => $table->getShortestName($table->getNamespaceName()) . '_AI_PK',
                 'trigger_func' => $table->getName() . '_AI_FUNC',
             ]
-        )->render()[0];
+        ))->render()[0];
 
         return $sqls;
     }

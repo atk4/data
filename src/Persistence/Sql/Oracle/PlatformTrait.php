@@ -71,9 +71,8 @@ trait PlatformTrait
         $aiSequenceName = $this->getIdentitySequenceName($tableIdentifier->getQuotedName($this), $nameIdentifier->getQuotedName($this));
         assert(str_starts_with($sqls[count($sqls) - 1], 'CREATE TRIGGER ' . $aiTriggerName . "\n"));
 
-        $conn = new Connection();
         $pkSeq = \Closure::bind(fn () => $this->normalizeIdentifier($aiSequenceName), $this, OraclePlatform::class)()->getName();
-        $sqls[count($sqls) - 1] = $conn->expr(
+        $sqls[count($sqls) - 1] = (new Expression(
             // else branch should be maybe (because of concurrency) put into after update trigger
             str_replace('[pk_seq]', '\'' . str_replace('\'', '\'\'', $pkSeq) . '\'', <<<'EOF'
                 CREATE TRIGGER {{trigger}}
@@ -100,7 +99,7 @@ trait PlatformTrait
                 'pk' => $nameIdentifier->getName(),
                 'pk_seq' => $pkSeq,
             ]
-        )->render()[0];
+        ))->render()[0];
 
         return $sqls;
     }

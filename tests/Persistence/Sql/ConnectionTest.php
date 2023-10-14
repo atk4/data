@@ -8,34 +8,6 @@ use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Exception;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Connection;
-use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Doctrine\DBAL\Platforms\SQLitePlatform;
-
-class DummyConnection extends Connection
-{
-    public function getDatabasePlatform(): AbstractPlatform
-    {
-        return new class() extends SQLitePlatform {
-            public function getName()
-            {
-                return 'dummy';
-            }
-        };
-    }
-}
-
-class DummyConnection2 extends Connection
-{
-    public function getDatabasePlatform(): AbstractPlatform
-    {
-        return new class() extends SQLitePlatform {
-            public function getName()
-            {
-                return 'dummy2';
-            }
-        };
-    }
-}
 
 class ConnectionTest extends TestCase
 {
@@ -128,10 +100,15 @@ class ConnectionTest extends TestCase
 
     public function testConnectionRegistry(): void
     {
+        $dummyConnectionClass = get_class(\Closure::bind(static fn () => new class() extends Connection {}, null, Connection::class)());
+        $dummyConnectionClass2 = get_class(\Closure::bind(static fn () => new class() extends Connection {}, null, Connection::class)());
+        self::assertNotSame($dummyConnectionClass, $dummyConnectionClass2);
+
         $registryBackup = \Closure::bind(static fn () => Connection::$connectionClassRegistry, null, Connection::class)();
         try {
-            Connection::registerConnectionClass(DummyConnection::class, 'dummy');
-            self::assertSame(DummyConnection::class, Connection::resolveConnectionClass('dummy'));
+            Connection::registerConnectionClass($dummyConnectionClass, 'dummy');
+            self::assertSame($dummyConnectionClass, Connection::resolveConnectionClass('dummy'));
+
             try {
                 Connection::resolveConnectionClass('dummy2');
                 self::assertFalse(true); // @phpstan-ignore-line
@@ -139,8 +116,8 @@ class ConnectionTest extends TestCase
                 self::assertSame('Driver schema is not registered', $e->getMessage());
             }
 
-            Connection::registerConnectionClass(DummyConnection2::class, 'dummy2');
-            self::assertSame(DummyConnection2::class, Connection::resolveConnectionClass('dummy2'));
+            Connection::registerConnectionClass($dummyConnectionClass2, 'dummy2');
+            self::assertSame($dummyConnectionClass2, Connection::resolveConnectionClass('dummy2'));
 
             self::assertNotSame($registryBackup, \Closure::bind(static fn () => Connection::$connectionClassRegistry, null, Connection::class)());
         } finally {
@@ -169,14 +146,8 @@ class ConnectionTest extends TestCase
 
     public function testException3(): void
     {
-        $this->expectException(\TypeError::class);
-        new Persistence\Sql\Sqlite\Connection('sqlite::memory'); // @phpstan-ignore-line
-    }
-
-    public function testException4(): void
-    {
-        $c = new Persistence\Sql\Sqlite\Connection();
-        $q = $c->expr('select (2 + 2)');
+        $connection = \Closure::bind(static fn () => new Persistence\Sql\Sqlite\Connection(), null, Connection::class)();
+        $q = $connection->expr('select (2 + 2)');
         self::assertSame('select (2 + 2)', $q->render()[0]);
 
         $this->expectException(Persistence\Sql\Exception::class);

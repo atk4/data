@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests\Persistence\Sql;
 
 use Atk4\Core\Phpunit\TestCase;
+use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Exception;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Expressionable;
@@ -212,7 +213,7 @@ class ExpressionTest extends TestCase
     {
         self::assertInstanceOf(Expression::class, $this->e('foo'));
 
-        $connection = new Mysql\Connection();
+        $connection = \Closure::bind(static fn () => new Mysql\Connection(), null, Connection::class)();
         $e = new Mysql\Expression(['connection' => $connection]);
         self::assertSame(Mysql\Expression::class, get_class($e->expr('foo')));
         self::assertSame($connection, $e->expr('foo')->connection);
@@ -295,7 +296,7 @@ class ExpressionTest extends TestCase
             }
         };
         $e = $this->e('hello, []', [$myField]);
-        $e->connection = new Sqlite\Connection();
+        $e->connection = \Closure::bind(static fn () => new Sqlite\Connection(), null, Connection::class)();
         self::assertSame(
             'hello, "myfield"',
             $e->render()[0]
