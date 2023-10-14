@@ -707,6 +707,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must be numeric');
         $m->set('foo', '123---456');
     }
 
@@ -717,6 +718,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must be numeric');
         $m->set('foo', '123---456');
     }
 
@@ -727,6 +729,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must be numeric');
         $m->set('foo', '123---456');
     }
 
@@ -757,6 +760,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must be numeric');
         $m->set('foo', 'ABC');
     }
 
