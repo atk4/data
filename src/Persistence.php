@@ -446,7 +446,7 @@ abstract class Persistence
     protected function _typecastLoadField(Field $field, $value)
     {
         // TODO casting optionally to null should be handled by type itself solely
-        if ($value === '' && in_array($field->type, ['boolean', 'integer', 'float', 'datetime', 'date', 'time', 'json', 'object'], true)) {
+        if ($value === '' && in_array($field->type, ['boolean', 'integer', 'float', 'decimal', 'datetime', 'date', 'time', 'json', 'object'], true)) {
             return null;
         }
 

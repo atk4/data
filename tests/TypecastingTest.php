@@ -140,6 +140,7 @@ class TypecastingTest extends TestCase
                     'integer' => '',
                     'money' => '',
                     'float' => '',
+                    'decimal' => '',
                     'json' => '',
                     'object' => '',
                     'local-object' => '',
@@ -160,6 +161,7 @@ class TypecastingTest extends TestCase
         $m->addField('integer', ['type' => 'integer']);
         $m->addField('money', ['type' => 'atk4_money']);
         $m->addField('float', ['type' => 'float']);
+        $m->addField('decimal', ['type' => 'decimal']);
         $m->addField('json', ['type' => 'json']);
         $m->addField('object', ['type' => 'object']);
         $m->addField('local-object', ['type' => 'atk4_local_object']);
@@ -174,6 +176,7 @@ class TypecastingTest extends TestCase
         self::assertNull($mm->get('integer'));
         self::assertNull($mm->get('money'));
         self::assertNull($mm->get('float'));
+        self::assertNull($mm->get('decimal'));
         self::assertNull($mm->get('json'));
         self::assertNull($mm->get('object'));
         self::assertNull($mm->get('local-object'));
@@ -191,6 +194,7 @@ class TypecastingTest extends TestCase
         self::assertNull($mm->get('integer'));
         self::assertNull($mm->get('money'));
         self::assertNull($mm->get('float'));
+        self::assertNull($mm->get('decimal'));
         self::assertNull($mm->get('json'));
         self::assertNull($mm->get('object'));
         self::assertNull($mm->get('local-object'));
@@ -214,6 +218,7 @@ class TypecastingTest extends TestCase
             'integer' => null,
             'money' => null,
             'float' => null,
+            'decimal' => null,
             'json' => null,
             'object' => null,
             'local-object' => null,
