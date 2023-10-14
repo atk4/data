@@ -445,7 +445,15 @@ abstract class Expression implements Expressionable, \ArrayAccess
     {
         [$sql, $params] = $this->render();
 
-        if (class_exists('SqlFormatter')) { // requires optional "jdorn/sql-formatter" package
+        if (class_exists(\SqlFormatter::class)) { // requires optional "jdorn/sql-formatter" package
+            \Closure::bind(static function () {
+                // fix latest/1.2.16 release from 2013-11-28
+                if (end(\SqlFormatter::$reserved_toplevel) === 'INTERSECT') {
+                    \SqlFormatter::$reserved_toplevel[] = 'OFFSET';
+                    \SqlFormatter::$reserved_toplevel[] = 'FETCH';
+                }
+            }, null, \SqlFormatter::class)();
+
             $sql = preg_replace('~ +(?=\n|$)|(?<=:) (?=\w)~', '', \SqlFormatter::format($sql, false));
         }
 
