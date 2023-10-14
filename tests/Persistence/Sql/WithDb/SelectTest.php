@@ -450,4 +450,32 @@ class SelectTest extends TestCase
             ['id' => 102, 'f1' => 'M'],
         ], $m->export());
     }
+
+    public function testSubqueryWithOrderAndLimit(): void
+    {
+        $subQuery = $this->q('employee');
+        $query = $this->q($subQuery, 't')->field('name')->order('name');
+
+        self::assertSame(
+            [['name' => 'Charlie'], ['name' => 'Harry'], ['name' => 'Jack'], ['name' => 'Oliver']],
+            $query->getRows()
+        );
+
+        // subquery /w limit but /wo order
+        $subQuery->limit(2);
+        self::assertCount(2, $query->getRows());
+
+        $subQuery->order('surname', true);
+        self::assertSame(
+            [['name' => 'Harry'], ['name' => 'Jack']],
+            $query->getRows()
+        );
+
+        // subquery /w order but /wo limit
+        $subQuery->args['limit'] = null;
+        self::assertSame(
+            [['name' => 'Charlie'], ['name' => 'Harry'], ['name' => 'Jack'], ['name' => 'Oliver']],
+            $query->getRows()
+        );
+    }
 }

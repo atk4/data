@@ -942,6 +942,25 @@ abstract class Query extends Expression
         return parent::render();
     }
 
+    protected function renderNested(): array
+    {
+        if (isset($this->args['order']) && !isset($this->args['limit'])) {
+            $orderOrig = $this->args['order'];
+            unset($this->args['order']);
+        } else {
+            $orderOrig = null;
+        }
+        try {
+            [$sql, $params] = parent::renderNested();
+        } finally {
+            if ($orderOrig !== null) {
+                $this->args['order'] = $orderOrig;
+            }
+        }
+
+        return [$sql, $params];
+    }
+
     /**
      * Switch template for this query. Determines what would be done
      * on execute.
