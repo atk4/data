@@ -324,6 +324,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Must not be boolean type');
         $m->set('foo', true);
     }
 
@@ -627,6 +628,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must be scalar');
         $m->set('foo', []);
     }
 
@@ -637,6 +639,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must be scalar');
         $m->set('foo', []);
     }
 
@@ -647,6 +650,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must be scalar');
         $m->set('foo', []);
     }
 
@@ -657,6 +661,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must be scalar');
         $m->set('foo', []);
     }
 
@@ -667,6 +672,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must be scalar');
         $m->set('foo', []);
     }
 
@@ -677,6 +683,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must be instance of DateTimeInterface');
         $m->set('foo', []);
     }
 
@@ -687,6 +694,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must be instance of DateTimeInterface');
         $m->set('foo', []);
     }
 
@@ -697,6 +705,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must be instance of DateTimeInterface');
         $m->set('foo', []);
     }
 
@@ -740,6 +749,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must be an array');
         $m->set('foo', 'ABC');
     }
 
@@ -750,6 +760,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must be an object');
         $m->set('foo', 'ABC');
     }
 
