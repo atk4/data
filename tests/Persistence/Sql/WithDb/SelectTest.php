@@ -451,6 +451,20 @@ class SelectTest extends TestCase
         ], $m->export());
     }
 
+    public function testOrderDuplicate(): void
+    {
+        $query = $this->q('employee')->field('name')
+            ->order('id')
+            ->order('name')
+            ->order('surname')
+            ->order('name');
+
+        self::assertSame(
+            [['name' => 'Charlie'], ['name' => 'Harry'], ['name' => 'Jack'], ['name' => 'Oliver']],
+            $query->getRows()
+        );
+    }
+
     public function testSubqueryWithOrderAndLimit(): void
     {
         $subQuery = $this->q('employee');

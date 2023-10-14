@@ -880,7 +880,7 @@ abstract class Query extends Expression
             $x[] = $this->consume($arg, self::ESCAPE_IDENTIFIER_SOFT) . ($desc ? (' ' . $desc) : '');
         }
 
-        return ' order by ' . implode(', ', array_reverse($x));
+        return ' order by ' . implode(', ', array_unique(array_reverse($x)));
     }
 
     // }}}
