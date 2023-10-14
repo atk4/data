@@ -359,7 +359,7 @@ abstract class Persistence
         try {
             $v = $this->_typecastSaveField($field, $value);
             if ($v !== null && !is_scalar($v)) { // @phpstan-ignore-line
-                throw new Exception('Unexpected non-scalar value');
+                throw new \TypeError('Unexpected non-scalar value');
             }
 
             return $v;
@@ -382,7 +382,7 @@ abstract class Persistence
         if ($value === null) {
             return null;
         } elseif (!is_scalar($value)) { // @phpstan-ignore-line
-            throw new Exception('Unexpected non-scalar value');
+            throw new \TypeError('Unexpected non-scalar value');
         }
 
         try {
