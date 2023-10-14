@@ -491,5 +491,7 @@ class SelectTest extends TestCase
             [['name' => 'Charlie'], ['name' => 'Harry'], ['name' => 'Jack'], ['name' => 'Oliver']],
             $query->getRows()
         );
+
+        self::assertSame([['surname', 'desc']], $subQuery->args['order']);
     }
 }
