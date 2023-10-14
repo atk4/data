@@ -193,7 +193,9 @@ abstract class Expression implements Expressionable, \ArrayAccess
         $expressionParamBaseBackup = $expr->paramBase;
         try {
             $expr->paramBase = $this->renderParamBase;
-            [$sql, $params] = $expr->render();
+            [$sql, $params] = $expr->wrapInParentheses
+                    ? $expr->renderNested()
+                    : $expr->render();
             foreach ($params as $k => $v) {
                 $this->renderParams[$k] = $v;
             }
@@ -207,11 +209,6 @@ abstract class Expression implements Expressionable, \ArrayAccess
             }
         } finally {
             $expr->paramBase = $expressionParamBaseBackup;
-        }
-
-        // wrap in parentheses if expression requires so
-        if ($expr->wrapInParentheses) {
-            $sql = '(' . $sql . ')';
         }
 
         return $sql;
@@ -436,6 +433,16 @@ abstract class Expression implements Expressionable, \ArrayAccess
             $this->renderParamBase = null;
             $this->renderParams = null;
         }
+    }
+
+    /**
+     * @return array{string, array<string, mixed>}
+     */
+    protected function renderNested(): array
+    {
+        [$sql, $params] = $this->render();
+
+        return ['(' . $sql . ')', $params];
     }
 
     /**
