@@ -1022,7 +1022,7 @@ class Model implements \IteratorAggregate
      * Set order for model records. Multiple calls are allowed.
      *
      * @param string|array<int, string|array{string, 1?: 'asc'|'desc'}>|array<string, 'asc'|'desc'> $field
-     * @param 'asc'|'desc'                                                                          $direction
+     * @param ($field is array ? never : 'asc'|'desc')                                              $direction
      *
      * @return $this
      */
@@ -1063,7 +1063,6 @@ class Model implements \IteratorAggregate
                 ->addMoreInfo('direction', $direction);
         }
 
-        // finally set order
         $this->order[] = [$field, $direction];
 
         return $this;

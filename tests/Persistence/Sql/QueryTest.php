@@ -862,11 +862,11 @@ class QueryTest extends TestCase
         );
     }
 
-    public function testOrderException1(): void
+    public function testOrderException(): void
     {
-        // if first argument is array, second argument must not be used
         $this->expectException(Exception::class);
-        $this->q('[order]')->order(['name', 'surname'], 'desc');
+        $this->expectExceptionMessage('If first argument is array, second argument must not be used');
+        $this->q('[order]')->order(['name', 'surname'], 'desc'); // @phpstan-ignore-line
     }
 
     public function testGroup(): void

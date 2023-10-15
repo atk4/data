@@ -32,6 +32,19 @@ class Query extends BaseQuery
         end catch
         EOF;
 
+    protected function deduplicateRenderOrder(array $sqls): array
+    {
+        $res = [];
+        foreach ($sqls as $sql) {
+            $sqlWithoutDirection = preg_replace('~\s+(?:asc|desc)\s*$~i', '', $sql);
+            if (!isset($res[$sqlWithoutDirection])) {
+                $res[$sqlWithoutDirection] = $sql;
+            }
+        }
+
+        return array_values($res);
+    }
+
     protected function _renderLimit(): ?string
     {
         if (!isset($this->args['limit'])) {

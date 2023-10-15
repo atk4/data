@@ -29,7 +29,8 @@ class Transfer extends Payment
             if ($this->get('destination_account_id') && !$this->getId()) {
                 // in this section we test if "clone" works ok
 
-                $this->otherLegCreation = $m2 = clone $this;
+                $m2 = clone $this;
+                $this->otherLegCreation = $m2;
                 $m2->set('account_id', $m2->get('destination_account_id'));
                 $m2->set('amount', -$m2->get('amount'));
 
