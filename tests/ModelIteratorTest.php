@@ -19,7 +19,7 @@ class ModelIteratorTest extends TestCase
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('If first argument is array, second argument must not be used');
-        $m->setOrder(['name', 'salary'], 'desc');
+        $m->setOrder(['name', 'salary'], 'desc'); // @phpstan-ignore-line
     }
 
     public function testNoPersistenceTryLoadException(): void

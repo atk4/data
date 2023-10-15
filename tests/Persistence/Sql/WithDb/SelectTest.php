@@ -455,6 +455,8 @@ class SelectTest extends TestCase
     {
         $query = $this->q('employee')->field('name')
             ->order('id')
+            ->order('name', 'desc')
+            ->order('name', 'ASC')
             ->order('name')
             ->order('surname')
             ->order('name');

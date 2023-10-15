@@ -781,6 +781,91 @@ abstract class Query extends Expression
 
     // }}}
 
+    // {{{ Order
+
+    /**
+     * Orders results by field or Expression. See documentation for full
+     * list of possible arguments.
+     *
+     * $q->order('name');
+     * $q->order('name desc');
+     * $q->order(['name desc', 'id asc'])
+     * $q->order('name', true);
+     *
+     * @param string|Expressionable|array<int, string|Expressionable> $order     order by
+     * @param ($order is array ? never : string|bool)                 $direction true to sort descending
+     *
+     * @return $this
+     */
+    public function order($order, $direction = null)
+    {
+        if (is_string($order) && str_contains($order, ',')) {
+            throw new Exception('Comma-separated fields list is no longer accepted, use array instead');
+        }
+
+        if (is_array($order)) {
+            if ($direction !== null) {
+                throw new Exception('If first argument is array, second argument must not be used');
+            }
+
+            foreach (array_reverse($order) as $o) {
+                $this->order($o);
+            }
+
+            return $this;
+        }
+
+        // first argument may contain space, to divide field and ordering keyword
+        if ($direction === null && is_string($order) && str_contains($order, ' ')) {
+            $lastSpacePos = strrpos($order, ' ');
+            if (in_array(strtolower(substr($order, $lastSpacePos + 1)), ['desc', 'asc'], true)) {
+                $direction = substr($order, $lastSpacePos + 1);
+                $order = substr($order, 0, $lastSpacePos);
+            }
+        }
+
+        if (is_bool($direction)) {
+            $direction = $direction ? 'desc' : '';
+        } elseif (strtolower($direction ?? '') === 'asc') {
+            $direction = '';
+        }
+        // no else - allow custom order like "order by name desc nulls last" for Oracle
+
+        $this->args['order'][] = [$order, $direction];
+
+        return $this;
+    }
+
+    /**
+     * @param list<string> $sqls
+     *
+     * @return list<string>
+     */
+    protected function deduplicateRenderOrder(array $sqls): array
+    {
+        return $sqls;
+    }
+
+    protected function _renderOrder(): ?string
+    {
+        if (!isset($this->args['order'])) {
+            return '';
+        }
+
+        $sqls = [];
+        foreach ($this->args['order'] as $tmp) {
+            [$arg, $desc] = $tmp;
+            $sqls[] = $this->consume($arg, self::ESCAPE_IDENTIFIER_SOFT) . ($desc ? (' ' . $desc) : '');
+        }
+
+        $sqls = array_reverse($sqls);
+        $sqlsDeduplicated = $this->deduplicateRenderOrder($sqls);
+
+        return ' order by ' . implode(', ', $sqlsDeduplicated);
+    }
+
+    // }}}
+
     // {{{ Limit
 
     /**
@@ -809,78 +894,6 @@ abstract class Query extends Expression
 
         return ' limit ' . (int) $this->args['limit']['shift']
             . ', ' . (int) $this->args['limit']['cnt'];
-    }
-
-    // }}}
-
-    // {{{ Order
-
-    /**
-     * Orders results by field or Expression. See documentation for full
-     * list of possible arguments.
-     *
-     * $q->order('name');
-     * $q->order('name desc');
-     * $q->order(['name desc', 'id asc'])
-     * $q->order('name', true);
-     *
-     * @param string|Expressionable|array<int, string|Expressionable> $order order by
-     * @param string|bool                                             $desc  true to sort descending
-     *
-     * @return $this
-     */
-    public function order($order, $desc = null)
-    {
-        if (is_string($order) && str_contains($order, ',')) {
-            throw new Exception('Comma-separated fields list is no longer accepted, use array instead');
-        }
-
-        if (is_array($order)) {
-            if ($desc !== null) {
-                throw new Exception('If first argument is array, second argument must not be used');
-            }
-
-            foreach (array_reverse($order) as $o) {
-                $this->order($o);
-            }
-
-            return $this;
-        }
-
-        // first argument may contain space, to divide field and ordering keyword
-        if ($desc === null && is_string($order) && str_contains($order, ' ')) {
-            $lastSpacePos = strrpos($order, ' ');
-            if (in_array(strtolower(substr($order, $lastSpacePos + 1)), ['desc', 'asc'], true)) {
-                $desc = substr($order, $lastSpacePos + 1);
-                $order = substr($order, 0, $lastSpacePos);
-            }
-        }
-
-        if (is_bool($desc)) {
-            $desc = $desc ? 'desc' : '';
-        } elseif (strtolower($desc ?? '') === 'asc') {
-            $desc = '';
-        }
-        // no else - allow custom order like "order by name desc nulls last" for Oracle
-
-        $this->args['order'][] = [$order, $desc];
-
-        return $this;
-    }
-
-    protected function _renderOrder(): ?string
-    {
-        if (!isset($this->args['order'])) {
-            return '';
-        }
-
-        $x = [];
-        foreach ($this->args['order'] as $tmp) {
-            [$arg, $desc] = $tmp;
-            $x[] = $this->consume($arg, self::ESCAPE_IDENTIFIER_SOFT) . ($desc ? (' ' . $desc) : '');
-        }
-
-        return ' order by ' . implode(', ', array_unique(array_reverse($x)));
     }
 
     // }}}
