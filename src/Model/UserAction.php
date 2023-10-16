@@ -32,17 +32,8 @@ class UserAction
     public const APPLIES_TO_MULTIPLE_RECORDS = 'multiple'; // e.g. delete
     public const APPLIES_TO_ALL_RECORDS = 'all'; // e.g. truncate
 
-    /** Defining action modifier */
-    public const MODIFIER_CREATE = 'create'; // create new record(s)
-    public const MODIFIER_UPDATE = 'update'; // update existing record(s)
-    public const MODIFIER_DELETE = 'delete'; // delete record(s)
-    public const MODIFIER_READ = 'read'; // just read, does not modify record(s)
-
     /** @var string by default action is for a single record */
     public $appliesTo = self::APPLIES_TO_SINGLE_RECORD;
-
-    /** @var string How this action interact with record */
-    public $modifier;
 
     /** @var \Closure(object, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed|string code to execute. By default will call entity method with same name */
     public $callback;
