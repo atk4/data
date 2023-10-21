@@ -57,16 +57,32 @@ class TestCaseTest extends TestCase
 
 
                 "SAVEPOINT";
+                EOF . "\n\n"
+            . ($this->getDatabasePlatform() instanceof SQLServerPlatform
+                ? <<<'EOF'
 
+                    begin try insert into `t` (`name`, `int`, `float`, `null`)
+                    values
+                      ('Ewa', 1, '1.0', NULL); end try begin catch if ERROR_NUMBER() = 544 begin
+                    set
+                      IDENTITY_INSERT `t` on; begin try insert into `t` (`name`, `int`, `float`, `null`)
+                    values
+                      ('Ewa', 1, '1.0', NULL);
+                    set
+                      IDENTITY_INSERT `t` off; end try begin catch
+                    set
+                      IDENTITY_INSERT `t` off; throw; end catch end else begin throw; end end catch;
+                    EOF . "\n\n"
+                : <<<'EOF'
 
-                insert into `t` (`name`, `int`, `float`, `null`)
-                values
-                  (
-                EOF
-            . ($this->getDatabasePlatform() instanceof OraclePlatform ? "\n    " : '')
-            . '\'Ewa\', 1, \'1.0\', NULL'
-            . ($this->getDatabasePlatform() instanceof OraclePlatform ? "\n  " : '')
-            . ");\n\n"
+                    insert into `t` (`name`, `int`, `float`, `null`)
+                    values
+                      (
+                    EOF
+                . ($this->getDatabasePlatform() instanceof OraclePlatform ? "\n    " : '')
+                . '\'Ewa\', 1, \'1.0\', NULL'
+                . ($this->getDatabasePlatform() instanceof OraclePlatform ? "\n  " : '')
+                . ");\n\n")
             . ($this->getDatabasePlatform() instanceof OraclePlatform ? <<<'EOF'
 
                 select
