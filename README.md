@@ -404,7 +404,7 @@ Smart Fields in Agile Toolkit are represented as objects. Because of inheritance
 
 Foreign keys and Relation are bread and butter of RDBMS. While it makes sense in "Persistence", not all databases support Relations.
 
-Agile Data takes a different approach by introducing "References". It allow you to define relationships between Domain Models that can work with non-relational databases, yet allow you to perform various operations such as importing or aggregating fields. (use of JOIN is explained below)
+Agile Data takes a different approach by introducing "References". It enables you to define relationships between Domain Models that can work with non-relational databases, while allowing you to perform various operations such as importing or aggregating fields. (use of JOIN is explained below)
 
 ![GitHub release](docs/images/import-field.gif)
 
@@ -412,9 +412,9 @@ Agile Data takes a different approach by introducing "References". It allow you 
 
 ### Model Conditions and DataSets
 
-Conditions (or scopes) are rare and optional feature across ORMs but it is one of the most significant features in Agile Data. It allows you to create objects that represent multiple database records without actually loading them.
+Conditions (or scopes) are rare and optional features across ORMs but they are one of the most significant features in Agile Data. It allows you to create objects that represent multiple database records without actually loading them.
 
-Once condition is defined, it will appear in actions and will also restrict you from adding non-compliant records.
+Once a condition is defined, it will appear in actions and will also restrict you from adding non-compliant records.
 
 ![GitHub release](docs/images/reference-magic.gif)
 
@@ -422,13 +422,13 @@ Once condition is defined, it will appear in actions and will also restrict you 
 
 ### Build Reports inside Domain Model
 
-With most frameworks when it comes to serious data aggregation you must make a choice - write in-efficient domain-model code or write RAW SQL query. Agile Data helps you tap into unique features of your DataBase while letting you stay inside Domain Model.
+With most frameworks when it comes to serious data aggregation you must make a choice - write in-efficient domain-model code or write RAW SQL query. Agile Data helps you tap into the unique features of your DataBase while letting you stay inside Domain Model.
 
 How do we create an efficient query to display total budget from all the projects grouped by client's country while entirely remaining in domain model? One line of code in Agile Data:
 
 ![GitHub release](docs/images/domain-model-reports.gif)
 
-Did you notice the query has automatically excluded canceled projects?
+Did you notice that the query has automatically excluded canceled projects?
 
 ### Model-level join
 
@@ -436,7 +436,7 @@ Most ORMs can define models that only work with a single SQL table. If you have
 to store logical entity data into multiple tables - tough luck, you'll have to do
 some linking yourself.
 
-Agile Data allow you to define multiple joins right inside your model. As you join()
+Agile Data allows you to define multiple joins right inside your model. As you join()
 another table, you will be able to import fields from the joined table. If you
 create a new record, data will automatically be distributed into the tables and
 records will be linked up correctly.
@@ -520,7 +520,7 @@ foreach ($client->ref('Project') as $project) {
 
 Nothing unnecessary is pre-fetched. Only requested columns are queried. Rows are streamed and never ever we will try to squeeze a large collection of IDs into a variable or a query.
 
-Agile Data works fast and efficient even if you have huge amount of records in the database.
+Agile Data works fast and efficiently even if you have huge amount of records in the database.
 
 ### Security
 
