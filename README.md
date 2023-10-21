@@ -12,7 +12,7 @@ Agile Data is a framework for defining your "business layer" which is separate f
 - Agile Data is high-performance, capable of abstracting aggregation logic and shifting it into a capable database persistence (such as SQL) through advanced expressions.
 - Agile Data is extensible - field types, persistence types, relations and action types can be extended.
 
-![Build](https://github.com/atk4/data/workflows/Unit/badge.svg)
+[![Build](https://github.com/atk4/data/actions/workflows/test-unit.yml/badge.svg?branch=develop)](https://github.com/atk4/data/actions?query=branch:develop)
 [![CodeCov](https://codecov.io/gh/atk4/data/branch/develop/graph/badge.svg)](https://codecov.io/gh/atk4/data)
 [![GitHub release](https://img.shields.io/github/release/atk4/data.svg)](CHANGELOG.md)
 [![Code Climate](https://codeclimate.com/github/atk4/data/badges/gpa.svg)](https://codeclimate.com/github/atk4/data)
