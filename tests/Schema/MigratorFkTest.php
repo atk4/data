@@ -120,6 +120,7 @@ class MigratorFkTest extends TestCase
         ], $client->export());
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unable to execute insert query');
         try {
             $client->insert(['name' => 'Michael']);
         } catch (Exception $e) {
@@ -190,6 +191,7 @@ class MigratorFkTest extends TestCase
         $client->insert(['name' => 'Ewa', 'created_by_client_id' => $clientId]);
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unable to execute insert query');
         try {
             $invoice->insert(['client_id' => 50]);
         } catch (Exception $e) {
@@ -263,6 +265,7 @@ class MigratorFkTest extends TestCase
         }
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unable to execute insert query');
         try {
             $price->insert(['amount' => 5, 'currency' => 'JPY']);
         } catch (Exception $e) {

@@ -427,6 +427,7 @@ class JoinSqlTest extends TestCase
         $user = $user->getModel()->load(1);
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unable to delete due to query error');
         try {
             $user->delete();
         } catch (Exception $e) {
