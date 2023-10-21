@@ -404,7 +404,7 @@ Smart Fields in Agile Toolkit are represented as objects. Because of inheritance
 
 Foreign keys and Relation are bread and butter of RDBMS. While it makes sense in "Persistence", not all databases support Relations.
 
-Agile Data takes a different approach by introducing "References". It allows you to define relationships between Domain Models that can work with non-relational databases, yet allow you to perform various operations such as importing or aggregating fields. (use of JOIN is explained below)
+Agile Data takes a different approach by introducing "References". It enables you to define relationships between Domain Models that can work with non-relational databases, while allowing you to perform various operations such as importing or aggregating fields. (use of JOIN is explained below)
 
 ![GitHub release](docs/images/import-field.gif)
 
