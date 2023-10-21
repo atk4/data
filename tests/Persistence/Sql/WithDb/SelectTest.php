@@ -222,6 +222,7 @@ class SelectTest extends TestCase
         $q = $this->q('employee')->field('Sqlite must use backticks for identifier escape');
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Dsql execute error');
         $q->executeStatement();
     }
 
@@ -308,6 +309,7 @@ class SelectTest extends TestCase
         $q = $this->q('non_existing_table')->field('non_existing_field');
 
         $this->expectException(ExecuteException::class);
+        $this->expectExceptionMessage('Dsql execute error');
         try {
             $q->getOne();
         } catch (ExecuteException $e) {
