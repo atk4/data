@@ -344,13 +344,13 @@ abstract class Persistence
             switch ($field->type) {
                 case 'boolean':
                 case 'integer':
-                    $value = preg_replace('~\s+|[,`\']~', '', $value);
+                    $value = preg_replace('~\s+|,~', '', $value);
 
                     break;
                 case 'float':
                 case 'decimal':
                 case 'atk4_money':
-                    $value = preg_replace('~\s+|[`\']|,(?=.*\.)~', '', $value);
+                    $value = preg_replace('~\s+|,(?=.*\.)~', '', $value);
 
                     break;
             }
