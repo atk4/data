@@ -334,6 +334,71 @@ abstract class Persistence
     }
 
     /**
+     * @param mixed $value
+     *
+     * @return ($value is scalar ? scalar : mixed)
+     */
+    private function _typecastPreField(Field $field, $value, bool $fromLoad)
+    {
+        if (is_string($value)) {
+            switch ($field->type) {
+                case 'boolean':
+                case 'integer':
+                    $value = preg_replace('~\s+|[,`\']~', '', $value);
+
+                    break;
+                case 'float':
+                case 'decimal':
+                case 'atk4_money':
+                    $value = preg_replace('~\s+|[`\']|,(?=.*\.)~', '', $value);
+
+                    break;
+            }
+
+            switch ($field->type) {
+                case 'boolean':
+                case 'integer':
+                case 'float':
+                case 'decimal':
+                case 'atk4_money':
+                    if ($value === '') {
+                        $value = null;
+                    } elseif (!is_numeric($value)) {
+                        throw new Exception('Must be numeric');
+                    }
+
+                    break;
+            }
+        } elseif ($value !== null) {
+            switch ($field->type) {
+                case 'string':
+                case 'text':
+                case 'integer':
+                case 'float':
+                case 'decimal':
+                case 'atk4_money':
+                    if (is_bool($value)) {
+                        throw new Exception('Must not be bool type');
+                    } elseif (is_int($value)) {
+                        if ($fromLoad) {
+                            $value = (string) $value;
+                        }
+                    } elseif (is_float($value)) {
+                        if ($fromLoad) {
+                            $value = Persistence\Sql\Expression::castFloatToString($value);
+                        }
+                    } else {
+                        throw new Exception('Must be scalar');
+                    }
+
+                    break;
+            }
+        }
+
+        return $value;
+    }
+
+    /**
      * Prepare value of a specific field by converting it to
      * persistence-friendly format.
      *
@@ -357,7 +422,8 @@ abstract class Persistence
         }
 
         try {
-            $v = $this->_typecastSaveField($field, $value);
+            $valuePre = $this->_typecastPreField($field, $value, false);
+            $v = $this->_typecastSaveField($field, $valuePre);
             if ($v !== null && !is_scalar($v)) { // @phpstan-ignore-line
                 throw new \TypeError('Unexpected non-scalar value');
             }
@@ -386,7 +452,9 @@ abstract class Persistence
         }
 
         try {
-            return $this->_typecastLoadField($field, $value);
+            $valuePre = $this->_typecastPreField($field, $value, true);
+
+            return $this->_typecastLoadField($field, $valuePre);
         } catch (\Exception $e) {
             throw (new Exception('Typecast parse error', 0, $e))
                 ->addMoreInfo('field', $field->shortName);

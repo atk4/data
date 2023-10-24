@@ -346,7 +346,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must not be boolean type');
+        $this->expectExceptionMessage('Must not be bool type');
         $m->set('foo', true);
     }
 
@@ -646,7 +646,7 @@ class FieldTest extends TestCase
         self::assertTrue($m->get('boolean'));
     }
 
-    public function testNormalizeException1(): void
+    public function testNormalizeStringArrayException(): void
     {
         $m = new Model();
         $m->addField('foo', ['type' => 'string']);
@@ -657,51 +657,62 @@ class FieldTest extends TestCase
         $m->set('foo', []);
     }
 
-    public function testNormalizeException2(): void
+    public function testNormalizeStringBoolException(): void
     {
         $m = new Model();
-        $m->addField('foo', ['type' => 'text']);
+        $m->addField('foo', ['type' => 'string']);
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be scalar');
-        $m->set('foo', []);
+        $this->expectExceptionMessageMatches('~^Must not be bool type$~');
+        $m->set('foo', false);
     }
 
-    public function testNormalizeException3(): void
+    public function testNormalizeIntegerNumericException(): void
     {
         $m = new Model();
         $m->addField('foo', ['type' => 'integer']);
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be scalar');
-        $m->set('foo', []);
+        $this->expectExceptionMessage('Must be numeric');
+        $m->set('foo', '1x');
     }
 
-    public function testNormalizeException4(): void
-    {
-        $m = new Model();
-        $m->addField('foo', ['type' => 'atk4_money']);
-        $m = $m->createEntity();
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be scalar');
-        $m->set('foo', []);
-    }
-
-    public function testNormalizeException5(): void
+    public function testNormalizeFloatNumericException(): void
     {
         $m = new Model();
         $m->addField('foo', ['type' => 'float']);
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be scalar');
-        $m->set('foo', []);
+        $this->expectExceptionMessage('Must be numeric');
+        $m->set('foo', '1x');
     }
 
-    public function testNormalizeException6(): void
+    public function testNormalizeAtk4MoneyNumericException(): void
+    {
+        $m = new Model();
+        $m->addField('foo', ['type' => 'atk4_money']);
+        $m = $m->createEntity();
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must be numeric');
+        $m->set('foo', '1x');
+    }
+
+    public function testNormalizeBooleanNumericException(): void
+    {
+        $m = new Model();
+        $m->addField('foo', ['type' => 'boolean']);
+        $m = $m->createEntity();
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must be numeric');
+        $m->set('foo', '1x');
+    }
+
+    public function testNormalizeDateException(): void
     {
         $m = new Model();
         $m->addField('foo', ['type' => 'date']);
@@ -709,21 +720,10 @@ class FieldTest extends TestCase
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Must be instance of DateTimeInterface');
-        $m->set('foo', []);
+        $m->set('foo', '2000-01-01');
     }
 
-    public function testNormalizeException7(): void
-    {
-        $m = new Model();
-        $m->addField('foo', ['type' => 'datetime']);
-        $m = $m->createEntity();
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be instance of DateTimeInterface');
-        $m->set('foo', []);
-    }
-
-    public function testNormalizeException8(): void
+    public function testNormalizeTimeException(): void
     {
         $m = new Model();
         $m->addField('foo', ['type' => 'time']);
@@ -731,43 +731,21 @@ class FieldTest extends TestCase
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Must be instance of DateTimeInterface');
-        $m->set('foo', []);
+        $m->set('foo', '20:00:00');
     }
 
-    public function testNormalizeException9(): void
+    public function testNormalizeDatetimeException(): void
     {
         $m = new Model();
-        $m->addField('foo', ['type' => 'integer']);
+        $m->addField('foo', ['type' => 'datetime']);
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be numeric');
-        $m->set('foo', '123---456');
+        $this->expectExceptionMessage('Must be instance of DateTimeInterface');
+        $m->set('foo', '2000-01-01 20:00:00');
     }
 
-    public function testNormalizeException10(): void
-    {
-        $m = new Model();
-        $m->addField('foo', ['type' => 'atk4_money']);
-        $m = $m->createEntity();
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be numeric');
-        $m->set('foo', '123---456');
-    }
-
-    public function testNormalizeException11(): void
-    {
-        $m = new Model();
-        $m->addField('foo', ['type' => 'float']);
-        $m = $m->createEntity();
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be numeric');
-        $m->set('foo', '123---456');
-    }
-
-    public function testNormalizeException12(): void
+    public function testNormalizeJsonException(): void
     {
         $m = new Model();
         $m->addField('foo', ['type' => 'json']);
@@ -778,7 +756,7 @@ class FieldTest extends TestCase
         $m->set('foo', 'ABC');
     }
 
-    public function testNormalizeException13(): void
+    public function testNormalizeObjectException(): void
     {
         $m = new Model();
         $m->addField('foo', ['type' => 'object']);
@@ -786,17 +764,6 @@ class FieldTest extends TestCase
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Must be an object');
-        $m->set('foo', 'ABC');
-    }
-
-    public function testNormalizeException14(): void
-    {
-        $m = new Model();
-        $m->addField('foo', ['type' => 'boolean']);
-        $m = $m->createEntity();
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be numeric');
         $m->set('foo', 'ABC');
     }
 
