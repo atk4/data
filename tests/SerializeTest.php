@@ -66,7 +66,7 @@ class SerializeTest extends TestCase
         $dbData[] = &$dbData;
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Typecast save error: Could not convert PHP type \'array\' to \'json\', as an \'Recursion detected\'');
+        $this->expectExceptionMessage('Could not convert PHP type \'array\' to \'json\', as an \'Recursion detected\'');
         $this->db->typecastSaveRow($m, ['data' => ['foo' => 'bar', 'recursive' => $dbData]]);
     }
 

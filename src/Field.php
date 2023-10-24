@@ -147,52 +147,6 @@ class Field implements Expressionable
                         $value = rtrim(preg_replace('~\r?\n|\r~', "\n", $value)); // normalize line-ends to LF and rtrim
 
                         break;
-                    case 'boolean':
-                    case 'integer':
-                        $value = preg_replace('~\s+|[,`\']~', '', $value);
-
-                        break;
-                    case 'float':
-                    case 'decimal':
-                    case 'atk4_money':
-                        $value = preg_replace('~\s+|[`\']|,(?=.*\.)~', '', $value);
-
-                        break;
-                }
-
-                switch ($this->type) {
-                    case 'boolean':
-                    case 'integer':
-                    case 'float':
-                    case 'decimal':
-                    case 'atk4_money':
-                        if ($value === '') {
-                            $value = null;
-                        } elseif (!is_numeric($value)) {
-                            throw new Exception('Must be numeric');
-                        }
-
-                        break;
-                }
-            } elseif ($value !== null) {
-                switch ($this->type) {
-                    case 'string':
-                    case 'text':
-                    case 'integer':
-                    case 'float':
-                    case 'decimal':
-                    case 'atk4_money':
-                        if (is_bool($value)) {
-                            throw new Exception('Must not be boolean type');
-                        } elseif (is_int($value)) {
-                            $value = (string) $value;
-                        } elseif (is_float($value)) {
-                            $value = Expression::castFloatToString($value);
-                        } else {
-                            throw new Exception('Must be scalar');
-                        }
-
-                        break;
                 }
             }
 
@@ -277,6 +231,10 @@ class Field implements Expressionable
             do {
                 $messages[] = $e->getMessage();
             } while ($e = $e->getPrevious());
+
+            if (count($messages) >= 2 && $messages[0] === 'Typecast save error') {
+                array_shift($messages);
+            }
 
             throw (new ValidationException([$this->shortName => implode(': ', $messages)], $this->issetOwner() ? $this->getOwner() : null))
                 ->addMoreInfo('field', $this);

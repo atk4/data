@@ -332,7 +332,7 @@ class ConditionSqlTest extends TestCase
         $m->addField('name');
         $m->addField('date', ['type' => 'date']);
 
-        $m = $m->loadBy('date', new \DateTime('08-12-1982'));
+        $m = $m->loadBy('date', new \DateTime('1982-12-08'));
         self::assertSame('Sue', $m->get('name'));
     }
 
@@ -349,7 +349,7 @@ class ConditionSqlTest extends TestCase
         $m->addField('name');
         $m->addField('date', ['type' => 'date']);
 
-        $m->addCondition('date', new \DateTime('08-12-1982'));
+        $m->addCondition('date', new \DateTime('1982-12-08'));
         $m = $m->loadOne();
         self::assertSame('Sue', $m->get('name'));
     }
@@ -369,7 +369,7 @@ class ConditionSqlTest extends TestCase
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Must be scalar');
-        $m->tryLoadBy('name', new \DateTime('08-12-1982'));
+        $m->tryLoadBy('name', new \DateTime('1982-12-08'));
     }
 
     public function testAndFromArrayCondition(): void
