@@ -422,8 +422,7 @@ abstract class Persistence
         }
 
         try {
-            $valuePre = $this->_typecastPreField($field, $value, false);
-            $v = $this->_typecastSaveField($field, $valuePre);
+            $v = $this->_typecastSaveField($field, $value);
             if ($v !== null && !is_scalar($v)) { // @phpstan-ignore-line
                 throw new \TypeError('Unexpected non-scalar value');
             }
@@ -452,9 +451,7 @@ abstract class Persistence
         }
 
         try {
-            $valuePre = $this->_typecastPreField($field, $value, true);
-
-            return $this->_typecastLoadField($field, $valuePre);
+            return $this->_typecastLoadField($field, $value);
         } catch (\Exception $e) {
             throw (new Exception('Typecast parse error', 0, $e))
                 ->addMoreInfo('field', $field->shortName);
@@ -471,6 +468,8 @@ abstract class Persistence
      */
     protected function _typecastSaveField(Field $field, $value)
     {
+        $value = $this->_typecastPreField($field, $value, false);
+
         if (in_array($field->type, ['json', 'object'], true) && $value === '') { // TODO remove later
             return null;
         }
@@ -513,6 +512,8 @@ abstract class Persistence
      */
     protected function _typecastLoadField(Field $field, $value)
     {
+        $value = $this->_typecastPreField($field, $value, true);
+
         // TODO casting optionally to null should be handled by type itself solely
         if ($value === '' && in_array($field->type, ['boolean', 'integer', 'float', 'decimal', 'datetime', 'date', 'time', 'json', 'object'], true)) {
             return null;
