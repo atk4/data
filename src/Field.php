@@ -232,7 +232,7 @@ class Field implements Expressionable
                 $messages[] = $e->getMessage();
             } while ($e = $e->getPrevious());
 
-            if (count($messages) >= 2 && ($messages[0] === 'Typecast parse error' || $messages[0] === 'Typecast save error')) {
+            if (count($messages) >= 2 && $messages[0] === 'Typecast save error') {
                 array_shift($messages);
             }
 
