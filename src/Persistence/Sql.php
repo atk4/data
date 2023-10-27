@@ -145,8 +145,12 @@ class Sql extends Persistence
     public function expr(Model $model, string $template, array $arguments = []): Expression
     {
         preg_replace_callback(
-            '~\[\w*\]|\{\w*\}~',
+            '~(?!\[\w*\])' . Expression::QUOTED_TOKEN_REGEX . '\K|\[\w*\]|\{\w*\}~',
             static function ($matches) use ($model, &$arguments) {
+                if ($matches[0] === '') {
+                    return '';
+                }
+
                 $identifier = substr($matches[0], 1, -1);
                 if ($identifier !== '' && !isset($arguments[$identifier])) {
                     $arguments[$identifier] = $model->getField($identifier);

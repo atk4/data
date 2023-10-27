@@ -78,7 +78,7 @@ trait ExpressionTrait
         $newParamBase = $this->paramBase;
         $newParams = [];
         $sql = preg_replace_callback(
-            '~\'(?:\'\'|\\\\\'|[^\'])*+\'|:\w+~s',
+            '~\'(?:\'\'|\\\\\'|[^\'])*+\'|:\w+~',
             function ($matches) use ($params, &$newParams, &$newParamBase) {
                 if (str_starts_with($matches[0], '\'')) {
                     $value = str_replace('\'\'', '\'', substr($matches[0], 1, -1));
@@ -94,7 +94,7 @@ trait ExpressionTrait
                     unset($value);
                     [$exprSql, $exprParams] = $expr->render();
                     $sql = preg_replace_callback(
-                        '~\'(?:\'\'|\\\\\'|[^\'])*+\'\K|:\w+~s',
+                        '~' . self::QUOTED_TOKEN_REGEX . '\K|:\w+~',
                         static function ($matches) use ($exprParams, &$newParams, &$newParamBase) {
                             if ($matches[0] === '') {
                                 return '';

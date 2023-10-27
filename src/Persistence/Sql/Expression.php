@@ -31,6 +31,17 @@ abstract class Expression implements Expressionable, \ArrayAccess
     /** Keep input as is */
     protected const ESCAPE_NONE = 'none';
 
+    public const QUOTED_TOKEN_REGEX = <<<'EOF'
+        (?:(?sx)
+            '(?:[^'\\]+|\\.|'')*+'
+            |"(?:[^"\\]+|\\.|"")*+"
+            |`(?:[^`\\]+|\\.|``)*+`
+            |\[(?:[^\]\\]+|\\.|\]\])*+\]
+            |(?:--|\#)[^\r\n]*+
+            |/\*(?:[^*]+|\*(?!/))*+\*/
+        )
+        EOF;
+
     protected ?string $template = null;
 
     /**
@@ -354,16 +365,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
         // - {{xxx}} = escapeSoft
         $namelessCount = 0;
         $res = preg_replace_callback(
-            <<<'EOF'
-                ~
-                 '(?:[^'\\]+|\\.|'')*+'\K
-                |"(?:[^"\\]+|\\.|"")*+"\K
-                |`(?:[^`\\]+|\\.|``)*+`\K
-                |\[\w*\]
-                |\{\w*\}
-                |\{\{\w*\}\}
-                ~xs
-                EOF,
+            '~(?!\[\w*\])' . self::QUOTED_TOKEN_REGEX . '\K|\[\w*\]|\{\w*\}|\{\{\w*\}\}~',
             function ($matches) use (&$namelessCount) {
                 if ($matches[0] === '') {
                     return '';
@@ -461,12 +463,12 @@ abstract class Expression implements Expressionable, \ArrayAccess
                 }
             }, null, \SqlFormatter::class)();
 
-            $sql = preg_replace('~ +(?=\n|$)|(?<=:) (?=\w)~', '', \SqlFormatter::format($sql, false));
+            $sql = preg_replace('~' . self::QUOTED_TOKEN_REGEX . '\K| +(?=\n)|(?<=:) (?=\w)~', '', \SqlFormatter::format($sql, false));
         }
 
         $i = 0;
         $sql = preg_replace_callback(
-            '~\'(?:\'\'|\\\\\'|[^\'])*+\'\K|(?:\?|:\w+)~s',
+            '~' . self::QUOTED_TOKEN_REGEX . '\K|(?:\?|:\w+)~',
             static function ($matches) use ($params, &$i) {
                 if ($matches[0] === '') {
                     return '';
@@ -542,7 +544,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
             $i = 0;
             $j = 0;
             $sql = preg_replace_callback(
-                '~\'(?:\'\'|\\\\\'|[^\'])*+\'\K|(?:\?|:\w+)~s',
+                '~' . self::QUOTED_TOKEN_REGEX . '\K|(?:\?|:\w+)~',
                 static function ($matches) use ($params, &$numParams, &$i, &$j) {
                     if ($matches[0] === '') {
                         return '';

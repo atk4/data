@@ -180,16 +180,16 @@ class ExpressionTest extends TestCase
     {
         $e1 = $this->e('[] and []', [
             $this->e('++[]', [1]),
-            $this->e('--[]', [2]),
+            $this->e('**[]', [2]),
         ]);
 
-        self::assertSame('++:a and --:b', $e1->render()[0]);
+        self::assertSame('++:a and **:b', $e1->render()[0]);
 
         $e2 = $this->e('=== [foo] ===', ['foo' => $e1]);
 
-        self::assertSame('=== ++:a and --:b ===', $e2->render()[0]);
+        self::assertSame('=== ++:a and **:b ===', $e2->render()[0]);
 
-        self::assertSame('++:a and --:b', $e1->render()[0]);
+        self::assertSame('++:a and **:b', $e1->render()[0]);
     }
 
     /**

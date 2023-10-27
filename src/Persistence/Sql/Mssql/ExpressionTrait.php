@@ -17,7 +17,7 @@ trait ExpressionTrait
         [$sql, $params] = parent::render();
 
         // convert all string literals to NVARCHAR, eg. 'text' to N'text'
-        $sql = preg_replace_callback('~N?\'(?:\'\'|\\\\\'|[^\'])*+\'~s', static function ($matches) {
+        $sql = preg_replace_callback('~N?\'(?:\'\'|\\\\\'|[^\'])*+\'~', static function ($matches) {
             return (substr($matches[0], 0, 1) === 'N' ? '' : 'N') . $matches[0];
         }, $sql);
 
