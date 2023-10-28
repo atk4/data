@@ -17,9 +17,17 @@ trait ExpressionTrait
         [$sql, $params] = parent::render();
 
         // convert all string literals to NVARCHAR, eg. 'text' to N'text'
-        $sql = preg_replace_callback('~N?\'(?:\'\'|\\\\\'|[^\'])*+\'~', static function ($matches) {
-            return (substr($matches[0], 0, 1) === 'N' ? '' : 'N') . $matches[0];
-        }, $sql);
+        $sql = preg_replace_callback(
+            '~(?!\')' . self::QUOTED_TOKEN_REGEX . '\K|N?' . self::QUOTED_TOKEN_REGEX . '~',
+            static function ($matches) {
+                if ($matches[0] === '') {
+                    return '';
+                }
+
+                return (substr($matches[0], 0, 1) === 'N' ? '' : 'N') . $matches[0];
+            },
+            $sql
+        );
 
         return [$sql, $params];
     }

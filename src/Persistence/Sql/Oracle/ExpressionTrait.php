@@ -78,8 +78,12 @@ trait ExpressionTrait
         $newParamBase = $this->paramBase;
         $newParams = [];
         $sql = preg_replace_callback(
-            '~\'(?:\'\'|\\\\\'|[^\'])*+\'|:\w+~',
+            '~(?!\')' . self::QUOTED_TOKEN_REGEX . '\K|' . self::QUOTED_TOKEN_REGEX . '|:\w+~',
             function ($matches) use ($params, &$newParams, &$newParamBase) {
+                if ($matches[0] === '') {
+                    return '';
+                }
+
                 if (str_starts_with($matches[0], '\'')) {
                     $value = str_replace('\'\'', '\'', substr($matches[0], 1, -1));
                     if (strlen($value) <= 4000) {
