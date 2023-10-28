@@ -157,6 +157,10 @@ class ExpressionTest extends TestCase
                 '\'[\'\']\'',
                 '\'\'\'[]\'',
                 '\'[]\'\'\'',
+                '--[]',
+                '-- select [a]',
+                '/*[]*/',
+                '/* select [a] */',
             ] as $testStr) {
                 $testStr = str_replace('\'', $enclosureChar, $testStr);
 
