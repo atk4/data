@@ -76,7 +76,7 @@ abstract class Query extends Expression
         // if no fields were defined, use defaultField
         if (($this->args['field'] ?? []) === []) {
             if ($this->defaultField instanceof Expression) {
-                return $this->consume($this->defaultField);
+                return $this->consume($this->defaultField, self::ESCAPE_PARAM);
             }
 
             return $this->defaultField;
@@ -377,7 +377,7 @@ abstract class Query extends Expression
                 . ' on ';
 
             if (isset($j['expr'])) {
-                $jj .= $this->consume($j['expr']);
+                $jj .= $this->consume($j['expr'], self::ESCAPE_PARAM);
             } else {
                 $jj .= $this->escapeIdentifier($j['fa'] ?? $j['f1']) . '.'
                     . $this->escapeIdentifier($j['f2']) . ' = '
@@ -573,7 +573,7 @@ abstract class Query extends Expression
                     return '1 = 1'; // always true
                 }
 
-                $value = '(' . implode(', ', array_map(fn ($v) => $this->consume($v), $value)) . ')';
+                $value = '(' . implode(', ', array_map(fn ($v) => $this->consume($v, self::ESCAPE_PARAM), $value)) . ')';
 
                 return $field . ' ' . $cond . ' ' . $value;
             }

@@ -275,7 +275,6 @@ class ExpressionTest extends TestCase
     {
         $constants = (new \ReflectionClass(Expression::class))->getConstants();
 
-        // few brief tests on consume
         self::assertSame(
             '"123"',
             $this->callProtected($this->e(), 'consume', '123', $constants['ESCAPE_IDENTIFIER'])

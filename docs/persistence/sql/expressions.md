@@ -276,26 +276,26 @@ composer require jdorn/sql-formatter
 The following methods are useful if you're building your own code for rendering
 parts of the query. You must not call them in normal circumstances.
 
-:::{php:method} consume($expression, string $escapeMode = self::ESCAPE_PARAM)
+:::{php:method} consume($expression, string $escapeMode)
 Makes `$sqlCode` part of `$this` expression. Argument may be either a string
 (which will be escaped) or another {php:class}`Expression` or {php:class}`Query`.
 If specified {php:class}`Query` is in "select" mode, then it's automatically
 placed inside parentheses:
 
 ```
-$query->consume('first_name'); // `first_name`
-$query->consume($otherQuery); // will merge parameters and return string
+$query->consume('first_name', Expression::ESCAPE_PARAM); // `first_name`
+$query->consume($otherQuery, Expression::ESCAPE_PARAM); // will merge parameters and return string
 ```
 :::
 
 :::{php:method} escapeIdentifier($sqlCode)
-Always surrounds `$sql code` with back-ticks.
+Always surrounds `$sqlCode` with back-ticks.
 
 This escaping method is automatically used for `{...}` expression template tags .
 :::
 
 :::{php:method} escapeIdentifierSoft($sqlCode)
-Surrounds `$sql code` with back-ticks.
+Surrounds `$sqlCode` with back-ticks.
 
 This escaping method is automatically used for `{{...}}` expression template tags .
 

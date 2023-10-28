@@ -176,11 +176,11 @@ abstract class Expression implements Expressionable, \ArrayAccess
      * Recursively renders sub-query or expression, combining parameters.
      *
      * @param string|Expressionable $expr
-     * @param string                $escapeMode Fall-back escaping mode - using one of the Expression::ESCAPE_* constants
+     * @param self::ESCAPE_*        $escapeMode
      *
      * @return string Quoted expression
      */
-    protected function consume($expr, string $escapeMode = self::ESCAPE_PARAM)
+    protected function consume($expr, string $escapeMode)
     {
         if (!is_object($expr)) {
             switch ($escapeMode) {
@@ -194,7 +194,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
                     return $expr;
             }
 
-            throw (new Exception('$escapeMode value is incorrect'))
+            throw (new Exception('Unexpected escape mode')) // @phpstan-ignore-line
                 ->addMoreInfo('escapeMode', $escapeMode);
         }
 
@@ -616,7 +616,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
                 } elseif (is_resource($val)) { // phpstan-ignore-line
                     throw new Exception('Resource type is not supported, set value as string instead');
                 } else {
-                    throw (new Exception('Incorrect param type'))
+                    throw (new Exception('Unsupported param type'))
                         ->addMoreInfo('key', $key)
                         ->addMoreInfo('value', $val)
                         ->addMoreInfo('type', gettype($val));
