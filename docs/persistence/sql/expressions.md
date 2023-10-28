@@ -280,7 +280,7 @@ parts of the query. You must not call them in normal circumstances.
 Makes `$sqlCode` part of `$this` expression. Argument may be either a string
 (which will be escaped) or another {php:class}`Expression` or {php:class}`Query`.
 If specified {php:class}`Query` is in "select" mode, then it's automatically
-placed inside brackets:
+placed inside parentheses:
 
 ```
 $query->consume('first_name'); // `first_name`

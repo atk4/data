@@ -45,8 +45,7 @@ abstract class Query extends Expression
      * You can pass first argument as Expression or Query
      *  $q->field($q->expr('2 + 2'), 'alias'); // must always use alias
      *
-     * You can use $q->dsql() for subqueries. Subqueries will be wrapped in
-     * brackets.
+     * You can use $q->dsql() for subqueries. Subqueries will be wrapped in parentheses.
      *  $q->field( $q->dsql()->table('x')..., 'alias');
      *
      * If you need to use funky name for the field (e.g, one containing
@@ -401,9 +400,8 @@ abstract class Query extends Expression
      * Examples:
      *  $q->where('id', 1);
      *
-     * By default condition implies equality. You can specify a different comparison
-     * operator by using 3-argument
-     * format:
+     * By default condition implies equality. You can specify a different comparison operator
+     * by using 3-argument format:
      *  $q->where('id', '>', 1);
      *
      * You may use Expression as any part of the query.
@@ -411,8 +409,7 @@ abstract class Query extends Expression
      *  $q->where('date', '>', $q->expr('now()'));
      *  $q->where($q->expr('length(password)'), '>', 5);
      *
-     * If you specify Query as an argument, it will be automatically
-     * surrounded by brackets:
+     * If you specify Query as an argument, it will be automatically surrounded by parentheses:
      *  $q->where('user_id', $q->dsql()->table('users')->field('id'));
      *
      * To specify OR conditions:

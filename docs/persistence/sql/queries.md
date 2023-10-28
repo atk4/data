@@ -133,7 +133,7 @@ $age = $c->dsql()->table('user')->where('id', 123)->field('age')->getOne();
 ## Using query as expression
 
 You can use query as expression where applicable. The query will get a special
-treatment where it will be surrounded in brackets. Here are few examples:
+treatment where it will be surrounded in parentheses. Here are few examples:
 
 ```
 $q = $c->dsql()
@@ -291,8 +291,8 @@ $query->field(['name' => 'employee.first_name']);
     // SELECT `employee`.`first_name` `name` from `user`
 ```
 
-If the first parameter of field() method contains non-alphanumeric values
-such as spaces or brackets, then field() will assume that you're passing an
+If the first parameter of field() method contains non-alphanumeric character
+such as space or parenthesis, then field() will assume that you're passing an
 expression:
 
 ```
