@@ -31,6 +31,17 @@ abstract class Expression implements Expressionable, \ArrayAccess
     /** Keep input as is */
     protected const ESCAPE_NONE = 'none';
 
+    public const QUOTED_TOKEN_REGEX = <<<'EOF'
+        (?:(?sx)
+            '(?:[^'\\]+|\\.|'')*+'
+            |"(?:[^"\\]+|\\.|"")*+"
+            |`(?:[^`\\]+|\\.|``)*+`
+            |\[(?:[^\]\\]+|\\.|\]\])*+\]
+            |(?:--|\#)[^\r\n]*+
+            |/\*(?:[^*]+|\*(?!/))*+\*/
+        )
+        EOF;
+
     protected ?string $template = null;
 
     /**
@@ -165,11 +176,11 @@ abstract class Expression implements Expressionable, \ArrayAccess
      * Recursively renders sub-query or expression, combining parameters.
      *
      * @param string|Expressionable $expr
-     * @param string                $escapeMode Fall-back escaping mode - using one of the Expression::ESCAPE_* constants
+     * @param self::ESCAPE_*        $escapeMode
      *
      * @return string Quoted expression
      */
-    protected function consume($expr, string $escapeMode = self::ESCAPE_PARAM)
+    protected function consume($expr, string $escapeMode)
     {
         if (!is_object($expr)) {
             switch ($escapeMode) {
@@ -183,7 +194,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
                     return $expr;
             }
 
-            throw (new Exception('$escapeMode value is incorrect'))
+            throw (new Exception('Unexpected escape mode')) // @phpstan-ignore-line
                 ->addMoreInfo('escapeMode', $escapeMode);
         }
 
@@ -354,16 +365,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
         // - {{xxx}} = escapeSoft
         $namelessCount = 0;
         $res = preg_replace_callback(
-            <<<'EOF'
-                ~
-                 '(?:[^'\\]+|\\.|'')*+'\K
-                |"(?:[^"\\]+|\\.|"")*+"\K
-                |`(?:[^`\\]+|\\.|``)*+`\K
-                |\[\w*\]
-                |\{\w*\}
-                |\{\{\w*\}\}
-                ~xs
-                EOF,
+            '~(?!\[\w*\])' . self::QUOTED_TOKEN_REGEX . '\K|\[\w*\]|\{\w*\}|\{\{\w*\}\}~',
             function ($matches) use (&$namelessCount) {
                 if ($matches[0] === '') {
                     return '';
@@ -461,12 +463,12 @@ abstract class Expression implements Expressionable, \ArrayAccess
                 }
             }, null, \SqlFormatter::class)();
 
-            $sql = preg_replace('~ +(?=\n|$)|(?<=:) (?=\w)~', '', \SqlFormatter::format($sql, false));
+            $sql = preg_replace('~' . self::QUOTED_TOKEN_REGEX . '\K| +(?=\n)|(?<=:) (?=\w)~', '', \SqlFormatter::format($sql, false));
         }
 
         $i = 0;
         $sql = preg_replace_callback(
-            '~\'(?:\'\'|\\\\\'|[^\'])*+\'\K|(?:\?|:\w+)~s',
+            '~' . self::QUOTED_TOKEN_REGEX . '\K|(?:\?|:\w+)~',
             static function ($matches) use ($params, &$i) {
                 if ($matches[0] === '') {
                     return '';
@@ -542,7 +544,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
             $i = 0;
             $j = 0;
             $sql = preg_replace_callback(
-                '~\'(?:\'\'|\\\\\'|[^\'])*+\'\K|(?:\?|:\w+)~s',
+                '~' . self::QUOTED_TOKEN_REGEX . '\K|(?:\?|:\w+)~',
                 static function ($matches) use ($params, &$numParams, &$i, &$j) {
                     if ($matches[0] === '') {
                         return '';
@@ -614,7 +616,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
                 } elseif (is_resource($val)) { // phpstan-ignore-line
                     throw new Exception('Resource type is not supported, set value as string instead');
                 } else {
-                    throw (new Exception('Incorrect param type'))
+                    throw (new Exception('Unsupported param type'))
                         ->addMoreInfo('key', $key)
                         ->addMoreInfo('value', $val)
                         ->addMoreInfo('type', gettype($val));

@@ -99,8 +99,12 @@ abstract class TestCase extends BaseTestCase
         $platform = $this->getDatabasePlatform();
 
         $convertedSql = preg_replace_callback(
-            '~\'(?:[^\'\\\\]+|\\\\.)*+\'|`(?:[^`\\\\]+|\\\\.)*+`|:(\w+)~s',
+            '~(?![\'`])' . Expression::QUOTED_TOKEN_REGEX . '\K|' . Expression::QUOTED_TOKEN_REGEX . '|:(\w+)~',
             static function ($matches) use ($platform) {
+                if ($matches[0] === '') {
+                    return '';
+                }
+
                 if (isset($matches[1])) {
                     return ':' . ($platform instanceof OraclePlatform ? 'xxaaa' : '') . $matches[1];
                 }

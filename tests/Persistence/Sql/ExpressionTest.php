@@ -157,6 +157,10 @@ class ExpressionTest extends TestCase
                 '\'[\'\']\'',
                 '\'\'\'[]\'',
                 '\'[]\'\'\'',
+                '--[]',
+                '-- select [a]',
+                '/*[]*/',
+                '/* select [a] */',
             ] as $testStr) {
                 $testStr = str_replace('\'', $enclosureChar, $testStr);
 
@@ -180,16 +184,16 @@ class ExpressionTest extends TestCase
     {
         $e1 = $this->e('[] and []', [
             $this->e('++[]', [1]),
-            $this->e('--[]', [2]),
+            $this->e('**[]', [2]),
         ]);
 
-        self::assertSame('++:a and --:b', $e1->render()[0]);
+        self::assertSame('++:a and **:b', $e1->render()[0]);
 
         $e2 = $this->e('=== [foo] ===', ['foo' => $e1]);
 
-        self::assertSame('=== ++:a and --:b ===', $e2->render()[0]);
+        self::assertSame('=== ++:a and **:b ===', $e2->render()[0]);
 
-        self::assertSame('++:a and --:b', $e1->render()[0]);
+        self::assertSame('++:a and **:b', $e1->render()[0]);
     }
 
     /**
@@ -275,7 +279,6 @@ class ExpressionTest extends TestCase
     {
         $constants = (new \ReflectionClass(Expression::class))->getConstants();
 
-        // few brief tests on consume
         self::assertSame(
             '"123"',
             $this->callProtected($this->e(), 'consume', '123', $constants['ESCAPE_IDENTIFIER'])

@@ -119,7 +119,7 @@ trait PlatformTrait
 
     private function quoteSingleIdentifierAsStringLiteral(string $levelName): string
     {
-        return $this->quoteStringLiteral(preg_replace('~^\[|\]$~s', '', $levelName));
+        return $this->quoteStringLiteral(preg_replace('~^\[|\]$~', '', $levelName));
     }
 
     public function getAddExtendedPropertySQL(
