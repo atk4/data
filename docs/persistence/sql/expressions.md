@@ -283,7 +283,8 @@ If specified {php:class}`Query` is in "select" mode, then it's automatically
 placed inside parentheses:
 
 ```
-$query->consume('first_name', Expression::ESCAPE_PARAM); // `first_name`
+$query->consume('first_name', Expression::ESCAPE_PARAM); // :a
+$query->consume('first_name', Expression::ESCAPE_IDENTIFIER); // `first_name`
 $query->consume($otherQuery, Expression::ESCAPE_PARAM); // will merge parameters and return string
 ```
 :::
