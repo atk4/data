@@ -46,7 +46,7 @@ abstract class Query extends Expression
      *  $q->field($q->expr('2 + 2'), 'alias'); // must always use alias
      *
      * You can use $q->dsql() for subqueries. Subqueries will be wrapped in parentheses.
-     *  $q->field( $q->dsql()->table('x')..., 'alias');
+     *  $q->field($q->dsql()->table('x')..., 'alias');
      *
      * If you need to use funky name for the field (e.g, one containing
      * a dot or a space), you should wrap it into expression:
@@ -1016,7 +1016,7 @@ abstract class Query extends Expression
      *
      * @param string|array<string, mixed> $defaults
      *
-     * @return Query
+     * @return self
      */
     public function dsql($defaults = [])
     {
@@ -1040,7 +1040,7 @@ abstract class Query extends Expression
     /**
      * Returns new Query object of [or] expression.
      *
-     * @return Query
+     * @return self
      */
     public function orExpr()
     {
@@ -1050,7 +1050,7 @@ abstract class Query extends Expression
     /**
      * Returns new Query object of [and] expression.
      *
-     * @return Query
+     * @return self
      */
     public function andExpr()
     {
@@ -1075,7 +1075,7 @@ abstract class Query extends Expression
      *
      * @param mixed $operand optional operand for case expression
      *
-     * @return Query
+     * @return self
      */
     public function caseExpr($operand = null)
     {

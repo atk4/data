@@ -152,6 +152,13 @@ class ConditionSqlTest extends TestCase
         self::assertSame('John', $mm2->get('name'));
         $mm2 = $mm->tryLoad(2);
         self::assertNull($mm2);
+
+        $mm = clone $m;
+        $mm->addCondition('id', 'not in', [1, 3]);
+        $mm2 = $mm->tryLoad(1);
+        self::assertNull($mm2);
+        $mm2 = $mm->tryLoad(2);
+        self::assertSame('Sue', $mm2->get('name'));
     }
 
     public function testExpressions1(): void

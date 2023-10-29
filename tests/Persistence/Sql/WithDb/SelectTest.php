@@ -276,17 +276,7 @@ class SelectTest extends TestCase
             ->where('first_name', 'John')
             ->exists();
 
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-            self::assertSame([
-                'select exists (select * from `contacts` where `first_name` = :a)',
-                [':a' => 'John'],
-            ], $q->render());
-        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            self::assertSame([
-                'select exists (select * from "contacts" where "first_name" = :a)',
-                [':a' => 'John'],
-            ], $q->render());
-        } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             self::assertSame([
                 'select case when exists(select * from [contacts] where [first_name] = :a) then 1 else 0 end',
                 [':a' => 'John'],
@@ -297,10 +287,8 @@ class SelectTest extends TestCase
                 [':xxaaaa' => 'John'],
             ], $q->render());
         } else {
-            self::assertSame([
-                'select exists (select * from `contacts` where `first_name` = :a)',
-                [':a' => 'John'],
-            ], $q->render());
+            self::assertSameSql('select exists (select * from `contacts` where `first_name` = :a)', $q->render()[0]);
+            self::assertSame([':a' => 'John'], $q->render()[1]);
         }
     }
 
