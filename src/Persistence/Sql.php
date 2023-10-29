@@ -449,7 +449,7 @@ class Sql extends Persistence
 
         if (!$noId) {
             if (!$model->idField) {
-                throw (new Exception('Unable to load field by "id" when Model->idField is not defined'))
+                throw (new Exception('Unable to load by "id" when Model->idField is not defined'))
                     ->addMoreInfo('id', $id);
             }
 

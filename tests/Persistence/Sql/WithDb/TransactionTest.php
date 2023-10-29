@@ -13,10 +13,8 @@ use Doctrine\DBAL\Exception\InvalidFieldNameException;
 
 class TransactionTest extends TestCase
 {
-    protected function setUp(): void
+    protected function setupTables(): void
     {
-        parent::setUp();
-
         $model = new Model($this->db, ['table' => 'employee']);
         $model->addField('name');
         $model->addField('surname');
@@ -49,6 +47,7 @@ class TransactionTest extends TestCase
     {
         // try to commit when not in transaction
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Commit failed');
         $this->getConnection()->commit();
     }
 
@@ -59,6 +58,7 @@ class TransactionTest extends TestCase
 
         // try to commit when not in transaction anymore
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Commit failed');
         $this->getConnection()->commit();
     }
 
@@ -66,6 +66,7 @@ class TransactionTest extends TestCase
     {
         // try to rollback when not in transaction
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Rollback failed');
         $this->getConnection()->rollBack();
     }
 
@@ -76,6 +77,7 @@ class TransactionTest extends TestCase
 
         // try to rollback when not in transaction anymore
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Rollback failed');
         $this->getConnection()->rollBack();
     }
 
@@ -85,6 +87,8 @@ class TransactionTest extends TestCase
      */
     public function testTransactions(): void
     {
+        $this->setupTables();
+
         // truncate table, prepare
         $this->q('employee')->mode('truncate')->executeStatement();
         self::assertSame(

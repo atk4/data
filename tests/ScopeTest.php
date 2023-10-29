@@ -71,10 +71,8 @@ class STicket extends Model
 
 class ScopeTest extends TestCase
 {
-    protected function setUp(): void
+    protected function setupTables(): void
     {
-        parent::setUp();
-
         $country = new SCountry($this->db);
         $this->createMigrator($country)->create();
         $country->import([
@@ -110,6 +108,8 @@ class ScopeTest extends TestCase
 
     public function testCondition(): void
     {
+        $this->setupTables();
+
         $user = new SUser($this->db);
 
         $condition = new Condition('name', 'John');
@@ -117,7 +117,6 @@ class ScopeTest extends TestCase
         $user->scope()->add($condition);
 
         $user = $user->loadOne();
-
         self::assertSame('Smith', $user->get('surname'));
     }
 
@@ -174,6 +173,8 @@ class ScopeTest extends TestCase
 
     public function testConditionToWords(): void
     {
+        $this->setupTables();
+
         $user = new SUser($this->db);
 
         $condition = new Condition($this->getConnection()->expr('false'));
@@ -245,6 +246,8 @@ class ScopeTest extends TestCase
 
     public function testConditionOnReferencedRecords(): void
     {
+        $this->setupTables();
+
         $user = new SUser($this->db);
         $user->addCondition('country_id/code', 'LV');
 
@@ -338,6 +341,8 @@ class ScopeTest extends TestCase
 
     public function testScope(): void
     {
+        $this->setupTables();
+
         $user = new SUser($this->db);
 
         $condition1 = ['name', 'John'];
@@ -391,6 +396,8 @@ class ScopeTest extends TestCase
 
     public function testNegate(): void
     {
+        $this->setupTables();
+
         $user = new SUser($this->db);
 
         $condition1 = new Condition('name', '!=', 'Alain');
