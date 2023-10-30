@@ -239,24 +239,16 @@ class TransactionTest extends TestCase
 
     public function testInTransaction(): void
     {
-        self::assertFalse(
-            $this->getConnection()->inTransaction()
-        );
+        self::assertFalse($this->getConnection()->inTransaction());
 
         $this->getConnection()->beginTransaction();
-        self::assertTrue(
-            $this->getConnection()->inTransaction()
-        );
+        self::assertTrue($this->getConnection()->inTransaction());
 
         $this->getConnection()->rollBack();
-        self::assertFalse(
-            $this->getConnection()->inTransaction()
-        );
+        self::assertFalse($this->getConnection()->inTransaction());
 
         $this->getConnection()->beginTransaction();
         $this->getConnection()->commit();
-        self::assertFalse(
-            $this->getConnection()->inTransaction()
-        );
+        self::assertFalse($this->getConnection()->inTransaction());
     }
 }
