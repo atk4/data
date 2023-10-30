@@ -17,10 +17,8 @@ use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class SelectTest extends TestCase
 {
-    protected function setUp(): void
+    protected function setupTables(): void
     {
-        parent::setUp();
-
         $model = new Model($this->db, ['table' => 'employee']);
         $model->addField('name');
         $model->addField('surname');
@@ -37,7 +35,8 @@ class SelectTest extends TestCase
     }
 
     /**
-     * @param string|Expression $table
+     * @param string|Expression                 $table
+     * @param ($table is null ? never : string) $alias
      */
     protected function q($table = null, string $alias = null): Query
     {
@@ -60,6 +59,8 @@ class SelectTest extends TestCase
 
     public function testBasicQueries(): void
     {
+        $this->setupTables();
+
         self::assertCount(4, $this->q('employee')->getRows());
 
         self::assertSame(
@@ -142,6 +143,8 @@ class SelectTest extends TestCase
 
     public function testOtherQueries(): void
     {
+        $this->setupTables();
+
         $this->q('employee')->mode('truncate')->executeStatement();
         self::assertSame(
             '0',
@@ -201,6 +204,8 @@ class SelectTest extends TestCase
 
     public function testGetRowEmpty(): void
     {
+        $this->setupTables();
+
         $this->q('employee')->mode('truncate')->executeStatement();
         $q = $this->q('employee');
 
@@ -209,6 +214,8 @@ class SelectTest extends TestCase
 
     public function testGetOneEmptyException(): void
     {
+        $this->setupTables();
+
         $this->q('employee')->mode('truncate')->executeStatement();
         $q = $this->q('employee')->field('name');
 
@@ -219,6 +226,8 @@ class SelectTest extends TestCase
 
     public function testSelectUnexistingColumnException(): void
     {
+        $this->setupTables();
+
         $q = $this->q('employee')->field('Sqlite must use backticks for identifier escape');
 
         $this->expectException(Exception::class);
@@ -228,6 +237,8 @@ class SelectTest extends TestCase
 
     public function testWhereExpression(): void
     {
+        $this->setupTables();
+
         self::assertSame([
             ['id' => '2', 'name' => 'Jack', 'surname' => 'Williams', 'retired' => '1'],
         ], $this->q('employee')->where('retired', true)->where($this->q()->expr('{}=[] or {}=[]', ['surname', 'Williams', 'surname', 'Smith']))->getRows());
@@ -276,17 +287,7 @@ class SelectTest extends TestCase
             ->where('first_name', 'John')
             ->exists();
 
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-            self::assertSame([
-                'select exists (select * from `contacts` where `first_name` = :a)',
-                [':a' => 'John'],
-            ], $q->render());
-        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            self::assertSame([
-                'select exists (select * from "contacts" where "first_name" = :a)',
-                [':a' => 'John'],
-            ], $q->render());
-        } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             self::assertSame([
                 'select case when exists(select * from [contacts] where [first_name] = :a) then 1 else 0 end',
                 [':a' => 'John'],
@@ -297,10 +298,8 @@ class SelectTest extends TestCase
                 [':xxaaaa' => 'John'],
             ], $q->render());
         } else {
-            self::assertSame([
-                'select exists (select * from `contacts` where `first_name` = :a)',
-                [':a' => 'John'],
-            ], $q->render());
+            self::assertSameSql('select exists (select * from `contacts` where `first_name` = :a)', $q->render()[0]);
+            self::assertSame([':a' => 'John'], $q->render()[1]);
         }
     }
 
@@ -455,6 +454,8 @@ class SelectTest extends TestCase
 
     public function testOrderDuplicate(): void
     {
+        $this->setupTables();
+
         $query = $this->q('employee')->field('name')
             ->order('id')
             ->order('name', 'desc')
@@ -471,6 +472,8 @@ class SelectTest extends TestCase
 
     public function testSubqueryWithOrderAndLimit(): void
     {
+        $this->setupTables();
+
         $subQuery = $this->q('employee');
         $query = $this->q($subQuery, 't')->field('name')->order('name');
 

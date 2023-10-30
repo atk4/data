@@ -98,21 +98,22 @@ class TransactionTest extends TestCase
 
         $this->db->atomic(function () use ($m) {
             foreach ($m as $entity) {
-                $rollback = $entity->get('name') === 'Sue';
-
+                $e = null;
+                $eExpected = $entity->get('name') === 'Sue'
+                    ? new \Exception('Rollback to savepoint')
+                    : null;
                 try {
-                    $this->db->atomic(static function () use ($entity, $rollback) {
+                    $this->db->atomic(static function () use ($entity, $eExpected) {
                         $entity->set('name', $entity->get('name') . ' 2');
                         $entity->save();
 
-                        if ($rollback) {
-                            throw new \Exception('Rollback to savepoint');
+                        if ($eExpected) {
+                            throw $eExpected;
                         }
                     });
                 } catch (\Exception $e) {
-                    self::assertSame('Rollback to savepoint', $e->getMessage());
-                    self::assertTrue($rollback);
                 }
+                self::assertSame($eExpected, $e);
             }
         });
 

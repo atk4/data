@@ -157,14 +157,14 @@ class ExpressionTest extends TestCase
                 '\'[\'\']\'',
                 '\'\'\'[]\'',
                 '\'[]\'\'\'',
-                '--[]',
-                '-- select [a]',
+                '--[]' . "\n",
+                '-- select [a]' . "\n",
                 '/*[]*/',
                 '/* select [a] */',
             ] as $testStr) {
                 $testStr = str_replace('\'', $enclosureChar, $testStr);
 
-                yield [$testStr, $testStr, []];
+                yield [rtrim($testStr, "\n"), $testStr, []];
 
                 $testStrs[] = $testStr;
             }
@@ -172,6 +172,7 @@ class ExpressionTest extends TestCase
 
         $fullStr = implode('', $testStrs);
         yield [$fullStr, $fullStr, []];
+        yield [$fullStr . ' :a', $fullStr . ' []', ['foo']];
 
         $fullStr = implode(' ', $testStrs);
         yield [$fullStr, $fullStr, []];
