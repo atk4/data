@@ -223,4 +223,27 @@ class TransactionTest extends TestCase
             ['id' => '1', 'name' => 'John'],
         ], $this->q('employee')->getRows());
     }
+
+    public function testAtomicSavepoint(): void
+    {
+        $this->setupEmployeeTable();
+
+        $this->getConnection()->atomic(function () {
+            $this->executeOnePassingInsert();
+            try {
+                $this->getConnection()->atomic(function () {
+                    $this->executeOneFailingInsert();
+                });
+            } catch (Exception $e) {
+                self::assertInstanceOf(InvalidFieldNameException::class, $e->getPrevious());
+            }
+            $this->executeOnePassingInsert();
+        });
+
+        self::assertSameExportUnordered([
+            ['id' => '1', 'name' => 'John'],
+            // TODO replace ID with fixed value once auto increment ID after rollback is consistent
+            ['id' => $this->q('employee')->field($this->q()->expr('max({})', ['id']))->getOne(), 'name' => 'John'],
+        ], $this->q('employee')->getRows());
+    }
 }
