@@ -13,14 +13,6 @@ use Doctrine\DBAL\Exception\InvalidFieldNameException;
 
 class TransactionTest extends TestCase
 {
-    protected function setupTables(): void
-    {
-        $model = new Model($this->db, ['table' => 'employee']);
-        $model->addField('name');
-
-        $this->createMigrator($model)->create();
-    }
-
     /**
      * @param string|Expression                 $table
      * @param ($table is null ? never : string) $alias
@@ -69,160 +61,6 @@ class TransactionTest extends TestCase
         $this->getConnection()->rollBack();
     }
 
-    /**
-     * Tests simple and nested transactions.
-     * TODO split this test.
-     */
-    public function testTransactions(): void
-    {
-        $this->setupTables();
-
-        self::assertSame(
-            '0',
-            $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
-        );
-
-        // without transaction, ignoring exceptions
-        try {
-            $this->q('employee')
-                ->setMulti(['id' => 1, 'name' => 'John'])
-                ->mode('insert')->executeStatement();
-            $this->q('employee')
-                ->setMulti(['id' => 2, 'name' => 'John', 'non_existent' => 'bar'])
-                ->mode('insert')->executeStatement();
-        } catch (Exception $e) {
-            self::assertInstanceOf(InvalidFieldNameException::class, $e->getPrevious());
-        }
-
-        self::assertSame(
-            '1',
-            $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
-        );
-
-        // 1-level transaction: begin, insert, 2, rollback, 1
-        $this->getConnection()->beginTransaction();
-        $this->q('employee')
-            ->setMulti(['id' => 3, 'name' => 'John'])
-            ->mode('insert')->executeStatement();
-        self::assertSame(
-            '2',
-            $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
-        );
-
-        $this->getConnection()->rollBack();
-        self::assertSame(
-            '1',
-            $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
-        );
-
-        // atomic method, rolls back everything inside atomic() callback in case of exception
-        try {
-            $this->getConnection()->atomic(function () {
-                $this->q('employee')
-                    ->setMulti(['id' => 3, 'name' => 'John'])
-                    ->mode('insert')->executeStatement();
-                $this->q('employee')
-                    ->setMulti(['id' => 4, 'name' => 'John', 'non_existent' => 'bar'])
-                    ->mode('insert')->executeStatement();
-            });
-        } catch (Exception $e) {
-            self::assertInstanceOf(InvalidFieldNameException::class, $e->getPrevious());
-        }
-
-        self::assertSame(
-            '1',
-            $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
-        );
-
-        // atomic method, nested atomic transaction, rolls back everything
-        try {
-            $this->getConnection()->atomic(function () {
-                $this->q('employee')
-                    ->setMulti(['id' => 3, 'name' => 'John'])
-                    ->mode('insert')->executeStatement();
-
-                // success, in, fail, out, fail
-                $this->getConnection()->atomic(function () {
-                    $this->q('employee')
-                        ->setMulti(['id' => 4, 'name' => 'John'])
-                        ->mode('insert')->executeStatement();
-                    $this->q('employee')
-                        ->setMulti(['id' => 5, 'name' => 'John', 'non_existent' => 'bar'])
-                        ->mode('insert')->executeStatement();
-                });
-            });
-        } catch (Exception $e) {
-            self::assertInstanceOf(InvalidFieldNameException::class, $e->getPrevious());
-        }
-
-        self::assertSame(
-            '1',
-            $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
-        );
-
-        // atomic method, nested atomic transaction, rolls back everything
-        try {
-            $this->getConnection()->atomic(function () {
-                $this->q('employee')
-                    ->setMulti(['id' => 3, 'name' => 'John'])
-                    ->mode('insert')->executeStatement();
-
-                // success, in, success, out, fail
-                $this->getConnection()->atomic(function () {
-                    $this->q('employee')
-                        ->setMulti(['id' => 4, 'name' => 'John'])
-                        ->mode('insert')->executeStatement();
-                });
-
-                $this->q('employee')
-                    ->setMulti(['id' => 5, 'name' => 'John', 'non_existent' => 'bar'])
-                    ->mode('insert')->executeStatement();
-            });
-        } catch (Exception $e) {
-            self::assertInstanceOf(InvalidFieldNameException::class, $e->getPrevious());
-        }
-
-        self::assertSame(
-            '1',
-            $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
-        );
-
-        // atomic method, nested atomic transaction, rolls back everything
-        try {
-            $this->getConnection()->atomic(function () {
-                $this->q('employee')
-                    ->setMulti(['id' => 3, 'name' => 'John'])
-                    ->mode('insert')->executeStatement();
-
-                // success, in, fail, out, catch exception
-                $this->getConnection()->atomic(function () {
-                    $this->q('employee')
-                        ->setMulti(['id' => 4, 'name' => 'John', 'non_existent' => 'bar'])
-                        ->mode('insert')->executeStatement();
-                });
-            });
-        } catch (Exception $e) {
-            self::assertInstanceOf(InvalidFieldNameException::class, $e->getPrevious());
-        }
-
-        self::assertSame(
-            '1',
-            $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
-        );
-
-        // atomic method, success - commit
-        $this->getConnection()->atomic(function () {
-            $this->q('employee')
-                ->setMulti(['id' => 3, 'name' => 'John'])
-                ->mode('insert')->executeStatement();
-        });
-
-        self::assertSame(
-            '2',
-            $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
-        );
-    }
-
     public function testInTransaction(): void
     {
         self::assertFalse($this->getConnection()->inTransaction());
@@ -236,5 +74,151 @@ class TransactionTest extends TestCase
         $this->getConnection()->beginTransaction();
         $this->getConnection()->commit();
         self::assertFalse($this->getConnection()->inTransaction());
+    }
+
+    protected function setupEmployeeTable(): void
+    {
+        $model = new Model($this->db, ['table' => 'employee']);
+        $model->addField('name');
+        $this->createMigrator($model)->create();
+    }
+
+    protected function executeOnePassingInsert(): void
+    {
+        $rowsBefore = $this->q('employee')->getRows();
+        try {
+            $this->q('employee')
+                ->setMulti(['name' => 'John'])
+                ->mode('insert')->executeStatement();
+        } finally {
+            self::assertSame(
+                array_merge($rowsBefore, [['id' => count($rowsBefore) > 0 ? (string) (end($rowsBefore)['id'] + 1) : '1', 'name' => 'John']]),
+                $this->q('employee')->getRows()
+            );
+        }
+    }
+
+    protected function executeOneFailingInsert(): void
+    {
+        $rowsBefore = $this->q('employee')->getRows();
+        try {
+            $this->q('employee')
+                ->setMulti(['name' => 'John', 'non_existent' => 'bar'])
+                ->mode('insert')->executeStatement();
+        } catch (Exception $e) {
+            self::assertSame('Dsql execute error', $e->getMessage());
+            self::assertInstanceOf(InvalidFieldNameException::class, $e->getPrevious());
+
+            throw $e;
+        } finally {
+            self::assertSame($rowsBefore, $this->q('employee')->getRows());
+        }
+    }
+
+    public function testBeginAndCommitTransaction(): void
+    {
+        $this->setupEmployeeTable();
+
+        $this->executeOnePassingInsert();
+
+        $this->getConnection()->beginTransaction();
+        $this->executeOnePassingInsert();
+        $this->getConnection()->commit();
+
+        self::assertSame([
+            ['id' => '1', 'name' => 'John'],
+            ['id' => '2', 'name' => 'John'],
+        ], $this->q('employee')->getRows());
+    }
+
+    public function testBeginAndRollbackTransaction(): void
+    {
+        $this->setupEmployeeTable();
+
+        $this->executeOnePassingInsert();
+
+        $this->getConnection()->beginTransaction();
+        $this->executeOnePassingInsert();
+        $this->getConnection()->rollBack();
+
+        self::assertSame([
+            ['id' => '1', 'name' => 'John'],
+        ], $this->q('employee')->getRows());
+
+        $this->getConnection()->beginTransaction();
+        $this->executeOnePassingInsert();
+        $this->executeOnePassingInsert();
+        $this->getConnection()->rollBack();
+
+        self::assertSame([
+            ['id' => '1', 'name' => 'John'],
+        ], $this->q('employee')->getRows());
+    }
+
+    public function testAtomicSimple(): void
+    {
+        $this->setupEmployeeTable();
+
+        $this->getConnection()->atomic(function () {
+            $this->executeOnePassingInsert();
+            $this->executeOnePassingInsert();
+        });
+
+        try {
+            $this->getConnection()->atomic(function () {
+                $this->executeOnePassingInsert();
+                $this->executeOneFailingInsert();
+            });
+        } catch (Exception $e) {
+            self::assertInstanceOf(InvalidFieldNameException::class, $e->getPrevious());
+        }
+
+        self::assertSameExportUnordered([
+            ['id' => '1', 'name' => 'John'],
+            ['id' => '2', 'name' => 'John'],
+        ], $this->q('employee')->getRows());
+    }
+
+    public function testAtomicNested(): void
+    {
+        $this->setupEmployeeTable();
+
+        $this->getConnection()->atomic(function () {
+            $this->getConnection()->atomic(function () {
+                $this->executeOnePassingInsert();
+            });
+        });
+
+        try {
+            $this->getConnection()->atomic(function () {
+                $this->executeOnePassingInsert();
+                $this->getConnection()->atomic(function () {
+                    $this->executeOnePassingInsert();
+                    $this->executeOneFailingInsert();
+                });
+            });
+        } catch (Exception $e) {
+            self::assertInstanceOf(InvalidFieldNameException::class, $e->getPrevious());
+        }
+
+        self::assertSameExportUnordered([
+            ['id' => '1', 'name' => 'John'],
+        ], $this->q('employee')->getRows());
+
+        try {
+            $this->getConnection()->atomic(function () {
+                $this->executeOnePassingInsert();
+                $this->getConnection()->atomic(function () {
+                    $this->executeOnePassingInsert();
+                });
+                $this->executeOneFailingInsert();
+            });
+        } catch (Exception $e) {
+            self::assertInstanceOf(InvalidFieldNameException::class, $e->getPrevious());
+        }
+
+        self::assertSameExportUnordered([
+            ['id' => '1', 'name' => 'John'],
+        ], $this->q('employee')->getRows());
     }
 }
