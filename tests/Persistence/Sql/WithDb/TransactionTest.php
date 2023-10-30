@@ -21,13 +21,6 @@ class TransactionTest extends TestCase
         $model->addField('retired', ['type' => 'boolean']);
 
         $this->createMigrator($model)->create();
-
-        $model->import([
-            ['id' => 1, 'name' => 'Oliver', 'surname' => 'Smith', 'retired' => false],
-            ['id' => 2, 'name' => 'Jack', 'surname' => 'Williams', 'retired' => true],
-            ['id' => 3, 'name' => 'Harry', 'surname' => 'Taylor', 'retired' => true],
-            ['id' => 4, 'name' => 'Charlie', 'surname' => 'Lee', 'retired' => false],
-        ]);
     }
 
     /**
@@ -86,8 +79,6 @@ class TransactionTest extends TestCase
     {
         $this->setupTables();
 
-        // truncate table, prepare
-        $this->q('employee')->mode('truncate')->executeStatement();
         self::assertSame(
             '0',
             $this->q('employee')->field($this->getConnection()->expr('count(*)'))->getOne()
