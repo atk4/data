@@ -17,7 +17,6 @@ class TransactionTest extends TestCase
     {
         $model = new Model($this->db, ['table' => 'employee']);
         $model->addField('name');
-        $model->addField('retired', ['type' => 'boolean']);
 
         $this->createMigrator($model)->create();
     }
@@ -86,10 +85,10 @@ class TransactionTest extends TestCase
         // without transaction, ignoring exceptions
         try {
             $this->q('employee')
-                ->setMulti(['id' => 1, 'name' => 'John', 'retired' => true])
+                ->setMulti(['id' => 1, 'name' => 'John'])
                 ->mode('insert')->executeStatement();
             $this->q('employee')
-                ->setMulti(['id' => 2, 'FOO' => 'bar', 'name' => 'Jane', 'retired' => false])
+                ->setMulti(['id' => 2, 'FOO' => 'bar', 'name' => 'Jane'])
                 ->mode('insert')->executeStatement();
         } catch (Exception $e) {
             self::assertInstanceOf(InvalidFieldNameException::class, $e->getPrevious());
@@ -103,7 +102,7 @@ class TransactionTest extends TestCase
         // 1-level transaction: begin, insert, 2, rollback, 1
         $this->getConnection()->beginTransaction();
         $this->q('employee')
-            ->setMulti(['id' => 3, 'name' => 'John', 'retired' => true])
+            ->setMulti(['id' => 3, 'name' => 'John'])
             ->mode('insert')->executeStatement();
         self::assertSame(
             '2',
@@ -120,10 +119,10 @@ class TransactionTest extends TestCase
         try {
             $this->getConnection()->atomic(function () {
                 $this->q('employee')
-                    ->setMulti(['id' => 3, 'name' => 'John', 'retired' => true])
+                    ->setMulti(['id' => 3, 'name' => 'John'])
                     ->mode('insert')->executeStatement();
                 $this->q('employee')
-                    ->setMulti(['id' => 4, 'FOO' => 'bar', 'name' => 'Jane', 'retired' => false])
+                    ->setMulti(['id' => 4, 'FOO' => 'bar', 'name' => 'Jane'])
                     ->mode('insert')->executeStatement();
             });
         } catch (Exception $e) {
@@ -139,16 +138,16 @@ class TransactionTest extends TestCase
         try {
             $this->getConnection()->atomic(function () {
                 $this->q('employee')
-                    ->setMulti(['id' => 3, 'name' => 'John', 'retired' => true])
+                    ->setMulti(['id' => 3, 'name' => 'John'])
                     ->mode('insert')->executeStatement();
 
                 // success, in, fail, out, fail
                 $this->getConnection()->atomic(function () {
                     $this->q('employee')
-                        ->setMulti(['id' => 4, 'name' => 'John', 'retired' => true])
+                        ->setMulti(['id' => 4, 'name' => 'John'])
                         ->mode('insert')->executeStatement();
                     $this->q('employee')
-                        ->setMulti(['id' => 5, 'FOO' => 'bar', 'name' => 'Jane', 'retired' => false])
+                        ->setMulti(['id' => 5, 'FOO' => 'bar', 'name' => 'Jane'])
                         ->mode('insert')->executeStatement();
                 });
             });
@@ -165,18 +164,18 @@ class TransactionTest extends TestCase
         try {
             $this->getConnection()->atomic(function () {
                 $this->q('employee')
-                    ->setMulti(['id' => 3, 'name' => 'John', 'retired' => true])
+                    ->setMulti(['id' => 3, 'name' => 'John'])
                     ->mode('insert')->executeStatement();
 
                 // success, in, success, out, fail
                 $this->getConnection()->atomic(function () {
                     $this->q('employee')
-                        ->setMulti(['id' => 4, 'name' => 'John', 'retired' => true])
+                        ->setMulti(['id' => 4, 'name' => 'John'])
                         ->mode('insert')->executeStatement();
                 });
 
                 $this->q('employee')
-                    ->setMulti(['id' => 5, 'FOO' => 'bar', 'name' => 'Jane', 'retired' => false])
+                    ->setMulti(['id' => 5, 'FOO' => 'bar', 'name' => 'Jane'])
                     ->mode('insert')->executeStatement();
             });
         } catch (Exception $e) {
@@ -192,13 +191,13 @@ class TransactionTest extends TestCase
         try {
             $this->getConnection()->atomic(function () {
                 $this->q('employee')
-                    ->setMulti(['id' => 3, 'name' => 'John', 'retired' => true])
+                    ->setMulti(['id' => 3, 'name' => 'John'])
                     ->mode('insert')->executeStatement();
 
                 // success, in, fail, out, catch exception
                 $this->getConnection()->atomic(function () {
                     $this->q('employee')
-                        ->setMulti(['id' => 4, 'FOO' => 'bar', 'name' => 'John', 'retired' => true])
+                        ->setMulti(['id' => 4, 'FOO' => 'bar', 'name' => 'John'])
                         ->mode('insert')->executeStatement();
                 });
             });
@@ -214,7 +213,7 @@ class TransactionTest extends TestCase
         // atomic method, success - commit
         $this->getConnection()->atomic(function () {
             $this->q('employee')
-                ->setMulti(['id' => 3, 'name' => 'John', 'retired' => true])
+                ->setMulti(['id' => 3, 'name' => 'John'])
                 ->mode('insert')->executeStatement();
         });
 
