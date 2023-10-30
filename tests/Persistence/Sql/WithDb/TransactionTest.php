@@ -92,7 +92,7 @@ class TransactionTest extends TestCase
                 ->mode('insert')->executeStatement();
         } finally {
             self::assertSame(
-                array_merge($rowsBefore, [['id' => count($rowsBefore) > 0 ? (string) (end($rowsBefore)['id'] + 1) : '1', 'name' => 'John']]),
+                array_merge($rowsBefore, [['id' => count($rowsBefore) > 0 ? (string) (end((int) $rowsBefore)['id'] + 1) : '1', 'name' => 'John']]),
                 $this->q('employee')->getRows()
             );
         }
