@@ -10,7 +10,6 @@ use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Exception\InvalidFieldNameException;
-use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 
 class TransactionTest extends TestCase
 {
@@ -111,9 +110,7 @@ class TransactionTest extends TestCase
 
             throw $e;
         } finally {
-            if (!$this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-                self::assertSame($rowsBefore, $this->q('employee')->getRows());
-            }
+            self::assertSame($rowsBefore, $this->q('employee')->getRows());
         }
     }
 
