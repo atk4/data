@@ -370,10 +370,11 @@ class SelectTest extends TestCase
         $getLastAiFx = function (): int {
             $table = 'test';
             $pk = 'myid';
-            $maxIdExpr = $this->q()->table($table)->field($this->e('max({})', [$pk]));
             if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+                self::assertFalse($this->getConnection()->inTransaction());
+                $this->getConnection()->expr('analyze table {}', [$table])->executeStatement();
                 $query = $this->q()->table('INFORMATION_SCHEMA.TABLES')
-                    ->field($this->e('greatest({} - 1, (' . $maxIdExpr->render()[0] . '))', ['AUTO_INCREMENT']))
+                    ->field($this->e('{} - 1', ['AUTO_INCREMENT']))
                     ->where('TABLE_NAME', $table);
             } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
                 $query = $this->q()->field($this->e('currval(pg_get_serial_sequence([], []))', [$table, $pk]));
@@ -438,7 +439,7 @@ class SelectTest extends TestCase
         $m->createEntity()->set('f1', 'M')->save();
         self::assertSame(102, $getLastAiFx());
 
-        self::assertSame([
+        $expectedRows = [
             ['id' => 1, 'f1' => 'A'],
             ['id' => 2, 'f1' => 'B'],
             ['id' => 3, 'f1' => 'C'],
@@ -450,14 +451,15 @@ class SelectTest extends TestCase
             ['id' => 99, 'f1' => 'I'],
             ['id' => 101, 'f1' => 'L'],
             ['id' => 102, 'f1' => 'M'],
-        ], $m->export());
+        ];
+        self::assertSame($expectedRows, $m->export());
 
+        // auto increment ID after rollback must not be reused
         $e = null;
         $eExpected = new Exception();
         try {
-            $m->atomic(static function () use ($m, $getLastAiFx, $eExpected) {
+            $m->atomic(static function () use ($m, $eExpected) {
                 $m->import([['f1' => 'N']]);
-                self::assertSame(103, $getLastAiFx());
 
                 throw $eExpected;
             });
@@ -465,13 +467,16 @@ class SelectTest extends TestCase
         }
         self::assertSame($eExpected, $e);
 
-        // auto increment ID after rollback must not be reused
         // TODO fix SQLite to be consistent with other databases
         if (!$this->getDatabasePlatform() instanceof SQLitePlatform) {
             self::assertSame(103, $getLastAiFx());
+            self::assertSame($expectedRows, $m->export());
 
-            $m->import([['f1' => 'N']]);
+            $m->import([['f1' => 'O']]);
             self::assertSame(104, $getLastAiFx());
+            self::assertSame(array_merge($expectedRows, [
+                ['id' => 104, 'f1' => 'O'],
+            ]), $m->export());
         }
     }
 
