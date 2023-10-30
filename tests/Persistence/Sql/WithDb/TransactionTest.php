@@ -44,39 +44,35 @@ class TransactionTest extends TestCase
         return $q;
     }
 
-    public function testCommitException1(): void
+    public function testCommitUnopenedTransactionException(): void
     {
-        // try to commit when not in transaction
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Commit failed');
         $this->getConnection()->commit();
     }
 
-    public function testCommitException2(): void
+    public function testCommitUnopenedTransactionAfterTransactionException(): void
     {
         $this->getConnection()->beginTransaction();
         $this->getConnection()->commit();
 
-        // try to commit when not in transaction anymore
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Commit failed');
         $this->getConnection()->commit();
     }
 
-    public function testRollbackException1(): void
+    public function testRollbackUnopenedTransactionException(): void
     {
-        // try to rollback when not in transaction
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Rollback failed');
         $this->getConnection()->rollBack();
     }
 
-    public function testRollbackException2(): void
+    public function testRollbackUnopenedTransactionAfterTransactionException(): void
     {
         $this->getConnection()->beginTransaction();
         $this->getConnection()->rollBack();
 
-        // try to rollback when not in transaction anymore
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Rollback failed');
         $this->getConnection()->rollBack();
