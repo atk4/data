@@ -88,7 +88,7 @@ class TransactionTest extends TestCase
                 ->setMulti(['id' => 1, 'name' => 'John'])
                 ->mode('insert')->executeStatement();
             $this->q('employee')
-                ->setMulti(['id' => 2, 'FOO' => 'bar', 'name' => 'Jane'])
+                ->setMulti(['id' => 2, 'name' => 'John', 'non_existent' => 'bar'])
                 ->mode('insert')->executeStatement();
         } catch (Exception $e) {
             self::assertInstanceOf(InvalidFieldNameException::class, $e->getPrevious());
@@ -122,7 +122,7 @@ class TransactionTest extends TestCase
                     ->setMulti(['id' => 3, 'name' => 'John'])
                     ->mode('insert')->executeStatement();
                 $this->q('employee')
-                    ->setMulti(['id' => 4, 'FOO' => 'bar', 'name' => 'Jane'])
+                    ->setMulti(['id' => 4, 'name' => 'John', 'non_existent' => 'bar'])
                     ->mode('insert')->executeStatement();
             });
         } catch (Exception $e) {
@@ -147,7 +147,7 @@ class TransactionTest extends TestCase
                         ->setMulti(['id' => 4, 'name' => 'John'])
                         ->mode('insert')->executeStatement();
                     $this->q('employee')
-                        ->setMulti(['id' => 5, 'FOO' => 'bar', 'name' => 'Jane'])
+                        ->setMulti(['id' => 5, 'name' => 'John', 'non_existent' => 'bar'])
                         ->mode('insert')->executeStatement();
                 });
             });
@@ -175,7 +175,7 @@ class TransactionTest extends TestCase
                 });
 
                 $this->q('employee')
-                    ->setMulti(['id' => 5, 'FOO' => 'bar', 'name' => 'Jane'])
+                    ->setMulti(['id' => 5, 'name' => 'John', 'non_existent' => 'bar'])
                     ->mode('insert')->executeStatement();
             });
         } catch (Exception $e) {
@@ -197,7 +197,7 @@ class TransactionTest extends TestCase
                 // success, in, fail, out, catch exception
                 $this->getConnection()->atomic(function () {
                     $this->q('employee')
-                        ->setMulti(['id' => 4, 'FOO' => 'bar', 'name' => 'John'])
+                        ->setMulti(['id' => 4, 'name' => 'John', 'non_existent' => 'bar'])
                         ->mode('insert')->executeStatement();
                 });
             });
