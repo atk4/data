@@ -13,6 +13,7 @@ use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class SelectTest extends TestCase
@@ -450,6 +451,28 @@ class SelectTest extends TestCase
             ['id' => 101, 'f1' => 'L'],
             ['id' => 102, 'f1' => 'M'],
         ], $m->export());
+
+        $e = null;
+        $eExpected = new Exception();
+        try {
+            $m->atomic(static function () use ($m, $getLastAiFx, $eExpected) {
+                $m->import([['f1' => 'N']]);
+                self::assertSame(103, $getLastAiFx());
+
+                throw $eExpected;
+            });
+        } catch (Exception $e) {
+        }
+        self::assertSame($eExpected, $e);
+
+        // auto increment ID after rollback must not be reused
+        // TODO fix SQLite to be consistent with other databases
+        if (!$this->getDatabasePlatform() instanceof SQLitePlatform) {
+            self::assertSame(103, $getLastAiFx());
+
+            $m->import([['f1' => 'N']]);
+            self::assertSame(104, $getLastAiFx());
+        }
     }
 
     public function testOrderDuplicate(): void
