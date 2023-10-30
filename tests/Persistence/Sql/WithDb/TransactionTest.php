@@ -91,10 +91,9 @@ class TransactionTest extends TestCase
                 ->setMulti(['name' => 'John'])
                 ->mode('insert')->executeStatement();
         } finally {
-            self::assertSame(
-                array_merge($rowsBefore, [['id' => count($rowsBefore) > 0 ? (string) (end((int) $rowsBefore)['id'] + 1) : '1', 'name' => 'John']]),
-                $this->q('employee')->getRows()
-            );
+            $rowsAfter = $this->q('employee')->getRows();
+            self::assertSame($rowsBefore, array_slice($rowsAfter, 0, -1));
+            self::assertSame('John', end($rowsAfter)['name']);
         }
     }
 
