@@ -31,7 +31,8 @@ class TransactionTest extends TestCase
     }
 
     /**
-     * @param string|Expression $table
+     * @param string|Expression                 $table
+     * @param ($table is null ? never : string) $alias
      */
     protected function q($table = null, string $alias = null): Query
     {
