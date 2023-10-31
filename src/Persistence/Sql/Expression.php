@@ -14,6 +14,7 @@ use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Result as DbalResult;
+use Doctrine\DBAL\Statement;
 
 /**
  * @phpstan-implements \ArrayAccess<int|string, mixed>
@@ -563,6 +564,22 @@ abstract class Expression implements Expressionable, \ArrayAccess
     }
 
     /**
+     * @return ($fromExecuteStatement is true ? int<0, max> : DbalResult)
+     *
+     * @internal
+     */
+    protected function _executeStatement(Statement $statement, bool $fromExecuteStatement)
+    {
+        if ($fromExecuteStatement) {
+            $result = $statement->executeStatement();
+        } else {
+            $result = $statement->executeQuery();
+        }
+
+        return $result;
+    }
+
+    /**
      * @param DbalConnection|Connection $connection
      *
      * @return ($fromExecuteStatement is true ? int<0, max> : DbalResult)
@@ -631,13 +648,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
                 }
             }
 
-            if ($fromExecuteStatement) {
-                $result = $statement->executeStatement();
-            } else {
-                $result = $statement->executeQuery();
-            }
-
-            return $result;
+            return $this->_executeStatement($statement, $fromExecuteStatement);
         } catch (DbalException $e) {
             $firstException = $e;
             while ($firstException->getPrevious() !== null) {

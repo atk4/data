@@ -10,7 +10,6 @@ use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Exception\InvalidFieldNameException;
-use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 
 class TransactionTest extends TestCase
 {
@@ -111,9 +110,7 @@ class TransactionTest extends TestCase
 
             throw $e;
         } finally {
-            if (!$this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-                self::assertSame($rowsBefore, $this->q('employee')->getRows());
-            }
+            self::assertSame($rowsBefore, $this->q('employee')->getRows());
         }
     }
 
@@ -224,7 +221,7 @@ class TransactionTest extends TestCase
         ], $this->q('employee')->getRows());
     }
 
-    public function testAtomicSavepoint(): void
+    public function testAtomicSavepointAfterAtomicFailure(): void
     {
         $this->setupEmployeeTable();
 
@@ -242,8 +239,27 @@ class TransactionTest extends TestCase
 
         self::assertSameExportUnordered([
             ['id' => '1', 'name' => 'John'],
-            // TODO replace ID with fixed value once auto increment ID after rollback is consistent
-            ['id' => $this->q('employee')->field($this->q()->expr('max({})', ['id']))->getOne(), 'name' => 'John'],
+            ['id' => '2', 'name' => 'John'],
+        ], $this->q('employee')->getRows());
+    }
+
+    public function testAtomicSavepointAfterQueryFailure(): void
+    {
+        $this->setupEmployeeTable();
+
+        $this->getConnection()->atomic(function () {
+            $this->executeOnePassingInsert();
+            try {
+                $this->executeOneFailingInsert();
+            } catch (Exception $e) {
+                self::assertInstanceOf(InvalidFieldNameException::class, $e->getPrevious());
+            }
+            $this->executeOnePassingInsert();
+        });
+
+        self::assertSameExportUnordered([
+            ['id' => '1', 'name' => 'John'],
+            ['id' => '2', 'name' => 'John'],
         ], $this->q('employee')->getRows());
     }
 }

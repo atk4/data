@@ -73,7 +73,8 @@ class TestCaseTest extends TestCase
                     set
                       IDENTITY_INSERT `t` off; throw; end catch end else begin throw; end end catch;
                     EOF . "\n\n"
-                : <<<'EOF'
+                : ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "\n\"SAVEPOINT\";\n\n" : '')
+                . <<<'EOF'
 
                     insert into `t` (`name`, `int`, `float`, `null`)
                     values
@@ -82,7 +83,8 @@ class TestCaseTest extends TestCase
                 . ($this->getDatabasePlatform() instanceof OraclePlatform ? "\n    " : '')
                 . '\'Ewa\', 1, \'1.0\', NULL'
                 . ($this->getDatabasePlatform() instanceof OraclePlatform ? "\n  " : '')
-                . ");\n\n")
+                . ");\n\n"
+                . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "\n\"RELEASE SAVEPOINT\";\n\n" : ''))
             . ($this->getDatabasePlatform() instanceof OraclePlatform ? <<<'EOF'
 
                 select
