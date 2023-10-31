@@ -467,7 +467,8 @@ class SelectTest extends TestCase
         }
         self::assertSame($eExpected, $e);
 
-        // TODO fix SQLite to be consistent with other databases
+        // TODO workaround SQLite to be consistent with other databases
+        // https://stackoverflow.com/questions/27947712/sqlite-repeats-primary-key-autoincrement-value-after-rollback
         if (!$this->getDatabasePlatform() instanceof SQLitePlatform) {
             self::assertSame(103, $getLastAiFx());
             self::assertSame($expectedRows, $m->export());
