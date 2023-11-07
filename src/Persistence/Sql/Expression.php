@@ -455,18 +455,6 @@ abstract class Expression implements Expressionable, \ArrayAccess
     {
         [$sql, $params] = $this->render();
 
-        if (class_exists(\SqlFormatter::class)) { // requires optional "jdorn/sql-formatter" package
-            \Closure::bind(static function () {
-                // fix latest/1.2.16 release from 2013-11-28
-                if (end(\SqlFormatter::$reserved_toplevel) === 'INTERSECT') {
-                    \SqlFormatter::$reserved_toplevel[] = 'OFFSET';
-                    \SqlFormatter::$reserved_toplevel[] = 'FETCH';
-                }
-            }, null, \SqlFormatter::class)();
-
-            $sql = preg_replace('~' . self::QUOTED_TOKEN_REGEX . '\K| +(?=\n)|(?<=:) (?=\w)~', '', \SqlFormatter::format($sql, false));
-        }
-
         $i = 0;
         $sql = preg_replace_callback(
             '~' . self::QUOTED_TOKEN_REGEX . '\K|(?:\?|:\w+)~',
@@ -498,6 +486,18 @@ abstract class Expression implements Expressionable, \ArrayAccess
             },
             $sql
         );
+
+        if (class_exists(\SqlFormatter::class)) { // requires optional "jdorn/sql-formatter" package
+            \Closure::bind(static function () {
+                // fix latest/1.2.17 release from 2014-01-12
+                if (end(\SqlFormatter::$reserved_toplevel) === 'INTERSECT') {
+                    \SqlFormatter::$reserved_toplevel[] = 'OFFSET';
+                    \SqlFormatter::$reserved_toplevel[] = 'FETCH';
+                }
+            }, null, \SqlFormatter::class)();
+
+            $sql = preg_replace('~' . self::QUOTED_TOKEN_REGEX . '\K| +(?=\n)|(?<=:) (?=\w)~', '', \SqlFormatter::format($sql, false));
+        }
 
         return $sql;
     }

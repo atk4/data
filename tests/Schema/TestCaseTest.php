@@ -78,12 +78,8 @@ class TestCaseTest extends TestCase
 
                     insert into `t` (`name`, `int`, `float`, `null`)
                     values
-                      (
-                    EOF
-                . ($this->getDatabasePlatform() instanceof OraclePlatform ? "\n    " : '')
-                . '\'Ewa\', 1, \'1.0\', NULL'
-                . ($this->getDatabasePlatform() instanceof OraclePlatform ? "\n  " : '')
-                . ");\n\n"
+                      ('Ewa', 1, '1.0', NULL);
+                    EOF . "\n\n"
                 . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "\n\"RELEASE SAVEPOINT\";\n\n" : ''))
             . ($this->getDatabasePlatform() instanceof OraclePlatform ? <<<'EOF'
 
