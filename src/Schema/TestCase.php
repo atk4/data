@@ -80,6 +80,27 @@ abstract class TestCase extends BaseTestCase
             return;
         }
 
+        // remove once oci8/pdo_oci param type bind is fixed
+        // related with \Atk4\Data\Persistence\Sql\Postgresql\ExpressionTrait::updateRenderBeforeExecute() fix
+        if ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            $sql = preg_replace_callback(
+                '~' . Expression::QUOTED_TOKEN_REGEX . '\K|cast\((:\w+) as INTEGER\)~',
+                static function ($matches) use ($types, $params) {
+                    if ($matches[0] === '') {
+                        return '';
+                    }
+
+                    $k = $matches[1];
+                    if ($types[$k] === ParameterType::INTEGER && is_int($params[$k])) {
+                        return $k;
+                    }
+
+                    return $matches[0];
+                },
+                $sql
+            );
+        }
+
         $exprNoRender = new class($sql, $params) extends Expression {
             public function render(): array
             {
@@ -87,6 +108,7 @@ abstract class TestCase extends BaseTestCase
             }
         };
         $sqlWithParams = $exprNoRender->getDebugQuery();
+
         if (substr($sqlWithParams, -1) !== ';') {
             $sqlWithParams .= ';';
         }

@@ -117,6 +117,14 @@ trait ExpressionTrait
                     ++$newParamBase; // @phpstan-ignore-line
 
                     $newParams[$sql] = $value;
+
+                    // fix oci8 param type bind
+                    // TODO create a DBAL PR - https://github.com/doctrine/dbal/blob/3.7.1/src/Driver/OCI8/Statement.php#L135
+                    // fix pdo_oci param type bind
+                    // https://github.com/php/php-src/issues/12578
+                    if (is_bool($value) || is_int($value)) {
+                        $sql = 'cast(' . $sql . ' as INTEGER)';
+                    }
                 }
 
                 return $sql;
