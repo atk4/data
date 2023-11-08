@@ -473,7 +473,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
                 if ($v === null) {
                     return 'NULL';
                 } elseif (is_bool($v)) {
-                    return $v ? '1' : '0';
+                    return $v ? 'true' : 'false';
                 } elseif (is_int($v)) {
                     return (string) $v;
                 } elseif (is_float($v)) {
@@ -608,13 +608,8 @@ abstract class Expression implements Expressionable, \ArrayAccess
                 if ($val === null) {
                     $type = ParameterType::NULL;
                 } elseif (is_bool($val)) {
-                    if ($platform instanceof PostgreSQLPlatform) {
-                        $type = ParameterType::STRING;
-                        $val = $val ? '1' : '0';
-                    } else {
-                        $type = ParameterType::INTEGER;
-                        $val = $val ? 1 : 0;
-                    }
+                    $type = ParameterType::INTEGER;
+                    $val = $val ? 1 : 0;
                 } elseif (is_int($val)) {
                     $type = ParameterType::INTEGER;
                 } elseif (is_float($val)) {

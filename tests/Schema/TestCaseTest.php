@@ -18,6 +18,7 @@ class TestCaseTest extends TestCase
         $m->addField('name');
         $m->addField('int', ['type' => 'integer']);
         $m->addField('float', ['type' => 'float']);
+        $m->addField('bool', ['type' => 'boolean']);
         $m->addField('null');
         $m->addCondition('int', '>', -1);
 
@@ -28,7 +29,7 @@ class TestCaseTest extends TestCase
             $this->debug = true;
 
             $m->atomic(static function () use ($m) {
-                $m->insert(['name' => 'Ewa', 'int' => 1, 'float' => 1]);
+                $m->insert(['name' => 'Ewa', 'int' => 1, 'float' => 1, 'bool' => 1]);
             });
 
             self::assertSame(1, $m->loadAny()->getId());
@@ -61,13 +62,17 @@ class TestCaseTest extends TestCase
             . ($this->getDatabasePlatform() instanceof SQLServerPlatform
                 ? <<<'EOF'
 
-                    begin try insert into `t` (`name`, `int`, `float`, `null`)
+                    begin try insert into `t` (
+                      `name`, `int`, `float`, `bool`, `null`
+                    )
                     values
-                      ('Ewa', 1, '1.0', NULL); end try begin catch if ERROR_NUMBER() = 544 begin
+                      ('Ewa', 1, '1.0', 1, NULL); end try begin catch if ERROR_NUMBER() = 544 begin
                     set
-                      IDENTITY_INSERT `t` on; begin try insert into `t` (`name`, `int`, `float`, `null`)
+                      IDENTITY_INSERT `t` on; begin try insert into `t` (
+                        `name`, `int`, `float`, `bool`, `null`
+                      )
                     values
-                      ('Ewa', 1, '1.0', NULL);
+                      ('Ewa', 1, '1.0', 1, NULL);
                     set
                       IDENTITY_INSERT `t` off; end try begin catch
                     set
@@ -76,10 +81,12 @@ class TestCaseTest extends TestCase
                 : ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "\n\"SAVEPOINT\";\n\n" : '')
                 . <<<'EOF'
 
-                    insert into `t` (`name`, `int`, `float`, `null`)
+                    insert into `t` (
+                      `name`, `int`, `float`, `bool`, `null`
+                    )
                     values
-                      ('Ewa', 1, '1.0', NULL);
-                    EOF . "\n\n"
+                    EOF
+                . "\n  ('Ewa', 1, '1.0', " . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? 'true' : '1') . ", NULL);\n\n"
                 . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "\n\"RELEASE SAVEPOINT\";\n\n" : ''))
             . ($this->getDatabasePlatform() instanceof OraclePlatform ? <<<'EOF'
 
@@ -95,6 +102,7 @@ class TestCaseTest extends TestCase
                   `name`,
                   `int`,
                   `float`,
+                  `bool`,
                   `null`
                 from
                   `t`
@@ -115,6 +123,7 @@ class TestCaseTest extends TestCase
                   `name`,
                   `int`,
                   `float`,
+                  `bool`,
                   `null`
                 from
                   `t`
@@ -124,7 +133,7 @@ class TestCaseTest extends TestCase
             . $makeLimitSqlFx(1)
             . ";\n\n",
             $this->getDatabasePlatform() instanceof SQLServerPlatform
-                ? str_replace('(\'Ewa\', 1, \'1.0\', NULL)', '(N\'Ewa\', 1, N\'1.0\', NULL)', $output)
+                ? str_replace('(\'Ewa\', 1, \'1.0\', 1, NULL)', '(N\'Ewa\', 1, N\'1.0\', 1, NULL)', $output)
                 : $output
         );
     }

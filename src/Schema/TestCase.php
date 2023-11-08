@@ -86,14 +86,22 @@ abstract class TestCase extends BaseTestCase
         // related with \Atk4\Data\Persistence\Sql\Oracle\ExpressionTrait::updateRenderBeforeExecute() fix
         if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
             $sql = preg_replace_callback(
-                '~' . Expression::QUOTED_TOKEN_REGEX . '\K|cast\((:\w+) as (?:INTEGER|BIGINT)\)~',
-                static function ($matches) use ($types, $params) {
+                '~' . Expression::QUOTED_TOKEN_REGEX . '\K|cast\((:\w+) as (BOOLEAN|INTEGER|BIGINT)\)~',
+                static function ($matches) use (&$types, &$params) {
                     if ($matches[0] === '') {
                         return '';
                     }
 
                     $k = $matches[1];
-                    if ($types[$k] === ParameterType::INTEGER && is_int($params[$k])) {
+                    if ($matches[2] === 'BOOLEAN' && (
+                        ($types[$k] === ParameterType::BOOLEAN && is_bool($params[$k]))
+                        || ($types[$k] === ParameterType::INTEGER && ($params[$k] === 0 || $params[$k] === 1))
+                    )) {
+                        $types[$k] = ParameterType::BOOLEAN;
+                        $params[$k] = (bool) $params[$k];
+
+                        return $k;
+                    } elseif (($matches[2] === 'INTEGER' || $matches[2] === 'BIGINT') && $types[$k] === ParameterType::INTEGER && is_int($params[$k])) {
                         return $k;
                     }
 
