@@ -23,7 +23,7 @@ trait ExpressionTrait
                 $value = $params[$sql];
 
                 // fix pgsql/pdo_pgsql param type bind
-                // TODO is this php-src issue? it seems pg_typeof() of bound param is not supported in general
+                // TODO open php-src issue
                 if (is_bool($value)) {
                     $sql = 'cast(' . $sql . ' as BOOLEAN)';
                 } elseif (is_int($value)) {

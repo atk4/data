@@ -329,11 +329,23 @@ class SelectTest extends TestCase
         yield [['0.0'], '=', ['[]', [0.0]], false, false, true];
         yield [['4.4'], '!=', ['[]', [4.3]]];
         yield [['4e1'], '=', ['[]', [40.0]], false, false, true];
+        yield [[(string) \PHP_INT_MAX], '=', ['[]', [\PHP_INT_MAX]]];
+        yield [[(string) \PHP_INT_MIN], '=', ['[]', [\PHP_INT_MIN]]];
+        yield [[(string) (\PHP_INT_MAX - 1)], '<', ['[]', [\PHP_INT_MAX]]];
+        yield [[(string) \PHP_INT_MAX], '>', ['[]', [\PHP_INT_MAX - 1]]];
+        yield [[Expression::castFloatToString(\PHP_FLOAT_MAX)], '=', ['[]', [\PHP_FLOAT_MAX]], false, false, true];
+        yield [[Expression::castFloatToString(\PHP_FLOAT_MIN)], '=', ['[]', [\PHP_FLOAT_MIN]], false, false, true];
+        yield [['0.0'], '<', ['[]', [\PHP_FLOAT_MIN]]];
+        yield [['1.0'], '<', ['[]', [1.0 + \PHP_FLOAT_EPSILON]]];
+        yield [['2e305'], '<', ['[]', [1e306]]];
+        yield [['2e305'], '>', ['[]', [3e304]], false, false, true];
 
         yield [['[]', [4]], '=', ['[]', [4]]];
         yield [['[]', ['4']], '=', ['[]', ['4']]];
         yield [['[]', [4.4]], '=', ['[]', [4.4]]];
         yield [['[]', [4.4]], '>', ['[]', [4.3]]];
+        yield [['[]', [2e305]], '<', ['[]', [1e306]], false, false, true];
+        yield [['[]', [2e305]], '>', ['[]', [3e304]], false, false, true];
         yield [['[]', [true]], '=', ['[]', [true]]];
         yield [['[]', [false]], '=', ['[]', [false]]];
 
@@ -342,6 +354,10 @@ class SelectTest extends TestCase
         yield [['4'], '=', ['[]', [4.0]], false, true, true];
         yield [['4'], '=', ['[]', ['4.0']], true, true, true];
         yield [['2.5'], '=', ['[]', ['02.50']], true, false, true];
+        yield [['0'], '=', ['[]', [false]], true];
+        yield [['0'], '!=', ['[]', [true]], true];
+        yield [['1'], '=', ['[]', [true]], true];
+        yield [['1'], '!=', ['[]', [false]], true];
 
         yield [['2 + 2'], '=', ['[]', [4]]];
         yield [['2 + 2'], '=', ['[]', ['4']], true, false, true];
