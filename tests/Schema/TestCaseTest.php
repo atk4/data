@@ -67,13 +67,13 @@ class TestCaseTest extends TestCase
                       `name`, `int`, `float`, `bool`, `null`
                     )
                     values
-                      ('Ewa', 1, '1.0', 1, NULL); end try begin catch if ERROR_NUMBER() = 544 begin
+                      ('Ewa', 1, 1.0, 1, NULL); end try begin catch if ERROR_NUMBER() = 544 begin
                     set
                       IDENTITY_INSERT `t` on; begin try insert into `t` (
                         `name`, `int`, `float`, `bool`, `null`
                       )
                     values
-                      ('Ewa', 1, '1.0', 1, NULL);
+                      ('Ewa', 1, 1.0, 1, NULL);
                     set
                       IDENTITY_INSERT `t` off; end try begin catch
                     set
@@ -138,7 +138,7 @@ class TestCaseTest extends TestCase
             . $makeLimitSqlFx(1)
             . ";\n\n",
             $this->getDatabasePlatform() instanceof SQLServerPlatform
-                ? str_replace('(\'Ewa\', 1, \'1.0\', 1, NULL)', '(N\'Ewa\', 1, N\'1.0\', 1, NULL)', $output)
+                ? str_replace('(\'Ewa\', 1, 1.0, 1, NULL)', '(N\'Ewa\', 1, 1.0, 1, NULL)', $output)
                 : $output
         );
     }
