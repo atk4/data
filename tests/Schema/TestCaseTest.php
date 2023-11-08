@@ -86,7 +86,11 @@ class TestCaseTest extends TestCase
                     )
                     values
                     EOF
-                . "\n  ('Ewa', 1, " . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? '1.0, true' : '\'1.0\', 1') . ", NULL);\n\n"
+                . "\n  ('Ewa', 1, "
+                . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof OraclePlatform ? '1.0' : '\'1.0\'')
+                . ', '
+                . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? 'true' : '1')
+                . ", NULL);\n\n"
                 . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "\n\"RELEASE SAVEPOINT\";\n\n" : ''))
             . ($this->getDatabasePlatform() instanceof OraclePlatform ? <<<'EOF'
 

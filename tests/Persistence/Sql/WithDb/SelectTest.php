@@ -253,6 +253,10 @@ class SelectTest extends TestCase
      */
     public function testWhereNumericCompare(array $exprLeft, string $operator, array $exprRight, bool $expectPostgresqlTypeMismatchException = false, bool $expectMssqlTypeMismatchException = false, bool $expectSqliteWrongResult = false): void
     {
+        if ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            $exprLeft[0] = preg_replace('~\d+[eE][\-+]?\d++~', '$0d', $exprLeft[0]);
+        }
+
         $queryWhere = $this->q()->field($this->e('1'), 'v');
         if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
             $queryWhere->table('(select 1)', 'dual'); // needed for MySQL 5.x when WHERE or HAVING is specified

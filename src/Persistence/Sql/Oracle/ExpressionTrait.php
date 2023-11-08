@@ -124,6 +124,8 @@ trait ExpressionTrait
                     // https://github.com/php/php-src/issues/12578
                     if (is_bool($value) || is_int($value)) {
                         $sql = 'cast(' . $sql . ' as INTEGER)';
+                    } elseif (is_float($value)) {
+                        $sql = 'cast(' . $sql . ' as BINARY_DOUBLE)';
                     }
                 }
 
