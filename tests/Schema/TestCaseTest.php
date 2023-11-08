@@ -8,7 +8,6 @@ use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
-use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class TestCaseTest extends TestCase
@@ -87,9 +86,7 @@ class TestCaseTest extends TestCase
                     )
                     values
                     EOF
-                . "\n  ('Ewa', 1, "
-                . ($this->getDatabasePlatform() instanceof SQLitePlatform ? '\'1.0\'' : '1.0')
-                . ', '
+                . "\n  ('Ewa', 1, 1.0, "
                 . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? 'true' : '1')
                 . ", NULL);\n\n"
                 . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "\n\"RELEASE SAVEPOINT\";\n\n" : ''))

@@ -251,7 +251,7 @@ class SelectTest extends TestCase
      * @param array{string, array<mixed>} $exprLeft
      * @param array{string, array<mixed>} $exprRight
      */
-    public function testWhereNumericCompare(array $exprLeft, string $operator, array $exprRight, bool $expectPostgresqlTypeMismatchException = false, bool $expectMssqlTypeMismatchException = false, bool $expectSqliteWrongResult = false): void
+    public function testWhereNumericCompare(array $exprLeft, string $operator, array $exprRight, bool $expectPostgresqlTypeMismatchException = false, bool $expectMssqlTypeMismatchException = false, bool $expectSqliteWrongAffinity = false): void
     {
         if ($this->getDatabasePlatform() instanceof OraclePlatform) {
             $exprLeft[0] = preg_replace('~\d+[eE][\-+]?\d++~', '$0d', $exprLeft[0]);
@@ -299,7 +299,7 @@ class SelectTest extends TestCase
         }
 
         self::assertSame(
-            $expectSqliteWrongResult && $this->getDatabasePlatform() instanceof SQLitePlatform
+            $expectSqliteWrongAffinity && $this->getDatabasePlatform() instanceof SQLitePlatform
                 ? [['where' => null, 'having' => null, 'where2' => null]]
                 : [['where' => '1', 'having' => '1', 'where2' => '1']],
             $rows
@@ -333,20 +333,20 @@ class SelectTest extends TestCase
         yield [['\'4\''], '!=', ['[]', ['4.0']]];
         yield [['\'2e4\''], '<', ['[]', ['3e3']]];
         yield [['\'2e4\''], '>', ['[]', ['1e5']]];
-        yield [['4.4'], '=', ['[]', [4.4]], false, false, true];
-        yield [['0.0'], '=', ['[]', [0.0]], false, false, true];
+        yield [['4.4'], '=', ['[]', [4.4]]];
+        yield [['0.0'], '=', ['[]', [0.0]]];
         yield [['4.4'], '!=', ['[]', [4.3]]];
-        yield [['4e1'], '=', ['[]', [40.0]], false, false, true];
+        yield [['4e1'], '=', ['[]', [40.0]]];
         yield [[(string) \PHP_INT_MAX], '=', ['[]', [\PHP_INT_MAX]]];
         yield [[(string) \PHP_INT_MIN], '=', ['[]', [\PHP_INT_MIN]]];
         yield [[(string) (\PHP_INT_MAX - 1)], '<', ['[]', [\PHP_INT_MAX]]];
         yield [[(string) \PHP_INT_MAX], '>', ['[]', [\PHP_INT_MAX - 1]]];
-        yield [[Expression::castFloatToString(\PHP_FLOAT_MAX)], '=', ['[]', [\PHP_FLOAT_MAX]], false, false, true];
-        yield [[Expression::castFloatToString(\PHP_FLOAT_MIN)], '=', ['[]', [\PHP_FLOAT_MIN]], false, false, true];
+        yield [[Expression::castFloatToString(\PHP_FLOAT_MAX)], '=', ['[]', [\PHP_FLOAT_MAX]]];
+        yield [[Expression::castFloatToString(\PHP_FLOAT_MIN)], '=', ['[]', [\PHP_FLOAT_MIN]]];
         yield [['0.0'], '<', ['[]', [\PHP_FLOAT_MIN]]];
         yield [['1.0'], '<', ['[]', [1.0 + \PHP_FLOAT_EPSILON]]];
         yield [['2e305'], '<', ['[]', [1e306]]];
-        yield [['2e305'], '>', ['[]', [3e304]], false, false, true];
+        yield [['2e305'], '>', ['[]', [3e304]]];
 
         yield [['[]', [4]], '=', ['[]', [4]]];
         yield [['[]', ['4']], '=', ['[]', ['4']]];
@@ -354,8 +354,8 @@ class SelectTest extends TestCase
         yield [['[]', ['2e4']], '>', ['[]', ['1e5']]];
         yield [['[]', [4.4]], '=', ['[]', [4.4]]];
         yield [['[]', [4.4]], '>', ['[]', [4.3]]];
-        yield [['[]', [2e305]], '<', ['[]', [1e306]], false, false, true];
-        yield [['[]', [2e305]], '>', ['[]', [3e304]], false, false, true];
+        yield [['[]', [2e305]], '<', ['[]', [1e306]]];
+        yield [['[]', [2e305]], '>', ['[]', [3e304]]];
         yield [['[]', [false]], '=', ['[]', [false]]];
         yield [['[]', [true]], '=', ['[]', [true]]];
         yield [['[]', [false]], '!=', ['[]', [true]]];
@@ -363,7 +363,7 @@ class SelectTest extends TestCase
 
         yield [['4'], '=', ['[]', ['04']], true, false, true];
         yield [['\'04\''], '=', ['[]', [4]], true, false, true];
-        yield [['4'], '=', ['[]', [4.0]], false, false, true];
+        yield [['4'], '=', ['[]', [4.0]]];
         yield [['4'], '=', ['[]', ['4.0']], true, true, true];
         yield [['2.5'], '=', ['[]', ['02.50']], true, false, true];
         yield [['0'], '=', ['[]', [false]], true];
@@ -375,7 +375,7 @@ class SelectTest extends TestCase
         yield [['2 + 2'], '=', ['[] + []', [1, 3]]];
         yield [['[] + []', [-1, 5]], '=', ['[] + []', [1, 3]]];
         yield [['2 + 2'], '=', ['[]', ['4']], true, false, true];
-        yield [['2 + 2.5'], '=', ['[]', [4.5]], false, false, true];
+        yield [['2 + 2.5'], '=', ['[]', [4.5]]];
         yield [['2 + 2.5'], '=', ['[] + []', [1.5, 3.0]]];
         yield [['[] + []', [-1.5, 6.0]], '=', ['[] + []', [1.5, 3.0]]];
         yield [['2 + 2.5'], '=', ['[]', ['4.5']], true, false, true];

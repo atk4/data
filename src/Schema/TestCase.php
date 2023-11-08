@@ -12,7 +12,6 @@ use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
@@ -81,51 +80,45 @@ abstract class TestCase extends BaseTestCase
             return;
         }
 
-        // remove once pgsql/pdo_pgsql and oci8/pdo_oci param type bind is fixed
-        // related with \Atk4\Data\Persistence\Sql\Mysql\ExpressionTrait::updateRenderBeforeExecute() float type workaround
-        // related with \Atk4\Data\Persistence\Sql\Postgresql\ExpressionTrait::updateRenderBeforeExecute() fix
-        // related with \Atk4\Data\Persistence\Sql\Mssql\ExpressionTrait::updateRenderBeforeExecute() float type workaround
-        // related with \Atk4\Data\Persistence\Sql\Oracle\ExpressionTrait::updateRenderBeforeExecute() fix
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform || $this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
-            $i = 0;
-            $sql = preg_replace_callback(
-                '~' . Expression::QUOTED_TOKEN_REGEX . '\K|(\?)|cast\((\?|:\w+) as (BOOLEAN|INTEGER|BIGINT|DOUBLE PRECISION|BINARY_DOUBLE)\)|\((\?|:\w+) \+ 0\.00\)~',
-                static function ($matches) use (&$types, &$params, &$i) {
-                    if ($matches[0] === '') {
-                        return '';
-                    }
+        // needed for \Atk4\Data\Persistence\Sql\*\ExpressionTrait::updateRenderBeforeExecute() fixes
+        $i = 0;
+        $sql = preg_replace_callback(
+            '~' . Expression::QUOTED_TOKEN_REGEX . '\K|(\?)|cast\((\?|:\w+) as (BOOLEAN|INTEGER|BIGINT|DOUBLE PRECISION|BINARY_DOUBLE)\)|\((\?|:\w+) \+ 0\.00\)~',
+            static function ($matches) use (&$types, &$params, &$i) {
+                if ($matches[0] === '') {
+                    return '';
+                }
 
-                    if ($matches[1] === '?') {
-                        ++$i;
-
-                        return $matches[0];
-                    }
-
-                    $k = isset($matches[4]) ? ($matches[4] === '?' ? ++$i : $matches[4]) : ($matches[2] === '?' ? ++$i : $matches[2]);
-
-                    if ($matches[3] === 'BOOLEAN' && ($types[$k] === ParameterType::BOOLEAN || $types[$k] === ParameterType::INTEGER)
-                        && (is_bool($params[$k]) || $params[$k] === '0' || $params[$k] === '1')
-                    ) {
-                        $types[$k] = ParameterType::BOOLEAN;
-                        $params[$k] = (bool) $params[$k];
-
-                        return $matches[4] ?? $matches[2];
-                    } elseif (($matches[3] === 'INTEGER' || $matches[3] === 'BIGINT') && $types[$k] === ParameterType::INTEGER && is_int($params[$k])) {
-                        return $matches[4] ?? $matches[2];
-                    } elseif (($matches[3] === 'DOUBLE PRECISION' || $matches[3] === 'BINARY_DOUBLE' || isset($matches[4]))
-                        && $types[$k] === ParameterType::STRING && is_string($params[$k]) && is_numeric($params[$k])
-                    ) {
-                        // $types[$k] = ParameterType::FLOAT; is not supported yet by DBAL
-                        $params[$k] = (float) $params[$k];
-
-                        return $matches[4] ?? $matches[2];
-                    }
+                if ($matches[1] === '?') {
+                    ++$i;
 
                     return $matches[0];
-                },
-                $sql
-            );
-        }
+                }
+
+                $k = isset($matches[4]) ? ($matches[4] === '?' ? ++$i : $matches[4]) : ($matches[2] === '?' ? ++$i : $matches[2]);
+
+                if ($matches[3] === 'BOOLEAN' && ($types[$k] === ParameterType::BOOLEAN || $types[$k] === ParameterType::INTEGER)
+                    && (is_bool($params[$k]) || $params[$k] === '0' || $params[$k] === '1')
+                ) {
+                    $types[$k] = ParameterType::BOOLEAN;
+                    $params[$k] = (bool) $params[$k];
+
+                    return $matches[4] ?? $matches[2];
+                } elseif (($matches[3] === 'INTEGER' || $matches[3] === 'BIGINT') && $types[$k] === ParameterType::INTEGER && is_int($params[$k])) {
+                    return $matches[4] ?? $matches[2];
+                } elseif (($matches[3] === 'DOUBLE PRECISION' || $matches[3] === 'BINARY_DOUBLE' || isset($matches[4]))
+                    && $types[$k] === ParameterType::STRING && is_string($params[$k]) && is_numeric($params[$k])
+                ) {
+                    // $types[$k] = ParameterType::FLOAT; is not supported yet by DBAL
+                    $params[$k] = (float) $params[$k];
+
+                    return $matches[4] ?? $matches[2];
+                }
+
+                return $matches[0];
+            },
+            $sql
+        );
 
         $exprNoRender = new class($sql, $params) extends Expression {
             public function render(): array
