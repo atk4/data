@@ -608,8 +608,10 @@ abstract class Expression implements Expressionable, \ArrayAccess
                 if ($val === null) {
                     $type = ParameterType::NULL;
                 } elseif (is_bool($val)) {
-                    $type = ParameterType::INTEGER;
-                    $val = $val ? 1 : 0;
+                    $type = ParameterType::BOOLEAN;
+                    if ($platform instanceof OraclePlatform) {
+                        $val = $val ? 1 : 0;
+                    }
                 } elseif (is_int($val)) {
                     $type = ParameterType::INTEGER;
                 } elseif (is_float($val)) {

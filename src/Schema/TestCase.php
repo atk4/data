@@ -93,10 +93,7 @@ abstract class TestCase extends BaseTestCase
                     }
 
                     $k = $matches[1];
-                    if ($matches[2] === 'BOOLEAN' && (
-                        ($types[$k] === ParameterType::BOOLEAN && is_bool($params[$k]))
-                        || ($types[$k] === ParameterType::INTEGER && ($params[$k] === 0 || $params[$k] === 1))
-                    )) {
+                    if ($matches[2] === 'BOOLEAN' && (($types[$k] === ParameterType::BOOLEAN || $types[$k] === ParameterType::INTEGER) && (is_bool($params[$k]) || $params[$k] === 0 || $params[$k] === 1))) {
                         $types[$k] = ParameterType::BOOLEAN;
                         $params[$k] = (bool) $params[$k];
 
