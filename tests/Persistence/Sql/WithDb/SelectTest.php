@@ -356,8 +356,10 @@ class SelectTest extends TestCase
         yield [['[]', [4.4]], '>', ['[]', [4.3]]];
         yield [['[]', [2e305]], '<', ['[]', [1e306]], false, false, true];
         yield [['[]', [2e305]], '>', ['[]', [3e304]], false, false, true];
-        yield [['[]', [true]], '=', ['[]', [true]]];
         yield [['[]', [false]], '=', ['[]', [false]]];
+        yield [['[]', [true]], '=', ['[]', [true]]];
+        yield [['[]', [false]], '!=', ['[]', [true]]];
+        yield [['[]', [false]], '<', ['[]', [true]]];
 
         yield [['4'], '=', ['[]', ['04']], true, false, true];
         yield [['\'04\''], '=', ['[]', [4]], true, false, true];
