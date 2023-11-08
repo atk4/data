@@ -28,6 +28,8 @@ trait ExpressionTrait
                     $sql = 'cast(' . $sql . ' as BOOLEAN)';
                 } elseif (is_int($value)) {
                     $sql = 'cast(' . $sql . ' as BIGINT)';
+                } elseif (is_float($value)) {
+                    $sql = 'cast(' . $sql . ' as DOUBLE PRECISION)';
                 }
 
                 return $sql;

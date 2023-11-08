@@ -614,7 +614,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
                     $type = ParameterType::INTEGER;
                 } elseif (is_float($val)) {
                     $val = self::castFloatToString($val);
-                    $type = ParameterType::STRING;
+                    $type = ParameterType::STRING; // TODO create PR to add ParameterType::FLOAT type to DBAL
                 } elseif (is_string($val)) {
                     $type = ParameterType::STRING;
 

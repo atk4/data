@@ -86,7 +86,7 @@ abstract class TestCase extends BaseTestCase
         // related with \Atk4\Data\Persistence\Sql\Oracle\ExpressionTrait::updateRenderBeforeExecute() fix
         if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
             $sql = preg_replace_callback(
-                '~' . Expression::QUOTED_TOKEN_REGEX . '\K|cast\((:\w+) as (BOOLEAN|INTEGER|BIGINT)\)~',
+                '~' . Expression::QUOTED_TOKEN_REGEX . '\K|cast\((:\w+) as (BOOLEAN|INTEGER|BIGINT|DOUBLE PRECISION)\)~',
                 static function ($matches) use (&$types, &$params) {
                     if ($matches[0] === '') {
                         return '';
@@ -102,6 +102,11 @@ abstract class TestCase extends BaseTestCase
 
                         return $k;
                     } elseif (($matches[2] === 'INTEGER' || $matches[2] === 'BIGINT') && $types[$k] === ParameterType::INTEGER && is_int($params[$k])) {
+                        return $k;
+                    } elseif ($matches[2] === 'DOUBLE PRECISION' && $types[$k] === ParameterType::STRING && is_string($params[$k]) && is_numeric($params[$k])) {
+                        // $types[$k] = ParameterType::FLOAT; is not supported yet by DBAL
+                        $params[$k] = (float) $params[$k];
+
                         return $k;
                     }
 
