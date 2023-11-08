@@ -22,7 +22,9 @@ trait ExpressionTrait
 
                 // emulate bind param support for float type
                 // TODO open php-src feature request
-                if (is_float($value)) {
+                if (is_int($value)) {
+                    $sql = 'cast(' . $sql . ' as INTEGER)';
+                } elseif (is_float($value)) {
                     $sql = 'cast(' . $sql . ' as DOUBLE PRECISION)';
                 }
 
