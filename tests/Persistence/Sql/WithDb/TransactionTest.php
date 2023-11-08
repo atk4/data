@@ -6,6 +6,7 @@ namespace Atk4\Data\Tests\Persistence\Sql\WithDb;
 
 use Atk4\Data\Model;
 use Atk4\Data\Persistence\Sql\Exception;
+use Atk4\Data\Persistence\Sql\ExecuteException;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Schema\TestCase;
@@ -104,8 +105,7 @@ class TransactionTest extends TestCase
             $this->q('employee')
                 ->setMulti(['name' => 'John', 'non_existent' => 'bar'])
                 ->mode('insert')->executeStatement();
-        } catch (Exception $e) {
-            self::assertSame('Dsql execute error', $e->getMessage());
+        } catch (ExecuteException $e) {
             self::assertInstanceOf(InvalidFieldNameException::class, $e->getPrevious());
 
             throw $e;

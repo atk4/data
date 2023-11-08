@@ -245,6 +245,110 @@ class SelectTest extends TestCase
         ], $this->q('employee')->where('retired', true)->where($this->q()->expr('{}=[] or {}=[]', ['surname', 'Williams', 'surname', 'Smith']))->getRows());
     }
 
+    /**
+     * @dataProvider provideWhereNumericCompareCases
+     *
+     * @param array{string, array<mixed>} $exprLeft
+     * @param array{string, array<mixed>} $exprRight
+     */
+    public function testWhereNumericCompare(array $exprLeft, string $operator, array $exprRight, bool $expectPostgresqlTypeMismatchException = false, bool $expectMssqlTypeMismatchException = false, bool $expectSqliteWrongResult = false): void
+    {
+        $queryWhere = $this->q()->field($this->e('1'), 'v');
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            $queryWhere->table('(select 1)', 'dual'); // needed for MySQL 5.x when WHERE or HAVING is specified
+        }
+        $queryWhere->where($this->e(...$exprLeft), $operator, $this->e(...$exprRight));
+
+        $queryHaving = $this->q()->field($this->e('1'), 'v');
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            $queryHaving->table('(select 1)', 'dual'); // needed for MySQL 5.x when WHERE or HAVING is specified
+        }
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
+            $queryHaving->group('v');
+        }
+        $queryHaving->having($this->e(...$exprLeft), $operator, $this->e(...$exprRight));
+
+        $queryWhere2 = $this->q()->field($this->e('1'), 'v');
+        $queryWhere2->table($this->q()->field($this->e(...$exprLeft), 'a')->field($this->e(...$exprRight), 'b'), 't');
+        $queryWhere2->where('a', $operator, $this->e('{}', ['b']));
+
+        $queryAll = $this->q()
+            ->field($queryWhere, 'where')
+            ->field($queryHaving, 'having')
+            ->field($queryWhere2, 'where2');
+
+        if (($expectPostgresqlTypeMismatchException && $this->getDatabasePlatform() instanceof PostgreSQLPlatform) || ($expectMssqlTypeMismatchException && $this->getDatabasePlatform() instanceof SQLServerPlatform)) {
+            $this->expectException(ExecuteException::class);
+        }
+        try {
+            $rows = $queryAll->getRows();
+        } catch (ExecuteException $e) {
+            if ($expectPostgresqlTypeMismatchException && $this->getDatabasePlatform() instanceof PostgreSQLPlatform && str_contains($e->getPrevious()->getMessage(), 'operator does not exist')) {
+                // https://dbfiddle.uk/YJvvOTpR
+                self::markTestIncomplete('PostgreSQL does not implicitly cast string for numeric comparison');
+            } elseif ($expectMssqlTypeMismatchException && $this->getDatabasePlatform() instanceof SQLServerPlatform && str_contains($e->getPrevious()->getMessage(), 'Conversion failed when converting the nvarchar value \'4.0\' to data type int')) {
+                // https://dbfiddle.uk/YmYeklp_
+                self::markTestIncomplete('MSSQL does not implicitly cast string with decimal point for float comparison');
+            }
+
+            throw $e;
+        }
+
+        self::assertSame(
+            $expectSqliteWrongResult && $this->getDatabasePlatform() instanceof SQLitePlatform
+                ? [['where' => null, 'having' => null, 'where2' => null]]
+                : [['where' => '1', 'having' => '1', 'where2' => '1']],
+            $rows
+        );
+    }
+
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public function provideWhereNumericCompareCases(): iterable
+    {
+        yield [['4'], '=', ['4']];
+        yield [['0'], '=', ['0']];
+        yield [['4'], '<', ['5']];
+        yield [['5'], '>', ['4']];
+        yield [['\'4\''], '=', ['\'4\'']];
+        yield [['\'04\''], '=', ['\'04\'']];
+        yield [['\'4\''], '!=', ['\'04\'']];
+        yield [['\'4\''], '!=', ['\'4.0\'']];
+        yield [['4.4'], '=', ['4.4']];
+        yield [['0.0'], '=', ['0.0']];
+        yield [['4.4'], '!=', ['4.3']];
+
+        yield [['4'], '=', ['[]', [4]]];
+        yield [['0'], '=', ['[]', [0]]];
+        yield [['\'4\''], '=', ['[]', ['4']]];
+        yield [['\'04\''], '=', ['[]', ['04']]];
+        yield [['\'4\''], '!=', ['[]', ['04']]];
+        yield [['\'4\''], '!=', ['[]', ['4.0']]];
+        yield [['4.4'], '=', ['[]', [4.4]], false, false, true];
+        yield [['0.0'], '=', ['[]', [0.0]], false, false, true];
+        yield [['4.4'], '!=', ['[]', [4.3]]];
+        yield [['4e1'], '=', ['[]', [40.0]], false, false, true];
+
+        yield [['[]', [4]], '=', ['[]', [4]]];
+        yield [['[]', ['4']], '=', ['[]', ['4']]];
+        yield [['[]', [4.4]], '=', ['[]', [4.4]]];
+        yield [['[]', [4.4]], '>', ['[]', [4.3]]];
+        yield [['[]', [true]], '=', ['[]', [true]]];
+        yield [['[]', [false]], '=', ['[]', [false]]];
+
+        yield [['4'], '=', ['[]', ['04']], true, false, true];
+        yield [['\'04\''], '=', ['[]', [4]], true, false, true];
+        yield [['4'], '=', ['[]', [4.0]], false, true, true];
+        yield [['4'], '=', ['[]', ['4.0']], true, true, true];
+        yield [['2.5'], '=', ['[]', ['02.50']], true, false, true];
+
+        yield [['2 + 2'], '=', ['[]', [4]]];
+        yield [['2 + 2'], '=', ['[]', ['4']], true, false, true];
+        yield [['2 + 2.5'], '=', ['[]', [4.5]], false, false, true];
+        yield [['2 + 2.5'], '=', ['[]', ['4.5']], true, false, true];
+    }
+
     public function testGroupConcat(): void
     {
         $q = $this->q()
