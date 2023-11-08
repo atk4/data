@@ -610,7 +610,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
                 } elseif (is_bool($val)) {
                     $type = ParameterType::BOOLEAN;
                     if ($platform instanceof OraclePlatform) {
-                        $val = $val ? 1 : 0;
+                        $val = $val ? '1' : '0';
                     }
                 } elseif (is_int($val)) {
                     $type = ParameterType::INTEGER;

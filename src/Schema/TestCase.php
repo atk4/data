@@ -104,7 +104,7 @@ abstract class TestCase extends BaseTestCase
                     $k = isset($matches[4]) ? ($matches[4] === '?' ? ++$i : $matches[4]) : ($matches[2] === '?' ? ++$i : $matches[2]);
 
                     if ($matches[3] === 'BOOLEAN' && ($types[$k] === ParameterType::BOOLEAN || $types[$k] === ParameterType::INTEGER)
-                        && (is_bool($params[$k]) || $params[$k] === 0 || $params[$k] === 1)
+                        && (is_bool($params[$k]) || $params[$k] === '0' || $params[$k] === '1')
                     ) {
                         $types[$k] = ParameterType::BOOLEAN;
                         $params[$k] = (bool) $params[$k];
