@@ -502,6 +502,24 @@ abstract class Query extends Expression
     }
 
     /**
+     * Override to fix numeric affinity for SQLite.
+     */
+    protected function _renderConditionBinary(string $operator, string $sqlLeft, string $sqlRight): string
+    {
+        return $sqlLeft . ' ' . $operator . ' ' . $sqlRight;
+    }
+
+    /**
+     * Override to fix numeric affinity for SQLite.
+     *
+     * @param non-empty-list<string> $sqlValues
+     */
+    protected function _renderConditionInOperator(bool $negated, string $sqlLeft, array $sqlValues): string
+    {
+        return $sqlLeft . ($negated ? ' not' : '') . ' in (' . implode(', ', $sqlValues) . ')';
+    }
+
+    /**
      * @param array<0|1|2, mixed> $row
      */
     protected function _subrenderCondition(array $row): string
@@ -575,7 +593,7 @@ abstract class Query extends Expression
 
                 $values = array_map(fn ($v) => $this->consume($v, self::ESCAPE_PARAM), $value);
 
-                return $field . ' ' . $cond . ' (' . implode(', ', $values) . ')';
+                return $this->_renderConditionInOperator($cond === 'not in', $field, $values);
             }
 
             throw (new Exception('Unsupported operator for array value'))
@@ -589,7 +607,7 @@ abstract class Query extends Expression
         // otherwise just escape value
         $value = $this->consume($value, self::ESCAPE_PARAM);
 
-        return $field . ' ' . $cond . ' ' . $value;
+        return $this->_renderConditionBinary($cond, $field, $value);
     }
 
     protected function _renderWhere(): ?string
