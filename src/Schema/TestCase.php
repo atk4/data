@@ -12,6 +12,7 @@ use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
@@ -80,11 +81,12 @@ abstract class TestCase extends BaseTestCase
             return;
         }
 
-        // remove once oci8/pdo_oci param type bind is fixed
+        // remove once pgsql/pdo_pgsql and oci8/pdo_oci param type bind is fixed
         // related with \Atk4\Data\Persistence\Sql\Postgresql\ExpressionTrait::updateRenderBeforeExecute() fix
-        if ($this->getDatabasePlatform() instanceof OraclePlatform) {
+        // related with \Atk4\Data\Persistence\Sql\Oracle\ExpressionTrait::updateRenderBeforeExecute() fix
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
             $sql = preg_replace_callback(
-                '~' . Expression::QUOTED_TOKEN_REGEX . '\K|cast\((:\w+) as INTEGER\)~',
+                '~' . Expression::QUOTED_TOKEN_REGEX . '\K|cast\((:\w+) as (?:INTEGER|BIGINT)\)~',
                 static function ($matches) use ($types, $params) {
                     if ($matches[0] === '') {
                         return '';
