@@ -40,7 +40,7 @@ parameters:
         -
             message: '~^Class Doctrine\\DBAL\\Platforms\\SqlitePlatform referenced with incorrect case: Doctrine\\DBAL\\Platforms\\SQLitePlatform\.$~'
             path: '*'
-            count: 26
+            count: 28
 
         # TODO these rules are generated, this ignores should be fixed in the code
         # for src/Schema/TestCase.php

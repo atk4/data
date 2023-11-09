@@ -55,7 +55,7 @@
         "phpunit/phpunit": "^9.5.25"
     },
     "conflict": {
-        "jdorn/sql-formatter": "<1.2.9"
+        "jdorn/sql-formatter": "<1.2.16"
     },
     "suggest": {
         "jdorn/sql-formatter": "*"

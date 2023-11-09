@@ -455,18 +455,6 @@ abstract class Expression implements Expressionable, \ArrayAccess
     {
         [$sql, $params] = $this->render();
 
-        if (class_exists(\SqlFormatter::class)) { // requires optional "jdorn/sql-formatter" package
-            \Closure::bind(static function () {
-                // fix latest/1.2.16 release from 2013-11-28
-                if (end(\SqlFormatter::$reserved_toplevel) === 'INTERSECT') {
-                    \SqlFormatter::$reserved_toplevel[] = 'OFFSET';
-                    \SqlFormatter::$reserved_toplevel[] = 'FETCH';
-                }
-            }, null, \SqlFormatter::class)();
-
-            $sql = preg_replace('~' . self::QUOTED_TOKEN_REGEX . '\K| +(?=\n)|(?<=:) (?=\w)~', '', \SqlFormatter::format($sql, false));
-        }
-
         $i = 0;
         $sql = preg_replace_callback(
             '~' . self::QUOTED_TOKEN_REGEX . '\K|(?:\?|:\w+)~',
@@ -485,7 +473,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
                 if ($v === null) {
                     return 'NULL';
                 } elseif (is_bool($v)) {
-                    return $v ? '1' : '0';
+                    return $v ? 'true' : 'false';
                 } elseif (is_int($v)) {
                     return (string) $v;
                 } elseif (is_float($v)) {
@@ -498,6 +486,18 @@ abstract class Expression implements Expressionable, \ArrayAccess
             },
             $sql
         );
+
+        if (class_exists(\SqlFormatter::class)) { // requires optional "jdorn/sql-formatter" package
+            \Closure::bind(static function () {
+                // fix latest/1.2.17 release from 2014-01-12
+                if (end(\SqlFormatter::$reserved_toplevel) === 'INTERSECT') {
+                    \SqlFormatter::$reserved_toplevel[] = 'OFFSET';
+                    \SqlFormatter::$reserved_toplevel[] = 'FETCH';
+                }
+            }, null, \SqlFormatter::class)();
+
+            $sql = preg_replace('~' . self::QUOTED_TOKEN_REGEX . '\K| +(?=\n)|(?<=:) (?=\w)~', '', \SqlFormatter::format($sql, false));
+        }
 
         return $sql;
     }
@@ -608,18 +608,15 @@ abstract class Expression implements Expressionable, \ArrayAccess
                 if ($val === null) {
                     $type = ParameterType::NULL;
                 } elseif (is_bool($val)) {
-                    if ($platform instanceof PostgreSQLPlatform) {
-                        $type = ParameterType::STRING;
+                    $type = ParameterType::BOOLEAN;
+                    if ($platform instanceof OraclePlatform) {
                         $val = $val ? '1' : '0';
-                    } else {
-                        $type = ParameterType::INTEGER;
-                        $val = $val ? 1 : 0;
                     }
                 } elseif (is_int($val)) {
                     $type = ParameterType::INTEGER;
                 } elseif (is_float($val)) {
                     $val = self::castFloatToString($val);
-                    $type = ParameterType::STRING;
+                    $type = ParameterType::STRING; // TODO create PR to add ParameterType::FLOAT type to DBAL
                 } elseif (is_string($val)) {
                     $type = ParameterType::STRING;
 

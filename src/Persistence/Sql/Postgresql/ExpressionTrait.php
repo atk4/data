@@ -8,6 +8,38 @@ use Doctrine\DBAL\Statement;
 
 trait ExpressionTrait
 {
+    protected function updateRenderBeforeExecute(array $render): array
+    {
+        [$sql, $params] = parent::updateRenderBeforeExecute($render);
+
+        $sql = preg_replace_callback(
+            '~' . self::QUOTED_TOKEN_REGEX . '\K|:\w+~',
+            static function ($matches) use ($params) {
+                if ($matches[0] === '') {
+                    return '';
+                }
+
+                $sql = $matches[0];
+                $value = $params[$sql];
+
+                // fix pgsql/pdo_pgsql param type bind
+                // TODO open php-src issue
+                if (is_bool($value)) {
+                    $sql = 'cast(' . $sql . ' as BOOLEAN)';
+                } elseif (is_int($value)) {
+                    $sql = 'cast(' . $sql . ' as BIGINT)';
+                } elseif (is_float($value)) {
+                    $sql = 'cast(' . $sql . ' as DOUBLE PRECISION)';
+                }
+
+                return $sql;
+            },
+            $sql
+        );
+
+        return [$sql, $params];
+    }
+
     protected function _executeStatement(Statement $statement, bool $fromExecuteStatement)
     {
         $sql = \Closure::bind(static fn () => $statement->sql, null, Statement::class)();

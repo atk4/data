@@ -61,6 +61,11 @@ trait PlatformTrait
         return parent::getCurrentDatabaseExpression();
     }
 
+    public function convertBooleansToDatabaseValue($item)
+    {
+        return $item;
+    }
+
     // PostgreSQL DBAL platform uses SERIAL column type for autoincrement which does not increment
     // when a row with a not-null PK is inserted like Sqlite or MySQL does, unify the behaviour
 

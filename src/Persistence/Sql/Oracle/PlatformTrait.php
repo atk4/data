@@ -36,6 +36,12 @@ trait PlatformTrait
         return $this->getClobTypeDeclarationSQL($column);
     }
 
+    // TODO create DBAL PR
+    public function getFloatDeclarationSQL(array $column)
+    {
+        return 'BINARY_DOUBLE';
+    }
+
     // TODO test DBAL DB diff for each supported Field type
     // then fix using https://github.com/doctrine/dbal/issues/5194#issuecomment-1018790220
     /* protected function initializeCommentedDoctrineTypes()
