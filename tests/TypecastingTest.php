@@ -99,7 +99,7 @@ class TypecastingTest extends TestCase
                     'time' => '12:00:50.000000',
                     'boolean' => '1',
                     'integer' => '2940',
-                    'money' => '8.2',
+                    'money' => 8.2,
                     'float' => 8.20234376757473,
                     'json' => '[1,2,3]',
                 ],
@@ -337,7 +337,7 @@ class TypecastingTest extends TestCase
         $m->delete(1);
 
         unset($dbData['types'][0]);
-        $row['money'] = '8.2'; // no trailing zero is expected
+        $row['money'] = 8.2; // no trailing zero is expected
         $dbData['types'][2] = array_merge(['id' => '2'], $row);
 
         self::{'assertEquals'}($dbData, $this->getDb());
