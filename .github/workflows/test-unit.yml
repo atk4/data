@@ -225,7 +225,7 @@ jobs:
       - name: "Run tests: Oracle - PDO (only for coverage or cron)"
         if: (success() || failure()) && (env.LOG_COVERAGE || github.event_name == 'schedule')
         env:
-          DB_DSN: "pdo_oci:dbname=oracle/xe"
+          DB_DSN: "pdo_oci:dbname=oracle/free"
           DB_USER: system
           DB_PASSWORD: atk4_pass
           NLS_LANG: AMERICAN_AMERICA.AL32UTF8
@@ -236,7 +236,7 @@ jobs:
       - name: "Run tests: Oracle - OCI8"
         if: success() || failure()
         env:
-          DB_DSN: "oci8:dbname=oracle/xe"
+          DB_DSN: "oci8:dbname=oracle/free"
           DB_USER: system
           DB_PASSWORD: atk4_pass
           NLS_LANG: AMERICAN_AMERICA.AL32UTF8

@@ -573,9 +573,9 @@ abstract class Query extends Expression
                     return '1 = 1'; // always true
                 }
 
-                $value = '(' . implode(', ', array_map(fn ($v) => $this->consume($v, self::ESCAPE_PARAM), $value)) . ')';
+                $values = array_map(fn ($v) => $this->consume($v, self::ESCAPE_PARAM), $value);
 
-                return $field . ' ' . $cond . ' ' . $value;
+                return $field . ' ' . $cond . ' (' . implode(', ', $values) . ')';
             }
 
             throw (new Exception('Unsupported operator for array value'))

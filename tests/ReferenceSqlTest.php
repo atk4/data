@@ -8,7 +8,6 @@ use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Types as DbalTypes;
 
@@ -501,17 +500,8 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
-        $buildLengthSqlFx = function (string $v): string {
+        $makeLengthSqlFx = function (string $v): string {
             return ($this->getDatabasePlatform() instanceof SQLServerPlatform ? 'LEN' : 'LENGTH') . '(' . $v . ')';
-        };
-
-        $buildSumWithIntegerCastSqlFx = function (string $v): string {
-            if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform
-                || $this->getDatabasePlatform() instanceof SQLServerPlatform) {
-                $v = 'CAST(' . $v . ' AS INT)';
-            }
-
-            return 'SUM(' . $v . ')';
         };
 
         $l = new Model($this->db, ['table' => 'list']);
@@ -528,9 +518,9 @@ class ReferenceSqlTest extends TestCase
             'items_star' => ['aggregate' => 'count', 'type' => 'integer'], // no field set, counts all rows with count(*)
             'items_c:' => ['concat' => '::', 'field' => 'name'],
             'items_c-' => ['aggregate' => $i->dsql()->groupConcat($i->expr('[name]'), '-')],
-            'len' => ['aggregate' => $i->expr($buildSumWithIntegerCastSqlFx($buildLengthSqlFx('[name]'))), 'type' => 'integer'], // TODO cast should be implicit when using "aggregate", sandpit http://sqlfiddle.com/#!17/0d2c0/3
-            'len2' => ['expr' => $buildSumWithIntegerCastSqlFx($buildLengthSqlFx('[name]')), 'type' => 'integer'],
-            'chicken5' => ['expr' => $buildSumWithIntegerCastSqlFx('[]'), 'args' => ['5'], 'type' => 'integer'],
+            'len' => ['aggregate' => $i->expr('SUM(' . $makeLengthSqlFx('[name]') . ')'), 'type' => 'integer'],
+            'len2' => ['expr' => 'SUM(' . $makeLengthSqlFx('[name]') . ')', 'type' => 'integer'],
+            'chicken5' => ['expr' => 'SUM([])', 'args' => [5], 'type' => 'integer'],
         ]);
 
         $ll = $l->load(1);

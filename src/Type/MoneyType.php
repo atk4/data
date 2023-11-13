@@ -19,20 +19,18 @@ class MoneyType extends DbalTypes\Type
         return DbalTypes\Type::getType(DbalTypes\Types::FLOAT)->getSQLDeclaration($fieldDeclaration, $platform);
     }
 
-    public function convertToDatabaseValue($value, AbstractPlatform $platform): ?string
+    public function convertToDatabaseValue($value, AbstractPlatform $platform): ?float
     {
         if ($value === null || trim((string) $value) === '') {
             return null;
         }
 
-        return (string) round((float) $value, 4);
+        return round((float) $value, 4);
     }
 
     public function convertToPHPValue($value, AbstractPlatform $platform): ?float
     {
-        $v = $this->convertToDatabaseValue($value, $platform);
-
-        return $v === null ? null : (float) $v;
+        return $this->convertToDatabaseValue($value, $platform);
     }
 
     public function requiresSQLCommentHint(AbstractPlatform $platform): bool
