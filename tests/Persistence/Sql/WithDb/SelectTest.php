@@ -272,14 +272,27 @@ class SelectTest extends TestCase
         }
         $queryHaving->having($this->e(...$exprLeft), $operator, $this->e(...$exprRight));
 
-        $queryWhere2 = $this->q()->field($this->e('1'), 'v');
-        $queryWhere2->table($this->q()->field($this->e(...$exprLeft), 'a')->field($this->e(...$exprRight), 'b'), 't');
-        $queryWhere2->where('a', $operator, $this->e('{}', ['b']));
+        $queryWhereSub = $this->q()->field($this->e('1'), 'v');
+        $queryWhereSub->table($this->q()->field($this->e(...$exprLeft), 'a')->field($this->e(...$exprRight), 'b'), 't');
+        $queryWhereSub->where('a', $operator, $this->e('{}', ['b']));
+
+        $queryWhereIn = $this->q()->field($this->e('1'), 'v');
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            $queryWhereIn->table('(select 1)', 'dual'); // needed for MySQL 5.x when WHERE or HAVING is specified
+        }
+        if ($operator === '=' || $operator === '!=') {
+            $queryWhereIn->where(
+                $this->e(...$exprLeft),
+                $operator === '!=' ? 'not in' : 'in',
+                [$this->e(...$exprRight), $this->e(...$exprRight)]
+            );
+        }
 
         $queryAll = $this->q()
             ->field($queryWhere, 'where')
             ->field($queryHaving, 'having')
-            ->field($queryWhere2, 'where2');
+            ->field($queryWhereSub, 'where_sub')
+            ->field($queryWhereIn, 'where_in');
 
         if (($expectPostgresqlTypeMismatchException && $this->getDatabasePlatform() instanceof PostgreSQLPlatform) || ($expectMssqlTypeMismatchException && $this->getDatabasePlatform() instanceof SQLServerPlatform)) {
             $this->expectException(ExecuteException::class);
@@ -299,7 +312,7 @@ class SelectTest extends TestCase
         }
 
         self::assertSame(
-            [['where' => '1', 'having' => '1', 'where2' => '1']],
+            [['where' => '1', 'having' => '1', 'where_sub' => '1', 'where_in' => '1']],
             $rows
         );
     }
