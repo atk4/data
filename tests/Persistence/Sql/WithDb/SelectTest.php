@@ -251,7 +251,7 @@ class SelectTest extends TestCase
      * @param array{string, array<mixed>} $exprLeft
      * @param array{string, array<mixed>} $exprRight
      */
-    public function testWhereNumericCompare(array $exprLeft, string $operator, array $exprRight, bool $expectPostgresqlTypeMismatchException = false, bool $expectMssqlTypeMismatchException = false, bool $expectSqliteWrongAffinity = false): void
+    public function testWhereNumericCompare(array $exprLeft, string $operator, array $exprRight, bool $expectPostgresqlTypeMismatchException = false, bool $expectMssqlTypeMismatchException = false): void
     {
         if ($this->getDatabasePlatform() instanceof OraclePlatform) {
             $exprLeft[0] = preg_replace('~\d+[eE][\-+]?\d++~', '$0d', $exprLeft[0]);
@@ -272,14 +272,27 @@ class SelectTest extends TestCase
         }
         $queryHaving->having($this->e(...$exprLeft), $operator, $this->e(...$exprRight));
 
-        $queryWhere2 = $this->q()->field($this->e('1'), 'v');
-        $queryWhere2->table($this->q()->field($this->e(...$exprLeft), 'a')->field($this->e(...$exprRight), 'b'), 't');
-        $queryWhere2->where('a', $operator, $this->e('{}', ['b']));
+        $queryWhereSub = $this->q()->field($this->e('1'), 'v');
+        $queryWhereSub->table($this->q()->field($this->e(...$exprLeft), 'a')->field($this->e(...$exprRight), 'b'), 't');
+        $queryWhereSub->where('a', $operator, $this->e('{}', ['b']));
+
+        $queryWhereIn = $this->q()->field($this->e('1'), 'v');
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            $queryWhereIn->table('(select 1)', 'dual'); // needed for MySQL 5.x when WHERE or HAVING is specified
+        }
+        if ($operator === '=' || $operator === '!=') {
+            $queryWhereIn->where(
+                $this->e(...$exprLeft),
+                $operator === '!=' ? 'not in' : 'in',
+                [$this->e(...$exprRight), $this->e(...$exprRight)]
+            );
+        }
 
         $queryAll = $this->q()
             ->field($queryWhere, 'where')
             ->field($queryHaving, 'having')
-            ->field($queryWhere2, 'where2');
+            ->field($queryWhereSub, 'where_sub')
+            ->field($queryWhereIn, 'where_in');
 
         if (($expectPostgresqlTypeMismatchException && $this->getDatabasePlatform() instanceof PostgreSQLPlatform) || ($expectMssqlTypeMismatchException && $this->getDatabasePlatform() instanceof SQLServerPlatform)) {
             $this->expectException(ExecuteException::class);
@@ -299,9 +312,7 @@ class SelectTest extends TestCase
         }
 
         self::assertSame(
-            $expectSqliteWrongAffinity && $this->getDatabasePlatform() instanceof SQLitePlatform
-                ? [['where' => null, 'having' => null, 'where2' => null]]
-                : [['where' => '1', 'having' => '1', 'where2' => '1']],
+            [['where' => '1', 'having' => '1', 'where_sub' => '1', 'where_in' => '1']],
             $rows
         );
     }
@@ -361,11 +372,11 @@ class SelectTest extends TestCase
         yield [['[]', [false]], '!=', ['[]', [true]]];
         yield [['[]', [false]], '<', ['[]', [true]]];
 
-        yield [['4'], '=', ['[]', ['04']], true, false, true];
+        yield [['4'], '=', ['[]', ['04']], true];
         yield [['\'04\''], '=', ['[]', [4]], true];
         yield [['4'], '=', ['[]', [4.0]]];
-        yield [['4'], '=', ['[]', ['4.0']], true, true, true];
-        yield [['2.5'], '=', ['[]', ['02.50']], true, false, true];
+        yield [['4'], '=', ['[]', ['4.0']], true, true];
+        yield [['2.5'], '=', ['[]', ['02.50']], true];
         yield [['0'], '=', ['[]', [false]], true];
         yield [['0'], '!=', ['[]', [true]], true];
         yield [['1'], '=', ['[]', [true]], true];
@@ -374,11 +385,11 @@ class SelectTest extends TestCase
         yield [['2 + 2'], '=', ['[]', [4]]];
         yield [['2 + 2'], '=', ['[] + []', [1, 3]]];
         yield [['[] + []', [-1, 5]], '=', ['[] + []', [1, 3]]];
-        yield [['2 + 2'], '=', ['[]', ['4']], true, false, true];
+        yield [['2 + 2'], '=', ['[]', ['4']], true];
         yield [['2 + 2.5'], '=', ['[]', [4.5]]];
         yield [['2 + 2.5'], '=', ['[] + []', [1.5, 3.0]]];
         yield [['[] + []', [-1.5, 6.0]], '=', ['[] + []', [1.5, 3.0]]];
-        yield [['2 + 2.5'], '=', ['[]', ['4.5']], true, false, true];
+        yield [['2 + 2.5'], '=', ['[]', ['4.5']], true];
     }
 
     public function testGroupConcat(): void

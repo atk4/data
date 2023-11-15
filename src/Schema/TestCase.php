@@ -169,6 +169,16 @@ abstract class TestCase extends BaseTestCase
 
     protected function assertSameSql(string $expectedSqliteSql, string $actualSql, string $message = ''): void
     {
+        // remove once SQLite affinity of expressions is fixed natively
+        // related with Atk4\Data\Persistence\Sql\Sqlite\Query::_renderConditionBinary() fix
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
+            do {
+                $actualSqlPrev = $actualSql;
+                $actualSql = preg_replace('~case when typeof\((.+?)\) in \(\'integer\', \'real\'\) then cast\(\1 as numeric\) (.{1,20}?) (.+?) else \1 \2 \3 end~s', '$1 $2 $3', $actualSql);
+                $actualSql = preg_replace('~case when typeof\((.+?)\) in \(\'integer\', \'real\'\) then (.+?) (.{1,20}?) cast\(\1 as numeric\) else \2 \3 \1 end~s', '$2 $3 $1', $actualSql);
+            } while ($actualSql !== $actualSqlPrev);
+        }
+
         self::assertSame($this->convertSqlFromSqlite($expectedSqliteSql), $actualSql, $message);
     }
 
