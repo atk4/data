@@ -273,6 +273,7 @@ class TestUser extends Model
 {
     public $table = 'user';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -290,6 +291,7 @@ class TestRole extends Model
 {
     public $table = 'role';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();

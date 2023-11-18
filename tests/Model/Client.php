@@ -8,6 +8,7 @@ class Client extends User
 {
     public $table = 'client';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();

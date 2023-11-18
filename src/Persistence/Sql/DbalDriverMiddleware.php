@@ -47,11 +47,13 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
         return $platform;
     }
 
+    #[\Override]
     public function getDatabasePlatform(): AbstractPlatform
     {
         return $this->replaceDatabasePlatform(parent::getDatabasePlatform());
     }
 
+    #[\Override]
     public function createDatabasePlatformForVersion($version): AbstractPlatform
     {
         return $this->replaceDatabasePlatform(parent::createDatabasePlatformForVersion($version));
@@ -97,6 +99,7 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
                 $this->convertFx = $convertFx;
             }
 
+            #[\Override]
             public function convert(DbalDriverException $exception, ?DbalQuery $query): DbalDriverConvertedException
             {
                 $convertedException = $this->wrappedExceptionConverter->convert($exception, $query);
@@ -111,6 +114,7 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
         return $convertedException->getPrevious(); // @phpstan-ignore-line
     }
 
+    #[\Override]
     public function getExceptionConverter(): ExceptionConverter
     {
         $exceptionConverter = parent::getExceptionConverter();

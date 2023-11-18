@@ -99,6 +99,7 @@ class Scope extends AbstractScope
         return $this->elements;
     }
 
+    #[\Override]
     protected function onChangeModel(): void
     {
         foreach ($this->elements as $nestedCondition) {
@@ -106,11 +107,13 @@ class Scope extends AbstractScope
         }
     }
 
+    #[\Override]
     public function isEmpty(): bool
     {
         return count($this->elements) === 0;
     }
 
+    #[\Override]
     public function isCompound(): bool
     {
         return count($this->elements) > 1;
@@ -152,6 +155,7 @@ class Scope extends AbstractScope
         return $this;
     }
 
+    #[\Override]
     public function simplify(): AbstractScope
     {
         if (count($this->elements) !== 1) {
@@ -179,6 +183,7 @@ class Scope extends AbstractScope
         return $this;
     }
 
+    #[\Override]
     public function toWords(Model $model = null): string
     {
         $parts = [];

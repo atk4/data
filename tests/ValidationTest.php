@@ -11,6 +11,7 @@ use Atk4\Data\ValidationException;
 
 class MyValidationModel extends Model
 {
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -19,6 +20,7 @@ class MyValidationModel extends Model
         $this->addField('domain');
     }
 
+    #[\Override]
     public function validate(string $intent = null): array
     {
         $errors = [];
@@ -35,6 +37,7 @@ class MyValidationModel extends Model
 
 class BadValidationModel extends Model
 {
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -42,6 +45,7 @@ class BadValidationModel extends Model
         $this->addField('name');
     }
 
+    #[\Override]
     public function validate(string $intent = null): array
     {
         return 'This should be array'; // @phpstan-ignore-line
@@ -53,6 +57,7 @@ class ValidationTest extends TestCase
     /** @var Model */
     public $m;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

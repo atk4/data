@@ -178,6 +178,7 @@ class Csv extends Persistence
         }, $header);
     }
 
+    #[\Override]
     public function tryLoad(Model $model, $id): ?array
     {
         $model->assertIsModel();
@@ -239,6 +240,7 @@ class Csv extends Persistence
         }
     }
 
+    #[\Override]
     protected function insertRaw(Model $model, array $dataRaw)
     {
         if (!$this->mode) {

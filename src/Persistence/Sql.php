@@ -90,6 +90,7 @@ class Sql extends Persistence
         $this->_connection = null; // @phpstan-ignore-line
     }
 
+    #[\Override]
     public function atomic(\Closure $fx)
     {
         return $this->getConnection()->atomic($fx);
@@ -124,6 +125,7 @@ class Sql extends Persistence
         }
     }
 
+    #[\Override]
     protected function initPersistence(Model $model): void
     {
         $model->addMethod('expr', static function (Model $m, ...$args) {
@@ -439,6 +441,7 @@ class Sql extends Persistence
         }
     }
 
+    #[\Override]
     public function tryLoad(Model $model, $id): ?array
     {
         $model->assertIsModel();
@@ -604,6 +607,7 @@ class Sql extends Persistence
         $model->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update]);
     }
 
+    #[\Override]
     protected function deleteRaw(Model $model, $idRaw): void
     {
         $delete = $this->initQuery($model);
@@ -624,6 +628,7 @@ class Sql extends Persistence
         $model->hook(self::HOOK_AFTER_DELETE_QUERY, [$delete]);
     }
 
+    #[\Override]
     public function typecastSaveField(Field $field, $value)
     {
         $value = parent::typecastSaveField($field, $value);
@@ -635,6 +640,7 @@ class Sql extends Persistence
         return $value;
     }
 
+    #[\Override]
     public function typecastLoadField(Field $field, $value)
     {
         $value = parent::typecastLoadField($field, $value);
@@ -646,6 +652,7 @@ class Sql extends Persistence
         return $value;
     }
 
+    #[\Override]
     protected function _typecastSaveField(Field $field, $value)
     {
         $res = parent::_typecastSaveField($field, $value);

@@ -15,6 +15,7 @@ class ModelNestedSqlTest extends TestCase
     /** @var array<array{string, string, 2?: array<int, mixed>}> */
     public array $hookLog = [];
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -56,6 +57,7 @@ class ModelNestedSqlTest extends TestCase
                 return $res;
             }
 
+            #[\Override]
             public function hook(string $spot, array $args = [], HookBreaker &$brokenBy = null)
             {
                 if (!str_starts_with($spot, '__atk4__dynamic_method__') && $spot !== Model::HOOK_NORMALIZE) {
@@ -65,6 +67,7 @@ class ModelNestedSqlTest extends TestCase
                 return parent::hook($spot, $args, $brokenBy);
             }
 
+            #[\Override]
             public function atomic(\Closure $fx)
             {
                 $this->testCaseWeakRef->get()->hookLog[] = [$this->convertValueToLog($this), '>>>'];

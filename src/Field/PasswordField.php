@@ -63,6 +63,7 @@ class PasswordField extends Field
         return \password_get_info($value)['algo'] === \PASSWORD_BCRYPT;
     }
 
+    #[\Override]
     public function normalize($hash): ?string
     {
         $hash = parent::normalize($hash);

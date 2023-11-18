@@ -17,6 +17,7 @@ class CsvTest extends TestCase
     /** @var resource */
     protected $file2;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -25,6 +26,7 @@ class CsvTest extends TestCase
         $this->file2 = fopen('php://memory', 'w+');
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         fclose($this->file);
@@ -56,12 +58,14 @@ class CsvTest extends TestCase
                 $this->handleUnloaded = $fileHandle;
             }
 
+            #[\Override]
             public function openFile(string $mode = 'r'): void
             {
                 $this->handle = $this->handleUnloaded;
                 fseek($this->handle, 0);
             }
 
+            #[\Override]
             public function closeFile(): void
             {
                 if ($this->handle && get_resource_type($this->handle) === 'stream') {

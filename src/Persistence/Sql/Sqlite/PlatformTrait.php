@@ -9,11 +9,13 @@ use Doctrine\DBAL\Schema\TableDiff;
 
 trait PlatformTrait
 {
+    #[\Override]
     public function getIdentifierQuoteCharacter(): string
     {
         return '`';
     }
 
+    #[\Override]
     public function getAlterTableSQL(TableDiff $diff): array
     {
         // fix https://github.com/doctrine/dbal/pull/5501

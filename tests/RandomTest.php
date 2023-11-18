@@ -16,6 +16,7 @@ class Model_Rate extends Model
 {
     public $table = 'rate';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -29,6 +30,7 @@ class Model_Item extends Model
 {
     public $table = 'item';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -42,6 +44,7 @@ class Model_Item2 extends Model
 {
     public $table = 'item';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -56,6 +59,7 @@ class Model_Item3 extends Model
 {
     public $table = 'item';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();

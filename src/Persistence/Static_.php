@@ -125,6 +125,7 @@ class Static_ extends Array_
         parent::__construct($data);
     }
 
+    #[\Override]
     public function add(Model $model, array $defaults = []): void
     {
         if ($model->idField && !$model->hasField($model->idField)) {

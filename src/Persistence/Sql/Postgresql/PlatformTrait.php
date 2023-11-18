@@ -34,16 +34,19 @@ trait PlatformTrait
         return $sqls;
     }
 
+    #[\Override]
     protected function getVarcharTypeDeclarationSQLSnippet($length, $fixed)
     {
         return $fixed ? 'ATK4__CICHAR' : 'ATK4__CIVARCHAR';
     }
 
+    #[\Override]
     public function getClobTypeDeclarationSQL(array $column)
     {
         return 'CITEXT';
     }
 
+    #[\Override]
     protected function initializeDoctrineTypeMappings(): void
     {
         parent::initializeDoctrineTypeMappings();
@@ -52,6 +55,7 @@ trait PlatformTrait
         $this->doctrineTypeMapping['citext'] = 'text';
     }
 
+    #[\Override]
     public function getCurrentDatabaseExpression(bool $includeSchema = false): string
     {
         if ($includeSchema) {
@@ -61,6 +65,7 @@ trait PlatformTrait
         return parent::getCurrentDatabaseExpression();
     }
 
+    #[\Override]
     public function convertBooleansToDatabaseValue($item)
     {
         return $item;
@@ -134,6 +139,7 @@ trait PlatformTrait
         return $sqls;
     }
 
+    #[\Override]
     public function getCreateTableSQL(Table $table, $createFlags = self::CREATE_INDEXES)
     {
         $sqls = array_merge(

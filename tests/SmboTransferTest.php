@@ -11,6 +11,7 @@ use Atk4\Data\Tests\Model\Smbo\Transfer;
 
 class SmboTransferTest extends TestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

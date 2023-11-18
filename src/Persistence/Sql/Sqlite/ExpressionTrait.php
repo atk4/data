@@ -6,6 +6,7 @@ namespace Atk4\Data\Persistence\Sql\Sqlite;
 
 trait ExpressionTrait
 {
+    #[\Override]
     protected function updateRenderBeforeExecute(array $render): array
     {
         [$sql, $params] = $render;

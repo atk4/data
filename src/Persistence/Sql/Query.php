@@ -927,6 +927,7 @@ abstract class Query extends Expression
 
     // }}}
 
+    #[\Override]
     public function __debugInfo(): array
     {
         $arr = [

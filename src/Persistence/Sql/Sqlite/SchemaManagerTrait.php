@@ -11,6 +11,7 @@ use Doctrine\DBAL\Schema\TableDiff;
 
 trait SchemaManagerTrait
 {
+    #[\Override]
     public function alterTable(TableDiff $tableDiff): void
     {
         $hadForeignKeysEnabled = (bool) $this->_conn->executeQuery('PRAGMA foreign_keys')->fetchOne();
@@ -33,6 +34,7 @@ trait SchemaManagerTrait
     // fix collations unescape for SqliteSchemaManager::parseColumnCollationFromSQL() method
     // https://github.com/doctrine/dbal/issues/6129
 
+    #[\Override]
     protected function _getPortableTableColumnList($table, $database, $tableColumns)
     {
         $res = parent::_getPortableTableColumnList($table, $database, $tableColumns);
@@ -54,16 +56,19 @@ trait SchemaManagerTrait
         return (new Identifier($tableName))->getName();
     }
 
+    #[\Override]
     public function listTableDetails($name): Table
     {
         return parent::listTableDetails($this->unquoteTableIdentifier($name));
     }
 
+    #[\Override]
     public function listTableIndexes($table): array
     {
         return parent::listTableIndexes($this->unquoteTableIdentifier($table));
     }
 
+    #[\Override]
     public function listTableForeignKeys($table, $database = null): array
     {
         return parent::listTableForeignKeys($this->unquoteTableIdentifier($table), $database);

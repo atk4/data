@@ -14,6 +14,7 @@ class DcClient extends Model
 {
     public $table = 'client';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -30,6 +31,7 @@ class DcInvoice extends Model
 {
     public $table = 'invoice';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -60,6 +62,7 @@ class DcQuote extends Model
 {
     public $table = 'quote';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -79,6 +82,7 @@ class DcInvoiceLine extends Model
 {
     public $table = 'line';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -103,6 +107,7 @@ class DcQuoteLine extends Model
 {
     public $table = 'line';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -126,6 +131,7 @@ class DcPayment extends Model
 {
     public $table = 'payment';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -140,6 +146,7 @@ class DcPayment extends Model
 
 class DeepCopyTest extends TestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

@@ -24,6 +24,7 @@ class MaterializedField implements Expressionable
         $this->field = $field;
     }
 
+    #[\Override]
     public function getDsqlExpression(Expression $expression): Expression
     {
         return $expression->expr('{}', [$this->field->shortName]);

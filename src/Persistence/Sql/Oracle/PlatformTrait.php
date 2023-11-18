@@ -13,6 +13,7 @@ use Doctrine\DBAL\Schema\UniqueConstraint;
 
 trait PlatformTrait
 {
+    #[\Override]
     public function getVarcharTypeDeclarationSQL(array $column)
     {
         $column['length'] = ($column['length'] ?? 255) * 4;
@@ -23,6 +24,7 @@ trait PlatformTrait
     // Oracle database requires explicit conversion when using binary column,
     // workaround by using a standard non-binary column with custom encoding/typecast
 
+    #[\Override]
     public function getBinaryTypeDeclarationSQL(array $column)
     {
         $lengthEncodedAscii = ($column['length'] ?? 255) * 2 + strlen('atk__binary__u5f8mzx4vsm8g2c9__' . hash('crc32b', ''));
@@ -31,12 +33,14 @@ trait PlatformTrait
         return $this->getVarcharTypeDeclarationSQL($column);
     }
 
+    #[\Override]
     public function getBlobTypeDeclarationSQL(array $column)
     {
         return $this->getClobTypeDeclarationSQL($column);
     }
 
     // TODO create DBAL PR
+    #[\Override]
     public function getFloatDeclarationSQL(array $column)
     {
         return 'BINARY_DOUBLE';
@@ -55,6 +59,7 @@ trait PlatformTrait
     // Oracle DBAL platform autoincrement implementation does not increment like
     // Sqlite or MySQL does, unify the behaviour
 
+    #[\Override]
     public function getCreateSequenceSQL(Sequence $sequence)
     {
         $sequence->setCache(1);
@@ -62,6 +67,7 @@ trait PlatformTrait
         return parent::getCreateSequenceSQL($sequence);
     }
 
+    #[\Override]
     public function getCreateAutoincrementSql($name, $table, $start = 1)
     {
         $sqls = parent::getCreateAutoincrementSql($name, $table, $start);
@@ -110,6 +116,7 @@ trait PlatformTrait
         return $sqls;
     }
 
+    #[\Override]
     public function getCreateIndexSQL(Index $index, $table)
     {
         // workaround https://github.com/doctrine/dbal/issues/5508
@@ -136,6 +143,7 @@ trait PlatformTrait
         return parent::getCreateIndexSQL($index, $table);
     }
 
+    #[\Override]
     public function getListDatabasesSQL(): string
     {
         // ignore Oracle maintained schemas, improve tests performance

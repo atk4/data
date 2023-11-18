@@ -30,6 +30,7 @@ class UaClient extends Model
 
     public $caption = 'UaClient';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -50,6 +51,7 @@ class UserActionTest extends TestCase
     /** @var Persistence\Static_ */
     public $pers;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

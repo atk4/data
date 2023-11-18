@@ -24,6 +24,7 @@ class Query extends BaseQuery
      * https://dba.stackexchange.com/questions/332585/sqlite-comparison-of-the-same-operand-types-behaves-differently
      * https://sqlite.org/forum/forumpost/5f1135146fbc37ab .
      */
+    #[\Override]
     protected function _renderConditionBinary(string $operator, string $sqlLeft, string $sqlRight): string
     {
         // TODO deduplicate the duplicated SQL using https://sqlite.org/forum/info/c9970a37edf11cd1
@@ -56,6 +57,7 @@ class Query extends BaseQuery
         return $res;
     }
 
+    #[\Override]
     protected function _renderConditionInOperator(bool $negated, string $sqlLeft, array $sqlValues): string
     {
         $res = '(' . implode(' or ', array_map(fn ($v) => $this->_renderConditionBinary('=', $sqlLeft, $v), $sqlValues)) . ')';
@@ -66,6 +68,7 @@ class Query extends BaseQuery
         return $res;
     }
 
+    #[\Override]
     public function groupConcat($field, string $separator = ',')
     {
         return $this->expr('group_concat({}, [])', [$field, $separator]);

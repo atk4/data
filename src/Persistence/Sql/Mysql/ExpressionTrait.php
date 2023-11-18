@@ -6,11 +6,13 @@ namespace Atk4\Data\Persistence\Sql\Mysql;
 
 trait ExpressionTrait
 {
+    #[\Override]
     protected function escapeStringLiteral(string $value): string
     {
         return str_replace('\\', '\\\\', parent::escapeStringLiteral($value));
     }
 
+    #[\Override]
     protected function hasNativeNamedParamSupport(): bool
     {
         $dbalConnection = $this->connection->getConnection();
@@ -18,6 +20,7 @@ trait ExpressionTrait
         return !$dbalConnection->getNativeConnection() instanceof \mysqli;
     }
 
+    #[\Override]
     protected function updateRenderBeforeExecute(array $render): array
     {
         [$sql, $params] = $render;

@@ -10,6 +10,7 @@ use Atk4\Data\Persistence;
 
 class Join extends Model\Join
 {
+    #[\Override]
     protected function afterLoad(Model $entity): void
     {
         $model = $this->getOwner();

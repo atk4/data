@@ -222,6 +222,7 @@ class Array_ extends Persistence
         return $rowRemapped;
     }
 
+    #[\Override]
     public function tryLoad(Model $model, $id): ?array
     {
         $model->assertIsModel();
@@ -272,6 +273,7 @@ class Array_ extends Persistence
         return $this->typecastLoadRow($model, $rowData);
     }
 
+    #[\Override]
     protected function insertRaw(Model $model, array $dataRaw)
     {
         $this->seedData($model);
@@ -283,6 +285,7 @@ class Array_ extends Persistence
         return $idRaw;
     }
 
+    #[\Override]
     protected function updateRaw(Model $model, $idRaw, array $dataRaw): void
     {
         $table = $this->seedDataAndGetTable($model);
@@ -290,6 +293,7 @@ class Array_ extends Persistence
         $this->saveRow($model, array_merge($this->filterRowDataOnlyModelFields($model, $table->getRowById($model, $idRaw)->getData()), $dataRaw), $idRaw);
     }
 
+    #[\Override]
     protected function deleteRaw(Model $model, $idRaw): void
     {
         $table = $this->seedDataAndGetTable($model);

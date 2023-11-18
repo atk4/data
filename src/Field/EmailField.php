@@ -23,6 +23,7 @@ class EmailField extends Field
     /** @var bool Allow display name as per RFC2822, eg. format like "Romans <me@example.com>" */
     public $allowName = false;
 
+    #[\Override]
     public function normalize($value)
     {
         $value = parent::normalize($value);

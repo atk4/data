@@ -13,6 +13,7 @@ class Country extends Model
 {
     public $table = 'country';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();

@@ -35,6 +35,7 @@ class LocalObjectTest extends TestCase
         }, null, LocalObjectType::class)();
     }
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -42,6 +43,7 @@ class LocalObjectTest extends TestCase
         self::assertCount(0, $this->getLocalObjectHandles());
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         self::assertCount(0, $this->getLocalObjectHandles());

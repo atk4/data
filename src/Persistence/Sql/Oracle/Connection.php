@@ -16,6 +16,7 @@ class Connection extends BaseConnection
     protected string $expressionClass = Expression::class;
     protected string $queryClass = Query::class;
 
+    #[\Override]
     protected static function createDbalConfiguration(): Configuration
     {
         $configuration = parent::createDbalConfiguration();
@@ -24,9 +25,11 @@ class Connection extends BaseConnection
         // and make comparison of character types case insensitive
         // based on https://github.com/doctrine/dbal/blob/3.6.5/src/Driver/OCI8/Middleware/InitializeSession.php
         $initializeSessionMiddleware = new class() implements Middleware {
+            #[\Override]
             public function wrap(Driver $driver): Driver
             {
                 return new class($driver) extends AbstractDriverMiddleware {
+                    #[\Override]
                     public function connect(
                         #[\SensitiveParameter]
                         array $params
@@ -64,6 +67,7 @@ class Connection extends BaseConnection
         return $configuration;
     }
 
+    #[\Override]
     public function lastInsertId(string $sequence = null): string
     {
         if ($sequence) {

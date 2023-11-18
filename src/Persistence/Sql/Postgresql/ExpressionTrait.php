@@ -8,6 +8,7 @@ use Doctrine\DBAL\Statement;
 
 trait ExpressionTrait
 {
+    #[\Override]
     protected function updateRenderBeforeExecute(array $render): array
     {
         [$sql, $params] = parent::updateRenderBeforeExecute($render);
@@ -40,6 +41,7 @@ trait ExpressionTrait
         return [$sql, $params];
     }
 
+    #[\Override]
     protected function _executeStatement(Statement $statement, bool $fromExecuteStatement)
     {
         $sql = \Closure::bind(static fn () => $statement->sql, null, Statement::class)();

@@ -11,6 +11,7 @@ class Transfer extends Payment
     /** @var static|null */
     public $otherLegCreation;
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();

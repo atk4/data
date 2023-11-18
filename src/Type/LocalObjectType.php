@@ -41,16 +41,19 @@ class LocalObjectType extends DbalTypes\Type
         $this->handlesIndex = [];
     }
 
+    #[\Override]
     public function getName(): string
     {
         return Types::LOCAL_OBJECT;
     }
 
+    #[\Override]
     public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform): string
     {
         return DbalTypes\Type::getType(DbalTypes\Types::STRING)->getSQLDeclaration($fieldDeclaration, $platform);
     }
 
+    #[\Override]
     public function convertToDatabaseValue($value, AbstractPlatform $platform): ?string
     {
         if ($value === null) {
@@ -83,6 +86,7 @@ class LocalObjectType extends DbalTypes\Type
         return $className . '-' . $this->instanceUid . '-' . $handle->getLocalUid();
     }
 
+    #[\Override]
     public function convertToPHPValue($value, AbstractPlatform $platform): ?object
     {
         if ($value === null || trim($value) === '') {
@@ -108,6 +112,7 @@ class LocalObjectType extends DbalTypes\Type
         return $res;
     }
 
+    #[\Override]
     public function requiresSQLCommentHint(AbstractPlatform $platform): bool
     {
         return true;
