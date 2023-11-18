@@ -646,6 +646,19 @@ class Sql extends Persistence
         return $value;
     }
 
+    protected function _typecastSaveField(Field $field, $value)
+    {
+        $res = parent::_typecastSaveField($field, $value);
+
+        // Oracle always converts empty string to null
+        // https://stackoverflow.com/questions/13278773/null-vs-empty-string-in-oracle#13278879
+        if ($res === '' && $this->getDatabasePlatform() instanceof OraclePlatform && !$this->binaryTypeIsEncodeNeeded($field->type)) {
+            return null;
+        }
+
+        return $res;
+    }
+
     public function getFieldSqlExpression(Field $field, Expression $expression): Expression
     {
         if (isset($field->getOwner()->persistenceData['use_table_prefixes'])) {
