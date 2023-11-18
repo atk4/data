@@ -127,15 +127,23 @@ class TypecastingTest extends TestCase
     public function testEmptyValues(): void
     {
         // Oracle always converts empty string to null
-        // see https://stackoverflow.com/questions/13278773/null-vs-empty-string-in-oracle#13278879
-        $emptyStringValue = $this->getDatabasePlatform() instanceof OraclePlatform ? null : '';
+        // https://stackoverflow.com/questions/13278773/null-vs-empty-string-in-oracle#13278879
+        $fixEmptyStringForOracleFx = function ($v) use (&$fixEmptyStringForOracleFx) {
+            if (is_array($v)) {
+                return array_map($fixEmptyStringForOracleFx, $v);
+            } elseif ($v === '' && $this->getDatabasePlatform() instanceof OraclePlatform) {
+                return null;
+            }
+
+            return $v;
+        };
 
         $dbData = [
             'types' => [
                 1 => $row = [
                     'id' => 1,
                     'string' => '',
-                    'notype' => '',
+                    'text' => '',
                     'date' => '',
                     'datetime' => '',
                     'time' => '',
@@ -156,7 +164,7 @@ class TypecastingTest extends TestCase
 
         $m = new Model($this->db, ['table' => 'types']);
         $m->addField('string', ['type' => 'string']);
-        $m->addField('notype');
+        $m->addField('text', ['type' => 'text']);
         $m->addField('date', ['type' => 'date']);
         $m->addField('datetime', ['type' => 'datetime']);
         $m->addField('time', ['type' => 'time']);
@@ -170,8 +178,8 @@ class TypecastingTest extends TestCase
         $m->addField('local-object', ['type' => 'atk4_local_object']);
         $mm = $m->load(1);
 
-        self::assertSame($emptyStringValue, $mm->get('string'));
-        self::assertSame($emptyStringValue, $mm->get('notype'));
+        self::assertSame($fixEmptyStringForOracleFx(''), $mm->get('string'));
+        self::assertSame($fixEmptyStringForOracleFx(''), $mm->get('text'));
         self::assertNull($mm->get('date'));
         self::assertNull($mm->get('datetime'));
         self::assertNull($mm->get('time'));
@@ -188,8 +196,8 @@ class TypecastingTest extends TestCase
         unset($row['local-object']);
         $mm->setMulti($row);
 
-        self::assertSame('', $mm->get('string'));
-        self::assertSame('', $mm->get('notype'));
+        self::assertSame($fixEmptyStringForOracleFx(''), $mm->get('string'));
+        self::assertSame($fixEmptyStringForOracleFx(''), $mm->get('text'));
         self::assertNull($mm->get('date'));
         self::assertNull($mm->get('datetime'));
         self::assertNull($mm->get('time'));
@@ -201,19 +209,17 @@ class TypecastingTest extends TestCase
         self::assertNull($mm->get('json'));
         self::assertNull($mm->get('object'));
         self::assertNull($mm->get('local-object'));
-        if (!$this->getDatabasePlatform() instanceof OraclePlatform) { // @TODO IMPORTANT we probably want to cast to string for Oracle on our own, so dirty array stay clean!
-            self::assertSame([], $mm->getDirtyRef());
-        }
+
+        self::assertSame([], $mm->getDirtyRef());
 
         $mm->save();
-        self::{'assertEquals'}($dbData, $this->getDb());
+        self::assertSame($fixEmptyStringForOracleFx($dbData), $this->getDb());
 
         $m->createEntity()->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
-
         $dbData['types'][2] = [
             'id' => 2,
-            'string' => null,
-            'notype' => null,
+            'string' => '',
+            'text' => '',
             'date' => null,
             'datetime' => null,
             'time' => null,
@@ -226,8 +232,7 @@ class TypecastingTest extends TestCase
             'object' => null,
             'local-object' => null,
         ];
-
-        self::{'assertEquals'}($dbData, $this->getDb());
+        self::assertSame($fixEmptyStringForOracleFx($dbData), $this->getDb());
     }
 
     public function testTypecastNull(): void

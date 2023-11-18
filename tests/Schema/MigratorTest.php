@@ -156,8 +156,8 @@ class MigratorTest extends TestCase
         if ($length === 0) {
             $str = '';
 
-            // TODO Oracle converts empty string to NULL
-            // https://stackoverflow.com/questions/13278773/null-vs-empty-string-in-oracle
+            // TODO Oracle always converts empty string to null
+            // https://stackoverflow.com/questions/13278773/null-vs-empty-string-in-oracle#13278879
             if ($this->getDatabasePlatform() instanceof OraclePlatform && in_array($type, ['string', 'text'], true)) {
                 $str = 'x';
             }
@@ -244,6 +244,7 @@ class MigratorTest extends TestCase
      */
     public function provideCharacterTypeFieldLongCases(): iterable
     {
+        yield ['string', false, 0];
         yield ['binary', true, 0];
         yield ['text', false, 0];
         yield ['blob', true, 0];
