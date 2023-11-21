@@ -297,6 +297,48 @@ class TypecastingTest extends TestCase
         $this->db->typecastLoadField(new Field(['type' => 'datetime']), new \DateTime()); // @phpstan-ignore-line
     }
 
+    public function testSaveFieldConvertedWarningNotWrappedException(): void
+    {
+        $this->executeFxWithTemporaryType('with-warning', new class() extends DbalTypes\IntegerType {
+            public function convertToDatabaseValue($value, AbstractPlatform $platform)
+            {
+                throw new \ErrorException('Converted PHP warning');
+            }
+        }, function () {
+            $this->expectException(\ErrorException::class);
+            $this->expectExceptionMessage('Converted PHP warning');
+            $this->db->typecastSaveField(new Field(['type' => 'with-warning']), 1);
+        });
+    }
+
+    public function testLoadFieldConvertedWarningNotWrappedException(): void
+    {
+        $this->executeFxWithTemporaryType('with-warning', new class() extends DbalTypes\IntegerType {
+            public function convertToPHPValue($value, AbstractPlatform $platform)
+            {
+                throw new \ErrorException('Converted PHP warning');
+            }
+        }, function () {
+            $this->expectException(\ErrorException::class);
+            $this->expectExceptionMessage('Converted PHP warning');
+            $this->db->typecastLoadField(new Field(['type' => 'with-warning']), 1);
+        });
+    }
+
+    public function testNormalizeConvertedWarningNotWrappedException(): void
+    {
+        $this->executeFxWithTemporaryType('with-warning', new class() extends DbalTypes\IntegerType {
+            public function convertToDatabaseValue($value, AbstractPlatform $platform)
+            {
+                throw new \ErrorException('Converted PHP warning');
+            }
+        }, function () {
+            $this->expectException(\ErrorException::class);
+            $this->expectExceptionMessage('Converted PHP warning');
+            (new Field(['type' => 'with-warning']))->normalize(1);
+        });
+    }
+
     public function testTypeCustom1(): void
     {
         $dbData = [
