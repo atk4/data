@@ -429,6 +429,10 @@ abstract class Persistence
 
             return $v;
         } catch (\Exception $e) {
+            if ($e instanceof \ErrorException) {
+                throw $e;
+            }
+
             throw (new Exception('Typecast save error', 0, $e))
                 ->addMoreInfo('field', $field->shortName);
         }
@@ -453,6 +457,10 @@ abstract class Persistence
         try {
             return $this->_typecastLoadField($field, $value);
         } catch (\Exception $e) {
+            if ($e instanceof \ErrorException) {
+                throw $e;
+            }
+
             throw (new Exception('Typecast parse error', 0, $e))
                 ->addMoreInfo('field', $field->shortName);
         }
