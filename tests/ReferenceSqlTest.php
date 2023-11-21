@@ -274,6 +274,23 @@ class ReferenceSqlTest extends TestCase
         );
     }
 
+    /**
+     * @param \Closure(): void $fx
+     */
+    protected function executeFxWithTemporaryType(string $name, DbalTypes\Type $type, \Closure $fx): void
+    {
+        $typeRegistry = DbalTypes\Type::getTypeRegistry();
+
+        $typeRegistry->register($name, $type);
+        try {
+            $fx();
+        } finally {
+            \Closure::bind(static function () use ($typeRegistry, $name) {
+                unset($typeRegistry->instances[$name]);
+            }, null, DbalTypes\TypeRegistry::class)();
+        }
+    }
+
     public function testReferenceWithObjectId(): void
     {
         $this->setDb([
@@ -335,8 +352,7 @@ class ReferenceSqlTest extends TestCase
         };
         $integerWrappedTypeName = $integerWrappedType->getName(); // @phpstan-ignore-line
 
-        DbalTypes\Type::addType($integerWrappedTypeName, get_class($integerWrappedType));
-        try {
+        $this->executeFxWithTemporaryType($integerWrappedTypeName, $integerWrappedType, function () use ($integerWrappedType, $integerWrappedTypeName) {
             $file = new Model($this->db, ['table' => 'file']);
             $file->getField('id')->type = $integerWrappedTypeName;
             $file->addField('name');
@@ -408,12 +424,7 @@ class ReferenceSqlTest extends TestCase
             self::{'assertEquals'}([
                 ['id' => $createWrappedIntegerFx(2), 'name' => 'u', 'parentDirectoryId' => null],
             ], $fileEntity->getModel()->export());
-        } finally {
-            \Closure::bind(static function () use ($integerWrappedTypeName) {
-                $dbalTypeRegistry = DbalTypes\Type::getTypeRegistry();
-                unset($dbalTypeRegistry->instances[$integerWrappedTypeName]);
-            }, null, DbalTypes\TypeRegistry::class)();
-        }
+        });
     }
 
     public function testAggregateHasMany(): void
