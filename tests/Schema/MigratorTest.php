@@ -111,7 +111,7 @@ class MigratorTest extends TestCase
     /**
      * @return iterable<list<mixed>>
      */
-    public function provideCharacterTypeFieldCaseSensitivityCases(): iterable
+    public static function provideCharacterTypeFieldCaseSensitivityCases(): iterable
     {
         yield ['string', false];
         yield ['binary', true];
@@ -242,7 +242,7 @@ class MigratorTest extends TestCase
     /**
      * @return iterable<list<mixed>>
      */
-    public function provideCharacterTypeFieldLongCases(): iterable
+    public static function provideCharacterTypeFieldLongCases(): iterable
     {
         yield ['string', false, 0];
         yield ['binary', true, 0];

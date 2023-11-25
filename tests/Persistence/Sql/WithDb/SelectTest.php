@@ -320,7 +320,7 @@ class SelectTest extends TestCase
     /**
      * @return iterable<list<mixed>>
      */
-    public function provideWhereNumericCompareCases(): iterable
+    public static function provideWhereNumericCompareCases(): iterable
     {
         yield [['4'], '=', ['4']];
         yield [['0'], '=', ['0']];

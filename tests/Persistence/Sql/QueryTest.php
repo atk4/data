@@ -683,7 +683,7 @@ class QueryTest extends TestCase
     /**
      * @return iterable<list<mixed>>
      */
-    public function provideWhereUnsupportedOperatorCases(): iterable
+    public static function provideWhereUnsupportedOperatorCases(): iterable
     {
         // unsupported operators
         yield ['<>', 2];

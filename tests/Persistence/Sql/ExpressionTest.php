@@ -143,7 +143,7 @@ class ExpressionTest extends TestCase
     /**
      * @return iterable<list<mixed>>
      */
-    public function provideNoTemplatingInSqlStringCases(): iterable
+    public static function provideNoTemplatingInSqlStringCases(): iterable
     {
         $testStrs = [];
         foreach (['\'', '"', '`'] as $enclosureChar) {

@@ -155,7 +155,7 @@ class FieldTest extends TestCase
     /**
      * @return iterable<list<mixed>>
      */
-    public function provideRequiredNumericZeroExceptionCases(): iterable
+    public static function provideRequiredNumericZeroExceptionCases(): iterable
     {
         yield ['integer'];
         yield ['float'];
