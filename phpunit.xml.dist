@@ -12,11 +12,13 @@
     <extensions>
         <bootstrap class="Ergebnis\PHPUnit\SlowTestDetector\Extension" />
     </extensions>
-    <coverage>
+    <source>
         <include>
             <directory>src</directory>
             <directory>tests</directory>
         </include>
+    </source>
+    <coverage>
         <report>
             <php outputFile="coverage/phpunit.cov" />
         </report>
