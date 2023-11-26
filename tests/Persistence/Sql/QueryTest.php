@@ -59,6 +59,16 @@ class QueryTest extends TestCase
         return $this->q()->expr($template, $arguments);
     }
 
+    /**
+     * @param mixed ...$args
+     *
+     * @return mixed
+     */
+    private function callProtected(object $obj, string $name, ...$args)
+    {
+        return \Closure::bind(static fn () => $obj->{$name}(...$args), null, $obj)();
+    }
+
     public function testConstruct(): void
     {
         self::assertSame(

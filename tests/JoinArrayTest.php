@@ -17,8 +17,7 @@ class JoinArrayTest extends TestCase
     private function getInternalPersistenceData(Persistence\Array_ $db): array
     {
         $data = [];
-        /** @var Persistence\Array_\Db\Table $table */
-        foreach ($this->getProtected($db, 'data') as $table) {
+        foreach (\Closure::bind(static fn () => $db->data, null, Persistence\Array_::class)() as $table) {
             foreach ($table->getRows() as $row) {
                 $rowData = $row->getData();
                 $id = $rowData['id'];
@@ -28,6 +27,14 @@ class JoinArrayTest extends TestCase
         }
 
         return $data;
+    }
+
+    /**
+     * @return mixed
+     */
+    private function getProtected(object $obj, string $name)
+    {
+        return \Closure::bind(static fn () => $obj->{$name}, null, $obj)();
     }
 
     public function testDirection(): void

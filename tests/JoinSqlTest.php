@@ -48,6 +48,14 @@ class JoinSqlTest extends TestCase
         ]);
     }
 
+    /**
+     * @return mixed
+     */
+    private function getProtected(object $obj, string $name)
+    {
+        return \Closure::bind(static fn () => $obj->{$name}, null, $obj)();
+    }
+
     public function testDirection(): void
     {
         $m = new Model($this->db, ['table' => 'user']);
