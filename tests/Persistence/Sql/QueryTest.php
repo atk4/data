@@ -59,6 +59,16 @@ class QueryTest extends TestCase
         return $this->q()->expr($template, $arguments);
     }
 
+    /**
+     * @param mixed ...$args
+     *
+     * @return mixed
+     */
+    private function callProtected(object $obj, string $name, ...$args)
+    {
+        return \Closure::bind(static fn () => $obj->{$name}(...$args), null, $obj)();
+    }
+
     public function testConstruct(): void
     {
         self::assertSame(
@@ -683,7 +693,7 @@ class QueryTest extends TestCase
     /**
      * @return iterable<list<mixed>>
      */
-    public function provideWhereUnsupportedOperatorCases(): iterable
+    public static function provideWhereUnsupportedOperatorCases(): iterable
     {
         // unsupported operators
         yield ['<>', 2];

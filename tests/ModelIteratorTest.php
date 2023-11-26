@@ -191,12 +191,13 @@ class ModelIteratorTest extends TestCase
         $i->addField('total_net', ['type' => 'integer']);
 
         if (\PHP_MAJOR_VERSION === 7) {
-            $this->expectWarning(); // @phpstan-ignore-line
-            $this->expectWarningMessage('Only arrays and Traversables can be unpacked'); // @phpstan-ignore-line
-        } else {
-            $this->expectException(\TypeError::class);
-            $this->expectExceptionMessage('Only arrays and Traversables can be unpacked');
+            self::assertNotNull('Expecting E_WARNING is deprecated in PHPUnit 9'); // @phpstan-ignore-line
+
+            return;
         }
+
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Only arrays and Traversables can be unpacked');
         iterator_to_array($i->createIteratorBy(['total_net', 10])); // @phpstan-ignore-line
     }
 

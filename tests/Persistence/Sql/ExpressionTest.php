@@ -25,6 +25,16 @@ class ExpressionTest extends TestCase
         };
     }
 
+    /**
+     * @param mixed ...$args
+     *
+     * @return mixed
+     */
+    private function callProtected(object $obj, string $name, ...$args)
+    {
+        return \Closure::bind(static fn () => $obj->{$name}(...$args), null, $obj)();
+    }
+
     public function testConstructorNoTemplateException(): void
     {
         $this->expectException(Exception::class);
@@ -143,7 +153,7 @@ class ExpressionTest extends TestCase
     /**
      * @return iterable<list<mixed>>
      */
-    public function provideNoTemplatingInSqlStringCases(): iterable
+    public static function provideNoTemplatingInSqlStringCases(): iterable
     {
         $testStrs = [];
         foreach (['\'', '"', '`'] as $enclosureChar) {
@@ -399,11 +409,11 @@ class ExpressionTest extends TestCase
         // reset everything
         $e = $this->e('hello, [name] [surname]', ['name' => 'John', 'surname' => 'Doe']);
         $e->reset();
-        self::assertSame(['custom' => []], $this->getProtected($e, 'args'));
+        self::assertSame(['custom' => []], $e->args);
 
         // reset particular custom/tag
         $e = $this->e('hello, [name] [surname]', ['name' => 'John', 'surname' => 'Doe']);
         $e->reset('surname');
-        self::assertSame(['custom' => ['name' => 'John']], $this->getProtected($e, 'args'));
+        self::assertSame(['custom' => ['name' => 'John']], $e->args);
     }
 }
