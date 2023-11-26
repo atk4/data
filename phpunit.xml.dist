@@ -9,9 +9,9 @@
             <directory>tests</directory>
         </testsuite>
     </testsuites>
-    <listeners>
-        <listener class="JohnKary\PHPUnit\Listener\SpeedTrapListener" />
-    </listeners>
+    <extensions>
+        <bootstrap class="Ergebnis\PHPUnit\SlowTestDetector\Extension" />
+    </extensions>
     <coverage>
         <include>
             <directory>src</directory>
