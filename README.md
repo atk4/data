@@ -14,7 +14,7 @@ Agile Data is a framework for defining your "business layer" which is separate f
 
 [![Build](https://github.com/atk4/data/actions/workflows/test-unit.yml/badge.svg?branch=develop)](https://github.com/atk4/data/actions?query=branch:develop)
 [![CodeCov](https://codecov.io/gh/atk4/data/branch/develop/graph/badge.svg)](https://codecov.io/gh/atk4/data)
-[![GitHub release](https://img.shields.io/github/release/atk4/data.svg)](CHANGELOG.md)
+[![GitHub release](https://img.shields.io/github/release/atk4/data.svg)](https://github.com/atk4/data/releases)
 [![Code Climate](https://codeclimate.com/github/atk4/data/badges/gpa.svg)](https://codeclimate.com/github/atk4/data)
 
 Quick-Links: [Documentation](https://atk4-data.readthedocs.io) | [Discord channel](https://discord.gg/QVKSk2B) | [ATK UI](https://github.com/atk4/ui)
@@ -53,7 +53,7 @@ $api->rest('/clients', new Client($db));
 
 ## Extensibility and Add-ons
 
-ATK Data is extensible and offers wide range of add-ons like [Audit](https://github.com/atk4/audit). Developer may also implement advanced DB concepts like "[disjoint subtypes](https://nearly.guru/blog/data/disjoint-subtypes-in-php)" - allowing to efficiently persist object-oriented data in your database.
+ATK Data is extensible and offers wide range of add-ons like [Audit](https://github.com/atk4/audit).
 
 Regardless of how your model is constructed and what database backend is used, it can easily be used in conjunction with any 3rd party add-on, like [Charts](https://github.com/atk4/chart).
 
@@ -65,7 +65,7 @@ Designed for medium to large PHP applications and frameworks, ATK Data is a clea
 - Execute more on the server. Agile Data converts query logic into server-specific language (e.g. SQL) then delivers you the exact data rows / columns which you need from a single statement, no matter how complex.
 - Data architecture transparency. As your database structure change, your application code does not need to be refactored. Replace fields with expressions, denormalize/normalize data, join and merge tables. Only update your application in a single place.
 - Extensions. "[Audit](https://github.com/atk4/audit)" - transparently record all edits, updates and deletes with "Undo" support.
-- [Out of the box UI](https://github.com/atk4/ui). Who wants to build Admin systems today? Tens of professional components: [Crud](https://ui.atk4.org/demos/crud.php), [Grid](https://ui.atk4.org/demos/grid.php), [Form](https://ui.atk4.org/demos/form3.php) as well as add-ons like [Charts](https://github.com/atk4/chart) can be added to your PHP app with 3-lines of code.
+- [Out of the box UI](https://github.com/atk4/ui). Who wants to build Admin systems today? Tens of professional components: [Crud](https://ui.atk4.org/demos/collection/crud.php), [Grid](https://ui.atk4.org/demos/collection/grid.php), [Form](https://ui.atk4.org/demos/form/form.php) as well as add-ons like [Charts](https://github.com/atk4/chart) can be added to your PHP app with 3-lines of code.
 - RestAPI server for Agile Data is currently under development.
 - Agile Data and all extensions mentioned above are licensed under MIT and are free to use.
 
@@ -285,11 +285,11 @@ We put all our focus into making a good quality software and give it to you for 
 
 #### Q: Is there training material for Agile Data / Agile UI
 
-We are working on it. For now - visit our [gitter.im](https://gitter.im/atk4/atk4).
+We are working on it. For now - visit our [![Discord](https://img.shields.io/badge/discord-User_Forum-green.svg)](https://discord.gg/QVKSk2B).
 
 #### Q: How can I help / Contribute?
 
-Say hi. We enjoy meeting new people regardless of how good they are with PHP and the framework (https://gitter.im/atk4/atk4).
+Say hi. We enjoy meeting new people regardless of how good they are with PHP and the framework [![Discord](https://img.shields.io/badge/discord-User_Forum-green.svg)](https://discord.gg/QVKSk2B).
 
 If you want to help, we have a special tag [Help Wanted](https://github.com/atk4/data/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) in our issue system:
 
@@ -713,6 +713,5 @@ Please consider our other MIT-licensed project - [Agile UI](https://atk4.org/) t
 
 ## Community and Support
 
-[![Gitter](https://img.shields.io/gitter/room/atk4/data.svg)](https://gitter.im/atk4/dataset?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Stack Overflow Community](https://img.shields.io/stackexchange/stackoverflow/t/atk4.svg)](https://stackoverflow.com/questions/ask?tags=atk4)
-[![Discord User forum](https://img.shields.io/badge/discord-User_Forum-green.svg)](https://forum.agiletoolkit.org/c/44)
+[![Discord Community](https://img.shields.io/badge/discord-User_Forum-green.svg)](https://discord.gg/QVKSk2B)
