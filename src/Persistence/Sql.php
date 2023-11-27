@@ -80,9 +80,7 @@ class Sql extends Persistence
         return $this->_connection;
     }
 
-    /**
-     * Disconnect from database explicitly.
-     */
+    #[\Override]
     public function disconnect(): void
     {
         parent::disconnect();
@@ -96,11 +94,13 @@ class Sql extends Persistence
         return $this->getConnection()->atomic($fx);
     }
 
+    #[\Override]
     public function getDatabasePlatform(): AbstractPlatform
     {
         return $this->getConnection()->getDatabasePlatform();
     }
 
+    #[\Override]
     public function add(Model $model, array $defaults = []): void
     {
         $defaults = array_merge([
@@ -547,6 +547,7 @@ class Sql extends Persistence
     /**
      * @param array<scalar|Expressionable|null> $dataRaw
      */
+    #[\Override]
     protected function insertRaw(Model $model, array $dataRaw)
     {
         $insert = $this->initQuery($model);
@@ -583,6 +584,7 @@ class Sql extends Persistence
     /**
      * @param array<scalar|Expressionable|null> $dataRaw
      */
+    #[\Override]
     protected function updateRaw(Model $model, $idRaw, array $dataRaw): void
     {
         $update = $this->initQuery($model);

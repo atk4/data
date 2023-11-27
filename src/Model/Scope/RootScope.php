@@ -45,7 +45,7 @@ class RootScope extends Model\Scope
     }
 
     #[\Override]
-    public function negate()
+    public function negate(): self
     {
         throw new Exception('Model scope cannot be negated');
     }

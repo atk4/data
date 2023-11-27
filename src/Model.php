@@ -1775,6 +1775,7 @@ class Model implements \IteratorAggregate
      *
      * @return \Traversable<static>
      */
+    #[\Override]
     final public function getIterator(): \Traversable
     {
         return $this->createIteratorBy([]);

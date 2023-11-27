@@ -80,6 +80,7 @@ class HasMany extends Reference
     /**
      * Returns referenced model with condition set.
      */
+    #[\Override]
     public function ref(Model $ourModel, array $defaults = []): Model
     {
         $ourModel = $this->getOurModel($ourModel);

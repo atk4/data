@@ -953,6 +953,7 @@ abstract class Query extends Expression
     /**
      * Renders query template. If the template is not explicitly use "select" mode.
      */
+    #[\Override]
     public function render(): array
     {
         if ($this->template === null) {
@@ -971,6 +972,7 @@ abstract class Query extends Expression
         return parent::render();
     }
 
+    #[\Override]
     protected function renderNested(): array
     {
         if (isset($this->args['order']) && !isset($this->args['limit'])) {
@@ -1015,12 +1017,7 @@ abstract class Query extends Expression
         return $this;
     }
 
-    /**
-     * Create Expression object with the same connection.
-     *
-     * @param string|array<string, mixed> $template
-     * @param array<int|string, mixed>    $arguments
-     */
+    #[\Override]
     public function expr($template = [], array $arguments = []): Expression
     {
         $class = $this->expressionClass;

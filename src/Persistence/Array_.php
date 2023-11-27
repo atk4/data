@@ -166,9 +166,7 @@ class Array_ extends Persistence
         }
     }
 
-    /**
-     * @param array<string, mixed> $defaults
-     */
+    #[\Override]
     public function add(Model $model, array $defaults = []): void
     {
         $defaults = array_merge([

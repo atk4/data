@@ -264,7 +264,8 @@ class Condition extends AbstractScope
         return array_filter([$this->key, $this->operator, $this->value]) ? false : true;
     }
 
-    public function clear()
+    #[\Override]
+    public function clear(): self
     {
         $this->key = null; // @phpstan-ignore-line
         $this->operator = null;
@@ -273,7 +274,8 @@ class Condition extends AbstractScope
         return $this;
     }
 
-    public function negate()
+    #[\Override]
+    public function negate(): self
     {
         if (isset(self::$operators[$this->operator]['negate'])) {
             $this->operator = self::$operators[$this->operator]['negate'];

@@ -62,6 +62,7 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
     /**
      * @return AbstractSchemaManager<AbstractPlatform>
      */
+    #[\Override]
     public function getSchemaManager(DbalConnection $connection, AbstractPlatform $platform): AbstractSchemaManager
     {
         if ($platform instanceof SQLitePlatform) {
