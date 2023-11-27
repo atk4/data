@@ -71,6 +71,7 @@ trait ExpressionTrait
         return $this->expr($expr, $exprArgs); // @phpstan-ignore-line
     }
 
+    #[\Override]
     protected function updateRenderBeforeExecute(array $render): array
     {
         [$sql, $params] = parent::updateRenderBeforeExecute($render);

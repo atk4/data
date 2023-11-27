@@ -17,6 +17,7 @@ class Query extends BaseQuery
 
     protected string $templateUpdate = 'update [table][join] set [set] [where]';
 
+    #[\Override]
     public function groupConcat($field, string $separator = ',')
     {
         return $this->expr('group_concat({} separator ' . $this->escapeStringLiteral($separator) . ')', [$field]);

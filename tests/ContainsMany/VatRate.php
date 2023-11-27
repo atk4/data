@@ -14,6 +14,7 @@ class VatRate extends Model
 {
     public $table = 'vat_rate';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();

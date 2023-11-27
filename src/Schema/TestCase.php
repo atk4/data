@@ -40,6 +40,7 @@ abstract class TestCase extends BaseTestCase
         return null;
     }
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -47,6 +48,7 @@ abstract class TestCase extends BaseTestCase
         $this->db = new TestSqlPersistence();
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         $debugOrig = $this->debug;
@@ -121,6 +123,7 @@ abstract class TestCase extends BaseTestCase
         );
 
         $exprNoRender = new class($sql, $params) extends Expression {
+            #[\Override]
             public function render(): array
             {
                 return [$this->template, $this->args['custom']];

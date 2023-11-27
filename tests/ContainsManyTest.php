@@ -20,6 +20,7 @@ use Atk4\Data\Tests\ContainsMany\VatRate;
  */
 class ContainsManyTest extends TestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

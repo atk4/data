@@ -14,6 +14,7 @@ class Invoice extends Model
 {
     public $table = 'invoice';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();

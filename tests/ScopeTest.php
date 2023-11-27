@@ -17,6 +17,7 @@ class SCountry extends Model
     public $table = 'country';
     public $caption = 'Country';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -36,6 +37,7 @@ class SUser extends Model
     public $table = 'user';
     public $caption = 'User';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -57,6 +59,7 @@ class STicket extends Model
     public $table = 'ticket';
     public $caption = 'Ticket';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();

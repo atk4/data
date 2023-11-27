@@ -102,6 +102,7 @@ class AggregateModel extends Model
         return $this;
     }
 
+    #[\Override]
     public function addField(string $name, $seed = []): Field
     {
         if ($seed instanceof SqlExpressionField) {
@@ -120,6 +121,7 @@ class AggregateModel extends Model
         return parent::addField($name, $seed);
     }
 
+    #[\Override]
     public function action(string $mode, array $args = [])
     {
         switch ($mode) {
@@ -173,6 +175,7 @@ class AggregateModel extends Model
         }
     }
 
+    #[\Override]
     public function __debugInfo(): array
     {
         return array_merge(parent::__debugInfo(), [

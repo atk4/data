@@ -23,6 +23,7 @@ class LCountry extends Model
 {
     public $table = 'country';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -57,6 +58,7 @@ class LUser extends Model
 {
     public $table = 'user';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -92,6 +94,7 @@ class LFriend extends Model
 
     protected bool $skipReverse = false;
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -132,6 +135,7 @@ class LFriend extends Model
 
 class LookupSqlTest extends TestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

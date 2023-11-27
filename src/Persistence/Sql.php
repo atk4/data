@@ -80,9 +80,7 @@ class Sql extends Persistence
         return $this->_connection;
     }
 
-    /**
-     * Disconnect from database explicitly.
-     */
+    #[\Override]
     public function disconnect(): void
     {
         parent::disconnect();
@@ -90,16 +88,19 @@ class Sql extends Persistence
         $this->_connection = null; // @phpstan-ignore-line
     }
 
+    #[\Override]
     public function atomic(\Closure $fx)
     {
         return $this->getConnection()->atomic($fx);
     }
 
+    #[\Override]
     public function getDatabasePlatform(): AbstractPlatform
     {
         return $this->getConnection()->getDatabasePlatform();
     }
 
+    #[\Override]
     public function add(Model $model, array $defaults = []): void
     {
         $defaults = array_merge([
@@ -124,6 +125,7 @@ class Sql extends Persistence
         }
     }
 
+    #[\Override]
     protected function initPersistence(Model $model): void
     {
         $model->addMethod('expr', static function (Model $m, ...$args) {
@@ -439,6 +441,7 @@ class Sql extends Persistence
         }
     }
 
+    #[\Override]
     public function tryLoad(Model $model, $id): ?array
     {
         $model->assertIsModel();
@@ -544,6 +547,7 @@ class Sql extends Persistence
     /**
      * @param array<scalar|Expressionable|null> $dataRaw
      */
+    #[\Override]
     protected function insertRaw(Model $model, array $dataRaw)
     {
         $insert = $this->initQuery($model);
@@ -580,6 +584,7 @@ class Sql extends Persistence
     /**
      * @param array<scalar|Expressionable|null> $dataRaw
      */
+    #[\Override]
     protected function updateRaw(Model $model, $idRaw, array $dataRaw): void
     {
         $update = $this->initQuery($model);
@@ -604,6 +609,7 @@ class Sql extends Persistence
         $model->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update]);
     }
 
+    #[\Override]
     protected function deleteRaw(Model $model, $idRaw): void
     {
         $delete = $this->initQuery($model);
@@ -624,6 +630,7 @@ class Sql extends Persistence
         $model->hook(self::HOOK_AFTER_DELETE_QUERY, [$delete]);
     }
 
+    #[\Override]
     public function typecastSaveField(Field $field, $value)
     {
         $value = parent::typecastSaveField($field, $value);
@@ -635,6 +642,7 @@ class Sql extends Persistence
         return $value;
     }
 
+    #[\Override]
     public function typecastLoadField(Field $field, $value)
     {
         $value = parent::typecastLoadField($field, $value);
@@ -646,6 +654,7 @@ class Sql extends Persistence
         return $value;
     }
 
+    #[\Override]
     protected function _typecastSaveField(Field $field, $value)
     {
         $res = parent::_typecastSaveField($field, $value);

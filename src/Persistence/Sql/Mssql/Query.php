@@ -32,6 +32,7 @@ class Query extends BaseQuery
         end catch
         EOF;
 
+    #[\Override]
     protected function deduplicateRenderOrder(array $sqls): array
     {
         $res = [];
@@ -45,6 +46,7 @@ class Query extends BaseQuery
         return array_values($res);
     }
 
+    #[\Override]
     protected function _renderLimit(): ?string
     {
         if (!isset($this->args['limit'])) {
@@ -64,11 +66,13 @@ class Query extends BaseQuery
             . ' fetch next ' . $cnt . ' rows only';
     }
 
+    #[\Override]
     public function groupConcat($field, string $separator = ',')
     {
         return $this->expr('string_agg({}, ' . $this->escapeStringLiteral($separator) . ')', [$field]);
     }
 
+    #[\Override]
     public function exists()
     {
         return $this->dsql()->mode('select')->field(

@@ -136,6 +136,7 @@ class HasOneSql extends HasOne
         return $theirModel;
     }
 
+    #[\Override]
     public function ref(Model $ourModel, array $defaults = []): Model
     {
         $theirModel = parent::ref($ourModel, $defaults);

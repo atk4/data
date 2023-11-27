@@ -436,8 +436,10 @@ class Field implements Expressionable
 
     /**
      * When field is used as expression, this method will be called.
-     * Universal way to convert ourselves to expression. Off-load implementation into persistence.
+     *
+     * Off-load implementation into persistence.
      */
+    #[\Override]
     public function getDsqlExpression(Expression $expression): Expression
     {
         $this->getOwner()->assertHasPersistence();

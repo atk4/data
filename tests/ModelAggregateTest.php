@@ -11,6 +11,7 @@ use Atk4\Data\Schema\TestCase;
 
 class ModelAggregateTest extends TestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

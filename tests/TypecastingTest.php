@@ -18,6 +18,7 @@ class TypecastingTest extends TestCase
     /** @var string */
     private $defaultTzBackup;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -25,6 +26,7 @@ class TypecastingTest extends TestCase
         $this->defaultTzBackup = date_default_timezone_get();
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         date_default_timezone_set($this->defaultTzBackup);
@@ -300,6 +302,7 @@ class TypecastingTest extends TestCase
     public function testSaveFieldConvertedWarningNotWrappedException(): void
     {
         $this->executeFxWithTemporaryType('with-warning', new class() extends DbalTypes\IntegerType {
+            #[\Override]
             public function convertToDatabaseValue($value, AbstractPlatform $platform)
             {
                 throw new \ErrorException('Converted PHP warning');
@@ -314,6 +317,7 @@ class TypecastingTest extends TestCase
     public function testLoadFieldConvertedWarningNotWrappedException(): void
     {
         $this->executeFxWithTemporaryType('with-warning', new class() extends DbalTypes\IntegerType {
+            #[\Override]
             public function convertToPHPValue($value, AbstractPlatform $platform)
             {
                 throw new \ErrorException('Converted PHP warning');
@@ -328,6 +332,7 @@ class TypecastingTest extends TestCase
     public function testNormalizeConvertedWarningNotWrappedException(): void
     {
         $this->executeFxWithTemporaryType('with-warning', new class() extends DbalTypes\IntegerType {
+            #[\Override]
             public function convertToDatabaseValue($value, AbstractPlatform $platform)
             {
                 throw new \ErrorException('Converted PHP warning');

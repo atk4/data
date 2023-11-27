@@ -13,6 +13,7 @@ class ReadOnlyModeTest extends TestCase
     /** @var Model */
     public $m;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

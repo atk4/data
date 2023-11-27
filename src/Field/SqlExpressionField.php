@@ -35,18 +35,13 @@ class SqlExpressionField extends Field
     /** @var string Specifies which field to use. */
     public $field;
 
-    /**
-     * Should this field use alias?
-     * Expression fields always need alias.
-     */
+    #[\Override]
     public function useAlias(): bool
     {
         return true;
     }
 
-    /**
-     * When field is used as expression, this method will be called.
-     */
+    #[\Override]
     public function getDsqlExpression(Expression $expression): Expression
     {
         $expr = $this->expr;

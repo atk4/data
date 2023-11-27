@@ -18,6 +18,7 @@ final class TestSqlPersistence extends Persistence\Sql
     public function __construct() // @phpstan-ignore-line
     {}
 
+    #[\Override]
     public function getConnection(): Persistence\Sql\Connection
     {
         \Closure::bind(function () {
@@ -34,6 +35,7 @@ final class TestSqlPersistence extends Persistence\Sql
                 $this->getConnection()->getConnection()->getConfiguration()->setSQLLogger(
                     // @phpstan-ignore-next-line SQLLogger is deprecated
                     new class() implements SQLLogger {
+                        #[\Override]
                         public function startQuery($sql, array $params = null, array $types = null): void
                         {
                             // log transaction savepoint operations only once
@@ -51,6 +53,7 @@ final class TestSqlPersistence extends Persistence\Sql
                             \Closure::bind(static fn () => $test->logQuery($sql, $params ?? [], $types ?? []), null, TestCase::class)(); // @phpstan-ignore-line
                         }
 
+                        #[\Override]
                         public function stopQuery(): void {}
                     }
                 );

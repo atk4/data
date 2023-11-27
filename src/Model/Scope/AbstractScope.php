@@ -49,17 +49,16 @@ abstract class AbstractScope
     /**
      * Empty the scope object.
      *
-     * @return static
+     * @return $this
      */
-    abstract public function clear();
+    abstract public function clear(): self;
 
     /**
-     * Negate the scope object
-     * e.g from '=' to '!='.
+     * Negate the scope object e.g. from '=' to '!='.
      *
-     * @return static
+     * @return $this
      */
-    abstract public function negate();
+    abstract public function negate(): self;
 
     /**
      * Return if scope has any conditions.

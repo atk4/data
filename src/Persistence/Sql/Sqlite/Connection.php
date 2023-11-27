@@ -13,6 +13,7 @@ class Connection extends BaseConnection
     protected string $expressionClass = Expression::class;
     protected string $queryClass = Query::class;
 
+    #[\Override]
     protected static function createDbalConfiguration(): Configuration
     {
         $configuration = parent::createDbalConfiguration();

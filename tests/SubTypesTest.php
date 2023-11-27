@@ -12,6 +12,7 @@ class StAccount extends Model
 {
     public $table = 'account';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -76,6 +77,7 @@ class StGenericTransaction extends Model
     /** @var string */
     public $type;
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -127,6 +129,7 @@ class StTransaction_TransferOut extends StGenericTransaction
 {
     public $type = 'TransferOut';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -141,6 +144,7 @@ class StTransaction_TransferIn extends StGenericTransaction
 {
     public $type = 'TransferIn';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -151,6 +155,7 @@ class StTransaction_TransferIn extends StGenericTransaction
 
 class SubTypesTest extends TestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

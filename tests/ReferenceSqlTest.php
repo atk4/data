@@ -310,16 +310,19 @@ class ReferenceSqlTest extends TestCase
             /**
              * TODO: Remove once DBAL 3.x support is dropped.
              */
+            #[\Override]
             public function getName(): string
             {
                 return self::class;
             }
 
+            #[\Override]
             public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform): string
             {
                 return DbalTypes\Type::getType(DbalTypes\Types::INTEGER)->getSQLDeclaration($fieldDeclaration, $platform);
             }
 
+            #[\Override]
             public function convertToDatabaseValue($value, AbstractPlatform $platform): ?int
             {
                 if ($value === null) {
@@ -329,6 +332,7 @@ class ReferenceSqlTest extends TestCase
                 return DbalTypes\Type::getType('integer')->convertToDatabaseValue($value->getValue(), $platform);
             }
 
+            #[\Override]
             public function convertToPHPValue($value, AbstractPlatform $platform): ?object
             {
                 if ($value === null) {

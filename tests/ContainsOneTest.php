@@ -20,6 +20,7 @@ use Atk4\Data\Tests\ContainsOne\Invoice;
  */
 class ContainsOneTest extends TestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

@@ -49,8 +49,6 @@ DSQL can also execute queries with multiple sub-queries, joins, expressions
 grouping, ordering, unions as well as queries on result-set.
 
 - See {ref}`quickstart` if you would like to start learning DSQL.
-- See https://github.com/atk4/dsql-primer for various working
-  examples of using DSQL with a real data-set.
 
 ## DSQL is Part of Agile Toolkit
 

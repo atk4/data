@@ -17,6 +17,7 @@ class Query extends BaseQuery
     protected string $identifierEscapeChar = '"';
     protected string $expressionClass = Expression::class;
 
+    #[\Override]
     public function render(): array
     {
         if ($this->mode === 'select' && count($this->args['table'] ?? []) === 0) {
@@ -32,6 +33,7 @@ class Query extends BaseQuery
         return parent::render();
     }
 
+    #[\Override]
     protected function _subrenderCondition(array $row): string
     {
         if (count($row) === 2) {
@@ -60,6 +62,7 @@ class Query extends BaseQuery
         return parent::_subrenderCondition($row);
     }
 
+    #[\Override]
     protected function _renderLimit(): ?string
     {
         if (!isset($this->args['limit'])) {
@@ -73,11 +76,13 @@ class Query extends BaseQuery
             . ' fetch next ' . $cnt . ' rows only';
     }
 
+    #[\Override]
     public function groupConcat($field, string $separator = ',')
     {
         return $this->expr('listagg({field}, []) within group (order by {field})', ['field' => $field, $separator]);
     }
 
+    #[\Override]
     public function exists()
     {
         return $this->dsql()->mode('select')->field(

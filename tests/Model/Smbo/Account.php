@@ -10,6 +10,7 @@ class Account extends Model
 {
     public $table = 'account';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();

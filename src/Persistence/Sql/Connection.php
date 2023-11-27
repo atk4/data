@@ -232,6 +232,7 @@ abstract class Connection
         $configuration = new Configuration();
         $configuration->setMiddlewares([
             new class() implements DbalMiddleware {
+                #[\Override]
                 public function wrap(DbalDriver $driver): DbalDriver
                 {
                     return new DbalDriverMiddleware($driver);

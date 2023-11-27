@@ -10,6 +10,7 @@ class Document extends Model
 {
     public $table = 'document';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();

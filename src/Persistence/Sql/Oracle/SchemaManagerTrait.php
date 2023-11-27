@@ -8,6 +8,7 @@ use Doctrine\DBAL\Result as DbalResult;
 
 trait SchemaManagerTrait
 {
+    #[\Override]
     protected function selectTableNames(string $databaseName): DbalResult
     {
         // ignore Oracle maintained tables, improve tests performance

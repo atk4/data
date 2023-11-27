@@ -304,6 +304,7 @@ class ExpressionTest extends TestCase
         );
 
         $myField = new class() implements Expressionable {
+            #[\Override]
             public function getDsqlExpression(Expression $expr): Expression
             {
                 return $expr->expr('"myfield"');
@@ -379,6 +380,7 @@ class ExpressionTest extends TestCase
     public function testEscapeParamCustom(): void
     {
         $e = new class('hello, [who]', ['who' => 'world']) extends Expression {
+            #[\Override]
             public function escapeParam($value): string
             {
                 return json_encode($value);

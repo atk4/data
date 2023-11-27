@@ -12,6 +12,7 @@ use Doctrine\DBAL\Result as DbalResult;
 
 trait ExpressionTrait
 {
+    #[\Override]
     public function render(): array
     {
         [$sql, $params] = parent::render();
@@ -32,11 +33,13 @@ trait ExpressionTrait
         return [$sql, $params];
     }
 
+    #[\Override]
     protected function hasNativeNamedParamSupport(): bool
     {
         return false;
     }
 
+    #[\Override]
     protected function updateRenderBeforeExecute(array $render): array
     {
         [$sql, $params] = $render;
@@ -65,6 +68,7 @@ trait ExpressionTrait
         return parent::updateRenderBeforeExecute([$sql, $params]);
     }
 
+    #[\Override]
     protected function _execute(?object $connection, bool $fromExecuteStatement)
     {
         // fix exception throwing for MSSQL TRY/CATCH SQL (for Query::$templateInsert)

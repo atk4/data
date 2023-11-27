@@ -29,9 +29,7 @@ final class RenameColumnIterator extends \IteratorIterator
         $this->newName = $newName;
     }
 
-    /**
-     * @return array<string, mixed>
-     */
+    #[\Override]
     public function current(): array
     {
         $row = parent::current();

@@ -93,34 +93,26 @@ abstract class Expression implements Expressionable, \ArrayAccess
     /**
      * @return $this
      */
+    #[\Override]
     public function getDsqlExpression(self $expression): self
     {
         return $this;
     }
 
-    /**
-     * @param int|string $offset
-     */
+    #[\Override]
     public function offsetExists($offset): bool
     {
         return array_key_exists($offset, $this->args['custom']);
     }
 
-    /**
-     * @param int|string $offset
-     *
-     * @return mixed
-     */
+    #[\Override]
     #[\ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         return $this->args['custom'][$offset];
     }
 
-    /**
-     * @param int|string|null $offset
-     * @param mixed           $value  The value to set
-     */
+    #[\Override]
     public function offsetSet($offset, $value): void
     {
         if ($offset === null) {
@@ -130,9 +122,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
         }
     }
 
-    /**
-     * @param int|string $offset
-     */
+    #[\Override]
     public function offsetUnset($offset): void
     {
         unset($this->args['custom'][$offset]);

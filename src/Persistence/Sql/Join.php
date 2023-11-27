@@ -16,6 +16,7 @@ class Join extends Model\Join
      */
     protected $on;
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -41,6 +42,7 @@ class Join extends Model\Join
         }
     }
 
+    #[\Override]
     protected function initJoinHooks(): void
     {
         parent::initJoinHooks();

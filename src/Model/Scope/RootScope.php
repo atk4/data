@@ -38,12 +38,14 @@ class RootScope extends Model\Scope
         return $this;
     }
 
+    #[\Override]
     public function getModel(): Model
     {
         return $this->model;
     }
 
-    public function negate()
+    #[\Override]
+    public function negate(): self
     {
         throw new Exception('Model scope cannot be negated');
     }

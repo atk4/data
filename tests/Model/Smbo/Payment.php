@@ -11,6 +11,7 @@ class Payment extends Document
     /** @var Model\Join */
     public $jPayment;
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();

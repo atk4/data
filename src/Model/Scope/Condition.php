@@ -149,6 +149,7 @@ class Condition extends AbstractScope
         }
     }
 
+    #[\Override]
     protected function onChangeModel(): void
     {
         $model = $this->getModel();
@@ -257,12 +258,14 @@ class Condition extends AbstractScope
         return [$field, $operator, $value];
     }
 
+    #[\Override]
     public function isEmpty(): bool
     {
         return array_filter([$this->key, $this->operator, $this->value]) ? false : true;
     }
 
-    public function clear()
+    #[\Override]
+    public function clear(): self
     {
         $this->key = null; // @phpstan-ignore-line
         $this->operator = null;
@@ -271,7 +274,8 @@ class Condition extends AbstractScope
         return $this;
     }
 
-    public function negate()
+    #[\Override]
+    public function negate(): self
     {
         if (isset(self::$operators[$this->operator]['negate'])) {
             $this->operator = self::$operators[$this->operator]['negate'];
@@ -283,6 +287,7 @@ class Condition extends AbstractScope
         return $this;
     }
 
+    #[\Override]
     public function toWords(Model $model = null): string
     {
         if ($model === null) {

@@ -75,6 +75,7 @@ class StaticTest extends TestCase
     {
         $p = new Persistence\Static_(['hello', 'world']);
         $m = new class($p) extends Model {
+            #[\Override]
             protected function init(): void
             {
                 parent::init();
@@ -203,6 +204,7 @@ class StaticTestModel extends Model
 {
     public ?string $titleField = 'foo';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
