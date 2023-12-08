@@ -15,8 +15,7 @@ use Doctrine\DBAL\Platforms\MySQLPlatform;
  */
 final class TestSqlPersistence extends Persistence\Sql
 {
-    public function __construct() // @phpstan-ignore-line
-    {}
+    public function __construct() {} // @phpstan-ignore-line
 
     #[\Override]
     public function getConnection(): Persistence\Sql\Connection

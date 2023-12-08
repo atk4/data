@@ -281,7 +281,8 @@ class TypecastingTest extends TestCase
     public function testSaveFieldUnexpectedScalarException(): void
     {
         $this->executeFxWithTemporaryType('bad-datetime', new class() extends DbalTypes\DateTimeType {
-            public function convertToDatabaseValue($value, AbstractPlatform $platform): \DateTime // @phpstan-ignore-line
+            #[\Override] // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/10210
+            public function convertToDatabaseValue($value, AbstractPlatform $platform): \DateTime
             {
                 return $value;
             }

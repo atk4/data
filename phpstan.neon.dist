@@ -28,16 +28,6 @@ parameters:
             path: '*'
             count: 1
 
-        # https://github.com/phpstan/phpstan/issues/10208
-        -
-            message: '~^Return type \(Atk4\\Data\\Model\\Scope\) of method Atk4\\Data\\Model\\Scope::(clear|negate)\(\) should be covariant with return type \(\$this\(Atk4\\Data\\Model\\Scope\\AbstractScope\)\) of method Atk4\\Data\\Model\\Scope\\AbstractScope::(clear|negate)\(\)$~'
-            path: 'src/Model/Scope.php'
-            count: 2
-        -
-            message: '~^Return type \(Atk4\\Data\\Model\\Scope\\Condition\) of method Atk4\\Data\\Model\\Scope\\Condition::(clear|negate)\(\) should be covariant with return type \(\$this\(Atk4\\Data\\Model\\Scope\\AbstractScope\)\) of method Atk4\\Data\\Model\\Scope\\AbstractScope::(clear|negate)\(\)$~'
-            path: 'src/Model/Scope/Condition.php'
-            count: 2
-
         # AbstractPlatform::getIdentitySequenceName() method is deprecated in DBAL 3.4+,
         # in DBAL 4.0 OraclePlatform::getIdentitySequenceName() is protected and
         # PostgreSQLPlatform::getIdentitySequenceName() is removed:
