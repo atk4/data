@@ -271,7 +271,7 @@ abstract class Connection
         );
         \Closure::bind(static function () use ($dbalConnection, $dbalDriverConnection): void {
             $dbalConnection->_conn = $dbalDriverConnection;
-        }, null, \Doctrine\DBAL\Connection::class)();
+        }, null, DbalConnection::class)();
 
         return $dbalConnection;
     }
