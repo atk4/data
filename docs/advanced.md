@@ -365,7 +365,7 @@ class ControllerUniqueFields
     }
     use \Atk4\Core\TrackableTrait;
 
-    protected $fields = null;
+    protected ?array $fields = null;
 
     protected function init(): void
     {

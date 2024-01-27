@@ -64,7 +64,7 @@ class Scope extends AbstractScope
         if ($this->issetOwner()) {
             $this->unsetOwner();
         }
-        $this->shortName = null; // @phpstan-ignore-line
+        // $this->shortName = null; // uncomment once https://github.com/php/php-src/issues/9389 is resolved
     }
 
     /**
