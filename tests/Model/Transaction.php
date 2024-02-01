@@ -16,6 +16,7 @@ class Transaction extends UnionModel
     /** @var bool */
     public $subtractInvoice;
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();

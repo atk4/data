@@ -1,11 +1,11 @@
-:::{php:namespace} Atk4\Data\Model
+:::{php:namespace} Atk4\Data
 :::
 
 (Unions)=
 
 # Model Unions
 
-:::{php:class} UnionModel
+:::{php:class} Model\UnionModel
 :::
 
 In some cases data from multiple models need to be combined. In this case the UnionModel model comes very handy.
@@ -86,7 +86,7 @@ $nestedInvoice = $unionPaymentInvoice->addNestedModel(new Payment(), ['descripti
 $unionPaymentInvoice->addField('description');
 ```
 
-The key of the field map array must match the UnionModel field. The value is an expression. (See {ref}`Model<addExpression>`).
+The key of the field map array must match the UnionModel field. The value is an expression. (See {php:meth}`Model::addExpression`).
 This format can also be used to reverse sign on amounts. When we are creating "Transactions", then invoices would be
 subtracted from the amount, while payments will be added:
 

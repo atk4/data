@@ -10,6 +10,7 @@ use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class ModelUnionTest extends TestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -324,7 +325,7 @@ class ModelUnionTest extends TestCase
         $client->hasMany('tr', ['model' => $this->createTransaction()]);
 
         if (\PHP_MAJOR_VERSION >= 7) { // always true, TODO aggregate on reference is broken
-            self::assertTrue(true);
+            self::assertTrue(true); // @phpstan-ignore-line
 
             return;
         }

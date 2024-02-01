@@ -10,6 +10,7 @@ class Payment extends Model
 {
     public $table = 'payment';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();

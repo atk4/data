@@ -11,6 +11,7 @@ use Atk4\Data\Field\SqlExpressionField;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Expression;
+use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Query;
 
 /**
@@ -42,11 +43,11 @@ class UnionModel extends Model
      */
     public $idField = false;
 
-    /** @var array<array{0: Model, 1: array}> */
-    public $union = [];
-
-    /** @var string Derived table alias */
+    /** Derived table alias */
     public $table = '_tu';
+
+    /** @var list<array{0: Model, 1: array<string, string|Expressionable>}> */
+    public $union = [];
 
     /**
      * For a sub-model with a specified mapping, return expression
@@ -72,10 +73,12 @@ class UnionModel extends Model
 
     /**
      * Adds nested model in union.
+     *
+     * @param array<string, string|Expressionable> $fieldMap
      */
     public function addNestedModel(Model $model, array $fieldMap = []): Model
     {
-        $model->setPersistence($this->getpersistence()); // TODO this must be removed
+        $model->setPersistence($this->getPersistence()); // TODO this must be removed
 
         $this->union[] = [$model, $fieldMap];
 
@@ -86,46 +89,40 @@ class UnionModel extends Model
      * If UnionModel model has such field, then add condition to it.
      * Otherwise adds condition to all nested models.
      *
-     * @param mixed $key
-     * @param mixed $operator
-     * @param mixed $value
-     * @param bool  $forceNested Should we add condition to all nested models?
-     *
-     * @return $this
+     * @param bool $forceNested Should we add condition to all nested models?
      */
-    public function addCondition($key, $operator = null, $value = null, $forceNested = false)
+    #[\Override]
+    public function addCondition($field, $operator = null, $value = null, $forceNested = false)
     {
-        if (func_num_args() === 1) {
-            return parent::addCondition($key);
+        if ('func_num_args'() === 1) {
+            return parent::addCondition($field);
         }
 
         // if UnionModel has such field, then add condition to it
-        if ($this->hasField($key) && !$forceNested) {
-            return parent::addCondition(...func_get_args());
+        if ($this->hasField($field) && !$forceNested) {
+            return parent::addCondition(...'func_get_args'());
         }
 
         // otherwise add condition in all nested models
         foreach ($this->union as [$nestedModel, $fieldMap]) {
             try {
-                $field = $key;
-
-                if (isset($fieldMap[$key])) {
+                if (isset($fieldMap[$field])) {
                     // field is included in mapping - use mapping expression
-                    $field = $fieldMap[$key] instanceof Expression
-                        ? $fieldMap[$key]
-                        : $this->getFieldExpr($nestedModel, $key, $fieldMap[$key]);
-                } elseif (is_string($key) && $nestedModel->hasField($key)) {
+                    $f = $fieldMap[$field] instanceof Expression
+                        ? $fieldMap[$field]
+                        : $this->getFieldExpr($nestedModel, $field, $fieldMap[$field]);
+                } elseif (is_string($field) && $nestedModel->hasField($field)) {
                     // model has such field - use that field directly
-                    $field = $nestedModel->getField($key);
+                    $f = $nestedModel->getField($field);
                 } else {
                     // we don't know what to do, so let's do nothing
                     continue;
                 }
 
-                if (func_num_args() === 2) {
-                    $nestedModel->addCondition($field, $operator);
+                if ('func_num_args'() === 2) {
+                    $nestedModel->addCondition($f, $operator);
                 } else {
-                    $nestedModel->addCondition($field, $operator, $value);
+                    $nestedModel->addCondition($f, $operator, $value);
                 }
             } catch (CoreException $e) {
                 throw $e
@@ -136,16 +133,14 @@ class UnionModel extends Model
         return $this;
     }
 
-    /**
-     * @return Query
-     */
+    #[\Override]
     public function action(string $mode, array $args = [])
     {
         $subquery = null;
         switch ($mode) {
             case 'select':
                 // get list of available fields
-                $fields = $this->onlyFields ?: array_keys($this->getFields());
+                $fields = $this->onlyFields ?? array_keys($this->getFields());
                 foreach ($fields as $k => $field) {
                     if ($this->getField($field)->neverPersist) {
                         unset($fields[$k]);
@@ -194,7 +189,7 @@ class UnionModel extends Model
     }
 
     /**
-     * @param Query[] $subqueries
+     * @param list<Query> $subqueries
      */
     private function createUnionQuery(array $subqueries): Query
     {
@@ -210,11 +205,12 @@ class UnionModel extends Model
 
     /**
      * Configures nested models to have a specified set of fields available.
+     *
+     * @param list<string> $fields
      */
     public function getSubQuery(array $fields): Query
     {
         $subqueries = [];
-
         foreach ($this->union as [$nestedModel, $fieldMap]) {
             // map fields for related model
             $queryFieldExpressions = [];
@@ -263,10 +259,12 @@ class UnionModel extends Model
         return $unionQuery;
     }
 
+    /**
+     * @param array<mixed> $actionArgs
+     */
     public function getSubAction(string $action, array $actionArgs = []): Query
     {
         $subqueries = [];
-
         foreach ($this->union as [$model, $fieldMap]) {
             $modelActionArgs = $actionArgs;
             $fieldName = $actionArgs[1] ?? null;
@@ -289,6 +287,7 @@ class UnionModel extends Model
         return $unionQuery;
     }
 
+    #[\Override]
     public function __debugInfo(): array
     {
         return array_merge(parent::__debugInfo(), [
