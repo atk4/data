@@ -17,9 +17,9 @@ class RootScope extends Model\Scope
     /** @var Model */
     protected $model;
 
-    protected function __construct(array $nestedConditions = [])
+    protected function __construct(array $conditions = [])
     {
-        parent::__construct($nestedConditions, self::AND);
+        parent::__construct($conditions, self::AND);
     }
 
     /**
@@ -38,14 +38,16 @@ class RootScope extends Model\Scope
         return $this;
     }
 
+    #[\Override]
     public function getModel(): Model
     {
         return $this->model;
     }
 
-    public function negate()
+    #[\Override]
+    public function negate(): self
     {
-        throw new Exception('Model Scope cannot be negated!');
+        throw new Exception('Model scope cannot be negated');
     }
 
     /**

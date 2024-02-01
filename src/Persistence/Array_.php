@@ -74,7 +74,7 @@ class Array_ extends Persistence
         foreach ($model->getFields() as $field) {
             if ($field->hasJoin()) {
                 $join = $field->getJoin();
-                $joinTableName = \Closure::bind(function () use ($join) {
+                $joinTableName = \Closure::bind(static function () use ($join) {
                     return $join->foreignTable;
                 }, null, Array_\Join::class)();
                 if (isset($this->seedData[$joinTableName])) {
@@ -166,9 +166,7 @@ class Array_ extends Persistence
         }
     }
 
-    /**
-     * @param array<string, mixed> $defaults
-     */
+    #[\Override]
     public function add(Model $model, array $defaults = []): void
     {
         $defaults = array_merge([
@@ -193,7 +191,7 @@ class Array_ extends Persistence
      */
     private function getPersistenceNameToNameMap(Model $model): array
     {
-        return array_flip(array_map(fn (Field $f) => $f->getPersistenceName(), $model->getFields()));
+        return array_flip(array_map(static fn (Field $f) => $f->getPersistenceName(), $model->getFields()));
     }
 
     /**
@@ -222,6 +220,7 @@ class Array_ extends Persistence
         return $rowRemapped;
     }
 
+    #[\Override]
     public function tryLoad(Model $model, $id): ?array
     {
         $model->assertIsModel();
@@ -272,6 +271,7 @@ class Array_ extends Persistence
         return $this->typecastLoadRow($model, $rowData);
     }
 
+    #[\Override]
     protected function insertRaw(Model $model, array $dataRaw)
     {
         $this->seedData($model);
@@ -283,6 +283,7 @@ class Array_ extends Persistence
         return $idRaw;
     }
 
+    #[\Override]
     protected function updateRaw(Model $model, $idRaw, array $dataRaw): void
     {
         $table = $this->seedDataAndGetTable($model);
@@ -290,6 +291,7 @@ class Array_ extends Persistence
         $this->saveRow($model, array_merge($this->filterRowDataOnlyModelFields($model, $table->getRowById($model, $idRaw)->getData()), $dataRaw), $idRaw);
     }
 
+    #[\Override]
     protected function deleteRaw(Model $model, $idRaw): void
     {
         $table = $this->seedDataAndGetTable($model);
@@ -396,7 +398,7 @@ class Array_ extends Persistence
         }
 
         if ($fields !== null) {
-            $rows = array_map(function (array $row) use ($fields) {
+            $rows = array_map(static function (array $row) use ($fields) {
                 return array_intersect_key($row, array_flip($fields));
             }, $rows);
         }

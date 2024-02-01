@@ -9,18 +9,20 @@ use Doctrine\DBAL\Schema\TableDiff;
 
 trait PlatformTrait
 {
+    #[\Override]
     public function getIdentifierQuoteCharacter(): string
     {
         return '`';
     }
 
+    #[\Override]
     public function getAlterTableSQL(TableDiff $diff): array
     {
         // fix https://github.com/doctrine/dbal/pull/5501
         $diff = clone $diff;
         $diff->fromTable = clone $diff->fromTable;
         foreach ($diff->fromTable->getForeignKeys() as $foreignKey) {
-            \Closure::bind(function () use ($foreignKey) {
+            \Closure::bind(static function () use ($foreignKey) {
                 $foreignKey->_localColumnNames = $foreignKey->createIdentifierMap($foreignKey->getUnquotedLocalColumns());
             }, null, ForeignKeyConstraint::class)();
         }

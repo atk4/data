@@ -9,12 +9,15 @@ use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 
 class Query extends BaseQuery
 {
+    use ExpressionTrait;
+
     protected string $identifierEscapeChar = '"';
     protected string $expressionClass = Expression::class;
 
     protected string $templateUpdate = 'update [table][join] set [set] [where]';
     protected string $templateReplace;
 
+    #[\Override]
     protected function _subrenderCondition(array $row): string
     {
         if (count($row) >= 3) {
@@ -28,6 +31,7 @@ class Query extends BaseQuery
         return parent::_subrenderCondition($row);
     }
 
+    #[\Override]
     protected function _renderLimit(): ?string
     {
         if (!isset($this->args['limit'])) {
@@ -38,6 +42,7 @@ class Query extends BaseQuery
             . ' offset ' . (int) $this->args['limit']['shift'];
     }
 
+    #[\Override]
     public function groupConcat($field, string $separator = ','): BaseExpression
     {
         return $this->expr('string_agg({}, [])', [$field, $separator]);

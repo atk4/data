@@ -13,14 +13,13 @@ use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class SelectTest extends TestCase
 {
-    protected function setUp(): void
+    protected function setupTables(): void
     {
-        parent::setUp();
-
         $model = new Model($this->db, ['table' => 'employee']);
         $model->addField('name');
         $model->addField('surname');
@@ -37,7 +36,8 @@ class SelectTest extends TestCase
     }
 
     /**
-     * @param string|Expression $table
+     * @param string|Expression                 $table
+     * @param ($table is null ? never : string) $alias
      */
     protected function q($table = null, string $alias = null): Query
     {
@@ -60,6 +60,8 @@ class SelectTest extends TestCase
 
     public function testBasicQueries(): void
     {
+        $this->setupTables();
+
         self::assertCount(4, $this->q('employee')->getRows());
 
         self::assertSame(
@@ -142,6 +144,8 @@ class SelectTest extends TestCase
 
     public function testOtherQueries(): void
     {
+        $this->setupTables();
+
         $this->q('employee')->mode('truncate')->executeStatement();
         self::assertSame(
             '0',
@@ -185,18 +189,10 @@ class SelectTest extends TestCase
         // In SQLite replace is just like insert, it just checks if there is
         // duplicate key and if it is it deletes the row, and inserts the new
         // one, otherwise it just inserts.
-        // So order of records after REPLACE in SQLite will be [Jane, Peter]
-        // not [Peter, Jane] as in MySQL, which in theory does the same thing,
-        // but returns [Peter, Jane] - in original order.
-        // That's why we add usort here.
-        $data = $this->q('employee')->field('id')->field('name')->getRows();
-        usort($data, function ($a, $b) {
-            return $a['id'] - $b['id']; // @phpstan-ignore-line
-        });
-        self::assertSame([
+        self::assertSameExportUnordered([
             ['id' => '1', 'name' => 'Peter'],
             ['id' => '2', 'name' => 'Jane'],
-        ], $data);
+        ], $this->q('employee')->field('id')->field('name')->getRows());
 
         // delete
         $this->q('employee')
@@ -207,28 +203,193 @@ class SelectTest extends TestCase
         ], $this->q('employee')->field('id')->field('name')->getRows());
     }
 
-    public function testEmptyGetOne(): void
+    public function testGetRowEmpty(): void
     {
+        $this->setupTables();
+
+        $this->q('employee')->mode('truncate')->executeStatement();
+        $q = $this->q('employee');
+
+        self::assertNull($q->getRow());
+    }
+
+    public function testGetOneEmptyException(): void
+    {
+        $this->setupTables();
+
         $this->q('employee')->mode('truncate')->executeStatement();
         $q = $this->q('employee')->field('name');
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unable to fetch single cell of data');
         $q->getOne();
     }
 
     public function testSelectUnexistingColumnException(): void
     {
+        $this->setupTables();
+
         $q = $this->q('employee')->field('Sqlite must use backticks for identifier escape');
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Dsql execute error');
         $q->executeStatement();
     }
 
     public function testWhereExpression(): void
     {
+        $this->setupTables();
+
         self::assertSame([
             ['id' => '2', 'name' => 'Jack', 'surname' => 'Williams', 'retired' => '1'],
         ], $this->q('employee')->where('retired', true)->where($this->q()->expr('{}=[] or {}=[]', ['surname', 'Williams', 'surname', 'Smith']))->getRows());
+    }
+
+    /**
+     * @dataProvider provideWhereNumericCompareCases
+     *
+     * @param array{string, array<mixed>} $exprLeft
+     * @param array{string, array<mixed>} $exprRight
+     */
+    public function testWhereNumericCompare(array $exprLeft, string $operator, array $exprRight, bool $expectPostgresqlTypeMismatchException = false, bool $expectMssqlTypeMismatchException = false): void
+    {
+        if ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            $exprLeft[0] = preg_replace('~\d+[eE][\-+]?\d++~', '$0d', $exprLeft[0]);
+        }
+
+        $queryWhere = $this->q()->field($this->e('1'), 'v');
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            $queryWhere->table('(select 1)', 'dual'); // needed for MySQL 5.x when WHERE or HAVING is specified
+        }
+        $queryWhere->where($this->e(...$exprLeft), $operator, $this->e(...$exprRight));
+
+        $queryHaving = $this->q()->field($this->e('1'), 'v');
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            $queryHaving->table('(select 1)', 'dual'); // needed for MySQL 5.x when WHERE or HAVING is specified
+        }
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
+            $queryHaving->group('v');
+        }
+        $queryHaving->having($this->e(...$exprLeft), $operator, $this->e(...$exprRight));
+
+        $queryWhereSub = $this->q()->field($this->e('1'), 'v');
+        $queryWhereSub->table($this->q()->field($this->e(...$exprLeft), 'a')->field($this->e(...$exprRight), 'b'), 't');
+        $queryWhereSub->where('a', $operator, $this->e('{}', ['b']));
+
+        $queryWhereIn = $this->q()->field($this->e('1'), 'v');
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            $queryWhereIn->table('(select 1)', 'dual'); // needed for MySQL 5.x when WHERE or HAVING is specified
+        }
+        if ($operator === '=' || $operator === '!=') {
+            $queryWhereIn->where(
+                $this->e(...$exprLeft),
+                $operator === '!=' ? 'not in' : 'in',
+                [$this->e(...$exprRight), $this->e(...$exprRight)]
+            );
+        }
+
+        $queryAll = $this->q()
+            ->field($queryWhere, 'where')
+            ->field($queryHaving, 'having')
+            ->field($queryWhereSub, 'where_sub')
+            ->field($queryWhereIn, 'where_in');
+
+        if (($expectPostgresqlTypeMismatchException && $this->getDatabasePlatform() instanceof PostgreSQLPlatform) || ($expectMssqlTypeMismatchException && $this->getDatabasePlatform() instanceof SQLServerPlatform)) {
+            $this->expectException(ExecuteException::class);
+        }
+        try {
+            $rows = $queryAll->getRows();
+        } catch (ExecuteException $e) {
+            if ($expectPostgresqlTypeMismatchException && $this->getDatabasePlatform() instanceof PostgreSQLPlatform && str_contains($e->getPrevious()->getMessage(), 'operator does not exist')) {
+                // https://dbfiddle.uk/YJvvOTpR
+                self::markTestIncomplete('PostgreSQL does not implicitly cast string for numeric comparison');
+            } elseif ($expectMssqlTypeMismatchException && $this->getDatabasePlatform() instanceof SQLServerPlatform && str_contains($e->getPrevious()->getMessage(), 'Conversion failed when converting the nvarchar value \'4.0\' to data type int')) {
+                // https://dbfiddle.uk/YmYeklp_
+                self::markTestIncomplete('MSSQL does not implicitly cast string with decimal point for float comparison');
+            }
+
+            throw $e;
+        }
+
+        self::assertSame(
+            [['where' => '1', 'having' => '1', 'where_sub' => '1', 'where_in' => '1']],
+            $rows
+        );
+    }
+
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideWhereNumericCompareCases(): iterable
+    {
+        yield [['4'], '=', ['4']];
+        yield [['0'], '=', ['0']];
+        yield [['4'], '<', ['5']];
+        yield [['5'], '>', ['4']];
+        yield [['\'4\''], '=', ['\'4\'']];
+        yield [['\'04\''], '=', ['\'04\'']];
+        yield [['\'4\''], '!=', ['\'04\'']];
+        yield [['\'4\''], '!=', ['\'4.0\'']];
+        yield [['\'2e4\''], '<', ['\'3e3\'']];
+        yield [['\'2e4\''], '>', ['\'1e5\'']];
+        yield [['4.4'], '=', ['4.4']];
+        yield [['0.0'], '=', ['0.0']];
+        yield [['4.4'], '!=', ['4.3']];
+
+        yield [['4'], '=', ['[]', [4]]];
+        yield [['0'], '=', ['[]', [0]]];
+        yield [['\'4\''], '=', ['[]', ['4']]];
+        yield [['\'04\''], '=', ['[]', ['04']]];
+        yield [['\'4\''], '!=', ['[]', ['04']]];
+        yield [['\'4\''], '!=', ['[]', ['4.0']]];
+        yield [['\'2e4\''], '<', ['[]', ['3e3']]];
+        yield [['\'2e4\''], '>', ['[]', ['1e5']]];
+        yield [['4.4'], '=', ['[]', [4.4]]];
+        yield [['0.0'], '=', ['[]', [0.0]]];
+        yield [['4.4'], '!=', ['[]', [4.3]]];
+        yield [['4e1'], '=', ['[]', [40.0]]];
+        yield [[(string) \PHP_INT_MAX], '=', ['[]', [\PHP_INT_MAX]]];
+        yield [[(string) \PHP_INT_MIN], '=', ['[]', [\PHP_INT_MIN]]];
+        yield [[(string) (\PHP_INT_MAX - 1)], '<', ['[]', [\PHP_INT_MAX]]];
+        yield [[(string) \PHP_INT_MAX], '>', ['[]', [\PHP_INT_MAX - 1]]];
+        yield [[Expression::castFloatToString(\PHP_FLOAT_MAX)], '=', ['[]', [\PHP_FLOAT_MAX]]];
+        yield [[Expression::castFloatToString(\PHP_FLOAT_MIN)], '=', ['[]', [\PHP_FLOAT_MIN]]];
+        yield [['0.0'], '<', ['[]', [\PHP_FLOAT_MIN]]];
+        yield [['1.0'], '<', ['[]', [1.0 + \PHP_FLOAT_EPSILON]]];
+        yield [['2e305'], '<', ['[]', [1e306]]];
+        yield [['2e305'], '>', ['[]', [3e304]]];
+
+        yield [['[]', [4]], '=', ['[]', [4]]];
+        yield [['[]', ['4']], '=', ['[]', ['4']]];
+        yield [['[]', ['2e4']], '<', ['[]', ['3e3']]];
+        yield [['[]', ['2e4']], '>', ['[]', ['1e5']]];
+        yield [['[]', [4.4]], '=', ['[]', [4.4]]];
+        yield [['[]', [4.4]], '>', ['[]', [4.3]]];
+        yield [['[]', [2e305]], '<', ['[]', [1e306]]];
+        yield [['[]', [2e305]], '>', ['[]', [3e304]]];
+        yield [['[]', [false]], '=', ['[]', [false]]];
+        yield [['[]', [true]], '=', ['[]', [true]]];
+        yield [['[]', [false]], '!=', ['[]', [true]]];
+        yield [['[]', [false]], '<', ['[]', [true]]];
+
+        yield [['4'], '=', ['[]', ['04']], true];
+        yield [['\'04\''], '=', ['[]', [4]], true];
+        yield [['4'], '=', ['[]', [4.0]]];
+        yield [['4'], '=', ['[]', ['4.0']], true, true];
+        yield [['2.5'], '=', ['[]', ['02.50']], true];
+        yield [['0'], '=', ['[]', [false]], true];
+        yield [['0'], '!=', ['[]', [true]], true];
+        yield [['1'], '=', ['[]', [true]], true];
+        yield [['1'], '!=', ['[]', [false]], true];
+
+        yield [['2 + 2'], '=', ['[]', [4]]];
+        yield [['2 + 2'], '=', ['[] + []', [1, 3]]];
+        yield [['[] + []', [-1, 5]], '=', ['[] + []', [1, 3]]];
+        yield [['2 + 2'], '=', ['[]', ['4']], true];
+        yield [['2 + 2.5'], '=', ['[]', [4.5]]];
+        yield [['2 + 2.5'], '=', ['[] + []', [1.5, 3.0]]];
+        yield [['[] + []', [-1.5, 6.0]], '=', ['[] + []', [1.5, 3.0]]];
+        yield [['2 + 2.5'], '=', ['[]', ['4.5']], true];
     }
 
     public function testGroupConcat(): void
@@ -274,17 +435,7 @@ class SelectTest extends TestCase
             ->where('first_name', 'John')
             ->exists();
 
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-            self::assertSame([
-                'select exists (select * from `contacts` where `first_name` = :a)',
-                [':a' => 'John'],
-            ], $q->render());
-        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            self::assertSame([
-                'select exists (select * from "contacts" where "first_name" = :a)',
-                [':a' => 'John'],
-            ], $q->render());
-        } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             self::assertSame([
                 'select case when exists(select * from [contacts] where [first_name] = :a) then 1 else 0 end',
                 [':a' => 'John'],
@@ -295,10 +446,8 @@ class SelectTest extends TestCase
                 [':xxaaaa' => 'John'],
             ], $q->render());
         } else {
-            self::assertSame([
-                'select exists (select * from `contacts` where `first_name` = :a)',
-                [':a' => 'John'],
-            ], $q->render());
+            self::assertSameSql('select exists (select * from `contacts` where `first_name` = :a)', $q->render()[0]);
+            self::assertSame([':a' => 'John'], $q->render()[1]);
         }
     }
 
@@ -307,6 +456,7 @@ class SelectTest extends TestCase
         $q = $this->q('non_existing_table')->field('non_existing_field');
 
         $this->expectException(ExecuteException::class);
+        $this->expectExceptionMessage('Dsql execute error');
         try {
             $q->getOne();
         } catch (ExecuteException $e) {
@@ -367,10 +517,11 @@ class SelectTest extends TestCase
         $getLastAiFx = function (): int {
             $table = 'test';
             $pk = 'myid';
-            $maxIdExpr = $this->q()->table($table)->field($this->e('max({})', [$pk]));
             if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+                self::assertFalse($this->getConnection()->inTransaction());
+                $this->getConnection()->expr('analyze table {}', [$table])->executeStatement();
                 $query = $this->q()->table('INFORMATION_SCHEMA.TABLES')
-                    ->field($this->e('greatest({} - 1, (' . $maxIdExpr->render()[0] . '))', ['AUTO_INCREMENT']))
+                    ->field($this->e('{} - 1', ['AUTO_INCREMENT']))
                     ->where('TABLE_NAME', $table);
             } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
                 $query = $this->q()->field($this->e('currval(pg_get_serial_sequence([], []))', [$table, $pk]));
@@ -435,7 +586,7 @@ class SelectTest extends TestCase
         $m->createEntity()->set('f1', 'M')->save();
         self::assertSame(102, $getLastAiFx());
 
-        self::assertSame([
+        $expectedRows = [
             ['id' => 1, 'f1' => 'A'],
             ['id' => 2, 'f1' => 'B'],
             ['id' => 3, 'f1' => 'C'],
@@ -447,6 +598,83 @@ class SelectTest extends TestCase
             ['id' => 99, 'f1' => 'I'],
             ['id' => 101, 'f1' => 'L'],
             ['id' => 102, 'f1' => 'M'],
-        ], $m->export());
+        ];
+        self::assertSame($expectedRows, $m->export());
+
+        // auto increment ID after rollback must not be reused
+        $e = null;
+        $eExpected = new Exception();
+        try {
+            $m->atomic(static function () use ($m, $eExpected) {
+                $m->import([['f1' => 'N']]);
+
+                throw $eExpected;
+            });
+        } catch (Exception $e) {
+        }
+        self::assertSame($eExpected, $e);
+
+        // TODO workaround SQLite to be consistent with other databases
+        // https://stackoverflow.com/questions/27947712/sqlite-repeats-primary-key-autoincrement-value-after-rollback
+        if (!$this->getDatabasePlatform() instanceof SQLitePlatform) {
+            self::assertSame(103, $getLastAiFx());
+            self::assertSame($expectedRows, $m->export());
+
+            $m->import([['f1' => 'O']]);
+            self::assertSame(104, $getLastAiFx());
+            self::assertSame(array_merge($expectedRows, [
+                ['id' => 104, 'f1' => 'O'],
+            ]), $m->export());
+        }
+    }
+
+    public function testOrderDuplicate(): void
+    {
+        $this->setupTables();
+
+        $query = $this->q('employee')->field('name')
+            ->order('id')
+            ->order('name', 'desc')
+            ->order('name', 'ASC')
+            ->order('name')
+            ->order('surname')
+            ->order('name');
+
+        self::assertSame(
+            [['name' => 'Charlie'], ['name' => 'Harry'], ['name' => 'Jack'], ['name' => 'Oliver']],
+            $query->getRows()
+        );
+    }
+
+    public function testSubqueryWithOrderAndLimit(): void
+    {
+        $this->setupTables();
+
+        $subQuery = $this->q('employee');
+        $query = $this->q($subQuery, 't')->field('name')->order('name');
+
+        self::assertSame(
+            [['name' => 'Charlie'], ['name' => 'Harry'], ['name' => 'Jack'], ['name' => 'Oliver']],
+            $query->getRows()
+        );
+
+        // subquery /w limit but /wo order
+        $subQuery->limit(2);
+        self::assertCount(2, $query->getRows());
+
+        $subQuery->order('surname', true);
+        self::assertSame(
+            [['name' => 'Harry'], ['name' => 'Jack']],
+            $query->getRows()
+        );
+
+        // subquery /w order but /wo limit
+        $subQuery->args['limit'] = null;
+        self::assertSame(
+            [['name' => 'Charlie'], ['name' => 'Harry'], ['name' => 'Jack'], ['name' => 'Oliver']],
+            $query->getRows()
+        );
+
+        self::assertSame([['surname', 'desc']], $subQuery->args['order']);
     }
 }

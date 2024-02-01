@@ -1,0 +1,134 @@
+conditions.md: WARNING: duplicate object description of Atk4\Data\Model, other instance in /__w/data/data/docs/advanced.md
+expressions.md: WARNING: duplicate object description of Atk4\Data\Model, other instance in /__w/data/data/docs/conditions.md
+index.md: WARNING: toctree contains reference to nonexisting document 'deriving'
+index.md: WARNING: toctree contains reference to nonexisting document 'extensions'
+model.md: WARNING: duplicate object description of Atk4\Data\Model, other instance in /__w/data/data/docs/expressions.md
+model.md: WARNING: duplicate object description of Atk4\Data\Model::addExpression, other instance in /__w/data/data/docs/expressions.md
+persistence.md: WARNING: duplicate object description of Atk4\Data\Model, other instance in /__w/data/data/docs/model.md
+persistence.md: WARNING: duplicate object description of Atk4\Data\Model::withPersistence, other instance in /__w/data/data/docs/model.md
+persistence/sql/transactions.md: WARNING: duplicate object description of Atk4\Data\Persistence\Sql\Connection, other instance in /__w/data/data/docs/persistence/sql/connection.md
+quickstart.md: WARNING: duplicate label quickstart, other instance in /__w/data/data/docs/persistence/sql/quickstart.md
+references.md: WARNING: duplicate object description of Atk4\Data\Model, other instance in /__w/data/data/docs/persistence.md
+results.md: WARNING: duplicate object description of Atk4\Data\Model, other instance in /__w/data/data/docs/references.md
+sql.md: WARNING: duplicate object description of Atk4\Data\Field, other instance in /__w/data/data/docs/fields.md
+sql.md: WARNING: duplicate object description of Atk4\Data\Field::$actual, other instance in /__w/data/data/docs/fields.md
+types.md: WARNING: document isn't included in any toctree
+fields.md: [phpdomain] Target Atk4\Data\Persistence not found
+fields.md: [phpdomain] Target Atk4\Data\PasswordField not found
+fields.md: [phpdomain] Target Atk4\Data\Persistence::typecastSaveRow not found
+fields.md: [phpdomain] Target Atk4\Data\Persistence::typecastLoadRow not found
+fields.md: [phpdomain] Target Atk4\Data\Join not found
+hooks.md: [phpdomain] Target Atk4\Data\Model::$reloadAfterSave not found
+hooks.md: [phpdomain] Target Atk4\Data\Model::isLoaded not found
+hooks.md: [phpdomain] Target Atk4\Data\Model::$reloadAfterSave not found
+joins.md: [phpdomain] Target Atk4\Data\Model::join not found
+joins.md: [phpdomain] Target Atk4\Data\Reference::$theirField not found
+model.md: [phpdomain] Target Atk4\Data\Model\UserAction not found
+model.md: [phpdomain] Target Atk4\Data\ValidationException not found
+model.md: [phpdomain] Target Atk4\Data\HasOne::addTitle not found
+overview.md: [phpdomain] Target Atk4\Data\Persistence not found
+persistence/sql/advanced.md: [phpdomain] Target #manual-query-execution not found
+persistence/sql/advanced.md: [phpdomain] Target #manual-query-execution not found
+persistence/sql/advanced.md: [phpdomain] Target #manual-query-execution not found
+persistence/sql/advanced.md: [phpdomain] Target #manual-query-execution not found
+persistence/sql/advanced.md: [phpdomain] Target #manual-query-execution not found
+persistence/sql/advanced.md: [phpdomain] Target #manual-query-execution not found
+persistence/sql/advanced.md: [phpdomain] Target #manual-query-execution not found
+persistence/sql/advanced.md: [phpdomain] Target #manual-query-execution not found
+persistence/sql/advanced.md: [phpdomain] Target #manual-query-execution not found
+persistence/sql/advanced.md: [phpdomain] Target #manual-query-execution not found
+persistence/sql/advanced.md: [phpdomain] Target #manual-query-execution not found
+persistence/sql/advanced.md: [phpdomain] Target #manual-query-execution not found
+persistence/sql/advanced.md: [phpdomain] Target Atk4\Data\Persistence\Sql\Expression::execute not found
+persistence/sql/advanced.md: [phpdomain] Target Atk4\Data\Persistence\Sql\Connection::$queryClass not found
+persistence/sql/advanced.md: [phpdomain] Target Atk4\Data\Persistence\Sql\Expression::execute not found
+persistence/sql/advanced.md: [phpdomain] Target Atk4\Data\Persistence\Sql\string|array not found
+persistence/sql/connection.md: [phpdomain] Target Atk4\Data\Persistence\Sql\Query::$connection not found
+persistence/sql/connection.md: [phpdomain] Target Atk4\Data\Persistence\Sql\connect not found
+persistence/sql/expressions.md: [phpdomain] Target #rendering not found
+persistence/sql/expressions.md: [phpdomain] Target #rendering not found
+persistence/sql/expressions.md: [phpdomain] Target #rendering not found
+persistence/sql/expressions.md: [phpdomain] Target #rendering not found
+persistence/sql/expressions.md: [phpdomain] Target #rendering not found
+persistence/sql/expressions.md: [phpdomain] Target #rendering not found
+persistence/sql/expressions.md: [phpdomain] Target #rendering not found
+persistence/sql/expressions.md: [phpdomain] Target #rendering not found
+persistence/sql/expressions.md: [phpdomain] Target #rendering not found
+persistence/sql/expressions.md: [phpdomain] Target #rendering not found
+persistence/sql/expressions.md: [phpdomain] Target #rendering not found
+persistence/sql/expressions.md: [phpdomain] Target #rendering not found
+persistence/sql/expressions.md: [phpdomain] Target Atk4\Data\Persistence\Sql\Expressionable not found
+persistence/sql/expressions.md: [phpdomain] Target Atk4\Data\Persistence\Sql\expr not found
+persistence/sql/expressions.md: [phpdomain] Target Atk4\Data\Persistence\Sql\$template not found
+persistence/sql/expressions.md: [phpdomain] Target Atk4\Data\Persistence\Sql\$connection not found
+persistence/sql/expressions.md: [phpdomain] Target Atk4\Data\Persistence\Sql\executeQuery not found
+persistence/sql/expressions.md: [phpdomain] Target Atk4\Data\Persistence\Sql\$connection not found
+persistence/sql/expressions.md: [phpdomain] Target Atk4\Data\Persistence\Sql\consume not found
+persistence/sql/expressions.md: [phpdomain] Target Atk4\Data\Persistence\Sql\execute not found
+persistence/sql/expressions.md: [phpdomain] Target Atk4\Data\Persistence\Sql\getDebugQuery not found
+persistence/sql/queries.md: [phpdomain] Target Atk4\Data\Persistence\Sql\field not found
+persistence/sql/queries.md: [phpdomain] Target Atk4\Data\Persistence\Sql\table not found
+persistence/sql/queries.md: [phpdomain] Target Atk4\Data\Persistence\Sql\mode not found
+persistence/sql/queries.md: [phpdomain] Target Atk4\Data\Persistence\Sql\string|array|object not found
+persistence/sql/queries.md: [phpdomain] Target Atk4\Data\Persistence\Sql\Expressionable not found
+persistence/sql/queries.md: [phpdomain] Target Atk4\Data\Persistence\Sql\string|array not found
+persistence/sql/queries.md: [phpdomain] Target Atk4\Data\Persistence\Sql\Expression::$args not found
+persistence/sql/quickstart.md: [phpdomain] Target #advanced-connections not found
+persistence/sql/quickstart.md: [phpdomain] Target #advanced-connections not found
+persistence/sql/quickstart.md: [phpdomain] Target #advanced-connections not found
+persistence/sql/quickstart.md: [phpdomain] Target #advanced-connections not found
+persistence/sql/quickstart.md: [phpdomain] Target #advanced-connections not found
+persistence/sql/quickstart.md: [phpdomain] Target #advanced-connections not found
+persistence/sql/quickstart.md: [phpdomain] Target #advanced-connections not found
+persistence/sql/quickstart.md: [phpdomain] Target #advanced-connections not found
+persistence/sql/quickstart.md: [phpdomain] Target #advanced-connections not found
+persistence/sql/quickstart.md: [phpdomain] Target #advanced-connections not found
+persistence/sql/quickstart.md: [phpdomain] Target #advanced-connections not found
+persistence/sql/quickstart.md: [phpdomain] Target #advanced-connections not found
+persistence/sql/quickstart.md: [phpdomain] Target #manual-query-execution not found
+persistence/sql/quickstart.md: [phpdomain] Target #manual-query-execution not found
+persistence/sql/quickstart.md: [phpdomain] Target #manual-query-execution not found
+persistence/sql/quickstart.md: [phpdomain] Target #manual-query-execution not found
+persistence/sql/quickstart.md: [phpdomain] Target #manual-query-execution not found
+persistence/sql/quickstart.md: [phpdomain] Target #manual-query-execution not found
+persistence/sql/quickstart.md: [phpdomain] Target #manual-query-execution not found
+persistence/sql/quickstart.md: [phpdomain] Target #manual-query-execution not found
+persistence/sql/quickstart.md: [phpdomain] Target #manual-query-execution not found
+persistence/sql/quickstart.md: [phpdomain] Target #manual-query-execution not found
+persistence/sql/quickstart.md: [phpdomain] Target #manual-query-execution not found
+persistence/sql/quickstart.md: [phpdomain] Target #manual-query-execution not found
+persistence/sql/quickstart.md: [phpdomain] Target Atk4\Data\Persistence\Sql\Query::mode not found
+quickstart.md: [phpdomain] Target Atk4\Data\Persistence not found
+quickstart.md: [phpdomain] Target Atk4\Data\Model::loadBy not found
+quickstart.md: [phpdomain] Target Atk4\Data\Model::join not found
+quickstart.md: [phpdomain] Target Atk4\Data\Reference\HasMany not found
+quickstart.md: [phpdomain] Target Atk4\Data\Model::getReference not found
+quickstart.md: [phpdomain] Target Atk4\Data\Model::hasReference not found
+quickstart.md: [phpdomain] Target Atk4\Data\Reference::getModel not found
+references.md: [phpdomain] Target Atk4\Data\Model::getReferences not found
+references.md: [phpdomain] Target Atk4\Data\Model::getReference not found
+references.md: [phpdomain] Target Atk4\Data\Model::getReference not found
+references.md: [phpdomain] Target Atk4\Data\Model::hasReference not found
+sql.md: [phpdomain] Target Atk4\Data\Model::$reloadAfterSave not found
+sql.md: [phpdomain] Target Atk4\Data\Persistence\Sql::action not found
+static.md: [phpdomain] Target Atk4\Data\Persistence\Array_ not found
+static.md: [phpdomain] Target Atk4\Data\Persistence\Array_ not found
+static.md: [phpdomain] Target Atk4\Data\Model::$readOnly not found
+types.md: [phpdomain] Target DateTime not found
+types.md: [phpdomain] Target DateTime not found
+types.md: [phpdomain] Target DateTime not found
+hooks.md: WARNING: undefined label: soft-delete
+persistence/sql/advanced.md: WARNING: 'myst' reference target not found: #manual-query-execution
+persistence/sql/expressions.md: WARNING: 'myst' reference target not found: #rendering
+persistence/sql/queries.md: WARNING: undefined label: fetching-result
+persistence/sql/queries.md: WARNING: undefined label: query modes
+persistence/sql/queries.md: WARNING: undefined label: query modes
+persistence/sql/queries.md: WARNING: undefined label: query modes
+persistence/sql/queries.md: WARNING: undefined label: query modes
+persistence/sql/queries.md: WARNING: undefined label: query modes
+persistence/sql/queries.md: WARNING: undefined label: query modes
+persistence/sql/queries.md: WARNING: undefined label: query modes
+persistence/sql/quickstart.md: WARNING: 'myst' reference target not found: #advanced-connections
+persistence/sql/quickstart.md: WARNING: 'myst' reference target not found: #manual-query-execution
+persistence/sql/quickstart.md: WARNING: Failed to create a cross reference. A title or caption not found: expr
+persistence/sql/quickstart.md: WARNING: Failed to create a cross reference. A title or caption not found: query

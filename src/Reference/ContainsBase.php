@@ -27,10 +27,7 @@ abstract class ContainsBase extends Reference
     /** @var string Required! We need table alias for internal use only. */
     protected $tableAlias = 'tbl';
 
-    /**
-     * Reference\ContainsOne will also add a field corresponding
-     * to 'ourField' unless it exists of course.
-     */
+    #[\Override]
     protected function init(): void
     {
         parent::init();

@@ -21,6 +21,7 @@ class HasMany extends Reference
         return $model->table;
     }
 
+    #[\Override]
     public function getTheirFieldName(Model $theirModel = null): string
     {
         if ($this->theirField) {
@@ -79,6 +80,7 @@ class HasMany extends Reference
     /**
      * Returns referenced model with condition set.
      */
+    #[\Override]
     public function ref(Model $ourModel, array $defaults = []): Model
     {
         $ourModel = $this->getOurModel($ourModel);

@@ -29,7 +29,7 @@ class ReferenceTest extends TestCase
         self::assertSame(20, $o->get('amount'));
         self::assertSame(1, $o->get('user_id'));
 
-        $r2 = $user->getModel()->hasMany('BigOrders', ['model' => function () {
+        $r2 = $user->getModel()->hasMany('BigOrders', ['model' => static function () {
             $m = new Model();
             $m->addField('amount', ['default' => 100]);
             $m->addField('user_id', ['type' => 'integer']);
@@ -105,7 +105,7 @@ class ReferenceTest extends TestCase
     public function testCustomReference(): void
     {
         $m = new Model($this->db, ['table' => 'user']);
-        $m->addReference('archive', ['model' => function (Model $m) {
+        $m->addReference('archive', ['model' => static function (Model $m) {
             return new $m(null, ['table' => $m->table . '_archive']);
         }]);
 

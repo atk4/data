@@ -8,8 +8,6 @@ use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
-use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Types as DbalTypes;
 
@@ -113,13 +111,7 @@ class ReferenceSqlTest extends TestCase
         $c->addField('currency');
         $c->addField('name');
 
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-            $serverVersion = $this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
-            if (preg_match('~^5\.6~', $serverVersion)) {
-                self::markTestIncomplete('TODO MySQL 5.6: Unique key exceed max key (767 bytes) length');
-            }
-        }
-        $this->markTestIncompleteWhenCreateUniqueIndexIsNotSupportedByPlatform();
+        $this->markTestIncompleteOnMySQL56PlatformAsCreateUniqueStringIndexHasLengthLimit();
 
         $u->hasOne('cur', ['model' => $c, 'ourField' => 'currency', 'theirField' => 'currency']);
         $this->createMigrator()->createForeignKey($u->getReference('cur'));
@@ -282,6 +274,23 @@ class ReferenceSqlTest extends TestCase
         );
     }
 
+    /**
+     * @param \Closure(): void $fx
+     */
+    protected function executeFxWithTemporaryType(string $name, DbalTypes\Type $type, \Closure $fx): void
+    {
+        $typeRegistry = DbalTypes\Type::getTypeRegistry();
+
+        $typeRegistry->register($name, $type);
+        try {
+            $fx();
+        } finally {
+            \Closure::bind(static function () use ($typeRegistry, $name) {
+                unset($typeRegistry->instances[$name]);
+            }, null, DbalTypes\TypeRegistry::class)();
+        }
+    }
+
     public function testReferenceWithObjectId(): void
     {
         $this->setDb([
@@ -301,16 +310,19 @@ class ReferenceSqlTest extends TestCase
             /**
              * TODO: Remove once DBAL 3.x support is dropped.
              */
+            #[\Override]
             public function getName(): string
             {
                 return self::class;
             }
 
+            #[\Override]
             public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform): string
             {
                 return DbalTypes\Type::getType(DbalTypes\Types::INTEGER)->getSQLDeclaration($fieldDeclaration, $platform);
             }
 
+            #[\Override]
             public function convertToDatabaseValue($value, AbstractPlatform $platform): ?int
             {
                 if ($value === null) {
@@ -320,6 +332,7 @@ class ReferenceSqlTest extends TestCase
                 return DbalTypes\Type::getType('integer')->convertToDatabaseValue($value->getValue(), $platform);
             }
 
+            #[\Override]
             public function convertToPHPValue($value, AbstractPlatform $platform): ?object
             {
                 if ($value === null) {
@@ -343,8 +356,7 @@ class ReferenceSqlTest extends TestCase
         };
         $integerWrappedTypeName = $integerWrappedType->getName(); // @phpstan-ignore-line
 
-        DbalTypes\Type::addType($integerWrappedTypeName, get_class($integerWrappedType));
-        try {
+        $this->executeFxWithTemporaryType($integerWrappedTypeName, $integerWrappedType, function () use ($integerWrappedType, $integerWrappedTypeName) {
             $file = new Model($this->db, ['table' => 'file']);
             $file->getField('id')->type = $integerWrappedTypeName;
             $file->addField('name');
@@ -357,6 +369,20 @@ class ReferenceSqlTest extends TestCase
                 'model' => $file,
                 'theirField' => 'parentDirectoryId',
             ]);
+
+            $fileEntity = $file->loadBy('name', 'v');
+            self::assertSame(3, $fileEntity->getId()->getValue());
+            self::assertSame(3, $fileEntity->get('id')->getValue());
+            self::assertSame($fileEntity->getId(), $fileEntity->get('id'));
+
+            $c = 0;
+            unset($fileEntity);
+            foreach ($file as $id => $fileEntity) {
+                self::assertSame($fileEntity->getId()->getValue(), $id->getValue());
+                self::assertSame($fileEntity->getId(), $id);
+                ++$c;
+            }
+            self::assertSame(8, $c);
 
             $fileEntity = $file->loadBy('name', 'v')->ref('childFiles')->createEntity();
             self::assertSame(3, $fileEntity->get('parentDirectoryId')->getValue());
@@ -402,12 +428,7 @@ class ReferenceSqlTest extends TestCase
             self::{'assertEquals'}([
                 ['id' => $createWrappedIntegerFx(2), 'name' => 'u', 'parentDirectoryId' => null],
             ], $fileEntity->getModel()->export());
-        } finally {
-            \Closure::bind(function () use ($integerWrappedTypeName) {
-                $dbalTypeRegistry = DbalTypes\Type::getTypeRegistry();
-                unset($dbalTypeRegistry->instances[$integerWrappedTypeName]);
-            }, null, DbalTypes\TypeRegistry::class)();
-        }
+        });
     }
 
     public function testAggregateHasMany(): void
@@ -494,17 +515,8 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
-        $buildLengthSqlFx = function (string $v): string {
+        $makeLengthSqlFx = function (string $v): string {
             return ($this->getDatabasePlatform() instanceof SQLServerPlatform ? 'LEN' : 'LENGTH') . '(' . $v . ')';
-        };
-
-        $buildSumWithIntegerCastSqlFx = function (string $v): string {
-            if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform
-                || $this->getDatabasePlatform() instanceof SQLServerPlatform) {
-                $v = 'CAST(' . $v . ' AS INT)';
-            }
-
-            return 'SUM(' . $v . ')';
         };
 
         $l = new Model($this->db, ['table' => 'list']);
@@ -521,9 +533,9 @@ class ReferenceSqlTest extends TestCase
             'items_star' => ['aggregate' => 'count', 'type' => 'integer'], // no field set, counts all rows with count(*)
             'items_c:' => ['concat' => '::', 'field' => 'name'],
             'items_c-' => ['aggregate' => $i->dsql()->groupConcat($i->expr('[name]'), '-')],
-            'len' => ['aggregate' => $i->expr($buildSumWithIntegerCastSqlFx($buildLengthSqlFx('[name]'))), 'type' => 'integer'], // TODO cast should be implicit when using "aggregate", sandpit http://sqlfiddle.com/#!17/0d2c0/3
-            'len2' => ['expr' => $buildSumWithIntegerCastSqlFx($buildLengthSqlFx('[name]')), 'type' => 'integer'],
-            'chicken5' => ['expr' => $buildSumWithIntegerCastSqlFx('[]'), 'args' => ['5'], 'type' => 'integer'],
+            'len' => ['aggregate' => $i->expr('SUM(' . $makeLengthSqlFx('[name]') . ')'), 'type' => 'integer'],
+            'len2' => ['expr' => 'SUM(' . $makeLengthSqlFx('[name]') . ')', 'type' => 'integer'],
+            'chicken5' => ['expr' => 'SUM([])', 'args' => [5], 'type' => 'integer'],
         ]);
 
         $ll = $l->load(1);
@@ -696,8 +708,6 @@ class ReferenceSqlTest extends TestCase
         $s = (new Model($this->db, ['table' => 'stadium']));
         $s->addField('name');
         $s->addField('player_id', ['type' => 'integer']);
-
-        $this->markTestIncompleteWhenCreateUniqueIndexIsNotSupportedByPlatform();
 
         $p = new Model($this->db, ['table' => 'player']);
         $p->addField('name');
@@ -913,7 +923,7 @@ class ReferenceSqlTest extends TestCase
 
         $referencedCaption = $o->getField('user_last_name')->getCaption();
 
-        // Test: $field->caption for the field 'last_name' is defined in referenced model (User)
+        // $field->caption for the field 'last_name' is defined in referenced model (User)
         // When Order add field from Referenced model User
         // caption will be passed to Order field user_last_name
         self::assertSame('Surname', $referencedCaption);

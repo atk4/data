@@ -11,6 +11,7 @@ use Atk4\Data\Tests\Model\Smbo\Transfer;
 
 class SmboTransferTest extends TestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -50,7 +51,7 @@ class SmboTransferTest extends TestCase
 
         $t = new Transfer($this->db);
         $data = $t->export(['id', 'transfer_document_id']);
-        usort($data, function ($e1, $e2) {
+        usort($data, static function ($e1, $e2) {
             return $e1['id'] < $e2['id'] ? -1 : 1;
         });
         self::assertSame([
@@ -68,12 +69,10 @@ class SmboTransferTest extends TestCase
         $aa->save(['name' => 'AIB']);
         $aa->ref('Payment')->createEntity()->save(['amount' => 10]);
         $aa->ref('Payment')->createEntity()->save(['amount' => 20]);
-        $aa->unload();
 
         $aa = $a->createEntity();
         $aa->save(['name' => 'BOI']);
         $aa->ref('Payment')->createEntity()->save(['amount' => 30]);
-        $aa->unload();
 
         // create payment without link to account
         $p = new Payment($this->db);

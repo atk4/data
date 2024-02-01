@@ -62,10 +62,6 @@ class Field implements Expressionable
 
         // assert type exists
         if (isset($properties['type'])) {
-            if ($this->type === 'array') { // remove in v5.1
-                throw new Exception('Atk4 "array" type is no longer supported, originally, it serialized value to JSON, to keep this behaviour, use "json" type');
-            }
-
             Type::getType($this->type);
         }
 
@@ -106,12 +102,10 @@ class Field implements Expressionable
         $persistence = $this->issetOwner() && $this->getOwner()->issetPersistence()
             ? $this->getOwner()->getPersistence()
             : new class() extends Persistence {
-                public function __construct()
-                {
-                }
+                public function __construct() {}
             };
 
-        $persistenceSetSkipNormalizeFx = \Closure::bind(function (bool $value) use ($persistence) {
+        $persistenceSetSkipNormalizeFx = \Closure::bind(static function (bool $value) use ($persistence) {
             $persistence->typecastSaveSkipNormalize = $value;
         }, null, Persistence::class);
 
@@ -153,56 +147,15 @@ class Field implements Expressionable
                         $value = rtrim(preg_replace('~\r?\n|\r~', "\n", $value)); // normalize line-ends to LF and rtrim
 
                         break;
-                    case 'boolean':
-                    case 'integer':
-                        $value = preg_replace('~\s+|[,`\']~', '', $value);
-
-                        break;
-                    case 'float':
-                    case 'atk4_money':
-                        $value = preg_replace('~\s+|[`\']|,(?=.*\.)~', '', $value);
-
-                        break;
-                }
-
-                switch ($this->type) {
-                    case 'boolean':
-                    case 'integer':
-                    case 'float':
-                    case 'atk4_money':
-                        if ($value === '') {
-                            $value = null;
-                        } elseif (!is_numeric($value)) {
-                            throw new Exception('Must be numeric');
-                        }
-
-                        break;
-                }
-            } elseif ($value !== null) {
-                switch ($this->type) {
-                    case 'string':
-                    case 'text':
-                    case 'integer':
-                    case 'float':
-                    case 'atk4_money':
-                        if (is_bool($value)) {
-                            throw new Exception('Must not be boolean type');
-                        } elseif (is_int($value)) {
-                            $value = (string) $value;
-                        } elseif (is_float($value)) {
-                            $value = Expression::castFloatToString($value);
-                        } else {
-                            throw new Exception('Must be scalar');
-                        }
-
-                        break;
                 }
             }
 
             $value = $this->normalizeUsingTypecast($value);
 
             if ($value === null) {
-                if (!$this->nullable || $this->required) {
+                if ($this->required) {
+                    throw new Exception('Must not be empty');
+                } elseif (!$this->nullable) {
                     throw new Exception('Must not be null');
                 }
 
@@ -229,6 +182,7 @@ class Field implements Expressionable
                     break;
                 case 'integer':
                 case 'float':
+                case 'decimal':
                 case 'atk4_money':
                     if ($this->required && !$value) {
                         throw new Exception('Must not be a zero');
@@ -266,17 +220,25 @@ class Field implements Expressionable
             } elseif ($this->values) {
                 if ($value === '') {
                     $value = null;
-                } elseif ((!is_string($value) && !is_int($value)) || !array_key_exists($value, $this->values)) {
+                } elseif ((!is_string($value) && !is_int($value)) || !isset($this->values[$value])) {
                     throw new Exception('Value is not one of the allowed values: ' . implode(', ', array_keys($this->values)));
                 }
             }
 
             return $value;
         } catch (\Exception $e) {
+            if ($e instanceof \ErrorException) {
+                throw $e;
+            }
+
             $messages = [];
             do {
                 $messages[] = $e->getMessage();
             } while ($e = $e->getPrevious());
+
+            if (count($messages) >= 2 && $messages[0] === 'Typecast save error') {
+                array_shift($messages);
+            }
 
             throw (new ValidationException([$this->shortName => implode(': ', $messages)], $this->issetOwner() ? $this->getOwner() : null))
                 ->addMoreInfo('field', $this);
@@ -330,9 +292,7 @@ class Field implements Expressionable
     {
         if (!$this->getOwner()->issetPersistence() && $allowGenericPersistence) {
             $persistence = new class() extends Persistence {
-                public function __construct()
-                {
-                }
+                public function __construct() {}
             };
         } else {
             $this->getOwner()->assertHasPersistence();
@@ -428,7 +388,7 @@ class Field implements Expressionable
         if ($value instanceof Persistence\Array_\Action) { // needed to pass hintable tests
             $v = $value;
         } elseif (is_array($value)) {
-            $v = array_map(fn ($value) => $typecastField->typecastSaveField($value), $value);
+            $v = array_map(static fn ($value) => $typecastField->typecastSaveField($value), $value);
         } else {
             $v = $typecastField->typecastSaveField($value);
         }
@@ -476,8 +436,10 @@ class Field implements Expressionable
 
     /**
      * When field is used as expression, this method will be called.
-     * Universal way to convert ourselves to expression. Off-load implementation into persistence.
+     *
+     * Off-load implementation into persistence.
      */
+    #[\Override]
     public function getDsqlExpression(Expression $expression): Expression
     {
         $this->getOwner()->assertHasPersistence();

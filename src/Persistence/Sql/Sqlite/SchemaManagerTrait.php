@@ -11,6 +11,7 @@ use Doctrine\DBAL\Schema\TableDiff;
 
 trait SchemaManagerTrait
 {
+    #[\Override]
     public function alterTable(TableDiff $tableDiff): void
     {
         $hadForeignKeysEnabled = (bool) $this->_conn->executeQuery('PRAGMA foreign_keys')->fetchOne();
@@ -30,6 +31,22 @@ trait SchemaManagerTrait
         }
     }
 
+    // fix collations unescape for SqliteSchemaManager::parseColumnCollationFromSQL() method
+    // https://github.com/doctrine/dbal/issues/6129
+
+    #[\Override]
+    protected function _getPortableTableColumnList($table, $database, $tableColumns)
+    {
+        $res = parent::_getPortableTableColumnList($table, $database, $tableColumns);
+        foreach ($res as $column) {
+            if ($column->hasPlatformOption('collation')) {
+                $column->setPlatformOption('collation', $this->unquoteTableIdentifier($column->getPlatformOption('collation')));
+            }
+        }
+
+        return $res;
+    }
+
     // fix quoted table name support for private SqliteSchemaManager::getCreateTableSQL() method
     // https://github.com/doctrine/dbal/blob/3.3.7/src/Schema/SqliteSchemaManager.php#L539
     // TODO submit a PR with fixed SqliteSchemaManager to DBAL
@@ -39,16 +56,19 @@ trait SchemaManagerTrait
         return (new Identifier($tableName))->getName();
     }
 
+    #[\Override]
     public function listTableDetails($name): Table
     {
         return parent::listTableDetails($this->unquoteTableIdentifier($name));
     }
 
+    #[\Override]
     public function listTableIndexes($table): array
     {
         return parent::listTableIndexes($this->unquoteTableIdentifier($table));
     }
 
+    #[\Override]
     public function listTableForeignKeys($table, $database = null): array
     {
         return parent::listTableForeignKeys($this->unquoteTableIdentifier($table), $database);

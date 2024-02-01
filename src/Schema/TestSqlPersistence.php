@@ -15,10 +15,9 @@ use Doctrine\DBAL\Platforms\MySQLPlatform;
  */
 final class TestSqlPersistence extends Persistence\Sql
 {
-    public function __construct() // @phpstan-ignore-line
-    {
-    }
+    public function __construct() {} // @phpstan-ignore-line
 
+    #[\Override]
     public function getConnection(): Persistence\Sql\Connection
     {
         \Closure::bind(function () {
@@ -35,20 +34,26 @@ final class TestSqlPersistence extends Persistence\Sql
                 $this->getConnection()->getConnection()->getConfiguration()->setSQLLogger(
                     // @phpstan-ignore-next-line SQLLogger is deprecated
                     new class() implements SQLLogger {
+                        #[\Override]
                         public function startQuery($sql, array $params = null, array $types = null): void
                         {
+                            // log transaction savepoint operations only once
+                            // https://github.com/doctrine/dbal/blob/3.6.7/src/Connection.php#L1365
+                            if (preg_match('~^(?:SAVEPOINT|RELEASE SAVEPOINT|ROLLBACK TO SAVEPOINT|SAVE TRANSACTION|ROLLBACK TRANSACTION) DOCTRINE2_SAVEPOINT_\d+;?$~', $sql)) {
+                                return;
+                            }
+
                             // fix https://github.com/doctrine/dbal/issues/5525
                             if ($params !== null && $params !== [] && array_is_list($params)) {
                                 $params = array_combine(range(1, count($params)), $params);
                             }
 
                             $test = TestCase::getTestFromBacktrace();
-                            \Closure::bind(fn () => $test->logQuery($sql, $params ?? [], $types ?? []), null, TestCase::class)(); // @phpstan-ignore-line
+                            \Closure::bind(static fn () => $test->logQuery($sql, $params ?? [], $types ?? []), null, TestCase::class)(); // @phpstan-ignore-line
                         }
 
-                        public function stopQuery(): void
-                        {
-                        }
+                        #[\Override]
+                        public function stopQuery(): void {}
                     }
                 );
             }

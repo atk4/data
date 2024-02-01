@@ -10,23 +10,30 @@ use Atk4\Data\Persistence;
 
 class Join extends Model\Join
 {
-    public function afterLoad(Model $entity): void
+    #[\Override]
+    protected function afterLoad(Model $entity): void
     {
-        // we need to collect ID
-        $this->setId($entity, $entity->getDataRef()[$this->masterField]);
-        if ($this->getId($entity) === null) {
+        $model = $this->getOwner();
+
+        $foreignId = $entity->getDataRef()[$this->masterField];
+        if ($foreignId === null) {
             return;
         }
 
         try {
-            $data = Persistence\Array_::assertInstanceOf($this->getOwner()->getPersistence())
-                ->load($this->createFakeForeignModel(), $this->getId($entity));
+            $foreignData = Persistence\Array_::assertInstanceOf($model->getPersistence())
+                ->load($this->createFakeForeignModel(), $foreignId);
         } catch (Exception $e) {
             throw (new Exception('Unable to load joined record', $e->getCode(), $e))
                 ->addMoreInfo('table', $this->foreignTable)
-                ->addMoreInfo('id', $this->getId($entity));
+                ->addMoreInfo('id', $foreignId);
         }
+
         $dataRef = &$entity->getDataRef();
-        $dataRef = array_merge($data, $entity->getDataRef());
+        foreach ($model->getFields() as $field) {
+            if ($field->hasJoin() && $field->getJoin()->shortName === $this->shortName) {
+                $dataRef[$field->shortName] = $foreignData[$field->getPersistenceName()];
+            }
+        }
     }
 }

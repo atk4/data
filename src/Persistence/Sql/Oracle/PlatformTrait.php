@@ -5,10 +5,15 @@ declare(strict_types=1);
 namespace Atk4\Data\Persistence\Sql\Oracle;
 
 use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Schema\AbstractAsset;
+use Doctrine\DBAL\Schema\Index;
 use Doctrine\DBAL\Schema\Sequence;
+use Doctrine\DBAL\Schema\Table;
+use Doctrine\DBAL\Schema\UniqueConstraint;
 
 trait PlatformTrait
 {
+    #[\Override]
     public function getVarcharTypeDeclarationSQL(array $column)
     {
         $column['length'] = ($column['length'] ?? 255) * 4;
@@ -19,6 +24,7 @@ trait PlatformTrait
     // Oracle database requires explicit conversion when using binary column,
     // workaround by using a standard non-binary column with custom encoding/typecast
 
+    #[\Override]
     public function getBinaryTypeDeclarationSQL(array $column)
     {
         $lengthEncodedAscii = ($column['length'] ?? 255) * 2 + strlen('atk__binary__u5f8mzx4vsm8g2c9__' . hash('crc32b', ''));
@@ -27,9 +33,17 @@ trait PlatformTrait
         return $this->getVarcharTypeDeclarationSQL($column);
     }
 
+    #[\Override]
     public function getBlobTypeDeclarationSQL(array $column)
     {
         return $this->getClobTypeDeclarationSQL($column);
+    }
+
+    // TODO create DBAL PR
+    #[\Override]
+    public function getFloatDeclarationSQL(array $column)
+    {
+        return 'BINARY_DOUBLE';
     }
 
     // TODO test DBAL DB diff for each supported Field type
@@ -45,6 +59,7 @@ trait PlatformTrait
     // Oracle DBAL platform autoincrement implementation does not increment like
     // Sqlite or MySQL does, unify the behaviour
 
+    #[\Override]
     public function getCreateSequenceSQL(Sequence $sequence)
     {
         $sequence->setCache(1);
@@ -52,6 +67,7 @@ trait PlatformTrait
         return parent::getCreateSequenceSQL($sequence);
     }
 
+    #[\Override]
     public function getCreateAutoincrementSql($name, $table, $start = 1)
     {
         $sqls = parent::getCreateAutoincrementSql($name, $table, $start);
@@ -67,9 +83,8 @@ trait PlatformTrait
         $aiSequenceName = $this->getIdentitySequenceName($tableIdentifier->getQuotedName($this), $nameIdentifier->getQuotedName($this));
         assert(str_starts_with($sqls[count($sqls) - 1], 'CREATE TRIGGER ' . $aiTriggerName . "\n"));
 
-        $conn = new Connection();
         $pkSeq = \Closure::bind(fn () => $this->normalizeIdentifier($aiSequenceName), $this, OraclePlatform::class)()->getName();
-        $sqls[count($sqls) - 1] = $conn->expr(
+        $sqls[count($sqls) - 1] = (new Expression(
             // else branch should be maybe (because of concurrency) put into after update trigger
             str_replace('[pk_seq]', '\'' . str_replace('\'', '\'\'', $pkSeq) . '\'', <<<'EOF'
                 CREATE TRIGGER {{trigger}}
@@ -96,11 +111,39 @@ trait PlatformTrait
                 'pk' => $nameIdentifier->getName(),
                 'pk_seq' => $pkSeq,
             ]
-        )->render()[0];
+        ))->render()[0];
 
         return $sqls;
     }
 
+    #[\Override]
+    public function getCreateIndexSQL(Index $index, $table)
+    {
+        // workaround https://github.com/doctrine/dbal/issues/5508
+        // no side effect on multiple null values or DBAL index list observed
+        if ($index->isUnique()) {
+            $uniqueConstraint = new UniqueConstraint(
+                '0.0',
+                ['0.0'],
+                $index->getFlags(),
+                $index->getOptions()
+            );
+            \Closure::bind(static function () use ($index, $uniqueConstraint) {
+                $uniqueConstraint->_name = $index->_name;
+                $uniqueConstraint->_namespace = $index->_namespace;
+                $uniqueConstraint->_quoted = $index->_quoted;
+                $uniqueConstraint->columns = $index->_columns;
+            }, null, AbstractAsset::class)();
+
+            $tableName = $table instanceof Table ? $table->getQuotedName($this) : $table;
+
+            return $this->getCreateUniqueConstraintSQL($uniqueConstraint, $tableName);
+        }
+
+        return parent::getCreateIndexSQL($index, $table);
+    }
+
+    #[\Override]
     public function getListDatabasesSQL(): string
     {
         // ignore Oracle maintained schemas, improve tests performance

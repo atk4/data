@@ -25,10 +25,9 @@ object you can load/unload individual records (See Single record Operations belo
 ```
 $m = new User($db);
 
-$m = $m->load(3);
-$m->set('note', 'just updating');
-$m->save();
-$m->unload();
+$entity = $m->load(3);
+$entity->set('note', 'just updating');
+$entity->save();
 
 $m = $m->load(8);
 ...
@@ -183,10 +182,9 @@ You may safely rely on `$this->getPersistence()` result to make choices:
 
 ```
 if ($this->getPersistence() instanceof \Atk4\Data\Persistence\Sql) {
-    // Calculating on SQL server is more efficient!!
+    // calculating on SQL server is more efficient!!
     $this->addExpression('total', ['expr' => '[amount] + [vat]']);
 } else {
-    // Fallback
     $this->addCalculatedField('total', ['expr' => function (self $m) {
         return $m->get('amount') + $m->get('vat');
     }, 'type' => 'float']);
@@ -390,7 +388,7 @@ passwords to be generated and sent to the users:
 Crud::addTo($app)->setModel(new User($app->db));
 ```
 
-Read more about {php:class}`Model_i_UserAction`
+Read more about {php:class}`Model\UserAction`
 
 ### Hooks
 
@@ -472,7 +470,7 @@ explicitly associate model with persistence like this:
 ```
 $m = new User();
 
-// ....
+// ...
 
 $m->setPersistence($db); // links with persistence
 ```
@@ -487,7 +485,7 @@ $m = $m->load(1);
 echo $m->get('name'); // peter
 ```
 
-See {php:class}`Persistence_i_Static_`
+See {php:class}`Persistence\Static_`
 
 :::{php:attr} persistence
 :::
@@ -610,7 +608,7 @@ $m->set('name', 'John');
 echo $m->get('name'); // John
 
 $m->_unset('name');
-echo $m->get('name'); // Original value is shown
+echo $m->get('name'); // original value is shown
 ```
 
 This will restore original value of the field.
@@ -667,13 +665,13 @@ Full example:
 ```
 $m = new Model_User($db, 'user');
 
-// Fields can be added after model is created
+// fields can be added after model is created
 $m->addField('salary', ['default' => 1000]);
 
 echo $m->_isset('salary'); // false
 echo $m->get('salary'); // 1000
 
-// Next we load record from $db
+// next we load record from $db
 $m = $m->load(1);
 
 echo $m->get('salary'); // 2000 (from db)

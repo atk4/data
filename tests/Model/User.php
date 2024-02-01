@@ -8,6 +8,7 @@ use Atk4\Data\Model;
 
 class User extends Model
 {
+    #[\Override]
     protected function init(): void
     {
         parent::init();

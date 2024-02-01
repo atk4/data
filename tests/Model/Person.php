@@ -10,6 +10,7 @@ class Person extends Model
 {
     public $table = 'person';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();

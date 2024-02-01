@@ -14,50 +14,58 @@ class GenericPlatform extends Platforms\AbstractPlatform
         return DbalException::notSupported('SQL');
     }
 
+    #[\Override]
     public function getName(): string
     {
         return 'atk4_data_generic';
     }
 
-    protected function initializeDoctrineTypeMappings(): void
-    {
-    }
+    #[\Override]
+    protected function initializeDoctrineTypeMappings(): void {}
 
+    #[\Override]
     protected function _getCommonIntegerTypeDeclarationSQL(array $columnDef): string
     {
         throw $this->createNotSupportedException();
     }
 
+    #[\Override]
     public function getBigIntTypeDeclarationSQL(array $columnDef): string
     {
         throw $this->createNotSupportedException();
     }
 
+    #[\Override]
     public function getBlobTypeDeclarationSQL(array $field): string
     {
         throw $this->createNotSupportedException();
     }
 
+    #[\Override]
     public function getBooleanTypeDeclarationSQL(array $columnDef): string
     {
         throw $this->createNotSupportedException();
     }
 
+    #[\Override]
     public function getClobTypeDeclarationSQL(array $field): string
     {
         throw $this->createNotSupportedException();
     }
 
+    #[\Override]
     public function getIntegerTypeDeclarationSQL(array $columnDef): string
     {
         throw $this->createNotSupportedException();
     }
 
+    #[\Override]
     public function getSmallIntTypeDeclarationSQL(array $columnDef): string
     {
         throw $this->createNotSupportedException();
     }
 
+    #[\Override]
     public function getCurrentDatabaseExpression(): string
     {
         throw $this->createNotSupportedException();

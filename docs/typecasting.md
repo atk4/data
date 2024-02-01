@@ -11,9 +11,9 @@ operation. Here is the sequence and sample:
 
 ```
 $m->addField('birthday', ['type' => 'date']);
-// type has a number of pre-defined values. Using 'date'
+// Type has a number of pre-defined values. Using 'date'
 // instructs AD that we will be using it for staring dates
-// through 'DateTime' class.
+// through DateTime class
 
 $m->set('birthday', 'Jan 1 1960');
 // If non-compatible value is provided, it will be converted
@@ -28,8 +28,7 @@ $m->save();
 ```
 
 Typecasting is necessary to save the values inside the database and restore
-them back just as they were before. When modifying a record, typecasting will
-only be invoked on the fields which were dirty.
+them back just as they were before.
 
 The purpose of a flexible typecasting system is to allow you to store your date
 in a compatible format or even fine-tune it to match your database settings

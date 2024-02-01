@@ -63,8 +63,8 @@ If you have worked with other ORMs, read the following sections to avoid confusi
 - Documentation: {php:class}`Field`
 
 :::{note}
-Meta-information may be a persistence detail, ({php:attr}`Field::actual`)
-or presentation detail ({php:attr}`Field::ui`). Field class does not interpret
+Meta-information may be a persistence detail, ({php:attr}`Field::$actual`)
+or presentation detail ({php:attr}`Field::$ui`). Field class does not interpret
 the value, it only stores it.
 :::
 
@@ -237,7 +237,7 @@ echo $table->render();
 Class `\Atk4\Ui\Table` here is designed to work with persistencies and models -
 it will populate columns of correct type, fetch data, calculate totals if needed.
 But what if you have your data inside an array?
-You can use {php:class}`Persistence_i_Static_` for that:
+You can use {php:class}`Persistence\Static_` for that:
 
 ```
 $table = \Atk4\Ui\Table::addTo($app);

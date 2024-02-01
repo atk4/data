@@ -17,8 +17,7 @@ class JoinArrayTest extends TestCase
     private function getInternalPersistenceData(Persistence\Array_ $db): array
     {
         $data = [];
-        /** @var Persistence\Array_\Db\Table $table */
-        foreach ($this->getProtected($db, 'data') as $table) {
+        foreach (\Closure::bind(static fn () => $db->data, null, Persistence\Array_::class)() as $table) {
             foreach ($table->getRows() as $row) {
                 $rowData = $row->getData();
                 $id = $rowData['id'];
@@ -30,29 +29,37 @@ class JoinArrayTest extends TestCase
         return $data;
     }
 
+    /**
+     * @return mixed
+     */
+    private function getProtected(object $obj, string $name)
+    {
+        return \Closure::bind(static fn () => $obj->{$name}, null, $obj)();
+    }
+
     public function testDirection(): void
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $m = new Model($db, ['table' => 'user']);
 
         $j = $m->join('contact');
-        self::assertFalse($this->getProtected($j, 'reverse'));
+        self::assertFalse($j->reverse);
         self::assertSame('contact_id', $this->getProtected($j, 'masterField'));
         self::assertSame('id', $this->getProtected($j, 'foreignField'));
 
         $j = $m->join('contact2.test_id');
-        self::assertTrue($this->getProtected($j, 'reverse'));
+        self::assertTrue($j->reverse);
         self::assertSame('id', $this->getProtected($j, 'masterField'));
         self::assertSame('test_id', $this->getProtected($j, 'foreignField'));
 
         $j = $m->join('contact3', ['masterField' => 'test_id']);
-        self::assertFalse($this->getProtected($j, 'reverse'));
+        self::assertFalse($j->reverse);
         self::assertSame('test_id', $this->getProtected($j, 'masterField'));
         self::assertSame('id', $this->getProtected($j, 'foreignField'));
 
         $this->expectException(Exception::class); // TODO not implemented yet, see https://github.com/atk4/data/issues/803
         $j = $m->join('contact4.foo_id', ['masterField' => 'test_id', 'reverse' => true]);
-        // self::assertTrue($this->getProtected($j, 'reverse'));
+        // self::assertTrue($j->reverse);
         // self::assertSame('test_id', $this->getProtected($j, 'masterField'));
         // self::assertSame('foo_id', $this->getProtected($j, 'foreignField'));
     }
@@ -78,14 +85,18 @@ class JoinArrayTest extends TestCase
         $user2 = $user->createEntity();
         $user2->set('name', 'John');
         $user2->set('contact_phone', '+123');
+        $j->allowDangerousForeignTableUpdate = true;
         $user2->save();
+
+        self::assertSame(1, $user2->getId());
+        self::assertSame('John', $user2->get('name'));
+        self::assertSame('+123', $user2->get('contact_phone'));
 
         self::assertSame([
             'user' => [1 => ['name' => 'John', 'contact_id' => 1]],
             'contact' => [1 => ['contact_phone' => '+123']],
         ], $this->getInternalPersistenceData($db));
 
-        $user2->unload();
         $user2 = $user->createEntity();
         $user2->set('name', 'Peter');
         $user2->set('contact_id', 1);
@@ -101,7 +112,6 @@ class JoinArrayTest extends TestCase
             ],
         ], $this->getInternalPersistenceData($db));
 
-        $user2->unload();
         $user2 = $user->createEntity();
         $user2->set('name', 'Joe');
         $user2->set('contact_phone', '+321');
@@ -132,17 +142,22 @@ class JoinArrayTest extends TestCase
         $user2 = $user->createEntity();
         $user2->set('name', 'John');
         $user2->set('contact_phone', '+123');
+        $j->allowDangerousForeignTableUpdate = true;
         $user2->save();
+
+        self::assertSame(1, $user2->getId());
+        self::assertSame('John', $user2->get('name'));
+        self::assertSame('+123', $user2->get('contact_phone'));
 
         self::assertSame([
             'user' => [1 => ['name' => 'John']],
             'contact' => [1 => ['contact_phone' => '+123', 'test_id' => 1]],
         ], $this->getInternalPersistenceData($db));
 
-        $user2->unload();
         $user2 = $user->createEntity();
         $user2->set('name', 'Peter');
         $user2->save();
+
         self::assertSame([
             'user' => [
                 1 => ['name' => 'John'],
@@ -158,11 +173,11 @@ class JoinArrayTest extends TestCase
         $contact = $contact->load(2);
         $contact->delete();
 
-        $user2->unload();
         $user2 = $user->createEntity();
         $user2->set('name', 'Sue');
         $user2->set('contact_phone', '+444');
         $user2->save();
+
         self::assertSame([
             'user' => [
                 1 => ['name' => 'John'],
@@ -184,11 +199,11 @@ class JoinArrayTest extends TestCase
         $user->addField('test_id', ['type' => 'integer']);
         $j = $user->join('contact', ['masterField' => 'test_id']);
         $j->addField('contact_phone');
-        $user = $user->createEntity();
 
+        $user = $user->createEntity();
         $user->set('name', 'John');
         $user->set('contact_phone', '+123');
-
+        $j->allowDangerousForeignTableUpdate = true;
         $user->save();
 
         self::assertSame([
@@ -206,12 +221,12 @@ class JoinArrayTest extends TestCase
         $user->addField('code');
         $j = $user->join('contact.code', ['masterField' => 'code']);
         $j->addField('contact_phone');
-        $user = $user->createEntity();
 
+        $user = $user->createEntity();
         $user->set('name', 'John');
         $user->set('code', 'C28');
         $user->set('contact_phone', '+123');
-
+        $j->allowDangerousForeignTableUpdate = true;
         $user->save();
 
         self::assertSame([
@@ -255,7 +270,7 @@ class JoinArrayTest extends TestCase
             'id' => 3, 'contact_id' => 2, 'name' => 'Joe', 'contact_phone' => '+321',
         ], $user2->get());
 
-        $user2 = $user2->unload();
+        $user2->unload();
         self::assertSame([
             'id' => null, 'contact_id' => null, 'name' => null, 'contact_phone' => null,
         ], $user2->get());
@@ -286,6 +301,7 @@ class JoinArrayTest extends TestCase
         $user2 = $user->load(1);
         $user2->set('name', 'John 2');
         $user2->set('contact_phone', '+555');
+        $j->allowDangerousForeignTableUpdate = true;
         $user2->save();
 
         self::assertSame([
@@ -360,6 +376,7 @@ class JoinArrayTest extends TestCase
         $j->addField('contact_phone');
 
         $user = $user->load(1);
+        $j->allowDangerousForeignTableUpdate = true;
         $user->delete();
 
         self::assertSame([
@@ -375,7 +392,7 @@ class JoinArrayTest extends TestCase
         ], $this->getInternalPersistenceData($db));
     }
 
-    public function testLoadMissing(): void
+    public function testLoadMissingException(): void
     {
         $db = new Persistence\Array_([
             'user' => [
@@ -396,6 +413,7 @@ class JoinArrayTest extends TestCase
         $j->addField('contact_phone');
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unable to load joined record');
         $user->load(2);
     }
 
@@ -405,12 +423,12 @@ class JoinArrayTest extends TestCase
 
         $m = new Model($db, ['table' => 'db.user']);
         $j = $m->join('contact');
-        self::assertFalse($this->getProtected($j, 'reverse'));
+        self::assertFalse($j->reverse);
         self::assertSame('contact_id', $this->getProtected($j, 'masterField'));
         self::assertSame('id', $this->getProtected($j, 'foreignField'));
 
         $j = $m->join('contact2', ['reverse' => true]);
-        self::assertTrue($this->getProtected($j, 'reverse'));
+        self::assertTrue($j->reverse);
         self::assertSame('id', $this->getProtected($j, 'masterField'));
         self::assertSame('user_id', $this->getProtected($j, 'foreignField'));
     }

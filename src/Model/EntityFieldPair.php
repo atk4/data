@@ -22,7 +22,7 @@ class EntityFieldPair
     private $fieldName;
 
     /**
-     * @phpstan-param TModel $entity
+     * @param TModel $entity
      */
     public function __construct(Model $entity, string $fieldName)
     {
@@ -33,7 +33,7 @@ class EntityFieldPair
     }
 
     /**
-     * @phpstan-return TModel
+     * @return TModel
      */
     public function getModel(): Model
     {
@@ -41,7 +41,7 @@ class EntityFieldPair
     }
 
     /**
-     * @phpstan-return TModel
+     * @return TModel
      */
     public function getEntity(): Model
     {

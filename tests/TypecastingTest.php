@@ -5,16 +5,20 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests;
 
 use Atk4\Data\Exception;
+use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
+use Doctrine\DBAL\Types as DbalTypes;
 
 class TypecastingTest extends TestCase
 {
     /** @var string */
     private $defaultTzBackup;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -22,6 +26,7 @@ class TypecastingTest extends TestCase
         $this->defaultTzBackup = date_default_timezone_get();
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         date_default_timezone_set($this->defaultTzBackup);
@@ -96,7 +101,7 @@ class TypecastingTest extends TestCase
                     'time' => '12:00:50.000000',
                     'boolean' => '1',
                     'integer' => '2940',
-                    'money' => '8.2',
+                    'money' => 8.2,
                     'float' => 8.20234376757473,
                     'json' => '[1,2,3]',
                 ],
@@ -116,7 +121,7 @@ class TypecastingTest extends TestCase
         $m->load(2)->set('float', 8.202343767574732)->save();
         // pdo_sqlite in truncating float, see https://github.com/php/php-src/issues/8510
         // fixed since PHP 8.1, but if converted in SQL to string explicitly, the result is still rounded to 15 significant digits
-        if (!$this->getDatabasePlatform() instanceof SqlitePlatform || \PHP_VERSION_ID >= 80100) {
+        if (!$this->getDatabasePlatform() instanceof SQLitePlatform || \PHP_VERSION_ID >= 80100) {
             self::assertSame(8.202343767574732, $m->load(2)->get('float'));
         }
     }
@@ -124,15 +129,23 @@ class TypecastingTest extends TestCase
     public function testEmptyValues(): void
     {
         // Oracle always converts empty string to null
-        // see https://stackoverflow.com/questions/13278773/null-vs-empty-string-in-oracle#13278879
-        $emptyStringValue = $this->getDatabasePlatform() instanceof OraclePlatform ? null : '';
+        // https://stackoverflow.com/questions/13278773/null-vs-empty-string-in-oracle#13278879
+        $fixEmptyStringForOracleFx = function ($v) use (&$fixEmptyStringForOracleFx) {
+            if (is_array($v)) {
+                return array_map($fixEmptyStringForOracleFx, $v);
+            } elseif ($v === '' && $this->getDatabasePlatform() instanceof OraclePlatform) {
+                return null;
+            }
+
+            return $v;
+        };
 
         $dbData = [
             'types' => [
                 1 => $row = [
                     'id' => 1,
                     'string' => '',
-                    'notype' => '',
+                    'text' => '',
                     'date' => '',
                     'datetime' => '',
                     'time' => '',
@@ -140,6 +153,7 @@ class TypecastingTest extends TestCase
                     'integer' => '',
                     'money' => '',
                     'float' => '',
+                    'decimal' => '',
                     'json' => '',
                     'object' => '',
                     'local-object' => '',
@@ -152,7 +166,7 @@ class TypecastingTest extends TestCase
 
         $m = new Model($this->db, ['table' => 'types']);
         $m->addField('string', ['type' => 'string']);
-        $m->addField('notype');
+        $m->addField('text', ['type' => 'text']);
         $m->addField('date', ['type' => 'date']);
         $m->addField('datetime', ['type' => 'datetime']);
         $m->addField('time', ['type' => 'time']);
@@ -160,14 +174,14 @@ class TypecastingTest extends TestCase
         $m->addField('integer', ['type' => 'integer']);
         $m->addField('money', ['type' => 'atk4_money']);
         $m->addField('float', ['type' => 'float']);
+        $m->addField('decimal', ['type' => 'decimal']);
         $m->addField('json', ['type' => 'json']);
         $m->addField('object', ['type' => 'object']);
         $m->addField('local-object', ['type' => 'atk4_local_object']);
         $mm = $m->load(1);
 
-        // Only
-        self::assertSame($emptyStringValue, $mm->get('string'));
-        self::assertSame($emptyStringValue, $mm->get('notype'));
+        self::assertSame($fixEmptyStringForOracleFx(''), $mm->get('string'));
+        self::assertSame($fixEmptyStringForOracleFx(''), $mm->get('text'));
         self::assertNull($mm->get('date'));
         self::assertNull($mm->get('datetime'));
         self::assertNull($mm->get('time'));
@@ -175,6 +189,7 @@ class TypecastingTest extends TestCase
         self::assertNull($mm->get('integer'));
         self::assertNull($mm->get('money'));
         self::assertNull($mm->get('float'));
+        self::assertNull($mm->get('decimal'));
         self::assertNull($mm->get('json'));
         self::assertNull($mm->get('object'));
         self::assertNull($mm->get('local-object'));
@@ -183,8 +198,8 @@ class TypecastingTest extends TestCase
         unset($row['local-object']);
         $mm->setMulti($row);
 
-        self::assertSame('', $mm->get('string'));
-        self::assertSame('', $mm->get('notype'));
+        self::assertSame($fixEmptyStringForOracleFx(''), $mm->get('string'));
+        self::assertSame($fixEmptyStringForOracleFx(''), $mm->get('text'));
         self::assertNull($mm->get('date'));
         self::assertNull($mm->get('datetime'));
         self::assertNull($mm->get('time'));
@@ -192,22 +207,21 @@ class TypecastingTest extends TestCase
         self::assertNull($mm->get('integer'));
         self::assertNull($mm->get('money'));
         self::assertNull($mm->get('float'));
+        self::assertNull($mm->get('decimal'));
         self::assertNull($mm->get('json'));
         self::assertNull($mm->get('object'));
         self::assertNull($mm->get('local-object'));
-        if (!$this->getDatabasePlatform() instanceof OraclePlatform) { // @TODO IMPORTANT we probably want to cast to string for Oracle on our own, so dirty array stay clean!
-            self::assertSame([], $mm->getDirtyRef());
-        }
+
+        self::assertSame([], $mm->getDirtyRef());
 
         $mm->save();
-        self::{'assertEquals'}($dbData, $this->getDb());
+        self::assertSame($fixEmptyStringForOracleFx($dbData), $this->getDb());
 
         $m->createEntity()->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
-
         $dbData['types'][2] = [
             'id' => 2,
-            'string' => null,
-            'notype' => null,
+            'string' => '',
+            'text' => '',
             'date' => null,
             'datetime' => null,
             'time' => null,
@@ -215,12 +229,12 @@ class TypecastingTest extends TestCase
             'integer' => null,
             'money' => null,
             'float' => null,
+            'decimal' => null,
             'json' => null,
             'object' => null,
             'local-object' => null,
         ];
-
-        self::{'assertEquals'}($dbData, $this->getDb());
+        self::assertSame($fixEmptyStringForOracleFx($dbData), $this->getDb());
     }
 
     public function testTypecastNull(): void
@@ -245,6 +259,90 @@ class TypecastingTest extends TestCase
         $dbData['test'][2] = array_merge(['id' => 2], $row);
 
         self::{'assertEquals'}($dbData, $this->getDb());
+    }
+
+    /**
+     * @param \Closure(): void $fx
+     */
+    protected function executeFxWithTemporaryType(string $name, DbalTypes\Type $type, \Closure $fx): void
+    {
+        $typeRegistry = DbalTypes\Type::getTypeRegistry();
+
+        $typeRegistry->register($name, $type);
+        try {
+            $fx();
+        } finally {
+            \Closure::bind(static function () use ($typeRegistry, $name) {
+                unset($typeRegistry->instances[$name]);
+            }, null, DbalTypes\TypeRegistry::class)();
+        }
+    }
+
+    public function testSaveFieldUnexpectedScalarException(): void
+    {
+        $this->executeFxWithTemporaryType('bad-datetime', new class() extends DbalTypes\DateTimeType {
+            #[\Override] // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/10210
+            public function convertToDatabaseValue($value, AbstractPlatform $platform): \DateTime
+            {
+                return $value;
+            }
+        }, function () {
+            $this->expectException(\TypeError::class);
+            $this->expectExceptionMessage('Unexpected non-scalar value');
+            $this->db->typecastSaveField(new Field(['type' => 'bad-datetime']), new \DateTime());
+        });
+    }
+
+    public function testLoadFieldUnexpectedScalarException(): void
+    {
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Unexpected non-scalar value');
+        $this->db->typecastLoadField(new Field(['type' => 'datetime']), new \DateTime()); // @phpstan-ignore-line
+    }
+
+    public function testSaveFieldConvertedWarningNotWrappedException(): void
+    {
+        $this->executeFxWithTemporaryType('with-warning', new class() extends DbalTypes\IntegerType {
+            #[\Override]
+            public function convertToDatabaseValue($value, AbstractPlatform $platform)
+            {
+                throw new \ErrorException('Converted PHP warning');
+            }
+        }, function () {
+            $this->expectException(\ErrorException::class);
+            $this->expectExceptionMessage('Converted PHP warning');
+            $this->db->typecastSaveField(new Field(['type' => 'with-warning']), 1);
+        });
+    }
+
+    public function testLoadFieldConvertedWarningNotWrappedException(): void
+    {
+        $this->executeFxWithTemporaryType('with-warning', new class() extends DbalTypes\IntegerType {
+            #[\Override]
+            public function convertToPHPValue($value, AbstractPlatform $platform)
+            {
+                throw new \ErrorException('Converted PHP warning');
+            }
+        }, function () {
+            $this->expectException(\ErrorException::class);
+            $this->expectExceptionMessage('Converted PHP warning');
+            $this->db->typecastLoadField(new Field(['type' => 'with-warning']), 1);
+        });
+    }
+
+    public function testNormalizeConvertedWarningNotWrappedException(): void
+    {
+        $this->executeFxWithTemporaryType('with-warning', new class() extends DbalTypes\IntegerType {
+            #[\Override]
+            public function convertToDatabaseValue($value, AbstractPlatform $platform)
+            {
+                throw new \ErrorException('Converted PHP warning');
+            }
+        }, function () {
+            $this->expectException(\ErrorException::class);
+            $this->expectExceptionMessage('Converted PHP warning');
+            (new Field(['type' => 'with-warning']))->normalize(1);
+        });
     }
 
     public function testTypeCustom1(): void
@@ -292,7 +390,7 @@ class TypecastingTest extends TestCase
         $m->delete(1);
 
         unset($dbData['types'][0]);
-        $row['money'] = '8.2'; // no trailing zero is expected
+        $row['money'] = 8.2; // no trailing zero is expected
         $dbData['types'][2] = array_merge(['id' => '2'], $row);
 
         self::{'assertEquals'}($dbData, $this->getDb());
@@ -342,11 +440,15 @@ class TypecastingTest extends TestCase
         $m2 = $m->loadOne();
         self::assertTrue($m2->isLoaded());
         $d = $m2->get('date');
-        $m2->unload();
+        self::assertInstanceOf(\DateTime::class, $d);
+
+        $m->insert(['date' => new \DateTime()]);
 
         $m2 = $m->loadBy('date', $d);
         self::assertTrue($m2->isLoaded());
-        $m2->unload();
+
+        $m2 = $m->loadBy([['date', $d], ['date', '>=', $d], ['date', '<=', $d]]);
+        self::assertTrue($m2->isLoaded());
 
         $m2 = $m->addCondition('date', $d)->loadOne();
         self::assertTrue($m2->isLoaded());

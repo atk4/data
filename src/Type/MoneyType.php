@@ -9,32 +9,35 @@ use Doctrine\DBAL\Types as DbalTypes;
 
 class MoneyType extends DbalTypes\Type
 {
+    #[\Override]
     public function getName(): string
     {
         return Types::MONEY;
     }
 
+    #[\Override]
     public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform): string
     {
         return DbalTypes\Type::getType(DbalTypes\Types::FLOAT)->getSQLDeclaration($fieldDeclaration, $platform);
     }
 
-    public function convertToDatabaseValue($value, AbstractPlatform $platform): ?string
+    #[\Override]
+    public function convertToDatabaseValue($value, AbstractPlatform $platform): ?float
     {
         if ($value === null || trim((string) $value) === '') {
             return null;
         }
 
-        return (string) round((float) $value, 4);
+        return round((float) $value, 4);
     }
 
+    #[\Override]
     public function convertToPHPValue($value, AbstractPlatform $platform): ?float
     {
-        $v = $this->convertToDatabaseValue($value, $platform);
-
-        return $v === null ? null : (float) $v;
+        return $this->convertToDatabaseValue($value, $platform);
     }
 
+    #[\Override]
     public function requiresSQLCommentHint(AbstractPlatform $platform): bool
     {
         return true;

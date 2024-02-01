@@ -274,7 +274,7 @@ This method provides access to the model scope enabling conditions to be added:
 $contact->scope()->addCondition($condition); // adding condition to a model
 ```
 
-:::{php:class} Model_i_Scope
+:::{php:class} Model\Scope
 :::
 
 Scope object has a single defined junction (AND or OR) and can contain multiple nested Condition and/or Scope objects referred to as nested conditions.
@@ -315,7 +315,7 @@ $contact->scope()->add($condition); // adding condition to a model
 $contact->scope()->add($conditionXYZ); // adding more conditions
 ```
 
-:::{php:method} __construct($nestedConditions = [], $junction = Scope::AND)
+:::{php:method} __construct($conditions = [], $junction = Scope::AND)
 :::
 
 Creates a Scope object from an array:
@@ -370,7 +370,7 @@ Checks if scope components are joined by OR
 
 Checks if scope components are joined by AND
 
-:::{php:class} Model_i_Scope_i_Condition
+:::{php:class} Model\Scope\Condition
 :::
 
 Condition represents a simple condition in a form [field, operation, value], similar to the functionality of the

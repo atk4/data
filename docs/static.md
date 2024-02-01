@@ -5,10 +5,10 @@
 
 # Static Persistence
 
-:::{php:class} Persistence_i_Static_
+:::{php:class} Persistence\Static_
 :::
 
-Static Persistence extends {php:class}`Persistence_i_Array_` to implement
+Static Persistence extends {php:class}`Persistence\Array_` to implement
 a user-friendly way of specifying data through an array.
 
 ## Usage
@@ -44,7 +44,7 @@ Alternative it will check key "title".
 
 If neither are present you can still manually specify title field for your model.
 
-Finally, static persistence (unlike {php:class}`Persistence_i_Array_`) will automatically
+Finally, static persistence (unlike {php:class}`Persistence\Array_`) will automatically
 populate fields for the model and will even attempt to deduce field types.
 
 Currently it recognizes integer, date, boolean, float, array and object types.
@@ -53,6 +53,6 @@ Other fields will appear as-is.
 ### Saving Records
 
 Models that you specify against static persistence will not be marked as
-"Read Only" ({php:attr}`Model::readOnly`), and you will be allowed to save
+"Read Only" ({php:attr}`Model::$readOnly`), and you will be allowed to save
 data back. The data will only be stored inside persistence object and will be
 discarded at the end of your PHP script.

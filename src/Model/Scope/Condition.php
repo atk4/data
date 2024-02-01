@@ -92,9 +92,9 @@ class Condition extends AbstractScope
     ];
 
     /**
-     * @param string|Expressionable $key
-     * @param string|mixed|null     $operator
-     * @param mixed|null            $value
+     * @param string|Expressionable                 $key
+     * @param ($value is null ? mixed : string)     $operator
+     * @param ($operator is string ? mixed : never) $value
      */
     public function __construct($key, $operator = null, $value = null)
     {
@@ -106,7 +106,7 @@ class Condition extends AbstractScope
             throw new Exception('Field must be a string or an instance of Expressionable');
         }
 
-        if (func_num_args() === 2) {
+        if ('func_num_args'() === 2) {
             $value = $operator;
             $operator = self::OPERATOR_EQUALS;
         }
@@ -129,9 +129,11 @@ class Condition extends AbstractScope
         }
 
         if (is_array($value)) {
-            if (array_filter($value, 'is_array')) {
-                throw (new Exception('Multi-dimensional array as condition value is not supported'))
-                    ->addMoreInfo('value', $value);
+            foreach ($value as $v) {
+                if (is_array($v)) {
+                    throw (new Exception('Multi-dimensional array as condition value is not supported'))
+                        ->addMoreInfo('value', $value);
+                }
             }
 
             if (!in_array($this->operator, [
@@ -147,6 +149,7 @@ class Condition extends AbstractScope
         }
     }
 
+    #[\Override]
     protected function onChangeModel(): void
     {
         $model = $this->getModel();
@@ -255,12 +258,14 @@ class Condition extends AbstractScope
         return [$field, $operator, $value];
     }
 
+    #[\Override]
     public function isEmpty(): bool
     {
         return array_filter([$this->key, $this->operator, $this->value]) ? false : true;
     }
 
-    public function clear()
+    #[\Override]
+    public function clear(): self
     {
         $this->key = null; // @phpstan-ignore-line
         $this->operator = null;
@@ -269,7 +274,8 @@ class Condition extends AbstractScope
         return $this;
     }
 
-    public function negate()
+    #[\Override]
+    public function negate(): self
     {
         if (isset(self::$operators[$this->operator]['negate'])) {
             $this->operator = self::$operators[$this->operator]['negate'];
@@ -281,6 +287,7 @@ class Condition extends AbstractScope
         return $this;
     }
 
+    #[\Override]
     public function toWords(Model $model = null): string
     {
         if ($model === null) {
@@ -395,11 +402,11 @@ class Condition extends AbstractScope
         $title = null;
         if ($field instanceof Field && $field->hasReference()) {
             // make sure we set the value in the Model
-            $model = $model->isEntity() ? clone $model : $model->createEntity();
-            $model->set($field->shortName, $value);
+            $entity = $model->isEntity() ? clone $model : $model->createEntity();
+            $entity->set($field->shortName, $value);
 
             // then take the title
-            $title = $model->ref($field->getReference()->link)->getTitle();
+            $title = $entity->ref($field->getReference()->link)->getTitle();
             if ($title === $value) {
                 $title = null;
             }

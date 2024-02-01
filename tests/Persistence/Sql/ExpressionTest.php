@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests\Persistence\Sql;
 
 use Atk4\Core\Phpunit\TestCase;
+use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Exception;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Expressionable;
@@ -22,6 +23,16 @@ class ExpressionTest extends TestCase
         return new class($template, $arguments) extends Expression {
             protected string $identifierEscapeChar = '"';
         };
+    }
+
+    /**
+     * @param mixed ...$args
+     *
+     * @return mixed
+     */
+    private function callProtected(object $obj, string $name, ...$args)
+    {
+        return \Closure::bind(static fn () => $obj->{$name}(...$args), null, $obj)();
     }
 
     public function testConstructorNoTemplateException(): void
@@ -142,7 +153,7 @@ class ExpressionTest extends TestCase
     /**
      * @return iterable<list<mixed>>
      */
-    public function provideNoTemplatingInSqlStringCases(): iterable
+    public static function provideNoTemplatingInSqlStringCases(): iterable
     {
         $testStrs = [];
         foreach (['\'', '"', '`'] as $enclosureChar) {
@@ -156,10 +167,14 @@ class ExpressionTest extends TestCase
                 '\'[\'\']\'',
                 '\'\'\'[]\'',
                 '\'[]\'\'\'',
+                '--[]' . "\n",
+                '-- select [a]' . "\n",
+                '/*[]*/',
+                '/* select [a] */',
             ] as $testStr) {
                 $testStr = str_replace('\'', $enclosureChar, $testStr);
 
-                yield [$testStr, $testStr, []];
+                yield [rtrim($testStr, "\n"), $testStr, []];
 
                 $testStrs[] = $testStr;
             }
@@ -167,6 +182,7 @@ class ExpressionTest extends TestCase
 
         $fullStr = implode('', $testStrs);
         yield [$fullStr, $fullStr, []];
+        yield [$fullStr . ' :a', $fullStr . ' []', ['foo']];
 
         $fullStr = implode(' ', $testStrs);
         yield [$fullStr, $fullStr, []];
@@ -179,16 +195,16 @@ class ExpressionTest extends TestCase
     {
         $e1 = $this->e('[] and []', [
             $this->e('++[]', [1]),
-            $this->e('--[]', [2]),
+            $this->e('**[]', [2]),
         ]);
 
-        self::assertSame('++:a and --:b', $e1->render()[0]);
+        self::assertSame('++:a and **:b', $e1->render()[0]);
 
         $e2 = $this->e('=== [foo] ===', ['foo' => $e1]);
 
-        self::assertSame('=== ++:a and --:b ===', $e2->render()[0]);
+        self::assertSame('=== ++:a and **:b ===', $e2->render()[0]);
 
-        self::assertSame('++:a and --:b', $e1->render()[0]);
+        self::assertSame('++:a and **:b', $e1->render()[0]);
     }
 
     /**
@@ -201,22 +217,18 @@ class ExpressionTest extends TestCase
         $e2 = $this->e('[greeting]! How are you.', ['greeting' => $e1]);
         $e3 = $this->e('It is me again. [greeting]', ['greeting' => $e1]);
 
-        $s2 = $e2->render()[0]; // Hello :a! How are you.
-        $s3 = $e3->render()[0]; // It is me again. Hello :a
+        self::assertSame('Hello :a! How are you.', $e2->render()[0]);
+        self::assertSame('It is me again. Hello :a', $e3->render()[0]);
 
         $e4 = $this->e('[] and good night', [$e1]);
-        $s4 = $e4->render()[0]; // Hello :a and good night
-
-        self::assertSame('Hello :a! How are you.', $s2);
-        self::assertSame('It is me again. Hello :a', $s3);
-        self::assertSame('Hello :a and good night', $s4);
+        self::assertSame('Hello :a and good night', $e4->render()[0]);
     }
 
     public function testExpr(): void
     {
         self::assertInstanceOf(Expression::class, $this->e('foo'));
 
-        $connection = new Mysql\Connection();
+        $connection = \Closure::bind(static fn () => new Mysql\Connection(), null, Connection::class)();
         $e = new Mysql\Expression(['connection' => $connection]);
         self::assertSame(Mysql\Expression::class, get_class($e->expr('foo')));
         self::assertSame($connection, $e->expr('foo')->connection);
@@ -278,7 +290,6 @@ class ExpressionTest extends TestCase
     {
         $constants = (new \ReflectionClass(Expression::class))->getConstants();
 
-        // few brief tests on consume
         self::assertSame(
             '"123"',
             $this->callProtected($this->e(), 'consume', '123', $constants['ESCAPE_IDENTIFIER'])
@@ -293,13 +304,14 @@ class ExpressionTest extends TestCase
         );
 
         $myField = new class() implements Expressionable {
+            #[\Override]
             public function getDsqlExpression(Expression $expr): Expression
             {
                 return $expr->expr('"myfield"');
             }
         };
         $e = $this->e('hello, []', [$myField]);
-        $e->connection = new Sqlite\Connection();
+        $e->connection = \Closure::bind(static fn () => new Sqlite\Connection(), null, Connection::class)();
         self::assertSame(
             'hello, "myfield"',
             $e->render()[0]
@@ -368,6 +380,7 @@ class ExpressionTest extends TestCase
     public function testEscapeParamCustom(): void
     {
         $e = new class('hello, [who]', ['who' => 'world']) extends Expression {
+            #[\Override]
             public function escapeParam($value): string
             {
                 return json_encode($value);
@@ -398,11 +411,11 @@ class ExpressionTest extends TestCase
         // reset everything
         $e = $this->e('hello, [name] [surname]', ['name' => 'John', 'surname' => 'Doe']);
         $e->reset();
-        self::assertSame(['custom' => []], $this->getProtected($e, 'args'));
+        self::assertSame(['custom' => []], $e->args);
 
         // reset particular custom/tag
         $e = $this->e('hello, [name] [surname]', ['name' => 'John', 'surname' => 'Doe']);
         $e->reset('surname');
-        self::assertSame(['custom' => ['name' => 'John']], $this->getProtected($e, 'args'));
+        self::assertSame(['custom' => ['name' => 'John']], $e->args);
     }
 }

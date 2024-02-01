@@ -20,6 +20,7 @@ use Atk4\Data\Tests\ContainsMany\VatRate;
  */
 class ContainsManyTest extends TestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -235,7 +236,7 @@ class ContainsManyTest extends TestCase
         // let's test how it all looks in persistence without typecasting
         $exportLines = $i->getModel()->setOrder($i->fieldName()->id)
             ->export(null, null, false)[0][$i->fieldName()->lines];
-        $formatDtForCompareFunc = function (\DateTimeInterface $dt): string {
+        $formatDtForCompareFx = static function (\DateTimeInterface $dt): string {
             $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC')); // @phpstan-ignore-line
 
             return $dt->format('Y-m-d H:i:s.u');
@@ -245,33 +246,33 @@ class ContainsManyTest extends TestCase
                 1 => [
                     $i->lines->fieldName()->id => 1,
                     $i->lines->fieldName()->vat_rate_id => 1,
-                    $i->lines->fieldName()->price => '10',
+                    $i->lines->fieldName()->price => 10.0,
                     $i->lines->fieldName()->qty => 2,
-                    $i->lines->fieldName()->add_date => $formatDtForCompareFunc(new \DateTime('2019-06-01')),
+                    $i->lines->fieldName()->add_date => $formatDtForCompareFx(new \DateTime('2019-06-01')),
                     $i->lines->fieldName()->discounts => json_encode([
                         1 => [
                             $i->lines->discounts->fieldName()->id => 1,
                             $i->lines->discounts->fieldName()->percent => 5,
-                            $i->lines->discounts->fieldName()->valid_till => $formatDtForCompareFunc(new \DateTime('2019-07-15')),
+                            $i->lines->discounts->fieldName()->valid_till => $formatDtForCompareFx(new \DateTime('2019-07-15')),
                         ],
                         [
                             $i->lines->discounts->fieldName()->id => 2,
                             $i->lines->discounts->fieldName()->percent => 10,
-                            $i->lines->discounts->fieldName()->valid_till => $formatDtForCompareFunc(new \DateTime('2019-07-30')),
+                            $i->lines->discounts->fieldName()->valid_till => $formatDtForCompareFx(new \DateTime('2019-07-30')),
                         ],
                     ]),
                 ],
                 [
                     $i->lines->fieldName()->id => 2,
                     $i->lines->fieldName()->vat_rate_id => 2,
-                    $i->lines->fieldName()->price => '15',
+                    $i->lines->fieldName()->price => 15.0,
                     $i->lines->fieldName()->qty => 5,
-                    $i->lines->fieldName()->add_date => $formatDtForCompareFunc(new \DateTime('2019-07-01')),
+                    $i->lines->fieldName()->add_date => $formatDtForCompareFx(new \DateTime('2019-07-01')),
                     $i->lines->fieldName()->discounts => json_encode([
                         1 => [
                             $i->lines->discounts->fieldName()->id => 1,
                             $i->lines->discounts->fieldName()->percent => 20,
-                            $i->lines->discounts->fieldName()->valid_till => $formatDtForCompareFunc(new \DateTime('2019-12-31')),
+                            $i->lines->discounts->fieldName()->valid_till => $formatDtForCompareFx(new \DateTime('2019-12-31')),
                         ],
                     ]),
                 ],

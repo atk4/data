@@ -7,6 +7,7 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
+use Atk4\Data\ValidationException;
 
 class ConditionSqlTest extends TestCase
 {
@@ -69,7 +70,7 @@ class ConditionSqlTest extends TestCase
 
         $m = $m->load(1);
         self::assertSame('John', $m->get('name'));
-        \Closure::bind(function () use ($m) {
+        \Closure::bind(static function () use ($m) {
             $m->_entityId = 2;
         }, null, Model::class)();
 
@@ -151,6 +152,13 @@ class ConditionSqlTest extends TestCase
         self::assertSame('John', $mm2->get('name'));
         $mm2 = $mm->tryLoad(2);
         self::assertNull($mm2);
+
+        $mm = clone $m;
+        $mm->addCondition('id', 'not in', [1, 3]);
+        $mm2 = $mm->tryLoad(1);
+        self::assertNull($mm2);
+        $mm2 = $mm->tryLoad(2);
+        self::assertSame('Sue', $mm2->get('name'));
     }
 
     public function testExpressions1(): void
@@ -331,7 +339,7 @@ class ConditionSqlTest extends TestCase
         $m->addField('name');
         $m->addField('date', ['type' => 'date']);
 
-        $m = $m->loadBy('date', new \DateTime('08-12-1982'));
+        $m = $m->loadBy('date', new \DateTime('1982-12-08'));
         self::assertSame('Sue', $m->get('name'));
     }
 
@@ -348,7 +356,7 @@ class ConditionSqlTest extends TestCase
         $m->addField('name');
         $m->addField('date', ['type' => 'date']);
 
-        $m->addCondition('date', new \DateTime('08-12-1982'));
+        $m->addCondition('date', new \DateTime('1982-12-08'));
         $m = $m->loadOne();
         self::assertSame('Sue', $m->get('name'));
     }
@@ -366,11 +374,34 @@ class ConditionSqlTest extends TestCase
         $m->addField('name');
         $m->addField('date', ['type' => 'date']);
 
-        $this->expectException(Exception::class);
-        $m->tryLoadBy('name', new \DateTime('08-12-1982'));
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must be scalar');
+        $m->tryLoadBy('name', new \DateTime('1982-12-08'));
     }
 
-    public function testOrConditions(): void
+    public function testAndFromArrayCondition(): void
+    {
+        $this->setDb([
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John'],
+                ['id' => 2, 'name' => 'Peter'],
+                ['id' => 3, 'name' => 'Joe'],
+            ],
+        ]);
+
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name');
+
+        $u->addCondition([
+            ['name', 'like', 'J%'],
+            ['name', 'like', '%e%'],
+        ]);
+        self::assertSameExportUnordered([
+            ['id' => 3, 'name' => 'Joe'],
+        ], $u->export());
+    }
+
+    public function testOrCondition(): void
     {
         $this->setDb([
             'user' => [
@@ -387,7 +418,6 @@ class ConditionSqlTest extends TestCase
             ['name', 'John'],
             ['name', 'Peter'],
         ));
-
         self::assertSame(2, $u->executeCountQuery());
 
         $u->addCondition(Model\Scope::createOr(

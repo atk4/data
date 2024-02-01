@@ -12,6 +12,7 @@ use Atk4\Data\Model;
  */
 class DoorCode extends Model
 {
+    #[\Override]
     protected function init(): void
     {
         parent::init();

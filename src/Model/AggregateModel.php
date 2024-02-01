@@ -102,6 +102,7 @@ class AggregateModel extends Model
         return $this;
     }
 
+    #[\Override]
     public function addField(string $name, $seed = []): Field
     {
         if ($seed instanceof SqlExpressionField) {
@@ -120,13 +121,14 @@ class AggregateModel extends Model
         return parent::addField($name, $seed);
     }
 
+    #[\Override]
     public function action(string $mode, array $args = [])
     {
         switch ($mode) {
             case 'select':
                 $fields = $args[0] ?? array_unique(array_merge(
                     $this->onlyFields ?? array_keys($this->getFields()),
-                    array_filter($this->groupByFields, fn ($v) => !$v instanceof Expression)
+                    array_filter($this->groupByFields, static fn ($v) => !$v instanceof Expression)
                 ));
 
                 $query = parent::action($mode, [[]]);
@@ -173,6 +175,7 @@ class AggregateModel extends Model
         }
     }
 
+    #[\Override]
     public function __debugInfo(): array
     {
         return array_merge(parent::__debugInfo(), [

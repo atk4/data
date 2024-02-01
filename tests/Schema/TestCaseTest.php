@@ -6,8 +6,9 @@ namespace Atk4\Data\Tests\Schema;
 
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
-use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class TestCaseTest extends TestCase
 {
@@ -17,6 +18,7 @@ class TestCaseTest extends TestCase
         $m->addField('name');
         $m->addField('int', ['type' => 'integer']);
         $m->addField('float', ['type' => 'float']);
+        $m->addField('bool', ['type' => 'boolean']);
         $m->addField('null');
         $m->addCondition('int', '>', -1);
 
@@ -26,8 +28,8 @@ class TestCaseTest extends TestCase
 
             $this->debug = true;
 
-            $m->atomic(function () use ($m) {
-                $m->insert(['name' => 'Ewa', 'int' => 1, 'float' => 1]);
+            $m->atomic(static function () use ($m) {
+                $m->insert(['name' => 'Ewa', 'int' => 1, 'float' => 1, 'bool' => 1]);
             });
 
             self::assertSame(1, $m->loadAny()->getId());
@@ -37,53 +39,105 @@ class TestCaseTest extends TestCase
             ob_end_clean();
         }
 
-        if (!$this->getDatabasePlatform() instanceof SqlitePlatform && !$this->getDatabasePlatform() instanceof MySQLPlatform) {
-            return;
-        }
+        $makeLimitSqlFx = function (int $maxCount) {
+            if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+                return "\nlimit\n  " . $maxCount . "\noffset\n  0";
+            } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+                return "\norder by\n  (\n    select\n      null\n  )\noffset\n  0 rows\nfetch\n  next " . $maxCount . ' rows only';
+            } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
+                return "\nfetch\n  next " . $maxCount . ' rows only';
+            }
 
-        $this->assertSameSql(<<<'EOF'
+            return "\nlimit\n  0,\n  " . $maxCount;
+        };
 
-            "START TRANSACTION";
+        $this->assertSameSql(
+            <<<'EOF'
 
-
-            insert into `t` (`name`, `int`, `float`, `null`)
-            values
-              ('Ewa', 1, '1.0', NULL);
-
-
-            select
-              `id`,
-              `name`,
-              `int`,
-              `float`,
-              `null`
-            from
-              `t`
-            where
-              `int` > -1
-              and `id` = 1
-            limit
-              0,
-              2;
+                "START TRANSACTION";
 
 
-            "COMMIT";
+                "SAVEPOINT";
+                EOF . "\n\n"
+            . ($this->getDatabasePlatform() instanceof SQLServerPlatform
+                ? <<<'EOF'
+
+                    begin try insert into `t` (
+                      `name`, `int`, `float`, `bool`, `null`
+                    )
+                    values
+                      ('Ewa', 1, 1.0, 1, NULL); end try begin catch if ERROR_NUMBER() = 544 begin
+                    set
+                      IDENTITY_INSERT `t` on; begin try insert into `t` (
+                        `name`, `int`, `float`, `bool`, `null`
+                      )
+                    values
+                      ('Ewa', 1, 1.0, 1, NULL);
+                    set
+                      IDENTITY_INSERT `t` off; end try begin catch
+                    set
+                      IDENTITY_INSERT `t` off; throw; end catch end else begin throw; end end catch;
+                    EOF . "\n\n"
+                : ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "\n\"SAVEPOINT\";\n\n" : '')
+                . <<<'EOF'
+
+                    insert into `t` (
+                      `name`, `int`, `float`, `bool`, `null`
+                    )
+                    values
+                    EOF
+                . "\n  ('Ewa', 1, 1.0, "
+                . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? 'true' : '1')
+                . ", NULL);\n\n"
+                . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "\n\"RELEASE SAVEPOINT\";\n\n" : ''))
+            . ($this->getDatabasePlatform() instanceof OraclePlatform ? <<<'EOF'
+
+                select
+                  "t_SEQ".CURRVAL
+                from
+                  "DUAL";
+                EOF . "\n\n" : '')
+            . <<<'EOF'
+
+                select
+                  `id`,
+                  `name`,
+                  `int`,
+                  `float`,
+                  `bool`,
+                  `null`
+                from
+                  `t`
+                where
+                  `int` > -1
+                  and `id` = 1
+                EOF
+            . $makeLimitSqlFx(2)
+            . ";\n\n"
+            . ($this->getDatabasePlatform()->supportsReleaseSavepoints() ? "\n\"RELEASE SAVEPOINT\";\n\n" : '')
+            . <<<'EOF'
+
+                "COMMIT";
 
 
-            select
-              `id`,
-              `name`,
-              `int`,
-              `float`,
-              `null`
-            from
-              `t`
-            where
-              `int` > -1
-            limit
-              0,
-              1;
-            EOF . "\n\n", $output);
+                select
+                  `id`,
+                  `name`,
+                  `int`,
+                  `float`,
+                  `bool`,
+                  `null`
+                from
+                  `t`
+                where
+                  `int` > -1
+                EOF
+            . $makeLimitSqlFx(1)
+            . ";\n\n",
+            $this->getDatabasePlatform() instanceof SQLServerPlatform
+                ? str_replace('(\'Ewa\', 1, 1.0, 1, NULL)', '(N\'Ewa\', 1, 1.0, 1, NULL)', $output)
+                : $output
+        );
     }
 
     public function testGetSetDropDb(): void
@@ -97,7 +151,7 @@ class TestCaseTest extends TestCase
                 ['name' => 'Steve', 'age' => '30'],
             ],
         ];
-        $dbDataWithId = array_map(function (array $rows) {
+        $dbDataWithId = array_map(static function (array $rows) {
             $rowsWithId = [];
             $id = 1;
             foreach ($rows as $row) {

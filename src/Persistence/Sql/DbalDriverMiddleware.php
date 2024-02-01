@@ -6,18 +6,18 @@ namespace Atk4\Data\Persistence\Sql;
 
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Driver\API\ExceptionConverter;
-use Doctrine\DBAL\Driver\API\SQLite\ExceptionConverter as SqliteExceptionConverter;
 use Doctrine\DBAL\Driver\API\SQLSrv\ExceptionConverter as SQLServerExceptionConverter;
 use Doctrine\DBAL\Driver\Exception as DbalDriverException;
 use Doctrine\DBAL\Driver\Middleware\AbstractDriverMiddleware;
 use Doctrine\DBAL\Exception\DatabaseObjectNotFoundException;
 use Doctrine\DBAL\Exception\DriverException as DbalDriverConvertedException;
-use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\DBAL\Exception\TableNotFoundException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
-use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
+use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Query as DbalQuery;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
@@ -28,16 +28,16 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
 {
     protected function replaceDatabasePlatform(AbstractPlatform $platform): AbstractPlatform
     {
-        if ($platform instanceof SqlitePlatform) {
-            $platform = new class() extends SqlitePlatform {
+        if ($platform instanceof SQLitePlatform) {
+            $platform = new class() extends SQLitePlatform {
                 use Sqlite\PlatformTrait;
             };
         } elseif ($platform instanceof PostgreSQLPlatform) {
-            $platform = new class() extends \Doctrine\DBAL\Platforms\PostgreSQL94Platform { // @phpstan-ignore-line
+            $platform = new class() extends PostgreSQL94Platform { // @phpstan-ignore-line
                 use Postgresql\PlatformTrait;
             };
         } elseif ($platform instanceof SQLServerPlatform) {
-            $platform = new class() extends \Doctrine\DBAL\Platforms\SQLServer2012Platform { // @phpstan-ignore-line
+            $platform = new class() extends SQLServer2012Platform { // @phpstan-ignore-line
                 use Mssql\PlatformTrait;
             };
         } elseif ($platform instanceof OraclePlatform) {
@@ -49,22 +49,25 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
         return $platform;
     }
 
+    #[\Override]
     public function getDatabasePlatform(): AbstractPlatform
     {
         return $this->replaceDatabasePlatform(parent::getDatabasePlatform());
     }
 
+    #[\Override]
     public function createDatabasePlatformForVersion($version): AbstractPlatform
     {
         return $this->replaceDatabasePlatform(parent::createDatabasePlatformForVersion($version));
     }
 
     /**
-     * @phpstan-return AbstractSchemaManager<AbstractPlatform>
+     * @return AbstractSchemaManager<AbstractPlatform>
      */
+    #[\Override]
     public function getSchemaManager(DbalConnection $connection, AbstractPlatform $platform): AbstractSchemaManager
     {
-        if ($platform instanceof SqlitePlatform) {
+        if ($platform instanceof SQLitePlatform) {
             return new class($connection, $platform) extends SqliteSchemaManager { // @phpstan-ignore-line
                 use Sqlite\SchemaManagerTrait;
             };
@@ -99,6 +102,7 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
                 $this->convertFx = $convertFx;
             }
 
+            #[\Override]
             public function convert(DbalDriverException $exception, ?DbalQuery $query): DbalDriverConvertedException
             {
                 $convertedException = $this->wrappedExceptionConverter->convert($exception, $query);
@@ -113,34 +117,20 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
         return $convertedException->getPrevious(); // @phpstan-ignore-line
     }
 
+    #[\Override]
     public function getExceptionConverter(): ExceptionConverter
     {
         $exceptionConverter = parent::getExceptionConverter();
-        if ($exceptionConverter instanceof SqliteExceptionConverter) {
+        if ($exceptionConverter instanceof SQLServerExceptionConverter) {
             $exceptionConverter = $this->createExceptionConvertorMiddleware(
                 $exceptionConverter,
-                function (DbalDriverConvertedException $convertedException, ?DbalQuery $query): DbalDriverConvertedException {
-                    // fix FK violation exception conversion
-                    // https://github.com/doctrine/dbal/issues/5496
-                    $exception = self::getUnconvertedException($convertedException);
-                    $exceptionMessageLc = strtolower($exception->getMessage());
-                    if (str_contains($exceptionMessageLc, 'integrity constraint violation')) {
-                        return new ForeignKeyConstraintViolationException($exception, $query);
-                    }
-
-                    return $convertedException;
-                }
-            );
-        } elseif ($exceptionConverter instanceof SQLServerExceptionConverter) {
-            $exceptionConverter = $this->createExceptionConvertorMiddleware(
-                $exceptionConverter,
-                function (DbalDriverConvertedException $convertedException, ?DbalQuery $query): DbalDriverConvertedException {
+                static function (DbalDriverConvertedException $convertedException, ?DbalQuery $query): DbalDriverConvertedException {
                     // fix table not found exception conversion
                     // https://github.com/doctrine/dbal/pull/5492
                     if ($convertedException instanceof DatabaseObjectNotFoundException) {
                         $exception = self::getUnconvertedException($convertedException);
                         $exceptionMessageLc = strtolower($exception->getMessage());
-                        if (str_contains($exceptionMessageLc, 'cannot drop the table')) {
+                        if (str_contains($exceptionMessageLc, 'cannot drop the table') && !$convertedException instanceof TableNotFoundException) {
                             return new TableNotFoundException($exception, $query);
                         }
                     }

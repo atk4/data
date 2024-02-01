@@ -20,58 +20,23 @@ Create your persistence object first then iterate it:
 $db = \Atk4\Data\Persistence::connect($dsn);
 $m = new Model_Client($db);
 
-foreach ($m as $id => $item) {
-    echo $id . ': ' . $item->get('name') . "\n";
+foreach ($m as $id => $entity) {
+    echo $id . ': ' . $entity->get('name') . "\n";
 }
 ```
-
-You must be aware that $item will actually be same as $m and will point to the model.
-The model, however, will have the data loaded for you, so you can call methods for
-each iteration like this:
-
-```
-foreach ($m as $item) {
-    $item->sendReminder();
-}
-```
-
-:::{warning}
-Currently ATK Data does not create new copy of your model object for
-every row. Instead the same object is re-used, simply $item->getDataRef() is modified
-by the iterator. For new users this may be surprising that $item is the same
-object through the iterator, but for now it's the most CPU-efficient way.
-:::
-
-Additionally model will execute necessary after-load hooks that might trigger some
-other calculation or validations.
 
 :::{note}
 changing query parameter during iteration will has no effect until you
 finish iterating.
 :::
 
-### Keeping models
-
-If you wish to preserve the objects that you have loaded (not recommended as they
-will consume memory), you can do it like this:
-
-```
-$cat = [];
-foreach (new Model_Category($db) as $id => $c) {
-    $cat[$id] = clone $c;
-}
-```
-
 ### Raw Data Fetching
-
-:::{php:method} getRawIterator()
-:::
 
 If you do not care about the hooks and simply wish to get the data, you can fetch
 it:
 
 ```
-foreach ($m->getRawIterator() as $row) {
+foreach ($m->getPersistence()->prepareIterator($m) as $row) {
     var_dump($row); // array
 }
 ```
@@ -93,16 +58,9 @@ By default - `onlyFields` will be presented as well as system fields.
 You can invoke and iterate action (particularly SQL) to fetch the data:
 
 ```
-foreach ($m->action('select') as $row) {
+foreach ($m->action('select')->getRowsIterator() as $row) {
     var_dump($row); // array
 }
 ```
 
-This has the identical behavior to $m->getRawIterator();
-
-## Comparison of various ways of fetching
-
-- getIterator - action(select), [ fetches row, set ID/Data, call afterLoad hook,
-  yields model ], unloads data
-- getRawIterator - action(select), [ fetches row, yields row ]
-- export - action(select), fetches all rows, returns all rows
+This has the identical behavior to `$m->getPersistence()->prepareIterator($m)`.

@@ -80,9 +80,7 @@ class Sql extends Persistence
         return $this->_connection;
     }
 
-    /**
-     * Disconnect from database explicitly.
-     */
+    #[\Override]
     public function disconnect(): void
     {
         parent::disconnect();
@@ -90,16 +88,19 @@ class Sql extends Persistence
         $this->_connection = null; // @phpstan-ignore-line
     }
 
+    #[\Override]
     public function atomic(\Closure $fx)
     {
         return $this->getConnection()->atomic($fx);
     }
 
+    #[\Override]
     public function getDatabasePlatform(): AbstractPlatform
     {
         return $this->getConnection()->getDatabasePlatform();
     }
 
+    #[\Override]
     public function add(Model $model, array $defaults = []): void
     {
         $defaults = array_merge([
@@ -117,13 +118,14 @@ class Sql extends Persistence
                 ->addMoreInfo('model', $model);
         }
 
-        // When we work without table, we can't have any IDs
+        // when we work without table, we can't have any IDs
         if ($model->table === false) {
             $model->removeField($model->idField);
             $model->addExpression($model->idField, ['expr' => '-1', 'type' => 'integer']);
         }
     }
 
+    #[\Override]
     protected function initPersistence(Model $model): void
     {
         $model->addMethod('expr', static function (Model $m, ...$args) {
@@ -145,8 +147,12 @@ class Sql extends Persistence
     public function expr(Model $model, string $template, array $arguments = []): Expression
     {
         preg_replace_callback(
-            '~\[\w*\]|\{\w*\}~',
-            function ($matches) use ($model, &$arguments) {
+            '~(?!\[\w*\])' . Expression::QUOTED_TOKEN_REGEX . '\K|\[\w*\]|\{\w*\}~',
+            static function ($matches) use ($model, &$arguments) {
+                if ($matches[0] === '') {
+                    return '';
+                }
+
                 $identifier = substr($matches[0], 1, -1);
                 if ($identifier !== '' && !isset($arguments[$identifier])) {
                     $arguments[$identifier] = $model->getField($identifier);
@@ -220,15 +226,14 @@ class Sql extends Persistence
     {
         // init fields
         if ($fields !== null) {
-            // Set of fields is strictly defined for purposes of export,
-            // so we will ignore even system fields.
+            // set of fields is strictly defined, so we will ignore even system fields
             foreach ($fields as $fieldName) {
                 $this->initField($query, $model->getField($fieldName));
             }
         } elseif ($model->onlyFields !== null) {
             $addedFields = [];
 
-            // Add requested fields first
+            // add requested fields first
             foreach ($model->onlyFields as $fieldName) {
                 $field = $model->getField($fieldName);
                 if ($field->neverPersist) {
@@ -374,7 +379,10 @@ class Sql extends Persistence
                     throw (new Exception('This action requires one argument with field name'))
                         ->addMoreInfo('action', $type);
                 }
-                $field = is_string($args[0]) ? $model->getField($args[0]) : $args[0];
+                $field = $args[0];
+                if (is_string($field)) {
+                    $field = $model->getField($field);
+                }
 
                 $query = $this->action($model, 'select', [[]]);
 
@@ -400,7 +408,9 @@ class Sql extends Persistence
                         ->addMoreInfo('action', $type);
                 }
                 [$fx, $field] = $args;
-                $field = is_string($field) ? $model->getField($field) : $field;
+                if (is_string($field)) {
+                    $field = $model->getField($field);
+                }
 
                 $query = $this->action($model, 'select', [[]]);
 
@@ -431,6 +441,7 @@ class Sql extends Persistence
         }
     }
 
+    #[\Override]
     public function tryLoad(Model $model, $id): ?array
     {
         $model->assertIsModel();
@@ -441,7 +452,7 @@ class Sql extends Persistence
 
         if (!$noId) {
             if (!$model->idField) {
-                throw (new Exception('Unable to load field by "id" when Model->idField is not defined'))
+                throw (new Exception('Unable to load by "id" when Model->idField is not defined'))
                     ->addMoreInfo('id', $id);
             }
 
@@ -536,6 +547,7 @@ class Sql extends Persistence
     /**
      * @param array<scalar|Expressionable|null> $dataRaw
      */
+    #[\Override]
     protected function insertRaw(Model $model, array $dataRaw)
     {
         $insert = $this->initQuery($model);
@@ -572,6 +584,7 @@ class Sql extends Persistence
     /**
      * @param array<scalar|Expressionable|null> $dataRaw
      */
+    #[\Override]
     protected function updateRaw(Model $model, $idRaw, array $dataRaw): void
     {
         $update = $this->initQuery($model);
@@ -596,6 +609,7 @@ class Sql extends Persistence
         $model->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update]);
     }
 
+    #[\Override]
     protected function deleteRaw(Model $model, $idRaw): void
     {
         $delete = $this->initQuery($model);
@@ -616,6 +630,7 @@ class Sql extends Persistence
         $model->hook(self::HOOK_AFTER_DELETE_QUERY, [$delete]);
     }
 
+    #[\Override]
     public function typecastSaveField(Field $field, $value)
     {
         $value = parent::typecastSaveField($field, $value);
@@ -627,6 +642,7 @@ class Sql extends Persistence
         return $value;
     }
 
+    #[\Override]
     public function typecastLoadField(Field $field, $value)
     {
         $value = parent::typecastLoadField($field, $value);
@@ -636,6 +652,20 @@ class Sql extends Persistence
         }
 
         return $value;
+    }
+
+    #[\Override]
+    protected function _typecastSaveField(Field $field, $value)
+    {
+        $res = parent::_typecastSaveField($field, $value);
+
+        // Oracle always converts empty string to null
+        // https://stackoverflow.com/questions/13278773/null-vs-empty-string-in-oracle#13278879
+        if ($res === '' && $this->getDatabasePlatform() instanceof OraclePlatform && !$this->binaryTypeIsEncodeNeeded($field->type)) {
+            return null;
+        }
+
+        return $res;
     }
 
     public function getFieldSqlExpression(Field $field, Expression $expression): Expression
@@ -656,12 +686,12 @@ class Sql extends Persistence
             ];
         }
 
-        // If our Model has expr() method (inherited from Persistence\Sql) then use it
+        // if our Model has expr() method (inherited from Persistence\Sql) then use it
         if ($field->getOwner()->hasMethod('expr')) {
             return $field->getOwner()->expr($mask, $prop);
         }
 
-        // Otherwise call method from expression
+        // otherwise call method from expression
         return $expression->expr($mask, $prop);
     }
 

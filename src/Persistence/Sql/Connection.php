@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Persistence\Sql;
 
 use Atk4\Core\DiContainerTrait;
-use Doctrine\Common\EventManager;
-use Doctrine\DBAL\Configuration as DbalConfiguration;
+use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\ConnectionException as DbalConnectionException;
 use Doctrine\DBAL\Driver as DbalDriver;
@@ -46,7 +45,7 @@ abstract class Connection
     /**
      * @param array<string, mixed> $defaults
      */
-    public function __construct(array $defaults = [])
+    protected function __construct(array $defaults = [])
     {
         $this->setDefaults($defaults);
     }
@@ -178,7 +177,7 @@ abstract class Connection
     }
 
     /**
-     * Connect to database and return connection class.
+     * Connect to database and return connection instance.
      *
      * @param string|array<string, string>|DbalConnection|DbalDriverConnection $dsn
      * @param string|null                                                      $user
@@ -201,6 +200,8 @@ abstract class Connection
             $dbalDriverConnection = $connectionClass::connectFromDsn($dsn);
             $dbalConnection = $connectionClass::connectFromDbalDriverConnection($dbalDriverConnection);
         }
+
+        $dbalConnection->setNestTransactionsWithSavepoints(true); // remove once DBAL 3.x support is dropped
 
         $connection = new $connectionClass($defaults);
         $connection->_connection = $dbalConnection;
@@ -226,11 +227,12 @@ abstract class Connection
         return null; // @phpstan-ignore-line
     }
 
-    protected static function createDbalConfiguration(): DbalConfiguration
+    protected static function createDbalConfiguration(): Configuration
     {
-        $dbalConfiguration = new DbalConfiguration();
-        $dbalConfiguration->setMiddlewares([
+        $configuration = new Configuration();
+        $configuration->setMiddlewares([
             new class() implements DbalMiddleware {
+                #[\Override]
                 public function wrap(DbalDriver $driver): DbalDriver
                 {
                     return new DbalDriverMiddleware($driver);
@@ -238,12 +240,7 @@ abstract class Connection
             },
         ]);
 
-        return $dbalConfiguration;
-    }
-
-    protected static function createDbalEventManager(): EventManager
-    {
-        return new EventManager();
+        return $configuration;
     }
 
     /**
@@ -260,8 +257,7 @@ abstract class Connection
 
         $dbalConnection = DriverManager::getConnection(
             $dsn, // @phpstan-ignore-line
-            (static::class)::createDbalConfiguration(),
-            (static::class)::createDbalEventManager()
+            (static::class)::createDbalConfiguration()
         );
 
         return $dbalConnection->getWrappedConnection(); // @phpstan-ignore-line https://github.com/doctrine/dbal/issues/5199
@@ -271,12 +267,11 @@ abstract class Connection
     {
         $dbalConnection = DriverManager::getConnection(
             ['driver' => self::getDriverNameFromDbalDriverConnection($dbalDriverConnection)],
-            (static::class)::createDbalConfiguration(),
-            (static::class)::createDbalEventManager()
+            (static::class)::createDbalConfiguration()
         );
-        \Closure::bind(function () use ($dbalConnection, $dbalDriverConnection): void {
+        \Closure::bind(static function () use ($dbalConnection, $dbalDriverConnection): void {
             $dbalConnection->_conn = $dbalDriverConnection;
-        }, null, \Doctrine\DBAL\Connection::class)();
+        }, null, DbalConnection::class)();
 
         return $dbalConnection;
     }
@@ -325,7 +320,7 @@ abstract class Connection
     /**
      * Execute Expression by using this connection and return affected rows.
      *
-     * @phpstan-return int<0, max>
+     * @return int<0, max>
      */
     public function executeStatement(Expression $expr): int
     {
@@ -341,16 +336,17 @@ abstract class Connection
      * the code inside callback will fail, then all of the transaction
      * will be also rolled back.
      *
-     * @param \Closure(mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
-     * @param mixed                                                                                 ...$fxArgs
+     * @template T
      *
-     * @return mixed
+     * @param \Closure(): T $fx
+     *
+     * @return T
      */
-    public function atomic(\Closure $fx, ...$fxArgs)
+    public function atomic(\Closure $fx)
     {
         $this->beginTransaction();
         try {
-            $res = $fx(...$fxArgs);
+            $res = $fx();
             $this->commit();
 
             return $res;

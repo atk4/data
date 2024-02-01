@@ -23,7 +23,7 @@ trait PlatformTrait
             . '$$' . "\n"
             . 'BEGIN' . "\n"
             . '    CREATE EXTENSION IF NOT EXISTS citext;' . "\n"
-            . implode("\n", array_map(function (string $domain): string {
+            . implode("\n", array_map(static function (string $domain): string {
                 return '    IF to_regtype(\'' . $domain . '\') IS NULL THEN' . "\n"
                     . '        CREATE DOMAIN ' . $domain . ' AS citext;' . "\n"
                     . '    END IF;';
@@ -34,16 +34,19 @@ trait PlatformTrait
         return $sqls;
     }
 
+    #[\Override]
     protected function getVarcharTypeDeclarationSQLSnippet($length, $fixed)
     {
         return $fixed ? 'ATK4__CICHAR' : 'ATK4__CIVARCHAR';
     }
 
+    #[\Override]
     public function getClobTypeDeclarationSQL(array $column)
     {
         return 'CITEXT';
     }
 
+    #[\Override]
     protected function initializeDoctrineTypeMappings(): void
     {
         parent::initializeDoctrineTypeMappings();
@@ -52,6 +55,7 @@ trait PlatformTrait
         $this->doctrineTypeMapping['citext'] = 'text';
     }
 
+    #[\Override]
     public function getCurrentDatabaseExpression(bool $includeSchema = false): string
     {
         if ($includeSchema) {
@@ -59,6 +63,12 @@ trait PlatformTrait
         }
 
         return parent::getCurrentDatabaseExpression();
+    }
+
+    #[\Override]
+    public function convertBooleansToDatabaseValue($item)
+    {
+        return $item;
     }
 
     // PostgreSQL DBAL platform uses SERIAL column type for autoincrement which does not increment
@@ -82,9 +92,7 @@ trait PlatformTrait
 
         $pkSeqName = $this->getIdentitySequenceName($table->getName(), $pkColumn->getName());
 
-        $conn = new Connection();
-
-        $sqls[] = $conn->expr(
+        $sqls[] = (new Expression(
             // else branch should be maybe (because of concurrency) put into after update trigger
             // with pure nextval instead of setval with a loop like in Oracle trigger
             str_replace('[pk_seq]', '\'' . $pkSeqName . '\'', <<<'EOF'
@@ -111,9 +119,9 @@ trait PlatformTrait
                 'pk_seq' => $pkSeqName,
                 'trigger_func' => $table->getName() . '_AI_FUNC',
             ]
-        )->render()[0];
+        ))->render()[0];
 
-        $sqls[] = $conn->expr(
+        $sqls[] = (new Expression(
             <<<'EOF'
                 CREATE TRIGGER {trigger}
                     BEFORE INSERT OR UPDATE
@@ -126,11 +134,12 @@ trait PlatformTrait
                 'trigger' => $table->getShortestName($table->getNamespaceName()) . '_AI_PK',
                 'trigger_func' => $table->getName() . '_AI_FUNC',
             ]
-        )->render()[0];
+        ))->render()[0];
 
         return $sqls;
     }
 
+    #[\Override]
     public function getCreateTableSQL(Table $table, $createFlags = self::CREATE_INDEXES)
     {
         $sqls = array_merge(

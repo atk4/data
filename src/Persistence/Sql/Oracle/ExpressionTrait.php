@@ -52,7 +52,7 @@ trait ExpressionTrait
         $parts = $this->splitLongString($value, 1000);
 
         $exprArgs = [];
-        $buildConcatExprFx = function (array $parts) use (&$buildConcatExprFx, &$exprArgs): string {
+        $buildConcatExprFx = static function (array $parts) use (&$buildConcatExprFx, &$exprArgs): string {
             if (count($parts) > 1) {
                 $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
                 $partsRight = array_slice($parts, count($partsLeft));
@@ -71,6 +71,7 @@ trait ExpressionTrait
         return $this->expr($expr, $exprArgs); // @phpstan-ignore-line
     }
 
+    #[\Override]
     protected function updateRenderBeforeExecute(array $render): array
     {
         [$sql, $params] = parent::updateRenderBeforeExecute($render);
@@ -78,8 +79,12 @@ trait ExpressionTrait
         $newParamBase = $this->paramBase;
         $newParams = [];
         $sql = preg_replace_callback(
-            '~\'(?:\'\'|\\\\\'|[^\'])*+\'|:\w+~s',
+            '~(?!\')' . self::QUOTED_TOKEN_REGEX . '\K|' . self::QUOTED_TOKEN_REGEX . '|:\w+~',
             function ($matches) use ($params, &$newParams, &$newParamBase) {
+                if ($matches[0] === '') {
+                    return '';
+                }
+
                 if (str_starts_with($matches[0], '\'')) {
                     $value = str_replace('\'\'', '\'', substr($matches[0], 1, -1));
                     if (strlen($value) <= 4000) {
@@ -94,8 +99,8 @@ trait ExpressionTrait
                     unset($value);
                     [$exprSql, $exprParams] = $expr->render();
                     $sql = preg_replace_callback(
-                        '~\'(?:\'\'|\\\\\'|[^\'])*+\'\K|:\w+~s',
-                        function ($matches) use ($exprParams, &$newParams, &$newParamBase) {
+                        '~' . self::QUOTED_TOKEN_REGEX . '\K|:\w+~',
+                        static function ($matches) use ($exprParams, &$newParams, &$newParamBase) {
                             if ($matches[0] === '') {
                                 return '';
                             }
@@ -113,6 +118,16 @@ trait ExpressionTrait
                     ++$newParamBase; // @phpstan-ignore-line
 
                     $newParams[$sql] = $value;
+
+                    // fix oci8 param type bind
+                    // TODO create a DBAL PR - https://github.com/doctrine/dbal/blob/3.7.1/src/Driver/OCI8/Statement.php#L135
+                    // fix pdo_oci param type bind
+                    // https://github.com/php/php-src/issues/12578
+                    if (is_bool($value) || is_int($value)) {
+                        $sql = 'cast(' . $sql . ' as INTEGER)';
+                    } elseif (is_float($value)) {
+                        $sql = 'cast(' . $sql . ' as BINARY_DOUBLE)';
+                    }
                 }
 
                 return $sql;

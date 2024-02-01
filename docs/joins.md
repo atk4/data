@@ -5,7 +5,7 @@
 
 # Model from multiple joined tables
 
-:::{php:class} Model_i_Join
+:::{php:class} Model\Join
 :::
 
 Sometimes model logically contains information that is stored in various places
@@ -30,7 +30,7 @@ This code will load data from two tables simultaneously and if you do change any
 of those fields they will be update in their respective tables. With SQL the
 load query would look like this:
 
-```sql
+```
 select
     u.username, c.address, c.county, c.country_id
     (select name from country where country.id = c.country_id) country
@@ -49,7 +49,7 @@ $contact = $contact->load($user->get('contact_id'));
 
 When saving the record, Joins will automatically record data correctly:
 
-```sql
+```
 insert into contact (address, county, country_id) values ($, $, $);
 @join_c = last_insert_id();
 insert into user (username, contact_id) values ($, @join_c)
@@ -141,7 +141,7 @@ with foreign table.
 
 :::{php:method} hasMany
 same as {php:meth}`Model::hasMany` but condition for related model will be
-based on foreign table field and {php:attr}`Reference::theirField` will be
+based on foreign table field and {php:attr}`Reference::$theirField` will be
 set to $foreignTable . '_id'.
 :::
 
@@ -219,7 +219,7 @@ Joins are implemented like this:
   are using reverse join, then foreign table record will not be updated, but
   value of the foreign field will be set to null.
 
-:::{php:class} Persistence_i_Sql_i_Join
+:::{php:class} Persistence\Sql\Join
 :::
 
 ## SQL-specific joins

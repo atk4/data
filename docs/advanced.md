@@ -99,36 +99,7 @@ $this->onHookShort(Model::HOOK_AFTER_LOAD, function () {
 ```
 
 You would need to implement method "getClassName" which would return DESIRED class
-of the record. Finally to help with performance, you can implement a switch:
-
-```
-public $typeSubstitution = false;
-
-...
-
-protected function init(): void
-{
-    ...
-
-    if ($this->typeSubstitution) {
-        $this->onHook(Model::HOOK_AFTER_LOAD,
-            ...
-        )
-    }
-}
-```
-
-Now, every time you iterate (or load) you can decide if you want to invoke type
-substitution:
-
-```
-foreach ($account->ref('Transactions', ['typeSubstitution' => true]) as $tr) {
-    $tr->verify(); // verify() method can be overloaded!
-}
-
-// however, for export, we don't need expensive substitution
-$transactionData = $account->ref('Transaction')->export();
-```
+of the record.
 
 ## Audit Fields
 
@@ -394,7 +365,7 @@ class ControllerUniqueFields
     }
     use \Atk4\Core\TrackableTrait;
 
-    protected $fields = null;
+    protected ?array $fields = null;
 
     protected function init(): void
     {
@@ -554,7 +525,7 @@ public function autoAllocate()
     // we are only interested in unpaid invoices
     $invoices->addCondition('amount_due', '>', 0);
 
-    // Prioritize older invoices
+    // prioritize older invoices
     $invoices->setOrder('date');
 
     while ($this->get('amount_due') > 0) {
@@ -571,11 +542,11 @@ public function autoAllocate()
             }
         }
 
-        // How much we can allocate to this invoice
+        // how much we can allocate to this invoice
         $alloc = min($this->get('amount_due'), $invoice->get('amount_due'))
         $this->ref('InvoicePayment')->insert(['amount_closed' => $alloc, 'invoice_id' => $invoice->getId()]);
 
-        // Reload ourselves to refresh amount_due
+        // reload ourselves to refresh amount_due
         $this->reload();
     }
 }

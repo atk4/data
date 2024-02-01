@@ -45,9 +45,8 @@ abstract class Query extends Expression
      * You can pass first argument as Expression or Query
      *  $q->field($q->expr('2 + 2'), 'alias'); // must always use alias
      *
-     * You can use $q->dsql() for subqueries. Subqueries will be wrapped in
-     * brackets.
-     *  $q->field( $q->dsql()->table('x')..., 'alias');
+     * You can use $q->dsql() for subqueries. Subqueries will be wrapped in parentheses.
+     *  $q->field($q->dsql()->table('x')..., 'alias');
      *
      * If you need to use funky name for the field (e.g, one containing
      * a dot or a space), you should wrap it into expression:
@@ -77,7 +76,7 @@ abstract class Query extends Expression
         // if no fields were defined, use defaultField
         if (($this->args['field'] ?? []) === []) {
             if ($this->defaultField instanceof Expression) {
-                return $this->consume($this->defaultField);
+                return $this->consume($this->defaultField, self::ESCAPE_PARAM);
             }
 
             return $this->defaultField;
@@ -378,7 +377,7 @@ abstract class Query extends Expression
                 . ' on ';
 
             if (isset($j['expr'])) {
-                $jj .= $this->consume($j['expr']);
+                $jj .= $this->consume($j['expr'], self::ESCAPE_PARAM);
             } else {
                 $jj .= $this->escapeIdentifier($j['fa'] ?? $j['f1']) . '.'
                     . $this->escapeIdentifier($j['f2']) . ' = '
@@ -401,9 +400,8 @@ abstract class Query extends Expression
      * Examples:
      *  $q->where('id', 1);
      *
-     * By default condition implies equality. You can specify a different comparison
-     * operator by using 3-argument
-     * format:
+     * By default condition implies equality. You can specify a different comparison operator
+     * by using 3-argument format:
      *  $q->where('id', '>', 1);
      *
      * You may use Expression as any part of the query.
@@ -411,8 +409,7 @@ abstract class Query extends Expression
      *  $q->where('date', '>', $q->expr('now()'));
      *  $q->where($q->expr('length(password)'), '>', 5);
      *
-     * If you specify Query as an argument, it will be automatically
-     * surrounded by brackets:
+     * If you specify Query as an argument, it will be automatically surrounded by parentheses:
      *  $q->where('user_id', $q->dsql()->table('users')->field('id'));
      *
      * To specify OR conditions:
@@ -429,9 +426,9 @@ abstract class Query extends Expression
      */
     public function where($field, $cond = null, $value = null, $kind = 'where', $numArgs = null)
     {
-        // Number of passed arguments will be used to determine if arguments were specified or not
+        // number of passed arguments will be used to determine if arguments were specified or not
         if ($numArgs === null) {
-            $numArgs = func_num_args();
+            $numArgs = 'func_num_args'();
         }
 
         if (is_string($field) && preg_match('~([><!=]|(<!\w)(not|is|in|like))\s*$~i', $field)) {
@@ -482,7 +479,7 @@ abstract class Query extends Expression
      */
     public function having($field, $cond = null, $value = null)
     {
-        return $this->where($field, $cond, $value, 'having', func_num_args());
+        return $this->where($field, $cond, $value, 'having', 'func_num_args'());
     }
 
     /**
@@ -490,7 +487,7 @@ abstract class Query extends Expression
      *
      * @param string $kind 'where' or 'having'
      *
-     * @return array<int, string>
+     * @return list<string>
      */
     protected function _subrenderWhere($kind): array
     {
@@ -502,6 +499,24 @@ abstract class Query extends Expression
         }
 
         return $res;
+    }
+
+    /**
+     * Override to fix numeric affinity for SQLite.
+     */
+    protected function _renderConditionBinary(string $operator, string $sqlLeft, string $sqlRight): string
+    {
+        return $sqlLeft . ' ' . $operator . ' ' . $sqlRight;
+    }
+
+    /**
+     * Override to fix numeric affinity for SQLite.
+     *
+     * @param non-empty-list<string> $sqlValues
+     */
+    protected function _renderConditionInOperator(bool $negated, string $sqlLeft, array $sqlValues): string
+    {
+        return $sqlLeft . ($negated ? ' not' : '') . ' in (' . implode(', ', $sqlValues) . ')';
     }
 
     /**
@@ -576,9 +591,9 @@ abstract class Query extends Expression
                     return '1 = 1'; // always true
                 }
 
-                $value = '(' . implode(', ', array_map(fn ($v) => $this->consume($v), $value)) . ')';
+                $values = array_map(fn ($v) => $this->consume($v, self::ESCAPE_PARAM), $value);
 
-                return $field . ' ' . $cond . ' ' . $value;
+                return $this->_renderConditionInOperator($cond === 'not in', $field, $values);
             }
 
             throw (new Exception('Unsupported operator for array value'))
@@ -592,7 +607,7 @@ abstract class Query extends Expression
         // otherwise just escape value
         $value = $this->consume($value, self::ESCAPE_PARAM);
 
-        return $field . ' ' . $cond . ' ' . $value;
+        return $this->_renderConditionBinary($cond, $field, $value);
     }
 
     protected function _renderWhere(): ?string
@@ -781,6 +796,91 @@ abstract class Query extends Expression
 
     // }}}
 
+    // {{{ Order
+
+    /**
+     * Orders results by field or Expression. See documentation for full
+     * list of possible arguments.
+     *
+     * $q->order('name');
+     * $q->order('name desc');
+     * $q->order(['name desc', 'id asc'])
+     * $q->order('name', true);
+     *
+     * @param string|Expressionable|array<int, string|Expressionable> $order     order by
+     * @param ($order is array ? never : string|bool)                 $direction true to sort descending
+     *
+     * @return $this
+     */
+    public function order($order, $direction = null)
+    {
+        if (is_string($order) && str_contains($order, ',')) {
+            throw new Exception('Comma-separated fields list is no longer accepted, use array instead');
+        }
+
+        if (is_array($order)) {
+            if ($direction !== null) {
+                throw new Exception('If first argument is array, second argument must not be used');
+            }
+
+            foreach (array_reverse($order) as $o) {
+                $this->order($o);
+            }
+
+            return $this;
+        }
+
+        // first argument may contain space, to divide field and ordering keyword
+        if ($direction === null && is_string($order) && str_contains($order, ' ')) {
+            $lastSpacePos = strrpos($order, ' ');
+            if (in_array(strtolower(substr($order, $lastSpacePos + 1)), ['desc', 'asc'], true)) {
+                $direction = substr($order, $lastSpacePos + 1);
+                $order = substr($order, 0, $lastSpacePos);
+            }
+        }
+
+        if (is_bool($direction)) {
+            $direction = $direction ? 'desc' : '';
+        } elseif (strtolower($direction ?? '') === 'asc') {
+            $direction = '';
+        }
+        // no else - allow custom order like "order by name desc nulls last" for Oracle
+
+        $this->args['order'][] = [$order, $direction];
+
+        return $this;
+    }
+
+    /**
+     * @param list<string> $sqls
+     *
+     * @return list<string>
+     */
+    protected function deduplicateRenderOrder(array $sqls): array
+    {
+        return $sqls;
+    }
+
+    protected function _renderOrder(): ?string
+    {
+        if (!isset($this->args['order'])) {
+            return '';
+        }
+
+        $sqls = [];
+        foreach ($this->args['order'] as $tmp) {
+            [$arg, $desc] = $tmp;
+            $sqls[] = $this->consume($arg, self::ESCAPE_IDENTIFIER_SOFT) . ($desc ? (' ' . $desc) : '');
+        }
+
+        $sqls = array_reverse($sqls);
+        $sqlsDeduplicated = $this->deduplicateRenderOrder($sqls);
+
+        return ' order by ' . implode(', ', $sqlsDeduplicated);
+    }
+
+    // }}}
+
     // {{{ Limit
 
     /**
@@ -813,78 +913,6 @@ abstract class Query extends Expression
 
     // }}}
 
-    // {{{ Order
-
-    /**
-     * Orders results by field or Expression. See documentation for full
-     * list of possible arguments.
-     *
-     * $q->order('name');
-     * $q->order('name desc');
-     * $q->order(['name desc', 'id asc'])
-     * $q->order('name', true);
-     *
-     * @param string|Expressionable|array<int, string|Expressionable> $order order by
-     * @param string|bool                                             $desc  true to sort descending
-     *
-     * @return $this
-     */
-    public function order($order, $desc = null)
-    {
-        if (is_string($order) && str_contains($order, ',')) {
-            throw new Exception('Comma-separated fields list is no longer accepted, use array instead');
-        }
-
-        if (is_array($order)) {
-            if ($desc !== null) {
-                throw new Exception('If first argument is array, second argument must not be used');
-            }
-
-            foreach (array_reverse($order) as $o) {
-                $this->order($o);
-            }
-
-            return $this;
-        }
-
-        // first argument may contain space, to divide field and ordering keyword
-        if ($desc === null && is_string($order) && str_contains($order, ' ')) {
-            $lastSpacePos = strrpos($order, ' ');
-            if (in_array(strtolower(substr($order, $lastSpacePos + 1)), ['desc', 'asc'], true)) {
-                $desc = substr($order, $lastSpacePos + 1);
-                $order = substr($order, 0, $lastSpacePos);
-            }
-        }
-
-        if (is_bool($desc)) {
-            $desc = $desc ? 'desc' : '';
-        } elseif (strtolower($desc ?? '') === 'asc') {
-            $desc = '';
-        }
-        // no else - allow custom order like "order by name desc nulls last" for Oracle
-
-        $this->args['order'][] = [$order, $desc];
-
-        return $this;
-    }
-
-    protected function _renderOrder(): ?string
-    {
-        if (!isset($this->args['order'])) {
-            return '';
-        }
-
-        $x = [];
-        foreach ($this->args['order'] as $tmp) {
-            [$arg, $desc] = $tmp;
-            $x[] = $this->consume($arg, self::ESCAPE_IDENTIFIER_SOFT) . ($desc ? (' ' . $desc) : '');
-        }
-
-        return ' order by ' . implode(', ', array_reverse($x));
-    }
-
-    // }}}
-
     // {{{ Exists
 
     /**
@@ -899,6 +927,7 @@ abstract class Query extends Expression
 
     // }}}
 
+    #[\Override]
     public function __debugInfo(): array
     {
         $arr = [
@@ -924,6 +953,7 @@ abstract class Query extends Expression
     /**
      * Renders query template. If the template is not explicitly use "select" mode.
      */
+    #[\Override]
     public function render(): array
     {
         if ($this->template === null) {
@@ -940,6 +970,26 @@ abstract class Query extends Expression
         }
 
         return parent::render();
+    }
+
+    #[\Override]
+    protected function renderNested(): array
+    {
+        if (isset($this->args['order']) && !isset($this->args['limit'])) {
+            $orderOrig = $this->args['order'];
+            unset($this->args['order']);
+        } else {
+            $orderOrig = null;
+        }
+        try {
+            [$sql, $params] = parent::renderNested();
+        } finally {
+            if ($orderOrig !== null) {
+                $this->args['order'] = $orderOrig;
+            }
+        }
+
+        return [$sql, $params];
     }
 
     /**
@@ -967,12 +1017,7 @@ abstract class Query extends Expression
         return $this;
     }
 
-    /**
-     * Create Expression object with the same connection.
-     *
-     * @param string|array<string, mixed> $template
-     * @param array<int|string, mixed>    $arguments
-     */
+    #[\Override]
     public function expr($template = [], array $arguments = []): Expression
     {
         $class = $this->expressionClass;
@@ -987,7 +1032,7 @@ abstract class Query extends Expression
      *
      * @param string|array<string, mixed> $defaults
      *
-     * @return Query
+     * @return self
      */
     public function dsql($defaults = [])
     {
@@ -1011,7 +1056,7 @@ abstract class Query extends Expression
     /**
      * Returns new Query object of [or] expression.
      *
-     * @return Query
+     * @return self
      */
     public function orExpr()
     {
@@ -1021,7 +1066,7 @@ abstract class Query extends Expression
     /**
      * Returns new Query object of [and] expression.
      *
-     * @return Query
+     * @return self
      */
     public function andExpr()
     {
@@ -1046,7 +1091,7 @@ abstract class Query extends Expression
      *
      * @param mixed $operand optional operand for case expression
      *
-     * @return Query
+     * @return self
      */
     public function caseExpr($operand = null)
     {

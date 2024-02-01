@@ -13,10 +13,7 @@ class HasOne extends Reference
     use Model\FieldPropertiesTrait;
     use Model\JoinLinkTrait;
 
-    /**
-     * Reference\HasOne will also add a field corresponding
-     * to 'ourField' unless it exists.
-     */
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -73,11 +70,12 @@ class HasOne extends Reference
     }
 
     /**
-     * If our model is loaded, then return their model with respective record loaded.
+     * If our model is loaded, then return their model with respective loaded entity.
      *
      * If our model is not loaded, then return their model with condition set.
      * This can happen in case of deep traversal $model->ref('Many')->ref('one_id'), for example.
      */
+    #[\Override]
     public function ref(Model $ourModel, array $defaults = []): Model
     {
         $ourModel = $this->getOurModel($ourModel);

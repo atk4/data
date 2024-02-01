@@ -5,20 +5,20 @@
 
 # SQL Extensions
 
-Databases that support SQL language can use {php:class}`Persistence_i_Sql`.
+Databases that support SQL language can use {php:class}`Persistence\Sql`.
 This driver will format queries to the database using SQL language.
 
 In addition to normal operations you can extend and customize various queries.
 
 ## Default Model Classes
 
-When using {php:class}`Persistence_i_Sql` model building will use different classes for fields,
+When using {php:class}`Persistence\Sql` model building will use different classes for fields,
 expressions, joins etc:
 
 - addField - different class is no longer used/needed
-- hasOne - {php:class}`Reference_i_HasOneSql` (allow importing fields)
-- addExpression - {php:class}`Field_i_SqlExpressionField` (define expression through DSQL)
-- join - {php:class}`Persistence_i_Sql_i_Join` (join tables query-time)
+- hasOne - {php:class}`Reference\HasOneSql` (allow importing fields)
+- addExpression - {php:class}`Field\SqlExpressionField` (define expression through DSQL)
+- join - {php:class}`Persistence\Sql\Join` (join tables query-time)
 
 ### SQL Field
 
@@ -26,7 +26,7 @@ expressions, joins etc:
 :::
 
 :::{php:attr} actual
-{php:class}`Persistence_i_Sql` supports field name mapping. Your field could
+{php:class}`Persistence\Sql` supports field name mapping. Your field could
 have different column name in your schema:
 
 ```
@@ -49,8 +49,8 @@ $q = $connection->expr('[age] + [birth_year]', [
 
 ### SQL Reference
 
-:::{php:class} Reference_i_HasOneSql
-Extends {php:class}`Reference_i_HasOne`
+:::{php:class} Reference\HasOneSql
+Extends {php:class}`Reference\HasOne`
 :::
 
 :::{php:method} addField
@@ -114,7 +114,7 @@ Returns $this.
 :::
 
 :::{php:method} ref
-While similar to {php:meth}`Reference_i_HasOne::ref` this implementation
+While similar to {php:meth}`Reference\HasOne::ref` this implementation
 implements deep traversal:
 
 ```
@@ -152,7 +152,7 @@ Returns new field object.
 
 ### Expressions
 
-:::{php:class} Field_i_SqlExpressionField
+:::{php:class} Field\SqlExpressionField
 Extends {php:class}`Field`
 :::
 
@@ -176,11 +176,11 @@ $model->addExpression('can_buy_alcohol', ['expr' => 'if([age] > 25, 1, 0)', 'typ
 :::
 
 Adding expressions to model will make it automatically reload itself after save
-as default behavior, see {php:attr}`Model::reloadAfterSave`.
+as default behavior, see {php:attr}`Model::$reloadAfterSave`.
 
 ## Transactions
 
-:::{php:class} Persistence_i_Sql
+:::{php:class} Persistence\Sql
 :::
 
 :::{php:method} atomic
@@ -234,7 +234,7 @@ $q = $connection->expr('[age] + [birth_year]', [
 $q = $m->expr('[age] + [birth_year']);
 ```
 
-This method is automatically used by {php:class}`Field_i_SqlExpressionField`.
+This method is automatically used by {php:class}`Field\SqlExpressionField`.
 
 ## Actions
 
@@ -462,7 +462,7 @@ where once again, stored function is hidden.
 Not all SQL vendors may support this approach.
 :::
 
-Method {php:meth}`Persistence_i_Sql::action` and {php:meth}`Model::action`
+Method {php:meth}`Persistence\Sql::action` and {php:meth}`Model::action`
 generates queries for most of model operations. By re-defining this method,
 you can significantly affect the query building of an SQL model:
 
@@ -525,12 +525,13 @@ class NominalReport extends \Atk4\Data\Model
 
         $this->addField('date', ['type' => 'date']);
         $this->addField('items', ['type' => 'integer']);
+
         ...
     }
 }
 ```
 
-### as an Model Source
+### as a Model Source
 
 :::{important}
 Not all SQL vendors may support this approach.
@@ -548,10 +549,11 @@ class ClientReport extends \Atk4\Data\Model
     {
         parent::init();
 
-        $this->init = $this->expr('call get_report_data()');
+        $this->table = $this->expr('call get_report_data()');
 
         $this->addField('date', ['type' => 'date']);
         $this->addField('items', ['type' => 'integer']);
+
         ...
     }
 }

@@ -160,9 +160,9 @@ the value to an appropriate data-type. If it is impossible to cast the value,
 then exception will be generated:
 
 ```
-$m->set('is_admin', '1'); // OK, but stores as `true`
+$m->set('is_admin', '1'); // ok, will be normalized/stored as `true`
 
-$m->set('is_admin', 123); // throws exception.
+$m->set('is_admin', 123); // throws exception
 ```
 
 It's not only the 'type' property, but 'enum' can also imply restrictions:
@@ -170,8 +170,8 @@ It's not only the 'type' property, but 'enum' can also imply restrictions:
 ```
 $m->addField('access_type', ['enum' => ['readOnly', 'full']]);
 
-$m->set('access_type', 'full'); // OK
-$m->set('access_type', 'half-full'); // Exception
+$m->set('access_type', 'full'); // ok
+$m->set('access_type', 'half-full'); // throws exception
 ```
 
 There are also non-trivial types in Agile Data:
@@ -191,21 +191,20 @@ complex logic:
 $m->add(new Field_Currency(), 'balance');
 $m->set('balance', 12_200.0);
 
-// May transparently work with 2 columns: 'balance_amount' and
-// 'balance_currency_id' for example.
+// may transparently work with 2 columns: 'balance_amount' and 'balance_currency_id' for example
 ```
 
 Loaded/saved data are always normalized unless the field value normalization
 is intercepted a hook.
 
-Final field flag that is worth mentioning is called {php:attr}`Field::readOnly`
+Final field flag that is worth mentioning is called {php:attr}`Field::$readOnly`
 and if set, then value of a field may not be modified directly:
 
 ```
 $m->addField('ref_no', ['readOnly' => true]);
 $m = $m->load(123);
 
-$m->get('ref_no'); // perfect for reading field that is populated by trigger.
+$m->get('ref_no'); // perfect for reading field that is populated by trigger
 
 $m->set('ref_no', 'foo'); // exception
 ```
@@ -219,7 +218,7 @@ $m->addField('created', [
     'default' => new DateTime(),
 ]);
 
-$m->save(); // stores creation time just fine and also will loade it.
+$m->save(); // stores creation time just fine and also will loade it
 ```
 
 :::{note}
@@ -372,12 +371,12 @@ If you pass the `$id` parameter, then the new record will be saved under
 a new ID:
 
 ```
-// Assume DB with only one record with ID = 123
+// assume DB with only one record with ID = 123
 
-// Load and duplicate that record
+// load and duplicate that record
 $m->load(123)->duplicate()->save();
 
-// Now you have 2 records:
+// now you have 2 records:
 // one with ID = 123 and another with ID = {next db generated id}
 echo $m->executeCountQuery();
 ```
@@ -418,10 +417,6 @@ When you clone a model, the new copy will inherit pretty much all the conditions
 and any in-line modifications that you have applied on the original model.
 If you decide to create new instance, it will provide a `vanilla` copy of model
 without any in-line modifications.
-This can be used in conjunction to escape data-set.
-
-:::{php:method} newInstance($class = null, $options = [])
-:::
 
 ### Looking for duplicates
 
@@ -453,10 +448,6 @@ $this->onHookShort(Model::HOOK_BEFORE_SAVE, function () {
     }
 });
 ```
-
-So to review, we used newInstance() to create new copy of a current model. It
-is important to note that newInstance() is using get_class($this) to determine
-the class.
 
 ### Archiving Records
 
@@ -641,7 +632,7 @@ $m->withPersistence($writeReplica)->save();
 $dirtyRef = &$m->getDirtyRef();
 $dirtyRef = [];
 
-// Possibly the update is delayed
+// possibly the update is delayed
 // $m->reload();
 ```
 

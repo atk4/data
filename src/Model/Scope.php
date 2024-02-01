@@ -6,13 +6,15 @@ namespace Atk4\Data\Model;
 
 use Atk4\Core\ContainerTrait;
 use Atk4\Data\Exception;
+use Atk4\Data\Field;
 use Atk4\Data\Model;
+use Atk4\Data\Model\Scope\AbstractScope;
 use Atk4\Data\Persistence\Sql\Expressionable;
 
 /**
- * @property array<Scope\AbstractScope> $elements
+ * @property array<AbstractScope> $elements
  */
-class Scope extends Scope\AbstractScope
+class Scope extends AbstractScope
 {
     use ContainerTrait;
 
@@ -26,9 +28,9 @@ class Scope extends Scope\AbstractScope
     /**
      * Create a Scope from array of condition objects or condition arrays.
      *
-     * @param array<int, Scope\AbstractScope|string|Expressionable|array<mixed>> $nestedConditions
+     * @param array<int, AbstractScope|Expressionable|array{string|Expressionable, 1?: mixed, 2?: mixed}> $conditions
      */
-    public function __construct(array $nestedConditions = [], string $junction = self::AND)
+    public function __construct(array $conditions = [], string $junction = self::AND)
     {
         if (!in_array($junction, [self::OR, self::AND], true)) {
             throw (new Exception('Using invalid CompondCondition junction'))
@@ -37,14 +39,12 @@ class Scope extends Scope\AbstractScope
 
         $this->junction = $junction;
 
-        foreach ($nestedConditions as $nestedCondition) {
-            if ($nestedCondition instanceof Scope\AbstractScope) {
-                $condition = $nestedCondition;
-            } else {
-                if (!is_array($nestedCondition)) {
-                    $nestedCondition = [$nestedCondition];
+        foreach ($conditions as $condition) {
+            if (!$condition instanceof AbstractScope) {
+                if ($condition instanceof Expressionable && !$condition instanceof Field) {
+                    $condition = [$condition];
                 }
-                $condition = new Scope\Condition(...$nestedCondition);
+                $condition = new Scope\Condition(...$condition);
             }
 
             $this->add($condition);
@@ -64,24 +64,24 @@ class Scope extends Scope\AbstractScope
         if ($this->issetOwner()) {
             $this->unsetOwner();
         }
-        $this->shortName = null; // @phpstan-ignore-line
+        // $this->shortName = null; // uncomment once https://github.com/php/php-src/issues/9389 is resolved
     }
 
     /**
-     * @param Scope\AbstractScope|array<int, mixed>|string|Expressionable $field
-     * @param string|mixed|null                                           $operator
-     * @param mixed|null                                                  $value
+     * @param AbstractScope|array<int, AbstractScope|Expressionable|array{string|Expressionable, 1?: mixed, 2?: mixed}>|string|Expressionable $field
+     * @param ($field is string|Expressionable ? ($value is null ? mixed : string) : never)                                                   $operator
+     * @param ($operator is string ? mixed : never)                                                                                           $value
      *
      * @return $this
      */
     public function addCondition($field, $operator = null, $value = null)
     {
-        if (func_num_args() === 1 && $field instanceof Scope\AbstractScope) {
+        if ('func_num_args'() === 1 && $field instanceof AbstractScope) {
             $condition = $field;
-        } elseif (func_num_args() === 1 && is_array($field)) {
-            $condition = static::createAnd(func_get_args());
+        } elseif ('func_num_args'() === 1 && is_array($field)) {
+            $condition = static::createAnd(...$field);
         } else {
-            $condition = new Scope\Condition(...func_get_args());
+            $condition = new Scope\Condition(...'func_get_args'());
         }
 
         $this->add($condition);
@@ -92,13 +92,14 @@ class Scope extends Scope\AbstractScope
     /**
      * Return array of nested conditions.
      *
-     * @return array<Scope\AbstractScope>
+     * @return array<AbstractScope>
      */
     public function getNestedConditions()
     {
         return $this->elements;
     }
 
+    #[\Override]
     protected function onChangeModel(): void
     {
         foreach ($this->elements as $nestedCondition) {
@@ -106,11 +107,13 @@ class Scope extends Scope\AbstractScope
         }
     }
 
+    #[\Override]
     public function isEmpty(): bool
     {
         return count($this->elements) === 0;
     }
 
+    #[\Override]
     public function isCompound(): bool
     {
         return count($this->elements) > 1;
@@ -140,19 +143,16 @@ class Scope extends Scope\AbstractScope
         return $this->junction === self::AND;
     }
 
-    /**
-     * Clears the compound condition from nested conditions.
-     *
-     * @return static
-     */
-    public function clear()
+    #[\Override]
+    public function clear(): self
     {
         $this->elements = [];
 
         return $this;
     }
 
-    public function simplify(): Scope\AbstractScope
+    #[\Override]
+    public function simplify(): AbstractScope
     {
         if (count($this->elements) !== 1) {
             return $this;
@@ -165,10 +165,9 @@ class Scope extends Scope\AbstractScope
 
     /**
      * Use De Morgan's laws to negate.
-     *
-     * @return static
      */
-    public function negate()
+    #[\Override]
+    public function negate(): self
     {
         $this->junction = $this->junction === self::OR ? self::AND : self::OR;
 
@@ -179,6 +178,7 @@ class Scope extends Scope\AbstractScope
         return $this;
     }
 
+    #[\Override]
     public function toWords(Model $model = null): string
     {
         $parts = [];
@@ -194,7 +194,7 @@ class Scope extends Scope\AbstractScope
     }
 
     /**
-     * @param Scope\AbstractScope|string|Expressionable|array<mixed> ...$conditions
+     * @param AbstractScope|Expressionable|array{string|Expressionable, 1?: mixed, 2?: mixed} ...$conditions
      *
      * @return static
      */
@@ -204,7 +204,7 @@ class Scope extends Scope\AbstractScope
     }
 
     /**
-     * @param Scope\AbstractScope|string|Expressionable|array<mixed> ...$conditions
+     * @param AbstractScope|Expressionable|array{string|Expressionable, 1?: mixed, 2?: mixed} ...$conditions
      *
      * @return static
      */

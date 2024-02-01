@@ -10,12 +10,13 @@ use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 
 class Model_Rate extends Model
 {
     public $table = 'rate';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -29,6 +30,7 @@ class Model_Item extends Model
 {
     public $table = 'item';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -42,6 +44,7 @@ class Model_Item2 extends Model
 {
     public $table = 'item';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -56,6 +59,7 @@ class Model_Item3 extends Model
 {
     public $table = 'item';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -178,7 +182,7 @@ class RandomTest extends TestCase
 
         $p = new Persistence\Array_();
         $pAddCalled = false;
-        $p->onHookShort(Persistence::HOOK_AFTER_ADD, function (Model $mFromHook) use ($m, &$pAddCalled) {
+        $p->onHookShort(Persistence::HOOK_AFTER_ADD, static function (Model $mFromHook) use ($m, &$pAddCalled) {
             self::assertSame($m, $mFromHook);
             $pAddCalled = true;
         });
@@ -274,7 +278,7 @@ class RandomTest extends TestCase
 
         // default title field
         $m = new Model($p);
-        $m->addExpression('caps', ['expr' => function (Model $m) {
+        $m->addExpression('caps', ['expr' => static function (Model $m) {
             return strtoupper($m->get('name'));
         }]);
 
@@ -508,7 +512,7 @@ class RandomTest extends TestCase
 
     public function testTableWithSchema(): void
     {
-        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
             $userSchema = 'db1';
             $docSchema = 'db2';
             $runWithDb = false;
@@ -569,6 +573,4 @@ class RandomTest extends TestCase
     }
 }
 
-class CustomField extends Field
-{
-}
+class CustomField extends Field {}

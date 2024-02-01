@@ -111,7 +111,7 @@ class MigratorTest extends TestCase
     /**
      * @return iterable<list<mixed>>
      */
-    public function provideCharacterTypeFieldCaseSensitivityCases(): iterable
+    public static function provideCharacterTypeFieldCaseSensitivityCases(): iterable
     {
         yield ['string', false];
         yield ['binary', true];
@@ -156,8 +156,8 @@ class MigratorTest extends TestCase
         if ($length === 0) {
             $str = '';
 
-            // TODO Oracle converts empty string to NULL
-            // https://stackoverflow.com/questions/13278773/null-vs-empty-string-in-oracle
+            // TODO Oracle always converts empty string to null
+            // https://stackoverflow.com/questions/13278773/null-vs-empty-string-in-oracle#13278879
             if ($this->getDatabasePlatform() instanceof OraclePlatform && in_array($type, ['string', 'text'], true)) {
                 $str = 'x';
             }
@@ -198,7 +198,7 @@ class MigratorTest extends TestCase
 
         // functional test for Expression::escapeStringLiteral() method
         $strRaw = $model->getPersistence()->typecastSaveField($model->getField('v'), $str);
-        $strRawSql = \Closure::bind(function () use ($model, $strRaw) {
+        $strRawSql = \Closure::bind(static function () use ($model, $strRaw) {
             return $model->expr('')->escapeStringLiteral($strRaw);
         }, null, Expression::class)();
         $query = $this->getConnection()->dsql()
@@ -224,7 +224,7 @@ class MigratorTest extends TestCase
             }
 
             self::assertSame($length, mb_strlen($str));
-            $strSql = \Closure::bind(function () use ($model, $str) {
+            $strSql = \Closure::bind(static function () use ($model, $str) {
                 return $model->expr('')->escapeStringLiteral($str);
             }, null, Expression::class)();
             $query = $this->getConnection()->dsql()
@@ -242,8 +242,9 @@ class MigratorTest extends TestCase
     /**
      * @return iterable<list<mixed>>
      */
-    public function provideCharacterTypeFieldLongCases(): iterable
+    public static function provideCharacterTypeFieldLongCases(): iterable
     {
+        yield ['string', false, 0];
         yield ['binary', true, 0];
         yield ['text', false, 0];
         yield ['blob', true, 0];
@@ -272,6 +273,7 @@ class TestUser extends Model
 {
     public $table = 'user';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -289,6 +291,7 @@ class TestRole extends Model
 {
     public $table = 'role';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();

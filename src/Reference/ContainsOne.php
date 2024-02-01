@@ -9,6 +9,7 @@ use Atk4\Data\Persistence;
 
 class ContainsOne extends ContainsBase
 {
+    #[\Override]
     protected function getDefaultPersistence(Model $theirModel): Persistence
     {
         $ourModel = $this->getOurModelPassedToRefXxx();
@@ -18,6 +19,7 @@ class ContainsOne extends ContainsBase
         ]);
     }
 
+    #[\Override]
     public function ref(Model $ourModel, array $defaults = []): Model
     {
         $ourModel = $this->getOurModel($ourModel);

@@ -10,8 +10,9 @@ use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Expression;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 abstract class TestCase extends BaseTestCase
@@ -39,6 +40,7 @@ abstract class TestCase extends BaseTestCase
         return null;
     }
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -46,6 +48,7 @@ abstract class TestCase extends BaseTestCase
         $this->db = new TestSqlPersistence();
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         $debugOrig = $this->debug;
@@ -79,13 +82,55 @@ abstract class TestCase extends BaseTestCase
             return;
         }
 
+        // needed for \Atk4\Data\Persistence\Sql\*\ExpressionTrait::updateRenderBeforeExecute() fixes
+        $i = 0;
+        $sql = preg_replace_callback(
+            '~' . Expression::QUOTED_TOKEN_REGEX . '\K|(\?)|cast\((\?|:\w+) as (BOOLEAN|INTEGER|BIGINT|DOUBLE PRECISION|BINARY_DOUBLE)\)|\((\?|:\w+) \+ 0\.00\)~',
+            static function ($matches) use (&$types, &$params, &$i) {
+                if ($matches[0] === '') {
+                    return '';
+                }
+
+                if ($matches[1] === '?') {
+                    ++$i;
+
+                    return $matches[0];
+                }
+
+                $k = isset($matches[4]) ? ($matches[4] === '?' ? ++$i : $matches[4]) : ($matches[2] === '?' ? ++$i : $matches[2]);
+
+                if ($matches[3] === 'BOOLEAN' && ($types[$k] === ParameterType::BOOLEAN || $types[$k] === ParameterType::INTEGER)
+                    && (is_bool($params[$k]) || $params[$k] === '0' || $params[$k] === '1')
+                ) {
+                    $types[$k] = ParameterType::BOOLEAN;
+                    $params[$k] = (bool) $params[$k];
+
+                    return $matches[4] ?? $matches[2];
+                } elseif (($matches[3] === 'INTEGER' || $matches[3] === 'BIGINT') && $types[$k] === ParameterType::INTEGER && is_int($params[$k])) {
+                    return $matches[4] ?? $matches[2];
+                } elseif (($matches[3] === 'DOUBLE PRECISION' || $matches[3] === 'BINARY_DOUBLE' || isset($matches[4]))
+                    && $types[$k] === ParameterType::STRING && is_string($params[$k]) && is_numeric($params[$k])
+                ) {
+                    // $types[$k] = ParameterType::FLOAT; is not supported yet by DBAL
+                    $params[$k] = (float) $params[$k];
+
+                    return $matches[4] ?? $matches[2];
+                }
+
+                return $matches[0];
+            },
+            $sql
+        );
+
         $exprNoRender = new class($sql, $params) extends Expression {
+            #[\Override]
             public function render(): array
             {
                 return [$this->template, $this->args['custom']];
             }
         };
         $sqlWithParams = $exprNoRender->getDebugQuery();
+
         if (substr($sqlWithParams, -1) !== ';') {
             $sqlWithParams .= ';';
         }
@@ -98,8 +143,12 @@ abstract class TestCase extends BaseTestCase
         $platform = $this->getDatabasePlatform();
 
         $convertedSql = preg_replace_callback(
-            '~\'(?:[^\'\\\\]+|\\\\.)*+\'|`(?:[^`\\\\]+|\\\\.)*+`|:(\w+)~s',
-            function ($matches) use ($platform) {
+            '~(?![\'`])' . Expression::QUOTED_TOKEN_REGEX . '\K|' . Expression::QUOTED_TOKEN_REGEX . '|:(\w+)~',
+            static function ($matches) use ($platform) {
+                if ($matches[0] === '') {
+                    return '';
+                }
+
                 if (isset($matches[1])) {
                     return ':' . ($platform instanceof OraclePlatform ? 'xxaaa' : '') . $matches[1];
                 }
@@ -114,7 +163,7 @@ abstract class TestCase extends BaseTestCase
             $sql
         );
 
-        if ($platform instanceof SqlitePlatform && $convertedSql !== $sql) {
+        if ($platform instanceof SQLitePlatform && $convertedSql !== $sql) {
             self::assertSame($sql, $convertedSql);
         }
 
@@ -123,6 +172,16 @@ abstract class TestCase extends BaseTestCase
 
     protected function assertSameSql(string $expectedSqliteSql, string $actualSql, string $message = ''): void
     {
+        // remove once SQLite affinity of expressions is fixed natively
+        // related with Atk4\Data\Persistence\Sql\Sqlite\Query::_renderConditionBinary() fix
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
+            do {
+                $actualSqlPrev = $actualSql;
+                $actualSql = preg_replace('~case when typeof\((.+?)\) in \(\'integer\', \'real\'\) then cast\(\1 as numeric\) (.{1,20}?) (.+?) else \1 \2 \3 end~s', '$1 $2 $3', $actualSql);
+                $actualSql = preg_replace('~case when typeof\((.+?)\) in \(\'integer\', \'real\'\) then (.+?) (.{1,20}?) cast\(\1 as numeric\) else \2 \3 \1 end~s', '$2 $3 $1', $actualSql);
+            } while ($actualSql !== $actualSqlPrev);
+        }
+
         self::assertSame($this->convertSqlFromSqlite($expectedSqliteSql), $actualSql, $message);
     }
 
@@ -175,11 +234,11 @@ abstract class TestCase extends BaseTestCase
 
             if ($is2d) {
                 if (array_is_list($a) && array_is_list($b)) {
-                    usort($a, fn ($a, $b) => self::compareExportUnorderedValue($a, $b));
-                    usort($b, fn ($a, $b) => self::compareExportUnorderedValue($a, $b));
+                    usort($a, static fn ($a, $b) => self::compareExportUnorderedValue($a, $b));
+                    usort($b, static fn ($a, $b) => self::compareExportUnorderedValue($a, $b));
                 } else {
-                    uasort($a, fn ($a, $b) => self::compareExportUnorderedValue($a, $b));
-                    uasort($b, fn ($a, $b) => self::compareExportUnorderedValue($a, $b));
+                    uasort($a, static fn ($a, $b) => self::compareExportUnorderedValue($a, $b));
+                    uasort($b, static fn ($a, $b) => self::compareExportUnorderedValue($a, $b));
                 }
             }
 
@@ -363,14 +422,13 @@ abstract class TestCase extends BaseTestCase
         }
     }
 
-    public function markTestIncompleteWhenCreateUniqueIndexIsNotSupportedByPlatform(): void
+    protected function markTestIncompleteOnMySQL56PlatformAsCreateUniqueStringIndexHasLengthLimit(): void
     {
-        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            // https://github.com/doctrine/dbal/issues/5507
-            self::markTestIncomplete('TODO MSSQL: DBAL must setup unique index without WHERE clause');
-        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            // https://github.com/doctrine/dbal/issues/5508
-            self::markTestIncomplete('TODO Oracle: DBAL must setup unique index on table column too');
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            $serverVersion = $this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
+            if (preg_match('~^5\.6~', $serverVersion)) {
+                self::markTestIncomplete('TODO MySQL 5.6: Unique key exceed max key (767 bytes) length');
+            }
         }
     }
 }

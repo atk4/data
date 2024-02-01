@@ -15,6 +15,7 @@ use Atk4\Data\Model;
  */
 class Address extends Model
 {
+    #[\Override]
     protected function init(): void
     {
         parent::init();

@@ -2,24 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Atk4\Data\Persistence\Sql\Mysql;
+namespace Atk4\Data\Persistence\Sql\Sqlite;
 
 trait ExpressionTrait
 {
-    #[\Override]
-    protected function escapeStringLiteral(string $value): string
-    {
-        return str_replace('\\', '\\\\', parent::escapeStringLiteral($value));
-    }
-
-    #[\Override]
-    protected function hasNativeNamedParamSupport(): bool
-    {
-        $dbalConnection = $this->connection->getConnection();
-
-        return !$dbalConnection->getNativeConnection() instanceof \mysqli;
-    }
-
     #[\Override]
     protected function updateRenderBeforeExecute(array $render): array
     {
@@ -37,8 +23,10 @@ trait ExpressionTrait
 
                 // emulate bind param support for float type
                 // TODO open php-src feature request
-                if (is_float($value)) {
-                    $sql = '(' . $sql . ' + 0.00)';
+                if (is_int($value)) {
+                    $sql = 'cast(' . $sql . ' as INTEGER)';
+                } elseif (is_float($value)) {
+                    $sql = 'cast(' . $sql . ' as DOUBLE PRECISION)';
                 }
 
                 return $sql;

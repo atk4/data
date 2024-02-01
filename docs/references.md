@@ -73,7 +73,7 @@ $ordersForVips = $m->ref('Orders');
 Now that a different databases are used, the queries can no longer be
 joined so Agile Data will carry over list of IDs instead:
 
-```sql
+```
 $ids = select id from user where is_vip = 1
 select * from order where user_id in ($ids)
 ```
@@ -457,7 +457,7 @@ modified:
 $i->set('currency', 'GBP');
 $i->save();
 
-// will update $i->get('currency_id') to the corresponding ID for currency with name GBP.
+// will update $i->get('currency_id') to the corresponding ID for currency with name GBP
 ```
 
 This behavior is awesome when you are importing large amounts of data, because
@@ -482,7 +482,7 @@ so with `addReference` you can define whatever reference you want:
 
 ```
 $m->addReference('Archive', ['model' => function (Model $m) {
-    return $m->newInstance(null, ['table' => $m->table . '_archive']);
+    return new $m(null, ['table' => $m->table . '_archive']);
 }]);
 ```
 
@@ -500,7 +500,7 @@ No condition will be applied by default so it's all up to you:
 
 ```
 $m->addReference('Archive', ['model' => function (Model $m) {
-    $archive = $m->newInstance(null, ['table' => $m->table . '_archive']);
+    $archive = new $m(null, ['table' => $m->table . '_archive']);
 
     $m->addField('original_id', ['type' => 'integer']);
 
@@ -721,7 +721,7 @@ hook, which will update address_id field of the $m.
 
 References are implemented through several classes:
 
-:::{php:class} Reference_i_HasOne
+:::{php:class} Reference\HasOne
 Defines generic reference, that is typically created by {php:meth}`Model::addReference`
 :::
 

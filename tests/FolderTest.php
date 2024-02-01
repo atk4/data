@@ -11,6 +11,7 @@ class Folder extends Model
 {
     public $table = 'folder';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();

@@ -14,6 +14,7 @@ class ModelWithoutIdTest extends TestCase
     /** @var Model */
     public $m;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -72,6 +73,7 @@ class ModelWithoutIdTest extends TestCase
     public function testFail1(): void
     {
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unable to load by "id" when Model->idField is not defined');
         $this->m->load(1);
     }
 
@@ -134,6 +136,7 @@ class ModelWithoutIdTest extends TestCase
     public function testFailDelete1(): void
     {
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unable to load by "id" when Model->idField is not defined');
         $this->m->delete(4);
     }
 }

@@ -76,9 +76,9 @@ class Action
 
                 break;
             case 'AVG':
-                $column = $coalesce ? $column : array_filter($column, function ($value) {
-                    return $value !== null;
-                });
+                if (!$coalesce) { // TODO add tests and verify against SQL
+                    $column = array_filter($column, static fn ($v) => $v !== null);
+                }
 
                 $result = array_sum($column) / count($column);
 
@@ -128,18 +128,24 @@ class Action
 
             return $this->evaluateIf($row[$field->shortName] ?? null, $operator, $value);
         } elseif ($condition instanceof Model\Scope) { // nested conditions
-            $matches = [];
+            $isOr = $condition->isOr();
+            $res = true;
             foreach ($condition->getNestedConditions() as $nestedCondition) {
-                $matches[] = $subMatch = $this->match($row, $nestedCondition);
+                $submatch = $this->match($row, $nestedCondition);
 
-                // do not check all conditions if any match required
-                if ($condition->isOr() && $subMatch) {
+                if ($isOr) {
+                    // do not check all conditions if any match required
+                    if ($submatch) {
+                        break;
+                    }
+                } elseif (!$submatch) {
+                    $res = false;
+
                     break;
                 }
             }
 
-            // any matches && all matches the same (if all required)
-            return array_filter($matches) && ($condition->isAnd() ? count(array_unique($matches)) === 1 : true);
+            return $res;
         }
 
         throw (new Exception('Unexpected condition type'))

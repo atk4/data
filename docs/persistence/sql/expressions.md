@@ -21,7 +21,7 @@ $query->where('time', $query->expr(
     [$fromTime, $toTime]
 ));
 
-// Produces: .. where `time` between :a and :b
+// produces: .. where `time` between :a and :b
 ```
 
 Another use of expression is to supply field instead of value and vice versa:
@@ -32,7 +32,7 @@ $query->where($query->expr(
     [$time]
 ));
 
-// Produces: where :a between time_from and time_to
+// produces: where :a between time_from and time_to
 ```
 
 Yet another curious use for the DSQL library is if you have certain object in
@@ -45,7 +45,7 @@ $query->where($query->expr(
     [$time, $model->getElement('time_form'), $model->getElement('time_to')]
 ));
 
-// Produces: where :a between `time_from` and `time_to`
+// produces: where :a between `time_from` and `time_to`
 ```
 
 :::{todo}
@@ -92,7 +92,7 @@ you do not have to define "use" block:
 ```
 $query->where('time', '>', $query->expr('NOW()'));
 
-// Produces: .. where `time` > NOW()
+// produces: .. where `time` > NOW()
 ```
 
 You can specify some of the expression properties through first argument of the
@@ -276,32 +276,33 @@ composer require jdorn/sql-formatter
 The following methods are useful if you're building your own code for rendering
 parts of the query. You must not call them in normal circumstances.
 
-:::{php:method} consume($expression, string $escapeMode = self::ESCAPE_PARAM)
-Makes `$sqlCode` part of `$this` expression. Argument may be either a string
+:::{php:method} consume($expr, string $escapeMode)
+Makes `$expr` part of `$this` expression. Argument may be either a string
 (which will be escaped) or another {php:class}`Expression` or {php:class}`Query`.
 If specified {php:class}`Query` is in "select" mode, then it's automatically
-placed inside brackets:
+placed inside parentheses:
 
 ```
-$query->consume('first_name'); // `first_name`
-$query->consume($otherQuery); // will merge parameters and return string
+$query->consume('first_name', Expression::ESCAPE_PARAM); // :a
+$query->consume('first_name', Expression::ESCAPE_IDENTIFIER); // `first_name`
+$query->consume($otherQuery, Expression::ESCAPE_PARAM); // will merge parameters and return string
 ```
 :::
 
-:::{php:method} escapeIdentifier($sqlCode)
-Always surrounds `$sql code` with back-ticks.
+:::{php:method} escapeIdentifier(string $value)
+Always surrounds `$value` with back-ticks.
 
 This escaping method is automatically used for `{...}` expression template tags .
 :::
 
-:::{php:method} escapeIdentifierSoft($sqlCode)
-Surrounds `$sql code` with back-ticks.
+:::{php:method} escapeIdentifierSoft(string $value)
+Surrounds `$value` with back-ticks.
 
 This escaping method is automatically used for `{{...}}` expression template tags .
 
 It will smartly escape table.field type of strings resulting in `table`.`field`.
 
-Will do nothing if it finds "*", "`" or "(" character in `$sqlCode`:
+Will do nothing if it finds "*", "`" or "(" character in `$value`:
 
 ```
 $query->escapeIdentifierSoft('first_name'); // `first_name`

@@ -7,7 +7,7 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 
 class ExpressionSqlTest extends TestCase
 {
@@ -33,12 +33,10 @@ class ExpressionSqlTest extends TestCase
         $i->addField('total_vat', ['type' => 'float']);
         $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]', 'type' => 'float']);
 
-        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
-            self::assertSame(
-                'select `id`, `total_net`, `total_vat`, (`total_net` + `total_vat`) `total_gross` from `invoice`',
-                $i->action('select')->render()[0]
-            );
-        }
+        self::assertSameSql(
+            'select `id`, `total_net`, `total_vat`, (`total_net` + `total_vat`) `total_gross` from `invoice`',
+            $i->action('select')->render()[0]
+        );
 
         $ii = $i->load(1);
         self::assertSame(10, $ii->get('total_net'));
@@ -50,12 +48,10 @@ class ExpressionSqlTest extends TestCase
 
         $i->addExpression('double_total_gross', ['expr' => '[total_gross] * 2', 'type' => 'float']);
 
-        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
-            self::assertSame(
-                'select `id`, `total_net`, `total_vat`, (`total_net` + `total_vat`) `total_gross`, ((`total_net` + `total_vat`) * 2) `double_total_gross` from `invoice`',
-                $i->action('select')->render()[0]
-            );
-        }
+        self::assertSameSql(
+            'select `id`, `total_net`, `total_vat`, (`total_net` + `total_vat`) `total_gross`, ((`total_net` + `total_vat`) * 2) `double_total_gross` from `invoice`',
+            $i->action('select')->render()[0]
+        );
 
         $i = $i->load(1);
         self::assertSame(($i->get('total_net') + $i->get('total_vat')) * 2, $i->get('double_total_gross'));
@@ -73,16 +69,14 @@ class ExpressionSqlTest extends TestCase
         $i = new Model($this->db, ['table' => 'invoice']);
         $i->addField('total_net', ['type' => 'integer']);
         $i->addField('total_vat', ['type' => 'float']);
-        $i->addExpression('total_gross', ['expr' => function () {
+        $i->addExpression('total_gross', ['expr' => static function () {
             return '[total_net] + [total_vat]';
         }, 'type' => 'float']);
 
-        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
-            self::assertSame(
-                'select `id`, `total_net`, `total_vat`, (`total_net` + `total_vat`) `total_gross` from `invoice`',
-                $i->action('select')->render()[0]
-            );
-        }
+        self::assertSameSql(
+            'select `id`, `total_net`, `total_vat`, (`total_net` + `total_vat`) `total_gross` from `invoice`',
+            $i->action('select')->render()[0]
+        );
 
         $ii = $i->load(1);
         self::assertSame(10, $ii->get('total_net'));
@@ -107,12 +101,10 @@ class ExpressionSqlTest extends TestCase
         $i->addField('total_vat', ['type' => 'float']);
         $i->addExpression('sum_net', ['expr' => $i->action('fx', ['sum', 'total_net']), ['type' => 'integer']]);
 
-        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
-            self::assertSame(
-                'select `id`, `total_net`, `total_vat`, (select sum(`total_net`) from `invoice`) `sum_net` from `invoice`',
-                $i->action('select')->render()[0]
-            );
-        }
+        self::assertSameSql(
+            'select `id`, `total_net`, `total_vat`, (select sum(`total_net`) from `invoice`) `sum_net` from `invoice`',
+            $i->action('select')->render()[0]
+        );
 
         $ii = $i->load(1);
         self::assertSame(10, $ii->get('total_net'));
@@ -141,7 +133,7 @@ class ExpressionSqlTest extends TestCase
         $m->addField('surname');
         $m->addField('cached_name');
 
-        if ($this->getDatabasePlatform() instanceof SqlitePlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
             $concatExpr = '[name] || \' \' || [surname]';
         } else {
             $concatExpr = 'CONCAT([name], \' \', [surname])';

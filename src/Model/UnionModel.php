@@ -9,6 +9,7 @@ use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Field\SqlExpressionField;
 use Atk4\Data\Model;
+use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Query;
 
@@ -21,7 +22,7 @@ use Atk4\Data\Persistence\Sql\Query;
  * For example if you are asking sum(amount), there is no need to fetch any extra
  * fields from sub-models.
  *
- * @property \Atk4\Data\Persistence\Sql $persistence
+ * @property Persistence\Sql $persistence
  *
  * @method Expression expr($expr, array $args = []) forwards to Persistence\Sql::expr using $this as model
  */
@@ -199,7 +200,7 @@ class UnionModel extends Model
     {
         $unionQuery = $this->getPersistence()->dsql();
         $unionQuery->mode = 'union_all';
-        \Closure::bind(function () use ($unionQuery, $subqueries) {
+        \Closure::bind(static function () use ($unionQuery, $subqueries) {
             $unionQuery->template = implode(' UNION ALL ', array_fill(0, count($subqueries), '[]'));
         }, null, Query::class)();
         $unionQuery->args['custom'] = $subqueries;

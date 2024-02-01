@@ -11,9 +11,10 @@ use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
-use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Result as DbalResult;
+use Doctrine\DBAL\Statement;
 
 /**
  * @phpstan-implements \ArrayAccess<int|string, mixed>
@@ -30,6 +31,17 @@ abstract class Expression implements Expressionable, \ArrayAccess
     protected const ESCAPE_IDENTIFIER_SOFT = 'identifier-soft';
     /** Keep input as is */
     protected const ESCAPE_NONE = 'none';
+
+    public const QUOTED_TOKEN_REGEX = <<<'EOF'
+        (?:(?sx)
+            '(?:[^'\\]+|\\.|'')*+'
+            |"(?:[^"\\]+|\\.|"")*+"
+            |`(?:[^`\\]+|\\.|``)*+`
+            |\[(?:[^\]\\]+|\\.|\]\])*+\]
+            |(?:--|\#)[^\r\n]*+
+            |/\*(?:[^*]+|\*(?!/))*+\*/
+        )
+        EOF;
 
     protected ?string $template = null;
 
@@ -81,34 +93,26 @@ abstract class Expression implements Expressionable, \ArrayAccess
     /**
      * @return $this
      */
+    #[\Override]
     public function getDsqlExpression(self $expression): self
     {
         return $this;
     }
 
-    /**
-     * @param int|string $offset
-     */
+    #[\Override]
     public function offsetExists($offset): bool
     {
         return array_key_exists($offset, $this->args['custom']);
     }
 
-    /**
-     * @param int|string $offset
-     *
-     * @return mixed
-     */
+    #[\Override]
     #[\ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         return $this->args['custom'][$offset];
     }
 
-    /**
-     * @param int|string|null $offset
-     * @param mixed           $value  The value to set
-     */
+    #[\Override]
     public function offsetSet($offset, $value): void
     {
         if ($offset === null) {
@@ -118,9 +122,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
         }
     }
 
-    /**
-     * @param int|string $offset
-     */
+    #[\Override]
     public function offsetUnset($offset): void
     {
         unset($this->args['custom'][$offset]);
@@ -165,11 +167,11 @@ abstract class Expression implements Expressionable, \ArrayAccess
      * Recursively renders sub-query or expression, combining parameters.
      *
      * @param string|Expressionable $expr
-     * @param string                $escapeMode Fall-back escaping mode - using one of the Expression::ESCAPE_* constants
+     * @param self::ESCAPE_*        $escapeMode
      *
      * @return string Quoted expression
      */
-    protected function consume($expr, string $escapeMode = self::ESCAPE_PARAM)
+    protected function consume($expr, string $escapeMode)
     {
         if (!is_object($expr)) {
             switch ($escapeMode) {
@@ -183,7 +185,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
                     return $expr;
             }
 
-            throw (new Exception('$escapeMode value is incorrect'))
+            throw (new Exception('Unexpected escape mode')) // @phpstan-ignore-line
                 ->addMoreInfo('escapeMode', $escapeMode);
         }
 
@@ -193,7 +195,9 @@ abstract class Expression implements Expressionable, \ArrayAccess
         $expressionParamBaseBackup = $expr->paramBase;
         try {
             $expr->paramBase = $this->renderParamBase;
-            [$sql, $params] = $expr->render();
+            [$sql, $params] = $expr->wrapInParentheses
+                    ? $expr->renderNested()
+                    : $expr->render();
             foreach ($params as $k => $v) {
                 $this->renderParams[$k] = $v;
             }
@@ -207,11 +211,6 @@ abstract class Expression implements Expressionable, \ArrayAccess
             }
         } finally {
             $expr->paramBase = $expressionParamBaseBackup;
-        }
-
-        // wrap in parentheses if expression requires so
-        if ($expr->wrapInParentheses) {
-            $sql = '(' . $sql . ')';
         }
 
         return $sql;
@@ -243,8 +242,8 @@ abstract class Expression implements Expressionable, \ArrayAccess
         $platform = $this->connection->getDatabasePlatform();
         if ($platform instanceof PostgreSQLPlatform || $platform instanceof SQLServerPlatform) {
             $dummyPersistence = new Persistence\Sql($this->connection);
-            if (\Closure::bind(fn () => $dummyPersistence->binaryTypeValueIsEncoded($value), null, Persistence\Sql::class)()) {
-                $value = \Closure::bind(fn () => $dummyPersistence->binaryTypeValueDecode($value), null, Persistence\Sql::class)();
+            if (\Closure::bind(static fn () => $dummyPersistence->binaryTypeValueIsEncoded($value), null, Persistence\Sql::class)()) {
+                $value = \Closure::bind(static fn () => $dummyPersistence->binaryTypeValueDecode($value), null, Persistence\Sql::class)();
 
                 if ($platform instanceof PostgreSQLPlatform) {
                     return 'decode(\'' . bin2hex($value) . '\', \'hex\')';
@@ -277,7 +276,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
             $parts = ['\'\''];
         }
 
-        $buildConcatSqlFx = function (array $parts) use (&$buildConcatSqlFx, $platform): string {
+        $buildConcatSqlFx = static function (array $parts) use (&$buildConcatSqlFx, $platform): string {
             if (count($parts) > 1) {
                 $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
                 $partsRight = array_slice($parts, count($partsLeft));
@@ -287,9 +286,9 @@ abstract class Expression implements Expressionable, \ArrayAccess
                     $sqlLeft = 'CAST(' . $sqlLeft . ' AS NVARCHAR(MAX))';
                 }
 
-                return ($platform instanceof SqlitePlatform ? '(' : 'CONCAT(')
+                return ($platform instanceof SQLitePlatform ? '(' : 'CONCAT(')
                     . $sqlLeft
-                    . ($platform instanceof SqlitePlatform ? ' || ' : ', ')
+                    . ($platform instanceof SQLitePlatform ? ' || ' : ', ')
                     . $buildConcatSqlFx($partsRight)
                     . ')';
             }
@@ -357,16 +356,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
         // - {{xxx}} = escapeSoft
         $namelessCount = 0;
         $res = preg_replace_callback(
-            <<<'EOF'
-                ~
-                 '(?:[^'\\]+|\\.|'')*+'\K
-                |"(?:[^"\\]+|\\.|"")*+"\K
-                |`(?:[^`\\]+|\\.|``)*+`\K
-                |\[\w*\]
-                |\{\w*\}
-                |\{\{\w*\}\}
-                ~xs
-                EOF,
+            '~(?!\[\w*\])' . self::QUOTED_TOKEN_REGEX . '\K|\[\w*\]|\{\w*\}|\{\{\w*\}\}~',
             function ($matches) use (&$namelessCount) {
                 if ($matches[0] === '') {
                     return '';
@@ -439,20 +429,26 @@ abstract class Expression implements Expressionable, \ArrayAccess
     }
 
     /**
+     * @return array{string, array<string, mixed>}
+     */
+    protected function renderNested(): array
+    {
+        [$sql, $params] = $this->render();
+
+        return ['(' . $sql . ')', $params];
+    }
+
+    /**
      * Return formatted debug SQL query.
      */
     public function getDebugQuery(): string
     {
         [$sql, $params] = $this->render();
 
-        if (class_exists('SqlFormatter')) { // requires optional "jdorn/sql-formatter" package
-            $sql = preg_replace('~ +(?=\n|$)|(?<=:) (?=\w)~', '', \SqlFormatter::format($sql, false));
-        }
-
         $i = 0;
         $sql = preg_replace_callback(
-            '~\'(?:\'\'|\\\\\'|[^\'])*+\'\K|(?:\?|:\w+)~s',
-            function ($matches) use ($params, &$i) {
+            '~' . self::QUOTED_TOKEN_REGEX . '\K|(?:\?|:\w+)~',
+            static function ($matches) use ($params, &$i) {
                 if ($matches[0] === '') {
                     return '';
                 }
@@ -467,7 +463,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
                 if ($v === null) {
                     return 'NULL';
                 } elseif (is_bool($v)) {
-                    return $v ? '1' : '0';
+                    return $v ? 'true' : 'false';
                 } elseif (is_int($v)) {
                     return (string) $v;
                 } elseif (is_float($v)) {
@@ -480,6 +476,18 @@ abstract class Expression implements Expressionable, \ArrayAccess
             },
             $sql
         );
+
+        if (class_exists(\SqlFormatter::class)) { // requires optional "jdorn/sql-formatter" package
+            \Closure::bind(static function () {
+                // fix latest/1.2.17 release from 2014-01-12
+                if (end(\SqlFormatter::$reserved_toplevel) === 'INTERSECT') {
+                    \SqlFormatter::$reserved_toplevel[] = 'OFFSET';
+                    \SqlFormatter::$reserved_toplevel[] = 'FETCH';
+                }
+            }, null, \SqlFormatter::class)();
+
+            $sql = preg_replace('~' . self::QUOTED_TOKEN_REGEX . '\K| +(?=\n)|(?<=:) (?=\w)~', '', \SqlFormatter::format($sql, false));
+        }
 
         return $sql;
     }
@@ -527,8 +535,8 @@ abstract class Expression implements Expressionable, \ArrayAccess
             $i = 0;
             $j = 0;
             $sql = preg_replace_callback(
-                '~\'(?:\'\'|\\\\\'|[^\'])*+\'\K|(?:\?|:\w+)~s',
-                function ($matches) use ($params, &$numParams, &$i, &$j) {
+                '~' . self::QUOTED_TOKEN_REGEX . '\K|(?:\?|:\w+)~',
+                static function ($matches) use ($params, &$numParams, &$i, &$j) {
                     if ($matches[0] === '') {
                         return '';
                     }
@@ -546,11 +554,25 @@ abstract class Expression implements Expressionable, \ArrayAccess
     }
 
     /**
+     * @return ($fromExecuteStatement is true ? int<0, max> : DbalResult)
+     *
+     * @internal
+     */
+    protected function _executeStatement(Statement $statement, bool $fromExecuteStatement)
+    {
+        if ($fromExecuteStatement) {
+            $result = $statement->executeStatement();
+        } else {
+            $result = $statement->executeQuery();
+        }
+
+        return $result;
+    }
+
+    /**
      * @param DbalConnection|Connection $connection
      *
-     * @return DbalResult|int<0, max>
-     *
-     * @phpstan-return ($fromExecuteStatement is true ? int<0, max> : DbalResult)
+     * @return ($fromExecuteStatement is true ? int<0, max> : DbalResult)
      */
     protected function _execute(?object $connection, bool $fromExecuteStatement)
     {
@@ -576,32 +598,29 @@ abstract class Expression implements Expressionable, \ArrayAccess
                 if ($val === null) {
                     $type = ParameterType::NULL;
                 } elseif (is_bool($val)) {
-                    if ($platform instanceof PostgreSQLPlatform) {
-                        $type = ParameterType::STRING;
+                    $type = ParameterType::BOOLEAN;
+                    if ($platform instanceof OraclePlatform) {
                         $val = $val ? '1' : '0';
-                    } else {
-                        $type = ParameterType::INTEGER;
-                        $val = $val ? 1 : 0;
                     }
                 } elseif (is_int($val)) {
                     $type = ParameterType::INTEGER;
                 } elseif (is_float($val)) {
                     $val = self::castFloatToString($val);
-                    $type = ParameterType::STRING;
+                    $type = ParameterType::STRING; // TODO create PR to add ParameterType::FLOAT type to DBAL
                 } elseif (is_string($val)) {
                     $type = ParameterType::STRING;
 
                     if ($platform instanceof PostgreSQLPlatform || $platform instanceof SQLServerPlatform) {
                         $dummyPersistence = new Persistence\Sql($this->connection);
-                        if (\Closure::bind(fn () => $dummyPersistence->binaryTypeValueIsEncoded($val), null, Persistence\Sql::class)()) {
-                            $val = \Closure::bind(fn () => $dummyPersistence->binaryTypeValueDecode($val), null, Persistence\Sql::class)();
+                        if (\Closure::bind(static fn () => $dummyPersistence->binaryTypeValueIsEncoded($val), null, Persistence\Sql::class)()) {
+                            $val = \Closure::bind(static fn () => $dummyPersistence->binaryTypeValueDecode($val), null, Persistence\Sql::class)();
                             $type = ParameterType::BINARY;
                         }
                     }
                 } elseif (is_resource($val)) { // phpstan-ignore-line
                     throw new Exception('Resource type is not supported, set value as string instead');
                 } else {
-                    throw (new Exception('Incorrect param type'))
+                    throw (new Exception('Unsupported param type'))
                         ->addMoreInfo('key', $key)
                         ->addMoreInfo('value', $val)
                         ->addMoreInfo('type', gettype($val));
@@ -616,13 +635,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
                 }
             }
 
-            if ($fromExecuteStatement) {
-                $result = $statement->executeStatement();
-            } else {
-                $result = $statement->executeQuery();
-            }
-
-            return $result;
+            return $this->_executeStatement($statement, $fromExecuteStatement);
         } catch (DbalException $e) {
             $firstException = $e;
             while ($firstException->getPrevious() !== null) {
@@ -651,7 +664,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
     /**
      * @param DbalConnection|Connection $connection
      *
-     * @phpstan-return int<0, max>
+     * @return int<0, max>
      */
     public function executeStatement(object $connection = null): int
     {
@@ -713,9 +726,13 @@ abstract class Expression implements Expressionable, \ArrayAccess
      */
     public function getRowsIterator(): \Traversable
     {
-        // DbalResult::iterateAssociative() is broken with streams with Oracle database
-        // https://github.com/doctrine/dbal/issues/5002
-        $iterator = $this->executeQuery()->iterateAssociative();
+        $result = $this->executeQuery();
+        if ($this->connection->getDatabasePlatform() instanceof SQLServerPlatform) {
+            // workaround MSSQL database limitation to allow to start transaction/savepoint in middle of result iteration
+            $iterator = $result->fetchAllAssociative();
+        } else {
+            $iterator = $result->iterateAssociative();
+        }
 
         foreach ($iterator as $row) {
             yield array_map(function ($v) {
@@ -731,18 +748,29 @@ abstract class Expression implements Expressionable, \ArrayAccess
      */
     public function getRows(): array
     {
-        // DbalResult::fetchAllAssociative() is broken with streams with Oracle database
-        // https://github.com/doctrine/dbal/issues/5002
         $result = $this->executeQuery();
 
-        $rows = [];
-        while (($row = $result->fetchAssociative()) !== false) {
-            $rows[] = array_map(function ($v) {
-                return $this->castGetValue($v);
-            }, $row);
+        if ($this->connection->getDatabasePlatform() instanceof OraclePlatform) {
+            // DbalResult::fetchAllAssociative() is broken with streams with Oracle database
+            // https://github.com/doctrine/dbal/issues/5002
+
+            $res = [];
+            while (($row = $result->fetchAssociative()) !== false) {
+                $res[] = array_map(function ($v) {
+                    return $this->castGetValue($v);
+                }, $row);
+            }
+
+            return $res;
         }
 
-        return $rows;
+        $rows = $result->fetchAllAssociative();
+
+        return array_map(function ($row) {
+            return array_map(function ($v) {
+                return $this->castGetValue($v);
+            }, $row);
+        }, $rows);
     }
 
     /**
@@ -768,14 +796,15 @@ abstract class Expression implements Expressionable, \ArrayAccess
      */
     public function getOne(): ?string
     {
-        $row = $this->getRow();
-        if ($row === null || count($row) === 0) {
-            throw (new Exception('Unable to fetch single cell of data for getOne from this query'))
+        $row = $this->executeQuery()->fetchAssociative();
+
+        if ($row === false || count($row) === 0) {
+            throw (new Exception('Unable to fetch single cell of data'))
                 ->addMoreInfo('result', $row)
                 ->addMoreInfo('query', $this->getDebugQuery());
         }
 
-        return reset($row);
+        return $this->castGetValue(reset($row));
     }
 
     // }}}

@@ -63,9 +63,7 @@ abstract class Persistence
     /**
      * Disconnect from database explicitly.
      */
-    public function disconnect(): void
-    {
-    }
+    public function disconnect(): void {}
 
     /**
      * Associate model with the data driver.
@@ -94,18 +92,18 @@ abstract class Persistence
      * you can define additional methods or store additional data. This method
      * is executed before model's init().
      */
-    protected function initPersistence(Model $m): void
-    {
-    }
+    protected function initPersistence(Model $m): void {}
 
     /**
      * Atomic executes operations within one begin/end transaction. Not all
      * persistencies will support atomic operations, so by default we just
      * don't do anything.
      *
-     * @param \Closure(): mixed $fx
+     * @template T
      *
-     * @return mixed
+     * @param \Closure(): T $fx
+     *
+     * @return T
      */
     public function atomic(\Closure $fx)
     {
@@ -336,6 +334,71 @@ abstract class Persistence
     }
 
     /**
+     * @param mixed $value
+     *
+     * @return ($value is scalar ? scalar : mixed)
+     */
+    private function _typecastPreField(Field $field, $value, bool $fromLoad)
+    {
+        if (is_string($value)) {
+            switch ($field->type) {
+                case 'boolean':
+                case 'integer':
+                    $value = preg_replace('~\s+|,~', '', $value);
+
+                    break;
+                case 'float':
+                case 'decimal':
+                case 'atk4_money':
+                    $value = preg_replace('~\s+|,(?=.*\.)~', '', $value);
+
+                    break;
+            }
+
+            switch ($field->type) {
+                case 'boolean':
+                case 'integer':
+                case 'float':
+                case 'decimal':
+                case 'atk4_money':
+                    if ($value === '') {
+                        $value = null;
+                    } elseif (!is_numeric($value)) {
+                        throw new Exception('Must be numeric');
+                    }
+
+                    break;
+            }
+        } elseif ($value !== null) {
+            switch ($field->type) {
+                case 'string':
+                case 'text':
+                case 'integer':
+                case 'float':
+                case 'decimal':
+                case 'atk4_money':
+                    if (is_bool($value)) {
+                        throw new Exception('Must not be bool type');
+                    } elseif (is_int($value)) {
+                        if ($fromLoad) {
+                            $value = (string) $value;
+                        }
+                    } elseif (is_float($value)) {
+                        if ($fromLoad) {
+                            $value = Persistence\Sql\Expression::castFloatToString($value);
+                        }
+                    } else {
+                        throw new Exception('Must be scalar');
+                    }
+
+                    break;
+            }
+        }
+
+        return $value;
+    }
+
+    /**
      * Prepare value of a specific field by converting it to
      * persistence-friendly format.
      *
@@ -361,11 +424,15 @@ abstract class Persistence
         try {
             $v = $this->_typecastSaveField($field, $value);
             if ($v !== null && !is_scalar($v)) { // @phpstan-ignore-line
-                throw new Exception('Unexpected non-scalar value');
+                throw new \TypeError('Unexpected non-scalar value');
             }
 
             return $v;
         } catch (\Exception $e) {
+            if ($e instanceof \ErrorException) {
+                throw $e;
+            }
+
             throw (new Exception('Typecast save error', 0, $e))
                 ->addMoreInfo('field', $field->shortName);
         }
@@ -384,12 +451,16 @@ abstract class Persistence
         if ($value === null) {
             return null;
         } elseif (!is_scalar($value)) { // @phpstan-ignore-line
-            throw new Exception('Unexpected non-scalar value');
+            throw new \TypeError('Unexpected non-scalar value');
         }
 
         try {
             return $this->_typecastLoadField($field, $value);
         } catch (\Exception $e) {
+            if ($e instanceof \ErrorException) {
+                throw $e;
+            }
+
             throw (new Exception('Typecast parse error', 0, $e))
                 ->addMoreInfo('field', $field->shortName);
         }
@@ -405,6 +476,8 @@ abstract class Persistence
      */
     protected function _typecastSaveField(Field $field, $value)
     {
+        $value = $this->_typecastPreField($field, $value, false);
+
         if (in_array($field->type, ['json', 'object'], true) && $value === '') { // TODO remove later
             return null;
         }
@@ -447,8 +520,10 @@ abstract class Persistence
      */
     protected function _typecastLoadField(Field $field, $value)
     {
+        $value = $this->_typecastPreField($field, $value, true);
+
         // TODO casting optionally to null should be handled by type itself solely
-        if ($value === '' && in_array($field->type, ['boolean', 'integer', 'float', 'datetime', 'date', 'time', 'json', 'object'], true)) {
+        if ($value === '' && in_array($field->type, ['boolean', 'integer', 'float', 'decimal', 'datetime', 'date', 'time', 'json', 'object'], true)) {
             return null;
         }
 

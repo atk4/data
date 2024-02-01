@@ -37,7 +37,7 @@ Just like you can reuse {php:class}`Model` to access multiple data records,
 ## Purpose of Field
 
 Implementation of Field in Agile Data is a very powerful and distinctive feature.
-While {php:attr}`Model::data` store your field values, the job of {php:class}`Field`
+While {php:attr}`Model::$data` store your field values, the job of {php:class}`Field`
 is to interpret that value, normalize it, type-cast it, validate it and decide
 on how to store or present it.
 
@@ -103,7 +103,7 @@ if needed (see Field::actual)
 
 Fields have properties, which define its behaviour. Some properties apply on how
 the values are handled or restrictions on interaction, other values can even
-help with data visualization. For example if {php:attr}`Field::enum` is used
+help with data visualization. For example if {php:attr}`Field::$enum` is used
 with Agile UI form, it will be displayed as radio button or a drop-down:
 
 ```
@@ -178,7 +178,7 @@ $model->set('age', null); // exception
 :::
 
 Modifying field that is read-only through set() methods (or array access) will
-result in exception. {php:class}`Field_i_SqlExpressionField` is read-only by default.
+result in exception. {php:class}`Field\SqlExpressionField` is read-only by default.
 
 :::{php:attr} actual
 :::
@@ -196,7 +196,7 @@ with a joined table row.
 
 System flag is intended for fields that are important to have inside hooks
 or some core logic of a model. System fields will always be appended to
-{php:attr}`Model::setOnlyFields`, however by default they will not appear on forms
+{php:meth}`Model::setOnlyFields`, however by default they will not appear on forms
 or grids (see {php:meth}`Field::isVisible`, {php:meth}`Field::isEditable`).
 
 Adding condition on a field will also make it system.
@@ -258,9 +258,9 @@ Agile Data does not deal directly with formatting your data for the user.
 There may be various items to consider, for instance the same date can be
 presented in a short or long format for the user.
 
-The UI framework such as Agile Toolkit can make use of the {php:attr}`Field::ui`
+The UI framework such as Agile Toolkit can make use of the {php:attr}`Field::$ui`
 property to allow user to define default formats or input parsing rules, but
-Agile Data does not regulate the {php:attr}`Field::ui` property and different
+Agile Data does not regulate the {php:attr}`Field::$ui` property and different
 UI frameworks may use it differently.
 
 :::{php:method} isEditable

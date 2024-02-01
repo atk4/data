@@ -13,6 +13,7 @@ class ReadOnlyModeTest extends TestCase
     /** @var Model */
     public $m;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -55,6 +56,7 @@ class ReadOnlyModeTest extends TestCase
     public function testInsert(): void
     {
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Model is read-only');
         $this->m->insert(['name' => 'Joe']);
     }
 
@@ -64,6 +66,7 @@ class ReadOnlyModeTest extends TestCase
         $m->set('name', 'X');
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Model is read-only');
         $m->save();
     }
 
@@ -72,6 +75,7 @@ class ReadOnlyModeTest extends TestCase
         $m = $this->m->loadAny();
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Model is read-only');
         $m->saveAndUnload();
     }
 
@@ -91,6 +95,7 @@ class ReadOnlyModeTest extends TestCase
     public function testFailDelete1(): void
     {
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Model is read-only');
         $this->m->delete(1);
     }
 }

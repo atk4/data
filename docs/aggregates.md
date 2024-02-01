@@ -5,7 +5,7 @@
 
 # Model Aggregates
 
-:::{php:class} Model_i_AggregateModel
+:::{php:class} Model\AggregateModel
 :::
 
 In order to create model aggregates the AggregateModel model needs to be used:
@@ -32,7 +32,7 @@ $aggregate->setGroupBy(['country_id'], [
 
 // $aggregate will have following rows:
 // ['country' => 'UK', 'count' => 20, 'total_amount' => 123.2];
-// ..
+// ...
 ```
 
 Below is how opening balance can be built:

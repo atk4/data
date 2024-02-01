@@ -5,33 +5,21 @@ declare(strict_types=1);
 namespace Atk4\Data\Persistence\Sql\Sqlite;
 
 use Atk4\Data\Persistence\Sql\Connection as BaseConnection;
-use Doctrine\Common\EventManager;
-use Doctrine\Common\EventSubscriber;
-use Doctrine\DBAL\Event\ConnectionEventArgs;
-use Doctrine\DBAL\Events;
+use Doctrine\DBAL\Configuration;
+use Doctrine\DBAL\Driver\AbstractSQLiteDriver\Middleware\EnableForeignKeys;
 
 class Connection extends BaseConnection
 {
     protected string $expressionClass = Expression::class;
     protected string $queryClass = Query::class;
 
-    protected static function createDbalEventManager(): EventManager
+    #[\Override]
+    protected static function createDbalConfiguration(): Configuration
     {
-        $evm = parent::createDbalEventManager();
+        $configuration = parent::createDbalConfiguration();
 
-        // setup connection to always check foreign keys
-        $evm->addEventSubscriber(new class() implements EventSubscriber {
-            public function getSubscribedEvents(): array
-            {
-                return [Events::postConnect];
-            }
+        $configuration->setMiddlewares([...$configuration->getMiddlewares(), new EnableForeignKeys()]);
 
-            public function postConnect(ConnectionEventArgs $args): void
-            {
-                $args->getConnection()->executeStatement('PRAGMA foreign_keys = 1');
-            }
-        });
-
-        return $evm;
+        return $configuration;
     }
 }

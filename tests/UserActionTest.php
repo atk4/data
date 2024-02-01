@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
-use Atk4\Core\Exception as CoreException;
+use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Schema\TestCase;
@@ -30,6 +30,7 @@ class UaClient extends Model
 
     public $caption = 'UaClient';
 
+    #[\Override]
     protected function init(): void
     {
         parent::init();
@@ -50,6 +51,7 @@ class UserActionTest extends TestCase
     /** @var Persistence\Static_ */
     public $pers;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -82,10 +84,9 @@ class UserActionTest extends TestCase
         self::assertTrue($client->get('reminder_sent'));
 
         self::assertSame('sent reminder to John', $res);
-        $client->unload();
 
         // test system action
-        $act2 = $client->getUserAction('backupClients');
+        $act2 = $client->getModel()->getUserAction('backupClients');
 
         // action takes no arguments. If it would, we should be able to find info about those
         self::assertSame([], $act2->args);
@@ -108,20 +109,32 @@ class UserActionTest extends TestCase
         self::assertSame($customClass, get_class($client->getUserAction('foo')));
     }
 
+    public function testExecuteUndefinedMethodException(): void
+    {
+        $client = new UaClient($this->pers);
+        $client->addUserAction('new_client');
+        $client = $client->load(1);
+
+        $this->expectException(\Error::class);
+        $this->expectExceptionMessage('Call to undefined method');
+        $client->executeUserAction('new_client');
+    }
+
     public function testPreview(): void
     {
         $client = new UaClient($this->pers);
-        $client->addUserAction('say_name', function (UaClient $m) {
+        $client->addUserAction('say_name', static function (UaClient $m) {
             return $m->get('name');
         });
 
         $client = $client->load(1);
+
         self::assertSame('John', $client->getUserAction('say_name')->execute());
 
-        $client->getUserAction('say_name')->preview = function (UaClient $m, string $arg) {
+        $client->getUserAction('say_name')->preview = static function (UaClient $m) {
             return 'will say ' . $m->get('name');
         };
-        self::assertSame('will say John', $client->getUserAction('say_name')->preview('x'));
+        self::assertSame('will say John', $client->getUserAction('say_name')->preview());
 
         $client->getModel()->addUserAction('also_backup', ['callback' => 'backupClients']);
         self::assertSame('backs up all clients', $client->getUserAction('also_backup')->execute());
@@ -132,69 +145,83 @@ class UserActionTest extends TestCase
         self::assertSame('Also Backup UaClient', $client->getUserAction('also_backup')->getDescription());
     }
 
-    public function testAppliesTo1(): void
+    public function testAppliesToSingleRecordNotEntityException(): void
+    {
+        $client = new UaClient($this->pers);
+
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Expected entity, but instance is a model');
+        $client->executeUserAction('sendReminder');
+    }
+
+    public function testAppliesToAllRecordsEntityException(): void
+    {
+        $client = new UaClient($this->pers);
+        $client = $client->load(1);
+
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Expected model, but instance is an entity');
+        $client->executeUserAction('backupClients');
+    }
+
+    public function testAppliesToSingleRecordNotLoadedException(): void
     {
         $client = new UaClient($this->pers);
         $client = $client->createEntity();
 
-        $this->expectExceptionMessage('load existing record');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('User action can be executed on loaded entity only');
         $client->executeUserAction('sendReminder');
     }
 
-    public function testAppliesTo2(): void
+    public function testAppliesToNoRecordsLoadedRecordException(): void
     {
         $client = new UaClient($this->pers);
         $client->addUserAction('new_client', ['appliesTo' => Model\UserAction::APPLIES_TO_NO_RECORDS]);
         $client = $client->load(1);
 
-        $this->expectExceptionMessage('can be executed on non-existing record');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('User action can be executed on new entity only');
         $client->executeUserAction('new_client');
     }
 
-    public function testAppliesTo3(): void
-    {
-        $client = new UaClient($this->pers);
-        $client->addUserAction('new_client', ['appliesTo' => Model\UserAction::APPLIES_TO_NO_RECORDS, 'atomic' => false]);
-        $client = $client->createEntity();
-
-        $this->expectExceptionMessage('undefined method');
-        $client->executeUserAction('new_client');
-    }
-
-    public function testException1(): void
+    public function testNotDefinedException(): void
     {
         $client = new UaClient($this->pers);
 
-        $this->expectException(CoreException::class);
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('User action is not defined');
         $client->getUserAction('non_existent_action');
     }
 
-    public function testDisabled1(): void
+    public function testDisabledBoolException(): void
     {
         $client = new UaClient($this->pers);
         $client = $client->load(1);
 
         $client->getUserAction('sendReminder')->enabled = false;
 
-        $this->expectExceptionMessage('disabled');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('User action is disabled');
         $client->getUserAction('sendReminder')->execute();
     }
 
-    public function testDisabled2(): void
+    public function testDisabledClosureException(): void
     {
         $client = new UaClient($this->pers);
         $client = $client->load(1);
 
-        $client->getUserAction('sendReminder')->enabled = function (UaClient $m) {
+        $client->getUserAction('sendReminder')->enabled = static function (UaClient $m) {
             return true;
         };
         $client->getUserAction('sendReminder')->execute();
 
-        $client->getUserAction('sendReminder')->enabled = function (UaClient $m) {
+        $client->getUserAction('sendReminder')->enabled = static function (UaClient $m) {
             return false;
         };
 
-        $this->expectExceptionMessage('disabled');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('User action is disabled');
         $client->getUserAction('sendReminder')->execute();
     }
 
@@ -211,7 +238,7 @@ class UserActionTest extends TestCase
         self::assertSame('Peter', $client->get('name'));
     }
 
-    public function testFieldsTooDirty1(): void
+    public function testFieldsTooDirtyException(): void
     {
         $client = new UaClient($this->pers);
         $client->addUserAction('change_details', ['callback' => 'save', 'fields' => ['name']]);
@@ -222,21 +249,8 @@ class UserActionTest extends TestCase
         $client->set('name', 'Peter');
         $client->set('reminder_sent', true);
 
-        $this->expectExceptionMessage('dirty fields');
-        $client->getUserAction('change_details')->execute();
-    }
-
-    public function testFieldsIncorrect(): void
-    {
-        $client = new UaClient($this->pers);
-        $client->addUserAction('change_details', ['callback' => 'save', 'fields' => 'whops_forgot_brackets']);
-
-        $client = $client->load(1);
-
-        self::assertNotSame('Peter', $client->get('name'));
-        $client->set('name', 'Peter');
-
-        $this->expectExceptionMessage('must be either array or boolean');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('User action cannot be executed when unrelated fields are dirty');
         $client->getUserAction('change_details')->execute();
     }
 
@@ -255,7 +269,7 @@ class UserActionTest extends TestCase
         $action->confirmation = 'Are you sure?';
         self::assertSame('Are you sure?', $action->getConfirmation());
 
-        $action->confirmation = function (Model\UserAction $action) {
+        $action->confirmation = static function (Model\UserAction $action) {
             return 'Proceed with Test: ' . $action->getEntity()->getTitle();
         };
         self::assertSame('Proceed with Test: John', $action->getConfirmation());

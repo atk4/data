@@ -25,7 +25,7 @@ class LocalObjectTest extends TestCase
 
         $platform = $this->getDatabasePlatform();
 
-        return \Closure::bind(function () use ($type, $platform) {
+        return \Closure::bind(static function () use ($type, $platform) {
             // make sure handles are initialized
             $type->convertToDatabaseValue(new \stdClass(), $platform);
 
@@ -35,6 +35,7 @@ class LocalObjectTest extends TestCase
         }, null, LocalObjectType::class)();
     }
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -42,6 +43,7 @@ class LocalObjectTest extends TestCase
         self::assertCount(0, $this->getLocalObjectHandles());
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         self::assertCount(0, $this->getLocalObjectHandles());
@@ -188,6 +190,4 @@ class LocalObjectTest extends TestCase
     }
 }
 
-class LocalObjectDummyClassWithLongNameAWithLongNameBWithLongNameCWithLongNameDWithLongNameEWithLongNameFWithLongNameGWithLongNameHWithLongNameIWithLongNameJWithLongNameKWithLongNameL
-{
-}
+class LocalObjectDummyClassWithLongNameAWithLongNameBWithLongNameCWithLongNameDWithLongNameEWithLongNameFWithLongNameGWithLongNameHWithLongNameIWithLongNameJWithLongNameKWithLongNameL {}

@@ -38,10 +38,12 @@ class QueryTest extends TestCase
         };
 
         if (!(new \ReflectionProperty($query, 'connection'))->isInitialized($query)) {
-            $query->connection = new Persistence\Sql\Sqlite\Connection();
-            \Closure::bind(function () use ($query) {
-                $query->connection->expressionClass = \Closure::bind(fn () => $query->expressionClass, null, Query::class)();
-                $query->connection->queryClass = get_class($query);
+            $query->connection = \Closure::bind(static function () use ($query) {
+                $connection = new Persistence\Sql\Sqlite\Connection();
+                $connection->expressionClass = \Closure::bind(static fn () => $query->expressionClass, null, Query::class)();
+                $connection->queryClass = get_class($query);
+
+                return $connection;
             }, null, Connection::class)();
         }
 
@@ -57,6 +59,16 @@ class QueryTest extends TestCase
         return $this->q()->expr($template, $arguments);
     }
 
+    /**
+     * @param mixed ...$args
+     *
+     * @return mixed
+     */
+    private function callProtected(object $obj, string $name, ...$args)
+    {
+        return \Closure::bind(static fn () => $obj->{$name}(...$args), null, $obj)();
+    }
+
     public function testConstruct(): void
     {
         self::assertSame(
@@ -69,7 +81,7 @@ class QueryTest extends TestCase
     {
         self::assertInstanceOf(Expression::class, $this->q()->expr('foo'));
 
-        $connection = new Mysql\Connection();
+        $connection = \Closure::bind(static fn () => new Mysql\Connection(), null, Connection::class)();
         $q = new Mysql\Query(['connection' => $connection]);
         self::assertSame(Mysql\Expression::class, get_class($q->expr('foo')));
         self::assertSame($connection, $q->expr('foo')->connection);
@@ -79,7 +91,7 @@ class QueryTest extends TestCase
     {
         self::assertInstanceOf(Query::class, $this->q()->dsql());
 
-        $connection = new Mysql\Connection();
+        $connection = \Closure::bind(static fn () => new Mysql\Connection(), null, Connection::class)();
         $q = new Mysql\Query(['connection' => $connection]);
         self::assertSame(Mysql\Query::class, get_class($q->dsql()));
         self::assertSame($connection, $q->dsql()->connection);
@@ -172,7 +184,7 @@ class QueryTest extends TestCase
             'now()',
             $this->q('[field]')->field($this->e('now()'))->render()[0]
         );
-        // Usage of field aliases
+        // usage of field aliases
         self::assertSame(
             'now() "time"',
             $this->q('[field]')->field('now()', 'time')->render()[0]
@@ -523,9 +535,8 @@ class QueryTest extends TestCase
             $q->render()[0]
         );
 
-        // SQLite do not support (($q1) union ($q2)) syntax. Correct syntax is ($q1 union $q2) without additional braces
-        // Other SQL engines are more relaxed, but still these additional braces are not needed for union
-        // Let's test how to do that properly
+        // SQLite do not support (($q1) union ($q2)) syntax. Correct syntax is ($q1 union $q2) without additional braces,
+        // other SQL engines are more relaxed, but still these additional braces are not needed for union
         $q1->wrapInParentheses = false;
         $q2->wrapInParentheses = false;
         $u = $this->e('([] union [])', [$q1, $q2]);
@@ -682,7 +693,7 @@ class QueryTest extends TestCase
     /**
      * @return iterable<list<mixed>>
      */
-    public function provideWhereUnsupportedOperatorCases(): iterable
+    public static function provideWhereUnsupportedOperatorCases(): iterable
     {
         // unsupported operators
         yield ['<>', 2];
@@ -861,11 +872,11 @@ class QueryTest extends TestCase
         );
     }
 
-    public function testOrderException1(): void
+    public function testOrderException(): void
     {
-        // if first argument is array, second argument must not be used
         $this->expectException(Exception::class);
-        $this->q('[order]')->order(['name', 'surname'], 'desc');
+        $this->expectExceptionMessage('If first argument is array, second argument must not be used');
+        $this->q('[order]')->order(['name', 'surname'], 'desc'); // @phpstan-ignore-line
     }
 
     public function testGroup(): void
@@ -1283,7 +1294,6 @@ class QueryTest extends TestCase
 
     public function testCaseExprNormal(): void
     {
-        // Test normal form
         $s = $this->q()->caseExpr()
             ->caseWhen(['status', 'New'], 't2.expose_new')
             ->caseWhen(['status', 'like', '%Used%'], 't2.expose_used')
