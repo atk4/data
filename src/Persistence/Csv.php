@@ -72,7 +72,7 @@ class Csv extends Persistence
      * Override this method and open handle yourself if you want to
      * reposition or load some extra columns on the top.
      *
-     * @param string $mode 'r' or 'w'
+     * @param 'r'|'r+'|'w+'|'c+'|'x+' $mode
      */
     public function openFile(string $mode = 'r'): void
     {
@@ -149,7 +149,7 @@ class Csv extends Persistence
      */
     public function saveHeader(Model $model): void
     {
-        $this->openFile('w');
+        $this->openFile('r+');
 
         $header = [];
         foreach (array_keys($model->getFields()) as $name) {
