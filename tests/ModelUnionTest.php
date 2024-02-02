@@ -117,14 +117,16 @@ class ModelUnionTest extends TestCase
         );
 
         $this->assertSameSql(
-            'select sum(`val`) from (select sum(`amount`) `val` from `invoice` UNION ALL select sum(`amount`) `val` from `payment`) `_tu`',
+            // QUERY IS WIP
+            'select sum(`amount`) from (select `client_id`, `name`, `amount` from (select `client_id` `client_id`, `name` `name`, `amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_tu`) `_tu`',
             $transaction->action('fx', ['sum', 'amount'])->render()[0]
         );
 
         $transaction = $this->createSubtractInvoiceTransaction();
 
         $this->assertSameSql(
-            'select sum(`val`) from (select sum(-`amount`) `val` from `invoice` UNION ALL select sum(`amount`) `val` from `payment`) `_tu`',
+            // QUERY IS WIP
+            'select sum(`amount`) from (select `client_id`, `name`, `amount` from (select `client_id` `client_id`, `name` `name`, -`amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_tu`) `_tu`',
             $transaction->action('fx', ['sum', 'amount'])->render()[0]
         );
     }
@@ -324,19 +326,14 @@ class ModelUnionTest extends TestCase
         $client = $this->createClient();
         $client->hasMany('tr', ['model' => $this->createTransaction()]);
 
-        if (\PHP_MAJOR_VERSION >= 7) { // always true, TODO aggregate on reference is broken
-            self::assertTrue(true); // @phpstan-ignore-line
-
-            return;
-        }
-
         self::assertSame(19.0, (float) $client->load(1)->ref('Invoice')->action('fx', ['sum', 'amount'])->getOne());
         self::assertSame(10.0, (float) $client->load(1)->ref('Payment')->action('fx', ['sum', 'amount'])->getOne());
 
         self::assertSame(29.0, (float) $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->getOne());
 
         $this->assertSameSql(
-            'select sum(`val`) from (select sum(`amount`) `val` from `invoice` where `client_id` = :a UNION ALL select sum(`amount`) `val` from `payment` where `client_id` = :b) `_t_e7d707a26e7f`',
+            // QUERY IS WIP
+            'select sum(`amount`) from (select `client_id`, `name`, `amount` from (select `client_id` `client_id`, `name` `name`, `amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_tu`) `_t_e7d707a26e7f` where `client_id` = :a',
             $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->render()[0]
         );
 
@@ -348,7 +345,8 @@ class ModelUnionTest extends TestCase
         self::assertSame(-9.0, (float) $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->getOne());
 
         $this->assertSameSql(
-            'select sum(`val`) from (select sum(-`amount`) `val` from `invoice` where `client_id` = :a UNION ALL select sum(`amount`) `val` from `payment` where `client_id` = :b) `_t_e7d707a26e7f`',
+            // QUERY IS WIP
+            'select sum(`amount`) from (select `client_id`, `name`, `amount` from (select `client_id` `client_id`, `name` `name`, -`amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_tu`) `_t_e7d707a26e7f` where `client_id` = :a',
             $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->render()[0]
         );
     }

@@ -10,9 +10,6 @@ use Atk4\Data\Field;
 use Atk4\Data\Field\SqlExpressionField;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
-use Atk4\Data\Persistence\Sql\Expression;
-use Atk4\Data\Persistence\Sql\Expressionable;
-use Atk4\Data\Persistence\Sql\Query;
 
 /**
  * UnionModel model combines multiple nested models through a UNION in order to retrieve
@@ -25,7 +22,7 @@ use Atk4\Data\Persistence\Sql\Query;
  *
  * @property Persistence\Sql $persistence
  *
- * @method Expression expr($expr, array $args = []) forwards to Persistence\Sql::expr using $this as model
+ * @method Persistence\Sql\Expression expr($expr, array $args = []) forwards to Persistence\Sql::expr using $this as model
  */
 class UnionModel extends Model
 {
@@ -43,17 +40,28 @@ class UnionModel extends Model
      */
     public $idField = false;
 
-    /** Derived table alias */
-    public $table = '_tu';
-
-    /** @var list<array{0: Model, 1: array<string, string|Expressionable>}> */
+    /** @var list<array{0: Model, 1: array<string, string|Persistence\Sql\Expressionable>}> */
     public $union = [];
+
+    /**
+     * @param array<string, mixed> $defaults
+     */
+    public function __construct(Persistence $persistence = null, array $defaults = [])
+    {
+        $unionTable = new UnionInternalTable();
+        $unionTable->setOwner($this);
+        $this->table = $unionTable; // @phpstan-ignore-line
+
+        $this->tableAlias ??= '_tu'; // DEBUG
+
+        parent::__construct($persistence, $defaults);
+    }
 
     /**
      * For a sub-model with a specified mapping, return expression
      * that represents a field.
      *
-     * @return Field|Expression
+     * @return Field|Persistence\Sql\Expression
      */
     public function getFieldExpr(Model $model, string $fieldName, string $expr = null)
     {
@@ -74,7 +82,7 @@ class UnionModel extends Model
     /**
      * Adds nested model in union.
      *
-     * @param array<string, string|Expressionable> $fieldMap
+     * @param array<string, string|Persistence\Sql\Expressionable> $fieldMap
      */
     public function addNestedModel(Model $model, array $fieldMap = []): Model
     {
@@ -108,7 +116,7 @@ class UnionModel extends Model
             try {
                 if (isset($fieldMap[$field])) {
                     // field is included in mapping - use mapping expression
-                    $f = $fieldMap[$field] instanceof Expression
+                    $f = $fieldMap[$field] instanceof Persistence\Sql\Expression
                         ? $fieldMap[$field]
                         : $this->getFieldExpr($nestedModel, $field, $fieldMap[$field]);
                 } elseif (is_string($field) && $nestedModel->hasField($field)) {
@@ -133,6 +141,14 @@ class UnionModel extends Model
         return $this;
     }
 
+    /**
+     * @return Persistence\Sql\Query
+     */
+    public function actionSelectInnerTable()
+    {
+        return $this->action('select');
+    }
+
     #[\Override]
     public function action(string $mode, array $args = [])
     {
@@ -147,7 +163,7 @@ class UnionModel extends Model
                     }
                 }
                 $subquery = $this->getSubQuery($fields);
-                $query = parent::action($mode, $args)->reset('table')->table($subquery, $this->tableAlias ?? $this->table);
+                $query = parent::action($mode, $args)->reset('table')->table($subquery, $this->tableAlias);
 
                 $this->hook(self::HOOK_INIT_UNION_SELECT_QUERY, [$query]);
 
@@ -170,34 +186,35 @@ class UnionModel extends Model
                 break;
             case 'fx':
             case 'fx0':
-                $args['alias'] = 'val';
+                return parent::action($mode, $args);
+                /* $args['alias'] = 'val';
 
                 $subquery = $this->getSubAction($mode, $args);
 
                 $args = [$args[0], $this->expr('{}', ['val'])];
 
-                break;
+                break; */
             default:
                 throw (new Exception('UnionModel model does not support this action'))
                     ->addMoreInfo('mode', $mode);
         }
 
         $query = parent::action($mode, $args)
-            ->reset('table')->table($subquery, $this->tableAlias ?? $this->table);
+            ->reset('table')->table($subquery, $this->tableAlias);
 
         return $query;
     }
 
     /**
-     * @param list<Query> $subqueries
+     * @param list<Persistence\Sql\Query> $subqueries
      */
-    private function createUnionQuery(array $subqueries): Query
+    private function createUnionQuery(array $subqueries): Persistence\Sql\Query
     {
         $unionQuery = $this->getPersistence()->dsql();
         $unionQuery->mode = 'union_all';
         \Closure::bind(static function () use ($unionQuery, $subqueries) {
             $unionQuery->template = implode(' UNION ALL ', array_fill(0, count($subqueries), '[]'));
-        }, null, Query::class)();
+        }, null, Persistence\Sql\Query::class)();
         $unionQuery->args['custom'] = $subqueries;
 
         return $unionQuery;
@@ -208,7 +225,7 @@ class UnionModel extends Model
      *
      * @param list<string> $fields
      */
-    public function getSubQuery(array $fields): Query
+    public function getSubQuery(array $fields): Persistence\Sql\Query
     {
         $subqueries = [];
         foreach ($this->union as [$nestedModel, $fieldMap]) {
@@ -262,7 +279,7 @@ class UnionModel extends Model
     /**
      * @param array<mixed> $actionArgs
      */
-    public function getSubAction(string $action, array $actionArgs = []): Query
+    public function getSubAction(string $action, array $actionArgs = []): Persistence\Sql\Query
     {
         $subqueries = [];
         foreach ($this->union as [$model, $fieldMap]) {
