@@ -6,6 +6,7 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model\AggregateModel;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class ModelUnionTest extends TestCase
@@ -237,10 +238,8 @@ class ModelUnionTest extends TestCase
     {
         $transaction = $this->createTransaction();
         $transaction->removeField('client_id');
-        if (!$this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            // TODO where should be no ORDER BY in subquery
-            $transaction->setOrder('name');
-        }
+        $transaction->setOrder('name');
+
         $transactionAggregate = new AggregateModel($transaction);
         $transactionAggregate->setGroupBy(['name'], [
             'amount' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
@@ -256,10 +255,8 @@ class ModelUnionTest extends TestCase
 
         $transaction = $this->createSubtractInvoiceTransaction();
         $transaction->removeField('client_id');
-        if (!$this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            // TODO where should be no ORDER BY in subquery
-            $transaction->setOrder('name');
-        }
+        $transaction->setOrder('name');
+
         $transactionAggregate = new AggregateModel($transaction);
         $transactionAggregate->setGroupBy(['name'], [
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
@@ -295,10 +292,6 @@ class ModelUnionTest extends TestCase
             'select `type`, sum(`amount`) `amount` from (select `client_id`, `name`, `amount`, `type` from (select `client_id` `client_id`, `name` `name`, `amount` `amount`, (\'invoice\') `type` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount`, (\'payment\') `type` from `payment`) `_tu`) `_tm` group by `type`',
             $transactionAggregate->action('select')->render()[0]
         );
-
-        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            self::markTestIncomplete('TODO MSSQL: Constant value column seem not supported (Invalid column name \'type\')');
-        }
 
         self::assertSameExportUnordered([
             ['type' => 'invoice', 'amount' => 23.0],
@@ -351,29 +344,29 @@ class ModelUnionTest extends TestCase
         );
     }
 
-    /* public function testFieldAggregateUnion(): void
+    public function testFieldAggregateUnion(): void
     {
         $client = $this->createClient();
         $client->hasMany('tr', ['model' => $this->createTransaction()])
-            ->addField('balance', ['field' => 'amount', 'aggregate' => 'sum']);
+            ->addField('balance', ['field' => 'amount', 'aggregate' => 'sum', 'type' => 'float']);
 
-        if ($this->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MySQLPlatform
-                || $this->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\PostgreSQLPlatform
-                || $this->getDatabasePlatform() instanceof SQLServerPlatform
-                || $this->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\OraclePlatform) {
-            // TODO failing on all DBs expect Sqlite, MySQL uses "semi-joins" for this type of query which does not support UNION
-            // and therefore it complains about `client`.`id` field, see:
-            // http://stackoverflow.com/questions/8326815/mysql-field-from-union-subselect#comment10267696_8326815
-            self::assertTrue(true);
+        self::assertSameExportUnordered([
+            ['id' => 1, 'name' => 'Vinny', 'surname' => null, 'order' => null, 'balance' => 29.0],
+            ['id' => 2, 'name' => 'Zoe', 'surname' => null, 'order' => null, 'balance' => 8.0],
+        ], $client->export());
 
-            return;
-        }
+        self::assertSame(['id' => 1, 'name' => 'Vinny', 'surname' => null, 'order' => null, 'balance' => 29.0], $client->load(1)->get());
+        self::assertSame(['id' => 2, 'name' => 'Zoe', 'surname' => null, 'order' => null, 'balance' => 8.0], $client->load(2)->get());
+        self::assertNull($client->tryLoad(3));
 
         $this->assertSameSql(
-            'select `id`, `name`, `surname`, `order`, (select coalesce(sum(`val`), 0) from (select coalesce(sum(`amount`), 0) `val` from `invoice` UNION ALL select coalesce(sum(`amount`), 0) `val` from `payment`) `_t_e7d707a26e7f` where `client_id` = `client`.`id`) `balance` from `client` group by `id` having `id` = :a',
+            // QUERY IS WIP
+            $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform
+                ? 'select `id`, `name`, `surname`, `order`, (select coalesce(sum(`amount`), 0) from (select `client_id`, `name`, `amount` from (select `client_id` `client_id`, `name` `name`, `amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_tu`) `_t_e7d707a26e7f` where `client_id` = `client`.`id`) `balance` from `client` group by `id`, `id`, `name`, `surname`, `order`, (select coalesce(sum(`amount`), 0) from (select `client_id`, `name`, `amount` from (select `client_id` `client_id`, `name` `name`, `amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_tu`) `_t_e7d707a26e7f` where `client_id` = `client`.`id`) having `id` = :a'
+                : 'select `id`, `name`, `surname`, `order`, (select coalesce(sum(`amount`), 0) from (select `client_id`, `name`, `amount` from (select `client_id` `client_id`, `name` `name`, `amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_tu`) `_t_e7d707a26e7f` where `client_id` = `client`.`id`) `balance` from `client` group by `id` having `id` = :a',
             $client->load(1)->action('select')->render()[0]
         );
-    } */
+    }
 
     public function testConditionOnUnionField(): void
     {
