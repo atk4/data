@@ -28,7 +28,7 @@ class Query extends BaseQuery
     protected function _renderConditionBinary(string $operator, string $sqlLeft, string $sqlRight): string
     {
         // TODO deduplicate the duplicated SQL using https://sqlite.org/forum/info/c9970a37edf11cd1
-        // https://github.com/sqlite/sqlite/commit/5e4233a9e48b124d4d342b757b34e4ae849f5cf8
+        // https://github.com/sqlite/sqlite/commit/5e4233a9e4
         // expected to be supported since SQLite v3.45.0
 
         /** @var bool */

@@ -37,8 +37,8 @@ class Action
     {
         if (!$condition->isEmpty()) {
             // CallbackFilterIterator with circular reference (bound function) is not GCed
-            // https://github.com/php/php-src/commit/afab9eb48c883766b7870f76f2e2b0a4bd575786
-            // https://github.com/php/php-src/commit/fb70460d8e7593e32abdaaf8ae8849345d49c8fd
+            // https://github.com/php/php-src/commit/afab9eb48c
+            // https://github.com/php/php-src/commit/fb70460d8e
             // remove the if below once PHP 8.1.3 (or older) is no longer supported
             $filterFx = function (array $row) use ($condition): bool {
                 return $this->match($row, $condition);

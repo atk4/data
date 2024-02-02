@@ -45,21 +45,21 @@ class HasMany extends Reference
      *
      * @return mixed
      */
-    protected function getOurFieldValueForRefCondition(Model $ourModel)
+    protected function getOurFieldValueForRefCondition(Model $ourModelOrEntity)
     {
-        $ourModel = $this->getOurModel($ourModel);
+        $this->assertOurModelOrEntity($ourModelOrEntity);
 
-        if ($ourModel->isEntity()) {
+        if ($ourModelOrEntity->isEntity()) {
             $res = $this->ourField
-                ? $ourModel->get($this->ourField)
-                : $ourModel->getId();
+                ? $ourModelOrEntity->get($this->ourField)
+                : $ourModelOrEntity->getId();
             $this->assertReferenceValueNotNull($res);
 
             return $res;
         }
 
         // create expression based on existing conditions
-        return $ourModel->action('field', [
+        return $ourModelOrEntity->action('field', [
             $this->getOurFieldName(),
         ]);
     }
@@ -81,13 +81,13 @@ class HasMany extends Reference
      * Returns referenced model with condition set.
      */
     #[\Override]
-    public function ref(Model $ourModel, array $defaults = []): Model
+    public function ref(Model $ourModelOrEntity, array $defaults = []): Model
     {
-        $ourModel = $this->getOurModel($ourModel);
+        $this->assertOurModelOrEntity($ourModelOrEntity);
 
         return $this->createTheirModel($defaults)->addCondition(
             $this->getTheirFieldName(),
-            $this->getOurFieldValueForRefCondition($ourModel)
+            $this->getOurFieldValueForRefCondition($ourModelOrEntity)
         );
     }
 
@@ -98,7 +98,7 @@ class HasMany extends Reference
      */
     public function refLink(?Model $ourModel, array $defaults = []): Model
     {
-        $ourModel = $this->getOurModel($ourModel);
+        $this->getOurModel($ourModel); // or should $this->assertOurModelOrEntity($ourModelOrEntity); be here? What is exactly the difference between ref and refLink?
 
         $theirModelLinked = $this->createTheirModel($defaults)->addCondition(
             $this->getTheirFieldName(),
