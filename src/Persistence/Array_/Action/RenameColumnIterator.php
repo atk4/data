@@ -11,7 +11,7 @@ use Atk4\Data\Exception;
  *
  * @phpstan-extends \IteratorIterator<int, array<string, mixed>, \Traversable<array<string, mixed>>>
  */
-final class RenameColumnIterator extends \IteratorIterator
+class RenameColumnIterator extends \IteratorIterator
 {
     /** @var string */
     protected $origName;

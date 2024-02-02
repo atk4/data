@@ -71,7 +71,7 @@ $girls = (clone $m)->addCondition('gender', 'F');
 $notGirls = (clone $m)->addCondition('gender', '!=', 'F');
 ```
 
-When you use 'in' or 'not in' you should pass value as array:
+When you use 'in' or 'not in' you must pass value as array or DSQL expression:
 
 ```
 $m = new Model_User($db, 'user');

@@ -12,32 +12,35 @@ class ContainsMany extends ContainsBase
     #[\Override]
     protected function getDefaultPersistence(Model $theirModel): Persistence
     {
-        $ourModel = $this->getOurModelPassedToRefXxx();
+        $ourModelOrEntity = $this->getOurModelOrEntityPassedToRefXxx();
 
         return new Persistence\Array_([
-            $this->tableAlias => $ourModel->isEntity() && $this->getOurFieldValue($ourModel) !== null ? $this->getOurFieldValue($ourModel) : [],
+            $this->tableAlias => $ourModelOrEntity->isEntity() && $this->getOurFieldValue($ourModelOrEntity) !== null
+                ? $this->getOurFieldValue($ourModelOrEntity)
+                : [],
         ]);
     }
 
     #[\Override]
-    public function ref(Model $ourModel, array $defaults = []): Model
+    public function ref(Model $ourModelOrEntity, array $defaults = []): Model
     {
-        $ourModel = $this->getOurModel($ourModel);
+        $this->assertOurModelOrEntity($ourModelOrEntity);
 
         $theirModel = $this->createTheirModel(array_merge($defaults, [
-            'containedInEntity' => $ourModel->isEntity() ? $ourModel : null,
+            'containedInEntity' => $ourModelOrEntity->isEntity() ? $ourModelOrEntity : null,
             'table' => $this->tableAlias,
         ]));
 
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
             $this->onHookToTheirModel($theirModel, $spot, function (Model $theirEntity) {
-                $ourModel = $this->getOurModel($theirEntity->containedInEntity);
-                $ourModel->assertIsEntity();
+                $ourEntity = $theirEntity->containedInEntity;
+                $this->assertOurModelOrEntity($ourEntity);
+                $ourEntity->assertIsEntity();
 
                 /** @var Persistence\Array_ */
                 $persistence = $theirEntity->getModel()->getPersistence();
                 $rows = $persistence->getRawDataByTable($theirEntity->getModel(), $this->tableAlias); // @phpstan-ignore-line
-                $ourModel->save([$this->getOurFieldName() => $rows !== [] ? $rows : null]);
+                $ourEntity->save([$this->getOurFieldName() => $rows !== [] ? $rows : null]);
             });
         }
 

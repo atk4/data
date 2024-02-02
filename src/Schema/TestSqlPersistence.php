@@ -13,7 +13,7 @@ use Doctrine\DBAL\Platforms\MySQLPlatform;
  *
  * @internal
  */
-final class TestSqlPersistence extends Persistence\Sql
+class TestSqlPersistence extends Persistence\Sql
 {
     public function __construct() {} // @phpstan-ignore-line
 

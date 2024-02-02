@@ -76,15 +76,16 @@ class HasOne extends Reference
      * This can happen in case of deep traversal $model->ref('Many')->ref('one_id'), for example.
      */
     #[\Override]
-    public function ref(Model $ourModel, array $defaults = []): Model
+    public function ref(Model $ourModelOrEntity, array $defaults = []): Model
     {
-        $ourModel = $this->getOurModel($ourModel);
+        $this->assertOurModelOrEntity($ourModelOrEntity);
+
         $theirModel = $this->createTheirModel($defaults);
 
-        if ($ourModel->isEntity()) {
-            $ourValue = $this->getOurFieldValue($ourModel);
+        if ($ourModelOrEntity->isEntity()) {
+            $ourValue = $this->getOurFieldValue($ourModelOrEntity);
 
-            if ($this->getOurFieldName() === $ourModel->idField) {
+            if ($this->getOurFieldName() === $ourModelOrEntity->idField) {
                 $this->assertReferenceValueNotNull($ourValue);
                 $tryLoad = true;
             } else {
@@ -110,20 +111,20 @@ class HasOne extends Reference
         // their model will be reloaded after saving our model to reflect changes in referenced fields
         $theirModel->getModel(true)->reloadAfterSave = false;
 
-        if ($ourModel->isEntity()) {
-            $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function (Model $theirModel) use ($ourModel) {
+        if ($ourModelOrEntity->isEntity()) {
+            $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function (Model $theirModel) use ($ourModelOrEntity) {
                 $theirValue = $this->theirField ? $theirModel->get($this->theirField) : $theirModel->getId();
 
-                if (!$this->getOurField()->compare($this->getOurFieldValue($ourModel), $theirValue)) {
-                    $ourModel->set($this->getOurFieldName(), $theirValue)->save();
+                if (!$this->getOurField()->compare($this->getOurFieldValue($ourModelOrEntity), $theirValue)) {
+                    $ourModelOrEntity->set($this->getOurFieldName(), $theirValue)->save();
                 }
 
                 $theirModel->reload();
             });
 
             // add hook to set our field = null when record of referenced model is deleted
-            $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_DELETE, function (Model $theirModel) use ($ourModel) {
-                $ourModel->setNull($this->getOurFieldName());
+            $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_DELETE, function (Model $theirModel) use ($ourModelOrEntity) {
+                $ourModelOrEntity->setNull($this->getOurFieldName());
             });
         }
 

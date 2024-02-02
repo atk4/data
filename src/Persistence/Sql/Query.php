@@ -418,7 +418,7 @@ abstract class Query extends Expression
      * @param string|Expressionable $field   Field or Expression
      * @param mixed                 $cond    Condition such as '=', '>' or 'not like'
      * @param mixed                 $value   Value. Will be quoted unless you pass expression
-     * @param string                $kind    Do not use directly. Use having()
+     * @param 'where'|'having'      $kind    Do not use directly. Use having()
      * @param int                   $numArgs when $kind is passed, we can't determine number of
      *                                       actual arguments, so this argument must be specified
      *
@@ -485,7 +485,7 @@ abstract class Query extends Expression
     /**
      * Subroutine which renders either [where] or [having].
      *
-     * @param string $kind 'where' or 'having'
+     * @param 'where'|'having' $kind
      *
      * @return list<string>
      */

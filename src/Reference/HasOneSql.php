@@ -137,16 +137,17 @@ class HasOneSql extends HasOne
     }
 
     #[\Override]
-    public function ref(Model $ourModel, array $defaults = []): Model
+    public function ref(Model $ourModelOrEntity, array $defaults = []): Model
     {
-        $theirModel = parent::ref($ourModel, $defaults);
-        $ourModel = $this->getOurModel($ourModel);
+        $this->assertOurModelOrEntity($ourModelOrEntity);
 
-        if ($ourModel->isEntity() && $this->getOurFieldValue($ourModel) !== null) {
+        $theirModel = parent::ref($ourModelOrEntity, $defaults);
+
+        if ($ourModelOrEntity->isEntity() && $this->getOurFieldValue($ourModelOrEntity) !== null) {
             // materialized condition already added in parent/HasOne class
         } else {
             // handle deep traversal using an expression
-            $ourFieldExpression = $ourModel->action('field', [$this->getOurField()]);
+            $ourFieldExpression = $ourModelOrEntity->action('field', [$this->getOurField()]);
 
             $theirModel->getModel(true)
                 ->addCondition($this->getTheirFieldName($theirModel), $ourFieldExpression);
