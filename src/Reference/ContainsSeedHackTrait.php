@@ -9,11 +9,11 @@ use Atk4\Data\Model;
 trait ContainsSeedHackTrait
 {
     // TODO horrible getter for our possibly entity, for ContainsOne/ContainsMany, remove asap
-    public function getOurModelPassedToRefXxx(): Model
+    public function getOurModelOrEntityPassedToRefXxx(): Model
     {
         $trace = debug_backtrace(\DEBUG_BACKTRACE_PROVIDE_OBJECT, 10);
         $expectedCalls = [
-            'getOurModelPassedToRefXxx',
+            'getOurModelOrEntityPassedToRefXxx',
             'getDefaultPersistence',
             'addToPersistence',
             'createTheirModel',
@@ -33,7 +33,10 @@ trait ContainsSeedHackTrait
                 }
 
                 if (in_array($frame['function'], ['ref', 'refModel', 'refLink'], true)) {
-                    return $this->getOurModel($frame['args'][0]);
+                    $res = $frame['args'][0];
+                    $this->assertOurModelOrEntity($res);
+
+                    return $res;
                 }
             }
 

@@ -125,7 +125,9 @@ class Reference
      */
     final protected function getOurFieldValue(Model $ourEntity)
     {
-        return $this->getOurModel($ourEntity)->get($this->getOurFieldName());
+        $this->assertOurModelOrEntity($ourEntity);
+
+        return $ourEntity->get($this->getOurFieldName());
     }
 
     public function getTheirFieldName(Model $theirModel = null): string
@@ -192,13 +194,20 @@ class Reference
         return '#ref-' . $this->link;
     }
 
-    public function getOurModel(?Model $ourModel): Model
+    public function assertOurModelOrEntity(Model $ourModelOrEntity): void
     {
-        if ($ourModel === null) {
-            $ourModel = $this->getOwner();
-        }
+        $this->getOwner()
+            ->assertIsModel($ourModelOrEntity->getModel(true));
+    }
 
-        $this->getOwner()->assertIsModel($ourModel->getModel(true));
+    public function getOurModel(?Model $ourModelOrEntity): Model
+    {
+        $ourModel = $ourModelOrEntity !== null
+            ? $ourModelOrEntity->getModel(true)
+            : $this->getOwner();
+
+        $this->getOwner()
+            ->assertIsModel($ourModel);
 
         return $ourModel;
     }
