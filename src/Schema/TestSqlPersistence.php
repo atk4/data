@@ -34,7 +34,9 @@ class TestSqlPersistence extends Persistence\Sql
                 $this->getConnection()->getConnection()->getConfiguration()->setSQLLogger(
                     // @phpstan-ignore-next-line SQLLogger is deprecated
                     new class() implements SQLLogger {
-                        #[\Override]
+                        /**
+                         * @deprecated remove once DBAL 3.x support is dropped
+                         */
                         public function startQuery($sql, array $params = null, array $types = null): void
                         {
                             // log transaction savepoint operations only once
@@ -52,7 +54,9 @@ class TestSqlPersistence extends Persistence\Sql
                             \Closure::bind(static fn () => $test->logQuery($sql, $params ?? [], $types ?? []), null, TestCase::class)(); // @phpstan-ignore-line
                         }
 
-                        #[\Override]
+                        /**
+                         * @deprecated remove once DBAL 3.x support is dropped
+                         */
                         public function stopQuery(): void {}
                     }
                 );

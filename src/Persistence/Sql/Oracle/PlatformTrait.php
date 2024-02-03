@@ -13,7 +13,9 @@ use Doctrine\DBAL\Schema\UniqueConstraint;
 
 trait PlatformTrait
 {
-    #[\Override]
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     public function getVarcharTypeDeclarationSQL(array $column)
     {
         $column['length'] = ($column['length'] ?? 255) * 4;

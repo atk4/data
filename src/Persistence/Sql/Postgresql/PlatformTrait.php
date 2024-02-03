@@ -34,19 +34,25 @@ trait PlatformTrait
         return $sqls;
     }
 
-    #[\Override]
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     protected function getVarcharTypeDeclarationSQLSnippet($length, $fixed)
     {
         return $fixed ? 'ATK4__CICHAR' : 'ATK4__CIVARCHAR';
     }
 
-    #[\Override]
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     public function getClobTypeDeclarationSQL(array $column)
     {
         return 'CITEXT';
     }
 
-    #[\Override]
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     protected function initializeDoctrineTypeMappings(): void
     {
         parent::initializeDoctrineTypeMappings();
@@ -55,7 +61,9 @@ trait PlatformTrait
         $this->doctrineTypeMapping['citext'] = 'text';
     }
 
-    #[\Override]
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     public function getCurrentDatabaseExpression(bool $includeSchema = false): string
     {
         if ($includeSchema) {
@@ -65,7 +73,9 @@ trait PlatformTrait
         return parent::getCurrentDatabaseExpression();
     }
 
-    #[\Override]
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     public function convertBooleansToDatabaseValue($item)
     {
         return $item;
@@ -139,7 +149,9 @@ trait PlatformTrait
         return $sqls;
     }
 
-    #[\Override]
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     public function getCreateTableSQL(Table $table, $createFlags = self::CREATE_INDEXES)
     {
         $sqls = array_merge(
