@@ -19,9 +19,8 @@ use Atk4\Data\Persistence;
  * For example if you are asking sum(amount), there is no need to fetch any extra
  * fields from sub-models.
  *
- * @property Persistence\Sql $persistence
- *
- * @method Persistence\Sql\Expression expr($expr, array $args = []) forwards to Persistence\Sql::expr using $this as model
+ * @method Persistence\Sql            getPersistence()
+ * @method Persistence\Sql\Expression expr(string $template, array<int|string, mixed> $arguments = []) forwards to Persistence\Sql::expr using $this as model
  */
 class UnionModel extends Model
 {
@@ -90,49 +89,6 @@ class UnionModel extends Model
         $this->union[] = [$model, $fieldMap];
 
         return $model; // TODO nothing/void should be returned
-    }
-
-    /**
-     * If UnionModel model has such field, then add condition to it.
-     * Otherwise adds condition to all nested models.
-     *
-     * @param bool $forceNested Should we add condition to all nested models?
-     */
-    #[\Override]
-    public function addCondition($field, $operator = null, $value = null, $forceNested = false)
-    {
-        if ('func_num_args'() === 1) {
-            return parent::addCondition($field);
-        }
-
-        // if UnionModel has such field, then add condition to it
-        if ($this->hasField($field) && !$forceNested) {
-            return parent::addCondition(...'func_get_args'());
-        }
-
-        // otherwise add condition in all nested models
-        foreach ($this->union as [$nestedModel, $fieldMap]) {
-            if (isset($fieldMap[$field])) {
-                // field is included in mapping - use mapping expression
-                $f = $fieldMap[$field] instanceof Persistence\Sql\Expression
-                    ? $fieldMap[$field]
-                    : $this->getFieldExpr($nestedModel, $field, $fieldMap[$field]);
-            } elseif (is_string($field) && $nestedModel->hasField($field)) {
-                // model has such field - use that field directly
-                $f = $nestedModel->getField($field);
-            } else {
-                // we don't know what to do, so let's do nothing
-                continue;
-            }
-
-            if ('func_num_args'() === 2) {
-                $nestedModel->addCondition($f, $operator);
-            } else {
-                $nestedModel->addCondition($f, $operator, $value);
-            }
-        }
-
-        return $this;
     }
 
     /**

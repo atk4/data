@@ -393,26 +393,6 @@ class ModelUnionTest extends TestCase
         ], $transaction->export());
     }
 
-    public function testConditionForcedOnNestedModel1(): void
-    {
-        $transaction = $this->createSubtractInvoiceTransaction();
-        $transaction->addCondition('amount', '>', 5, true);
-
-        self::assertSameExportUnordered([
-            ['client_id' => 1, 'name' => 'prepay', 'amount' => 10.0],
-        ], $transaction->export());
-    }
-
-    public function testConditionForcedOnNestedModel2(): void
-    {
-        $transaction = $this->createSubtractInvoiceTransaction();
-        $transaction->addCondition('amount', '<', -10, true);
-
-        self::assertSameExportUnordered([
-            ['client_id' => 1, 'name' => 'table purchase', 'amount' => -15.0],
-        ], $transaction->export());
-    }
-
     public function testConditionExpression(): void
     {
         $transaction = $this->createSubtractInvoiceTransaction();
