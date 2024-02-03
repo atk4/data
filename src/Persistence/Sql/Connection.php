@@ -63,6 +63,11 @@ abstract class Connection
         return $this->_connection;
     }
 
+    final public static function isDbal3x(): bool
+    {
+        return (new \ReflectionClass(AbstractPlatform::class))->hasMethod('getName');
+    }
+
     /**
      * Normalize DSN connection string or DBAL connection params described in:
      * https://www.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/configuration.html .

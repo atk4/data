@@ -14,7 +14,9 @@ class GenericPlatform extends Platforms\AbstractPlatform
         return DbalException::notSupported('SQL');
     }
 
-    #[\Override]
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     public function getName(): string
     {
         return 'atk4_data_generic';

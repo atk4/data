@@ -12,7 +12,10 @@ use Doctrine\DBAL\Types as DbalTypes;
 
 // force Doctrine\DBAL\Platforms\SQLitePlatform class load as in DBAL 3.x it is named with a different case
 // remove once DBAL 3.x support is dropped
-new SqlitePlatform();
+try {
+    new SqlitePlatform();
+} catch (\Error $e) {
+}
 
 DbalTypes\Type::addType(Types::LOCAL_OBJECT, LocalObjectType::class);
 DbalTypes\Type::addType(Types::MONEY, MoneyType::class);
