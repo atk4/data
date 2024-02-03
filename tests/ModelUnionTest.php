@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
+use Atk4\Data\Exception;
 use Atk4\Data\Model\AggregateModel;
+use Atk4\Data\Model\UnionInternalTable;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
@@ -435,5 +437,14 @@ class ModelUnionTest extends TestCase
             ['client_id' => 1, 'name' => 'prepay', 'amount' => 10.0],
             ['client_id' => 2, 'name' => 'full pay', 'amount' => 4.0],
         ], $transaction->export());
+    }
+
+    public function testUnionInternalTableActionException(): void
+    {
+        $unionInternalTable = new UnionInternalTable();
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Only "select" action with empty arguments is expected');
+        $unionInternalTable->action('count');
     }
 }

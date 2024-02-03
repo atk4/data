@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Model;
 
-use Atk4\Core\Exception as CoreException;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Field\SqlExpressionField;
@@ -113,28 +112,23 @@ class UnionModel extends Model
 
         // otherwise add condition in all nested models
         foreach ($this->union as [$nestedModel, $fieldMap]) {
-            try {
-                if (isset($fieldMap[$field])) {
-                    // field is included in mapping - use mapping expression
-                    $f = $fieldMap[$field] instanceof Persistence\Sql\Expression
-                        ? $fieldMap[$field]
-                        : $this->getFieldExpr($nestedModel, $field, $fieldMap[$field]);
-                } elseif (is_string($field) && $nestedModel->hasField($field)) {
-                    // model has such field - use that field directly
-                    $f = $nestedModel->getField($field);
-                } else {
-                    // we don't know what to do, so let's do nothing
-                    continue;
-                }
+            if (isset($fieldMap[$field])) {
+                // field is included in mapping - use mapping expression
+                $f = $fieldMap[$field] instanceof Persistence\Sql\Expression
+                    ? $fieldMap[$field]
+                    : $this->getFieldExpr($nestedModel, $field, $fieldMap[$field]);
+            } elseif (is_string($field) && $nestedModel->hasField($field)) {
+                // model has such field - use that field directly
+                $f = $nestedModel->getField($field);
+            } else {
+                // we don't know what to do, so let's do nothing
+                continue;
+            }
 
-                if ('func_num_args'() === 2) {
-                    $nestedModel->addCondition($f, $operator);
-                } else {
-                    $nestedModel->addCondition($f, $operator, $value);
-                }
-            } catch (CoreException $e) {
-                throw $e
-                    ->addMoreInfo('nestedModel', $nestedModel);
+            if ('func_num_args'() === 2) {
+                $nestedModel->addCondition($f, $operator);
+            } else {
+                $nestedModel->addCondition($f, $operator, $value);
             }
         }
 
@@ -176,11 +170,6 @@ class UnionModel extends Model
 
                 break;
             case 'field':
-                if (!isset($args[0])) {
-                    throw (new Exception('This action requires one argument with field name'))
-                        ->addMoreInfo('mode', $mode);
-                }
-
                 $subquery = $this->getSubQuery([$args[0]]);
 
                 break;
@@ -232,33 +221,28 @@ class UnionModel extends Model
             // map fields for related model
             $queryFieldExpressions = [];
             foreach ($fields as $fieldName) {
-                try {
-                    if (!$this->hasField($fieldName)) {
-                        $queryFieldExpressions[$fieldName] = $nestedModel->expr('NULL');
+                if (!$this->hasField($fieldName)) {
+                    $queryFieldExpressions[$fieldName] = $nestedModel->expr('NULL');
 
-                        continue;
-                    }
-
-                    $field = $this->getField($fieldName);
-
-                    if ($field->hasJoin() || $field->neverPersist) {
-                        continue;
-                    }
-
-                    // UnionModel can have some fields defined as expressions. We don't touch those either.
-                    // Imants: I have no idea why this condition was set, but it's limiting our ability
-                    // to use expression fields in mapping
-                    if ($field instanceof SqlExpressionField /* && !isset($this->aggregate[$fieldName]) */) {
-                        continue;
-                    }
-
-                    $fieldExpression = $this->getFieldExpr($nestedModel, $fieldName, $fieldMap[$fieldName] ?? null);
-
-                    $queryFieldExpressions[$fieldName] = $fieldExpression;
-                } catch (CoreException $e) {
-                    throw $e
-                        ->addMoreInfo('nestedModel', $nestedModel);
+                    continue;
                 }
+
+                $field = $this->getField($fieldName);
+
+                if ($field->hasJoin() || $field->neverPersist) {
+                    continue;
+                }
+
+                // UnionModel can have some fields defined as expressions. We don't touch those either.
+                // Imants: I have no idea why this condition was set, but it's limiting our ability
+                // to use expression fields in mapping
+                if ($field instanceof SqlExpressionField /* && !isset($this->aggregate[$fieldName]) */) {
+                    continue;
+                }
+
+                $fieldExpression = $this->getFieldExpr($nestedModel, $fieldName, $fieldMap[$fieldName] ?? null);
+
+                $queryFieldExpressions[$fieldName] = $fieldExpression;
             }
 
             $query = $this->getPersistence()->action($nestedModel, 'select', [[]]);
