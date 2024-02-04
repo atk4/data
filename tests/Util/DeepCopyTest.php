@@ -158,18 +158,28 @@ class DeepCopyTest extends TestCase
         $this->createMigrator(new DcPayment($this->db))->create();
     }
 
-    public function testBasic(): void
+    public function createTestQuote(): DcQuote
     {
         $client = new DcClient($this->db);
         $clientId = $client->insert(['name' => 'John']);
 
         $quote = new DcQuote($this->db);
+        $quote->insert([
+            'ref' => 'q1',
+            'client_id' => $clientId,
+            'Lines' => [
+                ['name' => 'tools', 'qty' => 5, 'price' => 10],
+                ['name' => 'work', 'qty' => 1, 'price' => 40],
+            ],
+        ]);
+        $quoteEntity = $quote->loadOne();
 
-        $quote->insert(['ref' => 'q1', 'client_id' => $clientId, 'Lines' => [
-            ['name' => 'tools', 'qty' => 5, 'price' => 10],
-            ['name' => 'work', 'qty' => 1, 'price' => 40],
-        ]]);
-        $quote = $quote->loadOne();
+        return $quoteEntity;
+    }
+
+    public function testBasic(): void
+    {
+        $quote = $this->createTestQuote();
 
         // total price should match
         self::assertSame(90.0, $quote->get('total'));
@@ -272,17 +282,8 @@ class DeepCopyTest extends TestCase
 
     public function testCopyException(): void
     {
-        $client = new DcClient($this->db);
-        $clientId = $client->insert(['name' => 'John']);
-
-        $quote = new DcQuote($this->db);
-        $quote->hasMany('Lines2', ['model' => [DcQuoteLine::class], 'theirField' => 'parent_id']);
-
-        $quote->insert(['ref' => 'q1', 'client_id' => $clientId, 'Lines' => [
-            ['name' => 'tools', 'qty' => 5, 'price' => 10],
-            ['name' => 'work', 'qty' => 1, 'price' => 40],
-        ]]);
-        $quote = $quote->loadOne();
+        $quote = $this->createTestQuote();
+        $quote->getModel()->hasMany('Lines2', ['model' => [DcQuoteLine::class], 'theirField' => 'parent_id']);
 
         $invoice = new DcInvoice();
         $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, static function (Model $m) {
@@ -290,9 +291,6 @@ class DeepCopyTest extends TestCase
                 throw new \Exception('no test ref');
             }
         });
-
-        // total price should match
-        self::assertSame(90.0, $quote->get('total'));
 
         $dc = new DeepCopy();
 
@@ -314,16 +312,7 @@ class DeepCopyTest extends TestCase
 
     public function testDeepException(): void
     {
-        $client = new DcClient($this->db);
-        $clientId = $client->insert(['name' => 'John']);
-
-        $quote = new DcQuote($this->db);
-
-        $quote->insert(['ref' => 'q1', 'client_id' => $clientId, 'Lines' => [
-            ['name' => 'tools', 'qty' => 5, 'price' => 10],
-            ['name' => 'work', 'qty' => 1, 'price' => 40],
-        ]]);
-        $quote = $quote->loadOne();
+        $quote = $this->createTestQuote();
 
         $invoice = new DcInvoice();
         $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, static function (Model $m) {
@@ -331,9 +320,6 @@ class DeepCopyTest extends TestCase
                 throw new \Exception('no test ref');
             }
         });
-
-        // total price should match
-        self::assertSame(90.0, $quote->get('total'));
 
         $dc = new DeepCopy();
 
