@@ -71,6 +71,8 @@ class DeepCopy
      */
     public function from(Model $source)
     {
+        $source->assertIsEntity();
+
         $this->source = $source;
 
         return $this;
@@ -83,11 +85,11 @@ class DeepCopy
      */
     public function to(Model $destination)
     {
-        $this->destination = $destination;
-
-        if (!$this->destination->issetPersistence()) {
-            $this->destination->setPersistence($this->source->getModel()->getPersistence());
+        if (!$destination->issetPersistence()) {
+            $destination->setPersistence($this->source->getModel()->getPersistence());
         }
+
+        $this->destination = $destination;
 
         return $this;
     }
@@ -235,6 +237,7 @@ class DeepCopy
                     }
                 }
             }
+
             $destination->hook(self::HOOK_AFTER_COPY, [$source]);
 
             // make sure references with hasOne can be mapped or copy them
@@ -316,10 +319,8 @@ class DeepCopy
 
             throw (new DeepCopyException('Model copy failed', 0, $e))
                 ->addMoreInfo('source', $source)
-                ->addMoreInfo('source_info', $source->__debugInfo())
                 ->addMoreInfo('source_data', $source->get())
-                ->addMoreInfo('destination', $destination)
-                ->addMoreInfo('destination_info', $destination->__debugInfo());
+                ->addMoreInfo('destination', $destination);
         }
     }
 }
