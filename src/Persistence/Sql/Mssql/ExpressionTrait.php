@@ -90,10 +90,8 @@ trait ExpressionTrait
                 }
                 $errorInfo = $firstException instanceof \PDOException ? $firstException->errorInfo : null;
 
-                $eNew = (new ExecuteException($e->getMessage(), $errorInfo[1] ?? $e->getCode(), $e));
-                $eNew->addMoreInfo('query', $this->getDebugQuery());
-
-                throw $eNew;
+                throw (new ExecuteException($e->getMessage(), $errorInfo[1] ?? $e->getCode(), $e))
+                    ->addMoreInfo('query', $this->getDebugQuery());
             }
 
             return $result->rowCount();
