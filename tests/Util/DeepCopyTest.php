@@ -270,7 +270,7 @@ class DeepCopyTest extends TestCase
         self::assertSame(5.0, (float) $client3->ref('Invoices')->action('fx', ['sum', 'due'])->getOne());
     }
 
-    public function testError(): void
+    public function testCopyException(): void
     {
         $client = new DcClient($this->db);
         $clientId = $client->insert(['name' => 'John']);
@@ -287,7 +287,7 @@ class DeepCopyTest extends TestCase
         $invoice = new DcInvoice();
         $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, static function (Model $m) {
             if (!$m->get('ref')) {
-                throw new \Exception('no ref');
+                throw new \Exception('no test ref');
             }
         });
 
@@ -297,7 +297,7 @@ class DeepCopyTest extends TestCase
         $dc = new DeepCopy();
 
         $this->expectException(DeepCopyException::class);
-
+        $this->expectExceptionMessage('Model copy failed');
         try {
             $invoice = $dc
                 ->from($quote)
@@ -306,13 +306,13 @@ class DeepCopyTest extends TestCase
                 ->with(['Lines', 'Lines2'])
                 ->copy();
         } catch (DeepCopyException $e) {
-            self::assertSame('no ref', $e->getPrevious()->getMessage());
+            self::assertSame('no test ref', $e->getPrevious()->getMessage());
 
             throw $e;
         }
     }
 
-    public function testDeepError(): void
+    public function testDeepException(): void
     {
         $client = new DcClient($this->db);
         $clientId = $client->insert(['name' => 'John']);
@@ -328,7 +328,7 @@ class DeepCopyTest extends TestCase
         $invoice = new DcInvoice();
         $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, static function (Model $m) {
             if (!$m->get('ref')) {
-                throw new \Exception('no ref');
+                throw new \Exception('no test ref');
             }
         });
 
@@ -338,6 +338,7 @@ class DeepCopyTest extends TestCase
         $dc = new DeepCopy();
 
         $this->expectException(DeepCopyException::class);
+        $this->expectExceptionMessage('Model copy failed');
         try {
             $invoice = $dc
                 ->from($quote)
