@@ -249,7 +249,7 @@ class Condition extends AbstractScope
             }
 
             // skip explicitly using OPERATOR_EQUALS as in some cases it is transformed to OPERATOR_IN
-            // for instance in dsql so let exact operator be handled by Persistence
+            // for instance in DSQL so let exact operator be handled by Persistence
             if ($operator === self::OPERATOR_EQUALS) {
                 return [$field, $value];
             }

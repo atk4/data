@@ -90,7 +90,7 @@ trait ExpressionTrait
                 }
                 $errorInfo = $firstException instanceof \PDOException ? $firstException->errorInfo : null;
 
-                $eNew = (new ExecuteException('Dsql execute error', $errorInfo[1] ?? $e->getCode(), $e));
+                $eNew = (new ExecuteException($e->getMessage(), $errorInfo[1] ?? $e->getCode(), $e));
                 $eNew->addMoreInfo('query', $this->getDebugQuery());
 
                 throw $eNew;
