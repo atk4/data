@@ -644,9 +644,6 @@ abstract class Expression implements Expressionable, \ArrayAccess
             $errorInfo = $firstException instanceof \PDOException ? $firstException->errorInfo : null;
 
             $eNew = (new ExecuteException('Dsql execute error', $errorInfo[1] ?? $e->getCode(), $e));
-            if ($errorInfo !== null && $errorInfo !== []) {
-                $eNew->addMoreInfo('error', $errorInfo[2] ?? 'n/a (' . $errorInfo[0] . ')');
-            }
             $eNew->addMoreInfo('query', $this->getDebugQuery());
 
             throw $eNew;
