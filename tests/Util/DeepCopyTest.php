@@ -338,4 +338,37 @@ class DeepCopyTest extends TestCase
             throw $e;
         }
     }
+
+    public function testDeepNestedException(): void
+    {
+        $quote = $this->createTestQuote();
+
+        $quote->getModel()->getReference('client_id')->model = [get_class(new class() extends DcClient {
+            protected function init(): void
+            {
+                parent::init();
+
+                $this->onHook(DeepCopy::HOOK_AFTER_COPY, static function (Model $m) {
+                    throw new \Exception('test ex');
+                });
+            }
+        })];
+
+        $dc = new DeepCopy();
+
+        $this->expectException(DeepCopyException::class);
+        $this->expectExceptionMessage('Model copy failed');
+        try {
+            $invoice = $dc
+                ->from($quote)
+                ->to($quote->getModel())
+                ->with(['client_id'])
+                ->copy();
+        } catch (DeepCopyException $e) {
+            self::assertSame('client_id', $e->getParams()['depth']);
+            self::assertSame('test ex', $e->getPrevious()->getMessage());
+
+            throw $e;
+        }
+    }
 }
