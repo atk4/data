@@ -390,6 +390,12 @@ class SelectTest extends TestCase
         yield [['2 + 2.5'], '=', ['[] + []', [1.5, 3.0]]];
         yield [['[] + []', [-1.5, 6.0]], '=', ['[] + []', [1.5, 3.0]]];
         yield [['2 + 2.5'], '=', ['[]', ['4.5']], true];
+
+        yield [['null'], '=', ['null']];
+        yield [['[]', [null]], '=', ['[]', [null]]];
+        yield [['null'], '=', ['[]', [null]]];
+        yield [['0'], '!=', ['null']];
+        yield [['[]', [0]], '!=', ['[]', [null]]];
     }
 
     public function testGroupConcat(): void
