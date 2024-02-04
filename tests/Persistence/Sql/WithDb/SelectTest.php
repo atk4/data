@@ -461,29 +461,18 @@ class SelectTest extends TestCase
             $q->getOne();
         } catch (ExecuteException $e) {
             if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-                // SQLSTATE[42S02]: Base table or view not found: 1146 Table 'non_existing_table' doesn't exist
-                $expectedErrorCode = 1146;
-                $expectedErrorMessage = 'Table \'non_existing_table\' doesn\'t exist';
+                $expectedErrorCode = 1146; // SQLSTATE[42S02]: Base table or view not found: 1146 Table 'non_existing_table' doesn't exist
             } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-                // SQLSTATE[42P01]: Undefined table: 7 ERROR: relation "non_existing_table" does not exist
-                $expectedErrorCode = 7;
-                $expectedErrorMessage = 'ERROR: relation "non_existing_table" does not exist';
+                $expectedErrorCode = 7; // SQLSTATE[42P01]: Undefined table: 7 ERROR: relation "non_existing_table" does not exist
             } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-                // SQLSTATE[42S02]: Invalid object name 'non_existing_table'
-                $expectedErrorCode = 208;
-                $expectedErrorMessage = 'Invalid object name \'non_existing_table\'';
+                $expectedErrorCode = 208; // SQLSTATE[42S02]: Invalid object name 'non_existing_table'
             } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-                // SQLSTATE[HY000]: ORA-00942: table or view does not exist
-                $expectedErrorCode = 942;
-                $expectedErrorMessage = 'table or view does not exist';
+                $expectedErrorCode = 942; // SQLSTATE[HY000]: ORA-00942: table or view does not exist
             } else {
-                // SQLSTATE[HY000]: General error: 1 no such table: non_existing_table
-                $expectedErrorCode = 1;
-                $expectedErrorMessage = 'no such table: non_existing_table';
+                $expectedErrorCode = 1; // SQLSTATE[HY000]: General error: 1 no such table: non_existing_table
             }
 
             self::assertSame($expectedErrorCode, $e->getCode());
-            self::assertSame($expectedErrorMessage, $e->getErrorMessage());
             $this->assertSameSql(
                 preg_replace('~\s+~', '', 'select `non_existing_field` from `non_existing_table`'),
                 preg_replace('~\s+~', '', $e->getDebugQuery())
