@@ -762,6 +762,15 @@ class QueryTest extends TestCase
         );
     }
 
+    public function testWhereInWithNullException(): void
+    {
+        $q = $this->q('[where]')->where('x', 'in', ['a', null, 'b']);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Null value in IN operator is not supported');
+        $q->render();
+    }
+
     /**
      * Having basically is the same as where, so we can relax and thoroughly test where() instead.
      */
