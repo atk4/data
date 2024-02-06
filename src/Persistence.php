@@ -434,7 +434,7 @@ abstract class Persistence
             }
 
             throw (new Exception('Typecast save error', 0, $e))
-                ->addMoreInfo('field', $field->shortName);
+                ->addMoreInfo('field', $field);
         }
     }
 
@@ -462,7 +462,7 @@ abstract class Persistence
             }
 
             throw (new Exception('Typecast parse error', 0, $e))
-                ->addMoreInfo('field', $field->shortName);
+                ->addMoreInfo('field', $field);
         }
     }
 

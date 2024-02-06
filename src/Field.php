@@ -231,14 +231,14 @@ class Field implements Expressionable
                 throw $e;
             }
 
+            if ($e->getPrevious() !== null && $e instanceof Exception && $e->getMessage() === 'Typecast save error') {
+                $e = $e->getPrevious();
+            }
+
             $messages = [];
             do {
                 $messages[] = $e->getMessage();
             } while ($e = $e->getPrevious());
-
-            if (count($messages) >= 2 && $messages[0] === 'Typecast save error') {
-                array_shift($messages);
-            }
 
             throw (new ValidationException([$this->shortName => implode(': ', $messages)], $this->issetOwner() ? $this->getOwner() : null))
                 ->addMoreInfo('field', $this);
