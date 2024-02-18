@@ -27,6 +27,8 @@ class Field implements Expressionable
         setOwner as private _setOwner;
     }
 
+    private static $genericPersistence;
+
     // {{{ Core functionality
 
     /**
@@ -101,9 +103,7 @@ class Field implements Expressionable
     {
         $persistence = $this->issetOwner() && $this->getOwner()->issetPersistence()
             ? $this->getOwner()->getPersistence()
-            : new class() extends Persistence {
-                public function __construct() {}
-            };
+            : $this->getGenericPersistence();
 
         $persistenceSetSkipNormalizeFx = \Closure::bind(static function (bool $value) use ($persistence) {
             $persistence->typecastSaveSkipNormalize = $value;
@@ -283,6 +283,15 @@ class Field implements Expressionable
         return $this;
     }
 
+    private function getGenericPersistence(): Persistence
+    {
+        if ((self::$genericPersistence ?? null) === null) {
+            self::$genericPersistence = new class() extends Persistence {};
+        }
+
+        return self::$genericPersistence;
+    }
+
     /**
      * @param mixed $value
      *
@@ -291,9 +300,7 @@ class Field implements Expressionable
     private function typecastSaveField($value, bool $allowGenericPersistence = false)
     {
         if (!$this->getOwner()->issetPersistence() && $allowGenericPersistence) {
-            $persistence = new class() extends Persistence {
-                public function __construct() {}
-            };
+            $persistence = $this->getGenericPersistence();
         } else {
             $this->getOwner()->assertHasPersistence();
             $persistence = $this->getOwner()->getPersistence();
