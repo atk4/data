@@ -217,7 +217,9 @@ abstract class Persistence
     {
         $model->assertIsModel();
 
-        $idRaw = $model->idField ? $this->typecastSaveField($model->getIdField(), $id) : null;
+        $idRaw = $model->idField
+            ? $this->typecastSaveField($model->getIdField(), $id)
+            : null;
         unset($id);
         if ($idRaw === null || (array_key_exists($model->idField, $data) && $data[$model->idField] === null)) {
             throw new Exception('Unable to update record: Model idField is not set');
@@ -261,7 +263,9 @@ abstract class Persistence
     {
         $model->assertIsModel();
 
-        $idRaw = $model->idField ? $this->typecastSaveField($model->getIdField(), $id) : null;
+        $idRaw = $model->idField
+            ? $this->typecastSaveField($model->getIdField(), $id)
+            : null;
         unset($id);
         if ($idRaw === null) {
             throw new Exception('Unable to delete record: Model idField is not set');

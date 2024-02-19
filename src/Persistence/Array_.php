@@ -308,7 +308,9 @@ class Array_ extends Persistence
     {
         $this->seedData($model);
 
-        $type = $model->idField ? $model->getIdField()->type : 'integer';
+        $type = $model->idField
+            ? $model->getIdField()->type
+            : 'integer';
 
         switch ($type) {
             case 'integer':

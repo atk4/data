@@ -1671,7 +1671,9 @@ class Model implements \IteratorAggregate
             });
         }
 
-        return $this->idField ? $entity->getId() : null;
+        return $this->idField
+            ? $entity->getId()
+            : null;
     }
 
     /**

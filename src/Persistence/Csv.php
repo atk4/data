@@ -260,7 +260,9 @@ class Csv extends Persistence
 
         $this->putLine($line);
 
-        return $model->idField ? $dataRaw[$model->idField] : null;
+        return $model->idField
+            ? $dataRaw[$model->idField]
+            : null;
     }
 
     /**
