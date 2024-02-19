@@ -63,4 +63,12 @@ class SqlExpressionField extends Field
 
         return $expr;
     }
+
+    #[\Override]
+    public function __debugInfo(): array
+    {
+        return array_merge(parent::__debugInfo(), [
+            'expr' => $this->expr,
+        ]);
+    }
 }
