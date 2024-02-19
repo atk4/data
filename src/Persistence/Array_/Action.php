@@ -297,11 +297,11 @@ class Action
     /**
      * Return all data inside array.
      *
-     * @return array<int, array<string, mixed>>
+     * @return list<array<string, mixed>>
      */
     public function getRows(): array
     {
-        return iterator_to_array($this->generator, true);
+        return iterator_to_array($this->generator, false);
     }
 
     /**

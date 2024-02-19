@@ -370,8 +370,6 @@ class Array_ extends Persistence
             }, $data);
         }
 
-        $data = array_values($data);
-
         return $data;
     }
 
