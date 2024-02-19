@@ -739,7 +739,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
     /**
      * Executes expression and return whole result-set in form of array of hashes.
      *
-     * @return array<int, array<string, string|null>>
+     * @return list<array<string, string|null>>
      */
     public function getRows(): array
     {

@@ -499,7 +499,7 @@ class Sql extends Persistence
      *
      * @param array<int, string>|null $fields
      *
-     * @return array<int, array<string, mixed>>
+     * @return list<array<string, mixed>>
      */
     public function export(Model $model, array $fields = null, bool $typecast = true): array
     {

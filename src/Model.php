@@ -1686,7 +1686,7 @@ class Model implements \IteratorAggregate
      * @param string                  $keyField Optional name of field which value we will use as array key
      * @param bool                    $typecast Should we typecast exported data
      *
-     * @return ($keyField is string ? array<mixed, array<string, mixed>> : array<int, array<string, mixed>>)
+     * @return ($keyField is string ? array<mixed, array<string, mixed>> : list<array<string, mixed>>)
      */
     public function export(array $fields = null, string $keyField = null, bool $typecast = true): array
     {
