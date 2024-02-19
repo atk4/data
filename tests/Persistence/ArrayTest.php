@@ -223,12 +223,12 @@ class ArrayTest extends TestCase
         $m->addField('surname');
 
         self::assertSame([
-            1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
+            ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
             ['id' => 2, 'name' => 'Sarah', 'surname' => 'Jones'],
         ], $m->export());
 
         self::assertSame([
-            1 => ['surname' => 'Smith'],
+            ['surname' => 'Smith'],
             ['surname' => 'Jones'],
         ], $m->export(['surname']));
     }
@@ -679,16 +679,16 @@ class ArrayTest extends TestCase
         $m->createEntity()->set('f1', 'M')->save();
 
         self::assertSame([
-            1 => ['id' => 1, 'f1' => 'A'],
+            ['id' => 1, 'f1' => 'A'],
             ['id' => 2, 'f1' => 'B'],
             ['id' => 3, 'f1' => 'C'],
             ['id' => 4, 'f1' => 'D'],
-            7 => ['id' => 7, 'f1' => 'F'],
+            ['id' => 7, 'f1' => 'F'],
             ['id' => 8, 'f1' => 'G'],
             ['id' => 9, 'f1' => 'H'],
-            99 => ['id' => 99, 'f1' => 'I'],
-            20 => ['id' => 20, 'f1' => 'J'],
-            101 => ['id' => 101, 'f1' => 'L'],
+            ['id' => 99, 'f1' => 'I'],
+            ['id' => 20, 'f1' => 'J'],
+            ['id' => 101, 'f1' => 'L'],
             ['id' => 102, 'f1' => 'M'],
         ], $m->export());
     }
@@ -750,7 +750,7 @@ class ArrayTest extends TestCase
         $m->addCondition('surname', 'Smith');
         self::assertSame(1, $m->executeCountQuery());
         self::assertSame([
-            4 => ['id' => 4, 'name' => 'Sarah', 'surname' => 'Smith'],
+            ['id' => 4, 'name' => 'Sarah', 'surname' => 'Smith'],
         ], $m->export());
         self::assertSame([
             4 => ['id' => 4, 'name' => 'Sarah', 'surname' => 'Smith'],
