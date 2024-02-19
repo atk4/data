@@ -22,9 +22,8 @@ use Atk4\Data\Persistence\Sql\Query;
  *     'salary' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
  * ];
  *
- * your resulting model will have 3 fields: first, last, salary
- *
- * but when querying it will use the original model to calculate the query, then add grouping and aggregates.
+ * Your resulting model will have 3 fields: first, last, salary, but when querying
+ * it will use the original model to calculate the query, then add grouping and aggregates.
  *
  * If you wish you can add more fields, which will be passed through:
  * $aggregate->addField('middle');
