@@ -176,11 +176,11 @@ abstract class Persistence
                 return false;
             }
 
-            $idField = $model->getField($model->idField);
+            $idField = $model->getIdField();
             $insertId = $this->typecastLoadField(
                 $idField,
                 $idField->getPersistenceName() === $model->table->idField
-                    ? $this->typecastSaveField($model->table->getField($model->table->idField), $innerInsertId)
+                    ? $this->typecastSaveField($model->table->getIdField(), $innerInsertId)
                     : $dataRaw[$idField->getPersistenceName()]
             );
 
@@ -192,7 +192,7 @@ abstract class Persistence
             return false;
         }
 
-        $id = $this->typecastLoadField($model->getField($model->idField), $idRaw);
+        $id = $this->typecastLoadField($model->getIdField(), $idRaw);
 
         return $id;
     }
@@ -217,7 +217,9 @@ abstract class Persistence
     {
         $model->assertIsModel();
 
-        $idRaw = $model->idField ? $this->typecastSaveField($model->getField($model->idField), $id) : null;
+        $idRaw = $model->idField
+            ? $this->typecastSaveField($model->getIdField(), $id)
+            : null;
         unset($id);
         if ($idRaw === null || (array_key_exists($model->idField, $data) && $data[$model->idField] === null)) {
             throw new Exception('Unable to update record: Model idField is not set');
@@ -231,7 +233,7 @@ abstract class Persistence
         }
 
         if (is_object($model->table)) {
-            $idPersistenceName = $model->getField($model->idField)->getPersistenceName();
+            $idPersistenceName = $model->getIdField()->getPersistenceName();
             $innerId = $this->typecastLoadField($model->table->getField($idPersistenceName), $idRaw);
             $innerEntity = $model->table->loadBy($idPersistenceName, $innerId);
 
@@ -261,14 +263,16 @@ abstract class Persistence
     {
         $model->assertIsModel();
 
-        $idRaw = $model->idField ? $this->typecastSaveField($model->getField($model->idField), $id) : null;
+        $idRaw = $model->idField
+            ? $this->typecastSaveField($model->getIdField(), $id)
+            : null;
         unset($id);
         if ($idRaw === null) {
             throw new Exception('Unable to delete record: Model idField is not set');
         }
 
         if (is_object($model->table)) {
-            $idPersistenceName = $model->getField($model->idField)->getPersistenceName();
+            $idPersistenceName = $model->getIdField()->getPersistenceName();
             $innerId = $this->typecastLoadField($model->table->getField($idPersistenceName), $idRaw);
             $innerEntity = $model->table->loadBy($idPersistenceName, $innerId);
 
@@ -434,7 +438,7 @@ abstract class Persistence
             }
 
             throw (new Exception('Typecast save error', 0, $e))
-                ->addMoreInfo('field', $field->shortName);
+                ->addMoreInfo('field', $field);
         }
     }
 
@@ -462,7 +466,7 @@ abstract class Persistence
             }
 
             throw (new Exception('Typecast parse error', 0, $e))
-                ->addMoreInfo('field', $field->shortName);
+                ->addMoreInfo('field', $field);
         }
     }
 

@@ -13,7 +13,7 @@ class GenericPlatformTest extends TestCase
     public function testGetName(): void
     {
         $genericPlatform = new GenericPlatform();
-        self::assertSame($genericPlatform->getName(), 'atk4_data_generic'); // @phpstan-ignore-line
+        self::assertSame('atk4_data_generic', $genericPlatform->getName()); // @phpstan-ignore-line
     }
 
     public function testInitializeDoctrineTypeMappings(): void

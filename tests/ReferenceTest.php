@@ -119,7 +119,7 @@ class ReferenceTest extends TestCase
         $order->addField('user_id', ['type' => 'integer']);
 
         $user->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
-        self::assertSame($user->getReference('Orders')->getTheirFieldName(), 'user_id');
+        self::assertSame('user_id', $user->getReference('Orders')->getTheirFieldName());
     }
 
     public function testRefTypeMismatchOneException(): void

@@ -393,16 +393,19 @@ class ExpressionTest extends TestCase
         ], $e->render());
     }
 
-    public function testVarDump(): void
+    public function testVarDumpBasic(): void
     {
         self::assertSame(
             'test',
             $this->e('test')->__debugInfo()['R']
         );
+    }
 
-        self::assertStringContainsString(
-            'Expression could not render tag',
-            $this->e(' [nosuchtag] ')->__debugInfo()['R']
+    public function testVarDumpException(): void
+    {
+        self::assertSame(
+            Exception::class . ': Expression could not render tag',
+            $this->e('test [noSuchTag] ')->__debugInfo()['R']
         );
     }
 

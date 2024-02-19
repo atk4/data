@@ -112,7 +112,8 @@ class Reference
 
     public function getOurFieldName(): string
     {
-        return $this->ourField ?? $this->getOurModel(null)->idField;
+        return $this->ourField
+            ?? $this->getOurModel(null)->idField;
     }
 
     final protected function getOurField(): Field
@@ -132,7 +133,8 @@ class Reference
 
     public function getTheirFieldName(Model $theirModel = null): string
     {
-        return $this->theirField ?? ($theirModel ?? Model::assertInstanceOf($this->model))->idField;
+        return $this->theirField
+            ?? ($theirModel ?? Model::assertInstanceOf($this->model))->idField;
     }
 
     /**

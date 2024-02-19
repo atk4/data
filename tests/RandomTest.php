@@ -489,6 +489,47 @@ class RandomTest extends TestCase
         ], $m->export());
     }
 
+    public function testVarDumpModel(): void
+    {
+        $m = new Model($this->db, ['table' => 'user']);
+
+        $dump = $m->__debugInfo();
+        self::assertSame('user', $dump['table']);
+        self::assertArrayNotHasKey('entityId', $dump);
+    }
+
+    public function testVarDumpEntityBasic(): void
+    {
+        $m = new Model($this->db, ['table' => 'user']);
+        $entity = $m->createEntity();
+
+        $dump = $entity->__debugInfo();
+        self::assertSame('user', $dump['model']['table']);
+        self::assertArrayNotHasKey('table', $dump);
+        self::assertNull($dump['entityId']);
+
+        $entity->setId(10);
+        self::assertSame(10, $entity->__debugInfo()['entityId']);
+
+        $entity->setId(null);
+        self::assertSame('unloaded (10)', $entity->__debugInfo()['entityId']);
+    }
+
+    public function testVarDumpEntityWithObjectId(): void
+    {
+        $m = new Model($this->db, ['table' => 'user']);
+        $m->getIdField()->type = 'datetime';
+        $entity = $m->createEntity();
+
+        self::assertNull($entity->__debugInfo()['entityId']);
+
+        $entity->setId(new \DateTime());
+        self::assertSame($entity->getId(), $entity->__debugInfo()['entityId']);
+
+        $entity->setId(null);
+        self::assertSame('unloaded (DateTime)', $entity->__debugInfo()['entityId']);
+    }
+
     public function testNoWriteActionInsert(): void
     {
         $this->expectException(Exception::class);

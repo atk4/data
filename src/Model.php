@@ -144,7 +144,7 @@ class Model implements \IteratorAggregate
      *
      * @var array<string, mixed>
      */
-    private array $data = [];
+    private array $data;
 
     /**
      * After loading an entity the data will be stored in
@@ -157,7 +157,7 @@ class Model implements \IteratorAggregate
      *
      * @var array<string, mixed>
      */
-    private array $dirty = [];
+    private array $dirty;
 
     /**
      * Setting model as readOnly will protect you from accidentally
@@ -234,11 +234,6 @@ class Model implements \IteratorAggregate
      *   or
      * $m = new Model();
      * $m->setPersistence($db);
-     *
-     * The second use actually calls add() but is preferred usage because:
-     *  - it's shorter
-     *  - type hinting will work;
-     *  - you can specify string for a table
      *
      * @param array<string, mixed> $defaults
      */
@@ -373,6 +368,9 @@ class Model implements \IteratorAggregate
         foreach (array_keys($this->getModelOnlyProperties()) as $name) {
             unset($entity->{$name});
         }
+
+        $entity->data = [];
+        $entity->dirty = [];
 
         return $entity;
     }
@@ -604,6 +602,21 @@ class Model implements \IteratorAggregate
             throw (new Exception('Field is not defined'))
                 ->addMoreInfo('model', $this)
                 ->addMoreInfo('field', $name);
+        }
+    }
+
+    public function getIdField(): Field
+    {
+        if ($this->isEntity()) {
+            return $this->getModel()->getIdField();
+        }
+
+        try {
+            return $this->getField($this->idField);
+        } catch (\Throwable $e) {
+            $this->assertHasIdField();
+
+            throw $e;
         }
     }
 
@@ -863,7 +876,7 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Return value of $model->get($model->titleField). If not set, returns id value.
+     * Return value of $model->get($model->titleField). If not set, returns ID value.
      *
      * @return mixed
      */
@@ -885,7 +898,9 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsModel();
 
-        $field = $this->titleField && $this->hasField($this->titleField) ? $this->titleField : $this->idField;
+        $field = $this->titleField && $this->hasField($this->titleField)
+            ? $this->titleField
+            : $this->idField;
 
         return array_map(static function (array $row) use ($field) {
             return $row[$field];
@@ -1656,7 +1671,9 @@ class Model implements \IteratorAggregate
             });
         }
 
-        return $this->idField ? $entity->getId() : null;
+        return $this->idField
+            ? $entity->getId()
+            : null;
     }
 
     /**
@@ -1686,7 +1703,7 @@ class Model implements \IteratorAggregate
      * @param string                  $keyField Optional name of field which value we will use as array key
      * @param bool                    $typecast Should we typecast exported data
      *
-     * @return ($keyField is string ? array<mixed, array<string, mixed>> : array<int, array<string, mixed>>)
+     * @return ($keyField is string ? array<mixed, array<string, mixed>> : list<array<string, mixed>>)
      */
     public function export(array $fields = null, string $keyField = null, bool $typecast = true): array
     {
@@ -2050,10 +2067,12 @@ class Model implements \IteratorAggregate
     {
         if ($this->isEntity()) {
             return [
-                'entityId' => $this->idField && $this->hasField($this->idField)
-                    ? ($this->_entityId !== null ? $this->_entityId . ($this->getId() !== null ? '' : ' (unloaded)') : 'null')
-                    : 'no id field',
                 'model' => $this->getModel()->__debugInfo(),
+                'entityId' => $this->idField && $this->hasField($this->idField)
+                    ? ($this->_entityId === null || $this->getId() !== null
+                        ? $this->getId()
+                        : 'unloaded (' . (is_object($this->_entityId) ? get_class($this->_entityId) : $this->_entityId) . ')')
+                    : 'no id field',
             ];
         }
 

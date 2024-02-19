@@ -149,7 +149,7 @@ class Static_ extends Array_
             }, null, Model::class)();
 
             if (isset($this->fieldsForModel[$model->idField])) {
-                $model->getField($model->idField)->type = $this->fieldsForModel[$model->idField]['type'];
+                $model->getIdField()->type = $this->fieldsForModel[$model->idField]['type'];
             }
         }
         $this->addMissingFieldsToModel($model);
