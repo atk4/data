@@ -41,7 +41,7 @@ class Migrator
     /** @var Table */
     public $table;
 
-    /** @var array<int, string> */
+    /** @var list<string> */
     private $createdTableNames = [];
 
     /**
@@ -124,7 +124,7 @@ class Migrator
     }
 
     /**
-     * @return array<int, string>
+     * @return list<string>
      */
     public function getCreatedTableNames(): array
     {
@@ -163,7 +163,7 @@ class Migrator
 
         $schemaManager->dropTable($this->table->getQuotedName($this->getDatabasePlatform()));
 
-        $this->createdTableNames = array_diff($this->createdTableNames, [$this->table->getName()]);
+        $this->createdTableNames = array_values(array_diff($this->createdTableNames, [$this->table->getName()]));
 
         return $this;
     }
@@ -175,7 +175,7 @@ class Migrator
         } catch (TableNotFoundException $e) {
         }
 
-        $this->createdTableNames = array_diff($this->createdTableNames, [$this->table->getName()]);
+        $this->createdTableNames = array_values(array_diff($this->createdTableNames, [$this->table->getName()]));
 
         // OracleSchemaManager::dropTable() called in self::drop() above tries to drop AI,
         // but if AI trigger is not present, AI sequence is not dropped

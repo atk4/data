@@ -23,7 +23,7 @@ abstract class TestCase extends BaseTestCase
     /** @var bool If true, SQL queries are dumped. */
     public $debug = false;
 
-    /** @var array<int, Migrator> */
+    /** @var list<Migrator> */
     private array $createdMigrators = [];
 
     /**
@@ -360,7 +360,7 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * @param array<int, string>|null $tableNames
+     * @param list<string>|null $tableNames
      *
      * @return array<string, array<int, array<string, mixed>>>
      */
