@@ -154,6 +154,17 @@ class ExpressionSqlTest extends TestCase
         self::assertSame('Sue', $mm->get('name'));
     }
 
+    public function testVarDump(): void
+    {
+        $m = new Model($this->db, ['table' => false]);
+        $m->addExpression('x', ['expr' => '2 + 3']);
+
+        self::assertSame(
+            '2 + 3',
+            $m->getField('x')->__debugInfo()['expr']
+        );
+    }
+
     public function testReloading(): void
     {
         $this->setDb($dbData = [
