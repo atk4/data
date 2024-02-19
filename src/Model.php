@@ -144,7 +144,7 @@ class Model implements \IteratorAggregate
      *
      * @var array<string, mixed>
      */
-    private array $data = [];
+    private array $data;
 
     /**
      * After loading an entity the data will be stored in
@@ -157,7 +157,7 @@ class Model implements \IteratorAggregate
      *
      * @var array<string, mixed>
      */
-    private array $dirty = [];
+    private array $dirty;
 
     /**
      * Setting model as readOnly will protect you from accidentally
@@ -373,6 +373,9 @@ class Model implements \IteratorAggregate
         foreach (array_keys($this->getModelOnlyProperties()) as $name) {
             unset($entity->{$name});
         }
+
+        $entity->data = [];
+        $entity->dirty = [];
 
         return $entity;
     }
