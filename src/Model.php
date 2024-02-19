@@ -235,11 +235,6 @@ class Model implements \IteratorAggregate
      * $m = new Model();
      * $m->setPersistence($db);
      *
-     * The second use actually calls add() but is preferred usage because:
-     *  - it's shorter
-     *  - type hinting will work;
-     *  - you can specify string for a table
-     *
      * @param array<string, mixed> $defaults
      */
     public function __construct(Persistence $persistence = null, array $defaults = [])
