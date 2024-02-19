@@ -241,9 +241,7 @@ class Array_ extends Persistence
 
             $idRaw = reset($rowsRaw)[$model->idField];
 
-            $row = $this->tryLoad($model, $idRaw);
-
-            return $row;
+            return $this->tryLoad($model, $idRaw);
         }
 
         if (is_object($model->table)) {
