@@ -27,7 +27,7 @@ class Field implements Expressionable
         setOwner as private _setOwner;
     }
 
-    private static $genericPersistence;
+    private static Persistence $genericPersistence;
 
     // {{{ Core functionality
 
