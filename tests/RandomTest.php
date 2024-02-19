@@ -506,7 +506,7 @@ class RandomTest extends TestCase
         $dump = $entity->__debugInfo();
         self::assertSame('user', $dump['model']['table']);
         self::assertArrayNotHasKey('table', $dump);
-        self::assertSame(null, $dump['entityId']);
+        self::assertNull($dump['entityId']);
 
         $entity->setId(10);
         self::assertSame(10, $entity->__debugInfo()['entityId']);
@@ -520,6 +520,8 @@ class RandomTest extends TestCase
         $m = new Model($this->db, ['table' => 'user']);
         $m->getIdField()->type = 'datetime';
         $entity = $m->createEntity();
+
+        self::assertNull($entity->__debugInfo()['entityId']);
 
         $entity->setId(new \DateTime());
         self::assertSame($entity->getId(), $entity->__debugInfo()['entityId']);
