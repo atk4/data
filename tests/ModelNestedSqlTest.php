@@ -12,7 +12,7 @@ use Atk4\Data\Schema\TestCase;
 
 class ModelNestedSqlTest extends TestCase
 {
-    /** @var array<array{string, string, 2?: array<int, mixed>}> */
+    /** @var list<array{string, string, 2?: list<mixed>}> */
     public array $hookLog = [];
 
     #[\Override]

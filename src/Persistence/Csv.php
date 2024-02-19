@@ -98,7 +98,7 @@ class Csv extends Persistence
     /**
      * Returns one line of CSV file as array.
      *
-     * @return ($reindexWithHeader is true ? array<string, string> : array<int, string>)|null
+     * @return ($reindexWithHeader is true ? array<string, string> : list<string>)|null
      */
     public function getLine(bool $reindexWithHeader): ?array
     {

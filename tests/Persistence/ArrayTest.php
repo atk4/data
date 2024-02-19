@@ -517,9 +517,9 @@ class ArrayTest extends TestCase
     /**
      * Returns exported data, but will use get() instead of export().
      *
-     * @param array<int, string>|null $fields
+     * @param list<string>|null $fields
      *
-     * @return array<int, array<string, mixed>>
+     * @return list<array<string, mixed>>
      */
     protected function _getRows(Model $model, array $fields = null): array
     {

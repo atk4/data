@@ -77,7 +77,7 @@ class CsvTest extends TestCase
     }
 
     /**
-     * @param array<int, array<string, string>> $data
+     * @param list<array<string, string>> $data
      */
     protected function setDb(array $data): void
     {
@@ -91,7 +91,7 @@ class CsvTest extends TestCase
     }
 
     /**
-     * @return array<int, array<string, string>>
+     * @return list<array<string, string>>
      */
     protected function getDb(): array
     {
