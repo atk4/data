@@ -605,6 +605,21 @@ class Model implements \IteratorAggregate
         }
     }
 
+    public function getIdField(): Field
+    {
+        if ($this->isEntity()) {
+            return $this->getModel()->getIdField();
+        }
+
+        try {
+            return $this->getField($this->idField);
+        } catch (\Throwable $e) {
+            $this->assertHasIdField();
+
+            throw $e;
+        }
+    }
+
     /**
      * Sets which fields we will select.
      *
@@ -861,7 +876,7 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Return value of $model->get($model->titleField). If not set, returns id value.
+     * Return value of $model->get($model->titleField). If not set, returns ID value.
      *
      * @return mixed
      */
@@ -883,7 +898,9 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsModel();
 
-        $field = $this->titleField && $this->hasField($this->titleField) ? $this->titleField : $this->idField;
+        $field = $this->titleField && $this->hasField($this->titleField)
+            ? $this->titleField
+            : $this->idField;
 
         return array_map(static function (array $row) use ($field) {
             return $row[$field];
