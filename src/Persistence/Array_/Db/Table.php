@@ -100,7 +100,7 @@ class Table
     }
 
     /**
-     * @return array<int, string>
+     * @return list<string>
      */
     public function getColumnNames(): array
     {

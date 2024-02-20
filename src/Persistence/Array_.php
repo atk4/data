@@ -241,9 +241,7 @@ class Array_ extends Persistence
 
             $idRaw = reset($rowsRaw)[$model->idField];
 
-            $row = $this->tryLoad($model, $idRaw);
-
-            return $row;
+            return $this->tryLoad($model, $idRaw);
         }
 
         if (is_object($model->table)) {
@@ -360,7 +358,7 @@ class Array_ extends Persistence
      *
      * @param array<int, string>|null $fields
      *
-     * @return array<int, array<string, mixed>>
+     * @return list<array<string, mixed>>
      */
     public function export(Model $model, array $fields = null, bool $typecast = true): array
     {

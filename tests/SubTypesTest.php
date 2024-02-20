@@ -58,7 +58,7 @@ class StAccount extends Model
     }
 
     /**
-     * @return array<int, Model>
+     * @return array{Model, Model}
      */
     public function transferTo(self $account, float $amount): array
     {

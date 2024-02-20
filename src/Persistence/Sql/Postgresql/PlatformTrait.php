@@ -13,7 +13,7 @@ trait PlatformTrait
     // with custom case insensitive types
 
     /**
-     * @return array<int, string>
+     * @return list<string>
      */
     private function getCreateCaseInsensitiveDomainsSql(): array
     {
@@ -84,7 +84,7 @@ trait PlatformTrait
     }
 
     /**
-     * @return array<int, string>
+     * @return list<string>
      */
     protected function getCreateAutoincrementSql(Table $table, Column $pkColumn): array
     {

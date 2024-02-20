@@ -11,7 +11,7 @@ use Atk4\Data\Schema\TestCase;
 
 class ModelNestedArrayTest extends TestCase
 {
-    /** @var array<array{string, string, 2?: array<int, mixed>}> */
+    /** @var list<array{string, string, 2?: list<mixed>}> */
     public array $hookLog = [];
 
     #[\Override]
@@ -110,7 +110,7 @@ class ModelNestedArrayTest extends TestCase
         $m = $this->createTestModel();
 
         self::assertSameExportUnordered([
-            1 => ['name' => 'John', 'birthday' => new \DateTime('1980-2-1 UTC')],
+            ['name' => 'John', 'birthday' => new \DateTime('1980-2-1 UTC')],
             ['name' => 'Sue', 'birthday' => new \DateTime('2005-4-3 UTC')],
         ], $m->export());
 
@@ -152,9 +152,9 @@ class ModelNestedArrayTest extends TestCase
         self::assertSameExportUnordered([[new \DateTime('2000-6-1 UTC')]], [[$entity->getId()]]);
 
         self::assertSameExportUnordered([
-            1 => ['name' => 'John', 'birthday' => new \DateTime('1980-2-1 UTC')],
+            ['name' => 'John', 'birthday' => new \DateTime('1980-2-1 UTC')],
             ['name' => 'Sue', 'birthday' => new \DateTime('2005-4-3 UTC')],
-            4 => ['name' => 'Karl', 'birthday' => new \DateTime('2000-6-1 UTC')],
+            ['name' => 'Karl', 'birthday' => new \DateTime('2000-6-1 UTC')],
         ], $m->export());
     }
 
@@ -202,7 +202,7 @@ class ModelNestedArrayTest extends TestCase
         ], $this->hookLog);
 
         self::assertSameExportUnordered([
-            1 => ['name' => 'John', 'birthday' => new \DateTime('1980-2-1 UTC')],
+            ['name' => 'John', 'birthday' => new \DateTime('1980-2-1 UTC')],
             ['name' => 'Susan', 'birthday' => new \DateTime('2005-4-3 UTC')],
         ], $m->export());
     }
@@ -234,7 +234,7 @@ class ModelNestedArrayTest extends TestCase
         ], $this->hookLog);
 
         self::assertSameExportUnordered([
-            1 => ['name' => 'John', 'birthday' => new \DateTime('1980-2-1 UTC')],
+            ['name' => 'John', 'birthday' => new \DateTime('1980-2-1 UTC')],
         ], $m->export());
     }
 }

@@ -141,7 +141,9 @@ class ValidationTest extends TestCase
             $this->expectException(ValidationException::class);
             $m->save();
         } catch (ValidationException $e) {
-            self::assertSame('No sharp objects allowed', $e->errors['name']);
+            self::assertSame([
+                'name' => 'No sharp objects allowed',
+            ], $e->errors);
 
             throw $e;
         }
@@ -166,7 +168,10 @@ class ValidationTest extends TestCase
             $this->expectException(ValidationException::class);
             $m->save();
         } catch (ValidationException $e) {
-            self::assertCount(2, $e->errors);
+            self::assertSame([
+                'name' => 'Snakes are not allowed on this plane',
+                'domain' => 'This domain is reserved for examples only',
+            ], $e->errors);
 
             throw $e;
         }
