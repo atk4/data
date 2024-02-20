@@ -50,14 +50,10 @@ class SmboTransferTest extends TestCase
         self::assertSame(100.0, $boi->reload()->get('balance'));
 
         $t = new Transfer($this->db);
-        $data = $t->export(['id', 'transfer_document_id']);
-        usort($data, static function ($e1, $e2) {
-            return $e1['id'] < $e2['id'] ? -1 : 1;
-        });
-        self::assertSame([
+        self::assertSameExportUnordered([
             ['id' => 1, 'transfer_document_id' => 2],
             ['id' => 2, 'transfer_document_id' => 1],
-        ], $data);
+        ], $t->export(['id', 'transfer_document_id']));
     }
 
     public function testRef(): void

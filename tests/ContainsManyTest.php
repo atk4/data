@@ -77,7 +77,7 @@ class ContainsManyTest extends TestCase
         // now let's add some lines
         $l = $i->lines;
         $rows = [
-            1 => [
+            [
                 $l->fieldName()->id => 1,
                 $l->fieldName()->vat_rate_id => 1,
                 $l->fieldName()->price => 10,
@@ -125,7 +125,7 @@ class ContainsManyTest extends TestCase
                 $l->fieldName()->add_date => new \DateTime('2019-01-01'),
             ]);
         $rows = [
-            1 => [
+            [
                 $l->fieldName()->id => 1,
                 $l->fieldName()->vat_rate_id => 1,
                 $l->fieldName()->price => 10,
@@ -133,7 +133,7 @@ class ContainsManyTest extends TestCase
                 $l->fieldName()->discounts => null,
                 $l->fieldName()->add_date => new \DateTime('2019-01-01'),
             ],
-            3 => [
+            [
                 $l->fieldName()->id => 3,
                 $l->fieldName()->vat_rate_id => 1,
                 $l->fieldName()->price => 40,
@@ -215,7 +215,7 @@ class ContainsManyTest extends TestCase
 
         // ok, so now let's test
         self::assertSameExportUnordered([
-            1 => [
+            [
                 $l->discounts->fieldName()->id => 1,
                 $l->discounts->fieldName()->percent => 5,
                 $l->discounts->fieldName()->valid_till => new \DateTime('2019-07-15'),

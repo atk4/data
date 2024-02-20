@@ -458,35 +458,18 @@ class QueryTest extends TestCase
         );
     }
 
-    public function testVarDump(): void
+    public function testVarDumpBasic(): void
     {
         self::assertMatchesRegularExpression(
-            '~select\s+\*\s+from\s*"user"~',
+            '~^select\s+\*\s+from\s*"user"$~',
             $this->q()->table('user')->__debugInfo()['R']
         );
     }
 
-    public function testVarDump2(): void
+    public function testVarDumpException(): void
     {
-        self::assertStringContainsString(
-            'Expression could not render tag',
-            $this->e('Hello [world]')->__debugInfo()['R']
-        );
-    }
-
-    public function testVarDump3(): void
-    {
-        self::assertStringContainsString(
-            'Hello \'php\'',
-            $this->e('Hello [world]', ['world' => 'php'])->__debugInfo()['R']
-        );
-    }
-
-    public function testVarDump4(): void
-    {
-        // should throw exception "Table cannot be Query in UPDATE, INSERT etc. query modes"
-        self::assertStringContainsString(
-            'Table cannot be Query',
+        self::assertSame(
+            Exception::class . ': Table cannot be Query in UPDATE, INSERT etc. query modes',
             $this->q()
                 ->mode('update')
                 ->table($this->q()->table('test'), 'foo')->__debugInfo()['R']
@@ -760,6 +743,15 @@ class QueryTest extends TestCase
             'where "name" not like :a',
             $this->q('[where]')->where('name', 'not like', 'foo')->render()[0]
         );
+    }
+
+    public function testWhereInWithNullException(): void
+    {
+        $q = $this->q('[where]')->where('x', 'in', ['a', null, 'b']);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Null value in IN operator is not supported');
+        $q->render();
     }
 
     /**

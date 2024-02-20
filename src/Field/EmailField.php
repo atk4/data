@@ -57,7 +57,7 @@ class EmailField extends Field
     }
 
     /**
-     * @param array<int, string> $types
+     * @param list<string> $types
      */
     private function hasAnyDnsRecord(string $domain, array $types = ['MX', 'A', 'AAAA', 'CNAME']): bool
     {

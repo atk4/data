@@ -100,7 +100,7 @@ class Table
     }
 
     /**
-     * @return array<int, string>
+     * @return list<string>
      */
     public function getColumnNames(): array
     {
@@ -190,7 +190,7 @@ class Table
     public function getRowById(Model $model, $idRaw): ?Row
     {
         foreach ($this->getRows() as $row) {
-            if ($row->getValue($model->getField($model->idField)->getPersistenceName()) === $idRaw) {
+            if ($row->getValue($model->getIdField()->getPersistenceName()) === $idRaw) {
                 return $row;
             }
         }

@@ -9,6 +9,7 @@ use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
+use PHPUnit\Framework\ExpectationFailedException;
 
 class TestCaseTest extends TestCase
 {
@@ -138,6 +139,54 @@ class TestCaseTest extends TestCase
                 ? str_replace('(\'Ewa\', 1, 1.0, 1, NULL)', '(N\'Ewa\', 1, 1.0, 1, NULL)', $output)
                 : $output
         );
+    }
+
+    /**
+     * @param int<1, 12> $month
+     *
+     * @return array<mixed>
+     */
+    private function createAssertSameExportUnorderedTestRow(int $month): array
+    {
+        return [1, 'foo' => 'str', new \DateTime('2000-' . str_pad((string) $month, 2, '0', \STR_PAD_LEFT) . '-20 00:00:00.5')];
+    }
+
+    public function testAssertSameExportUnorderedList(): void
+    {
+        self::assertSameExportUnordered([
+            $this->createAssertSameExportUnorderedTestRow(1),
+            $this->createAssertSameExportUnorderedTestRow(2),
+        ], [
+            $this->createAssertSameExportUnorderedTestRow(2),
+            $this->createAssertSameExportUnorderedTestRow(1),
+        ]);
+
+        $this->expectException(ExpectationFailedException::class);
+        $this->expectExceptionMessage('Failed asserting that two arrays are identical.');
+        self::assertSameExportUnordered([
+            $this->createAssertSameExportUnorderedTestRow(1),
+        ], [
+            $this->createAssertSameExportUnorderedTestRow(2),
+        ]);
+    }
+
+    public function testAssertSameExportUnorderedNonList(): void
+    {
+        self::assertSameExportUnordered([
+            1 => $this->createAssertSameExportUnorderedTestRow(1),
+            2 => $this->createAssertSameExportUnorderedTestRow(2),
+        ], [
+            2 => $this->createAssertSameExportUnorderedTestRow(2),
+            1 => $this->createAssertSameExportUnorderedTestRow(1),
+        ]);
+
+        $this->expectException(ExpectationFailedException::class);
+        $this->expectExceptionMessage('Failed asserting that two arrays are identical.');
+        self::assertSameExportUnordered([
+            1 => $this->createAssertSameExportUnorderedTestRow(1),
+        ], [
+            2 => $this->createAssertSameExportUnorderedTestRow(1),
+        ]);
     }
 
     public function testGetSetDropDb(): void

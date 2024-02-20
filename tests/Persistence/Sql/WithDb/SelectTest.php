@@ -232,7 +232,7 @@ class SelectTest extends TestCase
         $q = $this->q('employee')->field('Sqlite must use backticks for identifier escape');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Dsql execute error');
+        $this->expectExceptionMessage('An exception occurred while executing a query: ');
         $q->executeStatement();
     }
 
@@ -456,7 +456,7 @@ class SelectTest extends TestCase
         $q = $this->q('non_existing_table')->field('non_existing_field');
 
         $this->expectException(ExecuteException::class);
-        $this->expectExceptionMessage('Dsql execute error');
+        $this->expectExceptionMessage('An exception occurred while executing a query: ');
         try {
             $q->getOne();
         } catch (ExecuteException $e) {
@@ -616,6 +616,7 @@ class SelectTest extends TestCase
 
         // TODO workaround SQLite to be consistent with other databases
         // https://stackoverflow.com/questions/27947712/sqlite-repeats-primary-key-autoincrement-value-after-rollback
+        // https://github.com/atk4/data/issues/1162
         if (!$this->getDatabasePlatform() instanceof SQLitePlatform) {
             self::assertSame(103, $getLastAiFx());
             self::assertSame($expectedRows, $m->export());

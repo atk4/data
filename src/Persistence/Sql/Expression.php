@@ -643,13 +643,8 @@ abstract class Expression implements Expressionable, \ArrayAccess
             }
             $errorInfo = $firstException instanceof \PDOException ? $firstException->errorInfo : null;
 
-            $eNew = (new ExecuteException('Dsql execute error', $errorInfo[1] ?? $e->getCode(), $e));
-            if ($errorInfo !== null && $errorInfo !== []) {
-                $eNew->addMoreInfo('error', $errorInfo[2] ?? 'n/a (' . $errorInfo[0] . ')');
-            }
-            $eNew->addMoreInfo('query', $this->getDebugQuery());
-
-            throw $eNew;
+            throw (new ExecuteException($e->getMessage(), $errorInfo[1] ?? $e->getCode(), $e))
+                ->addMoreInfo('query', $this->getDebugQuery());
         }
     }
 
@@ -744,7 +739,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
     /**
      * Executes expression and return whole result-set in form of array of hashes.
      *
-     * @return array<int, array<string, string|null>>
+     * @return list<array<string, string|null>>
      */
     public function getRows(): array
     {

@@ -13,7 +13,9 @@ class DeepCopyException extends Exception
      */
     public function addDepth(string $prefix)
     {
-        $this->addMoreInfo('depth', $prefix . ':' . $this->getParams()['depth']);
+        $innerDepth = $this->getParams()['depth'] ?? null;
+
+        $this->addMoreInfo('depth', $prefix . ($innerDepth === null ? '' : ' -> ' . $innerDepth));
 
         return $this;
     }

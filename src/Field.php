@@ -27,6 +27,8 @@ class Field implements Expressionable
         setOwner as private _setOwner;
     }
 
+    private static Persistence $genericPersistence;
+
     // {{{ Core functionality
 
     /**
@@ -101,9 +103,7 @@ class Field implements Expressionable
     {
         $persistence = $this->issetOwner() && $this->getOwner()->issetPersistence()
             ? $this->getOwner()->getPersistence()
-            : new class() extends Persistence {
-                public function __construct() {}
-            };
+            : $this->getGenericPersistence();
 
         $persistenceSetSkipNormalizeFx = \Closure::bind(static function (bool $value) use ($persistence) {
             $persistence->typecastSaveSkipNormalize = $value;
@@ -231,14 +231,14 @@ class Field implements Expressionable
                 throw $e;
             }
 
+            if ($e->getPrevious() !== null && $e instanceof Exception && $e->getMessage() === 'Typecast save error') {
+                $e = $e->getPrevious();
+            }
+
             $messages = [];
             do {
                 $messages[] = $e->getMessage();
             } while ($e = $e->getPrevious());
-
-            if (count($messages) >= 2 && $messages[0] === 'Typecast save error') {
-                array_shift($messages);
-            }
 
             throw (new ValidationException([$this->shortName => implode(': ', $messages)], $this->issetOwner() ? $this->getOwner() : null))
                 ->addMoreInfo('field', $this);
@@ -283,6 +283,15 @@ class Field implements Expressionable
         return $this;
     }
 
+    private function getGenericPersistence(): Persistence
+    {
+        if ((self::$genericPersistence ?? null) === null) {
+            self::$genericPersistence = new class() extends Persistence {};
+        }
+
+        return self::$genericPersistence;
+    }
+
     /**
      * @param mixed $value
      *
@@ -291,9 +300,7 @@ class Field implements Expressionable
     private function typecastSaveField($value, bool $allowGenericPersistence = false)
     {
         if (!$this->getOwner()->issetPersistence() && $allowGenericPersistence) {
-            $persistence = new class() extends Persistence {
-                public function __construct() {}
-            };
+            $persistence = $this->getGenericPersistence();
         } else {
             $this->getOwner()->assertHasPersistence();
             $persistence = $this->getOwner()->getPersistence();
@@ -388,9 +395,9 @@ class Field implements Expressionable
         if ($value instanceof Persistence\Array_\Action) { // needed to pass hintable tests
             $v = $value;
         } elseif (is_array($value)) {
-            $v = array_map(static fn ($value) => $typecastField->typecastSaveField($value), $value);
+            $v = array_map(static fn ($value) => $value === null ? null : $typecastField->typecastSaveField($value), $value);
         } else {
-            $v = $typecastField->typecastSaveField($value);
+            $v = $value === null ? null : $typecastField->typecastSaveField($value);
         }
 
         return [$this, $operator, $v];

@@ -293,9 +293,9 @@ class Sql extends Persistence
 
         // add entity ID to scope to allow easy traversal
         if ($model->isEntity() && $model->idField && $model->getId() !== null) {
-            $query->group($model->getField($model->idField));
+            $query->group($model->getIdField());
             $this->fixMssqlOracleMissingFieldsInGroup($model, $query);
-            $query->having($model->getField($model->idField), $model->getId());
+            $query->having($model->getIdField(), $model->getId());
         }
     }
 
@@ -305,7 +305,7 @@ class Sql extends Persistence
                 || $this->getDatabasePlatform() instanceof OraclePlatform) {
             $isIdFieldInGroup = false;
             foreach ($query->args['group'] ?? [] as $v) {
-                if ($model->idField && $v === $model->getField($model->idField)) {
+                if ($model->idField && $v === $model->getIdField()) {
                     $isIdFieldInGroup = true;
 
                     break;
@@ -396,8 +396,8 @@ class Sql extends Persistence
                 $this->fixMssqlOracleMissingFieldsInGroup($model, $query);
 
                 if ($model->isEntity() && $model->isLoaded()) {
-                    $idRaw = $this->typecastSaveField($model->getField($model->idField), $model->getId());
-                    $query->where($model->getField($model->idField), $idRaw);
+                    $idRaw = $this->typecastSaveField($model->getIdField(), $model->getId());
+                    $query->where($model->getIdField(), $idRaw);
                 }
 
                 return $query;
@@ -456,8 +456,8 @@ class Sql extends Persistence
                     ->addMoreInfo('id', $id);
             }
 
-            $idRaw = $this->typecastSaveField($model->getField($model->idField), $id);
-            $query->where($model->getField($model->idField), $idRaw);
+            $idRaw = $this->typecastSaveField($model->getIdField(), $id);
+            $query->where($model->getIdField(), $idRaw);
         }
         $query->limit(
             min($id === self::ID_LOAD_ANY ? 1 : 2, $query->args['limit']['cnt'] ?? \PHP_INT_MAX),
@@ -499,7 +499,7 @@ class Sql extends Persistence
      *
      * @param array<int, string>|null $fields
      *
-     * @return array<int, array<string, mixed>>
+     * @return list<array<string, mixed>>
      */
     public function export(Model $model, array $fields = null, bool $typecast = true): array
     {
@@ -568,7 +568,7 @@ class Sql extends Persistence
         $this->assertExactlyOneRecordUpdated($model, null, $c, 'insert');
 
         if ($model->idField) {
-            $idRaw = $dataRaw[$model->getField($model->idField)->getPersistenceName()] ?? null;
+            $idRaw = $dataRaw[$model->getIdField()->getPersistenceName()] ?? null;
             if ($idRaw === null) {
                 $idRaw = $this->lastInsertId($model);
             }
@@ -592,7 +592,7 @@ class Sql extends Persistence
 
         // only apply fields that has been modified
         $update->setMulti($dataRaw);
-        $update->where($model->getField($model->idField)->getPersistenceName(), $idRaw);
+        $update->where($model->getIdField()->getPersistenceName(), $idRaw);
 
         $model->hook(self::HOOK_BEFORE_UPDATE_QUERY, [$update]);
 
@@ -614,7 +614,7 @@ class Sql extends Persistence
     {
         $delete = $this->initQuery($model);
         $delete->mode('delete');
-        $delete->where($model->getField($model->idField)->getPersistenceName(), $idRaw);
+        $delete->where($model->getIdField()->getPersistenceName(), $idRaw);
         $model->hook(self::HOOK_BEFORE_DELETE_QUERY, [$delete]);
 
         try {
@@ -707,7 +707,7 @@ class Sql extends Persistence
         if ($this->getConnection()->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             $sequenceName = $this->getConnection()->getDatabasePlatform()->getIdentitySequenceName(
                 $model->table,
-                $model->getField($model->idField)->getPersistenceName()
+                $model->getIdField()->getPersistenceName()
             );
         } elseif ($this->getConnection()->getDatabasePlatform() instanceof OraclePlatform) {
             $sequenceName = $model->table . '_SEQ';

@@ -236,7 +236,7 @@ class Action
     /**
      * Applies sorting on Iterator.
      *
-     * @param array<int, array{string, 'asc'|'desc'}> $fields
+     * @param list<array{string, 'asc'|'desc'}> $fields
      *
      * @return $this
      */
@@ -244,19 +244,15 @@ class Action
     {
         $data = $this->getRows();
 
-        // prepare arguments for array_multisort()
-        $args = [];
+        $multisortArgs = [];
         foreach ($fields as [$field, $direction]) {
-            $args[] = array_column($data, $field);
-            $args[] = strtolower($direction) === 'desc' ? \SORT_DESC : \SORT_ASC;
+            $multisortArgs[] = array_column($data, $field);
+            $multisortArgs[] = strtolower($direction) === 'desc' ? \SORT_DESC : \SORT_ASC;
         }
-        $args[] = &$data;
 
-        // call sorting
-        array_multisort(...$args);
+        array_multisort(...$multisortArgs, ...[&$data]);
 
-        // put data back in generator
-        $this->generator = new \ArrayIterator(array_pop($args));
+        $this->generator = new \ArrayIterator($data);
 
         return $this;
     }
@@ -301,11 +297,11 @@ class Action
     /**
      * Return all data inside array.
      *
-     * @return array<int, array<string, mixed>>
+     * @return list<array<string, mixed>>
      */
     public function getRows(): array
     {
-        return iterator_to_array($this->generator, true);
+        return iterator_to_array($this->generator, false);
     }
 
     /**

@@ -122,7 +122,7 @@ class Array_ extends Persistence
      */
     private function assertNoIdMismatch(Model $model, $idFromRow, $id): void
     {
-        if ($idFromRow !== null && !$model->getField($model->idField)->compare($idFromRow, $id)) {
+        if ($idFromRow !== null && !$model->getIdField()->compare($idFromRow, $id)) {
             throw (new Exception('Row contains ID column, but it does not match the row ID'))
                 ->addMoreInfo('idFromKey', $id)
                 ->addMoreInfo('idFromData', $idFromRow);
@@ -136,7 +136,7 @@ class Array_ extends Persistence
     private function saveRow(Model $model, array $rowData, $id): void
     {
         if ($model->idField) {
-            $idField = $model->getField($model->idField);
+            $idField = $model->getIdField();
             $id = $idField->normalize($id);
             $idColumnName = $idField->getPersistenceName();
             if (array_key_exists($idColumnName, $rowData)) {
@@ -241,15 +241,13 @@ class Array_ extends Persistence
 
             $idRaw = reset($rowsRaw)[$model->idField];
 
-            $row = $this->tryLoad($model, $idRaw);
-
-            return $row;
+            return $this->tryLoad($model, $idRaw);
         }
 
         if (is_object($model->table)) {
             $action = $this->action($model, 'select');
             $condition = new Model\Scope\Condition('', $id);
-            $condition->key = $model->getField($model->idField);
+            $condition->key = $model->getIdField();
             $condition->setOwner($model->createEntity()); // TODO needed for typecasting to apply
             $action->filter($condition);
 
@@ -308,7 +306,9 @@ class Array_ extends Persistence
     {
         $this->seedData($model);
 
-        $type = $model->idField ? $model->getField($model->idField)->type : 'integer';
+        $type = $model->idField
+            ? $model->getIdField()->type
+            : 'integer';
 
         switch ($type) {
             case 'integer':
@@ -358,7 +358,7 @@ class Array_ extends Persistence
      *
      * @param array<int, string>|null $fields
      *
-     * @return array<int, array<string, mixed>>
+     * @return list<array<string, mixed>>
      */
     public function export(Model $model, array $fields = null, bool $typecast = true): array
     {
@@ -389,7 +389,7 @@ class Array_ extends Persistence
 
             $rows = [];
             foreach ($table->getRows() as $row) {
-                $rows[$row->getValue($model->getField($model->idField)->getPersistenceName())] = $row->getData();
+                $rows[$row->getValue($model->getIdField()->getPersistenceName())] = $row->getData();
             }
         }
 
@@ -432,7 +432,7 @@ class Array_ extends Persistence
         // add entity ID to scope to allow easy traversal
         if ($model->isEntity() && $model->idField && $model->getId() !== null) {
             $scope = new Model\Scope([$scope]);
-            $scope->addCondition($model->getField($model->idField), $model->getId());
+            $scope->addCondition($model->getIdField(), $model->getId());
         }
 
         $action->filter($scope);

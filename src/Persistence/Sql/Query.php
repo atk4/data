@@ -591,6 +591,13 @@ abstract class Query extends Expression
                     return '1 = 1'; // always true
                 }
 
+                foreach ($value as $v) {
+                    if ($v === null) {
+                        throw (new Exception('Null value in IN operator is not supported'))
+                            ->addMoreInfo('operator', $cond);
+                    }
+                }
+
                 $values = array_map(fn ($v) => $this->consume($v, self::ESCAPE_PARAM), $value);
 
                 return $this->_renderConditionInOperator($cond === 'not in', $field, $values);

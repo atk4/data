@@ -79,7 +79,7 @@ class ConditionSqlTest extends TestCase
         $m->reload();
     }
 
-    public function testNull(): void
+    public function testConditionWithNull(): void
     {
         $this->setDb([
             'user' => [
@@ -105,6 +105,51 @@ class ConditionSqlTest extends TestCase
         }
 
         self::assertSame(2, $nullCount);
+    }
+
+    public function testConditionWithNullOnNotNullableField(): void
+    {
+        $this->setDb([
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
+                ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
+                ['id' => 3, 'name' => 'Niki', 'gender' => null],
+            ],
+        ]);
+
+        $m = new Model($this->db, ['table' => 'user']);
+        $m->addField('name');
+        $m->addField('gender', ['nullable' => false]);
+        $m->setOrder('id');
+
+        self::assertCount(3, $m->export());
+
+        $m->addCondition('gender', '!=', null);
+        self::assertCount(2, $m->export());
+
+        $m->addCondition('id', '!=', null);
+        self::assertCount(2, $m->export());
+
+        $m->addCondition('id', '=', null);
+        self::assertCount(0, $m->export());
+    }
+
+    public function testInConditionWithNullException(): void
+    {
+        $m = new Model($this->db, ['table' => 'user']);
+        $m->addField('name');
+
+        $m->addCondition('name', 'in', [null]);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unable to load due to query error');
+        try {
+            $m->loadOne();
+        } catch (Exception $e) {
+            self::assertSame('Null value in IN operator is not supported', $e->getPrevious()->getMessage());
+
+            throw $e;
+        }
     }
 
     public function testOperations(): void

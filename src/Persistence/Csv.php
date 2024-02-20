@@ -98,7 +98,7 @@ class Csv extends Persistence
     /**
      * Returns one line of CSV file as array.
      *
-     * @return ($reindexWithHeader is true ? array<string, string> : array<int, string>)|null
+     * @return ($reindexWithHeader is true ? array<string, string> : list<string>)|null
      */
     public function getLine(bool $reindexWithHeader): ?array
     {
@@ -260,7 +260,9 @@ class Csv extends Persistence
 
         $this->putLine($line);
 
-        return $model->idField ? $dataRaw[$model->idField] : null;
+        return $model->idField
+            ? $dataRaw[$model->idField]
+            : null;
     }
 
     /**
@@ -268,7 +270,7 @@ class Csv extends Persistence
      *
      * @param array<int, string>|null $fields
      *
-     * @return array<int, array<string, mixed>>
+     * @return list<array<string, mixed>>
      */
     public function export(Model $model, array $fields = null): array
     {

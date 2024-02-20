@@ -52,6 +52,13 @@ class ModelWithoutIdTest extends TestCase
         self::assertSame(['Sue', 'John'], $names);
     }
 
+    public function testGetIdFieldException(): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('ID field is not defined');
+        $this->m->getIdField();
+    }
+
     public function testGetIdException(): void
     {
         $m = $this->m->loadAny();
