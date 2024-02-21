@@ -96,7 +96,7 @@ class UnionModel extends Model
      */
     public function actionSelectInnerTable()
     {
-        return $this->createSubQuery(null);
+        return $this->createSubquery(null);
     }
 
     #[\Override]
@@ -105,7 +105,7 @@ class UnionModel extends Model
         $subquery = null;
         switch ($mode) {
             case 'select':
-                $subquery = $this->createSubQuery(null);
+                $subquery = $this->createSubquery(null);
                 $query = parent::action($mode, $args)->reset('table')->table($subquery, $this->tableAlias);
 
                 $this->hook(self::HOOK_INIT_UNION_SELECT_QUERY, [$query]);
@@ -126,7 +126,7 @@ class UnionModel extends Model
 
                 break;
             case 'field':
-                $subquery = $this->createSubQuery([$args[0]]);
+                $subquery = $this->createSubquery([$args[0]]);
 
                 break;
             case 'fx':
@@ -163,7 +163,7 @@ class UnionModel extends Model
      *
      * @param list<string> $fields
      */
-    public function createSubQuery(?array $fields): Persistence\Sql\Query
+    public function createSubquery(?array $fields): Persistence\Sql\Query
     {
         if ($fields === null) {
             $fields = $this->onlyFields ?? array_keys($this->getFields());

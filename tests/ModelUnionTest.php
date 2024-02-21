@@ -65,30 +65,30 @@ class ModelUnionTest extends TestCase
         $this->assertSameSql('-NULL', $transaction->expr('[]', [$transaction->getFieldExpr($transaction->nestedInvoice, 'blah', '-[]')])->render()[0]);
     }
 
-    public function testCreateSubQueryBasic(): void
+    public function testCreateSubqueryBasic(): void
     {
         $transaction = $this->createTransaction();
 
         $this->assertSameSql(
             'select `name` `name` from `invoice` UNION ALL select `name` `name` from `payment`',
-            $transaction->createSubQuery(['name'])->render()[0]
+            $transaction->createSubquery(['name'])->render()[0]
         );
 
         $this->assertSameSql(
             'select `name` `name`, `amount` `amount` from `invoice` UNION ALL select `name` `name`, `amount` `amount` from `payment`',
-            $transaction->createSubQuery(['name', 'amount'])->render()[0]
+            $transaction->createSubquery(['name', 'amount'])->render()[0]
         );
 
         $this->assertSameSql(
             'select `name` `name` from `invoice` UNION ALL select `name` `name` from `payment`',
-            $transaction->createSubQuery(['name'])->render()[0]
+            $transaction->createSubquery(['name'])->render()[0]
         );
     }
 
     /**
      * If field is not set for one of the nested model, instead of generating exception, NULL will be filled in.
      */
-    public function testCreateSubQueryMissingField(): void
+    public function testCreateSubqueryMissingField(): void
     {
         $transaction = $this->createTransaction();
         $transaction->nestedInvoice->addExpression('type', ['expr' => '\'invoice\'']);
@@ -96,7 +96,7 @@ class ModelUnionTest extends TestCase
 
         $this->assertSameSql(
             'select (\'invoice\') `type`, `amount` `amount` from `invoice` UNION ALL select NULL `type`, `amount` `amount` from `payment`',
-            $transaction->createSubQuery(['type', 'amount'])->render()[0]
+            $transaction->createSubquery(['type', 'amount'])->render()[0]
         );
     }
 
