@@ -112,10 +112,17 @@ class UnionModel extends Model
 
                 return $query;
             case 'count':
-                $subquery = $this->createSubAction('count', ['alias' => 'cnt']);
-
                 $mode = 'fx';
                 $args = ['sum', $this->expr('{}', ['cnt'])];
+
+                $subqueries = [];
+                foreach ($this->union as [$model]) {
+                    $query = $model->action('count', ['alias' => 'cnt']);
+                    $query->wrapInParentheses = false;
+                    $subqueries[] = $query;
+                }
+
+                $subquery = $this->createUnionQuery($subqueries);
 
                 break;
             case 'field':
@@ -125,13 +132,6 @@ class UnionModel extends Model
             case 'fx':
             case 'fx0':
                 return parent::action($mode, $args);
-                /* $args['alias'] = 'val';
-
-                $subquery = $this->createSubAction($mode, $args);
-
-                $args = [$args[0], $this->expr('{}', ['val'])];
-
-                break; */
             default:
                 throw (new Exception('UnionModel model does not support this action'))
                     ->addMoreInfo('mode', $mode);
@@ -209,34 +209,6 @@ class UnionModel extends Model
             foreach ($queryFieldExpressions as $fAlias => $fExpr) {
                 $query->field($fExpr, $fAlias);
             }
-
-            $subqueries[] = $query;
-        }
-
-        $unionQuery = $this->createUnionQuery($subqueries);
-
-        return $unionQuery;
-    }
-
-    /**
-     * @param array<mixed> $actionArgs
-     */
-    public function createSubAction(string $action, array $actionArgs = []): Persistence\Sql\Query
-    {
-        $subqueries = [];
-        foreach ($this->union as [$model, $fieldMap]) {
-            $modelActionArgs = $actionArgs;
-            $fieldName = $actionArgs[1] ?? null;
-            if ($fieldName) {
-                $modelActionArgs[1] = $this->getFieldExpr(
-                    $model,
-                    $fieldName,
-                    $fieldMap[$fieldName] ?? null
-                );
-            }
-
-            $query = $model->action($action, $modelActionArgs);
-            $query->wrapInParentheses = false;
 
             $subqueries[] = $query;
         }

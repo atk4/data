@@ -142,16 +142,6 @@ class ModelUnionTest extends TestCase
         self::assertSame(-9.0, (float) $transaction->action('fx', ['sum', 'amount'])->getOne());
     }
 
-    public function testCreateSubAction(): void
-    {
-        $transaction = $this->createSubtractInvoiceTransaction();
-
-        $this->assertSameSql(
-            'select sum(-`amount`) from `invoice` UNION ALL select sum(`amount`) from `payment`',
-            $transaction->createSubAction('fx', ['sum', 'amount'])->render()[0]
-        );
-    }
-
     public function testBasics(): void
     {
         $client = $this->createClient();
