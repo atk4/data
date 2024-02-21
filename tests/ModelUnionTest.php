@@ -65,30 +65,30 @@ class ModelUnionTest extends TestCase
         $this->assertSameSql('-NULL', $transaction->expr('[]', [$transaction->getFieldExpr($transaction->nestedInvoice, 'blah', '-[]')])->render()[0]);
     }
 
-    public function testNestedQuery1(): void
+    public function testCreateSubQueryBasic(): void
     {
         $transaction = $this->createTransaction();
 
         $this->assertSameSql(
             'select `name` `name` from `invoice` UNION ALL select `name` `name` from `payment`',
-            $transaction->getSubQuery(['name'])->render()[0]
+            $transaction->createSubQuery(['name'])->render()[0]
         );
 
         $this->assertSameSql(
             'select `name` `name`, `amount` `amount` from `invoice` UNION ALL select `name` `name`, `amount` `amount` from `payment`',
-            $transaction->getSubQuery(['name', 'amount'])->render()[0]
+            $transaction->createSubQuery(['name', 'amount'])->render()[0]
         );
 
         $this->assertSameSql(
             'select `name` `name` from `invoice` UNION ALL select `name` `name` from `payment`',
-            $transaction->getSubQuery(['name'])->render()[0]
+            $transaction->createSubQuery(['name'])->render()[0]
         );
     }
 
     /**
      * If field is not set for one of the nested model, instead of generating exception, NULL will be filled in.
      */
-    public function testMissingField(): void
+    public function testCreateSubQueryMissingField(): void
     {
         $transaction = $this->createTransaction();
         $transaction->nestedInvoice->addExpression('type', ['expr' => '\'invoice\'']);
@@ -96,7 +96,7 @@ class ModelUnionTest extends TestCase
 
         $this->assertSameSql(
             'select (\'invoice\') `type`, `amount` `amount` from `invoice` UNION ALL select NULL `type`, `amount` `amount` from `payment`',
-            $transaction->getSubQuery(['type', 'amount'])->render()[0]
+            $transaction->createSubQuery(['type', 'amount'])->render()[0]
         );
     }
 
@@ -120,16 +120,14 @@ class ModelUnionTest extends TestCase
         );
 
         $this->assertSameSql(
-            // QUERY IS WIP
-            'select sum(`amount`) from (select `client_id`, `name`, `amount` from (select `client_id` `client_id`, `name` `name`, `amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_tu`) `_tu`',
+            'select sum(`amount`) from (select `client_id` `client_id`, `name` `name`, `amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_tu`',
             $transaction->action('fx', ['sum', 'amount'])->render()[0]
         );
 
         $transaction = $this->createSubtractInvoiceTransaction();
 
         $this->assertSameSql(
-            // QUERY IS WIP
-            'select sum(`amount`) from (select `client_id`, `name`, `amount` from (select `client_id` `client_id`, `name` `name`, -`amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_tu`) `_tu`',
+            'select sum(`amount`) from (select `client_id` `client_id`, `name` `name`, -`amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_tu`',
             $transaction->action('fx', ['sum', 'amount'])->render()[0]
         );
     }
@@ -144,13 +142,13 @@ class ModelUnionTest extends TestCase
         self::assertSame(-9.0, (float) $transaction->action('fx', ['sum', 'amount'])->getOne());
     }
 
-    public function testSubAction1(): void
+    public function testCreateSubAction(): void
     {
         $transaction = $this->createSubtractInvoiceTransaction();
 
         $this->assertSameSql(
             'select sum(-`amount`) from `invoice` UNION ALL select sum(`amount`) from `payment`',
-            $transaction->getSubAction('fx', ['sum', 'amount'])->render()[0]
+            $transaction->createSubAction('fx', ['sum', 'amount'])->render()[0]
         );
     }
 
@@ -327,8 +325,7 @@ class ModelUnionTest extends TestCase
         self::assertSame(29.0, (float) $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->getOne());
 
         $this->assertSameSql(
-            // QUERY IS WIP
-            'select sum(`amount`) from (select `client_id`, `name`, `amount` from (select `client_id` `client_id`, `name` `name`, `amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_tu`) `_t_e7d707a26e7f` where `client_id` = :a',
+            'select sum(`amount`) from (select `client_id` `client_id`, `name` `name`, `amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_t_e7d707a26e7f` where `client_id` = :a',
             $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->render()[0]
         );
 
@@ -340,8 +337,7 @@ class ModelUnionTest extends TestCase
         self::assertSame(-9.0, (float) $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->getOne());
 
         $this->assertSameSql(
-            // QUERY IS WIP
-            'select sum(`amount`) from (select `client_id`, `name`, `amount` from (select `client_id` `client_id`, `name` `name`, -`amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_tu`) `_t_e7d707a26e7f` where `client_id` = :a',
+            'select sum(`amount`) from (select `client_id` `client_id`, `name` `name`, -`amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_t_e7d707a26e7f` where `client_id` = :a',
             $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->render()[0]
         );
     }
@@ -362,10 +358,9 @@ class ModelUnionTest extends TestCase
         self::assertNull($client->tryLoad(3));
 
         $this->assertSameSql(
-            // QUERY IS WIP
             $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform
-                ? 'select `id`, `name`, `surname`, `order`, (select coalesce(sum(`amount`), 0) from (select `client_id`, `name`, `amount` from (select `client_id` `client_id`, `name` `name`, `amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_tu`) `_t_e7d707a26e7f` where `client_id` = `client`.`id`) `balance` from `client` group by `id`, `id`, `name`, `surname`, `order`, (select coalesce(sum(`amount`), 0) from (select `client_id`, `name`, `amount` from (select `client_id` `client_id`, `name` `name`, `amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_tu`) `_t_e7d707a26e7f` where `client_id` = `client`.`id`) having `id` = :a'
-                : 'select `id`, `name`, `surname`, `order`, (select coalesce(sum(`amount`), 0) from (select `client_id`, `name`, `amount` from (select `client_id` `client_id`, `name` `name`, `amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_tu`) `_t_e7d707a26e7f` where `client_id` = `client`.`id`) `balance` from `client` group by `id` having `id` = :a',
+                ? 'select `id`, `name`, `surname`, `order`, (select coalesce(sum(`amount`), 0) from (select `client_id` `client_id`, `name` `name`, `amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_t_e7d707a26e7f` where `client_id` = `client`.`id`) `balance` from `client` group by `id`, `id`, `name`, `surname`, `order`, (select coalesce(sum(`amount`), 0) from (select `client_id` `client_id`, `name` `name`, `amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_t_e7d707a26e7f` where `client_id` = `client`.`id`) having `id` = :a'
+                : 'select `id`, `name`, `surname`, `order`, (select coalesce(sum(`amount`), 0) from (select `client_id` `client_id`, `name` `name`, `amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_t_e7d707a26e7f` where `client_id` = `client`.`id`) `balance` from `client` group by `id` having `id` = :a',
             $client->load(1)->action('select')->render()[0]
         );
     }

@@ -96,7 +96,7 @@ class UnionModel extends Model
      */
     public function actionSelectInnerTable()
     {
-        return $this->action('select');
+        return $this->createSubQuery(null);
     }
 
     #[\Override]
@@ -105,28 +105,21 @@ class UnionModel extends Model
         $subquery = null;
         switch ($mode) {
             case 'select':
-                // get list of available fields
-                $fields = $this->onlyFields ?? array_keys($this->getFields());
-                foreach ($fields as $k => $field) {
-                    if ($this->getField($field)->neverPersist) {
-                        unset($fields[$k]);
-                    }
-                }
-                $subquery = $this->getSubQuery($fields);
+                $subquery = $this->createSubQuery(null);
                 $query = parent::action($mode, $args)->reset('table')->table($subquery, $this->tableAlias);
 
                 $this->hook(self::HOOK_INIT_UNION_SELECT_QUERY, [$query]);
 
                 return $query;
             case 'count':
-                $subquery = $this->getSubAction('count', ['alias' => 'cnt']);
+                $subquery = $this->createSubAction('count', ['alias' => 'cnt']);
 
                 $mode = 'fx';
                 $args = ['sum', $this->expr('{}', ['cnt'])];
 
                 break;
             case 'field':
-                $subquery = $this->getSubQuery([$args[0]]);
+                $subquery = $this->createSubQuery([$args[0]]);
 
                 break;
             case 'fx':
@@ -134,7 +127,7 @@ class UnionModel extends Model
                 return parent::action($mode, $args);
                 /* $args['alias'] = 'val';
 
-                $subquery = $this->getSubAction($mode, $args);
+                $subquery = $this->createSubAction($mode, $args);
 
                 $args = [$args[0], $this->expr('{}', ['val'])];
 
@@ -170,8 +163,17 @@ class UnionModel extends Model
      *
      * @param list<string> $fields
      */
-    public function getSubQuery(array $fields): Persistence\Sql\Query
+    public function createSubQuery(?array $fields): Persistence\Sql\Query
     {
+        if ($fields === null) {
+            $fields = $this->onlyFields ?? array_keys($this->getFields());
+            foreach ($fields as $k => $field) {
+                if ($this->getField($field)->neverPersist) {
+                    unset($fields[$k]);
+                }
+            }
+        }
+
         $subqueries = [];
         foreach ($this->union as [$nestedModel, $fieldMap]) {
             // map fields for related model
@@ -219,7 +221,7 @@ class UnionModel extends Model
     /**
      * @param array<mixed> $actionArgs
      */
-    public function getSubAction(string $action, array $actionArgs = []): Persistence\Sql\Query
+    public function createSubAction(string $action, array $actionArgs = []): Persistence\Sql\Query
     {
         $subqueries = [];
         foreach ($this->union as [$model, $fieldMap]) {
