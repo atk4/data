@@ -562,7 +562,7 @@ class ArrayTest extends TestCase
             ['f1' => 'D'],
             ['f1' => 'E'],
         ], $d);
-        self::assertSame($d, array_values($m->export(['f1']))); // array_values to get rid of keys
+        self::assertSame($d, $m->export(['f1']));
 
         // order by one field descending
         $p = new Persistence\Array_($dbData);
@@ -584,7 +584,7 @@ class ArrayTest extends TestCase
             ['f1' => 'A'],
             ['f1' => 'A'],
         ], $d);
-        self::assertSame($d, array_values($m->export(['f1']))); // array_values to get rid of keys
+        self::assertSame($d, $m->export(['f1']));
 
         // order by two fields ascending
         $p = new Persistence\Array_($dbData);
@@ -604,7 +604,7 @@ class ArrayTest extends TestCase
             ['id' => 4, 'f1' => 'A', 'f2' => 'C'],
             ['id' => 1, 'f1' => 'A', 'f2' => 'B'],
         ], $d);
-        self::assertSame($d, array_values($m->export(['f1', 'f2', 'id']))); // array_values to get rid of keys
+        self::assertSame($d, $m->export(['f1', 'f2', 'id']));
     }
 
     public function testNoKeyException(): void
@@ -701,14 +701,14 @@ class ArrayTest extends TestCase
             ['id' => 1, 'f1' => 'A'],
             ['id' => 2, 'f1' => 'D'],
             ['id' => 3, 'f1' => 'E'],
-        ], array_values($m->export()));
+        ], $m->export());
 
         $m->setLimit(2, 1);
         self::assertSame(2, $m->executeCountQuery());
         self::assertSame([
             ['id' => 2, 'f1' => 'D'],
             ['id' => 3, 'f1' => 'E'],
-        ], array_values($m->export()));
+        ], $m->export());
 
         // well, this is strange, that you can actually change limit on-the-fly and then previous
         // limit is not taken into account, but most likely you will never set it multiple times
