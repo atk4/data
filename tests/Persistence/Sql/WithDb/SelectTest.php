@@ -633,10 +633,10 @@ class SelectTest extends TestCase
                 self::assertSame(105, $m->insert(['f1' => 'O2']));
                 self::assertSame(106, $m->insert(['f1' => 'O3']));
                 $invokeInAtomicAndThrowFx(static function () use ($m) {
-                    self::assertSame(107, $m->insert(['f1' => 'O2']));
+                    self::assertSame(107, $m->insert(['f1' => 'O4']));
                 });
             });
-            self::assertSame(108, $m->insert(['f1' => 'O4']));
+            self::assertSame(108, $m->insert(['f1' => 'O5']));
         });
 
         self::assertSame(108, $getLastAiFx());
