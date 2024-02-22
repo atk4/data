@@ -21,6 +21,7 @@ class Connection extends BaseConnection
         $configuration->setMiddlewares([
             ...$configuration->getMiddlewares(),
             new EnableForeignKeys(),
+            new PreserveAutoincrementOnRollbackMiddleware(),
         ]);
 
         return $configuration;
