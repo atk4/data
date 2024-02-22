@@ -620,13 +620,6 @@ class SelectTest extends TestCase
             self::assertSame(103, $m->insert(['f1' => 'N']));
         });
 
-        // TODO workaround SQLite to be consistent with other databases
-        // https://stackoverflow.com/questions/27947712/sqlite-repeats-primary-key-autoincrement-value-after-rollback
-        // https://github.com/atk4/data/issues/1162
-        if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
-            return;
-        }
-
         $invokeInAtomicAndThrowFx(static function () use ($invokeInAtomicAndThrowFx, $m) {
             self::assertSame(104, $m->insert(['f1' => 'O1']));
             $invokeInAtomicAndThrowFx(static function () use ($invokeInAtomicAndThrowFx, $m) {
