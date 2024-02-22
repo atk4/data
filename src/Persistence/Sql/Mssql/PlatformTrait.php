@@ -9,7 +9,9 @@ use Doctrine\DBAL\Schema\Index;
 
 trait PlatformTrait
 {
-    #[\Override]
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     public function getVarcharTypeDeclarationSQL(array $column)
     {
         $column['length'] = ($column['length'] ?? 255) * 4;
@@ -19,7 +21,9 @@ trait PlatformTrait
 
     // remove once https://github.com/doctrine/dbal/pull/4987 is fixed
     // and also $this->markDoctrineTypeCommented('text') below
-    #[\Override]
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     public function getClobTypeDeclarationSQL(array $column)
     {
         $res = parent::getClobTypeDeclarationSQL($column);
@@ -36,7 +40,9 @@ trait PlatformTrait
         $this->markDoctrineTypeCommented('text');
     } */
 
-    #[\Override]
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     public function getCurrentDatabaseExpression(bool $includeSchema = false): string
     {
         if ($includeSchema) {
@@ -46,7 +52,9 @@ trait PlatformTrait
         return parent::getCurrentDatabaseExpression();
     }
 
-    #[\Override]
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     public function getCreateIndexSQL(Index $index, $table)
     {
         // workaround https://github.com/doctrine/dbal/issues/5507
@@ -62,7 +70,9 @@ trait PlatformTrait
     // SQL Server DBAL platform has buggy identifier escaping, fix until fixed officially, see:
     // https://github.com/doctrine/dbal/pull/4360
 
-    #[\Override]
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     protected function getCreateColumnCommentSQL($tableName, $columnName, $comment)
     {
         if (str_contains($tableName, '.')) {
@@ -83,7 +93,9 @@ trait PlatformTrait
         );
     }
 
-    #[\Override]
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     protected function getAlterColumnCommentSQL($tableName, $columnName, $comment)
     {
         if (str_contains($tableName, '.')) {
@@ -104,7 +116,9 @@ trait PlatformTrait
         );
     }
 
-    #[\Override]
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     protected function getDropColumnCommentSQL($tableName, $columnName)
     {
         if (str_contains($tableName, '.')) {
@@ -129,7 +143,9 @@ trait PlatformTrait
         return $this->quoteStringLiteral(preg_replace('~^\[|\]$~', '', $levelName));
     }
 
-    #[\Override]
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     public function getAddExtendedPropertySQL(
         $name,
         $value = null,
@@ -154,7 +170,9 @@ trait PlatformTrait
             );
     }
 
-    #[\Override]
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     public function getDropExtendedPropertySQL(
         $name,
         $level0Type = null,
@@ -178,7 +196,9 @@ trait PlatformTrait
             );
     }
 
-    #[\Override]
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     public function getUpdateExtendedPropertySQL(
         $name,
         $value = null,
@@ -203,7 +223,9 @@ trait PlatformTrait
             );
     }
 
-    #[\Override]
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     protected function getCommentOnTableSQL(string $tableName, ?string $comment): string
     {
         if (str_contains($tableName, '.')) {

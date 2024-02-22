@@ -55,7 +55,9 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
         return $this->replaceDatabasePlatform(parent::getDatabasePlatform());
     }
 
-    #[\Override]
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     public function createDatabasePlatformForVersion($version): AbstractPlatform
     {
         return $this->replaceDatabasePlatform(parent::createDatabasePlatformForVersion($version));
@@ -63,8 +65,9 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
 
     /**
      * @return AbstractSchemaManager<AbstractPlatform>
+     *
+     * @deprecated remove once DBAL 3.x support is dropped
      */
-    #[\Override]
     public function getSchemaManager(DbalConnection $connection, AbstractPlatform $platform): AbstractSchemaManager
     {
         if ($platform instanceof SQLitePlatform) {
