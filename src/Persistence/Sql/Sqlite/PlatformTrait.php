@@ -11,7 +11,7 @@ trait PlatformTrait
 {
     public function __construct()
     {
-        $this->disableSchemaEmulation();
+        $this->disableSchemaEmulation(); // @phpstan-ignore-line
     }
 
     #[\Override]
