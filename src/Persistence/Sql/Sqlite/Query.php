@@ -22,7 +22,7 @@ class Query extends BaseQuery
 
     /**
      * https://dba.stackexchange.com/questions/332585/sqlite-comparison-of-the-same-operand-types-behaves-differently
-     * https://sqlite.org/forum/forumpost/5f1135146fbc37ab .
+     * https://sqlite.org/forum/info/5f1135146fbc37ab .
      */
     #[\Override]
     protected function _renderConditionBinary(string $operator, string $sqlLeft, string $sqlRight): string

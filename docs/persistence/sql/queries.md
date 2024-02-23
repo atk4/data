@@ -98,11 +98,13 @@ $row = $query->getRow();
 if ($row) {
     $query
         ->set('revision', $query->expr('revision + 1'))
-        ->mode('update')->executeStatement();
+        ->mode('update')
+        ->executeStatement();
 } else {
     $query
         ->set('revision', 1)
-        ->mode('insert')->executeStatement();
+        ->mode('insert')
+        ->executeStatement();
 }
 ```
 

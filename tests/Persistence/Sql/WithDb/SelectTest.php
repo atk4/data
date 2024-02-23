@@ -602,31 +602,44 @@ class SelectTest extends TestCase
         self::assertSame($expectedRows, $m->export());
 
         // auto increment ID after rollback must not be reused
-        $e = null;
-        $eExpected = new Exception();
-        try {
-            $m->atomic(static function () use ($m, $eExpected) {
-                $m->import([['f1' => 'N']]);
+        $invokeInAtomicAndThrowFx = static function (\Closure $fx) use ($m) {
+            $e = null;
+            $eExpected = new Exception();
+            try {
+                $m->atomic(static function () use ($fx, $eExpected) {
+                    $fx();
 
-                throw $eExpected;
+                    throw $eExpected;
+                });
+            } catch (Exception $e) {
+            }
+            self::assertSame($eExpected, $e);
+        };
+
+        $invokeInAtomicAndThrowFx(static function () use ($m) {
+            self::assertSame(103, $m->insert(['f1' => 'N']));
+        });
+
+        $invokeInAtomicAndThrowFx(static function () use ($invokeInAtomicAndThrowFx, $m) {
+            self::assertSame(104, $m->insert(['f1' => 'O1']));
+            $invokeInAtomicAndThrowFx(static function () use ($invokeInAtomicAndThrowFx, $m) {
+                self::assertSame(105, $m->insert(['f1' => 'O2']));
+                self::assertSame(106, $m->insert(['f1' => 'O3']));
+                $invokeInAtomicAndThrowFx(static function () use ($m) {
+                    self::assertSame(107, $m->insert(['f1' => 'O4']));
+                });
             });
-        } catch (Exception $e) {
-        }
-        self::assertSame($eExpected, $e);
+            self::assertSame(108, $m->insert(['f1' => 'O5']));
+        });
 
-        // TODO workaround SQLite to be consistent with other databases
-        // https://stackoverflow.com/questions/27947712/sqlite-repeats-primary-key-autoincrement-value-after-rollback
-        // https://github.com/atk4/data/issues/1162
-        if (!$this->getDatabasePlatform() instanceof SQLitePlatform) {
-            self::assertSame(103, $getLastAiFx());
-            self::assertSame($expectedRows, $m->export());
+        self::assertSame(108, $getLastAiFx());
+        self::assertSame($expectedRows, $m->export());
 
-            $m->import([['f1' => 'O']]);
-            self::assertSame(104, $getLastAiFx());
-            self::assertSame(array_merge($expectedRows, [
-                ['id' => 104, 'f1' => 'O'],
-            ]), $m->export());
-        }
+        self::assertSame(109, $m->insert(['f1' => 'P']));
+        self::assertSame(109, $getLastAiFx());
+        self::assertSame(array_merge($expectedRows, [
+            ['id' => 109, 'f1' => 'P'],
+        ]), $m->export());
     }
 
     public function testOrderDuplicate(): void

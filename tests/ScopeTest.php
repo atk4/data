@@ -331,8 +331,10 @@ class ScopeTest extends TestCase
         $user->addCondition('Tickets/user/country_id/Users/#', '>=', 2);
         $user->addCondition('Tickets/user/country_id/Users/country_id/Users/#', '>', 1);
         if (!$this->getDatabasePlatform() instanceof SQLitePlatform) {
-            // not supported because of limitation/issue in Sqlite, the generated query fails
-            // with error: "parser stack overflow"
+            // TODO limitation of Sqlite parser stack has been lifted
+            // https://sqlite.org/forum/info/a2f5a952679c0fc5
+            // https://github.com/sqlite/sqlite/commit/7659ce22c5
+            // expected to be supported since SQLite v3.46.0
             $user->addCondition('Tickets/user/country_id/Users/country_id/Users/name', '!=', null); // should be always true
         }
 
