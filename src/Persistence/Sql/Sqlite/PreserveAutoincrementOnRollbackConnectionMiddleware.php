@@ -4,16 +4,22 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Sqlite;
 
+use Atk4\Data\Persistence\Sql\Exception;
 use Doctrine\DBAL\Driver\Middleware\AbstractConnectionMiddleware;
 
 class PreserveAutoincrementOnRollbackConnectionMiddleware extends AbstractConnectionMiddleware
 {
     private static string $libraryVersion;
 
+    private function createExpressionFromStringLiteral(string $value): Expression
+    {
+        return new Expression('\'' . str_replace('\'', '\'\'', $value) . '\'');
+    }
+
     /**
-     * @return list<array{schema: string, sequence: string, value: string}>
+     * @return array<string, array<string, int>>
      */
-    protected function beforeRollback(): array
+    protected function listSequences(): array
     {
         if ((self::$libraryVersion ?? null) === null) {
             $getLibraryVersionSql = (new Query())
@@ -54,32 +60,66 @@ class PreserveAutoincrementOnRollbackConnectionMiddleware extends AbstractConnec
             $listSchemasSql = (new Query())
                 ->table('pragma_table_list')
                 ->field('schema')
-                ->where('name', 'sqlite_sequence')
+                ->where('name', $this->createExpressionFromStringLiteral('sqlite_sequence'))
                 ->render()[0];
             $schemas = $this->query($listSchemasSql)->fetchFirstColumn();
         }
 
-        if ($schemas === []) {
-            $res = [];
-        } else {
-            $listAutoincrementsSql = implode("\nUNION ALL\n", array_map(static function (string $schema) {
+        $res = [];
+        if ($schemas !== []) {
+            $listSequencesSql = implode("\nUNION ALL\n", array_map(function (string $schema) {
                 return (new Query())
                     ->table($schema . '.sqlite_sequence')
-                    ->field(new Expression('\'' . str_replace('\'', '\'\'', $schema) . '\''), 'schema')
-                    ->field('name', 'sequence')
+                    ->field($this->createExpressionFromStringLiteral($schema), 'schema')
+                    ->field('name')
                     ->field('seq', 'value')
                     ->render()[0];
             }, $schemas));
 
-            $res = $this->query($listAutoincrementsSql)->fetchAllAssociative();
+            $res = [];
+            foreach ($this->query($listSequencesSql)->fetchAllAssociative() as $row) {
+                $value = (int) $row['value'];
+                if (!is_int($row['value']) && (string) $value !== $row['value']) {
+                    throw (new Exception('Unexpected SQLite sequence value'))
+                        ->addMoreInfo('value', $row['value']);
+                }
+
+                $res[$row['schema']][$row['name']] = $value;
+            }
         }
 
         return $res;
     }
 
-    protected function afterRollback(array $beforeRollbackData): void
+    /**
+     * @param array<string, array<string, int>> $beforeRollbackSequences
+     */
+    protected function restoreSequencesIfDecremented(array $beforeRollbackSequences): void
     {
-        // TODO
+        $afterRollbackSequences = $this->listSequences();
+
+        foreach ($beforeRollbackSequences as $schema => $beforeRollbackSequences2) {
+            foreach ($beforeRollbackSequences2 as $table => $beforeRollbackValue) {
+                $afterRollbackValue = $afterRollbackSequences[$schema][$table] ?? null;
+                if ($afterRollbackValue >= $beforeRollbackValue) {
+                    continue;
+                }
+
+                if ($afterRollbackValue === null) { // https://sqlite.org/forum/info/3e7cc380f0a159c6
+                    $query = (new Query())
+                        ->mode('insert')
+                        ->set('name', $this->createExpressionFromStringLiteral($table));
+                } else {
+                    $query = (new Query())
+                        ->mode('update')
+                        ->where('name', $this->createExpressionFromStringLiteral($table));
+                }
+                $query->table($schema . '.sqlite_sequence');
+                $query->set('seq', $this->createExpressionFromStringLiteral((string) $beforeRollbackValue));
+
+                $this->exec($query->render()[0]);
+            }
+        }
     }
 
     #[\Override]
@@ -88,13 +128,13 @@ class PreserveAutoincrementOnRollbackConnectionMiddleware extends AbstractConnec
         $isRollback = str_starts_with(strtoupper(ltrim($sql)), 'ROLLBACK ');
 
         if ($isRollback) {
-            $beforeRollbackData = $this->beforeRollback();
+            $beforeRollbackSequences = $this->listSequences();
         }
 
         $res = parent::exec($sql);
 
         if ($isRollback) {
-            $this->afterRollback($beforeRollbackData);
+            $this->restoreSequencesIfDecremented($beforeRollbackSequences);
         }
 
         return $res;
@@ -103,11 +143,11 @@ class PreserveAutoincrementOnRollbackConnectionMiddleware extends AbstractConnec
     #[\Override]
     public function rollBack()
     {
-        $beforeRollbackData = $this->beforeRollback();
+        $beforeRollbackSequences = $this->listSequences();
 
         $res = parent::rollBack();
 
-        $this->afterRollback($beforeRollbackData);
+        $this->restoreSequencesIfDecremented($beforeRollbackSequences);
 
         return $res;
     }
