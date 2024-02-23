@@ -223,6 +223,31 @@ class SqliteSchemaManager extends AbstractSchemaManager
     }
 
     /**
+     * @return array{?string, string}
+     */
+    public static function extractSchemaFromTableName(string $tableName, $fallbackDatabaseName = null): array
+    {
+        if (!str_contains($tableName, '.')) {
+            return [$fallbackDatabaseName, $tableName];
+        }
+
+        return explode('.', $tableName, 2);
+    }
+
+    /**
+     * @return array{?string, string}
+     */
+    public static function extractSchemaAsPrefixFromTableName(string $tableName, $fallbackDatabaseName = null): array
+    {
+        [$schemaName, $tableName] = self::extractSchemaFromTableName($tableName);
+
+        return [
+            ($schemaName ?? $fallbackDatabaseName) === null ? null : ($schemaName ?? $fallbackDatabaseName) . '.',
+            $tableName,
+        ];
+    }
+
+    /**
      * {@inheritDoc}
      *
      * @link http://ezcomponents.org/docs/api/trunk/DatabaseSchema/ezcDbSchemaPgsqlReader.html
@@ -231,8 +256,10 @@ class SqliteSchemaManager extends AbstractSchemaManager
     {
         $indexBuffer = [];
 
+        [$schemaPrefix, $tableName] = self::extractSchemaAsPrefixFromTableName($tableName);
+
         // fetch primary
-        $indexArray = $this->_conn->fetchAllAssociative('SELECT * FROM PRAGMA_TABLE_INFO (?)', [$tableName]);
+        $indexArray = $this->_conn->fetchAllAssociative('SELECT * FROM ' . $schemaPrefix . 'PRAGMA_TABLE_INFO (?)', [$tableName]);
 
         usort(
             $indexArray,
@@ -550,19 +577,21 @@ CREATE\sTABLE # Match "CREATE TABLE"
     /** @throws Exception */
     private function getCreateTableSQL(string $table): string
     {
+        [$schema, $table] = self::extractSchemaAsPrefixFromTableName($table);
+
         $sql = $this->_conn->fetchOne(
-            <<<'SQL'
+            '
 SELECT sql
   FROM (
       SELECT *
-        FROM sqlite_master
+        FROM ' . $schema . 'sqlite_master
    UNION ALL
       SELECT *
-        FROM sqlite_temp_master
+        FROM temp.sqlite_master
   )
-WHERE type = 'table'
+WHERE type = \'table\'
 AND name = ?
-SQL
+'
             ,
             [$table],
         );
@@ -663,31 +692,33 @@ SQL
 
     protected function selectTableNames(string $databaseName): Result
     {
-        $sql = <<<'SQL'
+        $sql = '
 SELECT name AS table_name
-FROM sqlite_master
-WHERE type = 'table'
-  AND name != 'sqlite_sequence'
-  AND name != 'geometry_columns'
-  AND name != 'spatial_ref_sys'
+FROM ' . $databaseName . '.sqlite_master
+WHERE type = \'table\'
+  AND name != \'sqlite_sequence\'
+  AND name != \'geometry_columns\'
+  AND name != \'spatial_ref_sys\'
 UNION ALL
 SELECT name
-FROM sqlite_temp_master
-WHERE type = 'table'
+FROM temp.sqlite_master
+WHERE type = \'table\'
 ORDER BY name
-SQL;
+';
 
         return $this->_conn->executeQuery($sql);
     }
 
     protected function selectTableColumns(string $databaseName, ?string $tableName = null): Result
     {
-        $sql = <<<'SQL'
+        [$databaseName, $tableName] = self::extractSchemaAsPrefixFromTableName($tableName);
+
+        $sql = '
             SELECT t.name AS table_name,
                    c.*
-              FROM sqlite_master t
+              FROM ' . $databaseName . 'sqlite_master t
               JOIN pragma_table_info(t.name) c
-SQL;
+';
 
         $conditions = [
             "t.type = 'table'",
@@ -707,12 +738,14 @@ SQL;
 
     protected function selectIndexColumns(string $databaseName, ?string $tableName = null): Result
     {
-        $sql = <<<'SQL'
+        [$databaseName, $tableName] = self::extractSchemaAsPrefixFromTableName($tableName, $databaseName);
+
+        $sql = '
             SELECT t.name AS table_name,
                    i.*
-              FROM sqlite_master t
-              JOIN pragma_index_list(t.name) i
-SQL;
+              FROM ' . $databaseName . 'sqlite_master t
+              JOIN ' . $databaseName . 'pragma_index_list(t.name) i
+';
 
         $conditions = [
             "t.type = 'table'",
