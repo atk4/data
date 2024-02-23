@@ -265,7 +265,7 @@ class QueryTest extends TestCase
         $this->q()
             ->mode('update')
             ->table($this->q()->table('test'), 'foo')
-            ->field('name')->set('name', 1)
+            ->set('name', 1)
             ->render();
     }
 
@@ -278,7 +278,7 @@ class QueryTest extends TestCase
         $this->q()
             ->mode('insert')
             ->table($this->q()->table('test'), 'foo')
-            ->field('name')->set('name', 1)
+            ->set('name', 1)
             ->render();
     }
 
@@ -378,14 +378,14 @@ class QueryTest extends TestCase
         self::assertSame(
             'insert into "employee" ("name") values (:a)',
             $this->q()
-                ->field('name')->table('employee', 'emp')->set('name', 1)
+                ->table('employee', 'emp')->set('name', 1)
                 ->mode('insert')
                 ->render()[0]
         );
         self::assertSame(
             'update "employee" set "name"=:a',
             $this->q()
-                ->field('name')->table('employee', 'emp')->set('name', 1)
+                ->table('employee', 'emp')->set('name', 1)
                 ->mode('update')
                 ->render()[0]
         );
@@ -1005,7 +1005,7 @@ class QueryTest extends TestCase
             'delete from "employee" where "employee"."a" = :a',
             $this->q()
                 ->mode('delete')
-                ->field('name')->table('employee')->where('employee.a', 1)
+                ->table('employee')->where('employee.a', 1)
                 ->render()[0]
         );
 
@@ -1042,7 +1042,7 @@ class QueryTest extends TestCase
         self::assertSame(
             'delete from "employee" where "name" = :a',
             $this->q()
-                ->field('name')->table('employee')->where('name', 1)
+                ->table('employee')->where('name', 1)
                 ->mode('delete')
                 ->render()[0]
         );
@@ -1051,7 +1051,7 @@ class QueryTest extends TestCase
         self::assertSame(
             'update "employee" set "name"=:a',
             $this->q()
-                ->field('name')->table('employee')->set('name', 1)
+                ->table('employee')->set('name', 1)
                 ->mode('update')
                 ->render()[0]
         );
@@ -1059,7 +1059,7 @@ class QueryTest extends TestCase
         self::assertSame(
             'update "employee" set "name"="name"+1',
             $this->q()
-                ->field('name')->table('employee')->set('name', $this->e('"name"+1'))
+                ->table('employee')->set('name', $this->e('"name"+1'))
                 ->mode('update')
                 ->render()[0]
         );
@@ -1068,7 +1068,7 @@ class QueryTest extends TestCase
         self::assertSame(
             'insert into "employee" ("name") values (:a)',
             $this->q()
-                ->field('name')->table('employee')->set('name', 1)
+                ->table('employee')->set('name', 1)
                 ->mode('insert')
                 ->render()[0]
         );
@@ -1077,7 +1077,7 @@ class QueryTest extends TestCase
         self::assertSame(
             'insert into "employee" ("time", "name") values (now(), :a)',
             $this->q()
-                ->field('time')->field('name')->table('employee')
+                ->table('employee')
                 ->set('time', $this->e('now()'))
                 ->set('name', 'unknown')
                 ->mode('insert')
@@ -1088,7 +1088,7 @@ class QueryTest extends TestCase
         self::assertSame(
             'insert into "employee" ("time", "name") values (now(), :a)',
             $this->q()
-                ->field('time')->field('name')->table('employee')
+                ->table('employee')
                 ->setMulti(['time' => $this->e('now()'), 'name' => 'unknown'])
                 ->mode('insert')
                 ->render()[0]
@@ -1353,7 +1353,7 @@ class QueryTest extends TestCase
         self::assertSame(
             'update "employee" set "hired"=current_timestamp()',
             $this->q()
-                ->field('hired')->table('employee')->set('hired', $this->q()->exprNow())
+                ->table('employee')->set('hired', $this->q()->exprNow())
                 ->mode('update')
                 ->render()[0]
         );
@@ -1361,7 +1361,7 @@ class QueryTest extends TestCase
         self::assertSame(
             'update "employee" set "hired"=current_timestamp(:a)',
             $this->q()
-                ->field('hired')->table('employee')->set('hired', $this->q()->exprNow(2))
+                ->table('employee')->set('hired', $this->q()->exprNow(2))
                 ->mode('update')
                 ->render()[0]
         );
