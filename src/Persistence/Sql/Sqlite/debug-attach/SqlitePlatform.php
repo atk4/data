@@ -1489,4 +1489,14 @@ class SqlitePlatform extends AbstractPlatform
     {
         return new SqliteSchemaManager($connection, $this);
     }
+
+    public function getCreateIndexSQL(Index $index, $table)
+    {
+        $sql = parent::getCreateIndexSQL($index, $table);
+
+        // https://sqlite.org/forum/info/f8f0c1a1069bb40a
+        $sql = preg_replace('~^(CREATE\s+.*?INDEX\s+)(.+?)(\s+ON\s+)(.+?)\.(.+?)(\s+\()~', '$1$4.$2$3$5$6', $sql);
+
+        return $sql;
+    }
 }
