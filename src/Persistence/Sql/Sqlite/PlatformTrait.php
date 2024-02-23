@@ -9,6 +9,11 @@ use Doctrine\DBAL\Schema\TableDiff;
 
 trait PlatformTrait
 {
+    public function __construct()
+    {
+        $this->disableSchemaEmulation(); // @phpstan-ignore-line
+    }
+
     #[\Override]
     public function getIdentifierQuoteCharacter(): string
     {

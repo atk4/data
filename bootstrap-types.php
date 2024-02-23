@@ -11,7 +11,7 @@ use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Schema\SqliteSchemaManager;
 use Doctrine\DBAL\Types as DbalTypes;
 
-// force SQLitePlatform and SQLiteSchemaManager classes load as in DBAL 3.x they were named with a different case
+// force SQLitePlatform and SQLiteSchemaManager classes load as in DBAL 3.x they are named with a different case
 // remove once DBAL 3.x support is dropped
 new \ReflectionClass(SqlitePlatform::class);
 new \ReflectionClass(SqliteSchemaManager::class);
