@@ -954,12 +954,31 @@ abstract class Query extends Expression
 
     // {{{ Miscelanious
 
+    protected function toParsedSelect(): Optimizer\ParsedSelect
+    {
+        return Optimizer\Util::parseSelectQuery($this, Optimizer\ParsedSelect::TOP_QUERY_ALIAS);
+    }
+
+    /**
+     * Deduplicate same subselects, field rereads to produce optimized select query
+     * using CTE/WITH.
+     */
+    protected function transformSelectUsingCte(): Optimizer\ParsedSelect
+    {
+        throw new Exception('Not implemented yet');
+    }
+
     /**
      * @return array{string, array<string, mixed>}
      */
     private function callParentRender(): array
     {
         $firstRender = parent::render();
+        if ($this->mode === 'select' && !Optimizer\Util::isSelectQueryParsed($this)) {
+            $parsedSelect = $this->toParsedSelect();
+            $firstRender = $parsedSelect->expr->render();
+        }
+
         if (($this->args['first_render'] ?? null) === null) {
             $this->args['first_render'] = $firstRender;
             $secondRender = $this->render();

@@ -107,4 +107,32 @@ class Util
 
         return $v[1];
     }
+
+    public static function parseSelectQuery(Query $query, string $tableAlias): ParsedSelect
+    {
+        $query->args['is_select_parsed'] = [true];
+        $select = new ParsedSelect($query, $tableAlias);
+        if (is_string($select->expr)) {
+            return $select;
+        }
+
+        // traverse $query and parse everything into ParsedSelect/ParsedColumn
+        foreach ($query->args as $argK => $argV) {
+            // TODO
+        }
+
+        return $select;
+    }
+
+    public static function isSelectQueryParsed(Query $query): bool
+    {
+        return ($query->args['is_select_parsed'] ?? [])[0] ?? false;
+    }
+
+    public static function parseColumn(Expression $expr, string $columnAlias): ParsedColumn
+    {
+        $column = new ParsedColumn($expr, $columnAlias);
+
+        return $column;
+    }
 }
