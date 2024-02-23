@@ -2,7 +2,7 @@
 
 $finder = PhpCsFixer\Finder::create()
     ->in([__DIR__])
-    ->exclude(['vendor']);
+    ->exclude(['vendor', 'src/Persistence/Sql/Sqlite/debug-attach']);
 
 return (new PhpCsFixer\Config())
     ->setRiskyAllowed(true)
