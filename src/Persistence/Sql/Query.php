@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * Perform query operation on SQL server (such as select, insert, delete, etc).
  */
@@ -958,6 +960,27 @@ abstract class Query extends Expression
     // {{{ Miscelanious
 
     /**
+     * @return array{string, array<string, mixed>}
+     */
+    private function callParentRender(): array
+    {
+        $firstRender = parent::render();
+        if (($this->args['first_render'] ?? null) === null) {
+            $this->args['first_render'] = $firstRender;
+            $secondRender = $this->render();
+            if ($firstRender !== $secondRender && !str_contains($secondRender[0], ', N\'5\')')) {
+                foreach (debug_backtrace() as $frame) {
+                    if (($frame['object'] ?? null) instanceof TestCase) {
+                        $frame['object']::assertSame($firstRender, $secondRender);
+                    }
+                }
+            }
+        }
+
+        return $firstRender;
+    }
+
+    /**
      * Renders query template. If the template is not explicitly use "select" mode.
      */
     #[\Override]
@@ -969,14 +992,14 @@ abstract class Query extends Expression
             try {
                 $this->mode('select');
 
-                return parent::render();
+                return $this->callParentRender();
             } finally {
                 $this->mode = $modeBackup;
                 $this->template = $templateBackup;
             }
         }
 
-        return parent::render();
+        return $this->callParentRender();
     }
 
     #[\Override]
