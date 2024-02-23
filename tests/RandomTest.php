@@ -591,12 +591,10 @@ class RandomTest extends TestCase
         $this->createMigrator($user)->create();
         $this->createMigrator($doc)->create();
         $this->debug = true;
-        if (!$this->getDatabasePlatform() instanceof SQLitePlatform) {
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
+            $this->createMigrator()->createIndex([$doc->getField('user_id')], false);
+        } else {
             $this->createMigrator()->createForeignKey($doc->getReference('user_id'));
-        }
-        // TODO once https://sqlite.org/forum/info/f8f0c1a1069bb40a is resolved
-        if (!$this->getDatabasePlatform() instanceof SQLitePlatform) {
-            $this->createMigrator()->createIndex([$doc->getField('user_id')], true);
         }
 
         $user->createEntity()
