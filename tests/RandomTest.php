@@ -590,6 +590,7 @@ class RandomTest extends TestCase
 
         $this->createMigrator($user)->create();
         $this->createMigrator($doc)->create();
+        $this->debug = true;
         $this->createMigrator()->createForeignKey($doc->getReference('user_id'));
 
         $user->createEntity()
