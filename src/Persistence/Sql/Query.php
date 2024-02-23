@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * Perform query operation on SQL server (such as select, insert, delete, etc).
  */
@@ -256,7 +258,8 @@ abstract class Query extends Expression
             }
 
             // will parameterize the value and escape if necessary
-            $s .= 'as ' . $this->consume($cursor, self::ESCAPE_IDENTIFIER_SOFT);
+            // DEBUG TODO preg_replace will break multiline strings, remove before merge
+            $s .= 'as' . "\n" . preg_replace('~^~m', '    ', $this->consume($cursor, self::ESCAPE_IDENTIFIER_SOFT));
 
             if ($recursive) {
                 $isRecursive = true;
@@ -449,7 +452,9 @@ abstract class Query extends Expression
         } else {
             if ($numArgs === 2) {
                 $value = $cond;
-                unset($cond);
+                $cond = null;
+            } elseif ($cond === null) {
+                throw new \InvalidArgumentException();
             }
 
             if (is_object($value) && !$value instanceof Expressionable) {
@@ -458,11 +463,7 @@ abstract class Query extends Expression
                     ->addMoreInfo('value', $value);
             }
 
-            if ($numArgs === 2) {
-                $this->args[$kind][] = [$field, $value];
-            } else {
-                $this->args[$kind][] = [$field, $cond, $value];
-            }
+            $this->args[$kind][] = [$field, $cond, $value];
         }
 
         return $this;
@@ -524,12 +525,10 @@ abstract class Query extends Expression
      */
     protected function _subrenderCondition(array $row): string
     {
-        if (count($row) === 3) {
-            [$field, $cond, $value] = $row;
-        } elseif (count($row) === 2) {
-            [$field, $cond] = $row;
-        } elseif (count($row) === 1) {
+        if (count($row) === 1) {
             [$field] = $row;
+        } elseif (count($row) === 3) {
+            [$field, $cond, $value] = $row;
         } else {
             throw new \InvalidArgumentException();
         }
@@ -541,10 +540,8 @@ abstract class Query extends Expression
             return $field;
         }
 
-        // if no condition defined - use default
-        if (count($row) === 2) {
-            $value = $cond;
-
+        // if no condition defined - set default condition
+        if ($cond === null) {
             if ($value instanceof Expressionable) {
                 $value = $value->getDsqlExpression($this);
             }
@@ -552,6 +549,9 @@ abstract class Query extends Expression
             if (is_array($value)) {
                 $cond = 'in';
             } elseif ($value instanceof self && $value->mode === 'select') {
+                $cond = 'in';
+            } elseif ($value instanceof Expressionable && $value->template === '{}' && ($value->args['custom'] ?? [null])[0] instanceof self) { // @phpstan-ignore-line
+                // DEVELOP for Optimizer
                 $cond = 'in';
             } else {
                 $cond = '=';
@@ -568,7 +568,7 @@ abstract class Query extends Expression
         }
 
         // special conditions (IS | IS NOT) if value is null
-        if ($value === null) { // @phpstan-ignore-line see https://github.com/phpstan/phpstan/issues/4173
+        if ($value === null) {
             if ($cond === '=') {
                 return $field . ' is null';
             } elseif ($cond === '!=') {
@@ -941,8 +941,8 @@ abstract class Query extends Expression
             // 'mode' => $this->mode,
             'R' => 'n/a',
             'R_params' => 'n/a',
-            // 'template' => $this->template,
-            // 'templateArgs' => $this->args,
+            'template' => $this->template,
+            'templateArgs' => array_diff_key($this->args, ['is_select_parsed' => true, 'first_render' => true]),
         ];
 
         try {
@@ -952,10 +952,62 @@ abstract class Query extends Expression
             $arr['R'] = get_class($e) . ': ' . $e->getMessage();
         }
 
+        if ($arr['template'] === null || $arr['template'] === $this->templateSelect) {
+            unset($arr['R']);
+            unset($arr['R_params']);
+            unset($arr['template']);
+            if ($arr['templateArgs']['custom'] === []) {
+                unset($arr['templateArgs']['custom']);
+            }
+        }
+
         return $arr;
     }
 
     // {{{ Miscelanious
+
+    protected function toParsedSelect(): Optimizer\ParsedSelect
+    {
+        return Optimizer\Util::parseSelectQuery($this, null);
+    }
+
+    /**
+     * Deduplicate same subselects, field rereads to produce optimized select query
+     * using CTE/WITH.
+     */
+    protected function transformSelectUsingCte(): Optimizer\ParsedSelect
+    {
+        throw new Exception('Not implemented yet');
+    }
+
+    /**
+     * @return array{string, array<string, mixed>}
+     */
+    private function callParentRender(): array
+    {
+        $firstRender = parent::render();
+        if ($this->mode === 'select' && !Optimizer\Util::isSelectQueryParsed($this)) {
+            $parsedSelect = $this->toParsedSelect();
+            $firstRender = $parsedSelect->expr->render();
+
+            print_r($parsedSelect);
+            echo "\n" . $firstRender[0] . "\n\n\n\n";
+        }
+
+        if (($this->args['first_render'] ?? null) === null) {
+            $this->args['first_render'] = $firstRender;
+            $secondRender = $this->render();
+            if ($firstRender !== $secondRender && !str_contains($secondRender[0], ', N\'5\')')) {
+                foreach (debug_backtrace() as $frame) {
+                    if (($frame['object'] ?? null) instanceof TestCase) {
+                        $frame['object']::assertSame($firstRender, $secondRender);
+                    }
+                }
+            }
+        }
+
+        return $firstRender;
+    }
 
     /**
      * Renders query template. If the template is not explicitly use "select" mode.
@@ -969,14 +1021,14 @@ abstract class Query extends Expression
             try {
                 $this->mode('select');
 
-                return parent::render();
+                return $this->callParentRender();
             } finally {
                 $this->mode = $modeBackup;
                 $this->template = $templateBackup;
             }
         }
 
-        return parent::render();
+        return $this->callParentRender();
     }
 
     #[\Override]
@@ -1121,6 +1173,10 @@ abstract class Query extends Expression
      */
     public function caseWhen($when, $then)
     {
+        if (is_array($when) && count($when) === 2) {
+            $when = [$when[0], null, $when[1]];
+        }
+
         $this->args['case_when'][] = [$when, $then];
 
         return $this;

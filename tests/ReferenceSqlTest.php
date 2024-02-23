@@ -531,8 +531,8 @@ class ReferenceSqlTest extends TestCase
             'items_name' => ['aggregate' => 'count', 'field' => 'name', 'type' => 'integer'],
             'items_code' => ['aggregate' => 'count', 'field' => 'code', 'type' => 'integer'], // counts only not-null values
             'items_star' => ['aggregate' => 'count', 'type' => 'integer'], // no field set, counts all rows with count(*)
-            'items_c:' => ['concat' => '::', 'field' => 'name'],
-            'items_c-' => ['aggregate' => $i->dsql()->groupConcat($i->expr('[name]'), '-')],
+            'items_c_' => ['concat' => '::', 'field' => 'name'],
+            'items_c__' => ['aggregate' => $i->dsql()->groupConcat($i->expr('[name]'), '-')],
             'len' => ['aggregate' => $i->expr('SUM(' . $makeLengthSqlFx('[name]') . ')'), 'type' => 'integer'],
             'len2' => ['expr' => 'SUM(' . $makeLengthSqlFx('[name]') . ')', 'type' => 'integer'],
             'chicken5' => ['expr' => 'SUM([])', 'args' => [5], 'type' => 'integer'],
@@ -542,8 +542,8 @@ class ReferenceSqlTest extends TestCase
         self::assertSame(2, $ll->get('items_name')); // 2 not-null values
         self::assertSame(1, $ll->get('items_code')); // only 1 not-null value
         self::assertSame(2, $ll->get('items_star')); // 2 rows in total
-        self::assertSame($ll->get('items_c:') === 'Pork::Chicken' ? 'Pork::Chicken' : 'Chicken::Pork', $ll->get('items_c:'));
-        self::assertSame($ll->get('items_c-') === 'Pork-Chicken' ? 'Pork-Chicken' : 'Chicken-Pork', $ll->get('items_c-'));
+        self::assertSame($ll->get('items_c_') === 'Pork::Chicken' ? 'Pork::Chicken' : 'Chicken::Pork', $ll->get('items_c_'));
+        self::assertSame($ll->get('items_c__') === 'Pork-Chicken' ? 'Pork-Chicken' : 'Chicken-Pork', $ll->get('items_c__'));
         self::assertSame(strlen('Chicken') + strlen('Pork'), $ll->get('len'));
         self::assertSame(strlen('Chicken') + strlen('Pork'), $ll->get('len2'));
         self::assertSame(10, $ll->get('chicken5'));
@@ -552,8 +552,8 @@ class ReferenceSqlTest extends TestCase
         self::assertSame(0, $ll->get('items_name'));
         self::assertSame(0, $ll->get('items_code'));
         self::assertSame(0, $ll->get('items_star'));
-        self::assertNull($ll->get('items_c:'));
-        self::assertNull($ll->get('items_c-'));
+        self::assertNull($ll->get('items_c_'));
+        self::assertNull($ll->get('items_c__'));
         self::assertNull($ll->get('len'));
         self::assertNull($ll->get('len2'));
         self::assertNull($ll->get('chicken5'));
