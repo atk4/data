@@ -18,7 +18,10 @@ class Connection extends BaseConnection
     {
         $configuration = parent::createDbalConfiguration();
 
-        $configuration->setMiddlewares([...$configuration->getMiddlewares(), new EnableForeignKeys()]);
+        $configuration->setMiddlewares([
+            ...$configuration->getMiddlewares(),
+            new EnableForeignKeys(),
+        ]);
 
         return $configuration;
     }
