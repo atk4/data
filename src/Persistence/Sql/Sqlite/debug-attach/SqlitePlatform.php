@@ -1097,7 +1097,12 @@ class SqlitePlatform extends AbstractPlatform
         $sql      = [];
         $tableSql = [];
         if (! $this->onSchemaAlterTable($diff, $tableSql)) {
-            $dataTable = new Table('__temp__' . $table->getName());
+            if (str_contains($table->getName(), '.')) {
+                $nameArr = explode('.', $table->getName(), 2);
+                $dataTable = new Table(/* $nameArr[0] . '.' . */ '__temp__' . $nameArr[1]);
+            } else {
+                $dataTable = new Table('__temp__' . $table->getName());
+            }
 
             $newTable = new Table(
                 $table->getQuotedName($this),
