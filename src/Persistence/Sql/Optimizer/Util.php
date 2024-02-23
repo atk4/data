@@ -18,7 +18,7 @@ class Util
      */
     private static function tryUnquoteSingleIdentifier(string $str)
     {
-        if (preg_match('~^\w+$~u', $str)) { // unquoted identifier
+        if (preg_match('~^[\w\x80-\xf7]+$~', $str)) { // unquoted identifier
             return $str;
         }
 
@@ -108,7 +108,34 @@ class Util
         return $v[1];
     }
 
-    public static function parseSelectQuery(Query $query, string $tableAlias): ParsedSelect
+    /**
+     * @param string|null $alias
+     * @param mixed       $v
+     *
+     * @return mixed
+     */
+    public static function parseSelectQueryTraverseValue(Expression $exprFactory, string $argName, $alias, $v)
+    {
+        // expand all Expressionable objects to Expression
+        if ($v instanceof Expressionable && !$v instanceof Expression) {
+            $v = $v->getDsqlExpression($exprFactory);
+        }
+
+        if (is_array($v)) {
+            $res = [];
+            foreach ($v as $k => $v2) {
+                $res[$k] = static::parseSelectQueryTraverseValue($exprFactory, $argName, is_int($k) ? null : $k, $v2);
+            }
+
+            return $res;
+        } elseif ($v instanceof Query) {
+            return static::parseSelectQuery($v, $alias);
+        }
+
+        return $v;
+    }
+
+    public static function parseSelectQuery(Query $query, ?string $tableAlias): ParsedSelect
     {
         $query->args['is_select_parsed'] = [true];
         $select = new ParsedSelect($query, $tableAlias);
@@ -117,8 +144,15 @@ class Util
         }
 
         // traverse $query and parse everything into ParsedSelect/ParsedColumn
-        foreach ($query->args as $argK => $argV) {
-            // TODO
+        foreach ($query->args as $argName => $args) {
+            foreach ($args as $alias => $v) {
+                $query->args[$argName][$alias] = static::parseSelectQueryTraverseValue(
+                    $query->expr(),
+                    $argName,
+                    is_int($alias) ? null : $alias,
+                    $v
+                );
+            }
         }
 
         return $select;

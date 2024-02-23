@@ -550,6 +550,9 @@ abstract class Query extends Expression
                 $cond = 'in';
             } elseif ($value instanceof self && $value->mode === 'select') {
                 $cond = 'in';
+            } elseif ($value instanceof Expressionable && $value->template === '{}' && ($value->args['custom'] ?? [null])[0] instanceof self) { // @phpstan-ignore-line
+                // DEVELOP for Optimizer
+                $cond = 'in';
             } else {
                 $cond = '=';
             }
@@ -938,8 +941,8 @@ abstract class Query extends Expression
             // 'mode' => $this->mode,
             'R' => 'n/a',
             'R_params' => 'n/a',
-            // 'template' => $this->template,
-            // 'templateArgs' => $this->args,
+            'template' => $this->template,
+            'templateArgs' => array_diff_key($this->args, ['is_select_parsed' => true, 'first_render' => true]),
         ];
 
         try {
@@ -949,6 +952,15 @@ abstract class Query extends Expression
             $arr['R'] = get_class($e) . ': ' . $e->getMessage();
         }
 
+        if ($arr['template'] === null || $arr['template'] === $this->templateSelect) {
+            unset($arr['R']);
+            unset($arr['R_params']);
+            unset($arr['template']);
+            if ($arr['templateArgs']['custom'] === []) {
+                unset($arr['templateArgs']['custom']);
+            }
+        }
+
         return $arr;
     }
 
@@ -956,7 +968,7 @@ abstract class Query extends Expression
 
     protected function toParsedSelect(): Optimizer\ParsedSelect
     {
-        return Optimizer\Util::parseSelectQuery($this, Optimizer\ParsedSelect::TOP_QUERY_ALIAS);
+        return Optimizer\Util::parseSelectQuery($this, null);
     }
 
     /**
@@ -977,6 +989,9 @@ abstract class Query extends Expression
         if ($this->mode === 'select' && !Optimizer\Util::isSelectQueryParsed($this)) {
             $parsedSelect = $this->toParsedSelect();
             $firstRender = $parsedSelect->expr->render();
+
+            print_r($parsedSelect);
+            echo "\n" . $firstRender[0] . "\n\n\n\n";
         }
 
         if (($this->args['first_render'] ?? null) === null) {

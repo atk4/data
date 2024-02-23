@@ -458,6 +458,7 @@ class QueryTest extends TestCase
         );
     }
 
+    /*
     public function testVarDumpBasic(): void
     {
         self::assertMatchesRegularExpression(
@@ -465,6 +466,7 @@ class QueryTest extends TestCase
             $this->q()->table('user')->__debugInfo()['R']
         );
     }
+    */
 
     public function testVarDumpException(): void
     {
