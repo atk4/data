@@ -204,7 +204,7 @@ class SqliteSchemaManager extends AbstractSchemaManager
     {
         $table = $this->normalizeName($table);
 
-        $columns = $this->selectForeignKeyColumns('', $table)
+        $columns = $this->selectForeignKeyColumns($database ?? 'main', $table)
             ->fetchAllAssociative();
 
         if (count($columns) > 0) {
@@ -765,13 +765,15 @@ ORDER BY name
 
     protected function selectForeignKeyColumns(string $databaseName, ?string $tableName = null): Result
     {
-        $sql = <<<'SQL'
+        [$databaseName, $tableName] = self::extractSchemaAsPrefixFromTableName($tableName, $databaseName);
+
+        $sql = '
             SELECT t.name AS table_name,
                    p.*
-              FROM sqlite_master t
-              JOIN pragma_foreign_key_list(t.name) p
+              FROM ' . $databaseName . 'sqlite_master t
+              JOIN ' . $databaseName . 'pragma_foreign_key_list(t.name) p
                 ON p."seq" != "-1"
-SQL;
+';
 
         $conditions = [
             "t.type = 'table'",
