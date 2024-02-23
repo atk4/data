@@ -40,9 +40,9 @@ parameters:
 
         # FC for DBAL 4.0, remove once DBAL 3.x support is dropped
         -
-            message: '~^Class Doctrine\\DBAL\\Platforms\\SqlitePlatform referenced with incorrect case: Doctrine\\DBAL\\Platforms\\SQLitePlatform\.$~'
+            message: '~^Class Doctrine\\DBAL\\(Platforms\\SqlitePlatform|Schema\\SqliteSchemaManager) referenced with incorrect case: Doctrine\\DBAL\\(Platforms\\SQLitePlatform|Schema\\SQLiteSchemaManager)\.$~'
             path: '*'
-            count: 24
+            count: 25
 
         # TODO these rules are generated, this ignores should be fixed in the code
         # for src/Schema/TestCase.php
