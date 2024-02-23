@@ -36,14 +36,14 @@ class Query extends BaseQuery
     #[\Override]
     protected function _subrenderCondition(array $row): string
     {
-        if (count($row) === 2) {
-            [$field, $value] = $row;
-            $cond = '=';
-        } elseif (count($row) >= 3) {
+        if (count($row) === 3) {
             [$field, $cond, $value] = $row;
+            if ($cond === null) {
+                $cond = '=';
+            }
         }
 
-        if (count($row) >= 2 && $field instanceof Field
+        if (count($row) === 3 && $field instanceof Field
             && in_array($field->type, ['text', 'blob'], true)) {
             if ($field->type === 'text') {
                 $field = $this->expr('LOWER([])', [$field]);
