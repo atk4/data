@@ -10,8 +10,8 @@ use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Array_\Action;
 use Atk4\Data\Persistence\Array_\Action\RenameColumnIterator;
-use Atk4\Data\Persistence\Array_\Db\Row;
-use Atk4\Data\Persistence\Array_\Db\Table;
+use Atk4\Data\Persistence\Array_\Db\RowArray;
+use Atk4\Data\Persistence\Array_\Db\TableArray;
 
 /**
  * Implements persistence driver that can save data into array and load
@@ -23,7 +23,7 @@ class Array_ extends Persistence
     /** @var array<string, array<int|string, mixed>> */
     private $seedData;
 
-    /** @var array<string, Table> */
+    /** @var array<string, TableArray> */
     private $data;
 
     /** @var array<string, int> */
@@ -59,7 +59,7 @@ class Array_ extends Persistence
             return;
         }
 
-        $this->data[$tableName] = new Table($tableName);
+        $this->data[$tableName] = new TableArray($tableName);
 
         if (isset($this->seedData[$tableName])) {
             $rows = $this->seedData[$tableName];
@@ -85,7 +85,7 @@ class Array_ extends Persistence
         }
     }
 
-    private function seedDataAndGetTable(Model $model): Table
+    private function seedDataAndGetTable(Model $model): TableArray
     {
         $this->seedData($model);
 
@@ -162,7 +162,7 @@ class Array_ extends Persistence
             }
             $row->updateValues($rowData);
         } else {
-            $row = $table->addRow(Row::class, $rowData);
+            $row = $table->addRow(RowArray::class, $rowData);
         }
     }
 

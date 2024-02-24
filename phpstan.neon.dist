@@ -16,6 +16,16 @@ parameters:
         # relax strict rules
         - '~^Only booleans are allowed in .+, .+ given( on the (left|right) side)?\.~'
         - '~^Variable (static )?(property access|method call) on .+\.~'
+        
+        # TODO
+        -
+            message: '~^Property Atk4\\Data\\Persistence\\Array_\\Db\\HashIndex::\$isUnique is never read, only written\.$~'
+            path: 'src/Persistence/Array_/Db/HashIndex.php'
+            count: 1
+        -
+            message: '~^Property Atk4\\Data\\Persistence\\Array_\\Db\\HashIndex::\$rowIndexesByHash is never read, only written\.$~'
+            path: 'src/Persistence/Array_/Db/HashIndex.php'
+            count: 1
 
         # fix https://github.com/phpstan/phpstan-deprecation-rules/issues/52 and https://github.com/phpstan/phpstan/issues/6444
         -

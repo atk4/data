@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Array_\Db;
 
-class Row
+class RowArray
 {
     /** @var int */
     private static $nextRowIndex = -1;
 
-    /** @var Table Immutable */
+    /** @var TableArray Immutable */
     private $owner;
     /** @var int Immutable */
     private $rowIndex;
     /** @var array<string, mixed> */
     private $data = [];
 
-    public function __construct(Table $owner)
+    public function __construct(TableArray $owner)
     {
         $this->owner = $owner;
         $this->rowIndex = self::getNextRowIndex();
@@ -38,7 +38,7 @@ class Row
         ];
     }
 
-    public function getOwner(): Table
+    public function getOwner(): TableArray
     {
         return $this->owner;
     }
