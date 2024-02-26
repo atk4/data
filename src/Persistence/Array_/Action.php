@@ -114,9 +114,7 @@ class Action
             $field = $args[0];
             $operator = $args[1] ?? null;
             $value = $args[2] ?? null;
-            if (count($args) === 2) {
-                $value = $operator;
-
+            if ($operator === null) {
                 $operator = '=';
             }
 
