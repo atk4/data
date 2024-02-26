@@ -415,12 +415,12 @@ abstract class Query extends Expression
      * To specify OR conditions:
      *  $q->where($q->orExpr()->where('a', 1)->where('b', 1));
      *
-     * @param string|Expressionable $field    Field or Expression
-     * @param mixed                 $operator Condition such as '=', '>' or 'not like'
-     * @param mixed                 $value    Value. Will be quoted unless you pass expression
-     * @param 'where'|'having'      $kind     Do not use directly. Use having()
-     * @param int                   $numArgs  when $kind is passed, we can't determine number of
-     *                                        actual arguments, so this argument must be specified
+     * @param string|Expressionable                      $field    Field or Expression
+     * @param ($value is null ? mixed : string|null)     $operator Condition such as '=', '>' or 'not like'
+     * @param ($operator is string|null ? mixed : never) $value    Value. Will be quoted unless you pass expression
+     * @param 'where'|'having'                           $kind     Do not use directly. Use having()
+     * @param int                                        $numArgs  when $kind is passed, we can't determine number of
+     *                                                             actual arguments, so this argument must be specified
      *
      * @return $this
      */
@@ -469,9 +469,9 @@ abstract class Query extends Expression
     /**
      * Same syntax as where().
      *
-     * @param string|Expressionable $field    Field or Expression
-     * @param mixed                 $operator Condition such as '=', '>' or 'not like'
-     * @param mixed                 $value    Value. Will be quoted unless you pass expression
+     * @param string|Expressionable                      $field    Field or Expression
+     * @param ($value is null ? mixed : string|null)     $operator Condition such as '=', '>' or 'not like'
+     * @param ($operator is string|null ? mixed : never) $value    Value. Will be quoted unless you pass expression
      *
      * @return $this
      */
