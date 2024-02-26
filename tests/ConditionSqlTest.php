@@ -352,7 +352,7 @@ class ConditionSqlTest extends TestCase
 
         $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
-        $m->addCondition('name', ['John', 'Doe']);
+        $m->addCondition('name', 'in', ['John', 'Doe']);
         self::assertCount(1, $m->export());
 
         $m = new Model($this->db, ['table' => 'user']);
@@ -362,13 +362,34 @@ class ConditionSqlTest extends TestCase
 
         $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
-        $m->addCondition('name', []); // this should not fail, should be always false
+        $m->addCondition('name', 'in', []); // this should not fail, should be always false
         self::assertCount(0, $m->export());
 
         $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->addCondition('name', 'not in', []); // this should not fail, should be always true
         self::assertCount(3, $m->export());
+    }
+
+    public function testConditionEqualWithArrayException(): void
+    {
+        $m = new Model($this->db, ['table' => 'user']);
+        $m->addField('name');
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Operator is not supported for array condition value');
+        $m->addCondition('name', ['John', 'Doe']);
+    }
+
+    public function testConditionInWithNonArrayException(): void
+    {
+        $m = new Model($this->db, ['table' => 'user']);
+        $m->addField('name');
+        $m->addCondition('name', 'not in', 'John');
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unsupported operator for non-array value');
+        $m->export();
     }
 
     public function testDateCondition(): void

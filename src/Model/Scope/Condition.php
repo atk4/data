@@ -136,12 +136,7 @@ class Condition extends AbstractScope
                 }
             }
 
-            if (!in_array($this->operator, [
-                self::OPERATOR_EQUALS,
-                self::OPERATOR_IN,
-                self::OPERATOR_DOESNOT_EQUAL,
-                self::OPERATOR_NOT_IN,
-            ], true)) {
+            if (!in_array($this->operator, [self::OPERATOR_IN, self::OPERATOR_NOT_IN], true)) {
                 throw (new Exception('Operator is not supported for array condition value'))
                     ->addMoreInfo('operator', $operator)
                     ->addMoreInfo('value', $value);

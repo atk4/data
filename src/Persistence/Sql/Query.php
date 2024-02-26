@@ -549,9 +549,7 @@ abstract class Query extends Expression
                 $value = $value->getDsqlExpression($this);
             }
 
-            if (is_array($value)) {
-                $cond = 'in';
-            } elseif ($value instanceof self && $value->mode === 'select') {
+            if ($value instanceof self && $value->mode === 'select') {
                 $cond = 'in';
             } else {
                 $cond = '=';
