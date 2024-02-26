@@ -20,8 +20,9 @@ class Query extends BaseQuery
     #[\Override]
     protected function _subrenderCondition(array $row): string
     {
-        if (count($row) >= 3) {
+        if (count($row) !== 1) {
             [$field, $cond, $value] = $row;
+
             if (in_array(strtolower($cond), ['like', 'not like', 'regexp', 'not regexp'], true)) {
                 $field = $this->expr('CAST([] AS citext)', [$field]);
                 $row = [$field, $cond, $value];

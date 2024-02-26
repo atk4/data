@@ -449,7 +449,9 @@ abstract class Query extends Expression
         } else {
             if ($numArgs === 2) {
                 $value = $cond;
-                unset($cond);
+                $cond = null;
+            } elseif ($cond === null) {
+                throw new \InvalidArgumentException();
             }
 
             if (is_object($value) && !$value instanceof Expressionable) {
@@ -458,11 +460,7 @@ abstract class Query extends Expression
                     ->addMoreInfo('value', $value);
             }
 
-            if ($numArgs === 2) {
-                $this->args[$kind][] = [$field, $value];
-            } else {
-                $this->args[$kind][] = [$field, $cond, $value];
-            }
+            $this->args[$kind][] = [$field, $cond, $value];
         }
 
         return $this;
@@ -524,12 +522,10 @@ abstract class Query extends Expression
      */
     protected function _subrenderCondition(array $row): string
     {
-        if (count($row) === 3) {
-            [$field, $cond, $value] = $row;
-        } elseif (count($row) === 2) {
-            [$field, $cond] = $row;
-        } elseif (count($row) === 1) {
+        if (count($row) === 1) {
             [$field] = $row;
+        } elseif (count($row) === 3) {
+            [$field, $cond, $value] = $row;
         } else {
             throw new \InvalidArgumentException();
         }
@@ -541,10 +537,8 @@ abstract class Query extends Expression
             return $field;
         }
 
-        // if no condition defined - use default
-        if (count($row) === 2) {
-            $value = $cond;
-
+        // if no condition defined - set default condition
+        if ($cond === null) {
             if ($value instanceof Expressionable) {
                 $value = $value->getDsqlExpression($this);
             }
@@ -568,7 +562,7 @@ abstract class Query extends Expression
         }
 
         // special conditions (IS | IS NOT) if value is null
-        if ($value === null) { // @phpstan-ignore-line see https://github.com/phpstan/phpstan/issues/4173
+        if ($value === null) {
             if ($cond === '=') {
                 return $field . ' is null';
             } elseif ($cond === '!=') {
