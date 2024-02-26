@@ -18,7 +18,7 @@ class Condition extends AbstractScope
     use ReadableCaptionTrait;
 
     /** @var string|Field|Expressionable */
-    public $key;
+    public $field;
 
     /** @var string|null */
     public $operator;
@@ -92,17 +92,17 @@ class Condition extends AbstractScope
     ];
 
     /**
-     * @param string|Expressionable                 $key
+     * @param string|Expressionable                 $field
      * @param ($value is null ? mixed : string)     $operator
      * @param ($operator is string ? mixed : never) $value
      */
-    public function __construct($key, $operator = null, $value = null)
+    public function __construct($field, $operator = null, $value = null)
     {
-        if ($key instanceof AbstractScope) {
+        if ($field instanceof AbstractScope) {
             throw new Exception('Only Scope can contain another conditions');
-        } elseif ($key instanceof Field) { // for BC
-            $key = $key->shortName;
-        } elseif (!is_string($key) && !$key instanceof Expressionable) { // @phpstan-ignore-line
+        } elseif ($field instanceof Field) { // for BC
+            $field = $field->shortName;
+        } elseif (!is_string($field) && !$field instanceof Expressionable) { // @phpstan-ignore-line
             throw new Exception('Field must be a string or an instance of Expressionable');
         }
 
@@ -111,12 +111,12 @@ class Condition extends AbstractScope
             $operator = self::OPERATOR_EQUALS;
         }
 
-        $this->key = $key;
+        $this->field = $field;
         $this->value = $value;
 
         if ($operator === null) {
             // at least MSSQL database always requires an operator
-            if (!$key instanceof Expressionable || $value !== null) {
+            if (!$field instanceof Expressionable || $value !== null) {
                 throw new Exception('Operator must be specified');
             }
         } else {
@@ -161,8 +161,8 @@ class Condition extends AbstractScope
                 && !$this->value instanceof Expressionable
                 && !$this->value instanceof Persistence\Array_\Action // needed to pass hintable tests
             ) {
-                // key containing '/' means chained references and it is handled in toQueryArguments method
-                $field = $this->key;
+                // field containing '/' means chained references and it is handled in toQueryArguments method
+                $field = $this->field;
                 if (is_string($field) && !str_contains($field, '/')) {
                     $field = $model->getField($field);
                 }
@@ -185,7 +185,7 @@ class Condition extends AbstractScope
      */
     public function toQueryArguments(): array
     {
-        $field = $this->key;
+        $field = $this->field;
         $operator = $this->operator;
         $value = $this->value;
 
@@ -296,18 +296,18 @@ class Condition extends AbstractScope
             throw new Exception('Condition must be associated with Model to convert to words');
         }
 
-        $key = $this->keyToWords($model);
+        $field = $this->fieldToWords($model);
         $operator = $this->operatorToWords();
         $value = $this->valueToWords($model, $this->value);
 
-        return trim($key . ' ' . $operator . ' ' . $value);
+        return trim($field . ' ' . $operator . ' ' . $value);
     }
 
-    protected function keyToWords(Model $model): string
+    protected function fieldToWords(Model $model): string
     {
         $words = [];
 
-        $field = $this->key;
+        $field = $this->field;
         if (is_string($field)) {
             if (str_contains($field, '/')) {
                 $references = explode('/', $field);
@@ -385,7 +385,7 @@ class Condition extends AbstractScope
         }
 
         // handling of scope on references
-        $field = $this->key;
+        $field = $this->field;
         if (is_string($field)) {
             if (str_contains($field, '/')) {
                 $references = explode('/', $field);
