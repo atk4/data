@@ -7,9 +7,12 @@ namespace Atk4\Data\Persistence\Sql\Sqlite;
 use Atk4\Data\Persistence\Sql\Connection as BaseConnection;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Driver\AbstractSQLiteDriver\Middleware\EnableForeignKeys;
+use Doctrine\DBAL\DriverManager;
 
 class Connection extends BaseConnection
 {
+    private static string $driverVersion;
+
     protected string $expressionClass = Expression::class;
     protected string $queryClass = Query::class;
 
@@ -25,5 +28,19 @@ class Connection extends BaseConnection
         ]);
 
         return $configuration;
+    }
+
+    /**
+     * @internal
+     */
+    public static function getDriverVersion(): string
+    {
+        if ((self::$driverVersion ?? null) === null) {
+            $dbalConnection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true]);
+            $dbalConnection->connect();
+            self::$driverVersion = $dbalConnection->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
+        }
+
+        return self::$driverVersion;
     }
 }

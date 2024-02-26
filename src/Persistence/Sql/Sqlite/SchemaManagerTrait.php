@@ -31,7 +31,7 @@ trait SchemaManagerTrait
         }
     }
 
-    // fix collations unescape for SqliteSchemaManager::parseColumnCollationFromSQL() method
+    // fix collations unescape for SQLiteSchemaManager::parseColumnCollationFromSQL() method
     // https://github.com/doctrine/dbal/issues/6129
 
     #[\Override]
@@ -47,9 +47,9 @@ trait SchemaManagerTrait
         return $res;
     }
 
-    // fix quoted table name support for private SqliteSchemaManager::getCreateTableSQL() method
+    // fix quoted table name support for private SQLiteSchemaManager::getCreateTableSQL() method
     // https://github.com/doctrine/dbal/blob/3.3.7/src/Schema/SqliteSchemaManager.php#L539
-    // TODO submit a PR with fixed SqliteSchemaManager to DBAL
+    // TODO submit a PR with fixed SQLiteSchemaManager to DBAL
 
     private function unquoteTableIdentifier(string $tableName): string
     {
