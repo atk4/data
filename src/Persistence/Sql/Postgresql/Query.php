@@ -23,7 +23,7 @@ class Query extends BaseQuery
         if (count($row) !== 1) {
             [$field, $cond, $value] = $row;
 
-            if (in_array(strtolower($cond), ['like', 'not like', 'regexp', 'not regexp'], true)) {
+            if (in_array(strtolower($cond ?? '='), ['like', 'not like', 'regexp', 'not regexp'], true)) {
                 $field = $this->expr('CAST([] AS citext)', [$field]);
                 $row = [$field, $cond, $value];
             }

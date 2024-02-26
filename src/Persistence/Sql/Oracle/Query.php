@@ -40,12 +40,12 @@ class Query extends BaseQuery
             [$field, $cond, $value] = $row;
 
             if ($field instanceof Field && in_array($field->type, ['text', 'blob'], true)) {
-                if ($field->type === 'text') {
-                    $field = $this->expr('LOWER([])', [$field]);
-                    $value = $this->expr('LOWER([])', [$value]);
-                }
+                if (in_array($cond ?? '=', ['=', '!='], true)) {
+                    if ($field->type === 'text') {
+                        $field = $this->expr('LOWER([])', [$field]);
+                        $value = $this->expr('LOWER([])', [$value]);
+                    }
 
-                if (in_array($cond, ['=', '!='], true)) {
                     $row = [$this->expr('dbms_lob.compare([], [])', [$field, $value]), $cond, 0];
                 } else {
                     throw (new Exception('Unsupported CLOB/BLOB field operator'))
