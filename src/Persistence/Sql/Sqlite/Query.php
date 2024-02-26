@@ -27,13 +27,36 @@ class Query extends BaseQuery
     #[\Override]
     protected function _renderConditionBinary(string $operator, string $sqlLeft, string $sqlRight): string
     {
-        // TODO deduplicate the duplicated SQL using https://sqlite.org/forum/info/c9970a37edf11cd1
-        // https://github.com/sqlite/sqlite/commit/5e4233a9e4
-        // expected to be supported since SQLite v3.45.0
-
         /** @var bool */
         $allowCastLeft = true;
         $allowCastRight = !in_array($operator, ['in', 'not in'], true);
+
+        // https://sqlite.org/forum/info/c9970a37edf11cd1
+        $subqueryFromSql = null;
+        if (version_compare(Connection::getDriverVersion(), '3.45') >= 0) {
+            $nonTrivialSqlRegex = '~\s|\(~';
+            $subqueryLeftColumnSql = $allowCastLeft && preg_match($nonTrivialSqlRegex, $sqlLeft)
+                ? $this->escapeIdentifier('__atk4_affinity_left__')
+                : null;
+            $subqueryRightColumnSql = $allowCastRight && preg_match($nonTrivialSqlRegex, $sqlRight)
+                ? $this->escapeIdentifier('__atk4_affinity_right__')
+                : null;
+
+            if ($subqueryLeftColumnSql !== null || $subqueryRightColumnSql !== null) {
+                $subqueryFromSql = 'select ';
+                if ($subqueryLeftColumnSql !== null) {
+                    $subqueryFromSql .= $sqlLeft . ' ' . $subqueryLeftColumnSql;
+                    $sqlLeft = $subqueryLeftColumnSql;
+                }
+                if ($subqueryRightColumnSql !== null) {
+                    if ($subqueryLeftColumnSql !== null) {
+                        $subqueryFromSql .= ', ';
+                    }
+                    $subqueryFromSql .= $sqlRight . ' ' . $subqueryRightColumnSql;
+                    $sqlRight = $subqueryRightColumnSql;
+                }
+            }
+        }
 
         $res = '';
         if ($allowCastLeft) {
@@ -52,6 +75,10 @@ class Query extends BaseQuery
         }
         if ($allowCastLeft) {
             $res .= ' end';
+        }
+
+        if ($subqueryFromSql !== null) {
+            $res = '(select ' . $res . ' from (' . $subqueryFromSql . ') ' . $this->escapeIdentifier('__atk4_affinity_tmp__') . ')';
         }
 
         return $res;
