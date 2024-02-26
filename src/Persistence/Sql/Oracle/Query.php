@@ -37,19 +37,19 @@ class Query extends BaseQuery
     protected function _subrenderCondition(array $row): string
     {
         if (count($row) !== 1) {
-            [$field, $cond, $value] = $row;
+            [$field, $operator, $value] = $row;
 
             if ($field instanceof Field && in_array($field->type, ['text', 'blob'], true)) {
-                if (in_array($cond ?? '=', ['=', '!='], true)) {
+                if (in_array($operator ?? '=', ['=', '!='], true)) {
                     if ($field->type === 'text') {
                         $field = $this->expr('LOWER([])', [$field]);
                         $value = $this->expr('LOWER([])', [$value]);
                     }
 
-                    $row = [$this->expr('dbms_lob.compare([], [])', [$field, $value]), $cond, 0];
+                    $row = [$this->expr('dbms_lob.compare([], [])', [$field, $value]), $operator, 0];
                 } else {
                     throw (new Exception('Unsupported CLOB/BLOB field operator'))
-                        ->addMoreInfo('operator', $cond)
+                        ->addMoreInfo('operator', $operator)
                         ->addMoreInfo('type', $field->type);
                 }
             }

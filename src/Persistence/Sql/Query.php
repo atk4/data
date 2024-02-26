@@ -415,16 +415,16 @@ abstract class Query extends Expression
      * To specify OR conditions:
      *  $q->where($q->orExpr()->where('a', 1)->where('b', 1));
      *
-     * @param string|Expressionable $field   Field or Expression
-     * @param mixed                 $cond    Condition such as '=', '>' or 'not like'
-     * @param mixed                 $value   Value. Will be quoted unless you pass expression
-     * @param 'where'|'having'      $kind    Do not use directly. Use having()
-     * @param int                   $numArgs when $kind is passed, we can't determine number of
-     *                                       actual arguments, so this argument must be specified
+     * @param string|Expressionable $field    Field or Expression
+     * @param mixed                 $operator Condition such as '=', '>' or 'not like'
+     * @param mixed                 $value    Value. Will be quoted unless you pass expression
+     * @param 'where'|'having'      $kind     Do not use directly. Use having()
+     * @param int                   $numArgs  when $kind is passed, we can't determine number of
+     *                                        actual arguments, so this argument must be specified
      *
      * @return $this
      */
-    public function where($field, $cond = null, $value = null, $kind = 'where', $numArgs = null)
+    public function where($field, $operator = null, $value = null, $kind = 'where', $numArgs = null)
     {
         // number of passed arguments will be used to determine if arguments were specified or not
         if ($numArgs === null) {
@@ -448,9 +448,9 @@ abstract class Query extends Expression
             $this->args[$kind][] = [$field];
         } else {
             if ($numArgs === 2) {
-                $value = $cond;
-                $cond = null;
-            } elseif ($cond === null) {
+                $value = $operator;
+                $operator = null;
+            } elseif ($operator === null) {
                 throw new \InvalidArgumentException();
             }
 
@@ -460,7 +460,7 @@ abstract class Query extends Expression
                     ->addMoreInfo('value', $value);
             }
 
-            $this->args[$kind][] = [$field, $cond, $value];
+            $this->args[$kind][] = [$field, $operator, $value];
         }
 
         return $this;
@@ -469,15 +469,15 @@ abstract class Query extends Expression
     /**
      * Same syntax as where().
      *
-     * @param string|Expressionable $field Field or Expression
-     * @param mixed                 $cond  Condition such as '=', '>' or 'not like'
-     * @param mixed                 $value Value. Will be quoted unless you pass expression
+     * @param string|Expressionable $field    Field or Expression
+     * @param mixed                 $operator Condition such as '=', '>' or 'not like'
+     * @param mixed                 $value    Value. Will be quoted unless you pass expression
      *
      * @return $this
      */
-    public function having($field, $cond = null, $value = null)
+    public function having($field, $operator = null, $value = null)
     {
-        return $this->where($field, $cond, $value, 'having', 'func_num_args'());
+        return $this->where($field, $operator, $value, 'having', 'func_num_args'());
     }
 
     /**
@@ -525,7 +525,7 @@ abstract class Query extends Expression
         if (count($row) === 1) {
             [$field] = $row;
         } elseif (count($row) === 3) {
-            [$field, $cond, $value] = $row;
+            [$field, $operator, $value] = $row;
         } else {
             throw new \InvalidArgumentException();
         }
@@ -536,45 +536,45 @@ abstract class Query extends Expression
             return $field;
         }
 
-        if ($cond === null) {
+        if ($operator === null) {
             if ($value instanceof Expressionable) {
                 $value = $value->getDsqlExpression($this);
             }
 
             if (is_array($value)) {
-                $cond = 'in';
+                $operator = 'in';
             } elseif ($value instanceof self && $value->mode === 'select') {
-                $cond = 'in';
+                $operator = 'in';
             } else {
-                $cond = '=';
+                $operator = '=';
             }
         } else {
-            $cond = strtolower($cond);
+            $operator = strtolower($operator);
         }
 
-        if (!in_array($cond, $this->supportedOperators, true)) {
+        if (!in_array($operator, $this->supportedOperators, true)) {
             throw (new Exception('Unsupported operator'))
-                ->addMoreInfo('operator', $cond);
+                ->addMoreInfo('operator', $operator);
         }
 
         // special conditions (IS | IS NOT) if value is null
         if ($value === null) {
-            if ($cond === '=') {
+            if ($operator === '=') {
                 return $field . ' is null';
-            } elseif ($cond === '!=') {
+            } elseif ($operator === '!=') {
                 return $field . ' is not null';
             }
 
             throw (new Exception('Unsupported operator for null value'))
-                ->addMoreInfo('operator', $cond);
+                ->addMoreInfo('operator', $operator);
         }
 
         // special conditions (IN | NOT IN) if value is array
         if (is_array($value)) {
-            if (in_array($cond, ['in', 'not in'], true)) {
+            if (in_array($operator, ['in', 'not in'], true)) {
                 // special treatment of empty array condition
                 if (count($value) === 0) {
-                    if ($cond === 'in') {
+                    if ($operator === 'in') {
                         return '1 = 0'; // never true
                     }
 
@@ -584,27 +584,27 @@ abstract class Query extends Expression
                 foreach ($value as $v) {
                     if ($v === null) {
                         throw (new Exception('Null value in IN operator is not supported'))
-                            ->addMoreInfo('operator', $cond);
+                            ->addMoreInfo('operator', $operator);
                     }
                 }
 
                 $values = array_map(fn ($v) => $this->consume($v, self::ESCAPE_PARAM), $value);
 
-                return $this->_renderConditionInOperator($cond === 'not in', $field, $values);
+                return $this->_renderConditionInOperator($operator === 'not in', $field, $values);
             }
 
             throw (new Exception('Unsupported operator for array value'))
-                ->addMoreInfo('operator', $cond);
-        } elseif (!$value instanceof Expressionable && in_array($cond, ['in', 'not in'], true)) {
+                ->addMoreInfo('operator', $operator);
+        } elseif (!$value instanceof Expressionable && in_array($operator, ['in', 'not in'], true)) {
             throw (new Exception('Unsupported operator for non-array value'))
-                ->addMoreInfo('operator', $cond);
+                ->addMoreInfo('operator', $operator);
         }
 
         // if value is object, then it should be Expression or Query itself
         // otherwise just escape value
         $value = $this->consume($value, self::ESCAPE_PARAM);
 
-        return $this->_renderConditionBinary($cond, $field, $value);
+        return $this->_renderConditionBinary($operator, $field, $value);
     }
 
     protected function _renderWhere(): ?string
