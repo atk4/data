@@ -116,7 +116,7 @@ class Condition extends AbstractScope
 
         if ($operator === null) {
             // at least MSSQL database always requires an operator
-            if (!$key instanceof Expressionable) {
+            if (!$key instanceof Expressionable || $value !== null) {
                 throw new Exception('Operator must be specified');
             }
         } else {
@@ -185,10 +185,6 @@ class Condition extends AbstractScope
      */
     public function toQueryArguments(): array
     {
-        if ($this->isEmpty()) {
-            return []; // @phpstan-ignore-line
-        }
-
         $field = $this->key;
         $operator = $this->operator;
         $value = $this->value;
@@ -258,22 +254,22 @@ class Condition extends AbstractScope
         return [$field, $operator, $value];
     }
 
+    /**
+     * @return false
+     */
     #[\Override]
     public function isEmpty(): bool
     {
-        return $this->key === null
-            && $this->operator === null
-            && $this->value === null;
+        return false;
     }
 
+    /**
+     * @return never
+     */
     #[\Override]
     public function clear(): self
     {
-        $this->key = null; // @phpstan-ignore-line
-        $this->operator = null;
-        $this->value = null;
-
-        return $this;
+        throw new Exception('Condition does not support clear operation');
     }
 
     #[\Override]
