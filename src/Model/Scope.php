@@ -18,12 +18,11 @@ class Scope extends AbstractScope
 {
     use ContainerTrait;
 
-    // junction definitions
     public const OR = 'OR';
     public const AND = 'AND';
 
     /** @var self::AND|self::OR Junction to use in case more than one element. */
-    protected $junction = self::AND;
+    protected string $junction = self::AND;
 
     /**
      * Create a Scope from array of condition objects or condition arrays.
@@ -94,7 +93,7 @@ class Scope extends AbstractScope
      *
      * @return array<AbstractScope>
      */
-    public function getNestedConditions()
+    public function getNestedConditions(): array
     {
         return $this->elements;
     }
