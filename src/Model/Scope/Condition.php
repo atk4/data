@@ -181,7 +181,7 @@ class Condition extends AbstractScope
     }
 
     /**
-     * @return array<0|1|2, mixed>
+     * @return array{mixed}|array{mixed, string|null, mixed}
      */
     public function toQueryArguments(): array
     {

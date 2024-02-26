@@ -518,7 +518,7 @@ abstract class Query extends Expression
     }
 
     /**
-     * @param array<0|1|2, mixed> $row
+     * @param array{mixed}|array{mixed, string|null, mixed} $row
      */
     protected function _subrenderCondition(array $row): string
     {
