@@ -533,11 +533,9 @@ abstract class Query extends Expression
         $field = $this->consume($field, self::ESCAPE_IDENTIFIER_SOFT);
 
         if (count($row) === 1) {
-            // only a single parameter was passed, so we simply include all
             return $field;
         }
 
-        // if no condition defined - set default condition
         if ($cond === null) {
             if ($value instanceof Expressionable) {
                 $value = $value->getDsqlExpression($this);
@@ -553,8 +551,6 @@ abstract class Query extends Expression
         } else {
             $cond = strtolower($cond);
         }
-
-        // below we can be sure that all 3 arguments has been passed
 
         if (!in_array($cond, $this->supportedOperators, true)) {
             throw (new Exception('Unsupported operator'))
