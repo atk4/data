@@ -9,8 +9,6 @@ use Doctrine\DBAL\Driver\Middleware\AbstractConnectionMiddleware;
 
 class PreserveAutoincrementOnRollbackConnectionMiddleware extends AbstractConnectionMiddleware
 {
-    private static string $libraryVersion;
-
     private function createExpressionFromStringLiteral(string $value): Expression
     {
         return new Expression('\'' . str_replace('\'', '\'\'', $value) . '\'');
@@ -21,14 +19,7 @@ class PreserveAutoincrementOnRollbackConnectionMiddleware extends AbstractConnec
      */
     protected function listSequences(): array
     {
-        if ((self::$libraryVersion ?? null) === null) {
-            $getLibraryVersionSql = (new Query())
-                ->field('sqlite_version()')
-                ->render()[0];
-            self::$libraryVersion = $this->query($getLibraryVersionSql)->fetchOne();
-        }
-
-        if (version_compare(self::$libraryVersion, '3.37') < 0) {
+        if (version_compare(Connection::getDriverVersion(), '3.37') < 0) {
             $listAllSchemasSql = (new Query())
                 ->table('pragma_database_list')
                 ->field('name')

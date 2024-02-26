@@ -180,6 +180,11 @@ abstract class TestCase extends BaseTestCase
                 $actualSql = preg_replace('~case when typeof\((.+?)\) in \(\'integer\', \'real\'\) then cast\(\1 as numeric\) (.{1,20}?) (.+?) else \1 \2 \3 end~s', '$1 $2 $3', $actualSql);
                 $actualSql = preg_replace('~case when typeof\((.+?)\) in \(\'integer\', \'real\'\) then (.+?) (.{1,20}?) cast\(\1 as numeric\) else \2 \3 \1 end~s', '$2 $3 $1', $actualSql);
             } while ($actualSql !== $actualSqlPrev);
+            do {
+                $actualSqlPrev = $actualSql;
+                $actualSql = preg_replace('~\(select `__atk4_affinity_left__` (.{1,20}?) `__atk4_affinity_right__` from \(select (.+?) `__atk4_affinity_left__`, (.+?) `__atk4_affinity_right__`\) `__atk4_affinity_tmp__`\)~s', '$2 $1 $3', $actualSql);
+                $actualSql = preg_replace('~\(select `__atk4_affinity_left__` (.{1,20}?) (.+?) from \(select (.+?) `__atk4_affinity_left__`\) `__atk4_affinity_tmp__`\)~s', '$3 $1 $2', $actualSql);
+            } while ($actualSql !== $actualSqlPrev);
         }
 
         self::assertSame($this->convertSqlFromSqlite($expectedSqliteSql), $actualSql, $message);
