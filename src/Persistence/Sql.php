@@ -330,7 +330,11 @@ class Sql extends Persistence
 
             // simple condition
             if ($condition instanceof Model\Scope\Condition) {
-                $query->where(...$condition->toQueryArguments());
+                $whereArgs = $condition->toQueryArguments();
+                if (count($whereArgs) === 3 && $whereArgs[1] === null) {
+                    unset($whereArgs[1]);
+                }
+                $query->where(...$whereArgs);
             }
 
             // nested conditions
