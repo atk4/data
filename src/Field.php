@@ -376,7 +376,7 @@ class Field implements Expressionable
      * @param string|null $operator one of Scope\Condition operators
      * @param mixed       $value    the condition value to be handled
      *
-     * @return array{$this, string, mixed}
+     * @return array{$this, string|null, mixed}
      */
     public function getQueryArguments($operator, $value): array
     {

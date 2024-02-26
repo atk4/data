@@ -181,12 +181,12 @@ class Condition extends AbstractScope
     }
 
     /**
-     * @return array<0|1|2, mixed>
+     * @return array{mixed}|array{mixed, string|null, mixed}
      */
     public function toQueryArguments(): array
     {
         if ($this->isEmpty()) {
-            return [];
+            return []; // @phpstan-ignore-line
         }
 
         $field = $this->key;
@@ -251,7 +251,7 @@ class Condition extends AbstractScope
             // skip explicitly using OPERATOR_EQUALS as in some cases it is transformed to OPERATOR_IN
             // for instance in DSQL so let exact operator be handled by Persistence
             if ($operator === self::OPERATOR_EQUALS) {
-                return [$field, $value];
+                return [$field, null, $value];
             }
         }
 
@@ -261,7 +261,9 @@ class Condition extends AbstractScope
     #[\Override]
     public function isEmpty(): bool
     {
-        return array_filter([$this->key, $this->operator, $this->value]) ? false : true;
+        return $this->key === null
+            && $this->operator === null
+            && $this->value === null;
     }
 
     #[\Override]
