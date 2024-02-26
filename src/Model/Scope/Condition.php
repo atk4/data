@@ -186,7 +186,7 @@ class Condition extends AbstractScope
     public function toQueryArguments(): array
     {
         if ($this->isEmpty()) {
-            return [];
+            return []; // @phpstan-ignore-line
         }
 
         $field = $this->key;
@@ -261,7 +261,9 @@ class Condition extends AbstractScope
     #[\Override]
     public function isEmpty(): bool
     {
-        return array_filter([$this->key, $this->operator, $this->value]) ? false : true;
+        return $this->key === null
+            && $this->operator === null
+            && $this->value === null;
     }
 
     #[\Override]
