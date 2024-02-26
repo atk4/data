@@ -279,7 +279,7 @@ class Condition extends AbstractScope
             $this->operator = self::$operators[$this->operator]['negate'];
         } else {
             throw (new Exception('Negation of condition is not supported for this operator'))
-                ->addMoreInfo('operator', $this->operator ?? 'no operator');
+                ->addMoreInfo('operator', $this->operator);
         }
 
         return $this;
@@ -325,7 +325,9 @@ class Condition extends AbstractScope
                 $words[] = 'where';
 
                 if ($field === '#') {
-                    $words[] = $this->operator ? 'number of records' : 'any referenced record exists';
+                    $words[] = $this->operator
+                        ? 'number of records'
+                        : 'any referenced record exists';
                 }
             }
 
@@ -345,7 +347,9 @@ class Condition extends AbstractScope
 
     protected function operatorToWords(): string
     {
-        return $this->operator ? self::$operators[$this->operator]['label'] : '';
+        return $this->operator
+            ? self::$operators[$this->operator]['label']
+            : '';
     }
 
     /**
@@ -354,7 +358,9 @@ class Condition extends AbstractScope
     protected function valueToWords(Model $model, $value): string
     {
         if ($value === null) {
-            return $this->operator ? 'empty' : '';
+            return $this->operator
+                ? 'empty'
+                : '';
         }
 
         if (is_array($value)) {
@@ -400,7 +406,9 @@ class Condition extends AbstractScope
         $title = null;
         if ($field instanceof Field && $field->hasReference()) {
             // make sure we set the value in the Model
-            $entity = $model->isEntity() ? clone $model : $model->createEntity();
+            $entity = $model->isEntity()
+                ? clone $model
+                : $model->createEntity();
             $entity->set($field->shortName, $value);
 
             // then take the title
