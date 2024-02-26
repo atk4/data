@@ -20,8 +20,7 @@ class Condition extends AbstractScope
     /** @var string|Field|Expressionable */
     public $field;
 
-    /** @var string|null */
-    public $operator;
+    public ?string $operator = null;
 
     /** @var mixed */
     public $value;
