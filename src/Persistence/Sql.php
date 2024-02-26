@@ -531,7 +531,7 @@ class Sql extends Persistence
     }
 
     /**
-     * @param mixed $idRaw
+     * @param scalar $idRaw
      */
     private function assertExactlyOneRecordUpdated(Model $model, $idRaw, int $affectedRows, string $operation): void
     {

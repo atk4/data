@@ -200,7 +200,7 @@ abstract class Persistence
     /**
      * @param array<scalar|null> $dataRaw
      *
-     * @return mixed
+     * @return scalar
      */
     protected function insertRaw(Model $model, array $dataRaw)
     {
@@ -246,7 +246,7 @@ abstract class Persistence
     }
 
     /**
-     * @param mixed              $idRaw
+     * @param scalar             $idRaw
      * @param array<scalar|null> $dataRaw
      */
     protected function updateRaw(Model $model, $idRaw, array $dataRaw): void
@@ -285,7 +285,7 @@ abstract class Persistence
     }
 
     /**
-     * @param mixed $idRaw
+     * @param scalar $idRaw
      */
     protected function deleteRaw(Model $model, $idRaw): void
     {
