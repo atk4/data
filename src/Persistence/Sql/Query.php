@@ -1115,6 +1115,10 @@ abstract class Query extends Expression
      */
     public function caseWhen($when, $then)
     {
+        if (is_array($when) && count($when) === 2) {
+            $when = [$when[0], null, $when[1]];
+        }
+
         $this->args['case_when'][] = [$when, $then];
 
         return $this;
