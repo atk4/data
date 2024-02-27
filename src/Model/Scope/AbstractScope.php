@@ -25,14 +25,16 @@ abstract class AbstractScope
 
     /**
      * @param Model\Scope $owner
+     *
+     * @return $this
      */
     public function setOwner(object $owner)
     {
-        if (!$owner instanceof self) {
+        if (!$owner instanceof self) { // @phpstan-ignore-line
             throw new Exception('Scope can only be added as element to scope');
         }
 
-        $this->_setOwner($owner);
+        return $this->_setOwner($owner);
     }
 
     /**
