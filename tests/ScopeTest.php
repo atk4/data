@@ -229,7 +229,7 @@ class ScopeTest extends TestCase
         $country->addCondition('name', '==', 'abc');
     }
 
-    public function testConditionUnsupportedNegate(): void
+    public function testConditionNegateUnsupportedException(): void
     {
         $condition = new Condition($this->getConnection()->expr('1 = 1'));
 
@@ -238,13 +238,23 @@ class ScopeTest extends TestCase
         $condition->negate();
     }
 
-    public function testRootScopeUnsupportedNegate(): void
+    public function testRootScopeNegateException(): void
     {
         $country = new SCountry($this->db);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Model scope cannot be negated');
+        $this->expectExceptionMessage('Model root scope cannot be negated');
         $country->scope()->negate();
+    }
+
+    public function testRootScopeCreateAnd(): void
+    {
+        self::assertSame(Scope::class, get_class(Scope\RootScope::createAnd()));
+    }
+
+    public function testRootScopeCreateOr(): void
+    {
+        self::assertSame(Scope::class, get_class(Scope\RootScope::createOr()));
     }
 
     public function testConditionOnReferencedRecords(): void
