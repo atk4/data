@@ -220,13 +220,27 @@ class ScopeTest extends TestCase
         $condition->toWords();
     }
 
-    public function testConditionUnsupportedOperator(): void
+    public function testConditionUnsupportedOperatorException(): void
     {
         $country = new SCountry($this->db);
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Operator is not supported');
         $country->addCondition('name', '==', 'abc');
+    }
+
+    public function testConditionUnsupportedOperatorWithArrayValueException(): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Operator is not supported for array condition value');
+        new Condition('name', '>', ['a', 'b']);
+    }
+
+    public function testConditionMultiDimensionalArrayException(): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Multi-dimensional array as condition value is not supported');
+        new Condition('name', ['a', 'b' => ['c']]);
     }
 
     public function testConditionNestedException(): void
@@ -517,19 +531,5 @@ class ScopeTest extends TestCase
 
         self::assertTrue($scope->isEmpty());
         self::assertEmpty($scope->toWords($user));
-    }
-
-    public function testInvalid1(): void
-    {
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Operator is not supported for array condition value');
-        new Condition('name', '>', ['a', 'b']);
-    }
-
-    public function testInvalid2(): void
-    {
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Multi-dimensional array as condition value is not supported');
-        new Condition('name', ['a', 'b' => ['c']]);
     }
 }
