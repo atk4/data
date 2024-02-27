@@ -416,6 +416,15 @@ class ScopeTest extends TestCase
         self::assertCount(4, $user->export());
     }
 
+    public function testScopeInitNonScopeOwnerException(): void
+    {
+        $scope = Scope::createAnd();
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Scope can only be added as element to scope');
+        $scope->setOwner(new Model());
+    }
+
     public function testScopeToWords(): void
     {
         $user = new SUser($this->db);
