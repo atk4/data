@@ -480,6 +480,13 @@ class ScopeTest extends TestCase
         self::assertTrue($scope->isOr());
     }
 
+    public function testUnsupportedJunctionException(): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unsupported compound condition junction');
+        new Scope([], '&&');
+    }
+
     public function testAnd(): void
     {
         $user = new SUser($this->db);

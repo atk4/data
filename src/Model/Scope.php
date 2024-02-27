@@ -32,7 +32,7 @@ class Scope extends AbstractScope
     public function __construct(array $conditions = [], string $junction = self::AND)
     {
         if (!in_array($junction, [self::OR, self::AND], true)) {
-            throw (new Exception('Using invalid CompondCondition junction'))
+            throw (new Exception('Unsupported compound condition junction'))
                 ->addMoreInfo('junction', $junction);
         }
 
