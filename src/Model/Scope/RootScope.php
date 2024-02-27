@@ -14,8 +14,7 @@ use Atk4\Data\Model;
  */
 class RootScope extends Model\Scope
 {
-    /** @var Model */
-    protected $model;
+    protected Model $model;
 
     protected function __construct(array $conditions = [])
     {
@@ -29,7 +28,7 @@ class RootScope extends Model\Scope
     {
         $model->assertIsModel();
 
-        if ($this->model !== $model) {
+        if (($this->model ?? null) !== $model) {
             $this->model = $model;
 
             $this->onChangeModel();
@@ -47,7 +46,7 @@ class RootScope extends Model\Scope
     #[\Override]
     public function negate(): self
     {
-        throw new Exception('Model scope cannot be negated');
+        throw new Exception('Model root scope cannot be negated');
     }
 
     /**

@@ -246,9 +246,8 @@ class Array_ extends Persistence
 
         if (is_object($model->table)) {
             $action = $this->action($model, 'select');
-            $condition = new Model\Scope\Condition('', $id);
-            $condition->key = $model->getIdField();
-            $condition->setOwner($model->createEntity()); // TODO needed for typecasting to apply
+            $condition = new Model\Scope\Condition($model->getIdField(), $id);
+            $condition->setOwner($model->scope()); // needed for typecasting to apply
             $action->filter($condition);
 
             $rowData = $action->getRow();
@@ -300,7 +299,7 @@ class Array_ extends Persistence
     /**
      * Generates new record ID.
      *
-     * @return string
+     * @return int|string
      */
     public function generateNewId(Model $model)
     {
@@ -334,7 +333,7 @@ class Array_ extends Persistence
     /**
      * Last ID inserted.
      *
-     * @return mixed
+     * @return int|string
      */
     public function lastInsertId(Model $model = null)
     {

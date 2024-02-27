@@ -18,19 +18,30 @@ abstract class AbstractScope
     use InitializerTrait {
         init as private _init;
     }
-    use TrackableTrait;
+    use TrackableTrait {
+        setOwner as private _setOwner;
+    }
     use WarnDynamicPropertyTrait;
+
+    /**
+     * @param Model\Scope $owner
+     *
+     * @return $this
+     */
+    public function setOwner(object $owner)
+    {
+        if (!$owner instanceof self) { // @phpstan-ignore-line
+            throw new Exception('Scope can only be added as element to scope');
+        }
+
+        return $this->_setOwner($owner);
+    }
 
     /**
      * Method is executed when the scope is added to parent scope using Scope::add().
      */
     protected function init(): void
     {
-        $owner = $this->getOwner();
-        if (!$owner instanceof self) { // @phpstan-ignore-line
-            throw new Exception('Scope can only be added as element to scope');
-        }
-
         $this->_init();
 
         $this->onChangeModel();

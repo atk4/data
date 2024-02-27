@@ -109,6 +109,20 @@ class UserActionTest extends TestCase
         self::assertSame($customClass, get_class($client->getUserAction('foo')));
     }
 
+    public function testGetActionForEntity(): void
+    {
+        $client = new UaClient($this->pers);
+        $clientEntity = $client->load(1);
+        $actl = $client->getUserAction('sendReminder');
+        $actlEntity = $actl->getActionForEntity($clientEntity);
+
+        self::assertSame($clientEntity->getUserAction('sendReminder'), $actlEntity);
+
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Model instance does not match');
+        $actl->getActionForEntity((clone $client)->load(1));
+    }
+
     public function testExecuteUndefinedMethodException(): void
     {
         $client = new UaClient($this->pers);
