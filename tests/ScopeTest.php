@@ -229,6 +229,13 @@ class ScopeTest extends TestCase
         $country->addCondition('name', '==', 'abc');
     }
 
+    public function testConditionNestedException(): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Only Scope can contain another conditions');
+        new Condition(new Condition('foo', 1));
+    }
+
     public function testConditionClearException(): void
     {
         $condition = new Condition('foo', 1);
