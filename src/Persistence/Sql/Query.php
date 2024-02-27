@@ -1086,7 +1086,7 @@ abstract class Query extends Expression
     /**
      * Returns Query object of [case] expression.
      *
-     * @param mixed $operand optional operand for case expression
+     * @param string|Expressionable|null $operand optional operand for case expression
      *
      * @return self
      */

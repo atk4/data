@@ -185,7 +185,7 @@ class Table
     /**
      * TODO rewrite with hash index support.
      *
-     * @param mixed $idRaw
+     * @param scalar $idRaw
      */
     public function getRowById(Model $model, $idRaw): ?Row
     {

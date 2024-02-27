@@ -300,7 +300,7 @@ class Array_ extends Persistence
     /**
      * Generates new record ID.
      *
-     * @return string
+     * @return int|string
      */
     public function generateNewId(Model $model)
     {
@@ -334,7 +334,7 @@ class Array_ extends Persistence
     /**
      * Last ID inserted.
      *
-     * @return mixed
+     * @return int|string
      */
     public function lastInsertId(Model $model = null)
     {
