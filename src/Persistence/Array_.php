@@ -246,8 +246,7 @@ class Array_ extends Persistence
 
         if (is_object($model->table)) {
             $action = $this->action($model, 'select');
-            $condition = new Model\Scope\Condition('', $id);
-            $condition->field = $model->getIdField();
+            $condition = new Model\Scope\Condition($model->getIdField(), $id);
             $condition->setOwner($model->scope()); // needed for typecasting to apply
             $action->filter($condition);
 
