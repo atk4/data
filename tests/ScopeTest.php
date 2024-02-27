@@ -229,6 +229,15 @@ class ScopeTest extends TestCase
         $country->addCondition('name', '==', 'abc');
     }
 
+    public function testConditionClearException(): void
+    {
+        $condition = new Condition('foo', 1);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Condition does not support clear operation');
+        $condition->clear();
+    }
+
     public function testConditionNegateUnsupportedException(): void
     {
         $condition = new Condition($this->getConnection()->expr('1 = 1'));
