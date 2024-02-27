@@ -263,16 +263,6 @@ class ScopeTest extends TestCase
         $country->scope()->negate();
     }
 
-    public function testRootScopeCreateAnd(): void
-    {
-        self::assertSame(Scope::class, get_class(Scope\RootScope::createAnd()));
-    }
-
-    public function testRootScopeCreateOr(): void
-    {
-        self::assertSame(Scope::class, get_class(Scope\RootScope::createOr()));
-    }
-
     public function testConditionOnReferencedRecords(): void
     {
         $this->setupTables();
@@ -456,6 +446,24 @@ class ScopeTest extends TestCase
         foreach ($user as $u) {
             self::assertTrue($u->get('name') === 'Alain' && $u->get('country_code') === 'FR');
         }
+    }
+
+    public function testCreateAnd(): void
+    {
+        $scope = Scope::createAnd();
+        self::assertSame(Scope::class, get_class($scope));
+        self::assertSame(Scope::class, get_class(Scope\RootScope::createAnd()));
+        self::assertTrue($scope->isAnd());
+        self::assertFalse($scope->isOr());
+    }
+
+    public function testCreateOr(): void
+    {
+        $scope = Scope::createOr();
+        self::assertSame(Scope::class, get_class($scope));
+        self::assertSame(Scope::class, get_class(Scope\RootScope::createOr()));
+        self::assertFalse($scope->isAnd());
+        self::assertTrue($scope->isOr());
     }
 
     public function testAnd(): void
