@@ -74,7 +74,7 @@ class StaticTest extends TestCase
     public function testZeroIdAllowed(): void
     {
         $p = new Persistence\Static_(['hello', 'world']);
-        $m = new class($p) extends Model {
+        $m = new class($p) extends Model2 {
             #[\Override]
             protected function init(): void
             {
@@ -200,7 +200,7 @@ class StaticTest extends TestCase
     }
 }
 
-class StaticTestModel extends Model
+class StaticTestModel extends Model2
 {
     public ?string $titleField = 'foo';
 

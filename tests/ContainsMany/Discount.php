@@ -10,7 +10,7 @@ use Atk4\Data\Model;
  * @property int       $percent    @Atk4\Field()
  * @property \DateTime $valid_till @Atk4\Field()
  */
-class Discount extends Model
+class Discount extends Model2
 {
     #[\Override]
     protected function init(): void

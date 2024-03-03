@@ -10,7 +10,7 @@ use Atk4\Data\Model;
  * @property string $name @Atk4\Field()
  * @property int    $rate @Atk4\Field()
  */
-class VatRate extends Model
+class VatRate extends Model2
 {
     public $table = 'vat_rate';
 

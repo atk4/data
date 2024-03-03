@@ -12,7 +12,7 @@ use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
 
-class SCountry extends Model
+class SCountry extends Model2
 {
     public $table = 'country';
     public $caption = 'Country';
@@ -32,7 +32,7 @@ class SCountry extends Model
     }
 }
 
-class SUser extends Model
+class SUser extends Model2
 {
     public $table = 'user';
     public $caption = 'User';
@@ -54,7 +54,7 @@ class SUser extends Model
     }
 }
 
-class STicket extends Model
+class STicket extends Model2
 {
     public $table = 'ticket';
     public $caption = 'Ticket';

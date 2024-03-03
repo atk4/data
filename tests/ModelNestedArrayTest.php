@@ -32,7 +32,7 @@ class ModelNestedArrayTest extends TestCase
 
     protected function createTestModel(): Model
     {
-        $mWithLoggingClass = get_class(new class() extends Model {
+        $mWithLoggingClass = get_class(new class() extends Model2 {
             /** @var \WeakReference<ModelNestedArrayTest> */
             protected $testCaseWeakRef;
             /** @var string */

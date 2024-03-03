@@ -10,7 +10,7 @@ use Atk4\Data\Util\DeepCopy;
 use Atk4\Data\Util\DeepCopyException;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
-class DcClient extends Model
+class DcClient extends Model2
 {
     public $table = 'client';
 
@@ -27,7 +27,7 @@ class DcClient extends Model
     }
 }
 
-class DcInvoice extends Model
+class DcInvoice extends Model2
 {
     public $table = 'invoice';
 
@@ -58,7 +58,7 @@ class DcInvoice extends Model
     }
 }
 
-class DcQuote extends Model
+class DcQuote extends Model2
 {
     public $table = 'quote';
 
@@ -78,7 +78,7 @@ class DcQuote extends Model
     }
 }
 
-class DcInvoiceLine extends Model
+class DcInvoiceLine extends Model2
 {
     public $table = 'line';
 
@@ -103,7 +103,7 @@ class DcInvoiceLine extends Model
     }
 }
 
-class DcQuoteLine extends Model
+class DcQuoteLine extends Model2
 {
     public $table = 'line';
 
@@ -127,7 +127,7 @@ class DcQuoteLine extends Model
     }
 }
 
-class DcPayment extends Model
+class DcPayment extends Model2
 {
     public $table = 'payment';
 

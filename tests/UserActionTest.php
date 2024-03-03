@@ -24,7 +24,7 @@ trait UaReminderTrait
     }
 }
 
-class UaClient extends Model
+class UaClient extends Model2
 {
     use UaReminderTrait;
 

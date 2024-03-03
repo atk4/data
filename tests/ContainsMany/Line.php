@@ -15,7 +15,7 @@ use Atk4\Data\Model;
  * @property Discount  $discounts         @Atk4\RefMany()
  * @property float     $discounts_percent @Atk4\Field()
  */
-class Line extends Model
+class Line extends Model2
 {
     #[\Override]
     protected function init(): void

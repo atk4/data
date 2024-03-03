@@ -12,7 +12,7 @@ use Atk4\Data\Persistence;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
 
-class Model_Rate extends Model
+class Model_Rate extends Model2
 {
     public $table = 'rate';
 
@@ -26,7 +26,7 @@ class Model_Rate extends Model
         $this->addField('ask', ['type' => 'float']);
     }
 }
-class Model_Item extends Model
+class Model_Item extends Model2
 {
     public $table = 'item';
 
@@ -40,7 +40,7 @@ class Model_Item extends Model
             ->addTitle();
     }
 }
-class Model_Item2 extends Model
+class Model_Item2 extends Model2
 {
     public $table = 'item';
 
@@ -55,7 +55,7 @@ class Model_Item2 extends Model
             ->addTitle();
     }
 }
-class Model_Item3 extends Model
+class Model_Item3 extends Model2
 {
     public $table = 'item';
 
@@ -370,7 +370,7 @@ class RandomTest extends TestCase
         $m = new Model2($this->db, ['table' => 'user']);
         self::assertSame('Atk 4 Data Model', $m->getModelCaption());
 
-        $m = new class($this->db, ['table' => 'user']) extends Model {};
+        $m = new class($this->db, ['table' => 'user']) extends Model2 {};
         self::assertSame('Atk 4 Data Model Anonymous', $m->getModelCaption());
 
         // caption is set

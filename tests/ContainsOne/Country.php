@@ -9,7 +9,7 @@ use Atk4\Data\Model;
 /**
  * @property string $name @Atk4\Field()
  */
-class Country extends Model
+class Country extends Model2
 {
     public $table = 'country';
 

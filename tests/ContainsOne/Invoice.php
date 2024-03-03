@@ -10,7 +10,7 @@ use Atk4\Data\Model;
  * @property string  $ref_no @Atk4\Field()
  * @property Address $addr   @Atk4\RefOne()
  */
-class Invoice extends Model
+class Invoice extends Model2
 {
     public $table = 'invoice';
 
