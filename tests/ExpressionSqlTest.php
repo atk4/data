@@ -34,7 +34,7 @@ class ExpressionSqlTest extends TestCase
         $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]', 'type' => 'float']);
 
         self::assertSameSql(
-            'select `id`, `total_net`, `total_vat`, (`total_net` + `total_vat`) `total_gross` from `invoice`',
+            'select `id`, `total_net`, `total_vat`, (`total_net` + `total_vat`) `total_gross` from (select `id`, `total_net`, `total_vat` from `invoice`) `_tm`',
             $i->action('select')->render()[0]
         );
 
@@ -49,7 +49,7 @@ class ExpressionSqlTest extends TestCase
         $i->addExpression('double_total_gross', ['expr' => '[total_gross] * 2', 'type' => 'float']);
 
         self::assertSameSql(
-            'select `id`, `total_net`, `total_vat`, (`total_net` + `total_vat`) `total_gross`, ((`total_net` + `total_vat`) * 2) `double_total_gross` from `invoice`',
+            'select `id`, `total_net`, `total_vat`, (`total_net` + `total_vat`) `total_gross`, ((`total_net` + `total_vat`) * 2) `double_total_gross` from (select `id`, `total_net`, `total_vat` from `invoice`) `_tm`',
             $i->action('select')->render()[0]
         );
 
@@ -74,7 +74,7 @@ class ExpressionSqlTest extends TestCase
         }, 'type' => 'float']);
 
         self::assertSameSql(
-            'select `id`, `total_net`, `total_vat`, (`total_net` + `total_vat`) `total_gross` from `invoice`',
+            'select `id`, `total_net`, `total_vat`, (`total_net` + `total_vat`) `total_gross` from (select `id`, `total_net`, `total_vat` from `invoice`) `_tm`',
             $i->action('select')->render()[0]
         );
 
@@ -102,7 +102,7 @@ class ExpressionSqlTest extends TestCase
         $i->addExpression('sum_net', ['expr' => $i->action('fx', ['sum', 'total_net']), ['type' => 'integer']]);
 
         self::assertSameSql(
-            'select `id`, `total_net`, `total_vat`, (select sum(`total_net`) from `invoice`) `sum_net` from `invoice`',
+            'select `id`, `total_net`, `total_vat`, (select sum(`total_net`) from (select `id`, `total_net`, `total_vat` from `invoice`) `_tm`) `sum_net` from (select `id`, `total_net`, `total_vat` from `invoice`) `_tm`',
             $i->action('select')->render()[0]
         );
 
@@ -144,7 +144,7 @@ class ExpressionSqlTest extends TestCase
 
         $concatSql = preg_replace('~\[(\w+)\]~', '`$1`', $concatExpr);
         $this->assertSameSql(
-            'select `id`, `name`, `surname`, `cached_name`, (' . $concatSql . ') `full_name` from `user` where ((' . $concatSql . ') != `cached_name`)',
+            'select `id`, `name`, `surname`, `cached_name`, (' . $concatSql . ') `full_name` from (select `id`, `name`, `surname`, `cached_name` from `user`) `_tm` where ((' . $concatSql . ') != `cached_name`)',
             $m->action('select')->render()[0]
         );
 
