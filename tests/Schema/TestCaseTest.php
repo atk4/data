@@ -59,6 +59,9 @@ class TestCaseTest extends TestCase
 
 
                 "SAVEPOINT";
+
+
+                "SAVEPOINT";
                 EOF . "\n\n"
             . ($this->getDatabasePlatform() instanceof SQLServerPlatform
                 ? <<<'EOF'
@@ -91,6 +94,7 @@ class TestCaseTest extends TestCase
                 . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? 'true' : '1')
                 . ", NULL);\n\n"
                 . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "\n\"RELEASE SAVEPOINT\";\n\n" : ''))
+            . ($this->getDatabasePlatform()->supportsReleaseSavepoints() ? "\n\"RELEASE SAVEPOINT\";\n\n" : '')
             . ($this->getDatabasePlatform() instanceof OraclePlatform ? <<<'EOF'
 
                 select
@@ -108,7 +112,17 @@ class TestCaseTest extends TestCase
                   `bool`,
                   `null`
                 from
-                  `t`
+                  (
+                    select
+                      `id`,
+                      `name`,
+                      `int`,
+                      `float`,
+                      `bool`,
+                      `null`
+                    from
+                      `t`
+                  ) `_tm`
                 where
                   `int` > -1
                   and `id` = 1
@@ -129,7 +143,17 @@ class TestCaseTest extends TestCase
                   `bool`,
                   `null`
                 from
-                  `t`
+                  (
+                    select
+                      `id`,
+                      `name`,
+                      `int`,
+                      `float`,
+                      `bool`,
+                      `null`
+                    from
+                      `t`
+                  ) `_tm`
                 where
                   `int` > -1
                 EOF
