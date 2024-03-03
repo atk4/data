@@ -6,7 +6,7 @@ namespace Atk4\Data;
 
 class Model2 extends Model
 {
-    /** @var string|false */
+    /** @var string|self|false */
     public $_tableName;
 
     public function __construct(Persistence $persistence = null, array $defaults = [])
@@ -77,7 +77,7 @@ class Model2 extends Model
     public function __set(string $name, $value): void
     {
         if ($name === 'table' && !$this->isEntity()) {
-            if (is_scalar($value) || $value === null) {
+            if (is_scalar($value) || $value instanceof self || $value === null) {
                 $this->_tableName = $value;
 
                 return;
