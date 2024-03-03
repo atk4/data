@@ -726,7 +726,7 @@ class ReferenceSqlTest extends TestCase
     public function testModelProperty(): void
     {
         $user = new Model2($this->db, ['table' => 'user']);
-        $user->hasMany('Orders', ['model' => [Model::class, 'table' => 'order'], 'theirField' => 'id']);
+        $user->hasMany('Orders', ['model' => [Model2::class, 'table' => 'order'], 'theirField' => 'id']);
         $o = $user->ref('Orders');
         self::assertSame('order', $o->table->table);
     }
