@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests\ContainsOne;
 
-use Atk4\Data\Model;
+use Atk4\Data\Model2;
 
 /**
  * @property string    $code       @Atk4\Field()

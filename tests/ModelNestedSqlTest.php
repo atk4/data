@@ -6,6 +6,7 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Core\HookBreaker;
 use Atk4\Data\Model;
+use Atk4\Data\Model2;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Schema\TestCase;

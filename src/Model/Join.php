@@ -11,6 +11,7 @@ use Atk4\Core\TrackableTrait;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
+use Atk4\Data\Model2;
 use Atk4\Data\Reference;
 
 /**

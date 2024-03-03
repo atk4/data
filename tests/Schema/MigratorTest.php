@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests\Schema;
 
 use Atk4\Data\Field\PasswordField;
-use Atk4\Data\Model;
+use Atk4\Data\Model2;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Schema\Migrator;
 use Atk4\Data\Schema\TestCase;
