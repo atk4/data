@@ -189,7 +189,7 @@ class ContainsOneTest extends TestCase
         self::{'assertEquals'}(array_merge($row, ['post_index' => 'LV-1234']), $a->get());
 
         // now this one is a bit tricky
-        // each time you call ref() it returns you new model object so it will not have post_index field
+        // each time you call ref() it returns you new Model2 object so it will not have post_index field
         self::assertFalse($i->addr->hasField('post_index'));
 
         // now reload invoice just in case

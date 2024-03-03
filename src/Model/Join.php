@@ -113,7 +113,7 @@ abstract class Join
         }
 
         // TODO this should be not needed in the future
-        $fakeModel = new Model($this->getOwner()->getPersistence(), [
+        $fakeModel = new Model2($this->getOwner()->getPersistence(), [
             'table' => $this->getJoin()->foreignTable,
             'idField' => $this->masterField,
         ]);
@@ -127,7 +127,7 @@ abstract class Join
      */
     protected function createFakeForeignModel(): Model
     {
-        $fakeModel = new Model($this->getOwner()->getPersistence(), [
+        $fakeModel = new Model2($this->getOwner()->getPersistence(), [
             'table' => $this->foreignTable,
             'idField' => $this->foreignIdField,
             'readOnly' => !$this->allowDangerousForeignTableUpdate,

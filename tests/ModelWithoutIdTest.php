@@ -26,7 +26,7 @@ class ModelWithoutIdTest extends TestCase
             ],
         ]);
 
-        $this->m = new Model($this->db, ['table' => 'user', 'idField' => false]);
+        $this->m = new Model2($this->db, ['table' => 'user', 'idField' => false]);
         $this->m->addField('name');
         $this->m->addField('gender');
     }

@@ -79,7 +79,7 @@ class TransactionTest extends TestCase
 
     protected function setupEmployeeTable(): void
     {
-        $model = new Model($this->db, ['table' => 'employee']);
+        $model = new Model2($this->db, ['table' => 'employee']);
         $model->addField('name');
         $this->createMigrator($model)->create();
     }

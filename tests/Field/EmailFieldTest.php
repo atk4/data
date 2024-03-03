@@ -13,7 +13,7 @@ class EmailFieldTest extends TestCase
 {
     public function testEmailFieldBasic(): void
     {
-        $m = new Model();
+        $m = new Model2();
         $m->addField('email', [EmailField::class]);
         $entity = $m->createEntity();
 
@@ -39,7 +39,7 @@ class EmailFieldTest extends TestCase
 
     public function testEmailValidateDns(): void
     {
-        $m = new Model();
+        $m = new Model2();
         $m->addField('email', [EmailField::class, 'dnsCheck' => true]);
         $entity = $m->createEntity();
 
@@ -59,7 +59,7 @@ class EmailFieldTest extends TestCase
 
     public function testEmailWithName(): void
     {
-        $m = new Model();
+        $m = new Model2();
         $m->addField('email', [EmailField::class]);
         $m->addField('email_name', [EmailField::class, 'allowName' => true]);
         $entity = $m->createEntity();
@@ -74,7 +74,7 @@ class EmailFieldTest extends TestCase
 
     public function testEmailMultipleException(): void
     {
-        $m = new Model();
+        $m = new Model2();
         $m->addField('email', [EmailField::class]);
         $entity = $m->createEntity();
 

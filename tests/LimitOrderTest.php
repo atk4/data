@@ -19,7 +19,7 @@ class LimitOrderTest extends TestCase
             ],
         ]);
 
-        $i = new Model($this->db, ['table' => 'invoice', 'idField' => false]);
+        $i = new Model2($this->db, ['table' => 'invoice', 'idField' => false]);
         $i->addField('total_net', ['type' => 'integer']);
         $i->addField('total_vat', ['type' => 'integer']);
         $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]', 'type' => 'integer']);
@@ -43,7 +43,7 @@ class LimitOrderTest extends TestCase
             ],
         ]);
 
-        $ii = new Model($this->db, ['table' => 'invoice', 'idField' => false]);
+        $ii = new Model2($this->db, ['table' => 'invoice', 'idField' => false]);
         $ii->addField('total_net', ['type' => 'integer']);
         $ii->addField('total_vat', ['type' => 'integer']);
         $ii->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]', 'type' => 'integer']);
@@ -95,7 +95,7 @@ class LimitOrderTest extends TestCase
             ],
         ]);
 
-        $ii = new Model($this->db, ['table' => 'invoice', 'idField' => false]);
+        $ii = new Model2($this->db, ['table' => 'invoice', 'idField' => false]);
         $ii->addField('net', ['type' => 'integer']);
         $ii->addField('vat', ['type' => 'integer']);
 
@@ -141,7 +141,7 @@ class LimitOrderTest extends TestCase
         ]);
 
         // order by expression field
-        $i = new Model($this->db, ['table' => 'invoice', 'idField' => false]);
+        $i = new Model2($this->db, ['table' => 'invoice', 'idField' => false]);
         $i->addField('code');
         $i->addField('net', ['type' => 'integer']);
         $i->addField('vat', ['type' => 'integer']);
@@ -204,7 +204,7 @@ class LimitOrderTest extends TestCase
             ],
         ]);
 
-        $i = new Model($this->db, ['table' => 'invoice']);
+        $i = new Model2($this->db, ['table' => 'invoice']);
         $i->addField('net', ['type' => 'integer']);
         $i->setOrder(new \DateTime()); // @phpstan-ignore-line
 
@@ -222,7 +222,7 @@ class LimitOrderTest extends TestCase
             ],
         ]);
 
-        $i = new Model($this->db, ['table' => 'invoice', 'idField' => false]);
+        $i = new Model2($this->db, ['table' => 'invoice', 'idField' => false]);
         $i->addField('total_net', ['type' => 'integer']);
         $i->addField('total_vat', ['type' => 'integer']);
         $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]', 'type' => 'integer']);
@@ -268,7 +268,7 @@ class LimitOrderTest extends TestCase
             ],
         ]);
 
-        $i = new Model($this->db, ['table' => 'invoice']);
+        $i = new Model2($this->db, ['table' => 'invoice']);
         $i->addField('total_net', ['type' => 'integer']);
         $i->setOrder('total_net');
 

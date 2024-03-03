@@ -90,7 +90,7 @@ class MigratorTest extends TestCase
      */
     public function testCharacterTypeFieldCaseSensitivity(string $type, bool $isBinary): void
     {
-        $model = new Model($this->db, ['table' => 'user']);
+        $model = new Model2($this->db, ['table' => 'user']);
         $model->addField('v', ['type' => $type]);
 
         $this->createMigrator($model)->create();
@@ -169,7 +169,7 @@ class MigratorTest extends TestCase
             self::assertSame($length - 1, $isBinary ? strlen($str) : mb_strlen($str));
         }
 
-        $model = new Model($this->db, ['table' => 'user']);
+        $model = new Model2($this->db, ['table' => 'user']);
         $model->addField('v', ['type' => $type]);
 
         $this->createMigrator($model)->create();
