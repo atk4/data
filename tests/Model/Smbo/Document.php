@@ -6,7 +6,7 @@ namespace Atk4\Data\Tests\Model\Smbo;
 
 use Atk4\Data\Model;
 
-class Document extends Model
+class Document extends Model2
 {
     public $table = 'document';
 

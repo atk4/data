@@ -6,7 +6,7 @@ namespace Atk4\Data\Tests\Model;
 
 use Atk4\Data\Model;
 
-class User extends Model
+class User extends Model2
 {
     #[\Override]
     protected function init(): void

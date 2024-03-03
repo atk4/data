@@ -36,7 +36,7 @@ use Atk4\Data\Persistence\Sql\Query;
  * @method Persistence\Sql getPersistence()
  * @method Expression      expr(string $template, array<int|string, mixed> $arguments = []) forwards to Persistence\Sql::expr using $this as model
  */
-class AggregateModel extends Model
+class AggregateModel extends Model2
 {
     public const HOOK_INIT_AGGREGATE_SELECT_QUERY = self::class . '@initAggregateSelectQuery';
 

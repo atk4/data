@@ -9,7 +9,7 @@ use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\ValidationException;
 
-class MyValidationModel extends Model
+class MyValidationModel extends Model2
 {
     #[\Override]
     protected function init(): void
@@ -35,7 +35,7 @@ class MyValidationModel extends Model
     }
 }
 
-class BadValidationModel extends Model
+class BadValidationModel extends Model2
 {
     #[\Override]
     protected function init(): void

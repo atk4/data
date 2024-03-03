@@ -13,7 +13,7 @@ use Atk4\Data\Model;
  * @property array<int, string> $tags       @Atk4\Field()
  * @property DoorCode           $door_code  @Atk4\RefOne()
  */
-class Address extends Model
+class Address extends Model2
 {
     #[\Override]
     protected function init(): void

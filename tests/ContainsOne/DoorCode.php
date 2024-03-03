@@ -10,7 +10,7 @@ use Atk4\Data\Model;
  * @property string    $code       @Atk4\Field()
  * @property \DateTime $valid_till @Atk4\Field()
  */
-class DoorCode extends Model
+class DoorCode extends Model2
 {
     #[\Override]
     protected function init(): void

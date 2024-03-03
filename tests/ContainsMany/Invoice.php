@@ -13,7 +13,7 @@ use Atk4\Data\Model;
  * @property float  $total_gross         @Atk4\Field()
  * @property float  $discounts_total_sum @Atk4\Field()
  */
-class Invoice extends Model
+class Invoice extends Model2
 {
     public $table = 'invoice';
 

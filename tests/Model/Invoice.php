@@ -6,7 +6,7 @@ namespace Atk4\Data\Tests\Model;
 
 use Atk4\Data\Model;
 
-class Invoice extends Model
+class Invoice extends Model2
 {
     public $table = 'invoice';
 

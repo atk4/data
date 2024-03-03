@@ -269,7 +269,7 @@ class MigratorTest extends TestCase
     }
 }
 
-class TestUser extends Model
+class TestUser extends Model2
 {
     public $table = 'user';
 
@@ -287,7 +287,7 @@ class TestUser extends Model
     }
 }
 
-class TestRole extends Model
+class TestRole extends Model2
 {
     public $table = 'role';
 
