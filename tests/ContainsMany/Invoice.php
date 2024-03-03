@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests\ContainsMany;
 
-use Atk4\Data\Model;
+use Atk4\Data\Model2;
 
 /**
  * @property string $ref_no              @Atk4\Field()

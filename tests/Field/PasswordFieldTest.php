@@ -6,7 +6,7 @@ namespace Atk4\Data\Tests\Field;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Field\PasswordField;
-use Atk4\Data\Model;
+use Atk4\Data\Model2;
 use Atk4\Data\Schema\TestCase;
 
 class PasswordFieldTest extends TestCase

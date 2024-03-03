@@ -8,6 +8,7 @@ use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Model\Join;
+use Atk4\Data\Model2;
 use Atk4\Data\Reference;
 use Atk4\Data\Schema\Migrator;
 use Atk4\Data\Schema\TestCase;

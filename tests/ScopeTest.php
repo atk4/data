@@ -8,6 +8,7 @@ use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Model\Scope;
 use Atk4\Data\Model\Scope\Condition;
+use Atk4\Data\Model2;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;

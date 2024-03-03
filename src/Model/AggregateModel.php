@@ -8,6 +8,7 @@ use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Field\SqlExpressionField;
 use Atk4\Data\Model;
+use Atk4\Data\Model2;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\MaterializedField;

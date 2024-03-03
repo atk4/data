@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests\Model;
 
-use Atk4\Data\Model;
+use Atk4\Data\Model2;
 
 class Invoice extends Model2
 {

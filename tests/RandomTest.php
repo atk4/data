@@ -8,6 +8,7 @@ use Atk4\Core\Exception as CoreException;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
+use Atk4\Data\Model2;
 use Atk4\Data\Persistence;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\SQLitePlatform;

@@ -7,6 +7,7 @@ namespace Atk4\Data\Persistence;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
+use Atk4\Data\Model2;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Array_\Action;
 use Atk4\Data\Persistence\Array_\Action\RenameColumnIterator;

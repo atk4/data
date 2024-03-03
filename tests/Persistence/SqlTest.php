@@ -6,6 +6,7 @@ namespace Atk4\Data\Tests\Persistence;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
+use Atk4\Data\Model2;
 use Atk4\Data\Schema\TestCase;
 
 class SqlTest extends TestCase

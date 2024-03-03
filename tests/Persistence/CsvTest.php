@@ -6,7 +6,7 @@ namespace Atk4\Data\Tests\Persistence;
 
 use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Exception;
-use Atk4\Data\Model;
+use Atk4\Data\Model2;
 use Atk4\Data\Persistence;
 use Atk4\Data\Tests\Model\Person;
 
