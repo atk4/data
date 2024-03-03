@@ -15,7 +15,7 @@ class TestCaseTest extends TestCase
 {
     public function testLogQuery(): void
     {
-        $m = new Model($this->db, ['table' => 't']);
+        $m = new Model2($this->db, ['table' => 't']);
         $m->addField('name');
         $m->addField('int', ['type' => 'integer']);
         $m->addField('float', ['type' => 'float']);

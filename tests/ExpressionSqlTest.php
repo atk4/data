@@ -13,7 +13,7 @@ class ExpressionSqlTest extends TestCase
 {
     public function testNakedExpression(): void
     {
-        $m = new Model($this->db, ['table' => false]);
+        $m = new Model2($this->db, ['table' => false]);
         $m->addExpression('x', ['expr' => '2 + 3', 'type' => 'integer']);
         $m = $m->loadOne();
         self::assertSame(5, $m->get('x'));
@@ -28,7 +28,7 @@ class ExpressionSqlTest extends TestCase
             ],
         ]);
 
-        $i = new Model($this->db, ['table' => 'invoice']);
+        $i = new Model2($this->db, ['table' => 'invoice']);
         $i->addField('total_net', ['type' => 'integer']);
         $i->addField('total_vat', ['type' => 'float']);
         $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]', 'type' => 'float']);
@@ -66,7 +66,7 @@ class ExpressionSqlTest extends TestCase
             ],
         ]);
 
-        $i = new Model($this->db, ['table' => 'invoice']);
+        $i = new Model2($this->db, ['table' => 'invoice']);
         $i->addField('total_net', ['type' => 'integer']);
         $i->addField('total_vat', ['type' => 'float']);
         $i->addExpression('total_gross', ['expr' => static function () {
@@ -96,7 +96,7 @@ class ExpressionSqlTest extends TestCase
             ],
         ]);
 
-        $i = new Model($this->db, ['table' => 'invoice']);
+        $i = new Model2($this->db, ['table' => 'invoice']);
         $i->addField('total_net', ['type' => 'integer']);
         $i->addField('total_vat', ['type' => 'float']);
         $i->addExpression('sum_net', ['expr' => $i->action('fx', ['sum', 'total_net']), ['type' => 'integer']]);
@@ -128,7 +128,7 @@ class ExpressionSqlTest extends TestCase
             ],
         ]);
 
-        $m = new Model($this->db, ['table' => 'user']);
+        $m = new Model2($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->addField('surname');
         $m->addField('cached_name');
@@ -156,7 +156,7 @@ class ExpressionSqlTest extends TestCase
 
     public function testVarDump(): void
     {
-        $m = new Model($this->db, ['table' => false]);
+        $m = new Model2($this->db, ['table' => false]);
         $m->addExpression('x', ['expr' => '2 + 3']);
 
         self::assertSame(
@@ -173,7 +173,7 @@ class ExpressionSqlTest extends TestCase
             ],
         ]);
 
-        $m = new Model($this->db, ['table' => 'math']);
+        $m = new Model2($this->db, ['table' => 'math']);
         $m->addField('a', ['type' => 'integer']);
         $m->addField('b', ['type' => 'integer']);
 
@@ -190,7 +190,7 @@ class ExpressionSqlTest extends TestCase
         $this->dropCreatedDb();
         $this->setDb($dbData);
 
-        $m = new Model($this->db, ['table' => 'math', 'reloadAfterSave' => false]);
+        $m = new Model2($this->db, ['table' => 'math', 'reloadAfterSave' => false]);
         $m->addField('a', ['type' => 'integer']);
         $m->addField('b', ['type' => 'integer']);
 
@@ -207,7 +207,7 @@ class ExpressionSqlTest extends TestCase
 
     public function testExpressionActionAlias(): void
     {
-        $m = new Model($this->db, ['table' => false]);
+        $m = new Model2($this->db, ['table' => false]);
         $m->addExpression('x', ['expr' => '2 + 3', 'type' => 'integer']);
 
         // use alias as array key if it is set
@@ -240,7 +240,7 @@ class ExpressionSqlTest extends TestCase
             ],
         ]);
 
-        $i = new Model($this->db, ['table' => 'invoice']);
+        $i = new Model2($this->db, ['table' => 'invoice']);
 
         $i->addExpression('zero_basic', ['expr' => $i->expr('0'), 'type' => 'integer']);
         $i->addExpression('zero_neverSave', ['expr' => $i->expr('0'), 'type' => 'integer', 'neverSave' => true]);

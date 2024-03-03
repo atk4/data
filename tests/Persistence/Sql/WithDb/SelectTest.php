@@ -20,7 +20,7 @@ class SelectTest extends TestCase
 {
     protected function setupTables(): void
     {
-        $model = new Model($this->db, ['table' => 'employee']);
+        $model = new Model2($this->db, ['table' => 'employee']);
         $model->addField('name');
         $model->addField('surname');
         $model->addField('retired', ['type' => 'boolean']);
@@ -508,7 +508,7 @@ class SelectTest extends TestCase
 
     public function testImportAndAutoincrement(): void
     {
-        $m = new Model($this->db, ['table' => 'test']);
+        $m = new Model2($this->db, ['table' => 'test']);
         $m->getField('id')->actual = 'myid';
         $m->setOrder('id');
         $m->addField('f1');

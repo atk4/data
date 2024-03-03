@@ -26,11 +26,11 @@ class ModelWithCteTest extends TestCase
             ],
         ]);
 
-        $mUser = new Model($this->db, ['table' => 'user']);
+        $mUser = new Model2($this->db, ['table' => 'user']);
         $mUser->addField('name');
         $mUser->addField('salary', ['type' => 'integer']);
 
-        $mInvoice = new Model($this->db, ['table' => 'invoice']);
+        $mInvoice = new Model2($this->db, ['table' => 'invoice']);
         $mInvoice->addField('net', ['type' => 'integer']);
         $mInvoice->hasOne('user_id', ['model' => $mUser]);
         $mInvoice->addCondition('net', '>', 100);
@@ -62,8 +62,8 @@ class ModelWithCteTest extends TestCase
 
     public function testUniqueNameException1(): void
     {
-        $m1 = new Model(null, ['table' => 't']);
-        $m2 = new Model();
+        $m1 = new Model2(null, ['table' => 't']);
+        $m2 = new Model2();
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('CTE model with given name already exist');
@@ -72,8 +72,8 @@ class ModelWithCteTest extends TestCase
 
     public function testUniqueNameException2(): void
     {
-        $m1 = new Model(null, ['tableAlias' => 't']);
-        $m2 = new Model();
+        $m1 = new Model2(null, ['tableAlias' => 't']);
+        $m2 = new Model2();
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('CTE model with given name already exist');
@@ -82,8 +82,8 @@ class ModelWithCteTest extends TestCase
 
     public function testUniqueNameException3(): void
     {
-        $m1 = new Model();
-        $m2 = new Model();
+        $m1 = new Model2();
+        $m2 = new Model2();
         $m1->addCteModel('t', $m2);
 
         $this->expectException(Exception::class);

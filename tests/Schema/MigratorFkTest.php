@@ -60,7 +60,7 @@ class MigratorFkTest extends TestCase
 
     public function testCreateIndexNonUnique(): void
     {
-        $client = new Model($this->db, ['table' => 'client']);
+        $client = new Model2($this->db, ['table' => 'client']);
         $client->addField('name');
 
         $this->createMigrator($client)->create();
@@ -93,7 +93,7 @@ class MigratorFkTest extends TestCase
 
     public function testCreateIndexUnique(): void
     {
-        $client = new Model($this->db, ['table' => 'client']);
+        $client = new Model2($this->db, ['table' => 'client']);
         $client->addField('name');
 
         $this->createMigrator($client)->create();
@@ -133,7 +133,7 @@ class MigratorFkTest extends TestCase
 
     public function testCreateIndexMultipleFields(): void
     {
-        $client = new Model($this->db, ['table' => 'client']);
+        $client = new Model2($this->db, ['table' => 'client']);
         $client->addField('a');
         $client->addField('b');
 
@@ -154,15 +154,15 @@ class MigratorFkTest extends TestCase
 
     public function testForeignKeyViolation(): void
     {
-        $country = new Model($this->db, ['table' => 'country']);
+        $country = new Model2($this->db, ['table' => 'country']);
         $country->addField('name');
 
-        $client = new Model($this->db, ['table' => 'client']);
+        $client = new Model2($this->db, ['table' => 'client']);
         $client->addField('name');
         $client->hasOne('country_id', ['model' => $country]);
         $client->hasOne('created_by_client_id', ['model' => $client]);
 
-        $invoice = new Model($this->db, ['table' => 'invoice']);
+        $invoice = new Model2($this->db, ['table' => 'invoice']);
         $invoice->hasOne('client_id', ['model' => $client]);
 
         $this->createMigrator($client)->create();
@@ -204,10 +204,10 @@ class MigratorFkTest extends TestCase
 
     public function testForeignKeyViolationDuringSetup(): void
     {
-        $country = new Model($this->db, ['table' => 'country']);
+        $country = new Model2($this->db, ['table' => 'country']);
         $country->addField('name');
 
-        $client = new Model($this->db, ['table' => 'client']);
+        $client = new Model2($this->db, ['table' => 'client']);
         $client->addField('name');
         $client->hasOne('country_id', ['model' => $country]);
 
@@ -222,11 +222,11 @@ class MigratorFkTest extends TestCase
 
     public function testForeignKeyViolationWithoutPk(): void
     {
-        $currency = new Model($this->db, ['table' => 'currency']);
+        $currency = new Model2($this->db, ['table' => 'currency']);
         $currency->addField('code');
         $currency->addField('name');
 
-        $price = new Model($this->db, ['table' => 'price']);
+        $price = new Model2($this->db, ['table' => 'price']);
         $price->addField('amount', ['type' => 'float']);
         $price->addField('currency');
 

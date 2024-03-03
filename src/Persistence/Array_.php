@@ -78,7 +78,7 @@ class Array_ extends Persistence
                     return $join->foreignTable;
                 }, null, Array_\Join::class)();
                 if (isset($this->seedData[$joinTableName])) {
-                    $dummyJoinModel = new Model($this, ['table' => $joinTableName]);
+                    $dummyJoinModel = new Model2($this, ['table' => $joinTableName]);
                     $dummyJoinModel->setPersistence($this);
                 }
             }

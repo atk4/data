@@ -55,7 +55,7 @@ class TypecastingTest extends TestCase
 
         date_default_timezone_set('Asia/Seoul');
 
-        $m = new Model($this->db, ['table' => 'types']);
+        $m = new Model2($this->db, ['table' => 'types']);
         $m->addField('string', ['type' => 'string']);
         $m->addField('date', ['type' => 'date']);
         $m->addField('datetime', ['type' => 'datetime']);
@@ -164,7 +164,7 @@ class TypecastingTest extends TestCase
 
         date_default_timezone_set('Asia/Seoul');
 
-        $m = new Model($this->db, ['table' => 'types']);
+        $m = new Model2($this->db, ['table' => 'types']);
         $m->addField('string', ['type' => 'string']);
         $m->addField('text', ['type' => 'text']);
         $m->addField('date', ['type' => 'date']);
@@ -246,7 +246,7 @@ class TypecastingTest extends TestCase
         ];
         $this->setDb($dbData);
 
-        $m = new Model($this->db, ['table' => 'test']);
+        $m = new Model2($this->db, ['table' => 'test']);
         $m->addField('a');
         $m->addField('b');
         $m->addField('c');
@@ -365,7 +365,7 @@ class TypecastingTest extends TestCase
 
         date_default_timezone_set('Asia/Seoul');
 
-        $m = new Model($this->db, ['table' => 'types']);
+        $m = new Model2($this->db, ['table' => 'types']);
         $m->addField('date', ['type' => 'date']);
         $m->addField('datetime', ['type' => 'datetime']);
         $m->addField('time', ['type' => 'time']);
@@ -404,7 +404,7 @@ class TypecastingTest extends TestCase
             ],
         ]);
 
-        $m = new Model($this->db, ['table' => 'types']);
+        $m = new Model2($this->db, ['table' => 'types']);
         $m->addField('date', ['type' => 'date']);
 
         $m = $m->load(1);
@@ -419,7 +419,7 @@ class TypecastingTest extends TestCase
             ],
         ]);
 
-        $m = new Model($this->db, ['table' => 'types']);
+        $m = new Model2($this->db, ['table' => 'types']);
         $m->addField('date', ['type' => 'date']);
 
         $m = $m->loadAny();
@@ -434,7 +434,7 @@ class TypecastingTest extends TestCase
             ],
         ]);
 
-        $m = new Model($this->db, ['table' => 'types']);
+        $m = new Model2($this->db, ['table' => 'types']);
         $m->addField('date', ['type' => 'date']);
 
         $m2 = $m->loadOne();
@@ -463,7 +463,7 @@ class TypecastingTest extends TestCase
             ],
         ]);
 
-        $m = new Model($this->db, ['table' => 'types']);
+        $m = new Model2($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
         $m = $m->loadOne();
 
@@ -480,7 +480,7 @@ class TypecastingTest extends TestCase
             ],
         ]);
 
-        $m = new Model($this->db, ['table' => 'types']);
+        $m = new Model2($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
 
         $this->expectException(Exception::class);
@@ -496,7 +496,7 @@ class TypecastingTest extends TestCase
             ],
         ]);
 
-        $m = new Model($this->db, ['table' => 'types']);
+        $m = new Model2($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
         $m = $m->loadOne();
         $m->set('ts', clone $m->get('ts'));
@@ -512,7 +512,7 @@ class TypecastingTest extends TestCase
             ],
         ]);
 
-        $m = new Model($this->db, ['table' => 'types']);
+        $m = new Model2($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'date']);
         $m = $m->loadOne();
         $m->set('ts', new \DateTime('2012-02-30'));
@@ -527,7 +527,7 @@ class TypecastingTest extends TestCase
 
     public function testIntegerSave(): void
     {
-        $m = new Model($this->db, ['table' => 'types']);
+        $m = new Model2($this->db, ['table' => 'types']);
         $m->addField('i', ['type' => 'integer']);
         $m = $m->createEntity();
 
@@ -544,7 +544,7 @@ class TypecastingTest extends TestCase
         self::assertSame([], $m->getDirtyRef());
 
         // same test without type integer
-        $m = new Model($this->db, ['table' => 'types']);
+        $m = new Model2($this->db, ['table' => 'types']);
         $m->addField('i');
         $m = $m->createEntity();
 
@@ -574,7 +574,7 @@ class TypecastingTest extends TestCase
             ],
         ]);
 
-        $m = new Model($this->db, ['table' => 'types']);
+        $m = new Model2($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'time']);
         $m = $m->loadOne();
 
@@ -598,7 +598,7 @@ class TypecastingTest extends TestCase
             ],
         ]);
 
-        $m = new Model($this->db, ['table' => 'types']);
+        $m = new Model2($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'time']);
         $m = $m->loadOne();
 

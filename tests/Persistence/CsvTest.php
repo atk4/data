@@ -127,7 +127,7 @@ class CsvTest extends TestCase
         $this->setDb($data);
 
         $p = $this->makeCsvPersistence($this->file);
-        $m = new Model($p);
+        $m = new Model2($p);
         $m->addField('name');
         $m->addField('surname');
         $m = $m->loadAny();
@@ -146,7 +146,7 @@ class CsvTest extends TestCase
         $this->setDb($data);
 
         $p = $this->makeCsvPersistence($this->file);
-        $m = new Model($p);
+        $m = new Model2($p);
         $m->addField('name');
         $m->addField('surname');
 
@@ -170,7 +170,7 @@ class CsvTest extends TestCase
         $this->setDb($data);
 
         $p = $this->makeCsvPersistence($this->file);
-        $m = new Model($p);
+        $m = new Model2($p);
 
         $this->expectException(Exception::class);
         $m->tryLoad(1);
@@ -217,7 +217,7 @@ class CsvTest extends TestCase
         $this->setDb($data);
 
         $p = $this->makeCsvPersistence($this->file);
-        $m = new Model($p);
+        $m = new Model2($p);
         $m->addField('name');
         $m->addField('surname');
 

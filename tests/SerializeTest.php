@@ -12,7 +12,7 @@ class SerializeTest extends TestCase
 {
     public function testBasicSerialize(): void
     {
-        $m = new Model($this->db, ['table' => 'job']);
+        $m = new Model2($this->db, ['table' => 'job']);
         $m->addField('data', ['type' => 'object']);
 
         self::assertSame(
@@ -49,7 +49,7 @@ class SerializeTest extends TestCase
 
     public function testSerializeErrorJson(): void
     {
-        $m = new Model($this->db, ['table' => 'job']);
+        $m = new Model2($this->db, ['table' => 'job']);
         $m->addField('data', ['type' => 'json']);
 
         $this->expectException(Exception::class);
@@ -58,7 +58,7 @@ class SerializeTest extends TestCase
 
     public function testSerializeErrorJson2(): void
     {
-        $m = new Model($this->db, ['table' => 'job']);
+        $m = new Model2($this->db, ['table' => 'job']);
         $m->addField('data', ['type' => 'json']);
 
         // recursive array - json can't encode that
@@ -72,7 +72,7 @@ class SerializeTest extends TestCase
 
     public function testSerializeErrorSerialize(): void
     {
-        $m = new Model($this->db, ['table' => 'job']);
+        $m = new Model2($this->db, ['table' => 'job']);
         $m->addField('data', ['type' => 'object']);
 
         $this->expectException(Exception::class);

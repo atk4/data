@@ -13,7 +13,7 @@ class ModelIteratorTest extends TestCase
 {
     public function testSetOrderArrayWithAnotherArgumentException(): void
     {
-        $m = new Model();
+        $m = new Model2();
         $m->addField('name');
         $m->addField('salary');
 
@@ -24,7 +24,7 @@ class ModelIteratorTest extends TestCase
 
     public function testNoPersistenceTryLoadException(): void
     {
-        $m = new Model();
+        $m = new Model2();
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Model is not associated with a persistence');
@@ -33,7 +33,7 @@ class ModelIteratorTest extends TestCase
 
     public function testNoPersistenceLoadException(): void
     {
-        $m = new Model();
+        $m = new Model2();
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Model is not associated with a persistence');
@@ -42,7 +42,7 @@ class ModelIteratorTest extends TestCase
 
     public function testNoPersistenceTryLoadAnyException(): void
     {
-        $m = new Model();
+        $m = new Model2();
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Model is not associated with a persistence');
@@ -51,7 +51,7 @@ class ModelIteratorTest extends TestCase
 
     public function testNoPersistenceSaveException(): void
     {
-        $m = new Model();
+        $m = new Model2();
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Model is not associated with a persistence');
@@ -60,7 +60,7 @@ class ModelIteratorTest extends TestCase
 
     public function testNoPersistenceActionException(): void
     {
-        $m = new Model();
+        $m = new Model2();
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Model is not associated with a persistence');
@@ -77,7 +77,7 @@ class ModelIteratorTest extends TestCase
             ],
         ]);
 
-        $i = new Model($this->db, ['table' => 'invoice']);
+        $i = new Model2($this->db, ['table' => 'invoice']);
         $i->addField('total_net', ['type' => 'integer']);
         $i->addField('total_vat', ['type' => 'integer']);
         $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]', 'type' => 'integer']);
@@ -122,7 +122,7 @@ class ModelIteratorTest extends TestCase
             ],
         ]);
 
-        $i = new Model($this->db, ['table' => 'invoice']);
+        $i = new Model2($this->db, ['table' => 'invoice']);
         $i->addField('total_net', ['type' => 'integer']);
         $i->addField('total_vat', ['type' => 'integer']);
         $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]', 'type' => 'integer']);
@@ -151,7 +151,7 @@ class ModelIteratorTest extends TestCase
             ],
         ]);
 
-        $i = new Model($this->db, ['table' => 'invoice']);
+        $i = new Model2($this->db, ['table' => 'invoice']);
         $i->addField('total_net', ['type' => 'integer']);
 
         $i->setOrder('total_net');
@@ -187,7 +187,7 @@ class ModelIteratorTest extends TestCase
 
     public function testCreateIteratorByOneLevelArrayException(): void
     {
-        $i = new Model($this->db, ['table' => 'invoice']);
+        $i = new Model2($this->db, ['table' => 'invoice']);
         $i->addField('total_net', ['type' => 'integer']);
 
         if (\PHP_MAJOR_VERSION === 7) {
@@ -203,7 +203,7 @@ class ModelIteratorTest extends TestCase
 
     public function testCreateIteratorByAssociativeArrayException(): void
     {
-        $i = new Model($this->db, ['table' => 'invoice']);
+        $i = new Model2($this->db, ['table' => 'invoice']);
         $i->addField('total_net', ['type' => 'integer']);
 
         $this->expectException(\Error::class);

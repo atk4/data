@@ -99,7 +99,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $m = new Model($this->db, ['table' => 'user']);
+        $m = new Model2($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->addField('salary', ['default' => 10]);
 
@@ -153,7 +153,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $m = new Model($this->db, ['table' => 'user']);
+        $m = new Model2($this->db, ['table' => 'user']);
         $m->addFields(['name', 'login'], ['default' => 'unknown']);
 
         $m->insert(['name' => 'Peter']);
@@ -176,7 +176,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $m = new Model($this->db, ['table' => 'user']);
+        $m = new Model2($this->db, ['table' => 'user']);
         $m->addFields(['name'], ['default' => 'anonymous']);
         $m->addFields([
             'last_name',
@@ -202,10 +202,10 @@ class RandomTest extends TestCase
 
     public function testSetPersistence(): void
     {
-        $m = new Model($this->db, ['table' => 'user']);
+        $m = new Model2($this->db, ['table' => 'user']);
         self::assertTrue($m->hasField('id'));
 
-        $m = new Model(null, ['table' => 'user']);
+        $m = new Model2(null, ['table' => 'user']);
         self::assertFalse($m->hasField('id'));
 
         $p = new Persistence\Array_();
@@ -226,7 +226,7 @@ class RandomTest extends TestCase
 
     public function testPersistenceAddException(): void
     {
-        $m = new Model(null, ['table' => 'user']);
+        $m = new Model2(null, ['table' => 'user']);
 
         $this->expectException(\Error::class);
         $this->expectExceptionMessage('Persistence::add() cannot be called directly');
@@ -305,7 +305,7 @@ class RandomTest extends TestCase
         $p = new Persistence\Static_([1 => 'hello', 'world']);
 
         // default title field
-        $m = new Model($p);
+        $m = new Model2($p);
         $m->addExpression('caps', ['expr' => static function (Model $m) {
             return strtoupper($m->get('name'));
         }]);
@@ -325,7 +325,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $m = new Model($this->db, ['table' => 'never_used']);
+        $m = new Model2($this->db, ['table' => 'never_used']);
         $m->addField('name');
 
         $m->onHook(Model::HOOK_BEFORE_SAVE, static function (Model $m) {
@@ -367,7 +367,7 @@ class RandomTest extends TestCase
     public function testModelCaption(): void
     {
         // caption is not set, so generate it from class name Model
-        $m = new Model($this->db, ['table' => 'user']);
+        $m = new Model2($this->db, ['table' => 'user']);
         self::assertSame('Atk 4 Data Model', $m->getModelCaption());
 
         $m = new class($this->db, ['table' => 'user']) extends Model {};
@@ -432,12 +432,12 @@ class RandomTest extends TestCase
         ]);
 
         // model without id field
-        $m1 = new Model($this->db, ['table' => 'user', 'idField' => false]);
+        $m1 = new Model2($this->db, ['table' => 'user', 'idField' => false]);
         $m1->addField('code', ['type' => 'integer']);
         $m1->addField('name');
 
         // model with id field
-        $m2 = new Model($this->db, ['table' => 'user']);
+        $m2 = new Model2($this->db, ['table' => 'user']);
         $m2->addField('code', ['type' => 'integer']);
         $m2->addField('name');
 
@@ -519,7 +519,7 @@ class RandomTest extends TestCase
 
     public function testVarDumpModel(): void
     {
-        $m = new Model($this->db, ['table' => 'user']);
+        $m = new Model2($this->db, ['table' => 'user']);
 
         $dump = $m->__debugInfo();
         self::assertSame('user', $dump['table']);
@@ -528,7 +528,7 @@ class RandomTest extends TestCase
 
     public function testVarDumpEntityBasic(): void
     {
-        $m = new Model($this->db, ['table' => 'user']);
+        $m = new Model2($this->db, ['table' => 'user']);
         $entity = $m->createEntity();
 
         $dump = $entity->__debugInfo();
@@ -545,7 +545,7 @@ class RandomTest extends TestCase
 
     public function testVarDumpEntityWithObjectId(): void
     {
-        $m = new Model($this->db, ['table' => 'user']);
+        $m = new Model2($this->db, ['table' => 'user']);
         $m->getIdField()->type = 'datetime';
         $entity = $m->createEntity();
 
@@ -562,21 +562,21 @@ class RandomTest extends TestCase
     {
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Unsupported action mode');
-        $this->db->action(new Model(), 'insert');
+        $this->db->action(new Model2(), 'insert');
     }
 
     public function testNoWriteActionUpdate(): void
     {
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Unsupported action mode');
-        $this->db->action(new Model(), 'update');
+        $this->db->action(new Model2(), 'update');
     }
 
     public function testNoWriteActionDelete(): void
     {
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Unsupported action mode');
-        $this->db->action(new Model(), 'delete');
+        $this->db->action(new Model2(), 'delete');
     }
 
     public function testTableWithSchema(): void
@@ -594,10 +594,10 @@ class RandomTest extends TestCase
             $runWithDb = true;
         }
 
-        $user = new Model($this->db, ['table' => $userSchema . '.user']);
+        $user = new Model2($this->db, ['table' => $userSchema . '.user']);
         $user->addField('name');
 
-        $doc = new Model($this->db, ['table' => $docSchema . '.doc']);
+        $doc = new Model2($this->db, ['table' => $docSchema . '.doc']);
         $doc->addField('name');
         $doc->hasOne('user_id', ['model' => $user])->addTitle();
         $doc->addCondition('user', 'Sarah');

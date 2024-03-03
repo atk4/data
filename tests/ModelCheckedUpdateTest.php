@@ -12,7 +12,7 @@ class ModelCheckedUpdateTest extends TestCase
 {
     protected function setupModelWithNameStartsWithJCondition(): Model
     {
-        $model = new Model($this->db, ['table' => 't']);
+        $model = new Model2($this->db, ['table' => 't']);
         $model->addField('name');
         $this->createMigrator($model)->create();
 

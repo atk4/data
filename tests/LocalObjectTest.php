@@ -137,7 +137,7 @@ class LocalObjectTest extends TestCase
 
     public function testEntityKeepsReference(): void
     {
-        $model = new Model($this->db, ['table' => 't']);
+        $model = new Model2($this->db, ['table' => 't']);
         $model->addField('v', ['type' => 'atk4_local_object']);
         $this->createMigrator($model)->create();
 

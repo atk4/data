@@ -58,7 +58,7 @@ class JoinSqlTest extends TestCase
 
     public function testDirection(): void
     {
-        $m = new Model($this->db, ['table' => 'user']);
+        $m = new Model2($this->db, ['table' => 'user']);
 
         $j1 = $m->join('contact');
         self::assertFalse($j1->reverse);
@@ -95,7 +95,7 @@ class JoinSqlTest extends TestCase
 
     public function testDirectionException(): void
     {
-        $m = new Model($this->db, ['table' => 'user']);
+        $m = new Model2($this->db, ['table' => 'user']);
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Joining tables on non-id fields is not implemented yet');
@@ -104,7 +104,7 @@ class JoinSqlTest extends TestCase
 
     public function testJoinSaving1(): void
     {
-        $user = new Model($this->db, ['table' => 'user']);
+        $user = new Model2($this->db, ['table' => 'user']);
         $this->setDb([
             'user' => [
                 '_' => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
@@ -168,7 +168,7 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        $user = new Model($this->db, ['table' => 'user']);
+        $user = new Model2($this->db, ['table' => 'user']);
         $user->addField('name');
         $j = $user->join('contact.test_id');
         $this->assertMigratorResolveRelation('contact.test_id', 'user.id', $j);
@@ -231,7 +231,7 @@ class JoinSqlTest extends TestCase
 
     public function testJoinSaving3(): void
     {
-        $user = new Model($this->db, ['table' => 'user']);
+        $user = new Model2($this->db, ['table' => 'user']);
         $this->setDb([
             'user' => [
                 '_' => ['id' => 1, 'name' => 'John', 'test_id' => 0],
@@ -276,7 +276,7 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        $user = new Model($this->db, ['table' => 'user']);
+        $user = new Model2($this->db, ['table' => 'user']);
         $user->addField('name');
         $j = $user->join('contact');
         $this->createMigrator()->createForeignKey($j);
@@ -314,7 +314,7 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        $user = new Model($this->db, ['table' => 'user']);
+        $user = new Model2($this->db, ['table' => 'user']);
         $user->addField('contact_id', ['type' => 'integer']);
         $user->addField('name');
         $j = $user->join('contact');
@@ -409,7 +409,7 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        $user = new Model($this->db, ['table' => 'user']);
+        $user = new Model2($this->db, ['table' => 'user']);
         $user->addField('contact_id', ['type' => 'integer']);
         $user->addField('name');
         $j = $user->join('contact');
@@ -448,7 +448,7 @@ class JoinSqlTest extends TestCase
 
     public function testDangerousForeignTableUpdateException(): void
     {
-        $user = new Model($this->db, ['table' => 'user']);
+        $user = new Model2($this->db, ['table' => 'user']);
         $j = $user->join('contact');
         $j->addField('phone');
 
@@ -471,7 +471,7 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        $user = new Model($this->db, ['table' => 'user']);
+        $user = new Model2($this->db, ['table' => 'user']);
         $user->addField('name');
         $j = $user->join('contact.test_id');
         $this->createMigrator()->createForeignKey($j);
@@ -520,7 +520,7 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        $user = new Model($this->db, ['table' => 'user']);
+        $user = new Model2($this->db, ['table' => 'user']);
         $user->addField('contact_id', ['type' => 'integer']);
         $user->addField('name');
         $jContact = $user->join('contact');
@@ -590,7 +590,7 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        $country = new Model($this->db, ['table' => 'country']);
+        $country = new Model2($this->db, ['table' => 'country']);
         $country->addField('name');
         $jContact = $country->join('contact.country_id');
         $this->assertMigratorResolveRelation('contact.country_id', 'country.id', $jContact);
@@ -662,7 +662,7 @@ class JoinSqlTest extends TestCase
         ]);
 
         // main user model joined to contact table
-        $user = new Model($this->db, ['table' => 'user']);
+        $user = new Model2($this->db, ['table' => 'user']);
         $user->addField('name');
         $user->addField('contact_id', ['type' => 'integer']);
         $j = $user->join('contact');
@@ -674,7 +674,7 @@ class JoinSqlTest extends TestCase
         ], $user2->get());
 
         // hasOne phone model
-        $phone = new Model($this->db, ['table' => 'phone']);
+        $phone = new Model2($this->db, ['table' => 'phone']);
         $phone->addField('number');
         $refOne = $j->hasOne('phone_id', ['model' => $phone]); // hasOne on JOIN
         $this->assertMigratorResolveRelation('user.phone_id', 'phone.id', $refOne, false);
@@ -688,7 +688,7 @@ class JoinSqlTest extends TestCase
         ], $user2->get());
 
         // hasMany token model (uses default ourField, theirField)
-        $token = new Model($this->db, ['table' => 'token']);
+        $token = new Model2($this->db, ['table' => 'token']);
         $token->addField('user_id', ['type' => 'integer']);
         $token->addField('token');
         $refMany = $j->hasMany('Token', ['model' => $token]); // hasMany on JOIN (use default ourField, theirField)
@@ -701,7 +701,7 @@ class JoinSqlTest extends TestCase
         ], $user2->ref('Token')->export());
 
         // hasMany email model (uses custom ourField, theirField)
-        $email = new Model($this->db, ['table' => 'email']);
+        $email = new Model2($this->db, ['table' => 'email']);
         $email->addField('contact_id', ['type' => 'integer']);
         $email->addField('address');
         $refMany = $j->hasMany('Email', ['model' => $email, 'ourField' => 'contact_id', 'theirField' => 'contact_id']); // hasMany on JOIN (use custom ourField, theirField)
@@ -727,7 +727,7 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        $user = new Model($this->db, ['table' => 'user']);
+        $user = new Model2($this->db, ['table' => 'user']);
         $user->addField('name');
         $j = $user->join('detail.my_user_id'); // this will be reverse join by default
         $this->createMigrator()->createForeignKey($j);
@@ -751,7 +751,7 @@ class JoinSqlTest extends TestCase
         self::assertSame(['id' => 21, 'name' => 'Emily', 'notes' => '3rd note'], $m->get());
 
         // now test reverse join defined differently
-        $user = new Model($this->db, ['table' => 'user']);
+        $user = new Model2($this->db, ['table' => 'user']);
         $user->addField('name');
         $j = $user->join('detail', [ // here we just set foreign table name without dot and foreignField
             'reverse' => true, // and set it as revers join
@@ -766,7 +766,7 @@ class JoinSqlTest extends TestCase
         self::assertSame(['id' => 22, 'name' => 'Olaf', 'notes' => '4th note'], $m->get());
 
         // now test reverse join with tableAlias and foreignAlias
-        $user = new Model($this->db, ['table' => 'user', 'tableAlias' => 'u']);
+        $user = new Model2($this->db, ['table' => 'user', 'tableAlias' => 'u']);
         $user->addField('name');
         $j = $user->join('detail', [
             'reverse' => true,
@@ -809,7 +809,7 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        $user = new Model($this->db, ['table' => 'user']);
+        $user = new Model2($this->db, ['table' => 'user']);
         $user->addField('contact_id', ['type' => 'integer', 'actual' => $contactForeignIdFieldName]);
         $user->addField('name', ['actual' => 'first_name']);
         // normal join
@@ -878,11 +878,11 @@ class JoinSqlTest extends TestCase
      */
     protected function setupJoinWithNonDefaultForeignIdField(array $joinDefaults = []): array
     {
-        $masterModel = new Model($this->db, ['table' => 'user']);
+        $masterModel = new Model2($this->db, ['table' => 'user']);
         $masterModel->addField('name');
         $masterModel->addField('foo', ['type' => 'integer']);
 
-        $joinedModel = new Model($this->db, ['table' => 'contact', 'idField' => 'uid']);
+        $joinedModel = new Model2($this->db, ['table' => 'contact', 'idField' => 'uid']);
         $joinedModel->addField('bar', ['type' => 'integer']);
         $joinedModel->addField('contact_phone');
 
@@ -899,7 +899,7 @@ class JoinSqlTest extends TestCase
             ['uid' => 2, 'bar' => 21, 'contact_phone' => '+200'],
         ]);
 
-        $user = new Model($this->db, ['table' => 'user']);
+        $user = new Model2($this->db, ['table' => 'user']);
         $user->addField('name');
         $j = $user->join('contact', array_merge([
             'masterField' => 'foo',

@@ -12,13 +12,13 @@ class ReferenceTest extends TestCase
 {
     public function testBasicReferences(): void
     {
-        $user = new Model(null, ['table' => 'user']);
+        $user = new Model2(null, ['table' => 'user']);
         $user->addField('id', ['type' => 'integer']);
         $user->addField('name');
         $user = $user->createEntity();
         $user->setId(1);
 
-        $order = new Model();
+        $order = new Model2();
         $order->addField('id', ['type' => 'integer']);
         $order->addField('amount', ['default' => 20]);
         $order->addField('user_id', ['type' => 'integer']);
@@ -30,7 +30,7 @@ class ReferenceTest extends TestCase
         self::assertSame(1, $o->get('user_id'));
 
         $r2 = $user->getModel()->hasMany('BigOrders', ['model' => static function () {
-            $m = new Model();
+            $m = new Model2();
             $m->addField('amount', ['default' => 100]);
             $m->addField('user_id', ['type' => 'integer']);
 
@@ -51,13 +51,13 @@ class ReferenceTest extends TestCase
 
     public function testModelCaption(): void
     {
-        $user = new Model(null, ['table' => 'user']);
+        $user = new Model2(null, ['table' => 'user']);
         $user->addField('id', ['type' => 'integer']);
         $user->addField('name');
         $user = $user->createEntity();
         $user->setId(1);
 
-        $order = new Model();
+        $order = new Model2();
         $order->addField('id', ['type' => 'integer']);
         $order->addField('amount', ['default' => 20]);
         $order->addField('user_id', ['type' => 'integer']);
@@ -71,7 +71,7 @@ class ReferenceTest extends TestCase
 
     public function testModelProperty(): void
     {
-        $user = new Model($this->db, ['table' => 'user']);
+        $user = new Model2($this->db, ['table' => 'user']);
         $user = $user->createEntity();
         $user->setId(1);
         $user->getModel()->hasOne('order_id', ['model' => [Model::class, 'table' => 'order']]);
@@ -81,8 +81,8 @@ class ReferenceTest extends TestCase
 
     public function testRefName1(): void
     {
-        $user = new Model(null, ['table' => 'user']);
-        $order = new Model();
+        $user = new Model2(null, ['table' => 'user']);
+        $order = new Model2();
         $order->addField('user_id', ['type' => 'integer']);
 
         $user->hasMany('Orders', ['model' => $order]);
@@ -93,8 +93,8 @@ class ReferenceTest extends TestCase
 
     public function testRefName2(): void
     {
-        $order = new Model(null, ['table' => 'order']);
-        $user = new Model(null, ['table' => 'user']);
+        $order = new Model2(null, ['table' => 'order']);
+        $user = new Model2(null, ['table' => 'user']);
 
         $user->hasOne('user_id', ['model' => $user]);
 
@@ -104,7 +104,7 @@ class ReferenceTest extends TestCase
 
     public function testCustomReference(): void
     {
-        $m = new Model($this->db, ['table' => 'user']);
+        $m = new Model2($this->db, ['table' => 'user']);
         $m->addReference('archive', ['model' => static function (Model $m) {
             return new $m(null, ['table' => $m->table . '_archive']);
         }]);
@@ -114,8 +114,8 @@ class ReferenceTest extends TestCase
 
     public function testTheirFieldNameGuessTableWithSchema(): void
     {
-        $user = new Model($this->db, ['table' => 'db1.user']);
-        $order = new Model($this->db, ['table' => 'db2.orders']);
+        $user = new Model2($this->db, ['table' => 'db1.user']);
+        $order = new Model2($this->db, ['table' => 'db2.orders']);
         $order->addField('user_id', ['type' => 'integer']);
 
         $user->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
@@ -124,8 +124,8 @@ class ReferenceTest extends TestCase
 
     public function testRefTypeMismatchOneException(): void
     {
-        $user = new Model($this->db, ['table' => 'user']);
-        $order = new Model($this->db, ['table' => 'order']);
+        $user = new Model2($this->db, ['table' => 'user']);
+        $order = new Model2($this->db, ['table' => 'order']);
         $order->addField('placed_by_user_id');
 
         $order->hasOne('placed_by', ['model' => $user, 'ourField' => 'placed_by_user_id']);
@@ -137,8 +137,8 @@ class ReferenceTest extends TestCase
 
     public function testRefTypeMismatchManyException(): void
     {
-        $user = new Model($this->db, ['table' => 'user']);
-        $order = new Model($this->db, ['table' => 'order']);
+        $user = new Model2($this->db, ['table' => 'user']);
+        $order = new Model2($this->db, ['table' => 'order']);
         $order->addField('placed_by_user_id');
 
         $user->hasMany('orders', ['model' => $order, 'theirField' => 'placed_by_user_id']);
@@ -150,8 +150,8 @@ class ReferenceTest extends TestCase
 
     public function testRefTypeMismatchWithDisabledCheck(): void
     {
-        $user = new Model($this->db, ['table' => 'user']);
-        $order = new Model($this->db, ['table' => 'order']);
+        $user = new Model2($this->db, ['table' => 'user']);
+        $order = new Model2($this->db, ['table' => 'order']);
         $order->addField('placed_by_user_id');
 
         $order->hasOne('placed_by', ['model' => $user, 'ourField' => 'placed_by_user_id', 'checkTheirType' => false]);

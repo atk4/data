@@ -125,7 +125,7 @@ class ScopeTest extends TestCase
 
     public function testUnexistingFieldException(): void
     {
-        $m = new Model();
+        $m = new Model2();
         $m->addField('name');
 
         $this->expectException(Exception::class);
@@ -135,7 +135,7 @@ class ScopeTest extends TestCase
 
     public function testBasicDiscrimination(): void
     {
-        $m = new Model();
+        $m = new Model2();
         $m->addField('name');
         $m->addField('gender', ['enum' => ['M', 'F']]);
         $m->addField('foo');
@@ -151,7 +151,7 @@ class ScopeTest extends TestCase
 
     public function testEditableAfterCondition(): void
     {
-        $m = new Model();
+        $m = new Model2();
         $m->addField('name');
         $m->addField('gender');
 
@@ -163,10 +163,10 @@ class ScopeTest extends TestCase
 
     public function testEditableHasOne(): void
     {
-        $gender = new Model();
+        $gender = new Model2();
         $gender->addField('name');
 
-        $m = new Model();
+        $m = new Model2();
         $m->addField('name');
         $m->hasOne('gender_id', ['model' => $gender]);
 
@@ -426,7 +426,7 @@ class ScopeTest extends TestCase
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Scope can only be added as element to scope');
-        $scope->setOwner(new Model()); // @phpstan-ignore-line
+        $scope->setOwner(new Model2()); // @phpstan-ignore-line
     }
 
     public function testScopeToWords(): void
