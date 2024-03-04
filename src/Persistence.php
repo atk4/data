@@ -84,7 +84,9 @@ abstract class Persistence
         // model is not added to elements as it does not implement TrackableTrait trait
         $this->_add($model);
 
-        $this->hook(self::HOOK_AFTER_ADD, [$model]);
+        if (!$model instanceof Model2Inner) {
+            $this->hook(self::HOOK_AFTER_ADD, [$model]);
+        }
     }
 
     /**
