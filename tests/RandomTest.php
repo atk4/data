@@ -181,15 +181,15 @@ class RandomTest extends TestCase
         self::assertFalse($m->hasField('id'));
 
         $p = new Persistence\Array_();
-        $pAddCalled = false;
-        $p->onHookShort(Persistence::HOOK_AFTER_ADD, static function (Model $mFromHook) use ($m, &$pAddCalled) {
+        $hookCalled = 0;
+        $p->onHookShort(Persistence::HOOK_AFTER_ADD, static function (Model $mFromHook) use ($m, &$hookCalled) {
             self::assertSame($m, $mFromHook);
-            $pAddCalled = true;
+            ++$hookCalled;
         });
 
         $m->setPersistence($p);
         self::assertTrue($m->hasField('id'));
-        self::assertTrue($pAddCalled);
+        self::assertSame(1, $hookCalled);
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Persistence is already set');
