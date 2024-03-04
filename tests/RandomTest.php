@@ -117,11 +117,28 @@ class RandomTest extends TestCase
         ], $this->getDb());
     }
 
+    public function testIssetTablePropertyOnEntityException(): void
+    {
+        $model = new Model(null, ['table' => 'user']);
+        $entity = $model->createEntity();
+
+        self::assertTrue(isset($model->table)); // @phpstan-ignore-line
+        self::assertTrue(isset($model->idField)); // @phpstan-ignore-line
+        self::assertTrue(isset($entity->idField)); // @phpstan-ignore-line
+
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Expected model, but instance is an entity');
+        isset($entity->table); // @phpstan-ignore-line
+    }
+
     public function testGetTablePropertyOnEntityException(): void
     {
         $model = new Model(null, ['table' => 'user']);
-        self::assertSame('user', $model->table);
         $entity = $model->createEntity();
+
+        self::assertSame('user', $model->table);
+        self::assertSame('id', $model->idField);
+        self::assertSame('id', $entity->idField);
 
         $this->expectException(\TypeError::class);
         $this->expectExceptionMessage('Expected model, but instance is an entity');
