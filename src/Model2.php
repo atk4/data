@@ -78,14 +78,14 @@ class Model2 extends Model
      */
     public function __set(string $name, $value): void
     {
-        if ($name === 'table' && !$this->isEntity()) {
-            if (is_scalar($value) || $value instanceof self || $value === null) {
+        if ($name === 'table') {
+            if (!$this->isEntity() && (is_scalar($value) || $value instanceof self || $value === null)) {
                 $this->_tableName = $value;
 
                 return;
             }
 
-            throw new \Error('Unexpected set call');
+            throw new \Error('Unexpected set Model::$table call');
         }
 
         parent::__set($name, $value);
@@ -95,10 +95,17 @@ class Model2 extends Model
     {
         if ($name === 'table') {
             if ($this->isEntity()) {
-                return;
+                $trace = debug_backtrace(\DEBUG_BACKTRACE_PROVIDE_OBJECT | \DEBUG_BACKTRACE_IGNORE_ARGS, 5);
+                while (($trace[0]['object'] ?? null) === $this && ($trace[0]['function'] ?? null) === '__unset') {
+                    array_shift($trace);
+                    $trace = array_values($trace);
+                }
+                if (($trace[0]['object'] ?? null) instanceof Model && ($trace[0]['function'] ?? null) === 'createEntity') {
+                    return;
+                }
             }
 
-            throw new \Error('Unexpected unset call');
+            throw new \Error('Unexpected unset Model::$table call');
         }
 
         parent::__unset($name);
