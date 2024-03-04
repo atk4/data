@@ -477,7 +477,7 @@ after-save reloading:
 ```
 public function archive()
 {
-    $this->reloadAfterSave = false;
+    $this->getModel()->reloadAfterSave = false;
     $this->set('is_archived', true);
 
     return $this;

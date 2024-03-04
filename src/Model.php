@@ -94,7 +94,13 @@ class Model implements \IteratorAggregate
     private $_entityId;
 
     /** @var array<string, true> */
-    private static $_modelOnlyProperties;
+    private static array $_modelOnlyProperties;
+
+    /** @var array<string, true> */
+    private static array $_modelOnlyPropertiesAllowEntityMagic = [
+        'idField' => true,
+        'titleField' => true,
+    ];
 
     /** @var array<mixed> The seed used by addField() method. */
     protected $_defaultSeedAddField = [Field::class];
@@ -316,7 +322,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsModel();
 
-        if (self::$_modelOnlyProperties === null) {
+        if ((self::$_modelOnlyProperties ?? null) === null) {
             $modelOnlyProperties = [];
             foreach ((new \ReflectionClass(self::class))->getProperties() as $prop) {
                 if (!$prop->isStatic()) {
@@ -804,7 +810,7 @@ class Model implements \IteratorAggregate
             $this->assertIsEntity();
 
             $data = [];
-            foreach ($this->onlyFields ?? array_keys($this->getFields()) as $k) {
+            foreach ($this->getModel()->onlyFields ?? array_keys($this->getFields()) as $k) {
                 $data[$k] = $this->get($k);
             }
 
@@ -1383,7 +1389,7 @@ class Model implements \IteratorAggregate
      */
     public function saveAndUnload(array $data = [])
     {
-        $reloadAfterSaveBackup = $this->reloadAfterSave;
+        $reloadAfterSaveBackup = $this->getModel()->reloadAfterSave;
         try {
             $this->getModel()->reloadAfterSave = false;
             $this->save($data);
@@ -1599,7 +1605,7 @@ class Model implements \IteratorAggregate
             $dirtyRef = &$this->getDirtyRef();
             $dirtyRef = [];
 
-            if ($this->idField && $this->reloadAfterSave) {
+            if ($this->idField && $this->getModel()->reloadAfterSave) {
                 $this->reload();
             }
 
@@ -1631,7 +1637,7 @@ class Model implements \IteratorAggregate
         }
 
         // save data fields
-        $reloadAfterSaveBackup = $this->reloadAfterSave;
+        $reloadAfterSaveBackup = $this->getModel()->reloadAfterSave;
         try {
             $this->getModel()->reloadAfterSave = false;
             $this->save($row);
@@ -1990,6 +1996,13 @@ class Model implements \IteratorAggregate
         return $field;
     }
 
+    private function assertMagicEntityPropertyToModelAllowed(string $name): void
+    {
+        if (!isset(self::$_modelOnlyPropertiesAllowEntityMagic[$name])) {
+            $this->assertIsModel();
+        }
+    }
+
     public function __isset(string $name): bool
     {
         $model = $this->getModel(true);
@@ -1999,6 +2012,7 @@ class Model implements \IteratorAggregate
         }
 
         if ($this->isEntity() && isset($model->getModelOnlyProperties()[$name])) {
+            $this->assertMagicEntityPropertyToModelAllowed($name);
             return isset($model->{$name});
         }
 
@@ -2017,6 +2031,7 @@ class Model implements \IteratorAggregate
         }
 
         if ($this->isEntity() && isset($model->getModelOnlyProperties()[$name])) {
+            $this->assertMagicEntityPropertyToModelAllowed($name);
             return $model->{$name};
         }
 

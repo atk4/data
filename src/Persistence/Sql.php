@@ -187,6 +187,10 @@ class Sql extends Persistence
      */
     public function initQuery(Model $model): Query
     {
+        if ($model->isEntity()) { // TODO pass model only
+            $model = $model->getModel();
+        }
+
         $query = $this->dsql();
 
         if ($model->table) {
@@ -267,6 +271,10 @@ class Sql extends Persistence
      */
     protected function setLimitOrder(Model $model, Query $query): void
     {
+        if ($model->isEntity()) { // TODO pass model only
+            $model = $model->getModel();
+        }
+
         // set limit
         if ($model->limit[0] !== null || $model->limit[1] !== 0) {
             $query->limit($model->limit[0] ?? \PHP_INT_MAX, $model->limit[1]);
