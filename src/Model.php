@@ -97,7 +97,7 @@ class Model implements \IteratorAggregate
     private static array $_modelOnlyProperties;
 
     /** @var array<string, true> */
-    private static array $_modelOnlyPropertiesAllowEntityMagic = [
+    private static array $_modelOnlyPropertiesEntityMagic = [
         'idField' => true,
         'titleField' => true,
     ];
@@ -1998,7 +1998,7 @@ class Model implements \IteratorAggregate
 
     private function assertMagicEntityPropertyToModelAllowed(string $name): void
     {
-        if (!isset(self::$_modelOnlyPropertiesAllowEntityMagic[$name])) {
+        if (!isset(self::$_modelOnlyPropertiesEntityMagic[$name])) {
             $this->assertIsModel();
         }
     }
@@ -2013,6 +2013,7 @@ class Model implements \IteratorAggregate
 
         if ($this->isEntity() && isset($model->getModelOnlyProperties()[$name])) {
             $this->assertMagicEntityPropertyToModelAllowed($name);
+
             return isset($model->{$name});
         }
 
@@ -2032,6 +2033,7 @@ class Model implements \IteratorAggregate
 
         if ($this->isEntity() && isset($model->getModelOnlyProperties()[$name])) {
             $this->assertMagicEntityPropertyToModelAllowed($name);
+
             return $model->{$name};
         }
 

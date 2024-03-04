@@ -117,6 +117,17 @@ class RandomTest extends TestCase
         ], $this->getDb());
     }
 
+    public function testGetTablePropertyOnEntityException(): void
+    {
+        $model = new Model(null, ['table' => 'user']);
+        self::assertSame('user', $model->table);
+        $entity = $model->createEntity();
+
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Expected model, but instance is an entity');
+        $entity->table; // @phpstan-ignore-line
+    }
+
     public function testAddFields(): void
     {
         $this->setDb([
@@ -272,7 +283,7 @@ class RandomTest extends TestCase
         self::assertSame('John', $m->load(2)->ref('parent_item_id', ['tableAlias' => 'pp'])->get('name'));
     }
 
-    public function testDirty2(): void
+    public function testDirty(): void
     {
         $p = new Persistence\Static_([1 => 'hello', 'world']);
 
