@@ -117,6 +117,34 @@ class RandomTest extends TestCase
         ], $this->getDb());
     }
 
+    public function testIssetTablePropertyOnEntityException(): void
+    {
+        $model = new Model(null, ['table' => 'user']);
+        $entity = $model->createEntity();
+
+        self::assertTrue(isset($model->table)); // @phpstan-ignore-line
+        self::assertTrue(isset($model->idField)); // @phpstan-ignore-line
+        self::assertTrue(isset($entity->idField)); // @phpstan-ignore-line
+
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Expected model, but instance is an entity');
+        isset($entity->table); // @phpstan-ignore-line
+    }
+
+    public function testGetTablePropertyOnEntityException(): void
+    {
+        $model = new Model(null, ['table' => 'user']);
+        $entity = $model->createEntity();
+
+        self::assertSame('user', $model->table);
+        self::assertSame('id', $model->idField);
+        self::assertSame('id', $entity->idField);
+
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Expected model, but instance is an entity');
+        $entity->table; // @phpstan-ignore-line
+    }
+
     public function testAddFields(): void
     {
         $this->setDb([
@@ -181,15 +209,15 @@ class RandomTest extends TestCase
         self::assertFalse($m->hasField('id'));
 
         $p = new Persistence\Array_();
-        $pAddCalled = false;
-        $p->onHookShort(Persistence::HOOK_AFTER_ADD, static function (Model $mFromHook) use ($m, &$pAddCalled) {
+        $hookCalled = 0;
+        $p->onHookShort(Persistence::HOOK_AFTER_ADD, static function (Model $mFromHook) use ($m, &$hookCalled) {
             self::assertSame($m, $mFromHook);
-            $pAddCalled = true;
+            ++$hookCalled;
         });
 
         $m->setPersistence($p);
         self::assertTrue($m->hasField('id'));
-        self::assertTrue($pAddCalled);
+        self::assertSame(1, $hookCalled);
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Persistence is already set');
@@ -272,7 +300,7 @@ class RandomTest extends TestCase
         self::assertSame('John', $m->load(2)->ref('parent_item_id', ['tableAlias' => 'pp'])->get('name'));
     }
 
-    public function testDirty2(): void
+    public function testDirty(): void
     {
         $p = new Persistence\Static_([1 => 'hello', 'world']);
 

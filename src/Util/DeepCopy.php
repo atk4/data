@@ -201,11 +201,13 @@ class DeepCopy
     protected function _copy(Model $source, Model $destination, array $references, array $exclusions, array $transforms): Model
     {
         try {
+            $sourceTable = $source->getModel()->table;
+
             // perhaps source was already copied, then simply load destination model and return
-            if (isset($this->mapping[$source->table]) && isset($this->mapping[$source->table][$source->getId()])) {
+            if (isset($this->mapping[$sourceTable]) && isset($this->mapping[$sourceTable][$source->getId()])) {
                 $this->debug('Skipping ' . get_class($source));
 
-                $destination = $destination->load($this->mapping[$source->table][$source->getId()]);
+                $destination = $destination->load($this->mapping[$sourceTable][$source->getId()]);
             } else {
                 $this->debug('Copying ' . get_class($source));
 
@@ -291,7 +293,7 @@ class DeepCopy
             $destination->save();
 
             // store mapping
-            $this->mapping[$source->table][$source->getId()] = $destination->getId();
+            $this->mapping[$sourceTable][$source->getId()] = $destination->getId();
             $this->debug(' .. copied ' . get_class($source) . ' ' . $source->getId() . ' ' . $destination->getId());
 
             // next look for hasMany relationships and copy those too

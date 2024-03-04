@@ -1,10 +1,15 @@
 <?php
 
-$finder = PhpCsFixer\Finder::create()
+declare(strict_types=1);
+
+use PhpCsFixer\Config;
+use PhpCsFixer\Finder;
+
+$finder = Finder::create()
     ->in([__DIR__])
     ->exclude(['vendor']);
 
-return (new PhpCsFixer\Config())
+return (new Config())
     ->setRiskyAllowed(true)
     ->setRules([
         '@PhpCsFixer' => true,
