@@ -149,7 +149,7 @@ class ModelNestedArrayTest extends TestCase
             ['main', '<<<'],
         ], $this->hookLog);
 
-        self::assertSame(4, $m->table->loadBy('name', 'Karl')->getId());
+        self::assertSame(4, $m->table->table->loadBy('name', 'Karl')->getId());
         self::assertSameExportUnordered([[new \DateTime('2000-6-1 UTC')]], [[$entity->getId()]]);
 
         self::assertSameExportUnordered([

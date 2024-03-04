@@ -808,7 +808,7 @@ class ArrayTest extends TestCase
         $user->addField('surname');
 
         $country = new Model2();
-        $country->table = 'country';
+        $country->table->table = 'country';
         $country->addField('name');
 
         $user->hasOne('country_id', ['model' => $country]);
@@ -838,7 +838,7 @@ class ArrayTest extends TestCase
         $country->addField('name');
 
         $user = new Model2();
-        $user->table = 'user';
+        $user->table->table = 'user';
         $user->addField('name');
         $user->addField('surname');
 

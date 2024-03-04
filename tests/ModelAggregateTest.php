@@ -124,7 +124,7 @@ class ModelAggregateTest extends TestCase
     public function testGroupSelectExpression(): void
     {
         $aggregate = $this->createInvoiceAggregate();
-        $aggregate->table->getReference('client_id')->addField('order'); // @phpstan-ignore-line
+        $aggregate->table->table->getReference('client_id')->addField('order'); // @phpstan-ignore-line
         $aggregate->addField('client');
 
         $aggregate->setGroupBy(['client_id'], [
@@ -146,7 +146,7 @@ class ModelAggregateTest extends TestCase
     {
         $aggregate = $this->createInvoiceAggregate();
         $aggregate->addField('client');
-        $aggregate->table->addCondition('name', 'chair purchase');
+        $aggregate->table->table->addCondition('name', 'chair purchase');
 
         $aggregate->setGroupBy(['client_id'], [
             's' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
@@ -258,7 +258,7 @@ class ModelAggregateTest extends TestCase
 
         self::assertSame(1, $aggregate->loadBy('client', 'Vinny')->ref('client_id')->id);
         self::assertSame(2, $aggregate->loadBy('client', 'Zoe')->ref('client_id')->id);
-        $aggregate->table->addCondition('client', 'Zoe');
+        $aggregate->table->table->addCondition('client', 'Zoe');
         self::assertSame(2, $aggregate->ref('client_id')->loadOne()->id);
     }
 
@@ -341,7 +341,7 @@ class ModelAggregateTest extends TestCase
     public function testAggregateFieldExpressionSql(): void
     {
         $aggregate = $this->createInvoiceAggregate();
-        $aggregate->table->getReference('client_id')->addField('order'); // @phpstan-ignore-line
+        $aggregate->table->table->getReference('client_id')->addField('order'); // @phpstan-ignore-line
 
         $aggregate->setGroupBy([$aggregate->expr('{}', ['abc'])], [
             'xyz' => ['expr' => 'sum([amount])'],

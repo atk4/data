@@ -37,7 +37,7 @@ class JoinSqlTest extends TestCase
         };
 
         $fieldToStrFx = static function (Field $field): string {
-            return $field->getOwner()->table . '.' . $field->shortName;
+            return $field->getOwner()->table->table . '.' . $field->shortName;
         };
 
         self::assertSame([

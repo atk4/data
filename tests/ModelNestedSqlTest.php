@@ -109,8 +109,8 @@ class ModelNestedSqlTest extends TestCase
     public function testSelectSql(): void
     {
         $m = $this->createTestModel();
-        $m->table->setOrder('name', 'desc');
-        $m->table->setLimit(5);
+        $m->table->table->setOrder('name', 'desc');
+        $m->table->table->setLimit(5);
         $m->setOrder('birthday');
 
         self::assertSame(
@@ -190,7 +190,7 @@ class ModelNestedSqlTest extends TestCase
             ['main', '<<<'],
         ], $this->hookLog);
 
-        self::assertSame(4, $m->table->loadBy('name', 'Karl')->getId());
+        self::assertSame(4, $m->table->table->loadBy('name', 'Karl')->getId());
         self::assertSameExportUnordered([[new \DateTime('2000-6-1 UTC')]], [[$entity->getId()]]);
 
         self::assertSameExportUnordered([
