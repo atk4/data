@@ -25,8 +25,7 @@ class HasOneSql extends HasOne
                     $theirFieldName = $theirModel->titleField;
                 }
 
-                // remove order if we just select one field from hasOne model, needed for Oracle
-                return $theirModel->action('field', [$theirFieldName])->reset('order');
+                return $theirModel->action('field', [$theirFieldName]);
             },
         ], $defaults, [
             // allow to set our field value by an imported foreign field, but only when
