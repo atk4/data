@@ -51,6 +51,7 @@ class Model2Inner extends Model
             }
 
             $fieldDefaults = [get_class($oField)];
+            $fieldDefaults = [Field::class];
             foreach ([
                 'type',
                 'system',
