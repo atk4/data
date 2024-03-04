@@ -3,12 +3,11 @@ includes:
 
 parameters:
     level: 6
+    checkMissingOverrideMethodAttribute: true
     paths:
         - .
     excludePaths:
         - vendor
-
-    checkMissingOverrideMethodAttribute: true
 
     ignoreErrors:
         - '~^Unsafe usage of new static\(\)\.$~'
