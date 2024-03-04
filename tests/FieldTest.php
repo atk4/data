@@ -275,10 +275,10 @@ class FieldTest extends TestCase
             $m->getField('newNASA_module')->getCaption()
         );
 
-        $m->addField('this\\ _isNASA_MyBigBull shit_123\Foo');
+        $m->addField('this\ _isNASA_MyBigBull shit_123\Foo');
         self::assertSame(
             'This Is NASA My Big Bull Shit 123 Foo',
-            $m->getField('this\\ _isNASA_MyBigBull shit_123\Foo')->getCaption()
+            $m->getField('this\ _isNASA_MyBigBull shit_123\Foo')->getCaption()
         );
     }
 

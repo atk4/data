@@ -52,7 +52,7 @@ class ModelNestedSqlTest extends TestCase
                     return $this->testModelAlias;
                 }
 
-                $res = preg_replace('~(?<=^Atk4\\\\Data\\\\Persistence\\\\Sql\\\\)\w+\\\\(?=\w+$)~', '', get_debug_type($v));
+                $res = preg_replace('~(?<=^Atk4\\\Data\\\Persistence\\\Sql\\\)\w+\\\(?=\w+$)~', '', get_debug_type($v));
 
                 return $res;
             }

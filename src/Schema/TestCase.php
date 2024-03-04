@@ -153,7 +153,7 @@ abstract class TestCase extends BaseTestCase
                     return ':' . ($platform instanceof OraclePlatform ? 'xxaaa' : '') . $matches[1];
                 }
 
-                $str = substr(preg_replace('~\\\\(.)~s', '$1', $matches[0]), 1, -1);
+                $str = substr(preg_replace('~\\\(.)~s', '$1', $matches[0]), 1, -1);
                 if (substr($matches[0], 0, 1) === '`') {
                     return $platform->quoteSingleIdentifier($str);
                 }
