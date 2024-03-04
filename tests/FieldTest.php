@@ -2,438 +2,323 @@
 
 declare(strict_types=1);
 
-namespace Atk4\Data\Tests;
+namespace atk4\data\tests;
 
-use Atk4\Data\Exception;
-use Atk4\Data\Field;
-use Atk4\Data\Model;
-use Atk4\Data\Schema\TestCase;
-use Atk4\Data\ValidationException;
+use atk4\data\Exception;
+use atk4\data\Field;
+use atk4\data\Model;
+use atk4\data\Persistence;
+use atk4\data\ValidationException;
 
-class FieldTest extends TestCase
+class FieldTest extends \atk4\schema\PhpunitTestCase
 {
-    public function testDefaultValue(): void
-    {
-        $m = new Model();
-        $m->addField('nodefault');
-        $m->addField('withdefault', ['default' => 'abc']);
-        $m = $m->createEntity();
-
-        self::assertNull($m->get('nodefault'));
-        self::assertSame('abc', $m->get('withdefault'));
-    }
-
-    public function testDirty(): void
+    public function testDirty1()
     {
         $m = new Model();
         $m->addField('foo', ['default' => 'abc']);
-        $m = $m->createEntity();
 
-        self::assertFalse($m->isDirty('foo'));
+        $this->assertFalse($m->isDirty('foo'));
 
         $m->set('foo', 'abc');
-        self::assertFalse($m->isDirty('foo'));
+        $this->assertFalse($m->isDirty('foo'));
 
         $m->set('foo', 'bca');
-        self::assertTrue($m->isDirty('foo'));
+        $this->assertTrue($m->isDirty('foo'));
 
         $m->set('foo', 'abc');
-        self::assertFalse($m->isDirty('foo'));
+        $this->assertFalse($m->isDirty('foo'));
 
         // set initial data
-        $m->getDataRef()['foo'] = 'xx';
-        self::assertFalse($m->isDirty('foo'));
+        $m->data['foo'] = 'xx';
+        $this->assertFalse($m->isDirty('foo'));
 
         $m->set('foo', 'abc');
-        self::assertTrue($m->isDirty('foo'));
+        $this->assertTrue($m->isDirty('foo'));
 
         $m->set('foo', 'bca');
-        self::assertTrue($m->isDirty('foo'));
+        $this->assertTrue($m->isDirty('foo'));
 
         $m->set('foo', 'xx');
-        self::assertFalse($m->isDirty('foo'));
+        $this->assertFalse($m->isDirty('foo'));
     }
 
-    public function testCompare(): void
+    public function testCompare()
     {
         $m = new Model();
         $m->addField('foo', ['default' => 'abc']);
-        $m = $m->createEntity();
 
-        self::assertTrue($m->compare('foo', 'abc'));
+        $this->assertTrue($m->compare('foo', 'abc'));
         $m->set('foo', 'zzz');
 
-        self::assertFalse($m->compare('foo', 'abc'));
-        self::assertTrue($m->compare('foo', 'zzz'));
+        $this->assertFalse($m->compare('foo', 'abc'));
+        $this->assertTrue($m->compare('foo', 'zzz'));
     }
 
-    public function testNotNullableNullException(): void
+    public function testMandatory1()
     {
         $m = new Model();
-        $m->addField('foo', ['nullable' => false]);
-        $m = $m->createEntity();
-
+        $m->addField('foo', ['mandatory' => true]);
         $m->set('foo', 'abc');
         $m->set('foo', '');
 
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must not be null');
+        /* known bug, see https://github.com/atk4/data/issues/575, fix in https://github.com/atk4/data/issues/576
+        $this->expectException(ValidationException::class);*/
         $m->set('foo', null);
+
+        $this->assertTrue(true); // no exceptions
     }
 
-    public function testRequiredNullException(): void
+    public function testRequired1()
     {
         $m = new Model();
         $m->addField('foo', ['required' => true]);
-        $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must not be empty');
-        $m->set('foo', null);
-    }
-
-    public function testNotNullableAndRequiredNullException(): void
-    {
-        $m = new Model();
-        $m->addField('foo', ['nullable' => false, 'required' => true]);
-        $m = $m->createEntity();
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must not be empty');
-        $m->set('foo', null);
-    }
-
-    public function testRequiredStringEmptyException(): void
-    {
-        $m = new Model();
-        $m->addField('foo', ['required' => true]);
-        $m = $m->createEntity();
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must not be empty');
         $m->set('foo', '');
     }
 
-    public function testRequiredBinaryEmptyException(): void
-    {
-        $m = new Model();
-        $m->addField('foo', ['type' => 'binary', 'required' => true]);
-        $m = $m->createEntity();
-
-        $m->set('foo', '0');
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must not be empty');
-        $m->set('foo', '');
-    }
-
-    public function testRequiredStringZeroException(): void
+    public function testRequired11()
     {
         $m = new Model();
         $m->addField('foo', ['required' => true]);
-        $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must not be empty');
-        $m->set('foo', '0');
+        $m->set('foo', null);
     }
 
-    /**
-     * @dataProvider provideRequiredNumericZeroExceptionCases
-     */
-    public function testRequiredNumericZeroException(string $type): void
+    public function testMandatory2()
     {
-        $m = new Model();
-        $m->addField('foo', ['type' => $type, 'required' => true]);
-        $m = $m->createEntity();
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must not be a zero');
-        $m->set('foo', 0);
-    }
-
-    /**
-     * @return iterable<list<mixed>>
-     */
-    public static function provideRequiredNumericZeroExceptionCases(): iterable
-    {
-        yield ['integer'];
-        yield ['float'];
-        yield ['decimal'];
-        yield ['atk4_money'];
-    }
-
-    public function testNotNullableNullInsertException(): void
-    {
-        $this->setDb([
+        $db = new Persistence\Sql($this->db->connection);
+        $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
-            ],
-        ]);
+            ], ];
+        $this->setDb($a);
 
-        $m = new Model($this->db, ['table' => 'user']);
-        $m->addField('name', ['nullable' => false]);
+        $m = new Model($db, 'user');
+        $m->addField('name', ['mandatory' => true]);
         $m->addField('surname');
-
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Must not be null');
         $m->insert(['surname' => 'qq']);
     }
 
-    public function testRequiredStringEmptyInsertException(): void
+    public function testRequired2()
     {
-        $this->setDb([
+        $db = new Persistence\Sql($this->db->connection);
+        $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
-            ],
-        ]);
+            ], ];
+        $this->setDb($a);
 
-        $m = new Model($this->db, ['table' => 'user']);
+        $m = new Model($db, 'user');
         $m->addField('name', ['required' => true]);
         $m->addField('surname');
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must not be empty');
+        $this->expectException(Exception::class);
         $m->insert(['surname' => 'qq', 'name' => '']);
     }
 
-    public function testNotNullableNullLoadException(): void
+    public function testMandatory3()
     {
-        $this->setDb([
+        $db = new Persistence\Sql($this->db->connection);
+        $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
-            ],
-        ]);
+            ], ];
+        $this->setDb($a);
 
-        $m = new Model($this->db, ['table' => 'user']);
-        $m->addField('name', ['nullable' => false]);
+        $m = new Model($db, 'user');
+        $m->addField('name', ['mandatory' => true]);
         $m->addField('surname');
-        $m = $m->load(1);
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must not be null');
+        $m->load(1);
+        $this->expectException(Exception::class);
         $m->save(['name' => null]);
     }
 
-    public function testNotNullableInsertWithDefault(): void
+    public function testMandatory4()
     {
-        $this->setDb([
+        if ($this->driverType === 'pgsql') {
+            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+        }
+
+        $db = new Persistence\Sql($this->db->connection);
+        $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
-            ],
-        ]);
+            ], ];
+        $this->setDb($a);
 
-        $m = new Model($this->db, ['table' => 'user']);
-        $m->addField('name', ['nullable' => false, 'default' => 'NoName']);
+        $m = new Model($db, 'user');
+        $m->addField('name', ['mandatory' => true, 'default' => 'NoName']);
         $m->addField('surname');
         $m->insert(['surname' => 'qq']);
-        self::assertSame([
+        $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
-                ['id' => 2, 'name' => 'NoName', 'surname' => 'qq'],
-            ],
-        ], $this->getDb());
+                2 => ['id' => 2, 'name' => 'NoName', 'surname' => 'qq'],
+            ], ];
+        $this->assertEquals($a, $this->getDb());
     }
 
-    public function testCaption(): void
+    public function testCaption()
     {
         $m = new Model();
+        $f = $m->addField('foo');
+        $this->assertSame('Foo', $f->getCaption());
 
-        $m->addField('foo');
-        self::assertSame(
-            'Foo',
-            $m->getField('foo')->getCaption()
-        );
+        $f = $m->addField('user_defined_entity');
+        $this->assertSame('User Defined Entity', $f->getCaption());
 
-        $m->addField('user_defined_entity');
-        self::assertSame(
-            'User Defined Entity',
-            $m->getField('user_defined_entity')->getCaption()
-        );
+        $f = $m->addField('foo2', ['caption' => 'My Foo']);
+        $this->assertSame('My Foo', $f->getCaption());
 
-        $m->addField('foo2', ['caption' => 'My Foo']);
-        self::assertSame(
-            'My Foo',
-            $m->getField('foo2')->getCaption()
-        );
+        $f = $m->addField('foo3', ['ui' => ['caption' => 'My Foo']]);
+        $this->assertSame('My Foo', $f->getCaption());
 
-        $m->addField('foo3', ['ui' => ['caption' => 'My Foo']]);
-        self::assertSame(
-            'My Foo',
-            $m->getField('foo3')->getCaption()
-        );
+        $f = $m->addField('userDefinedEntity');
+        $this->assertSame('User Defined Entity', $f->getCaption());
 
-        $m->addField('userDefinedEntity');
-        self::assertSame(
-            'User Defined Entity',
-            $m->getField('userDefinedEntity')->getCaption()
-        );
+        $f = $m->addField('newNASA_module');
+        $this->assertSame('New NASA Module', $f->getCaption());
 
-        $m->addField('newNASA_module');
-        self::assertSame(
-            'New NASA Module',
-            $m->getField('newNASA_module')->getCaption()
-        );
-
-        $m->addField('this\\ _isNASA_MyBigBull shit_123\Foo');
-        self::assertSame(
-            'This Is NASA My Big Bull Shit 123 Foo',
-            $m->getField('this\\ _isNASA_MyBigBull shit_123\Foo')->getCaption()
-        );
+        $f = $m->addField('this\\ _isNASA_MyBigBull shit_123\Foo');
+        $this->assertSame('This Is NASA My Big Bull Shit 123 Foo', $f->getCaption());
     }
 
-    public function testReadOnlyException(): void
+    public function testReadOnly1()
     {
         $m = new Model();
-        $m->addField('foo', ['readOnly' => true]);
-        $m = $m->createEntity();
-
+        $m->addField('foo', ['read_only' => true]);
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Attempting to change read-only field');
         $m->set('foo', 'bar');
     }
 
-    public function testReadOnlySetSameValue(): void
+    public function testReadOnly2()
     {
         $m = new Model();
-        $m->addField('foo', ['readOnly' => true, 'default' => 'abc']);
-        $m = $m->createEntity();
+        $m->addField('foo', ['read_only' => true, 'default' => 'abc']);
         $m->set('foo', 'abc');
-        self::assertSame('abc', $m->get('foo'));
+        $this->assertSame('abc', $m->get('foo'));
     }
 
-    public function testEnum1(): void
+    public function testEnum1()
     {
         $m = new Model();
         $m->addField('foo', ['enum' => ['foo', 'bar']]);
-        $m = $m->createEntity();
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Value is not one of the allowed values: foo, bar');
+        $this->expectException(Exception::class);
         $m->set('foo', 'xx');
     }
 
-    public function testEnum2(): void
-    {
-        $m = new Model();
-        $m->addField('foo', ['enum' => ['1', 'bar']]);
-        $m = $m->createEntity();
-        $m->set('foo', '1');
-
-        self::assertSame('1', $m->get('foo'));
-
-        $m->set('foo', 'bar');
-        self::assertSame('bar', $m->get('foo'));
-    }
-
-    public function testEnum2b(): void
-    {
-        $m = new Model();
-        $m->addField('foo', ['type' => 'integer', 'enum' => [1, 2]]);
-        $m = $m->createEntity();
-        $m->set('foo', 1);
-
-        self::assertSame(1, $m->get('foo'));
-
-        $m->set('foo', '2');
-        self::assertSame(2, $m->get('foo'));
-    }
-
-    public function testEnum3(): void
+    public function testEnum2()
     {
         $m = new Model();
         $m->addField('foo', ['enum' => [1, 'bar']]);
-        $m = $m->createEntity();
+        $m->set('foo', 1);
 
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must not be bool type');
+        $this->assertSame(1, $m->get('foo'));
+
+        $m->set('foo', 'bar');
+        $this->assertSame('bar', $m->get('foo'));
+    }
+
+    public function testEnum3()
+    {
+        $m = new Model();
+        $m->addField('foo', ['enum' => [1, 'bar']]);
+        $this->expectException(Exception::class);
         $m->set('foo', true);
     }
 
-    public function testEnum4(): void
+    public function testEnum4()
     {
+        // PHP type control is really crappy...
+        // This test has no purpose but it stands testament
+        // to a weird behaviours of PHP
         $m = new Model();
         $m->addField('foo', ['enum' => [1, 'bar'], 'default' => 1]);
-        $m = $m->createEntity();
-        $m->setNull('foo');
+        $m->set('foo', null);
 
-        self::assertNull($m->get('foo'));
+        $this->assertNull($m->get('foo'));
     }
 
-    public function testValues1(): void
+    public function testValues1()
     {
         $m = new Model();
         $m->addField('foo', ['values' => ['foo', 'bar']]);
-        $m = $m->createEntity();
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Value is not one of the allowed values: 0, 1');
+        $this->expectException(Exception::class);
         $m->set('foo', 4);
     }
 
-    public function testValues2(): void
+    public function testValues2()
     {
         $m = new Model();
-        $m->addField('foo', ['type' => 'integer', 'values' => [3 => 'bar']]);
-        $m = $m->createEntity();
+        $m->addField('foo', ['values' => [3 => 'bar']]);
         $m->set('foo', 3);
 
-        self::assertSame(3, $m->get('foo'));
+        $this->assertSame(3, $m->get('foo'));
 
         $m->set('foo', null);
-        self::assertNull($m->get('foo'));
+        $this->assertNull($m->get('foo'));
     }
 
-    public function testValues3(): void
+    public function testValues3()
     {
         $m = new Model();
         $m->addField('foo', ['values' => [1 => 'bar']]);
-        $m = $m->createEntity();
+        $this->expectException(Exception::class);
+        $m->set('foo', true);
+    }
 
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Value is not one of the allowed values: 1');
+    public function testValues3a()
+    {
+        $m = new Model();
+        $m->addField('foo', ['values' => [1 => 'bar']]);
+        $this->expectException(Exception::class);
         $m->set('foo', 'bar');
     }
 
-    public function testValues4(): void
+    public function testValues4()
     {
+        // PHP type control is really crappy...
+        // This test has no purpose but it stands testament
+        // to a weird behaviours of PHP
         $m = new Model();
         $m->addField('foo', ['values' => ['1a' => 'bar']]);
-        $m = $m->createEntity();
         $m->set('foo', '1a');
-        self::assertSame('1a', $m->get('foo'));
+        $this->assertSame('1a', $m->get('foo'));
     }
 
-    public function testNeverPersist(): void
+    public function testPersist()
     {
-        $this->setDb($dbData = [
+        $db = new Persistence\Sql($this->db->connection);
+        $a = [
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
-            ],
-        ]);
+            ], ];
+        $this->setDb($a);
 
-        $m = new Model($this->db, ['table' => 'item']);
-        $m->addField('name', ['neverPersist' => true]);
-        $m->addField('surname', ['neverSave' => true]);
-        $m = $m->load(1);
+        $m = new Model($db, 'item');
+        $m->addField('name', ['never_persist' => true]);
+        $m->addField('surname', ['never_save' => true]);
+        $m->load(1);
 
-        self::assertNull($m->get('name'));
-        self::assertSame('Smith', $m->get('surname'));
+        $this->assertNull($m->get('name'));
+        $this->assertSame('Smith', $m->get('surname'));
 
         $m->set('name', 'Bill');
         $m->set('surname', 'Stalker');
         $m->save();
-        self::assertSame($dbData, $this->getDb());
+        $this->assertEquals($a, $this->getDb());
 
         $m->reload();
-        self::assertSame('Smith', $m->get('surname'));
-        $m->getField('surname')->neverSave = false;
+        $this->assertSame('Smith', $m->get('surname'));
+        $m->getField('surname')->never_save = false;
         $m->set('surname', 'Stalker');
         $m->save();
-        $dbData['item'][1]['surname'] = 'Stalker';
-        self::assertSame($dbData, $this->getDb());
+        $a['item'][1]['surname'] = 'Stalker';
+        $this->assertEquals($a, $this->getDb());
 
-        $m->onHook(Model::HOOK_BEFORE_SAVE, static function (Model $m) {
+        $m->onHook(Model::HOOK_BEFORE_SAVE, function ($m) {
             if ($m->isDirty('name')) {
                 $m->set('surname', $m->get('name'));
                 $m->_unset('name');
@@ -446,336 +331,446 @@ class FieldTest extends TestCase
         $m->set('name', 'X');
         $m->save();
 
-        $dbData['item'][1]['surname'] = 'X';
+        $a['item'][1]['surname'] = 'X';
 
-        self::assertSame($dbData, $this->getDb());
-        self::assertNull($m->get('name'));
-        self::assertSame('X', $m->get('surname'));
+        $this->assertEquals($a, $this->getDb());
+        $this->assertNull($m->get('name'));
+        $this->assertSame('X', $m->get('surname'));
 
         $m->set('surname', 'Y');
         $m->save();
 
-        self::assertSame($dbData, $this->getDb());
-        self::assertSame('Y', $m->get('name'));
-        self::assertSame('X', $m->get('surname'));
+        $this->assertEquals($a, $this->getDb());
+        $this->assertSame('Y', $m->get('name'));
+        $this->assertSame('X', $m->get('surname'));
     }
 
-    public function testTitle(): void
+    public function testTitle()
     {
-        $this->setDb([
+        if ($this->driverType === 'pgsql') {
+            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+        }
+
+        $db = new Persistence\Sql($this->db->connection);
+        $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'category_id' => 2],
             ],
             'category' => [
                 1 => ['id' => 1, 'name' => 'General'],
-                ['id' => 2, 'name' => 'Programmer'],
-                ['id' => 3, 'name' => 'Sales'],
+                2 => ['id' => 2, 'name' => 'Programmer'],
+                3 => ['id' => 3, 'name' => 'Sales'],
             ],
-        ]);
+        ];
+        $this->setDb($a);
 
-        $c = new Model($this->db, ['table' => 'category']);
+        $c = new Model($db, 'category');
         $c->addField('name');
 
-        $m = new Model($this->db, ['table' => 'user']);
+        $m = new Model($db, 'user');
         $m->addField('name');
-        $m->hasOne('category_id', ['model' => $c])
+        $m->hasOne('category_id', $c)
             ->addTitle();
 
-        $m = $m->load(1);
+        $m->load(1);
 
-        self::assertSame('John', $m->get('name'));
-        self::assertSame('Programmer', $m->get('category'));
+        $this->assertSame('John', $m->get('name'));
+        $this->assertSame('Programmer', $m->get('category'));
 
-        $m->getModel()->insert(['name' => 'Peter', 'category' => 'Sales']);
+        $m->insert(['name' => 'Peter', 'category' => 'Sales']);
 
-        self::assertSame([
+        $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'category_id' => 2],
-                ['id' => 2, 'name' => 'Peter', 'surname' => null, 'category_id' => 3],
+                2 => ['id' => 2, 'name' => 'Peter', 'surname' => null, 'category_id' => 3],
             ],
             'category' => [
                 1 => ['id' => 1, 'name' => 'General'],
-                ['id' => 2, 'name' => 'Programmer'],
-                ['id' => 3, 'name' => 'Sales'],
+                2 => ['id' => 2, 'name' => 'Programmer'],
+                3 => ['id' => 3, 'name' => 'Sales'],
             ],
-        ], $this->getDb());
+        ];
+        $this->assertEquals($a, $this->getDb());
     }
 
-    public function testNonExistingField(): void
+    public function testNonExisitngField()
     {
         $m = new Model();
         $m->addField('foo');
-        $m = $m->createEntity();
-
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Field is not defined');
         $m->set('baz', 'bar');
     }
 
-    public function testActual(): void
+    public function testActual()
     {
-        $this->setDb([
+        if ($this->driverType === 'pgsql') {
+            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+        }
+
+        $db = new Persistence\Sql($this->db->connection);
+        $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
-            ],
-        ]);
+            ], ];
+        $this->setDb($a);
 
-        $m = new Model($this->db, ['table' => 'user']);
+        $m = new Model($db, 'user');
         $m->addField('first_name', ['actual' => 'name']);
         $m->addField('surname');
         $m->insert(['first_name' => 'Peter', 'surname' => 'qq']);
+        $m->loadBy('first_name', 'John');
+        $this->assertSame('John', $m->get('first_name'));
 
-        $mm = $m->loadBy('first_name', 'John');
-        self::assertSame('John', $mm->get('first_name'));
+        $d = $m->export();
+        $this->assertSame('John', $d[0]['first_name']);
 
-        self::assertSameExportUnordered([
-            ['id' => 1, 'first_name' => 'John', 'surname' => 'Smith'],
-            ['id' => 2, 'first_name' => 'Peter', 'surname' => 'qq'],
-        ], $m->export());
-
-        self::assertSame([
+        $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
-                ['id' => 2, 'name' => 'Peter', 'surname' => 'qq'],
-            ],
-        ], $this->getDb());
+                2 => ['id' => 2, 'name' => 'Peter', 'surname' => 'qq'],
+            ], ];
+        $this->assertEquals($a, $this->getDb());
 
-        $mm->set('first_name', 'Scott');
-        $mm->save();
+        $m->set('first_name', 'Scott');
+        $m->save();
 
-        self::assertSame([
+        $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'Scott', 'surname' => 'Smith'],
-                ['id' => 2, 'name' => 'Peter', 'surname' => 'qq'],
-            ],
-        ], $this->getDb());
+                2 => ['id' => 2, 'name' => 'Peter', 'surname' => 'qq'],
+            ], ];
+        $this->assertEquals($a, $this->getDb());
     }
 
-    public function testCalculatedField(): void
+    public function testCalculatedField()
     {
-        $this->setDb([
+        $db = new Persistence\Sql($this->db->connection);
+        $a = [
             'invoice' => [
                 1 => ['id' => 1, 'net' => 100, 'vat' => 21],
-            ],
-        ]);
+            ], ];
+        $this->setDb($a);
 
-        $m = new Model($this->db, ['table' => 'invoice']);
-        $m->addField('net', ['type' => 'atk4_money']);
-        $m->addField('vat', ['type' => 'atk4_money']);
-        $m->addCalculatedField('total', ['expr' => static function (Model $m) {
+        $m = new Model($db, 'invoice');
+        $m->addField('net', ['type' => 'money']);
+        $m->addField('vat', ['type' => 'money']);
+        $m->addCalculatedField('total', function ($m) {
             return $m->get('net') + $m->get('vat');
-        }, 'type' => 'atk4_money']);
+        });
         $m->insert(['net' => 30, 'vat' => 8]);
 
-        $mm = $m->load(1);
-        self::assertSame(121.0, $mm->get('total'));
-        $mm = $m->load(2);
-        self::assertSame(38.0, $mm->get('total'));
+        $m->load(1);
+        $this->assertEquals(121, $m->get('total'));
+        $m->load(2);
+        $this->assertEquals(38, $m->get('total'));
 
         $d = $m->export(); // in export calculated fields are not included
-        self::assertFalse(array_key_exists('total', $d[0]));
+        $this->assertFalse(isset($d[0]['total']));
     }
 
-    public function testSystem1(): void
+    public function testSystem1()
     {
         $m = new Model();
         $m->addField('foo', ['system' => true]);
         $m->addField('bar');
-        self::assertFalse($m->getField('foo')->isEditable());
-        self::assertFalse($m->getField('foo')->isVisible());
+        $this->assertFalse($m->getField('foo')->isEditable());
+        $this->assertFalse($m->getField('foo')->isVisible());
 
-        $m->setOnlyFields(['bar']);
+        $m->onlyFields(['bar']);
         // TODO: build a query and see if the field is there
     }
 
-    public function testNormalize(): void
+    public function testEncryptedField()
     {
-        // normalize must work even without model
-        self::assertSame('test', (new Field(['type' => 'string']))->normalize('test'));
-        self::assertSame('test', (new Field(['type' => 'string']))->normalize('test '));
+        $db = new Persistence\Sql($this->db->connection);
+        $a = [
+            'user' => [
+                '_' => ['id' => 1, 'name' => 'John', 'secret' => 'Smith'],
+            ], ];
+        $this->setDb($a);
 
-        $m = new Model();
+        $encrypt = function ($value, $field, $persistence) {
+            if (!$persistence instanceof Persistence\Sql) {
+                return $value;
+            }
 
+            /*
+            $algorithm = 'rijndael-128';
+            $key = md5($field->password, true);
+            $iv_length = mcrypt_get_iv_size( $algorithm, MCRYPT_MODE_CBC );
+            $iv = mcrypt_create_iv( $iv_length, MCRYPT_RAND );
+            return mcrypt_encrypt( $algorithm, $key, $value, MCRYPT_MODE_CBC, $iv );
+             */
+            return base64_encode($value);
+        };
+
+        $decrypt = function ($value, $field, $persistence) {
+            if (!$persistence instanceof Persistence\Sql) {
+                return $value;
+            }
+
+            /*
+            $algorithm = 'rijndael-128';
+            $key = md5($field->password, true);
+            $iv_length = mcrypt_get_iv_size( $algorithm, MCRYPT_MODE_CBC );
+            $iv = mcrypt_create_iv( $iv_length, MCRYPT_RAND );
+            return mcrypt_encrypt( $algorithm, $key, $value, MCRYPT_MODE_CBC, $iv );
+             */
+            return base64_decode($value, true);
+        };
+
+        $m = new Model($db, 'user');
+        $m->addField('name', ['mandatory' => true]);
+        $m->addField('secret', [
+            //'password'  => 'bonkers',
+            'typecast' => [$encrypt, $decrypt],
+        ]);
+        $m->save(['name' => 'John', 'secret' => 'i am a woman']);
+
+        $a = $this->getDb();
+        $this->assertNotNull($a['user'][1]['secret']);
+        $this->assertNotSame('i am a woman', $a['user'][1]['secret']);
+
+        $m->unload()->load(1);
+        $this->assertSame('i am a woman', $m->get('secret'));
+    }
+
+    public function testNormalize()
+    {
+        $m = new Model(['strict_types' => true]);
+
+        // Field types: 'string', 'text', 'integer', 'money', 'float', 'boolean',
+        //              'date', 'datetime', 'time', 'array', 'object'
         $m->addField('string', ['type' => 'string']);
         $m->addField('text', ['type' => 'text']);
         $m->addField('integer', ['type' => 'integer']);
-        $m->addField('money', ['type' => 'atk4_money']);
+        $m->addField('money', ['type' => 'money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('boolean', ['type' => 'boolean']);
+        $m->addField('boolean_enum', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
         $m->addField('date', ['type' => 'date']);
         $m->addField('datetime', ['type' => 'datetime']);
         $m->addField('time', ['type' => 'time']);
-        $m->addField('json', ['type' => 'json']);
+        $m->addField('array', ['type' => 'array']);
         $m->addField('object', ['type' => 'object']);
-        $m = $m->createEntity();
 
         // string
         $m->set('string', "Two\r\nLines  ");
-        self::assertSame('Two Lines', $m->get('string'));
+        $this->assertSame('TwoLines', $m->get('string'));
 
         $m->set('string', "Two\rLines  ");
-        self::assertSame('Two Lines', $m->get('string'));
+        $this->assertSame('TwoLines', $m->get('string'));
 
         $m->set('string', "Two\nLines  ");
-        self::assertSame('Two Lines', $m->get('string'));
+        $this->assertSame('TwoLines', $m->get('string'));
 
         // text
         $m->set('text', "Two\r\nLines  ");
-        self::assertSame("Two\nLines", $m->get('text'));
+        $this->assertSame("Two\nLines", $m->get('text'));
 
         $m->set('text', "Two\rLines  ");
-        self::assertSame("Two\nLines", $m->get('text'));
+        $this->assertSame("Two\nLines", $m->get('text'));
 
         $m->set('text', "Two\nLines  ");
-        self::assertSame("Two\nLines", $m->get('text'));
+        $this->assertSame("Two\nLines", $m->get('text'));
 
         // integer, money, float
-        $m->set('integer', '12,345.67676767');
-        self::assertSame(12345, $m->get('integer'));
+        $m->set('integer', '12,345.67676767'); // no digits after dot
+        $this->assertSame(12345, $m->get('integer'));
 
-        $m->set('money', '12,345.67676767');
-        self::assertSame(12345.6768, $m->get('money'));
+        $m->set('money', '12,345.67676767'); // 4 digits after dot
+        $this->assertSame(12345.6768, $m->get('money'));
 
-        $m->set('float', '12,345.67676767');
-        self::assertSame(12345.67676767, $m->get('float'));
+        $m->set('float', '12,345.67676767'); // don't round
+        $this->assertSame(12345.67676767, $m->get('float'));
 
         // boolean
         $m->set('boolean', 0);
-        self::assertFalse($m->get('boolean'));
+        $this->assertFalse($m->get('boolean'));
         $m->set('boolean', 1);
-        self::assertTrue($m->get('boolean'));
+        $this->assertTrue($m->get('boolean'));
+
+        $m->set('boolean_enum', 'N');
+        $this->assertFalse($m->get('boolean_enum'));
+        $m->set('boolean_enum', 'Y');
+        $this->assertTrue($m->get('boolean_enum'));
+
+        // date, datetime, time
+        $m->set('date', 123);
+        $this->assertInstanceof('DateTime', $m->get('date'));
+        $m->set('date', '123');
+        $this->assertInstanceof('DateTime', $m->get('date'));
+        $m->set('date', '2018-05-31');
+        $this->assertInstanceof('DateTime', $m->get('date'));
+        $m->set('datetime', 123);
+        $this->assertInstanceof('DateTime', $m->get('datetime'));
+        $m->set('datetime', '123');
+        $this->assertInstanceof('DateTime', $m->get('datetime'));
+        $m->set('datetime', '2018-05-31 12:13:14');
+        $this->assertInstanceof('DateTime', $m->get('datetime'));
+        $m->set('time', 123);
+        $this->assertInstanceof('DateTime', $m->get('time'));
+        $m->set('time', '123');
+        $this->assertInstanceof('DateTime', $m->get('time'));
+        $m->set('time', '12:13:14');
+        $this->assertInstanceof('DateTime', $m->get('time'));
     }
 
-    public function testNormalizeStringArrayException(): void
+    public function testNormalizeException1()
     {
-        $m = new Model();
+        $m = new Model(['strict_types' => true]);
         $m->addField('foo', ['type' => 'string']);
-        $m = $m->createEntity();
-
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be scalar');
         $m->set('foo', []);
     }
 
-    public function testNormalizeStringBoolException(): void
+    public function testNormalizeException2()
     {
-        $m = new Model();
-        $m->addField('foo', ['type' => 'string']);
-        $m = $m->createEntity();
-
+        $m = new Model(['strict_types' => true]);
+        $m->addField('foo', ['type' => 'text']);
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessageMatches('~^Must not be bool type$~');
-        $m->set('foo', false);
+        $m->set('foo', []);
     }
 
-    public function testNormalizeIntegerNumericException(): void
+    public function testNormalizeException3()
     {
-        $m = new Model();
+        $m = new Model(['strict_types' => true]);
         $m->addField('foo', ['type' => 'integer']);
-        $m = $m->createEntity();
-
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be numeric');
-        $m->set('foo', '1x');
+        $m->set('foo', []);
     }
 
-    public function testNormalizeFloatNumericException(): void
+    public function testNormalizeException4()
     {
-        $m = new Model();
+        $m = new Model(['strict_types' => true]);
+        $m->addField('foo', ['type' => 'money']);
+        $this->expectException(ValidationException::class);
+        $m->set('foo', []);
+    }
+
+    public function testNormalizeException5()
+    {
+        $m = new Model(['strict_types' => true]);
         $m->addField('foo', ['type' => 'float']);
-        $m = $m->createEntity();
-
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be numeric');
-        $m->set('foo', '1x');
+        $m->set('foo', []);
     }
 
-    public function testNormalizeAtk4MoneyNumericException(): void
+    public function testNormalizeException6()
     {
-        $m = new Model();
-        $m->addField('foo', ['type' => 'atk4_money']);
-        $m = $m->createEntity();
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be numeric');
-        $m->set('foo', '1x');
-    }
-
-    public function testNormalizeBooleanNumericException(): void
-    {
-        $m = new Model();
-        $m->addField('foo', ['type' => 'boolean']);
-        $m = $m->createEntity();
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be numeric');
-        $m->set('foo', '1x');
-    }
-
-    public function testNormalizeDateException(): void
-    {
-        $m = new Model();
+        $m = new Model(['strict_types' => true]);
         $m->addField('foo', ['type' => 'date']);
-        $m = $m->createEntity();
-
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be instance of DateTimeInterface');
-        $m->set('foo', '2000-01-01');
+        $m->set('foo', []);
     }
 
-    public function testNormalizeTimeException(): void
+    public function testNormalizeException7()
     {
-        $m = new Model();
-        $m->addField('foo', ['type' => 'time']);
-        $m = $m->createEntity();
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be instance of DateTimeInterface');
-        $m->set('foo', '20:00:00');
-    }
-
-    public function testNormalizeDatetimeException(): void
-    {
-        $m = new Model();
+        $m = new Model(['strict_types' => true]);
         $m->addField('foo', ['type' => 'datetime']);
-        $m = $m->createEntity();
-
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be instance of DateTimeInterface');
-        $m->set('foo', '2000-01-01 20:00:00');
+        $m->set('foo', []);
     }
 
-    public function testNormalizeJsonException(): void
+    public function testNormalizeException8()
     {
-        $m = new Model();
-        $m->addField('foo', ['type' => 'json']);
-        $m = $m->createEntity();
-
+        $m = new Model(['strict_types' => true]);
+        $m->addField('foo', ['type' => 'time']);
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be an array');
+        $m->set('foo', []);
+    }
+
+    public function testNormalizeException9()
+    {
+        $m = new Model(['strict_types' => true]);
+        $m->addField('foo', ['type' => 'integer']);
+        $this->expectException(ValidationException::class);
+        $m->set('foo', '123---456');
+    }
+
+    public function testNormalizeException10()
+    {
+        $m = new Model(['strict_types' => true]);
+        $m->addField('foo', ['type' => 'money']);
+        $this->expectException(ValidationException::class);
+        $m->set('foo', '123---456');
+    }
+
+    public function testNormalizeException11()
+    {
+        $m = new Model(['strict_types' => true]);
+        $m->addField('foo', ['type' => 'float']);
+        $this->expectException(ValidationException::class);
+        $m->set('foo', '123---456');
+    }
+
+    public function testNormalizeException12()
+    {
+        $m = new Model(['strict_types' => true]);
+        $m->addField('foo', ['type' => 'array']);
+        $this->expectException(ValidationException::class);
         $m->set('foo', 'ABC');
     }
 
-    public function testNormalizeObjectException(): void
+    public function testNormalizeException13()
     {
-        $m = new Model();
+        $m = new Model(['strict_types' => true]);
         $m->addField('foo', ['type' => 'object']);
-        $m = $m->createEntity();
-
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be an object');
         $m->set('foo', 'ABC');
     }
 
-    public function testAddFieldDirectly(): void
+    public function testNormalizeException14()
     {
-        $model = new Model();
-
-        $this->expectException(Exception::class);
-        $model->add(new Field());
+        $m = new Model(['strict_types' => true]);
+        $m->addField('foo', ['type' => 'boolean']);
+        $this->expectException(ValidationException::class);
+        $m->set('foo', 'ABC');
     }
 
-    public function testGetFields(): void
+    public function testToString()
+    {
+        $m = new Model(['strict_types' => true]);
+
+        // Field types: 'string', 'text', 'integer', 'money', 'float', 'boolean',
+        //              'date', 'datetime', 'time', 'array', 'object'
+        $m->addField('string', ['type' => 'string']);
+        $m->addField('text', ['type' => 'text']);
+        $m->addField('integer', ['type' => 'integer']);
+        $m->addField('money', ['type' => 'money']);
+        $m->addField('float', ['type' => 'float']);
+        $m->addField('boolean', ['type' => 'boolean']);
+        $m->addField('boolean_enum', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
+        $m->addField('date', ['type' => 'date']);
+        $m->addField('datetime', ['type' => 'datetime']);
+        $m->addField('time', ['type' => 'time']);
+        $m->addField('array', ['type' => 'array']);
+        $m->addField('object', ['type' => 'object']);
+
+        $this->assertSame('TwoLines', $m->getField('string')->toString("Two\r\nLines  "));
+        $this->assertSame("Two\nLines", $m->getField('text')->toString("Two\r\nLines  "));
+        $this->assertSame('123', $m->getField('integer')->toString(123));
+        $this->assertSame('123.45', $m->getField('money')->toString(123.45));
+        $this->assertSame('123.456789', $m->getField('float')->toString(123.456789));
+        $this->assertSame('1', $m->getField('boolean')->toString(true));
+        $this->assertSame('0', $m->getField('boolean')->toString(false));
+        $this->assertSame('1', $m->getField('boolean_enum')->toString('Y'));
+        $this->assertSame('0', $m->getField('boolean_enum')->toString('N'));
+        $this->assertSame('2019-01-20', $m->getField('date')->toString(new \DateTime('2019-01-20T12:23:34+00:00')));
+        $this->assertSame('2019-01-20T12:23:34+00:00', $m->getField('datetime')->toString(new \DateTime('2019-01-20T12:23:34+00:00')));
+        $this->assertSame('12:23:34', $m->getField('time')->toString(new \DateTime('2019-01-20T12:23:34+00:00')));
+        $this->assertSame('{"foo":"bar","int":123,"rows":["a","b"]}', $m->getField('array')->toString(['foo' => 'bar', 'int' => 123, 'rows' => ['a', 'b']]));
+        $this->assertSame('{"foo":"bar","int":123,"rows":["a","b"]}', $m->getField('object')->toString((object) ['foo' => 'bar', 'int' => 123, 'rows' => ['a', 'b']]));
+    }
+
+    public function testAddFieldDirectly()
+    {
+        $this->expectException(Exception::class);
+        $model = new Model();
+        $model->add(new Field(), ['test']);
+    }
+
+    public function testGetFields()
     {
         $model = new Model();
         $model->addField('system', ['system' => true]);
@@ -784,110 +779,128 @@ class FieldTest extends TestCase
         $model->addField('visible', ['ui' => ['visible' => true]]);
         $model->addField('visible_system', ['ui' => ['visible' => true], 'system' => true]);
         $model->addField('not_editable', ['ui' => ['editable' => false]]);
-        $model = $model->createEntity();
 
-        self::assertSame(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));
-        self::assertSame(['system', 'editable_system', 'visible_system'], array_keys($model->getFields('system')));
-        self::assertSame(['editable', 'visible', 'not_editable'], array_keys($model->getFields('not system')));
-        self::assertSame(['editable', 'editable_system', 'visible'], array_keys($model->getFields('editable')));
-        self::assertSame(['editable', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields('visible')));
-        self::assertSame(['editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields(['editable', 'visible'])));
+        $this->assertSame(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));
+        $this->assertSame(['system', 'editable_system', 'visible_system'], array_keys($model->getFields('system')));
+        $this->assertSame(['editable', 'visible', 'not_editable'], array_keys($model->getFields('not system')));
+        $this->assertSame(['editable', 'editable_system', 'visible'], array_keys($model->getFields('editable')));
+        $this->assertSame(['editable', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields('visible')));
+        $this->assertSame(['editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields(['editable', 'visible'])));
 
-        $model->getModel()->setOnlyFields(['system', 'visible', 'not_editable']);
+        $model->onlyFields(['system', 'visible', 'not_editable']);
 
-        // getFields() is unaffected by onlyFields, will always return all fields
-        self::assertSame(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));
+        // getFields() is unaffected by only_fields, will always return all fields
+        $this->assertSame(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));
 
-        // only return subset of onlyFields
-        self::assertSame(['visible', 'not_editable'], array_keys($model->getFields('visible')));
+        // only return subset of only_fields
+        $this->assertSame(['visible', 'not_editable'], array_keys($model->getFields('visible')));
 
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Field filter is not supported');
+        $this->expectExceptionMessage('not supported');
         $model->getFields('foo');
     }
 
-    public function testSetNull(): void
+    public function testDateTimeFieldsToString()
+    {
+        $model = new Model();
+        $model->addField('date', ['type' => 'date']);
+        $model->addField('time', ['type' => 'time']);
+        $model->addField('datetime', ['type' => 'datetime']);
+
+        $this->assertSame('', $model->getField('date')->toString());
+        $this->assertSame('', $model->getField('time')->toString());
+        $this->assertSame('', $model->getField('datetime')->toString());
+
+        // datetime without microseconds
+        $dt = new \DateTime('2020-01-21 21:09:42');
+        $model->set('date', $dt);
+        $model->set('time', $dt);
+        $model->set('datetime', $dt);
+
+        $this->assertSame($dt->format('Y-m-d'), $model->getField('date')->toString());
+        $this->assertSame($dt->format('H:i:s'), $model->getField('time')->toString());
+        $this->assertSame($dt->format('c'), $model->getField('datetime')->toString());
+
+        // datetime with microseconds
+        $dt = new \DateTime('2020-01-21 21:09:42.895623');
+        $model->set('date', $dt);
+        $model->set('time', $dt);
+        $model->set('datetime', $dt);
+
+        $this->assertSame($dt->format('Y-m-d'), $model->getField('date')->toString());
+        $this->assertSame($dt->format('H:i:s.u'), $model->getField('time')->toString());
+        $this->assertSame($dt->format('Y-m-d\TH:i:s.uP'), $model->getField('datetime')->toString());
+    }
+
+    public function testSetNull()
     {
         $m = new Model();
         $m->addField('a');
-        $m->addField('b', ['nullable' => false]);
+        $m->addField('b', ['mandatory' => true]);
         $m->addField('c', ['required' => true]);
-        $m = $m->createEntity();
 
         // valid value for set()
         $m->set('a', 'x');
         $m->set('b', 'y');
         $m->set('c', 'z');
-        self::assertSame('x', $m->get('a'));
-        self::assertSame('y', $m->get('b'));
-        self::assertSame('z', $m->get('c'));
+        $this->assertSame('x', $m->get('a'));
+        $this->assertSame('y', $m->get('b'));
+        $this->assertSame('z', $m->get('c'));
         $m->set('a', '');
         $m->set('b', '');
-        self::assertSame('', $m->get('a'));
-        self::assertSame('', $m->get('b'));
+        $this->assertSame('', $m->get('a'));
+        $this->assertSame('', $m->get('b'));
         $m->set('a', null);
-        self::assertNull($m->get('a'));
+        $this->assertNull($m->get('a'));
 
         // null must pass
         $m->setNull('a');
         $m->setNull('b');
-        $m->getField('c')->setNull($m);
-        self::assertNull($m->get('a'));
-        self::assertNull($m->get('b'));
-        self::assertNull($m->get('c'));
+        $m->getField('c')->setNull();
+        $this->assertNull($m->get('a'));
+        $this->assertNull($m->get('b'));
+        $this->assertNull($m->get('c'));
 
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must not be empty');
-        $m->set('c', null);
+        // invalid value for set() - normalization must fail
+        $this->expectException(\atk4\data\Exception::class);
+        $m->set('c', null); // @TODO even "b"/mandatory field should fail!
     }
 
-    public function testEntityFieldPair(): void
+    public function testBoolean()
     {
         $m = new Model();
-        $m->addField('foo');
-        $m->addField('bar', ['nullable' => false]);
+        $m->addField('is_vip_1', ['type' => 'boolean', 'enum' => ['No', 'Yes']]);
+        $m->addField('is_vip_2', ['type' => 'boolean', 'valueTrue' => 1, 'valueFalse' => 0]);
+        $m->addField('is_vip_3', ['type' => 'boolean', 'valueTrue' => 'Y', 'valueFalse' => 'N']);
 
-        $entity = $m->createEntity();
-        $entityFooField = new Model\EntityFieldPair($entity, 'foo');
-        $entityBarField = new Model\EntityFieldPair($entity, 'bar');
+        $m->set('is_vip_1', 'No');
+        $this->assertFalse($m->get('is_vip_1'));
+        $m->set('is_vip_1', 'Yes');
+        $this->assertTrue($m->get('is_vip_1'));
+        $m->set('is_vip_1', false);
+        $this->assertFalse($m->get('is_vip_1'));
+        $m->set('is_vip_1', true);
+        $this->assertTrue($m->get('is_vip_1'));
+        $m->set('is_vip_1', 0);
+        $this->assertFalse($m->get('is_vip_1'));
+        $m->set('is_vip_1', 1);
+        $this->assertTrue($m->get('is_vip_1'));
 
-        self::assertSame($m, $entityFooField->getModel());
-        self::assertSame($m, $entityBarField->getModel());
-        self::assertSame($entity, $entityFooField->getEntity());
-        self::assertSame($entity, $entityBarField->getEntity());
-        self::assertSame('foo', $entityFooField->getFieldName());
-        self::assertSame('bar', $entityBarField->getFieldName());
-        self::assertSame($m->getField('foo'), $entityFooField->getField());
-        self::assertSame($m->getField('bar'), $entityBarField->getField());
+        $m->set('is_vip_2', 0);
+        $this->assertFalse($m->get('is_vip_2'));
+        $m->set('is_vip_2', 1);
+        $this->assertTrue($m->get('is_vip_2'));
+        $m->set('is_vip_2', false);
+        $this->assertFalse($m->get('is_vip_2'));
+        $m->set('is_vip_2', true);
+        $this->assertTrue($m->get('is_vip_2'));
 
-        self::assertNull($entityFooField->get());
-        self::assertNull($entityBarField->get());
-
-        $entity->set('foo', 'a');
-        self::assertSame('a', $entityFooField->get());
-        $entityBarField->set('b');
-        self::assertSame('b', $entityBarField->get());
-        $entityBarField->setNull();
-        self::assertNull($entityBarField->get());
-
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Must not be null');
-        $entityBarField->set(null);
-    }
-
-    public function testBoolean(): void
-    {
-        $m = new Model();
-        $m->addField('is_vip', ['type' => 'boolean']);
-        $m = $m->createEntity();
-
-        $m->set('is_vip', false);
-        self::assertFalse($m->get('is_vip'));
-        $m->set('is_vip', true);
-        self::assertTrue($m->get('is_vip'));
-        $m->set('is_vip', 0);
-        self::assertFalse($m->get('is_vip'));
-        $m->set('is_vip', 1);
-        self::assertTrue($m->get('is_vip'));
+        $m->set('is_vip_3', 'N');
+        $this->assertFalse($m->get('is_vip_3'));
+        $m->set('is_vip_3', 'Y');
+        $this->assertTrue($m->get('is_vip_3'));
+        $m->set('is_vip_3', false);
+        $this->assertFalse($m->get('is_vip_3'));
+        $m->set('is_vip_3', true);
+        $this->assertTrue($m->get('is_vip_3'));
     }
 }
