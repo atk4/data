@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Atk4\Data;
 
+use Doctrine\DBAL\Schema\Identifier;
+
 class Model2 extends Model
 {
     /** @var string|self|false */
@@ -58,7 +60,7 @@ class Model2 extends Model
 
             $im = $this->createInnerModel();
 
-            if ($calledFromObject instanceof Schema\Migrator // does not make much sense to support object table
+            if ($calledFromObject instanceof Schema\Migrator || $trace[0]['class'] === Identifier::class // does not make much sense to support object table
                 || is_subclass_of($calledFromObject, Model::class) // two uses directly in Model are fine, other uses may rely on string table justifiably
                 || $calledFromObject instanceof Util\DeepCopy // not implemented, must match by class name + string table
             ) {
