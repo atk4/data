@@ -728,7 +728,7 @@ class ReferenceSqlTest extends TestCase
         $user = new Model2($this->db, ['table' => 'user']);
         $user->hasMany('Orders', ['model' => [Model::class, 'table' => 'order'], 'theirField' => 'id']);
         $o = $user->ref('Orders');
-        self::assertSame('order', $o->table);
+        self::assertSame('order', $o->table->table);
     }
 
     public function testAddTitle(): void

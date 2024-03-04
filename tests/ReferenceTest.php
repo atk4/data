@@ -77,7 +77,7 @@ class ReferenceTest extends TestCase
         $user->setId(1);
         $user->getModel()->hasOne('order_id', ['model' => [Model::class, 'table' => 'order']]);
         $o = $user->ref('order_id');
-        self::assertSame('order', $o->getModel()->table);
+        self::assertSame('order', $o->getModel()->table->table);
     }
 
     public function testRefName1(): void
@@ -107,10 +107,10 @@ class ReferenceTest extends TestCase
     {
         $m = new Model2($this->db, ['table' => 'user']);
         $m->addReference('archive', ['model' => static function (Model $m) {
-            return new $m(null, ['table' => $m->table . '_archive']);
+            return new $m(null, ['table' => $m->table->table . '_archive']);
         }]);
 
-        self::assertSame('user_archive', $m->ref('archive')->table);
+        self::assertSame('user_archive', $m->ref('archive')->table->table);
     }
 
     public function testTheirFieldNameGuessTableWithSchema(): void
@@ -157,6 +157,6 @@ class ReferenceTest extends TestCase
 
         $order->hasOne('placed_by', ['model' => $user, 'ourField' => 'placed_by_user_id', 'checkTheirType' => false]);
 
-        self::assertSame('user', $order->ref('placed_by')->table);
+        self::assertSame('user', $order->ref('placed_by')->table->table);
     }
 }
