@@ -1996,7 +1996,7 @@ class Model implements \IteratorAggregate
         return $field;
     }
 
-    private function assertMagicGetEntityPropertyToModelAllowed(string $name): void
+    private function assertIsGetEntityToModelMagicProperty(string $name): void
     {
         if (!isset(self::$_modelOnlyPropertiesEntityMagic[$name])) {
             $this->assertIsModel();
@@ -2012,7 +2012,7 @@ class Model implements \IteratorAggregate
         }
 
         if ($this->isEntity() && isset($model->getModelOnlyProperties()[$name])) {
-            $this->assertMagicGetEntityPropertyToModelAllowed($name);
+            $this->assertIsGetEntityToModelMagicProperty($name);
 
             return isset($model->{$name});
         }
@@ -2032,7 +2032,7 @@ class Model implements \IteratorAggregate
         }
 
         if ($this->isEntity() && isset($model->getModelOnlyProperties()[$name])) {
-            $this->assertMagicGetEntityPropertyToModelAllowed($name);
+            $this->assertIsGetEntityToModelMagicProperty($name);
 
             return $model->{$name};
         }
