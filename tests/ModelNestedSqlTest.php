@@ -117,13 +117,26 @@ class ModelNestedSqlTest extends TestCase
             $this->getConnection()->dsql()
                 ->table(
                     $this->getConnection()->dsql()
-                        ->table('user')
-                        ->field('_id', 'uid')
+                        ->table(
+                            $this->getConnection()->dsql()
+                                ->table(
+                                    $this->getConnection()->dsql()
+                                        ->table('user')
+                                        ->field('_id')
+                                        ->field('name')
+                                        ->field('_birthday'),
+                                    '_tm'
+                                )
+                                ->field('_id', 'uid')
+                                ->field('name')
+                                ->field('_birthday', 'y')
+                                ->where('_id', '!=', 3)
+                                ->order('name', true)
+                                ->limit(5),
+                            '_tm'
+                        )
                         ->field('name')
-                        ->field('_birthday', 'y')
-                        ->where('_id', '!=', 3)
-                        ->order('name', true)
-                        ->limit(5),
+                        ->field('y'),
                     '_tm'
                 )
                 ->field('name')
@@ -173,8 +186,6 @@ class ModelNestedSqlTest extends TestCase
             ['inner', Model::HOOK_VALIDATE, ['save']],
             ['inner', Model::HOOK_BEFORE_SAVE, [false]],
             ['inner', Model::HOOK_BEFORE_INSERT, [['uid' => null, 'name' => 'Karl', 'y' => \DateTime::class]]],
-            ['inner', Persistence\Sql::HOOK_BEFORE_INSERT_QUERY, [Query::class]],
-            ['inner', Persistence\Sql::HOOK_AFTER_INSERT_QUERY, [Query::class]],
             ['inner', Model::HOOK_AFTER_INSERT, []],
             ['inner', Model::HOOK_AFTER_SAVE, [false]],
             ['inner', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
@@ -223,6 +234,7 @@ class ModelNestedSqlTest extends TestCase
             ['main', Model::HOOK_VALIDATE, ['save']],
             ['main', Model::HOOK_BEFORE_SAVE, [true]],
             ['main', Model::HOOK_BEFORE_UPDATE, [['name' => 'Susan']]],
+            ['inner', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['inner', Model::HOOK_BEFORE_LOAD, [null]],
             ['inner', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['inner', Model::HOOK_AFTER_LOAD, []],
@@ -231,8 +243,6 @@ class ModelNestedSqlTest extends TestCase
             ['inner', Model::HOOK_BEFORE_SAVE, [true]],
             ['inner', Model::HOOK_BEFORE_UPDATE, [['name' => 'Susan']]],
             ['inner', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
-            ['inner', Persistence\Sql::HOOK_BEFORE_UPDATE_QUERY, [Query::class]],
-            ['inner', Persistence\Sql::HOOK_AFTER_UPDATE_QUERY, [Query::class]],
             ['inner', Model::HOOK_AFTER_UPDATE, [['name' => 'Susan']]],
             ['inner', Model::HOOK_AFTER_SAVE, [true]],
             ['inner', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
@@ -272,14 +282,13 @@ class ModelNestedSqlTest extends TestCase
 
             ['main', '>>>'],
             ['main', Model::HOOK_BEFORE_DELETE, []],
+            ['inner', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['inner', Model::HOOK_BEFORE_LOAD, [null]],
             ['inner', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['inner', Model::HOOK_AFTER_LOAD, []],
             ['inner', '>>>'],
             ['inner', Model::HOOK_BEFORE_DELETE, []],
             ['inner', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
-            ['inner', Persistence\Sql::HOOK_BEFORE_DELETE_QUERY, [Query::class]],
-            ['inner', Persistence\Sql::HOOK_AFTER_DELETE_QUERY, [Query::class]],
             ['inner', Model::HOOK_AFTER_DELETE, []],
             ['inner', '<<<'],
             ['inner', Model::HOOK_BEFORE_UNLOAD, []],
