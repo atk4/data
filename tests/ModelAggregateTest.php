@@ -349,7 +349,7 @@ class ModelAggregateTest extends TestCase
         ]);
 
         $this->assertSameSql(
-            'select sum(`amount`) `xyz`, sum(`order`) `sum_hasone` from (select `id`, `client_id`, `name`, `amount`, (select `name` from `client` `_c_2bfe9d72a4aa` where `id` = `invoice`.`client_id`) `client`, (select `order` from `client` `_c_2bfe9d72a4aa` where `id` = `invoice`.`client_id`) `order` from `invoice`) `_tm` group by `abc`',
+            'select sum(`amount`) `xyz`, sum(`order`) `sum_hasone` from (select * from (select `id`, `client_id`, `name`, `amount`, (select `name` from (select `id`, `name`, `surname`, `order` from `client`) `_c_2bfe9d72a4aa` where `id` = `_tm`.`client_id`) `client`, (select `order` from (select `id`, `name`, `surname`, `order` from `client`) `_c_2bfe9d72a4aa` where `id` = `_tm`.`client_id`) `order` from (select `id`, `client_id`, `name`, `amount` from `invoice`) `_tm`) `_tm`) `_tm` group by `abc`',
             $aggregate->action('select')->render()[0]
         );
     }
