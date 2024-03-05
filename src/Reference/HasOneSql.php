@@ -33,7 +33,7 @@ class HasOneSql extends HasOne
             'readOnly' => false,
         ]));
 
-        $this->onHookToOurModel($ourModel, Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($fieldName, $theirFieldIsTitle, $theirFieldName) {
+        $this->onHookToOurModel(Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($fieldName, $theirFieldIsTitle, $theirFieldName) {
             if ($ourModel->isDirty($fieldName)) {
                 $theirModel = $this->createTheirModel();
                 if ($theirFieldIsTitle) {
