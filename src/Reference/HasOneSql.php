@@ -79,7 +79,7 @@ class HasOneSql extends HasOne
         $ourModel = $this->getOurModel(null);
 
         // if caption/type is not defined in $defaults -> get it directly from the linked model field $theirFieldName
-        $refModel = $ourModel->refModel($this->link);
+        $refModel = $ourModel->getReference($this->link)->createTheirModel();
         $refModelField = $refModel->getField($theirFieldName);
         $defaults['type'] ??= $refModelField->type;
         $defaults['enum'] ??= $refModelField->enum;

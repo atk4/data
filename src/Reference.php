@@ -327,24 +327,11 @@ class Reference
     }
 
     /**
-     * Returns referenced model without any extra conditions. However other
-     * relationship types may override this to imply conditions.
+     * Create their model. May be overridden to imply traversal conditions.
      *
      * @param array<string, mixed> $defaults
      */
     public function ref(Model $ourModel, array $defaults = []): Model
-    {
-        return $this->createTheirModel($defaults);
-    }
-
-    /**
-     * Returns referenced model without any extra conditions. Ever when extended
-     * must always respond with Model that does not look into current record
-     * or scope.
-     *
-     * @param array<string, mixed> $defaults
-     */
-    public function refModel(Model $ourModel, array $defaults = []): Model
     {
         return $this->createTheirModel($defaults);
     }

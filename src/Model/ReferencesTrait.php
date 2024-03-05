@@ -147,7 +147,7 @@ trait ReferencesTrait
     }
 
     /**
-     * Traverse to related model.
+     * Traverse reference and create their model.
      *
      * @param array<string, mixed> $defaults
      */
@@ -159,19 +159,7 @@ trait ReferencesTrait
     }
 
     /**
-     * Return related model.
-     *
-     * @param array<string, mixed> $defaults
-     */
-    public function refModel(string $link, array $defaults = []): Model
-    {
-        $reference = $this->getModel(true)->getReference($link);
-
-        return $reference->refModel($this, $defaults);
-    }
-
-    /**
-     * Returns model that can be used for generating sub-query actions.
+     * Traverse reference and create their model but keep condition not materialized (for subquery actions).
      *
      * @param array<string, mixed> $defaults
      */

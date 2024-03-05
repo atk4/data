@@ -622,21 +622,18 @@ persistence layer to load or save anything. Next I need a beforeSave handler:
 ```
 $this->onHookShort(Model::HOOK_BEFORE_SAVE, function () {
     if ($this->_isset('client_code') && !$this->_isset('client_id')) {
-        $cl = $this->refModel('client_id');
-        $cl->addCondition('code', $this->get('client_code'));
-        $this->set('client_id', $cl->action('field', ['id']));
+        $client = $this->ref('client_id');
+        $this->set('client_id', $client->getId());
     }
 
     if ($this->_isset('client_name') && !$this->_isset('client_id')) {
-        $cl = $this->refModel('client_id');
-        $cl->addCondition('name', 'like', $this->get('client_name'));
-        $this->set('client_id', $cl->action('field', ['id']));
+        $client = $this->ref('client_id');
+        $this->set('client_id', $client->getId());
     }
 
     if ($this->_isset('category') && !$this->_isset('category_id')) {
-        $c = $this->refModel('category_id');
-        $c->addCondition($c->titleField, 'like', $this->get('category'));
-        $this->set('category_id', $c->action('field', ['id']));
+        $category = $this->ref('category_id');
+        $this->set('category_id', $category->getId());
     }
 });
 ```
@@ -646,43 +643,6 @@ differently from PHP's default behavior. See documentation for Model::isset
 
 This technique allows you to hide the complexity of the lookups and also embed
 the necessary queries inside your "insert" query.
-
-### Fallback to default value
-
-You might wonder, with the lookup like that, how the default values will work?
-What if the user-specified entry is not found? Lets look at the code:
-
-```
-if ($m->_isset('category') && !$m->_isset('category_id')) {
-    $c = $this->refModel('category_id');
-    $c->addCondition($c->titleField, 'like', $m->get('category'));
-    $m->set('category_id', $c->action('field', ['id']));
-}
-```
-
-So if category with a name is not found, then sub-query will return "NULL".
-If you wish to use a different value instead, you can create an expression:
-
-```
-if ($m->_isset('category') && !$m->_isset('category_id')) {
-    $c = $this->refModel('category_id');
-    $c->addCondition($c->titleField, 'like', $m->get('category'));
-    $m->set('category_id', $this->expr('coalesce([], [])', [
-        $c->action('field', ['id']),
-        $m->getField('category_id')->default,
-    ]));
-}
-```
-
-The beautiful thing about this approach is that default can also be defined
-as a lookup query:
-
-```
-$this->hasOne('category_id', 'Model_Category');
-$this->getField('category_id')->default =
-    $this->refModel('category_id')->addCondition('name', 'Other')
-        ->action('field', ['id']);
-```
 
 ## Inserting Hierarchical Data
 
