@@ -224,7 +224,6 @@ class Reference
      */
     public function createTheirModel(array $defaults = []): Model
     {
-        // set tableAlias
         $defaults['tableAlias'] ??= $this->tableAlias;
 
         // if model is Closure, then call the closure and it should return a model
@@ -237,7 +236,6 @@ class Reference
         if (is_object($m)) {
             $theirModel = Factory::factory(clone $m, $defaults);
         } else {
-            // add model from seed
             $modelDefaults = $m;
             $theirModelSeed = [$modelDefaults[0]];
             unset($modelDefaults[0]);
