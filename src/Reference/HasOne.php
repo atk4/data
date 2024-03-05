@@ -84,7 +84,9 @@ class HasOne extends Reference
 
         if ($ourModelOrEntity->isEntity()) {
             $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function (Model $theirEntity) use ($ourModelOrEntity) {
-                $theirValue = $this->theirField ? $theirEntity->get($this->theirField) : $theirEntity->getId();
+                $theirValue = $this->theirField
+                    ? $theirEntity->get($this->theirField)
+                    : $theirEntity->getId();
 
                 if (!$this->getOurField()->compare($this->getOurFieldValue($ourModelOrEntity), $theirValue)) {
                     $ourModelOrEntity->set($this->getOurFieldName(), $theirValue)->save();
@@ -92,8 +94,8 @@ class HasOne extends Reference
 
                 $theirEntity->reload();
             });
+            $theirModel->reloadAfterSave = false;
 
-            // add hook to set our field = null when record of referenced model is deleted
             $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_DELETE, function (Model $theirEntity) use ($ourModelOrEntity) {
                 $ourModelOrEntity->setNull($this->getOurFieldName());
             });
@@ -122,9 +124,6 @@ class HasOne extends Reference
                 $theirModel = $theirModelOrig->createEntity();
             }
         }
-
-        // their model will be reloaded after saving our model to reflect changes in referenced fields
-        $theirModel->getModel(true)->reloadAfterSave = false;
 
         return $theirModel;
     }
