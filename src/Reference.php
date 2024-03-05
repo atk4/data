@@ -150,7 +150,11 @@ class Reference
         return $this->getOurModel(null)->onHookDynamic(
             $spot,
             static function (Model $modelOrEntity) use ($name): self {
-                return $modelOrEntity->getModel(true)->getElement($name);
+                /** @var self */
+                $obj = $modelOrEntity->getModel(true)->getElement($name);
+                $modelOrEntity->getModel(true)->assertIsModel($obj->getOwner());
+
+                return $obj;
             },
             $fx,
             $args,
