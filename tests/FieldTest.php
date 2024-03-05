@@ -433,13 +433,13 @@ class FieldTest extends TestCase
         $dbData['item'][1]['surname'] = 'Stalker';
         self::assertSame($dbData, $this->getDb());
 
-        $m->onHook(Model::HOOK_BEFORE_SAVE, static function (Model $m) {
-            if ($m->isDirty('name')) {
-                $m->set('surname', $m->get('name'));
-                $m->_unset('name');
-            } elseif ($m->isDirty('surname')) {
-                $m->set('name', $m->get('surname'));
-                $m->_unset('surname');
+        $m->onHook(Model::HOOK_BEFORE_SAVE, static function (Model $entity) {
+            if ($entity->isDirty('name')) {
+                $entity->set('surname', $entity->get('name'));
+                $entity->_unset('name');
+            } elseif ($entity->isDirty('surname')) {
+                $entity->set('name', $entity->get('surname'));
+                $entity->_unset('surname');
             }
         });
 

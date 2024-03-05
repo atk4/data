@@ -143,14 +143,18 @@ class Reference
      * @param \Closure(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
      * @param array<int, mixed>                                                                        $args
      */
-    protected function onHookToOurModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    protected function onHookToOurModel(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->shortName; // use static function to allow this object to be GCed
 
-        return $model->onHookDynamic(
+        return $this->getOurModel(null)->onHookDynamic(
             $spot,
-            static function (Model $model) use ($name): self {
-                return $model->getModel(true)->getElement($name);
+            static function (Model $modelOrEntity) use ($name): self {
+                /** @var self */
+                $obj = $modelOrEntity->getModel(true)->getElement($name);
+                $modelOrEntity->getModel(true)->assertIsModel($obj->getOwner());
+
+                return $obj;
             },
             $fx,
             $args,
@@ -162,19 +166,22 @@ class Reference
      * @param \Closure(Model, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
      * @param array<int, mixed>                                                                            $args
      */
-    protected function onHookToTheirModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    protected function onHookToTheirModel(Model $theirModel, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
-        if ($model->ownerReference !== null && $model->ownerReference !== $this) {
-            throw new Exception('Model owner reference is unexpectedly already set');
-        }
-        $model->ownerReference = $this;
-        $getThisFx = static function (Model $model) {
-            return $model->ownerReference;
-        };
+        $theirModel->assertIsModel();
 
-        return $model->onHookDynamic(
+        $ourModel = $this->getOurModel(null);
+        $name = $this->shortName; // use static function to allow this object to be GCed
+
+        return $theirModel->onHookDynamic(
             $spot,
-            $getThisFx,
+            static function () use ($ourModel, $name): self {
+                /** @var self */
+                $obj = $ourModel->getElement($name);
+                $ourModel->assertIsModel($obj->getOwner());
+
+                return $obj;
+            },
             $fx,
             $args,
             $priority
@@ -224,7 +231,6 @@ class Reference
      */
     public function createTheirModel(array $defaults = []): Model
     {
-        // set tableAlias
         $defaults['tableAlias'] ??= $this->tableAlias;
 
         // if model is Closure, then call the closure and it should return a model
@@ -237,7 +243,6 @@ class Reference
         if (is_object($m)) {
             $theirModel = Factory::factory(clone $m, $defaults);
         } else {
-            // add model from seed
             $modelDefaults = $m;
             $theirModelSeed = [$modelDefaults[0]];
             unset($modelDefaults[0]);
@@ -316,7 +321,9 @@ class Reference
             return $ourModel->containedInEntity->getModel()->getPersistence();
         }
 
-        return $ourModel->issetPersistence() ? $ourModel->getPersistence() : false;
+        return $ourModel->issetPersistence()
+            ? $ourModel->getPersistence()
+            : false;
     }
 
     /**

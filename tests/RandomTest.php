@@ -328,21 +328,21 @@ class RandomTest extends TestCase
         $m = new Model($this->db, ['table' => 'never_used']);
         $m->addField('name');
 
-        $m->onHook(Model::HOOK_BEFORE_SAVE, static function (Model $m) {
-            $m->breakHook(false);
+        $m->onHook(Model::HOOK_BEFORE_SAVE, static function (Model $entity) {
+            $entity->breakHook(false);
         });
 
-        $m->onHook(Model::HOOK_BEFORE_LOAD, static function (Model $m, int $id) {
-            $m->setId($id);
-            $m->set('name', 'rec #' . $id);
+        $m->onHook(Model::HOOK_BEFORE_LOAD, static function (Model $entity, int $id) {
+            $entity->setId($id);
+            $entity->set('name', 'rec #' . $id);
 
-            $m->breakHook($m);
+            $entity->breakHook($entity);
         });
 
-        $m->onHook(Model::HOOK_BEFORE_DELETE, static function (Model $m) {
-            $m->unload();
+        $m->onHook(Model::HOOK_BEFORE_DELETE, static function (Model $entity) {
+            $entity->unload();
 
-            $m->breakHook(false);
+            $entity->breakHook(false);
         });
 
         $m = $m->createEntity();

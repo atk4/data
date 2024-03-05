@@ -173,8 +173,8 @@ MongoDB), you would need to define the field differently:
 
 ```
 $model->addField('gross');
-$model->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
-    $m->set('gross', $m->get('net') + $m->get('vat'));
+$model->onHook(Model::HOOK_BEFORE_SAVE, function (Model $entity) {
+    $entity->set('gross', $entity->get('net') + $entity->get('vat'));
 });
 ```
 
@@ -192,8 +192,8 @@ if ($model->hasMethod('addExpression')) {
 } else {
     // persistence does not support expressions
     $model->addField('gross');
-    $model->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
-        $m->set('gross', $m->get('net') + $m->get('vat'));
+    $model->onHook(Model::HOOK_BEFORE_SAVE, function (Model $entity) {
+        $entity->set('gross', $entity->get('net') + $entity->get('vat'));
     });
 }
 ```

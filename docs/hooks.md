@@ -51,9 +51,9 @@ The next code snippet demonstrates a basic usage of a `beforeSave` hook.
 This one will update field values just before record is saved:
 
 ```
-$m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
-    $m->set('name', strtoupper($m->get('name')));
-    $m->set('surname', strtoupper($m->get('surname')));
+$m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $entity) {
+    $entity->set('name', strtoupper($entity->get('name')));
+    $entity->set('surname', strtoupper($entity->get('surname')));
 });
 
 $m->insert(['name' => 'John', 'surname' => 'Smith']);
@@ -86,9 +86,9 @@ model will assume the operation was successful.
 You can also break beforeLoad hook which can be used to skip rows:
 
 ```
-$model->onHook(Model::HOOK_AFTER_LOAD, function (Model $m) {
-    if ($m->get('date') < $m->date_from) {
-        $m->breakHook(false); // will not yield such data row
+$model->onHook(Model::HOOK_AFTER_LOAD, function (Model $entity) {
+    if ($entity->get('date') < $entity->date_from) {
+        $entity->breakHook(false); // will not yield such data row
     }
     // otherwise yields data row
 });
@@ -137,8 +137,8 @@ of save.
 You may actually drop validation exception inside save, insert or update hooks:
 
 ```
-$m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
-    if ($m->get('name') === 'Yagi') {
+$m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $entity) {
+    if ($entity->get('name') === 'Yagi') {
         throw new \Atk4\Data\ValidationException(['name' => "We don't serve like you"]);
     }
 });
@@ -189,14 +189,14 @@ Suppose you want to check 'memcache' before actually loading the record from
 the database. Here is how you can implement this functionality:
 
 ```
-$m->onHook(Model::HOOK_BEFORE_LOAD, function (Model $m, $id) {
-    $data = $m->getApp()->cacheFetch($m->table, $id);
+$m->onHook(Model::HOOK_BEFORE_LOAD, function (Model $entity, $id) {
+    $data = $entity->getApp()->cacheFetch($entity->getModel()->table, $id);
     if ($data) {
-        $dataRef = &$m->getDataRef();
+        $dataRef = &$entity->getDataRef();
         $dataRef = $data;
-        $m->setId($id);
+        $entity->setId($id);
 
-        $m->breakHook($m);
+        $entity->breakHook($entity);
     }
 });
 ```

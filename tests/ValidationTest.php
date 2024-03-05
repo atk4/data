@@ -126,8 +126,8 @@ class ValidationTest extends TestCase
     public function testValidateHook1(): void
     {
         $m = $this->m->createEntity();
-        $m->onHook(Model::HOOK_VALIDATE, static function (Model $m) {
-            if ($m->get('name') === 'C#') {
+        $m->onHook(Model::HOOK_VALIDATE, static function (Model $entity) {
+            if ($entity->get('name') === 'C#') {
                 return ['name' => 'No sharp objects allowed'];
             }
         });
@@ -152,8 +152,8 @@ class ValidationTest extends TestCase
     public function testValidateHook2(): void
     {
         $m = $this->m->createEntity();
-        $m->onHook(Model::HOOK_VALIDATE, static function (Model $m) {
-            if ($m->get('name') === 'C#') {
+        $m->onHook(Model::HOOK_VALIDATE, static function (Model $entity) {
+            if ($entity->get('name') === 'C#') {
                 return ['name' => 'No sharp objects allowed'];
             }
         });

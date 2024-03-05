@@ -36,7 +36,7 @@ class TransactionTest extends TestCase
 
         self::assertSame('Sue', $this->getDb()['item'][2]['name']);
 
-        $m->onHook(Model::HOOK_AFTER_DELETE, static function (Model $model) {
+        $m->onHook(Model::HOOK_AFTER_DELETE, static function (Model $entity) {
             throw new \Exception('Awful thing happened');
         });
 

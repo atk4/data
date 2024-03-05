@@ -228,9 +228,6 @@ class Model implements \IteratorAggregate
      */
     public ?self $containedInEntity = null;
 
-    /** Only for Reference class */
-    public ?Reference $ownerReference = null;
-
     // {{{ Basic Functionality, field definition, set() and get()
 
     /**
@@ -340,10 +337,7 @@ class Model implements \IteratorAggregate
                 'data',
                 'dirty',
 
-                'ownerReference', // should be removed once references are non-entity
                 'userActions', // should be removed once user actions are non-entity
-
-                'containedInEntity',
             ]));
 
             self::$_modelOnlyProperties = $modelOnlyProperties;
@@ -1787,9 +1781,9 @@ class Model implements \IteratorAggregate
      * Create iterator (yield values).
      *
      * You can return false in afterLoad hook to prevent to yield this data row, example:
-     * $model->onHook(self::HOOK_AFTER_LOAD, static function (Model $m) {
-     *     if ($m->get('date') < $m->dateFrom) {
-     *         $m->breakHook(false);
+     * $model->onHook(self::HOOK_AFTER_LOAD, static function (Model $entity) {
+     *     if ($entity->get('date') < $entity->dateFrom) {
+     *         $entity->breakHook(false);
      *     }
      * })
      *
