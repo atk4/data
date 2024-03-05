@@ -21,19 +21,18 @@ use Atk4\Data\Persistence\Array_\Db\Table;
 class Array_ extends Persistence
 {
     /** @var array<string, array<int|string, mixed>> */
-    private $seedData;
+    private array $seedData;
 
     /** @var array<string, Table> */
-    private $data;
+    private array $data = [];
 
     /** @var array<string, int> */
-    protected $maxSeenIdByTable = [];
+    protected array $maxSeenIdByTable = [];
 
     /** @var array<string, int|string> */
-    protected $lastInsertIdByTable = [];
+    protected array $lastInsertIdByTable = [];
 
-    /** @var string */
-    protected $lastInsertIdTable;
+    protected string $lastInsertIdTable;
 
     /**
      * @param array<int|string, mixed> $data
@@ -337,7 +336,7 @@ class Array_ extends Persistence
      */
     public function lastInsertId(Model $model = null)
     {
-        if ($model) {
+        if ($model !== null) {
             return $this->lastInsertIdByTable[$model->table] ?? null;
         }
 

@@ -10,18 +10,6 @@ use Atk4\Data\Persistence;
 class ContainsMany extends ContainsBase
 {
     #[\Override]
-    protected function getDefaultPersistence(Model $theirModel): Persistence
-    {
-        $ourModelOrEntity = $this->getOurModelOrEntityPassedToRefXxx();
-
-        return new Persistence\Array_([
-            $this->tableAlias => $ourModelOrEntity->isEntity() && $this->getOurFieldValue($ourModelOrEntity) !== null
-                ? $this->getOurFieldValue($ourModelOrEntity)
-                : [],
-        ]);
-    }
-
-    #[\Override]
     public function ref(Model $ourModelOrEntity, array $defaults = []): Model
     {
         $this->assertOurModelOrEntity($ourModelOrEntity);
@@ -30,6 +18,13 @@ class ContainsMany extends ContainsBase
             'containedInEntity' => $ourModelOrEntity->isEntity() ? $ourModelOrEntity : null,
             'table' => $this->tableAlias,
         ]));
+
+        $this->setTheirModelPersistenceSeedData(
+            $theirModel,
+            $ourModelOrEntity->isEntity() && $this->getOurFieldValue($ourModelOrEntity) !== null
+                ? $this->getOurFieldValue($ourModelOrEntity)
+                : []
+        );
 
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
             $this->onHookToTheirModel($theirModel, $spot, function (Model $theirEntity) {
