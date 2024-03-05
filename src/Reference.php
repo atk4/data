@@ -321,7 +321,9 @@ class Reference
             return $ourModel->containedInEntity->getModel()->getPersistence();
         }
 
-        return $ourModel->issetPersistence() ? $ourModel->getPersistence() : false;
+        return $ourModel->issetPersistence()
+            ? $ourModel->getPersistence()
+            : false;
     }
 
     /**
