@@ -331,14 +331,14 @@ class Model implements \IteratorAggregate
             }
 
             $modelOnlyProperties = array_diff_key($modelOnlyProperties, array_flip([
+                'hooks',
+                '_hookIndexCounter',
+                '_hookOrigThis',
+
                 '_model',
                 '_entityId',
                 'data',
                 'dirty',
-
-                'hooks',
-                '_hookIndexCounter',
-                '_hookOrigThis',
 
                 'ownerReference', // should be removed once references are non-entity
                 'userActions', // should be removed once user actions are non-entity
