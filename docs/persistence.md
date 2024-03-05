@@ -547,12 +547,12 @@ public function loadQuick(Model $class, $id)
         $m = $m->withPersistence($this->mdb)->save();
     }
 
-    $m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
-        $m->withPersistence($this->sql)->save();
+    $m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $entity) {
+        $entity->withPersistence($this->sql)->save();
     });
 
-    $m->onHook(Model::HOOK_BEFORE_DELETE, function (Model $m) {
-        $m->withPersistence($this->sql)->delete();
+    $m->onHook(Model::HOOK_BEFORE_DELETE, function (Model $entity) {
+        $entity->withPersistence($this->sql)->delete();
     });
 
     return $m;
@@ -599,12 +599,12 @@ The last two hooks are in order to replicate any changes into the SQL database
 also:
 
 ```
-$m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
-    $m->withPersistence($this->sql)->save();
+$m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $entity) {
+    $entity->withPersistence($this->sql)->save();
 });
 
-$m->onHook(Model::HOOK_BEFORE_DELETE, function (Model $m) {
-    $m->withPersistence($this->sql)->delete();
+$m->onHook(Model::HOOK_BEFORE_DELETE, function (Model $entity) {
+    $entity->withPersistence($this->sql)->delete();
 });
 ```
 
@@ -660,8 +660,8 @@ If you wish that every time you save your model the copy is also stored inside
 some other database (for archive purposes) you can implement it like this:
 
 ```
-$m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
-    $arc = $this->withPersistence($m->getApp()->archive_db);
+$m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $entity) {
+    $arc = $this->withPersistence($entity->getApp()->archive_db);
 
     // add some audit fields
     $arc->addField('original_id', ['type' => 'integer'])->set($this->getId());

@@ -301,9 +301,9 @@ class DeepCopy
             foreach ($this->extractKeys($references) as $refKey => $refVal) {
                 if ($source->hasReference($refKey) && $source->getModel(true)->getReference($refKey) instanceof HasMany) {
                     // no mapping, will always copy
-                    foreach ($source->ref($refKey) as $refModel) {
+                    foreach ($source->ref($refKey) as $refEntity) {
                         $this->_copy(
-                            $refModel,
+                            $refEntity,
                             $destination->ref($refKey),
                             $refVal,
                             $exclusions[$refKey] ?? [],

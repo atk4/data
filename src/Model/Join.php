@@ -177,16 +177,16 @@ abstract class Join
      * @param \Closure(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
      * @param array<int, mixed>                                                                        $args
      */
-    protected function onHookToOwnerBoth(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    protected function onHookToOwnerModel(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->shortName; // use static function to allow this object to be GCed
 
         return $this->getOwner()->onHookDynamic(
             $spot,
-            static function (Model $model) use ($name): self {
+            static function (Model $modelOrEntity) use ($name): self {
                 /** @var self */
-                $obj = $model->getModel(true)->getElement($name);
-                $model->getModel(true)->assertIsModel($obj->getOwner());
+                $obj = $modelOrEntity->getModel(true)->getElement($name);
+                $modelOrEntity->getModel(true)->assertIsModel($obj->getOwner());
 
                 return $obj;
             },

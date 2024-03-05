@@ -1787,9 +1787,9 @@ class Model implements \IteratorAggregate
      * Create iterator (yield values).
      *
      * You can return false in afterLoad hook to prevent to yield this data row, example:
-     * $model->onHook(self::HOOK_AFTER_LOAD, static function (Model $m) {
-     *     if ($m->get('date') < $m->dateFrom) {
-     *         $m->breakHook(false);
+     * $model->onHook(self::HOOK_AFTER_LOAD, static function (Model $entity) {
+     *     if ($entity->get('date') < $entity->dateFrom) {
+     *         $entity->breakHook(false);
      *     }
      * })
      *

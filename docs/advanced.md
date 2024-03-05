@@ -152,7 +152,7 @@ protected function init(): void
 
     $this->getOwner()->addField('updated_dts', ['type' => 'datetime']);
 
-    $this->getOwner()->onHook(Model::HOOK_BEFORE_UPDATE, function (Model $m, array $data) {
+    $this->getOwner()->onHook(Model::HOOK_BEFORE_UPDATE, function (Model $entity, array $data) {
         if (isset($this->getApp()->user) && $this->getApp()->user->isLoaded()) {
             $data['updated_by'] = $this->getApp()->user->getId();
         }

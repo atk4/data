@@ -149,8 +149,8 @@ class Reference
 
         return $this->getOurModel(null)->onHookDynamic(
             $spot,
-            static function (Model $model) use ($name): self {
-                return $model->getModel(true)->getElement($name);
+            static function (Model $modelOrEntity) use ($name): self {
+                return $modelOrEntity->getModel(true)->getElement($name);
             },
             $fx,
             $args,
@@ -162,17 +162,17 @@ class Reference
      * @param \Closure(Model, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
      * @param array<int, mixed>                                                                            $args
      */
-    protected function onHookToTheirModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    protected function onHookToTheirModel(Model $modelOrEntity, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
-        if ($model->ownerReference !== null && $model->ownerReference !== $this) {
+        if ($modelOrEntity->ownerReference !== null && $modelOrEntity->ownerReference !== $this) {
             throw new Exception('Model owner reference is unexpectedly already set');
         }
-        $model->ownerReference = $this;
+        $modelOrEntity->ownerReference = $this;
 
-        return $model->onHookDynamic(
+        return $modelOrEntity->onHookDynamic(
             $spot,
-            static function (Model $model) {
-                return $model->ownerReference;
+            static function (Model $modelOrEntity) {
+                return $modelOrEntity->ownerReference;
             },
             $fx,
             $args,

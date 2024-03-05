@@ -50,8 +50,8 @@ class DcInvoice extends Model
 
         $this->addField('is_paid', ['type' => 'boolean', 'default' => false]);
 
-        $this->onHookShort(DeepCopy::HOOK_AFTER_COPY, function (Model $s) {
-            if (get_class($s) === static::class) {
+        $this->onHookShort(DeepCopy::HOOK_AFTER_COPY, function (Model $entity) {
+            if (get_class($entity) === static::class) {
                 $this->set('ref', $this->get('ref') . '_copy');
             }
         });
@@ -286,8 +286,8 @@ class DeepCopyTest extends TestCase
         $quote->getModel()->hasMany('Lines2', ['model' => [DcQuoteLine::class], 'theirField' => 'parent_id']);
 
         $invoice = new DcInvoice();
-        $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, static function (Model $m) {
-            if (!$m->get('ref')) {
+        $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, static function (Model $entity) {
+            if (!$entity->get('ref')) {
                 throw new \Exception('no test ref');
             }
         });
@@ -315,8 +315,8 @@ class DeepCopyTest extends TestCase
         $quote = $this->createTestQuote();
 
         $invoice = new DcInvoice();
-        $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, static function (Model $m) {
-            if (!$m->get('ref')) {
+        $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, static function (Model $entity) {
+            if (!$entity->get('ref')) {
                 throw new \Exception('no test ref');
             }
         });
@@ -349,7 +349,7 @@ class DeepCopyTest extends TestCase
             {
                 parent::init();
 
-                $this->onHook(DeepCopy::HOOK_AFTER_COPY, static function (Model $m) {
+                $this->onHook(DeepCopy::HOOK_AFTER_COPY, static function (Model $entity) {
                     throw new \Exception('test ex');
                 });
             }

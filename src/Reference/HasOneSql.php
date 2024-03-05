@@ -33,8 +33,8 @@ class HasOneSql extends HasOne
             'readOnly' => false,
         ]));
 
-        $this->onHookToOurModel(Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($fieldName, $theirFieldIsTitle, $theirFieldName) {
-            if ($ourModel->isDirty($fieldName)) {
+        $this->onHookToOurModel(Model::HOOK_BEFORE_SAVE, function (Model $ourEntity) use ($fieldName, $theirFieldIsTitle, $theirFieldName) {
+            if ($ourEntity->isDirty($fieldName)) {
                 $theirModel = $this->createTheirModel();
                 if ($theirFieldIsTitle) {
                     $theirFieldName = $theirModel->titleField;
@@ -42,9 +42,9 @@ class HasOneSql extends HasOne
 
                 // when our field is not null or dirty too, update nothing, but check if the imported
                 // field was changed to expected value implied by the relation
-                if ($ourModel->isDirty($this->getOurFieldName()) || $ourModel->get($this->getOurFieldName()) !== null) {
-                    $importedFieldValue = $ourModel->get($fieldName);
-                    $expectedTheirEntity = $theirModel->loadBy($this->getTheirFieldName($theirModel), $ourModel->get($this->getOurFieldName()));
+                if ($ourEntity->isDirty($this->getOurFieldName()) || $ourEntity->get($this->getOurFieldName()) !== null) {
+                    $importedFieldValue = $ourEntity->get($fieldName);
+                    $expectedTheirEntity = $theirModel->loadBy($this->getTheirFieldName($theirModel), $ourEntity->get($this->getOurFieldName()));
                     if (!$expectedTheirEntity->compare($theirFieldName, $importedFieldValue)) {
                         throw (new Exception('Imported field was changed to an unexpected value'))
                             ->addMoreInfo('ourFieldName', $this->getOurFieldName())
@@ -55,9 +55,9 @@ class HasOneSql extends HasOne
                             ->addMoreInfo('sourceFieldValue', $expectedTheirEntity->get($theirFieldName));
                     }
                 } else {
-                    $newTheirEntity = $theirModel->loadBy($theirFieldName, $ourModel->get($fieldName));
-                    $ourModel->set($this->getOurFieldName(), $newTheirEntity->get($this->getTheirFieldName($theirModel)));
-                    $ourModel->_unset($fieldName);
+                    $newTheirEntity = $theirModel->loadBy($theirFieldName, $ourEntity->get($fieldName));
+                    $ourEntity->set($this->getOurFieldName(), $newTheirEntity->get($this->getTheirFieldName($theirModel)));
+                    $ourEntity->_unset($fieldName);
                 }
             }
         }, [], 20);
@@ -79,7 +79,8 @@ class HasOneSql extends HasOne
         $ourModel = $this->getOurModel(null);
 
         // if caption/type is not defined in $defaults -> get it directly from the linked model field $theirFieldName
-        $refModelField = $ourModel->refModel($this->link)->getField($theirFieldName);
+        $refModel = $ourModel->refModel($this->link);
+        $refModelField = $refModel->getField($theirFieldName);
         $defaults['type'] ??= $refModelField->type;
         $defaults['enum'] ??= $refModelField->enum;
         $defaults['values'] ??= $refModelField->values;
