@@ -166,12 +166,14 @@ class Reference
      * @param \Closure(Model, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
      * @param array<int, mixed>                                                                            $args
      */
-    protected function onHookToTheirModel(Model $theirModelOrEntity, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    protected function onHookToTheirModel(Model $theirModel, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
+        $theirModel->assertIsModel();
+
         $ourModel = $this->getOurModel(null);
         $name = $this->shortName; // use static function to allow this object to be GCed
 
-        return $theirModelOrEntity->onHookDynamic(
+        return $theirModel->onHookDynamic(
             $spot,
             static function () use ($ourModel, $name): self {
                 /** @var self */
