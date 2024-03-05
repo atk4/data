@@ -250,13 +250,13 @@ class DeepCopy
                     $this->debug('Proceeding with ' . $refKey);
 
                     // load destination model through $source
-                    $sourceTable = $source->refModel($refKey)->table;
+                    $refSourceTable = $source->refModel($refKey)->table;
 
-                    if (isset($this->mapping[$sourceTable])
-                        && array_key_exists($source->get($refKey), $this->mapping[$sourceTable])
+                    if (isset($this->mapping[$refSourceTable])
+                        && array_key_exists($source->get($refKey), $this->mapping[$refSourceTable])
                     ) {
                         // no need to deep copy, simply alter ID
-                        $destination->set($refKey, $this->mapping[$sourceTable][$source->get($refKey)]);
+                        $destination->set($refKey, $this->mapping[$refSourceTable][$source->get($refKey)]);
                         $this->debug(' already copied ' . $source->get($refKey) . ' as ' . $destination->get($refKey));
                     } else {
                         // hasOne points to null!
