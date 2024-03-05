@@ -166,17 +166,19 @@ class Reference
      * @param \Closure(Model, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
      * @param array<int, mixed>                                                                            $args
      */
-    protected function onHookToTheirModel(Model $modelOrEntity, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    protected function onHookToTheirModel(Model $theirModelOrEntity, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
-        if ($modelOrEntity->ownerReference !== null && $modelOrEntity->ownerReference !== $this) {
-            throw new Exception('Model owner reference is unexpectedly already set');
-        }
-        $modelOrEntity->ownerReference = $this;
+        $ourModel = $this->getOurModel(null);
+        $name = $this->shortName; // use static function to allow this object to be GCed
 
-        return $modelOrEntity->onHookDynamic(
+        return $theirModelOrEntity->onHookDynamic(
             $spot,
-            static function (Model $modelOrEntity) {
-                return $modelOrEntity->ownerReference;
+            static function () use ($ourModel, $name): self {
+                /** @var self */
+                $obj = $ourModel->getElement($name);
+                $ourModel->assertIsModel($obj->getOwner());
+
+                return $obj;
             },
             $fx,
             $args,

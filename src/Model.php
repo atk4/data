@@ -228,9 +228,6 @@ class Model implements \IteratorAggregate
      */
     public ?self $containedInEntity = null;
 
-    /** Only for Reference class */
-    public ?Reference $ownerReference = null;
-
     // {{{ Basic Functionality, field definition, set() and get()
 
     /**
@@ -340,7 +337,6 @@ class Model implements \IteratorAggregate
                 'data',
                 'dirty',
 
-                'ownerReference', // should be removed once references are non-entity
                 'userActions', // should be removed once user actions are non-entity
 
                 'containedInEntity',
