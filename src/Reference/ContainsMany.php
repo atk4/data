@@ -33,7 +33,7 @@ class ContainsMany extends ContainsBase
 
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
             $this->onHookToTheirModel($theirModel, $spot, function (Model $theirEntity) {
-                $ourEntity = $theirEntity->containedInEntity;
+                $ourEntity = $theirEntity->getModel()->containedInEntity;
                 $this->assertOurModelOrEntity($ourEntity);
                 $ourEntity->assertIsEntity();
 

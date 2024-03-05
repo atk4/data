@@ -338,8 +338,6 @@ class Model implements \IteratorAggregate
                 'dirty',
 
                 'userActions', // should be removed once user actions are non-entity
-
-                'containedInEntity',
             ]));
 
             self::$_modelOnlyProperties = $modelOnlyProperties;
