@@ -746,10 +746,10 @@ executing:
 ```
 $m = Model_Product($db);
 $m->addCondition('name', $productName);
-$action = $m->action('getOne', ['id']);
+$productIdAction = $m->action('field', ['id']);
 
 $m = Model_Invoice($db);
-$m->insert(['qty' => 20, 'product_id' => $action]);
+$m->insert(['qty' => 20, 'product_id' => $productIdAction]);
 ```
 
 Insert operation will check if you are using same persistence.
@@ -758,14 +758,6 @@ result instead.
 
 Being able to embed actions inside next query allows Agile Data to reduce number
 of queries issued.
-
-The default action type can be set when executing action, for example:
-
-```
-$a = $m->action('field', 'user', 'getOne');
-
-echo $a(); // same as $a->getOne();
-```
 
 ### SQL Actions
 

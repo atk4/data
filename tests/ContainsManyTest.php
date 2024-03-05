@@ -63,7 +63,7 @@ class ContainsManyTest extends TestCase
 
         // test caption of containsMany reference
         self::assertSame('My Invoice Lines', $i->getField($i->fieldName()->lines)->getCaption());
-        self::assertSame('My Invoice Lines', $i->refModel($i->fieldName()->lines)->getModelCaption());
+        self::assertSame('My Invoice Lines', $i->getReference($i->fieldName()->lines)->createTheirModel()->getModelCaption());
         self::assertSame('My Invoice Lines', $i->lines->getModelCaption());
     }
 

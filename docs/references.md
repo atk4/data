@@ -95,7 +95,7 @@ If you are worried about performance you can keep 2 models in memory:
 
 ```
 $order = new Order($db);
-$client = $order->refModel('client_id');
+$client = $order->ref('client_id');
 
 foreach ($order as $o) {
     $c = $client->load($o->get('client_id'));
@@ -267,7 +267,7 @@ Alternatively you may also specify either 'aggregate':
 ```
 $book->hasMany('Pages', ['model' => [Page::class]])
     ->addField('page_list', [
-        'aggregate' => $book->refModel('Pages')->expr('group_concat([number], [])', ['-']),
+        'aggregate' => $book->getReference('Pages')->createTheirModel()->expr('group_concat([number], [])', ['-']),
     ]);
 ```
 
@@ -281,7 +281,7 @@ or 'field':
 as of 1.3.4 count's field defaults to `*` - no need to specify explicitly.
 :::
 
-## hasMany / refLink / refModel
+## hasMany / refLink
 
 :::{php:method} refLink($link)
 :::
@@ -314,13 +314,6 @@ select
 from user
 where is_vip = 1
 ```
-
-:::{php:method} refModel($link)
-:::
-
-There are many situations when you need to get referenced model instead of
-reference itself. In such case refModel() comes in as handy shortcut of doing
-`$model->refLink($link)->getModel()`.
 
 ## hasOne reference
 
@@ -530,15 +523,7 @@ While {php:meth}`Model::ref()` returns a related model, {php:meth}`Model::getRef
 gives you the reference object itself so that you could perform some changes on it,
 such as import more fields with {php:meth}`Model::addField()`.
 
-Or you can use {php:meth}`Model::refModel()` which will simply return referenced
-model and you can do fancy things with it.
-
-```
-$refModel = $model->refModel('owner_id');
-```
-
-You can also use {php:meth}`Model::hasReference()` to check if particular reference
-exists in model:
+{php:meth}`Model::hasReference()` can be used to check if particular reference exists in model:
 
 ```
 if ($model->hasReference('owner_id')) {

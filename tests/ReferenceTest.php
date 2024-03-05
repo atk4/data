@@ -65,7 +65,7 @@ class ReferenceTest extends TestCase
         $user->getModel()->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
 
         // test caption of containsOne reference
-        self::assertSame('My Orders', $user->refModel('Orders')->getModelCaption());
+        self::assertSame('My Orders', $user->getModel()->getReference('Orders')->createTheirModel()->getModelCaption());
         self::assertSame('My Orders', $user->ref('Orders')->getModelCaption());
     }
 

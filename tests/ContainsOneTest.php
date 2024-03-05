@@ -62,7 +62,7 @@ class ContainsOneTest extends TestCase
 
         // test caption of containsOne reference
         self::assertSame('Secret Code', $a->getField($a->fieldName()->door_code)->getCaption());
-        self::assertSame('Secret Code', $a->refModel($a->fieldName()->door_code)->getModelCaption());
+        self::assertSame('Secret Code', $a->getReference($a->fieldName()->door_code)->createTheirModel()->getModelCaption());
         self::assertSame('Secret Code', $a->door_code->getModelCaption());
     }
 

@@ -250,7 +250,7 @@ class DeepCopy
                     $this->debug('Proceeding with ' . $refKey);
 
                     // load destination model through $source
-                    $refSourceTable = $source->refModel($refKey)->table;
+                    $refSourceTable = $source->getModel()->getReference($refKey)->createTheirModel()->table;
 
                     if (isset($this->mapping[$refSourceTable])
                         && array_key_exists($source->get($refKey), $this->mapping[$refSourceTable])
@@ -273,7 +273,7 @@ class DeepCopy
                                 $refKey,
                                 $this->_copy(
                                     $source->ref($refKey),
-                                    $destination->refModel($refKey),
+                                    $destination->getModel()->getReference($refKey)->createTheirModel(),
                                     $refVal,
                                     $exclusions[$refKey] ?? [],
                                     $transforms[$refKey] ?? []
