@@ -7,12 +7,11 @@ namespace Atk4\Data\Reference;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
+use Atk4\Data\Persistence;
 use Atk4\Data\Reference;
 
 abstract class ContainsBase extends Reference
 {
-    use ContainsSeedHackTrait;
-
     public bool $checkTheirType = false;
 
     /** Field type. */
@@ -69,5 +68,24 @@ abstract class ContainsBase extends Reference
 
             throw new Exception('ContainsXxx does not support unmanaged data modification');
         });
+    }
+
+    #[\Override]
+    protected function getDefaultPersistence(Model $theirModel): Persistence
+    {
+        return new Persistence\Array_();
+    }
+
+    /**
+     * @param array<int, mixed> $data
+     */
+    protected function setTheirModelPersistenceSeedData(Model $theirModel, array $data): void
+    {
+        $persistence = Persistence\Array_::assertInstanceOf($theirModel->getPersistence());
+        $tableName = $this->tableAlias;
+        \Closure::bind(static function () use ($persistence, $tableName, $data) {
+            $persistence->seedData = [$tableName => $data];
+            $persistence->data = [];
+        }, null, Persistence\Array_::class)();
     }
 }
