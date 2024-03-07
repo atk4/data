@@ -247,6 +247,10 @@ class Reference
 
     protected function createTheirModelAfterInit(Model $theirModel): void
     {
+        if ($this->caption !== null) {
+            $theirModel->caption = $this->caption;
+        }
+
         if ($this->checkTheirType) {
             $ourField = $this->getOurField();
             $theirField = $theirModel->getField($this->getTheirFieldName($theirModel));
@@ -300,10 +304,6 @@ class Reference
             if ($persistence !== false) {
                 $theirModel->setPersistence($persistence);
             }
-        }
-
-        if ($this->caption !== null) {
-            $theirModel->caption = $this->caption;
         }
     }
 
