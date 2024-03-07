@@ -217,6 +217,43 @@ class Reference
         return $ourModel;
     }
 
+    protected function initTableAlias(): void
+    {
+        if (!$this->tableAlias) {
+            $ourModel = $this->getOurModel(null);
+
+            $aliasFull = $this->link;
+            $alias = preg_replace('~_(' . preg_quote($ourModel->idField !== false ? $ourModel->idField : '', '~') . '|id)$~', '', $aliasFull);
+            $alias = preg_replace('~([0-9a-z]?)[0-9a-z]*[^0-9a-z]*~i', '$1', $alias);
+            if ($ourModel->tableAlias !== null) {
+                $aliasFull = $ourModel->tableAlias . '_' . $aliasFull;
+                $alias = preg_replace('~^_(.+)_[0-9a-f]{12}$~', '$1', $ourModel->tableAlias) . '_' . $alias;
+            }
+            $this->tableAlias = '_' . $alias . '_' . substr(md5($aliasFull), 0, 12);
+        }
+    }
+
+    /**
+     * Returns default persistence for their model.
+     *
+     * @return Persistence|false
+     */
+    protected function getDefaultPersistence(Model $theirModel)
+    {
+        $ourModel = $this->getOurModel(null);
+
+        // this is useful for ContainsOne/Many implementation in case when you have
+        // SQL_Model->containsOne()->hasOne() structure to get back to SQL persistence
+        // from Array persistence used in ContainsOne model
+        if ($ourModel->containedInEntity !== null && $ourModel->containedInEntity->getModel()->issetPersistence()) {
+            return $ourModel->containedInEntity->getModel()->getPersistence();
+        }
+
+        return $ourModel->issetPersistence()
+            ? $ourModel->getPersistence()
+            : false;
+    }
+
     /**
      * @param array<string, mixed> $defaults
      */
@@ -243,6 +280,16 @@ class Reference
         }
 
         return $theirModel;
+    }
+
+    protected function createTheirModelSetPersistence(Model $theirModel): void
+    {
+        if (!$theirModel->issetPersistence()) {
+            $persistence = $this->getDefaultPersistence($theirModel);
+            if ($persistence !== false) {
+                $theirModel->setPersistence($persistence);
+            }
+        }
     }
 
     protected function createTheirModelAfterInit(Model $theirModel): void
@@ -275,57 +322,10 @@ class Reference
     final public function createTheirModel(array $defaults = []): Model
     {
         $theirModel = $this->createTheirModelBeforeInit($defaults);
-        $this->addToPersistence($theirModel, $defaults);
+        $this->createTheirModelSetPersistence($theirModel);
         $this->createTheirModelAfterInit($theirModel);
 
         return $theirModel;
-    }
-
-    protected function initTableAlias(): void
-    {
-        if (!$this->tableAlias) {
-            $ourModel = $this->getOurModel(null);
-
-            $aliasFull = $this->link;
-            $alias = preg_replace('~_(' . preg_quote($ourModel->idField !== false ? $ourModel->idField : '', '~') . '|id)$~', '', $aliasFull);
-            $alias = preg_replace('~([0-9a-z]?)[0-9a-z]*[^0-9a-z]*~i', '$1', $alias);
-            if ($ourModel->tableAlias !== null) {
-                $aliasFull = $ourModel->tableAlias . '_' . $aliasFull;
-                $alias = preg_replace('~^_(.+)_[0-9a-f]{12}$~', '$1', $ourModel->tableAlias) . '_' . $alias;
-            }
-            $this->tableAlias = '_' . $alias . '_' . substr(md5($aliasFull), 0, 12);
-        }
-    }
-
-    protected function addToPersistence(Model $theirModel): void
-    {
-        if (!$theirModel->issetPersistence()) {
-            $persistence = $this->getDefaultPersistence($theirModel);
-            if ($persistence !== false) {
-                $theirModel->setPersistence($persistence);
-            }
-        }
-    }
-
-    /**
-     * Returns default persistence for theirModel.
-     *
-     * @return Persistence|false
-     */
-    protected function getDefaultPersistence(Model $theirModel)
-    {
-        $ourModel = $this->getOurModel(null);
-
-        // this is useful for ContainsOne/Many implementation in case when you have
-        // SQL_Model->containsOne()->hasOne() structure to get back to SQL persistence
-        // from Array persistence used in ContainsOne model
-        if ($ourModel->containedInEntity !== null && $ourModel->containedInEntity->getModel()->issetPersistence()) {
-            return $ourModel->containedInEntity->getModel()->getPersistence();
-        }
-
-        return $ourModel->issetPersistence()
-            ? $ourModel->getPersistence()
-            : false;
     }
 
     /**
