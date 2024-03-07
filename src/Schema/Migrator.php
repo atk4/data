@@ -317,14 +317,10 @@ class Migrator
     {
         $reference = $field->getReference();
         if ($reference instanceof HasOne) {
-            $referenceField = $reference->getTheirFieldName($reference->createTheirModel());
+            $theirModel = $reference->createTheirModel();
+            $referenceField = $reference->getTheirFieldName($theirModel);
 
-            $modelSeed = is_array($reference->model)
-                ? $reference->model
-                : clone $reference->model;
-            $referenceModel = Model::fromSeed($modelSeed, [new Persistence\Sql($this->getConnection())]);
-
-            return $referenceModel->getField($referenceField);
+            return $theirModel->getField($referenceField);
         }
 
         return null;

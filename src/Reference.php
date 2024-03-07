@@ -10,9 +10,7 @@ use Atk4\Core\InitializerTrait;
 use Atk4\Core\TrackableTrait;
 
 /**
- * Reference implements a link between one model and another. The basic components for
- * a reference is ability to generate the destination model, which is returned through
- * getModel() and that's pretty much it.
+ * Reference implements a link between our model and their model..
  *
  * It's possible to extend the basic reference with more meaningful references.
  *
@@ -29,7 +27,7 @@ class Reference
     }
 
     /**
-     * Use this alias for related entity by default. This can help you
+     * Use this alias for their model by default. This can help you
      * if you create sub-queries or joins to separate this from main
      * table. The tableAlias will be uniquely generated.
      *
@@ -47,14 +45,12 @@ class Reference
     public $link;
 
     /**
-     * Definition of the destination their model, that can be either an object, a
-     * callback or a string. This can be defined during initialization and
-     * then used inside getModel() to fully populate and associate with
-     * persistence.
+     * Seed of their model. If it is a Model instance, self::createTheirModel() must
+     * always clone it to return a new instance.
      *
      * @var Model|\Closure(object, static, array<string, mixed>): Model|array<mixed>
      */
-    public $model;
+    protected $model;
 
     /**
      * This is an optional property which can be used by your implementation
@@ -221,15 +217,47 @@ class Reference
         return $ourModel;
     }
 
+    protected function initTableAlias(): void
+    {
+        if (!$this->tableAlias) {
+            $ourModel = $this->getOurModel(null);
+
+            $aliasFull = $this->link;
+            $alias = preg_replace('~_(' . preg_quote($ourModel->idField !== false ? $ourModel->idField : '', '~') . '|id)$~', '', $aliasFull);
+            $alias = preg_replace('~([0-9a-z]?)[0-9a-z]*[^0-9a-z]*~i', '$1', $alias);
+            if ($ourModel->tableAlias !== null) {
+                $aliasFull = $ourModel->tableAlias . '_' . $aliasFull;
+                $alias = preg_replace('~^_(.+)_[0-9a-f]{12}$~', '$1', $ourModel->tableAlias) . '_' . $alias;
+            }
+            $this->tableAlias = '_' . $alias . '_' . substr(md5($aliasFull), 0, 12);
+        }
+    }
+
     /**
-     * Create destination model that is linked through this reference. Will apply
-     * necessary conditions.
+     * Returns default persistence for their model.
      *
-     * IMPORTANT: the returned model must be a fresh clone or freshly built from a seed
-     *
+     * @return Persistence|false
+     */
+    protected function getDefaultPersistence(Model $theirModel)
+    {
+        $ourModel = $this->getOurModel(null);
+
+        // this is useful for ContainsOne/Many implementation in case when you have
+        // SQL_Model->containsOne()->hasOne() structure to get back to SQL persistence
+        // from Array persistence used in ContainsOne model
+        if ($ourModel->containedInEntity !== null && $ourModel->containedInEntity->getModel()->issetPersistence()) {
+            return $ourModel->containedInEntity->getModel()->getPersistence();
+        }
+
+        return $ourModel->issetPersistence()
+            ? $ourModel->getPersistence()
+            : false;
+    }
+
+    /**
      * @param array<string, mixed> $defaults
      */
-    public function createTheirModel(array $defaults = []): Model
+    protected function createTheirModelBeforeInit(array $defaults): Model
     {
         $defaults['tableAlias'] ??= $this->tableAlias;
 
@@ -251,7 +279,24 @@ class Reference
             $theirModel = Factory::factory($theirModelSeed, $defaults);
         }
 
-        $this->addToPersistence($theirModel, $defaults);
+        return $theirModel;
+    }
+
+    protected function createTheirModelSetPersistence(Model $theirModel): void
+    {
+        if (!$theirModel->issetPersistence()) {
+            $persistence = $this->getDefaultPersistence($theirModel);
+            if ($persistence !== false) {
+                $theirModel->setPersistence($persistence);
+            }
+        }
+    }
+
+    protected function createTheirModelAfterInit(Model $theirModel): void
+    {
+        if ($this->caption !== null) {
+            $theirModel->caption = $this->caption;
+        }
 
         if ($this->checkTheirType) {
             $ourField = $this->getOurField();
@@ -264,66 +309,23 @@ class Reference
                     ->addMoreInfo('theirFieldType', $theirField->type);
             }
         }
-
-        return $theirModel;
-    }
-
-    protected function initTableAlias(): void
-    {
-        if (!$this->tableAlias) {
-            $ourModel = $this->getOurModel(null);
-
-            $aliasFull = $this->link;
-            $alias = preg_replace('~_(' . preg_quote($ourModel->idField !== false ? $ourModel->idField : '', '~') . '|id)$~', '', $aliasFull);
-            $alias = preg_replace('~([0-9a-z]?)[0-9a-z]*[^0-9a-z]*~i', '$1', $alias);
-            if ($ourModel->tableAlias !== null) {
-                $aliasFull = $ourModel->tableAlias . '_' . $aliasFull;
-                $alias = preg_replace('~^_(.+)_[0-9a-f]{12}$~', '$1', $ourModel->tableAlias) . '_' . $alias;
-            }
-            $this->tableAlias = '_' . $alias . '_' . substr(md5($aliasFull), 0, 12);
-        }
     }
 
     /**
+     * Create their model that is linked through this reference. Will apply
+     * necessary conditions.
+     *
+     * IMPORTANT: the returned model must be a fresh clone or freshly built from a seed
+     *
      * @param array<string, mixed> $defaults
      */
-    protected function addToPersistence(Model $theirModel, array $defaults = []): void
+    final public function createTheirModel(array $defaults = []): Model
     {
-        if (!$theirModel->issetPersistence()) {
-            $persistence = $this->getDefaultPersistence($theirModel);
-            if ($persistence !== false) {
-                $theirModel->setDefaults($defaults);
-                $theirModel->setPersistence($persistence);
-            }
-        } elseif ($defaults !== []) {
-            // TODO this seems dangerous
-        }
+        $theirModel = $this->createTheirModelBeforeInit($defaults);
+        $this->createTheirModelSetPersistence($theirModel);
+        $this->createTheirModelAfterInit($theirModel);
 
-        // set model caption
-        if ($this->caption !== null) {
-            $theirModel->caption = $this->caption;
-        }
-    }
-
-    /**
-     * Returns default persistence for theirModel.
-     *
-     * @return Persistence|false
-     */
-    protected function getDefaultPersistence(Model $theirModel)
-    {
-        $ourModel = $this->getOurModel(null);
-
-        // this is useful for ContainsOne/Many implementation in case when you have
-        // SQL_Model->containsOne()->hasOne() structure to get back to SQL persistence
-        // from Array persistence used in ContainsOne model
-        if ($ourModel->containedInEntity !== null && $ourModel->containedInEntity->getModel()->issetPersistence()) {
-            return $ourModel->containedInEntity->getModel()->getPersistence();
-        }
-
-        return $ourModel->issetPersistence()
-            ? $ourModel->getPersistence()
-            : false;
+        return $theirModel;
     }
 
     /**

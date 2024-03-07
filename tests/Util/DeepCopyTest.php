@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests\Util;
 
 use Atk4\Data\Model;
+use Atk4\Data\Reference;
 use Atk4\Data\Schema\TestCase;
 use Atk4\Data\Util\DeepCopy;
 use Atk4\Data\Util\DeepCopyException;
@@ -343,17 +344,19 @@ class DeepCopyTest extends TestCase
     {
         $quote = $this->createTestQuote();
 
-        $quote->getModel()->getReference('client_id')->model = [get_class(new class() extends DcClient {
-            #[\Override]
-            protected function init(): void
-            {
-                parent::init();
+        \Closure::bind(function () use ($quote) {
+            $quote->getModel()->getReference('client_id')->model = [get_class(new class() extends DcClient {
+                #[\Override]
+                protected function init(): void
+                {
+                    parent::init();
 
-                $this->onHook(DeepCopy::HOOK_AFTER_COPY, static function (Model $entity) {
-                    throw new \Exception('test ex');
-                });
-            }
-        })];
+                    $this->onHook(DeepCopy::HOOK_AFTER_COPY, static function (Model $entity) {
+                        throw new \Exception('test ex');
+                    });
+                }
+            })];
+        }, null, Reference::class)();
 
         $dc = new DeepCopy();
 
