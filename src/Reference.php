@@ -50,7 +50,7 @@ class Reference
      *
      * @var Model|\Closure(object, static, array<string, mixed>): Model|array<mixed>
      */
-    public $model;
+    protected $model;
 
     /**
      * This is an optional property which can be used by your implementation
