@@ -293,22 +293,15 @@ class Reference
         }
     }
 
-    /**
-     * @param array<string, mixed> $defaults
-     */
-    protected function addToPersistence(Model $theirModel, array $defaults): void
+    protected function addToPersistence(Model $theirModel): void
     {
         if (!$theirModel->issetPersistence()) {
             $persistence = $this->getDefaultPersistence($theirModel);
             if ($persistence !== false) {
-                $theirModel->setDefaults($defaults);
                 $theirModel->setPersistence($persistence);
             }
-        } elseif ($defaults !== []) {
-            // TODO this seems dangerous
         }
 
-        // set model caption
         if ($this->caption !== null) {
             $theirModel->caption = $this->caption;
         }
