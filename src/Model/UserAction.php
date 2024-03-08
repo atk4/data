@@ -44,10 +44,10 @@ class UserAction
     /** @var string How this action interact with record */
     public $modifier;
 
-    /** @var \Closure(object, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed|string code to execute. By default will call entity method with same name */
+    /** @var \Closure<T of Model>(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed|string code to execute. By default will call entity method with same name */
     public $callback;
 
-    /** @var \Closure(object, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed|string identical to callback, but would generate preview of action without permanent effect */
+    /** @var \Closure<T of Model>(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed|string identical to callback, but would generate preview of action without permanent effect */
     public $preview;
 
     /** @var string|null caption to put on the button */
@@ -59,7 +59,7 @@ class UserAction
     /** @var bool|string|\Closure($this): string Will ask user to confirm. */
     public $confirmation = false;
 
-    /** @var bool|\Closure(object): bool setting this to false will disable action. */
+    /** @var bool|\Closure<T of Model>(T): bool setting this to false will disable action. */
     public $enabled = true;
 
     /** @var bool system action will be hidden from UI, but can still be explicitly triggered */

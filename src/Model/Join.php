@@ -172,10 +172,8 @@ abstract class Join
     }
 
     /**
-     * @template T of Model
-     *
-     * @param \Closure(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
-     * @param array<int, mixed>                                                                        $args
+     * @param \Closure<T of Model>(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
+     * @param array<int, mixed> $args
      */
     protected function onHookToOwnerModel(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
@@ -197,10 +195,8 @@ abstract class Join
     }
 
     /**
-     * @template T of Model
-     *
-     * @param \Closure(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
-     * @param array<int, mixed>                                                                        $args
+     * @param \Closure<T of Model>(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
+     * @param array<int, mixed> $args
      */
     protected function onHookToOwnerEntity(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
