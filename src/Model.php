@@ -1975,9 +1975,7 @@ class Model implements \IteratorAggregate
     /**
      * Add expression field which will calculate its value by using callback.
      *
-     * @template T of self
-     *
-     * @param array{'expr': \Closure(T): mixed} $seed
+     * @param array{'expr': \Closure<T of self>(T): mixed} $seed
      *
      * @return CallbackField
      */
