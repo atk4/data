@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
-use Atk4\Core\Exception as CoreException;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
@@ -355,12 +354,12 @@ class RandomTest extends TestCase
         $m->delete();
     }
 
-    public function testAddFieldDuplicateNameException(): void
+    public function testAddTitleDuplicateNameException(): void
     {
         $m = new Model_Item($this->db);
 
-        $this->expectException(CoreException::class);
-        $this->expectExceptionMessage('already exist');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Field with such name already exists');
         $m->hasOne('foo', ['model' => [Model_Item::class]])->addTitle();
     }
 

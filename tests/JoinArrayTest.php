@@ -57,20 +57,33 @@ class JoinArrayTest extends TestCase
         self::assertSame('test_id', $this->getProtected($j, 'masterField'));
         self::assertSame('id', $this->getProtected($j, 'foreignField'));
 
-        $this->expectException(Exception::class); // TODO not implemented yet, see https://github.com/atk4/data/issues/803
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Joining tables on non-id fields is not implemented yet');
         $j = $m->join('contact4.foo_id', ['masterField' => 'test_id', 'reverse' => true]);
         // self::assertTrue($j->reverse);
         // self::assertSame('test_id', $this->getProtected($j, 'masterField'));
         // self::assertSame('foo_id', $this->getProtected($j, 'foreignField'));
     }
 
-    public function testJoinException(): void
+    public function testDirectionException(): void
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $m = new Model($db, ['table' => 'user']);
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Joining tables on non-id fields is not implemented yet');
         $m->join('contact.foo_id', ['masterField' => 'test_id']);
+    }
+
+    public function testAddJoinDuplicateNameException(): void
+    {
+        $db = new Persistence\Array_();
+        $m = new Model($db);
+        $m->join('foo');
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Join with such name already exists');
+        $m->join('foo');
     }
 
     public function testJoinSaving1(): void
@@ -212,15 +225,16 @@ class JoinArrayTest extends TestCase
         ], $this->getInternalPersistenceData($db));
     }
 
-    /* Joining tables on non-id fields is not implemented yet
     public function testJoinSaving4(): void
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $user = new Model($db, ['table' => 'user']);
         $user->addField('name');
         $user->addField('code');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Joining tables on non-id fields is not implemented yet');
         $j = $user->join('contact.code', ['masterField' => 'code']);
-        $j->addField('contact_phone');
+        /* $j->addField('contact_phone');
 
         $user = $user->createEntity();
         $user->set('name', 'John');
@@ -236,9 +250,8 @@ class JoinArrayTest extends TestCase
             'contact' => [
                 1 => ['id' => 1, 'code' => 'C28', 'contact_phone' => '+123'],
             ],
-        ], $this->getInternalPersistenceData($db));
+        ], $this->getInternalPersistenceData($db)); */
     }
-    */
 
     public function testJoinLoading(): void
     {

@@ -533,6 +533,12 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsModel();
 
+        if ($this->hasField($name)) {
+            throw (new Exception('Field with such name already exists'))
+                ->addMoreInfo('name', $name)
+                ->addMoreInfo('seed', $seed);
+        }
+
         if (is_object($seed)) {
             $field = $seed;
         } else {
