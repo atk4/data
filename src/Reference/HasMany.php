@@ -96,12 +96,8 @@ class HasMany extends Reference
      *
      * @param array<string, mixed> $defaults
      */
-    public function refLink(?Model $ourModelOrEntity, array $defaults = []): Model
+    public function refLink(array $defaults = []): Model
     {
-        if ($ourModelOrEntity !== null) { // TODO drop this parameter, refLink for entity is useless
-            $this->assertOurModelOrEntity($ourModelOrEntity);
-        }
-
         $theirModelLinked = $this->createTheirModel($defaults)->addCondition(
             $this->getTheirFieldName(),
             $this->referenceOurValue()
@@ -136,7 +132,7 @@ class HasMany extends Reference
 
         if (isset($defaults['expr'])) {
             $fx = function () use ($defaults, $alias) {
-                $theirModelLinked = $this->refLink(null);
+                $theirModelLinked = $this->refLink();
 
                 return $theirModelLinked->action('field', [$theirModelLinked->expr(
                     $defaults['expr'],
@@ -146,15 +142,15 @@ class HasMany extends Reference
             unset($defaults['args']);
         } elseif (is_object($defaults['aggregate'])) {
             $fx = function () use ($defaults, $alias) {
-                return $this->refLink(null)->action('field', [$defaults['aggregate'], 'alias' => $alias]);
+                return $this->refLink()->action('field', [$defaults['aggregate'], 'alias' => $alias]);
             };
         } elseif ($defaults['aggregate'] === 'count' && !isset($defaults['field'])) {
             $fx = function () use ($alias) {
-                return $this->refLink(null)->action('count', ['alias' => $alias]);
+                return $this->refLink()->action('count', ['alias' => $alias]);
             };
         } elseif (in_array($defaults['aggregate'], ['sum', 'avg', 'min', 'max', 'count'], true)) {
             $fx = function () use ($defaults, $field) {
-                return $this->refLink(null)->action('fx0', [$defaults['aggregate'], $field]);
+                return $this->refLink()->action('fx0', [$defaults['aggregate'], $field]);
             };
         } else {
             $fx = function () use ($defaults, $field) {
@@ -163,7 +159,7 @@ class HasMany extends Reference
                     $args['concatSeparator'] = $defaults['concatSeparator'];
                 }
 
-                return $this->refLink(null)->action('fx', $args);
+                return $this->refLink()->action('fx', $args);
             };
         }
 

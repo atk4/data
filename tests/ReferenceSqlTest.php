@@ -68,10 +68,7 @@ class ReferenceSqlTest extends TestCase
         );
     }
 
-    /**
-     * Tests to make sure refLink properly generates field links.
-     */
-    public function testLink(): void
+    public function testRefLink(): void
     {
         $u = new Model($this->db, ['table' => 'user']);
         $u->addField('name');
@@ -85,6 +82,24 @@ class ReferenceSqlTest extends TestCase
         $this->assertSameSql(
             'select `id`, `amount`, `user_id` from `order` `_O_7442e29d7d53` where `user_id` = `user`.`id`',
             $u->refLink('Orders')->action('select')->render()[0]
+        );
+    }
+
+    public function testRefLink2(): void
+    {
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name');
+        $u->addField('currency_code');
+
+        $c = new Model($this->db, ['table' => 'currency']);
+        $c->addField('code');
+        $c->addField('name');
+
+        $u->hasMany('cur', ['model' => $c, 'ourField' => 'currency_code', 'theirField' => 'code']);
+
+        $this->assertSameSql(
+            'select `id`, `code`, `name` from `currency` `_c_b5fddf1ef601` where `code` = `user`.`currency_code`',
+            $u->refLink('cur')->action('select')->render()[0]
         );
     }
 
@@ -121,24 +136,6 @@ class ReferenceSqlTest extends TestCase
 
         $cc = $u->load(2)->ref('cur');
         self::assertSame('Pound', $cc->get('name'));
-    }
-
-    public function testLink2(): void
-    {
-        $u = new Model($this->db, ['table' => 'user']);
-        $u->addField('name');
-        $u->addField('currency_code');
-
-        $c = new Model($this->db, ['table' => 'currency']);
-        $c->addField('code');
-        $c->addField('name');
-
-        $u->hasMany('cur', ['model' => $c, 'ourField' => 'currency_code', 'theirField' => 'code']);
-
-        $this->assertSameSql(
-            'select `id`, `code`, `name` from `currency` `_c_b5fddf1ef601` where `code` = `user`.`currency_code`',
-            $u->refLink('cur')->action('select')->render()[0]
-        );
     }
 
     /**

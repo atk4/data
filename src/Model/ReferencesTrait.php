@@ -155,14 +155,14 @@ trait ReferencesTrait
     }
 
     /**
-     * Traverse reference and create their model but keep condition not materialized (for subquery actions).
+     * Traverse reference and create their model but keep reference condition not materialized (for subquery actions).
      *
      * @param array<string, mixed> $defaults
      */
     public function refLink(string $link, array $defaults = []): Model
     {
-        $reference = $this->getModel(true)->getReference($link);
+        $reference = $this->getReference($link);
 
-        return $reference->refLink($this, $defaults);
+        return $reference->refLink($defaults);
     }
 }

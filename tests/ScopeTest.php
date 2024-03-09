@@ -216,7 +216,7 @@ class ScopeTest extends TestCase
         $condition = new Condition('name', 'abc');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Condition must be associated with Model to convert to words');
+        $this->expectExceptionMessage('Condition must be associated with model to convert to words');
         $condition->toWords();
     }
 

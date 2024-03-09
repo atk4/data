@@ -287,12 +287,14 @@ class Condition extends AbstractScope
     #[\Override]
     public function toWords(Model $model = null): string
     {
-        if ($model === null) {
+        if ($model !== null) {
+            $model->assertIsModel();
+        } else {
             $model = $this->getModel();
-        }
 
-        if ($model === null) {
-            throw new Exception('Condition must be associated with Model to convert to words');
+            if ($model === null) {
+                throw new Exception('Condition must be associated with model to convert to words');
+            }
         }
 
         $field = $this->fieldToWords($model);
@@ -405,9 +407,7 @@ class Condition extends AbstractScope
         $title = null;
         if ($field instanceof Field && $field->hasReference()) {
             // make sure we set the value in the Model
-            $entity = $model->isEntity()
-                ? clone $model
-                : $model->createEntity();
+            $entity = $model->createEntity();
             $entity->set($field->shortName, $value);
 
             // then take the title

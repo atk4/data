@@ -147,7 +147,7 @@ class HasOneSql extends HasOne
      *
      * @param array<string, mixed> $defaults
      */
-    public function refLink(Model $ourModelOrEntity, array $defaults = []): Model
+    public function refLink(array $defaults = []): Model
     {
         $theirModel = $this->createTheirModel($defaults);
 
