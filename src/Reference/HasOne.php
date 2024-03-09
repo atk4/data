@@ -18,12 +18,12 @@ class HasOne extends Reference
     {
         parent::init();
 
-        if (!$this->ourField) {
+        if ($this->ourField === null) {
             $this->ourField = $this->link;
         }
 
         // for references use "integer" as a default type
-        if (!(new \ReflectionProperty($this, 'type'))->isInitialized($this)) {
+        if (($this->type ?? null) === null) {
             $this->type = 'integer';
         }
 
@@ -32,7 +32,7 @@ class HasOne extends Reference
         $fieldPropsRefl = (new \ReflectionClass(Model\FieldPropertiesTrait::class))->getProperties();
         $fieldPropsRefl[] = (new \ReflectionClass(Model\JoinLinkTrait::class))->getProperty('joinName');
 
-        $ourModel = $this->getOurModel(null);
+        $ourModel = $this->getOurModel();
         if (!$ourModel->hasField($this->ourField)) {
             $fieldSeed = [];
             foreach ($fieldPropsRefl as $fieldPropRefl) {
@@ -63,7 +63,7 @@ class HasOne extends Reference
     {
         // TODO horrible hack to render the field with a table prefix,
         // find a solution how to wrap the field inside custom Field (without owner?)
-        $ourModelCloned = clone $this->getOurModel(null);
+        $ourModelCloned = clone $this->getOurModel();
         $ourModelCloned->persistenceData['use_table_prefixes'] = true;
 
         return $ourModelCloned->getReference($this->link)->getOurField();
@@ -84,7 +84,7 @@ class HasOne extends Reference
 
         if ($ourModelOrEntity->isEntity()) {
             $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function (Model $theirEntity) use ($ourModelOrEntity) {
-                $theirValue = $this->theirField
+                $theirValue = $this->theirField !== null
                     ? $theirEntity->get($this->theirField)
                     : $theirEntity->getId();
 

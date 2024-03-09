@@ -159,6 +159,16 @@ class UserActionTest extends TestCase
         self::assertSame('Also Backup UaClient', $client->getUserAction('also_backup')->getDescription());
     }
 
+    public function testAddUserActionDuplicateNameException(): void
+    {
+        $m = new Model();
+        $m->addUserAction('foo', static fn () => 1);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('User action with such name already exists');
+        $m->addUserAction('foo', static fn () => 1);
+    }
+
     public function testAppliesToSingleRecordNotEntityException(): void
     {
         $client = new UaClient($this->pers);

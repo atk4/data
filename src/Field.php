@@ -38,7 +38,7 @@ class Field implements Expressionable
     {
         $this->setDefaults($defaults);
 
-        if (!(new \ReflectionProperty($this, 'type'))->isInitialized($this)) {
+        if (($this->type ?? null) === null) {
             $this->type = 'string';
         }
     }

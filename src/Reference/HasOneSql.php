@@ -16,7 +16,7 @@ class HasOneSql extends HasOne
      */
     private function _addField(string $fieldName, bool $theirFieldIsTitle, ?string $theirFieldName, array $defaults): SqlExpressionField
     {
-        $ourModel = $this->getOurModel(null);
+        $ourModel = $this->getOurModel();
 
         $fieldExpression = $ourModel->addExpression($fieldName, array_merge([
             'expr' => function (Model $ourModel) use ($theirFieldIsTitle, $theirFieldName) {
@@ -76,9 +76,9 @@ class HasOneSql extends HasOne
             $theirFieldName = $fieldName;
         }
 
-        $ourModel = $this->getOurModel(null);
+        $ourModel = $this->getOurModel();
 
-        // if caption/type is not defined in $defaults -> get it directly from the linked model field $theirFieldName
+        // if caption/type is not defined in $defaults then infer it from their field
         $refModel = $ourModel->getReference($this->link)->createTheirModel();
         $refModelField = $refModel->getField($theirFieldName);
         $defaults['type'] ??= $refModelField->type;
@@ -122,20 +122,6 @@ class HasOneSql extends HasOne
         return $this;
     }
 
-    /**
-     * Creates model that can be used for generating sub-query actions.
-     *
-     * @param array<string, mixed> $defaults
-     */
-    public function refLink(Model $ourModel, array $defaults = []): Model
-    {
-        $theirModel = $this->createTheirModel($defaults);
-
-        $theirModel->addCondition($this->getTheirFieldName($theirModel), $this->referenceOurValue());
-
-        return $theirModel;
-    }
-
     #[\Override]
     public function ref(Model $ourModelOrEntity, array $defaults = []): Model
     {
@@ -157,6 +143,20 @@ class HasOneSql extends HasOne
     }
 
     /**
+     * Creates model that can be used for generating sub-query actions.
+     *
+     * @param array<string, mixed> $defaults
+     */
+    public function refLink(array $defaults = []): Model
+    {
+        $theirModel = $this->createTheirModel($defaults);
+
+        $theirModel->addCondition($this->getTheirFieldName($theirModel), $this->referenceOurValue());
+
+        return $theirModel;
+    }
+
+    /**
      * Add a title of related entity as expression to our field.
      *
      * $order->hasOne('user_id', 'User')->addTitle();
@@ -167,7 +167,7 @@ class HasOneSql extends HasOne
      */
     public function addTitle(array $defaults = []): SqlExpressionField
     {
-        $ourModel = $this->getOurModel(null);
+        $ourModel = $this->getOurModel();
 
         $fieldName = $defaults['field'] ?? preg_replace('~_(' . preg_quote($ourModel->idField, '~') . '|id)$~', '', $this->link);
 

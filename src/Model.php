@@ -123,8 +123,7 @@ class Model implements \IteratorAggregate
     /** @var string|null */
     public $tableAlias;
 
-    /** @var Persistence|null */
-    private $_persistence;
+    private ?Persistence $_persistence = null;
 
     /** @var array<string, mixed>|null Persistence store some custom information in here that may be useful for them. */
     public ?array $persistenceData = null;
@@ -533,6 +532,12 @@ class Model implements \IteratorAggregate
     public function addField(string $name, $seed = []): Field
     {
         $this->assertIsModel();
+
+        if ($this->hasField($name)) {
+            throw (new Exception('Field with such name already exists'))
+                ->addMoreInfo('name', $name)
+                ->addMoreInfo('seed', $seed);
+        }
 
         if (is_object($seed)) {
             $field = $seed;

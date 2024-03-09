@@ -224,10 +224,34 @@ class LimitOrderTest extends TestCase
 
         $i = new Model($this->db, ['table' => 'invoice', 'idField' => false]);
         $i->addField('total_net', ['type' => 'integer']);
-        $i->addField('total_vat', ['type' => 'integer']);
-        $i->addExpression('total_gross', ['expr' => '[total_net] + [total_vat]', 'type' => 'integer']);
-
         $i->setOrder('total_net');
+
+        self::assertSame(10, $i->loadAny()->get('total_net'));
+        $i->setLimit(2);
+        self::assertSame(10, $i->loadAny()->get('total_net'));
+
+        $i->setLimit(2, 2);
+        self::assertSame(20, $i->loadAny()->get('total_net'));
+        self::assertSame(20, $i->loadOne()->get('total_net'));
+
+        $i->setLimit(1);
+        self::assertSame(10, $i->loadAny()->get('total_net'));
+        self::assertSame(10, $i->loadOne()->get('total_net'));
+        $i->setLimit(1, 1);
+        self::assertSame(15, $i->loadAny()->get('total_net'));
+        self::assertSame(15, $i->loadOne()->get('total_net'));
+        $i->setLimit(1, 2);
+        self::assertSame(20, $i->loadAny()->get('total_net'));
+        self::assertSame(20, $i->loadOne()->get('total_net'));
+        $i->setLimit(1, 3);
+        self::assertNull($i->tryLoadAny());
+        self::assertNull($i->tryLoadOne());
+
+        $i->setLimit(0);
+        self::assertNull($i->tryLoadAny());
+        self::assertNull($i->tryLoadOne());
+
+        $i->setLimit();
         $i->setOnlyFields(['total_net']);
         self::assertSame([
             ['total_net' => 10],
@@ -256,45 +280,5 @@ class LimitOrderTest extends TestCase
             ['total_net' => 15],
             ['total_net' => 20],
         ], $i->export());
-    }
-
-    public function testLimitBug1010(): void
-    {
-        $this->setDb([
-            'invoice' => [
-                ['total_net' => 10],
-                ['total_net' => 20],
-                ['total_net' => 15],
-            ],
-        ]);
-
-        $i = new Model($this->db, ['table' => 'invoice']);
-        $i->addField('total_net', ['type' => 'integer']);
-        $i->setOrder('total_net');
-
-        self::assertSame(10, $i->loadAny()->get('total_net'));
-        $i->setLimit(2);
-        self::assertSame(10, $i->loadAny()->get('total_net'));
-
-        $i->setLimit(2, 2);
-        self::assertSame(20, $i->loadAny()->get('total_net'));
-        self::assertSame(20, $i->loadOne()->get('total_net'));
-
-        $i->setLimit(1);
-        self::assertSame(10, $i->loadAny()->get('total_net'));
-        self::assertSame(10, $i->loadOne()->get('total_net'));
-        $i->setLimit(1, 1);
-        self::assertSame(15, $i->loadAny()->get('total_net'));
-        self::assertSame(15, $i->loadOne()->get('total_net'));
-        $i->setLimit(1, 2);
-        self::assertSame(20, $i->loadAny()->get('total_net'));
-        self::assertSame(20, $i->loadOne()->get('total_net'));
-        $i->setLimit(1, 3);
-        self::assertNull($i->tryLoadAny());
-        self::assertNull($i->tryLoadOne());
-
-        $i->setLimit(0);
-        self::assertNull($i->tryLoadAny());
-        self::assertNull($i->tryLoadOne());
     }
 }

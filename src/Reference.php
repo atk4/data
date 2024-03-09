@@ -109,12 +109,12 @@ class Reference
     public function getOurFieldName(): string
     {
         return $this->ourField
-            ?? $this->getOurModel(null)->idField;
+            ?? $this->getOurModel()->idField;
     }
 
     final protected function getOurField(): Field
     {
-        return $this->getOurModel(null)->getField($this->getOurFieldName());
+        return $this->getOurModel()->getField($this->getOurFieldName());
     }
 
     /**
@@ -141,7 +141,7 @@ class Reference
     {
         $name = $this->shortName; // use static function to allow this object to be GCed
 
-        return $this->getOurModel(null)->onHookDynamic(
+        return $this->getOurModel()->onHookDynamic(
             $spot,
             static function (Model $modelOrEntity) use ($name): self {
                 /** @var self */
@@ -164,7 +164,7 @@ class Reference
     {
         $theirModel->assertIsModel();
 
-        $ourModel = $this->getOurModel(null);
+        $ourModel = $this->getOurModel();
         $name = $this->shortName; // use static function to allow this object to be GCed
 
         return $theirModel->onHookDynamic(
@@ -203,14 +203,10 @@ class Reference
             ->assertIsModel($ourModelOrEntity->getModel(true));
     }
 
-    public function getOurModel(?Model $ourModelOrEntity): Model
+    public function getOurModel(): Model
     {
-        $ourModel = $ourModelOrEntity !== null
-            ? $ourModelOrEntity->getModel(true)
-            : $this->getOwner();
-
-        $this->getOwner()
-            ->assertIsModel($ourModel);
+        $ourModel = $this->getOwner();
+        $ourModel->assertIsModel();
 
         return $ourModel;
     }
@@ -218,7 +214,7 @@ class Reference
     protected function initTableAlias(): void
     {
         if (!$this->tableAlias) {
-            $ourModel = $this->getOurModel(null);
+            $ourModel = $this->getOurModel();
 
             $aliasFull = $this->link;
             $alias = preg_replace('~_(' . preg_quote($ourModel->idField !== false ? $ourModel->idField : '', '~') . '|id)$~', '', $aliasFull);
@@ -238,7 +234,7 @@ class Reference
      */
     protected function getDefaultPersistence(Model $theirModel)
     {
-        $ourModel = $this->getOurModel(null);
+        $ourModel = $this->getOurModel();
 
         // this is useful for ContainsOne/Many implementation in case when you have
         // SQL_Model->containsOne()->hasOne() structure to get back to SQL persistence
@@ -261,7 +257,7 @@ class Reference
 
         // if model is Closure, then call the closure and it should return a model
         if ($this->model instanceof \Closure) {
-            $m = ($this->model)($this->getOurModel(null), $this, $defaults);
+            $m = ($this->model)($this->getOurModel(), $this, $defaults);
         } else {
             $m = $this->model;
         }

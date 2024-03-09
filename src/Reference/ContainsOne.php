@@ -32,8 +32,7 @@ class ContainsOne extends ContainsBase
                 $this->assertOurModelOrEntity($ourEntity);
                 $ourEntity->assertIsEntity();
 
-                /** @var Persistence\Array_ */
-                $persistence = $theirEntity->getModel()->getPersistence();
+                $persistence = Persistence\Array_::assertInstanceOf($theirEntity->getModel()->getPersistence());
                 $row = $persistence->getRawDataByTable($theirEntity->getModel(), $this->tableAlias); // @phpstan-ignore-line
                 $row = $row ? array_shift($row) : null; // get first and only one record from array persistence
                 $ourEntity->save([$this->getOurFieldName() => $row]);

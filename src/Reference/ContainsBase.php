@@ -31,11 +31,11 @@ abstract class ContainsBase extends Reference
     {
         parent::init();
 
-        if (!$this->ourField) {
+        if ($this->ourField === null) {
             $this->ourField = $this->link;
         }
 
-        $ourModel = $this->getOurModel(null);
+        $ourModel = $this->getOurModel();
 
         $ourField = $this->getOurFieldName();
         if (!$ourModel->hasField($ourField)) {

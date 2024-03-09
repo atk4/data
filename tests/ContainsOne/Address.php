@@ -20,7 +20,7 @@ class Address extends Model
     {
         parent::init();
 
-        $this->hasOne($this->fieldName()->country_id, ['model' => [Country::class], 'type' => 'integer']);
+        $this->hasOne($this->fieldName()->country_id, ['model' => [Country::class]]);
 
         $this->addField($this->fieldName()->address);
         $this->addField($this->fieldName()->built_date, ['type' => 'datetime']);

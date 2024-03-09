@@ -767,11 +767,22 @@ class FieldTest extends TestCase
         $m->set('foo', 'ABC');
     }
 
-    public function testAddFieldDirectly(): void
+    public function testAddFieldDuplicateNameException(): void
+    {
+        $m = new Model();
+        $m->addField('foo');
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Field with such name already exists');
+        $m->addField('foo');
+    }
+
+    public function testAddFieldDirectlyException(): void
     {
         $model = new Model();
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Field can be added using addField() method only');
         $model->add(new Field());
     }
 

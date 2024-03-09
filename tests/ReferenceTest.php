@@ -79,7 +79,17 @@ class ReferenceTest extends TestCase
         self::assertSame('order', $o->getModel()->table);
     }
 
-    public function testRefName1(): void
+    public function testRefLinkEntityException(): void
+    {
+        $user = new Model($this->db, ['table' => 'user']);
+        $user = $user->createEntity();
+
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Expected model, but instance is an entity');
+        $user->refLink('order');
+    }
+
+    public function testHasManyDuplicateNameException(): void
     {
         $user = new Model(null, ['table' => 'user']);
         $order = new Model();
@@ -88,10 +98,11 @@ class ReferenceTest extends TestCase
         $user->hasMany('Orders', ['model' => $order]);
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Reference with such name already exists');
         $user->hasMany('Orders', ['model' => $order]);
     }
 
-    public function testRefName2(): void
+    public function testHasOneDuplicateNameException(): void
     {
         $order = new Model(null, ['table' => 'order']);
         $user = new Model(null, ['table' => 'user']);
@@ -99,6 +110,7 @@ class ReferenceTest extends TestCase
         $user->hasOne('user_id', ['model' => $user]);
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Reference with such name already exists');
         $user->hasOne('user_id', ['model' => $user]);
     }
 
@@ -157,5 +169,7 @@ class ReferenceTest extends TestCase
         $order->hasOne('placed_by', ['model' => $user, 'ourField' => 'placed_by_user_id', 'checkTheirType' => false]);
 
         self::assertSame('user', $order->ref('placed_by')->table);
+        self::assertSame('string', $order->getField('placed_by_user_id')->type);
+        self::assertSame('integer', $order->ref('placed_by')->getIdField()->type);
     }
 }

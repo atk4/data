@@ -27,6 +27,12 @@ trait UserActionsTrait
     {
         $this->assertIsModel();
 
+        if ($this->hasUserAction($name)) {
+            throw (new Exception('User action with such name already exists'))
+                ->addMoreInfo('name', $name)
+                ->addMoreInfo('seed', $seed);
+        }
+
         if ($seed instanceof \Closure) {
             $seed = ['callback' => $seed];
         }
