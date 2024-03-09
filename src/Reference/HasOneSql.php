@@ -16,7 +16,7 @@ class HasOneSql extends HasOne
      */
     private function _addField(string $fieldName, bool $theirFieldIsTitle, ?string $theirFieldName, array $defaults): SqlExpressionField
     {
-        $ourModel = $this->getOurModel(null);
+        $ourModel = $this->getOurModel();
 
         $fieldExpression = $ourModel->addExpression($fieldName, array_merge([
             'expr' => function (Model $ourModel) use ($theirFieldIsTitle, $theirFieldName) {
@@ -76,7 +76,7 @@ class HasOneSql extends HasOne
             $theirFieldName = $fieldName;
         }
 
-        $ourModel = $this->getOurModel(null);
+        $ourModel = $this->getOurModel();
 
         // if caption/type is not defined in $defaults then infer it from their field
         $refModel = $ourModel->getReference($this->link)->createTheirModel();
@@ -167,7 +167,7 @@ class HasOneSql extends HasOne
      */
     public function addTitle(array $defaults = []): SqlExpressionField
     {
-        $ourModel = $this->getOurModel(null);
+        $ourModel = $this->getOurModel();
 
         $fieldName = $defaults['field'] ?? preg_replace('~_(' . preg_quote($ourModel->idField, '~') . '|id)$~', '', $this->link);
 

@@ -32,7 +32,7 @@ class HasOne extends Reference
         $fieldPropsRefl = (new \ReflectionClass(Model\FieldPropertiesTrait::class))->getProperties();
         $fieldPropsRefl[] = (new \ReflectionClass(Model\JoinLinkTrait::class))->getProperty('joinName');
 
-        $ourModel = $this->getOurModel(null);
+        $ourModel = $this->getOurModel();
         if (!$ourModel->hasField($this->ourField)) {
             $fieldSeed = [];
             foreach ($fieldPropsRefl as $fieldPropRefl) {
@@ -63,7 +63,7 @@ class HasOne extends Reference
     {
         // TODO horrible hack to render the field with a table prefix,
         // find a solution how to wrap the field inside custom Field (without owner?)
-        $ourModelCloned = clone $this->getOurModel(null);
+        $ourModelCloned = clone $this->getOurModel();
         $ourModelCloned->persistenceData['use_table_prefixes'] = true;
 
         return $ourModelCloned->getReference($this->link)->getOurField();

@@ -30,7 +30,7 @@ class HasMany extends Reference
 
         // this is pure guess, verify if such field exist, otherwise throw
         // TODO probably remove completely in the future
-        $ourModel = $this->getOurModel(null);
+        $ourModel = $this->getOurModel();
         $theirFieldName = preg_replace('~^.+\.~s', '', $this->getModelTableString($ourModel)) . '_' . $ourModel->idField;
         if (!($theirModel ?? $this->createTheirModel())->hasField($theirFieldName)) {
             throw (new Exception('Their model does not contain fallback field'))
@@ -71,7 +71,7 @@ class HasMany extends Reference
     {
         // TODO horrible hack to render the field with a table prefix,
         // find a solution how to wrap the field inside custom Field (without owner?)
-        $ourModelCloned = clone $this->getOurModel(null);
+        $ourModelCloned = clone $this->getOurModel();
         $ourModelCloned->persistenceData['use_table_prefixes'] = true;
 
         return $ourModelCloned->getReference($this->link)->getOurField();
@@ -163,7 +163,7 @@ class HasMany extends Reference
             };
         }
 
-        return $this->getOurModel(null)->addExpression($fieldName, array_merge($defaults, ['expr' => $fx]));
+        return $this->getOurModel()->addExpression($fieldName, array_merge($defaults, ['expr' => $fx]));
     }
 
     /**

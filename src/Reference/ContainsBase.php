@@ -35,7 +35,7 @@ abstract class ContainsBase extends Reference
             $this->ourField = $this->link;
         }
 
-        $ourModel = $this->getOurModel(null);
+        $ourModel = $this->getOurModel();
 
         $ourField = $this->getOurFieldName();
         if (!$ourModel->hasField($ourField)) {
