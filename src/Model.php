@@ -123,8 +123,7 @@ class Model implements \IteratorAggregate
     /** @var string|null */
     public $tableAlias;
 
-    /** @var Persistence|null */
-    private $_persistence;
+    private ?Persistence $_persistence = null;
 
     /** @var array<string, mixed>|null Persistence store some custom information in here that may be useful for them. */
     public ?array $persistenceData = null;
