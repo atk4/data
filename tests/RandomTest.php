@@ -355,7 +355,7 @@ class RandomTest extends TestCase
         $m->delete();
     }
 
-    public function testIssue220(): void
+    public function testAddFieldDuplicateNameException(): void
     {
         $m = new Model_Item($this->db);
 
