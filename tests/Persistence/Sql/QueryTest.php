@@ -37,7 +37,7 @@ class QueryTest extends TestCase
             }
         };
 
-        if (!(new \ReflectionProperty($query, 'connection'))->isInitialized($query)) {
+        if (($query->connection ?? null) === null) {
             $query->connection = \Closure::bind(static function () use ($query) {
                 $connection = new Persistence\Sql\Sqlite\Connection();
                 $connection->expressionClass = \Closure::bind(static fn () => $query->expressionClass, null, Query::class)();

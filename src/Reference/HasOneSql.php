@@ -78,7 +78,7 @@ class HasOneSql extends HasOne
 
         $ourModel = $this->getOurModel(null);
 
-        // if caption/type is not defined in $defaults -> get it directly from the linked model field $theirFieldName
+        // if caption/type is not defined in $defaults then infer it from their field
         $refModel = $ourModel->getReference($this->link)->createTheirModel();
         $refModelField = $refModel->getField($theirFieldName);
         $defaults['type'] ??= $refModelField->type;
@@ -122,20 +122,6 @@ class HasOneSql extends HasOne
         return $this;
     }
 
-    /**
-     * Creates model that can be used for generating sub-query actions.
-     *
-     * @param array<string, mixed> $defaults
-     */
-    public function refLink(Model $ourModel, array $defaults = []): Model
-    {
-        $theirModel = $this->createTheirModel($defaults);
-
-        $theirModel->addCondition($this->getTheirFieldName($theirModel), $this->referenceOurValue());
-
-        return $theirModel;
-    }
-
     #[\Override]
     public function ref(Model $ourModelOrEntity, array $defaults = []): Model
     {
@@ -152,6 +138,20 @@ class HasOneSql extends HasOne
             $theirModel->getModel(true)
                 ->addCondition($this->getTheirFieldName($theirModel), $ourFieldExpression);
         }
+
+        return $theirModel;
+    }
+
+    /**
+     * Creates model that can be used for generating sub-query actions.
+     *
+     * @param array<string, mixed> $defaults
+     */
+    public function refLink(Model $ourModelOrEntity, array $defaults = []): Model
+    {
+        $theirModel = $this->createTheirModel($defaults);
+
+        $theirModel->addCondition($this->getTheirFieldName($theirModel), $this->referenceOurValue());
 
         return $theirModel;
     }

@@ -31,7 +31,7 @@ abstract class ContainsBase extends Reference
     {
         parent::init();
 
-        if (!$this->ourField) {
+        if ($this->ourField === null) {
             $this->ourField = $this->link;
         }
 

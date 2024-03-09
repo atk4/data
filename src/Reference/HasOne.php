@@ -18,12 +18,12 @@ class HasOne extends Reference
     {
         parent::init();
 
-        if (!$this->ourField) {
+        if ($this->ourField === null) {
             $this->ourField = $this->link;
         }
 
         // for references use "integer" as a default type
-        if (!(new \ReflectionProperty($this, 'type'))->isInitialized($this)) {
+        if (($this->type ?? null) === null) {
             $this->type = 'integer';
         }
 
@@ -84,7 +84,7 @@ class HasOne extends Reference
 
         if ($ourModelOrEntity->isEntity()) {
             $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function (Model $theirEntity) use ($ourModelOrEntity) {
-                $theirValue = $this->theirField
+                $theirValue = $this->theirField !== null
                     ? $theirEntity->get($this->theirField)
                     : $theirEntity->getId();
 

@@ -24,7 +24,7 @@ class HasMany extends Reference
     #[\Override]
     public function getTheirFieldName(Model $theirModel = null): string
     {
-        if ($this->theirField) {
+        if ($this->theirField !== null) {
             return $this->theirField;
         }
 
@@ -50,7 +50,7 @@ class HasMany extends Reference
         $this->assertOurModelOrEntity($ourModelOrEntity);
 
         if ($ourModelOrEntity->isEntity()) {
-            $res = $this->ourField
+            $res = $this->ourField !== null
                 ? $ourModelOrEntity->get($this->ourField)
                 : $ourModelOrEntity->getId();
             $this->assertReferenceValueNotNull($res);
@@ -96,9 +96,11 @@ class HasMany extends Reference
      *
      * @param array<string, mixed> $defaults
      */
-    public function refLink(?Model $ourModel, array $defaults = []): Model
+    public function refLink(?Model $ourModelOrEntity, array $defaults = []): Model
     {
-        $this->getOurModel($ourModel); // or should $this->assertOurModelOrEntity($ourModelOrEntity); be here? What is exactly the difference between ref and refLink?
+        if ($ourModelOrEntity !== null) { // TODO drop this parameter, refLink for entity is useless
+            $this->assertOurModelOrEntity($ourModelOrEntity);
+        }
 
         $theirModelLinked = $this->createTheirModel($defaults)->addCondition(
             $this->getTheirFieldName(),
