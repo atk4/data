@@ -28,8 +28,7 @@ abstract class Connection
     /** @var class-string<Query> */
     protected string $queryClass;
 
-    /** @var DbalConnection */
-    private $_connection;
+    private DbalConnection $_connection;
 
     /** @var array<string, class-string<self>> */
     protected static $connectionClassRegistry = [
@@ -53,7 +52,7 @@ abstract class Connection
     public function __destruct()
     {
         // needed for DBAL connection to be released immeditelly
-        if ($this->_connection !== null) {
+        if (($this->_connection ?? null) !== null) {
             $this->getConnection()->close();
         }
     }
@@ -309,10 +308,6 @@ abstract class Connection
      */
     public function executeQuery(Expression $expr): DbalResult
     {
-        if ($this->_connection === null) {
-            throw new Exception('DBAL connection is not set');
-        }
-
         return $expr->executeQuery($this->getConnection());
     }
 
@@ -323,10 +318,6 @@ abstract class Connection
      */
     public function executeStatement(Expression $expr): int
     {
-        if ($this->_connection === null) {
-            throw new Exception('DBAL connection is not set');
-        }
-
         return $expr->executeStatement($this->getConnection());
     }
 

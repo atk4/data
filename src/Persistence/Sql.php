@@ -34,23 +34,22 @@ class Sql extends Persistence
     public const HOOK_BEFORE_DELETE_QUERY = self::class . '@beforeDeleteQuery';
     public const HOOK_AFTER_DELETE_QUERY = self::class . '@afterDeleteQuery';
 
-    /** @var Connection */
-    private $_connection;
+    private ?Connection $_connection;
 
     /** @var array<mixed> Default class when adding new field. */
-    protected $_defaultSeedAddField; // no custom seed needed
+    protected ?array $_defaultSeedAddField = null; // no custom seed needed
 
     /** @var array<mixed> Default class when adding Expression field. */
-    protected $_defaultSeedAddExpression = [SqlExpressionField::class];
+    protected ?array $_defaultSeedAddExpression = [SqlExpressionField::class];
 
     /** @var array<mixed> Default class when adding hasOne field. */
-    protected $_defaultSeedHasOne = [HasOneSql::class];
+    protected ?array $_defaultSeedHasOne = [HasOneSql::class];
 
     /** @var array<mixed> Default class when adding hasMany field. */
-    protected $_defaultSeedHasMany; // no custom seed needed
+    protected ?array $_defaultSeedHasMany = null; // no custom seed needed
 
     /** @var array<mixed> Default class when adding join. */
-    protected $_defaultSeedJoin = [Sql\Join::class];
+    protected ?array $_defaultSeedJoin = [Sql\Join::class];
 
     /**
      * @param Connection|string|array<string, string>|DbalConnection|DbalDriverConnection $connection
@@ -85,7 +84,7 @@ class Sql extends Persistence
     {
         parent::disconnect();
 
-        $this->_connection = null; // @phpstan-ignore-line
+        $this->_connection = null;
     }
 
     #[\Override]

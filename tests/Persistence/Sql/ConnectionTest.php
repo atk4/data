@@ -143,15 +143,4 @@ class ConnectionTest extends TestCase
         $this->expectException(Persistence\Sql\Exception::class);
         Connection::connect('');
     }
-
-    public function testException3(): void
-    {
-        $connection = \Closure::bind(static fn () => new Persistence\Sql\Sqlite\Connection(), null, Connection::class)();
-        $q = $connection->expr('select (2 + 2)');
-        self::assertSame('select (2 + 2)', $q->render()[0]);
-
-        $this->expectException(Persistence\Sql\Exception::class);
-        $this->expectExceptionMessage('DBAL connection is not set');
-        $q->executeQuery();
-    }
 }

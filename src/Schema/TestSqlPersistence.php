@@ -21,7 +21,7 @@ class TestSqlPersistence extends Persistence\Sql
     public function getConnection(): Persistence\Sql\Connection
     {
         \Closure::bind(function () {
-            if ($this->_connection === null) {
+            if (($this->_connection ?? null) === null) {
                 $this->_connection = Persistence::connect($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD'])->_connection; // @phpstan-ignore-line
 
                 if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
