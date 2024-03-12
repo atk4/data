@@ -59,10 +59,6 @@ abstract class Connection
 
     public function getConnection(): DbalConnection
     {
-        if (($this->_connection ?? null) === null) {
-            throw new Exception('DBAL connection is not set');
-        }
-
         return $this->_connection;
     }
 
