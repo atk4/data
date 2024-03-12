@@ -35,14 +35,11 @@ class Migrator
     public const REF_TYPE_LINK = 1;
     public const REF_TYPE_PRIMARY = 2;
 
-    /** @var Connection */
-    private $_connection;
+    private Connection $_connection;
 
-    /** @var Table */
-    public $table;
+    public Table $table;
 
-    /** @var list<string> */
-    private $createdTableNames = [];
+    private array $createdTableNames = [];
 
     /**
      * @param Connection|Persistence\Sql|Model $source
