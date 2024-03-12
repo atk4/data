@@ -6,6 +6,7 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Core\Exception as CoreException;
 use Atk4\Data\Exception;
+use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Reference;
 use Atk4\Data\Reference\WeakAnalysingMap;
@@ -199,6 +200,95 @@ class ReferenceTest extends TestCase
         // https://github.com/BenMorel/weakmap-polyfill/blob/0.4.0/src/WeakMap.php#L126
         $weakMap = \Closure::bind(static fn () => $analysingMap->ownerDestructorHandlers, null, WeakAnalysingMap::class)();
         count($weakMap); // @phpstan-ignore-line
+    }
+
+    public function testCreateAnalysingTheirModelRecursiveInit(): void
+    {
+        $userModelClass = get_class(new class() extends Model {
+            /** @var list<string> */
+            public static array $logs = [];
+
+            public static int $c;
+
+            /** @var class-string<Model> */
+            public static string $orderModelClass;
+
+            public $table = 'user';
+
+            /** @var array<string, Field> */
+            public array $analysingOrderModelFields;
+
+            #[\Override]
+            protected function init(): void
+            {
+                parent::init();
+
+                $i = ++self::$c;
+                self::$logs[] = '> ' . $this->table . ' ' . $i;
+
+                $this->addField('name');
+
+                $this->hasMany('orders', ['model' => [self::$orderModelClass], 'theirField' => 'user_id'])
+                    ->addField('orders_count', ['type' => 'integer', 'aggregate' => 'count']);
+
+                $this->analysingOrderModelFields = $this->getReference('orders')->createAnalysingTheirModel()->getFields();
+
+                self::$logs[] = '< ' . $this->table . ' ' . $i;
+            }
+        });
+        $userModelClass::$c = -1;
+
+        $orderModelClass = get_class(new class() extends Model {
+            public static int $c;
+
+            /** @var class-string<Model> */
+            public static string $userModelClass;
+
+            public $table = 'order';
+
+            /** @var array<string, Field> */
+            public array $analysingUserModelFields;
+
+            #[\Override]
+            protected function init(): void
+            {
+                parent::init();
+
+                $i = ++self::$c;
+                self::$userModelClass::$logs[] = '> ' . $this->table . ' ' . $i;
+
+                $this->addField('name');
+
+                $this->hasOne('user', ['model' => [self::$userModelClass], 'ourField' => 'user_id'])
+                    ->addTitle();
+
+                $this->analysingUserModelFields = $this->getReference('user')->createAnalysingTheirModel()->getFields();
+
+                self::$userModelClass::$logs[] = '< ' . $this->table . ' ' . $i;
+            }
+        });
+        $orderModelClass::$c = -1;
+
+        $userModelClass::$orderModelClass = $orderModelClass;
+        $orderModelClass::$userModelClass = $userModelClass;
+
+        self::assertSame([], $userModelClass::$logs);
+        $userModel = new $userModelClass($this->db);
+        $expectedLogs = ['> user 0', '> order 0', '> user 1', '< user 1', '< order 0', '< user 0'];
+        self::assertSame($expectedLogs, $userModelClass::$logs);
+        $orderModel = new $orderModelClass($this->db);
+        $expectedLogs = array_merge($expectedLogs, ['> order 1', '< order 1']);
+        self::assertSame($expectedLogs, $userModelClass::$logs);
+
+        self::assertSame(['id', 'name', 'user_id', 'user'], array_keys($userModel->analysingOrderModelFields));
+        self::assertSame(['id', 'name', 'orders_count'], array_keys($orderModel->analysingUserModelFields));
+        self::assertSame($expectedLogs, $userModelClass::$logs);
+
+        new $userModelClass($this->db);
+        $expectedLogs = array_merge($expectedLogs, ['> user 2', '< user 2']);
+        self::assertSame($expectedLogs, $userModelClass::$logs);
+
+        $userModelClass::$logs = [];
     }
 
     public function testCreateAnalysingTheirModelKeepReferencedByPersistenceIfSeedIsClassNameOnly(): void
