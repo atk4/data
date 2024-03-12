@@ -103,10 +103,10 @@ class Model implements \IteratorAggregate
     ];
 
     /** @var array<mixed> The seed used by addField() method. */
-    protected $_defaultSeedAddField = [Field::class];
+    protected array $_defaultSeedAddField = [Field::class];
 
     /** @var array<mixed> The seed used by addExpression() method. */
-    protected $_defaultSeedAddExpression = [CallbackField::class];
+    protected array $_defaultSeedAddExpression = [CallbackField::class];
 
     /** @var array<string, Field> */
     protected array $fields = [];
