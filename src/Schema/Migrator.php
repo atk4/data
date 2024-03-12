@@ -39,6 +39,7 @@ class Migrator
 
     public Table $table;
 
+    /** @var list<string> */
     private array $createdTableNames = [];
 
     /**

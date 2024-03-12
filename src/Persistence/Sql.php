@@ -84,7 +84,7 @@ class Sql extends Persistence
     {
         parent::disconnect();
 
-        $this->_connection = null; // @phpstan-ignore-line
+        $this->_connection = null;
     }
 
     #[\Override]
