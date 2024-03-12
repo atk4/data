@@ -60,6 +60,10 @@ abstract class Connection
 
     public function getConnection(): DbalConnection
     {
+        if ($this->_connection === null) {
+            throw new Exception('DBAL connection is not set');
+        }
+
         return $this->_connection;
     }
 
@@ -309,10 +313,6 @@ abstract class Connection
      */
     public function executeQuery(Expression $expr): DbalResult
     {
-        if ($this->_connection === null) {
-            throw new Exception('DBAL connection is not set');
-        }
-
         return $expr->executeQuery($this->getConnection());
     }
 
@@ -323,10 +323,6 @@ abstract class Connection
      */
     public function executeStatement(Expression $expr): int
     {
-        if ($this->_connection === null) {
-            throw new Exception('DBAL connection is not set');
-        }
-
         return $expr->executeStatement($this->getConnection());
     }
 
