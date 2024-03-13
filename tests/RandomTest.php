@@ -27,6 +27,8 @@ class Model_Rate extends Model
 }
 class Model_Item extends Model
 {
+    use ModelSoftDeleteTrait;
+
     public $table = 'item';
 
     #[\Override]
@@ -37,6 +39,8 @@ class Model_Item extends Model
         $this->addField('name');
         $this->hasOne('parent_item_id', ['model' => [self::class]])
             ->addTitle();
+
+        $this->initSoftDelete();
     }
 }
 class Model_Item2 extends Model
@@ -74,6 +78,83 @@ class Model_Item3 extends Model
     }
 }
 
+trait ModelSoftDeleteTrait
+{
+    protected function initSoftDelete(): void
+    {
+        $this->addField('is_deleted', ['type' => 'boolean', 'nullable' => false, 'default' => false]);
+        $this->addCondition('is_deleted', false);
+        $this->onHook(Model::HOOK_BEFORE_DELETE, function (Model $entity) {
+            $softDeleteController = new ControllerSoftDelete();
+            $softDeleteController->softDelete($entity);
+
+            $entity->hook(Model::HOOK_AFTER_DELETE);
+            $entity->breakHook(false); // this will cancel original Model::delete()
+        }, [], 100);
+    }
+}
+
+class ControllerSoftDelete
+{
+    protected function init(): void
+    {
+        // example broken for clone "Object cannot be cloned with hook bound to a different object than this"
+        // TODO remove this code from docs, hard to fix, controller is not meant to be added this way to model
+        throw new \Error();
+    }
+
+    /**
+     * @return mixed
+     */
+    public function invokeCallbackWithoutUndeletedCondition(Model $model, \Closure $callback)
+    {
+        $model->getField('is_deleted'); // assert field exists
+
+        $scopeElementsOrig = $model->scope()->elements;
+        try {
+            foreach ($model->scope()->elements as $k => $v) {
+                if ($v instanceof Model\Scope\Condition && $v->key === 'is_deleted' && $v->operator === '=' && $v->value === false) {
+                    unset($model->scope()->elements[$k]);
+                }
+            }
+
+            return $callback();
+        } finally {
+            $model->scope()->elements = $scopeElementsOrig;
+        }
+    }
+
+    public function softDelete(Model $entity): void
+    {
+        $entity->assertIsLoaded();
+
+        $this->invokeCallbackWithoutUndeletedCondition($entity->getModel(), function () use ($entity): void {
+            if ($entity->hook('beforeSoftDelete') === false) {
+                return;
+            }
+
+            $entity->saveAndUnload(['is_deleted' => true]);
+
+            $entity->hook('afterSoftDelete');
+        });
+    }
+
+    public function restore(Model $entity): void
+    {
+        $entity->assertIsLoaded();
+
+        $this->invokeCallbackWithoutUndeletedCondition($entity->getModel(), function () use ($entity): void {
+            if ($entity->hook('beforeRestore') === false) {
+                return;
+            }
+
+            $entity->saveAndUnload(['is_deleted' => false]);
+
+            $entity->hook('afterRestore');
+        });
+    }
+}
+
 class RandomTest extends TestCase
 {
     public function testRate(): void
@@ -88,6 +169,46 @@ class RandomTest extends TestCase
         $m = new Model_Rate($this->db);
 
         self::assertSame(2, $m->executeCountQuery());
+    }
+
+    public function testSoftDelete(): void
+    {
+        $m = new Model_Item($this->db);
+        $this->createMigrator($m)->dropIfExists()->create();
+
+        $m->insert(['name' => 'John']);
+        $m->insert(['name' => 'Michael']);
+
+        $softDeleteController = new ControllerSoftDelete();
+
+        $entity = $m->loadBy('name', 'Michael');
+        $softDeleteController->softDelete($entity);
+        static::assertSame([
+            'item' => [
+                1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => null, 'is_deleted' => '0'],
+                2 => ['id' => 2, 'name' => 'Michael', 'parent_item_id' => null, 'is_deleted' => '1'],
+            ],
+        ], $this->getDb());
+
+        $entity = $softDeleteController->invokeCallbackWithoutUndeletedCondition($m, function () use ($m) {
+            return $m->loadBy('name', 'Michael');
+        });
+        $softDeleteController->restore($entity);
+        static::assertSame([
+            'item' => [
+                1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => null, 'is_deleted' => '0'],
+                2 => ['id' => 2, 'name' => 'Michael', 'parent_item_id' => null, 'is_deleted' => '0'],
+            ],
+        ], $this->getDb());
+
+        $entity = $m->loadBy('name', 'Michael');
+        $entity->delete();
+        static::assertSame([
+            'item' => [
+                1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => null, 'is_deleted' => '0'],
+                2 => ['id' => 2, 'name' => 'Michael', 'parent_item_id' => null, 'is_deleted' => '1'],
+            ],
+        ], $this->getDb());
     }
 
     public function testTitleImport(): void
@@ -236,16 +357,16 @@ class RandomTest extends TestCase
     {
         $this->setDb([
             'item' => [
-                1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => 1],
-                ['id' => 2, 'name' => 'Sue', 'parent_item_id' => 1],
-                ['id' => 3, 'name' => 'Smith', 'parent_item_id' => 2],
+                1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => 1, 'is_deleted' => false],
+                ['id' => 2, 'name' => 'Sue', 'parent_item_id' => 1, 'is_deleted' => false],
+                ['id' => 3, 'name' => 'Smith', 'parent_item_id' => 2, 'is_deleted' => false],
             ],
         ]);
 
         $m = new Model_Item($this->db, ['table' => 'item']);
 
         self::assertSame(
-            ['id' => 3, 'name' => 'Smith', 'parent_item_id' => 2, 'parent_item' => 'Sue'],
+            ['id' => 3, 'name' => 'Smith', 'parent_item_id' => 2, 'parent_item' => 'Sue', 'is_deleted' => false],
             $m->load(3)->get()
         );
     }
@@ -381,8 +502,8 @@ class RandomTest extends TestCase
     {
         $this->setDb([
             'item' => [
-                1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => 1],
-                ['id' => 2, 'name' => 'Sue', 'parent_item_id' => 1],
+                1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => 1, 'is_deleted' => false],
+                ['id' => 2, 'name' => 'Sue', 'parent_item_id' => 1, 'is_deleted' => false],
             ],
         ]);
 
