@@ -28,8 +28,7 @@ class HasOneSql extends HasOne
                 return $theirModel->action('field', [$theirFieldName]);
             },
         ], $defaults, [
-            // allow to set our field value by an imported foreign field, but only when
-            // the our field value is null
+            // allow to set our field value by an imported foreign field, but only when the our field value is null
             'readOnly' => false,
         ]));
 

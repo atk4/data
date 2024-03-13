@@ -298,7 +298,7 @@ protected function init(): void
     $this->getOwner()->hasOne(
         $f . '_currency_id',
         [
-            'model' => $this->currency_model ?? new Currency(),
+            'model' => [Currency::class],
             'system' => true,
         ]
     );
