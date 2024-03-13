@@ -206,10 +206,11 @@ class ReferenceSqlTest extends TestCase
 
         $o = new Model($this->db, ['table' => 'order']);
         $o->addField('amount');
-        $o->hasOne('user_id', ['model' => $u])->addFields([
-            'username' => 'name',
-            ['date', 'type' => 'date'],
-        ]);
+        $o->hasOne('user_id', ['model' => $u])
+            ->addFields([
+                'username' => 'name',
+                ['date', 'type' => 'date'],
+            ]);
 
         self::assertSame('John', $o->load(1)->get('username'));
         self::{'assertEquals'}(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('date'));
@@ -221,16 +222,18 @@ class ReferenceSqlTest extends TestCase
         // few more tests
         $o = new Model($this->db, ['table' => 'order']);
         $o->addField('amount');
-        $o->hasOne('user_id', ['model' => $u])->addFields([
-            'username' => 'name',
-            'thedate' => ['date', 'type' => 'date'],
-        ]);
+        $o->hasOne('user_id', ['model' => $u])
+            ->addFields([
+                'username' => 'name',
+                'thedate' => ['date', 'type' => 'date'],
+            ]);
         self::assertSame('John', $o->load(1)->get('username'));
         self::{'assertEquals'}(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('thedate'));
 
         $o = new Model($this->db, ['table' => 'order']);
         $o->addField('amount');
-        $o->hasOne('user_id', ['model' => $u])->addField('date', null, ['type' => 'date']);
+        $o->hasOne('user_id', ['model' => $u])
+            ->addField('date', null, ['type' => 'date']);
         self::{'assertEquals'}(new \DateTime('2001-01-02 UTC'), $o->load(1)->get('date'));
     }
 
@@ -456,11 +459,12 @@ class ReferenceSqlTest extends TestCase
         $l->addField('total_vat', ['type' => 'atk4_money']);
         $l->addField('total_gross', ['type' => 'atk4_money']);
 
-        $i->hasMany('line', ['model' => $l])->addFields([
-            'total_net' => ['aggregate' => 'sum'],
-            'total_vat' => ['aggregate' => 'sum', 'type' => 'atk4_money'],
-            'total_gross' => ['aggregate' => 'sum', 'type' => 'atk4_money'],
-        ]);
+        $i->hasMany('line', ['model' => $l])
+            ->addFields([
+                'total_net' => ['aggregate' => 'sum'],
+                'total_vat' => ['aggregate' => 'sum', 'type' => 'atk4_money'],
+                'total_gross' => ['aggregate' => 'sum', 'type' => 'atk4_money'],
+            ]);
         $i = $i->load('1');
 
         // type was set explicitly
@@ -524,16 +528,17 @@ class ReferenceSqlTest extends TestCase
         $i->addField('name');
         $i->addField('code');
 
-        $l->hasMany('Items', ['model' => $i])->addFields([
-            'items_name' => ['aggregate' => 'count', 'field' => 'name', 'type' => 'integer'],
-            'items_code' => ['aggregate' => 'count', 'field' => 'code', 'type' => 'integer'], // counts only not-null values
-            'items_star' => ['aggregate' => 'count', 'type' => 'integer'], // no field set, counts all rows with count(*)
-            'items_c:' => ['concat' => '::', 'field' => 'name'],
-            'items_c-' => ['aggregate' => $i->dsql()->groupConcat($i->expr('[name]'), '-')],
-            'len' => ['aggregate' => $i->expr('SUM(' . $makeLengthSqlFx('[name]') . ')'), 'type' => 'integer'],
-            'len2' => ['expr' => 'SUM(' . $makeLengthSqlFx('[name]') . ')', 'type' => 'integer'],
-            'chicken5' => ['expr' => 'SUM([])', 'args' => [5], 'type' => 'integer'],
-        ]);
+        $l->hasMany('Items', ['model' => $i])
+            ->addFields([
+                'items_name' => ['aggregate' => 'count', 'field' => 'name', 'type' => 'integer'],
+                'items_code' => ['aggregate' => 'count', 'field' => 'code', 'type' => 'integer'], // counts only not-null values
+                'items_star' => ['aggregate' => 'count', 'type' => 'integer'], // no field set, counts all rows with count(*)
+                'items_c:' => ['concat' => '::', 'field' => 'name'],
+                'items_c-' => ['aggregate' => $i->dsql()->groupConcat($i->expr('[name]'), '-')],
+                'len' => ['aggregate' => $i->expr('SUM(' . $makeLengthSqlFx('[name]') . ')'), 'type' => 'integer'],
+                'len2' => ['expr' => 'SUM(' . $makeLengthSqlFx('[name]') . ')', 'type' => 'integer'],
+                'chicken5' => ['expr' => 'SUM([])', 'args' => [5], 'type' => 'integer'],
+            ]);
 
         $ll = $l->load(1);
         self::assertSame(2, $ll->get('items_name')); // 2 not-null values
@@ -791,7 +796,8 @@ class ReferenceSqlTest extends TestCase
         $u->addField('last_name');
 
         $o = (new Model($this->db, ['table' => 'order']));
-        $o->hasOne('user_id', ['model' => $u])->addTitle();
+        $o->hasOne('user_id', ['model' => $u])
+            ->addTitle();
 
         // change order user by changing titleField value
         $o = $o->load(1);
@@ -812,7 +818,8 @@ class ReferenceSqlTest extends TestCase
         $u->addField('last_name');
 
         $o = (new Model($this->db, ['table' => 'order']));
-        $o->hasOne('user_id', ['model' => $u])->addTitle();
+        $o->hasOne('user_id', ['model' => $u])
+            ->addTitle();
 
         // change order user by changing titleField value
         $o = $o->load(1);
@@ -833,7 +840,8 @@ class ReferenceSqlTest extends TestCase
         $u->addField('last_name');
 
         $o = (new Model($this->db, ['table' => 'order']));
-        $o->hasOne('my_user', ['model' => $u, 'ourField' => 'user_id'])->addTitle();
+        $o->hasOne('my_user', ['model' => $u, 'ourField' => 'user_id'])
+            ->addTitle();
 
         // change order user by changing reference field value
         $o = $o->load(1);
@@ -854,7 +862,8 @@ class ReferenceSqlTest extends TestCase
         $u->addField('last_name');
 
         $o = (new Model($this->db, ['table' => 'order']));
-        $o->hasOne('my_user', ['model' => $u, 'ourField' => 'user_id'])->addTitle();
+        $o->hasOne('my_user', ['model' => $u, 'ourField' => 'user_id'])
+            ->addTitle();
 
         // change order user by changing ref field and titleField value - same
         $o = $o->load(1);

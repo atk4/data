@@ -118,7 +118,7 @@ There are several ways how to link models with hasMany:
 ```
 $m->hasMany('Orders', ['model' => [Model_Order::class]]); // using seed
 
-$m->hasMany('Order', ['model' => function (Model $m, $r) { // using callback
+$m->hasMany('Order', ['model' => static function (Model $m, Reference $r, array $defaults) { // using callback
     return new Model_Order();
 }]);
 ```
@@ -154,10 +154,7 @@ available. Both models will relate through `currency.code = exchange.currency_co
 
 ```
 $c = new Model_Currency();
-$e = new Model_ExchangeRate();
-
-$c->hasMany('Exchanges', ['model' => $e, 'theirField' => 'currency_code', 'ourField' => 'code']);
-
+$c->hasMany('Exchanges', ['model' => [Model_ExchangeRate::class], 'theirField' => 'currency_code', 'ourField' => 'code']);
 $c->addCondition('is_convertible', true);
 $e = $c->ref('Exchanges');
 ```

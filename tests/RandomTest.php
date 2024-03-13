@@ -358,9 +358,11 @@ class RandomTest extends TestCase
     {
         $m = new Model_Item($this->db);
 
+        $r = $m->hasOne('foo', ['model' => [Model_Item::class]]);
+
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Field with such name already exists');
-        $m->hasOne('foo', ['model' => [Model_Item::class]])->addTitle();
+        $r->addTitle();
     }
 
     public function testModelCaption(): void
@@ -598,7 +600,8 @@ class RandomTest extends TestCase
 
         $doc = new Model($this->db, ['table' => $docSchema . '.doc']);
         $doc->addField('name');
-        $doc->hasOne('user_id', ['model' => $user])->addTitle();
+        $doc->hasOne('user_id', ['model' => $user])
+            ->addTitle();
         $doc->addCondition('user', 'Sarah');
         $user->hasMany('Documents', ['model' => $doc]);
 

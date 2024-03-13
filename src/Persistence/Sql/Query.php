@@ -291,7 +291,8 @@ abstract class Query extends Expression
      *  $q->join('address.code', 'user.code', 'inner');
      *
      * You can use expression for more complex joins
-     *  $q->join('address',
+     *  $q->join(
+     *      'address',
      *      $q->orExpr()
      *          ->where('user.billing_id', 'address.id')
      *          ->where('user.technical_id', 'address.id')
