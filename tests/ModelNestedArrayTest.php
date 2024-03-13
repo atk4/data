@@ -12,7 +12,7 @@ use Atk4\Data\Schema\TestCase;
 class ModelNestedArrayTest extends TestCase
 {
     /** @var list<array{string, string, 2?: list<mixed>}> */
-    public array $hookLog = [];
+    public array $hookLogs = [];
 
     #[\Override]
     protected function setUp(): void
@@ -60,7 +60,7 @@ class ModelNestedArrayTest extends TestCase
             public function hook(string $spot, array $args = [], HookBreaker &$brokenBy = null)
             {
                 if (!str_starts_with($spot, '__atk4__dynamic_method__') && $spot !== Model::HOOK_NORMALIZE) {
-                    $this->testCaseWeakRef->get()->hookLog[] = [$this->convertValueToLog($this), $spot, $this->convertValueToLog($args)];
+                    $this->testCaseWeakRef->get()->hookLogs[] = [$this->convertValueToLog($this), $spot, $this->convertValueToLog($args)];
                 }
 
                 return parent::hook($spot, $args, $brokenBy);
@@ -69,11 +69,11 @@ class ModelNestedArrayTest extends TestCase
             #[\Override]
             public function atomic(\Closure $fx)
             {
-                $this->testCaseWeakRef->get()->hookLog[] = [$this->convertValueToLog($this), '>>>'];
+                $this->testCaseWeakRef->get()->hookLogs[] = [$this->convertValueToLog($this), '>>>'];
 
                 $res = parent::atomic($fx);
 
-                $this->testCaseWeakRef->get()->hookLog[] = [$this->convertValueToLog($this), '<<<'];
+                $this->testCaseWeakRef->get()->hookLogs[] = [$this->convertValueToLog($this), '<<<'];
 
                 return $res;
             }
@@ -114,7 +114,7 @@ class ModelNestedArrayTest extends TestCase
             ['name' => 'Sue', 'birthday' => new \DateTime('2005-4-3 UTC')],
         ], $m->export());
 
-        self::assertSame([], $this->hookLog);
+        self::assertSame([], $this->hookLogs);
     }
 
     public function testInsert(): void
@@ -146,7 +146,7 @@ class ModelNestedArrayTest extends TestCase
             ['main', Model::HOOK_AFTER_LOAD, []],
             ['main', Model::HOOK_AFTER_SAVE, [false]],
             ['main', '<<<'],
-        ], $this->hookLog);
+        ], $this->hookLogs);
 
         self::assertSame(4, $m->table->loadBy('name', 'Karl')->getId());
         self::assertSameExportUnordered([[new \DateTime('2000-6-1 UTC')]], [[$entity->getId()]]);
@@ -199,7 +199,7 @@ class ModelNestedArrayTest extends TestCase
 
             ['main', Model::HOOK_AFTER_SAVE, [true]],
             ['main', '<<<'],
-        ], $this->hookLog);
+        ], $this->hookLogs);
 
         self::assertSameExportUnordered([
             ['name' => 'John', 'birthday' => new \DateTime('1980-2-1 UTC')],
@@ -231,7 +231,7 @@ class ModelNestedArrayTest extends TestCase
             ['main', '<<<'],
             ['main', Model::HOOK_BEFORE_UNLOAD, []],
             ['main', Model::HOOK_AFTER_UNLOAD, []],
-        ], $this->hookLog);
+        ], $this->hookLogs);
 
         self::assertSameExportUnordered([
             ['name' => 'John', 'birthday' => new \DateTime('1980-2-1 UTC')],
