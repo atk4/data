@@ -115,15 +115,6 @@ class WeakAnalysingMap
     }
 
     /**
-     * @param TKey $keyA
-     * @param TKey $keyB
-     */
-    protected function isSameKey($keyA, $keyB): bool
-    {
-        return $keyA === $keyB;
-    }
-
-    /**
      * @param TOwner $owner
      */
     protected function addKeyOwner(object $owner, int $hash, int $index): void
@@ -207,7 +198,7 @@ class WeakAnalysingMap
         $hash = $this->makeHashFromKey($key);
 
         foreach ($this->keyByIndexByHash[$hash] ?? [] as $index => $k) {
-            if ($this->isSameKey($this->unboxValue($k->get()), $key)) {
+            if ($this->unboxValue($k->get()) === $key) {
                 $value = $this->unboxValue($this->valueWithOwnerCountByIndex[$index][0]->get());
 
                 $this->addKeyOwner($owner, $hash, $index);
@@ -229,7 +220,7 @@ class WeakAnalysingMap
         $hash = $this->makeHashFromKey($key);
 
         foreach ($this->keyByIndexByHash[$hash] ?? [] as $index => $k) {
-            if ($this->isSameKey($this->unboxValue($k->get()), $key)) {
+            if ($this->unboxValue($k->get()) === $key) {
                 throw (new Exception('Analysing key is already present'))
                     ->addMoreInfo('key', $key);
             }
