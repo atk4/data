@@ -581,16 +581,16 @@ class RandomTest extends TestCase
     public function testTableWithSchema(): void
     {
         if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
-            $userSchema = 'db1';
+            $userSchema = 'main';
             $docSchema = 'db2';
-            $runWithDb = false;
+
+            $this->getConnection()->expr('ATTACH DATABASE \':memory:\' AS {}', [$docSchema])->executeStatement();
         } else {
             $dbSchema = $this->getConnection()->dsql()
                 ->field($this->getConnection()->expr('{{}}', [$this->getDatabasePlatform()->getCurrentDatabaseExpression(true)])) // @phpstan-ignore-line
                 ->getOne();
             $userSchema = $dbSchema;
             $docSchema = $dbSchema;
-            $runWithDb = true;
         }
 
         $user = new Model($this->db, ['table' => $userSchema . '.user']);
@@ -615,29 +615,32 @@ class RandomTest extends TestCase
             $render[0]
         );
 
-        if ($runWithDb) {
-            $this->createMigrator($user)->create();
-            $this->createMigrator($doc)->create();
+        $this->createMigrator($user)->create();
+        $this->createMigrator($doc)->create();
+        $this->debug = true;
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
+            $this->createMigrator()->createIndex([$doc->getField('user_id')], false);
+        } else {
             $this->createMigrator()->createForeignKey($doc->getReference('user_id'));
-
-            $user->createEntity()
-                ->set('name', 'Sarah')
-                ->save();
-
-            $doc->createEntity()
-                ->set('name', 'Invoice 7')
-                ->set('user_id', 1)
-                ->save();
-
-            self::assertSame([
-                [
-                    'id' => 1,
-                    'name' => 'Invoice 7',
-                    'user_id' => 1,
-                    'user' => 'Sarah',
-                ],
-            ], $doc->export());
         }
+
+        $user->createEntity()
+            ->set('name', 'Sarah')
+            ->save();
+
+        $doc->createEntity()
+            ->set('name', 'Invoice 7')
+            ->set('user_id', 1)
+            ->save();
+
+        self::assertSame([
+            [
+                'id' => 1,
+                'name' => 'Invoice 7',
+                'user_id' => 1,
+                'user' => 'Sarah',
+            ],
+        ], $doc->export());
     }
 }
 
