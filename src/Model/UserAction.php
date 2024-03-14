@@ -9,6 +9,7 @@ use Atk4\Core\Exception as CoreException;
 use Atk4\Core\InitializerTrait;
 use Atk4\Core\TrackableTrait;
 use Atk4\Data\Exception;
+use Atk4\Data\Field;
 use Atk4\Data\Model;
 
 /**
@@ -66,7 +67,7 @@ class UserAction
     public $system = false;
 
     /** @var array<string, array<string, mixed>|Model> Argument definition. */
-    public $args = [];
+    public $args = []; // TODO test with positional, named and Model arguments
 
     /** @var array<int, string>|bool Specify which fields may be dirty when invoking action. APPLIES_TO_NO_RECORDS|APPLIES_TO_SINGLE_RECORD scopes for adding/modifying */
     public $fields = [];
@@ -119,6 +120,46 @@ class UserAction
     }
 
     /**
+     * @param mixed $value
+     *
+     * @return mixed
+     */
+    protected function normalizeArg(string $name, $value)
+    {
+        $argFieldSeed = $this->args[$name];
+        if ($argFieldSeed instanceof Model) {
+            return $value === null
+                ? null
+                : $argFieldSeed::assertInstanceOf($value);
+        }
+
+        $argField = new Field($argFieldSeed);
+
+        return $argField->normalize($value);
+    }
+
+    /**
+     * @param array<int|string, mixed> $args
+     *
+     * @return array<string, mixed>
+     */
+    protected function normalizeArgs($args): array
+    {
+        $argsNames = array_keys($this->args);
+
+        $res = [];
+        foreach ($args as $k => $v) {
+            if (is_int($k)) {
+                $k = $argsNames[$k];
+            }
+
+            $res[$k] = $this->normalizeArg($k, $v);
+        }
+
+        return $res;
+    }
+
+    /**
      * Attempt to execute callback of the action.
      *
      * @param mixed ...$args
@@ -142,6 +183,7 @@ class UserAction
         try {
             $this->validateBeforeExecute();
 
+            $args = $this->normalizeArgs($args);
             if ($passOwner) {
                 array_unshift($args, $this->_getOwner());
             }
@@ -215,6 +257,7 @@ class UserAction
         try {
             $this->validateBeforeExecute();
 
+            $args = $this->normalizeArgs($args);
             if ($passOwner) {
                 array_unshift($args, $this->_getOwner());
             }
