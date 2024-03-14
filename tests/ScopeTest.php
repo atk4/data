@@ -163,10 +163,10 @@ class ScopeTest extends TestCase
 
     public function testEditableHasOne(): void
     {
-        $gender = new Model();
+        $gender = new Model(null, ['table' => 'gender']);
         $gender->addField('name');
 
-        $m = new Model();
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->hasOne('gender_id', ['model' => $gender]);
 

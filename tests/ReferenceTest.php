@@ -105,7 +105,7 @@ class ReferenceTest extends TestCase
     public function testHasOneDuplicateNameException(): void
     {
         $order = new Model(null, ['table' => 'order']);
-        $user = new Model(null, ['table' => 'user']);
+        $user = new Model($this->db, ['table' => 'user']);
 
         $user->hasOne('user_id', ['model' => $user]);
 
@@ -160,6 +160,36 @@ class ReferenceTest extends TestCase
         $user->ref('orders');
     }
 
+    public function testHasOneInferOurFieldType(): void
+    {
+        $userModel = new class($this->db) extends Model {
+            public $table = 'user';
+
+            #[\Override]
+            protected function init(): void
+            {
+                parent::init();
+
+                $this->getIdField()->type = 'date';
+            }
+        };
+
+        $order = new Model($this->db, ['table' => 'order']);
+        $order->hasOne('user_id', ['model' => [get_class($userModel)]]);
+        $order->hasOne('a', ['model' => $userModel, 'theirField' => 'id']);
+        $order->hasOne('b', ['model' => static function () use ($userModel) {
+            $m = clone $userModel;
+            $m->addField('x', ['type' => 'float']);
+
+            return $m;
+        }, 'theirField' => 'x']);
+
+        self::assertSame(['id' => 'date'], array_map(static fn (Field $f) => $f->type, $userModel->getFields()));
+        self::assertSame(['id' => 'date'], array_map(static fn (Field $f) => $f->type, $order->ref('a')->getFields()));
+        self::assertSame(['id' => 'date', 'x' => 'float'], array_map(static fn (Field $f) => $f->type, $order->ref('b')->getFields()));
+        self::assertSame(['id' => 'integer', 'user_id' => 'date', 'a' => 'date', 'b' => 'float'], array_map(static fn (Field $f) => $f->type, $order->getFields()));
+    }
+
     public function testRefTypeMismatchWithDisabledCheck(): void
     {
         $user = new Model($this->db, ['table' => 'user']);
@@ -179,8 +209,7 @@ class ReferenceTest extends TestCase
 
         $this->expectException(CoreException::class);
         $this->expectExceptionMessage('Seed must be an array or an object');
-        $m->hasOne('foo', [])
-            ->createTheirModel();
+        $m->hasOne('foo', []);
     }
 
     public function testCreateTheirModelInvalidModelSeedException(): void
@@ -189,8 +218,7 @@ class ReferenceTest extends TestCase
 
         $this->expectException(CoreException::class);
         $this->expectExceptionMessage('Seed must be an array or an object');
-        $m->hasOne('foo', ['model' => Model::class])
-            ->createTheirModel();
+        $m->hasOne('foo', ['model' => Model::class]);
     }
 
     private function forceWeakMapPolyfillHousekeeping(): void
@@ -316,7 +344,7 @@ class ReferenceTest extends TestCase
         $refB = $m->hasOne('b', ['model' => $refBSeed]);
         $m->hasOne('a2', ['model' => $refASeed]);
         $m->hasOne('b2', ['model' => $refBSeed]);
-        self::assertSame([], $theirModelClass::$logs);
+        self::assertSame(['foo', 'bar'], $theirModelClass::$logs);
 
         self::assertSame('foo', $refA->createAnalysingTheirModel()->table);
         self::assertSame('bar', $refB->createAnalysingTheirModel()->table);
@@ -337,7 +365,7 @@ class ReferenceTest extends TestCase
         $this->forceWeakMapPolyfillHousekeeping();
         $refA = $m->hasOne('a', ['model' => $refASeed]);
         $refB = $m->hasOne('b', ['model' => $refBSeed]);
-        self::assertSame([], $theirModelClass::$logs);
+        self::assertSame(['bar'], $theirModelClass::$logs);
 
         self::assertSame('foo', $refA->createAnalysingTheirModel()->table);
         self::assertSame('bar', $refB->createAnalysingTheirModel()->table);
@@ -366,7 +394,7 @@ class ReferenceTest extends TestCase
         $refB = $m->hasOne('b', ['model' => $refBSeed]);
         $m->hasOne('a2', ['model' => $refASeed]);
         $m->hasOne('b2', ['model' => $refBSeed]);
-        self::assertSame([], $theirModelClass::$logs);
+        self::assertSame(['foo', 'bar'], $theirModelClass::$logs);
 
         self::assertSame('foo', $refA->createAnalysingTheirModel()->table);
         self::assertSame('bar', $refB->createAnalysingTheirModel()->table);

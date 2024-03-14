@@ -836,7 +836,7 @@ class ArrayTest extends TestCase
         $country = new Model($p, ['table' => 'country']);
         $country->addField('name');
 
-        $user = new Model();
+        $user = new Model($p);
         $user->table = 'user';
         $user->addField('name');
         $user->addField('surname');
