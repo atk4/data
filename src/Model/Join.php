@@ -371,7 +371,7 @@ abstract class Join
      *
      * @return Reference\HasOne
      */
-    public function hasOne(string $link, array $defaults = [])
+    public function hasOne(string $link, array $defaults)
     {
         $defaults['joinName'] = $this->getJoinNameFromShortName();
 
@@ -385,7 +385,7 @@ abstract class Join
      *
      * @return Reference\HasMany
      */
-    public function hasMany(string $link, array $defaults = [])
+    public function hasMany(string $link, array $defaults)
     {
         return $this->getOwner()->hasMany($link, $defaults);
     }
@@ -400,7 +400,7 @@ abstract class Join
      *
      * @return Reference\ContainsOne
      *X/
-    public function containsOne(string $link, array $defaults = []) // : Reference
+    public function containsOne(string $link, array $defaults) // : Reference
     {
         $defaults['joinName'] = $this->getJoinNameFromShortName();
 
@@ -416,7 +416,7 @@ abstract class Join
      *
      * @return Reference\ContainsMany
      *X/
-    public function containsMany(string $link, array $defaults = []) // : Reference
+    public function containsMany(string $link, array $defaults) // : Reference
     {
         return $this->getOwner()->containsMany($link, $defaults);
     }
