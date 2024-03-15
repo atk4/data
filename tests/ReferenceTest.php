@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
+use Atk4\Core\Exception as CoreException;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
@@ -167,5 +168,25 @@ class ReferenceTest extends TestCase
         self::assertSame('user', $order->ref('placed_by')->table);
         self::assertSame('string', $order->getField('placed_by_user_id')->type);
         self::assertSame('integer', $order->ref('placed_by')->getIdField()->type);
+    }
+
+    public function testCreateTheirModelMissingModelSeedException(): void
+    {
+        $m = new Model($this->db, ['table' => 'user']);
+
+        $this->expectException(CoreException::class);
+        $this->expectExceptionMessage('Seed must be an array or an object');
+        $m->hasOne('foo', [])
+            ->createTheirModel();
+    }
+
+    public function testCreateTheirModelInvalidModelSeedException(): void
+    {
+        $m = new Model($this->db, ['table' => 'user']);
+
+        $this->expectException(CoreException::class);
+        $this->expectExceptionMessage('Seed must be an array or an object');
+        $m->hasOne('foo', ['model' => Model::class])
+            ->createTheirModel();
     }
 }
