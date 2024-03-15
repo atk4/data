@@ -6,6 +6,7 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
+use Atk4\Data\Persistence;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
@@ -357,18 +358,17 @@ class ReferenceSqlTest extends TestCase
         $integerWrappedTypeName = $integerWrappedType->getName(); // @phpstan-ignore-line
 
         $this->executeFxWithTemporaryType($integerWrappedTypeName, $integerWrappedType, function () use ($integerWrappedType, $integerWrappedTypeName) {
-            $file = new Model($this->db, ['table' => 'file']);
-            $file->getField('id')->type = $integerWrappedTypeName;
-            $file->addField('name');
-            $file->hasOne('parentDirectory', [
-                'model' => $file,
-                'type' => $integerWrappedTypeName,
-                'ourField' => 'parentDirectoryId',
-            ]);
-            $file->hasMany('childFiles', [
-                'model' => $file,
-                'theirField' => 'parentDirectoryId',
-            ]);
+            $createFileModelFx = static function (Persistence $persistence) use ($integerWrappedTypeName, &$createFileModelFx) {
+                $m = new Model($persistence, ['table' => 'file']);
+                $m->getField('id')->type = $integerWrappedTypeName;
+                $m->addField('name');
+                $m->hasOne('parentDirectory', ['model' => $createFileModelFx, 'ourField' => 'parentDirectoryId', 'type' => $integerWrappedTypeName]);
+                $m->hasMany('childFiles', ['model' => $createFileModelFx, 'theirField' => 'parentDirectoryId']);
+
+                return $m;
+            };
+
+            $file = $createFileModelFx($this->db);
 
             $fileEntity = $file->loadBy('name', 'v');
             self::assertSame(3, $fileEntity->getId()->getValue());

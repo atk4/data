@@ -47,7 +47,7 @@ class Reference
      * Seed of their model. If it is a Model instance, self::createTheirModel() must
      * always clone it to return a new instance.
      *
-     * @var Model|\Closure(object, static, array<string, mixed>): Model|array<mixed>
+     * @var array<mixed>|\Closure(Persistence, array<string, mixed>): Model|Model
      */
     protected $model;
 
@@ -231,7 +231,7 @@ class Reference
      *
      * @return Persistence|false
      */
-    protected function getDefaultPersistence(Model $theirModel)
+    protected function getDefaultPersistence()
     {
         $ourModel = $this->getOurModel();
 
@@ -256,7 +256,8 @@ class Reference
 
         // if model is Closure, then call the closure and it should return a model
         if ($this->model instanceof \Closure) {
-            $m = ($this->model)($this->getOurModel(), $this, $defaults);
+            $persistence = Persistence::assertInstanceOf($this->getDefaultPersistence());
+            $m = ($this->model)($persistence, $defaults);
         } else {
             $m = $this->model;
         }
@@ -278,7 +279,7 @@ class Reference
     protected function createTheirModelSetPersistence(Model $theirModel): void
     {
         if (!$theirModel->issetPersistence()) {
-            $persistence = $this->getDefaultPersistence($theirModel);
+            $persistence = $this->getDefaultPersistence();
             if ($persistence !== false) {
                 $theirModel->setPersistence($persistence);
             }

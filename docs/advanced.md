@@ -471,11 +471,13 @@ Next we need to define reference. Inside Model_Invoice add:
 ```
 $this->hasMany('InvoicePayment', ['model' => [Model_InvoicePayment::class]]);
 
-$this->hasMany('Payment', ['model' => function (self $m) {
-    $p = new Model_Payment($m->getPersistence());
+$this->hasMany('Payment', ['model' => static function (Persistence $persistence) {
+    $p = new Model_Payment($persistence);
     $j = $p->join('invoice_payment.payment_id');
     $j->addField('amount_closed');
     $j->hasOne('invoice_id', ['model' => [Model_Invoice::class]]);
+
+    return $p;
 }, 'theirField' => 'invoice_id']);
 
 $this->onHookShort(Model::HOOK_BEFORE_DELETE, function () {
@@ -724,7 +726,7 @@ $this->hasOne('client_id', ['model' => [$this->client_class]]);
 Alternatively you can replace model in the init() method of Model_Invoice:
 
 ```
-$this->getReference('client_id')->model = 'Model_Client';
+$this->getReference('client_id')->model = [Model_Client::class];
 ```
 
 You can also use array here if you wish to pass additional information into
@@ -737,36 +739,6 @@ $this->getReference('client_id')->model = ['Model_Client', 'no_audit' => true];
 Combined with our "Audit" handler above, this should allow you to relate
 with deleted clients.
 
-The final use case is when some value inside the existing model should be
-passed into the related model. Let's say we have 'Model_Invoice' and we want to
-add 'payment_invoice_id' that points to 'Model_Payment'. However we want this
-field only to offer payments made by the same client. Inside Model_Invoice add:
-
-```
-$this->hasOne('client_id', ['model' => [Model_Client::class]]);
-
-$this->hasOne('payment_invoice_id', ['model' => function (self $m) {
-    return $m->ref('client_id')->ref('Payment');
-}]);
-
-/// how to use
-
-$m = new Model_Invoice($db);
-$m->set('client_id', 123);
-
-$m->set('payment_invoice_id', $m->ref('payment_invoice_id')->loadOne()->getId());
-```
-
-In this case the payment_invoice_id will be set to ID of any payment by client
-123. There also may be some better uses:
-
-```
-foreach ($cl->ref('Invoice') as $m) {
-    $m->set('payment_invoice_id', $m->ref('payment_invoice_id')->loadOne()->getId());
-    $m->save();
-}
-```
-
 ## Narrowing Down Existing References
 
 Agile Data allow you to define multiple references between same entities, but
@@ -774,8 +746,10 @@ sometimes that can be quite useful. Consider adding this inside your Model_Conta
 
 ```
 $this->hasMany('Invoice', ['model' => [Model_Invoice::class]]);
-$this->hasMany('OverdueInvoice', ['model' => function (self $m) {
-    return $m->ref('Invoice')->addCondition('due', '<', date('Y-m-d'))
+
+$this->hasMany('OverdueInvoice', ['model' => static function (Persistence $persistence) {
+    return (new Model_Invoice($persistence))
+        ->addCondition('due', '<', new \DateTime());
 }]);
 ```
 
@@ -783,7 +757,7 @@ This way if you extend your class into 'Model_Client' and modify the 'Invoice'
 reference to use different model:
 
 ```
-$this->getReference('Invoice')->model = 'Model_Invoice_Sale';
+$this->getReference('Invoice')->model = [Model_Invoice_Sale::class];
 ```
 
 The 'OverdueInvoice' reference will be also properly adjusted.
