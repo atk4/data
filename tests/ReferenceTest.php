@@ -12,14 +12,12 @@ class ReferenceTest extends TestCase
 {
     public function testBasicReferences(): void
     {
-        $user = new Model(null, ['table' => 'user']);
-        $user->addField('id', ['type' => 'integer']);
+        $user = new Model($this->db, ['table' => 'user']);
         $user->addField('name');
         $user = $user->createEntity();
         $user->setId(1);
 
-        $order = new Model();
-        $order->addField('id', ['type' => 'integer']);
+        $order = new Model(null, ['table' => 'order']);
         $order->addField('amount', ['default' => 20]);
         $order->addField('user_id', ['type' => 'integer']);
 
@@ -30,7 +28,7 @@ class ReferenceTest extends TestCase
         self::assertSame(1, $o->get('user_id'));
 
         $r2 = $user->getModel()->hasMany('BigOrders', ['model' => static function () {
-            $m = new Model();
+            $m = new Model(null, ['table' => 'big_order']);
             $m->addField('amount', ['default' => 100]);
             $m->addField('user_id', ['type' => 'integer']);
 
@@ -51,14 +49,12 @@ class ReferenceTest extends TestCase
 
     public function testModelCaption(): void
     {
-        $user = new Model(null, ['table' => 'user']);
-        $user->addField('id', ['type' => 'integer']);
+        $user = new Model($this->db, ['table' => 'user']);
         $user->addField('name');
         $user = $user->createEntity();
         $user->setId(1);
 
-        $order = new Model();
-        $order->addField('id', ['type' => 'integer']);
+        $order = new Model(null, ['table' => 'order']);
         $order->addField('amount', ['default' => 20]);
         $order->addField('user_id', ['type' => 'integer']);
 
