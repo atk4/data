@@ -197,8 +197,8 @@ you use Persistence's "afterAdd" hook. This will not affect ALL models but just 
 which are associated with said persistence:
 
 ```
-$db->onHook(Persistence::HOOK_AFTER_ADD, function (Persistence $p, Model $m) use ($acl) {
-    $fields = $m->getFields();
+$db->onHook(Persistence::HOOK_AFTER_ADD, function (Persistence $persistence, Model $model) use ($acl) {
+    $fields = $model->getFields();
 
     $acl->disableRestrictedFields($fields);
 });

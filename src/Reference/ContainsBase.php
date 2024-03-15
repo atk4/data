@@ -71,7 +71,7 @@ abstract class ContainsBase extends Reference
     }
 
     #[\Override]
-    protected function getDefaultPersistence(Model $theirModel): Persistence
+    protected function getDefaultPersistence(): Persistence
     {
         return new Persistence\Array_();
     }

@@ -118,7 +118,7 @@ There are several ways how to link models with hasMany:
 ```
 $m->hasMany('Orders', ['model' => [Model_Order::class]]); // using seed
 
-$m->hasMany('Order', ['model' => static function (Model $m, Reference $r, array $defaults) { // using callback
+$m->hasMany('Order', ['model' => static function (Persistence $persistence, array $defaults) { // using callback
     return new Model_Order();
 }]);
 ```
@@ -471,7 +471,7 @@ Sometimes you would want to have a different type of relation between models,
 so with `addReference` you can define whatever reference you want:
 
 ```
-$m->addReference('Archive', ['model' => function (Model $m) {
+$m->addReference('Archive', ['model' => static function (Persistence $persistence) use ($m) {
     return new $m(null, ['table' => $m->table . '_archive']);
 }]);
 ```
@@ -489,7 +489,7 @@ custom logic.
 No condition will be applied by default so it's all up to you:
 
 ```
-$m->addReference('Archive', ['model' => function (Model $m) {
+$m->addReference('Archive', ['model' => static function (Persistence $persistence) use ($m) {
     $archive = new $m(null, ['table' => $m->table . '_archive']);
 
     $m->addField('original_id', ['type' => 'integer']);
