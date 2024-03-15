@@ -78,13 +78,13 @@ class HasOneSql extends HasOne
         $ourModel = $this->getOurModel();
 
         // if caption/type is not defined in $defaults then infer it from their field
-        $refModel = $ourModel->getReference($this->link)->createTheirModel();
-        $refModelField = $refModel->getField($theirFieldName);
-        $defaults['type'] ??= $refModelField->type;
-        $defaults['enum'] ??= $refModelField->enum;
-        $defaults['values'] ??= $refModelField->values;
-        $defaults['caption'] ??= $refModelField->caption;
-        $defaults['ui'] = array_merge($defaults['ui'] ?? $refModelField->ui, ['editable' => false]);
+        $analysingTheirModel = $ourModel->getReference($this->link)->createAnalysingTheirModel();
+        $analysingTheirField = $analysingTheirModel->getField($theirFieldName);
+        $defaults['type'] ??= $analysingTheirField->type;
+        $defaults['enum'] ??= $analysingTheirField->enum;
+        $defaults['values'] ??= $analysingTheirField->values;
+        $defaults['caption'] ??= $analysingTheirField->caption;
+        $defaults['ui'] = array_merge($defaults['ui'] ?? $analysingTheirField->ui, ['editable' => false]);
 
         $fieldExpression = $this->_addField($fieldName, false, $theirFieldName, $defaults);
 

@@ -32,7 +32,7 @@ class HasMany extends Reference
         // TODO probably remove completely in the future
         $ourModel = $this->getOurModel();
         $theirFieldName = preg_replace('~^.+\.~s', '', $this->getModelTableString($ourModel)) . '_' . $ourModel->idField;
-        if (!($theirModel ?? $this->createTheirModel())->hasField($theirFieldName)) {
+        if (!($theirModel ?? $this->createAnalysingTheirModel())->hasField($theirFieldName)) {
             throw (new Exception('Their model does not contain implicit field'))
                 ->addMoreInfo('theirImplicitField', $theirFieldName);
         }

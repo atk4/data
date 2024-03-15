@@ -250,7 +250,7 @@ class DeepCopy
                     $this->debug('Proceeding with ' . $refKey);
 
                     // load destination model through $source
-                    $refSourceTable = $source->getModel()->getReference($refKey)->createTheirModel()->table;
+                    $refSourceTable = $source->getModel()->getReference($refKey)->createAnalysingTheirModel()->table;
 
                     if (isset($this->mapping[$refSourceTable])
                         && array_key_exists($source->get($refKey), $this->mapping[$refSourceTable])
