@@ -7,6 +7,8 @@ namespace Atk4\Data\Tests;
 use Atk4\Core\Exception as CoreException;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
+use Atk4\Data\Reference;
+use Atk4\Data\Reference\WeakAnalysingMap;
 use Atk4\Data\Schema\TestCase;
 
 class ReferenceTest extends TestCase
@@ -188,5 +190,102 @@ class ReferenceTest extends TestCase
         $this->expectExceptionMessage('Seed must be an array or an object');
         $m->hasOne('foo', ['model' => Model::class])
             ->createTheirModel();
+    }
+
+    private function forceWeakMapPolyfillHousekeeping(): void
+    {
+        $analysingMap = \Closure::bind(static fn () => Reference::$analysingTheirModelMap, null, Reference::class)();
+
+        // https://github.com/BenMorel/weakmap-polyfill/blob/0.4.0/src/WeakMap.php#L126
+        $weakMap = \Closure::bind(static fn () => $analysingMap->ownerDestructorHandlers, null, WeakAnalysingMap::class)();
+        count($weakMap); // @phpstan-ignore-line
+    }
+
+    public function testCreateAnalysingTheirModelKeepReferencedByPersistenceIfSeedIsClassNameOnly(): void
+    {
+        $theirModelClass = get_class(new class() extends Model {
+            public $table = 'foo';
+
+            /** @var list<string> */
+            public static array $logs = [];
+
+            #[\Override]
+            protected function init(): void
+            {
+                parent::init();
+
+                self::$logs[] = $this->table;
+            }
+        });
+
+        $refASeed = [$theirModelClass];
+        $refBSeed = [$theirModelClass, 'table' => 'bar'];
+
+        $m = new Model($this->db, ['table' => 'user']);
+        $refA = $m->hasOne('a', ['model' => $refASeed]);
+        $refB = $m->hasOne('b', ['model' => $refBSeed]);
+        $m->hasOne('a2', ['model' => $refASeed]);
+        $m->hasOne('b2', ['model' => $refBSeed]);
+        self::assertSame([], $theirModelClass::$logs);
+
+        self::assertSame('foo', $refA->createAnalysingTheirModel()->table);
+        self::assertSame('bar', $refB->createAnalysingTheirModel()->table);
+        self::assertSame(['foo', 'bar'], $theirModelClass::$logs);
+
+        self::assertSame('foo', $refA->createTheirModel()->table);
+        self::assertSame('bar', $refB->createTheirModel()->table);
+        self::assertSame(['foo', 'bar', 'foo', 'bar'], $theirModelClass::$logs);
+
+        $theirModelClass::$logs = [];
+
+        $weakM = \WeakReference::create($m);
+        $m = new Model($this->db, ['table' => 'user']);
+        unset($refA);
+        unset($refB);
+        gc_collect_cycles();
+        self::assertNull($weakM->get());
+        $this->forceWeakMapPolyfillHousekeeping();
+        $refA = $m->hasOne('a', ['model' => $refASeed]);
+        $refB = $m->hasOne('b', ['model' => $refBSeed]);
+        self::assertSame([], $theirModelClass::$logs);
+
+        self::assertSame('foo', $refA->createAnalysingTheirModel()->table);
+        self::assertSame('bar', $refB->createAnalysingTheirModel()->table);
+        self::assertSame(['bar'], $theirModelClass::$logs);
+
+        self::assertSame('foo', $refA->createTheirModel()->table);
+        self::assertSame('bar', $refB->createTheirModel()->table);
+        self::assertSame(['bar', 'foo', 'bar'], $theirModelClass::$logs);
+
+        $refC = $m->hasMany('c', ['model' => $refASeed, 'theirField' => 'id']);
+        $refD = $m->hasMany('d', ['model' => $refBSeed, 'theirField' => 'id']);
+        self::assertSame(['bar', 'foo', 'bar'], $theirModelClass::$logs);
+
+        self::assertSame('foo', $refC->createAnalysingTheirModel()->table);
+        self::assertSame('bar', $refD->createAnalysingTheirModel()->table);
+        self::assertSame(['bar', 'foo', 'bar'], $theirModelClass::$logs);
+
+        self::assertSame('foo', $refC->createTheirModel()->table);
+        self::assertSame('bar', $refD->createTheirModel()->table);
+        self::assertSame(['bar', 'foo', 'bar', 'foo', 'bar'], $theirModelClass::$logs);
+
+        $theirModelClass::$logs = [];
+
+        $m = new Model(clone $this->db, ['table' => 'user']);
+        $refA = $m->hasOne('a', ['model' => $refASeed]);
+        $refB = $m->hasOne('b', ['model' => $refBSeed]);
+        $m->hasOne('a2', ['model' => $refASeed]);
+        $m->hasOne('b2', ['model' => $refBSeed]);
+        self::assertSame([], $theirModelClass::$logs);
+
+        self::assertSame('foo', $refA->createAnalysingTheirModel()->table);
+        self::assertSame('bar', $refB->createAnalysingTheirModel()->table);
+        self::assertSame(['foo', 'bar'], $theirModelClass::$logs);
+
+        self::assertSame('foo', $refA->createTheirModel()->table);
+        self::assertSame('bar', $refB->createTheirModel()->table);
+        self::assertSame(['foo', 'bar', 'foo', 'bar'], $theirModelClass::$logs);
+
+        $theirModelClass::$logs = [];
     }
 }
