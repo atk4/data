@@ -675,7 +675,7 @@ $salary->where('emp_no', $employees);
 
 // join with another table for more data
 $salary
-    ->join('employees.emp_id', 'emp_id')
+    ->join('employees.emp_id')
     ->field('employees.first_name');
 
 // finally, fetch result

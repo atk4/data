@@ -54,7 +54,7 @@ abstract class Join
      *
      * If you are using the following syntax:
      *
-     * $user->join('contact', 'default_contact_id')
+     * $user->join('contact.default_contact_id')
      *
      * Then the ID connecting tables is stored in foreign table and the order
      * of saving and delete needs to be reversed. In this case $reverse
