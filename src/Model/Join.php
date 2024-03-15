@@ -54,7 +54,7 @@ abstract class Join
      *
      * If you are using the following syntax:
      *
-     * $user->join('contact', 'default_contact_id')
+     * $user->join('contact.default_contact_id')
      *
      * Then the ID connecting tables is stored in foreign table and the order
      * of saving and delete needs to be reversed. In this case $reverse
@@ -371,7 +371,7 @@ abstract class Join
      *
      * @return Reference\HasOne
      */
-    public function hasOne(string $link, array $defaults = [])
+    public function hasOne(string $link, array $defaults): Reference
     {
         $defaults['joinName'] = $this->getJoinNameFromShortName();
 
@@ -385,7 +385,7 @@ abstract class Join
      *
      * @return Reference\HasMany
      */
-    public function hasMany(string $link, array $defaults = [])
+    public function hasMany(string $link, array $defaults): Reference
     {
         return $this->getOwner()->hasMany($link, $defaults);
     }
@@ -400,7 +400,7 @@ abstract class Join
      *
      * @return Reference\ContainsOne
      *X/
-    public function containsOne(string $link, array $defaults = []) // : Reference
+    public function containsOne(string $link, array $defaults): Reference
     {
         $defaults['joinName'] = $this->getJoinNameFromShortName();
 
@@ -416,7 +416,7 @@ abstract class Join
      *
      * @return Reference\ContainsMany
      *X/
-    public function containsMany(string $link, array $defaults = []) // : Reference
+    public function containsMany(string $link, array $defaults): Reference
     {
         return $this->getOwner()->containsMany($link, $defaults);
     }

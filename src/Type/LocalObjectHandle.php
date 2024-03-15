@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Type;
 
+/**
+ * @internal
+ */
 class LocalObjectHandle
 {
     private int $localUid;

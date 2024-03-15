@@ -23,7 +23,7 @@ $user->addField('username');
 $jContact = $user->join('contact');
 $jContact->addField('address');
 $jContact->addField('county');
-$jContact->hasOne('Country');
+$jContact->hasOne('Country', ['model' => [Country::class]]);
 ```
 
 This code will load data from two tables simultaneously and if you do change any

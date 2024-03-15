@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
+use Atk4\Core\Exception as CoreException;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
@@ -12,14 +13,12 @@ class ReferenceTest extends TestCase
 {
     public function testBasicReferences(): void
     {
-        $user = new Model(null, ['table' => 'user']);
-        $user->addField('id', ['type' => 'integer']);
+        $user = new Model($this->db, ['table' => 'user']);
         $user->addField('name');
         $user = $user->createEntity();
         $user->setId(1);
 
-        $order = new Model();
-        $order->addField('id', ['type' => 'integer']);
+        $order = new Model(null, ['table' => 'order']);
         $order->addField('amount', ['default' => 20]);
         $order->addField('user_id', ['type' => 'integer']);
 
@@ -30,7 +29,7 @@ class ReferenceTest extends TestCase
         self::assertSame(1, $o->get('user_id'));
 
         $r2 = $user->getModel()->hasMany('BigOrders', ['model' => static function () {
-            $m = new Model();
+            $m = new Model(null, ['table' => 'big_order']);
             $m->addField('amount', ['default' => 100]);
             $m->addField('user_id', ['type' => 'integer']);
 
@@ -51,14 +50,12 @@ class ReferenceTest extends TestCase
 
     public function testModelCaption(): void
     {
-        $user = new Model(null, ['table' => 'user']);
-        $user->addField('id', ['type' => 'integer']);
+        $user = new Model($this->db, ['table' => 'user']);
         $user->addField('name');
         $user = $user->createEntity();
         $user->setId(1);
 
-        $order = new Model();
-        $order->addField('id', ['type' => 'integer']);
+        $order = new Model(null, ['table' => 'order']);
         $order->addField('amount', ['default' => 20]);
         $order->addField('user_id', ['type' => 'integer']);
 
@@ -171,5 +168,25 @@ class ReferenceTest extends TestCase
         self::assertSame('user', $order->ref('placed_by')->table);
         self::assertSame('string', $order->getField('placed_by_user_id')->type);
         self::assertSame('integer', $order->ref('placed_by')->getIdField()->type);
+    }
+
+    public function testCreateTheirModelMissingModelSeedException(): void
+    {
+        $m = new Model($this->db, ['table' => 'user']);
+
+        $this->expectException(CoreException::class);
+        $this->expectExceptionMessage('Seed must be an array or an object');
+        $m->hasOne('foo', [])
+            ->createTheirModel();
+    }
+
+    public function testCreateTheirModelInvalidModelSeedException(): void
+    {
+        $m = new Model($this->db, ['table' => 'user']);
+
+        $this->expectException(CoreException::class);
+        $this->expectExceptionMessage('Seed must be an array or an object');
+        $m->hasOne('foo', ['model' => Model::class])
+            ->createTheirModel();
     }
 }

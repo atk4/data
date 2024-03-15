@@ -122,7 +122,8 @@ $model->addField('secret', ['neverPersist' => true]);
 $model->addField('old_field', ['actual' => 'new_field']);
 
 // or even into a different table
-$model->join('new_table')->addField('extra_field');
+$model->join('new_table')
+    ->addField('extra_field');
 ```
 
 Model also has a property `$table`, which indicate name of default table/collection/file to be

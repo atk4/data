@@ -28,8 +28,7 @@ class HasOneSql extends HasOne
                 return $theirModel->action('field', [$theirFieldName]);
             },
         ], $defaults, [
-            // allow to set our field value by an imported foreign field, but only when
-            // the our field value is null
+            // allow to set our field value by an imported foreign field, but only when the our field value is null
             'readOnly' => false,
         ]));
 
@@ -159,7 +158,8 @@ class HasOneSql extends HasOne
     /**
      * Add a title of related entity as expression to our field.
      *
-     * $order->hasOne('user_id', 'User')->addTitle();
+     * $order->hasOne('user_id', ['model' => [User::class]])
+     *     ->addTitle();
      *
      * This will add expression 'user' equal to ref('user_id')['name'];
      *

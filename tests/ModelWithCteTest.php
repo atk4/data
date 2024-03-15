@@ -36,9 +36,9 @@ class ModelWithCteTest extends TestCase
         $mInvoice->addCondition('net', '>', 100);
 
         $m = clone $mUser;
-        $m->addCteModel('i', $mInvoice); // add cursor
-        $jInvoice = $m->join('i.user_id'); // join cursor
-        $jInvoice->addField('invoiced', ['type' => 'integer', 'actual' => 'net']); // add field from joined cursor
+        $m->addCteModel('i', $mInvoice);
+        $jInvoice = $m->join('i.user_id');
+        $jInvoice->addField('invoiced', ['type' => 'integer', 'actual' => 'net']); // add field from joined CTE
 
         $this->assertSameSql(
             'with `i` as (select `id`, `net`, `user_id` from `invoice` where `net` > :a)' . "\n"

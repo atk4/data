@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Atk4\Data;
 
 use Atk4\Core\DiContainerTrait;
-use Atk4\Core\Factory;
 use Atk4\Core\InitializerTrait;
 use Atk4\Core\TrackableTrait;
 
@@ -263,15 +262,15 @@ class Reference
         }
 
         if (is_object($m)) {
-            $theirModel = Factory::factory(clone $m, $defaults);
+            $theirModelSeed = clone $m;
         } else {
-            $modelDefaults = $m;
-            $theirModelSeed = [$modelDefaults[0]];
-            unset($modelDefaults[0]);
-            $defaults = array_merge($modelDefaults, $defaults);
-
-            $theirModel = Factory::factory($theirModelSeed, $defaults);
+            \Closure::bind(static fn () => Model::_fromSeedPrecheck($m, false), null, Model::class)();
+            $theirModelSeed = [$m[0]];
+            unset($m[0]);
+            $defaults = array_merge($m, $defaults);
         }
+
+        $theirModel = Model::fromSeed($theirModelSeed, $defaults);
 
         return $theirModel;
     }

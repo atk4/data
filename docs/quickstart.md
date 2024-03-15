@@ -17,7 +17,8 @@ unions but only if the database server supports those operations.
 Developer would normally create a declaration like this:
 
 ```
-$user->hasMany('Order')->addField('total', ['aggregate' => 'sum']);
+$user->hasMany('Order', ['model' => [Order::class]])
+    ->addField('total', ['aggregate' => 'sum']);
 ```
 
 It is up to Agile Data to decide what's the most efficient way to implement
@@ -273,7 +274,7 @@ class Model_User extends Model
         $j->addField('address_1');
         $j->addField('address_2');
         $j->addField('address_3');
-        $j->hasOne('country_id', 'Country');
+        $j->hasOne('country_id', ['model' => [Model_Country::class]]);
     }
 }
 ```
@@ -441,7 +442,7 @@ As per our database design - one user can have multiple 'system' records:
 
 ```
 $m = new Model_User($db);
-$m->hasMany('System');
+$m->hasMany('System', ['model' => [Model_System::class]]);
 ```
 
 Next you can load a specific user and traverse into System model:

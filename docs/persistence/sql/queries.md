@@ -541,34 +541,6 @@ $q->join('address.user_id'); // address.user_id = id
     // JOIN `address` ON `address`.`user_id`=`id`
 ```
 
-You can also pass array as a first argument, to join multiple tables:
-
-```
-$q->table('user u');
-$q->join(['a' => 'address', 'c' => 'credit_card', 'preferences']);
-```
-
-The above code will join 3 tables using the following query syntax:
-
-```sql
-join
-    address as a on a.id = u.address_id
-    credit_card as c on c.id = u.credit_card_id
-    preferences on preferences.id = u.preferences_id
-```
-
-However normally you would have `user_id` field defined in your supplementary
-tables so you need a different syntax:
-
-```
-$q->table('user u');
-$q->join([
-    'a' => 'address.user_id',
-    'c' => 'credit_card.user_id',
-    'preferences.user_id',
-]);
-```
-
 The second argument to join specifies which existing table/field is
 used in `on` condition:
 

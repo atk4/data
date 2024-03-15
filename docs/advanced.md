@@ -143,12 +143,12 @@ protected function init(): void
 
     $this->getOwner()->addField('created_dts', ['type' => 'datetime', 'default' => new \DateTime()]);
 
-    $this->getOwner()->hasOne('created_by_user_id', 'User');
+    $this->getOwner()->hasOne('created_by_user_id', ['model' => [User::class]]);
     if (isset($this->getApp()->user) && $this->getApp()->user->isLoaded()) {
         $this->getOwner()->getField('created_by_user_id')->default = $this->getApp()->user->getId();
     }
 
-    $this->getOwner()->hasOne('updated_by_user_id', 'User');
+    $this->getOwner()->hasOne('updated_by_user_id', ['model' => [User::class]]);
 
     $this->getOwner()->addField('updated_dts', ['type' => 'datetime']);
 
@@ -457,8 +457,8 @@ class Model_InvoicePayment extends \Atk4\Data\Model
     {
         parent::init();
 
-        $this->hasOne('invoice_id', 'Model_Invoice');
-        $this->hasOne('payment_id', 'Model_Payment');
+        $this->hasOne('invoice_id', ['model' => [Model_Invoice::class]]);
+        $this->hasOne('payment_id', ['model' => [Model_Payment::class]]);
         $this->addField('amount_closed');
     }
 }
@@ -469,13 +469,13 @@ class Model_InvoicePayment extends \Atk4\Data\Model
 Next we need to define reference. Inside Model_Invoice add:
 
 ```
-$this->hasMany('InvoicePayment');
+$this->hasMany('InvoicePayment', ['model' => [Model_InvoicePayment::class]]);
 
 $this->hasMany('Payment', ['model' => function (self $m) {
     $p = new Model_Payment($m->getPersistence());
     $j = $p->join('invoice_payment.payment_id');
     $j->addField('amount_closed');
-    $j->hasOne('invoice_id', 'Model_Invoice');
+    $j->hasOne('invoice_id', ['model' => [Model_Invoice::class]]);
 }, 'theirField' => 'invoice_id']);
 
 $this->onHookShort(Model::HOOK_BEFORE_DELETE, function () {
@@ -506,7 +506,7 @@ that shows how much amount is closed and `amount_due`:
 
 ```
 // define field to see closed amount on invoice
-$this->hasMany('InvoicePayment')
+$this->hasMany('InvoicePayment', ['model' => [Model_InvoicePayment::class]])
     ->addField('total_payments', ['aggregate' => 'sum', 'field' => 'amount_closed']);
 $this->addExpression('amount_due', ['expr' => '[total] - coalesce([total_payments], 0)']);
 ```
@@ -574,7 +574,7 @@ class Model_Invoice extends \Atk4\Data\Model
 
         ...
 
-        $this->hasOne('category_id', 'Model_Category');
+        $this->hasOne('category_id', ['model' => [Model_Category::class]]);
 
         ...
     }
@@ -711,7 +711,7 @@ In theory Document's 'contact_id' can be any Contact, however when you create
 define Model_Document:
 
 ```
-$this->hasOne('client_id', 'Model_Contact');
+$this->hasOne('client_id', ['model' => [Model_Contact::class]]);
 ```
 
 One option here is to move 'Model_Contact' into model property, which will be
@@ -743,7 +743,7 @@ add 'payment_invoice_id' that points to 'Model_Payment'. However we want this
 field only to offer payments made by the same client. Inside Model_Invoice add:
 
 ```
-$this->hasOne('client_id', 'Client');
+$this->hasOne('client_id', ['model' => [Model_Client::class]]);
 
 $this->hasOne('payment_invoice_id', ['model' => function (self $m) {
     return $m->ref('client_id')->ref('Payment');
@@ -773,7 +773,7 @@ Agile Data allow you to define multiple references between same entities, but
 sometimes that can be quite useful. Consider adding this inside your Model_Contact:
 
 ```
-$this->hasMany('Invoice', 'Model_Invoice');
+$this->hasMany('Invoice', ['model' => [Model_Invoice::class]]);
 $this->hasMany('OverdueInvoice', ['model' => function (self $m) {
     return $m->ref('Invoice')->addCondition('due', '<', date('Y-m-d'))
 }]);
