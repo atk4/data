@@ -129,15 +129,12 @@ It is possible to perform reference through an 3rd party table:
 
 ```
 $i = new Model_Invoice();
-$p = new Model_Payment();
 
-// table invoice_payment has 'invoice_id', 'payment_id' and 'amount_allocated'
-
-$p
-    ->join('invoice_payment.payment_id')
-    ->addFields(['amount_allocated', 'invoice_id']);
-
-$i->hasMany('Payments', ['model' => $p]);
+$i->hasMany('Payments', ['model' => static function () {
+    return (new Model_Payment())
+        ->join('invoice_payment.payment_id')
+        ->addFields(['amount_allocated', 'invoice_id']);
+}]);
 ```
 
 Now you can fetch all the payments associated with the invoice through:
@@ -195,7 +192,10 @@ inside `$m` that will correspond to the sum of all the orders. Here is another
 example:
 
 ```
-$u->hasMany('PaidOrders', (new Model_Order())->addCondition('is_paid', true))
+$u->hasMany('PaidOrders', ['model' => static function (Persistence $persistence) {
+    return (new Model_Order($persistence))
+        ->addCondition('is_paid', true);
+}])
     ->addField('paid_amount', ['aggregate' => 'sum', 'field' => 'amount']);
 ```
 
