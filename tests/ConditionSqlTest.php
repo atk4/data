@@ -306,7 +306,8 @@ class ConditionSqlTest extends TestCase
         $m->addField('gender');
         $m->addField('surname');
 
-        $m->join('contact')->addField('contact_phone');
+        $m->join('contact')
+            ->addField('contact_phone');
 
         $mm2 = $m->load(1);
         self::assertSame('John', $mm2->get('name'));
