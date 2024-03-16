@@ -358,7 +358,7 @@ class Reference
                     \PHP_VERSION_ID < 80100 ? $fxRefl->getStaticVariables() : $fxRefl->getClosureUsedVariables(),
                 ];
 
-                // optimization - simplify key to improve hash speed
+                // optimization - simplify key to improve hashing speed
                 if ($fxKey[4] === []) {
                     unset($fxKey[4]);
                     if ($fxKey[3] === null) {

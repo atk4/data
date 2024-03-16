@@ -155,4 +155,25 @@ class WeakAnalysingMapTest extends TestCase
         }
         self::assertSame('Analysing key is already present', $e);
     }
+
+    public function testGetSetKeyWithHashCollision(): void
+    {
+        $map = new WeakAnalysingMap();
+
+        $makeHashFromKeyFx = \Closure::bind(static fn ($v) => $map->makeHashFromKey($v), null, WeakAnalysingMap::class);
+
+        $hashes = array_map(static fn ($v) => $makeHashFromKeyFx([$v]), range(1, 2_000));
+        self::assertSameSize($hashes, array_unique($hashes));
+
+        $key1 = [5_371_838];
+        $key2 = [6_000_402];
+        self::assertSame($makeHashFromKeyFx($key1), $makeHashFromKeyFx($key2));
+
+        $value1 = new \stdClass();
+        $value2 = new \stdClass();
+        $map->set($key1, $value1, $map);
+        $map->set($key2, $value2, $map);
+        self::assertSame($value1, $map->get($key1, new \stdClass()));
+        self::assertSame($value2, $map->get($key2, new \stdClass()));
+    }
 }
