@@ -7,12 +7,11 @@ namespace Atk4\Data\Reference;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
+use Atk4\Data\Persistence;
 use Atk4\Data\Reference;
 
 abstract class ContainsBase extends Reference
 {
-    use ContainsSeedHackTrait;
-
     public bool $checkTheirType = false;
 
     /** Field type. */
@@ -32,11 +31,11 @@ abstract class ContainsBase extends Reference
     {
         parent::init();
 
-        if (!$this->ourField) {
+        if ($this->ourField === null) {
             $this->ourField = $this->link;
         }
 
-        $ourModel = $this->getOurModel(null);
+        $ourModel = $this->getOurModel();
 
         $ourField = $this->getOurFieldName();
         if (!$ourModel->hasField($ourField)) {
@@ -54,7 +53,7 @@ abstract class ContainsBase extends Reference
 
         // TODO https://github.com/atk4/data/issues/881
         // prevent unmanaged ContainsXxx data modification (/wo proper normalize, hooks, ...)
-        $this->onHookToOurModel($ourModel, Model::HOOK_NORMALIZE, function (Model $ourModel, Field $field, $value) {
+        $this->onHookToOurModel(Model::HOOK_NORMALIZE, function (Model $ourModel, Field $field, $value) {
             if (!$field->hasReference() || $field->shortName !== $this->getOurFieldName() || $value === null) {
                 // this code relies on Field::$referenceLink set
                 // also, allowing null value to be set will not fire any HOOK_BEFORE_DELETE/HOOK_AFTER_DELETE hook
@@ -69,5 +68,24 @@ abstract class ContainsBase extends Reference
 
             throw new Exception('ContainsXxx does not support unmanaged data modification');
         });
+    }
+
+    #[\Override]
+    protected function getDefaultPersistence(): Persistence
+    {
+        return new Persistence\Array_();
+    }
+
+    /**
+     * @param array<int, mixed> $data
+     */
+    protected function setTheirModelPersistenceSeedData(Model $theirModel, array $data): void
+    {
+        $persistence = Persistence\Array_::assertInstanceOf($theirModel->getPersistence());
+        $tableName = $this->tableAlias;
+        \Closure::bind(static function () use ($persistence, $tableName, $data) {
+            $persistence->seedData = [$tableName => $data];
+            $persistence->data = [];
+        }, null, Persistence\Array_::class)();
     }
 }

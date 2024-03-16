@@ -54,7 +54,7 @@ abstract class Join
      *
      * If you are using the following syntax:
      *
-     * $user->join('contact', 'default_contact_id')
+     * $user->join('contact.default_contact_id')
      *
      * Then the ID connecting tables is stored in foreign table and the order
      * of saving and delete needs to be reversed. In this case $reverse
@@ -172,21 +172,19 @@ abstract class Join
     }
 
     /**
-     * @template T of Model
-     *
-     * @param \Closure(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
-     * @param array<int, mixed>                                                                        $args
+     * @param \Closure<T of Model>(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
+     * @param array<int, mixed> $args
      */
-    protected function onHookToOwnerBoth(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    protected function onHookToOwnerModel(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->shortName; // use static function to allow this object to be GCed
 
         return $this->getOwner()->onHookDynamic(
             $spot,
-            static function (Model $model) use ($name): self {
+            static function (Model $modelOrEntity) use ($name): self {
                 /** @var self */
-                $obj = $model->getModel(true)->getElement($name);
-                $model->getModel(true)->assertIsModel($obj->getOwner());
+                $obj = $modelOrEntity->getModel(true)->getElement($name);
+                $modelOrEntity->getModel(true)->assertIsModel($obj->getOwner());
 
                 return $obj;
             },
@@ -197,10 +195,8 @@ abstract class Join
     }
 
     /**
-     * @template T of Model
-     *
-     * @param \Closure(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
-     * @param array<int, mixed>                                                                        $args
+     * @param \Closure<T of Model>(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
+     * @param array<int, mixed> $args
      */
     protected function onHookToOwnerEntity(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
@@ -375,7 +371,7 @@ abstract class Join
      *
      * @return Reference\HasOne
      */
-    public function hasOne(string $link, array $defaults = [])
+    public function hasOne(string $link, array $defaults): Reference
     {
         $defaults['joinName'] = $this->getJoinNameFromShortName();
 
@@ -389,7 +385,7 @@ abstract class Join
      *
      * @return Reference\HasMany
      */
-    public function hasMany(string $link, array $defaults = [])
+    public function hasMany(string $link, array $defaults): Reference
     {
         return $this->getOwner()->hasMany($link, $defaults);
     }
@@ -404,7 +400,7 @@ abstract class Join
      *
      * @return Reference\ContainsOne
      *X/
-    public function containsOne(string $link, array $defaults = []) // : Reference
+    public function containsOne(string $link, array $defaults): Reference
     {
         $defaults['joinName'] = $this->getJoinNameFromShortName();
 
@@ -420,7 +416,7 @@ abstract class Join
      *
      * @return Reference\ContainsMany
      *X/
-    public function containsMany(string $link, array $defaults = []) // : Reference
+    public function containsMany(string $link, array $defaults): Reference
     {
         return $this->getOwner()->containsMany($link, $defaults);
     }

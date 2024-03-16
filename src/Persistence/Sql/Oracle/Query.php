@@ -36,26 +36,22 @@ class Query extends BaseQuery
     #[\Override]
     protected function _subrenderCondition(array $row): string
     {
-        if (count($row) === 2) {
-            [$field, $value] = $row;
-            $cond = '=';
-        } elseif (count($row) >= 3) {
-            [$field, $cond, $value] = $row;
-        }
+        if (count($row) !== 1) {
+            [$field, $operator, $value] = $row;
 
-        if (count($row) >= 2 && $field instanceof Field
-            && in_array($field->type, ['text', 'blob'], true)) {
-            if ($field->type === 'text') {
-                $field = $this->expr('LOWER([])', [$field]);
-                $value = $this->expr('LOWER([])', [$value]);
-            }
+            if ($field instanceof Field && in_array($field->type, ['text', 'blob'], true)) {
+                if (in_array($operator ?? '=', ['=', '!='], true)) {
+                    if ($field->type === 'text') {
+                        $field = $this->expr('LOWER([])', [$field]);
+                        $value = $this->expr('LOWER([])', [$value]);
+                    }
 
-            if (in_array($cond, ['=', '!='], true)) {
-                $row = [$this->expr('dbms_lob.compare([], [])', [$field, $value]), $cond, 0];
-            } else {
-                throw (new Exception('Unsupported CLOB/BLOB field operator'))
-                    ->addMoreInfo('operator', $cond)
-                    ->addMoreInfo('type', $field->type);
+                    $row = [$this->expr('dbms_lob.compare([], [])', [$field, $value]), $operator, 0];
+                } else {
+                    throw (new Exception('Unsupported CLOB/BLOB field operator'))
+                        ->addMoreInfo('operator', $operator)
+                        ->addMoreInfo('type', $field->type);
+                }
             }
         }
 

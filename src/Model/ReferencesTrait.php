@@ -14,25 +14,25 @@ use Atk4\Data\Reference;
 trait ReferencesTrait
 {
     /** @var array<mixed> The seed used by addReference() method. */
-    protected $_defaultSeedAddReference = [Reference::class];
+    protected array $_defaultSeedAddReference = [Reference::class];
 
     /** @var array<mixed> The seed used by hasOne() method. */
-    protected $_defaultSeedHasOne = [Reference\HasOne::class];
+    protected array $_defaultSeedHasOne = [Reference\HasOne::class];
 
     /** @var array<mixed> The seed used by hasMany() method. */
-    protected $_defaultSeedHasMany = [Reference\HasMany::class];
+    protected array $_defaultSeedHasMany = [Reference\HasMany::class];
 
     /** @var array<mixed> The seed used by containsOne() method. */
-    protected $_defaultSeedContainsOne = [Reference\ContainsOne::class];
+    protected array $_defaultSeedContainsOne = [Reference\ContainsOne::class];
 
     /** @var array<mixed> The seed used by containsMany() method. */
-    protected $_defaultSeedContainsMany = [Reference\ContainsMany::class];
+    protected array $_defaultSeedContainsMany = [Reference\ContainsMany::class];
 
     /**
      * @param array<mixed>         $seed
      * @param array<string, mixed> $defaults
      */
-    protected function _addReference(array $seed, string $link, array $defaults = []): Reference
+    protected function _addReference(array $seed, string $link, array $defaults): Reference
     {
         $this->assertIsModel();
 
@@ -69,9 +69,8 @@ trait ReferencesTrait
      *
      * @return Reference\HasOne|Reference\HasOneSql
      */
-    public function hasOne(string $link, array $defaults = []) // : Reference
+    public function hasOne(string $link, array $defaults): Reference
     {
-        // @phpstan-ignore-next-line https://github.com/phpstan/phpstan/issues/9022
         return $this->_addReference($this->_defaultSeedHasOne, $link, $defaults); // @phpstan-ignore-line
     }
 
@@ -82,9 +81,8 @@ trait ReferencesTrait
      *
      * @return Reference\HasMany
      */
-    public function hasMany(string $link, array $defaults = []) // : Reference
+    public function hasMany(string $link, array $defaults): Reference
     {
-        // @phpstan-ignore-next-line https://github.com/phpstan/phpstan/issues/9022
         return $this->_addReference($this->_defaultSeedHasMany, $link, $defaults); // @phpstan-ignore-line
     }
 
@@ -95,9 +93,8 @@ trait ReferencesTrait
      *
      * @return Reference\ContainsOne
      */
-    public function containsOne(string $link, array $defaults = []) // : Reference
+    public function containsOne(string $link, array $defaults): Reference
     {
-        // @phpstan-ignore-next-line https://github.com/phpstan/phpstan/issues/9022
         return $this->_addReference($this->_defaultSeedContainsOne, $link, $defaults); // @phpstan-ignore-line
     }
 
@@ -108,9 +105,8 @@ trait ReferencesTrait
      *
      * @return Reference\ContainsMany
      */
-    public function containsMany(string $link, array $defaults = []) // : Reference
+    public function containsMany(string $link, array $defaults): Reference
     {
-        // @phpstan-ignore-next-line https://github.com/phpstan/phpstan/issues/9022
         return $this->_addReference($this->_defaultSeedContainsMany, $link, $defaults); // @phpstan-ignore-line
     }
 
@@ -147,32 +143,26 @@ trait ReferencesTrait
     }
 
     /**
-     * Traverse to related model.
+     * Traverse reference and create their model.
      *
      * @param array<string, mixed> $defaults
      */
     public function ref(string $link, array $defaults = []): Model
     {
-        return $this->getModel(true)->getReference($link)->ref($this, $defaults);
+        $reference = $this->getModel(true)->getReference($link);
+
+        return $reference->ref($this, $defaults);
     }
 
     /**
-     * Return related model.
-     *
-     * @param array<string, mixed> $defaults
-     */
-    public function refModel(string $link, array $defaults = []): Model
-    {
-        return $this->getModel(true)->getReference($link)->refModel($this, $defaults);
-    }
-
-    /**
-     * Returns model that can be used for generating sub-query actions.
+     * Traverse reference and create their model but keep reference condition not materialized (for subquery actions).
      *
      * @param array<string, mixed> $defaults
      */
     public function refLink(string $link, array $defaults = []): Model
     {
-        return $this->getModel(true)->getReference($link)->refLink($this, $defaults);
+        $reference = $this->getReference($link);
+
+        return $reference->refLink($defaults);
     }
 }

@@ -201,11 +201,13 @@ class DeepCopy
     protected function _copy(Model $source, Model $destination, array $references, array $exclusions, array $transforms): Model
     {
         try {
+            $sourceTable = $source->getModel()->table;
+
             // perhaps source was already copied, then simply load destination model and return
-            if (isset($this->mapping[$source->table]) && isset($this->mapping[$source->table][$source->getId()])) {
+            if (isset($this->mapping[$sourceTable]) && isset($this->mapping[$sourceTable][$source->getId()])) {
                 $this->debug('Skipping ' . get_class($source));
 
-                $destination = $destination->load($this->mapping[$source->table][$source->getId()]);
+                $destination = $destination->load($this->mapping[$sourceTable][$source->getId()]);
             } else {
                 $this->debug('Copying ' . get_class($source));
 
@@ -248,13 +250,13 @@ class DeepCopy
                     $this->debug('Proceeding with ' . $refKey);
 
                     // load destination model through $source
-                    $sourceTable = $source->refModel($refKey)->table;
+                    $refSourceTable = $source->getModel()->getReference($refKey)->createAnalysingTheirModel()->table;
 
-                    if (isset($this->mapping[$sourceTable])
-                        && array_key_exists($source->get($refKey), $this->mapping[$sourceTable])
+                    if (isset($this->mapping[$refSourceTable])
+                        && array_key_exists($source->get($refKey), $this->mapping[$refSourceTable])
                     ) {
                         // no need to deep copy, simply alter ID
-                        $destination->set($refKey, $this->mapping[$sourceTable][$source->get($refKey)]);
+                        $destination->set($refKey, $this->mapping[$refSourceTable][$source->get($refKey)]);
                         $this->debug(' already copied ' . $source->get($refKey) . ' as ' . $destination->get($refKey));
                     } else {
                         // hasOne points to null!
@@ -271,7 +273,7 @@ class DeepCopy
                                 $refKey,
                                 $this->_copy(
                                     $source->ref($refKey),
-                                    $destination->refModel($refKey),
+                                    $destination->getModel()->getReference($refKey)->createTheirModel(),
                                     $refVal,
                                     $exclusions[$refKey] ?? [],
                                     $transforms[$refKey] ?? []
@@ -291,7 +293,7 @@ class DeepCopy
             $destination->save();
 
             // store mapping
-            $this->mapping[$source->table][$source->getId()] = $destination->getId();
+            $this->mapping[$sourceTable][$source->getId()] = $destination->getId();
             $this->debug(' .. copied ' . get_class($source) . ' ' . $source->getId() . ' ' . $destination->getId());
 
             // next look for hasMany relationships and copy those too
@@ -299,9 +301,9 @@ class DeepCopy
             foreach ($this->extractKeys($references) as $refKey => $refVal) {
                 if ($source->hasReference($refKey) && $source->getModel(true)->getReference($refKey) instanceof HasMany) {
                     // no mapping, will always copy
-                    foreach ($source->ref($refKey) as $refModel) {
+                    foreach ($source->ref($refKey) as $refEntity) {
                         $this->_copy(
-                            $refModel,
+                            $refEntity,
                             $destination->ref($refKey),
                             $refVal,
                             $exclusions[$refKey] ?? [],

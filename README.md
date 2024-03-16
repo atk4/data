@@ -137,28 +137,29 @@ class JobReport extends Job
         // we need to ignore draft invoices
         $invoice->addCondition('status', '!=', 'draft');
 
-        // each invoice may have multiple lines, which is what we want
-        $invoiceLines = $invoice->ref('Lines');
-
         // build relation between job and invoice line
-        $this->hasMany('InvoiceLines', ['model' => $invoiceLines])
+        $this->hasMany('InvoiceLines', ['model' => static function () use ($invoice) {
+            return $invoice->ref('Lines');
+        }])
             ->addField('invoiced', [
                 'aggregate' => 'sum',
                 'field' => 'total',
                 'type' => 'atk4_money'
             ]);
 
-        // next we need to see how much is reported through timesheets
-        $timesheet = new Timesheet($this->getPersistence());
-
-        // timesheet relates to client, import client.hourly_rate as expression
-        $timesheet->getReference('client_id')->addField('hourly_rate');
-
-        // calculate timesheet cost expression
-        $timesheet->addExpression('cost', ['expr' => '[hours] * [hourly_rate]']);
-
         // build relation between Job and Timesheets
-        $this->hasMany('Timesheets', ['model' => $timesheet])
+        $this->hasMany('Timesheets', ['model' => static function (Persistence $persistence) {
+            // next we need to see how much is reported through timesheets
+            $timesheet = new Timesheet($persistence);
+
+            // timesheet relates to client, import client.hourly_rate as expression
+            $timesheet->getReference('client_id')->addField('hourly_rate');
+
+            // calculate timesheet cost expression
+            $timesheet->addExpression('cost', ['expr' => '[hours] * [hourly_rate]']);
+
+            return $timesheet;
+        }])
             ->addField('reported', [
                 'aggregate' => 'sum',
                 'field' => 'cost',
@@ -675,7 +676,7 @@ $salary->where('emp_no', $employees);
 
 // join with another table for more data
 $salary
-    ->join('employees.emp_id', 'emp_id')
+    ->join('employees.emp_id')
     ->field('employees.first_name');
 
 // finally, fetch result

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
-use Atk4\Core\Exception as CoreException;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
@@ -117,6 +116,34 @@ class RandomTest extends TestCase
         ], $this->getDb());
     }
 
+    public function testIssetTablePropertyOnEntityException(): void
+    {
+        $model = new Model(null, ['table' => 'user']);
+        $entity = $model->createEntity();
+
+        self::assertTrue(isset($model->table)); // @phpstan-ignore-line
+        self::assertTrue(isset($model->idField)); // @phpstan-ignore-line
+        self::assertTrue(isset($entity->idField)); // @phpstan-ignore-line
+
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Expected model, but instance is an entity');
+        isset($entity->table); // @phpstan-ignore-line
+    }
+
+    public function testGetTablePropertyOnEntityException(): void
+    {
+        $model = new Model(null, ['table' => 'user']);
+        $entity = $model->createEntity();
+
+        self::assertSame('user', $model->table);
+        self::assertSame('id', $model->idField);
+        self::assertSame('id', $entity->idField);
+
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Expected model, but instance is an entity');
+        $entity->table; // @phpstan-ignore-line
+    }
+
     public function testAddFields(): void
     {
         $this->setDb([
@@ -181,15 +208,15 @@ class RandomTest extends TestCase
         self::assertFalse($m->hasField('id'));
 
         $p = new Persistence\Array_();
-        $pAddCalled = false;
-        $p->onHookShort(Persistence::HOOK_AFTER_ADD, static function (Model $mFromHook) use ($m, &$pAddCalled) {
+        $hookCalled = 0;
+        $p->onHookShort(Persistence::HOOK_AFTER_ADD, static function (Model $mFromHook) use ($m, &$hookCalled) {
             self::assertSame($m, $mFromHook);
-            $pAddCalled = true;
+            ++$hookCalled;
         });
 
         $m->setPersistence($p);
         self::assertTrue($m->hasField('id'));
-        self::assertTrue($pAddCalled);
+        self::assertSame(1, $hookCalled);
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Persistence is already set');
@@ -272,7 +299,7 @@ class RandomTest extends TestCase
         self::assertSame('John', $m->load(2)->ref('parent_item_id', ['tableAlias' => 'pp'])->get('name'));
     }
 
-    public function testDirty2(): void
+    public function testDirty(): void
     {
         $p = new Persistence\Static_([1 => 'hello', 'world']);
 
@@ -300,21 +327,21 @@ class RandomTest extends TestCase
         $m = new Model($this->db, ['table' => 'never_used']);
         $m->addField('name');
 
-        $m->onHook(Model::HOOK_BEFORE_SAVE, static function (Model $m) {
-            $m->breakHook(false);
+        $m->onHook(Model::HOOK_BEFORE_SAVE, static function (Model $entity) {
+            $entity->breakHook(false);
         });
 
-        $m->onHook(Model::HOOK_BEFORE_LOAD, static function (Model $m, int $id) {
-            $m->setId($id);
-            $m->set('name', 'rec #' . $id);
+        $m->onHook(Model::HOOK_BEFORE_LOAD, static function (Model $entity, int $id) {
+            $entity->setId($id);
+            $entity->set('name', 'rec #' . $id);
 
-            $m->breakHook($m);
+            $entity->breakHook($entity);
         });
 
-        $m->onHook(Model::HOOK_BEFORE_DELETE, static function (Model $m) {
-            $m->unload();
+        $m->onHook(Model::HOOK_BEFORE_DELETE, static function (Model $entity) {
+            $entity->unload();
 
-            $m->breakHook(false);
+            $entity->breakHook(false);
         });
 
         $m = $m->createEntity();
@@ -327,13 +354,15 @@ class RandomTest extends TestCase
         $m->delete();
     }
 
-    public function testIssue220(): void
+    public function testAddTitleDuplicateNameException(): void
     {
         $m = new Model_Item($this->db);
 
-        $this->expectException(CoreException::class);
-        $this->expectExceptionMessage('already exist');
-        $m->hasOne('foo', ['model' => [Model_Item::class]])->addTitle();
+        $r = $m->hasOne('foo', ['model' => [Model_Item::class]]);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Field with such name already exists');
+        $r->addTitle();
     }
 
     public function testModelCaption(): void
@@ -571,7 +600,8 @@ class RandomTest extends TestCase
 
         $doc = new Model($this->db, ['table' => $docSchema . '.doc']);
         $doc->addField('name');
-        $doc->hasOne('user_id', ['model' => $user])->addTitle();
+        $doc->hasOne('user_id', ['model' => $user])
+            ->addTitle();
         $doc->addCondition('user', 'Sarah');
         $user->hasMany('Documents', ['model' => $doc]);
 

@@ -18,12 +18,11 @@ class Scope extends AbstractScope
 {
     use ContainerTrait;
 
-    // junction definitions
     public const OR = 'OR';
     public const AND = 'AND';
 
     /** @var self::AND|self::OR Junction to use in case more than one element. */
-    protected $junction = self::AND;
+    protected string $junction = self::AND;
 
     /**
      * Create a Scope from array of condition objects or condition arrays.
@@ -33,7 +32,7 @@ class Scope extends AbstractScope
     public function __construct(array $conditions = [], string $junction = self::AND)
     {
         if (!in_array($junction, [self::OR, self::AND], true)) {
-            throw (new Exception('Using invalid CompondCondition junction'))
+            throw (new Exception('Unsupported compound condition junction'))
                 ->addMoreInfo('junction', $junction);
         }
 
@@ -94,7 +93,7 @@ class Scope extends AbstractScope
      *
      * @return array<AbstractScope>
      */
-    public function getNestedConditions()
+    public function getNestedConditions(): array
     {
         return $this->elements;
     }

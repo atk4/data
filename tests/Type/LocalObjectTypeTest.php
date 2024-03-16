@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Atk4\Data\Tests;
+namespace Atk4\Data\Tests\Type;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
@@ -11,7 +11,7 @@ use Atk4\Data\Type\LocalObjectHandle;
 use Atk4\Data\Type\LocalObjectType;
 use Doctrine\DBAL\Types as DbalTypes;
 
-class LocalObjectTest extends TestCase
+class LocalObjectTypeTest extends TestCase
 {
     /**
      * @return \WeakMap<object, LocalObjectHandle>
@@ -51,7 +51,7 @@ class LocalObjectTest extends TestCase
         parent::tearDown();
     }
 
-    public function testTypeBasic(): void
+    public function testBasic(): void
     {
         $t1 = new LocalObjectType();
         $t2 = new LocalObjectType();
@@ -93,7 +93,7 @@ class LocalObjectTest extends TestCase
         self::assertNotSame($v4, $v3);
     }
 
-    public function testTypeCloneException(): void
+    public function testCloneException(): void
     {
         $t = new LocalObjectType();
 
@@ -101,7 +101,7 @@ class LocalObjectTest extends TestCase
         clone $t;
     }
 
-    public function testTypeDifferentInstanceException(): void
+    public function testDifferentInstanceException(): void
     {
         $t1 = new LocalObjectType();
         $t2 = new LocalObjectType();
@@ -116,7 +116,7 @@ class LocalObjectTest extends TestCase
         $t2->convertToPHPValue($v, $platform);
     }
 
-    public function testTypeReleasedException(): void
+    public function testReleasedException(): void
     {
         $t = new LocalObjectType();
         $platform = $this->getDatabasePlatform();
@@ -185,8 +185,8 @@ class LocalObjectTest extends TestCase
         self::assertLessThan(250, strlen($v1));
         self::assertLessThan(250, strlen($v2));
 
-        self::assertSame('Atk4\Data\Tests\LocalObjectDummyClassWithLongNameAWithLongNameBWithLongNameCWith...eFWithLongNameGWithLongNameHWithLongNameIWithLongNameJWithLongNameKWithLongNameL', explode('-', $v1)[0]);
-        self::assertSame('Atk4\Data\Tests\LocalObjectDummyClassWithLongNameAWithLongNameBWithLongNameCWith...NameGWithLongNameHWithLongNameIWithLongNameJWithLongNameKWithLongNameL@anonymous', explode('-', $v2)[0]);
+        self::assertSame('Atk4\Data\Tests\Type\LocalObjectDummyClassWithLongNameAWithLongNameBWithLongName...eFWithLongNameGWithLongNameHWithLongNameIWithLongNameJWithLongNameKWithLongNameL', explode('-', $v1)[0]);
+        self::assertSame('Atk4\Data\Tests\Type\LocalObjectDummyClassWithLongNameAWithLongNameBWithLongName...NameGWithLongNameHWithLongNameIWithLongNameJWithLongNameKWithLongNameL@anonymous', explode('-', $v2)[0]);
     }
 }
 

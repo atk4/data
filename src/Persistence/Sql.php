@@ -34,23 +34,22 @@ class Sql extends Persistence
     public const HOOK_BEFORE_DELETE_QUERY = self::class . '@beforeDeleteQuery';
     public const HOOK_AFTER_DELETE_QUERY = self::class . '@afterDeleteQuery';
 
-    /** @var Connection */
-    private $_connection;
+    private ?Connection $_connection;
 
     /** @var array<mixed> Default class when adding new field. */
-    protected $_defaultSeedAddField; // no custom seed needed
+    protected ?array $_defaultSeedAddField = null; // no custom seed needed
 
     /** @var array<mixed> Default class when adding Expression field. */
-    protected $_defaultSeedAddExpression = [SqlExpressionField::class];
+    protected ?array $_defaultSeedAddExpression = [SqlExpressionField::class];
 
     /** @var array<mixed> Default class when adding hasOne field. */
-    protected $_defaultSeedHasOne = [HasOneSql::class];
+    protected ?array $_defaultSeedHasOne = [HasOneSql::class];
 
     /** @var array<mixed> Default class when adding hasMany field. */
-    protected $_defaultSeedHasMany; // no custom seed needed
+    protected ?array $_defaultSeedHasMany = null; // no custom seed needed
 
     /** @var array<mixed> Default class when adding join. */
-    protected $_defaultSeedJoin = [Sql\Join::class];
+    protected ?array $_defaultSeedJoin = [Sql\Join::class];
 
     /**
      * @param Connection|string|array<string, string>|DbalConnection|DbalDriverConnection $connection
@@ -85,7 +84,7 @@ class Sql extends Persistence
     {
         parent::disconnect();
 
-        $this->_connection = null; // @phpstan-ignore-line
+        $this->_connection = null;
     }
 
     #[\Override]
@@ -187,6 +186,10 @@ class Sql extends Persistence
      */
     public function initQuery(Model $model): Query
     {
+        if ($model->isEntity()) { // TODO pass model only
+            $model = $model->getModel();
+        }
+
         $query = $this->dsql();
 
         if ($model->table) {
@@ -267,6 +270,10 @@ class Sql extends Persistence
      */
     protected function setLimitOrder(Model $model, Query $query): void
     {
+        if ($model->isEntity()) { // TODO pass model only
+            $model = $model->getModel();
+        }
+
         // set limit
         if ($model->limit[0] !== null || $model->limit[1] !== 0) {
             $query->limit($model->limit[0] ?? \PHP_INT_MAX, $model->limit[1]);
@@ -330,7 +337,11 @@ class Sql extends Persistence
 
             // simple condition
             if ($condition instanceof Model\Scope\Condition) {
-                $query->where(...$condition->toQueryArguments());
+                $whereArgs = $condition->toQueryArguments();
+                if (count($whereArgs) === 3 && $whereArgs[1] === null) {
+                    unset($whereArgs[1]);
+                }
+                $query->where(...$whereArgs);
             }
 
             // nested conditions
@@ -531,7 +542,7 @@ class Sql extends Persistence
     }
 
     /**
-     * @param mixed $idRaw
+     * @param scalar|($operation is 'insert' ? null : never) $idRaw
      */
     private function assertExactlyOneRecordUpdated(Model $model, $idRaw, int $affectedRows, string $operation): void
     {

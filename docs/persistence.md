@@ -298,7 +298,7 @@ protected function init(): void
     $this->getOwner()->hasOne(
         $f . '_currency_id',
         [
-            $this->currency_model ?? new Currency(),
+            'model' => [Currency::class],
             'system' => true,
         ]
     );
@@ -477,7 +477,7 @@ after-save reloading:
 ```
 public function archive()
 {
-    $this->reloadAfterSave = false;
+    $this->getModel()->reloadAfterSave = false;
     $this->set('is_archived', true);
 
     return $this;
@@ -547,12 +547,12 @@ public function loadQuick(Model $class, $id)
         $m = $m->withPersistence($this->mdb)->save();
     }
 
-    $m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
-        $m->withPersistence($this->sql)->save();
+    $m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $entity) {
+        $entity->withPersistence($this->sql)->save();
     });
 
-    $m->onHook(Model::HOOK_BEFORE_DELETE, function (Model $m) {
-        $m->withPersistence($this->sql)->delete();
+    $m->onHook(Model::HOOK_BEFORE_DELETE, function (Model $entity) {
+        $entity->withPersistence($this->sql)->delete();
     });
 
     return $m;
@@ -599,12 +599,12 @@ The last two hooks are in order to replicate any changes into the SQL database
 also:
 
 ```
-$m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
-    $m->withPersistence($this->sql)->save();
+$m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $entity) {
+    $entity->withPersistence($this->sql)->save();
 });
 
-$m->onHook(Model::HOOK_BEFORE_DELETE, function (Model $m) {
-    $m->withPersistence($this->sql)->delete();
+$m->onHook(Model::HOOK_BEFORE_DELETE, function (Model $entity) {
+    $entity->withPersistence($this->sql)->delete();
 });
 ```
 
@@ -660,8 +660,8 @@ If you wish that every time you save your model the copy is also stored inside
 some other database (for archive purposes) you can implement it like this:
 
 ```
-$m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) {
-    $arc = $this->withPersistence($m->getApp()->archive_db);
+$m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $entity) {
+    $arc = $this->withPersistence($entity->getApp()->archive_db);
 
     // add some audit fields
     $arc->addField('original_id', ['type' => 'integer'])->set($this->getId());
@@ -746,10 +746,10 @@ executing:
 ```
 $m = Model_Product($db);
 $m->addCondition('name', $productName);
-$action = $m->action('getOne', ['id']);
+$productIdAction = $m->action('field', ['id']);
 
 $m = Model_Invoice($db);
-$m->insert(['qty' => 20, 'product_id' => $action]);
+$m->insert(['qty' => 20, 'product_id' => $productIdAction]);
 ```
 
 Insert operation will check if you are using same persistence.
@@ -758,14 +758,6 @@ result instead.
 
 Being able to embed actions inside next query allows Agile Data to reduce number
 of queries issued.
-
-The default action type can be set when executing action, for example:
-
-```
-$a = $m->action('field', 'user', 'getOne');
-
-echo $a(); // same as $a->getOne();
-```
 
 ### SQL Actions
 
@@ -791,7 +783,7 @@ In conjunction with Model::refLink() you can produce expressions for creating
 sub-selects. The functionality is nicely wrapped inside HasMany::addField():
 
 ```
-$client->hasMany('Invoice')
+$client->hasMany('Invoice', ['model' => [Model_Invoice::class]])
     ->addField('total_gross', ['aggregate' => 'sum', 'field' => 'gross']);
 ```
 
@@ -806,7 +798,7 @@ This operation is actually consisting of 3 following operations:
 Here is a way how to intervene with the process:
 
 ```
-$client->hasMany('Invoice');
+$client->hasMany('Invoice', ['model' => [Model_Invoice::class]]);
 $client->addExpression('last_sale', ['expr' => function (Model $m) {
     return $m->refLink('Invoice')
         ->setOrder('date desc')

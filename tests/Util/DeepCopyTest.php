@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests\Util;
 
 use Atk4\Data\Model;
+use Atk4\Data\Reference;
 use Atk4\Data\Schema\TestCase;
 use Atk4\Data\Util\DeepCopy;
 use Atk4\Data\Util\DeepCopyException;
@@ -50,8 +51,8 @@ class DcInvoice extends Model
 
         $this->addField('is_paid', ['type' => 'boolean', 'default' => false]);
 
-        $this->onHookShort(DeepCopy::HOOK_AFTER_COPY, function (Model $s) {
-            if (get_class($s) === static::class) {
+        $this->onHookShort(DeepCopy::HOOK_AFTER_COPY, function (Model $entity) {
+            if (get_class($entity) === static::class) {
                 $this->set('ref', $this->get('ref') . '_copy');
             }
         });
@@ -286,8 +287,8 @@ class DeepCopyTest extends TestCase
         $quote->getModel()->hasMany('Lines2', ['model' => [DcQuoteLine::class], 'theirField' => 'parent_id']);
 
         $invoice = new DcInvoice();
-        $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, static function (Model $m) {
-            if (!$m->get('ref')) {
+        $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, static function (Model $entity) {
+            if (!$entity->get('ref')) {
                 throw new \Exception('no test ref');
             }
         });
@@ -315,8 +316,8 @@ class DeepCopyTest extends TestCase
         $quote = $this->createTestQuote();
 
         $invoice = new DcInvoice();
-        $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, static function (Model $m) {
-            if (!$m->get('ref')) {
+        $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, static function (Model $entity) {
+            if (!$entity->get('ref')) {
                 throw new \Exception('no test ref');
             }
         });
@@ -343,17 +344,19 @@ class DeepCopyTest extends TestCase
     {
         $quote = $this->createTestQuote();
 
-        $quote->getModel()->getReference('client_id')->model = [get_class(new class() extends DcClient {
-            #[\Override]
-            protected function init(): void
-            {
-                parent::init();
+        \Closure::bind(function () use ($quote) {
+            $quote->getModel()->getReference('client_id')->model = [get_class(new class() extends DcClient {
+                #[\Override]
+                protected function init(): void
+                {
+                    parent::init();
 
-                $this->onHook(DeepCopy::HOOK_AFTER_COPY, static function (Model $m) {
-                    throw new \Exception('test ex');
-                });
-            }
-        })];
+                    $this->onHook(DeepCopy::HOOK_AFTER_COPY, static function (Model $entity) {
+                        throw new \Exception('test ex');
+                    });
+                }
+            })];
+        }, null, Reference::class)();
 
         $dc = new DeepCopy();
 

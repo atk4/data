@@ -770,10 +770,9 @@ class ArrayTest extends TestCase
         $m->action('fx', ['UNSUPPORTED', 'name']);
     }
 
-    public function testUnsupportedCondition1(): void
+    public function testConditionNoOperatorException(): void
     {
-        $p = new Persistence\Array_([1 => ['name' => 'John']]);
-        $m = new Model($p);
+        $m = new Model();
         $m->addField('name');
 
         $this->expectException(Exception::class);
@@ -781,11 +780,9 @@ class ArrayTest extends TestCase
         $m->addCondition('name');
     }
 
-    public function testUnsupportedCondition2(): void
+    public function testConditionUnsupportedFieldException(): void
     {
-        $p = new Persistence\Array_([1 => ['name' => 'John']]);
-        $m = new Model($p);
-        $m->addField('name');
+        $m = new Model();
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Field must be a string or an instance of Expressionable');
@@ -839,7 +836,7 @@ class ArrayTest extends TestCase
         $country = new Model($p, ['table' => 'country']);
         $country->addField('name');
 
-        $user = new Model();
+        $user = new Model($p);
         $user->table = 'user';
         $user->addField('name');
         $user->addField('surname');

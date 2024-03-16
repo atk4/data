@@ -275,10 +275,10 @@ class FieldTest extends TestCase
             $m->getField('newNASA_module')->getCaption()
         );
 
-        $m->addField('this\\ _isNASA_MyBigBull shit_123\Foo');
+        $m->addField('this\ _isNASA_MyBigBull shit_123\Foo');
         self::assertSame(
             'This Is NASA My Big Bull Shit 123 Foo',
-            $m->getField('this\\ _isNASA_MyBigBull shit_123\Foo')->getCaption()
+            $m->getField('this\ _isNASA_MyBigBull shit_123\Foo')->getCaption()
         );
     }
 
@@ -433,13 +433,13 @@ class FieldTest extends TestCase
         $dbData['item'][1]['surname'] = 'Stalker';
         self::assertSame($dbData, $this->getDb());
 
-        $m->onHook(Model::HOOK_BEFORE_SAVE, static function (Model $m) {
-            if ($m->isDirty('name')) {
-                $m->set('surname', $m->get('name'));
-                $m->_unset('name');
-            } elseif ($m->isDirty('surname')) {
-                $m->set('name', $m->get('surname'));
-                $m->_unset('surname');
+        $m->onHook(Model::HOOK_BEFORE_SAVE, static function (Model $entity) {
+            if ($entity->isDirty('name')) {
+                $entity->set('surname', $entity->get('name'));
+                $entity->_unset('name');
+            } elseif ($entity->isDirty('surname')) {
+                $entity->set('name', $entity->get('surname'));
+                $entity->_unset('surname');
             }
         });
 
@@ -767,11 +767,22 @@ class FieldTest extends TestCase
         $m->set('foo', 'ABC');
     }
 
-    public function testAddFieldDirectly(): void
+    public function testAddFieldDuplicateNameException(): void
+    {
+        $m = new Model();
+        $m->addField('foo');
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Field with such name already exists');
+        $m->addField('foo');
+    }
+
+    public function testAddFieldDirectlyException(): void
     {
         $model = new Model();
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Field can be added using addField() method only');
         $model->add(new Field());
     }
 

@@ -12,7 +12,7 @@ use Atk4\Data\Exception;
 trait JoinsTrait
 {
     /** @var array<mixed> The class used by join() method. */
-    protected $_defaultSeedJoin = [Join::class];
+    protected array $_defaultSeedJoin = [Join::class];
 
     /**
      * Creates an objects that describes relationship between multiple tables (or collections).

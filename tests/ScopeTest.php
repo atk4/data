@@ -163,10 +163,10 @@ class ScopeTest extends TestCase
 
     public function testEditableHasOne(): void
     {
-        $gender = new Model();
+        $gender = new Model(null, ['table' => 'gender']);
         $gender->addField('name');
 
-        $m = new Model();
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->hasOne('gender_id', ['model' => $gender]);
 
@@ -216,11 +216,11 @@ class ScopeTest extends TestCase
         $condition = new Condition('name', 'abc');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Condition must be associated with Model to convert to words');
+        $this->expectExceptionMessage('Condition must be associated with model to convert to words');
         $condition->toWords();
     }
 
-    public function testConditionUnsupportedOperator(): void
+    public function testConditionUnsupportedOperatorException(): void
     {
         $country = new SCountry($this->db);
 
@@ -229,7 +229,37 @@ class ScopeTest extends TestCase
         $country->addCondition('name', '==', 'abc');
     }
 
-    public function testConditionUnsupportedNegate(): void
+    public function testConditionUnsupportedOperatorWithArrayValueException(): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Operator is not supported for array condition value');
+        new Condition('name', '>', ['a', 'b']);
+    }
+
+    public function testConditionMultiDimensionalArrayException(): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Multi-dimensional array as condition value is not supported');
+        new Condition('name', ['a', 'b' => ['c']]);
+    }
+
+    public function testConditionNestedException(): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Only Scope can contain another conditions');
+        new Condition(new Condition('foo', 1)); // @phpstan-ignore-line
+    }
+
+    public function testConditionClearException(): void
+    {
+        $condition = new Condition('foo', 1);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Condition does not support clear operation');
+        $condition->clear();
+    }
+
+    public function testConditionNegateUnsupportedException(): void
     {
         $condition = new Condition($this->getConnection()->expr('1 = 1'));
 
@@ -238,12 +268,12 @@ class ScopeTest extends TestCase
         $condition->negate();
     }
 
-    public function testRootScopeUnsupportedNegate(): void
+    public function testRootScopeNegateException(): void
     {
         $country = new SCountry($this->db);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Model scope cannot be negated');
+        $this->expectExceptionMessage('Model root scope cannot be negated');
         $country->scope()->negate();
     }
 
@@ -390,6 +420,15 @@ class ScopeTest extends TestCase
         self::assertCount(4, $user->export());
     }
 
+    public function testScopeInitNonScopeOwnerException(): void
+    {
+        $scope = Scope::createAnd();
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Scope can only be added as element to scope');
+        $scope->setOwner(new Model()); // @phpstan-ignore-line
+    }
+
     public function testScopeToWords(): void
     {
         $user = new SUser($this->db);
@@ -421,6 +460,31 @@ class ScopeTest extends TestCase
         foreach ($user as $u) {
             self::assertTrue($u->get('name') === 'Alain' && $u->get('country_code') === 'FR');
         }
+    }
+
+    public function testCreateAnd(): void
+    {
+        $scope = Scope::createAnd();
+        self::assertSame(Scope::class, get_class($scope));
+        self::assertSame(Scope::class, get_class(Scope\RootScope::createAnd()));
+        self::assertTrue($scope->isAnd());
+        self::assertFalse($scope->isOr());
+    }
+
+    public function testCreateOr(): void
+    {
+        $scope = Scope::createOr();
+        self::assertSame(Scope::class, get_class($scope));
+        self::assertSame(Scope::class, get_class(Scope\RootScope::createOr()));
+        self::assertFalse($scope->isAnd());
+        self::assertTrue($scope->isOr());
+    }
+
+    public function testUnsupportedJunctionException(): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unsupported compound condition junction');
+        new Scope([], '&&');
     }
 
     public function testAnd(): void
@@ -474,19 +538,5 @@ class ScopeTest extends TestCase
 
         self::assertTrue($scope->isEmpty());
         self::assertEmpty($scope->toWords($user));
-    }
-
-    public function testInvalid1(): void
-    {
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Operator is not supported for array condition value');
-        new Condition('name', '>', ['a', 'b']);
-    }
-
-    public function testInvalid2(): void
-    {
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Multi-dimensional array as condition value is not supported');
-        new Condition('name', ['a', 'b' => ['c']]);
     }
 }

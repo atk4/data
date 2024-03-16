@@ -20,7 +20,7 @@ class CallbackField extends Field
     public bool $neverPersist = true;
     public bool $readOnly = true;
 
-    /** @var \Closure(object): mixed */
+    /** @var \Closure<T of Model>(T): mixed */
     public $expr;
 
     protected function init(): void

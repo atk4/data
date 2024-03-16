@@ -18,13 +18,21 @@ class HasOne extends Reference
     {
         parent::init();
 
-        if (!$this->ourField) {
+        if ($this->ourField === null) {
             $this->ourField = $this->link;
         }
 
-        // for references use "integer" as a default type
-        if (!(new \ReflectionProperty($this, 'type'))->isInitialized($this)) {
-            $this->type = 'integer';
+        $checkTheirTypeOrig = $this->checkTheirType;
+        $this->checkTheirType = false;
+        try {
+            $analysingTheirModel = $this->createAnalysingTheirModel();
+        } finally {
+            $this->checkTheirType = $checkTheirTypeOrig;
+        }
+
+        // infer our field type from their field
+        if (($this->type ?? null) === null) {
+            $this->type = $analysingTheirModel->getField($this->getTheirFieldName($analysingTheirModel))->type;
         }
 
         $this->referenceLink = $this->link; // named differently than in Model\FieldPropertiesTrait
@@ -32,7 +40,7 @@ class HasOne extends Reference
         $fieldPropsRefl = (new \ReflectionClass(Model\FieldPropertiesTrait::class))->getProperties();
         $fieldPropsRefl[] = (new \ReflectionClass(Model\JoinLinkTrait::class))->getProperty('joinName');
 
-        $ourModel = $this->getOurModel(null);
+        $ourModel = $this->getOurModel();
         if (!$ourModel->hasField($this->ourField)) {
             $fieldSeed = [];
             foreach ($fieldPropsRefl as $fieldPropRefl) {
@@ -63,7 +71,7 @@ class HasOne extends Reference
     {
         // TODO horrible hack to render the field with a table prefix,
         // find a solution how to wrap the field inside custom Field (without owner?)
-        $ourModelCloned = clone $this->getOurModel(null);
+        $ourModelCloned = clone $this->getOurModel();
         $ourModelCloned->persistenceData['use_table_prefixes'] = true;
 
         return $ourModelCloned->getReference($this->link)->getOurField();
@@ -83,6 +91,23 @@ class HasOne extends Reference
         $theirModel = $this->createTheirModel($defaults);
 
         if ($ourModelOrEntity->isEntity()) {
+            $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function (Model $theirEntity) use ($ourModelOrEntity) {
+                $theirValue = $this->theirField !== null
+                    ? $theirEntity->get($this->theirField)
+                    : $theirEntity->getId();
+
+                if (!$this->getOurField()->compare($this->getOurFieldValue($ourModelOrEntity), $theirValue)) {
+                    $ourModelOrEntity->set($this->getOurFieldName(), $theirValue)->save();
+                }
+
+                $theirEntity->reload();
+            });
+            $theirModel->reloadAfterSave = false;
+
+            $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_DELETE, function (Model $theirEntity) use ($ourModelOrEntity) {
+                $ourModelOrEntity->setNull($this->getOurFieldName());
+            });
+
             $ourValue = $this->getOurFieldValue($ourModelOrEntity);
 
             if ($this->getOurFieldName() === $ourModelOrEntity->idField) {
@@ -106,26 +131,6 @@ class HasOne extends Reference
             if ($theirModel === null) {
                 $theirModel = $theirModelOrig->createEntity();
             }
-        }
-
-        // their model will be reloaded after saving our model to reflect changes in referenced fields
-        $theirModel->getModel(true)->reloadAfterSave = false;
-
-        if ($ourModelOrEntity->isEntity()) {
-            $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function (Model $theirModel) use ($ourModelOrEntity) {
-                $theirValue = $this->theirField ? $theirModel->get($this->theirField) : $theirModel->getId();
-
-                if (!$this->getOurField()->compare($this->getOurFieldValue($ourModelOrEntity), $theirValue)) {
-                    $ourModelOrEntity->set($this->getOurFieldName(), $theirValue)->save();
-                }
-
-                $theirModel->reload();
-            });
-
-            // add hook to set our field = null when record of referenced model is deleted
-            $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_DELETE, function (Model $theirModel) use ($ourModelOrEntity) {
-                $ourModelOrEntity->setNull($this->getOurFieldName());
-            });
         }
 
         return $theirModel;

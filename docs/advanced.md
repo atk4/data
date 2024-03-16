@@ -143,16 +143,16 @@ protected function init(): void
 
     $this->getOwner()->addField('created_dts', ['type' => 'datetime', 'default' => new \DateTime()]);
 
-    $this->getOwner()->hasOne('created_by_user_id', 'User');
+    $this->getOwner()->hasOne('created_by_user_id', ['model' => [User::class]]);
     if (isset($this->getApp()->user) && $this->getApp()->user->isLoaded()) {
         $this->getOwner()->getField('created_by_user_id')->default = $this->getApp()->user->getId();
     }
 
-    $this->getOwner()->hasOne('updated_by_user_id', 'User');
+    $this->getOwner()->hasOne('updated_by_user_id', ['model' => [User::class]]);
 
     $this->getOwner()->addField('updated_dts', ['type' => 'datetime']);
 
-    $this->getOwner()->onHook(Model::HOOK_BEFORE_UPDATE, function (Model $m, array $data) {
+    $this->getOwner()->onHook(Model::HOOK_BEFORE_UPDATE, function (Model $entity, array $data) {
         if (isset($this->getApp()->user) && $this->getApp()->user->isLoaded()) {
             $data['updated_by'] = $this->getApp()->user->getId();
         }
@@ -457,8 +457,8 @@ class Model_InvoicePayment extends \Atk4\Data\Model
     {
         parent::init();
 
-        $this->hasOne('invoice_id', 'Model_Invoice');
-        $this->hasOne('payment_id', 'Model_Payment');
+        $this->hasOne('invoice_id', ['model' => [Model_Invoice::class]]);
+        $this->hasOne('payment_id', ['model' => [Model_Payment::class]]);
         $this->addField('amount_closed');
     }
 }
@@ -469,13 +469,15 @@ class Model_InvoicePayment extends \Atk4\Data\Model
 Next we need to define reference. Inside Model_Invoice add:
 
 ```
-$this->hasMany('InvoicePayment');
+$this->hasMany('InvoicePayment', ['model' => [Model_InvoicePayment::class]]);
 
-$this->hasMany('Payment', ['model' => function (self $m) {
-    $p = new Model_Payment($m->getPersistence());
+$this->hasMany('Payment', ['model' => static function (Persistence $persistence) {
+    $p = new Model_Payment($persistence);
     $j = $p->join('invoice_payment.payment_id');
     $j->addField('amount_closed');
-    $j->hasOne('invoice_id', 'Model_Invoice');
+    $j->hasOne('invoice_id', ['model' => [Model_Invoice::class]]);
+
+    return $p;
 }, 'theirField' => 'invoice_id']);
 
 $this->onHookShort(Model::HOOK_BEFORE_DELETE, function () {
@@ -506,7 +508,7 @@ that shows how much amount is closed and `amount_due`:
 
 ```
 // define field to see closed amount on invoice
-$this->hasMany('InvoicePayment')
+$this->hasMany('InvoicePayment', ['model' => [Model_InvoicePayment::class]])
     ->addField('total_payments', ['aggregate' => 'sum', 'field' => 'amount_closed']);
 $this->addExpression('amount_due', ['expr' => '[total] - coalesce([total_payments], 0)']);
 ```
@@ -574,7 +576,7 @@ class Model_Invoice extends \Atk4\Data\Model
 
         ...
 
-        $this->hasOne('category_id', 'Model_Category');
+        $this->hasOne('category_id', ['model' => [Model_Category::class]]);
 
         ...
     }
@@ -622,21 +624,18 @@ persistence layer to load or save anything. Next I need a beforeSave handler:
 ```
 $this->onHookShort(Model::HOOK_BEFORE_SAVE, function () {
     if ($this->_isset('client_code') && !$this->_isset('client_id')) {
-        $cl = $this->refModel('client_id');
-        $cl->addCondition('code', $this->get('client_code'));
-        $this->set('client_id', $cl->action('field', ['id']));
+        $client = $this->ref('client_id');
+        $this->set('client_id', $client->getId());
     }
 
     if ($this->_isset('client_name') && !$this->_isset('client_id')) {
-        $cl = $this->refModel('client_id');
-        $cl->addCondition('name', 'like', $this->get('client_name'));
-        $this->set('client_id', $cl->action('field', ['id']));
+        $client = $this->ref('client_id');
+        $this->set('client_id', $client->getId());
     }
 
     if ($this->_isset('category') && !$this->_isset('category_id')) {
-        $c = $this->refModel('category_id');
-        $c->addCondition($c->titleField, 'like', $this->get('category'));
-        $this->set('category_id', $c->action('field', ['id']));
+        $category = $this->ref('category_id');
+        $this->set('category_id', $category->getId());
     }
 });
 ```
@@ -646,43 +645,6 @@ differently from PHP's default behavior. See documentation for Model::isset
 
 This technique allows you to hide the complexity of the lookups and also embed
 the necessary queries inside your "insert" query.
-
-### Fallback to default value
-
-You might wonder, with the lookup like that, how the default values will work?
-What if the user-specified entry is not found? Lets look at the code:
-
-```
-if ($m->_isset('category') && !$m->_isset('category_id')) {
-    $c = $this->refModel('category_id');
-    $c->addCondition($c->titleField, 'like', $m->get('category'));
-    $m->set('category_id', $c->action('field', ['id']));
-}
-```
-
-So if category with a name is not found, then sub-query will return "NULL".
-If you wish to use a different value instead, you can create an expression:
-
-```
-if ($m->_isset('category') && !$m->_isset('category_id')) {
-    $c = $this->refModel('category_id');
-    $c->addCondition($c->titleField, 'like', $m->get('category'));
-    $m->set('category_id', $this->expr('coalesce([], [])', [
-        $c->action('field', ['id']),
-        $m->getField('category_id')->default,
-    ]));
-}
-```
-
-The beautiful thing about this approach is that default can also be defined
-as a lookup query:
-
-```
-$this->hasOne('category_id', 'Model_Category');
-$this->getField('category_id')->default =
-    $this->refModel('category_id')->addCondition('name', 'Other')
-        ->action('field', ['id']);
-```
 
 ## Inserting Hierarchical Data
 
@@ -751,7 +713,7 @@ In theory Document's 'contact_id' can be any Contact, however when you create
 define Model_Document:
 
 ```
-$this->hasOne('client_id', 'Model_Contact');
+$this->hasOne('client_id', ['model' => [Model_Contact::class]]);
 ```
 
 One option here is to move 'Model_Contact' into model property, which will be
@@ -764,7 +726,7 @@ $this->hasOne('client_id', ['model' => [$this->client_class]]);
 Alternatively you can replace model in the init() method of Model_Invoice:
 
 ```
-$this->getReference('client_id')->model = 'Model_Client';
+$this->getReference('client_id')->model = [Model_Client::class];
 ```
 
 You can also use array here if you wish to pass additional information into
@@ -777,45 +739,17 @@ $this->getReference('client_id')->model = ['Model_Client', 'no_audit' => true];
 Combined with our "Audit" handler above, this should allow you to relate
 with deleted clients.
 
-The final use case is when some value inside the existing model should be
-passed into the related model. Let's say we have 'Model_Invoice' and we want to
-add 'payment_invoice_id' that points to 'Model_Payment'. However we want this
-field only to offer payments made by the same client. Inside Model_Invoice add:
-
-```
-$this->hasOne('client_id', 'Client');
-
-$this->hasOne('payment_invoice_id', ['model' => function (self $m) {
-    return $m->ref('client_id')->ref('Payment');
-}]);
-
-/// how to use
-
-$m = new Model_Invoice($db);
-$m->set('client_id', 123);
-
-$m->set('payment_invoice_id', $m->ref('payment_invoice_id')->loadOne()->getId());
-```
-
-In this case the payment_invoice_id will be set to ID of any payment by client
-123. There also may be some better uses:
-
-```
-foreach ($cl->ref('Invoice') as $m) {
-    $m->set('payment_invoice_id', $m->ref('payment_invoice_id')->loadOne()->getId());
-    $m->save();
-}
-```
-
 ## Narrowing Down Existing References
 
 Agile Data allow you to define multiple references between same entities, but
 sometimes that can be quite useful. Consider adding this inside your Model_Contact:
 
 ```
-$this->hasMany('Invoice', 'Model_Invoice');
-$this->hasMany('OverdueInvoice', ['model' => function (self $m) {
-    return $m->ref('Invoice')->addCondition('due', '<', date('Y-m-d'))
+$this->hasMany('Invoice', ['model' => [Model_Invoice::class]]);
+
+$this->hasMany('OverdueInvoice', ['model' => static function (Persistence $persistence) {
+    return (new Model_Invoice($persistence))
+        ->addCondition('due', '<', new \DateTime());
 }]);
 ```
 
@@ -823,7 +757,7 @@ This way if you extend your class into 'Model_Client' and modify the 'Invoice'
 reference to use different model:
 
 ```
-$this->getReference('Invoice')->model = 'Model_Invoice_Sale';
+$this->getReference('Invoice')->model = [Model_Invoice_Sale::class];
 ```
 
 The 'OverdueInvoice' reference will be also properly adjusted.

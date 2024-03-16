@@ -36,7 +36,7 @@ class TransactionTest extends TestCase
 
         self::assertSame('Sue', $this->getDb()['item'][2]['name']);
 
-        $m->onHook(Model::HOOK_AFTER_DELETE, static function (Model $model) {
+        $m->onHook(Model::HOOK_AFTER_DELETE, static function (Model $entity) {
             throw new \Exception('Awful thing happened');
         });
 
@@ -189,10 +189,10 @@ class TransactionTest extends TestCase
         $m->addField('name');
         $m->addField('foo');
 
-        $hookCalled = false;
+        $hookCalled = 0;
         $values = [];
         $m->onHook(Model::HOOK_ROLLBACK, static function (Model $model, \Exception $e) use (&$hookCalled, &$values) {
-            $hookCalled = true;
+            ++$hookCalled;
             $values = $model->get(); // model field values are still the same no matter we rolled back
             $model->breakHook(false); // if we break hook and return false then exception is not thrown, but rollback still happens
         });
@@ -202,7 +202,7 @@ class TransactionTest extends TestCase
         $m->setMulti(['name' => 'Jane', 'foo' => 'bar']);
         $m->save();
 
-        self::assertTrue($hookCalled);
+        self::assertSame(1, $hookCalled);
         self::assertSame($m->get(), $values);
     }
 }

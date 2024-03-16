@@ -94,13 +94,19 @@ class Model implements \IteratorAggregate
     private $_entityId;
 
     /** @var array<string, true> */
-    private static $_modelOnlyProperties;
+    private static array $_modelOnlyProperties;
+
+    /** @var array<string, true> */
+    private static array $_modelOnlyPropertiesEntityMagic = [
+        'idField' => true,
+        'titleField' => true,
+    ];
 
     /** @var array<mixed> The seed used by addField() method. */
-    protected $_defaultSeedAddField = [Field::class];
+    protected array $_defaultSeedAddField = [Field::class];
 
     /** @var array<mixed> The seed used by addExpression() method. */
-    protected $_defaultSeedAddExpression = [CallbackField::class];
+    protected array $_defaultSeedAddExpression = [CallbackField::class];
 
     /** @var array<string, Field> */
     protected array $fields = [];
@@ -117,8 +123,7 @@ class Model implements \IteratorAggregate
     /** @var string|null */
     public $tableAlias;
 
-    /** @var Persistence|null */
-    private $_persistence;
+    private ?Persistence $_persistence = null;
 
     /** @var array<string, mixed>|null Persistence store some custom information in here that may be useful for them. */
     public ?array $persistenceData = null;
@@ -222,9 +227,6 @@ class Model implements \IteratorAggregate
      */
     public ?self $containedInEntity = null;
 
-    /** Only for Reference class */
-    public ?Reference $ownerReference = null;
-
     // {{{ Basic Functionality, field definition, set() and get()
 
     /**
@@ -316,7 +318,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsModel();
 
-        if (self::$_modelOnlyProperties === null) {
+        if ((self::$_modelOnlyProperties ?? null) === null) {
             $modelOnlyProperties = [];
             foreach ((new \ReflectionClass(self::class))->getProperties() as $prop) {
                 if (!$prop->isStatic()) {
@@ -325,19 +327,16 @@ class Model implements \IteratorAggregate
             }
 
             $modelOnlyProperties = array_diff_key($modelOnlyProperties, array_flip([
+                'hooks',
+                '_hookIndexCounter',
+                '_hookOrigThis',
+
                 '_model',
                 '_entityId',
                 'data',
                 'dirty',
 
-                'hooks',
-                '_hookIndexCounter',
-                '_hookOrigThis',
-
-                'ownerReference', // should be removed once references are non-entity
                 'userActions', // should be removed once user actions are non-entity
-
-                'containedInEntity',
             ]));
 
             self::$_modelOnlyProperties = $modelOnlyProperties;
@@ -449,11 +448,11 @@ class Model implements \IteratorAggregate
         $this->_add($obj, $defaults);
     }
 
-    public function _addIntoCollection(string $name, object $item, string $collection): object
+    public function _addIntoCollection(string $name, object $item, string $collection): void
     {
         // TODO $this->assertIsModel();
 
-        return $this->__addIntoCollection($name, $item, $collection);
+        $this->__addIntoCollection($name, $item, $collection);
     }
 
     /**
@@ -534,13 +533,21 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsModel();
 
+        if ($this->hasField($name)) {
+            throw (new Exception('Field with such name already exists'))
+                ->addMoreInfo('name', $name)
+                ->addMoreInfo('seed', $seed);
+        }
+
         if (is_object($seed)) {
             $field = $seed;
         } else {
             $field = $this->fieldFactory($seed);
         }
 
-        return $this->_addIntoCollection($name, $field, 'fields');
+        $this->_addIntoCollection($name, $field, 'fields');
+
+        return $field;
     }
 
     /**
@@ -804,7 +811,7 @@ class Model implements \IteratorAggregate
             $this->assertIsEntity();
 
             $data = [];
-            foreach ($this->onlyFields ?? array_keys($this->getFields()) as $k) {
+            foreach ($this->getModel()->onlyFields ?? array_keys($this->getFields()) as $k) {
                 $data[$k] = $this->get($k);
             }
 
@@ -1383,7 +1390,7 @@ class Model implements \IteratorAggregate
      */
     public function saveAndUnload(array $data = [])
     {
-        $reloadAfterSaveBackup = $this->reloadAfterSave;
+        $reloadAfterSaveBackup = $this->getModel()->reloadAfterSave;
         try {
             $this->getModel()->reloadAfterSave = false;
             $this->save($data);
@@ -1599,7 +1606,7 @@ class Model implements \IteratorAggregate
             $dirtyRef = &$this->getDirtyRef();
             $dirtyRef = [];
 
-            if ($this->idField && $this->reloadAfterSave) {
+            if ($this->idField && $this->getModel()->reloadAfterSave) {
                 $this->reload();
             }
 
@@ -1631,7 +1638,7 @@ class Model implements \IteratorAggregate
         }
 
         // save data fields
-        $reloadAfterSaveBackup = $this->reloadAfterSave;
+        $reloadAfterSaveBackup = $this->getModel()->reloadAfterSave;
         try {
             $this->getModel()->reloadAfterSave = false;
             $this->save($row);
@@ -1781,9 +1788,9 @@ class Model implements \IteratorAggregate
      * Create iterator (yield values).
      *
      * You can return false in afterLoad hook to prevent to yield this data row, example:
-     * $model->onHook(self::HOOK_AFTER_LOAD, static function (Model $m) {
-     *     if ($m->get('date') < $m->dateFrom) {
-     *         $m->breakHook(false);
+     * $model->onHook(self::HOOK_AFTER_LOAD, static function (Model $entity) {
+     *     if ($entity->get('date') < $entity->dateFrom) {
+     *         $entity->breakHook(false);
      *     }
      * })
      *
@@ -1975,9 +1982,7 @@ class Model implements \IteratorAggregate
     /**
      * Add expression field which will calculate its value by using callback.
      *
-     * @template T of self
-     *
-     * @param array{'expr': \Closure(T): mixed} $seed
+     * @param array{'expr': \Closure<T of self>(T): mixed} $seed
      *
      * @return CallbackField
      */
@@ -1990,6 +1995,13 @@ class Model implements \IteratorAggregate
         return $field;
     }
 
+    private function assertIsGetEntityToModelMagicProperty(string $name): void
+    {
+        if (!isset(self::$_modelOnlyPropertiesEntityMagic[$name])) {
+            $this->assertIsModel();
+        }
+    }
+
     public function __isset(string $name): bool
     {
         $model = $this->getModel(true);
@@ -1999,6 +2011,8 @@ class Model implements \IteratorAggregate
         }
 
         if ($this->isEntity() && isset($model->getModelOnlyProperties()[$name])) {
+            $this->assertIsGetEntityToModelMagicProperty($name);
+
             return isset($model->{$name});
         }
 
@@ -2017,6 +2031,8 @@ class Model implements \IteratorAggregate
         }
 
         if ($this->isEntity() && isset($model->getModelOnlyProperties()[$name])) {
+            $this->assertIsGetEntityToModelMagicProperty($name);
+
             return $model->{$name};
         }
 

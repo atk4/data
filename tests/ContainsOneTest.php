@@ -62,7 +62,7 @@ class ContainsOneTest extends TestCase
 
         // test caption of containsOne reference
         self::assertSame('Secret Code', $a->getField($a->fieldName()->door_code)->getCaption());
-        self::assertSame('Secret Code', $a->refModel($a->fieldName()->door_code)->getModelCaption());
+        self::assertSame('Secret Code', $a->getReference($a->fieldName()->door_code)->createTheirModel()->getModelCaption());
         self::assertSame('Secret Code', $a->door_code->getModelCaption());
     }
 
@@ -76,7 +76,7 @@ class ContainsOneTest extends TestCase
         // check do we have address set
         self::assertNull($i->addr); // @phpstan-ignore-line
         $a = $i->getModel()->addr->createEntity();
-        $a->containedInEntity = $i;
+        $a->getModel()->containedInEntity = $i;
 
         // now store some address
         $a->setMulti($row = [
@@ -103,7 +103,7 @@ class ContainsOneTest extends TestCase
         // now add nested containsOne - DoorCode
         $iEntity = $i->addr;
         $c = $iEntity->getModel()->door_code->createEntity();
-        $c->containedInEntity = $iEntity;
+        $c->getModel()->containedInEntity = $iEntity;
         $c->setMulti($row = [
             $c->fieldName()->id => 1,
             $c->fieldName()->code => 'ABC',
@@ -170,7 +170,7 @@ class ContainsOneTest extends TestCase
         // with address
         self::assertNull($i->addr); // @phpstan-ignore-line
         $a = $i->getModel()->addr->createEntity();
-        $a->containedInEntity = $i;
+        $a->getModel()->containedInEntity = $i;
         $a->setMulti($row = [
             $a->fieldName()->id => 1,
             $a->fieldName()->country_id => 1,

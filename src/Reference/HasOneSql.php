@@ -16,7 +16,7 @@ class HasOneSql extends HasOne
      */
     private function _addField(string $fieldName, bool $theirFieldIsTitle, ?string $theirFieldName, array $defaults): SqlExpressionField
     {
-        $ourModel = $this->getOurModel(null);
+        $ourModel = $this->getOurModel();
 
         $fieldExpression = $ourModel->addExpression($fieldName, array_merge([
             'expr' => function (Model $ourModel) use ($theirFieldIsTitle, $theirFieldName) {
@@ -25,17 +25,15 @@ class HasOneSql extends HasOne
                     $theirFieldName = $theirModel->titleField;
                 }
 
-                // remove order if we just select one field from hasOne model, needed for Oracle
-                return $theirModel->action('field', [$theirFieldName])->reset('order');
+                return $theirModel->action('field', [$theirFieldName]);
             },
         ], $defaults, [
-            // allow to set our field value by an imported foreign field, but only when
-            // the our field value is null
+            // allow to set our field value by an imported foreign field, but only when the our field value is null
             'readOnly' => false,
         ]));
 
-        $this->onHookToOurModel($ourModel, Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($fieldName, $theirFieldIsTitle, $theirFieldName) {
-            if ($ourModel->isDirty($fieldName)) {
+        $this->onHookToOurModel(Model::HOOK_BEFORE_SAVE, function (Model $ourEntity) use ($fieldName, $theirFieldIsTitle, $theirFieldName) {
+            if ($ourEntity->isDirty($fieldName)) {
                 $theirModel = $this->createTheirModel();
                 if ($theirFieldIsTitle) {
                     $theirFieldName = $theirModel->titleField;
@@ -43,9 +41,9 @@ class HasOneSql extends HasOne
 
                 // when our field is not null or dirty too, update nothing, but check if the imported
                 // field was changed to expected value implied by the relation
-                if ($ourModel->isDirty($this->getOurFieldName()) || $ourModel->get($this->getOurFieldName()) !== null) {
-                    $importedFieldValue = $ourModel->get($fieldName);
-                    $expectedTheirEntity = $theirModel->loadBy($this->getTheirFieldName($theirModel), $ourModel->get($this->getOurFieldName()));
+                if ($ourEntity->isDirty($this->getOurFieldName()) || $ourEntity->get($this->getOurFieldName()) !== null) {
+                    $importedFieldValue = $ourEntity->get($fieldName);
+                    $expectedTheirEntity = $theirModel->loadBy($this->getTheirFieldName($theirModel), $ourEntity->get($this->getOurFieldName()));
                     if (!$expectedTheirEntity->compare($theirFieldName, $importedFieldValue)) {
                         throw (new Exception('Imported field was changed to an unexpected value'))
                             ->addMoreInfo('ourFieldName', $this->getOurFieldName())
@@ -56,9 +54,9 @@ class HasOneSql extends HasOne
                             ->addMoreInfo('sourceFieldValue', $expectedTheirEntity->get($theirFieldName));
                     }
                 } else {
-                    $newTheirEntity = $theirModel->loadBy($theirFieldName, $ourModel->get($fieldName));
-                    $ourModel->set($this->getOurFieldName(), $newTheirEntity->get($this->getTheirFieldName($theirModel)));
-                    $ourModel->_unset($fieldName);
+                    $newTheirEntity = $theirModel->loadBy($theirFieldName, $ourEntity->get($fieldName));
+                    $ourEntity->set($this->getOurFieldName(), $newTheirEntity->get($this->getTheirFieldName($theirModel)));
+                    $ourEntity->_unset($fieldName);
                 }
             }
         }, [], 20);
@@ -77,15 +75,16 @@ class HasOneSql extends HasOne
             $theirFieldName = $fieldName;
         }
 
-        $ourModel = $this->getOurModel(null);
+        $ourModel = $this->getOurModel();
 
-        // if caption/type is not defined in $defaults -> get it directly from the linked model field $theirFieldName
-        $refModelField = $ourModel->refModel($this->link)->getField($theirFieldName);
-        $defaults['type'] ??= $refModelField->type;
-        $defaults['enum'] ??= $refModelField->enum;
-        $defaults['values'] ??= $refModelField->values;
-        $defaults['caption'] ??= $refModelField->caption;
-        $defaults['ui'] = array_merge($defaults['ui'] ?? $refModelField->ui, ['editable' => false]);
+        // if caption/type is not defined in $defaults then infer it from their field
+        $analysingTheirModel = $ourModel->getReference($this->link)->createAnalysingTheirModel();
+        $analysingTheirField = $analysingTheirModel->getField($theirFieldName);
+        $defaults['type'] ??= $analysingTheirField->type;
+        $defaults['enum'] ??= $analysingTheirField->enum;
+        $defaults['values'] ??= $analysingTheirField->values;
+        $defaults['caption'] ??= $analysingTheirField->caption;
+        $defaults['ui'] = array_merge($defaults['ui'] ?? $analysingTheirField->ui, ['editable' => false]);
 
         $fieldExpression = $this->_addField($fieldName, false, $theirFieldName, $defaults);
 
@@ -122,20 +121,6 @@ class HasOneSql extends HasOne
         return $this;
     }
 
-    /**
-     * Creates model that can be used for generating sub-query actions.
-     *
-     * @param array<string, mixed> $defaults
-     */
-    public function refLink(Model $ourModel, array $defaults = []): Model
-    {
-        $theirModel = $this->createTheirModel($defaults);
-
-        $theirModel->addCondition($this->getTheirFieldName($theirModel), $this->referenceOurValue());
-
-        return $theirModel;
-    }
-
     #[\Override]
     public function ref(Model $ourModelOrEntity, array $defaults = []): Model
     {
@@ -157,9 +142,24 @@ class HasOneSql extends HasOne
     }
 
     /**
+     * Creates model that can be used for generating sub-query actions.
+     *
+     * @param array<string, mixed> $defaults
+     */
+    public function refLink(array $defaults = []): Model
+    {
+        $theirModel = $this->createTheirModel($defaults);
+
+        $theirModel->addCondition($this->getTheirFieldName($theirModel), $this->referenceOurValue());
+
+        return $theirModel;
+    }
+
+    /**
      * Add a title of related entity as expression to our field.
      *
-     * $order->hasOne('user_id', 'User')->addTitle();
+     * $order->hasOne('user_id', ['model' => [User::class]])
+     *     ->addTitle();
      *
      * This will add expression 'user' equal to ref('user_id')['name'];
      *
@@ -167,7 +167,7 @@ class HasOneSql extends HasOne
      */
     public function addTitle(array $defaults = []): SqlExpressionField
     {
-        $ourModel = $this->getOurModel(null);
+        $ourModel = $this->getOurModel();
 
         $fieldName = $defaults['field'] ?? preg_replace('~_(' . preg_quote($ourModel->idField, '~') . '|id)$~', '', $this->link);
 

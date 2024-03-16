@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace Atk4\Data;
 
 use Atk4\Core\DiContainerTrait;
-use Atk4\Core\Factory;
 use Atk4\Core\InitializerTrait;
 use Atk4\Core\TrackableTrait;
+use Atk4\Data\Reference\WeakAnalysingMap;
 
 /**
- * Reference implements a link between one model and another. The basic components for
- * a reference is ability to generate the destination model, which is returned through
- * getModel() and that's pretty much it.
+ * Reference implements a link between our model and their model..
  *
  * It's possible to extend the basic reference with more meaningful references.
  *
@@ -28,8 +26,14 @@ class Reference
         setOwner as private _setOwner;
     }
 
+    /** @var WeakAnalysingMap<list<mixed>, \Closure, Model|Persistence> */
+    private static WeakAnalysingMap $analysingClosureMap;
+
+    /** @var WeakAnalysingMap<array{Persistence, array<mixed>|\Closure(Persistence, array<string, mixed>): Model|Model, array<mixed>}, Model, Model|Persistence> */
+    private static WeakAnalysingMap $analysingTheirModelMap;
+
     /**
-     * Use this alias for related entity by default. This can help you
+     * Use this alias for their model by default. This can help you
      * if you create sub-queries or joins to separate this from main
      * table. The tableAlias will be uniquely generated.
      *
@@ -47,14 +51,12 @@ class Reference
     public $link;
 
     /**
-     * Definition of the destination their model, that can be either an object, a
-     * callback or a string. This can be defined during initialization and
-     * then used inside getModel() to fully populate and associate with
-     * persistence.
+     * Seed of their model. If it is a Model instance, self::createTheirModel() must
+     * always clone it to return a new instance.
      *
-     * @var Model|\Closure(object, static, array<string, mixed>): Model|array<mixed>
+     * @var array<mixed>|\Closure(Persistence, array<string, mixed>): Model|Model
      */
-    public $model;
+    protected $model;
 
     /**
      * This is an optional property which can be used by your implementation
@@ -113,12 +115,12 @@ class Reference
     public function getOurFieldName(): string
     {
         return $this->ourField
-            ?? $this->getOurModel(null)->idField;
+            ?? $this->getOurModel()->idField;
     }
 
     final protected function getOurField(): Field
     {
-        return $this->getOurModel(null)->getField($this->getOurFieldName());
+        return $this->getOurModel()->getField($this->getOurFieldName());
     }
 
     /**
@@ -138,19 +140,21 @@ class Reference
     }
 
     /**
-     * @template T of Model
-     *
-     * @param \Closure(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
-     * @param array<int, mixed>                                                                        $args
+     * @param \Closure<T of Model>(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
+     * @param array<int, mixed> $args
      */
-    protected function onHookToOurModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    protected function onHookToOurModel(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->shortName; // use static function to allow this object to be GCed
 
-        return $model->onHookDynamic(
+        return $this->getOurModel()->onHookDynamic(
             $spot,
-            static function (Model $model) use ($name): self {
-                return $model->getModel(true)->getElement($name);
+            static function (Model $modelOrEntity) use ($name): self {
+                /** @var self */
+                $obj = $modelOrEntity->getModel(true)->getElement($name);
+                $modelOrEntity->getModel(true)->assertIsModel($obj->getOwner());
+
+                return $obj;
             },
             $fx,
             $args,
@@ -162,19 +166,22 @@ class Reference
      * @param \Closure(Model, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
      * @param array<int, mixed>                                                                            $args
      */
-    protected function onHookToTheirModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    protected function onHookToTheirModel(Model $theirModel, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
-        if ($model->ownerReference !== null && $model->ownerReference !== $this) {
-            throw new Exception('Model owner reference is unexpectedly already set');
-        }
-        $model->ownerReference = $this;
-        $getThisFx = static function (Model $model) {
-            return $model->ownerReference;
-        };
+        $theirModel->assertIsModel();
 
-        return $model->onHookDynamic(
+        $ourModel = $this->getOurModel();
+        $name = $this->shortName; // use static function to allow this object to be GCed
+
+        return $theirModel->onHookDynamic(
             $spot,
-            $getThisFx,
+            static function () use ($ourModel, $name): self {
+                /** @var self */
+                $obj = $ourModel->getElement($name);
+                $ourModel->assertIsModel($obj->getOwner());
+
+                return $obj;
+            },
             $fx,
             $args,
             $priority
@@ -202,71 +209,18 @@ class Reference
             ->assertIsModel($ourModelOrEntity->getModel(true));
     }
 
-    public function getOurModel(?Model $ourModelOrEntity): Model
+    public function getOurModel(): Model
     {
-        $ourModel = $ourModelOrEntity !== null
-            ? $ourModelOrEntity->getModel(true)
-            : $this->getOwner();
-
-        $this->getOwner()
-            ->assertIsModel($ourModel);
+        $ourModel = $this->getOwner();
+        $ourModel->assertIsModel();
 
         return $ourModel;
-    }
-
-    /**
-     * Create destination model that is linked through this reference. Will apply
-     * necessary conditions.
-     *
-     * IMPORTANT: the returned model must be a fresh clone or freshly built from a seed
-     *
-     * @param array<string, mixed> $defaults
-     */
-    public function createTheirModel(array $defaults = []): Model
-    {
-        // set tableAlias
-        $defaults['tableAlias'] ??= $this->tableAlias;
-
-        // if model is Closure, then call the closure and it should return a model
-        if ($this->model instanceof \Closure) {
-            $m = ($this->model)($this->getOurModel(null), $this, $defaults);
-        } else {
-            $m = $this->model;
-        }
-
-        if (is_object($m)) {
-            $theirModel = Factory::factory(clone $m, $defaults);
-        } else {
-            // add model from seed
-            $modelDefaults = $m;
-            $theirModelSeed = [$modelDefaults[0]];
-            unset($modelDefaults[0]);
-            $defaults = array_merge($modelDefaults, $defaults);
-
-            $theirModel = Factory::factory($theirModelSeed, $defaults);
-        }
-
-        $this->addToPersistence($theirModel, $defaults);
-
-        if ($this->checkTheirType) {
-            $ourField = $this->getOurField();
-            $theirField = $theirModel->getField($this->getTheirFieldName($theirModel));
-            if ($theirField->type !== $ourField->type) {
-                throw (new Exception('Reference type mismatch'))
-                    ->addMoreInfo('ourField', $ourField)
-                    ->addMoreInfo('ourFieldType', $ourField->type)
-                    ->addMoreInfo('theirField', $theirField)
-                    ->addMoreInfo('theirFieldType', $theirField->type);
-            }
-        }
-
-        return $theirModel;
     }
 
     protected function initTableAlias(): void
     {
         if (!$this->tableAlias) {
-            $ourModel = $this->getOurModel(null);
+            $ourModel = $this->getOurModel();
 
             $aliasFull = $this->link;
             $alias = preg_replace('~_(' . preg_quote($ourModel->idField !== false ? $ourModel->idField : '', '~') . '|id)$~', '', $aliasFull);
@@ -280,64 +234,217 @@ class Reference
     }
 
     /**
-     * @param array<string, mixed> $defaults
-     */
-    protected function addToPersistence(Model $theirModel, array $defaults = []): void
-    {
-        if (!$theirModel->issetPersistence()) {
-            $persistence = $this->getDefaultPersistence($theirModel);
-            if ($persistence !== false) {
-                $theirModel->setDefaults($defaults);
-                $theirModel->setPersistence($persistence);
-            }
-        } elseif ($defaults !== []) {
-            // TODO this seems dangerous
-        }
-
-        // set model caption
-        if ($this->caption !== null) {
-            $theirModel->caption = $this->caption;
-        }
-    }
-
-    /**
-     * Returns default persistence for theirModel.
+     * Returns default persistence for their model.
      *
      * @return Persistence|false
      */
-    protected function getDefaultPersistence(Model $theirModel)
+    protected function getDefaultPersistence()
     {
-        $ourModel = $this->getOurModel(null);
+        $ourModel = $this->getOurModel();
 
         // this is useful for ContainsOne/Many implementation in case when you have
         // SQL_Model->containsOne()->hasOne() structure to get back to SQL persistence
         // from Array persistence used in ContainsOne model
-        if ($ourModel->containedInEntity && $ourModel->containedInEntity->getModel()->issetPersistence()) {
+        if ($ourModel->containedInEntity !== null && $ourModel->containedInEntity->getModel()->issetPersistence()) {
             return $ourModel->containedInEntity->getModel()->getPersistence();
         }
 
-        return $ourModel->issetPersistence() ? $ourModel->getPersistence() : false;
+        return $ourModel->issetPersistence()
+            ? $ourModel->getPersistence()
+            : false;
     }
 
     /**
-     * Returns referenced model without any extra conditions. However other
-     * relationship types may override this to imply conditions.
+     * @param array<string, mixed> $defaults
+     */
+    protected function createTheirModelBeforeInit(array $defaults): Model
+    {
+        $defaults['tableAlias'] ??= $this->tableAlias;
+
+        // if model is Closure, then call the closure and it should return a model
+        if ($this->model instanceof \Closure) {
+            $persistence = Persistence::assertInstanceOf($this->getDefaultPersistence());
+            $m = ($this->model)($persistence, $defaults);
+        } else {
+            $m = $this->model;
+        }
+
+        if (is_object($m)) {
+            $theirModelSeed = clone $m;
+        } else {
+            \Closure::bind(static fn () => Model::_fromSeedPrecheck($m, false), null, Model::class)();
+            $theirModelSeed = [$m[0]];
+            unset($m[0]);
+            $defaults = array_merge($m, $defaults);
+        }
+
+        $theirModel = Model::fromSeed($theirModelSeed, $defaults);
+
+        return $theirModel;
+    }
+
+    protected function createTheirModelSetPersistence(Model $theirModel): void
+    {
+        if (!$theirModel->issetPersistence()) {
+            $persistence = $this->getDefaultPersistence();
+            if ($persistence !== false) {
+                $theirModel->setPersistence($persistence);
+            }
+        }
+    }
+
+    protected function createTheirModelAfterInit(Model $theirModel): void
+    {
+        if ($this->caption !== null) {
+            $theirModel->caption = $this->caption;
+        }
+
+        if ($this->checkTheirType) {
+            $ourField = $this->getOurField();
+            $theirField = $theirModel->getField($this->getTheirFieldName($theirModel));
+            if ($theirField->type !== $ourField->type) {
+                throw (new Exception('Reference type mismatch'))
+                    ->addMoreInfo('ourField', $ourField)
+                    ->addMoreInfo('ourFieldType', $ourField->type)
+                    ->addMoreInfo('theirField', $theirField)
+                    ->addMoreInfo('theirFieldType', $theirField->type);
+            }
+        }
+    }
+
+    /**
+     * Create their model that is linked through this reference. Will apply
+     * necessary conditions.
+     *
+     * IMPORTANT: the returned model must be a fresh clone or freshly built from a seed
+     *
+     * @param array<string, mixed> $defaults
+     */
+    final public function createTheirModel(array $defaults = []): Model
+    {
+        $theirModel = $this->createTheirModelBeforeInit($defaults);
+        $this->createTheirModelSetPersistence($theirModel);
+        $this->createTheirModelAfterInit($theirModel);
+
+        return $theirModel;
+    }
+
+    /**
+     * @template T of array<mixed>
+     *
+     * @param T $analysingKey
+     *
+     * @return T
+     */
+    private function deduplicateAnalysingKey(array $analysingKey, object $analysingOwner): array
+    {
+        if ((self::$analysingClosureMap ?? null) === null) {
+            self::$analysingClosureMap = new WeakAnalysingMap();
+        }
+
+        foreach ($analysingKey as $k => $v) {
+            if (is_array($v)) {
+                $analysingKey[$k] = $this->deduplicateAnalysingKey($v, $analysingOwner);
+            } elseif ($v instanceof \Closure) {
+                $fxRefl = new \ReflectionFunction($v);
+
+                $fxKey = [
+                    self::$analysingClosureMap,
+                    $fxRefl->getFileName()
+                        . '-' . $fxRefl->getStartLine()
+                        . '-' . $fxRefl->getEndLine() . '-' . $fxRefl->getName(), // https://github.com/php/php-src/issues/11391
+                    $fxRefl->getClosureScopeClass() !== null ? $fxRefl->getClosureScopeClass()->getName() : null,
+                    $fxRefl->getClosureThis(),
+                    \PHP_VERSION_ID < 80100 ? $fxRefl->getStaticVariables() : $fxRefl->getClosureUsedVariables(),
+                ];
+
+                // optimization - simplify key to improve hashing speed
+                if ($fxKey[4] === []) {
+                    unset($fxKey[4]);
+                    if ($fxKey[3] === null) {
+                        unset($fxKey[3]);
+                    }
+                }
+
+                $fx = self::$analysingClosureMap->get($fxKey, $analysingOwner);
+                if ($fx === null) {
+                    $fx = $v;
+                    self::$analysingClosureMap->set($fxKey, $fx, $analysingOwner);
+                }
+
+                $analysingKey[$k] = $fx;
+            }
+        }
+
+        return $analysingKey;
+    }
+
+    /**
+     * Same as self::createTheirModel() but the created model is deduplicated based on our model persistence,
+     * self::$model seed and $defaults parameter to guard recursion from possibly recursively invoked Model::init()
+     * and also to improve performance when used for their field/reference analysing purposes.
+     *
+     * @param array<string, mixed> $defaults
+     */
+    public function createAnalysingTheirModel(array $defaults = []): Model
+    {
+        if ((self::$analysingTheirModelMap ?? null) === null) {
+            self::$analysingTheirModelMap = new WeakAnalysingMap();
+        }
+
+        $ourPersistence = $this->getOurModel()->getPersistence();
+        $analysingKey = [$ourPersistence, $this->model, $defaults];
+        $analysingOwner = $this->getOwner();
+
+        // optimization - keep referenced for whole persistence lifetime if seed is class name only or unbound \Closure
+        if ($defaults === []) {
+            if (is_array($this->model) && count($this->model) === 1 && is_string($this->model[0] ?? null)) {
+                $analysingOwner = $ourPersistence;
+            } elseif ($this->model instanceof \Closure) {
+                $fxRefl = new \ReflectionFunction($this->model);
+                if ($fxRefl->getClosureThis() === null
+                    && (\PHP_VERSION_ID < 80100 ? $fxRefl->getStaticVariables() : $fxRefl->getClosureUsedVariables()) === []) {
+                    $analysingOwner = $ourPersistence;
+                }
+            }
+        }
+
+        $analysingKey = $this->deduplicateAnalysingKey($analysingKey, $analysingOwner);
+
+        $theirModel = self::$analysingTheirModelMap->get($analysingKey, $analysingOwner);
+        if ($theirModel === null) {
+            try {
+                $theirModel = $this->createTheirModelBeforeInit($defaults);
+                self::$analysingTheirModelMap->set($analysingKey, $theirModel, $analysingOwner);
+                $this->createTheirModelSetPersistence($theirModel);
+                $this->createTheirModelAfterInit($theirModel);
+
+                // make analysing model unusable
+                \Closure::bind(static function () use ($theirModel) {
+                    unset($theirModel->{'_persistence'});
+                }, null, Model::class)();
+            } catch (\Throwable $e) {
+                if ($theirModel !== null) {
+                    \Closure::bind(static function () use ($theirModel) {
+                        $theirModel->_initialized = false;
+                    }, null, Model::class)();
+                }
+
+                throw $e;
+            }
+        }
+
+        $theirModel->assertIsInitialized();
+
+        return $theirModel;
+    }
+
+    /**
+     * Create their model. May be overridden to imply traversal conditions.
      *
      * @param array<string, mixed> $defaults
      */
     public function ref(Model $ourModel, array $defaults = []): Model
-    {
-        return $this->createTheirModel($defaults);
-    }
-
-    /**
-     * Returns referenced model without any extra conditions. Ever when extended
-     * must always respond with Model that does not look into current record
-     * or scope.
-     *
-     * @param array<string, mixed> $defaults
-     */
-    public function refModel(Model $ourModel, array $defaults = []): Model
     {
         return $this->createTheirModel($defaults);
     }

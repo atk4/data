@@ -47,7 +47,7 @@ class Join extends Model\Join
     {
         parent::initJoinHooks();
 
-        $this->onHookToOwnerBoth(Persistence\Sql::HOOK_INIT_SELECT_QUERY, \Closure::fromCallable([$this, 'initSelectQuery']));
+        $this->onHookToOwnerModel(Persistence\Sql::HOOK_INIT_SELECT_QUERY, \Closure::fromCallable([$this, 'initSelectQuery']));
     }
 
     /**

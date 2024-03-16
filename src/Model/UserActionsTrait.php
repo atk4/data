@@ -12,7 +12,7 @@ use Atk4\Data\Model;
 trait UserActionsTrait
 {
     /** @var array<mixed> The seed used by addUserAction() method. */
-    protected $_defaultSeedUserAction = [UserAction::class];
+    protected array $_defaultSeedUserAction = [UserAction::class];
 
     /** @var array<string, UserAction> Collection of user actions - using key as action system name */
     protected $userActions = [];
@@ -21,13 +21,17 @@ trait UserActionsTrait
      * Register new user action for this model. By default UI will allow users to trigger actions
      * from UI.
      *
-     * @template T of Model
-     *
-     * @param array<mixed>|\Closure(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $seed
+     * @param array<mixed>|\Closure<T of Model>(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $seed
      */
     public function addUserAction(string $name, $seed = []): UserAction
     {
         $this->assertIsModel();
+
+        if ($this->hasUserAction($name)) {
+            throw (new Exception('User action with such name already exists'))
+                ->addMoreInfo('name', $name)
+                ->addMoreInfo('seed', $seed);
+        }
 
         if ($seed instanceof \Closure) {
             $seed = ['callback' => $seed];

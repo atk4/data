@@ -24,17 +24,17 @@ class HasMany extends Reference
     #[\Override]
     public function getTheirFieldName(Model $theirModel = null): string
     {
-        if ($this->theirField) {
+        if ($this->theirField !== null) {
             return $this->theirField;
         }
 
         // this is pure guess, verify if such field exist, otherwise throw
         // TODO probably remove completely in the future
-        $ourModel = $this->getOurModel(null);
+        $ourModel = $this->getOurModel();
         $theirFieldName = preg_replace('~^.+\.~s', '', $this->getModelTableString($ourModel)) . '_' . $ourModel->idField;
-        if (!($theirModel ?? $this->createTheirModel())->hasField($theirFieldName)) {
-            throw (new Exception('Their model does not contain fallback field'))
-                ->addMoreInfo('their_fallback_field', $theirFieldName);
+        if (!($theirModel ?? $this->createAnalysingTheirModel())->hasField($theirFieldName)) {
+            throw (new Exception('Their model does not contain implicit field'))
+                ->addMoreInfo('theirImplicitField', $theirFieldName);
         }
 
         return $theirFieldName;
@@ -50,7 +50,7 @@ class HasMany extends Reference
         $this->assertOurModelOrEntity($ourModelOrEntity);
 
         if ($ourModelOrEntity->isEntity()) {
-            $res = $this->ourField
+            $res = $this->ourField !== null
                 ? $ourModelOrEntity->get($this->ourField)
                 : $ourModelOrEntity->getId();
             $this->assertReferenceValueNotNull($res);
@@ -71,7 +71,7 @@ class HasMany extends Reference
     {
         // TODO horrible hack to render the field with a table prefix,
         // find a solution how to wrap the field inside custom Field (without owner?)
-        $ourModelCloned = clone $this->getOurModel(null);
+        $ourModelCloned = clone $this->getOurModel();
         $ourModelCloned->persistenceData['use_table_prefixes'] = true;
 
         return $ourModelCloned->getReference($this->link)->getOurField();
@@ -96,10 +96,8 @@ class HasMany extends Reference
      *
      * @param array<string, mixed> $defaults
      */
-    public function refLink(?Model $ourModel, array $defaults = []): Model
+    public function refLink(array $defaults = []): Model
     {
-        $this->getOurModel($ourModel); // or should $this->assertOurModelOrEntity($ourModelOrEntity); be here? What is exactly the difference between ref and refLink?
-
         $theirModelLinked = $this->createTheirModel($defaults)->addCondition(
             $this->getTheirFieldName(),
             $this->referenceOurValue()
@@ -134,7 +132,7 @@ class HasMany extends Reference
 
         if (isset($defaults['expr'])) {
             $fx = function () use ($defaults, $alias) {
-                $theirModelLinked = $this->refLink(null);
+                $theirModelLinked = $this->refLink();
 
                 return $theirModelLinked->action('field', [$theirModelLinked->expr(
                     $defaults['expr'],
@@ -144,15 +142,15 @@ class HasMany extends Reference
             unset($defaults['args']);
         } elseif (is_object($defaults['aggregate'])) {
             $fx = function () use ($defaults, $alias) {
-                return $this->refLink(null)->action('field', [$defaults['aggregate'], 'alias' => $alias]);
+                return $this->refLink()->action('field', [$defaults['aggregate'], 'alias' => $alias]);
             };
         } elseif ($defaults['aggregate'] === 'count' && !isset($defaults['field'])) {
             $fx = function () use ($alias) {
-                return $this->refLink(null)->action('count', ['alias' => $alias]);
+                return $this->refLink()->action('count', ['alias' => $alias]);
             };
         } elseif (in_array($defaults['aggregate'], ['sum', 'avg', 'min', 'max', 'count'], true)) {
             $fx = function () use ($defaults, $field) {
-                return $this->refLink(null)->action('fx0', [$defaults['aggregate'], $field]);
+                return $this->refLink()->action('fx0', [$defaults['aggregate'], $field]);
             };
         } else {
             $fx = function () use ($defaults, $field) {
@@ -161,11 +159,11 @@ class HasMany extends Reference
                     $args['concatSeparator'] = $defaults['concatSeparator'];
                 }
 
-                return $this->refLink(null)->action('fx', $args);
+                return $this->refLink()->action('fx', $args);
             };
         }
 
-        return $this->getOurModel(null)->addExpression($fieldName, array_merge($defaults, ['expr' => $fx]));
+        return $this->getOurModel()->addExpression($fieldName, array_merge($defaults, ['expr' => $fx]));
     }
 
     /**

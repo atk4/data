@@ -35,14 +35,12 @@ class Migrator
     public const REF_TYPE_LINK = 1;
     public const REF_TYPE_PRIMARY = 2;
 
-    /** @var Connection */
-    private $_connection;
+    private Connection $_connection;
 
-    /** @var Table */
-    public $table;
+    public Table $table;
 
     /** @var list<string> */
-    private $createdTableNames = [];
+    private array $createdTableNames = [];
 
     /**
      * @param Connection|Persistence\Sql|Model $source
@@ -317,14 +315,10 @@ class Migrator
     {
         $reference = $field->getReference();
         if ($reference instanceof HasOne) {
-            $referenceField = $reference->getTheirFieldName($reference->createTheirModel());
+            $theirModel = $reference->createTheirModel();
+            $referenceField = $reference->getTheirFieldName($theirModel);
 
-            $modelSeed = is_array($reference->model)
-                ? $reference->model
-                : clone $reference->model;
-            $referenceModel = Model::fromSeed($modelSeed, [new Persistence\Sql($this->getConnection())]);
-
-            return $referenceModel->getField($referenceField);
+            return $theirModel->getField($referenceField);
         }
 
         return null;

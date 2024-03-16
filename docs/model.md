@@ -122,7 +122,8 @@ $model->addField('secret', ['neverPersist' => true]);
 $model->addField('old_field', ['actual' => 'new_field']);
 
 // or even into a different table
-$model->join('new_table')->addField('extra_field');
+$model->join('new_table')
+    ->addField('extra_field');
 ```
 
 Model also has a property `$table`, which indicate name of default table/collection/file to be
@@ -196,8 +197,8 @@ you use Persistence's "afterAdd" hook. This will not affect ALL models but just 
 which are associated with said persistence:
 
 ```
-$db->onHook(Persistence::HOOK_AFTER_ADD, function (Persistence $p, Model $m) use ($acl) {
-    $fields = $m->getFields();
+$db->onHook(Persistence::HOOK_AFTER_ADD, function (Persistence $persistence, Model $model) use ($acl) {
+    $fields = $model->getFields();
 
     $acl->disableRestrictedFields($fields);
 });

@@ -20,7 +20,7 @@ class SqlExpressionField extends Field
     public bool $neverSave = true;
     public bool $readOnly = true;
 
-    /** @var \Closure(object, Expression): (string|Expressionable)|string|Expressionable Used expression. */
+    /** @var \Closure<T of Model>(T, Expression): (string|Expressionable)|string|Expressionable Used expression. */
     public $expr;
 
     /** @var string Specifies how to aggregate this. */

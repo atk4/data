@@ -95,7 +95,7 @@ If you are worried about performance you can keep 2 models in memory:
 
 ```
 $order = new Order($db);
-$client = $order->refModel('client_id');
+$client = $order->ref('client_id');
 
 foreach ($order as $o) {
     $c = $client->load($o->get('client_id'));
@@ -118,7 +118,7 @@ There are several ways how to link models with hasMany:
 ```
 $m->hasMany('Orders', ['model' => [Model_Order::class]]); // using seed
 
-$m->hasMany('Order', ['model' => function (Model $m, $r) { // using callback
+$m->hasMany('Order', ['model' => static function (Persistence $persistence, array $defaults) { // using callback
     return new Model_Order();
 }]);
 ```
@@ -129,15 +129,12 @@ It is possible to perform reference through an 3rd party table:
 
 ```
 $i = new Model_Invoice();
-$p = new Model_Payment();
 
-// table invoice_payment has 'invoice_id', 'payment_id' and 'amount_allocated'
-
-$p
-    ->join('invoice_payment.payment_id')
-    ->addFields(['amount_allocated', 'invoice_id']);
-
-$i->hasMany('Payments', ['model' => $p]);
+$i->hasMany('Payments', ['model' => static function () {
+    return (new Model_Payment())
+        ->join('invoice_payment.payment_id')
+        ->addFields(['amount_allocated', 'invoice_id']);
+}]);
 ```
 
 Now you can fetch all the payments associated with the invoice through:
@@ -154,10 +151,7 @@ available. Both models will relate through `currency.code = exchange.currency_co
 
 ```
 $c = new Model_Currency();
-$e = new Model_ExchangeRate();
-
-$c->hasMany('Exchanges', ['model' => $e, 'theirField' => 'currency_code', 'ourField' => 'code']);
-
+$c->hasMany('Exchanges', ['model' => [Model_ExchangeRate::class], 'theirField' => 'currency_code', 'ourField' => 'code']);
 $c->addCondition('is_convertible', true);
 $e = $c->ref('Exchanges');
 ```
@@ -198,7 +192,10 @@ inside `$m` that will correspond to the sum of all the orders. Here is another
 example:
 
 ```
-$u->hasMany('PaidOrders', (new Model_Order())->addCondition('is_paid', true))
+$u->hasMany('PaidOrders', ['model' => static function (Persistence $persistence) {
+    return (new Model_Order($persistence))
+        ->addCondition('is_paid', true);
+}])
     ->addField('paid_amount', ['aggregate' => 'sum', 'field' => 'amount']);
 ```
 
@@ -267,7 +264,7 @@ Alternatively you may also specify either 'aggregate':
 ```
 $book->hasMany('Pages', ['model' => [Page::class]])
     ->addField('page_list', [
-        'aggregate' => $book->refModel('Pages')->expr('group_concat([number], [])', ['-']),
+        'aggregate' => $book->getReference('Pages')->createTheirModel()->expr('group_concat([number], [])', ['-']),
     ]);
 ```
 
@@ -281,7 +278,7 @@ or 'field':
 as of 1.3.4 count's field defaults to `*` - no need to specify explicitly.
 :::
 
-## hasMany / refLink / refModel
+## hasMany / refLink
 
 :::{php:method} refLink($link)
 :::
@@ -314,13 +311,6 @@ select
 from user
 where is_vip = 1
 ```
-
-:::{php:method} refModel($link)
-:::
-
-There are many situations when you need to get referenced model instead of
-reference itself. In such case refModel() comes in as handy shortcut of doing
-`$model->refLink($link)->getModel()`.
 
 ## hasOne reference
 
@@ -481,7 +471,7 @@ Sometimes you would want to have a different type of relation between models,
 so with `addReference` you can define whatever reference you want:
 
 ```
-$m->addReference('Archive', ['model' => function (Model $m) {
+$m->addReference('Archive', ['model' => static function (Persistence $persistence) use ($m) {
     return new $m(null, ['table' => $m->table . '_archive']);
 }]);
 ```
@@ -499,7 +489,7 @@ custom logic.
 No condition will be applied by default so it's all up to you:
 
 ```
-$m->addReference('Archive', ['model' => function (Model $m) {
+$m->addReference('Archive', ['model' => static function (Persistence $persistence) use ($m) {
     $archive = new $m(null, ['table' => $m->table . '_archive']);
 
     $m->addField('original_id', ['type' => 'integer']);
@@ -530,15 +520,7 @@ While {php:meth}`Model::ref()` returns a related model, {php:meth}`Model::getRef
 gives you the reference object itself so that you could perform some changes on it,
 such as import more fields with {php:meth}`Model::addField()`.
 
-Or you can use {php:meth}`Model::refModel()` which will simply return referenced
-model and you can do fancy things with it.
-
-```
-$refModel = $model->refModel('owner_id');
-```
-
-You can also use {php:meth}`Model::hasReference()` to check if particular reference
-exists in model:
+{php:meth}`Model::hasReference()` can be used to check if particular reference exists in model:
 
 ```
 if ($model->hasReference('owner_id')) {

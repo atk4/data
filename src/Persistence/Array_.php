@@ -21,19 +21,18 @@ use Atk4\Data\Persistence\Array_\Db\Table;
 class Array_ extends Persistence
 {
     /** @var array<string, array<int|string, mixed>> */
-    private $seedData;
+    private array $seedData;
 
     /** @var array<string, Table> */
-    private $data;
+    private array $data = [];
 
     /** @var array<string, int> */
-    protected $maxSeenIdByTable = [];
+    protected array $maxSeenIdByTable = [];
 
     /** @var array<string, int|string> */
-    protected $lastInsertIdByTable = [];
+    protected array $lastInsertIdByTable = [];
 
-    /** @var string */
-    protected $lastInsertIdTable;
+    protected string $lastInsertIdTable;
 
     /**
      * @param array<int|string, mixed> $data
@@ -246,9 +245,8 @@ class Array_ extends Persistence
 
         if (is_object($model->table)) {
             $action = $this->action($model, 'select');
-            $condition = new Model\Scope\Condition('', $id);
-            $condition->key = $model->getIdField();
-            $condition->setOwner($model->createEntity()); // TODO needed for typecasting to apply
+            $condition = new Model\Scope\Condition($model->getIdField(), $id);
+            $condition->setOwner($model->scope()); // needed for typecasting to apply
             $action->filter($condition);
 
             $rowData = $action->getRow();
@@ -300,7 +298,7 @@ class Array_ extends Persistence
     /**
      * Generates new record ID.
      *
-     * @return string
+     * @return int|string
      */
     public function generateNewId(Model $model)
     {
@@ -334,11 +332,11 @@ class Array_ extends Persistence
     /**
      * Last ID inserted.
      *
-     * @return mixed
+     * @return int|string
      */
     public function lastInsertId(Model $model = null)
     {
-        if ($model) {
+        if ($model !== null) {
             return $this->lastInsertIdByTable[$model->table] ?? null;
         }
 
