@@ -1,5 +1,7 @@
 includes:
     - phar://phpstan.phar/conf/bleedingEdge.neon
+    # remove once https://github.com/phpstan/extension-installer/issues/36 is fixed
+    - phpstan-ext.neon
 
 parameters:
     level: 6
@@ -54,6 +56,27 @@ parameters:
             message: '~^Class Doctrine\\DBAL\\(Platforms\\SqlitePlatform|Schema\\SqliteSchemaManager) referenced with incorrect case: Doctrine\\DBAL\\(Platforms\\SQLitePlatform|Schema\\SQLiteSchemaManager)\.$~'
             path: '*'
             count: 25
+
+        -
+            message: '~^Creating new PHPStan\\Reflection\\Type\\UnionTypeMethodReflection is not covered by backward compatibility promise\. The class might change in a minor PHPStan version\.$~'
+            path: 'src/Model/Phpstan/RemoveVirtualInterfacesFromStaticReturnTypeDmrtExtension.php'
+            count: 1
+        -
+            message: '~^Calling PHPStan\\Reflection\\Type\\UnionTypeMethodReflection::getName\(\) is not covered by backward compatibility promise\. The method might change in a minor PHPStan version\.$~'
+            path: 'src/Model/Phpstan/RemoveVirtualInterfacesFromStaticReturnTypeDmrtExtension.php'
+            count: 1
+        -
+            message: '~^Creating new PHPStan\\Reflection\\Type\\CalledOnTypeUnresolvedMethodPrototypeReflection is not covered by backward compatibility promise\. The class might change in a minor PHPStan version\.$~'
+            path: 'src/Model/Phpstan/RemoveVirtualInterfacesFromStaticReturnTypeDmrtExtension.php'
+            count: 1
+        -
+            message: '~^Calling PHPStan\\Reflection\\Type\\CalledOnTypeUnresolvedMethodPrototypeReflection::getTransformedMethod\(\) is not covered by backward compatibility promise\. The method might change in a minor PHPStan version\.$~'
+            path: 'src/Model/Phpstan/RemoveVirtualInterfacesFromStaticReturnTypeDmrtExtension.php'
+            count: 1
+        -
+            message: '~^Parameter #1 \$methodReflection of method Atk4\\Data\\Model\\Phpstan\\RemoveVirtualInterfacesFromStaticReturnTypeDmrtExtension::unresolveMethodReflection\(\) expects PHPStan\\Reflection\\ResolvedMethodReflection, PHPStan\\Reflection\\MethodReflection given\.$~'
+            path: 'src/Model/Phpstan/RemoveVirtualInterfacesFromStaticReturnTypeDmrtExtension.php'
+            count: 1
 
         # TODO these rules are generated, this ignores should be fixed in the code
         # for src/Schema/TestCase.php

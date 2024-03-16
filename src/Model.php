@@ -16,6 +16,8 @@ use Atk4\Core\InitializerTrait;
 use Atk4\Core\ReadableCaptionTrait;
 use Atk4\Data\Field\CallbackField;
 use Atk4\Data\Field\SqlExpressionField;
+use Atk4\Data\Model\Phpstan\IsEntity;
+use Atk4\Data\Model\Phpstan\IsLoaded;
 use Atk4\Data\Model\Scope\AbstractScope;
 use Atk4\Data\Model\Scope\RootScope;
 use Mvorisek\Atk4\Hintable\Data\HintableModelTrait;
@@ -25,7 +27,7 @@ use Mvorisek\Atk4\Hintable\Data\HintableModelTrait;
  *                                                               If the value is null then the record is considered to be new.
  * @property array<string, Field|Reference|Model\Join> $elements
  *
- * @phpstan-implements \IteratorAggregate<static>
+ * @phpstan-implements \IteratorAggregate<static&IsLoaded>
  */
 class Model implements \IteratorAggregate
 {
@@ -347,6 +349,8 @@ class Model implements \IteratorAggregate
 
     /**
      * @return static
+     *
+     * @phpstan-return static&IsEntity
      */
     public function createEntity(): self
     {
@@ -371,7 +375,7 @@ class Model implements \IteratorAggregate
         $entity->data = [];
         $entity->dirty = [];
 
-        return $entity;
+        return $entity; // @phpstan-ignore-line
     }
 
     /**
@@ -1209,7 +1213,7 @@ class Model implements \IteratorAggregate
      * @param ($fromTryLoad is true ? false : bool) $fromReload
      * @param mixed                                 $id
      *
-     * @return ($fromTryLoad is true ? static|null : static)
+     * @return ($fromTryLoad is true ? (static&IsLoaded)|null : static&IsLoaded)
      */
     private function _load(bool $fromReload, bool $fromTryLoad, $id)
     {
@@ -1224,15 +1228,15 @@ class Model implements \IteratorAggregate
             if ($fromReload) {
                 $this->unload();
 
-                return $this;
+                return $this; // @phpstan-ignore-line
             }
 
             return null;
         } elseif (is_object($res)) {
-            $res = (static::class)::assertInstanceOf($res);
+            (static::class)::assertInstanceOf($res);
             $res->assertIsEntity();
 
-            return $res;
+            return $res; // @phpstan-ignore-line
         }
 
         $data = $this->getModel()->getPersistence()->{$fromTryLoad ? 'tryLoad' : 'load'}($this->getModel(), $this->remapIdLoadToPersistence($id));
@@ -1252,18 +1256,18 @@ class Model implements \IteratorAggregate
             if ($fromReload) {
                 $this->unload();
 
-                return $this;
+                return $this; // @phpstan-ignore-line
             }
 
             return null;
         } elseif (is_object($res)) {
-            $res = (static::class)::assertInstanceOf($res);
+            (static::class)::assertInstanceOf($res);
             $res->assertIsEntity();
 
-            return $res;
+            return $res; // @phpstan-ignore-line
         }
 
-        return $this;
+        return $this; // @phpstan-ignore-line
     }
 
     /**
@@ -1272,6 +1276,8 @@ class Model implements \IteratorAggregate
      * @param mixed $id
      *
      * @return static|null
+     *
+     * @phpstan-return (static&IsLoaded)|null
      */
     public function tryLoad($id)
     {
@@ -1286,6 +1292,8 @@ class Model implements \IteratorAggregate
      * @param mixed $id
      *
      * @return static
+     *
+     * @phpstan-return static&IsLoaded
      */
     public function load($id)
     {
@@ -1298,6 +1306,8 @@ class Model implements \IteratorAggregate
      * Try to load one record. Will throw if more than one record exists, but not if there is no record.
      *
      * @return static|null
+     *
+     * @phpstan-return (static&IsLoaded)|null
      */
     public function tryLoadOne()
     {
@@ -1308,6 +1318,8 @@ class Model implements \IteratorAggregate
      * Load one record. Will throw if more than one record exists.
      *
      * @return static
+     *
+     * @phpstan-return static&IsLoaded
      */
     public function loadOne()
     {
@@ -1320,6 +1332,8 @@ class Model implements \IteratorAggregate
      * If only one record should match, use checked "tryLoadOne" method.
      *
      * @return static|null
+     *
+     * @phpstan-return (static&IsLoaded)|null
      */
     public function tryLoadAny()
     {
@@ -1332,6 +1346,8 @@ class Model implements \IteratorAggregate
      * If only one record should match, use checked "loadOne" method.
      *
      * @return static
+     *
+     * @phpstan-return static&IsLoaded
      */
     public function loadAny()
     {
@@ -1341,7 +1357,7 @@ class Model implements \IteratorAggregate
     /**
      * Reload model by taking its current ID.
      *
-     * @return $this
+     * @return $this&IsLoaded
      */
     public function reload()
     {
@@ -1363,6 +1379,8 @@ class Model implements \IteratorAggregate
      * record in the database.
      *
      * @return static
+     *
+     * @phpstan-return static&IsEntity
      */
     public function duplicate()
     {
@@ -1375,7 +1393,7 @@ class Model implements \IteratorAggregate
         $duplicateDirtyRef = $data;
         $duplicate->setId(null);
 
-        return $duplicate;
+        return $duplicate; // @phpstan-ignore-line
     }
 
     /**
@@ -1462,7 +1480,7 @@ class Model implements \IteratorAggregate
      * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never)                                                                                   $operator
      * @param ($operator is string ? mixed : never)                                                                                                                                           $value
      *
-     * @return ($fromTryLoad is true ? static|null : static)
+     * @return ($fromTryLoad is true ? (static&IsLoaded)|null : static&IsLoaded)
      */
     private function _loadBy(bool $fromTryLoad, $field, $operator = null, $value = null)
     {
@@ -1489,6 +1507,8 @@ class Model implements \IteratorAggregate
      * @param ($operator is string ? mixed : never)                                                                                                                                           $value
      *
      * @return static
+     *
+     * @phpstan-return static&IsLoaded
      */
     public function loadBy($field, $operator = null, $value = null)
     {
@@ -1503,6 +1523,8 @@ class Model implements \IteratorAggregate
      * @param ($operator is string ? mixed : never)                                                                                                                                           $value
      *
      * @return static|null
+     *
+     * @phpstan-return (static&IsLoaded)|null
      */
     public function tryLoadBy($field, $operator = null, $value = null)
     {
@@ -1798,6 +1820,8 @@ class Model implements \IteratorAggregate
      * as a next iterator value.
      *
      * @return \Traversable<static>
+     *
+     * @phpstan-return \Traversable<static&IsLoaded>
      */
     #[\Override]
     final public function getIterator(): \Traversable
@@ -1848,7 +1872,7 @@ class Model implements \IteratorAggregate
                 if ($res === false) {
                     continue;
                 } elseif (is_object($res)) {
-                    $res = (static::class)::assertInstanceOf($res);
+                    (static::class)::assertInstanceOf($res);
                     $res->assertIsEntity();
                 } else {
                     $res = $entity;

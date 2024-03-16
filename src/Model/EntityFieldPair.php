@@ -7,6 +7,7 @@ namespace Atk4\Data\Model;
 use Atk4\Core\WarnDynamicPropertyTrait;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
+use Atk4\Data\Model\Phpstan\IsEntity;
 
 /**
  * @template-covariant TModel of Model
@@ -16,13 +17,13 @@ class EntityFieldPair
 {
     use WarnDynamicPropertyTrait;
 
-    /** @var TModel */
+    /** @var TModel&IsEntity */
     private $entity;
     /** @var string */
     private $fieldName;
 
     /**
-     * @param TModel $entity
+     * @param TModel&IsEntity $entity
      */
     public function __construct(Model $entity, string $fieldName)
     {
@@ -41,7 +42,7 @@ class EntityFieldPair
     }
 
     /**
-     * @return TModel
+     * @return TModel&IsEntity
      */
     public function getEntity(): Model
     {

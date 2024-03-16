@@ -145,8 +145,11 @@ trait UserActionsTrait
             'appliesTo' => UserAction::APPLIES_TO_SINGLE_RECORD,
             'callback' => static function (Model $entity) {
                 $entity->assertIsLoaded();
+                \PHPStan\dumpType($entity);
+                $res = $entity->save();
+                \PHPStan\dumpType($res);
 
-                return $entity->save();
+                return $res;
             },
         ]);
 

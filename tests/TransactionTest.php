@@ -21,18 +21,24 @@ class TransactionTest extends TestCase
 
         $m = new Model($this->db, ['table' => 'item']);
         $m->addField('name');
+        \PHPStan\dumpType($m);
         $m = $m->load(2);
+        \PHPStan\dumpType($m);
 
+        \PHPStan\dumpType($m);
         $m->onHook(Model::HOOK_AFTER_SAVE, static function () {
             throw new \Exception('Awful thing happened');
         });
+        \PHPStan\dumpType($m);
         $m->set('name', 'XXX');
 
+        \PHPStan\dumpType($m);
         try {
             $m->save();
         } catch (\Exception $e) {
             self::assertSame('Awful thing happened', $e->getMessage());
         }
+        \PHPStan\dumpType($m);
 
         self::assertSame('Sue', $this->getDb()['item'][2]['name']);
 

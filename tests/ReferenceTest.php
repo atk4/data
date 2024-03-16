@@ -26,6 +26,7 @@ class ReferenceTest extends TestCase
         $order->addField('user_id', ['type' => 'integer']);
 
         $r1 = $user->getModel()->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
+        \PHPStan\dumpType($r1);
         $o = $user->ref('Orders')->createEntity();
 
         self::assertSame(20, $o->get('amount'));
@@ -38,9 +39,14 @@ class ReferenceTest extends TestCase
 
             return $m;
         }]);
+        \PHPStan\dumpType($r2);
 
         self::assertSame(100, $user->ref('BigOrders')->createEntity()->get('amount'));
 
+        \PHPStan\dumpType([
+            'Orders' => $r1,
+            'BigOrders' => $r2,
+        ]);
         self::assertSame([
             'Orders' => $r1,
             'BigOrders' => $r2,

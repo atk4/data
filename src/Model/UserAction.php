@@ -10,6 +10,7 @@ use Atk4\Core\InitializerTrait;
 use Atk4\Core\TrackableTrait;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
+use Atk4\Data\Model\Phpstan\IsEntity;
 
 /**
  * Implements generic user action. Assigned to a model it can be invoked by a user. Model\UserAction class contains a
@@ -93,15 +94,21 @@ class UserAction
         return $owner->getModel(true);
     }
 
+    /**
+     * @phpstan-return Model&IsEntity
+     */
     public function getEntity(): Model
     {
-        $owner = $this->_getOwner();
+        /** @var Model&IsEntity */
+        $owner = $this->_getOwner(); // @phpstan-ignore-line
         $owner->assertIsEntity();
 
         return $owner;
     }
 
     /**
+     * @phpstan-param Model&IsEntity $entity
+     *
      * @return static
      */
     public function getActionForEntity(Model $entity): self
