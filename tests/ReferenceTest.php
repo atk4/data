@@ -407,6 +407,76 @@ class ReferenceTest extends TestCase
         $theirModelClass::$logs = [];
     }
 
+    public function testCreateAnalysingTheirModelKeepReferencedByPersistenceIfSeedIsUnboundClosure(): void
+    {
+        $modelClass = get_class(new class() extends Model {
+            public $table = 'main';
+
+            /** @var list<string> */
+            public static array $logs = [];
+
+            #[\Override]
+            protected function init(): void
+            {
+                parent::init();
+
+                self::$logs[] = $this->table;
+
+                foreach (['_u', '_v'] as $suffix) {
+                    $this->hasOne('a' . $suffix, ['model' => static function () {
+                        self::$logs[] = 's';
+
+                        return new Model(null, ['table' => 't']);
+                    }]);
+
+                    $this->hasOne('b' . $suffix, ['model' => static function () {
+                        self::$logs[] = 's_2';
+
+                        return new Model(null, ['table' => 't']);
+                    }]);
+
+                    $v = 'use';
+                    $this->hasOne('c' . $suffix, ['model' => static function () use ($v) {
+                        self::$logs[] = 's_' . $v;
+
+                        return new Model(null, ['table' => 't']);
+                    }]);
+
+                    $this->hasOne('d' . $suffix, ['model' => function () {
+                        $this->getIdField(); // prevent PHP CS Fixer to make this anonymous function static
+
+                        self::$logs[] = 'bound';
+
+                        return new Model(null, ['table' => 't']);
+                    }]);
+                }
+            }
+        });
+        self::assertSame([], $modelClass::$logs);
+
+        $m = new $modelClass($this->db);
+        self::assertSame(['main', 's', 's_2', 's_use', 'bound'], $modelClass::$logs);
+        $modelClass::$logs = [];
+
+        $m2 = new $modelClass(clone $this->db);
+        self::assertSame(['main', 's', 's_2', 's_use', 'bound'], $modelClass::$logs);
+        $modelClass::$logs = [];
+
+        $m = new $modelClass($this->db);
+        self::assertSame(['main', 'bound'], $modelClass::$logs);
+        $modelClass::$logs = [];
+
+        if (\PHP_VERSION_ID >= 80300) {
+            $weakM = \WeakReference::create($m);
+            unset($m);
+            gc_collect_cycles();
+            self::assertNull($weakM->get());
+            $m = new $modelClass($this->db);
+            self::assertSame(['main', 's_use', 'bound'], $modelClass::$logs);
+            $modelClass::$logs = [];
+        }
+    }
+
     public function testCreateAnalysingTheirModelUninitializeIfNotCreated(): void
     {
         $m = new Model($this->db, ['table' => 'user']);
