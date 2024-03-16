@@ -358,16 +358,14 @@ class ReferenceSqlTest extends TestCase
         $integerWrappedTypeName = $integerWrappedType->getName(); // @phpstan-ignore-line
 
         $this->executeFxWithTemporaryType($integerWrappedTypeName, $integerWrappedType, function () use ($integerWrappedType, $integerWrappedTypeName) {
-            $createFileModelFx = static function (Persistence $persistence) use ($integerWrappedTypeName /* , &$createFileModelFx */) {
-                $createFileModelFx = &$m; // TODO
-
+            $createFileModelFx = static function (Persistence $persistence) use ($integerWrappedTypeName) {
                 $m = new Model($persistence, ['table' => 'file']);
                 $m->getField('id')->type = $integerWrappedTypeName;
                 $m->addField('name');
-                $m->hasOne('parentDirectory', ['model' => $createFileModelFx, 'ourField' => 'parentDirectoryId']);
-                $m->hasMany('childFiles', ['model' => $createFileModelFx, 'theirField' => 'parentDirectoryId']);
+                $m->hasOne('parentDirectory', ['model' => $m, 'ourField' => 'parentDirectoryId']);
+                $m->hasMany('childFiles', ['model' => $m, 'theirField' => 'parentDirectoryId']);
 
-                return $m;
+                return clone $m;
             };
 
             $file = $createFileModelFx($this->db);
