@@ -406,4 +406,34 @@ class ReferenceTest extends TestCase
 
         $theirModelClass::$logs = [];
     }
+
+    public function testCreateAnalysingTheirModelUninitializeIfNotCreated(): void
+    {
+        $m = new Model($this->db, ['table' => 'user']);
+
+        $createModelFx = static function () {
+            return new class() extends Model {
+                #[\Override]
+                protected function init(): void
+                {
+                    parent::init();
+
+                    throw new Exception('from init');
+                }
+            };
+        };
+
+        $e = false;
+        try {
+            $m->hasOne('foo', ['model' => $createModelFx]);
+        } catch (Exception $e) {
+            $e = $e->getMessage();
+        }
+
+        self::assertSame('from init', $e);
+
+        $this->expectException(CoreException::class);
+        $this->expectExceptionMessage('Object was not initialized');
+        $m->hasOne('foo', ['model' => $createModelFx]);
+    }
 }

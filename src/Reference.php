@@ -413,15 +413,25 @@ class Reference
 
         $theirModel = self::$analysingTheirModelMap->get($analysingKey, $analysingOwner);
         if ($theirModel === null) {
-            $theirModel = $this->createTheirModelBeforeInit($defaults);
-            self::$analysingTheirModelMap->set($analysingKey, $theirModel, $analysingOwner);
-            $this->createTheirModelSetPersistence($theirModel);
-            $this->createTheirModelAfterInit($theirModel);
+            try {
+                $theirModel = $this->createTheirModelBeforeInit($defaults);
+                self::$analysingTheirModelMap->set($analysingKey, $theirModel, $analysingOwner);
+                $this->createTheirModelSetPersistence($theirModel);
+                $this->createTheirModelAfterInit($theirModel);
 
-            // make analysing model unusable
-            \Closure::bind(static function () use ($theirModel) {
-                unset($theirModel->{'_persistence'});
-            }, null, Model::class)();
+                // make analysing model unusable
+                \Closure::bind(static function () use ($theirModel) {
+                    unset($theirModel->{'_persistence'});
+                }, null, Model::class)();
+            } catch (\Throwable $e) {
+                if ($theirModel !== null) {
+                    \Closure::bind(static function () use ($theirModel) {
+                        $theirModel->_initialized = false;
+                    }, null, Model::class)();
+                }
+
+                throw $e;
+            }
         }
 
         $theirModel->assertIsInitialized();
