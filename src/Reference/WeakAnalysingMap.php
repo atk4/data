@@ -62,6 +62,7 @@ class WeakAnalysingMap
         $this->makeHashFromKeyUpdate($hashContext, gettype($value));
 
         if (is_array($value)) {
+            $this->makeHashFromKeyUpdate($hashContext, (string) count($value));
             foreach ($value as $k => $v) {
                 $this->makeHashFromKeyUpdate($hashContext, (string) $k);
                 $this->makeHashFromKey($v, $hashContext);
