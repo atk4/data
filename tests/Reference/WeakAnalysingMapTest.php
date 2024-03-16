@@ -119,6 +119,18 @@ class WeakAnalysingMapTest extends TestCase
         self::assertNull($weakKey->get());
     }
 
+    public function testDestructBeforeOwner(): void
+    {
+        $owner = new \stdClass();
+
+        (new WeakAnalysingMap())
+            ->set(new \stdClass(), new \stdClass(), $owner);
+
+        $weakOwner = \WeakReference::create($owner);
+        unset($owner);
+        self::assertNull($weakOwner->get());
+    }
+
     public function testSetKeyAlreadyPresentException(): void
     {
         $map = new WeakAnalysingMap();
