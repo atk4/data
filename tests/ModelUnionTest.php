@@ -348,10 +348,8 @@ class ModelUnionTest extends TestCase
         self::assertNull($client->tryLoad(3));
 
         $this->assertSameSql(
-            $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform
-                ? 'select `id`, `name`, `surname`, `order`, (select coalesce(sum(`amount`), 0) from (select `client_id` `client_id`, `name` `name`, `amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_t_e7d707a26e7f` where `client_id` = `client`.`id`) `balance` from `client` group by `id`, `id`, `name`, `surname`, `order`, (select coalesce(sum(`amount`), 0) from (select `client_id` `client_id`, `name` `name`, `amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_t_e7d707a26e7f` where `client_id` = `client`.`id`) having `id` = :a'
-                : 'select `id`, `name`, `surname`, `order`, (select coalesce(sum(`amount`), 0) from (select `client_id` `client_id`, `name` `name`, `amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_t_e7d707a26e7f` where `client_id` = `client`.`id`) `balance` from `client` group by `id` having `id` = :a',
-            $client->load(1)->action('select')->render()[0]
+            'select `id`, `name`, `surname`, `order`, (select coalesce(sum(`amount`), 0) from (select `client_id` `client_id`, `name` `name`, `amount` `amount` from `invoice` UNION ALL select `client_id` `client_id`, `name` `name`, `amount` `amount` from `payment`) `_t_e7d707a26e7f` where `client_id` = `client`.`id`) `balance` from `client`',
+            $client->action('select')->render()[0]
         );
     }
 
