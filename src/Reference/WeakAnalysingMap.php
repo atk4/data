@@ -82,9 +82,16 @@ class WeakAnalysingMap
             );
         }
 
-        return $return
-            ? hexdec(hash_final($hashContext))
-            : null;
+        if (!$return) {
+            return null;
+        }
+
+        $hex = hash_final($hashContext);
+        if (\PHP_INT_SIZE === 4) {
+            $hex = dechex(hexdec(substr($hex, 0, 4)) & ((1 << 15) - 1)) . substr($hex, 4, 4);
+        }
+
+        return hexdec($hex);
     }
 
     /**
