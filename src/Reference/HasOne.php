@@ -22,9 +22,17 @@ class HasOne extends Reference
             $this->ourField = $this->link;
         }
 
-        // for references use "integer" as a default type
+        $checkTheirTypeOrig = $this->checkTheirType;
+        $this->checkTheirType = false;
+        try {
+            $analysingTheirModel = $this->createAnalysingTheirModel();
+        } finally {
+            $this->checkTheirType = $checkTheirTypeOrig;
+        }
+
+        // infer our field type from their field
         if (($this->type ?? null) === null) {
-            $this->type = 'integer';
+            $this->type = $analysingTheirModel->getField($this->getTheirFieldName($analysingTheirModel))->type;
         }
 
         $this->referenceLink = $this->link; // named differently than in Model\FieldPropertiesTrait

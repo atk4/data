@@ -448,11 +448,11 @@ class Model implements \IteratorAggregate
         $this->_add($obj, $defaults);
     }
 
-    public function _addIntoCollection(string $name, object $item, string $collection): object
+    public function _addIntoCollection(string $name, object $item, string $collection): void
     {
         // TODO $this->assertIsModel();
 
-        return $this->__addIntoCollection($name, $item, $collection);
+        $this->__addIntoCollection($name, $item, $collection);
     }
 
     /**
@@ -545,7 +545,9 @@ class Model implements \IteratorAggregate
             $field = $this->fieldFactory($seed);
         }
 
-        return $this->_addIntoCollection($name, $field, 'fields');
+        $this->_addIntoCollection($name, $field, 'fields');
+
+        return $field;
     }
 
     /**

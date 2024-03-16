@@ -7,6 +7,7 @@ namespace Atk4\Data;
 use Atk4\Core\DiContainerTrait;
 use Atk4\Core\InitializerTrait;
 use Atk4\Core\TrackableTrait;
+use Atk4\Data\Reference\WeakAnalysingMap;
 
 /**
  * Reference implements a link between our model and their model..
@@ -24,6 +25,12 @@ class Reference
     use TrackableTrait {
         setOwner as private _setOwner;
     }
+
+    /** @var WeakAnalysingMap<list<mixed>, \Closure, Model|Persistence> */
+    private static WeakAnalysingMap $analysingClosureMap;
+
+    /** @var WeakAnalysingMap<array{Persistence, array<mixed>|\Closure(Persistence, array<string, mixed>): Model|Model, array<mixed>}, Model, Model|Persistence> */
+    private static WeakAnalysingMap $analysingTheirModelMap;
 
     /**
      * Use this alias for their model by default. This can help you
@@ -318,6 +325,116 @@ class Reference
         $theirModel = $this->createTheirModelBeforeInit($defaults);
         $this->createTheirModelSetPersistence($theirModel);
         $this->createTheirModelAfterInit($theirModel);
+
+        return $theirModel;
+    }
+
+    /**
+     * @template T of array<mixed>
+     *
+     * @param T $analysingKey
+     *
+     * @return T
+     */
+    private function deduplicateAnalysingKey(array $analysingKey, object $analysingOwner): array
+    {
+        if ((self::$analysingClosureMap ?? null) === null) {
+            self::$analysingClosureMap = new WeakAnalysingMap();
+        }
+
+        foreach ($analysingKey as $k => $v) {
+            if (is_array($v)) {
+                $analysingKey[$k] = $this->deduplicateAnalysingKey($v, $analysingOwner);
+            } elseif ($v instanceof \Closure) {
+                $fxRefl = new \ReflectionFunction($v);
+
+                $fxKey = [
+                    self::$analysingClosureMap,
+                    $fxRefl->getFileName()
+                        . '-' . $fxRefl->getStartLine()
+                        . '-' . $fxRefl->getEndLine() . '-' . $fxRefl->getName(), // https://github.com/php/php-src/issues/11391
+                    $fxRefl->getClosureScopeClass() !== null ? $fxRefl->getClosureScopeClass()->getName() : null,
+                    $fxRefl->getClosureThis(),
+                    \PHP_VERSION_ID < 80100 ? $fxRefl->getStaticVariables() : $fxRefl->getClosureUsedVariables(),
+                ];
+
+                // optimization - simplify key to improve hashing speed
+                if ($fxKey[4] === []) {
+                    unset($fxKey[4]);
+                    if ($fxKey[3] === null) {
+                        unset($fxKey[3]);
+                    }
+                }
+
+                $fx = self::$analysingClosureMap->get($fxKey, $analysingOwner);
+                if ($fx === null) {
+                    $fx = $v;
+                    self::$analysingClosureMap->set($fxKey, $fx, $analysingOwner);
+                }
+
+                $analysingKey[$k] = $fx;
+            }
+        }
+
+        return $analysingKey;
+    }
+
+    /**
+     * Same as self::createTheirModel() but the created model is deduplicated based on our model persistence,
+     * self::$model seed and $defaults parameter to guard recursion from possibly recursively invoked Model::init()
+     * and also to improve performance when used for their field/reference analysing purposes.
+     *
+     * @param array<string, mixed> $defaults
+     */
+    public function createAnalysingTheirModel(array $defaults = []): Model
+    {
+        if ((self::$analysingTheirModelMap ?? null) === null) {
+            self::$analysingTheirModelMap = new WeakAnalysingMap();
+        }
+
+        $ourPersistence = $this->getOurModel()->getPersistence();
+        $analysingKey = [$ourPersistence, $this->model, $defaults];
+        $analysingOwner = $this->getOwner();
+
+        // optimization - keep referenced for whole persistence lifetime if seed is class name only or unbound \Closure
+        if ($defaults === []) {
+            if (is_array($this->model) && count($this->model) === 1 && is_string($this->model[0] ?? null)) {
+                $analysingOwner = $ourPersistence;
+            } elseif ($this->model instanceof \Closure) {
+                $fxRefl = new \ReflectionFunction($this->model);
+                if ($fxRefl->getClosureThis() === null
+                    && (\PHP_VERSION_ID < 80100 ? $fxRefl->getStaticVariables() : $fxRefl->getClosureUsedVariables()) === []) {
+                    $analysingOwner = $ourPersistence;
+                }
+            }
+        }
+
+        $analysingKey = $this->deduplicateAnalysingKey($analysingKey, $analysingOwner);
+
+        $theirModel = self::$analysingTheirModelMap->get($analysingKey, $analysingOwner);
+        if ($theirModel === null) {
+            try {
+                $theirModel = $this->createTheirModelBeforeInit($defaults);
+                self::$analysingTheirModelMap->set($analysingKey, $theirModel, $analysingOwner);
+                $this->createTheirModelSetPersistence($theirModel);
+                $this->createTheirModelAfterInit($theirModel);
+
+                // make analysing model unusable
+                \Closure::bind(static function () use ($theirModel) {
+                    unset($theirModel->{'_persistence'});
+                }, null, Model::class)();
+            } catch (\Throwable $e) {
+                if ($theirModel !== null) {
+                    \Closure::bind(static function () use ($theirModel) {
+                        $theirModel->_initialized = false;
+                    }, null, Model::class)();
+                }
+
+                throw $e;
+            }
+        }
+
+        $theirModel->assertIsInitialized();
 
         return $theirModel;
     }

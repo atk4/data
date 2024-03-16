@@ -22,6 +22,12 @@ parameters:
             path: '*'
             count: 3
 
+        # https://github.com/phpstan/phpstan/issues/5551
+        -
+            message: '~^(Static property Atk4\\Data\\Reference::\$analysingClosureMap \(Atk4\\Data\\Reference\\WeakAnalysingMap<list<mixed>, Closure, Atk4\\Data\\Model\|Atk4\\Data\\Persistence>\) does not accept Atk4\\Data\\Reference\\WeakAnalysingMap<array\|object, array\|object, object>\.|Static property Atk4\\Data\\Reference::\$analysingTheirModelMap \(Atk4\\Data\\Reference\\WeakAnalysingMap<array\{Atk4\\Data\\Persistence, array\|Atk4\\Data\\Model\|\(Closure\(Atk4\\Data\\Persistence, array<string, mixed>\): Atk4\\Data\\Model\), array\}, Atk4\\Data\\Model, Atk4\\Data\\Model\|Atk4\\Data\\Persistence>\) does not accept Atk4\\Data\\Reference\\WeakAnalysingMap<array\|object, array\|object, object>\.|Cannot call method assertIsInitialized\(\) on array\|object\.)$~'
+            path: 'src/*'
+            count: 5
+
         # fix https://github.com/phpstan/phpstan-deprecation-rules/issues/52 and https://github.com/phpstan/phpstan/issues/6444
         -
             message: '~^Call to method (getVarcharTypeDeclarationSQL|getClobTypeDeclarationSQL|getCreateIndexSQL|getCreateTableSQL|getCurrentDatabaseExpression|initializeDoctrineTypeMappings)\(\) of deprecated class Doctrine\\DBAL\\Platforms\\(PostgreSQLPlatform|SQLServerPlatform|AbstractPlatform):\nUse.+instead\.$~'

@@ -6,7 +6,10 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Core\Exception as CoreException;
 use Atk4\Data\Exception;
+use Atk4\Data\Field;
 use Atk4\Data\Model;
+use Atk4\Data\Reference;
+use Atk4\Data\Reference\WeakAnalysingMap;
 use Atk4\Data\Schema\TestCase;
 
 class ReferenceTest extends TestCase
@@ -102,7 +105,7 @@ class ReferenceTest extends TestCase
     public function testHasOneDuplicateNameException(): void
     {
         $order = new Model(null, ['table' => 'order']);
-        $user = new Model(null, ['table' => 'user']);
+        $user = new Model($this->db, ['table' => 'user']);
 
         $user->hasOne('user_id', ['model' => $user]);
 
@@ -157,6 +160,36 @@ class ReferenceTest extends TestCase
         $user->ref('orders');
     }
 
+    public function testHasOneInferOurFieldType(): void
+    {
+        $userModel = new class($this->db) extends Model {
+            public $table = 'user';
+
+            #[\Override]
+            protected function init(): void
+            {
+                parent::init();
+
+                $this->getIdField()->type = 'date';
+            }
+        };
+
+        $order = new Model($this->db, ['table' => 'order']);
+        $order->hasOne('user_id', ['model' => [get_class($userModel)]]);
+        $order->hasOne('a', ['model' => $userModel, 'theirField' => 'id']);
+        $order->hasOne('b', ['model' => static function () use ($userModel) {
+            $m = clone $userModel;
+            $m->addField('x', ['type' => 'float']);
+
+            return $m;
+        }, 'theirField' => 'x']);
+
+        self::assertSame(['id' => 'date'], array_map(static fn (Field $f) => $f->type, $userModel->getFields()));
+        self::assertSame(['id' => 'date'], array_map(static fn (Field $f) => $f->type, $order->ref('a')->getFields()));
+        self::assertSame(['id' => 'date', 'x' => 'float'], array_map(static fn (Field $f) => $f->type, $order->ref('b')->getFields()));
+        self::assertSame(['id' => 'integer', 'user_id' => 'date', 'a' => 'date', 'b' => 'float'], array_map(static fn (Field $f) => $f->type, $order->getFields()));
+    }
+
     public function testRefTypeMismatchWithDisabledCheck(): void
     {
         $user = new Model($this->db, ['table' => 'user']);
@@ -176,8 +209,7 @@ class ReferenceTest extends TestCase
 
         $this->expectException(CoreException::class);
         $this->expectExceptionMessage('Seed must be an array or an object');
-        $m->hasOne('foo', [])
-            ->createTheirModel();
+        $m->hasOne('foo', []);
     }
 
     public function testCreateTheirModelInvalidModelSeedException(): void
@@ -186,7 +218,292 @@ class ReferenceTest extends TestCase
 
         $this->expectException(CoreException::class);
         $this->expectExceptionMessage('Seed must be an array or an object');
-        $m->hasOne('foo', ['model' => Model::class])
-            ->createTheirModel();
+        $m->hasOne('foo', ['model' => Model::class]);
+    }
+
+    private function forceWeakMapPolyfillHousekeeping(): void
+    {
+        $analysingMap = \Closure::bind(static fn () => Reference::$analysingTheirModelMap, null, Reference::class)();
+
+        // https://github.com/BenMorel/weakmap-polyfill/blob/0.4.0/src/WeakMap.php#L126
+        $weakMap = \Closure::bind(static fn () => $analysingMap->ownerDestructorHandlers, null, WeakAnalysingMap::class)();
+        count($weakMap); // @phpstan-ignore-line
+    }
+
+    public function testCreateAnalysingTheirModelRecursiveInit(): void
+    {
+        $userModelClass = get_class(new class() extends Model {
+            /** @var list<string> */
+            public static array $logs = [];
+
+            public static int $c;
+
+            /** @var class-string<Model> */
+            public static string $orderModelClass;
+
+            public $table = 'user';
+
+            /** @var array<string, Field> */
+            public array $analysingOrderModelFields;
+
+            #[\Override]
+            protected function init(): void
+            {
+                parent::init();
+
+                $i = ++self::$c;
+                self::$logs[] = '> ' . $this->table . ' ' . $i;
+
+                $this->addField('name');
+
+                $this->hasMany('orders', ['model' => [self::$orderModelClass], 'theirField' => 'user_id'])
+                    ->addField('orders_count', ['type' => 'integer', 'aggregate' => 'count']);
+
+                $this->analysingOrderModelFields = $this->getReference('orders')->createAnalysingTheirModel()->getFields();
+
+                self::$logs[] = '< ' . $this->table . ' ' . $i;
+            }
+        });
+        $userModelClass::$c = -1;
+
+        $orderModelClass = get_class(new class() extends Model {
+            public static int $c;
+
+            /** @var class-string<Model> */
+            public static string $userModelClass;
+
+            public $table = 'order';
+
+            /** @var array<string, Field> */
+            public array $analysingUserModelFields;
+
+            #[\Override]
+            protected function init(): void
+            {
+                parent::init();
+
+                $i = ++self::$c;
+                self::$userModelClass::$logs[] = '> ' . $this->table . ' ' . $i;
+
+                $this->addField('name');
+
+                $this->hasOne('user', ['model' => [self::$userModelClass], 'ourField' => 'user_id'])
+                    ->addTitle();
+
+                $this->analysingUserModelFields = $this->getReference('user')->createAnalysingTheirModel()->getFields();
+
+                self::$userModelClass::$logs[] = '< ' . $this->table . ' ' . $i;
+            }
+        });
+        $orderModelClass::$c = -1;
+
+        $userModelClass::$orderModelClass = $orderModelClass;
+        $orderModelClass::$userModelClass = $userModelClass;
+
+        self::assertSame([], $userModelClass::$logs);
+        $userModel = new $userModelClass($this->db);
+        $expectedLogs = ['> user 0', '> order 0', '> user 1', '< user 1', '< order 0', '< user 0'];
+        self::assertSame($expectedLogs, $userModelClass::$logs);
+        $orderModel = new $orderModelClass($this->db);
+        $expectedLogs = array_merge($expectedLogs, ['> order 1', '< order 1']);
+        self::assertSame($expectedLogs, $userModelClass::$logs);
+
+        self::assertSame(['id', 'name', 'user_id', 'user'], array_keys($userModel->analysingOrderModelFields));
+        self::assertSame(['id', 'name', 'orders_count'], array_keys($orderModel->analysingUserModelFields));
+        self::assertSame($expectedLogs, $userModelClass::$logs);
+
+        new $userModelClass($this->db);
+        $expectedLogs = array_merge($expectedLogs, ['> user 2', '< user 2']);
+        self::assertSame($expectedLogs, $userModelClass::$logs);
+
+        $userModelClass::$logs = [];
+    }
+
+    public function testCreateAnalysingTheirModelKeepReferencedByPersistenceIfSeedIsClassNameOnly(): void
+    {
+        $theirModelClass = get_class(new class() extends Model {
+            public $table = 'foo';
+
+            /** @var list<string> */
+            public static array $logs = [];
+
+            #[\Override]
+            protected function init(): void
+            {
+                parent::init();
+
+                self::$logs[] = $this->table;
+            }
+        });
+
+        $refASeed = [$theirModelClass];
+        $refBSeed = [$theirModelClass, 'table' => 'bar'];
+
+        $m = new Model($this->db, ['table' => 'user']);
+        $refA = $m->hasOne('a', ['model' => $refASeed]);
+        $refB = $m->hasOne('b', ['model' => $refBSeed]);
+        $m->hasOne('a2', ['model' => $refASeed]);
+        $m->hasOne('b2', ['model' => $refBSeed]);
+        self::assertSame(['foo', 'bar'], $theirModelClass::$logs);
+
+        self::assertSame('foo', $refA->createAnalysingTheirModel()->table);
+        self::assertSame('bar', $refB->createAnalysingTheirModel()->table);
+        self::assertSame(['foo', 'bar'], $theirModelClass::$logs);
+
+        self::assertSame('foo', $refA->createTheirModel()->table);
+        self::assertSame('bar', $refB->createTheirModel()->table);
+        self::assertSame(['foo', 'bar', 'foo', 'bar'], $theirModelClass::$logs);
+
+        $theirModelClass::$logs = [];
+
+        $weakM = \WeakReference::create($m);
+        $m = new Model($this->db, ['table' => 'user']);
+        unset($refA);
+        unset($refB);
+        gc_collect_cycles();
+        self::assertNull($weakM->get());
+        $this->forceWeakMapPolyfillHousekeeping();
+        $refA = $m->hasOne('a', ['model' => $refASeed]);
+        $refB = $m->hasOne('b', ['model' => $refBSeed]);
+        self::assertSame(['bar'], $theirModelClass::$logs);
+
+        self::assertSame('foo', $refA->createAnalysingTheirModel()->table);
+        self::assertSame('bar', $refB->createAnalysingTheirModel()->table);
+        self::assertSame(['bar'], $theirModelClass::$logs);
+
+        self::assertSame('foo', $refA->createTheirModel()->table);
+        self::assertSame('bar', $refB->createTheirModel()->table);
+        self::assertSame(['bar', 'foo', 'bar'], $theirModelClass::$logs);
+
+        $refC = $m->hasMany('c', ['model' => $refASeed, 'theirField' => 'id']);
+        $refD = $m->hasMany('d', ['model' => $refBSeed, 'theirField' => 'id']);
+        self::assertSame(['bar', 'foo', 'bar'], $theirModelClass::$logs);
+
+        self::assertSame('foo', $refC->createAnalysingTheirModel()->table);
+        self::assertSame('bar', $refD->createAnalysingTheirModel()->table);
+        self::assertSame(['bar', 'foo', 'bar'], $theirModelClass::$logs);
+
+        self::assertSame('foo', $refC->createTheirModel()->table);
+        self::assertSame('bar', $refD->createTheirModel()->table);
+        self::assertSame(['bar', 'foo', 'bar', 'foo', 'bar'], $theirModelClass::$logs);
+
+        $theirModelClass::$logs = [];
+
+        $m = new Model(clone $this->db, ['table' => 'user']);
+        $refA = $m->hasOne('a', ['model' => $refASeed]);
+        $refB = $m->hasOne('b', ['model' => $refBSeed]);
+        $m->hasOne('a2', ['model' => $refASeed]);
+        $m->hasOne('b2', ['model' => $refBSeed]);
+        self::assertSame(['foo', 'bar'], $theirModelClass::$logs);
+
+        self::assertSame('foo', $refA->createAnalysingTheirModel()->table);
+        self::assertSame('bar', $refB->createAnalysingTheirModel()->table);
+        self::assertSame(['foo', 'bar'], $theirModelClass::$logs);
+
+        self::assertSame('foo', $refA->createTheirModel()->table);
+        self::assertSame('bar', $refB->createTheirModel()->table);
+        self::assertSame(['foo', 'bar', 'foo', 'bar'], $theirModelClass::$logs);
+
+        $theirModelClass::$logs = [];
+    }
+
+    public function testCreateAnalysingTheirModelKeepReferencedByPersistenceIfSeedIsUnboundClosure(): void
+    {
+        $modelClass = get_class(new class() extends Model {
+            public $table = 'main';
+
+            /** @var list<string> */
+            public static array $logs = [];
+
+            #[\Override]
+            protected function init(): void
+            {
+                parent::init();
+
+                self::$logs[] = $this->table;
+
+                foreach (['_u', '_v'] as $suffix) {
+                    $this->hasOne('a' . $suffix, ['model' => static function () {
+                        self::$logs[] = 's';
+
+                        return new Model(null, ['table' => 't']);
+                    }]);
+
+                    $this->hasOne('b' . $suffix, ['model' => static function () {
+                        self::$logs[] = 's_2';
+
+                        return new Model(null, ['table' => 't']);
+                    }]);
+
+                    $v = 'use';
+                    $this->hasOne('c' . $suffix, ['model' => static function () use ($v) {
+                        self::$logs[] = 's_' . $v;
+
+                        return new Model(null, ['table' => 't']);
+                    }]);
+
+                    $this->hasOne('d' . $suffix, ['model' => function () {
+                        $this->getIdField(); // prevent PHP CS Fixer to make this anonymous function static
+
+                        self::$logs[] = 'bound';
+
+                        return new Model(null, ['table' => 't']);
+                    }]);
+                }
+            }
+        });
+        self::assertSame([], $modelClass::$logs);
+
+        $m = new $modelClass($this->db);
+        self::assertSame(['main', 's', 's_2', 's_use', 'bound'], $modelClass::$logs);
+        $modelClass::$logs = [];
+
+        $m2 = new $modelClass(clone $this->db);
+        self::assertSame(['main', 's', 's_2', 's_use', 'bound'], $modelClass::$logs);
+        $modelClass::$logs = [];
+
+        $m = new $modelClass($this->db);
+        self::assertSame(['main', 'bound'], $modelClass::$logs);
+        $modelClass::$logs = [];
+
+        if (\PHP_VERSION_ID >= 80300) {
+            $weakM = \WeakReference::create($m);
+            unset($m);
+            gc_collect_cycles();
+            self::assertNull($weakM->get());
+            $m = new $modelClass($this->db);
+            self::assertSame(['main', 's_use', 'bound'], $modelClass::$logs);
+            $modelClass::$logs = [];
+        }
+    }
+
+    public function testCreateAnalysingTheirModelUninitializeIfNotCreated(): void
+    {
+        $m = new Model($this->db, ['table' => 'user']);
+
+        $createModelFx = static function () {
+            return new class() extends Model {
+                #[\Override]
+                protected function init(): void
+                {
+                    parent::init();
+
+                    throw new Exception('from init');
+                }
+            };
+        };
+
+        $e = false;
+        try {
+            $m->hasOne('foo', ['model' => $createModelFx]);
+        } catch (Exception $e) {
+            $e = $e->getMessage();
+        }
+
+        self::assertSame('from init', $e);
+
+        $this->expectException(CoreException::class);
+        $this->expectExceptionMessage('Object was not initialized');
+        $m->hasOne('foo', ['model' => $createModelFx]);
     }
 }

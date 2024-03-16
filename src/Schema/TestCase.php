@@ -8,6 +8,7 @@ use Atk4\Core\Phpunit\TestCase as BaseTestCase;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Expression;
+use Atk4\Data\Reference;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
@@ -57,6 +58,18 @@ abstract class TestCase extends BaseTestCase
             $this->dropCreatedDb();
         } finally {
             $this->debug = $debugOrig;
+        }
+
+        if (\PHP_VERSION_ID < 80300) {
+            // workaround https://github.com/php/php-src/issues/10043
+            \Closure::bind(static function () {
+                if ((Reference::$analysingClosureMap ?? null) !== null) {
+                    Reference::$analysingClosureMap = new Reference\WeakAnalysingMap();
+                }
+                if ((Reference::$analysingTheirModelMap ?? null) !== null) {
+                    Reference::$analysingTheirModelMap = new Reference\WeakAnalysingMap();
+                }
+            }, null, Reference::class)();
         }
 
         parent::tearDown();
