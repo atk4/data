@@ -36,7 +36,7 @@ results from that. As a result, Union model will have no "id" field. Below is an
 The Union model can be separated in a designated class and nested model added within the init() method body of the new class:
 
 ```
-$unionPaymentInvoice = new \Atk4\Data\Model\Union();
+$unionPaymentInvoice = new \Atk4\Data\Model\UnionModel();
 
 $nestedPayment = $unionPaymentInvoice->addNestedModel(new Invoice());
 $nestedInvoice = $unionPaymentInvoice->addNestedModel(new Payment());
