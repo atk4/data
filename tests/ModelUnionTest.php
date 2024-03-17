@@ -8,8 +8,6 @@ use Atk4\Data\Exception;
 use Atk4\Data\Model\AggregateModel;
 use Atk4\Data\Model\UnionInternalTable;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class ModelUnionTest extends TestCase
 {
