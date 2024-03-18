@@ -22,6 +22,7 @@ static
 references
 expressions
 joins
+unions
 aggregates
 hooks
 deriving
