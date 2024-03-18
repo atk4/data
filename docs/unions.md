@@ -38,8 +38,8 @@ The Union model can be separated in a designated class and nested model added wi
 ```
 $unionPaymentInvoice = new \Atk4\Data\Model\UnionModel();
 
-$nestedPayment = $unionPaymentInvoice->addNestedModel(new Invoice());
-$nestedInvoice = $unionPaymentInvoice->addNestedModel(new Payment());
+$nestedInvoice = $unionPaymentInvoice->addNestedModel(new Invoice());
+$nestedPayment = $unionPaymentInvoice->addNestedModel(new Payment());
 ```
 
 Next, assuming that both models have common fields "name" and "amount", `$unionPaymentInvoice` fields can be set:
@@ -81,8 +81,8 @@ E.g. Invoice has field "description" and payment has field "note".
 When defining a nested model a field map array needs to be specified:
 
 ```
-$nestedPayment = $unionPaymentInvoice->addNestedModel(new Invoice());
-$nestedInvoice = $unionPaymentInvoice->addNestedModel(new Payment(), ['description' => '[note]']);
+$nestedInvoice = $unionPaymentInvoice->addNestedModel(new Invoice());
+$nestedPayment = $unionPaymentInvoice->addNestedModel(new Payment(), ['description' => '[note]']);
 $unionPaymentInvoice->addField('description');
 ```
 
@@ -91,19 +91,19 @@ This format can also be used to reverse sign on amounts. When we are creating "T
 subtracted from the amount, while payments will be added:
 
 ```
-$nestedPayment = $mUnion->addNestedModel(new Invoice(), ['amount' => '-[amount]']);
-$nestedInvoice = $mUnion->addNestedModel(new Payment(), ['description' => '[note]']);
+$nestedInvoice = $mUnion->addNestedModel(new Invoice(), ['amount' => '-[amount]']);
+$nestedPayment = $mUnion->addNestedModel(new Payment(), ['description' => '[note]']);
 $unionPaymentInvoice->addField('description');
 ```
 
 Should more flexibility be needed, more expressions (or fields) can be added directly to nested models:
 
 ```
-$nestedPayment = $unionPaymentInvoice->addNestedModel(new Invoice(), ['amount' => '-[amount]']);
-$nestedInvoice = $unionPaymentInvoice->addNestedModel(new Payment(), ['description' => '[note]']);
+$nestedInvoice = $unionPaymentInvoice->addNestedModel(new Invoice(), ['amount' => '-[amount]']);
+$nestedPayment = $unionPaymentInvoice->addNestedModel(new Payment(), ['description' => '[note]']);
 
-$nestedPayment->addExpression('type', ['expr' => '\'payment\'']);
 $nestedInvoice->addExpression('type', ['expr' => '\'invoice\'']);
+$nestedPayment->addExpression('type', ['expr' => '\'payment\'']);
 $unionPaymentInvoice->addField('type');
 ```
 
