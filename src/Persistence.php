@@ -38,7 +38,7 @@ abstract class Persistence
      *                                               leaving user and password arguments = null
      * @param array<string, mixed>         $defaults
      */
-    public static function connect($dsn, string $user = null, string $password = null, array $defaults = []): self
+    public static function connect($dsn, ?string $user = null, ?string $password = null, array $defaults = []): self
     {
         // parse DSN string
         $dsn = Persistence\Sql\Connection::normalizeDsn($dsn, $user, $password);

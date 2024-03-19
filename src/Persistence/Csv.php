@@ -272,7 +272,7 @@ class Csv extends Persistence
      *
      * @return list<array<string, mixed>>
      */
-    public function export(Model $model, array $fields = null): array
+    public function export(Model $model, ?array $fields = null): array
     {
         $data = [];
         foreach ($model as $entity) {

@@ -19,7 +19,7 @@ class JoinSqlTest extends TestCase
     /**
      * @param Reference|Join $relation
      */
-    protected function assertMigratorResolveRelation(string $expectedLocalField, string $expectedForeignField, $relation, bool $resolveToPersistence = null): void
+    protected function assertMigratorResolveRelation(string $expectedLocalField, string $expectedForeignField, $relation, ?bool $resolveToPersistence = null): void
     {
         if ($resolveToPersistence === null) {
             $this->assertMigratorResolveRelation($expectedLocalField, $expectedForeignField, $relation, false);

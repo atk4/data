@@ -75,7 +75,7 @@ trait UserActionsTrait
      *
      * @return array<string, UserAction>
      */
-    public function getUserActions(string $appliesTo = null): array
+    public function getUserActions(?string $appliesTo = null): array
     {
         $this->assertIsModel();
 

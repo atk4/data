@@ -521,7 +521,7 @@ class ArrayTest extends TestCase
      *
      * @return list<array<string, mixed>>
      */
-    protected function _getRows(Model $model, array $fields = null): array
+    protected function _getRows(Model $model, ?array $fields = null): array
     {
         $d = [];
         foreach ($model as $row) {

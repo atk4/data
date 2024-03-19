@@ -39,7 +39,7 @@ class SelectTest extends TestCase
      * @param string|Expression                 $table
      * @param ($table is null ? never : string) $alias
      */
-    protected function q($table = null, string $alias = null): Query
+    protected function q($table = null, ?string $alias = null): Query
     {
         $q = $this->getConnection()->dsql();
         if ($table !== null) {

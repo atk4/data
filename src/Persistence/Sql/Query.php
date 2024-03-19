@@ -226,7 +226,7 @@ abstract class Query extends Expression
      *
      * @return $this
      */
-    public function with(self $cursor, string $alias, array $fields = null, bool $recursive = false)
+    public function with(self $cursor, string $alias, ?array $fields = null, bool $recursive = false)
     {
         $this->_setArgs('with', $alias, [
             'cursor' => $cursor,
@@ -1043,7 +1043,7 @@ abstract class Query extends Expression
     /**
      * Returns Expression object for NOW() or CURRENT_TIMESTAMP() method.
      */
-    public function exprNow(int $precision = null): Expression
+    public function exprNow(?int $precision = null): Expression
     {
         return $this->expr(
             'current_timestamp(' . ($precision !== null ? '[]' : '') . ')',

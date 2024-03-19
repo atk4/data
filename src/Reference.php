@@ -133,7 +133,7 @@ class Reference
         return $ourEntity->get($this->getOurFieldName());
     }
 
-    public function getTheirFieldName(Model $theirModel = null): string
+    public function getTheirFieldName(?Model $theirModel = null): string
     {
         return $this->theirField
             ?? ($theirModel ?? Model::assertInstanceOf($this->model))->idField;
@@ -141,7 +141,7 @@ class Reference
 
     /**
      * @param \Closure<T of Model>(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
-     * @param array<int, mixed> $args
+     * @param array<int, mixed>                                                                                    $args
      */
     protected function onHookToOurModel(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {

@@ -168,7 +168,7 @@ class Sql extends Persistence
     /**
      * Creates new Query object with current time expression.
      */
-    public function exprNow(int $precision = null): Expression
+    public function exprNow(?int $precision = null): Expression
     {
         return $this->getConnection()->dsql()->exprNow($precision);
     }
@@ -225,7 +225,7 @@ class Sql extends Persistence
      *
      * @param array<int, string>|null $fields
      */
-    public function initQueryFields(Model $model, Query $query, array $fields = null): void
+    public function initQueryFields(Model $model, Query $query, ?array $fields = null): void
     {
         // init fields
         if ($fields !== null) {
@@ -329,7 +329,7 @@ class Sql extends Persistence
         }
     }
 
-    private function _initQueryConditions(Query $query, Model\Scope\AbstractScope $condition = null): void
+    private function _initQueryConditions(Query $query, Model\Scope\AbstractScope $condition): void
     {
         if (!$condition->isEmpty()) {
             // peel off the single nested scopes to convert (((field = value))) to field = value
@@ -512,7 +512,7 @@ class Sql extends Persistence
      *
      * @return list<array<string, mixed>>
      */
-    public function export(Model $model, array $fields = null, bool $typecast = true): array
+    public function export(Model $model, ?array $fields = null, bool $typecast = true): array
     {
         $data = $model->action('select', [$fields])->getRows();
 
