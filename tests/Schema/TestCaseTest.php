@@ -78,7 +78,9 @@ class TestCaseTest extends TestCase
                       IDENTITY_INSERT `t` off; end try begin catch
                     set
                       IDENTITY_INSERT `t` off; throw; end catch end else begin throw; end end catch;
-                    EOF . "\n\n"
+
+
+                    EOF
                 : ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "\n\"SAVEPOINT\";\n\n" : '')
                 . <<<'EOF'
 
@@ -97,7 +99,9 @@ class TestCaseTest extends TestCase
                   "t_SEQ".CURRVAL
                 from
                   "DUAL";
-                EOF . "\n\n" : '')
+
+
+                EOF : '')
             . <<<'EOF'
 
                 select

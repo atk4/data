@@ -72,7 +72,7 @@ class Field implements Expressionable
 
     /**
      * @param \Closure<T of Model>(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed $fx
-     * @param array<int, mixed> $args
+     * @param array<int, mixed>                                                                                    $args
      */
     protected function onHookToOwnerEntity(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
