@@ -96,7 +96,7 @@ class PasswordField extends Field
         return $this->hashPasswordVerify($v, $password);
     }
 
-    public function generatePassword(int $length = null): string
+    public function generatePassword(?int $length = null): string
     {
         $charsAll = array_diff(array_merge(
             range('0', '9'),

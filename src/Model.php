@@ -239,7 +239,7 @@ class Model implements \IteratorAggregate
      *
      * @param array<string, mixed> $defaults
      */
-    public function __construct(Persistence $persistence = null, array $defaults = [])
+    public function __construct(?Persistence $persistence = null, array $defaults = [])
     {
         $this->scope = \Closure::bind(static function () {
             return new RootScope();
@@ -258,7 +258,7 @@ class Model implements \IteratorAggregate
         return $this->_model !== null;
     }
 
-    public function assertIsModel(self $expectedModelInstance = null): void
+    public function assertIsModel(?self $expectedModelInstance = null): void
     {
         if ($this->_model !== null) {
             throw new \TypeError('Expected model, but instance is an entity');
@@ -271,7 +271,7 @@ class Model implements \IteratorAggregate
         }
     }
 
-    public function assertIsEntity(self $expectedModelInstance = null): void
+    public function assertIsEntity(?self $expectedModelInstance = null): void
     {
         if ($this->_model === null) {
             throw new \TypeError('Expected entity, but instance is a model');
@@ -493,7 +493,7 @@ class Model implements \IteratorAggregate
      *
      * @return array<string, string> [field => err_spec]
      */
-    public function validate(string $intent = null): array
+    public function validate(?string $intent = null): array
     {
         $errors = [];
         foreach ($this->hook(self::HOOK_VALIDATE, [$intent]) as $error) {
@@ -805,7 +805,7 @@ class Model implements \IteratorAggregate
      *
      * @return ($field is null ? array<string, mixed> : mixed)
      */
-    public function get(string $field = null)
+    public function get(?string $field = null)
     {
         if ($field === null) {
             $this->assertIsEntity();
@@ -1095,7 +1095,7 @@ class Model implements \IteratorAggregate
      *
      * @return $this
      */
-    public function setLimit(int $count = null, int $offset = 0)
+    public function setLimit(?int $count = null, int $offset = 0)
     {
         $this->assertIsModel();
 
@@ -1143,7 +1143,7 @@ class Model implements \IteratorAggregate
         return $this;
     }
 
-    public function assertHasPersistence(string $methodName = null): void
+    public function assertHasPersistence(?string $methodName = null): void
     {
         if (!$this->issetPersistence()) {
             throw new Exception('Model is not associated with a persistence');
@@ -1706,13 +1706,13 @@ class Model implements \IteratorAggregate
     /**
      * Export DataSet as array of hashes.
      *
-     * @param array<int, string>|null $fields   Names of fields to export
-     * @param string                  $keyField Optional name of field which value we will use as array key
-     * @param bool                    $typecast Should we typecast exported data
+     * @param array<int, string> $fields   Names of fields to export
+     * @param string             $keyField Optional name of field which value we will use as array key
+     * @param bool               $typecast Should we typecast exported data
      *
      * @return ($keyField is string ? array<mixed, array<string, mixed>> : list<array<string, mixed>>)
      */
-    public function export(array $fields = null, string $keyField = null, bool $typecast = true): array
+    public function export(?array $fields = null, ?string $keyField = null, bool $typecast = true): array
     {
         $this->assertHasPersistence('export');
 

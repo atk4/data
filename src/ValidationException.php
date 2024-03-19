@@ -14,7 +14,7 @@ class ValidationException extends Exception
      *
      * @return \Exception
      */
-    public function __construct(array $errors, Model $model = null)
+    public function __construct(array $errors, ?Model $model = null)
     {
         if (count($errors) === 0) {
             throw new Exception('At least one error must be given');

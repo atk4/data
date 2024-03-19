@@ -79,7 +79,7 @@ abstract class AbstractScope
     /**
      * Convert the scope to human readable words when applied on $model.
      */
-    abstract public function toWords(Model $model = null): string;
+    abstract public function toWords(?Model $model = null): string;
 
     /**
      * Simplifies by peeling off nested group conditions with single contained component.

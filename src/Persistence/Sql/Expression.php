@@ -144,7 +144,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
      *
      * @return $this
      */
-    public function reset(string $tag = null)
+    public function reset(?string $tag = null)
     {
         // unset all arguments
         if ($tag === null) {
@@ -651,7 +651,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
     /**
      * @param DbalConnection|Connection $connection
      */
-    public function executeQuery(object $connection = null): DbalResult
+    public function executeQuery(?object $connection = null): DbalResult
     {
         return $this->_execute($connection, false);
     }
@@ -661,7 +661,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
      *
      * @return int<0, max>
      */
-    public function executeStatement(object $connection = null): int
+    public function executeStatement(?object $connection = null): int
     {
         return $this->_execute($connection, true);
     }

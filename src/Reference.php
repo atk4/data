@@ -133,7 +133,7 @@ class Reference
         return $ourEntity->get($this->getOurFieldName());
     }
 
-    public function getTheirFieldName(Model $theirModel = null): string
+    public function getTheirFieldName(?Model $theirModel = null): string
     {
         return $this->theirField
             ?? ($theirModel ?? Model::assertInstanceOf($this->model))->idField;

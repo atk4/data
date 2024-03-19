@@ -285,7 +285,7 @@ class Condition extends AbstractScope
     }
 
     #[\Override]
-    public function toWords(Model $model = null): string
+    public function toWords(?Model $model = null): string
     {
         if ($model !== null) {
             $model->assertIsModel();

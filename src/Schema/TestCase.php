@@ -294,7 +294,7 @@ abstract class TestCase extends BaseTestCase
         self::assertSame($expected, $actual, $message);
     }
 
-    public function createMigrator(Model $model = null): Migrator
+    public function createMigrator(?Model $model = null): Migrator
     {
         $migrator = new Migrator($model ?? $this->db);
         $this->createdMigrators[] = $migrator;
@@ -382,7 +382,7 @@ abstract class TestCase extends BaseTestCase
      *
      * @return array<string, array<int, array<string, mixed>>>
      */
-    public function getDb(array $tableNames = null, bool $noId = false): array
+    public function getDb(?array $tableNames = null, bool $noId = false): array
     {
         if ($tableNames === null) {
             $tableNames = [];

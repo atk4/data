@@ -16,7 +16,7 @@ class LocalObjectTypeTest extends TestCase
     /**
      * @return \WeakMap<object, LocalObjectHandle>
      */
-    protected function getLocalObjectHandles(LocalObjectType $type = null): \WeakMap
+    protected function getLocalObjectHandles(?LocalObjectType $type = null): \WeakMap
     {
         if ($type === null) {
             /** @var LocalObjectType */

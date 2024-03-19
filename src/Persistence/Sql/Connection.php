@@ -416,7 +416,7 @@ abstract class Connection
      *
      * Drivers like PostgreSQL need to receive sequence name to get ID because PDO doesn't support this method.
      */
-    public function lastInsertId(string $sequence = null): string
+    public function lastInsertId(?string $sequence = null): string
     {
         $res = $this->getConnection()->lastInsertId($sequence);
 

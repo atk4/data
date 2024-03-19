@@ -69,7 +69,7 @@ class HasOneSql extends HasOne
      *
      * @param array<string, mixed> $defaults
      */
-    public function addField(string $fieldName, string $theirFieldName = null, array $defaults = []): SqlExpressionField
+    public function addField(string $fieldName, ?string $theirFieldName = null, array $defaults = []): SqlExpressionField
     {
         if ($theirFieldName === null) {
             $theirFieldName = $fieldName;
