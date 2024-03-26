@@ -266,7 +266,7 @@ You can, however, [import fields through joins too](https://atk4-data.readthedoc
 
 #### Q: I don't like the `$book->set('field', 123)`, I prefer properties
 
-Agile Models are not Entities. They don't represent a single record, but rather a set of records. Which is why Model has some important properties: `$model->getId()`, `$model->getPersistence()` and `model->getDataRef()`.
+Agile Models are not Entities. They don't represent a single record, but rather a set of records. Which is why Model has some important properties: `$entity->getId()`, `$model->getPersistence()` and `$entity->getDataRef()`.
 
 Read more on [working with individual data records](https://atk4-data.readthedocs.io/en/develop/persistence.html).
 
@@ -617,8 +617,8 @@ Now you can explore. Try typing:
 
 ```php
 > $m = new \my\User($db);
-> $m->loadBy('email', 'example@example.com')
-> $m->get()
+> $entity = $m->loadBy('email', 'example@example.com')
+> $entity->get()
 > $m->export(['email', 'name'])
 > $m->executeCountQuery()
 ```
