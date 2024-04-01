@@ -143,14 +143,15 @@ class ModelCheckedUpdateTest extends TestCase
     {
         $m = $this->setupModelWithNameStartsWithJCondition();
 
-        $entity3 = $m->load(3);
-        $entity3->onHook(Model::HOOK_BEFORE_UPDATE, static function (Model $entity) {
+        $m->onHook(Model::HOOK_BEFORE_UPDATE, static function (Model $entity) {
             (clone $entity)->delete();
             self::assertSameExportUnordered([
                 ['id' => 1, 'name' => 'James'],
             ], $entity->getModel()->export());
             $entity->getModel()->scope()->clear();
         });
+
+        $entity3 = $m->load(3);
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Update failed, exactly 1 row was expected to be affected');
@@ -230,15 +231,17 @@ class ModelCheckedUpdateTest extends TestCase
     public function testDeleteUnconditioned(): void
     {
         $m = $this->setupModelWithNameStartsWithJCondition();
+        $m2 = clone $m;
 
-        $entity3 = $m->load(3);
-        $entity3->onHook(Model::HOOK_BEFORE_DELETE, static function (Model $entity) {
-            (clone $entity)->delete();
+        $m->onHook(Model::HOOK_BEFORE_DELETE, static function (Model $entity) use ($m2) {
+            $m2->load($entity->getId())->delete();
             self::assertSameExportUnordered([
                 ['id' => 1, 'name' => 'James'],
             ], $entity->getModel()->export());
             $entity->getModel()->scope()->clear();
         });
+
+        $entity3 = $m->load(3);
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Delete failed, exactly 1 row was expected to be affected');
