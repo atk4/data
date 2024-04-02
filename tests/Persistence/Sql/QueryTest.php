@@ -11,6 +11,8 @@ use Atk4\Data\Persistence\Sql\Exception;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Mysql;
 use Atk4\Data\Persistence\Sql\Query;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
 
 class QueryTest extends TestCase
 {
@@ -204,6 +206,7 @@ class QueryTest extends TestCase
     /**
      * @doesNotPerformAssertions
      */
+    #[DoesNotPerformAssertions]
     public function testTableNoAliasExpressionException(): void
     {
         // $this->expectException(Exception::class); // no more
@@ -664,6 +667,7 @@ class QueryTest extends TestCase
      *
      * @dataProvider provideWhereUnsupportedOperatorCases
      */
+    #[DataProvider('provideWhereUnsupportedOperatorCases')]
     public function testWhereUnsupportedOperator(string $operator, $value): void
     {
         $q = $this->q('[where]')->where('x', $operator, $value);
@@ -1162,6 +1166,7 @@ class QueryTest extends TestCase
      *
      * @doesNotPerformAssertions
      */
+    #[DoesNotPerformAssertions]
     public function testSetException2(): void
     {
         $this->q()->set($this->e('foo'), 1);
@@ -1329,6 +1334,7 @@ class QueryTest extends TestCase
      *
      * @doesNotPerformAssertions
      */
+    #[DoesNotPerformAssertions]
     public function testCaseExprException1(): void
     {
         // $this->expectException(Exception::class);

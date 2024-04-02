@@ -15,6 +15,7 @@ use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class SelectTest extends TestCase
 {
@@ -251,6 +252,7 @@ class SelectTest extends TestCase
      * @param array{string, array<mixed>} $exprLeft
      * @param array{string, array<mixed>} $exprRight
      */
+    #[DataProvider('provideWhereNumericCompareCases')]
     public function testWhereNumericCompare(array $exprLeft, string $operator, array $exprRight, bool $expectPostgresqlTypeMismatchException = false, bool $expectMssqlTypeMismatchException = false): void
     {
         if ($this->getDatabasePlatform() instanceof OraclePlatform) {

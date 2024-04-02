@@ -14,6 +14,7 @@ use Doctrine\DBAL\Exception\TableNotFoundException;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class MigratorTest extends TestCase
 {
@@ -88,6 +89,7 @@ class MigratorTest extends TestCase
     /**
      * @dataProvider provideCharacterTypeFieldCaseSensitivityCases
      */
+    #[DataProvider('provideCharacterTypeFieldCaseSensitivityCases')]
     public function testCharacterTypeFieldCaseSensitivity(string $type, bool $isBinary): void
     {
         $model = new Model($this->db, ['table' => 'user']);
@@ -147,6 +149,7 @@ class MigratorTest extends TestCase
     /**
      * @dataProvider provideCharacterTypeFieldLongCases
      */
+    #[DataProvider('provideCharacterTypeFieldLongCases')]
     public function testCharacterTypeFieldLong(string $type, bool $isBinary, int $length): void
     {
         if ($length > 1000) {

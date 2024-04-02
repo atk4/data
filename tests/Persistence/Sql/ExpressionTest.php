@@ -11,6 +11,7 @@ use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Mysql;
 use Atk4\Data\Persistence\Sql\Sqlite;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class ExpressionTest extends TestCase
 {
@@ -145,6 +146,7 @@ class ExpressionTest extends TestCase
      *
      * @dataProvider provideNoTemplatingInSqlStringCases
      */
+    #[DataProvider('provideNoTemplatingInSqlStringCases')]
     public function testNoTemplatingInSqlString(string $expectedStr, string $exprTemplate, array $exprArguments): void
     {
         self::assertSame($expectedStr, $this->e($exprTemplate, $exprArguments)->render()[0]);
