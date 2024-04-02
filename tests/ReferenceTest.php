@@ -9,7 +9,6 @@ use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Reference;
-use Atk4\Data\Reference\WeakAnalysingMap;
 use Atk4\Data\Schema\TestCase;
 
 class ReferenceTest extends TestCase
@@ -221,15 +220,6 @@ class ReferenceTest extends TestCase
         $m->hasOne('foo', ['model' => Model::class]);
     }
 
-    private function forceWeakMapPolyfillHousekeeping(): void
-    {
-        $analysingMap = \Closure::bind(static fn () => Reference::$analysingTheirModelMap, null, Reference::class)();
-
-        // https://github.com/BenMorel/weakmap-polyfill/blob/0.4.0/src/WeakMap.php#L126
-        $weakMap = \Closure::bind(static fn () => $analysingMap->ownerDestructorHandlers, null, WeakAnalysingMap::class)();
-        count($weakMap); // @phpstan-ignore-line
-    }
-
     public function testCreateAnalysingTheirModelRecursiveInit(): void
     {
         $userModelClass = get_class(new class() extends Model {
@@ -362,7 +352,9 @@ class ReferenceTest extends TestCase
         unset($refB);
         gc_collect_cycles();
         self::assertNull($weakM->get());
-        $this->forceWeakMapPolyfillHousekeeping();
+        if (\PHP_MAJOR_VERSION === 7) { // force WeakMap polyfill housekeeping
+            gc_collect_cycles();
+        }
         $refA = $m->hasOne('a', ['model' => $refASeed]);
         $refB = $m->hasOne('b', ['model' => $refBSeed]);
         self::assertSame(['bar'], $theirModelClass::$logs);

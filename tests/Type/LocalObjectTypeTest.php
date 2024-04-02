@@ -127,7 +127,7 @@ class LocalObjectTypeTest extends TestCase
         $t->convertToPHPValue($v, $platform);
 
         unset($obj);
-        if (\PHP_MAJOR_VERSION < 8) { // force WeakMap polyfill housekeeping
+        if (\PHP_MAJOR_VERSION === 7) { // force WeakMap polyfill housekeeping
             $this->getLocalObjectHandles($t);
         }
 
