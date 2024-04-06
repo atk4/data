@@ -82,7 +82,7 @@ abstract class Connection
         }
         if (isset($dsn['dsn'])) {
             if (str_contains($dsn['dsn'], '://')) {
-                $parsed = array_filter(parse_url($dsn['dsn']));
+                $parsed = array_filter(parse_url($dsn['dsn']), static fn ($v) => $v !== '');
                 $dsn['dsn'] = str_replace('-', '_', $parsed['scheme']) . ':';
                 unset($parsed['scheme']);
                 foreach ($parsed as $k => $v) {

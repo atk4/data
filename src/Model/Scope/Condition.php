@@ -343,7 +343,7 @@ class Condition extends AbstractScope
             $words[] = $this->valueToWords($model, $field);
         }
 
-        return implode(' ', array_filter($words));
+        return implode(' ', array_filter($words, static fn ($v) => $v !== ''));
     }
 
     protected function operatorToWords(): string
