@@ -60,7 +60,7 @@ trait PlatformTrait
     }
 
     // SQL Server DBAL platform has buggy identifier escaping, fix until fixed officially, see:
-    // https://github.com/doctrine/dbal/pull/4360
+    // https://github.com/doctrine/dbal/pull/6353
 
     private function unquoteSingleIdentifier(string $possiblyQuotedName): string
     {
