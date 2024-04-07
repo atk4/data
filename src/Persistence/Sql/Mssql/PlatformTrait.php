@@ -62,24 +62,31 @@ trait PlatformTrait
     // SQL Server DBAL platform has buggy identifier escaping, fix until fixed officially, see:
     // https://github.com/doctrine/dbal/pull/4360
 
+    private function unquoteSingleIdentifier(string $possiblyQuotedName): string
+    {
+        return str_starts_with($possiblyQuotedName, '[') && str_ends_with($possiblyQuotedName, ']')
+            ? substr($possiblyQuotedName, 1, -1)
+            : $possiblyQuotedName;
+    }
+
     #[\Override]
     protected function getCreateColumnCommentSQL($tableName, $columnName, $comment)
     {
         if (str_contains($tableName, '.')) {
-            [$schemaName, $tableName] = explode('.', $tableName, 2);
+            [$schemaName, $tableName] = explode('.', $tableName);
         } else {
             $schemaName = 'dbo';
         }
 
         return $this->getAddExtendedPropertySQL(
             'MS_Description',
-            (string) $comment,
+            $comment,
             'SCHEMA',
-            $schemaName,
+            $this->quoteStringLiteral($this->unquoteSingleIdentifier($schemaName)),
             'TABLE',
-            $tableName,
+            $this->quoteStringLiteral($this->unquoteSingleIdentifier($tableName)),
             'COLUMN',
-            $columnName
+            $this->quoteStringLiteral($this->unquoteSingleIdentifier($columnName)),
         );
     }
 
@@ -87,20 +94,20 @@ trait PlatformTrait
     protected function getAlterColumnCommentSQL($tableName, $columnName, $comment)
     {
         if (str_contains($tableName, '.')) {
-            [$schemaName, $tableName] = explode('.', $tableName, 2);
+            [$schemaName, $tableName] = explode('.', $tableName);
         } else {
             $schemaName = 'dbo';
         }
 
         return $this->getUpdateExtendedPropertySQL(
             'MS_Description',
-            (string) $comment,
+            $comment,
             'SCHEMA',
-            $schemaName,
+            $this->quoteStringLiteral($this->unquoteSingleIdentifier($schemaName)),
             'TABLE',
-            $tableName,
+            $this->quoteStringLiteral($this->unquoteSingleIdentifier($tableName)),
             'COLUMN',
-            $columnName
+            $this->quoteStringLiteral($this->unquoteSingleIdentifier($columnName)),
         );
     }
 
@@ -108,7 +115,7 @@ trait PlatformTrait
     protected function getDropColumnCommentSQL($tableName, $columnName)
     {
         if (str_contains($tableName, '.')) {
-            [$schemaName, $tableName] = explode('.', $tableName, 2);
+            [$schemaName, $tableName] = explode('.', $tableName);
         } else {
             $schemaName = 'dbo';
         }
@@ -116,17 +123,12 @@ trait PlatformTrait
         return $this->getDropExtendedPropertySQL(
             'MS_Description',
             'SCHEMA',
-            $schemaName,
+            $this->quoteStringLiteral($this->unquoteSingleIdentifier($schemaName)),
             'TABLE',
-            $tableName,
+            $this->quoteStringLiteral($this->unquoteSingleIdentifier($tableName)),
             'COLUMN',
-            $columnName
+            $this->quoteStringLiteral($this->unquoteSingleIdentifier($columnName)),
         );
-    }
-
-    private function quoteSingleIdentifierAsStringLiteral(string $levelName): string
-    {
-        return $this->quoteStringLiteral(preg_replace('~^\[|\]$~', '', $levelName));
     }
 
     #[\Override]
@@ -140,17 +142,14 @@ trait PlatformTrait
         $level2Type = null,
         $level2Name = null
     ) {
-        return 'EXEC sp_addextendedproperty'
-            . ' N' . $this->quoteStringLiteral($name) . ', N' . $this->quoteStringLiteral((string) $value)
-            . ', N' . $this->quoteStringLiteral((string) $level0Type)
-            . ', ' . $this->quoteSingleIdentifierAsStringLiteral((string) $level0Name)
-            . ', N' . $this->quoteStringLiteral((string) $level1Type)
-            . ', ' . $this->quoteSingleIdentifierAsStringLiteral((string) $level1Name)
+        return 'EXEC sp_addextendedproperty '
+            . 'N' . $this->quoteStringLiteral($name) . ', N' . $this->quoteStringLiteral($value ?? '') . ', '
+            . 'N' . $this->quoteStringLiteral($level0Type ?? '') . ', ' . $level0Name . ', '
+            . 'N' . $this->quoteStringLiteral($level1Type ?? '') . ', ' . $level1Name
             . (
                 $level2Type !== null || $level2Name !== null
-                ? ', N' . $this->quoteStringLiteral((string) $level2Type)
-                  . ', ' . $this->quoteSingleIdentifierAsStringLiteral((string) $level2Name)
-                : ''
+                    ? ', N' . $this->quoteStringLiteral($level2Type ?? '') . ', ' . $level2Name
+                    : ''
             );
     }
 
@@ -164,17 +163,14 @@ trait PlatformTrait
         $level2Type = null,
         $level2Name = null
     ) {
-        return 'EXEC sp_dropextendedproperty'
-            . ' N' . $this->quoteStringLiteral($name)
-            . ', N' . $this->quoteStringLiteral((string) $level0Type)
-            . ', ' . $this->quoteSingleIdentifierAsStringLiteral((string) $level0Name)
-            . ', N' . $this->quoteStringLiteral((string) $level1Type)
-            . ', ' . $this->quoteSingleIdentifierAsStringLiteral((string) $level1Name)
+        return 'EXEC sp_dropextendedproperty '
+            . 'N' . $this->quoteStringLiteral($name) . ', '
+            . 'N' . $this->quoteStringLiteral($level0Type ?? '') . ', ' . $level0Name . ', '
+            . 'N' . $this->quoteStringLiteral($level1Type ?? '') . ', ' . $level1Name
             . (
                 $level2Type !== null || $level2Name !== null
-                ? ', N' . $this->quoteStringLiteral((string) $level2Type)
-                  . ', ' . $this->quoteSingleIdentifierAsStringLiteral((string) $level2Name)
-                : ''
+                    ? ', N' . $this->quoteStringLiteral($level2Type ?? '') . ', ' . $level2Name
+                    : ''
             );
     }
 
@@ -189,36 +185,27 @@ trait PlatformTrait
         $level2Type = null,
         $level2Name = null
     ) {
-        return 'EXEC sp_updateextendedproperty'
-            . ' N' . $this->quoteStringLiteral($name) . ', N' . $this->quoteStringLiteral((string) $value)
-            . ', N' . $this->quoteStringLiteral((string) $level0Type)
-            . ', ' . $this->quoteSingleIdentifierAsStringLiteral((string) $level0Name)
-            . ', N' . $this->quoteStringLiteral((string) $level1Type)
-            . ', ' . $this->quoteSingleIdentifierAsStringLiteral((string) $level1Name)
+        return 'EXEC sp_updateextendedproperty '
+            . 'N' . $this->quoteStringLiteral($name) . ', N' . $this->quoteStringLiteral($value ?? '') . ', '
+            . 'N' . $this->quoteStringLiteral($level0Type ?? '') . ', ' . $level0Name . ', '
+            . 'N' . $this->quoteStringLiteral($level1Type ?? '') . ', ' . $level1Name
             . (
                 $level2Type !== null || $level2Name !== null
-                ? ', N' . $this->quoteStringLiteral((string) $level2Type)
-                  . ', ' . $this->quoteSingleIdentifierAsStringLiteral((string) $level2Name)
-                : ''
+                    ? ', N' . $this->quoteStringLiteral($level2Type ?? '') . ', ' . $level2Name
+                    : ''
             );
     }
 
     #[\Override]
     protected function getCommentOnTableSQL(string $tableName, ?string $comment): string
     {
-        if (str_contains($tableName, '.')) {
-            [$schemaName, $tableName] = explode('.', $tableName, 2);
-        } else {
-            $schemaName = 'dbo';
-        }
-
         return $this->getAddExtendedPropertySQL(
             'MS_Description',
-            (string) $comment,
+            $comment,
             'SCHEMA',
-            $schemaName,
+            $this->quoteStringLiteral('dbo'),
             'TABLE',
-            $tableName
+            $this->quoteStringLiteral($this->unquoteSingleIdentifier($tableName)),
         );
     }
 }
