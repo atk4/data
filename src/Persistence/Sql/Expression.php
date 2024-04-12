@@ -240,18 +240,6 @@ abstract class Expression implements Expressionable, \ArrayAccess
     protected function escapeStringLiteral(string $value): string
     {
         $platform = $this->connection->getDatabasePlatform();
-        if ($platform instanceof PostgreSQLPlatform || $platform instanceof SQLServerPlatform) {
-            $dummyPersistence = new Persistence\Sql($this->connection);
-            if (\Closure::bind(static fn () => $dummyPersistence->binaryTypeValueIsEncoded($value), null, Persistence\Sql::class)()) {
-                $value = \Closure::bind(static fn () => $dummyPersistence->binaryTypeValueDecode($value), null, Persistence\Sql::class)();
-
-                if ($platform instanceof PostgreSQLPlatform) {
-                    return 'decode(\'' . bin2hex($value) . '\', \'hex\')';
-                }
-
-                return 'CONVERT(VARBINARY(MAX), \'' . bin2hex($value) . '\', 2)';
-            }
-        }
 
         $parts = [];
         foreach (explode("\0", $value) as $i => $v) {
@@ -611,13 +599,13 @@ abstract class Expression implements Expressionable, \ArrayAccess
                     $type = ParameterType::STRING;
 
                     if ($platform instanceof PostgreSQLPlatform || $platform instanceof SQLServerPlatform) {
-                        $dummyPersistence = new Persistence\Sql($this->connection);
+                        $dummyPersistence = (new \ReflectionClass(Persistence\Sql::class))->newInstanceWithoutConstructor();
                         if (\Closure::bind(static fn () => $dummyPersistence->binaryTypeValueIsEncoded($val), null, Persistence\Sql::class)()) {
                             $val = \Closure::bind(static fn () => $dummyPersistence->binaryTypeValueDecode($val), null, Persistence\Sql::class)();
                             $type = ParameterType::BINARY;
                         }
                     }
-                } elseif (is_resource($val)) { // phpstan-ignore-line
+                } elseif (is_resource($val)) {
                     throw new Exception('Resource type is not supported, set value as string instead');
                 } else {
                     throw (new Exception('Unsupported param type'))

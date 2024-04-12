@@ -4,10 +4,24 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Postgresql;
 
+use Atk4\Data\Persistence;
 use Doctrine\DBAL\Statement;
 
 trait ExpressionTrait
 {
+    #[\Override]
+    protected function escapeStringLiteral(string $value): string
+    {
+        $dummyPersistence = (new \ReflectionClass(Persistence\Sql::class))->newInstanceWithoutConstructor();
+        if (\Closure::bind(static fn () => $dummyPersistence->binaryTypeValueIsEncoded($value), null, Persistence\Sql::class)()) {
+            $value = \Closure::bind(static fn () => $dummyPersistence->binaryTypeValueDecode($value), null, Persistence\Sql::class)();
+
+            return 'decode(\'' . bin2hex($value) . '\', \'hex\')';
+        }
+
+        return parent::escapeStringLiteral($value);
+    }
+
     #[\Override]
     protected function updateRenderBeforeExecute(array $render): array
     {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Mssql;
 
+use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\ExecuteException;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Driver\PDO\Exception as DbalDriverPdoException;
@@ -12,6 +13,19 @@ use Doctrine\DBAL\Result as DbalResult;
 
 trait ExpressionTrait
 {
+    #[\Override]
+    protected function escapeStringLiteral(string $value): string
+    {
+        $dummyPersistence = (new \ReflectionClass(Persistence\Sql::class))->newInstanceWithoutConstructor();
+        if (\Closure::bind(static fn () => $dummyPersistence->binaryTypeValueIsEncoded($value), null, Persistence\Sql::class)()) {
+            $value = \Closure::bind(static fn () => $dummyPersistence->binaryTypeValueDecode($value), null, Persistence\Sql::class)();
+
+            return 'convert(VARBINARY(MAX), \'' . bin2hex($value) . '\', 2)';
+        }
+
+        return parent::escapeStringLiteral($value);
+    }
+
     #[\Override]
     public function render(): array
     {
