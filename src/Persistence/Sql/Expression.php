@@ -11,7 +11,6 @@ use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
-use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Result as DbalResult;
 use Doctrine\DBAL\Statement;
@@ -247,8 +246,6 @@ abstract class Expression implements Expressionable, \ArrayAccess
                 if ($platform instanceof PostgreSQLPlatform) {
                     // will raise SQL error, PostgreSQL does not support \0 character
                     $parts[] = 'convert_from(decode(\'00\', \'hex\'), \'UTF8\')';
-                } elseif ($platform instanceof SQLServerPlatform) {
-                    $parts[] = 'NCHAR(0)';
                 } elseif ($platform instanceof OraclePlatform) {
                     $parts[] = 'CHR(0)';
                 } else {
@@ -269,16 +266,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
                 $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
                 $partsRight = array_slice($parts, count($partsLeft));
 
-                $sqlLeft = $buildConcatSqlFx($partsLeft);
-                if ($platform instanceof SQLServerPlatform && count($partsLeft) === 1) {
-                    $sqlLeft = 'CAST(' . $sqlLeft . ' AS NVARCHAR(MAX))';
-                }
-
-                return ($platform instanceof SQLitePlatform ? '(' : 'CONCAT(')
-                    . $sqlLeft
-                    . ($platform instanceof SQLitePlatform ? ' || ' : ', ')
-                    . $buildConcatSqlFx($partsRight)
-                    . ')';
+                return 'CONCAT(' . $buildConcatSqlFx($partsLeft) . ', ' . $buildConcatSqlFx($partsRight) . ')';
             }
 
             return reset($parts);

@@ -7,6 +7,38 @@ namespace Atk4\Data\Persistence\Sql\Sqlite;
 trait ExpressionTrait
 {
     #[\Override]
+    protected function escapeStringLiteral(string $value): string
+    {
+        $parts = [];
+        foreach (explode("\0", $value) as $i => $v) {
+            if ($i > 0) {
+                $parts[] = 'x\'00\'';
+            }
+
+            if ($v !== '') {
+                $parts[] = '\'' . str_replace('\'', '\'\'', $v) . '\'';
+            }
+        }
+
+        if ($parts === []) {
+            $parts = ['\'\''];
+        }
+
+        $buildConcatSqlFx = static function (array $parts) use (&$buildConcatSqlFx): string {
+            if (count($parts) > 1) {
+                $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
+                $partsRight = array_slice($parts, count($partsLeft));
+
+                return '(' . $buildConcatSqlFx($partsLeft) . ' || ' . $buildConcatSqlFx($partsRight) . ')';
+            }
+
+            return reset($parts);
+        };
+
+        return $buildConcatSqlFx($parts);
+    }
+
+    #[\Override]
     protected function updateRenderBeforeExecute(array $render): array
     {
         [$sql, $params] = $render;
