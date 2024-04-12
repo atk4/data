@@ -133,8 +133,10 @@ class ExpressionSqlTest extends TestCase
         $m->addField('surname');
         $m->addField('cached_name');
 
-        if ($this->getDatabasePlatform() instanceof SQLitePlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
             $concatExpr = '[name] || \' \' || [surname]';
+        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) { // needed for Oracle 21 and lower
+            $concatExpr = 'CONCAT(CONCAT([name], \' \'), [surname])';
         } else {
             $concatExpr = 'CONCAT([name], \' \', [surname])';
         }
