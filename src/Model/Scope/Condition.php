@@ -31,10 +31,10 @@ class Condition extends AbstractScope
     public const OPERATOR_GREATER_EQUAL = '>=';
     public const OPERATOR_LESS = '<';
     public const OPERATOR_LESS_EQUAL = '<=';
-    public const OPERATOR_LIKE = 'LIKE';
-    public const OPERATOR_NOT_LIKE = 'NOT LIKE';
     public const OPERATOR_IN = 'IN';
     public const OPERATOR_NOT_IN = 'NOT IN';
+    public const OPERATOR_LIKE = 'LIKE';
+    public const OPERATOR_NOT_LIKE = 'NOT LIKE';
     public const OPERATOR_REGEXP = 'REGEXP';
     public const OPERATOR_NOT_REGEXP = 'NOT REGEXP';
 
@@ -64,14 +64,6 @@ class Condition extends AbstractScope
             'negate' => self::OPERATOR_GREATER,
             'label' => 'is smaller or equal to',
         ],
-        self::OPERATOR_LIKE => [
-            'negate' => self::OPERATOR_NOT_LIKE,
-            'label' => 'is like',
-        ],
-        self::OPERATOR_NOT_LIKE => [
-            'negate' => self::OPERATOR_LIKE,
-            'label' => 'is not like',
-        ],
         self::OPERATOR_IN => [
             'negate' => self::OPERATOR_NOT_IN,
             'label' => 'is one of',
@@ -80,13 +72,21 @@ class Condition extends AbstractScope
             'negate' => self::OPERATOR_IN,
             'label' => 'is not one of',
         ],
+        self::OPERATOR_LIKE => [
+            'negate' => self::OPERATOR_NOT_LIKE,
+            'label' => 'is like',
+        ],
+        self::OPERATOR_NOT_LIKE => [
+            'negate' => self::OPERATOR_LIKE,
+            'label' => 'is not like',
+        ],
         self::OPERATOR_REGEXP => [
             'negate' => self::OPERATOR_NOT_REGEXP,
-            'label' => 'is regular expression',
+            'label' => 'matches regex',
         ],
         self::OPERATOR_NOT_REGEXP => [
             'negate' => self::OPERATOR_REGEXP,
-            'label' => 'is not regular expression',
+            'label' => 'does not match regex',
         ],
     ];
 

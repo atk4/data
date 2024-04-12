@@ -21,7 +21,7 @@ abstract class Query extends Expression
     public bool $wrapInParentheses = true;
 
     /** @var array<string> */
-    protected array $supportedOperators = ['=', '!=', '<', '>', '<=', '>=', 'like', 'not like', 'in', 'not in'];
+    protected array $supportedOperators = ['=', '!=', '<', '>', '<=', '>=', 'in', 'not in', 'like', 'not like'];
 
     protected string $templateSelect = '[with]select[option] [field] [from] [table][join][where][group][having][order][limit]';
     protected string $templateInsert = 'insert[option] into [tableNoalias] ([setFields]) values ([setValues])';
