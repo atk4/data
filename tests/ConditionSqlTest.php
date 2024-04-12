@@ -485,15 +485,18 @@ class ConditionSqlTest extends TestCase
 
         $u = new Model($this->db, ['table' => 'user']);
         $u->addField('name');
+        $scope = $u->scope();
 
         $u2 = $u->loadBy('name', 'John');
         self::assertSame(['id' => 1, 'name' => 'John'], $u2->get());
+        self::assertSame($scope, $u->scope());
         self::assertTrue($u->scope()->isEmpty());
         self::assertFalse($u->getField('name')->system); // should not set field as system
         self::assertNull($u->getField('name')->default); // should not set field default value
 
         $u2 = $u->tryLoadBy('name', 'Joe');
         self::assertSame(['id' => 3, 'name' => 'Joe'], $u2->get());
+        self::assertSame($scope, $u->scope());
         self::assertTrue($u->scope()->isEmpty());
         self::assertFalse($u->getField('name')->system); // should not set field as system
         self::assertNull($u->getField('name')->default); // should not set field default value
@@ -503,36 +506,43 @@ class ConditionSqlTest extends TestCase
     {
         $this->setDb([
             'user' => [
-                1 => ['id' => 1, 'name' => 'John', 'active' => 1, 'created' => '2020-01-01 15:00:30'],
-                ['id' => 2, 'name' => 'Peter', 'active' => 0, 'created' => '2019-05-20 12:13:14'],
-                ['id' => 3, 'name' => 'Joe', 'active' => 1, 'created' => '2019-07-15 09:55:05'],
+                1 => ['id' => 1, 'name' => 'John', 'c' => 1],
+                ['id' => 2, 'name' => 'Peter', 'c' => 2000],
+                ['id' => 3, 'name' => 'Joe', 'c' => 50],
+                ['id' => 4, 'name' => 'Ca%ro_li\ne', 'c' => null],
+                ['id' => 5, 'name' => 'Ca.ro.li.ne', 'c' => null],
             ],
         ]);
 
         $u = new Model($this->db, ['table' => 'user']);
         $u->addField('name', ['type' => 'string']);
-        $u->addField('active', ['type' => 'boolean']);
-        $u->addField('created', ['type' => 'datetime']);
+        $u->addField('c', ['type' => 'boolean']);
 
-        $t = (clone $u)->addCondition('name', 'like', '%John%');
-        self::assertCount(1, $t->export());
+        $findIdsLikeFx = static function (string $field, string $value, bool $negated = false) use ($u) {
+            $t = (clone $u)->addCondition($field, ($negated ? 'not ' : '') . 'like', $value);
 
-        $t = (clone $u)->addCondition('name', 'like', '%john%');
-        self::assertCount(1, $t->export());
+            return array_keys($t->export(null, 'id'));
+        };
 
-        $t = (clone $u)->addCondition('created', 'like', '%19%');
-        self::assertCount(2, $t->export()); // only year 2019 records
+        self::assertSame([1], $findIdsLikeFx('name', 'John'));
+        self::assertSame([], $findIdsLikeFx('name', 'Joh'));
+        self::assertSame([1, 3], $findIdsLikeFx('name', 'Jo%'));
+        self::assertSame([2, 4, 5], $findIdsLikeFx('name', 'Jo%', true));
+        self::assertSame([1], $findIdsLikeFx('name', 'john'));
+        self::assertSame([1], $findIdsLikeFx('name', '%John%'));
+        self::assertSame([1], $findIdsLikeFx('name', 'Jo%n'));
+        self::assertSame([1], $findIdsLikeFx('name', 'J%n'));
+        self::assertSame([1], $findIdsLikeFx('name', 'Jo_n'));
+        self::assertSame([], $findIdsLikeFx('name', 'J_n'));
 
-        $t = (clone $u)->addCondition('active', 'like', '%1%');
-        self::assertCount(2, $t->export()); // only active records
+        self::assertSame([1], $findIdsLikeFx('c', '%1%'));
+        self::assertSame([2], $findIdsLikeFx('c', '%2000%'));
+        self::assertSame([2, 3], $findIdsLikeFx('c', '%0%'));
+        self::assertSame([1], $findIdsLikeFx('c', '%0%', true));
 
-        $t = (clone $u)->addCondition('active', 'like', '%0%');
-        self::assertCount(1, $t->export()); // only inactive records
-
-        $t = (clone $u)->addCondition('active', 'like', '%999%');
-        self::assertCount(0, $t->export()); // bad value, so it will not match anything
-
-        $t = (clone $u)->addCondition('active', 'like', '%ABC%');
-        self::assertCount(0, $t->export()); // bad value, so it will not match anything
+        self::assertSame([4, 5], $findIdsLikeFx('name', '%Ca%ro%'));
+        self::assertSame([4, 5], $findIdsLikeFx('name', '%ro_li%'));
+        // self::assertSame([4, 5], $findIdsLikeFx('name', '%li_\ne%'));
+        // self::assertSame([4], $findIdsLikeFx('name', '%li\\ne%'));
     }
 }
