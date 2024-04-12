@@ -23,6 +23,12 @@ class ExpressionTest extends TestCase
     {
         return new class($template, $arguments) extends Expression {
             protected string $identifierEscapeChar = '"';
+
+            #[\Override]
+            protected function escapeStringLiteral(string $value): string
+            {
+                return null; // @phpstan-ignore-line
+            }
         };
     }
 
@@ -381,7 +387,7 @@ class ExpressionTest extends TestCase
 
     public function testEscapeParamCustom(): void
     {
-        $e = new class('hello, [who]', ['who' => 'world']) extends Expression {
+        $e = new class('hello, [who]', ['who' => 'world']) extends Sqlite\Expression {
             #[\Override]
             public function escapeParam($value): string
             {

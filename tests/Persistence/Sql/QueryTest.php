@@ -33,9 +33,21 @@ class QueryTest extends TestCase
             {
                 $this->expressionClass = get_class(new class() extends Expression {
                     protected string $identifierEscapeChar = '"';
+
+                    #[\Override]
+                    protected function escapeStringLiteral(string $value): string
+                    {
+                        return null; // @phpstan-ignore-line
+                    }
                 });
 
                 parent::__construct($defaults, $arguments);
+            }
+
+            #[\Override]
+            protected function escapeStringLiteral(string $value): string
+            {
+                return null; // @phpstan-ignore-line
             }
         };
 

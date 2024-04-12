@@ -90,8 +90,7 @@ namespace and wish to use it.
 
 ## Extending Query Class
 
-You can add support for new database vendors by creating your own
-{php:class}`Query` class.
+You can add support for new database vendors by creating your own {php:class}`Query` class.
 Let's say you want to add support for new SQL vendor:
 
 ```

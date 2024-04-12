@@ -236,44 +236,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
     /**
      * This method should be used only when string value cannot be bound.
      */
-    protected function escapeStringLiteral(string $value): string
-    {
-        $platform = $this->connection->getDatabasePlatform();
-
-        $parts = [];
-        foreach (explode("\0", $value) as $i => $v) {
-            if ($i > 0) {
-                if ($platform instanceof PostgreSQLPlatform) {
-                    // will raise SQL error, PostgreSQL does not support \0 character
-                    $parts[] = 'convert_from(decode(\'00\', \'hex\'), \'UTF8\')';
-                } elseif ($platform instanceof OraclePlatform) {
-                    $parts[] = 'CHR(0)';
-                } else {
-                    $parts[] = 'x\'00\'';
-                }
-            }
-
-            if ($v !== '') {
-                $parts[] = '\'' . str_replace('\'', '\'\'', $v) . '\'';
-            }
-        }
-        if ($parts === []) {
-            $parts = ['\'\''];
-        }
-
-        $buildConcatSqlFx = static function (array $parts) use (&$buildConcatSqlFx, $platform): string {
-            if (count($parts) > 1) {
-                $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
-                $partsRight = array_slice($parts, count($partsLeft));
-
-                return 'CONCAT(' . $buildConcatSqlFx($partsLeft) . ', ' . $buildConcatSqlFx($partsRight) . ')';
-            }
-
-            return reset($parts);
-        };
-
-        return $buildConcatSqlFx($parts);
-    }
+    abstract protected function escapeStringLiteral(string $value): string;
 
     /**
      * Escapes identifier from argument.

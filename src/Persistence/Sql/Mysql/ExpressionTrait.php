@@ -9,7 +9,33 @@ trait ExpressionTrait
     #[\Override]
     protected function escapeStringLiteral(string $value): string
     {
-        return str_replace('\\', '\\\\', parent::escapeStringLiteral($value));
+        $parts = [];
+        foreach (explode("\0", $value) as $i => $v) {
+            if ($i > 0) {
+                $parts[] = 'x\'00\'';
+            }
+
+            if ($v !== '') {
+                $parts[] = '\'' . str_replace('\'', '\'\'', $v) . '\'';
+            }
+        }
+
+        if ($parts === []) {
+            $parts = ['\'\''];
+        }
+
+        $buildConcatSqlFx = static function (array $parts) use (&$buildConcatSqlFx): string {
+            if (count($parts) > 1) {
+                $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
+                $partsRight = array_slice($parts, count($partsLeft));
+
+                return 'CONCAT(' . $buildConcatSqlFx($partsLeft) . ', ' . $buildConcatSqlFx($partsRight) . ')';
+            }
+
+            return reset($parts);
+        };
+
+        return str_replace('\\', '\\\\', $buildConcatSqlFx($parts));
     }
 
     #[\Override]

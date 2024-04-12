@@ -33,6 +33,7 @@ trait ExpressionTrait
                 $parts[] = '\'' . str_replace('\'', '\'\'', $v) . '\'';
             }
         }
+
         if ($parts === []) {
             $parts = ['\'\''];
         }

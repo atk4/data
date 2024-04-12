@@ -6,6 +6,38 @@ namespace Atk4\Data\Persistence\Sql\Oracle;
 
 trait ExpressionTrait
 {
+    #[\Override]
+    protected function escapeStringLiteral(string $value): string
+    {
+        $parts = [];
+        foreach (explode("\0", $value) as $i => $v) {
+            if ($i > 0) {
+                $parts[] = 'CHR(0)';
+            }
+
+            if ($v !== '') {
+                $parts[] = '\'' . str_replace('\'', '\'\'', $v) . '\'';
+            }
+        }
+
+        if ($parts === []) {
+            $parts = ['\'\''];
+        }
+
+        $buildConcatSqlFx = static function (array $parts) use (&$buildConcatSqlFx): string {
+            if (count($parts) > 1) {
+                $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
+                $partsRight = array_slice($parts, count($partsLeft));
+
+                return 'CONCAT(' . $buildConcatSqlFx($partsLeft) . ', ' . $buildConcatSqlFx($partsRight) . ')';
+            }
+
+            return reset($parts);
+        };
+
+        return $buildConcatSqlFx($parts);
+    }
+
     /**
      * Like mb_str_split() function, but split by length in bytes.
      *

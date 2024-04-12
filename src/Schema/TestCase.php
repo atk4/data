@@ -137,6 +137,12 @@ abstract class TestCase extends BaseTestCase
 
         $exprNoRender = new class($sql, $params) extends Expression {
             #[\Override]
+            protected function escapeStringLiteral(string $value): string
+            {
+                return null; // @phpstan-ignore-line
+            }
+
+            #[\Override]
             public function render(): array
             {
                 return [$this->template, $this->args['custom']];
