@@ -488,7 +488,13 @@ class SelectTest extends TestCase
     {
         $str = '';
         for ($i = 0; $i <= 0x7F; ++$i) {
-            $str .= chr($i);
+            $chr = chr($i);
+            for ($j = 1; $j <= 3; ++$j) {
+                $str .= str_repeat($chr, $j) . ',';
+                for ($k = 1; $k <= 3; ++$k) {
+                    $str .= str_repeat('\\', $k) . str_repeat($chr, $j) . ',';
+                }
+            }
         }
 
         // PostgreSQL does not support \0 character
