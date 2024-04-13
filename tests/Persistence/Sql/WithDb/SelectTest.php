@@ -484,6 +484,37 @@ class SelectTest extends TestCase
         }
     }
 
+    public function testEscapeStringLiteral(): void
+    {
+        $str = '';
+        for ($i = 0; $i <= 0x7F; ++$i) {
+            $str .= chr($i);
+        }
+
+        // PostgreSQL does not support \0 character
+        // https://stackoverflow.com/questions/1347646/postgres-error-on-insert-error-invalid-byte-sequence-for-encoding-utf8-0x0
+        $str2 = $this->getDatabasePlatform() instanceof PostgreSQLPlatform
+            ? str_replace("\0", '-', $str)
+            : $str;
+
+        $dummyExpression = $this->getConnection()->expr();
+        $strSql = \Closure::bind(static fn () => $dummyExpression->escapeStringLiteral($str2), null, Expression::class)();
+        $query = $this->getConnection()->dsql()
+            ->field($this->getConnection()->expr($strSql));
+        $res = $query->getOne();
+        self::assertSame(bin2hex($str2), bin2hex($res));
+
+        $strSql = \Closure::bind(static fn () => $dummyExpression->escapeStringLiteral($str), null, Expression::class)();
+        $query = $this->getConnection()->dsql()
+            ->field($this->getConnection()->expr($strSql));
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            $this->expectException(ExecuteException::class);
+            $this->expectExceptionMessage('Character not in repertoire');
+        }
+        $res = $query->getOne();
+        self::assertSame(bin2hex($str), bin2hex($res));
+    }
+
     public function testUtf8mb4Support(): void
     {
         // MariaDB has no support of utf8mb4 identifiers
