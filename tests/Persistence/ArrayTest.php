@@ -345,6 +345,15 @@ class ArrayTest extends TestCase
             $dbDataCountries[10],
         ], $m->action('select')->getRows());
 
+        // case str_
+        $m->addCondition('country', 'LIKE', '%a__');
+        self::assertSame([
+            $dbDataCountries[1],
+            $dbDataCountries[2],
+            $dbDataCountries[6],
+            $dbDataCountries[10],
+        ], $m->action('select')->getRows());
+
         // case boolean field
         $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '0');
