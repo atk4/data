@@ -30,7 +30,9 @@ trait ExpressionTrait
             }
 
             if ($v !== '') {
-                $parts[] = '\'' . str_replace('\'', '\'\'', $v) . '\'';
+                foreach (mb_str_split($v, 4000) as $v2) {
+                    $parts[] = '\'' . str_replace('\'', '\'\'', $v2) . '\'';
+                }
             }
         }
 

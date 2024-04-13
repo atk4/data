@@ -145,8 +145,10 @@ class Sql extends Persistence
      */
     public function expr(Model $model, string $template, array $arguments = []): Expression
     {
+        $quotedTokenRegex = $this->getConnection()->expr()::QUOTED_TOKEN_REGEX;
+
         preg_replace_callback(
-            '~(?!\[\w*\])' . Expression::QUOTED_TOKEN_REGEX . '\K|\[\w*\]|\{\w*\}~',
+            '~(?!\[\w*\])' . $quotedTokenRegex . '\K|\[\w*\]|\{\w*\}~',
             static function ($matches) use ($model, &$arguments) {
                 if ($matches[0] === '') {
                     return '';

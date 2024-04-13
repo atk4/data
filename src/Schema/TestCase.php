@@ -8,6 +8,7 @@ use Atk4\Core\Phpunit\TestCase as BaseTestCase;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Expression;
+use Atk4\Data\Persistence\Sql\Sqlite\Expression as SqliteExpression;
 use Atk4\Data\Reference;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
@@ -97,8 +98,9 @@ abstract class TestCase extends BaseTestCase
 
         // needed for \Atk4\Data\Persistence\Sql\*\ExpressionTrait::updateRenderBeforeExecute() fixes
         $i = 0;
+        $quotedTokenRegex = $this->getConnection()->expr()::QUOTED_TOKEN_REGEX;
         $sql = preg_replace_callback(
-            '~' . Expression::QUOTED_TOKEN_REGEX . '\K|(\?)|cast\((\?|:\w+) as (BOOLEAN|INTEGER|BIGINT|DOUBLE PRECISION|BINARY_DOUBLE)\)|\((\?|:\w+) \+ 0\.00\)~',
+            '~' . $quotedTokenRegex . '\K|(\?)|cast\((\?|:\w+) as (BOOLEAN|INTEGER|BIGINT|DOUBLE PRECISION|BINARY_DOUBLE)\)|\((\?|:\w+) \+ 0\.00\)~',
             static function ($matches) use (&$types, &$params, &$i) {
                 if ($matches[0] === '') {
                     return '';
@@ -162,7 +164,7 @@ abstract class TestCase extends BaseTestCase
         $platform = $this->getDatabasePlatform();
 
         $convertedSql = preg_replace_callback(
-            '~(?![\'`])' . Expression::QUOTED_TOKEN_REGEX . '\K|' . Expression::QUOTED_TOKEN_REGEX . '|:(\w+)~',
+            '~(?![\'`])' . SqliteExpression::QUOTED_TOKEN_REGEX . '\K|' . SqliteExpression::QUOTED_TOKEN_REGEX . '|:(\w+)~',
             static function ($matches) use ($platform) {
                 if ($matches[0] === '') {
                     return '';
