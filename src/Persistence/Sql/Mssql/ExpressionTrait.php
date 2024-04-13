@@ -49,7 +49,7 @@ trait ExpressionTrait
             return reset($parts);
         };
 
-        return $buildConcatSqlFx($parts);
+        return str_replace(["\\\n", "\\\r"], ["\\\\\n\n", "\\\\\r"], $buildConcatSqlFx($parts));
     }
 
     #[\Override]
