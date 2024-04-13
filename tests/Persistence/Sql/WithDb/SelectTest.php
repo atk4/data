@@ -515,15 +515,15 @@ class SelectTest extends TestCase
         $res = $query->getOne();
         self::assertSame(bin2hex($str2), bin2hex($res));
 
-        $strSql = \Closure::bind(static fn () => $dummyExpression->escapeStringLiteral($str), null, Expression::class)();
-        $query = $this->getConnection()->dsql()
-            ->field($this->getConnection()->expr($strSql));
-        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+        if ($str2 !== $str) {
+            $strSql = \Closure::bind(static fn () => $dummyExpression->escapeStringLiteral($str), null, Expression::class)();
+            $query = $this->getConnection()->dsql()
+                ->field($this->getConnection()->expr($strSql));
+
             $this->expectException(ExecuteException::class);
             $this->expectExceptionMessage('Character not in repertoire');
+            $query->getOne();
         }
-        $res = $query->getOne();
-        self::assertSame(bin2hex($str), bin2hex($res));
     }
 
     public function testUtf8mb4Support(): void
