@@ -486,15 +486,14 @@ class SelectTest extends TestCase
 
     public function testQuotedTokenRegexConstant(): void
     {
-        $backslashEscape = $this->getDatabasePlatform() instanceof MySQLPlatform;
+        $hasBackslashSupport = $this->getDatabasePlatform() instanceof MySQLPlatform;
 
         self::assertSame(
             '(?:(?sx)' . "\n"
-                . '    \'(?:[^\'' . ($backslashEscape ? '\\\\' : '') . ']+' . ($backslashEscape ? '|\\\.' : '') . '|\'\')*+\'' . "\n"
-                . '    |"(?:[^"' . ($backslashEscape ? '\\\\' : '') . ']+' . ($backslashEscape ? '|\\\.' : '') . '|"")*+"' . "\n"
-                . '    |`(?:[^`' . ($backslashEscape ? '\\\\' : '') . ']+' . ($backslashEscape ? '|\\\.' : '') . '|``)*+`' . "\n"
-                // . '    |\[(?:[^\]\\\]+|\\\.|\]\])*+\]' . "\n"
-                . '    |\[[^\]]*+\]' . "\n"
+                . '    \'(?:[^\'' . ($hasBackslashSupport ? '\\\\' : '') . ']+' . ($hasBackslashSupport ? '|\\\.' : '') . '|\'\')*+\'' . "\n"
+                . '    |"(?:[^"' . ($hasBackslashSupport ? '\\\\' : '') . ']+' . ($hasBackslashSupport ? '|\\\.' : '') . '|"")*+"' . "\n"
+                . '    |`(?:[^`]+|``)*+`' . "\n"
+                . '    |\[(?:[^\]]+|\]\])*+\]' . "\n"
                 . '    |(?:--|\#)[^\r\n]*+' . "\n"
                 . '    |/\*(?:[^*]+|\*(?!/))*+\*/' . "\n"
                 . ')',
@@ -502,14 +501,64 @@ class SelectTest extends TestCase
         );
 
         self::assertSame($this->e()::QUOTED_TOKEN_REGEX, $this->q()::QUOTED_TOKEN_REGEX);
+
+        $sqlTwoEscape = '\'\'\'\'';
+        $sqlBackslashEscape = '\'\\\'-- \'';
+        if ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            $sqlBackslashEscape .= "\n/**/";
+        }
+
+        $query = $this->q()->field($this->e($sqlTwoEscape));
+        self::assertSame('\'', $query->getOne());
+
+        $query = $this->q()->field($this->e($sqlBackslashEscape));
+        self::assertSame($hasBackslashSupport ? '\'-- ' : '\\', $query->getOne());
+
+        foreach (['"', '`'] as $chr) {
+            if ($chr === '`' && ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform)) {
+                continue;
+            }
+
+            $replaceFx = static fn ($v) => str_replace('\'', $chr, $v);
+            $needsExplicitAs = $chr === '"' && $this->getDatabasePlatform() instanceof MySQLPlatform;
+
+            if ($chr !== '"' || !$this->getDatabasePlatform() instanceof OraclePlatform) {
+                $query = $this->q()->field($this->e('\'x\' ' . ($needsExplicitAs ? 'as ' : '') . $replaceFx($sqlTwoEscape)));
+                self::assertSame([$chr => 'x'], $query->getRow());
+            }
+
+            $query = $this->q()->field($this->e('\'x\' ' . ($needsExplicitAs ? 'as ' : '') . $replaceFx($sqlBackslashEscape)));
+            self::assertSame([$hasBackslashSupport && $chr === '"' ? $chr . '-- ' : '\\' => 'x'], $query->getRow());
+        }
+
+        if (!($this->getDatabasePlatform() instanceof MySQLPlatform || $this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof OraclePlatform)) {
+            $query = $this->q()->field($this->e('\'x\' [a*b]'));
+            self::assertSame(['a*b' => 'x'], $query->getRow());
+
+            $replaceFx = static fn ($v) => str_replace('\'', ']', preg_replace('~^\'~', '[a*b', $v));
+
+            if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+                $query = $this->q()->field($this->e('\'x\' ' . $replaceFx($sqlTwoEscape)));
+                self::assertSame(['a*b]' => 'x'], $query->getRow());
+            }
+
+            $query = $this->q()->field($this->e('\'x\' ' . $replaceFx($sqlBackslashEscape)));
+            self::assertSame(['a*b\\' => 'x'], $query->getRow());
+        }
     }
 
     public function testEscapeStringLiteral(): void
     {
+        // TODO full binary support
+        $maxOrd = $this->getDatabasePlatform() instanceof PostgreSQLPlatform
+            || $this->getDatabasePlatform() instanceof SQLServerPlatform
+            ? 0x7F
+            : 0xFF;
+
         $str = '';
-        for ($i = 0; $i <= 0x7F; ++$i) {
+        for ($i = 0; $i <= $maxOrd; ++$i) {
             $chr = chr($i);
-            for ($j = 1; $j <= 5; ++$j) {
+            for ($j = 1; $j <= 5; ++$j) { // TODO PostgreSQL/MSSQL is failing with "$j <= 1"
                 $str .= str_repeat($chr, $j) . '_';
                 for ($k = 1; $k <= 5; ++$k) {
                     $str .= str_repeat('\\', $k) . str_repeat($chr, $j) . '_';
