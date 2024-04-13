@@ -15,13 +15,9 @@ trait ExpressionTrait
                 $parts[] = 'x\'00\'';
             }
 
-            if ($v !== '') {
+            if ($v !== '' || $i === 0) {
                 $parts[] = '\'' . str_replace('\'', '\'\'', $v) . '\'';
             }
-        }
-
-        if ($parts === []) {
-            $parts = ['\'\''];
         }
 
         $buildConcatSqlFx = static function (array $parts) use (&$buildConcatSqlFx): string {

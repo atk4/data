@@ -242,6 +242,22 @@ class ExpressionTest extends TestCase
         self::assertSame($connection, $e->expr('foo')->connection);
     }
 
+    public function testEscapeStringLiteral(): void
+    {
+        $escapeStringLiteralFx = \Closure::bind(static function ($value) {
+            $e = new Sqlite\Expression();
+
+            return $e->escapeStringLiteral($value);
+        }, null, Sqlite\Expression::class);
+
+        self::assertSame('\'\'', $escapeStringLiteralFx(''));
+        self::assertSame('\'foo\'', $escapeStringLiteralFx('foo'));
+        self::assertSame('(\'\' || x\'00\')', $escapeStringLiteralFx("\0"));
+        self::assertSame('(\'\' || (x\'00\' || \'a\'))', $escapeStringLiteralFx("\0a"));
+        self::assertSame('(\'a\' || x\'00\')', $escapeStringLiteralFx("a\0"));
+        self::assertSame('((\'a\' || x\'00\') || (\'b\' || (x\'00\' || \'c\')))', $escapeStringLiteralFx("a\0b\0c"));
+    }
+
     public function testEscapeIdentifier(): void
     {
         // escaping expressions
