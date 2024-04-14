@@ -28,12 +28,14 @@ trait ExpressionTrait
 
             if ($v !== '') {
                 // workaround https://github.com/php/php-src/issues/13958
-                foreach (preg_split('~\\\\(?=\'|$)~', $v) as $i2 => $v2) {
-                    if ($i2 > 0) {
-                        $parts[] = 'chr(' . ord('\\') . ')';
-                    }
-
-                    if ($v2 !== '') {
+                foreach (preg_split('~(\\\+)(?=\\\|\'|$)~', $v, -1, \PREG_SPLIT_DELIM_CAPTURE) as $i2 => $v2) {
+                    if (($i2 % 2) === 1) {
+                        if (strlen($v2) === 1) {
+                            $parts[] = 'chr(' . ord('\\') . ')';
+                        } else {
+                            $parts[] = 'repeat(chr(' . ord('\\') . '), ' . strlen($v2) . ')';
+                        }
+                    } elseif ($v2 !== '') {
                         $parts[] = '\'' . str_replace('\'', '\'\'', $v2) . '\'';
                     }
                 }

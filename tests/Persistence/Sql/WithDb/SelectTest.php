@@ -558,10 +558,10 @@ class SelectTest extends TestCase
         $str = '';
         for ($i = 0; $i <= $maxOrd; ++$i) {
             $chr = chr($i);
-            for ($j = 1; $j <= 5; ++$j) { // TODO PostgreSQL/MSSQL is failing with "$j <= 1"
-                $str .= str_repeat($chr, $j) . '_';
+            for ($j = 1; $j <= 5; ++$j) {
+                $str .= str_repeat($chr, $j) . '?';
                 for ($k = 1; $k <= 5; ++$k) {
-                    $str .= str_repeat('\\', $k) . str_repeat($chr, $j) . '_';
+                    $str .= str_repeat('\\', $k) . str_repeat($chr, $j) . ':n';
                 }
             }
         }
