@@ -592,6 +592,63 @@ class SelectTest extends TestCase
         }
     }
 
+    public function testEscapeIdentifier(): void
+    {
+        $expected = [];
+        $query = $this->q();
+        foreach ([
+            'foo',
+            'a b',
+            'a  b',
+            "a\nb",
+            "a\tb",
+            '2',
+            '\'',
+            '"',
+            '`',
+            '[',
+            ']',
+            '\\',
+            '\\\\',
+            '\\\\\\',
+            '\\\\\\\\',
+            '\\n',
+            '.',
+            '*',
+            '?',
+            ':',
+            ':x',
+            ':1',
+            ';',
+            '--',
+            '#',
+        ] as $k => $v) {
+            if ($v === '2' && ( // TODO report php-src issue
+                $this->getDatabasePlatform() instanceof SQLitePlatform // https://dbfiddle.uk/XLSbYEoC
+                || $this->getDatabasePlatform() instanceof MySQLPlatform // https://dbfiddle.uk/NAEJ_B3u https://dbfiddle.uk/vLxZ3sqz
+                || $this->getDatabasePlatform() instanceof PostgreSQLPlatform // https://dbfiddle.uk/h2CWtcWk
+                || $this->getDatabasePlatform() instanceof SQLServerPlatform // https://dbfiddle.uk/M1JTBjMd
+                || $this->getDatabasePlatform() instanceof OraclePlatform // https://dbfiddle.uk/P9Z3SZ0k
+            )) {
+                continue;
+            } elseif ($v === '"' && $this->getDatabasePlatform() instanceof OraclePlatform) { // Oracle identifier cannot contain double quote
+                continue;
+            } elseif (($v === '\\' || $v === '\\\\\\') && $this->getDatabasePlatform() instanceof PostgreSQLPlatform) { // https://github.com/php/php-src/issues/13958
+                continue;
+            } elseif (($v === '?' || $v === ':x' || $v === ':1' || $v === '--') && $this->getDatabasePlatform() instanceof MySQLPlatform) { // TODO pdo_mysql only https://dbfiddle.uk/cEbLp3M4
+                continue;
+            } elseif (($v === ':x' || $v === ':1') && $this->getDatabasePlatform() instanceof SQLServerPlatform) { // TODO https://dbfiddle.uk/4pDZnwWq
+                continue;
+            }
+
+            $k = '=' . $k;
+            $expected[$v] = $k;
+            $query->field($this->e('[]', [$k]), $v);
+        }
+
+        self::assertSame($expected, $query->getRow());
+    }
+
     public function testUtf8mb4Support(): void
     {
         // MariaDB has no support of utf8mb4 identifiers
