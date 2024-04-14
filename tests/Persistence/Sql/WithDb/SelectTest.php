@@ -644,6 +644,22 @@ class SelectTest extends TestCase
             $k = '=' . $k;
             $expected[$v] = $k;
             $query->field($this->e('[]', [$k]), $v);
+
+            if (($v === '"' || $v === '\\\\\\\\') && $this->getDatabasePlatform() instanceof PostgreSQLPlatform) { // https://github.com/php/php-src/issues/13958
+                continue;
+            } elseif (($v === '\\' || $v === '\\\\' || $v === '\\\\\\') && ( // TODO report php-src issue
+                $this->getDatabasePlatform() instanceof SQLitePlatform // https://dbfiddle.uk/ye6Jv9AW
+                || $this->getDatabasePlatform() instanceof MySQLPlatform // https://dbfiddle.uk/cyoglskt
+                || $this->getDatabasePlatform() instanceof PostgreSQLPlatform // https://dbfiddle.uk/1L18Yn42
+                || $this->getDatabasePlatform() instanceof SQLServerPlatform // https://dbfiddle.uk/3MchbP0_
+                || $this->getDatabasePlatform() instanceof OraclePlatform // https://dbfiddle.uk/8veckcQK
+            )) {
+                continue;
+            }
+
+            $k = '\\' . $k;
+            $expected['\\' . $v] = $k;
+            $query->field($this->e('[]', [$k]), '\\' . $v);
         }
 
         self::assertSame($expected, $query->getRow());
