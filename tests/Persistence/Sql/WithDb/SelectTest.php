@@ -566,6 +566,8 @@ class SelectTest extends TestCase
             }
         }
 
+        $str .= "\\\r\n"; // for MSSQL
+
         // Oracle string literal is limited to 4000 bytes
         if ($this->getDatabasePlatform() instanceof OraclePlatform) {
             $str = substr($str, 0, 4000);

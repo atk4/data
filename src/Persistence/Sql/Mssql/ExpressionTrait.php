@@ -56,7 +56,7 @@ trait ExpressionTrait
             return reset($parts);
         };
 
-        return str_replace(["\\\n", "\\\r"], ["\\\\\n\n", "\\\\\r"], $buildConcatSqlFx($parts));
+        return str_replace(["\\\r\n", "\\\n", "\\\r"], ["\\\r\n\r\n", "\\\\\n\n", "\\\\\r"], $buildConcatSqlFx($parts));
     }
 
     #[\Override]
