@@ -16,7 +16,16 @@ trait ExpressionTrait
             }
 
             if ($v !== '') {
-                $parts[] = '\'' . str_replace('\'', '\'\'', $v) . '\'';
+                // workaround https://github.com/php/php-src/issues/13958
+                foreach (preg_split('~(\\\+)(?=\'|$)~', $v, -1, \PREG_SPLIT_DELIM_CAPTURE) as $i2 => $v2) {
+                    if (($i2 % 2) === 1) {
+                        for ($j = 0; $j < strlen($v2); ++$j) {
+                            $parts[] = 'chr(' . ord('\\') . ')';
+                        }
+                    } elseif ($v2 !== '') {
+                        $parts[] = '\'' . str_replace('\'', '\'\'', $v2) . '\'';
+                    }
+                }
             }
         }
 

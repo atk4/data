@@ -552,6 +552,7 @@ class SelectTest extends TestCase
         // TODO full binary support
         $maxOrd = $this->getDatabasePlatform() instanceof PostgreSQLPlatform
             || $this->getDatabasePlatform() instanceof SQLServerPlatform
+            || $this->getDatabasePlatform() instanceof OraclePlatform
             ? 0x7F
             : 0xFF;
 
@@ -575,7 +576,6 @@ class SelectTest extends TestCase
                 }
             }
         }
-
         foreach ($chars as $chr) {
             for ($i = 1; $i <= 3; ++$i) {
                 $str .= str_repeat($chr, $i) . '?';
