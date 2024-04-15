@@ -12,7 +12,7 @@ trait ExpressionTrait
         $parts = [];
         foreach (explode("\0", $value) as $i => $v) {
             if ($i > 0) {
-                $parts[] = 'CHR(0)';
+                $parts[] = 'chr(0)';
             }
 
             if ($v !== '') {
@@ -38,7 +38,7 @@ trait ExpressionTrait
                 $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
                 $partsRight = array_slice($parts, count($partsLeft));
 
-                return 'CONCAT(' . $buildConcatSqlFx($partsLeft) . ', ' . $buildConcatSqlFx($partsRight) . ')';
+                return 'concat(' . $buildConcatSqlFx($partsLeft) . ', ' . $buildConcatSqlFx($partsRight) . ')';
             }
 
             return reset($parts);
@@ -98,7 +98,7 @@ trait ExpressionTrait
                 $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
                 $partsRight = array_slice($parts, count($partsLeft));
 
-                return 'CONCAT(' . $buildConcatExprFx($partsLeft) . ', ' . $buildConcatExprFx($partsRight) . ')';
+                return 'concat(' . $buildConcatExprFx($partsLeft) . ', ' . $buildConcatExprFx($partsRight) . ')';
             }
 
             $exprArgs[] = reset($parts);

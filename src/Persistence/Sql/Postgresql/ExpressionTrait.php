@@ -20,21 +20,17 @@ trait ExpressionTrait
         }
 
         $parts = [];
-        foreach (explode("\0", $value) as $i => $v) {
-            if ($i > 0) {
+        foreach (preg_split('~((?:\x00+[^\x00]{1,100})*\x00+)~', $value, -1, \PREG_SPLIT_DELIM_CAPTURE) as $i => $v) {
+            if (($i % 2) === 1) {
                 // will raise SQL error, PostgreSQL does not support \0 character
-                $parts[] = 'convert_from(decode(\'00\', \'hex\'), \'UTF8\')';
-            }
-
-            if ($v !== '') {
+                $parts[] = 'convert_from(decode(\'' . bin2hex($v) . '\', \'hex\'), \'UTF8\')';
+            } elseif ($v !== '') {
                 // workaround https://github.com/php/php-src/issues/13958
                 foreach (preg_split('~(\\\+)(?=\'|$)~', $v, -1, \PREG_SPLIT_DELIM_CAPTURE) as $i2 => $v2) {
                     if (($i2 % 2) === 1) {
-                        if (strlen($v2) === 1) {
-                            $parts[] = 'chr(' . ord('\\') . ')';
-                        } else {
-                            $parts[] = 'repeat(chr(' . ord('\\') . '), ' . strlen($v2) . ')';
-                        }
+                        $parts[] = strlen($v2) === 1
+                            ? 'chr(' . ord('\\') . ')'
+                            : 'repeat(chr(' . ord('\\') . '), ' . strlen($v2) . ')';
                     } elseif ($v2 !== '') {
                         $parts[] = '\'' . str_replace('\'', '\'\'', $v2) . '\'';
                     }
@@ -51,7 +47,7 @@ trait ExpressionTrait
                 $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
                 $partsRight = array_slice($parts, count($partsLeft));
 
-                return 'CONCAT(' . $buildConcatSqlFx($partsLeft) . ', ' . $buildConcatSqlFx($partsRight) . ')';
+                return 'concat(' . $buildConcatSqlFx($partsLeft) . ', ' . $buildConcatSqlFx($partsRight) . ')';
             }
 
             return reset($parts);

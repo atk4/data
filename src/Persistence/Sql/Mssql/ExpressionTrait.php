@@ -54,7 +54,7 @@ trait ExpressionTrait
                 $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
                 $partsRight = array_slice($parts, count($partsLeft));
 
-                return 'CONCAT(CAST(' . $buildConcatSqlFx($partsLeft) . ' AS NVARCHAR(MAX)), ' . $buildConcatSqlFx($partsRight) . ')';
+                return 'concat(cast(' . $buildConcatSqlFx($partsLeft) . ' as NVARCHAR(MAX)), ' . $buildConcatSqlFx($partsRight) . ')';
             }
 
             return reset($parts);
