@@ -577,6 +577,8 @@ class SelectTest extends TestCase
                 }
             }
         }
+        $str .= str_repeat("\0", 100_000);
+        $str .= str_repeat('\\', 100_000);
 
         // TODO full binary support
         if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform

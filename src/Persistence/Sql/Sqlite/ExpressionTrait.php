@@ -10,12 +10,10 @@ trait ExpressionTrait
     protected function escapeStringLiteral(string $value): string
     {
         $parts = [];
-        foreach (explode("\0", $value) as $i => $v) {
-            if ($i > 0) {
-                $parts[] = 'x\'00\'';
-            }
-
-            if ($v !== '' || $i === 0) {
+        foreach (preg_split('~((?:\x00+[^\x00]{1,100})*\x00+)~', $value, -1, \PREG_SPLIT_DELIM_CAPTURE) as $i => $v) {
+            if (($i % 2) === 1) {
+                $parts[] = 'x\'' . bin2hex($v) . '\'';
+            } elseif ($v !== '' || $i === 0) {
                 $parts[] = '\'' . str_replace('\'', '\'\'', $v) . '\'';
             }
         }
