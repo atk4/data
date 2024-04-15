@@ -246,8 +246,8 @@ class ExpressionTest extends TestCase
 
     public function testEscapeStringLiteral(): void
     {
-        $escapeStringLiteralFx = \Closure::bind(static function ($value) {
-            $e = new SqliteExpression();
+        $escapeStringLiteralFx = \Closure::bind(static function ($value, $expressionClass = SqliteExpression::class) {
+            $e = new $expressionClass();
 
             return $e->escapeStringLiteral($value);
         }, null, Expression::class);
@@ -265,6 +265,17 @@ class ExpressionTest extends TestCase
         self::assertSame(
             '((\'a\' || x\'00\') || (\'' . str_repeat('b', 101) . '\' || (x\'00\' || \'c\')))',
             $escapeStringLiteralFx("a\0" . str_repeat('b', 101) . "\0c")
+        );
+
+        self::assertSame('\'foo\'', $escapeStringLiteralFx('foo', MysqlExpression::class));
+        self::assertSame('x\'00\'', $escapeStringLiteralFx("\0", MysqlExpression::class));
+        self::assertSame(
+            'concat(\'a\', concat(x\'00' . str_repeat('62', 100) . '00\', \'c\'))',
+                $escapeStringLiteralFx("a\0" . str_repeat('b', 100) . "\0c", MysqlExpression::class)
+        );
+        self::assertSame(
+            'concat(concat(\'a\', x\'00\'), concat(\'' . str_repeat('b', 101) . '\', concat(x\'00\', \'c\')))',
+            $escapeStringLiteralFx("a\0" . str_repeat('b', 101) . "\0c", MysqlExpression::class)
         );
     }
 
