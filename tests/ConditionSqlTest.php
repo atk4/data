@@ -510,7 +510,7 @@ class ConditionSqlTest extends TestCase
                 ['id' => 2, 'name' => 'Peter', 'c' => 2000],
                 ['id' => 3, 'name' => 'Joe', 'c' => 50],
                 ['id' => 4, 'name' => 'Ca%ro_li\ne', 'c' => null],
-                ['id' => 5, 'name' => 'Ca.ro.li.ne', 'c' => null],
+                ['id' => 5, 'name' => 'Ca.ro.li\\\ne', 'c' => null],
             ],
         ]);
 
@@ -541,8 +541,21 @@ class ConditionSqlTest extends TestCase
         self::assertSame([1], $findIdsLikeFx('c', '%0%', true));
 
         self::assertSame([4, 5], $findIdsLikeFx('name', '%Ca%ro%'));
+        self::assertSame([4], $findIdsLikeFx('name', '%Ca\%ro%'));
+
         self::assertSame([4, 5], $findIdsLikeFx('name', '%ro_li%'));
-        // self::assertSame([4, 5], $findIdsLikeFx('name', '%li_\ne%'));
-        // self::assertSame([4], $findIdsLikeFx('name', '%li\\ne%'));
+        self::assertSame([4], $findIdsLikeFx('name', '%ro\_li%'));
+
+        self::assertSame([], $findIdsLikeFx('name', '%li\ne%'));
+        self::assertSame([4, 5], $findIdsLikeFx('name', '%li%\ne%'));
+        self::assertSame([4], $findIdsLikeFx('name', '%li\\\ne%'));
+        self::assertSame([4], $findIdsLikeFx('name', '%li\\\\\ne%'));
+        self::assertSame([5], $findIdsLikeFx('name', '%li\\\\\\\ne%'));
+        self::assertSame([5], $findIdsLikeFx('name', '%li\\\\\\\\\ne%'));
+        self::assertSame([], $findIdsLikeFx('name', '%li\\\\\\\\\\\ne%'));
+        self::assertSame([5], $findIdsLikeFx('name', '%.li%ne'));
+        self::assertSame([], $findIdsLikeFx('name', '%.li%ne\\'));
+        self::assertSame([], $findIdsLikeFx('name', '%.li%ne\\\\'));
+        self::assertSame([], $findIdsLikeFx('name', '%*li%ne'));
     }
 }

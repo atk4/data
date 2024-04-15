@@ -518,6 +518,12 @@ abstract class Query extends Expression
         return $sqlLeft . ($negated ? ' not' : '') . ' in (' . implode(', ', $sqlValues) . ')';
     }
 
+    protected function _renderConditionLikeOperator(bool $negated, string $sqlLeft, string $sqlRight): string
+    {
+        return $sqlLeft . ($negated ? ' not' : '') . ' like ' . $sqlRight
+            . ' escape ' . $this->escapeStringLiteral('\\');
+    }
+
     /**
      * @param array{mixed}|array{mixed, string|null, mixed} $row
      */
@@ -604,6 +610,10 @@ abstract class Query extends Expression
         // if value is object, then it should be Expression or Query itself
         // otherwise just escape value
         $value = $this->consume($value, self::ESCAPE_PARAM);
+
+        if (in_array($operator, ['like', 'not like'], true)) {
+            return $this->_renderConditionLikeOperator($operator === 'not like', $field, $value);
+        }
 
         return $this->_renderConditionBinary($operator, $field, $value);
     }

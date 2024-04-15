@@ -11,6 +11,7 @@ use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Persistence\Sql\Mysql\Expression as MysqlExpression;
 use Atk4\Data\Persistence\Sql\Mysql\Query as MysqlQuery;
+use Atk4\Data\Persistence\Sql\Oracle\Query as OracleQuery;
 use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Persistence\Sql\Sqlite\Connection as SqliteConnection;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -49,6 +50,10 @@ class QueryTest extends TestCase
             #[\Override]
             protected function escapeStringLiteral(string $value): string
             {
+                if ($value === '\\') {
+                    return '\'\\\'';
+                }
+
                 return null; // @phpstan-ignore-line
             }
         };
@@ -772,12 +777,18 @@ class QueryTest extends TestCase
 
         // like | not like
         self::assertSame(
-            'where "name" like :a',
+            'where "name" like :a escape \'\\\'',
             $this->q('[where]')->where('name', 'like', 'foo')->render()[0]
         );
         self::assertSame(
-            'where "name" not like :a',
+            'where "name" not like :a escape \'\\\'',
             $this->q('[where]')->where('name', 'not like', 'foo')->render()[0]
+        );
+        self::assertSame(
+            <<<'EOF'
+                where "name" like regexp_replace(regexp_replace(:xxaaaa, '((\\\\)*)(\\([^_%]))?', '\1\4'), '((^|[^\\])(\\\\)*\\)$', concat('\1', rpad(chr(92), 2, chr(92)))) escape chr(92)
+                EOF,
+            (new OracleQuery('[where]'))->where('name', 'like', 'foo')->render()[0]
         );
     }
 
@@ -1328,7 +1339,7 @@ class QueryTest extends TestCase
             ->caseWhen(['status', 'like', '%Used%'], 't2.expose_used')
             ->caseElse(null)
             ->render()[0];
-        self::assertSame('case when "status" = :a then :b when "status" like :c then :d else :e end', $s);
+        self::assertSame('case when "status" = :a then :b when "status" like :c escape \'\\\' then :d else :e end', $s);
 
         // with subqueries
         $age = $this->e('year(now()) - year(birth_date)');
