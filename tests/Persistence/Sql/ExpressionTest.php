@@ -9,8 +9,10 @@ use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Exception;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Expressionable;
-use Atk4\Data\Persistence\Sql\Mysql;
-use Atk4\Data\Persistence\Sql\Sqlite;
+use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
+use Atk4\Data\Persistence\Sql\Mysql\Expression as MysqlExpression;
+use Atk4\Data\Persistence\Sql\Sqlite\Connection as SqliteConnection;
+use Atk4\Data\Persistence\Sql\Sqlite\Expression as SqliteExpression;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 class ExpressionTest extends TestCase
@@ -236,19 +238,19 @@ class ExpressionTest extends TestCase
     {
         self::assertInstanceOf(Expression::class, $this->e('foo'));
 
-        $connection = \Closure::bind(static fn () => new Mysql\Connection(), null, Connection::class)();
-        $e = new Mysql\Expression(['connection' => $connection]);
-        self::assertSame(Mysql\Expression::class, get_class($e->expr('foo')));
+        $connection = \Closure::bind(static fn () => new MysqlConnection(), null, Connection::class)();
+        $e = new MysqlExpression(['connection' => $connection]);
+        self::assertSame(MysqlExpression::class, get_class($e->expr('foo')));
         self::assertSame($connection, $e->expr('foo')->connection);
     }
 
     public function testEscapeStringLiteral(): void
     {
         $escapeStringLiteralFx = \Closure::bind(static function ($value) {
-            $e = new Sqlite\Expression();
+            $e = new SqliteExpression();
 
             return $e->escapeStringLiteral($value);
-        }, null, Sqlite\Expression::class);
+        }, null, SqliteExpression::class);
 
         self::assertSame('\'\'', $escapeStringLiteralFx(''));
         self::assertSame('\'foo\'', $escapeStringLiteralFx('foo'));
@@ -335,7 +337,7 @@ class ExpressionTest extends TestCase
             }
         };
         $e = $this->e('hello, []', [$myField]);
-        $e->connection = \Closure::bind(static fn () => new Sqlite\Connection(), null, Connection::class)();
+        $e->connection = \Closure::bind(static fn () => new SqliteConnection(), null, Connection::class)();
         self::assertSame(
             'hello, "myfield"',
             $e->render()[0]
@@ -403,7 +405,7 @@ class ExpressionTest extends TestCase
 
     public function testEscapeParamCustom(): void
     {
-        $e = new class('hello, [who]', ['who' => 'world']) extends Sqlite\Expression {
+        $e = new class('hello, [who]', ['who' => 'world']) extends SqliteExpression {
             #[\Override]
             public function escapeParam($value): string
             {

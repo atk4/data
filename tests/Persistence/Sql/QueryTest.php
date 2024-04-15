@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests\Persistence\Sql;
 
 use Atk4\Core\Phpunit\TestCase;
-use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Exception;
 use Atk4\Data\Persistence\Sql\Expression;
-use Atk4\Data\Persistence\Sql\Mysql;
+use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
+use Atk4\Data\Persistence\Sql\Mysql\Expression as MysqlExpression;
+use Atk4\Data\Persistence\Sql\Mysql\Query as MysqlQuery;
 use Atk4\Data\Persistence\Sql\Query;
+use Atk4\Data\Persistence\Sql\Sqlite\Connection as SqliteConnection;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
 
@@ -53,7 +55,7 @@ class QueryTest extends TestCase
 
         if (($query->connection ?? null) === null) {
             $query->connection = \Closure::bind(static function () use ($query) {
-                $connection = new Persistence\Sql\Sqlite\Connection();
+                $connection = new SqliteConnection();
                 $connection->expressionClass = \Closure::bind(static fn () => $query->expressionClass, null, Query::class)();
                 $connection->queryClass = get_class($query);
 
@@ -95,9 +97,9 @@ class QueryTest extends TestCase
     {
         self::assertInstanceOf(Expression::class, $this->q()->expr('foo'));
 
-        $connection = \Closure::bind(static fn () => new Mysql\Connection(), null, Connection::class)();
-        $q = new Mysql\Query(['connection' => $connection]);
-        self::assertSame(Mysql\Expression::class, get_class($q->expr('foo')));
+        $connection = \Closure::bind(static fn () => new MysqlConnection(), null, Connection::class)();
+        $q = new MysqlQuery(['connection' => $connection]);
+        self::assertSame(MysqlExpression::class, get_class($q->expr('foo')));
         self::assertSame($connection, $q->expr('foo')->connection);
     }
 
@@ -105,9 +107,9 @@ class QueryTest extends TestCase
     {
         self::assertInstanceOf(Query::class, $this->q()->dsql());
 
-        $connection = \Closure::bind(static fn () => new Mysql\Connection(), null, Connection::class)();
-        $q = new Mysql\Query(['connection' => $connection]);
-        self::assertSame(Mysql\Query::class, get_class($q->dsql()));
+        $connection = \Closure::bind(static fn () => new MysqlConnection(), null, Connection::class)();
+        $q = new MysqlQuery(['connection' => $connection]);
+        self::assertSame(MysqlQuery::class, get_class($q->dsql()));
         self::assertSame($connection, $q->dsql()->connection);
     }
 
