@@ -78,17 +78,17 @@ abstract class Query extends Expression
                 return $this->consume($this->defaultField, self::ESCAPE_PARAM);
             }
 
-            return $this->defaultField;
+            return $this->escapeIdentifierSoft($this->defaultField);
         }
 
         $res = [];
         foreach ($this->args['field'] as $alias => $field) {
-            // do not add alias when:
-            //  - we don't want aliases
-            //  - OR alias is the same as field
-            //  - OR alias is numeric
+            if (is_string($alias) && str_starts_with($alias, "\xff")) {
+                $alias = substr($alias, 1);
+            }
+
             if ($addAlias === false
-                || (is_string($field) && $alias === $field)
+                || $alias === $field
                 || is_int($alias)
             ) {
                 $alias = null;
@@ -97,7 +97,7 @@ abstract class Query extends Expression
             // will parameterize the value and escape if necessary
             $field = $this->consume($field, self::ESCAPE_IDENTIFIER_SOFT);
 
-            if ($alias) {
+            if ($alias !== null) {
                 // field alias cannot be expression, so simply escape it
                 $field .= ' ' . $this->escapeIdentifier($alias);
             }
@@ -1192,6 +1192,16 @@ abstract class Query extends Expression
                 throw (new Exception('Alias must be unique'))
                     ->addMoreInfo('kind', $kind)
                     ->addMoreInfo('alias', $alias);
+            }
+
+            if ($alias === (string) (int) $alias) {
+                if ($kind === 'field') {
+                    $alias = "\xff" . $alias;
+                } else {
+                    throw (new Exception('Alias must be not int-string'))
+                        ->addMoreInfo('kind', $kind)
+                        ->addMoreInfo('alias', $alias);
+                }
             }
 
             $this->args[$kind][$alias] = $value;

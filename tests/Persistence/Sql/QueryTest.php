@@ -150,6 +150,10 @@ class QueryTest extends TestCase
             $this->callProtected($this->q()->field('first_name', 'name'), '_renderField')
         );
         self::assertSame(
+            '"first_name" "2"',
+            $this->callProtected($this->q()->field('first_name', '2'), '_renderField')
+        );
+        self::assertSame(
             '*',
             $this->callProtected($this->q()->field('*'), '_renderField')
         );
@@ -161,20 +165,21 @@ class QueryTest extends TestCase
 
     public function testFieldDefaultField(): void
     {
-        // default defaultField
         self::assertSame(
             '*',
             $this->callProtected($this->q(), '_renderField')
         );
-        // defaultField as custom string - not escaped
         self::assertSame(
-            'id',
+            '"id"',
             $this->callProtected($this->q(['defaultField' => 'id']), '_renderField')
         );
-        // defaultField as custom string with dot - not escaped
         self::assertSame(
-            'all.values',
+            '"all"."values"',
             $this->callProtected($this->q(['defaultField' => 'all.values']), '_renderField')
+        );
+        self::assertSame(
+            '"all".*',
+            $this->callProtected($this->q(['defaultField' => 'all.*']), '_renderField')
         );
     }
 
@@ -214,6 +219,7 @@ class QueryTest extends TestCase
     public function testFieldDuplicateAliasException(): void
     {
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Alias must be unique');
         $this->q()->field('name', 'a')->field('surname', 'a');
     }
 
@@ -221,9 +227,8 @@ class QueryTest extends TestCase
      * @doesNotPerformAssertions
      */
     #[DoesNotPerformAssertions]
-    public function testTableNoAliasExpressionException(): void
+    public function testTableNoAliasExpression(): void
     {
-        // $this->expectException(Exception::class); // no more
         $this->q()->table($this->q()->expr('test'));
     }
 
@@ -237,6 +242,7 @@ class QueryTest extends TestCase
     public function testTableAliasNotUniqueException(): void
     {
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Alias must be unique');
         $this->q()
             ->table('foo', 'a')
             ->table('bar', 'a');
@@ -245,6 +251,7 @@ class QueryTest extends TestCase
     public function testTableAliasNotUniqueException2(): void
     {
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Alias must be unique');
         $this->q()
             ->table('foo', 'bar')
             ->table('bar');
@@ -253,6 +260,7 @@ class QueryTest extends TestCase
     public function testTableAliasNotUniqueException3(): void
     {
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Alias must be unique');
         $this->q()
             ->table('foo')
             ->table('foo');
@@ -261,6 +269,7 @@ class QueryTest extends TestCase
     public function testTableAliasNotUniqueException4(): void
     {
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Alias must be unique');
         $this->q()
             ->table($this->q()->table('test'), 'foo')
             ->table('foo');
@@ -269,9 +278,17 @@ class QueryTest extends TestCase
     public function testTableAliasNotUniqueException5(): void
     {
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Alias must be unique');
         $this->q()
             ->table('foo')
             ->table($this->q()->table('test'), 'foo');
+    }
+
+    public function testTableAliasIntStringException(): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Alias must be not int-string');
+        $this->q()->table('foo', '10');
     }
 
     /**
