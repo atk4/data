@@ -549,15 +549,8 @@ class SelectTest extends TestCase
 
     public function testEscapeStringLiteral(): void
     {
-        // TODO full binary support
-        $maxOrd = $this->getDatabasePlatform() instanceof PostgreSQLPlatform
-            || $this->getDatabasePlatform() instanceof SQLServerPlatform
-            || $this->getDatabasePlatform() instanceof OraclePlatform
-            ? 0x7F
-            : 0xFF;
-
         $chars = [];
-        for ($i = 0; $i <= $maxOrd; ++$i) {
+        for ($i = 0; $i <= 0xFF; ++$i) {
             $chr = chr($i);
             $chars[] = $chr;
 
@@ -583,6 +576,14 @@ class SelectTest extends TestCase
                     $str .= str_repeat('\\', $j) . str_repeat($chr, $i) . ':n';
                 }
             }
+        }
+
+        // TODO full binary support
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform
+            || $this->getDatabasePlatform() instanceof SQLServerPlatform
+            || $this->getDatabasePlatform() instanceof OraclePlatform
+        ) {
+            $str = mb_convert_encoding($str, 'UTF-8', 'UTF-8');
         }
 
         // Oracle string literal is limited to 4000 bytes
