@@ -10,18 +10,18 @@ trait ExpressionTrait
     protected function escapeStringLiteral(string $value): string
     {
         $parts = [];
-        foreach (explode("\0", $value) as $i => $v) {
-            if ($i > 0) {
-                $parts[] = 'chr(0)';
-            }
-
-            if ($v !== '') {
+        foreach (preg_split('~(\x00+)~', $value, -1, \PREG_SPLIT_DELIM_CAPTURE) as $i => $v) {
+            if (($i % 2) === 1) {
+                $parts[] = strlen($v) === 1
+                    ? 'chr(0)'
+                    : 'rpad(chr(0), ' . strlen($v) . ', chr(0))';
+            } elseif ($v !== '') {
                 // workaround https://github.com/php/php-src/issues/13958
                 foreach (preg_split('~(\\\+)(?=\'|$)~', $v, -1, \PREG_SPLIT_DELIM_CAPTURE) as $i2 => $v2) {
                     if (($i2 % 2) === 1) {
-                        for ($j = 0; $j < strlen($v2); ++$j) {
-                            $parts[] = 'chr(' . ord('\\') . ')';
-                        }
+                        $parts[] = strlen($v2) === 1
+                            ? 'chr(' . ord('\\') . ')'
+                            : 'rpad(chr(' . ord('\\') . '), ' . strlen($v2) . ', chr(' . ord('\\') . '))';
                     } elseif ($v2 !== '') {
                         $parts[] = '\'' . str_replace('\'', '\'\'', $v2) . '\'';
                     }
