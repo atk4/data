@@ -9,6 +9,8 @@ namespace Atk4\Data\Persistence\Sql;
  */
 abstract class Query extends Expression
 {
+    private const FIELD_INT_STRING_PREFIX = "\xff_int-string_";
+
     /** Template name for render. */
     public string $mode = 'select';
 
@@ -83,8 +85,8 @@ abstract class Query extends Expression
 
         $res = [];
         foreach ($this->args['field'] as $alias => $field) {
-            if (is_string($alias) && str_starts_with($alias, "\xff")) {
-                $alias = substr($alias, 1);
+            if (is_string($alias) && str_starts_with($alias, self::FIELD_INT_STRING_PREFIX)) {
+                $alias = substr($alias, strlen(self::FIELD_INT_STRING_PREFIX));
             }
 
             if ($addAlias === false
@@ -1196,7 +1198,7 @@ abstract class Query extends Expression
 
             if ($alias === (string) (int) $alias) {
                 if ($kind === 'field') {
-                    $alias = "\xff" . $alias;
+                    $alias = self::FIELD_INT_STRING_PREFIX . $alias;
                 } else {
                     throw (new Exception('Alias must be not int-string'))
                         ->addMoreInfo('kind', $kind)
