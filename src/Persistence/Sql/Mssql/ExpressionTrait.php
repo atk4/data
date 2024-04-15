@@ -24,12 +24,12 @@ trait ExpressionTrait
         }
 
         $parts = [];
-        foreach (explode("\0", $value) as $i => $v) {
-            if ($i > 0) {
-                $parts[] = 'NCHAR(0)';
-            }
-
-            if ($v !== '') {
+        foreach (preg_split('~(\x00{1,4000})~', $value, -1, \PREG_SPLIT_DELIM_CAPTURE) as $i => $v) {
+            if (($i % 2) === 1) {
+                $parts[] = strlen($v) === 1
+                    ? 'nchar(0)'
+                    : 'replicate(nchar(0), ' . strlen($v) . ')';
+            } elseif ($v !== '') {
                 foreach (mb_str_split($v, 4000) as $v2) {
                     // TODO report "select N'\'':n?'" issue to https://github.com/microsoft/msphpsql
                     foreach (preg_split('~(:+)~', $v2, -1, \PREG_SPLIT_DELIM_CAPTURE) as $v3) {
