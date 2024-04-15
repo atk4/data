@@ -653,7 +653,7 @@ class SelectTest extends TestCase
                 continue;
             } elseif ($v === '"' && $this->getDatabasePlatform() instanceof OraclePlatform) { // Oracle identifier cannot contain double quote
                 continue;
-            } elseif (($v === '\\' || $v === '\\\\\\') && $this->getDatabasePlatform() instanceof PostgreSQLPlatform) { // https://github.com/php/php-src/issues/13958
+            } elseif (($v === '\\' || $v === '\\\\\\') && ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof OraclePlatform)) { // https://github.com/php/php-src/issues/13958
                 continue;
             } elseif (($v === '?' || $v === ':x' || $v === ':1' || $v === '--') && $this->getDatabasePlatform() instanceof MySQLPlatform) { // TODO pdo_mysql only https://dbfiddle.uk/cEbLp3M4
                 continue;
@@ -666,6 +666,8 @@ class SelectTest extends TestCase
             $query->field($this->e('[]', [$k]), $v);
 
             if (($v === '"' || $v === '\\\\\\\\') && $this->getDatabasePlatform() instanceof PostgreSQLPlatform) { // https://github.com/php/php-src/issues/13958
+                continue;
+            } if ($v === '\\\\\\\\' && $this->getDatabasePlatform() instanceof OraclePlatform) { // https://github.com/php/php-src/issues/13958
                 continue;
             } elseif (($v === '\\' || $v === '\\\\' || $v === '\\\\\\') && ( // TODO report php-src issue
                 $this->getDatabasePlatform() instanceof SQLitePlatform // https://dbfiddle.uk/ye6Jv9AW
