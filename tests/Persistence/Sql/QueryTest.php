@@ -230,6 +230,7 @@ class QueryTest extends TestCase
     public function testTableNoAliasQueryException(): void
     {
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Table alias is required when table is set as subquery');
         $this->q()->table($this->q()->table('test'));
     }
 
