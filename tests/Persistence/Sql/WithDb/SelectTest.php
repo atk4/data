@@ -555,18 +555,35 @@ class SelectTest extends TestCase
             ? 0x7F
             : 0xFF;
 
-        $str = '';
+        $chars = [];
         for ($i = 0; $i <= $maxOrd; ++$i) {
             $chr = chr($i);
-            for ($j = 1; $j <= 5; ++$j) {
-                $str .= str_repeat($chr, $j) . '?';
-                for ($k = 1; $k <= 5; ++$k) {
-                    $str .= str_repeat('\\', $k) . str_repeat($chr, $j) . ':n';
+            $chars[] = $chr;
+
+            if ($chr === '1') {
+                $i += 7;
+            } elseif ($chr === 'B' || $chr === 'b') {
+                $i += 23;
+            }
+        }
+
+        $str = '';
+        foreach ($chars as $chr1) {
+            foreach ($chars as $chr2) {
+                foreach (['\\', '\''] as $chr3) {
+                    $str .= $chr1 . $chr2 . $chr3;
                 }
             }
         }
 
-        $str .= "\\\r\n"; // for MSSQL
+        foreach ($chars as $chr) {
+            for ($i = 1; $i <= 3; ++$i) {
+                $str .= str_repeat($chr, $i) . '?';
+                for ($j = 1; $j <= 3; ++$j) {
+                    $str .= str_repeat('\\', $j) . str_repeat($chr, $i) . ':n';
+                }
+            }
+        }
 
         // Oracle string literal is limited to 4000 bytes
         if ($this->getDatabasePlatform() instanceof OraclePlatform) {

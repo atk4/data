@@ -16,7 +16,7 @@ trait ExpressionTrait
             }
 
             if ($v !== '') {
-                $parts[] = '\'' . str_replace('\'', '\'\'', $v) . '\'';
+                $parts[] = '\'' . str_replace(['\'', '\\'], ['\'\'', '\\\\'], $v) . '\'';
             }
         }
 
@@ -35,7 +35,7 @@ trait ExpressionTrait
             return reset($parts);
         };
 
-        return str_replace('\\', '\\\\', $buildConcatSqlFx($parts));
+        return $buildConcatSqlFx($parts);
     }
 
     #[\Override]

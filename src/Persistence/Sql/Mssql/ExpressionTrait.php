@@ -34,7 +34,11 @@ trait ExpressionTrait
                     // TODO report php-src issue "select N'\'':n?'"
                     foreach (preg_split('~(:+)~', $v2, -1, \PREG_SPLIT_DELIM_CAPTURE) as $v3) {
                         if ($v3 !== '') {
-                            $parts[] = '\'' . str_replace('\'', '\'\'', $v3) . '\'';
+                            $parts[] = '\'' . str_replace(
+                                ['\'', "\\\r\n", "\\\n", "\\\r"],
+                                ['\'\'', "\\\r\n\r\n", "\\\\\n\n", "\\\\\r"],
+                                $v3
+                            ) . '\'';
                         }
                     }
                 }
@@ -56,7 +60,7 @@ trait ExpressionTrait
             return reset($parts);
         };
 
-        return str_replace(["\\\r\n", "\\\n", "\\\r"], ["\\\r\n\r\n", "\\\\\n\n", "\\\\\r"], $buildConcatSqlFx($parts));
+        return $buildConcatSqlFx($parts);
     }
 
     #[\Override]
