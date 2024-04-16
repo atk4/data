@@ -385,7 +385,7 @@ class Field implements Expressionable
             Scope\Condition::OPERATOR_REGEXP,
             Scope\Condition::OPERATOR_NOT_REGEXP,
         ], true)) {
-            $typecastField = new self(['type' => 'string']);
+            $typecastField = new self(['type' => 'text']);
             $typecastField->setOwner(new Model($this->getOwner()->getPersistence(), ['table' => false]));
             $typecastField->shortName = $this->shortName;
         }

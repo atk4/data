@@ -36,7 +36,7 @@ class CreateRegexpLikeFunctionMiddleware implements Middleware
                         $value = Expression::castFloatToString($value);
                     }
 
-                    return preg_match('~' . str_replace('~', '\~', $pattern) . '~' . $flags, $value) === 1;
+                    return preg_match('~' . preg_replace('~(?<!\\\)(?:\\\\\\\)*+\K\~~', '\\\~', $pattern) . '~' . $flags, $value) === 1;
                 }, -1, \PDO::SQLITE_DETERMINISTIC);
 
                 return $connection;

@@ -525,7 +525,7 @@ class ConditionSqlTest extends TestCase
 
             $t = (clone $u)->addCondition($field, ($negated ? 'not ' : '') . 'like', $u->dsql()->field($u->expr('[]', [$value])));
             if (!$this->getConnection()->getConnection()->getNativeConnection() instanceof \mysqli) { // https://bugs.mysql.com/bug.php?id=114659
-                self::assertSame($res, array_keys($t->export(null, 'id')));
+                self::assertSame(array_keys($t->export(null, 'id')), $res);
             }
 
             return $res;
@@ -573,6 +573,15 @@ class ConditionSqlTest extends TestCase
                 1 => ['id' => 1, 'name' => 'John', 'c' => 1, 'rating' => 1.5],
                 ['id' => 2, 'name' => 'Peter', 'c' => 2000, 'rating' => 2.5],
                 ['id' => 3, 'name' => 'Joe', 'c' => 50],
+                ['id' => 4, 'name' => ''],
+                ['id' => 5, 'name' => 'Sa ra'],
+                ['id' => 6, 'name' => "Sa\nra"],
+                ['id' => 7, 'name' => 'Sa.ra'],
+                ['id' => 8, 'name' => 'Sa/ra'],
+                ['id' => 9, 'name' => 'Sa\ra'],
+                ['id' => 10, 'name' => 'Sa\\\ra'],
+                ['id' => 11, 'name' => 'Sa~ra'],
+                ['id' => 12, 'name' => 'Sa$ra'],
             ],
         ]);
 
@@ -592,7 +601,7 @@ class ConditionSqlTest extends TestCase
 
             $t = (clone $u)->addCondition($field, ($negated ? 'not ' : '') . 'regexp', $u->dsql()->field($u->expr('[]', [$value])));
             if (!$this->getConnection()->getConnection()->getNativeConnection() instanceof \mysqli) { // https://bugs.mysql.com/bug.php?id=114659
-                self::assertSame($res, array_keys($t->export(null, 'id')));
+                self::assertSame(array_keys($t->export(null, 'id')), $res);
             }
 
             return $res;
@@ -602,12 +611,30 @@ class ConditionSqlTest extends TestCase
         self::assertSame([1], $findIdsRegexFx('name', 'john'));
         self::assertSame([1], $findIdsRegexFx('name', 'Joh'));
         self::assertSame([1], $findIdsRegexFx('name', 'ohn'));
+        self::assertSame([1, 2, 3, 4], $findIdsRegexFx('name', 'a', true));
 
-        self::assertSame([1], $findIdsRegexFx('c', '.*1.*'));
-        self::assertSame([2], $findIdsRegexFx('c', '.*2000.*'));
-        self::assertSame([2, 3], $findIdsRegexFx('c', '.*0.*'));
-        self::assertSame([1], $findIdsRegexFx('c', '.*0.*', true));
-        self::assertSame([1, 2], $findIdsRegexFx('rating', '.+\.5'));
+        self::assertSame([1], $findIdsRegexFx('c', '1'));
+        self::assertSame([2], $findIdsRegexFx('c', '2000'));
+        self::assertSame([2, 3], $findIdsRegexFx('c', '0'));
+        self::assertSame([1, 4, 5, 6, 7, 8, 9, 10, 11, 12], $findIdsRegexFx('c', '0', true));
+        self::assertSame([1, 2], $findIdsRegexFx('rating', '\.5'));
         self::assertSame([2], $findIdsRegexFx('rating', '2\.5'));
+
+        self::assertSame([9, 10], $findIdsRegexFx('name', '\\\\'));
+        self::assertSame([10], $findIdsRegexFx('name', '\\\\\\\\'));
+        self::assertSame([], $findIdsRegexFx('name', '\\\\\\\\\\\\'));
+        self::assertSame([1, 3], $findIdsRegexFx('name', '\Jo'));
+        self::assertSame([8], $findIdsRegexFx('name', '/ra'));
+        self::assertSame([8], $findIdsRegexFx('name', '\/ra'));
+        self::assertSame([11], $findIdsRegexFx('name', '~ra'));
+        self::assertSame([11], $findIdsRegexFx('name', '\~ra'));
+        self::assertSame([5], $findIdsRegexFx('name', ' ra'));
+        self::assertSame([5], $findIdsRegexFx('name', '\ ra'));
+        self::assertSame([6], $findIdsRegexFx('name', "\nra"));
+        self::assertSame([6], $findIdsRegexFx('name', "\\\nra"));
+
+        self::assertSame([2, 3], $findIdsRegexFx('name', '.e'));
+        self::assertSame([1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12], $findIdsRegexFx('name', '.'));
+        self::assertSame([7], $findIdsRegexFx('name', '\.'));
     }
 }
