@@ -8,6 +8,7 @@ use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 use Atk4\Data\ValidationException;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class ConditionSqlTest extends TestCase
 {
@@ -509,26 +510,30 @@ class ConditionSqlTest extends TestCase
                 1 => ['id' => 1, 'name' => 'John', 'c' => 1],
                 ['id' => 2, 'name' => 'Peter', 'c' => 2000],
                 ['id' => 3, 'name' => 'Joe', 'c' => 50],
-                ['id' => 4, 'name' => 'Ca%ro_li\ne', 'c' => null],
-                ['id' => 5, 'name' => 'Ca.ro.li\\\ne', 'c' => null],
+                ['id' => 4, 'name' => 'Ca%ro_li\ne'],
+                ['id' => 5, 'name' => 'Ca.ro.li\\\ne'],
             ],
         ]);
 
         $u = new Model($this->db, ['table' => 'user']);
         $u->addField('name', ['type' => 'string']);
-        $u->addField('c', ['type' => 'boolean']);
+        $u->addField('c', ['type' => 'integer']);
 
         $findIdsLikeFx = static function (string $field, string $value, bool $negated = false) use ($u) {
             $t = (clone $u)->addCondition($field, ($negated ? 'not ' : '') . 'like', $value);
+            $res = array_keys($t->export(null, 'id'));
 
-            return array_keys($t->export(null, 'id'));
+            $t = (clone $u)->addCondition($field, ($negated ? 'not ' : '') . 'like', $u->dsql()->field($u->expr('[]', [$value])));
+            self::assertSame($res, array_keys($t->export(null, 'id')));
+
+            return $res;
         };
 
         self::assertSame([1], $findIdsLikeFx('name', 'John'));
+        self::assertSame([1], $findIdsLikeFx('name', 'john'));
         self::assertSame([], $findIdsLikeFx('name', 'Joh'));
         self::assertSame([1, 3], $findIdsLikeFx('name', 'Jo%'));
         self::assertSame([2, 4, 5], $findIdsLikeFx('name', 'Jo%', true));
-        self::assertSame([1], $findIdsLikeFx('name', 'john'));
         self::assertSame([1], $findIdsLikeFx('name', '%John%'));
         self::assertSame([1], $findIdsLikeFx('name', 'Jo%n'));
         self::assertSame([1], $findIdsLikeFx('name', 'J%n'));
@@ -557,5 +562,48 @@ class ConditionSqlTest extends TestCase
         self::assertSame([], $findIdsLikeFx('name', '%.li%ne\\'));
         self::assertSame([], $findIdsLikeFx('name', '%.li%ne\\\\'));
         self::assertSame([], $findIdsLikeFx('name', '%*li%ne'));
+    }
+
+    public function testRegexpCondition(): void
+    {
+        $this->setDb([
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'c' => 1, 'rating' => 1.5],
+                ['id' => 2, 'name' => 'Peter', 'c' => 2000, 'rating' => 2.5],
+                ['id' => 3, 'name' => 'Joe', 'c' => 50],
+            ],
+        ]);
+
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name', ['type' => 'string']);
+        $u->addField('c', ['type' => 'integer']);
+        $u->addField('rating', ['type' => 'float']);
+
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+            // https://devblogs.microsoft.com/azure-sql/introducing-regular-expression-regex-support-in-azure-sql-db/
+            self::markTestIncomplete('MSSQL has no REGEXP support yet');
+        }
+
+        $findIdsRegexFx = static function (string $field, string $value, bool $negated = false) use ($u) {
+            $t = (clone $u)->addCondition($field, ($negated ? 'not ' : '') . 'regexp', $value);
+            $res = array_keys($t->export(null, 'id'));
+
+            $t = (clone $u)->addCondition($field, ($negated ? 'not ' : '') . 'regexp', $u->dsql()->field($u->expr('[]', [$value])));
+            self::assertSame($res, array_keys($t->export(null, 'id')));
+
+            return $res;
+        };
+
+        self::assertSame([1], $findIdsRegexFx('name', 'John'));
+        self::assertSame([1], $findIdsRegexFx('name', 'john'));
+        self::assertSame([1], $findIdsRegexFx('name', 'Joh'));
+        self::assertSame([1], $findIdsRegexFx('name', 'ohn'));
+
+        self::assertSame([1], $findIdsRegexFx('c', '.*1.*'));
+        self::assertSame([2], $findIdsRegexFx('c', '.*2000.*'));
+        self::assertSame([2, 3], $findIdsRegexFx('c', '.*0.*'));
+        self::assertSame([1], $findIdsRegexFx('c', '.*0.*', true));
+        self::assertSame([1, 2], $findIdsRegexFx('rating', '.+\.5'));
+        self::assertSame([2], $findIdsRegexFx('rating', '2\.5'));
     }
 }
