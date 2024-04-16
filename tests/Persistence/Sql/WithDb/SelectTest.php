@@ -635,7 +635,7 @@ class SelectTest extends TestCase
             '\\\\',
             '\\\\\\',
             '\\\\\\\\',
-            '\\n',
+            '\n',
             '.',
             '*',
             '?',

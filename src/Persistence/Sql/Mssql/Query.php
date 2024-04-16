@@ -13,6 +13,9 @@ class Query extends BaseQuery
     protected string $identifierEscapeChar = ']';
     protected string $expressionClass = Expression::class;
 
+    // https://devblogs.microsoft.com/azure-sql/introducing-regular-expression-regex-support-in-azure-sql-db/
+    protected array $supportedOperators = ['=', '!=', '<', '>', '<=', '>=', 'in', 'not in', 'like', 'not like'];
+
     protected string $templateInsert = <<<'EOF'
         begin try
           insert[option] into [tableNoalias] ([setFields]) values ([setValues]);

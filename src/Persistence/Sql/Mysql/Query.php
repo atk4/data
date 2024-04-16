@@ -15,9 +15,14 @@ class Query extends BaseQuery
     protected string $identifierEscapeChar = '`';
     protected string $expressionClass = Expression::class;
 
-    protected array $supportedOperators = ['=', '!=', '<', '>', '<=', '>=', 'in', 'not in', 'like', 'not like', 'regexp', 'not regexp'];
-
     protected string $templateUpdate = 'update [table][join] set [set] [where]';
+
+    // needed for MySQL 5.x and MariaDB
+    #[\Override]
+    protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight): string
+    {
+        return $sqlLeft . ($negated ? ' not' : '') . ' regexp ' . $sqlRight;
+    }
 
     #[\Override]
     public function groupConcat($field, string $separator = ',')

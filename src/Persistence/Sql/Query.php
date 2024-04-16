@@ -23,7 +23,7 @@ abstract class Query extends Expression
     public bool $wrapInParentheses = true;
 
     /** @var array<string> */
-    protected array $supportedOperators = ['=', '!=', '<', '>', '<=', '>=', 'in', 'not in', 'like', 'not like'];
+    protected array $supportedOperators = ['=', '!=', '<', '>', '<=', '>=', 'in', 'not in', 'like', 'not like', 'regexp', 'not regexp'];
 
     protected string $templateSelect = '[with]select[option] [field] [from] [table][join][where][group][having][order][limit]';
     protected string $templateInsert = 'insert[option] into [tableNoalias] ([setFields]) values ([setValues])';
@@ -524,6 +524,12 @@ abstract class Query extends Expression
             . ' escape ' . $this->escapeStringLiteral('\\');
     }
 
+    protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight): string
+    {
+        return ($negated ? 'not ' : '') . 'regexp_like(' . $sqlLeft . ', ' . $sqlRight
+            . ', ' . $this->escapeStringLiteral('i') . ')';
+    }
+
     /**
      * @param array{mixed}|array{mixed, string|null, mixed} $row
      */
@@ -613,6 +619,8 @@ abstract class Query extends Expression
 
         if (in_array($operator, ['like', 'not like'], true)) {
             return $this->_renderConditionLikeOperator($operator === 'not like', $field, $value);
+        } elseif (in_array($operator, ['regexp', 'not regexp'], true)) {
+            return $this->_renderConditionRegexpOperator($operator === 'not regexp', $field, $value);
         }
 
         return $this->_renderConditionBinary($operator, $field, $value);

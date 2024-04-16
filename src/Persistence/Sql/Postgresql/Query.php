@@ -17,6 +17,13 @@ class Query extends BaseQuery
     protected string $templateUpdate = 'update [table][join] set [set] [where]';
     protected string $templateReplace;
 
+    // needed for PostgreSQL v14 and lower
+    #[\Override]
+    protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight): string
+    {
+        return $sqlLeft . ' ' . ($negated ? '!' : '') . '~* ' . $sqlRight;
+    }
+
     #[\Override]
     protected function _subrenderCondition(array $row): string
     {
