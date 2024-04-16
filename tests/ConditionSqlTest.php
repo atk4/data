@@ -519,12 +519,14 @@ class ConditionSqlTest extends TestCase
         $u->addField('name', ['type' => 'string']);
         $u->addField('c', ['type' => 'integer']);
 
-        $findIdsLikeFx = static function (string $field, string $value, bool $negated = false) use ($u) {
+        $findIdsLikeFx = function (string $field, string $value, bool $negated = false) use ($u) {
             $t = (clone $u)->addCondition($field, ($negated ? 'not ' : '') . 'like', $value);
             $res = array_keys($t->export(null, 'id'));
 
             $t = (clone $u)->addCondition($field, ($negated ? 'not ' : '') . 'like', $u->dsql()->field($u->expr('[]', [$value])));
-            self::assertSame($res, array_keys($t->export(null, 'id')));
+            if (!$this->getConnection()->getConnection()->getNativeConnection() instanceof \mysqli) { // https://bugs.mysql.com/bug.php?id=114659
+                self::assertSame($res, array_keys($t->export(null, 'id')));
+            }
 
             return $res;
         };
@@ -584,12 +586,14 @@ class ConditionSqlTest extends TestCase
             self::markTestIncomplete('MSSQL has no REGEXP support yet');
         }
 
-        $findIdsRegexFx = static function (string $field, string $value, bool $negated = false) use ($u) {
+        $findIdsRegexFx = function (string $field, string $value, bool $negated = false) use ($u) {
             $t = (clone $u)->addCondition($field, ($negated ? 'not ' : '') . 'regexp', $value);
             $res = array_keys($t->export(null, 'id'));
 
             $t = (clone $u)->addCondition($field, ($negated ? 'not ' : '') . 'regexp', $u->dsql()->field($u->expr('[]', [$value])));
-            self::assertSame($res, array_keys($t->export(null, 'id')));
+            if (!$this->getConnection()->getConnection()->getNativeConnection() instanceof \mysqli) { // https://bugs.mysql.com/bug.php?id=114659
+                self::assertSame($res, array_keys($t->export(null, 'id')));
+            }
 
             return $res;
         };
