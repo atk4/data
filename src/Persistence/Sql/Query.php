@@ -527,7 +527,7 @@ abstract class Query extends Expression
     protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight): string
     {
         return ($negated ? 'not ' : '') . 'regexp_like(' . $sqlLeft . ', ' . $sqlRight
-            . ', ' . $this->escapeStringLiteral('i') . ')';
+            . ', ' . $this->escapeStringLiteral('is') . ')';
     }
 
     /**

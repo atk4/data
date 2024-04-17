@@ -50,11 +50,7 @@ class QueryTest extends TestCase
             #[\Override]
             protected function escapeStringLiteral(string $value): string
             {
-                if ($value === '\\') {
-                    return '\'\\\'';
-                }
-
-                return null; // @phpstan-ignore-line
+                return '\'' . str_replace('\'', '\'\'', $value) . '\'';
             }
         };
 
@@ -789,6 +785,16 @@ class QueryTest extends TestCase
                 where "name" like regexp_replace(regexp_replace(:xxaaaa, '((\\\\)*)(\\([^_%]))?', '\1\4'), '((^|[^\\])(\\\\)*\\)$', concat('\1', rpad(chr(92), 2, chr(92)))) escape chr(92)
                 EOF,
             (new OracleQuery('[where]'))->where('name', 'like', 'foo')->render()[0]
+        );
+
+        // regexp | not regexp
+        self::assertSame(
+            'where regexp_like("name", :a, \'is\')',
+            $this->q('[where]')->where('name', 'regexp', '^foo')->render()[0]
+        );
+        self::assertSame(
+            'where not regexp_like("name", :a, \'is\')',
+            $this->q('[where]')->where('name', 'not regexp', '^foo')->render()[0]
         );
     }
 

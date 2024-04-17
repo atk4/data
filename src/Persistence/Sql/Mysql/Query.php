@@ -17,11 +17,19 @@ class Query extends BaseQuery
 
     protected string $templateUpdate = 'update [table][join] set [set] [where]';
 
-    // needed for MySQL 5.x and MariaDB
     #[\Override]
     protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight): string
     {
-        return $sqlLeft . ($negated ? ' not' : '') . ' regexp ' . $sqlRight;
+        $serverVersion = $this->connection->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
+        if (str_contains($serverVersion, 'MariaDB')) {
+            return $sqlLeft . ($negated ? ' not' : '') . ' regexp concat('
+                . $this->escapeStringLiteral('(?s)') . ', ' . $sqlRight . ')';
+        } elseif (str_starts_with($serverVersion, '5.')) {
+            return $sqlLeft . ($negated ? ' not' : '') . ' regexp ' . $sqlRight;
+        }
+
+        return ($negated ? 'not ' : '') . 'regexp_like(' . $sqlLeft . ', ' . $sqlRight
+            . ', ' . $this->escapeStringLiteral('in') . ')';
     }
 
     #[\Override]

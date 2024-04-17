@@ -25,9 +25,9 @@ class CreateRegexpLikeFunctionMiddleware implements Middleware
                 $nativeConnection = $connection->getNativeConnection();
                 assert($nativeConnection instanceof \PDO);
 
-                $nativeConnection->sqliteCreateFunction('regexp_like', static function ($value, string $pattern, string $flags = ''): bool {
+                $nativeConnection->sqliteCreateFunction('regexp_like', static function ($value, string $pattern, string $flags = ''): ?bool {
                     if ($value === null) {
-                        return false;
+                        return null;
                     }
 
                     if (is_int($value)) {
@@ -36,7 +36,14 @@ class CreateRegexpLikeFunctionMiddleware implements Middleware
                         $value = Expression::castFloatToString($value);
                     }
 
-                    return preg_match('~' . preg_replace('~(?<!\\\)(?:\\\\\\\)*+\K\~~', '\\\~', $pattern) . '~' . $flags, $value) === 1;
+                    $isValidUtf8Value = \PHP_VERSION_ID < 80200
+                        ? preg_match('~~u', $value) === 1 // much faster in PHP 8.1 and lower
+                        : mb_check_encoding($value, 'UTF-8');
+
+                    $pregPattern = '~' . preg_replace('~(?<!\\\)(?:\\\\\\\)*+\K\~~', '\\\~', $pattern) . '~'
+                        . $flags . ($isValidUtf8Value ? 'u' : '');
+
+                    return preg_match($pregPattern, $value) === 1;
                 }, -1, \PDO::SQLITE_DETERMINISTIC);
 
                 return $connection;

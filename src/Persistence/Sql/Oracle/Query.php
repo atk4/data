@@ -30,6 +30,13 @@ class Query extends BaseQuery
     }
 
     #[\Override]
+    protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight): string
+    {
+        return ($negated ? 'not ' : '') . 'regexp_like(' . $sqlLeft . ', ' . $sqlRight
+            . ', ' . $this->escapeStringLiteral('in') . ')';
+    }
+
+    #[\Override]
     public function render(): array
     {
         if ($this->mode === 'select' && count($this->args['table'] ?? []) === 0) {
