@@ -208,7 +208,7 @@ class Action
             case 'LIKE':
                 $pattern = str_replace('_', '(.)', str_replace('%', '(.*)', preg_quote($v2, '~')));
 
-                $result = preg_match('~^' . $pattern . '$~s', (string) $v1) === 1;
+                $result = preg_match('~^' . $pattern . '$~is', (string) $v1) === 1;
 
                 break;
             case 'NOT LIKE':
@@ -216,7 +216,9 @@ class Action
 
                 break;
             case 'REGEXP':
-                $result = preg_match('/' . $v2 . '/', $v1) === 1;
+                $pattern = preg_replace('~(?<!\\\)(?:\\\\\\\)*+\K\~~', '\\\~', $v2);
+
+                $result = preg_match('~' . $pattern . '~is', $v1) === 1;
 
                 break;
             case 'NOT REGEXP':
