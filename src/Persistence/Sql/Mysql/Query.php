@@ -21,15 +21,13 @@ class Query extends BaseQuery
     protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight): string
     {
         $serverVersion = $this->connection->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
-        if (str_contains($serverVersion, 'MariaDB')) {
-            return $sqlLeft . ($negated ? ' not' : '') . ' regexp concat('
-                . $this->escapeStringLiteral('(?s)') . ', ' . $sqlRight . ')';
-        } elseif (str_starts_with($serverVersion, '5.')) {
-            return $sqlLeft . ($negated ? ' not' : '') . ' regexp ' . $sqlRight;
-        }
+        $isMysql5x = str_starts_with($serverVersion, '5.') && !str_contains($serverVersion, 'MariaDB');
 
-        return ($negated ? 'not ' : '') . 'regexp_like(' . $sqlLeft . ', ' . $sqlRight
-            . ', ' . $this->escapeStringLiteral('in') . ')';
+        return $sqlLeft . ($negated ? ' not' : '') . ' regexp ' . (
+            $isMysql5x
+                ? $sqlRight
+                : 'concat(' . $this->escapeStringLiteral('(?s)') . ', ' . $sqlRight . ')'
+        );
     }
 
     #[\Override]
