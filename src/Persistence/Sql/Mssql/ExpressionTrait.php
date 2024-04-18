@@ -32,7 +32,7 @@ trait ExpressionTrait
             } elseif ($v !== '') {
                 foreach (mb_str_split($v, 4000) as $v2) {
                     // TODO report "select N'\'':n?'" issue to https://github.com/microsoft/msphpsql
-                    foreach (preg_split('~(:+)~', $v2, -1, \PREG_SPLIT_DELIM_CAPTURE) as $v3) {
+                    foreach (preg_split('~(:+[^\w]*)~', $v2, -1, \PREG_SPLIT_DELIM_CAPTURE) as $v3) {
                         if ($v3 !== '') {
                             $parts[] = '\'' . str_replace(
                                 ['\'', "\\\r\n", "\\\n", "\\\r"],
