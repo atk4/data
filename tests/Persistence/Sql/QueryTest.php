@@ -796,6 +796,7 @@ class QueryTest extends TestCase
             'where not regexp_like("name", :a, \'is\')',
             $this->q('[where]')->where('name', 'not regexp', '^foo')->render()[0]
         );
+        // TODO add MysqlQuery test once MySQL 5.x support is dropped
     }
 
     public function testWhereInWithNullException(): void
