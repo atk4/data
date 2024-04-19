@@ -21,18 +21,13 @@ class Query extends BaseQuery
     protected function _renderConditionLikeOperator(bool $negated, string $sqlLeft, string $sqlRight): string
     {
         $serverVersion = $this->connection->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
-        $isMariaDb = str_contains($serverVersion, 'MariaDB');
-        $isMysql5x = str_starts_with($serverVersion, '5.') && !$isMariaDb;
-
-        if ($isMariaDb) {
-            return parent::_renderConditionLikeOperator($negated, $sqlLeft, $sqlRight);
-        }
+        $isMysql5x = str_starts_with($serverVersion, '5.') && !str_contains($serverVersion, 'MariaDB');
 
         $sqlRightEscaped = $isMysql5x
             ? $sqlRight
             : 'regexp_replace(' . $sqlRight . ', '
-                . $this->escapeStringLiteral('(\\\[\\\_%])|(\\\)') . ', '
-                . $this->escapeStringLiteral('$1$2$2') . ')';
+                . $this->escapeStringLiteral('\\\\\\\|\\\(?![_%])') . ', '
+                . $this->escapeStringLiteral('\\\\\\\\') . ')';
 
         return $sqlLeft . ($negated ? ' not' : '') . ' like ' . $sqlRightEscaped
             . ' escape ' . $this->escapeStringLiteral('\\');
