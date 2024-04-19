@@ -387,7 +387,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
         $i = 0;
         $sql = preg_replace_callback(
             '~' . self::QUOTED_TOKEN_REGEX . '\K|(?:\?|:\w+)~',
-            static function ($matches) use ($params, &$i) {
+            function ($matches) use ($params, &$i) {
                 if ($matches[0] === '') {
                     return '';
                 }
@@ -411,7 +411,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
                     return '*long string* (length: ' . strlen($v) . ' bytes, sha256: ' . hash('sha256', $v) . ')';
                 }
 
-                return '\'' . str_replace('\'', '\'\'', $v) . '\'';
+                return $this->escapeStringLiteral($v);
             },
             $sql
         );

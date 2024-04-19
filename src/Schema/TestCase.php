@@ -137,11 +137,24 @@ abstract class TestCase extends BaseTestCase
             $sql
         );
 
-        $exprNoRender = new class($sql, $params) extends Expression {
+        $exprNoRender = new class($sql, $params, $this->getConnection()->expr()) extends Expression {
+            private Expression $dummyExpression;
+
+            public function __construct($template, array $arguments, Expression $dummyExpression)
+            {
+                parent::__construct($template, $arguments);
+
+                $this->dummyExpression = $dummyExpression;
+            }
+
             #[\Override]
             protected function escapeStringLiteral(string $value): string
             {
-                return null; // @phpstan-ignore-line
+                $dummyExpression = $this->dummyExpression;
+
+                // Closure rebind should not be needed
+                // https://github.com/php/php-src/issues/14009
+                return \Closure::bind(static fn () => $dummyExpression->escapeStringLiteral($value), null, parent::class)();
             }
 
             #[\Override]
