@@ -18,6 +18,25 @@ class Query extends BaseQuery
     protected string $templateUpdate = 'update [table][join] set [set] [where]';
 
     #[\Override]
+    protected function _renderConditionLikeOperator(bool $negated, string $sqlLeft, string $sqlRight): string
+    {
+        $serverVersion = $this->connection->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
+        $isMysql5x = str_starts_with($serverVersion, '5.') && !str_contains($serverVersion, 'MariaDB');
+
+        if ($isMysql5x) {
+            return $sqlLeft . ($negated ? ' not' : '') . ' like ' . $sqlRight
+                . ' escape ' . $this->escapeStringLiteral('\\');
+        }
+
+        $sqlRightEscaped = 'regexp_replace(' . $sqlRight . ', '
+            . $this->escapeStringLiteral('((\\\\\\\)*)(([^\\\]|\\\[\\\_%])|(\\\))') . ', '
+            . $this->escapeStringLiteral('$1$4$5$5') . ')';
+
+        return $sqlLeft . ($negated ? ' not' : '') . ' like ' . $sqlRightEscaped
+            . ' escape ' . $this->escapeStringLiteral('\\');
+    }
+
+    #[\Override]
     protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight): string
     {
         $serverVersion = $this->connection->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
