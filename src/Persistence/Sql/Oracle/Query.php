@@ -18,18 +18,6 @@ class Query extends BaseQuery
     protected string $expressionClass = Expression::class;
 
     #[\Override]
-    protected function _renderConditionLikeOperator(bool $negated, string $sqlLeft, string $sqlRight): string
-    {
-        $sqlRight = 'regexp_replace(regexp_replace(' . $sqlRight
-            . ', ' . $this->escapeStringLiteral('((\\\\\\\)*)(\\\([^_%]))?')
-            . ', ' . $this->escapeStringLiteral('\1\4')
-            . '), ' . $this->escapeStringLiteral('((^|[^\\\])(\\\\\\\)*\\\)$')
-            . ', ' . $this->escapeStringLiteral('\1\\\\') . ')';
-
-        return parent::_renderConditionLikeOperator($negated, $sqlLeft, $sqlRight);
-    }
-
-    #[\Override]
     protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight): string
     {
         return ($negated ? 'not ' : '') . 'regexp_like(' . $sqlLeft . ', ' . $sqlRight
