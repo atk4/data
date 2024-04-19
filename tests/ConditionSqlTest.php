@@ -556,12 +556,12 @@ class ConditionSqlTest extends TestCase
         self::assertSame([4, 5], $findIdsLikeFx('name', '%ro_li%'));
         self::assertSame([4], $findIdsLikeFx('name', '%ro\_li%'));
 
-        self::assertSame([], $findIdsLikeFx('name', '%li\ne%'));
+        self::assertSame([4], $findIdsLikeFx('name', '%li\ne%'));
         self::assertSame([4, 5], $findIdsLikeFx('name', '%li%\ne%'));
         self::assertSame([4], $findIdsLikeFx('name', '%li\\\ne%'));
-        self::assertSame([4], $findIdsLikeFx('name', '%li\\\\\ne%'));
+        self::assertSame([5], $findIdsLikeFx('name', '%li\\\\\ne%'));
         self::assertSame([5], $findIdsLikeFx('name', '%li\\\\\\\ne%'));
-        self::assertSame([5], $findIdsLikeFx('name', '%li\\\\\\\\\ne%'));
+        self::assertSame([], $findIdsLikeFx('name', '%li\\\\\\\\\ne%'));
         self::assertSame([], $findIdsLikeFx('name', '%li\\\\\\\\\\\ne%'));
         self::assertSame([5], $findIdsLikeFx('name', '%.li%ne'));
         self::assertSame([], $findIdsLikeFx('name', '%.li%ne\\'));
@@ -570,7 +570,7 @@ class ConditionSqlTest extends TestCase
 
         self::assertStringStartsWith("Ca\nro", $u->load(5)->get('name'));
         self::assertSame([5], $findIdsLikeFx('name', "Ca\n%"));
-        self::assertSame([5], $findIdsLikeFx('name', "Ca\\\n%"));
+        self::assertSame([], $findIdsLikeFx('name', "Ca\\\n%"));
         self::assertSame([], $findIdsLikeFx('name', 'Ca\\n%'));
         self::assertSame([], $findIdsLikeFx('name', 'Ca %'));
     }
