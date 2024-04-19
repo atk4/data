@@ -36,6 +36,15 @@ class Query extends BaseQuery
         EOF;
 
     #[\Override]
+    protected function _renderConditionLikeOperator(bool $negated, string $sqlLeft, string $sqlRight): string
+    {
+        $sqlRightEscaped = $sqlRight;
+
+        return $sqlLeft . ($negated ? ' not' : '') . ' like ' . $sqlRightEscaped
+            . ' escape ' . $this->escapeStringLiteral('\\');
+    }
+
+    #[\Override]
     protected function deduplicateRenderOrder(array $sqls): array
     {
         $res = [];
