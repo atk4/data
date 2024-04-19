@@ -26,6 +26,7 @@ class Connection extends BaseConnection
             new EnableForeignKeys(),
             new PreserveAutoincrementOnRollbackMiddleware(),
             new CreateRegexpLikeFunctionMiddleware(),
+            new CreateRegexpReplaceFunctionMiddleware(),
         ]);
 
         return $configuration;
