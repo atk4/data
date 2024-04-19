@@ -21,7 +21,12 @@ class Query extends BaseQuery
     protected function _renderConditionLikeOperator(bool $negated, string $sqlLeft, string $sqlRight): string
     {
         $serverVersion = $this->connection->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
-        $isMysql5x = str_starts_with($serverVersion, '5.') && !str_contains($serverVersion, 'MariaDB');
+        $isMariaDb = str_contains($serverVersion, 'MariaDB');
+        $isMysql5x = str_starts_with($serverVersion, '5.') && !$isMariaDb;
+
+        if ($isMariaDb) {
+            return parent::_renderConditionLikeOperator($negated, $sqlLeft, $sqlRight);
+        }
 
         $sqlRightEscaped = $isMysql5x
             ? $sqlRight
