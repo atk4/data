@@ -31,8 +31,8 @@ class Query extends BaseQuery
         $sqlRightEscaped = $isMysql5x
             ? $sqlRight
             : 'regexp_replace(' . $sqlRight . ', '
-                . $this->escapeStringLiteral('((\\\\\\\)*)(([^\\\]|\\\[\\\_%])|(\\\))') . ', '
-                . $this->escapeStringLiteral('$1$4$5$5') . ')';
+                . $this->escapeStringLiteral('(\\\[\\\_%])|(\\\)') . ', '
+                . $this->escapeStringLiteral('$1$2$2') . ')';
 
         return $sqlLeft . ($negated ? ' not' : '') . ' like ' . $sqlRightEscaped
             . ' escape ' . $this->escapeStringLiteral('\\');

@@ -521,8 +521,8 @@ abstract class Query extends Expression
     protected function _renderConditionLikeOperator(bool $negated, string $sqlLeft, string $sqlRight): string
     {
         $sqlRightEscaped = 'regexp_replace(' . $sqlRight . ', '
-            . $this->escapeStringLiteral('((\\\\\\\)*)(([^\\\]|\\\[\\\_%])|(\\\))') . ', '
-            . $this->escapeStringLiteral('\1\4\5\5') . ')';
+            . $this->escapeStringLiteral('(\\\[\\\_%])|(\\\)') . ', '
+            . $this->escapeStringLiteral('\1\2\2') . ')';
 
         return $sqlLeft . ($negated ? ' not' : '') . ' like ' . $sqlRightEscaped
             . ' escape ' . $this->escapeStringLiteral('\\');

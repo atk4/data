@@ -773,13 +773,13 @@ class QueryTest extends TestCase
         // like | not like
         self::assertSame(
             <<<'EOF'
-                where "name" like regexp_replace(:a, '((\\\\)*)(([^\\]|\\[\\_%])|(\\))', '\1\4\5\5') escape '\'
+                where "name" like regexp_replace(:a, '(\\[\\_%])|(\\)', '\1\2\2') escape '\'
                 EOF,
             $this->q('[where]')->where('name', 'like', 'foo')->render()[0]
         );
         self::assertSame(
             <<<'EOF'
-                where "name" not like regexp_replace(:a, '((\\\\)*)(([^\\]|\\[\\_%])|(\\))', '\1\4\5\5') escape '\'
+                where "name" not like regexp_replace(:a, '(\\[\\_%])|(\\)', '\1\2\2') escape '\'
                 EOF,
             $this->q('[where]')->where('name', 'not like', 'foo')->render()[0]
         );
@@ -1345,7 +1345,7 @@ class QueryTest extends TestCase
             ->caseElse(null)
             ->render()[0];
         self::assertSame(<<<'EOF'
-            case when "status" = :a then :b when "status" like regexp_replace(:c, '((\\\\)*)(([^\\]|\\[\\_%])|(\\))', '\1\4\5\5') escape '\' then :d else :e end
+            case when "status" = :a then :b when "status" like regexp_replace(:c, '(\\[\\_%])|(\\)', '\1\2\2') escape '\' then :d else :e end
             EOF, $s);
 
         // with subqueries

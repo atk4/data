@@ -21,8 +21,8 @@ class Query extends BaseQuery
     protected function _renderConditionLikeOperator(bool $negated, string $sqlLeft, string $sqlRight): string
     {
         $sqlRightEscaped = 'regexp_replace(' . $sqlRight . ', '
-            . $this->escapeStringLiteral('((\\\\\\\)*)(([^\\\]|\\\[\\\_%])|(\\\))') . ', '
-            . $this->escapeStringLiteral('\1\4\5\5') . ', '
+            . $this->escapeStringLiteral('(\\\[\\\_%])|(\\\)') . ', '
+            . $this->escapeStringLiteral('\1\2\2') . ', '
             . $this->escapeStringLiteral('g') . ')';
 
         return $sqlLeft . ($negated ? ' not' : '') . ' like ' . $sqlRightEscaped
