@@ -23,11 +23,26 @@ class Query extends BaseQuery
         $serverVersion = $this->connection->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
         $isMysql5x = str_starts_with($serverVersion, '5.') && !str_contains($serverVersion, 'MariaDB');
 
-        $sqlRightEscaped = $isMysql5x
-            ? $sqlRight
-            : 'regexp_replace(' . $sqlRight . ', '
+        if ($isMysql5x) {
+            $replaceSqlFx = function (string $sql, string $search, string $replacement) {
+                return 'replace(' . $sql . ', ' . $this->escapeStringLiteral($search) . ', ' . $this->escapeStringLiteral($replacement) . ')';
+            };
+
+            // workaround missing regexp_replace() function
+            // https://devblogs.microsoft.com/azure-sql/introducing-regular-expression-regex-support-in-azure-sql-db/
+            $sqlRightEscaped = $sqlRight;
+            foreach (['\\', '_', '%'] as $v) {
+                $sqlRightEscaped = $replaceSqlFx($sqlRightEscaped, '\\' . $v, '\\' . "\x01" . $v);
+            }
+            $sqlRightEscaped = $replaceSqlFx($sqlRightEscaped, '\\', '\\\\');
+            foreach (['\\', '_', '%'] as $v) {
+                $sqlRightEscaped = $replaceSqlFx($sqlRightEscaped, '\\\\' . "\x01" . str_replace('\\', '\\\\', $v), '\\' . $v);
+            }
+        } else {
+            $sqlRightEscaped = 'regexp_replace(' . $sqlRight . ', '
                 . $this->escapeStringLiteral('\\\\\\\|\\\(?![_%])') . ', '
                 . $this->escapeStringLiteral('\\\\\\\\') . ')';
+        }
 
         return $sqlLeft . ($negated ? ' not' : '') . ' like ' . $sqlRightEscaped
             . ' escape ' . $this->escapeStringLiteral('\\');
