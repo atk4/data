@@ -773,16 +773,20 @@ class QueryTest extends TestCase
 
         // like | not like
         self::assertSame(
-            'where "name" like :a escape \'\\\'',
+            <<<'EOF'
+                where "name" like regexp_replace(:a, '((\\\\)*)(([^\\]|\\[\\_%])|(\\))', '\1\4\5\5') escape '\'
+                EOF,
             $this->q('[where]')->where('name', 'like', 'foo')->render()[0]
         );
         self::assertSame(
-            'where "name" not like :a escape \'\\\'',
+            <<<'EOF'
+                where "name" not like regexp_replace(:a, '((\\\\)*)(([^\\]|\\[\\_%])|(\\))', '\1\4\5\5') escape '\'
+                EOF,
             $this->q('[where]')->where('name', 'not like', 'foo')->render()[0]
         );
         self::assertSame(
             <<<'EOF'
-                where "name" like regexp_replace(regexp_replace(:xxaaaa, '((\\\\)*)(\\([^_%]))?', '\1\4'), '((^|[^\\])(\\\\)*\\)$', concat('\1', rpad(chr(92), 2, chr(92)))) escape chr(92)
+                where "name" like regexp_replace(regexp_replace(regexp_replace(:xxaaaa, '((\\\\)*)(\\([^_%]))?', '\1\4'), '((^|[^\\])(\\\\)*\\)$', concat('\1', rpad(chr(92), 2, chr(92)))), '((\\\\)*)(([^\\]|\\[\\_%])|(\\))', '\1\4\5\5') escape chr(92)
                 EOF,
             (new OracleQuery('[where]'))->where('name', 'like', 'foo')->render()[0]
         );
@@ -1346,7 +1350,9 @@ class QueryTest extends TestCase
             ->caseWhen(['status', 'like', '%Used%'], 't2.expose_used')
             ->caseElse(null)
             ->render()[0];
-        self::assertSame('case when "status" = :a then :b when "status" like :c escape \'\\\' then :d else :e end', $s);
+        self::assertSame(<<<'EOF'
+            case when "status" = :a then :b when "status" like regexp_replace(:c, '((\\\\)*)(([^\\]|\\[\\_%])|(\\))', '\1\4\5\5') escape '\' then :d else :e end
+            EOF, $s);
 
         // with subqueries
         $age = $this->e('year(now()) - year(birth_date)');
