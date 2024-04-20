@@ -38,6 +38,12 @@ class Query extends BaseQuery
             foreach (['_', '%', '\\'] as $v) {
                 $sqlRightEscaped = $replaceSqlFx($sqlRightEscaped, '\\\\' . str_replace('\\', '\\\\', $v) . '*', '\\' . $v);
             }
+
+            // workaround https://bugs.mysql.com/bug.php?id=84118
+            // https://bugs.mysql.com/bug.php?id=63829
+            // https://bugs.mysql.com/bug.php?id=68901
+            // https://www.db-fiddle.com/f/argVwuJuqjFAALqfUSTEJb/0
+            $sqlRightEscaped = $replaceSqlFx($sqlRightEscaped, '%\\', '%\\\\');
         } else {
             $sqlRightEscaped = 'regexp_replace(' . $sqlRight . ', '
                 . $this->escapeStringLiteral('\\\\\\\|\\\(?![_%])') . ', '
