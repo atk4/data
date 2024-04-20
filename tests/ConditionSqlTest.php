@@ -556,22 +556,10 @@ class ConditionSqlTest extends TestCase
         self::assertSame([4, 5], $findIdsLikeFx('name', '%ro_li%'));
         self::assertSame([4], $findIdsLikeFx('name', '%ro\_li%'));
 
-        // https://bugs.mysql.com/bug.php?id=84118
-        // https://bugs.mysql.com/bug.php?id=63829
-        // https://bugs.mysql.com/bug.php?id=68901
-        $isMysqlMariadb = $this->getDatabasePlatform() instanceof MySQLPlatform
-            ? str_contains($this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(), 'MariaDB') // @phpstan-ignore-line
-            : false;
-        $isMysql5x = $this->getDatabasePlatform() instanceof MySQLPlatform && !$isMysqlMariadb
-            ? str_starts_with($this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(), '5.') // @phpstan-ignore-line
-            : false;
-
         self::assertSame([4], $findIdsLikeFx('name', '%li\ne%'));
         self::assertSame([4], $findIdsLikeFx('name', '%l_\ne%'));
         self::assertSame([5], $findIdsLikeFx('name', '%l__\ne%'));
-        if (!$isMysql5x) {
-            self::assertSame([4, 5], $findIdsLikeFx('name', '%li%\ne%'));
-        }
+        self::assertSame([4, 5], $findIdsLikeFx('name', '%li%\ne%'));
         self::assertSame([4], $findIdsLikeFx('name', '%li\\\ne%'));
         self::assertSame([5], $findIdsLikeFx('name', '%li\\\\\ne%'));
         self::assertSame([5], $findIdsLikeFx('name', '%li\\\\\\\ne%'));
