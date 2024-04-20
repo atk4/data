@@ -114,6 +114,16 @@ class Migrator
         $table = $this->fixAbstractAssetName(new Table('0.0'), $tableName);
         if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
             $table->addOption('charset', 'utf8mb4');
+
+            // https://bugs.mysql.com/bug.php?id=84118
+            // https://bugs.mysql.com/bug.php?id=63829
+            // https://bugs.mysql.com/bug.php?id=68901
+            // https://www.db-fiddle.com/f/aGa9atFZzWLha6Hu5J6zsi/0
+            $serverVersion = $this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
+            $isMysql5x = str_starts_with($serverVersion, '5.') && !str_contains($serverVersion, 'MariaDB');
+            if ($isMysql5x) {
+                $table->addOption('collation', 'utf8mb4_general_ci');
+            }
         }
 
         $this->table = $table;
