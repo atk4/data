@@ -591,7 +591,7 @@ class ConditionSqlTest extends TestCase
         self::assertStringStartsWith("Ca\nro", $u->load(5)->get('name'));
         self::assertSame([5], $findIdsLikeFx('name', "Ca\n%"));
         self::assertSame([], $findIdsLikeFx('name', "Ca\\\n%"));
-        self::assertSame([], $findIdsLikeFx('name', 'Ca\\n%'));
+        self::assertSame([], $findIdsLikeFx('name', 'Ca\n%'));
         self::assertSame([], $findIdsLikeFx('name', 'Ca %'));
     }
 
