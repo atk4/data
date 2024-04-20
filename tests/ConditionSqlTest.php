@@ -703,10 +703,10 @@ class ConditionSqlTest extends TestCase
         self::assertSame([], $findIdsRegexFx('c', '20{4,4}'));
         self::assertSame([2], $findIdsRegexFx('c', '20{2,}$'));
 
-        $isMysqlMariadb = $this->getDatabasePlatform() instanceof MySQLPlatform
+        $isMariadb = $this->getDatabasePlatform() instanceof MySQLPlatform
             ? str_contains($this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(), 'MariaDB') // @phpstan-ignore-line
             : false;
-        $isMysql5x = $this->getDatabasePlatform() instanceof MySQLPlatform && !$isMysqlMariadb
+        $isMysql5x = $this->getDatabasePlatform() instanceof MySQLPlatform && !$isMariadb
             ? str_starts_with($this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(), '5.') // @phpstan-ignore-line
             : false;
 
@@ -726,7 +726,7 @@ class ConditionSqlTest extends TestCase
             }
         }
 
-        if (!$this->getDatabasePlatform() instanceof MySQLPlatform || $isMysqlMariadb) {
+        if (!$this->getDatabasePlatform() instanceof MySQLPlatform || $isMariadb) {
             self::assertSame([2, 5, 6, 7, 8, 9, 10, 11, 12], $findIdsRegexFx('name', '([ae]).+\1'));
         }
 

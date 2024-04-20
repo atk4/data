@@ -684,7 +684,7 @@ class SelectTest extends TestCase
         // remove once https://jira.mariadb.org/browse/MDEV-27050 is fixed
         $columnAlias = '❤';
         $tableAlias = '🚀';
-        if (str_contains($_ENV['DB_DSN'], 'mariadb')) {
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform && str_contains($this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(), 'MariaDB')) { // @phpstan-ignore-line
             $columnAlias = '仮';
             $tableAlias = '名';
         }
