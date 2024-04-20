@@ -11,6 +11,8 @@ class Query extends BaseQuery
 {
     use ExpressionTrait;
 
+    public const QUOTED_TOKEN_REGEX = Expression::QUOTED_TOKEN_REGEX;
+
     protected string $identifierEscapeChar = '"';
     protected string $expressionClass = Expression::class;
 

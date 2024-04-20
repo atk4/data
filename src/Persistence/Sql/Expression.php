@@ -37,7 +37,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
             |"(?:[^"]+|"")*+"
             |`(?:[^`]+|``)*+`
             |\[(?:[^\]]+|\]\])*+\]
-            |(?:--|\#)[^\r\n]*+
+            |(?:--|\#)[^\n]*+
             |/\*(?:[^*]+|\*(?!/))*+\*/
         )
         EOF;

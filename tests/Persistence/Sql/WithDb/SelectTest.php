@@ -486,6 +486,8 @@ class SelectTest extends TestCase
 
     public function testQuotedTokenRegexConstant(): void
     {
+        $hasCommentCarriageReturnSupport = $this->getDatabasePlatform() instanceof PostgreSQLPlatform
+            || $this->getDatabasePlatform() instanceof SQLServerPlatform;
         $hasBackslashSupport = $this->getDatabasePlatform() instanceof MySQLPlatform;
 
         self::assertSame(
@@ -494,7 +496,7 @@ class SelectTest extends TestCase
                 . '    |"(?:[^"' . ($hasBackslashSupport ? '\\\\' : '') . ']+' . ($hasBackslashSupport ? '|\\\.' : '') . '|"")*+"' . "\n"
                 . '    |`(?:[^`]+|``)*+`' . "\n"
                 . '    |\[(?:[^\]]+|\]\])*+\]' . "\n"
-                . '    |(?:--|\#)[^\r\n]*+' . "\n"
+                . '    |(?:--|\#)[^' . ($hasCommentCarriageReturnSupport ? '\r' : '') . '\n]*+' . "\n"
                 . '    |/\*(?:[^*]+|\*(?!/))*+\*/' . "\n"
                 . ')',
             $this->e()::QUOTED_TOKEN_REGEX
