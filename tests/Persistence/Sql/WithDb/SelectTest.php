@@ -496,7 +496,11 @@ class SelectTest extends TestCase
                 . '    |"(?:[^"' . ($hasBackslashSupport ? '\\\\' : '') . ']+' . ($hasBackslashSupport ? '|\\\.' : '') . '|"")*+"' . "\n"
                 . '    |`(?:[^`]+|``)*+`' . "\n"
                 . '    |\[(?:[^\]]+|\]\])*+\]' . "\n"
-                . '    |(?:--|\#)[^' . ($hasCommentCarriageReturnSupport ? '\r' : '') . '\n]*+' . "\n"
+                . '    |(?:--' . (
+                    $this->getDatabasePlatform() instanceof MySQLPlatform
+                        ? '(?=$|[\x01-\x21\x7f])'
+                        : ''
+                ) . '|\#)[^' . ($hasCommentCarriageReturnSupport ? '\r' : '') . '\n]*+' . "\n"
                 . '    |/\*(?:[^*]+|\*(?!/))*+\*/' . "\n"
                 . ')',
             $this->e()::QUOTED_TOKEN_REGEX
