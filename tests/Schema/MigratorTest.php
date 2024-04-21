@@ -97,7 +97,11 @@ class MigratorTest extends TestCase
 
         $this->createMigrator($model)->create();
 
-        $model->import([['v' => 'mixedcase'], ['v' => 'MIXEDCASE'], ['v' => 'MixedCase']]);
+        $model->import([
+            ['v' => 'mixedcase'],
+            ['v' => 'MIXEDCASE'],
+            ['v' => 'MixedCase'],
+        ]);
 
         $model->addCondition('v', 'MixedCase');
         $model->setOrder($this->getDatabasePlatform() instanceof OraclePlatform && in_array($type, ['text', 'blob'], true) ? 'id' : 'v');
@@ -177,12 +181,14 @@ class MigratorTest extends TestCase
 
         $this->createMigrator($model)->create();
 
-        $model->import([['v' => $str . (
-            // MSSQL database ignores trailing \0 characters even with binary comparison
-            // https://dba.stackexchange.com/questions/48660/comparing-binary-0x-and-0x00-turns-out-to-be-equal-on-sql-server
-            $isBinary ? ($this->getDatabasePlatform() instanceof SQLServerPlatform ? ' ' : "\0") : '.'
-        )]]);
-        $model->import([['v' => $str]]);
+        $model->import([
+            ['v' => $str . (
+                // MSSQL database ignores trailing \0 characters even with binary comparison
+                // https://dba.stackexchange.com/questions/48660/comparing-binary-0x-and-0x00-turns-out-to-be-equal-on-sql-server
+                $isBinary ? ($this->getDatabasePlatform() instanceof SQLServerPlatform ? ' ' : "\0") : '.'
+            )],
+            ['v' => $str],
+        ]);
 
         $model->addCondition('v', $str);
         $rows = $model->export();
