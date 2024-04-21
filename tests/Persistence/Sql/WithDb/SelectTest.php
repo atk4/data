@@ -595,6 +595,11 @@ class SelectTest extends TestCase
             $str = mb_convert_encoding($str, 'UTF-8', 'UTF-8');
         }
 
+        // remove once https://github.com/php/php-src/issues/8928 is fixed
+        if (str_starts_with($_ENV['DB_DSN'], 'oci8')) {
+            $str = substr($str, 0, 1000);
+        }
+
         // PostgreSQL does not support \0 character
         // https://stackoverflow.com/questions/1347646/postgres-error-on-insert-error-invalid-byte-sequence-for-encoding-utf8-0x0
         $str2 = $this->getDatabasePlatform() instanceof PostgreSQLPlatform
