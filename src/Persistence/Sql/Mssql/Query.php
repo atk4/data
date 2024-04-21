@@ -55,6 +55,8 @@ class Query extends BaseQuery
             $sqlRightEscaped = $replaceSqlFx($sqlRightEscaped, '\\\\' . str_replace('\\', '\\\\', $v) . '*', '\\' . $v);
         }
 
+        $sqlRightEscaped = $replaceSqlFx($sqlRightEscaped, '[', '\[');
+
         return $sqlLeft . ($negated ? ' not' : '') . ' like ' . $sqlRightEscaped
             . ' escape ' . $this->escapeStringLiteral('\\');
     }
