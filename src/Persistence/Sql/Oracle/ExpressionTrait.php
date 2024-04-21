@@ -9,6 +9,23 @@ trait ExpressionTrait
     #[\Override]
     protected function escapeStringLiteral(string $value): string
     {
+        // Oracle (multibyte) string literal is limited to 1332 bytes
+        $parts = $this->splitLongString($value, 1000);
+        if (count($parts) > 1) {
+            $buildConcatExprFx = function (array $parts) use (&$buildConcatExprFx): string {
+                if (count($parts) > 1) {
+                    $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
+                    $partsRight = array_slice($parts, count($partsLeft));
+
+                    return 'concat(' . $buildConcatExprFx($partsLeft) . ', ' . $buildConcatExprFx($partsRight) . ')';
+                }
+
+                return 'TO_CLOB(' . $this->escapeStringLiteral(reset($parts)) . ')';
+            };
+
+            return $buildConcatExprFx($parts);
+        }
+
         $parts = [];
         foreach (preg_split('~(\x00+)~', $value, -1, \PREG_SPLIT_DELIM_CAPTURE) as $i => $v) {
             if (($i % 2) === 1) {
