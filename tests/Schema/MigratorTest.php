@@ -103,15 +103,36 @@ class MigratorTest extends TestCase
             ['v' => 'MixedCase'],
         ]);
 
-        $model->addCondition('v', 'MixedCase');
-        $model->setOrder($this->getDatabasePlatform() instanceof OraclePlatform && in_array($type, ['text', 'blob'], true) ? 'id' : 'v');
+        if (!$this->getDatabasePlatform() instanceof OraclePlatform || !in_array($type, ['text', 'blob'], true)) {
+            $model->setOrder('v');
+        }
 
-        self::assertSameExportUnordered(
-            $isBinary
-                ? [['id' => 3]]
-                : [['id' => 1], ['id' => 2], ['id' => 3]],
-            $model->export(['id'])
-        );
+        $expectedExport = $isBinary
+            ? [['id' => 3]]
+            : [['id' => 1], ['id' => 2], ['id' => 3]];
+
+        $model->addCondition('v', 'MixedCase');
+        self::assertSameExportUnordered($expectedExport, $model->export(['id']));
+
+        if (!$this->getDatabasePlatform() instanceof OraclePlatform || !in_array($type, ['text', 'blob'], true)) {
+            $model->scope()->clear();
+            $model->addCondition('v', 'in', ['MixedCase', 'foo']);
+            self::assertSameExportUnordered($expectedExport, $model->export(['id']));
+
+            // TODO
+            // $model->scope()->clear();
+            // $model->addCondition('v', 'like', 'MixedCase');
+            // self::assertSameExportUnordered($expectedExport, $model->export(['id']));
+            //
+            // $model->scope()->clear();
+            // $model->addCondition('v', 'like', '%ix%Case');
+            // self::assertSameExportUnordered($expectedExport, $model->export(['id']));
+
+            // TODO
+            // $model->scope()->clear();
+            // $model->addCondition('v', 'regexp', 'ix.+Case');
+            // self::assertSameExportUnordered($expectedExport, $model->export(['id']));
+        }
     }
 
     /**
