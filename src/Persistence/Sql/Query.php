@@ -501,6 +501,50 @@ abstract class Query extends Expression
     }
 
     /**
+     * @param \Closure(string, string): string $makeSqlFx
+     */
+    protected function _renderConditionBinaryReuse(
+        string $sqlLeft,
+        string $sqlRight,
+        \Closure $makeSqlFx,
+        bool $allowReuseLeft = true,
+        bool $allowReuseRight = true,
+        string $internalIdentifier = 'reuse'
+    ): string {
+        $nonTrivialSqlRegex = '~\s|\(~';
+        $subqueryLeftColumnSql = $allowReuseLeft && preg_match($nonTrivialSqlRegex, $sqlLeft)
+            ? $this->escapeIdentifier('__atk4_' . $internalIdentifier . '_left__')
+            : null;
+        $subqueryRightColumnSql = $allowReuseRight && preg_match($nonTrivialSqlRegex, $sqlRight)
+            ? $this->escapeIdentifier('__atk4_' . $internalIdentifier . '_right__')
+            : null;
+
+        $subqueryFromSql = null;
+        if ($subqueryLeftColumnSql !== null || $subqueryRightColumnSql !== null) {
+            $subqueryFromSql = 'select ';
+            if ($subqueryLeftColumnSql !== null) {
+                $subqueryFromSql .= $sqlLeft . ' ' . $subqueryLeftColumnSql;
+                $sqlLeft = $subqueryLeftColumnSql;
+            }
+            if ($subqueryRightColumnSql !== null) {
+                if ($subqueryLeftColumnSql !== null) {
+                    $subqueryFromSql .= ', ';
+                }
+                $subqueryFromSql .= $sqlRight . ' ' . $subqueryRightColumnSql;
+                $sqlRight = $subqueryRightColumnSql;
+            }
+        }
+
+        $res = $makeSqlFx($sqlLeft, $sqlRight);
+
+        if ($subqueryFromSql !== null) {
+            $res = '(select ' . $res . ' from (' . $subqueryFromSql . ') ' . $this->escapeIdentifier('__atk4_' . $internalIdentifier . '_tmp__') . ')';
+        }
+
+        return $res;
+    }
+
+    /**
      * Override to fix numeric affinity for SQLite.
      */
     protected function _renderConditionBinary(string $operator, string $sqlLeft, string $sqlRight): string
