@@ -23,7 +23,7 @@ trait ExpressionTrait
                 $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
                 $partsRight = array_slice($parts, count($partsLeft));
 
-                return '(' . $buildConcatSqlFx($partsLeft) . ' || ' . $buildConcatSqlFx($partsRight) . ')';
+                return 'concat(' . $buildConcatSqlFx($partsLeft) . ', ' . $buildConcatSqlFx($partsRight) . ')';
             }
 
             return reset($parts);
