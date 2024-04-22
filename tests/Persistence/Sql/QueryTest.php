@@ -13,6 +13,7 @@ use Atk4\Data\Persistence\Sql\Mysql\Expression as MysqlExpression;
 use Atk4\Data\Persistence\Sql\Mysql\Query as MysqlQuery;
 use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Persistence\Sql\Sqlite\Connection as SqliteConnection;
+use Atk4\Data\Persistence\Sql\Sqlite\Query as SqliteQuery;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
 
@@ -620,6 +621,10 @@ class QueryTest extends TestCase
             'where "id" is not null',
             $this->q('[where]')->where('id', '!=', null)->render()[0]
         );
+        self::assertSame(
+            'where case when typeof(`id`) in (\'integer\', \'real\') then cast(`id` as numeric) = :a else case when typeof(:a) in (\'integer\', \'real\') then `id` = cast(:a as numeric) else `id` = :a end end',
+            (new SqliteQuery('[where]'))->where('id', 1)->render()[0]
+        );
 
         // three parameters - field, condition, value
         self::assertSame(
@@ -642,6 +647,12 @@ class QueryTest extends TestCase
             'where "id" in (select * from "user")',
             $this->q('[where]')->where('id', $this->q()->table('user'))->render()[0]
         );
+        self::assertSame(
+            version_compare(SqliteConnection::getDriverVersion(), '3.45') < 0
+                ? 'where case when typeof(`id`) in (\'integer\', \'real\') then cast(`id` as numeric) != (select * from "user") else case when typeof((select * from "user")) in (\'integer\', \'real\') then `id` != cast((select * from "user") as numeric) else `id` != (select * from "user") end end'
+                : 'where (select case when typeof(`id`) in (\'integer\', \'real\') then cast(`id` as numeric) != `__atk4_affinity_right__` else case when typeof(`__atk4_affinity_right__`) in (\'integer\', \'real\') then `id` != cast(`__atk4_affinity_right__` as numeric) else `id` != `__atk4_affinity_right__` end end from (select (select * from "user") `__atk4_affinity_right__`) `__atk4_affinity_tmp__`)',
+            (new SqliteQuery('[where]'))->where('id', '!=', $this->q()->table('user'))->render()[0]
+        );
 
         // field name with special symbols - not escape
         self::assertSame(
@@ -653,6 +664,18 @@ class QueryTest extends TestCase
         self::assertSame(
             'where now = :a',
             $this->q('[where]')->where($this->e('now'), 1)->render()[0]
+        );
+        self::assertSame(
+            version_compare(SqliteConnection::getDriverVersion(), '3.45') < 0
+                ? 'where case when typeof(sum("id")) in (\'integer\', \'real\') then cast(sum("id") as numeric) = :a else case when typeof(:a) in (\'integer\', \'real\') then sum("id") = cast(:a as numeric) else sum("id") = :a end end'
+                : 'where (select case when typeof(`__atk4_affinity_left__`) in (\'integer\', \'real\') then cast(`__atk4_affinity_left__` as numeric) = :a else case when typeof(:a) in (\'integer\', \'real\') then `__atk4_affinity_left__` = cast(:a as numeric) else `__atk4_affinity_left__` = :a end end from (select sum("id") `__atk4_affinity_left__`) `__atk4_affinity_tmp__`)',
+            (new SqliteQuery('[where]'))->where($this->e('sum({})', ['id']), 1)->render()[0]
+        );
+        self::assertSame(
+            version_compare(SqliteConnection::getDriverVersion(), '3.45') < 0
+                ? 'where case when typeof(sum("id")) in (\'integer\', \'real\') then cast(sum("id") as numeric) = sum("b") else case when typeof(sum("b")) in (\'integer\', \'real\') then sum("id") = cast(sum("b") as numeric) else sum("id") = sum("b") end end'
+                : 'where (select case when typeof(`__atk4_affinity_left__`) in (\'integer\', \'real\') then cast(`__atk4_affinity_left__` as numeric) = `__atk4_affinity_right__` else case when typeof(`__atk4_affinity_right__`) in (\'integer\', \'real\') then `__atk4_affinity_left__` = cast(`__atk4_affinity_right__` as numeric) else `__atk4_affinity_left__` = `__atk4_affinity_right__` end end from (select sum("id") `__atk4_affinity_left__`, sum("b") `__atk4_affinity_right__`) `__atk4_affinity_tmp__`)',
+            (new SqliteQuery('[where]'))->where($this->e('sum({})', ['id']), $this->e('sum({})', ['b']))->render()[0]
         );
 
         // more than one where condition - join with AND keyword
@@ -749,6 +772,14 @@ class QueryTest extends TestCase
         self::assertSame(
             'where "id" not in (:a, :b)',
             $this->q('[where]')->where('id', 'not in', [1, 2])->render()[0]
+        );
+        self::assertSame(
+            'where ('
+                . 'case when typeof(`id`) in (\'integer\', \'real\') then cast(`id` as numeric) = :a else case when typeof(:a) in (\'integer\', \'real\') then `id` = cast(:a as numeric) else `id` = :a end end'
+                . ' or '
+                . 'case when typeof(`id`) in (\'integer\', \'real\') then cast(`id` as numeric) = :b else case when typeof(:b) in (\'integer\', \'real\') then `id` = cast(:b as numeric) else `id` = :b end end'
+                . ')',
+            (new SqliteQuery('[where]'))->where('id', 'in', [1, 2])->render()[0]
         );
         // special treatment for empty array values
         self::assertSame(

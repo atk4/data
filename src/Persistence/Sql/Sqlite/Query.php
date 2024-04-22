@@ -17,7 +17,8 @@ class Query extends BaseQuery
 
     private function _renderConditionBinaryCheckNumericSql(string $sql): string
     {
-        return 'typeof(' . $sql . ') in (\'integer\', \'real\')';
+        return 'typeof(' . $sql . ') in (' . $this->escapeStringLiteral('integer')
+            . ', ' . $this->escapeStringLiteral('real') . ')';
     }
 
     /**
