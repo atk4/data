@@ -31,13 +31,7 @@ class CreateConcatFunctionMiddleware implements Middleware
                 $nativeConnection->sqliteCreateFunction('concat', static function ($value, ...$values): string {
                     $res = '';
                     foreach ([$value, ...$values] as $v) {
-                        if (is_int($v)) {
-                            $v = (string) $v;
-                        } elseif (is_float($v)) {
-                            $v = Expression::castFloatToString($v);
-                        }
-
-                        $res .= $v;
+                        $res .= CreateRegexpLikeFunctionMiddleware::castScalarToString($v);
                     }
 
                     return $res;

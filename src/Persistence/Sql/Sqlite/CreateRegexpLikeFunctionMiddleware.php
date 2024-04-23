@@ -30,11 +30,7 @@ class CreateRegexpLikeFunctionMiddleware implements Middleware
                         return null;
                     }
 
-                    if (is_int($value)) {
-                        $value = (string) $value;
-                    } elseif (is_float($value)) {
-                        $value = Expression::castFloatToString($value);
-                    }
+                    $value = CreateRegexpLikeFunctionMiddleware::castScalarToString($value);
 
                     $isValidUtf8Value = \PHP_VERSION_ID < 80200
                         ? preg_match('~~u', $value) === 1 // much faster in PHP 8.1 and lower
@@ -49,5 +45,20 @@ class CreateRegexpLikeFunctionMiddleware implements Middleware
                 return $connection;
             }
         };
+    }
+
+    /**
+     * @param string|int|float|null $value
+     */
+    public static function castScalarToString($value): ?string
+    {
+        if (is_int($value)) {
+            return (string) $value;
+        }
+        if (is_float($value)) {
+            return Expression::castFloatToString($value);
+        }
+
+        return $value;
     }
 }

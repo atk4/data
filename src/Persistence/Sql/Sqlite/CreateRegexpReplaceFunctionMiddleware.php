@@ -30,11 +30,7 @@ class CreateRegexpReplaceFunctionMiddleware implements Middleware
                         return null;
                     }
 
-                    if (is_int($value)) {
-                        $value = (string) $value;
-                    } elseif (is_float($value)) {
-                        $value = Expression::castFloatToString($value);
-                    }
+                    $value = CreateRegexpLikeFunctionMiddleware::castScalarToString($value);
 
                     $isValidUtf8Value = \PHP_VERSION_ID < 80200
                         ? preg_match('~~u', $value) === 1 // much faster in PHP 8.1 and lower
