@@ -32,12 +32,11 @@ class CreateRegexpLikeFunctionMiddleware implements Middleware
 
                     $value = CreateRegexpLikeFunctionMiddleware::castScalarToString($value);
 
-                    $isValidUtf8Value = \PHP_VERSION_ID < 80200
-                        ? preg_match('~~u', $value) === 1 // much faster in PHP 8.1 and lower
-                        : mb_check_encoding($value, 'UTF-8');
+                    $binary = !mb_check_encoding($pattern, 'UTF-8')
+                        || !mb_check_encoding($value, 'UTF-8');
 
                     $pregPattern = '~' . preg_replace('~(?<!\\\)(?:\\\\\\\)*+\K\~~', '\\\~', $pattern) . '~'
-                        . $flags . ($isValidUtf8Value ? 'u' : '');
+                        . $flags . ($binary ? '' : 'u');
 
                     return preg_match($pregPattern, $value) === 1;
                 }, -1, \PDO::SQLITE_DETERMINISTIC);
