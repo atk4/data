@@ -14,6 +14,8 @@ use Atk4\Data\Persistence\Sql\Mysql\Query as MysqlQuery;
 use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Persistence\Sql\Sqlite\Connection as SqliteConnection;
 use Atk4\Data\Persistence\Sql\Sqlite\Query as SqliteQuery;
+use Doctrine\DBAL\Connection as DbalConnection;
+use Doctrine\DBAL\Driver\Middleware\AbstractConnectionMiddleware;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
 
@@ -762,6 +764,48 @@ class QueryTest extends TestCase
         yield ['in', null];
     }
 
+    /**
+     * @param string|array<string, mixed> $template
+     */
+    private function createMysqlQuery(string $serverVersion, $template = []): MysqlQuery
+    {
+        $dbalConnection = new class($serverVersion) extends DbalConnection {
+            private string $serverVersion;
+
+            public function __construct(string $serverVersion) // @phpstan-ignore-line
+            {
+                $this->serverVersion = $serverVersion;
+            }
+
+            #[\Override]
+            public function getWrappedConnection()
+            {
+                return new class($this->serverVersion) extends AbstractConnectionMiddleware {
+                    private string $serverVersion;
+
+                    public function __construct(string $serverVersion) // @phpstan-ignore-line
+                    {
+                        $this->serverVersion = $serverVersion;
+                    }
+
+                    #[\Override]
+                    public function getServerVersion()
+                    {
+                        return $this->serverVersion;
+                    }
+                };
+            }
+        };
+
+        $connection = \Closure::bind(static fn () => new MysqlConnection(), null, Connection::class)();
+        \Closure::bind(static fn () => $connection->_connection = $dbalConnection, null, Connection::class)();
+
+        $q = new MysqlQuery($template);
+        $q->connection = $connection;
+
+        return $q;
+    }
+
     public function testWhereSpecialValues(): void
     {
         // in | not in
@@ -826,16 +870,23 @@ class QueryTest extends TestCase
                 EOF,
             (new SqliteQuery('[where]'))->where('name', 'like', $this->e('sum({})', ['b']))->render()[0]
         );
-        // TODO add MysqlQuery test once MySQL 5.x support is dropped
+        foreach (['8.0', 'MariaDB-11.0'] as $serverVersion) {
+            self::assertSame(
+                <<<'EOF'
+                    where `name` like regexp_replace(:a, '\\\\\\\\|\\\\(?![_%])', '\\\\\\\\') escape '\\'
+                    EOF,
+                $this->createMysqlQuery($serverVersion, '[where]')->where('name', 'like', 'foo')->render()[0]
+            );
+        }
 
         // regexp | not regexp
         self::assertSame(
             'where regexp_like("name", :a, \'is\')',
-            $this->q('[where]')->where('name', 'regexp', '^foo')->render()[0]
+            $this->q('[where]')->where('name', 'regexp', 'foo')->render()[0]
         );
         self::assertSame(
             'where not regexp_like("name", :a, \'is\')',
-            $this->q('[where]')->where('name', 'not regexp', '^foo')->render()[0]
+            $this->q('[where]')->where('name', 'not regexp', 'foo')->render()[0]
         );
         self::assertSame(
             'where regexp_like(`name`, :a, \'is\')',
@@ -845,7 +896,14 @@ class QueryTest extends TestCase
             'where regexp_like(`name`, sum("b"), \'is\')',
             (new SqliteQuery('[where]'))->where('name', 'regexp', $this->e('sum({})', ['b']))->render()[0]
         );
-        // TODO add MysqlQuery test once MySQL 5.x support is dropped
+        foreach (['8.0', 'MariaDB-11.0'] as $serverVersion) {
+            self::assertSame(
+                <<<'EOF'
+                    where `name` regexp concat('(?s)', :a)
+                    EOF,
+                $this->createMysqlQuery($serverVersion, '[where]')->where('name', 'regexp', 'foo')->render()[0]
+            );
+        }
     }
 
     public function testWhereInWithNullException(): void
