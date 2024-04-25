@@ -18,7 +18,7 @@ class DisableEmulatePrepareForPdoRegexpConnectionMiddleware extends AbstractConn
         // https://dbfiddle.uk/9SA-omyF
         $pdo = $this->getNativeConnection();
         if ($pdo instanceof \PDO && $pdo->getAttribute(\PDO::ATTR_EMULATE_PREPARES)
-            && preg_match('~\sregexp\s|(?<!\w)regexp_[a-z]+\(~i', preg_replace('~' . Expression::QUOTED_TOKEN_REGEX . '~', '', $sql))
+            && preg_match('~\sregexp\s|(?<!\w)regexp_[a-z]+\s*\(~i', preg_replace('~' . Expression::QUOTED_TOKEN_REGEX . '~', '', $sql))
         ) {
             $pdo->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
             try {
