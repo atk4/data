@@ -696,12 +696,6 @@ class ConditionSqlTest extends TestCase
             return $res;
         };
 
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform && $type === 'binary' && $this->getConnection()->getConnection()->getNativeConnection() instanceof \PDO) {
-            self::assertTrue(true); // @phpstan-ignore-line
-
-            return; // TODO SQLSTATE[HY000]: General error: 3995 Character set 'binary' cannot be used in conjunction with 'utf8mb4_general_ci' in call to regexp_like.
-        }
-
         if ($this->getDatabasePlatform() instanceof MySQLPlatform && ($type === 'binary' || $type === 'blob')) {
             self::assertTrue(true); // @phpstan-ignore-line
 
