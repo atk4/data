@@ -21,7 +21,7 @@ class Query extends BaseQuery
     protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight, bool $binary = false): string
     {
         return ($negated ? 'not ' : '') . 'regexp_like(' . $sqlLeft . ', ' . $sqlRight
-            . ', ' . $this->escapeStringLiteral(($binary ? '' : 'i') . 'n') . ')';
+            . ', ' . $this->escapeStringLiteral(($binary ? 'c' : 'i') . 'n') . ')';
     }
 
     #[\Override]
