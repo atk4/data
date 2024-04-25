@@ -887,11 +887,13 @@ class QueryTest extends TestCase
             $this->q('[where]')->where('name', 'not regexp', 'foo')->render()[0]
         );
         self::assertSame(
-            'where regexp_like(`name`, :a, \'is\')',
+            'where case when `name` = lower(`name`) and `name` = upper(`name`) then regexp_like(`name`, :a, \'is\') else regexp_like(`name`, :a, \'s\') end',
             (new SqliteQuery('[where]'))->where('name', 'regexp', 'foo')->render()[0]
         );
         self::assertSame(
-            'where regexp_like(`name`, sum("b"), \'is\')',
+            version_compare(SqliteConnection::getDriverVersion(), '3.45') < 0
+                ? 'where case when `name` = lower(`name`) and `name` = upper(`name`) then regexp_like(`name`, sum("b"), \'is\') else regexp_like(`name`, sum("b"), \'s\') end'
+                : 'where (select case when `name` = lower(`name`) and `name` = upper(`name`) then regexp_like(`name`, `__atk4_reuse_right__`, \'is\') else regexp_like(`name`, `__atk4_reuse_right__`, \'s\') end from (select sum("b") `__atk4_reuse_right__`) `__atk4_reuse_tmp__`)',
             (new SqliteQuery('[where]'))->where('name', 'regexp', $this->e('sum({})', ['b']))->render()[0]
         );
         foreach (['8.0', 'MariaDB-11.0'] as $serverVersion) {

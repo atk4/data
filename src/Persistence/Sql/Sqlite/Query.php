@@ -128,6 +128,27 @@ class Query extends BaseQuery
     }
 
     #[\Override]
+    protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight, bool $binary = false): string
+    {
+        if ($binary) {
+            return parent::_renderConditionRegexpOperator($negated, $sqlLeft, $sqlRight, $binary);
+        }
+
+        return ($negated ? 'not ' : '') . $this->_renderConditionBinaryReuse(
+            $sqlLeft,
+            $sqlRight,
+            function ($sqlLeft, $sqlRight) {
+                $res = 'case when ' . $sqlLeft . ' = lower(' . $sqlLeft . ') and ' . $sqlLeft . ' = upper(' . $sqlLeft . ')'
+                    . ' then ' . parent::_renderConditionRegexpOperator(false, $sqlLeft, $sqlRight)
+                    . ' else ' . parent::_renderConditionRegexpOperator(false, $sqlLeft, $sqlRight, true)
+                    . ' end';
+
+                return $res;
+            }
+        );
+    }
+
+    #[\Override]
     public function groupConcat($field, string $separator = ',')
     {
         return $this->expr('group_concat({}, [])', [$field, $separator]);

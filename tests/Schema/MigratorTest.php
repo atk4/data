@@ -128,10 +128,9 @@ class MigratorTest extends TestCase
                 $model->addCondition('v', 'like', '%ix%Case');
                 self::assertSameExportUnordered($expectedExport, $model->export(['id']));
 
-                // TODO
-                // $model->scope()->clear();
-                // $model->addCondition('v', 'regexp', 'ix.+Case');
-                // self::assertSameExportUnordered($expectedExport, $model->export(['id']));
+                $model->scope()->clear();
+                $model->addCondition('v', 'regexp', 'ix.+Case');
+                self::assertSameExportUnordered($expectedExport, $model->export(['id']));
             }
         }
     }
