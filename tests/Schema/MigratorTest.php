@@ -119,19 +119,20 @@ class MigratorTest extends TestCase
             $model->addCondition('v', 'in', ['MixedCase', 'foo']);
             self::assertSameExportUnordered($expectedExport, $model->export(['id']));
 
-            // TODO
-            // $model->scope()->clear();
-            // $model->addCondition('v', 'like', 'MixedCase');
-            // self::assertSameExportUnordered($expectedExport, $model->export(['id']));
-            //
-            // $model->scope()->clear();
-            // $model->addCondition('v', 'like', '%ix%Case');
-            // self::assertSameExportUnordered($expectedExport, $model->export(['id']));
+            if (!$this->getDatabasePlatform() instanceof PostgreSQLPlatform && !$this->getDatabasePlatform() instanceof SQLServerPlatform && !$this->getDatabasePlatform() instanceof OraclePlatform) {
+                $model->scope()->clear();
+                $model->addCondition('v', 'like', 'MixedCase');
+                self::assertSameExportUnordered($expectedExport, $model->export(['id']));
 
-            // TODO
-            // $model->scope()->clear();
-            // $model->addCondition('v', 'regexp', 'ix.+Case');
-            // self::assertSameExportUnordered($expectedExport, $model->export(['id']));
+                $model->scope()->clear();
+                $model->addCondition('v', 'like', '%ix%Case');
+                self::assertSameExportUnordered($expectedExport, $model->export(['id']));
+
+                // TODO
+                // $model->scope()->clear();
+                // $model->addCondition('v', 'regexp', 'ix.+Case');
+                // self::assertSameExportUnordered($expectedExport, $model->export(['id']));
+            }
         }
     }
 

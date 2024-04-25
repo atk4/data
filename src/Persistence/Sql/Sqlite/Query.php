@@ -90,6 +90,43 @@ class Query extends BaseQuery
     }
 
     #[\Override]
+    protected function _renderConditionLikeOperator(bool $negated, string $sqlLeft, string $sqlRight): string
+    {
+        return ($negated ? 'not ' : '') . $this->_renderConditionBinaryReuse(
+            $sqlLeft,
+            $sqlRight,
+            function ($sqlLeft, $sqlRight) {
+                $regexReplaceSqlFx = function (string $sql, string $search, string $replacement) {
+                    return 'regexp_replace(' . $sql . ', ' . $this->escapeStringLiteral($search) . ', ' . $this->escapeStringLiteral($replacement) . ')';
+                };
+
+                $res = '('
+                    . parent::_renderConditionLikeOperator(false, $sqlLeft, $sqlRight)
+                    . ' and ((' . $sqlLeft . ' = lower(' . $sqlLeft . ') and ' . $sqlLeft . ' = upper(' . $sqlLeft . '))'
+                    . ' or ' . preg_replace('~(?<=\')i(?=s\'\)$)~', '', $this->_renderConditionRegexpOperator(
+                        false,
+                        $sqlLeft,
+                        'concat(' . $this->escapeStringLiteral('^') . ',' . $regexReplaceSqlFx(
+                            $regexReplaceSqlFx(
+                                $regexReplaceSqlFx(
+                                    $regexReplaceSqlFx($sqlRight, '\\\(?:(?=[_%])|\K\\\)|(?=[.\\\+*?[^\]$(){}|])', '\\'),
+                                    '(?<!\\\)(\\\\\\\)*\K_',
+                                    '.'
+                                ),
+                                '(?<!\\\)(\\\\\\\)*\K%',
+                                '.*'
+                            ),
+                            '(?<!\\\)(\\\\\\\)*\K\\\(?=[_%])',
+                            ''
+                        ) . ', ' . $this->escapeStringLiteral('$') . ')'
+                    )) . '))';
+
+                return $res;
+            }
+        );
+    }
+
+    #[\Override]
     public function groupConcat($field, string $separator = ',')
     {
         return $this->expr('group_concat({}, [])', [$field, $separator]);

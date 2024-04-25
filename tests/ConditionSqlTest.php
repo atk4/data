@@ -12,7 +12,6 @@ use Atk4\Data\ValidationException;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
-use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 
@@ -544,12 +543,6 @@ class ConditionSqlTest extends TestCase
 
             return $res;
         };
-
-        if ($this->getDatabasePlatform() instanceof SQLitePlatform && ($type === 'binary' || $type === 'blob')) {
-            self::assertTrue(true); // @phpstan-ignore-line
-
-            return; // TODO
-        }
 
         if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform && ($type === 'binary' || $type === 'blob')) {
             self::assertTrue(true); // @phpstan-ignore-line

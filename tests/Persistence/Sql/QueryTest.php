@@ -649,12 +649,6 @@ class QueryTest extends TestCase
             'where "id" in (select * from "user")',
             $this->q('[where]')->where('id', $this->q()->table('user'))->render()[0]
         );
-        self::assertSame(
-            version_compare(SqliteConnection::getDriverVersion(), '3.45') < 0
-                ? 'where case when typeof(`id`) in (\'integer\', \'real\') then cast(`id` as numeric) != (select * from "user") else case when typeof((select * from "user")) in (\'integer\', \'real\') then `id` != cast((select * from "user") as numeric) else `id` != (select * from "user") end end'
-                : 'where (select case when typeof(`id`) in (\'integer\', \'real\') then cast(`id` as numeric) != `__atk4_affinity_right__` else case when typeof(`__atk4_affinity_right__`) in (\'integer\', \'real\') then `id` != cast(`__atk4_affinity_right__` as numeric) else `id` != `__atk4_affinity_right__` end end from (select (select * from "user") `__atk4_affinity_right__`) `__atk4_affinity_tmp__`)',
-            (new SqliteQuery('[where]'))->where('id', '!=', $this->q()->table('user'))->render()[0]
-        );
 
         // field name with special symbols - not escape
         self::assertSame(
@@ -860,14 +854,18 @@ class QueryTest extends TestCase
         );
         self::assertSame(
             <<<'EOF'
-                where `name` like regexp_replace(:a, '(\\[\\_%])|(\\)', '\1\2\2') escape '\'
+                where (`name` like regexp_replace(:a, '(\\[\\_%])|(\\)', '\1\2\2') escape '\' and ((`name` = lower(`name`) and `name` = upper(`name`)) or regexp_like(`name`, concat('^',regexp_replace(regexp_replace(regexp_replace(regexp_replace(:a, '\\(?:(?=[_%])|\K\\)|(?=[.\\+*?[^\]$(){}|])', '\'), '(?<!\\)(\\\\)*\K_', '.'), '(?<!\\)(\\\\)*\K%', '.*'), '(?<!\\)(\\\\)*\K\\(?=[_%])', ''), '$'), 's')))
                 EOF,
             (new SqliteQuery('[where]'))->where('name', 'like', 'foo')->render()[0]
         );
         self::assertSame(
-            <<<'EOF'
-                where `name` like regexp_replace(sum("b"), '(\\[\\_%])|(\\)', '\1\2\2') escape '\'
-                EOF,
+            version_compare(SqliteConnection::getDriverVersion(), '3.45') < 0
+                ? <<<'EOF'
+                    where (`name` like regexp_replace(sum("b"), '(\\[\\_%])|(\\)', '\1\2\2') escape '\' and ((`name` = lower(`name`) and `name` = upper(`name`)) or regexp_like(`name`, concat('^',regexp_replace(regexp_replace(regexp_replace(regexp_replace(sum("b"), '\\(?:(?=[_%])|\K\\)|(?=[.\\+*?[^\]$(){}|])', '\'), '(?<!\\)(\\\\)*\K_', '.'), '(?<!\\)(\\\\)*\K%', '.*'), '(?<!\\)(\\\\)*\K\\(?=[_%])', ''), '$'), 's')))
+                    EOF
+                : <<<'EOF'
+                    where (select (`name` like regexp_replace(`__atk4_reuse_right__`, '(\\[\\_%])|(\\)', '\1\2\2') escape '\' and ((`name` = lower(`name`) and `name` = upper(`name`)) or regexp_like(`name`, concat('^',regexp_replace(regexp_replace(regexp_replace(regexp_replace(`__atk4_reuse_right__`, '\\(?:(?=[_%])|\K\\)|(?=[.\\+*?[^\]$(){}|])', '\'), '(?<!\\)(\\\\)*\K_', '.'), '(?<!\\)(\\\\)*\K%', '.*'), '(?<!\\)(\\\\)*\K\\(?=[_%])', ''), '$'), 's'))) from (select sum("b") `__atk4_reuse_right__`) `__atk4_reuse_tmp__`)
+                    EOF,
             (new SqliteQuery('[where]'))->where('name', 'like', $this->e('sum({})', ['b']))->render()[0]
         );
         foreach (['8.0', 'MariaDB-11.0'] as $serverVersion) {
