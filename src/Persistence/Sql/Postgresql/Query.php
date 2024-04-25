@@ -33,9 +33,9 @@ class Query extends BaseQuery
 
     // needed for PostgreSQL v14 and lower
     #[\Override]
-    protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight): string
+    protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight, bool $binary = false): string
     {
-        return $sqlLeft . ' ' . ($negated ? '!' : '') . '~* ' . $sqlRight;
+        return $sqlLeft . ' ' . ($negated ? '!' : '') . '~' . ($binary ? '' : '*') . ' ' . $sqlRight;
     }
 
     #[\Override]

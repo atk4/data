@@ -572,10 +572,10 @@ abstract class Query extends Expression
             . ' escape ' . $this->escapeStringLiteral('\\');
     }
 
-    protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight): string
+    protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight, bool $binary = false): string
     {
         return ($negated ? 'not ' : '') . 'regexp_like(' . $sqlLeft . ', ' . $sqlRight
-            . ', ' . $this->escapeStringLiteral('is') . ')';
+            . ', ' . $this->escapeStringLiteral(($binary ? '' : 'i') . 's') . ')';
     }
 
     /**

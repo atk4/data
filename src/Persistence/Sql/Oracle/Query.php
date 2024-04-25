@@ -18,10 +18,10 @@ class Query extends BaseQuery
     protected string $expressionClass = Expression::class;
 
     #[\Override]
-    protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight): string
+    protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight, bool $binary = false): string
     {
         return ($negated ? 'not ' : '') . 'regexp_like(' . $sqlLeft . ', ' . $sqlRight
-            . ', ' . $this->escapeStringLiteral('in') . ')';
+            . ', ' . $this->escapeStringLiteral(($binary ? '' : 'i') . 'n') . ')';
     }
 
     #[\Override]

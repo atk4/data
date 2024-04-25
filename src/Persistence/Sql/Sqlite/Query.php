@@ -103,7 +103,7 @@ class Query extends BaseQuery
                 $res = '('
                     . parent::_renderConditionLikeOperator(false, $sqlLeft, $sqlRight)
                     . ' and ((' . $sqlLeft . ' = lower(' . $sqlLeft . ') and ' . $sqlLeft . ' = upper(' . $sqlLeft . '))'
-                    . ' or ' . preg_replace('~(?<=\')i(?=s\'\)$)~', '', $this->_renderConditionRegexpOperator(
+                    . ' or ' . $this->_renderConditionRegexpOperator(
                         false,
                         $sqlLeft,
                         'concat(' . $this->escapeStringLiteral('^') . ',' . $regexReplaceSqlFx(
@@ -118,8 +118,9 @@ class Query extends BaseQuery
                             ),
                             '(?<!\\\)(\\\\\\\)*\K\\\(?=[_%])',
                             ''
-                        ) . ', ' . $this->escapeStringLiteral('$') . ')'
-                    )) . '))';
+                        ) . ', ' . $this->escapeStringLiteral('$') . ')',
+                        true
+                    ) . '))';
 
                 return $res;
             }
