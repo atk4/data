@@ -7,11 +7,13 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
+use Atk4\Data\Tests\Schema\MigratorTest;
 use Atk4\Data\ValidationException;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 
 class ConditionSqlTest extends TestCase
 {
@@ -506,24 +508,28 @@ class ConditionSqlTest extends TestCase
         self::assertNull($u->getField('name')->default); // should not set field default value
     }
 
-    public function testLikeCondition(): void
+    /**
+     * @dataProvider \Atk4\Data\Tests\Schema\MigratorTest::provideCharacterTypeFieldCaseSensitivityCases
+     */
+    #[DataProviderExternal(MigratorTest::class, 'provideCharacterTypeFieldCaseSensitivityCases')]
+    public function testLikeCondition(string $type, bool $isBinary): void
     {
-        $this->setDb([
-            'user' => [
-                1 => ['id' => 1, 'name' => 'John', 'c' => 1],
-                ['id' => 2, 'name' => 'Peter', 'c' => 2000],
-                ['id' => 3, 'name' => 'Joe', 'c' => 50],
-                ['id' => 4, 'name' => 'Ca_ro%li\ne'],
-                ['id' => 5, 'name' => "Ca\nro.li\\\\ne"],
-                ['id' => 6, 'name' => 'Ca*ro^li$ne'],
-                ['id' => 7, 'name' => 'Ja[n]e'],
-                ['id' => 8, 'name' => 'Ja\[^n]e'],
-            ],
-        ]);
-
         $u = new Model($this->db, ['table' => 'user']);
-        $u->addField('name', ['type' => 'string']);
+        $u->addField('name', ['type' => $type]);
         $u->addField('c', ['type' => 'integer']);
+
+        $this->createMigrator($u)->create();
+
+        $u->import([
+            ['name' => 'John', 'c' => 1],
+            ['name' => 'Peter', 'c' => 2000],
+            ['name' => 'Joe', 'c' => 50],
+            ['name' => 'Ca_ro%li\ne'],
+            ['name' => "Ca\nro.li\\\\ne"],
+            ['name' => 'Ca*ro^li$ne'],
+            ['name' => 'Ja[n]e'],
+            ['name' => 'Ja\[^n]e'],
+        ]);
 
         $findIdsLikeFx = function (string $field, string $value, bool $negated = false) use ($u) {
             $t = (clone $u)->addCondition($field, ($negated ? 'not ' : '') . 'like', $value);
@@ -538,7 +544,7 @@ class ConditionSqlTest extends TestCase
         };
 
         self::assertSame([1], $findIdsLikeFx('name', 'John'));
-        self::assertSame([1], $findIdsLikeFx('name', 'john'));
+        self::assertSame($isBinary ? [] : [1], $findIdsLikeFx('name', 'john'));
         self::assertSame([], $findIdsLikeFx('name', 'Joh'));
         self::assertSame([1, 3], $findIdsLikeFx('name', 'Jo%'));
         self::assertSame(array_values(array_diff(range(1, 8), [1, 3])), $findIdsLikeFx('name', 'Jo%', true));
@@ -603,37 +609,42 @@ class ConditionSqlTest extends TestCase
         self::assertSame([8], $findIdsLikeFx('name', '%^n%'));
         self::assertSame([8], $findIdsLikeFx('name', '%[^n]%'));
 
-        self::assertStringStartsWith("Ca\nro", $u->load(5)->get('name'));
-        self::assertSame([5], $findIdsLikeFx('name', "Ca\n%"));
-        self::assertSame([], $findIdsLikeFx('name', "Ca\\\n%"));
-        self::assertSame([], $findIdsLikeFx('name', 'Ca\n%'));
-        self::assertSame([], $findIdsLikeFx('name', 'Ca %'));
+        if ($type !== 'string') {
+            self::assertStringStartsWith("Ca\nro", $u->load(5)->get('name'));
+            self::assertSame([5], $findIdsLikeFx('name', "Ca\n%"));
+            self::assertSame([], $findIdsLikeFx('name', "Ca\\\n%"));
+            self::assertSame([], $findIdsLikeFx('name', 'Ca %'));
+        }
     }
 
-    public function testRegexpCondition(): void
+    /**
+     * @dataProvider \Atk4\Data\Tests\Schema\MigratorTest::provideCharacterTypeFieldCaseSensitivityCases
+     */
+    #[DataProviderExternal(MigratorTest::class, 'provideCharacterTypeFieldCaseSensitivityCases')]
+    public function testRegexpCondition(string $type, bool $isBinary): void
     {
-        $this->setDb([
-            'user' => [
-                1 => ['id' => 1, 'name' => 'John', 'c' => 1, 'rating' => 1.5],
-                ['id' => 2, 'name' => 'Peter', 'c' => 2000, 'rating' => 2.5],
-                ['id' => 3, 'name' => 'Joe', 'c' => 50],
-                ['id' => 4, 'name' => ''],
-                ['id' => 5, 'name' => 'Sa ra'],
-                ['id' => 6, 'name' => "Sa\nra"],
-                ['id' => 7, 'name' => 'Sa.ra'],
-                ['id' => 8, 'name' => 'Sa/ra'],
-                ['id' => 9, 'name' => 'Sa\ra'],
-                ['id' => 10, 'name' => 'Sa\\\ra'],
-                ['id' => 11, 'name' => 'Sa~ra'],
-                ['id' => 12, 'name' => 'Sa$ra'],
-                ['id' => 13, 'name' => 'heiß'],
-            ],
-        ]);
-
         $u = new Model($this->db, ['table' => 'user']);
-        $u->addField('name', ['type' => 'string']);
+        $u->addField('name', ['type' => $type]);
         $u->addField('c', ['type' => 'integer']);
         $u->addField('rating', ['type' => 'float']);
+
+        $this->createMigrator($u)->create();
+
+        $u->import([
+            ['name' => 'John', 'c' => 1, 'rating' => 1.5],
+            ['name' => 'Peter', 'c' => 2000, 'rating' => 2.5],
+            ['name' => 'Joe', 'c' => 50],
+            ['name' => ''],
+            ['name' => 'Sa ra'],
+            ['name' => "Sa\nra"],
+            ['name' => 'Sa.ra'],
+            ['name' => 'Sa/ra'],
+            ['name' => 'Sa\ra'],
+            ['name' => 'Sa\\\ra'],
+            ['name' => 'Sa~ra'],
+            ['name' => 'Sa$ra'],
+            ['name' => 'heiß'],
+        ]);
 
         if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             // https://devblogs.microsoft.com/azure-sql/introducing-regular-expression-regex-support-in-azure-sql-db/
@@ -653,6 +664,9 @@ class ConditionSqlTest extends TestCase
         };
 
         self::assertSame([1], $findIdsRegexFx('name', 'John'));
+        if ($isBinary) {
+            return; // TODO
+        }
         self::assertSame([1], $findIdsRegexFx('name', 'john'));
         self::assertSame([13], $findIdsRegexFx('name', 'heiß'));
         self::assertSame([13], $findIdsRegexFx('name', 'Heiß'));
@@ -676,14 +690,16 @@ class ConditionSqlTest extends TestCase
         self::assertSame([8], $findIdsRegexFx('name', '\/ra'));
         self::assertSame([11], $findIdsRegexFx('name', '~ra'));
         self::assertSame([11], $findIdsRegexFx('name', '\~ra'));
-        self::assertSame([5], $findIdsRegexFx('name', ' ra'));
-        self::assertSame([5], $findIdsRegexFx('name', '\ ra'));
-        self::assertSame([6], $findIdsRegexFx('name', "\nra"));
-        self::assertSame([6], $findIdsRegexFx('name', "\\\nra"));
 
-        self::assertSame("Sa\nra", $u->load(6)->get('name'));
-        self::assertSame([6], $findIdsRegexFx('name', "Sa\nra"));
-        self::assertSame([6], $findIdsRegexFx('name', "Sa\\\nra"));
+        if ($type !== 'string') {
+            self::assertSame("Sa\nra", $u->load(6)->get('name'));
+            self::assertSame([6], $findIdsRegexFx('name', "Sa\nra"));
+            self::assertSame([6], $findIdsRegexFx('name', "Sa\\\nra"));
+            self::assertSame([6], $findIdsRegexFx('name', "\nra"));
+            self::assertSame([6], $findIdsRegexFx('name', "\\\nra"));
+            self::assertSame([5], $findIdsRegexFx('name', ' ra'));
+            self::assertSame([5], $findIdsRegexFx('name', '\ ra'));
+        }
 
         self::assertSame([2, 3, 13], $findIdsRegexFx('name', '.e'));
         self::assertSame(array_values(array_diff(range(1, 13), [4])), $findIdsRegexFx('name', '.'));
@@ -699,7 +715,7 @@ class ConditionSqlTest extends TestCase
 
         self::assertSame([1, 3], $findIdsRegexFx('name', 'John|e$'));
         self::assertSame([1], $findIdsRegexFx('name', '((John))()'));
-        self::assertSame([1, 3, 5], $findIdsRegexFx('name', '(J|Sa ra)'));
+        self::assertSame([1, 3, 11], $findIdsRegexFx('name', '(J|Sa~ra)'));
 
         self::assertSame([1], $findIdsRegexFx('name', 'J.+n'));
         self::assertSame([], $findIdsRegexFx('name', 'John.+'));
@@ -734,7 +750,7 @@ class ConditionSqlTest extends TestCase
             self::assertSame([1, 3], $findIdsRegexFx('name', '\wo'));
             self::assertSame([13], $findIdsRegexFx('name', 'hei\w$'));
             self::assertSame([10], $findIdsRegexFx('name', '\W\\\\'));
-            if (!$this->getDatabasePlatform() instanceof OraclePlatform) {
+            if ($type !== 'string' && !$this->getDatabasePlatform() instanceof OraclePlatform) {
                 self::assertSame([5], $findIdsRegexFx('name', '\x20'));
                 self::assertSame([6], $findIdsRegexFx('name', '\n'));
                 self::assertSame([], $findIdsRegexFx('name', '\r'));
