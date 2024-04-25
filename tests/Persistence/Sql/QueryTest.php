@@ -814,6 +814,18 @@ class QueryTest extends TestCase
                 EOF,
             $this->q('[where]')->where('name', 'not like', 'foo')->render()[0]
         );
+        self::assertSame(
+            <<<'EOF'
+                where `name` like regexp_replace(:a, '(\\[\\_%])|(\\)', '\1\2\2') escape '\'
+                EOF,
+            (new SqliteQuery('[where]'))->where('name', 'like', 'foo')->render()[0]
+        );
+        self::assertSame(
+            <<<'EOF'
+                where `name` like regexp_replace(sum("b"), '(\\[\\_%])|(\\)', '\1\2\2') escape '\'
+                EOF,
+            (new SqliteQuery('[where]'))->where('name', 'like', $this->e('sum({})', ['b']))->render()[0]
+        );
         // TODO add MysqlQuery test once MySQL 5.x support is dropped
 
         // regexp | not regexp
