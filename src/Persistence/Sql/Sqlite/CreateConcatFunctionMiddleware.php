@@ -29,8 +29,8 @@ class CreateConcatFunctionMiddleware implements Middleware
                 assert($nativeConnection instanceof \PDO);
 
                 $nativeConnection->sqliteCreateFunction('concat', static function ($value, ...$values): string {
-                    $res = '';
-                    foreach ([$value, ...$values] as $v) {
+                    $res = CreateRegexpLikeFunctionMiddleware::castScalarToString($value) ?? '';
+                    foreach ($values as $v) {
                         $res .= CreateRegexpLikeFunctionMiddleware::castScalarToString($v);
                     }
 
