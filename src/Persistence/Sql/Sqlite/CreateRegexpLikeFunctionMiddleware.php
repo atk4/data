@@ -49,7 +49,7 @@ class CreateRegexpLikeFunctionMiddleware implements Middleware
     /**
      * @param string|int|float|null $value
      */
-    public static function castScalarToString($value): ?string
+    final public static function castScalarToString($value): ?string
     {
         if (is_int($value)) {
             return (string) $value;
