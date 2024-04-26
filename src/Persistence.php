@@ -303,14 +303,14 @@ abstract class Persistence
      */
     public function typecastSaveRow(Model $model, array $row): array
     {
-        $result = [];
+        $res = [];
         foreach ($row as $fieldName => $value) {
             $field = $model->getField($fieldName);
 
-            $result[$field->getPersistenceName()] = $this->typecastSaveField($field, $value);
+            $res[$field->getPersistenceName()] = $this->typecastSaveField($field, $value);
         }
 
-        return $result;
+        return $res;
     }
 
     /**
@@ -327,14 +327,14 @@ abstract class Persistence
      */
     public function typecastLoadRow(Model $model, array $row): array
     {
-        $result = [];
+        $res = [];
         foreach ($row as $fieldName => $value) {
             $field = $model->getField($fieldName);
 
-            $result[$fieldName] = $this->typecastLoadField($field, $value);
+            $res[$fieldName] = $this->typecastLoadField($field, $value);
         }
 
-        return $result;
+        return $res;
     }
 
     /**

@@ -100,7 +100,7 @@ class Query extends BaseQuery
                     return 'regexp_replace(' . $sql . ', ' . $this->escapeStringLiteral($search) . ', ' . $this->escapeStringLiteral($replacement) . ')';
                 };
 
-                $res = '('
+                return '('
                     . parent::_renderConditionLikeOperator(false, $sqlLeft, $sqlRight)
                     . ' and ((' . $sqlLeft . ' = lower(' . $sqlLeft . ') and ' . $sqlLeft . ' = upper(' . $sqlLeft . '))'
                     . ' or ' . $this->_renderConditionRegexpOperator(
@@ -121,8 +121,6 @@ class Query extends BaseQuery
                         ) . ', ' . $this->escapeStringLiteral('$') . ')',
                         true
                     ) . '))';
-
-                return $res;
             }
         );
     }
@@ -138,12 +136,10 @@ class Query extends BaseQuery
             $sqlLeft,
             $sqlRight,
             function ($sqlLeft, $sqlRight) {
-                $res = 'case when ' . $sqlLeft . ' = lower(' . $sqlLeft . ') and ' . $sqlLeft . ' = upper(' . $sqlLeft . ')'
+                return 'case when ' . $sqlLeft . ' = lower(' . $sqlLeft . ') and ' . $sqlLeft . ' = upper(' . $sqlLeft . ')'
                     . ' then ' . parent::_renderConditionRegexpOperator(false, $sqlLeft, $sqlRight)
                     . ' else ' . parent::_renderConditionRegexpOperator(false, $sqlLeft, $sqlRight, true)
                     . ' end';
-
-                return $res;
             }
         );
     }
