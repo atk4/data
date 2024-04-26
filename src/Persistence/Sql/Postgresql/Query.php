@@ -28,11 +28,35 @@ class Query extends BaseQuery
             $sqlLeft,
             $sqlRight,
             function ($sqlLeft, $sqlRight) use ($makeSqlFx) {
-                return 'case when pg_typeof(' . $sqlLeft . ') = ' . $this->escapeStringLiteral('bytea') . '::regtype'
-                    . ' then ' . $makeSqlFx('convert_from(cast(cast(' . $sqlLeft . ' as text) as bytea), '
-                    . $this->escapeStringLiteral('UTF8') . ')', $sqlRight) // will raise SQL error for 0x00 or 0x80+ bytes
-                    . ' else ' . $makeSqlFx('cast(' . $sqlLeft . ' as citext)', $sqlRight)
-                    . ' end';
+                $iffByteaSqlFx = function ($valueSql, $trueSql, $falseSql) {
+                    return 'case when pg_typeof(' . $valueSql . ') = ' . $this->escapeStringLiteral('bytea') . '::regtype'
+                        . ' then ' . $trueSql . ' else ' . $falseSql . ' end';
+                };
+
+                $castToTextFx = function ($sql, $neverBytea = false) use ($iffByteaSqlFx) {
+                    $castTextToByteaSql = 'cast(replace(cast(' . $sql . ' as text), ' . $this->escapeStringLiteral('\\')
+                            . ', ' . $this->escapeStringLiteral('\\\\') . ') as bytea)';
+
+                    $sql = $neverBytea
+                        ? $castTextToByteaSql
+                        : $iffByteaSqlFx(
+                            $sql,
+                            'decode(' . $iffByteaSqlFx(
+                                $sql,
+                                'substring(cast(' . $sql . ' as text) from 3)',
+                                $this->escapeStringLiteral('')
+                            ) . ', ' . $this->escapeStringLiteral('hex') . ')',
+                            $castTextToByteaSql
+                        );
+
+                    return 'encode(' . $sql . ', ' . $this->escapeStringLiteral('escape') . ')';
+                };
+
+                return $iffByteaSqlFx(
+                    $sqlLeft,
+                    $makeSqlFx($castToTextFx($sqlLeft), $castToTextFx($sqlRight, true)),
+                    $makeSqlFx('cast(' . $sqlLeft . ' as citext)', $sqlRight)
+                );
             }
         );
     }

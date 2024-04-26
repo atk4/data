@@ -881,7 +881,7 @@ class QueryTest extends TestCase
         }
         self::assertSame(
             <<<'EOF'
-                where case when pg_typeof("name") = 'bytea'::regtype then convert_from(cast(cast("name" as text) as bytea), 'UTF8') like regexp_replace(:a, '(\\[\\_%])|(\\)', '\1\2\2', 'g') escape chr(92) else cast("name" as citext) like regexp_replace(:a, '(\\[\\_%])|(\\)', '\1\2\2', 'g') escape chr(92) end
+                where case when pg_typeof("name") = 'bytea'::regtype then encode(case when pg_typeof("name") = 'bytea'::regtype then decode(case when pg_typeof("name") = 'bytea'::regtype then substring(cast("name" as text) from 3) else '' end, 'hex') else cast(replace(cast("name" as text), chr(92), repeat(chr(92), 2)) as bytea) end, 'escape') like regexp_replace(encode(cast(replace(cast(:a as text), chr(92), repeat(chr(92), 2)) as bytea), 'escape'), '(\\[\\_%])|(\\)', '\1\2\2', 'g') escape chr(92) else cast("name" as citext) like regexp_replace(:a, '(\\[\\_%])|(\\)', '\1\2\2', 'g') escape chr(92) end
                 EOF,
             (new PostgresqlQuery('[where]'))->where('name', 'like', 'foo')->render()[0]
         );
@@ -927,7 +927,7 @@ class QueryTest extends TestCase
         }
         self::assertSame(
             <<<'EOF'
-                where case when pg_typeof("name") = 'bytea'::regtype then convert_from(cast(cast("name" as text) as bytea), 'UTF8') ~ :a else cast("name" as citext) ~ :a end
+                where case when pg_typeof("name") = 'bytea'::regtype then encode(case when pg_typeof("name") = 'bytea'::regtype then decode(case when pg_typeof("name") = 'bytea'::regtype then substring(cast("name" as text) from 3) else '' end, 'hex') else cast(replace(cast("name" as text), chr(92), repeat(chr(92), 2)) as bytea) end, 'escape') ~ encode(cast(replace(cast(:a as text), chr(92), repeat(chr(92), 2)) as bytea), 'escape') else cast("name" as citext) ~ :a end
                 EOF,
             (new PostgresqlQuery('[where]'))->where('name', 'regexp', 'foo')->render()[0]
         );

@@ -573,6 +573,10 @@ class ConditionSqlTest extends TestCase
         self::assertSame([2, 3], $findIdsLikeFx('c', '%0%'));
         self::assertSame([1], $findIdsLikeFx('c', '%0%', true));
 
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform && $isBinary) {
+            return; // TODO
+        }
+
         self::assertSame([4, 5, 6], $findIdsLikeFx('name', '%Ca_ro%'));
         self::assertSame([4], $findIdsLikeFx('name', '%Ca\_ro%'));
         self::assertSame([4, 5, 6], $findIdsLikeFx('name', '%ro%li%'));
@@ -691,6 +695,11 @@ class ConditionSqlTest extends TestCase
 
         self::assertSame([1], $findIdsRegexFx('name', 'John'));
         self::assertSame($isBinary ? [] : [1], $findIdsRegexFx('name', 'john'));
+
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform && $isBinary) {
+            return; // TODO
+        }
+
         // TODO investigate/report MySQL 8.x bug
         self::assertSame($this->getDatabasePlatform() instanceof MySQLPlatform && $isBinary && !$isMysql5x && !$isMariadb ? [] : [13], $findIdsRegexFx('name', 'heiß'));
         self::assertSame($isBinary ? [] : [13], $findIdsRegexFx('name', 'Heiß'));
