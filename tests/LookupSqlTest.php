@@ -155,8 +155,6 @@ class LookupSqlTest extends TestCase
     {
         $c = new LCountry($this->db);
 
-        $results = [];
-
         // should be OK, will set country name, rest of fields will be null
         $c->createEntity()->saveAndUnload(['name' => 'Canada']);
 

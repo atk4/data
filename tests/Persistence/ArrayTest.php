@@ -442,7 +442,6 @@ class ArrayTest extends TestCase
             $dbDataCountries[8],
             $dbDataCountries[9],
         ], $m->action('select')->getRows());
-        $result = $m->action('select')->getRows();
 
         $m->scope()->clear();
         $m->addCondition('code', '<', 12);
