@@ -167,10 +167,8 @@ abstract class Expression implements Expressionable, \ArrayAccess
      *
      * @param string|Expressionable $expr
      * @param self::ESCAPE_*        $escapeMode
-     *
-     * @return string Quoted expression
      */
-    protected function consume($expr, string $escapeMode)
+    protected function consume($expr, string $escapeMode): string
     {
         if (!is_object($expr)) {
             switch ($escapeMode) {

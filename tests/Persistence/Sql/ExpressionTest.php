@@ -344,8 +344,8 @@ class ExpressionTest extends TestCase
             $this->callProtected($this->e(['renderParamBase' => 'x']), 'consume', 123, $constants['ESCAPE_PARAM'])
         );
         self::assertSame(
-            123,
-            $this->callProtected($this->e(), 'consume', 123, $constants['ESCAPE_NONE'])
+            '123',
+            $this->callProtected($this->e(), 'consume', '123', $constants['ESCAPE_NONE'])
         );
 
         $myField = new class() implements Expressionable {
