@@ -50,10 +50,20 @@ class Query extends BaseQuery
      * https://dba.stackexchange.com/questions/332585/sqlite-comparison-of-the-same-operand-types-behaves-differently
      * https://sqlite.org/forum/info/5f1135146fbc37ab .
      */
-    #[\Override]
-    protected function _renderConditionBinary(string $operator, string $sqlLeft, string $sqlRight): string
+    #[\Override] // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/10942
+    protected function _renderConditionBinary(string $operator, string $sqlLeft, $sqlRight): string
     {
-        $allowCastRight = !in_array($operator, ['in', 'not in'], true);
+        if (in_array($operator, ['in', 'not in'], true)) {
+            if (is_array($sqlRight)) {
+                return ($operator === 'not in' ? ' not' : '') . '('
+                    . implode(' or ', array_map(fn ($v) => $this->_renderConditionBinary('=', $sqlLeft, $v), $sqlRight))
+                    . ')';
+            }
+
+            $allowCastRight = false;
+        } else {
+            $allowCastRight = true;
+        }
 
         return $this->_renderConditionBinaryReuse(
             $sqlLeft,
@@ -79,14 +89,6 @@ class Query extends BaseQuery
             $allowCastRight,
             'affinity'
         );
-    }
-
-    #[\Override]
-    protected function _renderConditionInOperator(bool $negated, string $sqlLeft, array $sqlValues): string
-    {
-        return ($negated ? ' not' : '') . '('
-            . implode(' or ', array_map(fn ($v) => $this->_renderConditionBinary('=', $sqlLeft, $v), $sqlValues))
-            . ')';
     }
 
     #[\Override]

@@ -545,21 +545,13 @@ abstract class Query extends Expression
     }
 
     /**
-     * Override to fix numeric affinity for SQLite.
+     * @param string|($operator is 'in'|'not in' ? non-empty-list<string> : never) $sqlRight
      */
-    protected function _renderConditionBinary(string $operator, string $sqlLeft, string $sqlRight): string
+    protected function _renderConditionBinary(string $operator, string $sqlLeft, $sqlRight): string
     {
-        return $sqlLeft . ' ' . $operator . ' ' . $sqlRight;
-    }
-
-    /**
-     * Override to fix numeric affinity for SQLite.
-     *
-     * @param non-empty-list<string> $sqlValues
-     */
-    protected function _renderConditionInOperator(bool $negated, string $sqlLeft, array $sqlValues): string
-    {
-        return $sqlLeft . ($negated ? ' not' : '') . ' in (' . implode(', ', $sqlValues) . ')';
+        return $sqlLeft . ' ' . $operator . ' ' . (is_array($sqlRight)
+            ? '(' . implode(', ', $sqlRight) . ')'
+            : $sqlRight);
     }
 
     protected function _renderConditionLikeOperator(bool $negated, string $sqlLeft, string $sqlRight): string
@@ -651,7 +643,7 @@ abstract class Query extends Expression
 
                 $values = array_map(fn ($v) => $this->consume($v, self::ESCAPE_PARAM), $value);
 
-                return $this->_renderConditionInOperator($operator === 'not in', $field, $values);
+                return $this->_renderConditionBinary($operator, $field, $values);
             }
 
             throw (new Exception('Unsupported operator for array value'))
