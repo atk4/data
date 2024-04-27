@@ -34,23 +34,38 @@ class Query extends BaseQuery
                 };
 
                 $escapeNonUtf8Fx = function ($sql, $neverBytea = false) use ($iffByteaSqlFx) {
-                    $byteaSql = 'cast(replace(cast(' . $sql . ' as text), ' . $this->escapeStringLiteral('\\')
-                            . ', ' . $this->escapeStringLiteral('\\\\') . ') as bytea)';
+                    $doubleBackslashesFx = function ($sql) {
+                        return 'replace(' . $sql . ', ' . $this->escapeStringLiteral('\\')
+                            . ', ' . $this->escapeStringLiteral('\\\\') . ')';
+                    };
 
-                    $sql = $neverBytea
-                        ? $byteaSql
-                        : $iffByteaSqlFx(
+                    $byteaSql = 'cast(' . $doubleBackslashesFx('cast(' . $sql . ' as text)') . ' as bytea)';
+                    if (!$neverBytea) {
+                        $byteaSql = $iffByteaSqlFx(
                             $sql,
                             'decode(' . $iffByteaSqlFx(
                                 $sql,
-                                'substring(cast(' . $sql . ' as text) from 3)',
+                                $doubleBackslashesFx('substring(cast(' . $sql . ' as text) from 3)'),
                                 $this->escapeStringLiteral('')
                             ) . ', ' . $this->escapeStringLiteral('hex') . ')',
                             $byteaSql
                         );
+                    }
 
-                    return 'replace(encode(' . $sql . ', ' . $this->escapeStringLiteral('escape') . '), '
-                        . $this->escapeStringLiteral('\\\\') . ', ' . $this->escapeStringLiteral('\\') . ')';
+                    // 0x00 and 0x80+ bytes will be escaped as "\xddd"
+                    $res = 'encode(' . $byteaSql . ', ' . $this->escapeStringLiteral('escape') . ')';
+
+                    // replace backslash in "\xddd" for LIKE/REGEXP
+                    $res = 'regexp_replace(' . $res . ', '
+                        . $this->escapeStringLiteral('(?<!\\\)((\\\\\\\)*)\\\(\d\d\d)') . ', '
+                        . $this->escapeStringLiteral('\1~~bytea~\3~~') . ', '
+                        . $this->escapeStringLiteral('g') . ')';
+
+                    // revert double backslashes
+                    $res = 'replace(' . $res . ', ' . $this->escapeStringLiteral('\\\\')
+                        . ', ' . $this->escapeStringLiteral('\\') . ')';
+
+                    return $res;
                 };
 
                 return $iffByteaSqlFx(
