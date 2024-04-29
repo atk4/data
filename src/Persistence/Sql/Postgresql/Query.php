@@ -35,7 +35,7 @@ class Query extends BaseQuery
     #[\Override]
     protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight, bool $binary = false): string
     {
-        return $sqlLeft . ' ' . ($negated ? '!' : '') . '~' . ($binary ? '' : '*') . ' ' . $sqlRight;
+        return $sqlLeft . ' ' . ($negated ? '!' : '') . '~ ' . $sqlRight;
     }
 
     #[\Override]
@@ -45,7 +45,7 @@ class Query extends BaseQuery
             [$field, $operator, $value] = $row;
 
             if (in_array(strtolower($operator ?? '='), ['like', 'not like', 'regexp', 'not regexp'], true)) {
-                $field = $this->expr('CAST([] AS citext)', [$field]);
+                $field = new Expression('CAST([] AS citext)', [$field]);
 
                 $row = [$field, $operator, $value];
             }
