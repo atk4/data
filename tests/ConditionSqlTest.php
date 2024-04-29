@@ -689,12 +689,6 @@ class ConditionSqlTest extends TestCase
             return $res;
         };
 
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform && $isBinary) {
-            self::assertTrue(true); // @phpstan-ignore-line
-
-            return; // TODO
-        }
-
         if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform && $isBinary) {
             self::assertTrue(true); // @phpstan-ignore-line
 
@@ -794,7 +788,7 @@ class ConditionSqlTest extends TestCase
             self::assertSame([5, 6], $findIdsRegexFx('name', 'Sa\s'));
             self::assertSame([7, 8, 9, 10, 11, 12], $findIdsRegexFx('name', 'Sa\S'));
             self::assertSame([1, 3], $findIdsRegexFx('name', '\wo'));
-            self::assertSame([13], $findIdsRegexFx('name', 'hei\w$'));
+            self::assertSame($this->getDatabasePlatform() instanceof MySQLPlatform && $isBinary ? [] : [13], $findIdsRegexFx('name', 'hei\w$'));
             self::assertSame([10], $findIdsRegexFx('name', '\W\\\\'));
             if ($type !== 'string' && !$this->getDatabasePlatform() instanceof OraclePlatform) {
                 self::assertSame([5], $findIdsRegexFx('name', '\x20'));
