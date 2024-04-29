@@ -33,12 +33,12 @@ class Query extends BaseQuery
                         . ' then ' . $trueSql . ' else ' . $falseSql . ' end';
                 };
 
-                $castToTextFx = function ($sql, $neverBytea = false) use ($iffByteaSqlFx) {
-                    $castTextToByteaSql = 'cast(replace(cast(' . $sql . ' as text), ' . $this->escapeStringLiteral('\\')
+                $escapeNonUtf8Fx = function ($sql, $neverBytea = false) use ($iffByteaSqlFx) {
+                    $byteaSql = 'cast(replace(cast(' . $sql . ' as text), ' . $this->escapeStringLiteral('\\')
                             . ', ' . $this->escapeStringLiteral('\\\\') . ') as bytea)';
 
                     $sql = $neverBytea
-                        ? $castTextToByteaSql
+                        ? $byteaSql
                         : $iffByteaSqlFx(
                             $sql,
                             'decode(' . $iffByteaSqlFx(
@@ -46,15 +46,16 @@ class Query extends BaseQuery
                                 'substring(cast(' . $sql . ' as text) from 3)',
                                 $this->escapeStringLiteral('')
                             ) . ', ' . $this->escapeStringLiteral('hex') . ')',
-                            $castTextToByteaSql
+                            $byteaSql
                         );
 
-                    return 'encode(' . $sql . ', ' . $this->escapeStringLiteral('escape') . ')';
+                    return 'replace(encode(' . $sql . ', ' . $this->escapeStringLiteral('escape') . '), '
+                        . $this->escapeStringLiteral('\\\\') . ', ' . $this->escapeStringLiteral('\\') . ')';
                 };
 
                 return $iffByteaSqlFx(
                     $sqlLeft,
-                    $makeSqlFx($castToTextFx($sqlLeft), $castToTextFx($sqlRight, true)),
+                    $makeSqlFx($escapeNonUtf8Fx($sqlLeft), $escapeNonUtf8Fx($sqlRight, true)),
                     $makeSqlFx('cast(' . $sqlLeft . ' as citext)', $sqlRight)
                 );
             }

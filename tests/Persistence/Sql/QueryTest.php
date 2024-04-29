@@ -881,7 +881,7 @@ class QueryTest extends TestCase
         }
         self::assertSame(
             <<<'EOF'
-                where case when pg_typeof("name") = 'bytea'::regtype then encode(case when pg_typeof("name") = 'bytea'::regtype then decode(case when pg_typeof("name") = 'bytea'::regtype then substring(cast("name" as text) from 3) else '' end, 'hex') else cast(replace(cast("name" as text), chr(92), repeat(chr(92), 2)) as bytea) end, 'escape') like regexp_replace(encode(cast(replace(cast(:a as text), chr(92), repeat(chr(92), 2)) as bytea), 'escape'), '(\\[\\_%])|(\\)', '\1\2\2', 'g') escape chr(92) else cast("name" as citext) like regexp_replace(:a, '(\\[\\_%])|(\\)', '\1\2\2', 'g') escape chr(92) end
+                where case when pg_typeof("name") = 'bytea'::regtype then replace(encode(case when pg_typeof("name") = 'bytea'::regtype then decode(case when pg_typeof("name") = 'bytea'::regtype then substring(cast("name" as text) from 3) else '' end, 'hex') else cast(replace(cast("name" as text), chr(92), repeat(chr(92), 2)) as bytea) end, 'escape'), repeat(chr(92), 2), chr(92)) like regexp_replace(replace(encode(cast(replace(cast(:a as text), chr(92), repeat(chr(92), 2)) as bytea), 'escape'), repeat(chr(92), 2), chr(92)), '(\\[\\_%])|(\\)', '\1\2\2', 'g') escape chr(92) else cast("name" as citext) like regexp_replace(:a, '(\\[\\_%])|(\\)', '\1\2\2', 'g') escape chr(92) end
                 EOF,
             (new PostgresqlQuery('[where]'))->where('name', 'like', 'foo')->render()[0]
         );
@@ -919,15 +919,13 @@ class QueryTest extends TestCase
         );
         foreach (['8.0', 'MariaDB-11.0'] as $serverVersion) {
             self::assertSame(
-                <<<'EOF'
-                    where `name` regexp concat('(?s)', :a)
-                    EOF,
+                'where `name` regexp concat(\'(?s)\', :a)',
                 $this->createMysqlQuery($serverVersion, '[where]')->where('name', 'regexp', 'foo')->render()[0]
             );
         }
         self::assertSame(
             <<<'EOF'
-                where case when pg_typeof("name") = 'bytea'::regtype then encode(case when pg_typeof("name") = 'bytea'::regtype then decode(case when pg_typeof("name") = 'bytea'::regtype then substring(cast("name" as text) from 3) else '' end, 'hex') else cast(replace(cast("name" as text), chr(92), repeat(chr(92), 2)) as bytea) end, 'escape') ~ encode(cast(replace(cast(:a as text), chr(92), repeat(chr(92), 2)) as bytea), 'escape') else cast("name" as citext) ~ :a end
+                where case when pg_typeof("name") = 'bytea'::regtype then replace(encode(case when pg_typeof("name") = 'bytea'::regtype then decode(case when pg_typeof("name") = 'bytea'::regtype then substring(cast("name" as text) from 3) else '' end, 'hex') else cast(replace(cast("name" as text), chr(92), repeat(chr(92), 2)) as bytea) end, 'escape'), repeat(chr(92), 2), chr(92)) ~ replace(encode(cast(replace(cast(:a as text), chr(92), repeat(chr(92), 2)) as bytea), 'escape'), repeat(chr(92), 2), chr(92)) else cast("name" as citext) ~ :a end
                 EOF,
             (new PostgresqlQuery('[where]'))->where('name', 'regexp', 'foo')->render()[0]
         );

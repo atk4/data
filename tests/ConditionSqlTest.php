@@ -572,11 +572,6 @@ class ConditionSqlTest extends TestCase
         self::assertSame([2], $findIdsLikeFx('c', '%2000%'));
         self::assertSame([2, 3], $findIdsLikeFx('c', '%0%'));
         self::assertSame([1], $findIdsLikeFx('c', '%0%', true));
-
-        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform && $isBinary) {
-            return; // TODO
-        }
-
         self::assertSame([4, 5, 6], $findIdsLikeFx('name', '%Ca_ro%'));
         self::assertSame([4], $findIdsLikeFx('name', '%Ca\_ro%'));
         self::assertSame([4, 5, 6], $findIdsLikeFx('name', '%ro%li%'));
