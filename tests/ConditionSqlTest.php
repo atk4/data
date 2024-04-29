@@ -544,12 +544,6 @@ class ConditionSqlTest extends TestCase
             return $res;
         };
 
-        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform && $isBinary) {
-            self::assertTrue(true); // @phpstan-ignore-line
-
-            return; // TODO
-        }
-
         if ($this->getDatabasePlatform() instanceof SQLServerPlatform && $isBinary) {
             self::assertTrue(true); // @phpstan-ignore-line
 
@@ -683,12 +677,6 @@ class ConditionSqlTest extends TestCase
             self::markTestIncomplete('MSSQL has no REGEXP support yet');
         }
 
-        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform && $isBinary) {
-            self::assertTrue(true); // @phpstan-ignore-line
-
-            return; // TODO
-        }
-
         if ($this->getDatabasePlatform() instanceof OraclePlatform && $isBinary) {
             $this->expectException(Exception::class);
             $this->expectExceptionMessage('Unsupported binary field operator');
@@ -703,7 +691,8 @@ class ConditionSqlTest extends TestCase
 
         self::assertSame([1], $findIdsRegexFx('name', 'John'));
         self::assertSame($isBinary ? [] : [1], $findIdsRegexFx('name', 'john'));
-        self::assertSame($this->getDatabasePlatform() instanceof MySQLPlatform && $isBinary && !$isMysql5x && !$isMariadb ? [] : [13], $findIdsRegexFx('name', 'heiß')); // TODO investigate/report MySQL 8.x bug
+        // TODO investigate/report MySQL 8.x bug
+        self::assertSame($this->getDatabasePlatform() instanceof MySQLPlatform && $isBinary && !$isMysql5x && !$isMariadb ? [] : [13], $findIdsRegexFx('name', 'heiß'));
         self::assertSame($isBinary ? [] : [13], $findIdsRegexFx('name', 'Heiß'));
         self::assertSame([1], $findIdsRegexFx('name', 'Joh'));
         self::assertSame([1], $findIdsRegexFx('name', 'ohn'));
@@ -776,7 +765,8 @@ class ConditionSqlTest extends TestCase
             self::assertSame([5, 6], $findIdsRegexFx('name', 'Sa\s'));
             self::assertSame([7, 8, 9, 10, 11, 12], $findIdsRegexFx('name', 'Sa\S'));
             self::assertSame([1, 3], $findIdsRegexFx('name', '\wo'));
-            self::assertSame($this->getDatabasePlatform() instanceof MySQLPlatform && $isBinary ? [] : [13], $findIdsRegexFx('name', 'hei\w$')); // TODO align SQLite with MySQL
+            // TODO align SQLite binary behaviour with MySQL
+            self::assertSame($isBinary && ($this->getDatabasePlatform() instanceof MySQLPlatform || $this->getDatabasePlatform() instanceof PostgreSQLPlatform) ? [] : [13], $findIdsRegexFx('name', 'hei\w$'));
             self::assertSame([10], $findIdsRegexFx('name', '\W\\\\'));
             if ($type !== 'string' && !$this->getDatabasePlatform() instanceof OraclePlatform) {
                 self::assertSame([5], $findIdsRegexFx('name', '\x20'));

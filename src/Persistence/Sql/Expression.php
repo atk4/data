@@ -384,7 +384,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
 
         $i = 0;
         $sql = preg_replace_callback(
-            '~' . self::QUOTED_TOKEN_REGEX . '\K|(?:\?|:\w+)~',
+            '~' . self::QUOTED_TOKEN_REGEX . '\K|(?:\?|(?<!:):\w+)~',
             function ($matches) use ($params, &$i) {
                 if ($matches[0] === '') {
                     return '';

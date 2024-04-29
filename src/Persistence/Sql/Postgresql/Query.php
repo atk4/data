@@ -19,39 +19,45 @@ class Query extends BaseQuery
     protected string $templateUpdate = 'update [table][join] set [set] [where]';
     protected string $templateReplace;
 
+    /**
+     * @param \Closure(string, string): string $makeSqlFx
+     */
+    private function _renderConditionConditionalCastToText(string $sqlLeft, string $sqlRight, \Closure $makeSqlFx): string
+    {
+        return $this->_renderConditionBinaryReuse(
+            $sqlLeft,
+            $sqlRight,
+            function ($sqlLeft, $sqlRight) use ($makeSqlFx) {
+                return 'case when pg_typeof(' . $sqlLeft . ') = ' . $this->escapeStringLiteral('bytea') . '::regtype'
+                    . ' then ' . $makeSqlFx('convert_from(cast(cast(' . $sqlLeft . ' as text) as bytea), '
+                    . $this->escapeStringLiteral('UTF8') . ')', $sqlRight) // will raise SQL error for 0x00 or 0x80+ bytes
+                    . ' else ' . $makeSqlFx('cast(' . $sqlLeft . ' as citext)', $sqlRight)
+                    . ' end';
+            }
+        );
+    }
+
     #[\Override]
     protected function _renderConditionLikeOperator(bool $negated, string $sqlLeft, string $sqlRight): string
     {
-        $sqlRightEscaped = 'regexp_replace(' . $sqlRight . ', '
-            . $this->escapeStringLiteral('(\\\[\\\_%])|(\\\)') . ', '
-            . $this->escapeStringLiteral('\1\2\2') . ', '
-            . $this->escapeStringLiteral('g') . ')';
+        return $this->_renderConditionConditionalCastToText($sqlLeft, $sqlRight, function ($sqlLeft, $sqlRight) use ($negated) {
+            $sqlRightEscaped = 'regexp_replace(' . $sqlRight . ', '
+                . $this->escapeStringLiteral('(\\\[\\\_%])|(\\\)') . ', '
+                . $this->escapeStringLiteral('\1\2\2') . ', '
+                . $this->escapeStringLiteral('g') . ')';
 
-        return $sqlLeft . ($negated ? ' not' : '') . ' like ' . $sqlRightEscaped
-            . ' escape ' . $this->escapeStringLiteral('\\');
+            return $sqlLeft . ($negated ? ' not' : '') . ' like ' . $sqlRightEscaped
+                . ' escape ' . $this->escapeStringLiteral('\\');
+        });
     }
 
     // needed for PostgreSQL v14 and lower
     #[\Override]
     protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight, bool $binary = false): string
     {
-        return $sqlLeft . ' ' . ($negated ? '!' : '') . '~ ' . $sqlRight;
-    }
-
-    #[\Override]
-    protected function _subrenderCondition(array $row): string
-    {
-        if (count($row) !== 1) {
-            [$field, $operator, $value] = $row;
-
-            if (in_array(strtolower($operator ?? '='), ['like', 'not like', 'regexp', 'not regexp'], true)) {
-                $field = new Expression('CAST([] AS citext)', [$field]);
-
-                $row = [$field, $operator, $value];
-            }
-        }
-
-        return parent::_subrenderCondition($row);
+        return $this->_renderConditionConditionalCastToText($sqlLeft, $sqlRight, static function ($sqlLeft, $sqlRight) use ($negated) {
+            return $sqlLeft . ' ' . ($negated ? '!' : '') . '~ ' . $sqlRight;
+        });
     }
 
     #[\Override]

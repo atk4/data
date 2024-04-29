@@ -881,7 +881,7 @@ class QueryTest extends TestCase
         }
         self::assertSame(
             <<<'EOF'
-                where CAST(:a AS citext) like regexp_replace(:b, '(\\[\\_%])|(\\)', '\1\2\2', 'g') escape chr(92)
+                where case when pg_typeof("name") = 'bytea'::regtype then convert_from(cast(cast("name" as text) as bytea), 'UTF8') like regexp_replace(:a, '(\\[\\_%])|(\\)', '\1\2\2', 'g') escape chr(92) else cast("name" as citext) like regexp_replace(:a, '(\\[\\_%])|(\\)', '\1\2\2', 'g') escape chr(92) end
                 EOF,
             (new PostgresqlQuery('[where]'))->where('name', 'like', 'foo')->render()[0]
         );
@@ -927,7 +927,7 @@ class QueryTest extends TestCase
         }
         self::assertSame(
             <<<'EOF'
-                where CAST(:a AS citext) ~ :b
+                where case when pg_typeof("name") = 'bytea'::regtype then convert_from(cast(cast("name" as text) as bytea), 'UTF8') ~ :a else cast("name" as citext) ~ :a end
                 EOF,
             (new PostgresqlQuery('[where]'))->where('name', 'regexp', 'foo')->render()[0]
         );

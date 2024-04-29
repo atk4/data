@@ -62,7 +62,7 @@ trait ExpressionTrait
         [$sql, $params] = parent::updateRenderBeforeExecute($render);
 
         $sql = preg_replace_callback(
-            '~' . self::QUOTED_TOKEN_REGEX . '\K|:\w+~',
+            '~' . self::QUOTED_TOKEN_REGEX . '\K|(?<!:):\w+~',
             static function ($matches) use ($params) {
                 if ($matches[0] === '') {
                     return '';
