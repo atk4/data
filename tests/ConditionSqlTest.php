@@ -556,15 +556,9 @@ class ConditionSqlTest extends TestCase
             return; // TODO
         }
 
-        if ($this->getDatabasePlatform() instanceof OraclePlatform && $type === 'blob') {
+        if ($this->getDatabasePlatform() instanceof OraclePlatform && $isBinary) {
             $this->expectException(Exception::class);
             $this->expectExceptionMessage('Unsupported binary field operator');
-        }
-
-        if ($this->getDatabasePlatform() instanceof OraclePlatform && $type === 'binary') {
-            self::assertTrue(true); // @phpstan-ignore-line
-
-            return; // TODO
         }
 
         self::assertSame([1], $findIdsLikeFx('name', 'John'));
@@ -672,11 +666,6 @@ class ConditionSqlTest extends TestCase
             ['name' => 'heiß'],
         ]);
 
-        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            // https://devblogs.microsoft.com/azure-sql/introducing-regular-expression-regex-support-in-azure-sql-db/
-            self::markTestIncomplete('MSSQL has no REGEXP support yet');
-        }
-
         $findIdsRegexFx = function (string $field, string $value, bool $negated = false) use ($u) {
             $t = (clone $u)->addCondition($field, ($negated ? 'not ' : '') . 'regexp', $value);
             $res = array_keys($t->export(null, 'id'));
@@ -689,21 +678,20 @@ class ConditionSqlTest extends TestCase
             return $res;
         };
 
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+            // https://devblogs.microsoft.com/azure-sql/introducing-regular-expression-regex-support-in-azure-sql-db/
+            self::markTestIncomplete('MSSQL has no REGEXP support yet');
+        }
+
         if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform && $isBinary) {
             self::assertTrue(true); // @phpstan-ignore-line
 
             return; // TODO
         }
 
-        if ($this->getDatabasePlatform() instanceof OraclePlatform && $type === 'blob') {
+        if ($this->getDatabasePlatform() instanceof OraclePlatform && $isBinary) {
             $this->expectException(Exception::class);
             $this->expectExceptionMessage('Unsupported binary field operator');
-        }
-
-        if ($this->getDatabasePlatform() instanceof OraclePlatform && $type === 'binary') {
-            self::assertTrue(true); // @phpstan-ignore-line
-
-            return; // TODO
         }
 
         self::assertSame([1], $findIdsRegexFx('name', 'John'));
