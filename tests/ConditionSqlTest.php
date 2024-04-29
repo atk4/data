@@ -544,13 +544,13 @@ class ConditionSqlTest extends TestCase
             return $res;
         };
 
-        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform && ($type === 'binary' || $type === 'blob')) {
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform && $isBinary) {
             self::assertTrue(true); // @phpstan-ignore-line
 
             return; // TODO
         }
 
-        if ($this->getDatabasePlatform() instanceof SQLServerPlatform && ($type === 'binary' || $type === 'blob')) {
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform && $isBinary) {
             self::assertTrue(true); // @phpstan-ignore-line
 
             return; // TODO
@@ -689,13 +689,13 @@ class ConditionSqlTest extends TestCase
             return $res;
         };
 
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform && ($type === 'binary' || $type === 'blob')) {
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform && $isBinary) {
             self::assertTrue(true); // @phpstan-ignore-line
 
             return; // TODO
         }
 
-        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform && ($type === 'binary' || $type === 'blob')) {
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform && $isBinary) {
             self::assertTrue(true); // @phpstan-ignore-line
 
             return; // TODO
