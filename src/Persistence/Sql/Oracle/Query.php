@@ -45,16 +45,30 @@ class Query extends BaseQuery
     {
         if (count($row) !== 1) {
             [$field, $operator, $value] = $row;
+            $operatorLc = strtolower($operator ?? '=');
+
+            if ($field instanceof Field && in_array($field->type, ['binary', 'blob'], true)
+                && in_array($operatorLc, ['like', 'not like', 'regexp', 'not regexp'], true)
+            ) {
+                throw (new Exception('Unsupported binary field operator'))
+                    ->addMoreInfo('operator', $operator)
+                    ->addMoreInfo('type', $field->type);
+            }
 
             if ($field instanceof Field && in_array($field->type, ['text', 'blob'], true)) {
-                if (in_array($operator ?? '=', ['=', '!='], true)) {
+                if (in_array($operatorLc, ['=', '!='], true)) {
                     if ($field->type === 'text') {
                         $field = $this->expr('LOWER([])', [$field]);
                         $value = $this->expr('LOWER([])', [$value]);
                     }
 
                     $row = [$this->expr('dbms_lob.compare([], [])', [$field, $value]), $operator, 0];
-                } else {
+                } elseif (in_array($operatorLc, ['like', 'not like'], true)) {
+                    $field = $this->expr('LOWER([])', [$field]);
+                    $value = $this->expr('LOWER([])', [$value]);
+
+                    $row = [$field, $operator, $value];
+                } elseif (!in_array($operatorLc, ['regexp', 'not regexp'], true)) {
                     throw (new Exception('Unsupported CLOB/BLOB field operator'))
                         ->addMoreInfo('operator', $operator)
                         ->addMoreInfo('type', $field->type);

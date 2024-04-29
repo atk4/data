@@ -556,9 +556,9 @@ class ConditionSqlTest extends TestCase
             return; // TODO
         }
 
-        if ($this->getDatabasePlatform() instanceof OraclePlatform && ($type === 'text' || $type === 'blob')) {
+        if ($this->getDatabasePlatform() instanceof OraclePlatform && $type === 'blob') {
             $this->expectException(Exception::class);
-            $this->expectExceptionMessage('Unsupported CLOB/BLOB field operator');
+            $this->expectExceptionMessage('Unsupported binary field operator');
         }
 
         if ($this->getDatabasePlatform() instanceof OraclePlatform && $type === 'binary') {
@@ -701,9 +701,9 @@ class ConditionSqlTest extends TestCase
             return; // TODO
         }
 
-        if ($this->getDatabasePlatform() instanceof OraclePlatform && ($type === 'text' || $type === 'blob')) {
+        if ($this->getDatabasePlatform() instanceof OraclePlatform && $type === 'blob') {
             $this->expectException(Exception::class);
-            $this->expectExceptionMessage('Unsupported CLOB/BLOB field operator');
+            $this->expectExceptionMessage('Unsupported binary field operator');
         }
 
         if ($this->getDatabasePlatform() instanceof OraclePlatform && $type === 'binary') {
@@ -814,7 +814,7 @@ class ConditionSqlTest extends TestCase
             self::assertSame([5, 6, 7, 8, 9, 12], $findIdsRegexFx('name', 'a.(?<!~)ra'));
         }
 
-        $hugeList = array_map(static fn ($i) => 'foo' . $i, range(0, $this->getDatabasePlatform() instanceof OraclePlatform ? 22 : 2_000));
+        $hugeList = array_map(static fn ($i) => 'foo' . $i, range(0, $this->getDatabasePlatform() instanceof OraclePlatform ? 19 : 2_000));
         self::assertSame([1], $findIdsRegexFx('name', implode('|', $hugeList) . '|John'));
         if (!$this->getDatabasePlatform() instanceof PostgreSQLPlatform) { // very slow on PostgreSQL 14 and lower, on PostgreSQL 15 and 16 the queries are still slow (~10 seconds)
             self::assertSame([1], $findIdsRegexFx('name', str_repeat('(', 99) . implode('|', $hugeList) . '|John' . str_repeat(')', 99)));
