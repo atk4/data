@@ -58,7 +58,7 @@ class Query extends BaseQuery
                     // replace backslash in "\xddd" for LIKE/REGEXP
                     $res = 'regexp_replace(' . $res . ', '
                         . $this->escapeStringLiteral('(?<!\\\)((\\\\\\\)*)\\\(\d\d\d)') . ', '
-                        . $this->escapeStringLiteral('\1~~bytea~\3~~') . ', '
+                        . $this->escapeStringLiteral("\\1\u{00a9}\\3\u{00a9}") . ', '
                         . $this->escapeStringLiteral('g') . ')';
 
                     // revert double backslashes

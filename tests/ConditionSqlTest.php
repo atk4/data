@@ -707,11 +707,6 @@ class ConditionSqlTest extends TestCase
 
         self::assertSame([1], $findIdsRegexFx('name', 'John'));
         self::assertSame($isBinary ? [] : [1], $findIdsRegexFx('name', 'john'));
-
-        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform && $isBinary) {
-            return; // TODO
-        }
-
         self::assertSame($isBinaryMysql8x ? [] : [13], $findIdsRegexFx('name', 'heiß'));
         self::assertSame($isBinary ? [] : [13], $findIdsRegexFx('name', 'Heiß'));
         self::assertSame([1], $findIdsRegexFx('name', 'Joh'));
