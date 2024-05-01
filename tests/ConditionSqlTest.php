@@ -549,9 +549,9 @@ class ConditionSqlTest extends TestCase
         };
 
         if ($this->getDatabasePlatform() instanceof SQLServerPlatform && $isBinary) {
-            self::assertTrue(true); // @phpstan-ignore-line
-
-            return; // TODO
+            // https://stackoverflow.com/questions/64284094/detecting-utf-8-in-sql-server
+            // https://dbfiddle.uk/2IVfBWAy
+            self::markTestIncomplete('MSSQL uses UCS-2 as default text encoding');
         }
 
         if ($this->getDatabasePlatform() instanceof OraclePlatform && $isBinary) {

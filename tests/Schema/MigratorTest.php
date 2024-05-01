@@ -98,9 +98,9 @@ class MigratorTest extends TestCase
         $this->createMigrator($model)->create();
 
         $model->import([
-            ['v' => 'mixedcase'],
-            ['v' => 'MIXEDCASE'],
-            ['v' => 'MixedCase'],
+            ['v' => 'mixedcaseß'],
+            ['v' => 'MIXEDCASEß'],
+            ['v' => 'MixedCaseß'],
         ]);
 
         if (!$this->getDatabasePlatform() instanceof OraclePlatform || !in_array($type, ['text', 'blob'], true)) {
@@ -111,29 +111,27 @@ class MigratorTest extends TestCase
             ? [['id' => 3]]
             : [['id' => 1], ['id' => 2], ['id' => 3]];
 
-        $model->addCondition('v', 'MixedCase');
+        $model->addCondition('v', 'MixedCaseß');
         self::assertSameExportUnordered($expectedExport, $model->export(['id']));
 
         // TODO
         if (!$this->getDatabasePlatform() instanceof OraclePlatform || !in_array($type, ['text', 'blob'], true)) {
             $model->scope()->clear();
-            $model->addCondition('v', 'in', ['MixedCase', 'foo']);
+            $model->addCondition('v', 'in', ['MixedCaseß', 'foo']);
             self::assertSameExportUnordered($expectedExport, $model->export(['id']));
         }
 
-        if (!($this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform)
-            || !in_array($type, ['binary', 'blob'], true)
-        ) {
+        if (!$this->getDatabasePlatform() instanceof OraclePlatform || !in_array($type, ['binary', 'blob'], true)) {
             $model->scope()->clear();
-            $model->addCondition('v', 'like', 'MixedCase');
+            $model->addCondition('v', 'like', 'MixedCaseß');
             self::assertSameExportUnordered($expectedExport, $model->export(['id']));
 
             $model->scope()->clear();
-            $model->addCondition('v', 'like', '%ix%Case');
+            $model->addCondition('v', 'like', '%ix%Caseß');
             self::assertSameExportUnordered($expectedExport, $model->export(['id']));
 
             $model->scope()->clear();
-            $model->addCondition('v', 'regexp', 'ix.+Case');
+            $model->addCondition('v', 'regexp', 'ix.+Caseß');
             if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
                 $this->expectExceptionMessage('Unsupported operator');
             }
