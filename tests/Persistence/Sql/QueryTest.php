@@ -887,7 +887,7 @@ class QueryTest extends TestCase
         );
         self::assertSame(
             <<<'EOF'
-                where [name] like replace(replace(replace(replace(replace(replace(replace(replace(:a, N'\\', N'\\*'), N'\_', N'\_*'), N'\%', N'\%*'), N'\', N'\\'), N'\\_*', N'\_'), N'\\%*', N'\%'), N'\\\\*', N'\\'), N'[', N'\[') escape N'\'
+                where [name] like replace(replace(replace(replace(replace(replace(replace(replace(:a, N'\\', N'\\*'), N'\_', N'\_*'), N'\%', N'\%*'), N'\', N'\\'), N'\\_*', N'\_'), N'\\%*', N'\%'), N'\\\\*', N'\\'), N'[', N'\[') escape cast(char(92) as binary(1))
                 EOF,
             (new MssqlQuery('[where]'))->where('name', 'like', 'foo')->render()[0]
         );
