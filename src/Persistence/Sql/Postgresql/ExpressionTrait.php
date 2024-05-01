@@ -79,6 +79,17 @@ trait ExpressionTrait
                     $sql = 'cast(' . $sql . ' as BIGINT)';
                 } elseif (is_float($value)) {
                     $sql = 'cast(' . $sql . ' as DOUBLE PRECISION)';
+                } elseif (is_string($value)) {
+                    $dummyPersistence = (new \ReflectionClass(Persistence\Sql::class))->newInstanceWithoutConstructor();
+                    if (\Closure::bind(static fn () => $dummyPersistence->binaryTypeValueIsEncoded($value), null, Persistence\Sql::class)()) {
+                        $sql = 'cast(' . $sql . ' as bytea)';
+                    } else {
+                        // "text" type is breaking citext
+                        // https://dbfiddle.uk/TpwLPPxn
+                        $sql = 'cast(' . $sql . ' as unknown)';
+                    }
+                } elseif ($value === null) {
+                    $sql = 'cast(' . $sql . ' as unknown)';
                 }
 
                 return $sql;

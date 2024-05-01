@@ -71,7 +71,7 @@ class Query extends BaseQuery
                 return $iifByteaSqlFx(
                     $sqlLeft,
                     $makeSqlFx($escapeNonUtf8Fx($sqlLeft), $escapeNonUtf8Fx($sqlRight, true)),
-                    $makeSqlFx('cast(' . $sqlLeft . ' as citext)', $sqlRight)
+                    $makeSqlFx('cast(' . $sqlLeft . ' as citext)', 'cast(' . $sqlRight . ' as citext)')
                 );
             }
         );
