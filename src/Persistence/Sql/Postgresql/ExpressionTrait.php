@@ -84,11 +84,9 @@ trait ExpressionTrait
                     if (\Closure::bind(static fn () => $dummyPersistence->binaryTypeValueIsEncoded($value), null, Persistence\Sql::class)()) {
                         $sql = 'cast(' . $sql . ' as bytea)';
                     } else {
-                        // "text" type is breaking citext
-                        // https://dbfiddle.uk/TpwLPPxn
-                        $sql = 'cast(' . $sql . ' as unknown)';
+                        $sql = 'cast(' . $sql . ' as text)';
                     }
-                } elseif ($value === null) {
+                } else {
                     $sql = 'cast(' . $sql . ' as unknown)';
                 }
 
