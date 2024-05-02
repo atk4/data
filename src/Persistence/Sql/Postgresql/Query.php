@@ -28,12 +28,12 @@ class Query extends BaseQuery
             $sqlLeft,
             $sqlRight,
             function ($sqlLeft, $sqlRight) use ($makeSqlFx) {
-                $iffByteaSqlFx = function ($valueSql, $trueSql, $falseSql) {
+                $iifByteaSqlFx = function ($valueSql, $trueSql, $falseSql) {
                     return 'case when pg_typeof(' . $valueSql . ') = ' . $this->escapeStringLiteral('bytea') . '::regtype'
                         . ' then ' . $trueSql . ' else ' . $falseSql . ' end';
                 };
 
-                $escapeNonUtf8Fx = function ($sql, $neverBytea = false) use ($iffByteaSqlFx) {
+                $escapeNonUtf8Fx = function ($sql, $neverBytea = false) use ($iifByteaSqlFx) {
                     $doubleBackslashesFx = function ($sql) {
                         return 'replace(' . $sql . ', ' . $this->escapeStringLiteral('\\')
                             . ', ' . $this->escapeStringLiteral('\\\\') . ')';
@@ -41,9 +41,9 @@ class Query extends BaseQuery
 
                     $byteaSql = 'cast(' . $doubleBackslashesFx('cast(' . $sql . ' as text)') . ' as bytea)';
                     if (!$neverBytea) {
-                        $byteaSql = $iffByteaSqlFx(
+                        $byteaSql = $iifByteaSqlFx(
                             $sql,
-                            'decode(' . $iffByteaSqlFx(
+                            'decode(' . $iifByteaSqlFx(
                                 $sql,
                                 $doubleBackslashesFx('substring(cast(' . $sql . ' as text) from 3)'),
                                 $this->escapeStringLiteral('')
@@ -68,7 +68,7 @@ class Query extends BaseQuery
                     return $res;
                 };
 
-                return $iffByteaSqlFx(
+                return $iifByteaSqlFx(
                     $sqlLeft,
                     $makeSqlFx($escapeNonUtf8Fx($sqlLeft), $escapeNonUtf8Fx($sqlRight, true)),
                     $makeSqlFx('cast(' . $sqlLeft . ' as citext)', $sqlRight)

@@ -536,7 +536,11 @@ class ConditionSqlTest extends TestCase
             ['name' => 'hei\123'],
         ]);
 
-        $findIdsLikeFx = function (string $field, string $value, bool $negated = false) use ($u) {
+        $findIdsLikeFx = function (string $field, string $value, bool $negated = false) use ($u, $isBinary) {
+            if ($this->getDatabasePlatform() instanceof SQLServerPlatform && $isBinary) {
+                $value = $u->expr('cast([] collate Latin1_General_100_CS_AS_SC_UTF8 as varchar(max))', [$value]);
+            }
+
             $t = (clone $u)->addCondition($field, ($negated ? 'not ' : '') . 'like', $value);
             $res = array_keys($t->export(null, 'id'));
 
@@ -547,12 +551,6 @@ class ConditionSqlTest extends TestCase
 
             return $res;
         };
-
-        if ($this->getDatabasePlatform() instanceof SQLServerPlatform && $isBinary) {
-            // https://stackoverflow.com/questions/64284094/detecting-utf-8-in-sql-server
-            // https://dbfiddle.uk/2IVfBWAy
-            self::markTestIncomplete('MSSQL uses UCS-2 as default text encoding');
-        }
 
         if ($this->getDatabasePlatform() instanceof OraclePlatform && $isBinary) {
             $this->expectException(Exception::class);

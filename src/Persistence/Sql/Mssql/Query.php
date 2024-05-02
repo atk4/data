@@ -37,28 +37,70 @@ class Query extends BaseQuery
         end catch
         EOF;
 
+    /**
+     * @param \Closure(string, string): string $makeSqlFx
+     */
+    private function _renderConditionBinaryReuseBool(string $sqlLeft, string $sqlRight, \Closure $makeSqlFx): string
+    {
+        return $this->_renderConditionBinaryReuse(
+            $sqlLeft,
+            $sqlRight,
+            static fn ($sqlLeft, $sqlRight) => 'iif(' . $makeSqlFx($sqlLeft, $sqlRight) . ', 1, 0)'
+        ) . ' = 1';
+    }
+
     #[\Override]
     protected function _renderConditionLikeOperator(bool $negated, string $sqlLeft, string $sqlRight): string
     {
-        $replaceSqlFx = function (string $sql, string $search, string $replacement) {
-            return 'replace(' . $sql . ', ' . $this->escapeStringLiteral($search) . ', ' . $this->escapeStringLiteral($replacement) . ')';
-        };
+        return $this->_renderConditionBinaryReuseBool(
+            $sqlLeft,
+            $sqlRight,
+            function ($sqlLeft, $sqlRight) use ($negated) {
+                $iifNtextFx = static function ($valueSql, $trueSql, $falseSql) {
+                    $isNtextFx = static function ($sql, $negate) {
+                        return 'datalength(concat(replicate(' . $sql . ', 0), 0x30)) '
+                            . ($negate ? '!' : '') . '= 2';
+                    };
 
-        // workaround missing regexp_replace() function
-        // https://devblogs.microsoft.com/azure-sql/introducing-regular-expression-regex-support-in-azure-sql-db/
-        $sqlRightEscaped = $sqlRight;
-        foreach (['\\', '_', '%'] as $v) {
-            $sqlRightEscaped = $replaceSqlFx($sqlRightEscaped, '\\' . $v, '\\' . $v . '*');
-        }
-        $sqlRightEscaped = $replaceSqlFx($sqlRightEscaped, '\\', '\\\\');
-        foreach (['_', '%', '\\'] as $v) {
-            $sqlRightEscaped = $replaceSqlFx($sqlRightEscaped, '\\\\' . str_replace('\\', '\\\\', $v) . '*', '\\' . $v);
-        }
+                    return '((' . $isNtextFx($valueSql, false) . ' and ' . $trueSql . ')'
+                        . ' or (' . $isNtextFx($valueSql, true) . ' and ' . $falseSql . '))';
+                };
 
-        $sqlRightEscaped = $replaceSqlFx($sqlRightEscaped, '[', '\[');
+                $makeSqlFx = function ($isNtext) use ($sqlLeft, $sqlRight, $negated) {
+                    $quoteStringFx = fn (string $v) => $isNtext
+                        ? $this->escapeStringLiteral($v)
+                        : '0x' . bin2hex($v);
 
-        return $sqlLeft . ($negated ? ' not' : '') . ' like ' . $sqlRightEscaped
-            . ' escape cast(char(' . ord('\\') . ') as binary(1))';
+                    $replaceFx = static function (string $sql, string $search, string $replacement) use ($quoteStringFx) {
+                        return 'replace(' . $sql . ', '
+                            . $quoteStringFx($search) . ', '
+                            . $quoteStringFx($replacement) . ')';
+                    };
+
+                    // workaround missing regexp_replace() function
+                    // https://devblogs.microsoft.com/azure-sql/introducing-regular-expression-regex-support-in-azure-sql-db/
+                    $sqlRightEscaped = $sqlRight;
+                    foreach (['\\', '_', '%'] as $v) {
+                        $sqlRightEscaped = $replaceFx($sqlRightEscaped, '\\' . $v, '\\' . $v . '*');
+                    }
+                    $sqlRightEscaped = $replaceFx($sqlRightEscaped, '\\', '\\\\');
+                    foreach (['_', '%', '\\'] as $v) {
+                        $sqlRightEscaped = $replaceFx($sqlRightEscaped, '\\\\' . str_replace('\\', '\\\\', $v) . '*', '\\' . $v);
+                    }
+
+                    $sqlRightEscaped = $replaceFx($sqlRightEscaped, '[', '\[');
+
+                    return $sqlLeft . ($negated ? ' not' : '') . ' like ' . $sqlRightEscaped
+                        . ' escape ' . $quoteStringFx('\\');
+                };
+
+                return $iifNtextFx(
+                    $sqlLeft,
+                    $makeSqlFx(true),
+                    $makeSqlFx(false)
+                );
+            }
+        );
     }
 
     #[\Override]

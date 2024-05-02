@@ -121,17 +121,23 @@ class MigratorTest extends TestCase
             self::assertSameExportUnordered($expectedExport, $model->export(['id']));
         }
 
-        if (!$this->getDatabasePlatform() instanceof OraclePlatform || !in_array($type, ['binary', 'blob'], true)) {
+        $fixEncodingForMssqlBinaryFx = function (string $v) use ($isBinary) {
+            return $this->getDatabasePlatform() instanceof SQLServerPlatform && $isBinary
+                ? $this->getConnection()->expr('cast([] collate Latin1_General_100_CS_AS_SC_UTF8 as varchar(max))', [$v])
+                : $v;
+        };
+
+        if (!$this->getDatabasePlatform() instanceof OraclePlatform || !$isBinary) {
             $model->scope()->clear();
-            $model->addCondition('v', 'like', 'MixedCaseß');
+            $model->addCondition('v', 'like', $fixEncodingForMssqlBinaryFx('MixedCaseß'));
             self::assertSameExportUnordered($expectedExport, $model->export(['id']));
 
             $model->scope()->clear();
-            $model->addCondition('v', 'like', '%ix%Caseß');
+            $model->addCondition('v', 'like', $fixEncodingForMssqlBinaryFx('%ixedCaseß'));
             self::assertSameExportUnordered($expectedExport, $model->export(['id']));
 
             $model->scope()->clear();
-            $model->addCondition('v', 'regexp', 'ix.+Caseß');
+            $model->addCondition('v', 'regexp', $fixEncodingForMssqlBinaryFx('ix.+Caseß'));
             if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
                 $this->expectExceptionMessage('Unsupported operator');
             }
