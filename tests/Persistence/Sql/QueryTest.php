@@ -887,7 +887,7 @@ class QueryTest extends TestCase
         );
         self::assertSame(
             <<<'EOF'
-                where iif(((datalength(concat(replicate([name], 0), 0x30)) = 2 and [name] like replace(replace(replace(replace(replace(replace(replace(replace(:a, N'\\', N'\\*'), N'\_', N'\_*'), N'\%', N'\%*'), N'\', N'\\'), N'\\_*', N'\_'), N'\\%*', N'\%'), N'\\\\*', N'\\'), N'[', N'\[') escape N'\') or (datalength(concat(replicate([name], 0), 0x30)) != 2 and [name] like replace(replace(replace(replace(replace(replace(replace(replace(:a, 0x5c5c, 0x5c5c2a), 0x5c5f, 0x5c5f2a), 0x5c25, 0x5c252a), 0x5c, 0x5c5c), 0x5c5c5f2a, 0x5c5f), 0x5c5c252a, 0x5c25), 0x5c5c5c5c2a, 0x5c5c), 0x5b, 0x5c5b) escape 0x5c)), 1, 0) = 1
+                where iif(((datalength(concat((select top 0 [name]), 0x30)) = 2 and [name] like replace(replace(replace(replace(replace(replace(replace(replace(:a, N'\\', N'\\*'), N'\_', N'\_*'), N'\%', N'\%*'), N'\', N'\\'), N'\\_*', N'\_'), N'\\%*', N'\%'), N'\\\\*', N'\\'), N'[', N'\[') escape N'\') or (datalength(concat((select top 0 [name]), 0x30)) != 2 and [name] like replace(replace(replace(replace(replace(replace(replace(replace(:a, 0x5c5c, 0x5c5c2a), 0x5c5f, 0x5c5f2a), 0x5c25, 0x5c252a), 0x5c, 0x5c5c), 0x5c5c5f2a, 0x5c5f), 0x5c5c252a, 0x5c25), 0x5c5c5c5c2a, 0x5c5c), 0x5b, 0x5c5b) escape 0x5c)), 1, 0) = 1
                 EOF,
             (new MssqlQuery('[where]'))->where('name', 'like', 'foo')->render()[0]
         );

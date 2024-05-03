@@ -58,7 +58,8 @@ class Query extends BaseQuery
             function ($sqlLeft, $sqlRight) use ($negated) {
                 $iifNtextFx = static function ($valueSql, $trueSql, $falseSql) {
                     $isNtextFx = static function ($sql, $negate) {
-                        return 'datalength(concat(replicate(' . $sql . ', 0), 0x30)) '
+                        // "select top 0 ..." is always optimized into constant fetch
+                        return 'datalength(concat((select top 0 ' . $sql . '), 0x30)) '
                             . ($negate ? '!' : '') . '= 2';
                     };
 
