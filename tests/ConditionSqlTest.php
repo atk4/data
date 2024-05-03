@@ -6,6 +6,7 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
+use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Schema\TestCase;
 use Atk4\Data\Tests\Schema\MigratorTest;
 use Atk4\Data\ValidationException;
@@ -695,13 +696,12 @@ class ConditionSqlTest extends TestCase
         }
 
         $isMariadb = $this->getDatabasePlatform() instanceof MySQLPlatform
-            ? str_contains($this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(), 'MariaDB') // @phpstan-ignore-line
-            : false;
+            && MysqlConnection::isServerMariaDb($this->getConnection());
         $isMysql5x = $this->getDatabasePlatform() instanceof MySQLPlatform && !$isMariadb
-            ? str_starts_with($this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(), '5.') // @phpstan-ignore-line
-            : false;
+            && MysqlConnection::getServerMinorVersion($this->getConnection()) < 600;
         // TODO investigate/report MySQL 8.x bug
-        $isBinaryMysql8x = $this->getDatabasePlatform() instanceof MySQLPlatform && $isBinary && !$isMysql5x && !$isMariadb;
+        $isBinaryMysql8x = $this->getDatabasePlatform() instanceof MySQLPlatform && $isBinary
+            && !$isMysql5x && !$isMariadb;
 
         self::assertSame([1], $findIdsRegexFx('name', 'John'));
         self::assertSame($isBinary ? [] : [1], $findIdsRegexFx('name', 'john'));

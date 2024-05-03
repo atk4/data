@@ -8,6 +8,7 @@ use Atk4\Core\Phpunit\TestCase as BaseTestCase;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Expression;
+use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Persistence\Sql\Sqlite\Expression as SqliteExpression;
 use Atk4\Data\Reference;
 use Doctrine\DBAL\ParameterType;
@@ -463,11 +464,11 @@ abstract class TestCase extends BaseTestCase
 
     protected function markTestIncompleteOnMySQL56PlatformAsCreateUniqueStringIndexHasLengthLimit(): void
     {
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-            $serverVersion = $this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
-            if (preg_match('~^5\.6~', $serverVersion)) {
-                self::markTestIncomplete('TODO MySQL 5.6: Unique key exceed max key (767 bytes) length');
-            }
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform
+            && !MysqlConnection::isServerMariaDb($this->getConnection())
+            && MysqlConnection::getServerMinorVersion($this->getConnection()) < 570
+        ) {
+            self::markTestIncomplete('TODO MySQL 5.6: Unique key exceed max key (767 bytes) length');
         }
     }
 }

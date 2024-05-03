@@ -20,8 +20,8 @@ class Query extends BaseQuery
     #[\Override]
     protected function _renderConditionLikeOperator(bool $negated, string $sqlLeft, string $sqlRight): string
     {
-        $serverVersion = $this->connection->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
-        $isMysql5x = str_starts_with($serverVersion, '5.') && !str_contains($serverVersion, 'MariaDB');
+        $isMysql5x = !Connection::isServerMariaDb($this->connection)
+            && Connection::getServerMinorVersion($this->connection) < 600;
 
         if ($isMysql5x) {
             $replaceSqlFx = function (string $sql, string $search, string $replacement) {
@@ -56,8 +56,8 @@ class Query extends BaseQuery
     #[\Override]
     protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight, bool $binary = false): string
     {
-        $serverVersion = $this->connection->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
-        $isMysql5x = str_starts_with($serverVersion, '5.') && !str_contains($serverVersion, 'MariaDB');
+        $isMysql5x = !Connection::isServerMariaDb($this->connection)
+            && Connection::getServerMinorVersion($this->connection) < 600;
 
         return $sqlLeft . ($negated ? ' not' : '') . ' regexp ' . (
             $isMysql5x

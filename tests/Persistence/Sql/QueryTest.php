@@ -19,6 +19,7 @@ use Atk4\Data\Persistence\Sql\Sqlite\Connection as SqliteConnection;
 use Atk4\Data\Persistence\Sql\Sqlite\Query as SqliteQuery;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Driver\Middleware\AbstractConnectionMiddleware;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
 
@@ -792,6 +793,12 @@ class QueryTest extends TestCase
                     }
                 };
             }
+
+            #[\Override]
+            public function getDatabasePlatform()
+            {
+                return new MySQLPlatform();
+            }
         };
 
         $connection = \Closure::bind(static fn () => new MysqlConnection(), null, Connection::class)();
@@ -871,7 +878,7 @@ class QueryTest extends TestCase
                     EOF,
             (new SqliteQuery('[where]'))->where('name', 'like', $this->e('sum({})', ['b']))->render()[0]
         );
-        foreach (['8.0', 'MariaDB-11.0'] as $serverVersion) {
+        foreach (['8.0.0', 'MariaDB-11.0.0'] as $serverVersion) {
             self::assertSame(
                 <<<'EOF'
                     where `name` like regexp_replace(:a, '\\\\\\\\|\\\\(?![_%])', '\\\\\\\\') escape '\\'
@@ -917,7 +924,7 @@ class QueryTest extends TestCase
                 : 'where (select case when `name` = lower(`name`) and `name` = upper(`name`) then regexp_like(`name`, `__atk4_reuse_right__`, \'is\') else regexp_like(`name`, `__atk4_reuse_right__`, \'s\') end from (select sum("b") `__atk4_reuse_right__`) `__atk4_reuse_tmp__`)',
             (new SqliteQuery('[where]'))->where('name', 'regexp', $this->e('sum({})', ['b']))->render()[0]
         );
-        foreach (['8.0', 'MariaDB-11.0'] as $serverVersion) {
+        foreach (['8.0.0', 'MariaDB-11.0.0'] as $serverVersion) {
             self::assertSame(
                 'where `name` regexp concat(\'(?s)\', :a)',
                 $this->createMysqlQuery($serverVersion, '[where]')->where('name', 'regexp', 'foo')->render()[0]
