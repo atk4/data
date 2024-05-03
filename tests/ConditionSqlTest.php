@@ -699,13 +699,12 @@ class ConditionSqlTest extends TestCase
             && MysqlConnection::isServerMariaDb($this->getConnection());
         $isMysql5x = $this->getDatabasePlatform() instanceof MySQLPlatform && !$isMariadb
             && MysqlConnection::getServerMinorVersion($this->getConnection()) < 600;
-        // TODO investigate/report MySQL 8.x bug
-        $isBinaryMysql8x = $this->getDatabasePlatform() instanceof MySQLPlatform && $isBinary
-            && !$isMysql5x && !$isMariadb;
+
+        $this->markTestIncompleteOnMySQL8xPlatformAsBinaryLikeIsBroken($isBinary);
 
         self::assertSame([1], $findIdsRegexFx('name', 'John'));
         self::assertSame($isBinary ? [] : [1], $findIdsRegexFx('name', 'john'));
-        self::assertSame($isBinaryMysql8x ? [] : [13], $findIdsRegexFx('name', 'heiß'));
+        self::assertSame([13], $findIdsRegexFx('name', 'heiß'));
         self::assertSame($isBinary ? [] : [13], $findIdsRegexFx('name', 'Heiß'));
         self::assertSame([1], $findIdsRegexFx('name', 'Joh'));
         self::assertSame([1], $findIdsRegexFx('name', 'ohn'));
@@ -721,8 +720,8 @@ class ConditionSqlTest extends TestCase
         self::assertSame([9, 10, 14, 15, 16], $findIdsRegexFx('name', '\\\\'));
         self::assertSame([10, 15], $findIdsRegexFx('name', '\\\\\\\\'));
         self::assertSame([], $findIdsRegexFx('name', '\\\\\\\\\\\\'));
-        self::assertSame($isBinaryMysql8x ? [] : [14], $findIdsRegexFx('name', 'hei\\\ß'));
-        self::assertSame($isBinaryMysql8x ? [] : [15], $findIdsRegexFx('name', 'hei\\\\\\\ß'));
+        self::assertSame([14], $findIdsRegexFx('name', 'hei\\\ß'));
+        self::assertSame([15], $findIdsRegexFx('name', 'hei\\\\\\\ß'));
         self::assertSame([], $findIdsRegexFx('name', 'hei\\\\\\\\\\\ß'));
         self::assertSame([16], $findIdsRegexFx('name', 'hei\\\123'));
         self::assertSame([], $findIdsRegexFx('name', 'hei\\\\\\\123'));

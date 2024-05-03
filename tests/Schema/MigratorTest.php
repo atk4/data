@@ -7,12 +7,10 @@ namespace Atk4\Data\Tests\Schema;
 use Atk4\Data\Field\PasswordField;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence\Sql\Expression;
-use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Schema\Migrator;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Exception\TableExistsException;
 use Doctrine\DBAL\Exception\TableNotFoundException;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
@@ -140,16 +138,7 @@ class MigratorTest extends TestCase
 
             $model->scope()->clear();
             $model->addCondition('v', 'regexp', $fixEncodingForMssqlBinaryFx('ix.+Caseß'));
-            if ($this->getDatabasePlatform() instanceof MySQLPlatform
-                && $isBinary && !MysqlConnection::isServerMariaDb($this->getConnection())
-                && MysqlConnection::getServerMinorVersion($this->getConnection()) >= 800
-            ) {
-                // MySQL v8.0.22 and higher throws SQLSTATE[HY000]: General error: 3995 Character set 'binary'
-                // cannot be used in conjunction with 'utf8mb4_0900_ai_ci' in call to regexp_like.
-                // https://github.com/mysql/mysql-server/blob/72136a6d15/sql/item_regexp_func.cc#L115-L120
-                // https://dbfiddle.uk/9SA-omyF
-                return;
-            }
+            $this->markTestIncompleteOnMySQL8xPlatformAsBinaryLikeIsBroken($isBinary);
             if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
                 $this->expectExceptionMessage('Unsupported operator');
             }
