@@ -133,7 +133,7 @@ class MigratorTest extends TestCase
             self::assertSameExportUnordered($expectedExport, $model->export(['id']));
 
             $model->scope()->clear();
-            $model->addCondition('v', 'like', $fixEncodingForMssqlBinaryFx('%ixedCaseß'));
+            $model->addCondition('v', 'like', $fixEncodingForMssqlBinaryFx('%ix__Caseß%'));
             self::assertSameExportUnordered($expectedExport, $model->export(['id']));
 
             $model->scope()->clear();
