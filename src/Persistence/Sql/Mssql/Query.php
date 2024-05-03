@@ -40,7 +40,7 @@ class Query extends BaseQuery
     /**
      * @param \Closure(string, string): string $makeSqlFx
      */
-    private function _renderConditionBinaryReuseBool(string $sqlLeft, string $sqlRight, \Closure $makeSqlFx): string
+    protected function _renderConditionBinaryReuseBool(string $sqlLeft, string $sqlRight, \Closure $makeSqlFx): string
     {
         return $this->_renderConditionBinaryReuse(
             $sqlLeft,
@@ -58,7 +58,7 @@ class Query extends BaseQuery
             function ($sqlLeft, $sqlRight) use ($negated) {
                 $iifNtextFx = static function ($valueSql, $trueSql, $falseSql) {
                     $isNtextFx = static function ($sql, $negate) {
-                        // "select top 0 ..." is always optimized into constant fetch
+                        // "select top 0 ..." is always optimized into constant expression
                         return 'datalength(concat((select top 0 ' . $sql . '), 0x30)) '
                             . ($negate ? '!' : '') . '= 2';
                     };

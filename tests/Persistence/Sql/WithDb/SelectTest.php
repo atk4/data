@@ -257,7 +257,7 @@ class SelectTest extends TestCase
     public function testWhereNumericCompare(array $exprLeft, string $operator, array $exprRight, bool $expectPostgresqlTypeMismatchException = false, bool $expectMssqlTypeMismatchException = false): void
     {
         if ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            $exprLeft[0] = preg_replace('~\d+[eE][\-+]?\d++~', '$0d', $exprLeft[0]);
+            $exprLeft[0] = preg_replace('~\d+[eE][\-+]?\d+~', '$0d', $exprLeft[0]);
         }
 
         $queryWhere = $this->q()->field($this->e('1'), 'v');

@@ -51,7 +51,7 @@ class ModelWithCteTest extends TestCase
             && !MysqlConnection::isServerMariaDb($this->getConnection())
             && MysqlConnection::getServerMinorVersion($this->getConnection()) < 800
         ) {
-            self::markTestIncomplete('MySQL Server 5.x does not support WITH clause');
+            self::markTestIncomplete('MySQL 5.x does not support WITH clause');
         }
 
         self::assertSameExportUnordered([
