@@ -864,17 +864,17 @@ class QueryTest extends TestCase
         );
         self::assertSame(
             <<<'EOF'
-                where (`name` like regexp_replace(:a, '(\\[\\_%])|(\\)', '\1\2\2') escape '\' and ((`name` = lower(`name`) and `name` = upper(`name`)) or regexp_like(`name`, concat('^',regexp_replace(regexp_replace(regexp_replace(regexp_replace(:a, '\\(?:(?=[_%])|\K\\)|(?=[.\\+*?[^\]$(){}|])', '\'), '(?<!\\)(\\\\)*\K_', '.'), '(?<!\\)(\\\\)*\K%', '.*'), '(?<!\\)(\\\\)*\K\\(?=[_%])', ''), '$'), 's')))
+                where (`name` like regexp_replace(:a, '(\\[\\_%])|(\\)', '\1\2\2') escape '\' and ((`name` = lower(`name`) and `name` = upper(`name`)) or regexp_like(`name`, concat('(?-u)', concat('^',regexp_replace(regexp_replace(regexp_replace(regexp_replace(:a, '\\(?:(?=[_%])|\K\\)|(?=[.\\+*?[^\]$(){}|])', '\'), '(?<!\\)(\\\\)*\K_', '.'), '(?<!\\)(\\\\)*\K%', '.*'), '(?<!\\)(\\\\)*\K\\(?=[_%])', ''), '$')), 's')))
                 EOF,
             (new SqliteQuery('[where]'))->where('name', 'like', 'foo')->render()[0]
         );
         self::assertSame(
             version_compare(SqliteConnection::getDriverVersion(), '3.45') < 0
                 ? <<<'EOF'
-                    where (`name` like regexp_replace(sum("b"), '(\\[\\_%])|(\\)', '\1\2\2') escape '\' and ((`name` = lower(`name`) and `name` = upper(`name`)) or regexp_like(`name`, concat('^',regexp_replace(regexp_replace(regexp_replace(regexp_replace(sum("b"), '\\(?:(?=[_%])|\K\\)|(?=[.\\+*?[^\]$(){}|])', '\'), '(?<!\\)(\\\\)*\K_', '.'), '(?<!\\)(\\\\)*\K%', '.*'), '(?<!\\)(\\\\)*\K\\(?=[_%])', ''), '$'), 's')))
+                    where (`name` like regexp_replace(sum("b"), '(\\[\\_%])|(\\)', '\1\2\2') escape '\' and ((`name` = lower(`name`) and `name` = upper(`name`)) or regexp_like(`name`, concat('(?-u)', concat('^',regexp_replace(regexp_replace(regexp_replace(regexp_replace(sum("b"), '\\(?:(?=[_%])|\K\\)|(?=[.\\+*?[^\]$(){}|])', '\'), '(?<!\\)(\\\\)*\K_', '.'), '(?<!\\)(\\\\)*\K%', '.*'), '(?<!\\)(\\\\)*\K\\(?=[_%])', ''), '$')), 's')))
                     EOF
                 : <<<'EOF'
-                    where (select (`name` like regexp_replace(`__atk4_reuse_right__`, '(\\[\\_%])|(\\)', '\1\2\2') escape '\' and ((`name` = lower(`name`) and `name` = upper(`name`)) or regexp_like(`name`, concat('^',regexp_replace(regexp_replace(regexp_replace(regexp_replace(`__atk4_reuse_right__`, '\\(?:(?=[_%])|\K\\)|(?=[.\\+*?[^\]$(){}|])', '\'), '(?<!\\)(\\\\)*\K_', '.'), '(?<!\\)(\\\\)*\K%', '.*'), '(?<!\\)(\\\\)*\K\\(?=[_%])', ''), '$'), 's'))) from (select sum("b") `__atk4_reuse_right__`) `__atk4_reuse_tmp__`)
+                    where (select (`name` like regexp_replace(`__atk4_reuse_right__`, '(\\[\\_%])|(\\)', '\1\2\2') escape '\' and ((`name` = lower(`name`) and `name` = upper(`name`)) or regexp_like(`name`, concat('(?-u)', concat('^',regexp_replace(regexp_replace(regexp_replace(regexp_replace(`__atk4_reuse_right__`, '\\(?:(?=[_%])|\K\\)|(?=[.\\+*?[^\]$(){}|])', '\'), '(?<!\\)(\\\\)*\K_', '.'), '(?<!\\)(\\\\)*\K%', '.*'), '(?<!\\)(\\\\)*\K\\(?=[_%])', ''), '$')), 's'))) from (select sum("b") `__atk4_reuse_right__`) `__atk4_reuse_tmp__`)
                     EOF,
             (new SqliteQuery('[where]'))->where('name', 'like', $this->e('sum({})', ['b']))->render()[0]
         );
@@ -915,13 +915,13 @@ class QueryTest extends TestCase
             $this->q('[where]')->where('name', 'not regexp', 'foo')->render()[0]
         );
         self::assertSame(
-            'where case when `name` = lower(`name`) and `name` = upper(`name`) then regexp_like(`name`, :a, \'is\') else regexp_like(`name`, :a, \'s\') end',
+            'where case when `name` = lower(`name`) and `name` = upper(`name`) then regexp_like(`name`, :a, \'is\') else regexp_like(`name`, concat(\'(?-u)\', :a), \'s\') end',
             (new SqliteQuery('[where]'))->where('name', 'regexp', 'foo')->render()[0]
         );
         self::assertSame(
             version_compare(SqliteConnection::getDriverVersion(), '3.45') < 0
-                ? 'where case when `name` = lower(`name`) and `name` = upper(`name`) then regexp_like(`name`, sum("b"), \'is\') else regexp_like(`name`, sum("b"), \'s\') end'
-                : 'where (select case when `name` = lower(`name`) and `name` = upper(`name`) then regexp_like(`name`, `__atk4_reuse_right__`, \'is\') else regexp_like(`name`, `__atk4_reuse_right__`, \'s\') end from (select sum("b") `__atk4_reuse_right__`) `__atk4_reuse_tmp__`)',
+                ? 'where case when `name` = lower(`name`) and `name` = upper(`name`) then regexp_like(`name`, sum("b"), \'is\') else regexp_like(`name`, concat(\'(?-u)\', sum("b")), \'s\') end'
+                : 'where (select case when `name` = lower(`name`) and `name` = upper(`name`) then regexp_like(`name`, `__atk4_reuse_right__`, \'is\') else regexp_like(`name`, concat(\'(?-u)\', `__atk4_reuse_right__`), \'s\') end from (select sum("b") `__atk4_reuse_right__`) `__atk4_reuse_tmp__`)',
             (new SqliteQuery('[where]'))->where('name', 'regexp', $this->e('sum({})', ['b']))->render()[0]
         );
         foreach (['8.0.0', 'MariaDB-11.0.0'] as $serverVersion) {

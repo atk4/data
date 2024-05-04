@@ -131,7 +131,12 @@ class Query extends BaseQuery
     protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight, bool $binary = false): string
     {
         if ($binary) {
-            return parent::_renderConditionRegexpOperator($negated, $sqlLeft, $sqlRight, $binary);
+            return parent::_renderConditionRegexpOperator(
+                $negated,
+                $sqlLeft,
+                'concat(' . $this->escapeStringLiteral('(?-u)') . ', ' . $sqlRight . ')',
+                $binary
+            );
         }
 
         return ($negated ? 'not ' : '') . $this->_renderConditionBinaryReuse(
@@ -140,7 +145,7 @@ class Query extends BaseQuery
             function ($sqlLeft, $sqlRight) {
                 return 'case when ' . $sqlLeft . ' = lower(' . $sqlLeft . ') and ' . $sqlLeft . ' = upper(' . $sqlLeft . ')'
                     . ' then ' . parent::_renderConditionRegexpOperator(false, $sqlLeft, $sqlRight)
-                    . ' else ' . parent::_renderConditionRegexpOperator(false, $sqlLeft, $sqlRight, true)
+                    . ' else ' . self::_renderConditionRegexpOperator(false, $sqlLeft, $sqlRight, true)
                     . ' end';
             }
         );
