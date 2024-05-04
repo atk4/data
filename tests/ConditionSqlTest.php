@@ -570,8 +570,8 @@ class ConditionSqlTest extends TestCase
         self::assertSame([1], $findIdsLikeFx('name', 'J%n'));
         self::assertSame([1], $findIdsLikeFx('name', 'Jo_n'));
         self::assertSame([], $findIdsLikeFx('name', 'J_n'));
-        self::assertSame($isBinary && !($this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) ? [] : [13], $findIdsLikeFx('name', '123_'));
-        self::assertSame($isBinary && !($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform) ? [13] : [], $findIdsLikeFx('name', '123__'));
+        self::assertSame($isBinary && !$this->getDatabasePlatform() instanceof OraclePlatform ? [] : [13], $findIdsLikeFx('name', '123_'));
+        self::assertSame($isBinary && !$this->getDatabasePlatform() instanceof PostgreSQLPlatform ? [13] : [], $findIdsLikeFx('name', '123__'));
         self::assertSame([], $findIdsLikeFx('name', '123___'));
 
         self::assertSame([1], $findIdsLikeFx('c', '%1%'));
