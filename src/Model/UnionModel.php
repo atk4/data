@@ -44,7 +44,7 @@ class UnionModel extends Model
     /**
      * @param array<string, mixed> $defaults
      */
-    public function __construct(Persistence $persistence = null, array $defaults = [])
+    public function __construct(?Persistence $persistence = null, array $defaults = [])
     {
         $unionTable = new UnionInternalTable();
         $unionTable->setOwner($this);
@@ -61,7 +61,7 @@ class UnionModel extends Model
      *
      * @return Field|Persistence\Sql\Expression
      */
-    public function getFieldExpr(Model $model, string $fieldName, string $expr = null)
+    public function getFieldExpr(Model $model, string $fieldName, ?string $expr = null)
     {
         if ($model->hasField($fieldName)) {
             $field = $model->getField($fieldName);
