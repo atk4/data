@@ -9,8 +9,11 @@ use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Exception;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Expressionable;
-use Atk4\Data\Persistence\Sql\Mysql;
-use Atk4\Data\Persistence\Sql\Sqlite;
+use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
+use Atk4\Data\Persistence\Sql\Mysql\Expression as MysqlExpression;
+use Atk4\Data\Persistence\Sql\Sqlite\Connection as SqliteConnection;
+use Atk4\Data\Persistence\Sql\Sqlite\Expression as SqliteExpression;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class ExpressionTest extends TestCase
 {
@@ -22,6 +25,12 @@ class ExpressionTest extends TestCase
     {
         return new class($template, $arguments) extends Expression {
             protected string $identifierEscapeChar = '"';
+
+            #[\Override]
+            protected function escapeStringLiteral(string $value): string
+            {
+                return null; // @phpstan-ignore-line
+            }
         };
     }
 
@@ -145,6 +154,7 @@ class ExpressionTest extends TestCase
      *
      * @dataProvider provideNoTemplatingInSqlStringCases
      */
+    #[DataProvider('provideNoTemplatingInSqlStringCases')]
     public function testNoTemplatingInSqlString(string $expectedStr, string $exprTemplate, array $exprArguments): void
     {
         self::assertSame($expectedStr, $this->e($exprTemplate, $exprArguments)->render()[0]);
@@ -162,7 +172,7 @@ class ExpressionTest extends TestCase
                 '\'{}\'',
                 '\'{{}}\'',
                 '\'[a]\'',
-                '\'\\\'[]\'',
+                '\'\[]\'',
                 '\'\\\[]\'',
                 '\'[\'\']\'',
                 '\'\'\'[]\'',
@@ -228,10 +238,45 @@ class ExpressionTest extends TestCase
     {
         self::assertInstanceOf(Expression::class, $this->e('foo'));
 
-        $connection = \Closure::bind(static fn () => new Mysql\Connection(), null, Connection::class)();
-        $e = new Mysql\Expression(['connection' => $connection]);
-        self::assertSame(Mysql\Expression::class, get_class($e->expr('foo')));
+        $connection = \Closure::bind(static fn () => new MysqlConnection(), null, Connection::class)();
+        $e = new MysqlExpression(['connection' => $connection]);
+        self::assertSame(MysqlExpression::class, get_class($e->expr('foo')));
         self::assertSame($connection, $e->expr('foo')->connection);
+    }
+
+    public function testEscapeStringLiteral(): void
+    {
+        $escapeStringLiteralFx = \Closure::bind(static function ($value, $expressionClass = SqliteExpression::class) {
+            $e = new $expressionClass();
+
+            return $e->escapeStringLiteral($value);
+        }, null, Expression::class);
+
+        self::assertSame('\'\'', $escapeStringLiteralFx(''));
+        self::assertSame('\'foo\'', $escapeStringLiteralFx('foo'));
+        self::assertSame('concat(\'\', x\'00\')', $escapeStringLiteralFx("\0"));
+        self::assertSame('concat(\'a\', x\'0000\')', $escapeStringLiteralFx("a\0\0"));
+        self::assertSame('concat(\'a\', x\'' . str_repeat('00', 10_000) . '\')', $escapeStringLiteralFx('a' . str_repeat("\0", 10_000)));
+        self::assertSame('concat(\'a\', concat(x\'006200\', \'c\'))', $escapeStringLiteralFx("a\0b\0c"));
+        self::assertSame(
+            'concat(\'a\', concat(x\'00' . str_repeat('62', 100) . '00\', \'c\'))',
+            $escapeStringLiteralFx("a\0" . str_repeat('b', 100) . "\0c")
+        );
+        self::assertSame(
+            'concat(concat(\'a\', x\'00\'), concat(\'' . str_repeat('b', 101) . '\', concat(x\'00\', \'c\')))',
+            $escapeStringLiteralFx("a\0" . str_repeat('b', 101) . "\0c")
+        );
+
+        self::assertSame('\'foo\'', $escapeStringLiteralFx('foo', MysqlExpression::class));
+        self::assertSame('x\'00\'', $escapeStringLiteralFx("\0", MysqlExpression::class));
+        self::assertSame(
+            'concat(\'a\', concat(x\'00' . str_repeat('62', 100) . '00\', \'c\'))',
+            $escapeStringLiteralFx("a\0" . str_repeat('b', 100) . "\0c", MysqlExpression::class)
+        );
+        self::assertSame(
+            'concat(concat(\'a\', x\'00\'), concat(\'' . str_repeat('b', 101) . '\', concat(x\'00\', \'c\')))',
+            $escapeStringLiteralFx("a\0" . str_repeat('b', 101) . "\0c", MysqlExpression::class)
+        );
     }
 
     public function testEscapeIdentifier(): void
@@ -299,8 +344,8 @@ class ExpressionTest extends TestCase
             $this->callProtected($this->e(['renderParamBase' => 'x']), 'consume', 123, $constants['ESCAPE_PARAM'])
         );
         self::assertSame(
-            123,
-            $this->callProtected($this->e(), 'consume', 123, $constants['ESCAPE_NONE'])
+            '123',
+            $this->callProtected($this->e(), 'consume', '123', $constants['ESCAPE_NONE'])
         );
 
         $myField = new class() implements Expressionable {
@@ -311,7 +356,7 @@ class ExpressionTest extends TestCase
             }
         };
         $e = $this->e('hello, []', [$myField]);
-        $e->connection = \Closure::bind(static fn () => new Sqlite\Connection(), null, Connection::class)();
+        $e->connection = \Closure::bind(static fn () => new SqliteConnection(), null, Connection::class)();
         self::assertSame(
             'hello, "myfield"',
             $e->render()[0]
@@ -379,7 +424,7 @@ class ExpressionTest extends TestCase
 
     public function testEscapeParamCustom(): void
     {
-        $e = new class('hello, [who]', ['who' => 'world']) extends Expression {
+        $e = new class('hello, [who]', ['who' => 'world']) extends SqliteExpression {
             #[\Override]
             public function escapeParam($value): string
             {

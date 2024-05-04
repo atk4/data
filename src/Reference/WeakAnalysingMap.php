@@ -50,7 +50,7 @@ class WeakAnalysingMap
      *
      * @return ($hashContext is null ? int : null)
      */
-    protected function makeHashFromKey($value, \HashContext $hashContext = null): ?int
+    protected function makeHashFromKey($value, ?\HashContext $hashContext = null): ?int
     {
         if ($hashContext === null) {
             $hashContext = hash_init('crc32c');

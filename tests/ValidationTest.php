@@ -21,7 +21,7 @@ class MyValidationModel extends Model
     }
 
     #[\Override]
-    public function validate(string $intent = null): array
+    public function validate(?string $intent = null): array
     {
         $errors = [];
         if ($this->get('name') === 'Python') {
@@ -46,7 +46,7 @@ class BadValidationModel extends Model
     }
 
     #[\Override]
-    public function validate(string $intent = null): array
+    public function validate(?string $intent = null): array
     {
         return 'This should be array'; // @phpstan-ignore-line
     }

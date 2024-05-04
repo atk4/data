@@ -22,7 +22,7 @@ class HasMany extends Reference
     }
 
     #[\Override]
-    public function getTheirFieldName(Model $theirModel = null): string
+    public function getTheirFieldName(?Model $theirModel = null): string
     {
         if ($this->theirField !== null) {
             return $this->theirField;

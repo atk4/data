@@ -8,6 +8,7 @@ use Atk4\Data\Model;
 use Atk4\Data\Persistence\Sql\Exception;
 use Atk4\Data\Persistence\Sql\ExecuteException;
 use Atk4\Data\Persistence\Sql\Expression;
+use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
@@ -15,6 +16,7 @@ use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class SelectTest extends TestCase
 {
@@ -39,7 +41,7 @@ class SelectTest extends TestCase
      * @param string|Expression                 $table
      * @param ($table is null ? never : string) $alias
      */
-    protected function q($table = null, string $alias = null): Query
+    protected function q($table = null, ?string $alias = null): Query
     {
         $q = $this->getConnection()->dsql();
         if ($table !== null) {
@@ -251,10 +253,11 @@ class SelectTest extends TestCase
      * @param array{string, array<mixed>} $exprLeft
      * @param array{string, array<mixed>} $exprRight
      */
+    #[DataProvider('provideWhereNumericCompareCases')]
     public function testWhereNumericCompare(array $exprLeft, string $operator, array $exprRight, bool $expectPostgresqlTypeMismatchException = false, bool $expectMssqlTypeMismatchException = false): void
     {
         if ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            $exprLeft[0] = preg_replace('~\d+[eE][\-+]?\d++~', '$0d', $exprLeft[0]);
+            $exprLeft[0] = preg_replace('~\d+[eE][\-+]?\d+~', '$0d', $exprLeft[0]);
         }
 
         $queryWhere = $this->q()->field($this->e('1'), 'v');
@@ -482,13 +485,213 @@ class SelectTest extends TestCase
         }
     }
 
+    public function testQuotedTokenRegexConstant(): void
+    {
+        $hasCommentCarriageReturnSupport = $this->getDatabasePlatform() instanceof PostgreSQLPlatform
+            || $this->getDatabasePlatform() instanceof SQLServerPlatform;
+        $hasBackslashSupport = $this->getDatabasePlatform() instanceof MySQLPlatform;
+
+        self::assertSame(
+            '(?:(?sx)' . "\n"
+                . '    \'(?:[^\'' . ($hasBackslashSupport ? '\\\\' : '') . ']+' . ($hasBackslashSupport ? '|\\\.' : '') . '|\'\')*+\'' . "\n"
+                . '    |"(?:[^"' . ($hasBackslashSupport ? '\\\\' : '') . ']+' . ($hasBackslashSupport ? '|\\\.' : '') . '|"")*+"' . "\n"
+                . '    |`(?:[^`]+|``)*+`' . "\n"
+                . '    |\[(?:[^\]]+|\]\])*+\]' . "\n"
+                . '    |(?:--' . (
+                    $this->getDatabasePlatform() instanceof MySQLPlatform
+                        ? '(?=$|[\x01-\x21\x7f])'
+                        : ''
+                ) . '|\#)[^' . ($hasCommentCarriageReturnSupport ? '\r' : '') . '\n]*+' . "\n"
+                . '    |/\*(?:[^*]+|\*(?!/))*+\*/' . "\n"
+                . ')',
+            $this->e()::QUOTED_TOKEN_REGEX
+        );
+
+        self::assertSame($this->e()::QUOTED_TOKEN_REGEX, $this->q()::QUOTED_TOKEN_REGEX);
+
+        $sqlTwoEscape = '\'\'\'\'';
+        $sqlBackslashEscape = '\'\\\'-- \'';
+        if ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            $sqlBackslashEscape .= "\n/**/";
+        }
+
+        $query = $this->q()->field($this->e($sqlTwoEscape));
+        self::assertSame('\'', $query->getOne());
+
+        $query = $this->q()->field($this->e($sqlBackslashEscape));
+        self::assertSame($hasBackslashSupport ? '\'-- ' : '\\', $query->getOne());
+
+        foreach (['"', '`'] as $chr) {
+            if ($chr === '`' && ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform)) {
+                continue;
+            }
+
+            $replaceFx = static fn ($v) => str_replace('\'', $chr, $v);
+            $needsExplicitAs = $chr === '"' && $this->getDatabasePlatform() instanceof MySQLPlatform;
+
+            if ($chr !== '"' || !$this->getDatabasePlatform() instanceof OraclePlatform) {
+                $query = $this->q()->field($this->e('\'x\' ' . ($needsExplicitAs ? 'as ' : '') . $replaceFx($sqlTwoEscape)));
+                self::assertSame([$chr => 'x'], $query->getRow());
+            }
+
+            $query = $this->q()->field($this->e('\'x\' ' . ($needsExplicitAs ? 'as ' : '') . $replaceFx($sqlBackslashEscape)));
+            self::assertSame([$hasBackslashSupport && $chr === '"' ? $chr . '-- ' : '\\' => 'x'], $query->getRow());
+        }
+
+        if (!($this->getDatabasePlatform() instanceof MySQLPlatform || $this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof OraclePlatform)) {
+            $query = $this->q()->field($this->e('\'x\' [a*b]'));
+            self::assertSame(['a*b' => 'x'], $query->getRow());
+
+            $replaceFx = static fn ($v) => str_replace('\'', ']', preg_replace('~^\'~', '[a*b', $v));
+
+            if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+                $query = $this->q()->field($this->e('\'x\' ' . $replaceFx($sqlTwoEscape)));
+                self::assertSame(['a*b]' => 'x'], $query->getRow());
+            }
+
+            $query = $this->q()->field($this->e('\'x\' ' . $replaceFx($sqlBackslashEscape)));
+            self::assertSame(['a*b\\' => 'x'], $query->getRow());
+        }
+    }
+
+    public function testEscapeStringLiteral(): void
+    {
+        $chars = [];
+        for ($i = 0; $i <= 0xFF; ++$i) {
+            $chr = chr($i);
+            $chars[] = $chr;
+
+            if ($chr === '1') {
+                $i += 7;
+            } elseif ($chr === 'B' || $chr === 'b') {
+                $i += 23;
+            }
+        }
+
+        $str = '';
+        foreach ($chars as $chr1) {
+            foreach ($chars as $chr2) {
+                foreach (['\\', '\''] as $chr3) {
+                    $str .= $chr1 . $chr2 . $chr3;
+                }
+            }
+        }
+        foreach ($chars as $chr) {
+            for ($i = 1; $i <= 3; ++$i) {
+                $str .= str_repeat($chr, $i) . '?';
+                for ($j = 1; $j <= 3; ++$j) {
+                    $str .= str_repeat('\\', $j) . str_repeat($chr, $i) . ':n';
+                }
+            }
+        }
+        for ($i = 1; $i <= 10_000; $i = (int) ceil($i * 1.1)) {
+            $str .= str_repeat('\\', $i) . str_repeat("\0", $i);
+        }
+
+        // TODO full binary support
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform
+            || $this->getDatabasePlatform() instanceof SQLServerPlatform
+            || $this->getDatabasePlatform() instanceof OraclePlatform
+        ) {
+            $str = mb_convert_encoding($str, 'UTF-8', 'UTF-8');
+        }
+
+        // remove once https://github.com/php/php-src/issues/8928 is fixed
+        if (str_starts_with($_ENV['DB_DSN'], 'oci8')) {
+            $str = substr($str, 0, 1000);
+        }
+
+        // PostgreSQL does not support \0 character
+        // https://stackoverflow.com/questions/1347646/postgres-error-on-insert-error-invalid-byte-sequence-for-encoding-utf8-0x0
+        $str2 = $this->getDatabasePlatform() instanceof PostgreSQLPlatform
+            ? str_replace("\0", '-', $str)
+            : $str;
+
+        $dummyExpression = $this->e();
+        $strSql = \Closure::bind(static fn () => $dummyExpression->escapeStringLiteral($str2), null, Expression::class)();
+        $query = $this->q()->field($this->e($strSql));
+        self::assertSame(bin2hex($str2), bin2hex($query->getOne()));
+
+        if ($str2 !== $str) {
+            $strSql = \Closure::bind(static fn () => $dummyExpression->escapeStringLiteral($str), null, Expression::class)();
+            $query = $this->q()->field($this->e($strSql));
+
+            $this->expectException(ExecuteException::class);
+            $this->expectExceptionMessage('Character not in repertoire');
+            $query->getOne();
+        }
+    }
+
+    public function testEscapeIdentifier(): void
+    {
+        $expected = [];
+        $query = $this->q();
+        foreach ([
+            'foo',
+            'a b',
+            'a  b',
+            "a\nb",
+            "a\tb",
+            '2',
+            '\'',
+            '"',
+            '`',
+            '[',
+            ']',
+            '\\',
+            '\\\\',
+            '\\\\\\',
+            '\\\\\\\\',
+            '\n',
+            '.',
+            '*',
+            '?',
+            ':',
+            ':x',
+            ':1',
+            ';',
+            '--',
+            '#',
+        ] as $k => $v) {
+            if ($v === '"' && $this->getDatabasePlatform() instanceof OraclePlatform) { // Oracle identifier cannot contain double quote
+                continue;
+            } elseif (($v === '\\' || $v === '\\\\\\') && ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof OraclePlatform)) { // https://github.com/php/php-src/issues/13958
+                continue;
+            } elseif (($v === '?' || $v === ':x' || $v === ':1' || $v === '--') && $this->getDatabasePlatform() instanceof MySQLPlatform) { // TODO pdo_mysql only https://dbfiddle.uk/cEbLp3M4
+                continue;
+            } elseif (($v === ':x' || $v === ':1') && $this->getDatabasePlatform() instanceof SQLServerPlatform) { // TODO https://dbfiddle.uk/4pDZnwWq
+                continue;
+            }
+
+            $k = '=' . $k;
+            $expected[$v] = $k;
+            $query->field($this->e('[]', [$k]), $v);
+
+            if ($v === '\\' || $v === '\\\\' || $v === '\\\\\\') {
+                continue;
+            }
+
+            if (($v === '"' || $v === '\\\\\\\\') && $this->getDatabasePlatform() instanceof PostgreSQLPlatform) { // https://github.com/php/php-src/issues/13958
+                continue;
+            } if ($v === '\\\\\\\\' && $this->getDatabasePlatform() instanceof OraclePlatform) { // https://github.com/php/php-src/issues/13958
+                continue;
+            }
+
+            $k = '\\' . $k;
+            $expected['\\' . $v] = $k;
+            $query->field($this->e('[]', [$k]), '\\' . $v);
+        }
+
+        self::assertSame($expected, $query->getRow());
+    }
+
     public function testUtf8mb4Support(): void
     {
         // MariaDB has no support of utf8mb4 identifiers
         // remove once https://jira.mariadb.org/browse/MDEV-27050 is fixed
         $columnAlias = '❤';
         $tableAlias = '🚀';
-        if (str_contains($_ENV['DB_DSN'], 'mariadb')) {
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform && MysqlConnection::isServerMariaDb($this->getConnection())) {
             $columnAlias = '仮';
             $tableAlias = '名';
         }
@@ -519,7 +722,7 @@ class SelectTest extends TestCase
             $pk = 'myid';
             if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
                 self::assertFalse($this->getConnection()->inTransaction());
-                $this->getConnection()->expr('analyze table {}', [$table])->executeStatement();
+                $this->e('analyze table {}', [$table])->executeStatement();
                 $query = $this->q()->table('INFORMATION_SCHEMA.TABLES')
                     ->field($this->e('{} - 1', ['AUTO_INCREMENT']))
                     ->where('TABLE_NAME', $table);

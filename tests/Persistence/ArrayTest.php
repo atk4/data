@@ -345,6 +345,15 @@ class ArrayTest extends TestCase
             $dbDataCountries[10],
         ], $m->action('select')->getRows());
 
+        // case str_
+        $m->addCondition('country', 'LIKE', '%a__');
+        self::assertSame([
+            $dbDataCountries[1],
+            $dbDataCountries[2],
+            $dbDataCountries[6],
+            $dbDataCountries[10],
+        ], $m->action('select')->getRows());
+
         // case boolean field
         $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '0');
@@ -433,7 +442,6 @@ class ArrayTest extends TestCase
             $dbDataCountries[8],
             $dbDataCountries[9],
         ], $m->action('select')->getRows());
-        $result = $m->action('select')->getRows();
 
         $m->scope()->clear();
         $m->addCondition('code', '<', 12);
@@ -521,7 +529,7 @@ class ArrayTest extends TestCase
      *
      * @return list<array<string, mixed>>
      */
-    protected function _getRows(Model $model, array $fields = null): array
+    protected function _getRows(Model $model, ?array $fields = null): array
     {
         $d = [];
         foreach ($model as $row) {

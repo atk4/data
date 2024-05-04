@@ -14,6 +14,7 @@ use Doctrine\DBAL\Exception\TableNotFoundException;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class MigratorTest extends TestCase
 {
@@ -88,6 +89,7 @@ class MigratorTest extends TestCase
     /**
      * @dataProvider provideCharacterTypeFieldCaseSensitivityCases
      */
+    #[DataProvider('provideCharacterTypeFieldCaseSensitivityCases')]
     public function testCharacterTypeFieldCaseSensitivity(string $type, bool $isBinary): void
     {
         $model = new Model($this->db, ['table' => 'user']);
@@ -95,17 +97,53 @@ class MigratorTest extends TestCase
 
         $this->createMigrator($model)->create();
 
-        $model->import([['v' => 'mixedcase'], ['v' => 'MIXEDCASE'], ['v' => 'MixedCase']]);
+        $model->import([
+            ['v' => 'mixedcaseß'],
+            ['v' => 'MIXEDCASEß'],
+            ['v' => 'MixedCaseß'],
+        ]);
 
-        $model->addCondition('v', 'MixedCase');
-        $model->setOrder($this->getDatabasePlatform() instanceof OraclePlatform && in_array($type, ['text', 'blob'], true) ? 'id' : 'v');
+        if (!$this->getDatabasePlatform() instanceof OraclePlatform || !in_array($type, ['text', 'blob'], true)) {
+            $model->setOrder('v');
+        }
 
-        self::assertSameExportUnordered(
-            $isBinary
-                ? [['id' => 3]]
-                : [['id' => 1], ['id' => 2], ['id' => 3]],
-            $model->export(['id'])
-        );
+        $expectedExport = $isBinary
+            ? [['id' => 3]]
+            : [['id' => 1], ['id' => 2], ['id' => 3]];
+
+        $model->addCondition('v', 'MixedCaseß');
+        self::assertSameExportUnordered($expectedExport, $model->export(['id']));
+
+        // TODO
+        if (!$this->getDatabasePlatform() instanceof OraclePlatform || !in_array($type, ['text', 'blob'], true)) {
+            $model->scope()->clear();
+            $model->addCondition('v', 'in', ['MixedCaseß', 'foo']);
+            self::assertSameExportUnordered($expectedExport, $model->export(['id']));
+        }
+
+        $fixEncodingForMssqlBinaryFx = function (string $v) use ($isBinary) {
+            return $this->getDatabasePlatform() instanceof SQLServerPlatform && $isBinary
+                ? $this->getConnection()->expr('cast([] collate Latin1_General_100_CS_AS_SC_UTF8 as varchar(max))', [$v])
+                : $v;
+        };
+
+        if (!$this->getDatabasePlatform() instanceof OraclePlatform || !$isBinary) {
+            $model->scope()->clear();
+            $model->addCondition('v', 'like', $fixEncodingForMssqlBinaryFx('MixedCaseß'));
+            self::assertSameExportUnordered($expectedExport, $model->export(['id']));
+
+            $model->scope()->clear();
+            $model->addCondition('v', 'like', $fixEncodingForMssqlBinaryFx('%ix__Caseß%'));
+            self::assertSameExportUnordered($expectedExport, $model->export(['id']));
+
+            $model->scope()->clear();
+            $model->addCondition('v', 'regexp', $fixEncodingForMssqlBinaryFx('ix.+Caseß'));
+            $this->markTestIncompleteOnMySQL8xPlatformAsBinaryLikeIsBroken($isBinary);
+            if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+                $this->expectExceptionMessage('Unsupported operator');
+            }
+            self::assertSameExportUnordered($expectedExport, $model->export(['id']));
+        }
     }
 
     /**
@@ -147,6 +185,7 @@ class MigratorTest extends TestCase
     /**
      * @dataProvider provideCharacterTypeFieldLongCases
      */
+    #[DataProvider('provideCharacterTypeFieldLongCases')]
     public function testCharacterTypeFieldLong(string $type, bool $isBinary, int $length): void
     {
         if ($length > 1000) {
@@ -174,12 +213,14 @@ class MigratorTest extends TestCase
 
         $this->createMigrator($model)->create();
 
-        $model->import([['v' => $str . (
-            // MSSQL database ignores trailing \0 characters even with binary comparison
-            // https://dba.stackexchange.com/questions/48660/comparing-binary-0x-and-0x00-turns-out-to-be-equal-on-sql-server
-            $isBinary ? ($this->getDatabasePlatform() instanceof SQLServerPlatform ? ' ' : "\0") : '.'
-        )]]);
-        $model->import([['v' => $str]]);
+        $model->import([
+            ['v' => $str . (
+                // MSSQL database ignores trailing \0 characters even with binary comparison
+                // https://dba.stackexchange.com/questions/48660/comparing-binary-0x-and-0x00-turns-out-to-be-equal-on-sql-server
+                $isBinary ? ($this->getDatabasePlatform() instanceof SQLServerPlatform ? ' ' : "\0") : '.'
+            )],
+            ['v' => $str],
+        ]);
 
         $model->addCondition('v', $str);
         $rows = $model->export();
@@ -198,9 +239,7 @@ class MigratorTest extends TestCase
 
         // functional test for Expression::escapeStringLiteral() method
         $strRaw = $model->getPersistence()->typecastSaveField($model->getField('v'), $str);
-        $strRawSql = \Closure::bind(static function () use ($model, $strRaw) {
-            return $model->expr('')->escapeStringLiteral($strRaw);
-        }, null, Expression::class)();
+        $strRawSql = \Closure::bind(static fn () => $model->expr('')->escapeStringLiteral($strRaw), null, Expression::class)();
         $query = $this->getConnection()->dsql()
             ->field($model->expr($strRawSql));
         $resRaw = $query->getOne();
@@ -224,9 +263,7 @@ class MigratorTest extends TestCase
             }
 
             self::assertSame($length, mb_strlen($str));
-            $strSql = \Closure::bind(static function () use ($model, $str) {
-                return $model->expr('')->escapeStringLiteral($str);
-            }, null, Expression::class)();
+            $strSql = \Closure::bind(static fn () => $model->expr('')->escapeStringLiteral($str), null, Expression::class)();
             $query = $this->getConnection()->dsql()
                 ->field($model->expr($strSql));
             $res = $query->getOne();

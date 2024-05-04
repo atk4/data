@@ -222,7 +222,7 @@ performance. In ATK Data this is not an issue, because "Model" is re-usable:
 ```
 foreach (new User($db) as $user) {
     // will be the same object every time!!
-    var_dump($user->getField['name']);
+    var_dump($user->getField('name'));
 
     // this is also the same object every time!!
     var_dump($user);

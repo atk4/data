@@ -10,5 +10,16 @@ class Expression extends BaseExpression
 {
     use ExpressionTrait;
 
+    public const QUOTED_TOKEN_REGEX = <<<'EOF'
+        (?:(?sx)
+            '(?:[^'\\]+|\\.|'')*+'
+            |"(?:[^"\\]+|\\.|"")*+"
+            |`(?:[^`]+|``)*+`
+            |\[(?:[^\]]+|\]\])*+\]
+            |(?:--(?=$|[\x01-\x21\x7f])|\#)[^\n]*+
+            |/\*(?:[^*]+|\*(?!/))*+\*/
+        )
+        EOF;
+
     protected string $identifierEscapeChar = '`';
 }

@@ -4,17 +4,65 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Postgresql;
 
+use Atk4\Data\Persistence;
 use Doctrine\DBAL\Statement;
 
 trait ExpressionTrait
 {
+    #[\Override]
+    protected function escapeStringLiteral(string $value): string
+    {
+        $dummyPersistence = (new \ReflectionClass(Persistence\Sql::class))->newInstanceWithoutConstructor();
+        if (\Closure::bind(static fn () => $dummyPersistence->binaryTypeValueIsEncoded($value), null, Persistence\Sql::class)()) {
+            $value = \Closure::bind(static fn () => $dummyPersistence->binaryTypeValueDecode($value), null, Persistence\Sql::class)();
+
+            return 'decode(\'' . bin2hex($value) . '\', \'hex\')';
+        }
+
+        $parts = [];
+        foreach (preg_split('~((?:\x00+[^\x00]{1,100})*\x00+)~', $value, -1, \PREG_SPLIT_DELIM_CAPTURE) as $i => $v) {
+            if (($i % 2) === 1) {
+                // will raise SQL error, PostgreSQL does not support \0 character
+                $parts[] = 'convert_from(decode(\'' . bin2hex($v) . '\', \'hex\'), \'UTF8\')';
+            } elseif ($v !== '') {
+                // workaround https://github.com/php/php-src/issues/13958
+                foreach (preg_split('~(\\\+)(?=\'|$)~', $v, -1, \PREG_SPLIT_DELIM_CAPTURE) as $i2 => $v2) {
+                    if (($i2 % 2) === 1) {
+                        $parts[] = strlen($v2) === 1
+                            ? 'chr(' . ord('\\') . ')'
+                            : 'repeat(chr(' . ord('\\') . '), ' . strlen($v2) . ')';
+                    } elseif ($v2 !== '') {
+                        $parts[] = '\'' . str_replace('\'', '\'\'', $v2) . '\'';
+                    }
+                }
+            }
+        }
+
+        if ($parts === []) {
+            $parts = ['\'\''];
+        }
+
+        $buildConcatSqlFx = static function (array $parts) use (&$buildConcatSqlFx): string {
+            if (count($parts) > 1) {
+                $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
+                $partsRight = array_slice($parts, count($partsLeft));
+
+                return 'concat(' . $buildConcatSqlFx($partsLeft) . ', ' . $buildConcatSqlFx($partsRight) . ')';
+            }
+
+            return reset($parts);
+        };
+
+        return $buildConcatSqlFx($parts);
+    }
+
     #[\Override]
     protected function updateRenderBeforeExecute(array $render): array
     {
         [$sql, $params] = parent::updateRenderBeforeExecute($render);
 
         $sql = preg_replace_callback(
-            '~' . self::QUOTED_TOKEN_REGEX . '\K|:\w+~',
+            '~' . self::QUOTED_TOKEN_REGEX . '\K|(?<!:):\w+~',
             static function ($matches) use ($params) {
                 if ($matches[0] === '') {
                     return '';

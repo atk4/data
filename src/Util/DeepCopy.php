@@ -161,16 +161,16 @@ class DeepCopy
      */
     protected function extractKeys(array $array): array
     {
-        $result = [];
+        $res = [];
         foreach ($array as $key => $val) {
             if (is_int($key)) {
-                $result[$val] = [];
+                $res[$val] = [];
             } else {
-                $result[$key] = $val;
+                $res[$key] = $val;
             }
         }
 
-        return $result;
+        return $res;
     }
 
     /**

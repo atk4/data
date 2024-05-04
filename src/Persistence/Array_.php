@@ -334,7 +334,7 @@ class Array_ extends Persistence
      *
      * @return int|string
      */
-    public function lastInsertId(Model $model = null)
+    public function lastInsertId(?Model $model = null)
     {
         if ($model !== null) {
             return $this->lastInsertIdByTable[$model->table] ?? null;
@@ -358,7 +358,7 @@ class Array_ extends Persistence
      *
      * @return list<array<string, mixed>>
      */
-    public function export(Model $model, array $fields = null, bool $typecast = true): array
+    public function export(Model $model, ?array $fields = null, bool $typecast = true): array
     {
         $data = $model->action('select', [$fields])->getRows();
 
@@ -376,7 +376,7 @@ class Array_ extends Persistence
      *
      * @param array<int, string>|null $fields
      */
-    public function initAction(Model $model, array $fields = null): Action
+    public function initAction(Model $model, ?array $fields = null): Action
     {
         if (is_object($model->table)) {
             $tableAction = $this->action($model->table, 'select');

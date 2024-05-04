@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Mssql;
 
+use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\ExecuteException;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Driver\PDO\Exception as DbalDriverPdoException;
@@ -12,6 +13,56 @@ use Doctrine\DBAL\Result as DbalResult;
 
 trait ExpressionTrait
 {
+    #[\Override]
+    protected function escapeStringLiteral(string $value): string
+    {
+        $dummyPersistence = (new \ReflectionClass(Persistence\Sql::class))->newInstanceWithoutConstructor();
+        if (\Closure::bind(static fn () => $dummyPersistence->binaryTypeValueIsEncoded($value), null, Persistence\Sql::class)()) {
+            $value = \Closure::bind(static fn () => $dummyPersistence->binaryTypeValueDecode($value), null, Persistence\Sql::class)();
+
+            return 'convert(VARBINARY(MAX), \'' . bin2hex($value) . '\', 2)';
+        }
+
+        $parts = [];
+        foreach (preg_split('~(\x00{1,4000})~', $value, -1, \PREG_SPLIT_DELIM_CAPTURE) as $i => $v) {
+            if (($i % 2) === 1) {
+                $parts[] = strlen($v) === 1
+                    ? 'nchar(0)'
+                    : 'replicate(nchar(0), ' . strlen($v) . ')';
+            } elseif ($v !== '') {
+                foreach (mb_str_split($v, 4000) as $v2) {
+                    // TODO report "select N'\'':n?'" issue to https://github.com/microsoft/msphpsql
+                    foreach (preg_split('~(:+[^\w]*)~', $v2, -1, \PREG_SPLIT_DELIM_CAPTURE) as $v3) {
+                        if ($v3 !== '') {
+                            $parts[] = '\'' . str_replace(
+                                ['\'', "\\\r\n", "\\\n", "\\\r"],
+                                ['\'\'', "\\\r\n\r\n", "\\\\\n\n", "\\\\\r"],
+                                $v3
+                            ) . '\'';
+                        }
+                    }
+                }
+            }
+        }
+
+        if ($parts === []) {
+            $parts = ['\'\''];
+        }
+
+        $buildConcatSqlFx = static function (array $parts) use (&$buildConcatSqlFx): string {
+            if (count($parts) > 1) {
+                $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
+                $partsRight = array_slice($parts, count($partsLeft));
+
+                return 'concat(cast(' . $buildConcatSqlFx($partsLeft) . ' as NVARCHAR(MAX)), ' . $buildConcatSqlFx($partsRight) . ')';
+            }
+
+            return reset($parts);
+        };
+
+        return $buildConcatSqlFx($parts);
+    }
+
     #[\Override]
     public function render(): array
     {

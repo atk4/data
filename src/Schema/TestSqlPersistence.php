@@ -35,7 +35,7 @@ class TestSqlPersistence extends Persistence\Sql
                     // @phpstan-ignore-next-line SQLLogger is deprecated
                     new class() implements SQLLogger {
                         #[\Override]
-                        public function startQuery($sql, array $params = null, array $types = null): void
+                        public function startQuery($sql, ?array $params = null, ?array $types = null): void
                         {
                             // log transaction savepoint operations only once
                             // https://github.com/doctrine/dbal/blob/3.6.7/src/Connection.php#L1365

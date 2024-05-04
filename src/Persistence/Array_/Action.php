@@ -67,12 +67,12 @@ class Action
      */
     public function aggregate(string $fx, string $field, bool $coalesce = false)
     {
-        $result = 0;
+        $res = 0;
         $column = array_column($this->getRows(), $field);
 
         switch (strtoupper($fx)) {
             case 'SUM':
-                $result = array_sum($column);
+                $res = array_sum($column);
 
                 break;
             case 'AVG':
@@ -80,15 +80,15 @@ class Action
                     $column = array_filter($column, static fn ($v) => $v !== null);
                 }
 
-                $result = array_sum($column) / count($column);
+                $res = array_sum($column) / count($column);
 
                 break;
             case 'MAX':
-                $result = max($column);
+                $res = max($column);
 
                 break;
             case 'MIN':
-                $result = min($column);
+                $res = min($column);
 
                 break;
             default:
@@ -96,7 +96,7 @@ class Action
                     ->addMoreInfo('action', $fx);
         }
 
-        $this->generator = new \ArrayIterator([['v' => $result]]);
+        $this->generator = new \ArrayIterator([['v' => $res]]);
 
         return $this;
     }
@@ -167,44 +167,34 @@ class Action
 
         switch (strtoupper($operator)) {
             case '=':
-                $result = is_array($v2) ? $this->evaluateIf($v1, 'IN', $v2) : $v1 === $v2;
+                $res = is_array($v2) ? $this->evaluateIf($v1, 'IN', $v2) : $v1 === $v2;
 
                 break;
             case '>':
-                $result = $v1 > $v2;
+                $res = $v1 > $v2;
 
                 break;
             case '>=':
-                $result = $v1 >= $v2;
+                $res = $v1 >= $v2;
 
                 break;
             case '<':
-                $result = $v1 < $v2;
+                $res = $v1 < $v2;
 
                 break;
             case '<=':
-                $result = $v1 <= $v2;
+                $res = $v1 <= $v2;
 
                 break;
             case '!=':
-                $result = !$this->evaluateIf($v1, '=', $v2);
-
-                break;
-            case 'LIKE':
-                $pattern = str_ireplace('%', '(.*?)', preg_quote($v2, '~'));
-
-                $result = (bool) preg_match('~^' . $pattern . '$~', (string) $v1);
-
-                break;
-            case 'NOT LIKE':
-                $result = !$this->evaluateIf($v1, 'LIKE', $v2);
+                $res = !$this->evaluateIf($v1, '=', $v2);
 
                 break;
             case 'IN':
-                $result = false;
+                $res = false;
                 foreach ($v2 as $v2Item) { // TODO flatten rows, this looses column names!
                     if ($this->evaluateIf($v1, '=', $v2Item)) {
-                        $result = true;
+                        $res = true;
 
                         break;
                     }
@@ -212,15 +202,27 @@ class Action
 
                 break;
             case 'NOT IN':
-                $result = !$this->evaluateIf($v1, 'IN', $v2);
+                $res = !$this->evaluateIf($v1, 'IN', $v2);
+
+                break;
+            case 'LIKE':
+                $pattern = str_replace('_', '(.)', str_replace('%', '(.*)', preg_quote($v2, '~')));
+
+                $res = preg_match('~^' . $pattern . '$~is', (string) $v1) === 1;
+
+                break;
+            case 'NOT LIKE':
+                $res = !$this->evaluateIf($v1, 'LIKE', $v2);
 
                 break;
             case 'REGEXP':
-                $result = (bool) preg_match('/' . $v2 . '/', $v1);
+                $pattern = preg_replace('~(?<!\\\)(?:\\\\\\\)*+\K\~~', '\\\~', $v2);
+
+                $res = preg_match('~' . $pattern . '~is', $v1) === 1;
 
                 break;
             case 'NOT REGEXP':
-                $result = !$this->evaluateIf($v1, 'REGEXP', $v2);
+                $res = !$this->evaluateIf($v1, 'REGEXP', $v2);
 
                 break;
             default:
@@ -228,7 +230,7 @@ class Action
                     ->addMoreInfo('operator', $operator);
         }
 
-        return $result;
+        return $res;
     }
 
     /**

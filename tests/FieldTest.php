@@ -9,6 +9,7 @@ use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 use Atk4\Data\ValidationException;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class FieldTest extends TestCase
 {
@@ -141,6 +142,7 @@ class FieldTest extends TestCase
     /**
      * @dataProvider provideRequiredNumericZeroExceptionCases
      */
+    #[DataProvider('provideRequiredNumericZeroExceptionCases')]
     public function testRequiredNumericZeroException(string $type): void
     {
         $m = new Model();

@@ -7,7 +7,6 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\SQLitePlatform;
 
 class ExpressionSqlTest extends TestCase
 {
@@ -133,8 +132,8 @@ class ExpressionSqlTest extends TestCase
         $m->addField('surname');
         $m->addField('cached_name');
 
-        if ($this->getDatabasePlatform() instanceof SQLitePlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
-            $concatExpr = '[name] || \' \' || [surname]';
+        if ($this->getDatabasePlatform() instanceof OraclePlatform) { // needed for Oracle 21 and lower
+            $concatExpr = 'CONCAT(CONCAT([name], \' \'), [surname])';
         } else {
             $concatExpr = 'CONCAT([name], \' \', [surname])';
         }

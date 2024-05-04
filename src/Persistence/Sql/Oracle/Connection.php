@@ -26,7 +26,7 @@ class Connection extends BaseConnection
     }
 
     #[\Override]
-    public function lastInsertId(string $sequence = null): string
+    public function lastInsertId(?string $sequence = null): string
     {
         if ($sequence) {
             return $this->dsql()->field($this->expr('{{}}.CURRVAL', [$sequence]))->getOne();

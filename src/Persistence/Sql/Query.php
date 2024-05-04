@@ -9,6 +9,8 @@ namespace Atk4\Data\Persistence\Sql;
  */
 abstract class Query extends Expression
 {
+    private const FIELD_INT_STRING_PREFIX = "\xff_int-string_";
+
     /** Template name for render. */
     public string $mode = 'select';
 
@@ -21,7 +23,7 @@ abstract class Query extends Expression
     public bool $wrapInParentheses = true;
 
     /** @var array<string> */
-    protected array $supportedOperators = ['=', '!=', '<', '>', '<=', '>=', 'like', 'not like', 'in', 'not in'];
+    protected array $supportedOperators = ['=', '!=', '<', '>', '<=', '>=', 'in', 'not in', 'like', 'not like', 'regexp', 'not regexp'];
 
     protected string $templateSelect = '[with]select[option] [field] [from] [table][join][where][group][having][order][limit]';
     protected string $templateInsert = 'insert[option] into [tableNoalias] ([setFields]) values ([setValues])';
@@ -52,12 +54,11 @@ abstract class Query extends Expression
      * a dot or a space), you should wrap it into expression:
      *  $q->field($q->expr('{}', ['fun...ky.field']), 'f');
      *
-     * @param string|Expressionable $field Specifies field to select
-     * @param string                $alias Specify alias for this field
+     * @param string|Expressionable $field
      *
      * @return $this
      */
-    public function field($field, $alias = null)
+    public function field($field, ?string $alias = null)
     {
         $this->_setArgs('field', $alias, $field);
 
@@ -79,17 +80,17 @@ abstract class Query extends Expression
                 return $this->consume($this->defaultField, self::ESCAPE_PARAM);
             }
 
-            return $this->defaultField;
+            return $this->escapeIdentifierSoft($this->defaultField);
         }
 
         $res = [];
         foreach ($this->args['field'] as $alias => $field) {
-            // do not add alias when:
-            //  - we don't want aliases
-            //  - OR alias is the same as field
-            //  - OR alias is numeric
+            if (is_string($alias) && str_starts_with($alias, self::FIELD_INT_STRING_PREFIX)) {
+                $alias = substr($alias, strlen(self::FIELD_INT_STRING_PREFIX));
+            }
+
             if ($addAlias === false
-                || (is_string($field) && $alias === $field)
+                || $alias === $field
                 || is_int($alias)
             ) {
                 $alias = null;
@@ -98,7 +99,7 @@ abstract class Query extends Expression
             // will parameterize the value and escape if necessary
             $field = $this->consume($field, self::ESCAPE_IDENTIFIER_SOFT);
 
-            if ($alias) {
+            if ($alias !== null) {
                 // field alias cannot be expression, so simply escape it
                 $field .= ' ' . $this->escapeIdentifier($alias);
             }
@@ -121,19 +122,21 @@ abstract class Query extends Expression
     /**
      * Specify a table to be used in a query.
      *
-     * @param string|Expressionable $table Specifies table
-     * @param string                $alias Specify alias for this table
+     * @param string|Expressionable $table
      *
      * @return $this
      */
-    public function table($table, $alias = null)
+    public function table($table, ?string $alias = null)
     {
-        if ($table instanceof self && $alias === null) {
-            throw new Exception('If table is set as subquery, then table alias is required');
-        }
+        if ($alias === null) {
+            if ($table instanceof self) {
+                throw (new Exception('Table alias is required when table is set as subquery'))
+                    ->addMoreInfo('table', $table);
+            }
 
-        if (is_string($table) && $alias === null) {
-            $alias = $table;
+            if (is_string($table)) {
+                $alias = $table;
+            }
         }
 
         $this->_setArgs('table', $alias, $table);
@@ -219,14 +222,11 @@ abstract class Query extends Expression
     /**
      * Specify WITH query to be used.
      *
-     * @param Query                   $cursor    Specifies cursor query or array [alias => query] for adding multiple
-     * @param string                  $alias     Specify alias for this cursor
-     * @param array<int, string>|null $fields    Optional array of field names used in cursor
-     * @param bool                    $recursive Is it recursive?
+     * @param array<int, string>|null $fields
      *
      * @return $this
      */
-    public function with(self $cursor, string $alias, array $fields = null, bool $recursive = false)
+    public function with(self $cursor, string $alias, ?array $fields = null, bool $recursive = false)
     {
         $this->_setArgs('with', $alias, [
             'cursor' => $cursor,
@@ -501,21 +501,73 @@ abstract class Query extends Expression
     }
 
     /**
-     * Override to fix numeric affinity for SQLite.
+     * @param \Closure(string, string): string $makeSqlFx
      */
-    protected function _renderConditionBinary(string $operator, string $sqlLeft, string $sqlRight): string
-    {
-        return $sqlLeft . ' ' . $operator . ' ' . $sqlRight;
+    protected function _renderConditionBinaryReuse(
+        string $sqlLeft,
+        string $sqlRight,
+        \Closure $makeSqlFx,
+        bool $allowReuseLeft = true,
+        bool $allowReuseRight = true,
+        string $internalIdentifier = 'reuse'
+    ): string {
+        $nonTrivialSqlRegex = '~\s|\(~';
+        $subqueryLeftColumnSql = $allowReuseLeft && preg_match($nonTrivialSqlRegex, $sqlLeft)
+            ? $this->escapeIdentifier('__atk4_' . $internalIdentifier . '_left__')
+            : null;
+        $subqueryRightColumnSql = $allowReuseRight && preg_match($nonTrivialSqlRegex, $sqlRight)
+            ? $this->escapeIdentifier('__atk4_' . $internalIdentifier . '_right__')
+            : null;
+
+        $subqueryFromSql = null;
+        if ($subqueryLeftColumnSql !== null || $subqueryRightColumnSql !== null) {
+            $subqueryFromSql = 'select ';
+            if ($subqueryLeftColumnSql !== null) {
+                $subqueryFromSql .= $sqlLeft . ' ' . $subqueryLeftColumnSql;
+                $sqlLeft = $subqueryLeftColumnSql;
+            }
+            if ($subqueryRightColumnSql !== null) {
+                if ($subqueryLeftColumnSql !== null) {
+                    $subqueryFromSql .= ', ';
+                }
+                $subqueryFromSql .= $sqlRight . ' ' . $subqueryRightColumnSql;
+                $sqlRight = $subqueryRightColumnSql;
+            }
+        }
+
+        $res = $makeSqlFx($sqlLeft, $sqlRight);
+
+        if ($subqueryFromSql !== null) {
+            $res = '(select ' . $res . ' from (' . $subqueryFromSql . ') ' . $this->escapeIdentifier('__atk4_' . $internalIdentifier . '_tmp__') . ')';
+        }
+
+        return $res;
     }
 
     /**
-     * Override to fix numeric affinity for SQLite.
-     *
-     * @param non-empty-list<string> $sqlValues
+     * @param string|($operator is 'in'|'not in' ? non-empty-list<string> : never) $sqlRight
      */
-    protected function _renderConditionInOperator(bool $negated, string $sqlLeft, array $sqlValues): string
+    protected function _renderConditionBinary(string $operator, string $sqlLeft, $sqlRight): string
     {
-        return $sqlLeft . ($negated ? ' not' : '') . ' in (' . implode(', ', $sqlValues) . ')';
+        return $sqlLeft . ' ' . $operator . ' ' . (is_array($sqlRight)
+            ? '(' . implode(', ', $sqlRight) . ')'
+            : $sqlRight);
+    }
+
+    protected function _renderConditionLikeOperator(bool $negated, string $sqlLeft, string $sqlRight): string
+    {
+        $sqlRightEscaped = 'regexp_replace(' . $sqlRight . ', '
+            . $this->escapeStringLiteral('(\\\[\\\_%])|(\\\)') . ', '
+            . $this->escapeStringLiteral('\1\2\2') . ')';
+
+        return $sqlLeft . ($negated ? ' not' : '') . ' like ' . $sqlRightEscaped
+            . ' escape ' . $this->escapeStringLiteral('\\');
+    }
+
+    protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight, bool $binary = false): string
+    {
+        return ($negated ? 'not ' : '') . 'regexp_like(' . $sqlLeft . ', ' . $sqlRight
+            . ', ' . $this->escapeStringLiteral(($binary ? '' : 'i') . 's') . ')';
     }
 
     /**
@@ -591,7 +643,7 @@ abstract class Query extends Expression
 
                 $values = array_map(fn ($v) => $this->consume($v, self::ESCAPE_PARAM), $value);
 
-                return $this->_renderConditionInOperator($operator === 'not in', $field, $values);
+                return $this->_renderConditionBinary($operator, $field, $values);
             }
 
             throw (new Exception('Unsupported operator for array value'))
@@ -604,6 +656,12 @@ abstract class Query extends Expression
         // if value is object, then it should be Expression or Query itself
         // otherwise just escape value
         $value = $this->consume($value, self::ESCAPE_PARAM);
+
+        if (in_array($operator, ['like', 'not like'], true)) {
+            return $this->_renderConditionLikeOperator($operator === 'not like', $field, $value);
+        } elseif (in_array($operator, ['regexp', 'not regexp'], true)) {
+            return $this->_renderConditionRegexpOperator($operator === 'not regexp', $field, $value);
+        }
 
         return $this->_renderConditionBinary($operator, $field, $value);
     }
@@ -1043,7 +1101,7 @@ abstract class Query extends Expression
     /**
      * Returns Expression object for NOW() or CURRENT_TIMESTAMP() method.
      */
-    public function exprNow(int $precision = null): Expression
+    public function exprNow(?int $precision = null): Expression
     {
         return $this->expr(
             'current_timestamp(' . ($precision !== null ? '[]' : '') . ')',
@@ -1183,22 +1241,30 @@ abstract class Query extends Expression
     /**
      * Sets value in args array. Doesn't allow duplicate aliases.
      *
-     * @param string      $what  Where to set it - table|field
-     * @param string|null $alias Alias name
-     * @param mixed       $value Value to set in args array
+     * @param mixed $value
      */
-    protected function _setArgs($what, $alias, $value): void
+    protected function _setArgs(string $kind, ?string $alias, $value): void
     {
         if ($alias === null) {
-            $this->args[$what][] = $value;
+            $this->args[$kind][] = $value;
         } else {
-            if (isset($this->args[$what][$alias])) {
+            if (isset($this->args[$kind][$alias])) {
                 throw (new Exception('Alias must be unique'))
-                    ->addMoreInfo('what', $what)
+                    ->addMoreInfo('kind', $kind)
                     ->addMoreInfo('alias', $alias);
             }
 
-            $this->args[$what][$alias] = $value;
+            if ($alias === (string) (int) $alias) {
+                if ($kind === 'field') {
+                    $alias = self::FIELD_INT_STRING_PREFIX . $alias;
+                } else {
+                    throw (new Exception('Alias must be not int-string'))
+                        ->addMoreInfo('kind', $kind)
+                        ->addMoreInfo('alias', $alias);
+                }
+            }
+
+            $this->args[$kind][$alias] = $value;
         }
     }
 

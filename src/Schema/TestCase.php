@@ -8,6 +8,8 @@ use Atk4\Core\Phpunit\TestCase as BaseTestCase;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Expression;
+use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
+use Atk4\Data\Persistence\Sql\Sqlite\Expression as SqliteExpression;
 use Atk4\Data\Reference;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
@@ -97,8 +99,9 @@ abstract class TestCase extends BaseTestCase
 
         // needed for \Atk4\Data\Persistence\Sql\*\ExpressionTrait::updateRenderBeforeExecute() fixes
         $i = 0;
+        $quotedTokenRegex = $this->getConnection()->expr()::QUOTED_TOKEN_REGEX;
         $sql = preg_replace_callback(
-            '~' . Expression::QUOTED_TOKEN_REGEX . '\K|(\?)|cast\((\?|:\w+) as (BOOLEAN|INTEGER|BIGINT|DOUBLE PRECISION|BINARY_DOUBLE)\)|\((\?|:\w+) \+ 0\.00\)~',
+            '~' . $quotedTokenRegex . '\K|(\?)|cast\((\?|:\w+) as (BOOLEAN|INTEGER|BIGINT|DOUBLE PRECISION|BINARY_DOUBLE)\)|\((\?|:\w+) \+ 0\.00\)~',
             static function ($matches) use (&$types, &$params, &$i) {
                 if ($matches[0] === '') {
                     return '';
@@ -135,7 +138,26 @@ abstract class TestCase extends BaseTestCase
             $sql
         );
 
-        $exprNoRender = new class($sql, $params) extends Expression {
+        $exprNoRender = new class($sql, $params, $this->getConnection()->expr()) extends Expression {
+            private Expression $dummyExpression;
+
+            public function __construct($template, array $arguments, Expression $dummyExpression)
+            {
+                parent::__construct($template, $arguments);
+
+                $this->dummyExpression = $dummyExpression;
+            }
+
+            #[\Override]
+            protected function escapeStringLiteral(string $value): string
+            {
+                $dummyExpression = $this->dummyExpression;
+
+                // Closure rebind should not be needed
+                // https://github.com/php/php-src/issues/14009
+                return \Closure::bind(static fn () => $dummyExpression->escapeStringLiteral($value), null, parent::class)();
+            }
+
             #[\Override]
             public function render(): array
             {
@@ -156,7 +178,7 @@ abstract class TestCase extends BaseTestCase
         $platform = $this->getDatabasePlatform();
 
         $convertedSql = preg_replace_callback(
-            '~(?![\'`])' . Expression::QUOTED_TOKEN_REGEX . '\K|' . Expression::QUOTED_TOKEN_REGEX . '|:(\w+)~',
+            '~(?![\'`])' . SqliteExpression::QUOTED_TOKEN_REGEX . '\K|' . SqliteExpression::QUOTED_TOKEN_REGEX . '|:(\w+)~',
             static function ($matches) use ($platform) {
                 if ($matches[0] === '') {
                     return '';
@@ -294,7 +316,7 @@ abstract class TestCase extends BaseTestCase
         self::assertSame($expected, $actual, $message);
     }
 
-    public function createMigrator(Model $model = null): Migrator
+    public function createMigrator(?Model $model = null): Migrator
     {
         $migrator = new Migrator($model ?? $this->db);
         $this->createdMigrators[] = $migrator;
@@ -382,7 +404,7 @@ abstract class TestCase extends BaseTestCase
      *
      * @return array<string, array<int, array<string, mixed>>>
      */
-    public function getDb(array $tableNames = null, bool $noId = false): array
+    public function getDb(?array $tableNames = null, bool $noId = false): array
     {
         if ($tableNames === null) {
             $tableNames = [];
@@ -442,11 +464,25 @@ abstract class TestCase extends BaseTestCase
 
     protected function markTestIncompleteOnMySQL56PlatformAsCreateUniqueStringIndexHasLengthLimit(): void
     {
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-            $serverVersion = $this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
-            if (preg_match('~^5\.6~', $serverVersion)) {
-                self::markTestIncomplete('TODO MySQL 5.6: Unique key exceed max key (767 bytes) length');
-            }
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform
+            && !MysqlConnection::isServerMariaDb($this->getConnection())
+            && MysqlConnection::getServerMinorVersion($this->getConnection()) < 570
+        ) {
+            self::markTestIncomplete('TODO MySQL 5.6: Unique key exceed max key (767 bytes) length');
+        }
+    }
+
+    protected function markTestIncompleteOnMySQL8xPlatformAsBinaryLikeIsBroken(bool $isBinary): void
+    {
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform && $isBinary
+            && !MysqlConnection::isServerMariaDb($this->getConnection())
+            && MysqlConnection::getServerMinorVersion($this->getConnection()) >= 800
+        ) {
+            // MySQL v8.0.22 and higher throws SQLSTATE[HY000]: General error: 3995 Character set 'binary'
+            // cannot be used in conjunction with 'utf8mb4_0900_ai_ci' in call to regexp_like.
+            // https://github.com/mysql/mysql-server/blob/72136a6d15/sql/item_regexp_func.cc#L115-L120
+            // https://dbfiddle.uk/9SA-omyF
+            self::markTestIncomplete('MySQL 8.x has broken binary LIKE support');
         }
     }
 }

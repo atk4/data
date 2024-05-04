@@ -6,6 +6,7 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
+use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 
@@ -46,11 +47,11 @@ class ModelWithCteTest extends TestCase
             $m->action('select')->render()[0]
         );
 
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-            $serverVersion = $this->getConnection()->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
-            if (preg_match('~^5\.(?!5\.5-.+?-MariaDB)~', $serverVersion)) {
-                self::markTestIncomplete('MySQL Server 5.x does not support WITH clause');
-            }
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform
+            && !MysqlConnection::isServerMariaDb($this->getConnection())
+            && MysqlConnection::getServerMinorVersion($this->getConnection()) < 800
+        ) {
+            self::markTestIncomplete('MySQL 5.x does not support WITH clause');
         }
 
         self::assertSameExportUnordered([

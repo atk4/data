@@ -25,6 +25,13 @@ class Connection extends BaseConnection
             ...$configuration->getMiddlewares(),
             new EnableForeignKeys(),
             new PreserveAutoincrementOnRollbackMiddleware(),
+            ...(
+                version_compare(self::getDriverVersion(), '3.44') < 0
+                    ? [new CreateConcatFunctionMiddleware()]
+                    : []
+            ),
+            new CreateRegexpLikeFunctionMiddleware(),
+            new CreateRegexpReplaceFunctionMiddleware(),
         ]);
 
         return $configuration;

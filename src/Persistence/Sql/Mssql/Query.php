@@ -10,8 +10,13 @@ class Query extends BaseQuery
 {
     use ExpressionTrait;
 
+    public const QUOTED_TOKEN_REGEX = Expression::QUOTED_TOKEN_REGEX;
+
     protected string $identifierEscapeChar = ']';
     protected string $expressionClass = Expression::class;
+
+    // https://devblogs.microsoft.com/azure-sql/introducing-regular-expression-regex-support-in-azure-sql-db/
+    protected array $supportedOperators = ['=', '!=', '<', '>', '<=', '>=', 'in', 'not in', 'like', 'not like'];
 
     protected string $templateInsert = <<<'EOF'
         begin try
@@ -31,6 +36,73 @@ class Query extends BaseQuery
           end
         end catch
         EOF;
+
+    /**
+     * @param \Closure(string, string): string $makeSqlFx
+     */
+    protected function _renderConditionBinaryReuseBool(string $sqlLeft, string $sqlRight, \Closure $makeSqlFx): string
+    {
+        return $this->_renderConditionBinaryReuse(
+            $sqlLeft,
+            $sqlRight,
+            static fn ($sqlLeft, $sqlRight) => 'iif(' . $makeSqlFx($sqlLeft, $sqlRight) . ', 1, 0)'
+        ) . ' = 1';
+    }
+
+    #[\Override]
+    protected function _renderConditionLikeOperator(bool $negated, string $sqlLeft, string $sqlRight): string
+    {
+        return $this->_renderConditionBinaryReuseBool(
+            $sqlLeft,
+            $sqlRight,
+            function ($sqlLeft, $sqlRight) use ($negated) {
+                $iifNtextFx = static function ($valueSql, $trueSql, $falseSql) {
+                    $isNtextFx = static function ($sql, $negate) {
+                        // "select top 0 ..." is always optimized into constant expression
+                        return 'datalength(concat((select top 0 ' . $sql . '), 0x30)) '
+                            . ($negate ? '!' : '') . '= 2';
+                    };
+
+                    return '((' . $isNtextFx($valueSql, false) . ' and ' . $trueSql . ')'
+                        . ' or (' . $isNtextFx($valueSql, true) . ' and ' . $falseSql . '))';
+                };
+
+                $makeSqlFx = function ($isNtext) use ($sqlLeft, $sqlRight, $negated) {
+                    $quoteStringFx = fn (string $v) => $isNtext
+                        ? $this->escapeStringLiteral($v)
+                        : '0x' . bin2hex($v);
+
+                    $replaceFx = static function (string $sql, string $search, string $replacement) use ($quoteStringFx) {
+                        return 'replace(' . $sql . ', '
+                            . $quoteStringFx($search) . ', '
+                            . $quoteStringFx($replacement) . ')';
+                    };
+
+                    // workaround missing regexp_replace() function
+                    // https://devblogs.microsoft.com/azure-sql/introducing-regular-expression-regex-support-in-azure-sql-db/
+                    $sqlRightEscaped = $sqlRight;
+                    foreach (['\\', '_', '%'] as $v) {
+                        $sqlRightEscaped = $replaceFx($sqlRightEscaped, '\\' . $v, '\\' . $v . '*');
+                    }
+                    $sqlRightEscaped = $replaceFx($sqlRightEscaped, '\\', '\\\\');
+                    foreach (['_', '%', '\\'] as $v) {
+                        $sqlRightEscaped = $replaceFx($sqlRightEscaped, '\\\\' . str_replace('\\', '\\\\', $v) . '*', '\\' . $v);
+                    }
+
+                    $sqlRightEscaped = $replaceFx($sqlRightEscaped, '[', '\[');
+
+                    return $sqlLeft . ($negated ? ' not' : '') . ' like ' . $sqlRightEscaped
+                        . ' escape ' . $quoteStringFx('\\');
+                };
+
+                return $iifNtextFx(
+                    $sqlLeft,
+                    $makeSqlFx(true),
+                    $makeSqlFx(false)
+                );
+            }
+        );
+    }
 
     #[\Override]
     protected function deduplicateRenderOrder(array $sqls): array

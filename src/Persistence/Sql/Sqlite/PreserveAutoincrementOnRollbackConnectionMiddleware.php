@@ -11,7 +11,9 @@ class PreserveAutoincrementOnRollbackConnectionMiddleware extends AbstractConnec
 {
     private function createExpressionFromStringLiteral(string $value): Expression
     {
-        return new Expression('\'' . str_replace('\'', '\'\'', $value) . '\'');
+        return new Expression(
+            \Closure::bind(static fn () => (new Expression())->escapeStringLiteral($value), null, Expression::class)()
+        );
     }
 
     /**

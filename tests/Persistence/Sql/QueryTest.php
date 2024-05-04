@@ -5,12 +5,23 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests\Persistence\Sql;
 
 use Atk4\Core\Phpunit\TestCase;
-use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Exception;
 use Atk4\Data\Persistence\Sql\Expression;
-use Atk4\Data\Persistence\Sql\Mysql;
+use Atk4\Data\Persistence\Sql\Mssql\Query as MssqlQuery;
+use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
+use Atk4\Data\Persistence\Sql\Mysql\Expression as MysqlExpression;
+use Atk4\Data\Persistence\Sql\Mysql\Query as MysqlQuery;
+use Atk4\Data\Persistence\Sql\Oracle\Query as OracleQuery;
+use Atk4\Data\Persistence\Sql\Postgresql\Query as PostgresqlQuery;
 use Atk4\Data\Persistence\Sql\Query;
+use Atk4\Data\Persistence\Sql\Sqlite\Connection as SqliteConnection;
+use Atk4\Data\Persistence\Sql\Sqlite\Query as SqliteQuery;
+use Doctrine\DBAL\Connection as DbalConnection;
+use Doctrine\DBAL\Driver\Middleware\AbstractConnectionMiddleware;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
 
 class QueryTest extends TestCase
 {
@@ -31,15 +42,27 @@ class QueryTest extends TestCase
             {
                 $this->expressionClass = get_class(new class() extends Expression {
                     protected string $identifierEscapeChar = '"';
+
+                    #[\Override]
+                    protected function escapeStringLiteral(string $value): string
+                    {
+                        return null; // @phpstan-ignore-line
+                    }
                 });
 
                 parent::__construct($defaults, $arguments);
+            }
+
+            #[\Override]
+            protected function escapeStringLiteral(string $value): string
+            {
+                return '\'' . str_replace('\'', '\'\'', $value) . '\'';
             }
         };
 
         if (($query->connection ?? null) === null) {
             $query->connection = \Closure::bind(static function () use ($query) {
-                $connection = new Persistence\Sql\Sqlite\Connection();
+                $connection = new SqliteConnection();
                 $connection->expressionClass = \Closure::bind(static fn () => $query->expressionClass, null, Query::class)();
                 $connection->queryClass = get_class($query);
 
@@ -81,9 +104,9 @@ class QueryTest extends TestCase
     {
         self::assertInstanceOf(Expression::class, $this->q()->expr('foo'));
 
-        $connection = \Closure::bind(static fn () => new Mysql\Connection(), null, Connection::class)();
-        $q = new Mysql\Query(['connection' => $connection]);
-        self::assertSame(Mysql\Expression::class, get_class($q->expr('foo')));
+        $connection = \Closure::bind(static fn () => new MysqlConnection(), null, Connection::class)();
+        $q = new MysqlQuery(['connection' => $connection]);
+        self::assertSame(MysqlExpression::class, get_class($q->expr('foo')));
         self::assertSame($connection, $q->expr('foo')->connection);
     }
 
@@ -91,9 +114,9 @@ class QueryTest extends TestCase
     {
         self::assertInstanceOf(Query::class, $this->q()->dsql());
 
-        $connection = \Closure::bind(static fn () => new Mysql\Connection(), null, Connection::class)();
-        $q = new Mysql\Query(['connection' => $connection]);
-        self::assertSame(Mysql\Query::class, get_class($q->dsql()));
+        $connection = \Closure::bind(static fn () => new MysqlConnection(), null, Connection::class)();
+        $q = new MysqlQuery(['connection' => $connection]);
+        self::assertSame(MysqlQuery::class, get_class($q->dsql()));
         self::assertSame($connection, $q->dsql()->connection);
     }
 
@@ -134,6 +157,10 @@ class QueryTest extends TestCase
             $this->callProtected($this->q()->field('first_name', 'name'), '_renderField')
         );
         self::assertSame(
+            '"first_name" "2"',
+            $this->callProtected($this->q()->field('first_name', '2'), '_renderField')
+        );
+        self::assertSame(
             '*',
             $this->callProtected($this->q()->field('*'), '_renderField')
         );
@@ -145,20 +172,21 @@ class QueryTest extends TestCase
 
     public function testFieldDefaultField(): void
     {
-        // default defaultField
         self::assertSame(
             '*',
             $this->callProtected($this->q(), '_renderField')
         );
-        // defaultField as custom string - not escaped
         self::assertSame(
-            'id',
+            '"id"',
             $this->callProtected($this->q(['defaultField' => 'id']), '_renderField')
         );
-        // defaultField as custom string with dot - not escaped
         self::assertSame(
-            'all.values',
+            '"all"."values"',
             $this->callProtected($this->q(['defaultField' => 'all.values']), '_renderField')
+        );
+        self::assertSame(
+            '"all".*',
+            $this->callProtected($this->q(['defaultField' => 'all.*']), '_renderField')
         );
     }
 
@@ -198,27 +226,30 @@ class QueryTest extends TestCase
     public function testFieldDuplicateAliasException(): void
     {
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Alias must be unique');
         $this->q()->field('name', 'a')->field('surname', 'a');
     }
 
     /**
      * @doesNotPerformAssertions
      */
-    public function testTableNoAliasExpressionException(): void
+    #[DoesNotPerformAssertions]
+    public function testTableNoAliasExpression(): void
     {
-        // $this->expectException(Exception::class); // no more
         $this->q()->table($this->q()->expr('test'));
     }
 
     public function testTableNoAliasQueryException(): void
     {
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Table alias is required when table is set as subquery');
         $this->q()->table($this->q()->table('test'));
     }
 
     public function testTableAliasNotUniqueException(): void
     {
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Alias must be unique');
         $this->q()
             ->table('foo', 'a')
             ->table('bar', 'a');
@@ -227,6 +258,7 @@ class QueryTest extends TestCase
     public function testTableAliasNotUniqueException2(): void
     {
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Alias must be unique');
         $this->q()
             ->table('foo', 'bar')
             ->table('bar');
@@ -235,6 +267,7 @@ class QueryTest extends TestCase
     public function testTableAliasNotUniqueException3(): void
     {
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Alias must be unique');
         $this->q()
             ->table('foo')
             ->table('foo');
@@ -243,6 +276,7 @@ class QueryTest extends TestCase
     public function testTableAliasNotUniqueException4(): void
     {
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Alias must be unique');
         $this->q()
             ->table($this->q()->table('test'), 'foo')
             ->table('foo');
@@ -251,9 +285,17 @@ class QueryTest extends TestCase
     public function testTableAliasNotUniqueException5(): void
     {
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Alias must be unique');
         $this->q()
             ->table('foo')
             ->table($this->q()->table('test'), 'foo');
+    }
+
+    public function testTableAliasIntStringException(): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Alias must be not int-string');
+        $this->q()->table('foo', '10');
     }
 
     /**
@@ -585,6 +627,10 @@ class QueryTest extends TestCase
             'where "id" is not null',
             $this->q('[where]')->where('id', '!=', null)->render()[0]
         );
+        self::assertSame(
+            'where case when typeof(`id`) in (\'integer\', \'real\') then cast(`id` as numeric) = :a else case when typeof(:a) in (\'integer\', \'real\') then `id` = cast(:a as numeric) else `id` = :a end end',
+            (new SqliteQuery('[where]'))->where('id', 1)->render()[0]
+        );
 
         // three parameters - field, condition, value
         self::assertSame(
@@ -618,6 +664,18 @@ class QueryTest extends TestCase
         self::assertSame(
             'where now = :a',
             $this->q('[where]')->where($this->e('now'), 1)->render()[0]
+        );
+        self::assertSame(
+            version_compare(SqliteConnection::getDriverVersion(), '3.45') < 0
+                ? 'where case when typeof(sum("id")) in (\'integer\', \'real\') then cast(sum("id") as numeric) = :a else case when typeof(:a) in (\'integer\', \'real\') then sum("id") = cast(:a as numeric) else sum("id") = :a end end'
+                : 'where (select case when typeof(`__atk4_affinity_left__`) in (\'integer\', \'real\') then cast(`__atk4_affinity_left__` as numeric) = :a else case when typeof(:a) in (\'integer\', \'real\') then `__atk4_affinity_left__` = cast(:a as numeric) else `__atk4_affinity_left__` = :a end end from (select sum("id") `__atk4_affinity_left__`) `__atk4_affinity_tmp__`)',
+            (new SqliteQuery('[where]'))->where($this->e('sum({})', ['id']), 1)->render()[0]
+        );
+        self::assertSame(
+            version_compare(SqliteConnection::getDriverVersion(), '3.45') < 0
+                ? 'where case when typeof(sum("id")) in (\'integer\', \'real\') then cast(sum("id") as numeric) = sum("b") else case when typeof(sum("b")) in (\'integer\', \'real\') then sum("id") = cast(sum("b") as numeric) else sum("id") = sum("b") end end'
+                : 'where (select case when typeof(`__atk4_affinity_left__`) in (\'integer\', \'real\') then cast(`__atk4_affinity_left__` as numeric) = `__atk4_affinity_right__` else case when typeof(`__atk4_affinity_right__`) in (\'integer\', \'real\') then `__atk4_affinity_left__` = cast(`__atk4_affinity_right__` as numeric) else `__atk4_affinity_left__` = `__atk4_affinity_right__` end end from (select sum("id") `__atk4_affinity_left__`, sum("b") `__atk4_affinity_right__`) `__atk4_affinity_tmp__`)',
+            (new SqliteQuery('[where]'))->where($this->e('sum({})', ['id']), $this->e('sum({})', ['b']))->render()[0]
         );
 
         // more than one where condition - join with AND keyword
@@ -664,6 +722,7 @@ class QueryTest extends TestCase
      *
      * @dataProvider provideWhereUnsupportedOperatorCases
      */
+    #[DataProvider('provideWhereUnsupportedOperatorCases')]
     public function testWhereUnsupportedOperator(string $operator, $value): void
     {
         $q = $this->q('[where]')->where('x', $operator, $value);
@@ -703,6 +762,54 @@ class QueryTest extends TestCase
         yield ['in', null];
     }
 
+    /**
+     * @param string|array<string, mixed> $template
+     */
+    private function createMysqlQuery(string $serverVersion, $template = []): MysqlQuery
+    {
+        $dbalConnection = new class($serverVersion) extends DbalConnection {
+            private string $serverVersion;
+
+            public function __construct(string $serverVersion) // @phpstan-ignore-line
+            {
+                $this->serverVersion = $serverVersion;
+            }
+
+            #[\Override]
+            public function getWrappedConnection()
+            {
+                return new class($this->serverVersion) extends AbstractConnectionMiddleware {
+                    private string $serverVersion;
+
+                    public function __construct(string $serverVersion) // @phpstan-ignore-line
+                    {
+                        $this->serverVersion = $serverVersion;
+                    }
+
+                    #[\Override]
+                    public function getServerVersion()
+                    {
+                        return $this->serverVersion;
+                    }
+                };
+            }
+
+            #[\Override]
+            public function getDatabasePlatform()
+            {
+                return new MySQLPlatform();
+            }
+        };
+
+        $connection = \Closure::bind(static fn () => new MysqlConnection(), null, Connection::class)();
+        \Closure::bind(static fn () => $connection->_connection = $dbalConnection, null, Connection::class)();
+
+        $q = new MysqlQuery($template);
+        $q->connection = $connection;
+
+        return $q;
+    }
+
     public function testWhereSpecialValues(): void
     {
         // in | not in
@@ -713,6 +820,14 @@ class QueryTest extends TestCase
         self::assertSame(
             'where "id" not in (:a, :b)',
             $this->q('[where]')->where('id', 'not in', [1, 2])->render()[0]
+        );
+        self::assertSame(
+            'where ('
+                . 'case when typeof(`id`) in (\'integer\', \'real\') then cast(`id` as numeric) = :a else case when typeof(:a) in (\'integer\', \'real\') then `id` = cast(:a as numeric) else `id` = :a end end'
+                . ' or '
+                . 'case when typeof(`id`) in (\'integer\', \'real\') then cast(`id` as numeric) = :b else case when typeof(:b) in (\'integer\', \'real\') then `id` = cast(:b as numeric) else `id` = :b end end'
+                . ')',
+            (new SqliteQuery('[where]'))->where('id', 'in', [1, 2])->render()[0]
         );
         // special treatment for empty array values
         self::assertSame(
@@ -736,12 +851,95 @@ class QueryTest extends TestCase
 
         // like | not like
         self::assertSame(
-            'where "name" like :a',
+            <<<'EOF'
+                where "name" like regexp_replace(:a, '(\\[\\_%])|(\\)', '\1\2\2') escape '\'
+                EOF,
             $this->q('[where]')->where('name', 'like', 'foo')->render()[0]
         );
         self::assertSame(
-            'where "name" not like :a',
+            <<<'EOF'
+                where "name" not like regexp_replace(:a, '(\\[\\_%])|(\\)', '\1\2\2') escape '\'
+                EOF,
             $this->q('[where]')->where('name', 'not like', 'foo')->render()[0]
+        );
+        self::assertSame(
+            <<<'EOF'
+                where (`name` like regexp_replace(:a, '(\\[\\_%])|(\\)', '\1\2\2') escape '\' and ((`name` = lower(`name`) and `name` = upper(`name`)) or regexp_like(`name`, concat('^',regexp_replace(regexp_replace(regexp_replace(regexp_replace(:a, '\\(?:(?=[_%])|\K\\)|(?=[.\\+*?[^\]$(){}|])', '\'), '(?<!\\)(\\\\)*\K_', '.'), '(?<!\\)(\\\\)*\K%', '.*'), '(?<!\\)(\\\\)*\K\\(?=[_%])', ''), '$'), 's')))
+                EOF,
+            (new SqliteQuery('[where]'))->where('name', 'like', 'foo')->render()[0]
+        );
+        self::assertSame(
+            version_compare(SqliteConnection::getDriverVersion(), '3.45') < 0
+                ? <<<'EOF'
+                    where (`name` like regexp_replace(sum("b"), '(\\[\\_%])|(\\)', '\1\2\2') escape '\' and ((`name` = lower(`name`) and `name` = upper(`name`)) or regexp_like(`name`, concat('^',regexp_replace(regexp_replace(regexp_replace(regexp_replace(sum("b"), '\\(?:(?=[_%])|\K\\)|(?=[.\\+*?[^\]$(){}|])', '\'), '(?<!\\)(\\\\)*\K_', '.'), '(?<!\\)(\\\\)*\K%', '.*'), '(?<!\\)(\\\\)*\K\\(?=[_%])', ''), '$'), 's')))
+                    EOF
+                : <<<'EOF'
+                    where (select (`name` like regexp_replace(`__atk4_reuse_right__`, '(\\[\\_%])|(\\)', '\1\2\2') escape '\' and ((`name` = lower(`name`) and `name` = upper(`name`)) or regexp_like(`name`, concat('^',regexp_replace(regexp_replace(regexp_replace(regexp_replace(`__atk4_reuse_right__`, '\\(?:(?=[_%])|\K\\)|(?=[.\\+*?[^\]$(){}|])', '\'), '(?<!\\)(\\\\)*\K_', '.'), '(?<!\\)(\\\\)*\K%', '.*'), '(?<!\\)(\\\\)*\K\\(?=[_%])', ''), '$'), 's'))) from (select sum("b") `__atk4_reuse_right__`) `__atk4_reuse_tmp__`)
+                    EOF,
+            (new SqliteQuery('[where]'))->where('name', 'like', $this->e('sum({})', ['b']))->render()[0]
+        );
+        foreach (['8.0.0', 'MariaDB-11.0.0'] as $serverVersion) {
+            self::assertSame(
+                <<<'EOF'
+                    where `name` like regexp_replace(:a, '\\\\\\\\|\\\\(?![_%])', '\\\\\\\\') escape '\\'
+                    EOF,
+                $this->createMysqlQuery($serverVersion, '[where]')->where('name', 'like', 'foo')->render()[0]
+            );
+        }
+        self::assertSame(
+            <<<'EOF'
+                where case when pg_typeof("name") = 'bytea'::regtype then replace(regexp_replace(encode(case when pg_typeof("name") = 'bytea'::regtype then decode(case when pg_typeof("name") = 'bytea'::regtype then replace(substring(cast("name" as text) from 3), chr(92), repeat(chr(92), 2)) else '' end, 'hex') else cast(replace(cast("name" as text), chr(92), repeat(chr(92), 2)) as bytea) end, 'escape'), '(?<!\\)((\\\\)*)\\(\d\d\d)', '\1©\3©', 'g'), repeat(chr(92), 2), chr(92)) like regexp_replace(replace(regexp_replace(encode(cast(replace(cast(:a as text), chr(92), repeat(chr(92), 2)) as bytea), 'escape'), '(?<!\\)((\\\\)*)\\(\d\d\d)', '\1©\3©', 'g'), repeat(chr(92), 2), chr(92)), '(\\[\\_%])|(\\)', '\1\2\2', 'g') escape chr(92) else cast("name" as citext) like regexp_replace(:a, '(\\[\\_%])|(\\)', '\1\2\2', 'g') escape chr(92) end
+                EOF,
+            (new PostgresqlQuery('[where]'))->where('name', 'like', 'foo')->render()[0]
+        );
+        self::assertSame(
+            <<<'EOF'
+                where iif(((datalength(concat((select top 0 [name]), 0x30)) = 2 and [name] like replace(replace(replace(replace(replace(replace(replace(replace(:a, N'\\', N'\\*'), N'\_', N'\_*'), N'\%', N'\%*'), N'\', N'\\'), N'\\_*', N'\_'), N'\\%*', N'\%'), N'\\\\*', N'\\'), N'[', N'\[') escape N'\') or (datalength(concat((select top 0 [name]), 0x30)) != 2 and [name] like replace(replace(replace(replace(replace(replace(replace(replace(:a, 0x5c5c, 0x5c5c2a), 0x5c5f, 0x5c5f2a), 0x5c25, 0x5c252a), 0x5c, 0x5c5c), 0x5c5c5f2a, 0x5c5f), 0x5c5c252a, 0x5c25), 0x5c5c5c5c2a, 0x5c5c), 0x5b, 0x5c5b) escape 0x5c)), 1, 0) = 1
+                EOF,
+            (new MssqlQuery('[where]'))->where('name', 'like', 'foo')->render()[0]
+        );
+        self::assertSame(
+            <<<'EOF'
+                where "name" like regexp_replace(:xxaaaa, '(\\[\\_%])|(\\)', '\1\2\2') escape chr(92)
+                EOF,
+            (new OracleQuery('[where]'))->where('name', 'like', 'foo')->render()[0]
+        );
+
+        // regexp | not regexp
+        self::assertSame(
+            'where regexp_like("name", :a, \'is\')',
+            $this->q('[where]')->where('name', 'regexp', 'foo')->render()[0]
+        );
+        self::assertSame(
+            'where not regexp_like("name", :a, \'is\')',
+            $this->q('[where]')->where('name', 'not regexp', 'foo')->render()[0]
+        );
+        self::assertSame(
+            'where case when `name` = lower(`name`) and `name` = upper(`name`) then regexp_like(`name`, :a, \'is\') else regexp_like(`name`, :a, \'s\') end',
+            (new SqliteQuery('[where]'))->where('name', 'regexp', 'foo')->render()[0]
+        );
+        self::assertSame(
+            version_compare(SqliteConnection::getDriverVersion(), '3.45') < 0
+                ? 'where case when `name` = lower(`name`) and `name` = upper(`name`) then regexp_like(`name`, sum("b"), \'is\') else regexp_like(`name`, sum("b"), \'s\') end'
+                : 'where (select case when `name` = lower(`name`) and `name` = upper(`name`) then regexp_like(`name`, `__atk4_reuse_right__`, \'is\') else regexp_like(`name`, `__atk4_reuse_right__`, \'s\') end from (select sum("b") `__atk4_reuse_right__`) `__atk4_reuse_tmp__`)',
+            (new SqliteQuery('[where]'))->where('name', 'regexp', $this->e('sum({})', ['b']))->render()[0]
+        );
+        foreach (['8.0.0', 'MariaDB-11.0.0'] as $serverVersion) {
+            self::assertSame(
+                'where `name` regexp concat(\'(?s)\', :a)',
+                $this->createMysqlQuery($serverVersion, '[where]')->where('name', 'regexp', 'foo')->render()[0]
+            );
+        }
+        self::assertSame(
+            <<<'EOF'
+                where case when pg_typeof("name") = 'bytea'::regtype then replace(regexp_replace(encode(case when pg_typeof("name") = 'bytea'::regtype then decode(case when pg_typeof("name") = 'bytea'::regtype then replace(substring(cast("name" as text) from 3), chr(92), repeat(chr(92), 2)) else '' end, 'hex') else cast(replace(cast("name" as text), chr(92), repeat(chr(92), 2)) as bytea) end, 'escape'), '(?<!\\)((\\\\)*)\\(\d\d\d)', '\1©\3©', 'g'), repeat(chr(92), 2), chr(92)) ~ replace(regexp_replace(encode(cast(replace(cast(:a as text), chr(92), repeat(chr(92), 2)) as bytea), 'escape'), '(?<!\\)((\\\\)*)\\(\d\d\d)', '\1©\3©', 'g'), repeat(chr(92), 2), chr(92)) else cast("name" as citext) ~ :a end
+                EOF,
+            (new PostgresqlQuery('[where]'))->where('name', 'regexp', 'foo')->render()[0]
+        );
+        // TODO test MssqlQuery here once REGEXP is supported https://devblogs.microsoft.com/azure-sql/introducing-regular-expression-regex-support-in-azure-sql-db/
+        self::assertSame(
+            'where regexp_like("name", :xxaaaa, \'in\')',
+            (new OracleQuery('[where]'))->where('name', 'regexp', 'foo')->render()[0]
         );
     }
 
@@ -1162,6 +1360,7 @@ class QueryTest extends TestCase
      *
      * @doesNotPerformAssertions
      */
+    #[DoesNotPerformAssertions]
     public function testSetException2(): void
     {
         $this->q()->set($this->e('foo'), 1);
@@ -1291,7 +1490,9 @@ class QueryTest extends TestCase
             ->caseWhen(['status', 'like', '%Used%'], 't2.expose_used')
             ->caseElse(null)
             ->render()[0];
-        self::assertSame('case when "status" = :a then :b when "status" like :c then :d else :e end', $s);
+        self::assertSame(<<<'EOF'
+            case when "status" = :a then :b when "status" like regexp_replace(:c, '(\\[\\_%])|(\\)', '\1\2\2') escape '\' then :d else :e end
+            EOF, $s);
 
         // with subqueries
         $age = $this->e('year(now()) - year(birth_date)');
@@ -1329,6 +1530,7 @@ class QueryTest extends TestCase
      *
      * @doesNotPerformAssertions
      */
+    #[DoesNotPerformAssertions]
     public function testCaseExprException1(): void
     {
         // $this->expectException(Exception::class);

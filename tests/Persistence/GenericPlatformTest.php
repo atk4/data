@@ -7,6 +7,7 @@ namespace Atk4\Data\Tests\Persistence;
 use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Persistence\GenericPlatform;
 use Doctrine\DBAL\Exception as DbalException;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class GenericPlatformTest extends TestCase
 {
@@ -27,6 +28,7 @@ class GenericPlatformTest extends TestCase
      *
      * @param list<mixed> $args
      */
+    #[DataProvider('provideNotSupportedExceptionCases')]
     public function testNotSupportedException(string $methodName, array $args): void
     {
         $genericPlatform = new GenericPlatform();

@@ -178,7 +178,7 @@ class Scope extends AbstractScope
     }
 
     #[\Override]
-    public function toWords(Model $model = null): string
+    public function toWords(?Model $model = null): string
     {
         $parts = [];
         foreach ($this->elements as $nestedCondition) {
