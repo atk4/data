@@ -423,7 +423,25 @@ abstract class Expression implements Expressionable, \ArrayAccess
                 }
             }, null, \SqlFormatter::class)();
 
-            $sql = preg_replace('~' . self::QUOTED_TOKEN_REGEX . '\K| +(?=\n)|(?<=:) (?=\w)~', '', \SqlFormatter::format($sql, false));
+            // fix string literal tokenize
+            // https://github.com/jdorn/sql-formatter/blob/v1.2.17/lib/SqlFormatter.php#L339
+            $origStringTokens = [];
+            $sql = preg_replace_callback('~' . self::QUOTED_TOKEN_REGEX . '~', static function ($matches) use (&$origStringTokens) {
+                $firstChar = substr($matches[0], 0, 1);
+                if (!in_array($firstChar, ['\'', '"', '`', '['], true)) {
+                    return $matches[0];
+                }
+
+                $k = $firstChar
+                    . 'atk4' . "\xff" . str_pad((string) count($origStringTokens), 5, '0', \STR_PAD_LEFT)
+                    . $firstChar;
+                $origStringTokens[$k] = $matches[0];
+
+                return $k;
+            }, $sql);
+
+            $sql = str_replace(array_keys($origStringTokens), $origStringTokens, \SqlFormatter::format($sql, false));
+            $sql = preg_replace('~' . self::QUOTED_TOKEN_REGEX . '\K| +(?=\n)|(?<=:) (?=\w)~', '', $sql);
         }
 
         return $sql;

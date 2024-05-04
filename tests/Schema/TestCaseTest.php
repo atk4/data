@@ -64,13 +64,15 @@ class TestCaseTest extends TestCase
                 ? <<<'EOF'
 
                     begin try insert into `t` (
-                      `name`, `int`, `float`, `bool`, `null`
+                      `name`, `int`, `float`,
+                      `bool`, `null`
                     )
                     values
                       ('Ewa', 1, 1.0, 1, NULL); end try begin catch if ERROR_NUMBER() = 544 begin
                     set
                       IDENTITY_INSERT `t` on; begin try insert into `t` (
-                        `name`, `int`, `float`, `bool`, `null`
+                        `name`, `int`, `float`,
+                        `bool`, `null`
                       )
                     values
                       ('Ewa', 1, 1.0, 1, NULL);
@@ -85,7 +87,8 @@ class TestCaseTest extends TestCase
                 . <<<'EOF'
 
                     insert into `t` (
-                      `name`, `int`, `float`, `bool`, `null`
+                      `name`, `int`, `float`,
+                      `bool`, `null`
                     )
                     values
                     EOF
