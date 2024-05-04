@@ -864,19 +864,19 @@ class QueryTest extends TestCase
         );
         self::assertSame(
             <<<'EOF'
-                where (`name` like regexp_replace(:a, '(\\[\\_%])|(\\)', '\1\2\2') escape '\' and ((`name` = lower(`name`) and `name` = upper(`name`)) or regexp_like(`name`, concat('(?-u)', concat('^',regexp_replace(regexp_replace(regexp_replace(regexp_replace(:a, '\\(?:(?=[_%])|\K\\)|(?=[.\\+*?[^\]$(){}|])', '\'), '(?<!\\)(\\\\)*\K_', '.'), '(?<!\\)(\\\\)*\K%', '.*'), '(?<!\\)(\\\\)*\K\\(?=[_%])', ''), '$')), 's')))
+                where regexp_like(`name`, concat(case when (select __atk4_case_v__ = 'a' from (select `name` __atk4_case_v__ where 1 = 0 union all select 'A') __atk4_case_tmp__) then '' else '(?-iu)' end, concat('^',regexp_replace(regexp_replace(regexp_replace(regexp_replace(:a, '\\(?:(?=[_%])|\K\\)|(?=[.\\+*?[^\]$(){}|])', '\'), '(?<!\\)(\\\\)*\K_', '.'), '(?<!\\)(\\\\)*\K%', '.*'), '(?<!\\)(\\\\)*\K\\(?=[_%])', ''), '$')), 'is')
                 EOF,
             (new SqliteQuery('[where]'))->where('name', 'like', 'foo')->render()[0]
         );
         self::assertSame(
             version_compare(SqliteConnection::getDriverVersion(), '3.45') < 0
                 ? <<<'EOF'
-                    where (`name` like regexp_replace(sum("b"), '(\\[\\_%])|(\\)', '\1\2\2') escape '\' and ((`name` = lower(`name`) and `name` = upper(`name`)) or regexp_like(`name`, concat('(?-u)', concat('^',regexp_replace(regexp_replace(regexp_replace(regexp_replace(sum("b"), '\\(?:(?=[_%])|\K\\)|(?=[.\\+*?[^\]$(){}|])', '\'), '(?<!\\)(\\\\)*\K_', '.'), '(?<!\\)(\\\\)*\K%', '.*'), '(?<!\\)(\\\\)*\K\\(?=[_%])', ''), '$')), 's')))
+                    where regexp_like(sum("a"), concat(case when (select __atk4_case_v__ = 'a' from (select sum("a") __atk4_case_v__ where 1 = 0 union all select 'A') __atk4_case_tmp__) then '' else '(?-iu)' end, concat('^',regexp_replace(regexp_replace(regexp_replace(regexp_replace(sum("b"), '\\(?:(?=[_%])|\K\\)|(?=[.\\+*?[^\]$(){}|])', '\'), '(?<!\\)(\\\\)*\K_', '.'), '(?<!\\)(\\\\)*\K%', '.*'), '(?<!\\)(\\\\)*\K\\(?=[_%])', ''), '$')), 'is')
                     EOF
                 : <<<'EOF'
-                    where (select (`name` like regexp_replace(`__atk4_reuse_right__`, '(\\[\\_%])|(\\)', '\1\2\2') escape '\' and ((`name` = lower(`name`) and `name` = upper(`name`)) or regexp_like(`name`, concat('(?-u)', concat('^',regexp_replace(regexp_replace(regexp_replace(regexp_replace(`__atk4_reuse_right__`, '\\(?:(?=[_%])|\K\\)|(?=[.\\+*?[^\]$(){}|])', '\'), '(?<!\\)(\\\\)*\K_', '.'), '(?<!\\)(\\\\)*\K%', '.*'), '(?<!\\)(\\\\)*\K\\(?=[_%])', ''), '$')), 's'))) from (select sum("b") `__atk4_reuse_right__`) `__atk4_reuse_tmp__`)
+                    where (select regexp_like(`__atk4_reuse_left__`, concat(case when (select __atk4_case_v__ = 'a' from (select `__atk4_reuse_left__` __atk4_case_v__ where 1 = 0 union all select 'A') __atk4_case_tmp__) then '' else '(?-iu)' end, concat('^',regexp_replace(regexp_replace(regexp_replace(regexp_replace(sum("b"), '\\(?:(?=[_%])|\K\\)|(?=[.\\+*?[^\]$(){}|])', '\'), '(?<!\\)(\\\\)*\K_', '.'), '(?<!\\)(\\\\)*\K%', '.*'), '(?<!\\)(\\\\)*\K\\(?=[_%])', ''), '$')), 'is') from (select sum("a") `__atk4_reuse_left__`) `__atk4_reuse_tmp__`)
                     EOF,
-            (new SqliteQuery('[where]'))->where('name', 'like', $this->e('sum({})', ['b']))->render()[0]
+            (new SqliteQuery('[where]'))->where($this->e('sum({})', ['a']), 'like', $this->e('sum({})', ['b']))->render()[0]
         );
         foreach (['8.0.0', 'MariaDB-11.0.0'] as $serverVersion) {
             self::assertSame(
@@ -894,9 +894,9 @@ class QueryTest extends TestCase
         );
         self::assertSame(
             <<<'EOF'
-                where (select case when pg_typeof("name") = 'bytea'::regtype then replace(regexp_replace(encode(case when pg_typeof("name") = 'bytea'::regtype then decode(case when pg_typeof("name") = 'bytea'::regtype then replace(substring(cast("name" as text) from 3), chr(92), repeat(chr(92), 2)) else '' end, 'hex') else cast(replace(cast("name" as text), chr(92), repeat(chr(92), 2)) as bytea) end, 'escape'), '(?<!\\)((\\\\)*)\\(\d\d\d)', '\1©\3©', 'g'), repeat(chr(92), 2), chr(92)) like regexp_replace(replace(regexp_replace(encode(cast(replace(cast("__atk4_reuse_right__" as text), chr(92), repeat(chr(92), 2)) as bytea), 'escape'), '(?<!\\)((\\\\)*)\\(\d\d\d)', '\1©\3©', 'g'), repeat(chr(92), 2), chr(92)), '(\\[\\_%])|(\\)', '\1\2\2', 'g') escape chr(92) else cast("name" as citext) like regexp_replace("__atk4_reuse_right__", '(\\[\\_%])|(\\)', '\1\2\2', 'g') escape chr(92) end from (select sum("b") "__atk4_reuse_right__") "__atk4_reuse_tmp__")
+                where (select case when pg_typeof("__atk4_reuse_left__") = 'bytea'::regtype then replace(regexp_replace(encode(case when pg_typeof("__atk4_reuse_left__") = 'bytea'::regtype then decode(case when pg_typeof("__atk4_reuse_left__") = 'bytea'::regtype then replace(substring(cast("__atk4_reuse_left__" as text) from 3), chr(92), repeat(chr(92), 2)) else '' end, 'hex') else cast(replace(cast("__atk4_reuse_left__" as text), chr(92), repeat(chr(92), 2)) as bytea) end, 'escape'), '(?<!\\)((\\\\)*)\\(\d\d\d)', '\1©\3©', 'g'), repeat(chr(92), 2), chr(92)) like regexp_replace(replace(regexp_replace(encode(cast(replace(cast("__atk4_reuse_right__" as text), chr(92), repeat(chr(92), 2)) as bytea), 'escape'), '(?<!\\)((\\\\)*)\\(\d\d\d)', '\1©\3©', 'g'), repeat(chr(92), 2), chr(92)), '(\\[\\_%])|(\\)', '\1\2\2', 'g') escape chr(92) else cast("__atk4_reuse_left__" as citext) like regexp_replace("__atk4_reuse_right__", '(\\[\\_%])|(\\)', '\1\2\2', 'g') escape chr(92) end from (select sum("a") "__atk4_reuse_left__", sum("b") "__atk4_reuse_right__") "__atk4_reuse_tmp__")
                 EOF,
-            (new PostgresqlQuery('[where]'))->where('name', 'like', $this->e('sum({})', ['b']))->render()[0]
+            (new PostgresqlQuery('[where]'))->where($this->e('sum({})', ['a']), 'like', $this->e('sum({})', ['b']))->render()[0]
         );
         self::assertSame(
             <<<'EOF'
@@ -906,9 +906,9 @@ class QueryTest extends TestCase
         );
         self::assertSame(
             <<<'EOF'
-                where (select iif(((datalength(concat((select top 0 [name]), 0x30)) = 2 and [name] like replace(replace(replace(replace(replace(replace(replace(replace([__atk4_reuse_right__], N'\\', N'\\*'), N'\_', N'\_*'), N'\%', N'\%*'), N'\', N'\\'), N'\\_*', N'\_'), N'\\%*', N'\%'), N'\\\\*', N'\\'), N'[', N'\[') escape N'\') or (datalength(concat((select top 0 [name]), 0x30)) != 2 and [name] like replace(replace(replace(replace(replace(replace(replace(replace([__atk4_reuse_right__], 0x5c5c, 0x5c5c2a), 0x5c5f, 0x5c5f2a), 0x5c25, 0x5c252a), 0x5c, 0x5c5c), 0x5c5c5f2a, 0x5c5f), 0x5c5c252a, 0x5c25), 0x5c5c5c5c2a, 0x5c5c), 0x5b, 0x5c5b) escape 0x5c)), 1, 0) from (select sum("b") [__atk4_reuse_right__]) [__atk4_reuse_tmp__]) = 1
+                where (select iif(((datalength(concat((select top 0 [__atk4_reuse_left__]), 0x30)) = 2 and [__atk4_reuse_left__] like replace(replace(replace(replace(replace(replace(replace(replace([__atk4_reuse_right__], N'\\', N'\\*'), N'\_', N'\_*'), N'\%', N'\%*'), N'\', N'\\'), N'\\_*', N'\_'), N'\\%*', N'\%'), N'\\\\*', N'\\'), N'[', N'\[') escape N'\') or (datalength(concat((select top 0 [__atk4_reuse_left__]), 0x30)) != 2 and [__atk4_reuse_left__] like replace(replace(replace(replace(replace(replace(replace(replace([__atk4_reuse_right__], 0x5c5c, 0x5c5c2a), 0x5c5f, 0x5c5f2a), 0x5c25, 0x5c252a), 0x5c, 0x5c5c), 0x5c5c5f2a, 0x5c5f), 0x5c5c252a, 0x5c25), 0x5c5c5c5c2a, 0x5c5c), 0x5b, 0x5c5b) escape 0x5c)), 1, 0) from (select sum("a") [__atk4_reuse_left__], sum("b") [__atk4_reuse_right__]) [__atk4_reuse_tmp__]) = 1
                 EOF,
-            (new MssqlQuery('[where]'))->where('name', 'like', $this->e('sum({})', ['b']))->render()[0]
+            (new MssqlQuery('[where]'))->where($this->e('sum({})', ['a']), 'like', $this->e('sum({})', ['b']))->render()[0]
         );
         self::assertSame(
             <<<'EOF'
@@ -927,14 +927,20 @@ class QueryTest extends TestCase
             $this->q('[where]')->where('name', 'not regexp', 'foo')->render()[0]
         );
         self::assertSame(
-            'where case when `name` = lower(`name`) and `name` = upper(`name`) then regexp_like(`name`, :a, \'is\') else regexp_like(`name`, concat(\'(?-u)\', :a), \'s\') end',
+            <<<'EOF'
+                where regexp_like(`name`, concat(case when (select __atk4_case_v__ = 'a' from (select `name` __atk4_case_v__ where 1 = 0 union all select 'A') __atk4_case_tmp__) then '' else '(?-iu)' end, :a), 'is')
+                EOF,
             (new SqliteQuery('[where]'))->where('name', 'regexp', 'foo')->render()[0]
         );
         self::assertSame(
             version_compare(SqliteConnection::getDriverVersion(), '3.45') < 0
-                ? 'where case when `name` = lower(`name`) and `name` = upper(`name`) then regexp_like(`name`, sum("b"), \'is\') else regexp_like(`name`, concat(\'(?-u)\', sum("b")), \'s\') end'
-                : 'where (select case when `name` = lower(`name`) and `name` = upper(`name`) then regexp_like(`name`, `__atk4_reuse_right__`, \'is\') else regexp_like(`name`, concat(\'(?-u)\', `__atk4_reuse_right__`), \'s\') end from (select sum("b") `__atk4_reuse_right__`) `__atk4_reuse_tmp__`)',
-            (new SqliteQuery('[where]'))->where('name', 'regexp', $this->e('sum({})', ['b']))->render()[0]
+                ? <<<'EOF'
+                    where regexp_like(sum("a"), concat(case when (select __atk4_case_v__ = 'a' from (select sum("a") __atk4_case_v__ where 1 = 0 union all select 'A') __atk4_case_tmp__) then '' else '(?-iu)' end, sum("b")), 'is')
+                    EOF
+                : <<<'EOF'
+                    where (select regexp_like(`__atk4_reuse_left__`, concat(case when (select __atk4_case_v__ = 'a' from (select `__atk4_reuse_left__` __atk4_case_v__ where 1 = 0 union all select 'A') __atk4_case_tmp__) then '' else '(?-iu)' end, sum("b")), 'is') from (select sum("a") `__atk4_reuse_left__`) `__atk4_reuse_tmp__`)
+                    EOF,
+            (new SqliteQuery('[where]'))->where($this->e('sum({})', ['a']), 'regexp', $this->e('sum({})', ['b']))->render()[0]
         );
         foreach (['8.0.0', 'MariaDB-11.0.0'] as $serverVersion) {
             self::assertSame(
@@ -950,9 +956,9 @@ class QueryTest extends TestCase
         );
         self::assertSame(
             <<<'EOF'
-                where (select case when pg_typeof("name") = 'bytea'::regtype then replace(regexp_replace(encode(case when pg_typeof("name") = 'bytea'::regtype then decode(case when pg_typeof("name") = 'bytea'::regtype then replace(substring(cast("name" as text) from 3), chr(92), repeat(chr(92), 2)) else '' end, 'hex') else cast(replace(cast("name" as text), chr(92), repeat(chr(92), 2)) as bytea) end, 'escape'), '(?<!\\)((\\\\)*)\\(\d\d\d)', '\1©\3©', 'g'), repeat(chr(92), 2), chr(92)) ~ replace(regexp_replace(encode(cast(replace(cast("__atk4_reuse_right__" as text), chr(92), repeat(chr(92), 2)) as bytea), 'escape'), '(?<!\\)((\\\\)*)\\(\d\d\d)', '\1©\3©', 'g'), repeat(chr(92), 2), chr(92)) else cast("name" as citext) ~ "__atk4_reuse_right__" end from (select sum("b") "__atk4_reuse_right__") "__atk4_reuse_tmp__")
+                where (select case when pg_typeof("__atk4_reuse_left__") = 'bytea'::regtype then replace(regexp_replace(encode(case when pg_typeof("__atk4_reuse_left__") = 'bytea'::regtype then decode(case when pg_typeof("__atk4_reuse_left__") = 'bytea'::regtype then replace(substring(cast("__atk4_reuse_left__" as text) from 3), chr(92), repeat(chr(92), 2)) else '' end, 'hex') else cast(replace(cast("__atk4_reuse_left__" as text), chr(92), repeat(chr(92), 2)) as bytea) end, 'escape'), '(?<!\\)((\\\\)*)\\(\d\d\d)', '\1©\3©', 'g'), repeat(chr(92), 2), chr(92)) ~ replace(regexp_replace(encode(cast(replace(cast("__atk4_reuse_right__" as text), chr(92), repeat(chr(92), 2)) as bytea), 'escape'), '(?<!\\)((\\\\)*)\\(\d\d\d)', '\1©\3©', 'g'), repeat(chr(92), 2), chr(92)) else cast("__atk4_reuse_left__" as citext) ~ "__atk4_reuse_right__" end from (select sum("a") "__atk4_reuse_left__", sum("b") "__atk4_reuse_right__") "__atk4_reuse_tmp__")
                 EOF,
-            (new PostgresqlQuery('[where]'))->where('name', 'regexp', $this->e('sum({})', ['b']))->render()[0]
+            (new PostgresqlQuery('[where]'))->where($this->e('sum({})', ['a']), 'regexp', $this->e('sum({})', ['b']))->render()[0]
         );
         // TODO test MssqlQuery here once REGEXP is supported https://devblogs.microsoft.com/azure-sql/introducing-regular-expression-regex-support-in-azure-sql-db/
         self::assertSame(

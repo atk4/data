@@ -91,63 +91,62 @@ class Query extends BaseQuery
         );
     }
 
+    private function _renderConditionIsCaseInsensitive(string $sql): string
+    {
+        return '(select __atk4_case_v__ = ' . $this->escapeStringLiteral('a')
+            . ' from (select ' . $sql . ' __atk4_case_v__ where 1 = 0 union all select '
+            . $this->escapeStringLiteral('A') . ') __atk4_case_tmp__)';
+    }
+
     #[\Override]
     protected function _renderConditionLikeOperator(bool $negated, string $sqlLeft, string $sqlRight): string
     {
-        return ($negated ? 'not ' : '') . $this->_renderConditionBinaryReuse(
-            $sqlLeft,
-            $sqlRight,
-            function ($sqlLeft, $sqlRight) {
-                $regexReplaceSqlFx = function (string $sql, string $search, string $replacement) {
-                    return 'regexp_replace(' . $sql . ', ' . $this->escapeStringLiteral($search) . ', ' . $this->escapeStringLiteral($replacement) . ')';
-                };
+        // prefix index cannot be used as it seems there is no way to check
+        // if the column is binary without row dependent subquery
+        // LIKE does full table scan if nocase collation is not used, respectively GLOB when used
 
-                return '('
-                    . parent::_renderConditionLikeOperator(false, $sqlLeft, $sqlRight)
-                    . ' and ((' . $sqlLeft . ' = lower(' . $sqlLeft . ') and ' . $sqlLeft . ' = upper(' . $sqlLeft . '))'
-                    . ' or ' . $this->_renderConditionRegexpOperator(
-                        false,
-                        $sqlLeft,
-                        'concat(' . $this->escapeStringLiteral('^') . ',' . $regexReplaceSqlFx(
-                            $regexReplaceSqlFx(
-                                $regexReplaceSqlFx(
-                                    $regexReplaceSqlFx($sqlRight, '\\\(?:(?=[_%])|\K\\\)|(?=[.\\\+*?[^\]$(){}|])', '\\'),
-                                    '(?<!\\\)(\\\\\\\)*\K_',
-                                    '.'
-                                ),
-                                '(?<!\\\)(\\\\\\\)*\K%',
-                                '.*'
-                            ),
-                            '(?<!\\\)(\\\\\\\)*\K\\\(?=[_%])',
-                            ''
-                        ) . ', ' . $this->escapeStringLiteral('$') . ')',
-                        true
-                    ) . '))';
-            }
+        $regexReplaceSqlFx = function (string $sql, string $search, string $replacement) {
+            return 'regexp_replace(' . $sql . ', ' . $this->escapeStringLiteral($search) . ', ' . $this->escapeStringLiteral($replacement) . ')';
+        };
+
+        return $this->_renderConditionRegexpOperator(
+            $negated,
+            $sqlLeft,
+            'concat(' . $this->escapeStringLiteral('^') . ',' . $regexReplaceSqlFx(
+                $regexReplaceSqlFx(
+                    $regexReplaceSqlFx(
+                        $regexReplaceSqlFx($sqlRight, '\\\(?:(?=[_%])|\K\\\)|(?=[.\\\+*?[^\]$(){}|])', '\\'),
+                        '(?<!\\\)(\\\\\\\)*\K_',
+                        '.'
+                    ),
+                    '(?<!\\\)(\\\\\\\)*\K%',
+                    '.*'
+                ),
+                '(?<!\\\)(\\\\\\\)*\K\\\(?=[_%])',
+                ''
+            ) . ', ' . $this->escapeStringLiteral('$') . ')',
+            true
         );
     }
 
     #[\Override]
     protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight, bool $binary = false): string
     {
-        if ($binary) {
-            return parent::_renderConditionRegexpOperator(
-                $negated,
-                $sqlLeft,
-                'concat(' . $this->escapeStringLiteral('(?-u)') . ', ' . $sqlRight . ')',
-                $binary
-            );
-        }
-
         return ($negated ? 'not ' : '') . $this->_renderConditionBinaryReuse(
             $sqlLeft,
             $sqlRight,
             function ($sqlLeft, $sqlRight) {
-                return 'case when ' . $sqlLeft . ' = lower(' . $sqlLeft . ') and ' . $sqlLeft . ' = upper(' . $sqlLeft . ')'
-                    . ' then ' . parent::_renderConditionRegexpOperator(false, $sqlLeft, $sqlRight)
-                    . ' else ' . self::_renderConditionRegexpOperator(false, $sqlLeft, $sqlRight, true)
-                    . ' end';
-            }
+                return parent::_renderConditionRegexpOperator(
+                    false,
+                    $sqlLeft,
+                    'concat(case when ' . $this->_renderConditionIsCaseInsensitive($sqlLeft)
+                        . ' then ' . $this->escapeStringLiteral('')
+                        . ' else ' . $this->escapeStringLiteral('(?-iu)')
+                        . ' end, ' . $sqlRight . ')'
+                );
+            },
+            true,
+            false
         );
     }
 

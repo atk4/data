@@ -32,8 +32,9 @@ class CreateRegexpLikeFunctionMiddleware implements Middleware
 
                     $value = CreateRegexpLikeFunctionMiddleware::castScalarToString($value);
 
-                    if (str_starts_with($pattern, '(?-u)')) {
-                        $pattern = substr($pattern, strlen('(?-u)'));
+                    if (str_starts_with($pattern, '(?-iu)')) {
+                        $pattern = substr($pattern, strlen('(?-iu)'));
+                        $flags = str_replace('i', '', $flags);
                         $binary = true;
                     } else {
                         $binary = \PHP_VERSION_ID < 80200
