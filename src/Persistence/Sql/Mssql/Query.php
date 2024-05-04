@@ -42,11 +42,13 @@ class Query extends BaseQuery
      */
     protected function _renderConditionBinaryReuseBool(string $sqlLeft, string $sqlRight, \Closure $makeSqlFx): string
     {
+        $reuse = $this->_renderConditionBinaryReuse($sqlLeft, $sqlRight, static fn () => '') !== '';
+
         return $this->_renderConditionBinaryReuse(
             $sqlLeft,
             $sqlRight,
-            static fn ($sqlLeft, $sqlRight) => 'iif(' . $makeSqlFx($sqlLeft, $sqlRight) . ', 1, 0)'
-        ) . ' = 1';
+            static fn ($sqlLeft, $sqlRight) => ($reuse ? 'iif(' : '') . $makeSqlFx($sqlLeft, $sqlRight) . ($reuse ? ', 1, 0)' : '')
+        ) . ($reuse ? ' = 1' : '');
     }
 
     #[\Override]
