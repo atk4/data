@@ -13,7 +13,6 @@ use Atk4\Data\ValidationException;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
-use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 
@@ -571,8 +570,8 @@ class ConditionSqlTest extends TestCase
         self::assertSame([1], $findIdsLikeFx('name', 'J%n'));
         self::assertSame([1], $findIdsLikeFx('name', 'Jo_n'));
         self::assertSame([], $findIdsLikeFx('name', 'J_n'));
-        self::assertSame($isBinary && !($this->getDatabasePlatform() instanceof SQLitePlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) ? [] : [13], $findIdsLikeFx('name', '123_'));
-        self::assertSame($isBinary && !($this->getDatabasePlatform() instanceof SQLitePlatform || $this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform) ? [13] : [], $findIdsLikeFx('name', '123__'));
+        self::assertSame($isBinary && !($this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) ? [] : [13], $findIdsLikeFx('name', '123_'));
+        self::assertSame($isBinary && !($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform) ? [13] : [], $findIdsLikeFx('name', '123__'));
         self::assertSame([], $findIdsLikeFx('name', '123___'));
 
         self::assertSame([1], $findIdsLikeFx('c', '%1%'));
@@ -758,8 +757,8 @@ class ConditionSqlTest extends TestCase
         self::assertSame([], $findIdsRegexFx('name', '^ra'));
         self::assertSame([5, 6, 7, 8, 9, 10, 11, 12], $findIdsRegexFx('name', 'ra$'));
         self::assertSame([], $findIdsRegexFx('name', 'Sa$'));
-        self::assertSame(($isBinary && !($this->getDatabasePlatform() instanceof SQLitePlatform || $this->getDatabasePlatform() instanceof OraclePlatform)) || $isMysql5x ? [] : [17], $findIdsRegexFx('name', '123.$'));
-        self::assertSame(($isBinary && !($this->getDatabasePlatform() instanceof SQLitePlatform || $this->getDatabasePlatform() instanceof PostgreSQLPlatform)) || $isMysql5x ? [17] : [], $findIdsRegexFx('name', '123..$'));
+        self::assertSame(($isBinary && !$this->getDatabasePlatform() instanceof OraclePlatform) || $isMysql5x ? [] : [17], $findIdsRegexFx('name', '123.$'));
+        self::assertSame(($isBinary && !$this->getDatabasePlatform() instanceof PostgreSQLPlatform) || $isMysql5x ? [17] : [], $findIdsRegexFx('name', '123..$'));
         self::assertSame([], $findIdsRegexFx('name', '123...$'));
 
         self::assertSame([1, 3], $findIdsRegexFx('name', 'John|e$'));
@@ -792,7 +791,7 @@ class ConditionSqlTest extends TestCase
             self::assertSame([7, 8, 9, 10, 11, 12], $findIdsRegexFx('name', 'Sa\S'));
             self::assertSame([1, 3], $findIdsRegexFx('name', '\wo'));
             self::assertSame($isBinary && !$this->getDatabasePlatform() instanceof OraclePlatform ? [] : [13], $findIdsRegexFx('name', 'hei\w$'));
-            self::assertSame($isBinary && !($this->getDatabasePlatform() instanceof SQLitePlatform || $this->getDatabasePlatform() instanceof OraclePlatform) ? [] : [17], $findIdsRegexFx('name', '123\w$'));
+            self::assertSame($isBinary && !$this->getDatabasePlatform() instanceof OraclePlatform ? [] : [17], $findIdsRegexFx('name', '123\w$'));
             self::assertSame([10, 15], $findIdsRegexFx('name', '\W\\\\'));
             if ($type !== 'string' && !$this->getDatabasePlatform() instanceof OraclePlatform) {
                 self::assertSame([5], $findIdsRegexFx('name', '\x20'));
