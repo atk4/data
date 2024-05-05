@@ -114,10 +114,18 @@ class MigratorTest extends TestCase
         $model->addCondition('v', 'MixedCaseß');
         self::assertSameExportUnordered($expectedExport, $model->export(['id']));
 
+        $model->scope()->clear();
+        $model->addCondition('v', '=', (clone $model)->addCondition('id', 3)->action('field', ['v']));
+        self::assertSameExportUnordered($expectedExport, $model->export(['id']));
+
         // TODO
         if (!$this->getDatabasePlatform() instanceof OraclePlatform || !in_array($type, ['text', 'blob'], true)) {
             $model->scope()->clear();
             $model->addCondition('v', 'in', ['MixedCaseß', 'foo']);
+            self::assertSameExportUnordered($expectedExport, $model->export(['id']));
+
+            $model->scope()->clear();
+            $model->addCondition('v', 'in', (clone $model)->addCondition('id', 3)->action('field', ['v']));
             self::assertSameExportUnordered($expectedExport, $model->export(['id']));
         }
     }
