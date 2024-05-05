@@ -543,7 +543,7 @@ class ConditionSqlTest extends TestCase
 
             $t = (clone $u)->addCondition($field, ($negated ? 'not ' : '') . 'like', $u->dsql()->field($u->expr('[]', [$value])));
             if (!$this->getConnection()->getConnection()->getNativeConnection() instanceof \mysqli // https://bugs.mysql.com/bug.php?id=114659
-                && (!$this->getDatabasePlatform() instanceof SQLServerPlatform || !$isBinary) // string encoding is UTF-16 by default
+                && (!$this->getDatabasePlatform() instanceof SQLServerPlatform || !$isBinary) // string encoding of bound variable is UTF-16
             ) {
                 self::assertSame(array_keys($t->export(null, 'id')), $res);
             }
