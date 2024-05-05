@@ -105,6 +105,7 @@ class Query extends BaseQuery
                     $sqlRightEscaped = $replaceFx($sqlRightEscaped, '[', '\[');
 
                     return $sqlLeft . ($negated ? ' not' : '') . ' like ' . $sqlRightEscaped
+                        . ($isBinary ? ' collate Latin1_General_BIN' : '')
                         . ' escape ' . $quoteStringFx('\\');
                 };
 
