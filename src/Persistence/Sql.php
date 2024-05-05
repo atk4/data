@@ -648,7 +648,7 @@ class Sql extends Persistence
     {
         $value = parent::typecastSaveField($field, $value);
 
-        if ($value !== null && $this->binaryTypeIsEncodeNeeded($field->type)) {
+        if ($value !== null && !$value instanceof Expression && $this->binaryTypeIsEncodeNeeded($field->type)) {
             $value = $this->binaryTypeValueEncode($value);
         }
 

@@ -121,23 +121,17 @@ class MigratorTest extends TestCase
             self::assertSameExportUnordered($expectedExport, $model->export(['id']));
         }
 
-        $fixEncodingForMssqlBinaryFx = function (string $v) use ($isBinary) {
-            return $this->getDatabasePlatform() instanceof SQLServerPlatform && $isBinary
-                ? $this->getConnection()->expr('cast([] collate Latin1_General_100_CS_AS_SC_UTF8 as varchar(max))', [$v])
-                : $v;
-        };
-
         if (!$this->getDatabasePlatform() instanceof OraclePlatform || !$isBinary) {
             $model->scope()->clear();
-            $model->addCondition('v', 'like', $fixEncodingForMssqlBinaryFx('MixedCaseß'));
+            $model->addCondition('v', 'like', 'MixedCaseß');
             self::assertSameExportUnordered($expectedExport, $model->export(['id']));
 
             $model->scope()->clear();
-            $model->addCondition('v', 'like', $fixEncodingForMssqlBinaryFx('%ix__Caseß%'));
+            $model->addCondition('v', 'like', '%ix__Caseß%');
             self::assertSameExportUnordered($expectedExport, $model->export(['id']));
 
             $model->scope()->clear();
-            $model->addCondition('v', 'regexp', $fixEncodingForMssqlBinaryFx('ix.+Caseß'));
+            $model->addCondition('v', 'regexp', 'ix.+Caseß');
             $this->markTestIncompleteOnMySQL8xPlatformAsBinaryLikeIsBroken($isBinary);
             if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
                 $this->expectExceptionMessage('Unsupported operator');

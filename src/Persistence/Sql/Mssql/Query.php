@@ -61,7 +61,7 @@ class Query extends BaseQuery
                 $iifNtextFx = static function ($valueSql, $trueSql, $falseSql) {
                     $isNtextFx = static function ($sql, $negate) {
                         // "select top 0 ..." is always optimized into constant expression
-                        return 'datalength(concat((select top 0 ' . $sql . '), 0x30)) '
+                        return 'datalength(concat((select top 0 ' . $sql . '), 0x' . bin2hex('0') . ')) '
                             . ($negate ? '!' : '') . '= 2';
                     };
 
@@ -69,7 +69,18 @@ class Query extends BaseQuery
                         . ' or (' . $isNtextFx($valueSql, true) . ' and ' . $falseSql . '))';
                 };
 
-                $makeSqlFx = function ($isNtext) use ($sqlLeft, $sqlRight, $negated) {
+                $iifBinaryFx = static function ($valueSql, $trueSql, $falseSql) {
+                    $isBinaryFx = static function ($sql, $negate) {
+                        // "select top 0 ..." is always optimized into constant expression
+                        return 'isnull((select top 0 ' . $sql . '), 0x' . bin2hex('A') . ') '
+                            . ($negate ? '' : '!') . '= 0x' . bin2hex('a');
+                    };
+
+                    return '((' . $isBinaryFx($valueSql, false) . ' and ' . $trueSql . ')'
+                        . ' or (' . $isBinaryFx($valueSql, true) . ' and ' . $falseSql . '))';
+                };
+
+                $makeSqlFx = function ($isNtext, $isBinary) use ($sqlLeft, $sqlRight, $negated) {
                     $quoteStringFx = fn (string $v) => $isNtext
                         ? $this->escapeStringLiteral($v)
                         : '0x' . bin2hex($v);
@@ -99,8 +110,12 @@ class Query extends BaseQuery
 
                 return $iifNtextFx(
                     $sqlLeft,
-                    $makeSqlFx(true),
-                    $makeSqlFx(false)
+                    $makeSqlFx(true, false),
+                    $iifBinaryFx(
+                        $sqlLeft,
+                        $makeSqlFx(false, true),
+                        $makeSqlFx(false, false)
+                    )
                 );
             }
         );
