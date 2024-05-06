@@ -864,17 +864,17 @@ class QueryTest extends TestCase
         );
         self::assertSame(
             <<<'EOF'
-                where (((select __atk4_case_v__ != 'a' from (select `name` __atk4_case_v__ where 1 = 0 union all select 'A') __atk4_case_tmp__) or `name` like regexp_replace(:a, '(\\[\\_%])|(\\)', '\1\2\2') escape '\') and regexp_like(`name`, concat(case when (select __atk4_case_v__ = 'a' from (select `name` __atk4_case_v__ where 1 = 0 union all select 'A') __atk4_case_tmp__) then '' else '(?-iu)' end, concat('^',regexp_replace(regexp_replace(regexp_replace(regexp_replace(:a, '\\(?:(?=[_%])|\K\\)|(?=[.\\+*?[^\]$(){}|])', '\'), '(?<!\\)(\\\\)*\K_', '.'), '(?<!\\)(\\\\)*\K%', '.*'), '(?<!\\)(\\\\)*\K\\(?=[_%])', ''), '$')), 'is'))
+                where regexp_like(`name`, concat(case when (select __atk4_case_v__ = 'a' from (select `name` __atk4_case_v__ where 1 = 0 union all select 'A') __atk4_case_tmp__) then '' else '(?-iu)' end, concat('^',regexp_replace(regexp_replace(regexp_replace(regexp_replace(:a, '\\(?:(?=[_%])|\K\\)|(?=[.\\+*?[^\]$(){}|])', '\'), '(?<!\\)(\\\\)*\K_', '.'), '(?<!\\)(\\\\)*\K%', '.*'), '(?<!\\)(\\\\)*\K\\(?=[_%])', ''), '$')), 'is')
                 EOF,
             (new SqliteQuery('[where]'))->where('name', 'like', 'foo')->render()[0]
         );
         self::assertSame(
             version_compare(SqliteConnection::getDriverVersion(), '3.45') < 0
                 ? <<<'EOF'
-                    where (((select __atk4_case_v__ != 'a' from (select sum("a") __atk4_case_v__ where 1 = 0 union all select 'A') __atk4_case_tmp__) or sum("a") like regexp_replace(sum("b"), '(\\[\\_%])|(\\)', '\1\2\2') escape '\') and regexp_like(sum("a"), concat(case when (select __atk4_case_v__ = 'a' from (select sum("a") __atk4_case_v__ where 1 = 0 union all select 'A') __atk4_case_tmp__) then '' else '(?-iu)' end, concat('^',regexp_replace(regexp_replace(regexp_replace(regexp_replace(sum("b"), '\\(?:(?=[_%])|\K\\)|(?=[.\\+*?[^\]$(){}|])', '\'), '(?<!\\)(\\\\)*\K_', '.'), '(?<!\\)(\\\\)*\K%', '.*'), '(?<!\\)(\\\\)*\K\\(?=[_%])', ''), '$')), 'is'))
+                    where regexp_like(sum("a"), concat(case when (select __atk4_case_v__ = 'a' from (select sum("a") __atk4_case_v__ where 1 = 0 union all select 'A') __atk4_case_tmp__) then '' else '(?-iu)' end, concat('^',regexp_replace(regexp_replace(regexp_replace(regexp_replace(sum("b"), '\\(?:(?=[_%])|\K\\)|(?=[.\\+*?[^\]$(){}|])', '\'), '(?<!\\)(\\\\)*\K_', '.'), '(?<!\\)(\\\\)*\K%', '.*'), '(?<!\\)(\\\\)*\K\\(?=[_%])', ''), '$')), 'is')
                     EOF
                 : <<<'EOF'
-                    where (select (((select __atk4_case_v__ != 'a' from (select `__atk4_reuse_left__` __atk4_case_v__ where 1 = 0 union all select 'A') __atk4_case_tmp__) or `__atk4_reuse_left__` like regexp_replace(`__atk4_reuse_right__`, '(\\[\\_%])|(\\)', '\1\2\2') escape '\') and regexp_like(`__atk4_reuse_left__`, concat(case when (select __atk4_case_v__ = 'a' from (select `__atk4_reuse_left__` __atk4_case_v__ where 1 = 0 union all select 'A') __atk4_case_tmp__) then '' else '(?-iu)' end, concat('^',regexp_replace(regexp_replace(regexp_replace(regexp_replace(`__atk4_reuse_right__`, '\\(?:(?=[_%])|\K\\)|(?=[.\\+*?[^\]$(){}|])', '\'), '(?<!\\)(\\\\)*\K_', '.'), '(?<!\\)(\\\\)*\K%', '.*'), '(?<!\\)(\\\\)*\K\\(?=[_%])', ''), '$')), 'is')) from (select sum("a") `__atk4_reuse_left__`, sum("b") `__atk4_reuse_right__`) `__atk4_reuse_tmp__`)
+                    where (select regexp_like(`__atk4_reuse_left__`, concat(case when (select __atk4_case_v__ = 'a' from (select `__atk4_reuse_left__` __atk4_case_v__ where 1 = 0 union all select 'A') __atk4_case_tmp__) then '' else '(?-iu)' end, concat('^',regexp_replace(regexp_replace(regexp_replace(regexp_replace(sum("b"), '\\(?:(?=[_%])|\K\\)|(?=[.\\+*?[^\]$(){}|])', '\'), '(?<!\\)(\\\\)*\K_', '.'), '(?<!\\)(\\\\)*\K%', '.*'), '(?<!\\)(\\\\)*\K\\(?=[_%])', ''), '$')), 'is') from (select sum("a") `__atk4_reuse_left__`) `__atk4_reuse_tmp__`)
                     EOF,
             (new SqliteQuery('[where]'))->where($this->e('sum({})', ['a']), 'like', $this->e('sum({})', ['b']))->render()[0]
         );

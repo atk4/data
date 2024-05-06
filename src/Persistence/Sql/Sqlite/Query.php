@@ -91,9 +91,9 @@ class Query extends BaseQuery
         );
     }
 
-    private function _renderConditionIsCaseInsensitive(string $sql, bool $negate): string
+    private function _renderConditionIsCaseInsensitive(string $sql): string
     {
-        return '(select __atk4_case_v__ ' . ($negate ? '!' : '') . '= ' . $this->escapeStringLiteral('a')
+        return '(select __atk4_case_v__ = ' . $this->escapeStringLiteral('a')
             . ' from (select ' . $sql . ' __atk4_case_v__ where 1 = 0 union all select '
             . $this->escapeStringLiteral('A') . ') __atk4_case_tmp__)';
     }
@@ -101,36 +101,27 @@ class Query extends BaseQuery
     #[\Override]
     protected function _renderConditionLikeOperator(bool $negated, string $sqlLeft, string $sqlRight): string
     {
-        return ($negated ? 'not ' : '') . $this->_renderConditionBinaryReuse(
-            $sqlLeft,
-            $sqlRight,
-            function ($sqlLeft, $sqlRight) {
-                $regexReplaceSqlFx = function (string $sql, string $search, string $replacement) {
-                    return 'regexp_replace(' . $sql . ', ' . $this->escapeStringLiteral($search) . ', ' . $this->escapeStringLiteral($replacement) . ')';
-                };
+        $regexReplaceSqlFx = function (string $sql, string $search, string $replacement) {
+            return 'regexp_replace(' . $sql . ', ' . $this->escapeStringLiteral($search) . ', ' . $this->escapeStringLiteral($replacement) . ')';
+        };
 
-                return '(('
-                    . $this->_renderConditionIsCaseInsensitive($sqlLeft, true) // workaround "_" matching more than one byte - https://dbfiddle.uk/Dnq8BXGy
-                    . ' or '
-                    . parent::_renderConditionLikeOperator(false, $sqlLeft, $sqlRight)
-                    . ') and ' . $this->_renderConditionRegexpOperator(
-                        false,
-                        $sqlLeft,
-                        'concat(' . $this->escapeStringLiteral('^') . ',' . $regexReplaceSqlFx(
-                            $regexReplaceSqlFx(
-                                $regexReplaceSqlFx(
-                                    $regexReplaceSqlFx($sqlRight, '\\\(?:(?=[_%])|\K\\\)|(?=[.\\\+*?[^\]$(){}|])', '\\'),
-                                    '(?<!\\\)(\\\\\\\)*\K_',
-                                    '.'
-                                ),
-                                '(?<!\\\)(\\\\\\\)*\K%',
-                                '.*'
-                            ),
-                            '(?<!\\\)(\\\\\\\)*\K\\\(?=[_%])',
-                            ''
-                        ) . ', ' . $this->escapeStringLiteral('$') . ')'
-                    ) . ')';
-            }
+        return $this->_renderConditionRegexpOperator(
+            $negated,
+            $sqlLeft,
+            'concat(' . $this->escapeStringLiteral('^') . ',' . $regexReplaceSqlFx(
+                $regexReplaceSqlFx(
+                    $regexReplaceSqlFx(
+                        $regexReplaceSqlFx($sqlRight, '\\\(?:(?=[_%])|\K\\\)|(?=[.\\\+*?[^\]$(){}|])', '\\'),
+                        '(?<!\\\)(\\\\\\\)*\K_',
+                        '.'
+                    ),
+                    '(?<!\\\)(\\\\\\\)*\K%',
+                    '.*'
+                ),
+                '(?<!\\\)(\\\\\\\)*\K\\\(?=[_%])',
+                ''
+            ) . ', ' . $this->escapeStringLiteral('$') . ')',
+            true
         );
     }
 
@@ -144,7 +135,7 @@ class Query extends BaseQuery
                 return parent::_renderConditionRegexpOperator(
                     false,
                     $sqlLeft,
-                    'concat(case when ' . $this->_renderConditionIsCaseInsensitive($sqlLeft, false)
+                    'concat(case when ' . $this->_renderConditionIsCaseInsensitive($sqlLeft)
                         . ' then ' . $this->escapeStringLiteral('')
                         . ' else ' . $this->escapeStringLiteral('(?-iu)')
                         . ' end, ' . $sqlRight . ')'
