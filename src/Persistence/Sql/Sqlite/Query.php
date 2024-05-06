@@ -91,9 +91,9 @@ class Query extends BaseQuery
         );
     }
 
-    private function _renderConditionIsCaseInsensitive(string $sql): string
+    private function _renderConditionIsCaseInsensitive(string $sql, bool $negate): string
     {
-        return '(select __atk4_case_v__ = ' . $this->escapeStringLiteral('a')
+        return '(select __atk4_case_v__ ' . ($negate ? '!' : '') . '= ' . $this->escapeStringLiteral('a')
             . ' from (select ' . $sql . ' __atk4_case_v__ where 1 = 0 union all select '
             . $this->escapeStringLiteral('A') . ') __atk4_case_tmp__)';
     }
@@ -101,31 +101,36 @@ class Query extends BaseQuery
     #[\Override]
     protected function _renderConditionLikeOperator(bool $negated, string $sqlLeft, string $sqlRight): string
     {
-        // prefix index cannot be used as it seems there is no way to check
-        // if the column is binary without row dependent subquery
-        // LIKE does full table scan if nocase collation is not used, respectively GLOB when used
-
-        $regexReplaceSqlFx = function (string $sql, string $search, string $replacement) {
-            return 'regexp_replace(' . $sql . ', ' . $this->escapeStringLiteral($search) . ', ' . $this->escapeStringLiteral($replacement) . ')';
-        };
-
-        return $this->_renderConditionRegexpOperator(
-            $negated,
+        return ($negated ? 'not ' : '') . $this->_renderConditionBinaryReuse(
             $sqlLeft,
-            'concat(' . $this->escapeStringLiteral('^') . ',' . $regexReplaceSqlFx(
-                $regexReplaceSqlFx(
-                    $regexReplaceSqlFx(
-                        $regexReplaceSqlFx($sqlRight, '\\\(?:(?=[_%])|\K\\\)|(?=[.\\\+*?[^\]$(){}|])', '\\'),
-                        '(?<!\\\)(\\\\\\\)*\K_',
-                        '.'
-                    ),
-                    '(?<!\\\)(\\\\\\\)*\K%',
-                    '.*'
-                ),
-                '(?<!\\\)(\\\\\\\)*\K\\\(?=[_%])',
-                ''
-            ) . ', ' . $this->escapeStringLiteral('$') . ')',
-            true
+            $sqlRight,
+            function ($sqlLeft, $sqlRight) {
+                $regexReplaceSqlFx = function (string $sql, string $search, string $replacement) {
+                    return 'regexp_replace(' . $sql . ', ' . $this->escapeStringLiteral($search) . ', ' . $this->escapeStringLiteral($replacement) . ')';
+                };
+
+                return '(('
+                    . $this->_renderConditionIsCaseInsensitive($sqlLeft, true) // workaround "_" matching more than one byte - https://dbfiddle.uk/Dnq8BXGy
+                    . ' or '
+                    . parent::_renderConditionLikeOperator(false, $sqlLeft, $sqlRight)
+                    . ') and ' . $this->_renderConditionRegexpOperator(
+                        false,
+                        $sqlLeft,
+                        'concat(' . $this->escapeStringLiteral('^') . ',' . $regexReplaceSqlFx(
+                            $regexReplaceSqlFx(
+                                $regexReplaceSqlFx(
+                                    $regexReplaceSqlFx($sqlRight, '\\\(?:(?=[_%])|\K\\\)|(?=[.\\\+*?[^\]$(){}|])', '\\'),
+                                    '(?<!\\\)(\\\\\\\)*\K_',
+                                    '.'
+                                ),
+                                '(?<!\\\)(\\\\\\\)*\K%',
+                                '.*'
+                            ),
+                            '(?<!\\\)(\\\\\\\)*\K\\\(?=[_%])',
+                            ''
+                        ) . ', ' . $this->escapeStringLiteral('$') . ')'
+                    ) . ')';
+            }
         );
     }
 
@@ -139,7 +144,7 @@ class Query extends BaseQuery
                 return parent::_renderConditionRegexpOperator(
                     false,
                     $sqlLeft,
-                    'concat(case when ' . $this->_renderConditionIsCaseInsensitive($sqlLeft)
+                    'concat(case when ' . $this->_renderConditionIsCaseInsensitive($sqlLeft, false)
                         . ' then ' . $this->escapeStringLiteral('')
                         . ' else ' . $this->escapeStringLiteral('(?-iu)')
                         . ' end, ' . $sqlRight . ')'
