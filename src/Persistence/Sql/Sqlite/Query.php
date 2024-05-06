@@ -120,8 +120,7 @@ class Query extends BaseQuery
                 ),
                 '(?<!\\\)(\\\\\\\)*\K\\\(?=[_%])',
                 ''
-            ) . ', ' . $this->escapeStringLiteral('$') . ')',
-            true
+            ) . ', ' . $this->escapeStringLiteral('$') . ')'
         );
     }
 
