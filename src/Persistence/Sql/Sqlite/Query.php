@@ -110,7 +110,8 @@ class Query extends BaseQuery
                 };
 
                 return 'case when '
-                    . 'case when instr(' . $sqlRight . ', ' . $this->escapeStringLiteral('_') . ') != 0 then 1 else ' // workaround "_" matching more than one byte in BLOB - https://dbfiddle.uk/Dnq8BXGy
+                    // workaround "_" matching more than one byte in BLOB - https://dbfiddle.uk/Dnq8BXGy
+                    . 'case when instr(' . $sqlRight . ', ' . $this->escapeStringLiteral('_') . ') != 0 then 1 else '
                     . parent::_renderConditionLikeOperator(
                         false,
                         $sqlLeft,
@@ -131,7 +132,7 @@ class Query extends BaseQuery
                             '(?<!\\\)(\\\\\\\)*\K\\\(?=[_%])',
                             ''
                         ) . ', ' . $this->escapeStringLiteral('$') . ')'
-                    ) . ' when ' . $sqlLeft . ' is not null then 0 end'; // https://sqlite.org/forum/info/ab1c05b883ca018e
+                    ) . ' when ' . $sqlLeft . ' is not null then 0 end';
             }
         );
     }
