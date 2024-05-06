@@ -94,7 +94,7 @@ class Query extends BaseQuery
     private function _renderConditionIsCaseInsensitive(string $sql, bool $negate): string
     {
         return '(select __atk4_case_v__ ' . ($negate ? '!' : '') . '= ' . $this->escapeStringLiteral('a')
-            . ' from (select ' . $sql . ' __atk4_case_v__ where 1 = 0 union all select '
+            . ' from (select ' . $sql . ' __atk4_case_v__ where 0 union all select '
             . $this->escapeStringLiteral('A') . ') __atk4_case_tmp__)';
     }
 
@@ -109,11 +109,11 @@ class Query extends BaseQuery
                     return 'regexp_replace(' . $sql . ', ' . $this->escapeStringLiteral($search) . ', ' . $this->escapeStringLiteral($replacement) . ')';
                 };
 
-                return '(('
+                return 'case when '
                     . $this->_renderConditionIsCaseInsensitive($sqlLeft, true) // workaround "_" matching more than one byte - https://dbfiddle.uk/Dnq8BXGy
                     . ' or '
                     . parent::_renderConditionLikeOperator(false, $sqlLeft, $sqlRight)
-                    . ') and ' . $this->_renderConditionRegexpOperator(
+                    . ' then ' . $this->_renderConditionRegexpOperator(
                         false,
                         $sqlLeft,
                         'concat(' . $this->escapeStringLiteral('^') . ',' . $regexReplaceSqlFx(
@@ -129,7 +129,7 @@ class Query extends BaseQuery
                             '(?<!\\\)(\\\\\\\)*\K\\\(?=[_%])',
                             ''
                         ) . ', ' . $this->escapeStringLiteral('$') . ')'
-                    ) . ')';
+                    ) . ' when ' . $sqlLeft . ' is not null then 0 end'; // https://sqlite.org/forum/info/ab1c05b883ca018e
             }
         );
     }
