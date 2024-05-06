@@ -110,10 +110,11 @@ class Query extends BaseQuery
                 };
 
                 return 'case when '
-                    . $this->_renderConditionIsCaseInsensitive($sqlLeft, true) // workaround "_" matching more than one byte - https://dbfiddle.uk/Dnq8BXGy
-                    . ' or '
-                    . parent::_renderConditionLikeOperator(false, $sqlLeft, $sqlRight)
-                    . ' then ' . $this->_renderConditionRegexpOperator(
+                    . parent::_renderConditionLikeOperator(
+                        false,
+                        $sqlLeft,
+                        $regexReplaceSqlFx($sqlRight, '(?<!\\\)(\\\\\\\)*\K_+', '%') // workaround "_" matching more than one byte - https://dbfiddle.uk/Dnq8BXGy
+                    ) . ' then ' . $this->_renderConditionRegexpOperator(
                         false,
                         $sqlLeft,
                         'concat(' . $this->escapeStringLiteral('^') . ',' . $regexReplaceSqlFx(
