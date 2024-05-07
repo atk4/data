@@ -525,6 +525,7 @@ class ConditionSqlTest extends TestCase
             ['name' => 'John', 'c' => 1],
             ['name' => 'Peter', 'c' => 2000],
             ['name' => 'Joe', 'c' => 50],
+            ['name' => ''],
             ['name' => 'Ca_ro%li\ne'],
             ['name' => "Ca\nro.li\\\\ne"],
             ['name' => 'Ca*ro^li$ne'],
@@ -558,88 +559,91 @@ class ConditionSqlTest extends TestCase
 
         self::assertSame([1], $findIdsLikeFx('name', 'John'));
         self::assertSame($isBinary ? [] : [1], $findIdsLikeFx('name', 'john'));
-        self::assertSame([9], $findIdsLikeFx('name', 'heiß'));
-        self::assertSame($isBinary ? [] : [9], $findIdsLikeFx('name', 'Heiß'));
+        self::assertSame([10], $findIdsLikeFx('name', 'heiß'));
+        self::assertSame($isBinary ? [] : [10], $findIdsLikeFx('name', 'Heiß'));
         self::assertSame([], $findIdsLikeFx('name', 'Joh'));
         self::assertSame([1, 3], $findIdsLikeFx('name', 'Jo%'));
-        self::assertSame(array_values(array_diff(range(1, 13), [1, 3])), $findIdsLikeFx('name', 'Jo%', true));
+        self::assertSame(array_values(array_diff(range(1, 14), [1, 3], $this->getDatabasePlatform() instanceof OraclePlatform ? [4] : [])), $findIdsLikeFx('name', 'Jo%', true));
         self::assertSame([1], $findIdsLikeFx('name', '%John%'));
         self::assertSame([1], $findIdsLikeFx('name', 'Jo%n'));
         self::assertSame([1], $findIdsLikeFx('name', 'J%n'));
         self::assertSame([1], $findIdsLikeFx('name', 'Jo_n'));
         self::assertSame([], $findIdsLikeFx('name', 'J_n'));
-        self::assertSame($isBinary && !$this->getDatabasePlatform() instanceof OraclePlatform ? [] : [13], $findIdsLikeFx('name', '123_'));
-        self::assertSame($isBinary && !$this->getDatabasePlatform() instanceof PostgreSQLPlatform ? [13] : [], $findIdsLikeFx('name', '123__'));
+        self::assertSame($isBinary && !$this->getDatabasePlatform() instanceof OraclePlatform ? [] : [14], $findIdsLikeFx('name', '123_'));
+        self::assertSame($isBinary && !$this->getDatabasePlatform() instanceof PostgreSQLPlatform ? [14] : [], $findIdsLikeFx('name', '123__'));
         self::assertSame([], $findIdsLikeFx('name', '123___'));
 
         self::assertSame([1], $findIdsLikeFx('c', '%1%'));
         self::assertSame([2], $findIdsLikeFx('c', '%2000%'));
         self::assertSame([2, 3], $findIdsLikeFx('c', '%0%'));
         self::assertSame([1], $findIdsLikeFx('c', '%0%', true));
-        self::assertSame([4, 5, 6], $findIdsLikeFx('name', '%Ca_ro%'));
-        self::assertSame([4], $findIdsLikeFx('name', '%Ca\_ro%'));
-        self::assertSame([4, 5, 6], $findIdsLikeFx('name', '%ro%li%'));
-        self::assertSame([4], $findIdsLikeFx('name', '%ro\%li%'));
+        self::assertSame([5, 6, 7], $findIdsLikeFx('name', '%Ca_ro%'));
+        self::assertSame([5], $findIdsLikeFx('name', '%Ca\_ro%'));
+        self::assertSame([5, 6, 7], $findIdsLikeFx('name', '%ro%li%'));
+        self::assertSame([5], $findIdsLikeFx('name', '%ro\%li%'));
 
         self::assertSame([], $findIdsLikeFx('name', '%line%'));
-        self::assertSame([4], $findIdsLikeFx('name', '%li\ne%'));
-        self::assertSame([4], $findIdsLikeFx('name', '%li\\\ne%'));
-        self::assertSame([5], $findIdsLikeFx('name', '%li\\\\\ne%'));
-        self::assertSame([5], $findIdsLikeFx('name', '%li\\\\\\\ne%'));
+        self::assertSame([5], $findIdsLikeFx('name', '%li\ne%'));
+        self::assertSame([5], $findIdsLikeFx('name', '%li\\\ne%'));
+        self::assertSame([6], $findIdsLikeFx('name', '%li\\\\\ne%'));
+        self::assertSame([6], $findIdsLikeFx('name', '%li\\\\\\\ne%'));
         self::assertSame([], $findIdsLikeFx('name', '%li\\\\\\\\\ne%'));
         self::assertSame([], $findIdsLikeFx('name', '%li\\\\\\\\\\\ne%'));
-        self::assertSame([4, 5, 6], $findIdsLikeFx('name', '%li%ne%'));
-        self::assertSame([4, 5], $findIdsLikeFx('name', '%li%\ne%'));
-        self::assertSame([4, 5], $findIdsLikeFx('name', '%li%\\\ne%'));
-        self::assertSame([5], $findIdsLikeFx('name', '%li%\\\\\ne%'));
-        self::assertSame([5], $findIdsLikeFx('name', '%li%\\\\\\\ne%'));
+        self::assertSame([5, 6, 7], $findIdsLikeFx('name', '%li%ne%'));
+        self::assertSame([5, 6], $findIdsLikeFx('name', '%li%\ne%'));
+        self::assertSame([5, 6], $findIdsLikeFx('name', '%li%\\\ne%'));
+        self::assertSame([6], $findIdsLikeFx('name', '%li%\\\\\ne%'));
+        self::assertSame([6], $findIdsLikeFx('name', '%li%\\\\\\\ne%'));
         self::assertSame([], $findIdsLikeFx('name', '%li%\\\\\\\\\ne%'));
         self::assertSame([], $findIdsLikeFx('name', '%li%\\\\\\\\\\\ne%'));
         self::assertSame([], $findIdsLikeFx('name', '%li\%ne%'));
-        self::assertSame([4, 5], $findIdsLikeFx('name', '%li\\\%ne%'));
+        self::assertSame([5, 6], $findIdsLikeFx('name', '%li\\\%ne%'));
         self::assertSame([], $findIdsLikeFx('name', '%li\\\\\%ne%'));
-        self::assertSame([5], $findIdsLikeFx('name', '%li\\\\\\\%ne%'));
+        self::assertSame([6], $findIdsLikeFx('name', '%li\\\\\\\%ne%'));
         self::assertSame([], $findIdsLikeFx('name', '%li\\\\\\\\\%ne%'));
         self::assertSame([], $findIdsLikeFx('name', '%li\%e%'));
-        self::assertSame([4, 5], $findIdsLikeFx('name', '%li\\\%e%'));
+        self::assertSame([5, 6], $findIdsLikeFx('name', '%li\\\%e%'));
         self::assertSame([], $findIdsLikeFx('name', '%li\\\\\%e%'));
-        self::assertSame([5], $findIdsLikeFx('name', '%li\\\\\\\%e%'));
+        self::assertSame([6], $findIdsLikeFx('name', '%li\\\\\\\%e%'));
         self::assertSame([], $findIdsLikeFx('name', '%li\\\\\\\\\%e%'));
-        self::assertSame([10], $findIdsLikeFx('name', 'hei\ß'));
-        self::assertSame([10], $findIdsLikeFx('name', 'hei\\\ß'));
-        self::assertSame([11], $findIdsLikeFx('name', 'hei\\\\\ß'));
-        self::assertSame([11], $findIdsLikeFx('name', 'hei\\\\\\\ß'));
+        self::assertSame([11], $findIdsLikeFx('name', 'hei\ß'));
+        self::assertSame([11], $findIdsLikeFx('name', 'hei\\\ß'));
+        self::assertSame([12], $findIdsLikeFx('name', 'hei\\\\\ß'));
+        self::assertSame([12], $findIdsLikeFx('name', 'hei\\\\\\\ß'));
         self::assertSame([], $findIdsLikeFx('name', 'hei\\\\\\\\\ß'));
-        self::assertSame([12], $findIdsLikeFx('name', 'hei\123'));
-        self::assertSame([12], $findIdsLikeFx('name', 'hei\\\123'));
+        self::assertSame([13], $findIdsLikeFx('name', 'hei\123'));
+        self::assertSame([13], $findIdsLikeFx('name', 'hei\\\123'));
         self::assertSame([], $findIdsLikeFx('name', 'hei\\\\\123'));
 
-        self::assertSame([4], $findIdsLikeFx('name', '%l_\ne%'));
-        self::assertSame([5], $findIdsLikeFx('name', '%l__\ne%'));
-        self::assertSame([4, 5], $findIdsLikeFx('name', '%li%%\ne%'));
-        self::assertSame([5], $findIdsLikeFx('name', '%.%'));
-        self::assertSame([5], $findIdsLikeFx('name', '%.li%ne'));
+        self::assertSame([5], $findIdsLikeFx('name', '%l_\ne%'));
+        self::assertSame([6], $findIdsLikeFx('name', '%l__\ne%'));
+        self::assertSame([5, 6], $findIdsLikeFx('name', '%li%%\ne%'));
+        self::assertSame([6], $findIdsLikeFx('name', '%.%'));
+        self::assertSame([6], $findIdsLikeFx('name', '%.li%ne'));
         self::assertSame([], $findIdsLikeFx('name', '%.li%ne\\'));
         self::assertSame([], $findIdsLikeFx('name', '%.li%ne\\\\'));
-        self::assertSame([6], $findIdsLikeFx('name', '%*%'));
+        self::assertSame([7], $findIdsLikeFx('name', '%*%'));
         self::assertSame([], $findIdsLikeFx('name', '%*li%ne'));
-        self::assertSame([6, 8], $findIdsLikeFx('name', '%^%'));
-        self::assertSame([6], $findIdsLikeFx('name', '%$%'));
-        self::assertSame([7, 8], $findIdsLikeFx('name', '%[%'));
-        self::assertSame([8], $findIdsLikeFx('name', '%\[%'));
-        self::assertSame([8], $findIdsLikeFx('name', '%\\\[%'));
+        self::assertSame([7, 9], $findIdsLikeFx('name', '%^%'));
+        self::assertSame([7], $findIdsLikeFx('name', '%$%'));
+        self::assertSame([8, 9], $findIdsLikeFx('name', '%[%'));
+        self::assertSame([9], $findIdsLikeFx('name', '%\[%'));
+        self::assertSame([9], $findIdsLikeFx('name', '%\\\[%'));
         self::assertSame([], $findIdsLikeFx('name', '%\\\\\[%'));
-        self::assertSame([7, 8], $findIdsLikeFx('name', '%]%'));
-        self::assertSame([7], $findIdsLikeFx('name', '%[n]%'));
-        self::assertSame([8], $findIdsLikeFx('name', '%^n%'));
-        self::assertSame([8], $findIdsLikeFx('name', '%[^n]%'));
+        self::assertSame([8, 9], $findIdsLikeFx('name', '%]%'));
+        self::assertSame([8], $findIdsLikeFx('name', '%[n]%'));
+        self::assertSame([9], $findIdsLikeFx('name', '%^n%'));
+        self::assertSame([9], $findIdsLikeFx('name', '%[^n]%'));
 
         if ($type !== 'string') {
-            self::assertStringStartsWith("Ca\nro", $u->load(5)->get('name'));
-            self::assertSame([5], $findIdsLikeFx('name', "Ca\n%"));
+            self::assertStringStartsWith("Ca\nro", $u->load(6)->get('name'));
+            self::assertSame([6], $findIdsLikeFx('name', "Ca\n%"));
             self::assertSame([], $findIdsLikeFx('name', "Ca\\\n%"));
             self::assertSame([], $findIdsLikeFx('name', 'Ca %'));
         }
+
+        self::assertSame($this->getDatabasePlatform() instanceof OraclePlatform ? [] : [4], array_keys((clone $u)->addCondition('name', 'like', $u->expr('\'\''))->export(null, 'id')));
+        self::assertSame([], array_keys((clone $u)->addCondition('name', 'like', $u->expr('null'))->export(null, 'id')));
     }
 
     /**
