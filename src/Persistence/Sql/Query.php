@@ -538,7 +538,13 @@ abstract class Query extends Expression
         $res = $makeSqlFx($sqlLeft, $sqlRight);
 
         if ($subqueryFromSql !== null) {
-            $res = '(select ' . $res . ' from (' . $subqueryFromSql . ') ' . $this->escapeIdentifier('__atk4_' . $internalIdentifier . '_tmp__') . ')';
+            $isOracle = $this->escapeStringLiteral("\x00") === 'chr(0)';
+            if ($isOracle) {
+                $subqueryFromSql .= ' from DUAL';
+            }
+
+            $res = '(select ' . $res . ' from (' . $subqueryFromSql . ') '
+                . $this->escapeIdentifier('__atk4_' . $internalIdentifier . '_tmp__') . ')';
         }
 
         return $res;
