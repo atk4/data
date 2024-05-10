@@ -1652,7 +1652,7 @@ class QueryTest extends TestCase
         self::assertSame('with recursive "q11" ("foo", "qwe""ry") as (select "salary" from "salaries"),' . "\n"
             . '"q12" ("bar", "baz") as (select "salary" from "salaries")' . "\n" . 'select * from "q11", "q12"', $q2->render()[0]);
 
-        // now test some more useful reql life query
+        // now test some more useful real life query
         $quotes = $this->q()
             ->table('quotes')
             ->field('emp_id')
