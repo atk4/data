@@ -40,14 +40,24 @@ class Query extends BaseQuery
     /**
      * @param \Closure(string, string): string $makeSqlFx
      */
-    protected function _renderConditionBinaryReuseBool(string $sqlLeft, string $sqlRight, \Closure $makeSqlFx): string
+    protected function _renderConditionBinaryReuseBool(string $sqlLeft, string $sqlRight, \Closure $makeSqlFx, bool $nullFromArgsOnly = false): string
     {
         $reuse = $this->_renderConditionBinaryReuse($sqlLeft, $sqlRight, static fn () => '') !== '';
 
         return $this->_renderConditionBinaryReuse(
             $sqlLeft,
             $sqlRight,
-            static fn ($sqlLeft, $sqlRight) => ($reuse ? 'iif(' : '') . $makeSqlFx($sqlLeft, $sqlRight) . ($reuse ? ', 1, 0)' : '')
+            static function ($sqlLeft, $sqlRight) use ($reuse, $makeSqlFx, $nullFromArgsOnly) {
+                $res = $makeSqlFx($sqlLeft, $sqlRight);
+
+                if ($reuse) {
+                    $res = 'iif(not(' . $res . '), 0, iif('
+                        . ($nullFromArgsOnly ? $sqlLeft . ' is not null and ' . $sqlRight . ' is not null' : $res)
+                        . ', 1, null))';
+                }
+
+                return $res;
+            }
         ) . ($reuse ? ' = 1' : '');
     }
 
@@ -118,7 +128,8 @@ class Query extends BaseQuery
                         $makeSqlFx(false, false)
                     )
                 );
-            }
+            },
+            true
         );
     }
 
