@@ -25,8 +25,8 @@ class CreateRegexpReplaceFunctionMiddleware implements Middleware
                 $nativeConnection = $connection->getNativeConnection();
                 assert($nativeConnection instanceof \PDO);
 
-                $nativeConnection->sqliteCreateFunction('regexp_replace', static function ($value, string $pattern, string $replacement, string $flags = ''): ?string {
-                    if ($value === null) {
+                $nativeConnection->sqliteCreateFunction('regexp_replace', static function ($value, ?string $pattern, ?string $replacement, string $flags = ''): ?string {
+                    if ($value === null || $pattern === null || $replacement === null) {
                         return null;
                     }
 
