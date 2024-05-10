@@ -878,11 +878,15 @@ class QueryTest extends TestCase
                     EOF,
             (new SqliteQuery('[where]'))->where($this->e('sum({})', ['a']), 'like', $this->e('sum({})', ['b']))->render()[0]
         );
-        foreach (['8.0.0', 'MariaDB-11.0.0'] as $serverVersion) {
+        foreach (['5.7.0', '8.0.0', 'MariaDB-11.0.0'] as $serverVersion) {
             self::assertSame(
-                <<<'EOF'
-                    where `name` like regexp_replace(:a, '\\\\\\\\|\\\\(?![_%])', '\\\\\\\\') escape '\\'
-                    EOF,
+                $serverVersion === '5.7.0'
+                    ? <<<'EOF'
+                        where `name` like replace(replace(replace(replace(replace(replace(replace(replace(:a, '\\\\', '\\\\*'), '\\_', '\\_*'), '\\%', '\\%*'), '\\', '\\\\'), '\\\\_*', '\\_'), '\\\\%*', '\\%'), '\\\\\\\\*', '\\\\'), '%\\', '%\\\\') escape '\\'
+                        EOF
+                    : <<<'EOF'
+                        where `name` like regexp_replace(:a, '\\\\\\\\|\\\\(?![_%])', '\\\\\\\\') escape '\\'
+                        EOF,
                 $this->createMysqlQuery($serverVersion, '[where]')->where('name', 'like', 'foo')->render()[0]
             );
         }
@@ -942,9 +946,11 @@ class QueryTest extends TestCase
                     EOF,
             (new SqliteQuery('[where]'))->where($this->e('sum({})', ['a']), 'regexp', $this->e('sum({})', ['b']))->render()[0]
         );
-        foreach (['8.0.0', 'MariaDB-11.0.0'] as $serverVersion) {
+        foreach (['5.7.0', '8.0.0', 'MariaDB-11.0.0'] as $serverVersion) {
             self::assertSame(
-                'where `name` regexp concat(\'(?s)\', :a)',
+                $serverVersion === '5.7.0'
+                    ? 'where `name` regexp concat(\'@?\', :a)'
+                    : 'where `name` regexp concat(\'(?s)\', :a)',
                 $this->createMysqlQuery($serverVersion, '[where]')->where('name', 'regexp', 'foo')->render()[0]
             );
         }

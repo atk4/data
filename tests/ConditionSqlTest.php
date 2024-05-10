@@ -833,15 +833,6 @@ class ConditionSqlTest extends TestCase
     #[DataProvider('provideNullLikeRegexpConditionCases')]
     public function testNullLikeRegexpCondition(string $operator, ?bool $expectedResult, ?string $value, ?string $pattern, bool $negated): void
     {
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform
-            && !MysqlConnection::isServerMariaDb($this->getConnection())
-            && MysqlConnection::getServerMinorVersion($this->getConnection()) < 600
-            && $operator === 'regexp' && $pattern === ''
-        ) {
-            // https://dbfiddle.uk/diAepf8V
-            self::markTestIncomplete('MySQL 5.x does not support REGEXP with empty pattern');
-        }
-
         if ($this->getDatabasePlatform() instanceof SQLServerPlatform && $operator === 'regexp') {
             // https://devblogs.microsoft.com/azure-sql/introducing-regular-expression-regex-support-in-azure-sql-db/
             self::markTestIncomplete('MSSQL has no REGEXP support yet');

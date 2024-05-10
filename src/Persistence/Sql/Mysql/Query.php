@@ -61,7 +61,7 @@ class Query extends BaseQuery
 
         return $sqlLeft . ($negated ? ' not' : '') . ' regexp ' . (
             $isMysql5x
-                ? $sqlRight
+                ? 'concat(' . $this->escapeStringLiteral('@?') . ', ' . $sqlRight . ')' // https://dbfiddle.uk/diAepf8V
                 : 'concat(' . $this->escapeStringLiteral('(?s)') . ', ' . $sqlRight . ')'
         );
     }
