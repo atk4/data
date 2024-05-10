@@ -846,14 +846,16 @@ class ConditionSqlTest extends TestCase
             return;
         }
 
-        $makeWhereExprFx = function ($value, $pattern, $negated) use ($operator) {
+        $makeWhereExprFx = function ($value, $pattern, $negated, $forceReuse) use ($operator) {
             $dsql = $this->getConnection()->dsql();
 
-            return new RawExpression(\Closure::bind(static function () use ($operator, $value, $pattern, $negated, $dsql) {
-                $escapeStringLiteralFx = static function ($value) use ($dsql) {
-                    return $value === null
-                        ? 'null'
-                        : $dsql->escapeStringLiteral($value);
+            return new RawExpression(\Closure::bind(static function () use ($operator, $value, $pattern, $negated, $forceReuse, $dsql) {
+                $escapeStringLiteralFx = static function ($value) use ($forceReuse, $dsql) {
+                    return ($forceReuse ? '(' : '')
+                        . ($value === null
+                            ? 'null'
+                            : $dsql->escapeStringLiteral($value))
+                        . ($forceReuse ? ')' : '');
                 };
 
                 // workaround Oracle "expr is null" limitation
@@ -873,10 +875,13 @@ class ConditionSqlTest extends TestCase
             }, null, Query::class)());
         };
 
-        $dsql = $this->getConnection()->dsql()
-            ->field($makeWhereExprFx($value, $pattern, $negated), 'v');
+        $expectedResult = $expectedResult === null ? null : ($expectedResult ? '1' : '0');
 
-        self::assertSame(['v' => $expectedResult === null ? null : ($expectedResult ? '1' : '0')], $dsql->getRow());
+        $dsql = $this->getConnection()->dsql()
+            ->field($makeWhereExprFx($value, $pattern, $negated, false), 'v')
+            ->field($makeWhereExprFx($value, $pattern, $negated, true), 'v2');
+
+        self::assertSame(['v' => $expectedResult, 'v2' => $expectedResult], $dsql->getRow());
     }
 
     /**
