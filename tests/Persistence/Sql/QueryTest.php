@@ -920,6 +920,12 @@ class QueryTest extends TestCase
                 EOF,
             (new OracleQuery('[where]'))->where('name', 'like', 'foo')->render()[0]
         );
+        self::assertSame(
+            <<<'EOF'
+                where sum("a") like regexp_replace(sum("b"), '(\\[\\_%])|(\\)', '\1\2\2') escape chr(92)
+                EOF,
+            (new OracleQuery('[where]'))->where($this->e('sum({})', ['a']), 'like', $this->e('sum({})', ['b']))->render()[0]
+        );
 
         // regexp | not regexp
         self::assertSame(
@@ -970,6 +976,10 @@ class QueryTest extends TestCase
         self::assertSame(
             'where regexp_like("name", :xxaaaa, \'in\')',
             (new OracleQuery('[where]'))->where('name', 'regexp', 'foo')->render()[0]
+        );
+        self::assertSame(
+            'where regexp_like(sum("a"), sum("b"), \'in\')',
+            (new OracleQuery('[where]'))->where($this->e('sum({})', ['a']), 'regexp', $this->e('sum({})', ['b']))->render()[0]
         );
     }
 
