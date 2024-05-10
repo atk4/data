@@ -7,8 +7,8 @@ namespace Atk4\Data\Schema;
 use Atk4\Core\Phpunit\TestCase as BaseTestCase;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
-use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
+use Atk4\Data\Persistence\Sql\RawExpression;
 use Atk4\Data\Persistence\Sql\Sqlite\Expression as SqliteExpression;
 use Atk4\Data\Reference;
 use Doctrine\DBAL\ParameterType;
@@ -138,33 +138,10 @@ abstract class TestCase extends BaseTestCase
             $sql
         );
 
-        $exprNoRender = new class($sql, $params, $this->getConnection()->expr()) extends Expression {
-            private Expression $dummyExpression;
-
-            public function __construct($template, array $arguments, Expression $dummyExpression)
-            {
-                parent::__construct($template, $arguments);
-
-                $this->dummyExpression = $dummyExpression;
-            }
-
-            #[\Override]
-            protected function escapeStringLiteral(string $value): string
-            {
-                $dummyExpression = $this->dummyExpression;
-
-                // Closure rebind should not be needed
-                // https://github.com/php/php-src/issues/14009
-                return \Closure::bind(static fn () => $dummyExpression->escapeStringLiteral($value), null, parent::class)();
-            }
-
-            #[\Override]
-            public function render(): array
-            {
-                return [$this->template, $this->args['custom']];
-            }
-        };
-        $sqlWithParams = $exprNoRender->getDebugQuery();
+        $sqlWithParams = (new RawExpression([
+            'template' => $sql,
+            'connection' => $this->getConnection(),
+        ], $params))->getDebugQuery();
 
         if (substr($sqlWithParams, -1) !== ';') {
             $sqlWithParams .= ';';
