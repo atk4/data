@@ -948,7 +948,7 @@ class QueryTest extends TestCase
         );
         self::assertSame(
             <<<'EOF'
-                where sum("a") like regexp_replace(sum("b"), '(\\[\\_%])|(\\)', '\1\2\2') escape chr(92)
+                where (select case when not("__atk4_reuse_left__" like regexp_replace("__atk4_reuse_right__", '(\\[\\_%])|(\\)', '\1\2\2') escape chr(92)) then 0 else case when "__atk4_reuse_left__" is not null and "__atk4_reuse_right__" is not null then 1 end end from (select sum("a") "__atk4_reuse_left__", sum("b") "__atk4_reuse_right__" from DUAL) "__atk4_reuse_tmp__") = 1
                 EOF,
             (new OracleQuery('[where]'))->where($this->e('sum({})', ['a']), 'like', $this->e('sum({})', ['b']))->render()[0]
         );

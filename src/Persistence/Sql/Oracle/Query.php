@@ -17,6 +17,49 @@ class Query extends BaseQuery
     protected string $identifierEscapeChar = '"';
     protected string $expressionClass = Expression::class;
 
+    /**
+     * @param \Closure(string, string): string $makeSqlFx
+     */
+    protected function _renderConditionBinaryReuseBool(string $sqlLeft, string $sqlRight, \Closure $makeSqlFx, bool $nullFromArgsOnly = false): string
+    {
+        $reuse = $this->_renderConditionBinaryReuse($sqlLeft, $sqlRight, static fn () => '') !== '';
+
+        return $this->_renderConditionBinaryReuse(
+            $sqlLeft,
+            $sqlRight,
+            static function ($sqlLeft, $sqlRight) use ($reuse, $makeSqlFx, $nullFromArgsOnly) {
+                $res = $makeSqlFx($sqlLeft, $sqlRight);
+
+                if ($reuse) {
+                    // for Oracle v23 and higher "CASE bool WHEN true THEN 1 ..." should be used
+                    // https://dbfiddle.uk/xYhEngrA
+                    $res = 'case when not(' . $res . ') then 0 else case when '
+                        . ($nullFromArgsOnly ? $sqlLeft . ' is not null and ' . $sqlRight . ' is not null' : $res)
+                        . ' then 1 end end';
+                }
+
+                return $res;
+            }
+        ) . ($reuse ? ' = 1' : '');
+    }
+
+    #[\Override]
+    protected function _renderConditionLikeOperator(bool $negated, string $sqlLeft, string $sqlRight): string
+    {
+        return ($negated ? 'not ' : '') . $this->_renderConditionBinaryReuseBool(
+            $sqlLeft,
+            $sqlRight,
+            function ($sqlLeft, $sqlRight) {
+                return parent::_renderConditionLikeOperator(
+                    false,
+                    $sqlLeft,
+                    $sqlRight
+                );
+            },
+            true
+        );
+    }
+
     #[\Override]
     protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight, bool $binary = false): string
     {
