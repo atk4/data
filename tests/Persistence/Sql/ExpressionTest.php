@@ -424,7 +424,7 @@ class ExpressionTest extends TestCase
 
     public function testEscapeParamCustom(): void
     {
-        $e = new class('hello, [who]', ['who' => 'world']) extends SqliteExpression {
+        $e = new class('hello, [who]', ['who' => ['world']]) extends SqliteExpression {
             #[\Override]
             public function escapeParam($value): string
             {
@@ -433,7 +433,7 @@ class ExpressionTest extends TestCase
         };
 
         self::assertSame([
-            'hello, "world"',
+            'hello, ["world"]',
             [],
         ], $e->render());
     }
