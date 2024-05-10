@@ -91,9 +91,9 @@ class Query extends BaseQuery
         );
     }
 
-    private function _renderConditionIsCaseInsensitive(string $sql, bool $negate): string
+    private function _renderConditionIsCaseInsensitive(string $sql): string
     {
-        return '(select __atk4_case_v__ ' . ($negate ? '!' : '') . '= ' . $this->escapeStringLiteral('a')
+        return '(select __atk4_case_v__ = ' . $this->escapeStringLiteral('a')
             . ' from (select ' . $sql . ' __atk4_case_v__ where 0 union all select '
             . $this->escapeStringLiteral('A') . ') __atk4_case_tmp__)';
     }
@@ -144,14 +144,11 @@ class Query extends BaseQuery
             $sqlLeft,
             $sqlRight,
             function ($sqlLeft, $sqlRight) {
-                return parent::_renderConditionRegexpOperator(
-                    false,
-                    $sqlLeft,
-                    'concat(case when ' . $this->_renderConditionIsCaseInsensitive($sqlLeft, false)
-                        . ' then ' . $this->escapeStringLiteral('')
-                        . ' else ' . $this->escapeStringLiteral('(?-iu)')
-                        . ' end, ' . $sqlRight . ')'
-                );
+                return 'regexp_like(' . $sqlLeft . ', ' . $sqlRight
+                    . ', case when ' . $this->_renderConditionIsCaseInsensitive($sqlLeft)
+                    . ' then ' . $this->escapeStringLiteral('is')
+                    . ' else ' . $this->escapeStringLiteral('-us')
+                    . ' end)';
             },
             true,
             false

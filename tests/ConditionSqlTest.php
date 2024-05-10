@@ -7,6 +7,8 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
+use Atk4\Data\Persistence\Sql\Query;
+use Atk4\Data\Persistence\Sql\RawExpression;
 use Atk4\Data\Schema\TestCase;
 use Atk4\Data\Tests\Schema\MigratorTest;
 use Atk4\Data\ValidationException;
@@ -14,6 +16,7 @@ use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 
 class ConditionSqlTest extends TestCase
@@ -820,5 +823,85 @@ class ConditionSqlTest extends TestCase
             self::assertSame([1], $findIdsRegexFx('name', implode('', array_map(static fn ($v) => '(' . $v . ')?', $hugeList)) . 'John'));
         }
         self::assertSame([1], $findIdsRegexFx('name', implode('', array_map(static fn ($v) => '((' . $v . ')?', array_slice($hugeList, 0, 98))) . 'John' . str_repeat(')', min(count($hugeList), 98))));
+    }
+
+    /**
+     * @dataProvider provideNullLikeRegexpConditionCases
+     *
+     * @param 'like'|'regexp' $operator
+     */
+    #[DataProvider('provideNullLikeRegexpConditionCases')]
+    public function testNullLikeRegexpCondition(string $operator, ?bool $expectedResult, ?string $value, ?string $pattern, bool $negated): void
+    {
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform
+            && !MysqlConnection::isServerMariaDb($this->getConnection())
+            && MysqlConnection::getServerMinorVersion($this->getConnection()) < 600
+            && $operator === 'regexp' && $pattern === ''
+        ) {
+            // https://dbfiddle.uk/diAepf8V
+            self::markTestIncomplete('MySQL 5.x does not support REGEXP with empty pattern');
+        }
+
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform && $operator === 'regexp') {
+            // https://devblogs.microsoft.com/azure-sql/introducing-regular-expression-regex-support-in-azure-sql-db/
+            self::markTestIncomplete('MSSQL has no REGEXP support yet');
+        }
+
+        // TODO Oracle always converts empty string to null
+        // https://stackoverflow.com/questions/13278773/null-vs-empty-string-in-oracle#13278879
+        if ($this->getDatabasePlatform() instanceof OraclePlatform && ($value === '' || $pattern === '') && $expectedResult !== null) {
+            self::assertTrue(true); // @phpstan-ignore-line
+
+            return;
+        }
+
+        $makeWhereExprFx = function ($value, $pattern, $negated) use ($operator) {
+            $dsql = $this->getConnection()->dsql();
+
+            return new RawExpression(\Closure::bind(static function () use ($operator, $value, $pattern, $negated, $dsql) {
+                $escapeStringLiteralFx = static function ($value) use ($dsql) {
+                    return $value === null
+                        ? 'null'
+                        : $dsql->escapeStringLiteral($value);
+                };
+
+                // workaround Oracle "expr is null" limitation
+                // https://dbfiddle.uk/9rtTvTDH
+                $boolToIntFx = static function ($sql) {
+                    $oneIfTrue = 'case when (' . $sql . ') then 1 else 0 end';
+                    $oneIfFalse = 'case when not(' . $sql . ') then 1 else 0 end';
+
+                    return 'case when ' . $oneIfTrue . ' + ' . $oneIfFalse . ' = 0 then null else ' . $oneIfTrue . ' end';
+                };
+
+                $res = $operator === 'like'
+                    ? $dsql->_renderConditionLikeOperator($negated, $escapeStringLiteralFx($value), $escapeStringLiteralFx($pattern))
+                    : $dsql->_renderConditionRegexpOperator($negated, $escapeStringLiteralFx($value), $escapeStringLiteralFx($pattern));
+
+                return $boolToIntFx($res);
+            }, null, Query::class)());
+        };
+
+        $dsql = $this->getConnection()->dsql()
+            ->field($makeWhereExprFx($value, $pattern, $negated), 'v');
+
+        self::assertSame(['v' => $expectedResult === null ? null : ($expectedResult ? '1' : '0')], $dsql->getRow());
+    }
+
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideNullLikeRegexpConditionCases(): iterable
+    {
+        foreach (['like', 'regexp'] as $operator) {
+            foreach ([false, true] as $negated) {
+                yield [$operator, !$negated, '', '', $negated];
+                yield [$operator, $negated, '', 'x', $negated];
+                yield [$operator, $negated, 'x', $operator === 'regexp' ? '^$' : '', $negated];
+                yield [$operator, null, null, null, $negated];
+                yield [$operator, null, null, '', $negated];
+                yield [$operator, null, '', null, $negated];
+            }
+        }
     }
 }
