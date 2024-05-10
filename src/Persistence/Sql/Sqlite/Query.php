@@ -132,7 +132,7 @@ class Query extends BaseQuery
                             '(?<!\\\)(\\\\\\\)*\K\\\(?=[_%])',
                             ''
                         ) . ', ' . $this->escapeStringLiteral('$') . ')'
-                    ) . ' when ' . $sqlLeft . ' is not null then 0 end';
+                    ) . ' when ' . $sqlLeft . ' is not null and ' . $sqlRight . ' is not null then 0 end';
             }
         );
     }
