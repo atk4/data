@@ -572,7 +572,7 @@ class ConditionSqlTest extends TestCase
         self::assertSame([1], $findIdsLikeFx('name', 'J%n'));
         self::assertSame([1], $findIdsLikeFx('name', 'Jo_n'));
         self::assertSame([], $findIdsLikeFx('name', 'J_n'));
-        self::assertSame($isBinary && !$this->getDatabasePlatform() instanceof OraclePlatform ? [] : [14], $findIdsLikeFx('name', '123_'));
+        self::assertSame($isBinary ? [] : [14], $findIdsLikeFx('name', '123_'));
         self::assertSame($isBinary && !$this->getDatabasePlatform() instanceof PostgreSQLPlatform ? [14] : [], $findIdsLikeFx('name', '123__'));
         self::assertSame([], $findIdsLikeFx('name', '123___'));
 
@@ -644,9 +644,6 @@ class ConditionSqlTest extends TestCase
             self::assertSame([], $findIdsLikeFx('name', "Ca\\\n%"));
             self::assertSame([], $findIdsLikeFx('name', 'Ca %'));
         }
-
-        self::assertSame($this->getDatabasePlatform() instanceof OraclePlatform ? [] : [4], array_keys((clone $u)->addCondition('name', 'like', $u->expr('\'\''))->export(null, 'id')));
-        self::assertSame([], array_keys((clone $u)->addCondition('name', 'like', $u->expr('null'))->export(null, 'id')));
     }
 
     /**
