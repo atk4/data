@@ -810,9 +810,8 @@ class QueryTest extends TestCase
         return $q;
     }
 
-    public function testWhereSpecialValues(): void
+    public function testWhereIn(): void
     {
-        // in | not in
         self::assertSame(
             'where "id" in (:a, :b)',
             $this->q('[where]')->where('id', 'in', [1, 2])->render()[0]
@@ -829,6 +828,7 @@ class QueryTest extends TestCase
                 . ')',
             (new SqliteQuery('[where]'))->where('id', 'in', [1, 2])->render()[0]
         );
+
         // special treatment for empty array values
         self::assertSame(
             'where 1 = 0',
@@ -848,8 +848,19 @@ class QueryTest extends TestCase
             'where "id" is not null',
             $this->q('[where]')->where('id', '!=', null)->render()[0]
         );
+    }
 
-        // like | not like
+    public function testWhereInWithNullException(): void
+    {
+        $q = $this->q('[where]')->where('x', 'in', ['a', null, 'b']);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Null value in IN operator is not supported');
+        $q->render();
+    }
+
+    public function testWhereLike(): void
+    {
         self::assertSame(
             <<<'EOF'
                 where "name" like regexp_replace(:a, '(\\[\\_%])|(\\)', '\1\2\2') escape '\'
@@ -862,6 +873,7 @@ class QueryTest extends TestCase
                 EOF,
             $this->q('[where]')->where('name', 'not like', 'foo')->render()[0]
         );
+
         self::assertSame(
             <<<'EOF'
                 where case when case when instr(:a, '_') != 0 then 1 else `name` like regexp_replace(:a, '(\\[\\_%])|(\\)', '\1\2\2') escape '\' end then regexp_like(`name`, concat('^',regexp_replace(regexp_replace(regexp_replace(regexp_replace(:a, '\\(?:(?=[_%])|\K\\)|(?=[.\\+*?[^\]$(){}|])', '\'), '(?<!\\)(\\\\)*\K_', '.'), '(?<!\\)(\\\\)*\K%', '.*'), '(?<!\\)(\\\\)*\K\\(?=[_%])', ''), '$'), case when (select __atk4_case_v__ = 'a' from (select `name` __atk4_case_v__ where 0 union all select 'A') __atk4_case_tmp__) then 'is' else '-us' end) when `name` is not null and :a is not null then 0 end
@@ -878,6 +890,7 @@ class QueryTest extends TestCase
                     EOF,
             (new SqliteQuery('[where]'))->where($this->e('sum({})', ['a']), 'like', $this->e('sum({})', ['b']))->render()[0]
         );
+
         foreach (['5.7.0', '8.0.0', 'MariaDB-11.0.0'] as $serverVersion) {
             self::assertSame(
                 $serverVersion === '5.7.0'
@@ -889,7 +902,18 @@ class QueryTest extends TestCase
                         EOF,
                 $this->createMysqlQuery($serverVersion, '[where]')->where('name', 'like', 'foo')->render()[0]
             );
+            self::assertSame(
+                $serverVersion === '5.7.0'
+                    ? <<<'EOF'
+                        where sum("a") like replace(replace(replace(replace(replace(replace(replace(replace(sum("b"), '\\\\', '\\\\*'), '\\_', '\\_*'), '\\%', '\\%*'), '\\', '\\\\'), '\\\\_*', '\\_'), '\\\\%*', '\\%'), '\\\\\\\\*', '\\\\'), '%\\', '%\\\\') escape '\\'
+                        EOF
+                    : <<<'EOF'
+                        where sum("a") like regexp_replace(sum("b"), '\\\\\\\\|\\\\(?![_%])', '\\\\\\\\') escape '\\'
+                        EOF,
+                $this->createMysqlQuery($serverVersion, '[where]')->where($this->e('sum({})', ['a']), 'like', $this->e('sum({})', ['b']))->render()[0]
+            );
         }
+
         self::assertSame(
             <<<'EOF'
                 where case when pg_typeof("name") = 'bytea'::regtype then replace(regexp_replace(encode(case when pg_typeof("name") = 'bytea'::regtype then decode(case when pg_typeof("name") = 'bytea'::regtype then replace(substring(cast("name" as text) from 3), chr(92), repeat(chr(92), 2)) else '' end, 'hex') else cast(replace(cast("name" as text), chr(92), repeat(chr(92), 2)) as bytea) end, 'escape'), '(?<!\\)((\\\\)*)\\(\d\d\d)', '\1©\3©', 'g'), repeat(chr(92), 2), chr(92)) like regexp_replace(replace(regexp_replace(encode(cast(replace(cast(:a as text), chr(92), repeat(chr(92), 2)) as bytea), 'escape'), '(?<!\\)((\\\\)*)\\(\d\d\d)', '\1©\3©', 'g'), repeat(chr(92), 2), chr(92)), '(\\[\\_%])|(\\)', '\1\2\2', 'g') escape chr(92) else cast("name" as citext) like regexp_replace(:a, '(\\[\\_%])|(\\)', '\1\2\2', 'g') escape chr(92) end
@@ -902,6 +926,7 @@ class QueryTest extends TestCase
                 EOF,
             (new PostgresqlQuery('[where]'))->where($this->e('sum({})', ['a']), 'like', $this->e('sum({})', ['b']))->render()[0]
         );
+
         self::assertSame(
             <<<'EOF'
                 where ((datalength(concat((select top 0 [name]), 0x30)) = 2 and [name] like replace(replace(replace(replace(replace(replace(replace(replace(:a, N'\\', N'\\*'), N'\_', N'\_*'), N'\%', N'\%*'), N'\', N'\\'), N'\\_*', N'\_'), N'\\%*', N'\%'), N'\\\\*', N'\\'), N'[', N'\[') escape N'\') or (datalength(concat((select top 0 [name]), 0x30)) != 2 and ((isnull((select top 0 [name]), 0x41) != 0x61 and [name] like replace(replace(replace(replace(replace(replace(replace(replace(:a, 0x5c5c, 0x5c5c2a), 0x5c5f, 0x5c5f2a), 0x5c25, 0x5c252a), 0x5c, 0x5c5c), 0x5c5c5f2a, 0x5c5f), 0x5c5c252a, 0x5c25), 0x5c5c5c5c2a, 0x5c5c), 0x5b, 0x5c5b) collate Latin1_General_BIN escape 0x5c) or (isnull((select top 0 [name]), 0x41) = 0x61 and [name] like replace(replace(replace(replace(replace(replace(replace(replace(:a, 0x5c5c, 0x5c5c2a), 0x5c5f, 0x5c5f2a), 0x5c25, 0x5c252a), 0x5c, 0x5c5c), 0x5c5c5f2a, 0x5c5f), 0x5c5c252a, 0x5c25), 0x5c5c5c5c2a, 0x5c5c), 0x5b, 0x5c5b) escape 0x5c))))
@@ -914,6 +939,7 @@ class QueryTest extends TestCase
                 EOF,
             (new MssqlQuery('[where]'))->where($this->e('sum({})', ['a']), 'like', $this->e('sum({})', ['b']))->render()[0]
         );
+
         self::assertSame(
             <<<'EOF'
                 where "name" like regexp_replace(:xxaaaa, '(\\[\\_%])|(\\)', '\1\2\2') escape chr(92)
@@ -926,8 +952,10 @@ class QueryTest extends TestCase
                 EOF,
             (new OracleQuery('[where]'))->where($this->e('sum({})', ['a']), 'like', $this->e('sum({})', ['b']))->render()[0]
         );
+    }
 
-        // regexp | not regexp
+    public function testWhereRegexp(): void
+    {
         self::assertSame(
             'where regexp_like("name", :a, \'is\')',
             $this->q('[where]')->where('name', 'regexp', 'foo')->render()[0]
@@ -936,6 +964,7 @@ class QueryTest extends TestCase
             'where not regexp_like("name", :a, \'is\')',
             $this->q('[where]')->where('name', 'not regexp', 'foo')->render()[0]
         );
+
         self::assertSame(
             <<<'EOF'
                 where regexp_like(`name`, :a, case when (select __atk4_case_v__ = 'a' from (select `name` __atk4_case_v__ where 0 union all select 'A') __atk4_case_tmp__) then 'is' else '-us' end)
@@ -952,6 +981,7 @@ class QueryTest extends TestCase
                     EOF,
             (new SqliteQuery('[where]'))->where($this->e('sum({})', ['a']), 'regexp', $this->e('sum({})', ['b']))->render()[0]
         );
+
         foreach (['5.7.0', '8.0.0', 'MariaDB-11.0.0'] as $serverVersion) {
             self::assertSame(
                 $serverVersion === '5.7.0'
@@ -959,7 +989,14 @@ class QueryTest extends TestCase
                     : 'where `name` regexp concat(\'(?s)\', :a)',
                 $this->createMysqlQuery($serverVersion, '[where]')->where('name', 'regexp', 'foo')->render()[0]
             );
+            self::assertSame(
+                $serverVersion === '5.7.0'
+                    ? 'where sum("a") regexp concat(\'@?\', sum("b"))'
+                    : 'where sum("a") regexp concat(\'(?s)\', sum("b"))',
+                $this->createMysqlQuery($serverVersion, '[where]')->where($this->e('sum({})', ['a']), 'regexp', $this->e('sum({})', ['b']))->render()[0]
+            );
         }
+
         self::assertSame(
             <<<'EOF'
                 where case when pg_typeof("name") = 'bytea'::regtype then replace(regexp_replace(encode(case when pg_typeof("name") = 'bytea'::regtype then decode(case when pg_typeof("name") = 'bytea'::regtype then replace(substring(cast("name" as text) from 3), chr(92), repeat(chr(92), 2)) else '' end, 'hex') else cast(replace(cast("name" as text), chr(92), repeat(chr(92), 2)) as bytea) end, 'escape'), '(?<!\\)((\\\\)*)\\(\d\d\d)', '\1©\3©', 'g'), repeat(chr(92), 2), chr(92)) ~ replace(regexp_replace(encode(cast(replace(cast(:a as text), chr(92), repeat(chr(92), 2)) as bytea), 'escape'), '(?<!\\)((\\\\)*)\\(\d\d\d)', '\1©\3©', 'g'), repeat(chr(92), 2), chr(92)) else cast("name" as citext) ~ :a end
@@ -972,7 +1009,9 @@ class QueryTest extends TestCase
                 EOF,
             (new PostgresqlQuery('[where]'))->where($this->e('sum({})', ['a']), 'regexp', $this->e('sum({})', ['b']))->render()[0]
         );
+
         // TODO test MssqlQuery here once REGEXP is supported https://devblogs.microsoft.com/azure-sql/introducing-regular-expression-regex-support-in-azure-sql-db/
+
         self::assertSame(
             'where regexp_like("name", :xxaaaa, \'in\')',
             (new OracleQuery('[where]'))->where('name', 'regexp', 'foo')->render()[0]
@@ -981,15 +1020,6 @@ class QueryTest extends TestCase
             'where regexp_like(sum("a"), sum("b"), \'in\')',
             (new OracleQuery('[where]'))->where($this->e('sum({})', ['a']), 'regexp', $this->e('sum({})', ['b']))->render()[0]
         );
-    }
-
-    public function testWhereInWithNullException(): void
-    {
-        $q = $this->q('[where]')->where('x', 'in', ['a', null, 'b']);
-
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Null value in IN operator is not supported');
-        $q->render();
     }
 
     /**
