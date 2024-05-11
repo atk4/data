@@ -555,11 +555,6 @@ class ConditionSqlTest extends TestCase
             return $res;
         };
 
-        if ($this->getDatabasePlatform() instanceof OraclePlatform && $isBinary) {
-            $this->expectException(Exception::class);
-            $this->expectExceptionMessage('Unsupported binary field operator');
-        }
-
         self::assertSame([1], $findIdsLikeFx('name', 'John'));
         self::assertSame($isBinary ? [] : [1], $findIdsLikeFx('name', 'john'));
         self::assertSame([10], $findIdsLikeFx('name', 'heiß'));

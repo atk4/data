@@ -48,7 +48,7 @@ class Query extends BaseQuery
             $operatorLc = strtolower($operator ?? '=');
 
             if ($field instanceof Field && in_array($field->type, ['binary', 'blob'], true)
-                && in_array($operatorLc, ['like', 'not like', 'regexp', 'not regexp'], true)
+                && in_array($operatorLc, ['regexp', 'not regexp'], true)
             ) {
                 throw (new Exception('Unsupported binary field operator'))
                     ->addMoreInfo('operator', $operator)
@@ -64,10 +64,12 @@ class Query extends BaseQuery
 
                     $row = [$this->expr('dbms_lob.compare([], [])', [$field, $value]), $operator, 0];
                 } elseif (in_array($operatorLc, ['like', 'not like'], true)) {
-                    $field = $this->expr('LOWER([])', [$field]);
-                    $value = $this->expr('LOWER([])', [$value]);
+                    if ($field->type === 'text') {
+                        $field = $this->expr('LOWER([])', [$field]);
+                        $value = $this->expr('LOWER([])', [$value]);
 
-                    $row = [$field, $operator, $value];
+                        $row = [$field, $operator, $value];
+                    }
                 } elseif (!in_array($operatorLc, ['regexp', 'not regexp'], true)) {
                     throw (new Exception('Unsupported CLOB/BLOB field operator'))
                         ->addMoreInfo('operator', $operator)
