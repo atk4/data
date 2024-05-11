@@ -13,7 +13,7 @@ trait BinaryTypeCompatibilityTypecastTrait
 {
     private function binaryTypeValueGetPrefixConst(): string
     {
-        return "atk_binary\ru5f8mzx4vsm8g2c9\r";
+        return "atk4_binary\ru5f8mzx4vsm8g2c9\r";
     }
 
     private function binaryTypeValueEncode(string $value): string

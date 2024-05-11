@@ -27,7 +27,7 @@ trait PlatformTrait
     #[\Override]
     public function getBinaryTypeDeclarationSQL(array $column)
     {
-        $lengthEncodedAscii = ($column['length'] ?? 255) * 2 + strlen("atk_binary\ru5f8mzx4vsm8g2c9\r" . hash('crc32b', ''));
+        $lengthEncodedAscii = ($column['length'] ?? 255) * 2 + strlen("atk4_binary\ru5f8mzx4vsm8g2c9\r" . hash('crc32b', ''));
         $column['length'] = intdiv($lengthEncodedAscii + 3, 4);
 
         return $this->getVarcharTypeDeclarationSQL($column);
