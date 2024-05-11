@@ -189,8 +189,8 @@ abstract class TestCase extends BaseTestCase
         if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
             do {
                 $actualSqlPrev = $actualSql;
-                $actualSql = preg_replace('~case when typeof\((.+?)\) in \(\'integer\', \'real\'\) then cast\(\1 as numeric\) (.{1,20}?) (.+?) else \1 \2 \3 end~s', '$1 $2 $3', $actualSql);
-                $actualSql = preg_replace('~case when typeof\((.+?)\) in \(\'integer\', \'real\'\) then (.+?) (.{1,20}?) cast\(\1 as numeric\) else \2 \3 \1 end~s', '$2 $3 $1', $actualSql);
+                $actualSql = preg_replace('~case\s+when typeof\((.+?)\) in \(\'integer\', \'real\'\) then\s+cast\(\1 as numeric\) (.{1,20}?) (.+?)\s+else\s+\1 \2 \3\s+end~s', '$1 $2 $3', $actualSql);
+                $actualSql = preg_replace('~case\s+when typeof\((.+?)\) in \(\'integer\', \'real\'\) then\s+(.+?) (.{1,20}?) cast\(\1 as numeric\)\s+else\s+\2 \3 \1\s+end~s', '$2 $3 $1', $actualSql);
             } while ($actualSql !== $actualSqlPrev);
             do {
                 $actualSqlPrev = $actualSql;
