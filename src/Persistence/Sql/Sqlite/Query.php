@@ -109,14 +109,14 @@ class Query extends BaseQuery
                     return 'regexp_replace(' . $sql . ', ' . $this->escapeStringLiteral($search) . ', ' . $this->escapeStringLiteral($replacement) . ')';
                 };
 
-                return 'case when '
+                return 'case '
                     // workaround "_" matching more than one byte in BLOB - https://dbfiddle.uk/Dnq8BXGy
                     . 'case when instr(' . $sqlRight . ', ' . $this->escapeStringLiteral('_') . ') != 0 then 1 else '
                     . parent::_renderConditionLikeOperator(
                         false,
                         $sqlLeft,
                         $sqlRight
-                    ) . ' end then ' . $this->_renderConditionRegexpOperator(
+                    ) . ' end when 1 then ' . $this->_renderConditionRegexpOperator(
                         false,
                         $sqlLeft,
                         'concat(' . $this->escapeStringLiteral('^') . ',' . $regexReplaceSqlFx(
@@ -132,7 +132,7 @@ class Query extends BaseQuery
                             '(?<!\\\)(\\\\\\\)*\K\\\(?=[_%])',
                             ''
                         ) . ', ' . $this->escapeStringLiteral('$') . ')'
-                    ) . ' when ' . $sqlLeft . ' is not null and ' . $sqlRight . ' is not null then 0 end';
+                    ) . ' when 0 then 0 end';
             }
         );
     }
