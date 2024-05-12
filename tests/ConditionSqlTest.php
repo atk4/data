@@ -715,11 +715,6 @@ class ConditionSqlTest extends TestCase
             return $res;
         };
 
-        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            // https://devblogs.microsoft.com/azure-sql/introducing-regular-expression-regex-support-in-azure-sql-db/
-            self::markTestIncomplete('MSSQL has no REGEXP support yet');
-        }
-
         if ($this->getDatabasePlatform() instanceof OraclePlatform && $isBinary) {
             $this->expectException(Exception::class);
             $this->expectExceptionMessage('Unsupported binary field operator');
@@ -856,11 +851,6 @@ class ConditionSqlTest extends TestCase
     #[DataProvider('provideNullLikeRegexpConditionCases')]
     public function testNullLikeRegexpCondition(string $operator, ?bool $expectedResult, ?string $value, ?string $pattern, bool $negated): void
     {
-        if ($this->getDatabasePlatform() instanceof SQLServerPlatform && $operator === 'regexp') {
-            // https://devblogs.microsoft.com/azure-sql/introducing-regular-expression-regex-support-in-azure-sql-db/
-            self::markTestIncomplete('MSSQL has no REGEXP support yet');
-        }
-
         // TODO Oracle always converts empty string to null
         // https://stackoverflow.com/questions/13278773/null-vs-empty-string-in-oracle#13278879
         if ($this->getDatabasePlatform() instanceof OraclePlatform && ($value === '' || $pattern === '') && $expectedResult !== null) {
