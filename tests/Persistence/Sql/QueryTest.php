@@ -940,17 +940,18 @@ class QueryTest extends TestCase
             (new MssqlQuery('[where]'))->where($this->e('sum({})', ['a']), 'like', $this->e('sum({})', ['b']))->render()[0]
         );
 
+        $binaryPrefix = "atk4_binary\ru5f8mzx4vsm8g2c9\r";
         self::assertSame(
             <<<'EOF'
-                where "name" like regexp_replace(:xxaaaa, '(\\[\\_%])|(\\)', '\1\2\2') escape chr(92)
+                where case when "name" is null or :xxaaaa is null then null when "name" like 'BBB________%' or :xxaaaa like 'BBB________%' then case when regexp_like(case when "name" like 'BBB________%' then to_char(substr("name", 38)) else rawtohex(utl_raw.cast_to_raw("name")) end, concat('^', concat(replace(replace(replace(replace(replace(replace(replace(replace(replace(case when :xxaaaa like 'BBB________%' then to_char(substr(:xxaaaa, 38)) else rawtohex(utl_raw.cast_to_raw(:xxaaaa)) end, '5c5c', 'x'), '5c5f', 'y'), '5c25', 'z'), '5c', 'x'), '5f', '..'), '25', '(..)*'), 'x', '5c'), 'y', '5f'), 'z', '25'), '$')), 'in') then 1 else 0 end else case when "name" like regexp_replace(:xxaaaa, '(\\[\\_%])|(\\)', '\1\2\2') escape chr(92) then 1 else 0 end end = 1
                 EOF,
-            (new OracleQuery('[where]'))->where('name', 'like', 'foo')->render()[0]
+            str_replace($binaryPrefix, 'BBB', (new OracleQuery('[where]'))->where('name', 'like', 'foo')->render()[0])
         );
         self::assertSame(
             <<<'EOF'
-                where (select case when not("__atk4_reuse_left__" like regexp_replace("__atk4_reuse_right__", '(\\[\\_%])|(\\)', '\1\2\2') escape chr(92)) then 0 else case when "__atk4_reuse_left__" is not null and "__atk4_reuse_right__" is not null then 1 end end from (select sum("a") "__atk4_reuse_left__", sum("b") "__atk4_reuse_right__" from DUAL) "__atk4_reuse_tmp__") = 1
+                where (select case when not(case when "__atk4_reuse_left__" is null or "__atk4_reuse_right__" is null then null when "__atk4_reuse_left__" like 'BBB________%' or "__atk4_reuse_right__" like 'BBB________%' then case when regexp_like(case when "__atk4_reuse_left__" like 'BBB________%' then to_char(substr("__atk4_reuse_left__", 38)) else rawtohex(utl_raw.cast_to_raw("__atk4_reuse_left__")) end, concat('^', concat(replace(replace(replace(replace(replace(replace(replace(replace(replace(case when "__atk4_reuse_right__" like 'BBB________%' then to_char(substr("__atk4_reuse_right__", 38)) else rawtohex(utl_raw.cast_to_raw("__atk4_reuse_right__")) end, '5c5c', 'x'), '5c5f', 'y'), '5c25', 'z'), '5c', 'x'), '5f', '..'), '25', '(..)*'), 'x', '5c'), 'y', '5f'), 'z', '25'), '$')), 'in') then 1 else 0 end else case when "__atk4_reuse_left__" like regexp_replace("__atk4_reuse_right__", '(\\[\\_%])|(\\)', '\1\2\2') escape chr(92) then 1 else 0 end end = 1) then 0 else case when "__atk4_reuse_left__" is not null and "__atk4_reuse_right__" is not null then 1 end end from (select sum("a") "__atk4_reuse_left__", sum("b") "__atk4_reuse_right__" from DUAL) "__atk4_reuse_tmp__") = 1
                 EOF,
-            (new OracleQuery('[where]'))->where($this->e('sum({})', ['a']), 'like', $this->e('sum({})', ['b']))->render()[0]
+            str_replace($binaryPrefix, 'BBB', (new OracleQuery('[where]'))->where($this->e('sum({})', ['a']), 'like', $this->e('sum({})', ['b']))->render()[0])
         );
     }
 

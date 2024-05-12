@@ -61,27 +61,36 @@ class Query extends BaseQuery
                         . ' else rawtohex(utl_raw.cast_to_raw(' . $sql . ')) end';
                 };
 
-                $binaryReplaceHexFx = function ($sql, $character) {
-                    return 'regexp_replace(' . $sql . ', '
-                        . $this->escapeStringLiteral(bin2hex($character)) . ', '
-                        . $this->escapeStringLiteral(['_' => '__', '\\' => '\\\\'][$character] ?? $character) . ')';
+                $replaceMultiFx = function (string $sql, array $replacements) {
+                    $res = $sql;
+                    foreach ($replacements as $search => $replacement) {
+                        $res = 'replace(' . $res . ', '
+                            . $this->escapeStringLiteral((string) $search) . ', '
+                            . $this->escapeStringLiteral($replacement) . ')';
+                    }
+
+                    return $res;
                 };
 
                 return 'case when ' . $sqlLeft . ' is null or ' . $sqlRight . ' is null then null '
                     . 'when ' . $startsWithBinaryPrefixFx($sqlLeft) . ' or ' . $startsWithBinaryPrefixFx($sqlRight) . ' then '
-                    . 'case when ' . parent::_renderConditionLikeOperator(
+                    . 'case when ' . $this->_renderConditionRegexpOperator(
                         false,
                         $binaryEncodeWithoutPrefixFx($sqlLeft),
-                        $binaryReplaceHexFx(
-                            $binaryReplaceHexFx(
-                                $binaryReplaceHexFx(
-                                    $binaryEncodeWithoutPrefixFx($sqlRight),
-                                    '_'
-                                ),
-                                '%'
-                            ),
-                            '\\'
-                        )
+                        'concat(' . $this->escapeStringLiteral('^') . ', concat(' . $replaceMultiFx(
+                            $binaryEncodeWithoutPrefixFx($sqlRight),
+                            [
+                                bin2hex('\\\\') => 'x',
+                                bin2hex('\_') => 'y',
+                                bin2hex('\%') => 'z',
+                                bin2hex('\\') => 'x',
+                                bin2hex('_') => '..',
+                                bin2hex('%') => '(..)*',
+                                'x' => bin2hex('\\'),
+                                'y' => bin2hex('_'),
+                                'z' => bin2hex('%'),
+                            ]
+                        ) . ', ' . $this->escapeStringLiteral('$') . '))'
                     ) . ' then 1 else 0 end'
                     . ' else '
                     . 'case when ' . parent::_renderConditionLikeOperator(
