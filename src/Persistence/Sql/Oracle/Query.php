@@ -50,11 +50,46 @@ class Query extends BaseQuery
             $sqlLeft,
             $sqlRight,
             function ($sqlLeft, $sqlRight) {
-                return parent::_renderConditionLikeOperator(
-                    false,
-                    $sqlLeft,
-                    $sqlRight
-                );
+                $binaryPrefix = "atk4_binary\ru5f8mzx4vsm8g2c9\r";
+
+                $startsWithBinaryPrefixFx = function ($sql) use ($binaryPrefix) {
+                    return $sql . ' like ' . $this->escapeStringLiteral($binaryPrefix . str_repeat('_', 8) . '%');
+                };
+
+                $binaryEncodeWithoutPrefixFx = static function ($sql) use ($binaryPrefix, $startsWithBinaryPrefixFx) {
+                    return 'case when ' . $startsWithBinaryPrefixFx($sql) . ' then to_char(substr(' . $sql . ', ' . (strlen($binaryPrefix) + 9) . '))'
+                        . ' else rawtohex(utl_raw.cast_to_raw(' . $sql . ')) end';
+                };
+
+                $binaryReplaceHexFx = function ($sql, $character) {
+                    return 'regexp_replace(' . $sql . ', '
+                        . $this->escapeStringLiteral(bin2hex($character)) . ', '
+                        . $this->escapeStringLiteral(['_' => '__', '\\' => '\\\\'][$character] ?? $character) . ')';
+                };
+
+                return 'case when ' . $sqlLeft . ' is null or ' . $sqlRight . ' is null then null '
+                    . 'when ' . $startsWithBinaryPrefixFx($sqlLeft) . ' or ' . $startsWithBinaryPrefixFx($sqlRight) . ' then '
+                    . 'case when ' . parent::_renderConditionLikeOperator(
+                        false,
+                        $binaryEncodeWithoutPrefixFx($sqlLeft),
+                        $binaryReplaceHexFx(
+                            $binaryReplaceHexFx(
+                                $binaryReplaceHexFx(
+                                    $binaryEncodeWithoutPrefixFx($sqlRight),
+                                    '_'
+                                ),
+                                '%'
+                            ),
+                            '\\'
+                        )
+                    ) . ' then 1 else 0 end'
+                    . ' else '
+                    . 'case when ' . parent::_renderConditionLikeOperator(
+                        false,
+                        $sqlLeft,
+                        $sqlRight
+                    ) . ' then 1 else 0 end'
+                    . ' end = 1';
             },
             true
         );
