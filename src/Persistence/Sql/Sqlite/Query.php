@@ -122,7 +122,7 @@ class Query extends BaseQuery
                         'concat(' . $this->escapeStringLiteral('^') . ',' . $regexReplaceSqlFx(
                             $regexReplaceSqlFx(
                                 $regexReplaceSqlFx(
-                                    $regexReplaceSqlFx($sqlRight, '\\\(?:(?=[_%])|\K\\\)|(?=[.\\\+*?[^\]$(){}|])', '\\'),
+                                    $regexReplaceSqlFx($sqlRight, '\\\(?:(?=[_%])|\K\\\)|(?=[.\\\+*?[^\]$(){}|])', '\\\\'),
                                     '(?<!\\\)(\\\\\\\)*\K_',
                                     '.'
                                 ),
