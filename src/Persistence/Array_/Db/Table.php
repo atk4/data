@@ -38,7 +38,7 @@ class Table
      */
     protected function assertValidIdentifier($name): void
     {
-        if (!is_string($name) || $name === '' || is_numeric($name)) { // @phpstan-ignore-line
+        if (!is_string($name) || $name === '' || is_numeric($name)) { // @phpstan-ignore function.alreadyNarrowedType
             throw (new Exception('Name must be a non-empty non-numeric string'))
                 ->addMoreInfo('name', $name);
         }

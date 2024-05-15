@@ -15,14 +15,14 @@ use Doctrine\DBAL\Platforms\MySQLPlatform;
  */
 class TestSqlPersistence extends Persistence\Sql
 {
-    public function __construct() {} // @phpstan-ignore-line
+    public function __construct() {} // @phpstan-ignore constructor.missingParentCall
 
     #[\Override]
     public function getConnection(): Persistence\Sql\Connection
     {
         \Closure::bind(function () {
             if (($this->_connection ?? null) === null) {
-                $this->_connection = Persistence::connect($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD'])->_connection; // @phpstan-ignore-line
+                $this->_connection = Persistence::connect($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD'])->_connection; // @phpstan-ignore property.notFound
 
                 if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
                     $this->getConnection()->expr(
@@ -30,9 +30,8 @@ class TestSqlPersistence extends Persistence\Sql
                     )->executeStatement();
                 }
 
-                // @phpstan-ignore-next-line SQLLogger is deprecated
-                $this->getConnection()->getConnection()->getConfiguration()->setSQLLogger(
-                    // @phpstan-ignore-next-line SQLLogger is deprecated
+                $this->getConnection()->getConnection()->getConfiguration()->setSQLLogger( // @phpstan-ignore method.deprecated
+                    // @phpstan-ignore class.implementsDeprecatedInterface (TODO PHP CS Fixer should allow comment on the same line)
                     new class() implements SQLLogger {
                         #[\Override]
                         public function startQuery($sql, ?array $params = null, ?array $types = null): void
@@ -49,7 +48,7 @@ class TestSqlPersistence extends Persistence\Sql
                             }
 
                             $test = TestCase::getTestFromBacktrace();
-                            \Closure::bind(static fn () => $test->logQuery($sql, $params ?? [], $types ?? []), null, TestCase::class)(); // @phpstan-ignore-line
+                            \Closure::bind(static fn () => $test->logQuery($sql, $params ?? [], $types ?? []), null, TestCase::class)(); // @phpstan-ignore argument.type
                         }
 
                         #[\Override]

@@ -125,7 +125,7 @@ trait ExpressionTrait
 
         $expr = $buildConcatExprFx($parts);
 
-        return $this->expr($expr, $exprArgs); // @phpstan-ignore-line
+        return $this->expr($expr, $exprArgs); // @phpstan-ignore return.type
     }
 
     #[\Override]
@@ -163,7 +163,7 @@ trait ExpressionTrait
                             }
 
                             $name = ':' . $newParamBase;
-                            ++$newParamBase; // @phpstan-ignore-line
+                            ++$newParamBase;
                             $newParams[$name] = $exprParams[$matches[0]];
 
                             return $name;
@@ -172,7 +172,7 @@ trait ExpressionTrait
                     );
                 } else {
                     $sql = ':' . $newParamBase;
-                    ++$newParamBase; // @phpstan-ignore-line
+                    ++$newParamBase;
 
                     $newParams[$sql] = $value;
 

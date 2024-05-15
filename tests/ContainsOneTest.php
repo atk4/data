@@ -74,7 +74,7 @@ class ContainsOneTest extends TestCase
         self::assertSame(Address::class, get_class($i->getModel()->addr));
 
         // check do we have address set
-        self::assertNull($i->addr); // @phpstan-ignore-line
+        self::assertNull($i->addr); // @phpstan-ignore staticMethod.impossibleType
         $a = $i->getModel()->addr->createEntity();
         $a->getModel()->containedInEntity = $i;
 
@@ -128,7 +128,7 @@ class ContainsOneTest extends TestCase
         $exportAddr = $i->getModel()->setOrder('id')
             ->export(null, null, false)[0][$i->fieldName()->addr];
         $formatDtForCompareFx = static function (\DateTimeInterface $dt): string {
-            $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC')); // @phpstan-ignore-line
+            $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC')); // @phpstan-ignore method.notFound
 
             return $dt->format('Y-m-d H:i:s.u');
         };
@@ -151,12 +151,12 @@ class ContainsOneTest extends TestCase
         // so far so good. now let's try to delete door_code
         $i->addr->door_code->delete();
         self::assertNull($i->addr->get($i->addr->fieldName()->door_code));
-        self::assertNull($i->addr->door_code); // @phpstan-ignore-line
+        self::assertNull($i->addr->door_code); // @phpstan-ignore staticMethod.impossibleType
 
         // and now delete address
         $i->addr->delete();
         self::assertNull($i->get($i->fieldName()->addr));
-        self::assertNull($i->addr); // @phpstan-ignore-line
+        self::assertNull($i->addr); // @phpstan-ignore staticMethod.impossibleType
     }
 
     /**
@@ -168,7 +168,7 @@ class ContainsOneTest extends TestCase
         $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
 
         // with address
-        self::assertNull($i->addr); // @phpstan-ignore-line
+        self::assertNull($i->addr); // @phpstan-ignore staticMethod.impossibleType
         $a = $i->getModel()->addr->createEntity();
         $a->getModel()->containedInEntity = $i;
         $a->setMulti($row = [

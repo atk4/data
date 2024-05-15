@@ -128,7 +128,7 @@ trait ExpressionTrait
             // mimic https://github.com/doctrine/dbal/blob/3.7.1/src/Statement.php#L249
             $result = $this->_execute($connection, false);
 
-            $driverResult = \Closure::bind(static fn (): DbalDriverPdoResult => $result->result, null, DbalResult::class)(); // @phpstan-ignore-line
+            $driverResult = \Closure::bind(static fn (): DbalDriverPdoResult => $result->result, null, DbalResult::class)(); // @phpstan-ignore return.type
             $driverPdoResult = \Closure::bind(static fn () => $driverResult->statement, null, DbalDriverPdoResult::class)();
             try {
                 while ($driverPdoResult->nextRowset());

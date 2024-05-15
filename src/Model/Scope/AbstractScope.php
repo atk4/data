@@ -30,7 +30,7 @@ abstract class AbstractScope
      */
     public function setOwner(object $owner)
     {
-        if (!$owner instanceof self) { // @phpstan-ignore-line
+        if (!$owner instanceof self) { // @phpstan-ignore instanceof.alwaysTrue
             throw new Exception('Scope can only be added as element to scope');
         }
 

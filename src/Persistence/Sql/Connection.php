@@ -185,7 +185,7 @@ abstract class Connection
     public static function connect($dsn, $user = null, $password = null, $defaults = []): self
     {
         if ($dsn instanceof DbalConnection) {
-            $driverName = self::getDriverNameFromDbalDriverConnection($dsn->getWrappedConnection()); // @phpstan-ignore-line https://github.com/doctrine/dbal/issues/5199
+            $driverName = self::getDriverNameFromDbalDriverConnection($dsn->getWrappedConnection()); // @phpstan-ignore method.deprecated (https://github.com/doctrine/dbal/issues/5199)
             $connectionClass = self::resolveConnectionClass($driverName);
             $dbalConnection = $dsn;
         } elseif ($dsn instanceof DbalDriverConnection) {
@@ -222,7 +222,7 @@ abstract class Connection
             return 'oci8';
         }
 
-        return null; // @phpstan-ignore-line
+        return null; // @phpstan-ignore return.type
     }
 
     protected static function createDbalConfiguration(): Configuration
@@ -254,11 +254,11 @@ abstract class Connection
         }
 
         $dbalConnection = DriverManager::getConnection(
-            $dsn, // @phpstan-ignore-line
+            $dsn, // @phpstan-ignore argument.type
             (static::class)::createDbalConfiguration()
         );
 
-        return $dbalConnection->getWrappedConnection(); // @phpstan-ignore-line https://github.com/doctrine/dbal/issues/5199
+        return $dbalConnection->getWrappedConnection(); // @phpstan-ignore method.deprecated (https://github.com/doctrine/dbal/issues/5199)
     }
 
     protected static function connectFromDbalDriverConnection(DbalDriverConnection $dbalDriverConnection): DbalConnection

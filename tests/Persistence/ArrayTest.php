@@ -794,7 +794,7 @@ class ArrayTest extends TestCase
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Field must be a string or an instance of Expressionable');
-        $m->addCondition(new Model(), 'like', '%o%'); // @phpstan-ignore-line
+        $m->addCondition(new Model(), 'like', '%o%'); // @phpstan-ignore argument.type
     }
 
     public function testHasOne(): void

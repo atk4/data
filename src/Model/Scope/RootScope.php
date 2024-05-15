@@ -52,7 +52,7 @@ class RootScope extends Model\Scope
     /**
      * @return Model\Scope
      */
-    public static function createAnd(...$conditions) // @phpstan-ignore-line
+    public static function createAnd(...$conditions) // @phpstan-ignore method.missingOverride
     {
         return (parent::class)::createAnd(...$conditions);
     }
@@ -60,7 +60,7 @@ class RootScope extends Model\Scope
     /**
      * @return Model\Scope
      */
-    public static function createOr(...$conditions) // @phpstan-ignore-line
+    public static function createOr(...$conditions) // @phpstan-ignore method.missingOverride
     {
         return (parent::class)::createOr(...$conditions);
     }

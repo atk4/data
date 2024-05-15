@@ -182,7 +182,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
                     return $expr;
             }
 
-            throw (new Exception('Unexpected escape mode')) // @phpstan-ignore-line
+            throw (new Exception('Unexpected escape mode')) // @phpstan-ignore deadCode.unreachable
                 ->addMoreInfo('escapeMode', $escapeMode);
         }
 
@@ -202,9 +202,9 @@ abstract class Expression implements Expressionable, \ArrayAccess
             if (count($params) > 0) {
                 $kWithoutColon = substr(array_key_last($params), 1);
                 while ($this->renderParamBase !== $kWithoutColon) {
-                    ++$this->renderParamBase; // @phpstan-ignore-line
+                    ++$this->renderParamBase; // @phpstan-ignore preInc.nonNumeric
                 }
-                ++$this->renderParamBase; // @phpstan-ignore-line
+                ++$this->renderParamBase; // @phpstan-ignore preInc.nonNumeric
             }
         } finally {
             $expr->paramBase = $expressionParamBaseBackup;
@@ -225,7 +225,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
     protected function escapeParam($value): string
     {
         $name = ':' . $this->renderParamBase;
-        ++$this->renderParamBase; // @phpstan-ignore-line
+        ++$this->renderParamBase; // @phpstan-ignore preInc.nonNumeric
         $this->renderParams[$name] = $value;
 
         return $name;
@@ -661,7 +661,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
         }
 
         // for PostgreSQL/Oracle CLOB/BLOB datatypes and PDO driver
-        if (is_resource($v) && get_resource_type($v) === 'stream') { // @phpstan-ignore-line
+        if (is_resource($v) && get_resource_type($v) === 'stream') { // @phpstan-ignore function.impossibleType
             $platform = $this->connection->getDatabasePlatform();
             if ($platform instanceof PostgreSQLPlatform || $platform instanceof OraclePlatform) {
                 $v = stream_get_contents($v);

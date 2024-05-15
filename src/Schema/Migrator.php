@@ -51,7 +51,7 @@ class Migrator
             $this->_connection = $source;
         } elseif ($source instanceof Persistence\Sql) {
             $this->_connection = $source->getConnection();
-        } elseif ($source instanceof Model && $source->getPersistence() instanceof Persistence\Sql) { // @phpstan-ignore-line
+        } elseif ($source instanceof Model && $source->getPersistence() instanceof Persistence\Sql) { // @phpstan-ignore instanceof.alwaysTrue
             $this->_connection = $source->getPersistence()->getConnection();
         } else {
             throw (new Exception('Source must be SQL connection, persistence or initialized model'))
@@ -201,7 +201,7 @@ class Migrator
             $database = substr($tableName, 0, $lastDotPos);
             if ($platform instanceof PostgreSQLPlatform || $platform instanceof SQLServerPlatform) {
                 $currentDatabase = $this->getConnection()->dsql()
-                    ->field($this->getConnection()->expr('{{}}', [$this->getDatabasePlatform()->getCurrentDatabaseExpression(true)])) // @phpstan-ignore-line
+                    ->field($this->getConnection()->expr('{{}}', [$this->getDatabasePlatform()->getCurrentDatabaseExpression(true)])) // @phpstan-ignore arguments.count
                     ->getOne();
             } else {
                 $currentDatabase = $this->getConnection()->getConnection()->getDatabase();

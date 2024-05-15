@@ -79,7 +79,7 @@ abstract class TestCase extends BaseTestCase
 
     protected function getConnection(): Persistence\Sql\Connection
     {
-        return $this->db->getConnection(); // @phpstan-ignore-line
+        return $this->db->getConnection(); // @phpstan-ignore method.notFound
     }
 
     protected function getDatabasePlatform(): AbstractPlatform
@@ -285,7 +285,7 @@ abstract class TestCase extends BaseTestCase
     protected static function assertSameExportUnordered(array $expected, array $actual, string $message = ''): void
     {
         if (self::compareExportUnorderedValue($expected, $actual) === 0) {
-            self::assertTrue(true); // @phpstan-ignore-line
+            self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
 
             return;
         }

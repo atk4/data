@@ -33,7 +33,7 @@ class ContainsMany extends ContainsBase
                 $ourEntity->assertIsEntity();
 
                 $persistence = Persistence\Array_::assertInstanceOf($theirEntity->getModel()->getPersistence());
-                $rows = $persistence->getRawDataByTable($theirEntity->getModel(), $this->tableAlias); // @phpstan-ignore-line
+                $rows = $persistence->getRawDataByTable($theirEntity->getModel(), $this->tableAlias); // @phpstan-ignore method.deprecated
                 $ourEntity->save([$this->getOurFieldName() => $rows !== [] ? $rows : null]);
             });
         }

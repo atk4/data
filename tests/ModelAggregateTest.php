@@ -124,7 +124,7 @@ class ModelAggregateTest extends TestCase
     public function testGroupSelectExpression(): void
     {
         $aggregate = $this->createInvoiceAggregate();
-        $aggregate->table->getReference('client_id')->addField('order'); // @phpstan-ignore-line
+        $aggregate->table->getReference('client_id')->addField('order'); // @phpstan-ignore method.notFound
         $aggregate->addField('client');
 
         $aggregate->setGroupBy(['client_id'], [
@@ -341,7 +341,7 @@ class ModelAggregateTest extends TestCase
     public function testAggregateFieldExpressionSql(): void
     {
         $aggregate = $this->createInvoiceAggregate();
-        $aggregate->table->getReference('client_id')->addField('order'); // @phpstan-ignore-line
+        $aggregate->table->getReference('client_id')->addField('order'); // @phpstan-ignore method.notFound
 
         $aggregate->setGroupBy([$aggregate->expr('{}', ['abc'])], [
             'xyz' => ['expr' => 'sum([amount])'],

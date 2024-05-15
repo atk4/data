@@ -836,7 +836,7 @@ class ConditionSqlTest extends TestCase
         // TODO Oracle always converts empty string to null
         // https://stackoverflow.com/questions/13278773/null-vs-empty-string-in-oracle#13278879
         if ($this->getDatabasePlatform() instanceof OraclePlatform && ($value === '' || $pattern === '') && $expectedResult !== null) {
-            self::assertTrue(true); // @phpstan-ignore-line
+            self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
 
             return;
         }

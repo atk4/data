@@ -33,11 +33,11 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
                 use Sqlite\PlatformTrait;
             };
         } elseif ($platform instanceof PostgreSQLPlatform) {
-            $platform = new class() extends PostgreSQL94Platform { // @phpstan-ignore-line
+            $platform = new class() extends PostgreSQL94Platform { // @phpstan-ignore class.extendsDeprecatedClass
                 use Postgresql\PlatformTrait;
             };
         } elseif ($platform instanceof SQLServerPlatform) {
-            $platform = new class() extends SQLServer2012Platform { // @phpstan-ignore-line
+            $platform = new class() extends SQLServer2012Platform { // @phpstan-ignore class.extendsDeprecatedClass
                 use Mssql\PlatformTrait;
             };
         } elseif ($platform instanceof OraclePlatform) {
@@ -68,11 +68,11 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
     public function getSchemaManager(DbalConnection $connection, AbstractPlatform $platform): AbstractSchemaManager
     {
         if ($platform instanceof SQLitePlatform) {
-            return new class($connection, $platform) extends SQLiteSchemaManager { // @phpstan-ignore-line
+            return new class($connection, $platform) extends SQLiteSchemaManager { // @phpstan-ignore return.type
                 use Sqlite\SchemaManagerTrait;
             };
         } elseif ($platform instanceof OraclePlatform) {
-            return new class($connection, $platform) extends OracleSchemaManager { // @phpstan-ignore-line
+            return new class($connection, $platform) extends OracleSchemaManager { // @phpstan-ignore return.type
                 use Oracle\SchemaManagerTrait;
             };
         }
@@ -114,7 +114,7 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
 
     final protected static function getUnconvertedException(DbalDriverConvertedException $convertedException): DbalDriverException
     {
-        return $convertedException->getPrevious(); // @phpstan-ignore-line
+        return $convertedException->getPrevious(); // @phpstan-ignore return.type
     }
 
     #[\Override]

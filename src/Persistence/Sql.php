@@ -131,7 +131,7 @@ class Sql extends Persistence
             return $m->getPersistence()->expr($m, ...$args);
         });
         $model->addMethod('dsql', static function (Model $m, ...$args) {
-            return $m->getPersistence()->dsql($m, ...$args); // @phpstan-ignore-line
+            return $m->getPersistence()->dsql($m, ...$args);
         });
         $model->addMethod('exprNow', static function (Model $m, ...$args) {
             return $m->getPersistence()->exprNow($m, ...$args);

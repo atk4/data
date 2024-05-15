@@ -17,7 +17,7 @@ class Connection extends BaseConnection
         assert($connection->getDatabasePlatform() instanceof MySQLPlatform);
 
         // active server connection is required, but nothing is sent to the server
-        return $connection->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore-line
+        return $connection->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore method.deprecated, method.notFound
     }
 
     public static function isServerMariaDb(BaseConnection $connection): bool

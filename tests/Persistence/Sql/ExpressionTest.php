@@ -29,7 +29,7 @@ class ExpressionTest extends TestCase
             #[\Override]
             protected function escapeStringLiteral(string $value): string
             {
-                return null; // @phpstan-ignore-line
+                return null; // @phpstan-ignore return.type
             }
         };
     }

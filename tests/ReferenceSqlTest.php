@@ -355,7 +355,7 @@ class ReferenceSqlTest extends TestCase
                 };
             }
         };
-        $integerWrappedTypeName = $integerWrappedType->getName(); // @phpstan-ignore-line
+        $integerWrappedTypeName = $integerWrappedType->getName(); // @phpstan-ignore method.deprecated
 
         $this->executeFxWithTemporaryType($integerWrappedTypeName, $integerWrappedType, function () use ($integerWrappedType, $integerWrappedTypeName) {
             $createFileModelFx = static function (Persistence $persistence) use ($integerWrappedTypeName) {

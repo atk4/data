@@ -427,7 +427,7 @@ abstract class Persistence
 
         try {
             $v = $this->_typecastSaveField($field, $value);
-            if ($v !== null && !is_scalar($v)) { // @phpstan-ignore-line
+            if ($v !== null && !is_scalar($v)) { // @phpstan-ignore function.alreadyNarrowedType, booleanAnd.alwaysFalse
                 throw new \TypeError('Unexpected non-scalar value');
             }
 
@@ -454,7 +454,7 @@ abstract class Persistence
     {
         if ($value === null) {
             return null;
-        } elseif (!is_scalar($value)) { // @phpstan-ignore-line
+        } elseif (!is_scalar($value)) { // @phpstan-ignore function.alreadyNarrowedType
             throw new \TypeError('Unexpected non-scalar value');
         }
 

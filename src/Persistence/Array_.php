@@ -348,7 +348,7 @@ class Array_ extends Persistence
      */
     public function prepareIterator(Model $model): \Traversable
     {
-        return $model->action('select')->generator; // @phpstan-ignore-line
+        return $model->action('select')->generator; // @phpstan-ignore property.notFound
     }
 
     /**

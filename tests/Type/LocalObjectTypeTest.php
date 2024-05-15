@@ -98,7 +98,7 @@ class LocalObjectTypeTest extends TestCase
         $t = new LocalObjectType();
 
         $this->expectException(\Error::class);
-        clone $t;
+        clone $t; // @phpstan-ignore expr.resultUnused
     }
 
     public function testDifferentInstanceException(): void

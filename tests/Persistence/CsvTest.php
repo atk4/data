@@ -30,9 +30,9 @@ class CsvTest extends TestCase
     protected function tearDown(): void
     {
         fclose($this->file);
-        $this->file = null; // @phpstan-ignore-line
+        $this->file = null; // @phpstan-ignore assign.propertyType
         fclose($this->file2);
-        $this->file2 = null; // @phpstan-ignore-line
+        $this->file2 = null; // @phpstan-ignore assign.propertyType
 
         parent::tearDown();
     }

@@ -46,7 +46,7 @@ class QueryTest extends TestCase
                     #[\Override]
                     protected function escapeStringLiteral(string $value): string
                     {
-                        return null; // @phpstan-ignore-line
+                        return null; // @phpstan-ignore return.type
                     }
                 });
 
@@ -770,7 +770,7 @@ class QueryTest extends TestCase
         $dbalConnection = new class($serverVersion) extends DbalConnection {
             private string $serverVersion;
 
-            public function __construct(string $serverVersion) // @phpstan-ignore-line
+            public function __construct(string $serverVersion) // @phpstan-ignore method.childParameterType, parameter.missing, parameter.missing, parameter.missing, constructor.missingParentCall
             {
                 $this->serverVersion = $serverVersion;
             }
@@ -781,7 +781,7 @@ class QueryTest extends TestCase
                 return new class($this->serverVersion) extends AbstractConnectionMiddleware {
                     private string $serverVersion;
 
-                    public function __construct(string $serverVersion) // @phpstan-ignore-line
+                    public function __construct(string $serverVersion) // @phpstan-ignore constructor.missingParentCall
                     {
                         $this->serverVersion = $serverVersion;
                     }
@@ -1137,7 +1137,7 @@ class QueryTest extends TestCase
     {
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('If first argument is array, second argument must not be used');
-        $this->q('[order]')->order(['name', 'surname'], 'desc'); // @phpstan-ignore-line
+        $this->q('[order]')->order(['name', 'surname'], 'desc'); // @phpstan-ignore argument.type
     }
 
     public function testGroup(): void

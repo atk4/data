@@ -1833,7 +1833,7 @@ class Model implements \IteratorAggregate
                 if ($scopeOrig !== null) {
                     $this->scope = $scopeOrig;
                     $scopeOrig = null;
-                    $this->temporaryMutateScopeFieldsRestore($fieldsBackup); // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/9685
+                    $this->temporaryMutateScopeFieldsRestore($fieldsBackup); // @phpstan-ignore variable.undefined (https://github.com/phpstan/phpstan/issues/9685)
                 }
 
                 $entity = $this->createEntity();
@@ -1864,7 +1864,7 @@ class Model implements \IteratorAggregate
             if ($scopeOrig !== null) {
                 $this->scope = $scopeOrig;
                 $scopeOrig = null;
-                $this->temporaryMutateScopeFieldsRestore($fieldsBackup); // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/9685
+                $this->temporaryMutateScopeFieldsRestore($fieldsBackup); // @phpstan-ignore variable.undefined (https://github.com/phpstan/phpstan/issues/9685)
             }
         }
     }

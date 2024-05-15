@@ -50,7 +50,7 @@ class Query extends BaseQuery
      * https://dba.stackexchange.com/questions/332585/sqlite-comparison-of-the-same-operand-types-behaves-differently
      * https://sqlite.org/forum/info/5f1135146fbc37ab .
      */
-    #[\Override] // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/10942
+    #[\Override] // @phpstan-ignore method.childParameterType (https://github.com/phpstan/phpstan/issues/10942)
     protected function _renderConditionBinary(string $operator, string $sqlLeft, $sqlRight): string
     {
         if (in_array($operator, ['in', 'not in'], true)) {
