@@ -134,6 +134,25 @@ class Query extends BaseQuery
     }
 
     #[\Override]
+    protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight, bool $binary = false): string
+    {
+        return ($negated ? 'not ' : '') . $this->_renderConditionBinaryReuseBool(
+            $sqlLeft,
+            $sqlRight,
+            function ($sqlLeft, $sqlRight) use ($binary) {
+                $castToStringFx = static function ($sql) {
+                    return 'case when ' . $sql . ' is not null then '
+                        . 'concat(' . $sql . ', substring(char(' . ord('0') . '), 1, 0)) end';
+                };
+
+                return 'regexp_like(' . $castToStringFx($sqlLeft) . ', ' . $sqlRight
+                    . ', cast(' . $this->escapeStringLiteral(($binary ? '' : 'i') . 's') . ' as varchar))';
+            },
+            true
+        );
+    }
+
+    #[\Override]
     protected function deduplicateRenderOrder(array $sqls): array
     {
         $res = [];
