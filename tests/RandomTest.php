@@ -100,7 +100,7 @@ class RandomTest extends TestCase
 
         $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
-        $m->addField('salary', ['default' => 10]);
+        $m->addField('salary', ['type' => 'integer', 'default' => 10]);
 
         $m->import([['name' => 'Peter'], ['name' => 'Steve', 'salary' => 30]]);
         $m->insert(['name' => 'Sue']);

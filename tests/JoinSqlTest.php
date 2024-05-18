@@ -817,7 +817,7 @@ class JoinSqlTest extends TestCase
         $j->addField('phone', ['actual' => 'contact_phone']);
         // reverse join
         $j2 = $user->join('salaries.' . $userForeignIdFieldName, ['prefix' => 'j2_']);
-        $j2->addField('salary', ['actual' => 'amount']);
+        $j2->addField('salary', ['actual' => 'amount', 'type' => 'integer']);
 
         // update
         $user2 = $user->load(1);
