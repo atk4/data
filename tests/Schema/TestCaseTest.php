@@ -44,12 +44,12 @@ class TestCaseTest extends TestCase
             if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
                 return "\nlimit\n  " . $maxCount . "\noffset\n  0";
             } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-                return "\norder by\n  (\n    select\n      null\n  )\noffset\n  0 rows\nfetch\n  next " . $maxCount . ' rows only';
+                return "\norder by\n  (\n    select\n      null\n  )\noffset\n  0\nrows\nfetch\n  next " . $maxCount . "\nrows\n  only";
             } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-                return "\nfetch\n  next " . $maxCount . ' rows only';
+                return "\nfetch\n  next " . $maxCount . "\nrows\n  only";
             }
 
-            return "\nlimit\n  0,\n  " . $maxCount;
+            return "\nlimit\n  0, " . $maxCount;
         };
 
         $this->assertSameSql(
@@ -63,23 +63,38 @@ class TestCaseTest extends TestCase
             . ($this->getDatabasePlatform() instanceof SQLServerPlatform
                 ? <<<'EOF'
 
-                    begin try insert into `t` (
-                      `name`, `int`, `float`,
-                      `bool`, `null`
-                    )
-                    values
-                      ('Ewa', 1, 1.0, 1, NULL); end try begin catch if ERROR_NUMBER() = 544 begin
-                    set
-                      IDENTITY_INSERT `t` on; begin try insert into `t` (
+                    begin
+                      try insert into `t` (
                         `name`, `int`, `float`,
                         `bool`, `null`
                       )
-                    values
-                      ('Ewa', 1, 1.0, 1, NULL);
-                    set
-                      IDENTITY_INSERT `t` off; end try begin catch
-                    set
-                      IDENTITY_INSERT `t` off; throw; end catch end else begin throw; end end catch;
+                      values
+                        ('Ewa', 1, 1.0, 1, NULL);
+                    end try begin
+                      catch if ERROR_NUMBER() = 544 begin
+                        set
+                          IDENTITY_INSERT `t` on;
+                        begin
+                          try insert into `t` (
+                            `name`, `int`, `float`,
+                            `bool`, `null`
+                          )
+                          values
+                            ('Ewa', 1, 1.0, 1, NULL);
+                          set
+                            IDENTITY_INSERT `t` off;
+                        end try begin
+                          catch
+                          set
+                            IDENTITY_INSERT `t` off;
+                          throw;
+                        end catch
+                      end
+                    else
+                      begin
+                        throw;
+                      end
+                    end catch;
 
 
                     EOF

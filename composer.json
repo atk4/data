@@ -45,6 +45,7 @@
         "mvorisek/atk4-hintable": "~1.9.0"
     },
     "require-dev": {
+        "doctrine/sql-formatter": "dev-1-5-php74 as 1.5.99",
         "ergebnis/composer-normalize": "^2.13",
         "ergebnis/phpunit-slow-test-detector": "^2.9",
         "friendsofphp/php-cs-fixer": "^3.0",
@@ -55,11 +56,18 @@
         "phpunit/phpunit": "^9.5.25 || ^10.0 || ^11.0"
     },
     "conflict": {
-        "jdorn/sql-formatter": "<1.2.16"
+        "doctrine/sql-formatter": "<1.5 || >=2.0"
     },
     "suggest": {
-        "jdorn/sql-formatter": "*"
+        "doctrine/sql-formatter": "*"
     },
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/atk4/doctrine-sql-formatter.git",
+            "name": "doctrine/sql-formatter"
+        }
+    ],
     "minimum-stability": "dev",
     "prefer-stable": true,
     "autoload": {
