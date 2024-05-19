@@ -135,10 +135,9 @@ class TestCaseTest extends TestCase
                         1.0,
                         true,
                         NULL
-                    EOF : <<<'EOF'
-                        'Ewa', 'x  y', '["z"]',
-                        1, 1.0, 1, NULL
-                    EOF)
+                    EOF : "    'Ewa', '" . ($this->getDatabasePlatform() instanceof OraclePlatform
+                    ? "atk4_binary\ru5f8mzx4vsm8g2c9\r287e8d9e78202079"
+                    : 'x  y') . "', '[\"z\"]',\n    1, 1.0, 1, NULL")
                 . "\n  );\n\n"
                 . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "\n\"RELEASE SAVEPOINT\";\n\n" : ''))
             . ($this->getDatabasePlatform() instanceof OraclePlatform ? <<<'EOF'

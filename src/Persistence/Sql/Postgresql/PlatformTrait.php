@@ -22,7 +22,9 @@ trait PlatformTrait
         $sqls[] = 'DO' . "\n"
             . '$$' . "\n"
             . 'BEGIN' . "\n"
-            . '    CREATE EXTENSION IF NOT EXISTS citext;' . "\n"
+            . '    IF to_regtype(\'citext\') IS NULL THEN' . "\n"
+            . '        CREATE EXTENSION citext;' . "\n"
+            . '    END IF;' . "\n"
             . implode("\n", array_map(static function (string $domain): string {
                 return '    IF to_regtype(\'' . $domain . '\') IS NULL THEN' . "\n"
                     . '        CREATE DOMAIN ' . $domain . ' AS citext;' . "\n"
