@@ -17,6 +17,8 @@ class TestCaseTest extends TestCase
     {
         $m = new Model($this->db, ['table' => 't']);
         $m->addField('name');
+        $m->addField('file', ['type' => 'blob']);
+        $m->addField('json', ['type' => 'json']);
         $m->addField('int', ['type' => 'integer']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('bool', ['type' => 'boolean']);
@@ -30,7 +32,14 @@ class TestCaseTest extends TestCase
             $this->debug = true;
 
             $m->atomic(static function () use ($m) {
-                $m->insert(['name' => 'Ewa', 'int' => 1, 'float' => 1, 'bool' => 1]);
+                $m->insert([
+                    'name' => 'Ewa',
+                    'file' => 'x  y',
+                    'json' => ['z'],
+                    'int' => 1,
+                    'float' => 1,
+                    'bool' => 1,
+                ]);
             });
 
             self::assertSame(1, $m->loadAny()->getId());
@@ -65,22 +74,30 @@ class TestCaseTest extends TestCase
 
                     begin
                       try insert into `t` (
-                        `name`, `int`, `float`,
-                        `bool`, `null`
+                        `name`, `file`, `json`,
+                        `int`, `float`, `bool`,
+                        `null`
                       )
                       values
-                        ('Ewa', 1, 1.0, 1, NULL);
+                        (
+                          'Ewa', 'x  y', '["z"]',
+                          1, 1.0, 1, NULL
+                        );
                     end try begin
                       catch if ERROR_NUMBER() = 544 begin
                         set
                           IDENTITY_INSERT `t` on;
                         begin
                           try insert into `t` (
-                            `name`, `int`, `float`,
-                            `bool`, `null`
+                            `name`, `file`, `json`,
+                            `int`, `float`, `bool`,
+                            `null`
                           )
                           values
-                            ('Ewa', 1, 1.0, 1, NULL);
+                            (
+                              'Ewa', 'x  y', '["z"]',
+                              1, 1.0, 1, NULL
+                            );
                           set
                             IDENTITY_INSERT `t` off;
                         end try begin
@@ -102,14 +119,27 @@ class TestCaseTest extends TestCase
                 . <<<'EOF'
 
                     insert into `t` (
-                      `name`, `int`, `float`,
-                      `bool`, `null`
+                      `name`, `file`, `json`,
+                      `int`, `float`, `bool`,
+                      `null`
                     )
                     values
+                      (
+
                     EOF
-                . "\n  ('Ewa', 1, 1.0, "
-                . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? 'true' : '1')
-                . ", NULL);\n\n"
+                . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? <<<'EOF'
+                        'Ewa',
+                        'x  y',
+                        cast('["z"]' as json),
+                        1,
+                        1.0,
+                        true,
+                        NULL
+                    EOF : <<<'EOF'
+                        'Ewa', 'x  y', '["z"]',
+                        1, 1.0, 1, NULL
+                    EOF)
+                . "\n  );\n\n"
                 . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "\n\"RELEASE SAVEPOINT\";\n\n" : ''))
             . ($this->getDatabasePlatform() instanceof OraclePlatform ? <<<'EOF'
 
@@ -125,6 +155,8 @@ class TestCaseTest extends TestCase
                 select
                   `id`,
                   `name`,
+                  `file`,
+                  `json`,
                   `int`,
                   `float`,
                   `bool`,
@@ -146,6 +178,8 @@ class TestCaseTest extends TestCase
                 select
                   `id`,
                   `name`,
+                  `file`,
+                  `json`,
                   `int`,
                   `float`,
                   `bool`,
@@ -158,7 +192,7 @@ class TestCaseTest extends TestCase
             . $makeLimitSqlFx(1)
             . ";\n\n",
             $this->getDatabasePlatform() instanceof SQLServerPlatform
-                ? str_replace('(\'Ewa\', 1, 1.0, 1, NULL)', '(N\'Ewa\', 1, 1.0, 1, NULL)', $output)
+                ? str_replace('\'Ewa\', \'x  y\', \'["z"]\'', 'N\'Ewa\', N\'x  y\', N\'["z"]\'', $output)
                 : $output
         );
     }
