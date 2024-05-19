@@ -101,7 +101,7 @@ abstract class TestCase extends BaseTestCase
         $i = 0;
         $quotedTokenRegex = $this->getConnection()->expr()::QUOTED_TOKEN_REGEX;
         $sql = preg_replace_callback(
-            '~' . $quotedTokenRegex . '\K|(\?)|cast\((\?|:\w+) as (BOOLEAN|INTEGER|BIGINT|DOUBLE PRECISION|BINARY_DOUBLE|text|bytea|unknown)\)|\((\?|:\w+) \+ 0\.00\)~',
+            '~' . $quotedTokenRegex . '\K|(\?)|cast\((\?|:\w+) as (BOOLEAN|INTEGER|BIGINT|DOUBLE PRECISION|BINARY_DOUBLE|citext|bytea|unknown)\)|\((\?|:\w+) \+ 0\.00\)~',
             static function ($matches) use (&$types, &$params, &$i) {
                 if ($matches[0] === '') {
                     return '';
@@ -133,7 +133,7 @@ abstract class TestCase extends BaseTestCase
                     $params[$k] = (float) $params[$k];
 
                     return $matches[4] ?? $matches[2];
-                } elseif (($matches[3] === 'text' || $matches[3] === 'bytea') && is_string($params[$k])) {
+                } elseif (($matches[3] === 'citext' || $matches[3] === 'bytea') && is_string($params[$k])) {
                     return $matches[2];
                 } elseif ($matches[3] === 'unknown' && $params[$k] === null) {
                     return $matches[2];
