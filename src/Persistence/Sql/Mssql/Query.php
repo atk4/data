@@ -64,10 +64,10 @@ class Query extends BaseQuery
     #[\Override]
     protected function _renderConditionLikeOperator(bool $negated, string $sqlLeft, string $sqlRight): string
     {
-        return $this->_renderConditionBinaryReuseBool(
+        return ($negated ? 'not ' : '') . $this->_renderConditionBinaryReuseBool(
             $sqlLeft,
             $sqlRight,
-            function ($sqlLeft, $sqlRight) use ($negated) {
+            function ($sqlLeft, $sqlRight) {
                 $iifNtextFx = static function ($valueSql, $trueSql, $falseSql) {
                     $isNtextFx = static function ($sql, $negate) {
                         // "select top 0 ..." is always optimized into constant expression
@@ -90,7 +90,7 @@ class Query extends BaseQuery
                         . ' or (' . $isBinaryFx($valueSql, true) . ' and ' . $falseSql . '))';
                 };
 
-                $makeSqlFx = function ($isNtext, $isBinary) use ($sqlLeft, $sqlRight, $negated) {
+                $makeSqlFx = function ($isNtext, $isBinary) use ($sqlLeft, $sqlRight) {
                     $quoteStringFx = fn (string $v) => $isNtext
                         ? $this->escapeStringLiteral($v)
                         : '0x' . bin2hex($v);
@@ -114,7 +114,7 @@ class Query extends BaseQuery
 
                     $sqlRightEscaped = $replaceFx($sqlRightEscaped, '[', '\[');
 
-                    return $sqlLeft . ($negated ? ' not' : '') . ' like ' . $sqlRightEscaped
+                    return $sqlLeft . ' like ' . $sqlRightEscaped
                         . ($isBinary ? ' collate Latin1_General_BIN' : '')
                         . ' escape ' . $quoteStringFx('\\');
                 };
