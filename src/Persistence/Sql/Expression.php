@@ -567,6 +567,8 @@ abstract class Expression implements Expressionable, \ArrayAccess
                         if (\Closure::bind(static fn () => $dummyPersistence->binaryTypeValueIsEncoded($val), null, Persistence\Sql::class)()) {
                             $val = \Closure::bind(static fn () => $dummyPersistence->binaryTypeValueDecode($val), null, Persistence\Sql::class)();
                             $type = ParameterType::BINARY;
+                        } elseif (\Closure::bind(static fn () => $dummyPersistence->jsonTypeValueIsEncoded($val), null, Persistence\Sql::class)()) {
+                            $val = \Closure::bind(static fn () => $dummyPersistence->jsonTypeValueDecode($val), null, Persistence\Sql::class)();
                         }
                     }
                 } elseif (is_resource($val)) {
