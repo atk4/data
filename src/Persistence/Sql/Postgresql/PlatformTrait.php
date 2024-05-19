@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Postgresql;
 
-use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\Table;
 
@@ -42,21 +41,9 @@ trait PlatformTrait
     }
 
     #[\Override]
-    public function getJsonTypeDeclarationSQL(array $column)
-    {
-        return AbstractPlatform::getJsonTypeDeclarationSQL($column);
-    }
-
-    #[\Override]
     public function getClobTypeDeclarationSQL(array $column)
     {
         return 'CITEXT';
-    }
-
-    #[\Override]
-    public function hasNativeJsonType()
-    {
-        return AbstractPlatform::hasNativeJsonType();
     }
 
     #[\Override]
