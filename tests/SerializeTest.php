@@ -7,7 +7,6 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 
 class SerializeTest extends TestCase
 {
@@ -33,7 +32,7 @@ class SerializeTest extends TestCase
 
         $m->getField('data')->type = 'json';
         self::assertSame(
-            ['data' => ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "atk4_json\ru5f8mzx4vsm8g2c9\rfe2bf5ef" : '') . '{"foo":"bar"}'],
+            ['data' => '{"foo":"bar"}'],
             $this->db->typecastSaveRow(
                 $m,
                 ['data' => ['foo' => 'bar']]
