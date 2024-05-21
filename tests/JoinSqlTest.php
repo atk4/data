@@ -828,7 +828,7 @@ class JoinSqlTest extends TestCase
         $j2->allowDangerousForeignTableUpdate = true;
         $user2->save();
 
-        self::{'assertEquals'}([
+        self::assertSame([
             'user' => [
                 1 => ['id' => 1, 'first_name' => 'John 2', $contactForeignIdFieldName => 1],
                 ['id' => 2, 'first_name' => 'Peter', $contactForeignIdFieldName => 1],
@@ -851,7 +851,7 @@ class JoinSqlTest extends TestCase
         $user3->set('j2_salary', 222);
         $user3->save();
 
-        self::{'assertEquals'}([
+        self::assertSame([
             'user' => [
                 1 => ['id' => 1, 'first_name' => 'John 2', $contactForeignIdFieldName => 1],
                 ['id' => 2, 'first_name' => 'Peter', $contactForeignIdFieldName => 1],

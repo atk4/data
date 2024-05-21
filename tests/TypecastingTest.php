@@ -44,8 +44,8 @@ class TypecastingTest extends TestCase
                     'datetime' => '2013-02-20 20:00:12.000000',
                     'time' => '12:00:50.000000',
                     'boolean' => true,
-                    'integer' => '2940',
-                    'money' => '8.20',
+                    'integer' => 2940,
+                    'money' => 8.2,
                     'float' => 8.20234376757473,
                     'json' => '[1,2,3]',
                 ],
@@ -87,7 +87,7 @@ class TypecastingTest extends TestCase
                     'date' => '2013-02-20',
                     'datetime' => '2013-02-20 20:00:12.000000',
                     'time' => '12:00:50.000000',
-                    'boolean' => 1,
+                    'boolean' => true,
                     'integer' => 2940,
                     'money' => 8.2,
                     'float' => 8.20234376757473,
@@ -99,15 +99,15 @@ class TypecastingTest extends TestCase
                     'date' => '2013-02-20',
                     'datetime' => '2013-02-20 20:00:12.000000',
                     'time' => '12:00:50.000000',
-                    'boolean' => '1',
-                    'integer' => '2940',
+                    'boolean' => true,
+                    'integer' => 2940,
                     'money' => 8.2,
                     'float' => 8.20234376757473,
                     'json' => '[1,2,3]',
                 ],
             ],
         ];
-        self::{'assertEquals'}($dbData, $this->getDb());
+        self::assertSame($dbData, $this->getDb());
 
         [$first, $duplicate] = $m->export();
 
@@ -258,7 +258,14 @@ class TypecastingTest extends TestCase
 
         $dbData['test'][2] = array_merge(['id' => 2], $row);
 
-        self::{'assertEquals'}($dbData, $this->getDb());
+        // TODO Oracle always converts empty string to null
+        // https://stackoverflow.com/questions/13278773/null-vs-empty-string-in-oracle#13278879
+        if ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            $dbData['test'][1]['b'] = null;
+            $dbData['test'][2]['b'] = null;
+        }
+
+        self::assertSame($dbData, $this->getDb());
     }
 
     /**
@@ -356,7 +363,7 @@ class TypecastingTest extends TestCase
                     'b1' => true,
                     'b2' => false,
                     'integer' => '2940',
-                    'money' => '8.20',
+                    'money' => 8.2,
                     'float' => 8.20234376757473,
                 ],
             ],
@@ -390,10 +397,10 @@ class TypecastingTest extends TestCase
         $m->delete(1);
 
         unset($dbData['types'][0]);
-        $row['money'] = 8.2; // no trailing zero is expected
-        $dbData['types'][2] = array_merge(['id' => '2'], $row);
+        $row['money'] = 8.2;
+        $dbData['types'][2] = array_merge(['id' => 2], $row);
 
-        self::{'assertEquals'}($dbData, $this->getDb());
+        self::assertSame($dbData, $this->getDb());
     }
 
     public function testLoad(): void
