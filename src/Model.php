@@ -384,7 +384,11 @@ class Model implements \IteratorAggregate
         $this->_init();
 
         if ($this->idField) {
-            $this->addField($this->idField, ['type' => 'integer', 'required' => true, 'system' => true]);
+            if (!$this->hasField($this->idField)) {
+                $this->addField($this->idField, ['type' => 'integer']);
+            }
+            $this->getIdField()->required = true;
+            $this->getIdField()->system = true;
 
             $this->initEntityIdHooks();
 
