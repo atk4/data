@@ -9,32 +9,32 @@ use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
-trait BinaryTypeCompatibilityTypecastTrait
+trait BinaryStringCompatibilityTypecastTrait
 {
-    private function binaryTypeValueGetPrefixConst(): string
+    private function binaryStringGetPrefixConst(): string
     {
         return "atk4_binary\ru5f8mzx4vsm8g2c9\r";
     }
 
-    private function binaryTypeValueEncode(string $value): string
+    private function binaryStringEncode(string $value): string
     {
         $hex = bin2hex($value);
 
-        return $this->binaryTypeValueGetPrefixConst() . hash('crc32b', $hex) . $hex;
+        return $this->binaryStringGetPrefixConst() . hash('crc32b', $hex) . $hex;
     }
 
-    private function binaryTypeValueIsEncoded(string $value): bool
+    private function binaryStringIsEncoded(string $value): bool
     {
-        return str_starts_with($value, $this->binaryTypeValueGetPrefixConst());
+        return str_starts_with($value, $this->binaryStringGetPrefixConst());
     }
 
-    private function binaryTypeValueDecode(string $value): string
+    private function binaryStringDecode(string $value): string
     {
-        if (!$this->binaryTypeValueIsEncoded($value)) {
+        if (!$this->binaryStringIsEncoded($value)) {
             throw new Exception('Unexpected unencoded binary value');
         }
 
-        $prefixLength = strlen($this->binaryTypeValueGetPrefixConst());
+        $prefixLength = strlen($this->binaryStringGetPrefixConst());
         $hexCrc = substr($value, $prefixLength, 8);
         $hex = substr($value, $prefixLength + 8);
         if ((strlen($hex) % 2) !== 0 || $hexCrc !== hash('crc32b', $hex)) {
@@ -42,14 +42,14 @@ trait BinaryTypeCompatibilityTypecastTrait
         }
 
         $res = hex2bin($hex);
-        if ($this->binaryTypeValueIsEncoded($res)) {
+        if ($this->binaryStringIsEncoded($res)) {
             throw new Exception('Unexpected double encoded binary value');
         }
 
         return $res;
     }
 
-    private function binaryTypeIsEncodeNeeded(string $type): bool
+    private function binaryStringIsEncodeNeeded(string $type): bool
     {
         // binary values for PostgreSQL and MSSQL databases are stored natively, but we need
         // to encode first to hold the binary type info for PDO parameter type binding
@@ -70,12 +70,12 @@ trait BinaryTypeCompatibilityTypecastTrait
     /**
      * @param scalar $value
      */
-    private function binaryTypeIsDecodeNeeded(string $type, $value): bool
+    private function binaryStringIsDecodeNeeded(string $type, $value): bool
     {
-        if ($this->binaryTypeIsEncodeNeeded($type)) {
+        if ($this->binaryStringIsEncodeNeeded($type)) {
             // always decode for Oracle platform to assert the value is always encoded,
             // on other platforms, binary values are stored natively
-            if ($this->getDatabasePlatform() instanceof OraclePlatform || $this->binaryTypeValueIsEncoded($value)) {
+            if ($this->getDatabasePlatform() instanceof OraclePlatform || $this->binaryStringIsEncoded($value)) {
                 return true;
             }
         }

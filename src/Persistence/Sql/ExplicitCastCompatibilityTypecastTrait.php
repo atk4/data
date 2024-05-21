@@ -9,28 +9,28 @@ use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 
 trait ExplicitCastCompatibilityTypecastTrait
 {
-    private function explicitCastValueGetPrefixConst(): string
+    private function explicitCastGetPrefixConst(): string
     {
         return "atk4_explicit_cast\ru5f8mzx4vsm8g2c9\r";
     }
 
-    private function explicitCastValueEncode(string $type, string $value): string
+    private function explicitCastEncode(string $type, string $value): string
     {
-        return $this->explicitCastValueGetPrefixConst() . $type . '_' . hash('crc32b', $value) . "\r" . $value;
+        return $this->explicitCastGetPrefixConst() . $type . '_' . hash('crc32b', $value) . "\r" . $value;
     }
 
-    private function explicitCastValueIsEncoded(string $value): bool
+    private function explicitCastIsEncoded(string $value): bool
     {
-        return str_starts_with($value, $this->explicitCastValueGetPrefixConst());
+        return str_starts_with($value, $this->explicitCastGetPrefixConst());
     }
 
-    private function explicitCastValueDecodeType(string $value): string
+    private function explicitCastDecodeType(string $value): string
     {
-        if (!$this->explicitCastValueIsEncoded($value)) {
+        if (!$this->explicitCastIsEncoded($value)) {
             throw new Exception('Unexpected unencoded value');
         }
 
-        $prefixLength = strlen($this->explicitCastValueGetPrefixConst());
+        $prefixLength = strlen($this->explicitCastGetPrefixConst());
         $nextCrPos = strpos($value, "\r", $prefixLength);
         if ($nextCrPos !== false) {
             $nextLine = substr($value, $prefixLength, $nextCrPos - $prefixLength);
@@ -46,9 +46,9 @@ trait ExplicitCastCompatibilityTypecastTrait
         return $resType;
     }
 
-    private function explicitCastValueDecode(string $value): string
+    private function explicitCastDecode(string $value): string
     {
-        $crcPos = strlen($this->explicitCastValueGetPrefixConst()) + strlen($this->explicitCastValueDecodeType($value)) + 1;
+        $crcPos = strlen($this->explicitCastGetPrefixConst()) + strlen($this->explicitCastDecodeType($value)) + 1;
 
         $resCrc = substr($value, $crcPos, 8);
         $res = substr($value, $crcPos + 9);
@@ -56,7 +56,7 @@ trait ExplicitCastCompatibilityTypecastTrait
             throw new Exception('Unexpected encoded value crc');
         }
 
-        if ($this->explicitCastValueIsEncoded($res)) {
+        if ($this->explicitCastIsEncoded($res)) {
             throw new Exception('Unexpected double encoded value');
         }
 
@@ -81,7 +81,7 @@ trait ExplicitCastCompatibilityTypecastTrait
     private function explicitCastIsDecodeNeeded(string $type, $value): bool
     {
         if ($this->explicitCastIsEncodeNeeded($type)) {
-            if ($this->explicitCastValueIsEncoded($value)) {
+            if ($this->explicitCastIsEncoded($value)) {
                 return true;
             }
         }

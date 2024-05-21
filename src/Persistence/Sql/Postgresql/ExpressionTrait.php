@@ -13,8 +13,8 @@ trait ExpressionTrait
     protected function escapeStringLiteral(string $value): string
     {
         $dummyPersistence = (new \ReflectionClass(Persistence\Sql::class))->newInstanceWithoutConstructor();
-        if (\Closure::bind(static fn () => $dummyPersistence->binaryTypeValueIsEncoded($value), null, Persistence\Sql::class)()) {
-            $value = \Closure::bind(static fn () => $dummyPersistence->binaryTypeValueDecode($value), null, Persistence\Sql::class)();
+        if (\Closure::bind(static fn () => $dummyPersistence->binaryStringIsEncoded($value), null, Persistence\Sql::class)()) {
+            $value = \Closure::bind(static fn () => $dummyPersistence->binaryStringDecode($value), null, Persistence\Sql::class)();
 
             return 'decode(\'' . bin2hex($value) . '\', \'hex\')';
         }
@@ -81,10 +81,10 @@ trait ExpressionTrait
                     $sql = 'cast(' . $sql . ' as DOUBLE PRECISION)';
                 } elseif (is_string($value)) {
                     $dummyPersistence = (new \ReflectionClass(Persistence\Sql::class))->newInstanceWithoutConstructor();
-                    if (\Closure::bind(static fn () => $dummyPersistence->binaryTypeValueIsEncoded($value), null, Persistence\Sql::class)()) {
+                    if (\Closure::bind(static fn () => $dummyPersistence->binaryStringIsEncoded($value), null, Persistence\Sql::class)()) {
                         $sql = 'cast(' . $sql . ' as bytea)';
-                    } elseif (\Closure::bind(static fn () => $dummyPersistence->explicitCastValueIsEncoded($value), null, Persistence\Sql::class)()) {
-                        $type = \Closure::bind(static fn () => $dummyPersistence->explicitCastValueDecodeType($value), null, Persistence\Sql::class)();
+                    } elseif (\Closure::bind(static fn () => $dummyPersistence->explicitCastIsEncoded($value), null, Persistence\Sql::class)()) {
+                        $type = \Closure::bind(static fn () => $dummyPersistence->explicitCastDecodeType($value), null, Persistence\Sql::class)();
                         $sql = 'cast(' . $sql . ' as json)';
                     } else {
                         $sql = 'cast(' . $sql . ' as citext)';

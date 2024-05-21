@@ -564,11 +564,11 @@ abstract class Expression implements Expressionable, \ArrayAccess
 
                     if ($platform instanceof PostgreSQLPlatform || $platform instanceof SQLServerPlatform) {
                         $dummyPersistence = (new \ReflectionClass(Persistence\Sql::class))->newInstanceWithoutConstructor();
-                        if (\Closure::bind(static fn () => $dummyPersistence->binaryTypeValueIsEncoded($val), null, Persistence\Sql::class)()) {
-                            $val = \Closure::bind(static fn () => $dummyPersistence->binaryTypeValueDecode($val), null, Persistence\Sql::class)();
+                        if (\Closure::bind(static fn () => $dummyPersistence->binaryStringIsEncoded($val), null, Persistence\Sql::class)()) {
+                            $val = \Closure::bind(static fn () => $dummyPersistence->binaryStringDecode($val), null, Persistence\Sql::class)();
                             $type = ParameterType::BINARY;
-                        } elseif (\Closure::bind(static fn () => $dummyPersistence->explicitCastValueIsEncoded($val), null, Persistence\Sql::class)()) {
-                            $val = \Closure::bind(static fn () => $dummyPersistence->explicitCastValueDecode($val), null, Persistence\Sql::class)();
+                        } elseif (\Closure::bind(static fn () => $dummyPersistence->explicitCastIsEncoded($val), null, Persistence\Sql::class)()) {
+                            $val = \Closure::bind(static fn () => $dummyPersistence->explicitCastDecode($val), null, Persistence\Sql::class)();
                         }
                     }
                 } elseif (is_resource($val)) {
