@@ -308,14 +308,16 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * @param array<string, array<int|'_', array<string, mixed>>> $dbData
+     * @param array<string, array<int|'_types', array<string, mixed>>> $dbData
      */
     public function setDb(array $dbData, bool $importData = true): void
     {
         foreach ($dbData as $tableName => $data) {
-            $migrator = $this->createMigrator()->table($tableName);
+            $idField = $data['_types']['_idField'] ?? 'id';
+            unset($data['_types']['_idField']);
 
-            $fieldTypes = [];
+            $fieldTypes = $data['_types'] ?? [];
+            unset($data['_types']);
             foreach ($data as $row) {
                 foreach ($row as $k => $v) {
                     if (isset($fieldTypes[$k])) {
@@ -323,61 +325,52 @@ abstract class TestCase extends BaseTestCase
                     }
 
                     if (is_bool($v)) {
-                        $fieldType = 'boolean';
+                        $type = 'boolean';
                     } elseif (is_int($v)) {
-                        $fieldType = 'integer';
+                        $type = 'integer';
                     } elseif (is_float($v)) {
-                        $fieldType = 'float';
+                        $type = 'float';
                     } elseif ($v instanceof \DateTimeInterface) {
-                        $fieldType = 'datetime';
+                        $type = 'datetime';
                     } elseif ($v !== null) {
-                        $fieldType = 'string';
+                        $type = 'string';
                     } else {
-                        $fieldType = null;
+                        $type = null;
                     }
 
-                    $fieldTypes[$k] = $fieldType;
+                    $fieldTypes[$k] = $type;
                 }
             }
-            foreach ($fieldTypes as $k => $fieldType) {
-                if ($fieldType === null) {
+            foreach ($fieldTypes as $k => $type) {
+                if ($type === null) {
                     $fieldTypes[$k] = 'string';
                 }
             }
-            $idColumnName = isset($fieldTypes['_id']) ? '_id' : 'id';
+            if (!isset($fieldTypes[$idField])) {
+                $fieldTypes = array_merge([$idField => 'integer'], $fieldTypes);
+            }
+
+            $model = new Model(null, ['table' => $tableName, 'idField' => $idField]);
+            foreach ($fieldTypes as $k => $type) {
+                $model->addField($k, ['type' => $type]);
+            }
+            $model->setPersistence($this->db);
 
             // create table
-            $migrator->id($idColumnName, isset($fieldTypes[$idColumnName]) ? ['type' => $fieldTypes[$idColumnName]] : []);
-            foreach ($fieldTypes as $k => $fieldType) {
-                if ($k === $idColumnName) {
-                    continue;
-                }
-
-                $migrator->field($k, ['type' => $fieldType]);
-            }
+            $migrator = $this->createMigrator($model);
             $migrator->create();
 
             // import data
             if ($importData) {
-                $this->db->atomic(function () use ($tableName, $data, $idColumnName) {
-                    $hasId = array_key_first($data) !== 0;
-
+                if (array_key_first($data) !== 0) {
                     foreach ($data as $id => $row) {
-                        $query = $this->db->dsql();
-                        if ($id === '_') {
-                            continue;
+                        if (!isset($row[$idField])) {
+                            $data[$id][$idField] = $id;
                         }
-
-                        $query->table($tableName);
-                        $query->setMulti($row);
-
-                        if (!isset($row[$idColumnName]) && $hasId) {
-                            $query->set($idColumnName, $id);
-                        }
-
-                        $query->mode('insert')->executeStatement();
                     }
-                });
+                }
+
+                $model->import($data);
             }
         }
     }
@@ -401,35 +394,18 @@ abstract class TestCase extends BaseTestCase
 
         $resAll = [];
         foreach ($tableNames as $table) {
-            $query = $this->db->dsql();
-            $rows = $query->table($table)->getRows();
-
-            $res = [];
-            $idColumnName = null;
-            foreach ($rows as $row) {
-                if ($idColumnName === null) {
-                    $idColumnName = isset($row['_id']) ? '_id' : 'id';
-                }
-
-                foreach ($row as $k => $v) {
-                    if (preg_match('~(?:^|_)id$~', $k) && $v === (string) (int) $v) {
-                        $row[$k] = (int) $v;
-                    }
-                }
-
-                if ($noId) {
-                    unset($row[$idColumnName]);
-                    $res[] = $row;
-                } else {
-                    $res[$row[$idColumnName]] = $row;
-                }
-            }
+            $model = $this->createMigrator()->introspectTableModel($table);
+            $model->setPersistence($this->db);
 
             if (!$noId) {
-                ksort($res);
+                $model->setOrder($model->idField);
             }
 
-            $resAll[$table] = $res;
+            $data = $noId
+                ? $model->export(array_diff(array_keys($model->getFields()), [$model->idField]))
+                : $model->export(null, $model->idField);
+
+            $resAll[$table] = $data;
         }
 
         return $resAll;
