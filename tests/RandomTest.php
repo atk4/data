@@ -94,7 +94,7 @@ class RandomTest extends TestCase
     {
         $this->setDb([
             'user' => [
-                '_' => ['name' => 'John', 'salary' => 29],
+                '_types' => ['name' => 'string', 'salary' => 'integer'],
             ],
         ]);
 
@@ -108,10 +108,10 @@ class RandomTest extends TestCase
 
         self::assertSame([
             'user' => [
-                1 => ['id' => 1, 'name' => 'Peter', 'salary' => '10'],
-                ['id' => 2, 'name' => 'Steve', 'salary' => '30'],
-                ['id' => 3, 'name' => 'Sue', 'salary' => '10'],
-                ['id' => 4, 'name' => 'John', 'salary' => '40'],
+                1 => ['id' => 1, 'name' => 'Peter', 'salary' => 10],
+                ['id' => 2, 'name' => 'Steve', 'salary' => 30],
+                ['id' => 3, 'name' => 'Sue', 'salary' => 10],
+                ['id' => 4, 'name' => 'John', 'salary' => 40],
             ],
         ], $this->getDb());
     }

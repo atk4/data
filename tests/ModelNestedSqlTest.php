@@ -21,6 +21,7 @@ class ModelNestedSqlTest extends TestCase
 
         $this->setDb([
             'user' => [
+                '_types' => ['_idField' => '_id'],
                 ['_id' => 1, 'name' => 'John', '_birthday' => '1980-02-01'],
                 ['_id' => 2, 'name' => 'Sue', '_birthday' => '2005-04-03'],
                 ['_id' => 3, 'name' => 'Veronica', '_birthday' => '2005-04-03'],

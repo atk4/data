@@ -107,10 +107,10 @@ class JoinSqlTest extends TestCase
         $user = new Model($this->db, ['table' => 'user']);
         $this->setDb([
             'user' => [
-                '_' => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
+                '_types' => ['name' => 'string', 'contact_id' => 'integer'],
             ],
             'contact' => [
-                '_' => ['id' => 1, 'contact_phone' => '+123'],
+                '_types' => ['contact_phone' => 'string'],
             ],
         ]);
 
@@ -161,10 +161,10 @@ class JoinSqlTest extends TestCase
     {
         $this->setDb([
             'user' => [
-                '_' => ['id' => 1, 'name' => 'John'],
+                '_types' => ['name' => 'string'],
             ],
             'contact' => [
-                '_' => ['id' => 1, 'contact_phone' => '+123', 'test_id' => 0],
+                '_types' => ['contact_phone' => 'string', 'test_id' => 'integer'],
             ],
         ]);
 
@@ -234,10 +234,10 @@ class JoinSqlTest extends TestCase
         $user = new Model($this->db, ['table' => 'user']);
         $this->setDb([
             'user' => [
-                '_' => ['id' => 1, 'name' => 'John', 'test_id' => 0],
+                '_types' => ['name' => 'string', 'test_id' => 'integer'],
             ],
             'contact' => [
-                '_' => ['id' => 1, 'contact_phone' => '+123'],
+                '_types' => ['contact_phone' => 'string'],
             ],
         ]);
 
@@ -464,10 +464,10 @@ class JoinSqlTest extends TestCase
     {
         $this->setDb([
             'user' => [
-                '_' => ['id' => 1, 'name' => 'John'],
+                '_types' => ['name' => 'string'],
             ],
             'contact' => [
-                '_' => ['id' => 1, 'contact_phone' => '+123', 'test_id' => 0],
+                '_types' => ['contact_phone' => 'string', 'test_id' => 'integer'],
             ],
         ]);
 
