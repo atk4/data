@@ -21,7 +21,7 @@ class Join extends Model\Join
     {
         parent::init();
 
-        // TODO thus mutates the owner model!
+        // TODO this mutates the owner model!
         $this->getOwner()->persistenceData['use_table_prefixes'] = true;
 
         // our short name will be unique
@@ -30,15 +30,15 @@ class Join extends Model\Join
             $this->foreignAlias = ($this->getOwner()->tableAlias ?? '') . '_' . (str_starts_with($this->shortName, '#join-') ? substr($this->shortName, 6) : $this->shortName);
         }
 
-        // TODO thus mutates the owner model/joins!
+        // TODO this mutates the owner model/joins!
         if (!$this->reverse && !$this->getOwner()->hasField($this->masterField)) {
             $owner = $this->hasJoin() ? $this->getJoin() : $this->getOwner();
             $field = $owner->addField($this->masterField, ['type' => 'integer', 'system' => true, 'readOnly' => true]);
-            $this->masterField = $field->shortName; // TODO thus mutates the join!
+            $this->masterField = $field->shortName; // TODO this mutates the join!
         } elseif ($this->reverse && !$this->getOwner()->hasField($this->foreignField) && $this->hasJoin()) {
             $owner = $this->getJoin();
             $field = $owner->addField($this->foreignField, ['type' => 'integer', 'system' => true, 'readOnly' => true, 'actual' => $this->masterField]);
-            $this->foreignField = $field->shortName; // TODO thus mutates the join!
+            $this->foreignField = $field->shortName; // TODO this mutates the join!
         }
     }
 
