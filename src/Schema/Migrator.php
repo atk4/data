@@ -398,7 +398,10 @@ class Migrator
         $tableName = $this->stripDatabaseFromTableName($tableName);
 
         $platform = $this->getDatabasePlatform();
-        if ($platform instanceof MySQLPlatform || $platform instanceof SQLServerPlatform) {
+        if ($platform instanceof SQLitePlatform // TODO related with https://github.com/doctrine/dbal/issues/6129
+            || $platform instanceof MySQLPlatform
+            || $platform instanceof SQLServerPlatform
+        ) {
             return $tableName;
         }
 

@@ -318,18 +318,15 @@ class MigratorTest extends TestCase
 
         // TODO fix DBAL introspection
         if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
-            $expectedFields['bin1']['type'] = 'blob';
-            $expectedFields['mn']['type'] = 'float';
-            $expectedFields['json']['type'] = 'text';
-            $expectedFields['lobj']['type'] = 'string';
+            $expectedFields['bin1']['type'] = 'blob'; // should be "binary"
         } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            $expectedFields['foo']['type'] = 'text';
-            $expectedFields['bin1']['type'] = 'blob';
+            $expectedFields['foo']['type'] = 'text'; // should be "string"
+            $expectedFields['bin1']['type'] = 'blob'; // should be "binary"
         } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            $expectedFields['baz']['type'] = 'string';
+            $expectedFields['baz']['type'] = 'string'; // should be "text"
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            $expectedFields['bin1']['type'] = 'string';
-            $expectedFields['bin2']['type'] = 'text';
+            $expectedFields['bin1']['type'] = 'string'; // should be "binary"
+            $expectedFields['bin2']['type'] = 'text'; // should be "blob"
         }
 
         self::assertSame($expectedFields, $introspectedFields);
