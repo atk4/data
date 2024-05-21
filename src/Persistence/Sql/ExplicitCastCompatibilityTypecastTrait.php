@@ -16,7 +16,7 @@ trait ExplicitCastCompatibilityTypecastTrait
 
     private function explicitCastEncode(string $type, string $value): string
     {
-        return $this->explicitCastGetPrefixConst() . $type . '_' . hash('crc32b', $value) . "\r" . $value;
+        return $this->explicitCastGetPrefixConst() . $type . "\r" . $value;
     }
 
     private function explicitCastIsEncoded(string $value): bool
@@ -32,29 +32,19 @@ trait ExplicitCastCompatibilityTypecastTrait
 
         $prefixLength = strlen($this->explicitCastGetPrefixConst());
         $nextCrPos = strpos($value, "\r", $prefixLength);
-        if ($nextCrPos !== false) {
-            $nextLine = substr($value, $prefixLength, $nextCrPos - $prefixLength);
-            $lastUnderscorePos = strrpos($nextLine, '_');
-            if ($lastUnderscorePos !== false) {
-                $resType = substr($nextLine, 0, $lastUnderscorePos);
-            }
-        }
-        if ($nextCrPos === false || $lastUnderscorePos === false) {
+        if ($nextCrPos === false) {
             throw new Exception('Unexpected encoded value format');
         }
 
-        return $resType;
+        $type = substr($value, $prefixLength, $nextCrPos - $prefixLength);
+
+        return $type;
     }
 
     private function explicitCastDecode(string $value): string
     {
-        $crcPos = strlen($this->explicitCastGetPrefixConst()) + strlen($this->explicitCastDecodeType($value)) + 1;
-
-        $resCrc = substr($value, $crcPos, 8);
-        $res = substr($value, $crcPos + 9);
-        if ($resCrc !== hash('crc32b', $res)) {
-            throw new Exception('Unexpected encoded value crc');
-        }
+        $resPos = strlen($this->explicitCastGetPrefixConst()) + strlen($this->explicitCastDecodeType($value)) + 1;
+        $res = substr($value, $resPos);
 
         if ($this->explicitCastIsEncoded($res)) {
             throw new Exception('Unexpected double encoded value');

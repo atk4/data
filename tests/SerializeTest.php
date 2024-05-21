@@ -33,7 +33,7 @@ class SerializeTest extends TestCase
 
         $m->getField('data')->type = 'json';
         self::assertSame(
-            ['data' => ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "atk4_explicit_cast\ru5f8mzx4vsm8g2c9\rjson_fe2bf5ef\r" : '') . '{"foo":"bar"}'],
+            ['data' => ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "atk4_explicit_cast\ru5f8mzx4vsm8g2c9\rjson\r" : '') . '{"foo":"bar"}'],
             $this->db->typecastSaveRow(
                 $m,
                 ['data' => ['foo' => 'bar']]
