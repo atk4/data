@@ -664,7 +664,7 @@ class Sql extends Persistence
     public function typecastLoadField(Field $field, $value)
     {
         if (is_string($value)) {
-            if ($this->binaryStringIsDecodeNeeded($field->type, $value)) {
+            if ($this->binaryStringIsEncodeNeeded($field->type)) { // always decode as never stored natively
                 $value = $this->binaryStringDecode($value);
             } elseif ($this->explicitCastIsDecodeNeeded($field->type, $value)) {
                 $value = $this->explicitCastDecode($value);

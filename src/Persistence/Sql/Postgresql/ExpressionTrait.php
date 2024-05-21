@@ -6,6 +6,7 @@ namespace Atk4\Data\Persistence\Sql\Postgresql;
 
 use Atk4\Data\Persistence;
 use Doctrine\DBAL\Statement;
+use Doctrine\DBAL\Types\Type;
 
 trait ExpressionTrait
 {
@@ -13,8 +14,8 @@ trait ExpressionTrait
     protected function escapeStringLiteral(string $value): string
     {
         $dummyPersistence = (new \ReflectionClass(Persistence\Sql::class))->newInstanceWithoutConstructor();
-        if (\Closure::bind(static fn () => $dummyPersistence->binaryStringIsEncoded($value), null, Persistence\Sql::class)()) {
-            $value = \Closure::bind(static fn () => $dummyPersistence->binaryStringDecode($value), null, Persistence\Sql::class)();
+        if (\Closure::bind(static fn () => $dummyPersistence->explicitCastIsEncodedBinary($value), null, Persistence\Sql::class)()) {
+            $value = \Closure::bind(static fn () => $dummyPersistence->explicitCastDecode($value), null, Persistence\Sql::class)();
 
             return 'decode(\'' . bin2hex($value) . '\', \'hex\')';
         }
@@ -63,7 +64,7 @@ trait ExpressionTrait
 
         $sql = preg_replace_callback(
             '~' . self::QUOTED_TOKEN_REGEX . '\K|(?<!:):\w+~',
-            static function ($matches) use ($params) {
+            function ($matches) use ($params) {
                 if ($matches[0] === '') {
                     return '';
                 }
@@ -81,11 +82,15 @@ trait ExpressionTrait
                     $sql = 'cast(' . $sql . ' as DOUBLE PRECISION)';
                 } elseif (is_string($value)) {
                     $dummyPersistence = (new \ReflectionClass(Persistence\Sql::class))->newInstanceWithoutConstructor();
-                    if (\Closure::bind(static fn () => $dummyPersistence->binaryStringIsEncoded($value), null, Persistence\Sql::class)()) {
-                        $sql = 'cast(' . $sql . ' as bytea)';
-                    } elseif (\Closure::bind(static fn () => $dummyPersistence->explicitCastIsEncoded($value), null, Persistence\Sql::class)()) {
-                        $type = \Closure::bind(static fn () => $dummyPersistence->explicitCastDecodeType($value), null, Persistence\Sql::class)();
-                        $sql = 'cast(' . $sql . ' as json)';
+                    if (\Closure::bind(static fn () => $dummyPersistence->explicitCastIsEncoded($value), null, Persistence\Sql::class)()) {
+                        if (\Closure::bind(static fn () => $dummyPersistence->explicitCastIsEncodedBinary($value), null, Persistence\Sql::class)()) {
+                            $sql = 'cast(' . $sql . ' as bytea)';
+                        } else {
+                            $typeString = \Closure::bind(static fn () => $dummyPersistence->explicitCastDecodeType($value), null, Persistence\Sql::class)();
+                            $type = Type::getType($typeString);
+                            $dbType = $type->getSQLDeclaration([], $this->connection->getDatabasePlatform());
+                            $sql = 'cast(' . $sql . ' as ' . $dbType . ')';
+                        }
                     } else {
                         $sql = 'cast(' . $sql . ' as citext)';
                     }

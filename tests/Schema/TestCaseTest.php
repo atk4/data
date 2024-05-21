@@ -18,11 +18,12 @@ class TestCaseTest extends TestCase
         $m = new Model($this->db, ['table' => 't']);
         $m->addField('name');
         $m->addField('file', ['type' => 'blob']);
-        $m->addField('json', ['type' => 'json']);
         $m->addField('int', ['type' => 'integer']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('bool', ['type' => 'boolean']);
         $m->addField('null');
+        $m->addField('date', ['type' => 'date']);
+        $m->addField('json', ['type' => 'json']);
         $m->addCondition('int', '>', -1);
 
         ob_start();
@@ -35,10 +36,11 @@ class TestCaseTest extends TestCase
                 $m->insert([
                     'name' => 'Ewa',
                     'file' => 'x  y',
-                    'json' => ['z'],
                     'int' => 1,
                     'float' => 1,
                     'bool' => 1,
+                    'date' => new \DateTime('2020-10-20'),
+                    'json' => ['z'],
                 ]);
             });
 
@@ -74,14 +76,14 @@ class TestCaseTest extends TestCase
 
                     begin
                       try insert into `t` (
-                        `name`, `file`, `json`,
-                        `int`, `float`, `bool`,
-                        `null`
+                        `name`, `file`, `int`,
+                        `float`, `bool`, `null`,
+                        `date`, `json`
                       )
                       values
                         (
-                          'Ewa', 'x  y', '["z"]',
-                          1, 1.0, 1, NULL
+                          'Ewa', 'x  y', 1, 1.0,
+                          1, NULL, '2020-10-20', '["z"]'
                         );
                     end try begin
                       catch if ERROR_NUMBER() = 544 begin
@@ -89,14 +91,14 @@ class TestCaseTest extends TestCase
                           IDENTITY_INSERT `t` on;
                         begin
                           try insert into `t` (
-                            `name`, `file`, `json`,
-                            `int`, `float`, `bool`,
-                            `null`
+                            `name`, `file`, `int`,
+                            `float`, `bool`, `null`,
+                            `date`, `json`
                           )
                           values
                             (
-                              'Ewa', 'x  y', '["z"]',
-                              1, 1.0, 1, NULL
+                              'Ewa', 'x  y', 1, 1.0,
+                              1, NULL, '2020-10-20', '["z"]'
                             );
                           set
                             IDENTITY_INSERT `t` off;
@@ -119,9 +121,9 @@ class TestCaseTest extends TestCase
                 . <<<'EOF'
 
                     insert into `t` (
-                      `name`, `file`, `json`,
-                      `int`, `float`, `bool`,
-                      `null`
+                      `name`, `file`, `int`,
+                      `float`, `bool`, `null`,
+                      `date`, `json`
                     )
                     values
                       (
@@ -130,14 +132,15 @@ class TestCaseTest extends TestCase
                 . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? <<<'EOF'
                         'Ewa',
                         'x  y',
-                        cast('["z"]' as json),
                         1,
                         1.0,
                         true,
-                        NULL
+                        NULL,
+                        cast('2020-10-20' as DATE),
+                        cast('["z"]' as JSON)
                     EOF : "    'Ewa', '" . ($this->getDatabasePlatform() instanceof OraclePlatform
                     ? "atk4_binary\ru5f8mzx4vsm8g2c9\r287e8d9e78202079"
-                    : 'x  y') . "', '[\"z\"]',\n    1, 1.0, 1, NULL")
+                    : 'x  y') . "', 1, 1.0,\n    1, NULL, '2020-10-20', '[\"z\"]'")
                 . "\n  );\n\n"
                 . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "\n\"RELEASE SAVEPOINT\";\n\n" : ''))
             . ($this->getDatabasePlatform() instanceof OraclePlatform ? <<<'EOF'
@@ -155,11 +158,12 @@ class TestCaseTest extends TestCase
                   `id`,
                   `name`,
                   `file`,
-                  `json`,
                   `int`,
                   `float`,
                   `bool`,
-                  `null`
+                  `null`,
+                  `date`,
+                  `json`
                 from
                   `t`
                 where
@@ -178,11 +182,12 @@ class TestCaseTest extends TestCase
                   `id`,
                   `name`,
                   `file`,
-                  `json`,
                   `int`,
                   `float`,
                   `bool`,
-                  `null`
+                  `null`,
+                  `date`,
+                  `json`
                 from
                   `t`
                 where
@@ -191,7 +196,11 @@ class TestCaseTest extends TestCase
             . $makeLimitSqlFx(1)
             . ";\n\n",
             $this->getDatabasePlatform() instanceof SQLServerPlatform
-                ? str_replace('\'Ewa\', \'x  y\', \'["z"]\'', 'N\'Ewa\', N\'x  y\', N\'["z"]\'', $output)
+                ? str_replace(
+                    ['\'Ewa\', \'x  y\'', '\'2020-10-20\', \'["z"]\''],
+                    ['N\'Ewa\', N\'x  y\'', 'N\'2020-10-20\', N\'["z"]\''],
+                    $output
+                )
                 : $output
         );
     }

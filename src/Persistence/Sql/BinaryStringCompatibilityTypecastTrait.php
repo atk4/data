@@ -6,8 +6,6 @@ namespace Atk4\Data\Persistence\Sql;
 
 use Atk4\Data\Exception;
 use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
-use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 trait BinaryStringCompatibilityTypecastTrait
 {
@@ -51,35 +49,7 @@ trait BinaryStringCompatibilityTypecastTrait
 
     private function binaryStringIsEncodeNeeded(string $type): bool
     {
-        // binary values for PostgreSQL and MSSQL databases are stored natively, but we need
-        // to encode first to hold the binary type info for PDO parameter type binding
-
-        $platform = $this->getDatabasePlatform();
-        if ($platform instanceof PostgreSQLPlatform
-            || $platform instanceof SQLServerPlatform
-            || $platform instanceof OraclePlatform
-        ) {
-            if (in_array($type, ['binary', 'blob'], true)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @param scalar $value
-     */
-    private function binaryStringIsDecodeNeeded(string $type, $value): bool
-    {
-        if ($this->binaryStringIsEncodeNeeded($type)) {
-            // always decode for Oracle platform to assert the value is always encoded,
-            // on other platforms, binary values are stored natively
-            if ($this->getDatabasePlatform() instanceof OraclePlatform || $this->binaryStringIsEncoded($value)) {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->getDatabasePlatform() instanceof OraclePlatform
+            && in_array($type, ['binary', 'blob'], true);
     }
 }

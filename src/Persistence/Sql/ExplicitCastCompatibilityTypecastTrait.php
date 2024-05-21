@@ -6,6 +6,7 @@ namespace Atk4\Data\Persistence\Sql;
 
 use Atk4\Data\Exception;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 trait ExplicitCastCompatibilityTypecastTrait
 {
@@ -22,6 +23,17 @@ trait ExplicitCastCompatibilityTypecastTrait
     private function explicitCastIsEncoded(string $value): bool
     {
         return str_starts_with($value, $this->explicitCastGetPrefixConst());
+    }
+
+    private function explicitCastIsEncodedBinary(string $value): bool
+    {
+        if (!$this->explicitCastIsEncoded($value)) {
+            return false;
+        }
+
+        $type = $this->explicitCastDecodeType($value);
+
+        return in_array($type, ['binary', 'blob'], true);
     }
 
     private function explicitCastDecodeType(string $value): string
@@ -56,10 +68,14 @@ trait ExplicitCastCompatibilityTypecastTrait
     private function explicitCastIsEncodeNeeded(string $type): bool
     {
         $platform = $this->getDatabasePlatform();
-        if ($platform instanceof PostgreSQLPlatform) {
-            if ($type === 'json') {
-                return true;
-            }
+        if ($platform instanceof PostgreSQLPlatform
+            && in_array($type, ['binary', 'blob', 'json', 'date', 'time', 'datetime'], true) // every string type other than case insensitive text
+        ) {
+            return true;
+        } elseif ($platform instanceof SQLServerPlatform
+            && in_array($type, ['binary', 'blob'], true)
+        ) {
+            return true;
         }
 
         return false;
@@ -70,12 +86,7 @@ trait ExplicitCastCompatibilityTypecastTrait
      */
     private function explicitCastIsDecodeNeeded(string $type, $value): bool
     {
-        if ($this->explicitCastIsEncodeNeeded($type)) {
-            if ($this->explicitCastIsEncoded($value)) {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->explicitCastIsEncodeNeeded($type)
+            && $this->explicitCastIsEncoded($value);
     }
 }

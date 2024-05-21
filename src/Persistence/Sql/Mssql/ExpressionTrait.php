@@ -17,8 +17,8 @@ trait ExpressionTrait
     protected function escapeStringLiteral(string $value): string
     {
         $dummyPersistence = (new \ReflectionClass(Persistence\Sql::class))->newInstanceWithoutConstructor();
-        if (\Closure::bind(static fn () => $dummyPersistence->binaryStringIsEncoded($value), null, Persistence\Sql::class)()) {
-            $value = \Closure::bind(static fn () => $dummyPersistence->binaryStringDecode($value), null, Persistence\Sql::class)();
+        if (\Closure::bind(static fn () => $dummyPersistence->explicitCastIsEncodedBinary($value), null, Persistence\Sql::class)()) {
+            $value = \Closure::bind(static fn () => $dummyPersistence->explicitCastDecode($value), null, Persistence\Sql::class)();
 
             return 'convert(VARBINARY(MAX), \'' . bin2hex($value) . '\', 2)';
         }
