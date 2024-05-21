@@ -386,8 +386,9 @@ class ConditionSqlTest extends TestCase
     {
         $this->setDb([
             'user' => [
-                1 => ['id' => 1, 'name' => 'John', 'date' => '1981-12-08'],
-                ['id' => 2, 'name' => 'Sue', 'date' => '1982-12-08'],
+                '_types' => ['date' => 'date'],
+                1 => ['id' => 1, 'name' => 'John', 'date' => new \DateTime('1981-12-08')],
+                ['id' => 2, 'name' => 'Sue', 'date' => new \DateTime('1982-12-08')],
             ],
         ]);
 
@@ -403,8 +404,9 @@ class ConditionSqlTest extends TestCase
     {
         $this->setDb([
             'user' => [
-                1 => ['id' => 1, 'name' => 'John', 'date' => '1981-12-08'],
-                ['id' => 2, 'name' => 'Sue', 'date' => '1982-12-08'],
+                '_types' => ['date' => 'date'],
+                1 => ['id' => 1, 'name' => 'John', 'date' => new \DateTime('1981-12-08')],
+                ['id' => 2, 'name' => 'Sue', 'date' => new \DateTime('1982-12-08')],
             ],
         ]);
 
