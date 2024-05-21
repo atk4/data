@@ -28,6 +28,7 @@ use Doctrine\DBAL\Schema\ForeignKeyConstraint;
 use Doctrine\DBAL\Schema\Identifier;
 use Doctrine\DBAL\Schema\Index;
 use Doctrine\DBAL\Schema\Table;
+use Doctrine\DBAL\Types\Type;
 
 class Migrator
 {
@@ -402,6 +403,29 @@ class Migrator
         }
 
         return $platform->quoteSingleIdentifier($tableName);
+    }
+
+    public function introspectTableModel(string $tableName): Model
+    {
+        $columns = $this->createSchemaManager()->listTableColumns($this->fixTableNameForListMethod($tableName));
+
+        $indexes = $this->createSchemaManager()->listTableIndexes($this->fixTableNameForListMethod($tableName));
+        $primaryIndexes = array_filter($indexes, static fn ($v) => $v->isPrimary() && count($v->getColumns()) === 1);
+        if (count($primaryIndexes) !== 1) {
+            throw (new Exception('Exactly one primary index is expected'))
+                ->addMoreInfo('table', $tableName);
+        }
+        $idFieldName = reset($primaryIndexes)->getUnquotedColumns()[0];
+
+        $model = new Model(null, ['table' => $tableName, 'idField' => $idFieldName]);
+        foreach ($columns as $column) {
+            $model->addField($column->getName(), [
+                'type' => Type::getTypeRegistry()->lookupName($column->getType()), // TODO simplify once https://github.com/doctrine/dbal/pull/6130 is merged
+                'nullable' => !$column->getNotnull(),
+            ]);
+        }
+
+        return $model;
     }
 
     /**
