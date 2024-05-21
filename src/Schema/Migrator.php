@@ -405,7 +405,7 @@ class Migrator
         return $platform->quoteSingleIdentifier($tableName);
     }
 
-    public function introspectTableModel(string $tableName): Model
+    public function introspectTableToModel(string $tableName): Model
     {
         $columns = $this->createSchemaManager()->listTableColumns($this->fixTableNameForListMethod($tableName));
 

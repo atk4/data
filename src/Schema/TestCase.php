@@ -394,7 +394,7 @@ abstract class TestCase extends BaseTestCase
 
         $resAll = [];
         foreach ($tableNames as $table) {
-            $model = $this->createMigrator()->introspectTableModel($table);
+            $model = $this->createMigrator()->introspectTableToModel($table);
             $model->setPersistence($this->db);
 
             if (!$noId) {

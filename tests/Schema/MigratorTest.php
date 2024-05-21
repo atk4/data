@@ -295,10 +295,10 @@ class MigratorTest extends TestCase
         ], $user->export());
     }
 
-    public function testIntrospectTableModelBasic(): void
+    public function testIntrospectTableToModelBasic(): void
     {
         $creatingMigrator = $this->createDemoMigrator('user')->create();
-        $introspectedModel = $this->createMigrator()->introspectTableModel('user');
+        $introspectedModel = $this->createMigrator()->introspectTableToModel('user');
 
         $expectedFields = [];
         foreach ($creatingMigrator->table->getColumns() as $column) {
@@ -335,7 +335,7 @@ class MigratorTest extends TestCase
         self::assertSame($expectedFields, $introspectedFields);
     }
 
-    public function testIntrospectTablePrimaryKeyNonFirstColumn(): void
+    public function testIntrospectTableToModelPrimaryKeyNonFirstColumn(): void
     {
         $this->createMigrator()
             ->table('t')
@@ -344,13 +344,13 @@ class MigratorTest extends TestCase
             ->field('b')
             ->create();
 
-        $model = $this->createMigrator()->introspectTableModel('t');
+        $model = $this->createMigrator()->introspectTableToModel('t');
 
         self::assertSame(['a', 'id', 'b'], array_keys($model->getFields()));
         self::assertSame('id', $model->idField);
     }
 
-    public function testIntrospectTableNoPrimaryKeyException(): void
+    public function testIntrospectTableToModelNoPrimaryKeyException(): void
     {
         $this->createMigrator()
             ->table('t')
@@ -359,7 +359,7 @@ class MigratorTest extends TestCase
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Table must contain exactly one primary key');
-        $this->createMigrator()->introspectTableModel('t');
+        $this->createMigrator()->introspectTableToModel('t');
     }
 }
 
