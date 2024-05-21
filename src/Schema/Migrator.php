@@ -412,7 +412,7 @@ class Migrator
         $indexes = $this->createSchemaManager()->listTableIndexes($this->fixTableNameForListMethod($tableName));
         $primaryIndexes = array_filter($indexes, static fn ($v) => $v->isPrimary() && count($v->getColumns()) === 1);
         if (count($primaryIndexes) !== 1) {
-            throw (new Exception('Exactly one primary index is expected'))
+            throw (new Exception('Table must contain exactly one primary key'))
                 ->addMoreInfo('table', $tableName);
         }
         $idFieldName = reset($primaryIndexes)->getUnquotedColumns()[0];

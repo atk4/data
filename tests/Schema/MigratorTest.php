@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests\Schema;
 
+use Atk4\Data\Exception;
 use Atk4\Data\Field\PasswordField;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence\Sql\Expression;
@@ -294,7 +295,7 @@ class MigratorTest extends TestCase
         ], $user->export());
     }
 
-    public function testIntrospectTableModel(): void
+    public function testIntrospectTableModelBasic(): void
     {
         $creatingMigrator = $this->createDemoMigrator('user')->create();
         $introspectedModel = $this->createMigrator()->introspectTableModel('user');
@@ -332,6 +333,33 @@ class MigratorTest extends TestCase
         }
 
         self::assertSame($expectedFields, $introspectedFields);
+    }
+
+    public function testIntrospectTablePrimaryKeyNonFirstColumn(): void
+    {
+        $this->createMigrator()
+            ->table('t')
+            ->field('a')
+            ->id()
+            ->field('b')
+            ->create();
+
+        $model = $this->createMigrator()->introspectTableModel('t');
+
+        self::assertSame(['a', 'id', 'b'], array_keys($model->getFields()));
+        self::assertSame('id', $model->idField);
+    }
+
+    public function testIntrospectTableNoPrimaryKeyException(): void
+    {
+        $this->createMigrator()
+            ->table('t')
+            ->field('a')
+            ->create();
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Table must contain exactly one primary key');
+        $this->createMigrator()->introspectTableModel('t');
     }
 }
 
