@@ -4,19 +4,11 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Postgresql;
 
-use Atk4\Data\Persistence\Sql\PlatformFixColumnCommentTypeHintTrait;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\Table;
 
 trait PlatformTrait
 {
-    use PlatformFixColumnCommentTypeHintTrait;
-
-    /** @var list<string> */
-    private $requireCommentHintTypes = [
-        'binary',
-    ];
-
     // standard PostgreSQL character types are case sensitive, unify the behaviour with other databases
     // with custom case insensitive types
 
