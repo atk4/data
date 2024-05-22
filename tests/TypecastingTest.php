@@ -9,9 +9,13 @@ use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Types as DbalTypes;
+use PHPUnit\Framework\ExpectationFailedException;
 
 class TypecastingTest extends TestCase
 {
@@ -398,6 +402,13 @@ class TypecastingTest extends TestCase
 
         self::assertSame(1, $mm->getId());
         self::assertSame(1, $mm->get('id'));
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform // TODO create DBAL PR to create DB column with microseconds support by default https://github.com/doctrine/dbal/blob/4.0.2/src/Platforms/AbstractMySQLPlatform.php#L171
+            || $this->getDatabasePlatform() instanceof PostgreSQLPlatform
+            || $this->getDatabasePlatform() instanceof SQLServerPlatform
+            || $this->getDatabasePlatform() instanceof OraclePlatform
+        ) {
+            $this->expectException(ExpectationFailedException::class);
+        }
         self::assertSame('2013-02-21 05:00:12.235689', $mm->get('datetime')->format('Y-m-d H:i:s.u'));
         self::assertSame('2013-02-20', $mm->get('date')->format('Y-m-d'));
         self::assertSame('12:00:50.235689', $mm->get('time')->format('H:i:s.u'));
