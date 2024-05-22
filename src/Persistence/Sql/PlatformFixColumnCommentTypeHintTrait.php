@@ -15,7 +15,7 @@ use Doctrine\DBAL\Types\Type;
  *
  * @internal
  */
-trait PlatformFixTypeCommentTrait
+trait PlatformFixColumnCommentTypeHintTrait
 {
     #[\Override]
     protected function getColumnComment(Column $column)

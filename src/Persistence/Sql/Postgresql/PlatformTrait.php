@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Postgresql;
 
-use Atk4\Data\Persistence\Sql\PlatformFixTypeCommentTrait;
+use Atk4\Data\Persistence\Sql\PlatformFixColumnCommentTypeHintTrait;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\Table;
 
 trait PlatformTrait
 {
-    use PlatformFixTypeCommentTrait;
+    use PlatformFixColumnCommentTypeHintTrait;
 
     /** @var list<string> */
     private $requireCommentHintTypes = [

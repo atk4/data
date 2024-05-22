@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Mssql;
 
-use Atk4\Data\Persistence\Sql\PlatformFixTypeCommentTrait;
+use Atk4\Data\Persistence\Sql\PlatformFixColumnCommentTypeHintTrait;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\Index;
 
 trait PlatformTrait
 {
-    use PlatformFixTypeCommentTrait;
+    use PlatformFixColumnCommentTypeHintTrait;
 
     /** @var list<string> */
     private $requireCommentHintTypes = [

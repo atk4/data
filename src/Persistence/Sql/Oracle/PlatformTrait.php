@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Oracle;
 
-use Atk4\Data\Persistence\Sql\PlatformFixTypeCommentTrait;
+use Atk4\Data\Persistence\Sql\PlatformFixColumnCommentTypeHintTrait;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Schema\AbstractAsset;
 use Doctrine\DBAL\Schema\Index;
@@ -14,7 +14,7 @@ use Doctrine\DBAL\Schema\UniqueConstraint;
 
 trait PlatformTrait
 {
-    use PlatformFixTypeCommentTrait;
+    use PlatformFixColumnCommentTypeHintTrait;
 
     /** @var list<string> */
     private $requireCommentHintTypes = [

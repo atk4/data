@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Sqlite;
 
-use Atk4\Data\Persistence\Sql\PlatformFixTypeCommentTrait;
+use Atk4\Data\Persistence\Sql\PlatformFixColumnCommentTypeHintTrait;
 use Doctrine\DBAL\Schema\ForeignKeyConstraint;
 use Doctrine\DBAL\Schema\TableDiff;
 
 trait PlatformTrait
 {
-    use PlatformFixTypeCommentTrait;
+    use PlatformFixColumnCommentTypeHintTrait;
 
     /** @var list<string> */
     private $requireCommentHintTypes = [
