@@ -330,8 +330,6 @@ abstract class TestCase extends BaseTestCase
                         $type = 'integer';
                     } elseif (is_float($v)) {
                         $type = 'float';
-                    } elseif ($v instanceof \DateTimeInterface) {
-                        $type = 'datetime';
                     } elseif ($v !== null) {
                         $type = 'string';
                     } else {
