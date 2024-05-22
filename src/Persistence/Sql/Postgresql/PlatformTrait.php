@@ -160,10 +160,11 @@ trait PlatformTrait
         return $sqls;
     }
 
+    #[\Override]
     public function getCommentOnColumnSQL($tableName, $columnName, $comment): string
     {
         return str_starts_with($tableName, '"') && str_ends_with($tableName, '"')
-            ? str_replace('"Rj3a4dOvue8AXtsK"', $tableName, parent::getCommentOnColumnSQL('"Rj3a4dOvue8AXtsK"', $columnName, $comment))
-            : parent::getCommentOnColumnSQL($tableName, $columnName, $comment);
+            ? str_replace('"Rj3a4dOvue8AXtsK"', $tableName, parent::getCommentOnColumnSQL('"Rj3a4dOvue8AXtsK"', $columnName, $comment)) // @phpstan-ignore staticMethod.deprecatedClass
+            : parent::getCommentOnColumnSQL($tableName, $columnName, $comment); // @phpstan-ignore staticMethod.deprecatedClass
     }
 }
