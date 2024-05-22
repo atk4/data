@@ -34,8 +34,9 @@ trait BinaryTypeCompatibilityTypecastTrait
             throw new Exception('Unexpected unencoded binary value');
         }
 
-        $hexCrc = substr($value, strlen($this->binaryTypeValueGetPrefixConst()), 8);
-        $hex = substr($value, strlen($this->binaryTypeValueGetPrefixConst()) + 8);
+        $prefixLength = strlen($this->binaryTypeValueGetPrefixConst());
+        $hexCrc = substr($value, $prefixLength, 8);
+        $hex = substr($value, $prefixLength + 8);
         if ((strlen($hex) % 2) !== 0 || $hexCrc !== hash('crc32b', $hex)) {
             throw new Exception('Unexpected binary value crc');
         }
