@@ -225,9 +225,6 @@ class Migrator
     {
         $type = $options['type'] ?? 'string';
         unset($options['type']);
-        if ($type === 'time' && $this->getDatabasePlatform() instanceof OraclePlatform) {
-            $type = 'string';
-        }
 
         $refType = $options['ref_type'] ?? self::REF_TYPE_NONE;
         unset($options['ref_type']);

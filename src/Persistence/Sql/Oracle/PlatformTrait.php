@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Oracle;
 
+use Atk4\Data\Persistence\Sql\PlatformFixTypeCommentTrait;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Schema\AbstractAsset;
 use Doctrine\DBAL\Schema\Index;
@@ -13,6 +14,15 @@ use Doctrine\DBAL\Schema\UniqueConstraint;
 
 trait PlatformTrait
 {
+    use PlatformFixTypeCommentTrait;
+
+    /** @var list<string> */
+    private $requireCommentHintTypes = [
+        'binary',
+        'blob',
+        'time',
+    ];
+
     #[\Override]
     public function getVarcharTypeDeclarationSQL(array $column)
     {
@@ -45,16 +55,6 @@ trait PlatformTrait
     {
         return 'BINARY_DOUBLE';
     }
-
-    // TODO test DBAL DB diff for each supported Field type
-    // then fix using https://github.com/doctrine/dbal/issues/5194#issuecomment-1018790220
-    /* protected function initializeCommentedDoctrineTypes()
-    {
-        parent::initializeCommentedDoctrineTypes();
-
-        $this->markDoctrineTypeCommented('binary');
-        $this->markDoctrineTypeCommented('blob');
-    } */
 
     // Oracle DBAL platform autoincrement implementation does not increment like
     // Sqlite or MySQL does, unify the behaviour

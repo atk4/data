@@ -28,6 +28,8 @@ class MigratorTest extends TestCase
             ->id()
             ->field('foo')
             ->field('bar', ['type' => 'integer', 'nullable' => false])
+            ->field('ismall', ['type' => 'smallint'])
+            ->field('ibig', ['type' => 'bigint'])
             ->field('baz', ['type' => 'text'])
             ->field('bin1', ['type' => 'binary'])
             ->field('bin2', ['type' => 'blob'])
@@ -317,16 +319,12 @@ class MigratorTest extends TestCase
         }
 
         // TODO fix DBAL introspection
+        // related with our PlatformFixTypeCommentTrait
         if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
             $expectedFields['bin1']['type'] = 'blob'; // should be "binary"
         } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             $expectedFields['foo']['type'] = 'text'; // should be "string"
             $expectedFields['bin1']['type'] = 'blob'; // should be "binary"
-        } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            $expectedFields['baz']['type'] = 'string'; // should be "text"
-        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            $expectedFields['bin1']['type'] = 'string'; // should be "binary"
-            $expectedFields['bin2']['type'] = 'text'; // should be "blob"
         }
 
         self::assertSame($expectedFields, $introspectedFields);
