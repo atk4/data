@@ -56,6 +56,15 @@ trait PlatformTrait
         return 'BINARY_DOUBLE';
     }
 
+    // TODO create DBAL PR
+    #[\Override]
+    public function getTimeTypeDeclarationSQL(array $column)
+    {
+        $column['length'] = 26;
+
+        return parent::getStringTypeDeclarationSQL($column);
+    }
+
     // Oracle DBAL platform autoincrement implementation does not increment like
     // Sqlite or MySQL does, unify the behaviour
 
