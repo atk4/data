@@ -9,7 +9,7 @@ use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Types\Type;
 
 /**
- * Fix AbstractPlatform::markDoctrineTypeCommented() no longer working.
+ * Fix AbstractPlatform::markDoctrineTypeCommented() no longer supported.
  *
  * https://github.com/doctrine/dbal/issues/5194#issuecomment-1018790220
  *
