@@ -165,4 +165,11 @@ trait PlatformTrait
 
         return $sqls;
     }
+
+    public function getCommentOnColumnSQL($tableName, $columnName, $comment): string
+    {
+        return str_starts_with($tableName, '"') && str_ends_with($tableName, '"')
+            ? str_replace('"Rj3a4dOvue8AXtsK"', $tableName, parent::getCommentOnColumnSQL('"Rj3a4dOvue8AXtsK"', $columnName, $comment))
+            : parent::getCommentOnColumnSQL($tableName, $columnName, $comment);
+    }
 }
