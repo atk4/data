@@ -457,7 +457,7 @@ class Migrator
     /**
      * @param list<Field> $fields
      */
-    public function isIndexExists(array $fields, bool $requireUnique): bool
+    public function isIndexExists(array $fields, bool $requireUnique = false): bool
     {
         $fields = array_map(fn ($field) => $this->resolvePersistenceField($field), $fields);
         $tableName = reset($fields)->getOwner()->table;
