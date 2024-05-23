@@ -36,7 +36,8 @@ class Migrator
     public const REF_TYPE_LINK = 1;
     public const REF_TYPE_PRIMARY = 2;
 
-    private Connection $_connection;
+    /** @var Connection|Persistence\Sql */
+    private object $_connection;
 
     public Table $table;
 
@@ -48,12 +49,10 @@ class Migrator
      */
     public function __construct(object $source)
     {
-        if ($source instanceof Connection) {
+        if ($source instanceof Connection || $source instanceof Persistence\Sql) {
             $this->_connection = $source;
-        } elseif ($source instanceof Persistence\Sql) {
-            $this->_connection = $source->getConnection();
         } elseif ($source instanceof Model && $source->getPersistence() instanceof Persistence\Sql) { // @phpstan-ignore instanceof.alwaysTrue
-            $this->_connection = $source->getPersistence()->getConnection();
+            $this->_connection = $source->getPersistence();
         } else {
             throw (new Exception('Source must be SQL connection, persistence or initialized model'))
                 ->addMoreInfo('source', $source);
@@ -65,6 +64,18 @@ class Migrator
     }
 
     public function getConnection(): Connection
+    {
+        return $this->_connection instanceof Persistence\Sql
+            ? $this->_connection->getConnection()
+            : $this->_connection;
+    }
+
+    protected function hasPersistence(): bool
+    {
+        return $this->_connection instanceof Persistence\Sql;
+    }
+
+    protected function getPersistence(): Persistence\Sql
     {
         return $this->_connection;
     }
@@ -423,6 +434,10 @@ class Migrator
                 'type' => Type::getTypeRegistry()->lookupName($column->getType()), // TODO simplify once https://github.com/doctrine/dbal/pull/6130 is merged
                 'nullable' => !$column->getNotnull(),
             ]);
+        }
+
+        if ($this->hasPersistence()) {
+            $model->setPersistence($this->getPersistence());
         }
 
         return $model;
