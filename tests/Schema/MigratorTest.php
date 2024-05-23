@@ -389,13 +389,16 @@ class MigratorTest extends TestCase
         $this->createMigrator()
             ->table('t')
             ->id()
+            ->field('a')
             ->create();
 
         $model = (new Migrator($this->getConnection()))->introspectTableToModel('t');
+        self::assertSame(['id', 'a'], array_keys($model->getFields()));
         self::assertFalse($model->issetPersistence());
 
         $model = $this->createMigrator()->introspectTableToModel('t');
         self::assertTrue($model->issetPersistence());
+        self::assertSame(['id', 'a'], array_keys($model->getFields()));
     }
 }
 
