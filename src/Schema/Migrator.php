@@ -397,6 +397,14 @@ class Migrator
         }
     }
 
+    public function assertTableExists(string $tableName): void
+    {
+        if (!$this->isTableExists($tableName)) {
+            throw (new Exception('Table does not exist'))
+                ->addMoreInfo('table', $tableName);
+        }
+    }
+
     /**
      * DBAL list methods have very broken support for quoted table name
      * and almost no support for table name with database name.
@@ -419,6 +427,9 @@ class Migrator
     public function introspectTableToModel(string $tableName): Model
     {
         $columns = $this->createSchemaManager()->listTableColumns($this->fixTableNameForListMethod($tableName));
+        if ($columns === []) {
+            $this->assertTableExists($tableName);
+        }
 
         $indexes = $this->createSchemaManager()->listTableIndexes($this->fixTableNameForListMethod($tableName));
         $primaryIndexes = array_filter($indexes, static fn ($v) => $v->isPrimary() && count($v->getColumns()) === 1);
@@ -449,9 +460,13 @@ class Migrator
     public function isIndexExists(array $fields, bool $requireUnique): bool
     {
         $fields = array_map(fn ($field) => $this->resolvePersistenceField($field), $fields);
-        $table = reset($fields)->getOwner()->table;
+        $tableName = reset($fields)->getOwner()->table;
 
-        $indexes = $this->createSchemaManager()->listTableIndexes($this->fixTableNameForListMethod($table));
+        $indexes = $this->createSchemaManager()->listTableIndexes($this->fixTableNameForListMethod($tableName));
+        if ($indexes === []) {
+            $this->assertTableExists($tableName);
+        }
+
         $fieldPersistenceNames = array_map(static fn ($field) => $field->getPersistenceName(), $fields);
         foreach ($indexes as $index) {
             $indexPersistenceNames = $index->getUnquotedColumns();
@@ -475,7 +490,7 @@ class Migrator
     public function createIndex(array $fields, bool $isUnique): void
     {
         $fields = array_map(fn ($field) => $this->resolvePersistenceField($field), $fields);
-        $table = reset($fields)->getOwner()->table;
+        $tableName = reset($fields)->getOwner()->table;
 
         $platform = $this->getDatabasePlatform();
 
@@ -490,9 +505,9 @@ class Migrator
         }
 
         $index = new Index(
-            \Closure::bind(static function () use ($table, $fields) {
+            \Closure::bind(static function () use ($tableName, $fields) {
                 return (new Identifier(''))->_generateIdentifierName([
-                    $table,
+                    $tableName,
                     ...array_map(static fn ($field) => $field->getPersistenceName(), $fields),
                 ], 'uniq');
             }, null, Identifier::class)(),
@@ -502,7 +517,7 @@ class Migrator
             $mssqlNullable === false ? ['atk4-not-null'] : []
         );
 
-        $this->createSchemaManager()->createIndex($index, $platform->quoteIdentifier($table));
+        $this->createSchemaManager()->createIndex($index, $platform->quoteIdentifier($tableName));
     }
 
     /**

@@ -58,6 +58,17 @@ class MigratorFkTest extends TestCase
         return $res;
     }
 
+    public function testIsIndexExistsTableDoesNotExistException(): void
+    {
+        self::assertFalse($this->createMigrator()->isTableExists('client'));
+
+        $client = new Model($this->db, ['table' => 'client']);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Table does not exist');
+        $this->createMigrator()->isIndexExists([$client->getField('id')], false);
+    }
+
     public function testCreateIndexNonUnique(): void
     {
         $client = new Model($this->db, ['table' => 'client']);
