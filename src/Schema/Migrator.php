@@ -70,7 +70,7 @@ class Migrator
             : $this->_connection;
     }
 
-    protected function hasPersistence(): bool
+    protected function issetPersistence(): bool
     {
         return $this->_connection instanceof Persistence\Sql;
     }
@@ -436,7 +436,7 @@ class Migrator
             ]);
         }
 
-        if ($this->hasPersistence()) {
+        if ($this->issetPersistence()) {
             $model->setPersistence($this->getPersistence());
         }
 
