@@ -355,6 +355,20 @@ class MigratorTest extends TestCase
         $this->expectExceptionMessage('Table must contain exactly one primary key');
         $this->createMigrator()->introspectTableToModel('t');
     }
+
+    public function testIntrospectTableToModelSetPersistence(): void
+    {
+        $this->createMigrator()
+            ->table('t')
+            ->id()
+            ->create();
+
+        $model = (new Migrator($this->getConnection()))->introspectTableToModel('t');
+        self::assertFalse($model->issetPersistence());
+
+        $model = $this->createMigrator()->introspectTableToModel('t');
+        self::assertTrue($model->issetPersistence());
+    }
 }
 
 class TestUser extends Model
