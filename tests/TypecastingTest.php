@@ -112,7 +112,7 @@ class TypecastingTest extends TestCase
                 ],
             ],
         ];
-        self::{'assertEquals'}($dbData, $this->getDb());
+        self::assertSameExportUnordered($dbData, $this->getDb());
 
         [$first, $duplicate] = $m->export();
 
@@ -488,45 +488,43 @@ class TypecastingTest extends TestCase
         self::assertTrue($m2->isLoaded());
     }
 
-    public function testTimestamp(): void
+    public function testDateTimeLoadFromString(): void
     {
-        $sqlTime = '2016-10-25 11:44:08';
         $this->setDb([
             'types' => [
-                ['date' => $sqlTime],
+                ['dt' => '2016-10-25 11:44:08'],
             ],
         ]);
 
         $m = new Model($this->db, ['table' => 'types']);
-        $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
+        $m->addField('dt', ['type' => 'datetime']);
         $m = $m->loadOne();
 
-        // must respect 'actual'
-        self::assertNotNull($m->get('ts'));
+        self::{'assertEquals'}(new \DateTime('2016-10-25 11:44:08 UTC'), $m->get('dt'));
     }
 
-    public function testBadTimestamp(): void
+    public function testDateTimeLoadFromStringInvalidException(): void
     {
-        $sqlTime = '20blah16-10-25 11:44:08';
         $this->setDb([
             'types' => [
-                ['date' => $sqlTime],
+                ['dt' => '20blah16-10-25 11:44:08'],
             ],
         ]);
 
         $m = new Model($this->db, ['table' => 'types']);
-        $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
+        $m->addField('dt', ['type' => 'datetime']);
 
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Typecast parse error');
         $m->loadOne();
     }
 
-    public function testDirtyTimestamp(): void
+    public function testDirtyDateTime(): void
     {
-        $sqlTime = '2016-10-25 11:44:08';
         $this->setDb([
             'types' => [
-                ['date' => $sqlTime],
+                '_types' => ['date' => 'datetime'],
+                ['date' => new \DateTime('2016-10-25 11:44:08')],
             ],
         ]);
 
@@ -538,11 +536,12 @@ class TypecastingTest extends TestCase
         self::assertFalse($m->isDirty('ts'));
     }
 
-    public function testTimestampSave(): void
+    public function testDateSave(): void
     {
         $this->setDb([
             'types' => [
-                ['date' => ''],
+                '_types' => ['date' => 'date'],
+                ['date' => null],
             ],
         ]);
 
@@ -552,9 +551,9 @@ class TypecastingTest extends TestCase
         $m->set('ts', new \DateTime('2012-02-30'));
         $m->save();
 
-        self::assertSame([
+        self::assertSameExportUnordered([
             'types' => [
-                1 => ['id' => 1, 'date' => '2012-03-01'],
+                1 => ['id' => 1, 'date' => new \DateTime('2012-02-30 UTC')],
             ],
         ], $this->getDb());
     }
@@ -604,7 +603,8 @@ class TypecastingTest extends TestCase
         $sqlTimeNew = new \DateTime('12:34:56 GMT');
         $this->setDb([
             'types' => [
-                ['date' => $sqlTime->format('H:i:s')],
+                '_types' => ['date' => 'time'],
+                ['date' => $sqlTime],
             ],
         ]);
 
@@ -628,6 +628,7 @@ class TypecastingTest extends TestCase
         $sqlTimeNew = new \DateTime('12:34:56 GMT');
         $this->setDb([
             'types' => [
+                '_types' => ['date' => 'time'],
                 ['date' => null],
             ],
         ]);
