@@ -359,21 +359,37 @@ abstract class Persistence
                     break;
             }
 
-            switch ($field->type) {
-                case 'boolean':
-                case 'smallint':
-                case 'integer':
-                case 'bigint':
-                case 'float':
-                case 'decimal':
-                case 'atk4_money':
-                    if ($value === '') {
+            if ($value === '') {
+                // TODO should be handled by DBAL types itself like "json" type already does
+                // https://github.com/doctrine/dbal/blob/4.0.2/src/Types/JsonType.php#L55
+                switch ($field->type) {
+                    case 'boolean':
+                    case 'smallint':
+                    case 'integer':
+                    case 'bigint':
+                    case 'float':
+                    case 'decimal':
+                    case 'atk4_money':
+                    case 'object':
                         $value = null;
-                    } elseif (!is_numeric($value)) {
-                        throw new Exception('Must be numeric');
-                    }
 
-                    break;
+                        break;
+                }
+            } else {
+                switch ($field->type) {
+                    case 'boolean':
+                    case 'smallint':
+                    case 'integer':
+                    case 'bigint':
+                    case 'float':
+                    case 'decimal':
+                    case 'atk4_money':
+                        if (!is_numeric($value)) {
+                            throw new Exception('Must be numeric');
+                        }
+
+                        break;
+                }
             }
         } elseif ($value !== null) {
             switch ($field->type) {
@@ -528,11 +544,6 @@ abstract class Persistence
     protected function _typecastLoadField(Field $field, $value)
     {
         $value = $this->_typecastPreField($field, $value, true);
-
-        // TODO casting optionally to null should be handled by type itself solely
-        if ($value === '' && in_array($field->type, ['boolean', 'integer', 'float', 'decimal', 'datetime', 'date', 'time', 'json', 'object'], true)) {
-            return null;
-        }
 
         // native DBAL DT types have no microseconds support
         if (in_array($field->type, ['datetime', 'date', 'time'], true)

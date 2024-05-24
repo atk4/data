@@ -156,7 +156,9 @@ class TypecastingTest extends TestCase
                     'datetime' => '',
                     'time' => '',
                     'boolean' => '',
+                    'smallint' => '',
                     'integer' => '',
+                    'bigint' => '',
                     'money' => '',
                     'float' => '',
                     'decimal' => '',
@@ -177,7 +179,9 @@ class TypecastingTest extends TestCase
         $m->addField('datetime', ['type' => 'datetime']);
         $m->addField('time', ['type' => 'time']);
         $m->addField('boolean', ['type' => 'boolean']);
+        $m->addField('smallint', ['type' => 'smallint']);
         $m->addField('integer', ['type' => 'integer']);
+        $m->addField('bigint', ['type' => 'bigint']);
         $m->addField('money', ['type' => 'atk4_money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('decimal', ['type' => 'decimal']);
@@ -192,7 +196,9 @@ class TypecastingTest extends TestCase
         self::assertNull($mm->get('datetime'));
         self::assertNull($mm->get('time'));
         self::assertNull($mm->get('boolean'));
+        self::assertNull($mm->get('smallint'));
         self::assertNull($mm->get('integer'));
+        self::assertNull($mm->get('bigint'));
         self::assertNull($mm->get('money'));
         self::assertNull($mm->get('float'));
         self::assertNull($mm->get('decimal'));
@@ -210,7 +216,9 @@ class TypecastingTest extends TestCase
         self::assertNull($mm->get('datetime'));
         self::assertNull($mm->get('time'));
         self::assertNull($mm->get('boolean'));
+        self::assertNull($mm->get('smallint'));
         self::assertNull($mm->get('integer'));
+        self::assertNull($mm->get('bigint'));
         self::assertNull($mm->get('money'));
         self::assertNull($mm->get('float'));
         self::assertNull($mm->get('decimal'));
@@ -241,7 +249,9 @@ class TypecastingTest extends TestCase
             'datetime' => null,
             'time' => null,
             'boolean' => null,
+            'smallint' => null,
             'integer' => null,
+            'bigint' => null,
             'money' => null,
             'float' => null,
             'decimal' => null,
