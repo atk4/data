@@ -507,6 +507,7 @@ abstract class Persistence
         }
 
         $res = Type::getType($field->type)->convertToDatabaseValue($value, $this->getDatabasePlatform());
+
         if (is_resource($res) && get_resource_type($res) === 'stream') {
             $res = stream_get_contents($res);
         }
@@ -556,7 +557,10 @@ abstract class Persistence
         }
 
         $res = Type::getType($field->type)->convertToPHPValue($value, $this->getDatabasePlatform());
-        if (is_resource($res) && get_resource_type($res) === 'stream') {
+
+        if ($field->type === 'bigint' && $res === (string) (int) $res) { // once DBAL 3.x support is dropped, it should no longer be needed
+            $res = (int) $res;
+        } elseif (is_resource($res) && get_resource_type($res) === 'stream') {
             $res = stream_get_contents($res);
         }
 
