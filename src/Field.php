@@ -178,7 +178,9 @@ class Field implements Expressionable
                     }
 
                     break;
+                case 'smallint':
                 case 'integer':
+                case 'bigint':
                 case 'float':
                 case 'decimal':
                 case 'atk4_money':

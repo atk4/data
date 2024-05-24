@@ -159,7 +159,9 @@ class FieldTest extends TestCase
      */
     public static function provideRequiredNumericZeroExceptionCases(): iterable
     {
+        yield ['smallint'];
         yield ['integer'];
+        yield ['bigint'];
         yield ['float'];
         yield ['decimal'];
         yield ['atk4_money'];
