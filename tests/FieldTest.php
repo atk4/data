@@ -672,10 +672,14 @@ class FieldTest extends TestCase
         $m->set('foo', false);
     }
 
-    public function testNormalizeIntegerNumericException(): void
+    /**
+     * @dataProvider provideNormalizeNumericExceptionCases
+     */
+    #[DataProvider('provideNormalizeNumericExceptionCases')]
+    public function testNormalizeNumericException(string $type): void
     {
         $m = new Model();
-        $m->addField('foo', ['type' => 'integer']);
+        $m->addField('foo', ['type' => $type]);
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
@@ -683,37 +687,18 @@ class FieldTest extends TestCase
         $m->set('foo', '1x');
     }
 
-    public function testNormalizeFloatNumericException(): void
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideNormalizeNumericExceptionCases(): iterable
     {
-        $m = new Model();
-        $m->addField('foo', ['type' => 'float']);
-        $m = $m->createEntity();
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be numeric');
-        $m->set('foo', '1x');
-    }
-
-    public function testNormalizeAtk4MoneyNumericException(): void
-    {
-        $m = new Model();
-        $m->addField('foo', ['type' => 'atk4_money']);
-        $m = $m->createEntity();
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be numeric');
-        $m->set('foo', '1x');
-    }
-
-    public function testNormalizeBooleanNumericException(): void
-    {
-        $m = new Model();
-        $m->addField('foo', ['type' => 'boolean']);
-        $m = $m->createEntity();
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be numeric');
-        $m->set('foo', '1x');
+        yield ['boolean'];
+        yield ['smallint'];
+        yield ['integer'];
+        yield ['bigint'];
+        yield ['float'];
+        yield ['decimal'];
+        yield ['atk4_money'];
     }
 
     public function testNormalizeDateException(): void

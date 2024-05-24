@@ -361,7 +361,9 @@ abstract class Persistence
 
             switch ($field->type) {
                 case 'boolean':
+                case 'smallint':
                 case 'integer':
+                case 'bigint':
                 case 'float':
                 case 'decimal':
                 case 'atk4_money':
