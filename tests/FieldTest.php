@@ -167,6 +167,17 @@ class FieldTest extends TestCase
         yield ['atk4_money'];
     }
 
+    public function testRequiredBooleanZeroException(): void
+    {
+        $m = new Model();
+        $m->addField('foo', ['type' => 'boolean', 'required' => true]);
+        $m = $m->createEntity();
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must be true');
+        $m->set('foo', 0);
+    }
+
     public function testNotNullableNullInsertException(): void
     {
         $this->setDb([
