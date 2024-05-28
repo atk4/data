@@ -147,7 +147,6 @@ class TypecastingTest extends TestCase
 
         $dbData = [
             'types' => [
-                '_types' => ['date' => 'date', 'datetime' => 'datetime', 'time' => 'time', 'decimal' => 'decimal', 'json' => 'json'],
                 1 => $row = [
                     'id' => 1,
                     'string' => '',
@@ -230,13 +229,7 @@ class TypecastingTest extends TestCase
 
         $mm->save();
 
-        unset($dbData['types']['_types']);
         $dbData['types'][1]['id'] = '1';
-        $dbData['types'][1]['date'] = null;
-        $dbData['types'][1]['datetime'] = null;
-        $dbData['types'][1]['time'] = null;
-        $dbData['types'][1]['decimal'] = null;
-        $dbData['types'][1]['json'] = null;
         $dbData['types'] = [$dbData['types'][1]];
         self::assertSame($fixEmptyStringForOracleFx($dbData['types']), $m->export(null, null, false));
 

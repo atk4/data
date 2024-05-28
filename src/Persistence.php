@@ -340,7 +340,7 @@ abstract class Persistence
     /**
      * @param mixed $value
      *
-     * @return ($value is scalar ? scalar : mixed)
+     * @return ($value is scalar ? scalar|null : mixed)
      */
     private function _typecastPreField(Field $field, $value, bool $fromLoad)
     {
@@ -370,6 +370,9 @@ abstract class Persistence
                     case 'float':
                     case 'decimal':
                     case 'atk4_money':
+                    case 'datetime':
+                    case 'date':
+                    case 'time':
                     case 'object':
                         $value = null;
 
@@ -505,8 +508,9 @@ abstract class Persistence
         }
 
         // native DBAL DT types have no microseconds support
-        if (in_array($field->type, ['datetime', 'date', 'time'], true)
-            && str_starts_with(get_class(Type::getType($field->type)), 'Doctrine\DBAL\Types\\')) {
+        if ($value !== null && in_array($field->type, ['datetime', 'date', 'time'], true)
+            && str_starts_with(get_class(Type::getType($field->type)), 'Doctrine\DBAL\Types\\')
+        ) {
             if ($value === '') {
                 return null;
             } elseif (!$value instanceof \DateTimeInterface) {
@@ -546,8 +550,9 @@ abstract class Persistence
         $value = $this->_typecastPreField($field, $value, true);
 
         // native DBAL DT types have no microseconds support
-        if (in_array($field->type, ['datetime', 'date', 'time'], true)
-            && str_starts_with(get_class(Type::getType($field->type)), 'Doctrine\DBAL\Types\\')) {
+        if ($value !== null && in_array($field->type, ['datetime', 'date', 'time'], true)
+            && str_starts_with(get_class(Type::getType($field->type)), 'Doctrine\DBAL\Types\\')
+        ) {
             $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'][$field->type];
             if (str_contains($value, '.')) { // time possibly with microseconds, otherwise invalid format
                 $format = preg_replace('~(?<=H:i:s)(?![. ]*u)~', '.u', $format);
