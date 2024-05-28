@@ -347,7 +347,9 @@ abstract class Persistence
         if (is_string($value)) {
             switch ($field->type) {
                 case 'boolean':
+                case 'smallint':
                 case 'integer':
+                case 'bigint':
                     $value = preg_replace('~\s+|,~', '', $value);
 
                     break;

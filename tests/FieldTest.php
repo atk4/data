@@ -613,7 +613,9 @@ class FieldTest extends TestCase
 
         $m->addField('string', ['type' => 'string']);
         $m->addField('text', ['type' => 'text']);
+        $m->addField('smallint', ['type' => 'smallint']);
         $m->addField('integer', ['type' => 'integer']);
+        $m->addField('bigint', ['type' => 'bigint']);
         $m->addField('money', ['type' => 'atk4_money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('boolean', ['type' => 'boolean']);
@@ -645,8 +647,14 @@ class FieldTest extends TestCase
         self::assertSame("Two\nLines", $m->get('text'));
 
         // integer, money, float
+        $m->set('smallint', '12,345.67676767');
+        self::assertSame(12345, $m->get('smallint'));
+
         $m->set('integer', '12,345.67676767');
         self::assertSame(12345, $m->get('integer'));
+
+        $m->set('bigint', '12,345.67676767');
+        self::assertSame(12345, (int) $m->get('bigint')); // once DBAL 3.x support is dropped, the explicit cast should no longer be needed
 
         $m->set('money', '12,345.67676767');
         self::assertSame(12345.6768, $m->get('money'));
