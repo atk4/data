@@ -206,7 +206,8 @@ class TypecastingTest extends TestCase
         self::assertNull($mm->get('local-object'));
 
         unset($row['id']);
-        unset($row['local-object']);
+        $row['json'] = null;
+        $row['local-object'] = null;
         $mm->setMulti($row);
 
         self::assertSame($fixEmptyStringForOracleFx(''), $mm->get('string'));

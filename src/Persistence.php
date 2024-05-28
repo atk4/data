@@ -503,10 +503,6 @@ abstract class Persistence
     {
         $value = $this->_typecastPreField($field, $value, false);
 
-        if (in_array($field->type, ['json', 'object'], true) && $value === '') { // TODO remove later
-            return null;
-        }
-
         // native DBAL DT types have no microseconds support
         if ($value !== null && in_array($field->type, ['datetime', 'date', 'time'], true)
             && str_starts_with(get_class(Type::getType($field->type)), 'Doctrine\DBAL\Types\\')
