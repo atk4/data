@@ -680,6 +680,35 @@ class FieldTest extends TestCase
         $m->set('foo', []);
     }
 
+    /**
+     * @dataProvider provideNormalizeNumericNonScalarExceptionCases
+     */
+    #[DataProvider('provideNormalizeNumericNonScalarExceptionCases')]
+    public function testNormalizeNumericNonScalarException(string $type): void
+    {
+        $m = new Model();
+        $m->addField('foo', ['type' => $type]);
+        $m = $m->createEntity();
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must be scalar');
+        $m->set('foo', []);
+    }
+
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideNormalizeNumericNonScalarExceptionCases(): iterable
+    {
+        yield ['boolean'];
+        yield ['smallint'];
+        yield ['integer'];
+        yield ['bigint'];
+        yield ['float'];
+        yield ['decimal'];
+        yield ['atk4_money'];
+    }
+
     public function testNormalizeStringBoolException(): void
     {
         $m = new Model();

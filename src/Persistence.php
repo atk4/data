@@ -400,12 +400,17 @@ abstract class Persistence
             switch ($field->type) {
                 case 'string':
                 case 'text':
+                case 'boolean':
+                case 'smallint':
                 case 'integer':
+                case 'bigint':
                 case 'float':
                 case 'decimal':
                 case 'atk4_money':
                     if (is_bool($value)) {
-                        throw new Exception('Must not be bool type');
+                        if ($field->type !== 'boolean') {
+                            throw new Exception('Must not be bool type');
+                        }
                     } elseif (is_int($value)) {
                         if ($fromLoad) {
                             $value = (string) $value;
