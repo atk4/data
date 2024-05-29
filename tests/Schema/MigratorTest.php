@@ -339,10 +339,6 @@ class MigratorTest extends TestCase
             ];
         }
 
-        // "integer" DBAL type in Migrator is mapped to "bigint"
-        $expectedFields['id']['type'] = 'bigint';
-        $expectedFields['bar']['type'] = 'bigint';
-
         // TODO fix DBAL column comment type hint
         // see PlatformFixColumnCommentTypeHintTrait trait used for MSSQL and Oracle platforms
         if ($this->getDatabasePlatform() instanceof SQLitePlatform) {

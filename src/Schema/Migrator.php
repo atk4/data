@@ -240,22 +240,18 @@ class Migrator
         $refType = $options['ref_type'] ?? self::REF_TYPE_NONE;
         unset($options['ref_type']);
 
-        if ($type === 'integer') {
-            $type = 'bigint';
-        }
-
         $column = $this->table->addColumn($this->getDatabasePlatform()->quoteSingleIdentifier($fieldName), $type);
 
         if (($options['nullable'] ?? true) && $refType !== self::REF_TYPE_PRIMARY) {
             $column->setNotnull(false);
         }
 
-        if ($type === 'bigint' && $refType !== self::REF_TYPE_NONE) {
+        if (in_array($type, ['smallint', 'integer', 'bigint'], true) && $refType !== self::REF_TYPE_NONE) {
             $column->setUnsigned(true);
         }
 
         // TODO remove, hack for createForeignKey so ID columns are unsigned
-        if ($type === 'bigint' && str_ends_with($fieldName, '_id')) {
+        if (in_array($type, ['smallint', 'integer', 'bigint'], true) && str_ends_with($fieldName, '_id')) {
             $column->setUnsigned(true);
         }
 
@@ -279,7 +275,7 @@ class Migrator
     public function id(string $name = 'id', array $options = []): self
     {
         $options = array_merge([
-            'type' => 'integer',
+            'type' => 'bigint',
             'ref_type' => self::REF_TYPE_PRIMARY,
             'nullable' => false,
         ], $options);

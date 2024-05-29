@@ -107,14 +107,14 @@ class JoinSqlTest extends TestCase
         $user = new Model($this->db, ['table' => 'user']);
         $this->setDb([
             'user' => [
-                '_types' => ['name' => 'string', 'contact_id' => 'integer'],
+                '_types' => ['name' => 'string', 'contact_id' => 'bigint'],
             ],
             'contact' => [
                 '_types' => ['contact_phone' => 'string'],
             ],
         ]);
 
-        $user->addField('contact_id', ['type' => 'integer']);
+        $user->addField('contact_id', ['type' => 'bigint']);
         $user->addField('name');
         $j = $user->join('contact');
         $this->assertMigratorResolveRelation('user.contact_id', 'contact.id', $j);
@@ -164,7 +164,7 @@ class JoinSqlTest extends TestCase
                 '_types' => ['name' => 'string'],
             ],
             'contact' => [
-                '_types' => ['contact_phone' => 'string', 'test_id' => 'integer'],
+                '_types' => ['contact_phone' => 'string', 'test_id' => 'bigint'],
             ],
         ]);
 
@@ -234,7 +234,7 @@ class JoinSqlTest extends TestCase
         $user = new Model($this->db, ['table' => 'user']);
         $this->setDb([
             'user' => [
-                '_types' => ['name' => 'string', 'test_id' => 'integer'],
+                '_types' => ['name' => 'string', 'test_id' => 'bigint'],
             ],
             'contact' => [
                 '_types' => ['contact_phone' => 'string'],
@@ -315,7 +315,7 @@ class JoinSqlTest extends TestCase
         ]);
 
         $user = new Model($this->db, ['table' => 'user']);
-        $user->addField('contact_id', ['type' => 'integer']);
+        $user->addField('contact_id', ['type' => 'bigint']);
         $user->addField('name');
         $j = $user->join('contact');
         $this->createMigrator()->createForeignKey($j);
@@ -410,7 +410,7 @@ class JoinSqlTest extends TestCase
         ]);
 
         $user = new Model($this->db, ['table' => 'user']);
-        $user->addField('contact_id', ['type' => 'integer']);
+        $user->addField('contact_id', ['type' => 'bigint']);
         $user->addField('name');
         $j = $user->join('contact');
         $this->createMigrator()->createForeignKey($j);
@@ -467,7 +467,7 @@ class JoinSqlTest extends TestCase
                 '_types' => ['name' => 'string'],
             ],
             'contact' => [
-                '_types' => ['contact_phone' => 'string', 'test_id' => 'integer'],
+                '_types' => ['contact_phone' => 'string', 'test_id' => 'bigint'],
             ],
         ]);
 
@@ -521,7 +521,7 @@ class JoinSqlTest extends TestCase
         ]);
 
         $user = new Model($this->db, ['table' => 'user']);
-        $user->addField('contact_id', ['type' => 'integer']);
+        $user->addField('contact_id', ['type' => 'bigint']);
         $user->addField('name');
         $jContact = $user->join('contact');
         $this->assertMigratorResolveRelation('user.contact_id', 'contact.id', $jContact);
@@ -810,7 +810,7 @@ class JoinSqlTest extends TestCase
         ]);
 
         $user = new Model($this->db, ['table' => 'user']);
-        $user->addField('contact_id', ['type' => 'integer', 'actual' => $contactForeignIdFieldName]);
+        $user->addField('contact_id', ['type' => 'bigint', 'actual' => $contactForeignIdFieldName]);
         $user->addField('name', ['actual' => 'first_name']);
         // normal join
         $j = $user->join('contact', ['prefix' => 'j1_']);
