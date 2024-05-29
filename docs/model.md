@@ -216,20 +216,7 @@ $model->addField('name');
 var_dump($model->getField('name'));
 ```
 
-Other persistence framework will use "properties", because individual objects may impact
-performance. In ATK Data this is not an issue, because "Model" is re-usable:
-
-```
-foreach (new User($db) as $user) {
-    // will be the same object every time!!
-    var_dump($user->getField('name'));
-
-    // this is also the same object every time!!
-    var_dump($user);
-}
-```
-
-Instead, Field handles many very valuable operations which would otherwise fall on the
+Field handles many very valuable operations which would otherwise fall on the
 shoulders of developer (Read more here {php:class}`Field`)
 
 :::{php:method} addField($name, $seed)

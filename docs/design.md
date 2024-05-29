@@ -374,26 +374,8 @@ $order = new Model_Order($db);
 $order = $order->load(10);
 ```
 
-In scenario above we loaded a specific record. Agile Data does not create a
-separate object when loading, instead the same object is re-used. This is done
-to preserve some memory.
-
-So in the code above `$order` is not created for the record, but it can load
-any record from the DataSet. Think of it as a "window" into a large table of
-Orders:
-
-```
-$sum = 0;
-$order = new Model_Order($db);
-$order = $order->load(10);
-$sum += $order->get('amount');
-
-$order = $order->load(11);
-$sum += $order->get('amount');
-
-$order = $order->load(13);
-$sum += $order->get('amount');
-```
+In scenario above we loaded a specific record. Agile Data creates a separate
+object/entity when loading by cloning the original object/model.
 
 You can iterate over the DataSet:
 
@@ -403,9 +385,6 @@ foreach (new Model_Order($db) as $order) {
     $sum += $order->get('amount');
 }
 ```
-
-You must remember that the code above will only create a single object and
-iterating it will simply make it load different values.
 
 At this point, I'll jump ahead a bit and will show you an alternative code:
 

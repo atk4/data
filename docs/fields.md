@@ -31,9 +31,6 @@ $model->set('name', 'John');
 echo $model->get('name'); // John
 ```
 
-Just like you can reuse {php:class}`Model` to access multiple data records,
-{php:class}`Field` object will be reused also.
-
 ## Purpose of Field
 
 Implementation of Field in Agile Data is a very powerful and distinctive feature.
