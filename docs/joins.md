@@ -67,7 +67,7 @@ but you wouldn't want that adding a new user would create a new country:
 
 ```
 $user->addField('username');
-$user->addField('country_id', ['type' => 'integer']);
+$user->addField('country_id', ['type' => 'bigint']);
 $jCountry = $user->join('country', ['weak' => true, 'prefix' => 'country_']);
 $jCountry->addField('code');
 $jCountry->addField('name');
@@ -110,7 +110,7 @@ $jCreditCard = $user->join('credit_card', [
     'prefix' => 'cc_',
     'masterField' => 'default_credit_card_id',
 ]);
-$jCreditCard->addField('integer'); // creates cc_number
+$jCreditCard->addField('bigint'); // creates cc_number
 $jCreditCard->addField('name'); // creates cc_name
 ```
 

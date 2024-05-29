@@ -664,7 +664,7 @@ class JoinSqlTest extends TestCase
         // main user model joined to contact table
         $user = new Model($this->db, ['table' => 'user']);
         $user->addField('name');
-        $user->addField('contact_id', ['type' => 'integer']);
+        $user->addField('contact_id', ['type' => 'bigint']);
         $j = $user->join('contact');
         $this->createMigrator()->createForeignKey($j);
 
@@ -689,7 +689,7 @@ class JoinSqlTest extends TestCase
 
         // hasMany token model (uses default ourField, theirField)
         $token = new Model($this->db, ['table' => 'token']);
-        $token->addField('user_id', ['type' => 'integer']);
+        $token->addField('user_id', ['type' => 'bigint']);
         $token->addField('token');
         $refMany = $j->hasMany('Token', ['model' => $token]); // hasMany on JOIN (use default ourField, theirField)
         $this->createMigrator()->createForeignKey($refMany);
@@ -702,7 +702,7 @@ class JoinSqlTest extends TestCase
 
         // hasMany email model (uses custom ourField, theirField)
         $email = new Model($this->db, ['table' => 'email']);
-        $email->addField('contact_id', ['type' => 'integer']);
+        $email->addField('contact_id', ['type' => 'bigint']);
         $email->addField('address');
         $refMany = $j->hasMany('Email', ['model' => $email, 'ourField' => 'contact_id', 'theirField' => 'contact_id']); // hasMany on JOIN (use custom ourField, theirField)
         $this->createMigrator()->createForeignKey($refMany);

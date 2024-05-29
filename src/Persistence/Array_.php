@@ -306,10 +306,12 @@ class Array_ extends Persistence
 
         $type = $model->idField
             ? $model->getIdField()->type
-            : 'integer';
+            : 'bigint';
 
         switch ($type) {
+            case 'smallint':
             case 'integer':
+            case 'bigint':
                 $nextId = ($this->maxSeenIdByTable[$model->table] ?? 0) + 1;
                 $this->maxSeenIdByTable[$model->table] = $nextId;
 
@@ -319,7 +321,7 @@ class Array_ extends Persistence
 
                 break;
             default:
-                throw (new Exception('Unsupported id field type. Array supports type=integer or type=string only'))
+                throw (new Exception('Unsupported ID field type'))
                     ->addMoreInfo('type', $type);
         }
 

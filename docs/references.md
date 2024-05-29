@@ -364,7 +364,7 @@ select * from user where id in
 By passing options to hasOne() you can also differentiate field name:
 
 ```
-$o->addField('user_id', ['type' => 'integer']);
+$o->addField('user_id', ['type' => 'bigint']);
 $o->hasOne('User', ['model' => $u, 'ourField' => 'user_id']);
 
 $o->load(1)->ref('User')['name'];
@@ -492,7 +492,7 @@ No condition will be applied by default so it's all up to you:
 $m->addReference('Archive', ['model' => static function (Persistence $persistence) use ($m) {
     $archive = new $m(null, ['table' => $m->table . '_archive']);
 
-    $m->addField('original_id', ['type' => 'integer']);
+    $m->addField('original_id', ['type' => 'bigint']);
 
     if ($m->isLoaded())) {
         $archive->addCondition('original_id', $m->getId());

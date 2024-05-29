@@ -25,7 +25,7 @@ in various ways to fine-tune aggregation. Below is one sample use:
 $aggregate = new AggregateModel($orders);
 $aggregate->addField('country');
 $aggregate->setGroupBy(['country_id'], [
-        'count' => ['expr' => 'count(*)', 'type' => 'integer'],
+        'count' => ['expr' => 'count(*)', 'type' => 'bigint'],
         'total_amount' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
     ],
 );

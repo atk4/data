@@ -385,7 +385,7 @@ class Model implements \IteratorAggregate
 
         if ($this->idField) {
             if (!$this->hasField($this->idField)) {
-                $this->addField($this->idField, ['type' => 'integer']);
+                $this->addField($this->idField, ['type' => 'bigint']);
             }
             $this->getIdField()->required = true;
             $this->getIdField()->system = true;

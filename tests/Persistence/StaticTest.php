@@ -149,7 +149,7 @@ class StaticTest extends TestCase
         ]]);
         $m = new Model($p);
 
-        self::assertSame('integer', $m->getField('id')->type);
+        self::assertSame('bigint', $m->getField('id')->type);
         self::assertSame('bigint', $m->getField('test_int')->type);
         self::assertSame('float', $m->getField('test_float')->type);
         // self::assertSame('datetime', $m->getField('test_date')->type);
@@ -186,7 +186,7 @@ class StaticTest extends TestCase
         $p = new Persistence\Static_([1 => ['foo' => null], 2 => ['foo' => 1], 3 => ['foo' => null]]);
         $m = new Model($p);
 
-        self::assertSame('integer', $m->getField('id')->type);
+        self::assertSame('bigint', $m->getField('id')->type);
         self::assertSame('bigint', $m->getField('foo')->type);
     }
 

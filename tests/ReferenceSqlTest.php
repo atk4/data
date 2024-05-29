@@ -41,7 +41,7 @@ class ReferenceSqlTest extends TestCase
 
         $o = new Model($this->db, ['table' => 'order']);
         $o->addField('amount', ['type' => 'integer']);
-        $o->addField('user_id', ['type' => 'integer']);
+        $o->addField('user_id', ['type' => 'bigint']);
 
         $u->hasMany('Orders', ['model' => $o]);
 
@@ -76,7 +76,7 @@ class ReferenceSqlTest extends TestCase
 
         $o = new Model($this->db, ['table' => 'order']);
         $o->addField('amount');
-        $o->addField('user_id', ['type' => 'integer']);
+        $o->addField('user_id', ['type' => 'bigint']);
 
         $u->hasMany('Orders', ['model' => $o]);
 
@@ -261,7 +261,7 @@ class ReferenceSqlTest extends TestCase
         $i->addField('ref_no');
 
         $l = new Model($this->db, ['table' => 'invoice_line']);
-        $l->addField('invoice_id', ['type' => 'integer']);
+        $l->addField('invoice_id', ['type' => 'bigint']);
         $l->addField('total_net');
         $l->addField('total_vat');
         $l->addField('total_gross');
@@ -454,7 +454,7 @@ class ReferenceSqlTest extends TestCase
         $i->addField('ref_no');
 
         $l = new Model($this->db, ['table' => 'invoice_line']);
-        $l->addField('invoice_id', ['type' => 'integer']);
+        $l->addField('invoice_id', ['type' => 'bigint']);
         $l->addField('total_net', ['type' => 'atk4_money']);
         $l->addField('total_vat', ['type' => 'atk4_money']);
         $l->addField('total_gross', ['type' => 'atk4_money']);
@@ -524,7 +524,7 @@ class ReferenceSqlTest extends TestCase
         $l->addField('name');
 
         $i = new Model($this->db, ['table' => 'item']);
-        $i->addField('list_id', ['type' => 'integer']);
+        $i->addField('list_id', ['type' => 'bigint']);
         $i->addField('name');
         $i->addField('code');
 
@@ -581,7 +581,7 @@ class ReferenceSqlTest extends TestCase
 
         $user = new Model($this->db, ['table' => 'user']);
         $user->addField('name');
-        $user->addField('company_id', ['type' => 'integer']);
+        $user->addField('company_id', ['type' => 'bigint']);
 
         $company = new Model($this->db, ['table' => 'company']);
         $company->addField('name');
@@ -589,7 +589,7 @@ class ReferenceSqlTest extends TestCase
         $user->hasOne('Company', ['model' => $company, 'ourField' => 'company_id', 'theirField' => 'id']);
 
         $order = new Model($this->db, ['table' => 'order']);
-        $order->addField('company_id', ['type' => 'integer']);
+        $order->addField('company_id', ['type' => 'bigint']);
         $order->addField('description');
         $order->addField('amount', ['default' => 20, 'type' => 'float']);
 
@@ -709,7 +709,7 @@ class ReferenceSqlTest extends TestCase
 
         $s = (new Model($this->db, ['table' => 'stadium']));
         $s->addField('name');
-        $s->addField('player_id', ['type' => 'integer']);
+        $s->addField('player_id', ['type' => 'bigint']);
 
         $p = new Model($this->db, ['table' => 'player']);
         $p->addField('name');
