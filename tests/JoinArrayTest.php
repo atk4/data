@@ -91,7 +91,7 @@ class JoinArrayTest extends TestCase
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $user = new Model($db, ['table' => 'user']);
         $user->addField('name');
-        $user->addField('contact_id', ['type' => 'integer']);
+        $user->addField('contact_id', ['type' => 'bigint']);
         $j = $user->join('contact');
         $j->addField('contact_phone');
 
