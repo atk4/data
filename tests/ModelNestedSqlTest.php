@@ -87,7 +87,7 @@ class ModelNestedSqlTest extends TestCase
         ]);
         $mInner->removeField('id');
         $mInner->idField = 'uid';
-        $mInner->addField('uid', ['actual' => '_id', 'type' => 'integer']);
+        $mInner->addField('uid', ['actual' => '_id', 'type' => 'bigint']);
         $mInner->addField('name');
         $mInner->addField('y', ['actual' => '_birthday', 'type' => 'date']);
         $mInner->addCondition('uid', '!=', 3);

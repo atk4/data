@@ -61,7 +61,7 @@ class ModelAggregateTest extends TestCase
         $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->setGroupBy(['client_id'], [
-            'c' => ['expr' => 'count(*)', 'type' => 'integer'],
+            'c' => ['expr' => 'count(*)', 'type' => 'bigint'],
         ]);
 
         self::assertSameExportUnordered([
@@ -76,7 +76,7 @@ class ModelAggregateTest extends TestCase
         $aggregate->addField('client');
 
         $aggregate->setGroupBy(['client_id'], [
-            'c' => ['expr' => 'count(*)', 'type' => 'integer'],
+            'c' => ['expr' => 'count(*)', 'type' => 'bigint'],
         ]);
         self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
@@ -130,7 +130,7 @@ class ModelAggregateTest extends TestCase
         $aggregate->setGroupBy(['client_id'], [
             's' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
-            'sum_hasone' => ['expr' => 'sum([order])', 'type' => 'integer'],
+            'sum_hasone' => ['expr' => 'sum([order])', 'type' => 'bigint'],
         ]);
         self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
@@ -250,7 +250,7 @@ class ModelAggregateTest extends TestCase
         $aggregate->addField('client');
 
         $aggregate->setGroupBy(['client_id'], [
-            'c' => ['expr' => 'count(*)', 'type' => 'integer'],
+            'c' => ['expr' => 'count(*)', 'type' => 'bigint'],
         ]);
         self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
@@ -345,7 +345,7 @@ class ModelAggregateTest extends TestCase
 
         $aggregate->setGroupBy([$aggregate->expr('{}', ['abc'])], [
             'xyz' => ['expr' => 'sum([amount])'],
-            'sum_hasone' => ['expr' => 'sum([order])', 'type' => 'integer'],
+            'sum_hasone' => ['expr' => 'sum([order])', 'type' => 'bigint'],
         ]);
 
         $this->assertSameSql(

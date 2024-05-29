@@ -92,7 +92,7 @@ class ReferenceTest extends TestCase
     {
         $user = new Model(null, ['table' => 'user']);
         $order = new Model();
-        $order->addField('user_id', ['type' => 'integer']);
+        $order->addField('user_id', ['type' => 'bigint']);
 
         $user->hasMany('Orders', ['model' => $order]);
 
@@ -247,7 +247,7 @@ class ReferenceTest extends TestCase
                 $this->addField('name');
 
                 $this->hasMany('orders', ['model' => [self::$orderModelClass], 'theirField' => 'user_id'])
-                    ->addField('orders_count', ['type' => 'integer', 'aggregate' => 'count']);
+                    ->addField('orders_count', ['type' => 'bigint', 'aggregate' => 'count']);
 
                 $this->analysingOrderModelFields = $this->getReference('orders')->createAnalysingTheirModel()->getFields();
 

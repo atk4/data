@@ -30,11 +30,11 @@ class SmboTransferTest extends TestCase
 
         $this->createMigrator()->table('payment')
             ->id()
-            ->field('document_id', ['type' => 'integer'])
-            ->field('account_id', ['type' => 'integer'])
+            ->field('document_id', ['type' => 'bigint'])
+            ->field('account_id', ['type' => 'bigint'])
             ->field('cheque_no')
             ->field('misc_payment', ['type' => 'boolean'])
-            ->field('transfer_document_id', ['type' => 'integer'])
+            ->field('transfer_document_id', ['type' => 'bigint'])
             ->create();
     }
 
