@@ -327,7 +327,7 @@ abstract class TestCase extends BaseTestCase
                     if (is_bool($v)) {
                         $type = 'boolean';
                     } elseif (is_int($v)) {
-                        $type = 'integer';
+                        $type = 'bigint';
                     } elseif (is_float($v)) {
                         $type = 'float';
                     } elseif ($v !== null) {
@@ -345,7 +345,7 @@ abstract class TestCase extends BaseTestCase
                 }
             }
             if (!isset($fieldTypes[$idField])) {
-                $fieldTypes = array_merge([$idField => 'integer'], $fieldTypes);
+                $fieldTypes = array_merge([$idField => 'bigint'], $fieldTypes);
             }
 
             $model = new Model(null, ['table' => $tableName, 'idField' => $idField]);

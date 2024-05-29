@@ -46,7 +46,7 @@ class Static_ extends Array_
                 if (is_bool($v)) {
                     $type = 'boolean';
                 } elseif (is_int($v)) {
-                    $type = 'integer';
+                    $type = 'bigint';
                 } elseif (is_float($v)) {
                     $type = 'float';
                 } elseif ($v instanceof \DateTimeInterface) {
