@@ -426,12 +426,14 @@ class Migrator
 
     public function introspectTableToModel(string $tableName): Model
     {
-        $columns = $this->createSchemaManager()->listTableColumns($this->fixTableNameForListMethod($tableName));
+        $schemaManager = $this->createSchemaManager();
+
+        $columns = $schemaManager->listTableColumns($this->fixTableNameForListMethod($tableName));
         if ($columns === []) {
             $this->assertTableExists($tableName);
         }
 
-        $indexes = $this->createSchemaManager()->listTableIndexes($this->fixTableNameForListMethod($tableName));
+        $indexes = $schemaManager->listTableIndexes($this->fixTableNameForListMethod($tableName));
         $primaryIndexes = array_filter($indexes, static fn ($v) => $v->isPrimary() && count($v->getColumns()) === 1);
         if (count($primaryIndexes) !== 1) {
             throw (new Exception('Table must contain exactly one primary key'))
