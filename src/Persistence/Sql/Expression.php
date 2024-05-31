@@ -438,7 +438,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
             $sql = $sqlFormatter->format($sql);
 
             // fix string literal tokenize 2/2
-            $sql = str_replace(array_keys($origStringTokens), $origStringTokens, $sqlFormatter->format($sql));
+            $sql = str_replace(array_keys($origStringTokens), $origStringTokens, $sql);
         }
 
         return $sql;
