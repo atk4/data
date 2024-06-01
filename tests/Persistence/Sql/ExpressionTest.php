@@ -257,24 +257,24 @@ class ExpressionTest extends TestCase
         self::assertSame('concat(\'\', x\'00\')', $escapeStringLiteralFx("\0"));
         self::assertSame('concat(\'a\', x\'0000\')', $escapeStringLiteralFx("a\0\0"));
         self::assertSame('concat(\'a\', x\'' . str_repeat('00', 10_000) . '\')', $escapeStringLiteralFx('a' . str_repeat("\0", 10_000)));
-        self::assertSame('concat(\'a\', concat(x\'006200\', \'c\'))', $escapeStringLiteralFx("a\0b\0c"));
+        self::assertSame('concat(\'a\', x\'006200\', \'c\')', $escapeStringLiteralFx("a\0b\0c"));
         self::assertSame(
-            'concat(\'a\', concat(x\'00' . str_repeat('62', 100) . '00\', \'c\'))',
+            'concat(\'a\', x\'00' . str_repeat('62', 100) . '00\', \'c\')',
             $escapeStringLiteralFx("a\0" . str_repeat('b', 100) . "\0c")
         );
         self::assertSame(
-            'concat(concat(\'a\', x\'00\'), concat(\'' . str_repeat('b', 101) . '\', concat(x\'00\', \'c\')))',
+            'concat(\'a\', x\'00\', \'' . str_repeat('b', 101) . '\', x\'00\', \'c\')',
             $escapeStringLiteralFx("a\0" . str_repeat('b', 101) . "\0c")
         );
 
         self::assertSame('\'foo\'', $escapeStringLiteralFx('foo', MysqlExpression::class));
         self::assertSame('x\'00\'', $escapeStringLiteralFx("\0", MysqlExpression::class));
         self::assertSame(
-            'concat(\'a\', concat(x\'00' . str_repeat('62', 100) . '00\', \'c\'))',
+            'concat(\'a\', x\'00' . str_repeat('62', 100) . '00\', \'c\')',
             $escapeStringLiteralFx("a\0" . str_repeat('b', 100) . "\0c", MysqlExpression::class)
         );
         self::assertSame(
-            'concat(concat(\'a\', x\'00\'), concat(\'' . str_repeat('b', 101) . '\', concat(x\'00\', \'c\')))',
+            'concat(\'a\', x\'00\', \'' . str_repeat('b', 101) . '\', x\'00\', \'c\')',
             $escapeStringLiteralFx("a\0" . str_repeat('b', 101) . "\0c", MysqlExpression::class)
         );
     }

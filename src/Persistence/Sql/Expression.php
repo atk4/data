@@ -236,6 +236,41 @@ abstract class Expression implements Expressionable, \ArrayAccess
     }
 
     /**
+     * @template TValue
+     * @template TNode
+     *
+     * @param list<TValue>                        $values
+     * @param int<2, max>                         $n
+     * @param \Closure(list<TValue|TNode>): TNode $mapNodeFx
+     *
+     * @return ($mapNodeFx is null ? TValue|list<TValue|list<mixed>> : TNode)
+     */
+    protected function makeNaryTree(array $values, int $n, ?\Closure $mapNodeFx = null)
+    {
+        if (count($values) <= $n) {
+            return $mapNodeFx === null
+                ? (count($values) === 1
+                    ? reset($values)
+                    : $values)
+                : (count($values) === 1
+                    ? $mapNodeFx($values)
+                    : $mapNodeFx(array_map(static fn ($v) => $mapNodeFx([$v]), $values)));
+        }
+
+        $maxDepth = (int) ceil(log(count($values), $n));
+        $countPerNode = $n ** ($maxDepth - 1);
+
+        $res = array_map(
+            fn ($values) => $this->makeNaryTree($values, $n, $mapNodeFx),
+            array_chunk($values, $countPerNode)
+        );
+
+        return $mapNodeFx === null
+            ? $res
+            : $mapNodeFx($res);
+    }
+
+    /**
      * This method should be used only when string value cannot be bound.
      */
     abstract protected function escapeStringLiteral(string $value): string;

@@ -49,18 +49,15 @@ trait ExpressionTrait
             $parts = ['\'\''];
         }
 
-        $buildConcatSqlFx = static function (array $parts) use (&$buildConcatSqlFx): string {
-            if (count($parts) > 1) {
-                $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
-                $partsRight = array_slice($parts, count($partsLeft));
-
-                return 'concat(cast(' . $buildConcatSqlFx($partsLeft) . ' as NVARCHAR(MAX)), ' . $buildConcatSqlFx($partsRight) . ')';
+        return $this->makeNaryTree($parts, 10, static function (array $parts) {
+            if (count($parts) === 1) {
+                return reset($parts);
             }
 
-            return reset($parts);
-        };
+            $parts[0] = 'cast(' . $parts[0] . ' as NVARCHAR(MAX))';
 
-        return $buildConcatSqlFx($parts);
+            return 'concat(' . implode(', ', $parts) . ')';
+        });
     }
 
     #[\Override]

@@ -12,18 +12,13 @@ trait ExpressionTrait
         // Oracle (multibyte) string literal is limited to 1332 bytes
         $parts = $this->splitLongString($value, 1000);
         if (count($parts) > 1) {
-            $buildConcatExprFx = function (array $parts) use (&$buildConcatExprFx): string {
-                if (count($parts) > 1) {
-                    $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
-                    $partsRight = array_slice($parts, count($partsLeft));
-
-                    return 'concat(' . $buildConcatExprFx($partsLeft) . ', ' . $buildConcatExprFx($partsRight) . ')';
+            return $this->makeNaryTree($parts, 2, function (array $parts) {
+                if (count($parts) === 1) {
+                    return 'TO_CLOB(' . $this->escapeStringLiteral(reset($parts)) . ')';
                 }
 
-                return 'TO_CLOB(' . $this->escapeStringLiteral(reset($parts)) . ')';
-            };
-
-            return $buildConcatExprFx($parts);
+                return 'concat(' . implode(', ', $parts) . ')';
+            });
         }
 
         $parts = [];
@@ -50,18 +45,13 @@ trait ExpressionTrait
             $parts = ['\'\''];
         }
 
-        $buildConcatSqlFx = static function (array $parts) use (&$buildConcatSqlFx): string {
-            if (count($parts) > 1) {
-                $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
-                $partsRight = array_slice($parts, count($partsLeft));
-
-                return 'concat(' . $buildConcatSqlFx($partsLeft) . ', ' . $buildConcatSqlFx($partsRight) . ')';
+        return $this->makeNaryTree($parts, 2, static function (array $parts) {
+            if (count($parts) === 1) {
+                return reset($parts);
             }
 
-            return reset($parts);
-        };
-
-        return $buildConcatSqlFx($parts);
+            return 'concat(' . implode(', ', $parts) . ')';
+        });
     }
 
     /**
@@ -109,23 +99,18 @@ trait ExpressionTrait
         // Oracle (multibyte) string literal is limited to 1332 bytes
         $parts = $this->splitLongString($value, 1000);
 
-        $exprArgs = [];
-        $buildConcatExprFx = static function (array $parts) use (&$buildConcatExprFx, &$exprArgs): string {
-            if (count($parts) > 1) {
-                $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
-                $partsRight = array_slice($parts, count($partsLeft));
+        $sqlArgs = [];
+        $sql = $this->makeNaryTree($parts, 2, static function (array $parts) use (&$sqlArgs) {
+            if (count($parts) === 1) {
+                $sqlArgs[] = reset($parts);
 
-                return 'concat(' . $buildConcatExprFx($partsLeft) . ', ' . $buildConcatExprFx($partsRight) . ')';
+                return 'TO_CLOB([])';
             }
 
-            $exprArgs[] = reset($parts);
+            return 'concat(' . implode(', ', $parts) . ')';
+        });
 
-            return 'TO_CLOB([])';
-        };
-
-        $expr = $buildConcatExprFx($parts);
-
-        return $this->expr($expr, $exprArgs); // @phpstan-ignore return.type
+        return $this->expr($sql, $sqlArgs); // @phpstan-ignore return.type
     }
 
     #[\Override]
