@@ -436,6 +436,7 @@ abstract class TestCase extends BaseTestCase
         ) {
             // MySQL v8.0.22 and higher throws SQLSTATE[HY000]: General error: 3995 Character set 'binary'
             // cannot be used in conjunction with 'utf8mb4_0900_ai_ci' in call to regexp_like.
+            // TODO report
             // https://github.com/mysql/mysql-server/blob/72136a6d15/sql/item_regexp_func.cc#L115-L120
             // https://dbfiddle.uk/9SA-omyF
             self::markTestIncomplete('MySQL 8.x has broken binary LIKE support');
