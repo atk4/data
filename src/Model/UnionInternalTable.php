@@ -38,7 +38,7 @@ class UnionInternalTable
         $tableOrig = $model->table;
         $model->table = '_tu';
         try {
-            return $model->actionSelectInnerTable(); // @phpstan-ignore-line
+            return $model->actionSelectInnerTable(); // @phpstan-ignore method.notFound
         } finally {
             $model->table = $tableOrig;
         }

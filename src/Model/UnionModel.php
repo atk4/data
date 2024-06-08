@@ -48,7 +48,7 @@ class UnionModel extends Model
     {
         $unionTable = new UnionInternalTable();
         $unionTable->setOwner($this);
-        $this->table = $unionTable; // @phpstan-ignore-line
+        $this->table = $unionTable; // @phpstan-ignore assign.propertyType
 
         $this->tableAlias ??= '_tu'; // DEBUG
 
