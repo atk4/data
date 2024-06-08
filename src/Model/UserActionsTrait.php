@@ -59,7 +59,7 @@ trait UserActionsTrait
     private function addUserActionFromModel(string $name, UserAction $action): void
     {
         $this->assertIsEntity();
-        $action->getOwner()->assertIsModel(); // @phpstan-ignore-line
+        $action->getOwner()->assertIsModel(); // @phpstan-ignore method.nonObject
 
         // clone action and store it in entity
         $action = clone $action;

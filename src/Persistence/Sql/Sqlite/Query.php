@@ -50,7 +50,7 @@ class Query extends BaseQuery
      * https://dba.stackexchange.com/questions/332585/sqlite-comparison-of-the-same-operand-types-behaves-differently
      * https://sqlite.org/forum/info/5f1135146fbc37ab .
      */
-    #[\Override] // @phpstan-ignore-line https://github.com/phpstan/phpstan/issues/10942
+    #[\Override] // @phpstan-ignore method.childParameterType (https://github.com/phpstan/phpstan/issues/10942)
     protected function _renderConditionBinary(string $operator, string $sqlLeft, $sqlRight): string
     {
         if (in_array($operator, ['in', 'not in'], true)) {
@@ -91,6 +91,13 @@ class Query extends BaseQuery
         );
     }
 
+    private function _renderConditionIsCaseInsensitive(string $sql): string
+    {
+        return '(select __atk4_case_v__ = ' . $this->escapeStringLiteral('a')
+            . ' from (select ' . $sql . ' __atk4_case_v__ where 0 union all select '
+            . $this->escapeStringLiteral('A') . ') __atk4_case_tmp__)';
+    }
+
     #[\Override]
     protected function _renderConditionLikeOperator(bool $negated, string $sqlLeft, string $sqlRight): string
     {
@@ -102,16 +109,20 @@ class Query extends BaseQuery
                     return 'regexp_replace(' . $sql . ', ' . $this->escapeStringLiteral($search) . ', ' . $this->escapeStringLiteral($replacement) . ')';
                 };
 
-                return '('
-                    . parent::_renderConditionLikeOperator(false, $sqlLeft, $sqlRight)
-                    . ' and ((' . $sqlLeft . ' = lower(' . $sqlLeft . ') and ' . $sqlLeft . ' = upper(' . $sqlLeft . '))'
-                    . ' or ' . $this->_renderConditionRegexpOperator(
+                return 'case '
+                    // workaround "_" matching more than one byte in BLOB - https://dbfiddle.uk/Dnq8BXGy
+                    . 'case when instr(' . $sqlRight . ', ' . $this->escapeStringLiteral('_') . ') != 0 then 1 else '
+                    . parent::_renderConditionLikeOperator(
+                        false,
+                        $sqlLeft,
+                        $sqlRight
+                    ) . ' end when 1 then ' . $this->_renderConditionRegexpOperator(
                         false,
                         $sqlLeft,
                         'concat(' . $this->escapeStringLiteral('^') . ',' . $regexReplaceSqlFx(
                             $regexReplaceSqlFx(
                                 $regexReplaceSqlFx(
-                                    $regexReplaceSqlFx($sqlRight, '\\\(?:(?=[_%])|\K\\\)|(?=[.\\\+*?[^\]$(){}|])', '\\'),
+                                    $regexReplaceSqlFx($sqlRight, '\\\(?:(?=[_%])|\K\\\)|(?=[.\\\+*?[^\]$(){}|])', '\\\\'),
                                     '(?<!\\\)(\\\\\\\)*\K_',
                                     '.'
                                 ),
@@ -120,9 +131,8 @@ class Query extends BaseQuery
                             ),
                             '(?<!\\\)(\\\\\\\)*\K\\\(?=[_%])',
                             ''
-                        ) . ', ' . $this->escapeStringLiteral('$') . ')',
-                        true
-                    ) . '))';
+                        ) . ', ' . $this->escapeStringLiteral('$') . ')'
+                    ) . ' when 0 then 0 end';
             }
         );
     }
@@ -130,19 +140,18 @@ class Query extends BaseQuery
     #[\Override]
     protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight, bool $binary = false): string
     {
-        if ($binary) {
-            return parent::_renderConditionRegexpOperator($negated, $sqlLeft, $sqlRight, $binary);
-        }
-
         return ($negated ? 'not ' : '') . $this->_renderConditionBinaryReuse(
             $sqlLeft,
             $sqlRight,
             function ($sqlLeft, $sqlRight) {
-                return 'case when ' . $sqlLeft . ' = lower(' . $sqlLeft . ') and ' . $sqlLeft . ' = upper(' . $sqlLeft . ')'
-                    . ' then ' . parent::_renderConditionRegexpOperator(false, $sqlLeft, $sqlRight)
-                    . ' else ' . parent::_renderConditionRegexpOperator(false, $sqlLeft, $sqlRight, true)
-                    . ' end';
-            }
+                return 'regexp_like(' . $sqlLeft . ', ' . $sqlRight
+                    . ', case when ' . $this->_renderConditionIsCaseInsensitive($sqlLeft)
+                    . ' then ' . $this->escapeStringLiteral('is')
+                    . ' else ' . $this->escapeStringLiteral('-us')
+                    . ' end)';
+            },
+            true,
+            false
         );
     }
 

@@ -71,7 +71,7 @@ trait ReferencesTrait
      */
     public function hasOne(string $link, array $defaults): Reference
     {
-        return $this->_addReference($this->_defaultSeedHasOne, $link, $defaults); // @phpstan-ignore-line
+        return $this->_addReference($this->_defaultSeedHasOne, $link, $defaults); // @phpstan-ignore return.type
     }
 
     /**
@@ -83,7 +83,7 @@ trait ReferencesTrait
      */
     public function hasMany(string $link, array $defaults): Reference
     {
-        return $this->_addReference($this->_defaultSeedHasMany, $link, $defaults); // @phpstan-ignore-line
+        return $this->_addReference($this->_defaultSeedHasMany, $link, $defaults); // @phpstan-ignore return.type
     }
 
     /**
@@ -95,7 +95,7 @@ trait ReferencesTrait
      */
     public function containsOne(string $link, array $defaults): Reference
     {
-        return $this->_addReference($this->_defaultSeedContainsOne, $link, $defaults); // @phpstan-ignore-line
+        return $this->_addReference($this->_defaultSeedContainsOne, $link, $defaults); // @phpstan-ignore return.type
     }
 
     /**
@@ -107,7 +107,7 @@ trait ReferencesTrait
      */
     public function containsMany(string $link, array $defaults): Reference
     {
-        return $this->_addReference($this->_defaultSeedContainsMany, $link, $defaults); // @phpstan-ignore-line
+        return $this->_addReference($this->_defaultSeedContainsMany, $link, $defaults); // @phpstan-ignore return.type
     }
 
     public function hasReference(string $link): bool

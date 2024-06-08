@@ -7,8 +7,8 @@ namespace Atk4\Data\Schema;
 use Atk4\Core\Phpunit\TestCase as BaseTestCase;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
-use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
+use Atk4\Data\Persistence\Sql\RawExpression;
 use Atk4\Data\Persistence\Sql\Sqlite\Expression as SqliteExpression;
 use Atk4\Data\Reference;
 use Doctrine\DBAL\ParameterType;
@@ -79,7 +79,7 @@ abstract class TestCase extends BaseTestCase
 
     protected function getConnection(): Persistence\Sql\Connection
     {
-        return $this->db->getConnection(); // @phpstan-ignore-line
+        return $this->db->getConnection(); // @phpstan-ignore method.notFound
     }
 
     protected function getDatabasePlatform(): AbstractPlatform
@@ -101,7 +101,7 @@ abstract class TestCase extends BaseTestCase
         $i = 0;
         $quotedTokenRegex = $this->getConnection()->expr()::QUOTED_TOKEN_REGEX;
         $sql = preg_replace_callback(
-            '~' . $quotedTokenRegex . '\K|(\?)|cast\((\?|:\w+) as (BOOLEAN|INTEGER|BIGINT|DOUBLE PRECISION|BINARY_DOUBLE)\)|\((\?|:\w+) \+ 0\.00\)~',
+            '~' . $quotedTokenRegex . '\K|(\?)|cast\((\?|:\w+) as (BOOLEAN|INTEGER|BIGINT|DOUBLE PRECISION|BINARY_DOUBLE|citext|bytea|unknown)\)|\((\?|:\w+) \+ 0\.00\)~',
             static function ($matches) use (&$types, &$params, &$i) {
                 if ($matches[0] === '') {
                     return '';
@@ -113,7 +113,9 @@ abstract class TestCase extends BaseTestCase
                     return $matches[0];
                 }
 
-                $k = isset($matches[4]) ? ($matches[4] === '?' ? ++$i : $matches[4]) : ($matches[2] === '?' ? ++$i : $matches[2]);
+                $k = isset($matches[4])
+                    ? ($matches[4] === '?' ? ++$i : $matches[4])
+                    : ($matches[2] === '?' ? ++$i : $matches[2]);
 
                 if ($matches[3] === 'BOOLEAN' && ($types[$k] === ParameterType::BOOLEAN || $types[$k] === ParameterType::INTEGER)
                     && (is_bool($params[$k]) || $params[$k] === '0' || $params[$k] === '1')
@@ -131,6 +133,10 @@ abstract class TestCase extends BaseTestCase
                     $params[$k] = (float) $params[$k];
 
                     return $matches[4] ?? $matches[2];
+                } elseif (($matches[3] === 'citext' || $matches[3] === 'bytea') && is_string($params[$k])) {
+                    return $matches[2];
+                } elseif ($matches[3] === 'unknown' && $params[$k] === null) {
+                    return $matches[2];
                 }
 
                 return $matches[0];
@@ -138,33 +144,10 @@ abstract class TestCase extends BaseTestCase
             $sql
         );
 
-        $exprNoRender = new class($sql, $params, $this->getConnection()->expr()) extends Expression {
-            private Expression $dummyExpression;
-
-            public function __construct($template, array $arguments, Expression $dummyExpression)
-            {
-                parent::__construct($template, $arguments);
-
-                $this->dummyExpression = $dummyExpression;
-            }
-
-            #[\Override]
-            protected function escapeStringLiteral(string $value): string
-            {
-                $dummyExpression = $this->dummyExpression;
-
-                // Closure rebind should not be needed
-                // https://github.com/php/php-src/issues/14009
-                return \Closure::bind(static fn () => $dummyExpression->escapeStringLiteral($value), null, parent::class)();
-            }
-
-            #[\Override]
-            public function render(): array
-            {
-                return [$this->template, $this->args['custom']];
-            }
-        };
-        $sqlWithParams = $exprNoRender->getDebugQuery();
+        $sqlWithParams = (new RawExpression([
+            'template' => $sql,
+            'connection' => $this->getConnection(),
+        ], $params))->getDebugQuery();
 
         if (substr($sqlWithParams, -1) !== ';') {
             $sqlWithParams .= ';';
@@ -212,8 +195,8 @@ abstract class TestCase extends BaseTestCase
         if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
             do {
                 $actualSqlPrev = $actualSql;
-                $actualSql = preg_replace('~case when typeof\((.+?)\) in \(\'integer\', \'real\'\) then cast\(\1 as numeric\) (.{1,20}?) (.+?) else \1 \2 \3 end~s', '$1 $2 $3', $actualSql);
-                $actualSql = preg_replace('~case when typeof\((.+?)\) in \(\'integer\', \'real\'\) then (.+?) (.{1,20}?) cast\(\1 as numeric\) else \2 \3 \1 end~s', '$2 $3 $1', $actualSql);
+                $actualSql = preg_replace('~case\s+when typeof\((.+?)\) in \(\'integer\', \'real\'\) then\s+cast\(\1 as numeric\) (.{1,20}?) (.+?)\s+else\s+\1 \2 \3\s+end~s', '$1 $2 $3', $actualSql);
+                $actualSql = preg_replace('~case\s+when typeof\((.+?)\) in \(\'integer\', \'real\'\) then\s+(.+?) (.{1,20}?) cast\(\1 as numeric\)\s+else\s+\2 \3 \1\s+end~s', '$2 $3 $1', $actualSql);
             } while ($actualSql !== $actualSqlPrev);
             do {
                 $actualSqlPrev = $actualSql;
@@ -308,7 +291,7 @@ abstract class TestCase extends BaseTestCase
     protected static function assertSameExportUnordered(array $expected, array $actual, string $message = ''): void
     {
         if (self::compareExportUnorderedValue($expected, $actual) === 0) {
-            self::assertTrue(true); // @phpstan-ignore-line
+            self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
 
             return;
         }
@@ -325,14 +308,16 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * @param array<string, array<int|'_', array<string, mixed>>> $dbData
+     * @param array<string, array<int|'_types', array<string, mixed>>> $dbData
      */
     public function setDb(array $dbData, bool $importData = true): void
     {
         foreach ($dbData as $tableName => $data) {
-            $migrator = $this->createMigrator()->table($tableName);
+            $idField = $data['_types']['_idField'] ?? 'id';
+            unset($data['_types']['_idField']);
 
-            $fieldTypes = [];
+            $fieldTypes = $data['_types'] ?? [];
+            unset($data['_types']);
             foreach ($data as $row) {
                 foreach ($row as $k => $v) {
                     if (isset($fieldTypes[$k])) {
@@ -340,61 +325,50 @@ abstract class TestCase extends BaseTestCase
                     }
 
                     if (is_bool($v)) {
-                        $fieldType = 'boolean';
+                        $type = 'boolean';
                     } elseif (is_int($v)) {
-                        $fieldType = 'integer';
+                        $type = 'bigint';
                     } elseif (is_float($v)) {
-                        $fieldType = 'float';
-                    } elseif ($v instanceof \DateTimeInterface) {
-                        $fieldType = 'datetime';
+                        $type = 'float';
                     } elseif ($v !== null) {
-                        $fieldType = 'string';
+                        $type = 'string';
                     } else {
-                        $fieldType = null;
+                        $type = null;
                     }
 
-                    $fieldTypes[$k] = $fieldType;
+                    $fieldTypes[$k] = $type;
                 }
             }
-            foreach ($fieldTypes as $k => $fieldType) {
-                if ($fieldType === null) {
+            foreach ($fieldTypes as $k => $type) {
+                if ($type === null) {
                     $fieldTypes[$k] = 'string';
                 }
             }
-            $idColumnName = isset($fieldTypes['_id']) ? '_id' : 'id';
+            if (!isset($fieldTypes[$idField])) {
+                $fieldTypes = array_merge([$idField => 'bigint'], $fieldTypes);
+            }
+
+            $model = new Model(null, ['table' => $tableName, 'idField' => $idField]);
+            foreach ($fieldTypes as $k => $type) {
+                $model->addField($k, ['type' => $type]);
+            }
+            $model->setPersistence($this->db);
 
             // create table
-            $migrator->id($idColumnName, isset($fieldTypes[$idColumnName]) ? ['type' => $fieldTypes[$idColumnName]] : []);
-            foreach ($fieldTypes as $k => $fieldType) {
-                if ($k === $idColumnName) {
-                    continue;
-                }
-
-                $migrator->field($k, ['type' => $fieldType]);
-            }
+            $migrator = $this->createMigrator($model);
             $migrator->create();
 
             // import data
             if ($importData) {
-                $this->db->atomic(function () use ($tableName, $data, $idColumnName) {
-                    $hasId = array_key_first($data) !== 0;
-
+                if (array_key_first($data) !== 0) {
                     foreach ($data as $id => $row) {
-                        $query = $this->db->dsql();
-                        if ($id === '_') {
-                            continue;
+                        if (!isset($row[$idField])) {
+                            $data[$id][$idField] = $id;
                         }
-
-                        $query->table($tableName);
-                        $query->setMulti($row);
-
-                        if (!isset($row[$idColumnName]) && $hasId) {
-                            $query->set($idColumnName, $id);
-                        }
-
-                        $query->mode('insert')->executeStatement();
                     }
-                });
+                }
+
+                $model->import($data);
             }
         }
     }
@@ -418,35 +392,17 @@ abstract class TestCase extends BaseTestCase
 
         $resAll = [];
         foreach ($tableNames as $table) {
-            $query = $this->db->dsql();
-            $rows = $query->table($table)->getRows();
-
-            $res = [];
-            $idColumnName = null;
-            foreach ($rows as $row) {
-                if ($idColumnName === null) {
-                    $idColumnName = isset($row['_id']) ? '_id' : 'id';
-                }
-
-                foreach ($row as $k => $v) {
-                    if (preg_match('~(?:^|_)id$~', $k) && $v === (string) (int) $v) {
-                        $row[$k] = (int) $v;
-                    }
-                }
-
-                if ($noId) {
-                    unset($row[$idColumnName]);
-                    $res[] = $row;
-                } else {
-                    $res[$row[$idColumnName]] = $row;
-                }
-            }
+            $model = $this->createMigrator()->introspectTableToModel($table);
 
             if (!$noId) {
-                ksort($res);
+                $model->setOrder($model->idField);
             }
 
-            $resAll[$table] = $res;
+            $data = $noId
+                ? $model->export(array_diff(array_keys($model->getFields()), [$model->idField]))
+                : $model->export(null, $model->idField);
+
+            $resAll[$table] = $data;
         }
 
         return $resAll;
@@ -480,6 +436,7 @@ abstract class TestCase extends BaseTestCase
         ) {
             // MySQL v8.0.22 and higher throws SQLSTATE[HY000]: General error: 3995 Character set 'binary'
             // cannot be used in conjunction with 'utf8mb4_0900_ai_ci' in call to regexp_like.
+            // TODO report
             // https://github.com/mysql/mysql-server/blob/72136a6d15/sql/item_regexp_func.cc#L115-L120
             // https://dbfiddle.uk/9SA-omyF
             self::markTestIncomplete('MySQL 8.x has broken binary LIKE support');

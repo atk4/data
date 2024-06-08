@@ -247,7 +247,7 @@ class ScopeTest extends TestCase
     {
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Only Scope can contain another conditions');
-        new Condition(new Condition('foo', 1)); // @phpstan-ignore-line
+        new Condition(new Condition('foo', 1)); // @phpstan-ignore argument.type
     }
 
     public function testConditionClearException(): void
@@ -426,7 +426,7 @@ class ScopeTest extends TestCase
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Scope can only be added as element to scope');
-        $scope->setOwner(new Model()); // @phpstan-ignore-line
+        $scope->setOwner(new Model()); // @phpstan-ignore argument.type
     }
 
     public function testScopeToWords(): void

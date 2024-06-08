@@ -17,8 +17,8 @@ trait ExpressionTrait
     protected function escapeStringLiteral(string $value): string
     {
         $dummyPersistence = (new \ReflectionClass(Persistence\Sql::class))->newInstanceWithoutConstructor();
-        if (\Closure::bind(static fn () => $dummyPersistence->binaryTypeValueIsEncoded($value), null, Persistence\Sql::class)()) {
-            $value = \Closure::bind(static fn () => $dummyPersistence->binaryTypeValueDecode($value), null, Persistence\Sql::class)();
+        if (\Closure::bind(static fn () => $dummyPersistence->explicitCastIsEncodedBinary($value), null, Persistence\Sql::class)()) {
+            $value = \Closure::bind(static fn () => $dummyPersistence->explicitCastDecode($value), null, Persistence\Sql::class)();
 
             return 'convert(VARBINARY(MAX), \'' . bin2hex($value) . '\', 2)';
         }
@@ -49,18 +49,15 @@ trait ExpressionTrait
             $parts = ['\'\''];
         }
 
-        $buildConcatSqlFx = static function (array $parts) use (&$buildConcatSqlFx): string {
-            if (count($parts) > 1) {
-                $partsLeft = array_slice($parts, 0, intdiv(count($parts), 2));
-                $partsRight = array_slice($parts, count($partsLeft));
-
-                return 'concat(cast(' . $buildConcatSqlFx($partsLeft) . ' as NVARCHAR(MAX)), ' . $buildConcatSqlFx($partsRight) . ')';
+        return $this->makeNaryTree($parts, 10, static function (array $parts) {
+            if (count($parts) === 1) {
+                return reset($parts);
             }
 
-            return reset($parts);
-        };
+            $parts[0] = 'cast(' . $parts[0] . ' as NVARCHAR(MAX))';
 
-        return $buildConcatSqlFx($parts);
+            return 'concat(' . implode(', ', $parts) . ')';
+        });
     }
 
     #[\Override]
@@ -128,7 +125,7 @@ trait ExpressionTrait
             // mimic https://github.com/doctrine/dbal/blob/3.7.1/src/Statement.php#L249
             $result = $this->_execute($connection, false);
 
-            $driverResult = \Closure::bind(static fn (): DbalDriverPdoResult => $result->result, null, DbalResult::class)(); // @phpstan-ignore-line
+            $driverResult = \Closure::bind(static fn (): DbalDriverPdoResult => $result->result, null, DbalResult::class)(); // @phpstan-ignore return.type
             $driverPdoResult = \Closure::bind(static fn () => $driverResult->statement, null, DbalDriverPdoResult::class)();
             try {
                 while ($driverPdoResult->nextRowset());

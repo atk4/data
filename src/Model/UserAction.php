@@ -76,7 +76,7 @@ class UserAction
 
     private function _getOwner(): Model
     {
-        return $this->getOwner(); // @phpstan-ignore-line;
+        return $this->getOwner(); // @phpstan-ignore return.type
     }
 
     public function isOwnerEntity(): bool
@@ -111,7 +111,7 @@ class UserAction
         $entity->assertIsEntity($owner);
         foreach ($owner->getUserActions() as $name => $action) {
             if ($action === $this) {
-                return $entity->getUserAction($name); // @phpstan-ignore-line
+                return $entity->getUserAction($name); // @phpstan-ignore return.type
             }
         }
 

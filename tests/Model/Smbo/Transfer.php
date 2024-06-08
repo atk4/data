@@ -23,7 +23,7 @@ class Transfer extends Payment
             $this->addCondition('transfer_document_id', '!=', null);
         }
 
-        $this->addField('destination_account_id', ['type' => 'integer', 'neverPersist' => true]);
+        $this->addField('destination_account_id', ['type' => 'bigint', 'neverPersist' => true]);
 
         $this->onHookShort(self::HOOK_BEFORE_SAVE, function () {
             // only for new records and when destination_account_id is set

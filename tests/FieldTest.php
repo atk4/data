@@ -159,10 +159,23 @@ class FieldTest extends TestCase
      */
     public static function provideRequiredNumericZeroExceptionCases(): iterable
     {
+        yield ['smallint'];
         yield ['integer'];
+        yield ['bigint'];
         yield ['float'];
         yield ['decimal'];
         yield ['atk4_money'];
+    }
+
+    public function testRequiredBooleanZeroException(): void
+    {
+        $m = new Model();
+        $m->addField('foo', ['type' => 'boolean', 'required' => true]);
+        $m = $m->createEntity();
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must be true');
+        $m->set('foo', 0);
     }
 
     public function testNotNullableNullInsertException(): void
@@ -600,7 +613,9 @@ class FieldTest extends TestCase
 
         $m->addField('string', ['type' => 'string']);
         $m->addField('text', ['type' => 'text']);
+        $m->addField('smallint', ['type' => 'smallint']);
         $m->addField('integer', ['type' => 'integer']);
+        $m->addField('bigint', ['type' => 'bigint']);
         $m->addField('money', ['type' => 'atk4_money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('boolean', ['type' => 'boolean']);
@@ -632,8 +647,14 @@ class FieldTest extends TestCase
         self::assertSame("Two\nLines", $m->get('text'));
 
         // integer, money, float
+        $m->set('smallint', '12,345.67676767');
+        self::assertSame(12345, $m->get('smallint'));
+
         $m->set('integer', '12,345.67676767');
         self::assertSame(12345, $m->get('integer'));
+
+        $m->set('bigint', '12,345.67676767');
+        self::assertSame(12345, (int) $m->get('bigint')); // once DBAL 3.x support is dropped, the explicit cast should no longer be needed
 
         $m->set('money', '12,345.67676767');
         self::assertSame(12345.6768, $m->get('money'));
@@ -659,6 +680,35 @@ class FieldTest extends TestCase
         $m->set('foo', []);
     }
 
+    /**
+     * @dataProvider provideNormalizeNumericNonScalarExceptionCases
+     */
+    #[DataProvider('provideNormalizeNumericNonScalarExceptionCases')]
+    public function testNormalizeNumericNonScalarException(string $type): void
+    {
+        $m = new Model();
+        $m->addField('foo', ['type' => $type]);
+        $m = $m->createEntity();
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Must be scalar');
+        $m->set('foo', []);
+    }
+
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideNormalizeNumericNonScalarExceptionCases(): iterable
+    {
+        yield ['boolean'];
+        yield ['smallint'];
+        yield ['integer'];
+        yield ['bigint'];
+        yield ['float'];
+        yield ['decimal'];
+        yield ['atk4_money'];
+    }
+
     public function testNormalizeStringBoolException(): void
     {
         $m = new Model();
@@ -670,10 +720,14 @@ class FieldTest extends TestCase
         $m->set('foo', false);
     }
 
-    public function testNormalizeIntegerNumericException(): void
+    /**
+     * @dataProvider provideNormalizeNumericExceptionCases
+     */
+    #[DataProvider('provideNormalizeNumericExceptionCases')]
+    public function testNormalizeNumericException(string $type): void
     {
         $m = new Model();
-        $m->addField('foo', ['type' => 'integer']);
+        $m->addField('foo', ['type' => $type]);
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
@@ -681,37 +735,18 @@ class FieldTest extends TestCase
         $m->set('foo', '1x');
     }
 
-    public function testNormalizeFloatNumericException(): void
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideNormalizeNumericExceptionCases(): iterable
     {
-        $m = new Model();
-        $m->addField('foo', ['type' => 'float']);
-        $m = $m->createEntity();
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be numeric');
-        $m->set('foo', '1x');
-    }
-
-    public function testNormalizeAtk4MoneyNumericException(): void
-    {
-        $m = new Model();
-        $m->addField('foo', ['type' => 'atk4_money']);
-        $m = $m->createEntity();
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be numeric');
-        $m->set('foo', '1x');
-    }
-
-    public function testNormalizeBooleanNumericException(): void
-    {
-        $m = new Model();
-        $m->addField('foo', ['type' => 'boolean']);
-        $m = $m->createEntity();
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be numeric');
-        $m->set('foo', '1x');
+        yield ['boolean'];
+        yield ['smallint'];
+        yield ['integer'];
+        yield ['bigint'];
+        yield ['float'];
+        yield ['decimal'];
+        yield ['atk4_money'];
     }
 
     public function testNormalizeDateException(): void

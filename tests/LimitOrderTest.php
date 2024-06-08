@@ -206,7 +206,7 @@ class LimitOrderTest extends TestCase
 
         $i = new Model($this->db, ['table' => 'invoice']);
         $i->addField('net', ['type' => 'integer']);
-        $i->setOrder(new \DateTime()); // @phpstan-ignore-line
+        $i->setOrder(new \DateTime()); // @phpstan-ignore argument.type
 
         $this->expectException(\TypeError::class);
         $i->export();

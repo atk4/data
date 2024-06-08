@@ -101,7 +101,7 @@ class Condition extends AbstractScope
             throw new Exception('Only Scope can contain another conditions');
         } elseif ($field instanceof Field) { // for BC
             $field = $field->shortName;
-        } elseif (!is_string($field) && !$field instanceof Expressionable) { // @phpstan-ignore-line
+        } elseif (!is_string($field) && !$field instanceof Expressionable) { // @phpstan-ignore instanceof.alwaysTrue, booleanAnd.alwaysFalse
             throw new Exception('Field must be a string or an instance of Expressionable');
         }
 

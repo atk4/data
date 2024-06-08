@@ -100,6 +100,6 @@ class Row
             return null;
         }, $this->data));
 
-        $this->owner = null; // @phpstan-ignore-line
+        $this->owner = null; // @phpstan-ignore assign.propertyType
     }
 }

@@ -48,7 +48,7 @@ class BadValidationModel extends Model
     #[\Override]
     public function validate(?string $intent = null): array
     {
-        return 'This should be array'; // @phpstan-ignore-line
+        return 'This should be array'; // @phpstan-ignore return.type
     }
 }
 

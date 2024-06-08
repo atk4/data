@@ -19,7 +19,7 @@ class ModelIteratorTest extends TestCase
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('If first argument is array, second argument must not be used');
-        $m->setOrder(['name', 'salary'], 'desc'); // @phpstan-ignore-line
+        $m->setOrder(['name', 'salary'], 'desc'); // @phpstan-ignore argument.type
     }
 
     public function testNoPersistenceTryLoadException(): void
@@ -191,14 +191,14 @@ class ModelIteratorTest extends TestCase
         $i->addField('total_net', ['type' => 'integer']);
 
         if (\PHP_MAJOR_VERSION === 7) {
-            self::assertNotNull('Expecting E_WARNING is deprecated in PHPUnit 9'); // @phpstan-ignore-line
+            self::assertNotNull('Expecting E_WARNING is deprecated in PHPUnit 9'); // @phpstan-ignore staticMethod.alreadyNarrowedType
 
             return;
         }
 
         $this->expectException(\TypeError::class);
         $this->expectExceptionMessage('Only arrays and Traversables can be unpacked');
-        iterator_to_array($i->createIteratorBy(['total_net', 10])); // @phpstan-ignore-line
+        iterator_to_array($i->createIteratorBy(['total_net', 10])); // @phpstan-ignore argument.type
     }
 
     public function testCreateIteratorByAssociativeArrayException(): void
@@ -208,6 +208,6 @@ class ModelIteratorTest extends TestCase
 
         $this->expectException(\Error::class);
         $this->expectExceptionMessage(\PHP_MAJOR_VERSION === 7 ? 'Cannot unpack array with string keys' : 'Unknown named parameter $total_net');
-        iterator_to_array($i->createIteratorBy([['total_net' => 10]])); // @phpstan-ignore-line
+        iterator_to_array($i->createIteratorBy([['total_net' => 10]])); // @phpstan-ignore argument.type
     }
 }

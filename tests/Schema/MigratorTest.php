@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests\Schema;
 
+use Atk4\Data\Exception;
 use Atk4\Data\Field\PasswordField;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence\Sql\Expression;
@@ -13,7 +14,9 @@ use Doctrine\DBAL\Exception\TableExistsException;
 use Doctrine\DBAL\Exception\TableNotFoundException;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
+use Doctrine\DBAL\Types\Type;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 class MigratorTest extends TestCase
@@ -24,14 +27,19 @@ class MigratorTest extends TestCase
             ->table($table)
             ->id()
             ->field('foo')
-            ->field('bar', ['type' => 'integer'])
+            ->field('bar', ['type' => 'integer', 'nullable' => false])
+            ->field('ismall', ['type' => 'smallint'])
+            ->field('ibig', ['type' => 'bigint'])
             ->field('baz', ['type' => 'text'])
+            ->field('bin1', ['type' => 'binary'])
+            ->field('bin2', ['type' => 'blob'])
             ->field('bl', ['type' => 'boolean'])
             ->field('tm', ['type' => 'time'])
             ->field('dt', ['type' => 'date'])
             ->field('dttm', ['type' => 'datetime'])
             ->field('fl', ['type' => 'float'])
             ->field('mn', ['type' => 'atk4_money'])
+            ->field('json', ['type' => 'json'])
             ->field('lobj', ['type' => 'atk4_local_object']);
     }
 
@@ -114,34 +122,18 @@ class MigratorTest extends TestCase
         $model->addCondition('v', 'MixedCaseß');
         self::assertSameExportUnordered($expectedExport, $model->export(['id']));
 
+        $model->scope()->clear();
+        $model->addCondition('v', '=', (clone $model)->addCondition('id', 3)->action('field', ['v']));
+        self::assertSameExportUnordered($expectedExport, $model->export(['id']));
+
         // TODO
         if (!$this->getDatabasePlatform() instanceof OraclePlatform || !in_array($type, ['text', 'blob'], true)) {
             $model->scope()->clear();
             $model->addCondition('v', 'in', ['MixedCaseß', 'foo']);
             self::assertSameExportUnordered($expectedExport, $model->export(['id']));
-        }
-
-        $fixEncodingForMssqlBinaryFx = function (string $v) use ($isBinary) {
-            return $this->getDatabasePlatform() instanceof SQLServerPlatform && $isBinary
-                ? $this->getConnection()->expr('cast([] collate Latin1_General_100_CS_AS_SC_UTF8 as varchar(max))', [$v])
-                : $v;
-        };
-
-        if (!$this->getDatabasePlatform() instanceof OraclePlatform || !$isBinary) {
-            $model->scope()->clear();
-            $model->addCondition('v', 'like', $fixEncodingForMssqlBinaryFx('MixedCaseß'));
-            self::assertSameExportUnordered($expectedExport, $model->export(['id']));
 
             $model->scope()->clear();
-            $model->addCondition('v', 'like', $fixEncodingForMssqlBinaryFx('%ix__Caseß%'));
-            self::assertSameExportUnordered($expectedExport, $model->export(['id']));
-
-            $model->scope()->clear();
-            $model->addCondition('v', 'regexp', $fixEncodingForMssqlBinaryFx('ix.+Caseß'));
-            $this->markTestIncompleteOnMySQL8xPlatformAsBinaryLikeIsBroken($isBinary);
-            if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-                $this->expectExceptionMessage('Unsupported operator');
-            }
+            $model->addCondition('v', 'in', (clone $model)->addCondition('id', 3)->action('field', ['v']));
             self::assertSameExportUnordered($expectedExport, $model->export(['id']));
         }
     }
@@ -293,7 +285,28 @@ class MigratorTest extends TestCase
         yield ['blob', true, 256 * 1024];
     }
 
-    public function testSetModelCreate(): void
+    public function testAssertTableExists(): void
+    {
+        $this->createMigrator()
+            ->table('t')
+            ->id()
+            ->create();
+
+        self::assertTrue($this->createMigrator()->isTableExists('t'));
+
+        $this->createMigrator()->assertTableExists('t');
+    }
+
+    public function testAssertTableExistsException(): void
+    {
+        self::assertFalse($this->createMigrator()->isTableExists('t'));
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Table does not exist');
+        $this->createMigrator()->assertTableExists('t');
+    }
+
+    public function testCreateSetModel(): void
     {
         $user = new TestUser($this->db);
         $this->createMigrator($user)->create();
@@ -303,6 +316,89 @@ class MigratorTest extends TestCase
         self::assertSame([
             ['id' => 1, 'name' => 'john', 'password' => null, 'is_admin' => true, 'notes' => 'some long notes', 'main_role_id' => null],
         ], $user->export());
+    }
+
+    public function testIntrospectTableToModelBasic(): void
+    {
+        $creatingMigrator = $this->createDemoMigrator('user')->create();
+        $introspectedModel = $this->createMigrator()->introspectTableToModel('user');
+
+        $expectedFields = [];
+        foreach ($creatingMigrator->table->getColumns() as $column) {
+            $expectedFields[$column->getName()] = [
+                'type' => Type::getTypeRegistry()->lookupName($column->getType()), // TODO simplify once https://github.com/doctrine/dbal/pull/6130 is merged
+                'nullable' => !$column->getNotnull(),
+            ];
+        }
+
+        $introspectedFields = [];
+        foreach ($introspectedModel->getFields() as $field) {
+            $introspectedFields[$field->shortName] = [
+                'type' => $field->type,
+                'nullable' => $field->nullable && !$field->required,
+            ];
+        }
+
+        // TODO fix DBAL column comment type hint
+        // see PlatformFixColumnCommentTypeHintTrait trait used for MSSQL and Oracle platforms
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
+            $expectedFields['bin1']['type'] = 'blob'; // should be "binary"
+        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            $expectedFields['bin1']['type'] = 'blob'; // should be "binary"
+        }
+
+        self::assertSame($expectedFields, $introspectedFields);
+    }
+
+    public function testIntrospectTableToModelTableDoesNotExistException(): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Table does not exist');
+        $this->createMigrator()->introspectTableToModel('t');
+    }
+
+    public function testIntrospectTableToModelPrimaryKeyNonFirstColumn(): void
+    {
+        $this->createMigrator()
+            ->table('t')
+            ->field('a')
+            ->id()
+            ->field('b')
+            ->create();
+
+        $model = $this->createMigrator()->introspectTableToModel('t');
+
+        self::assertSame(['a', 'id', 'b'], array_keys($model->getFields()));
+        self::assertSame('id', $model->idField);
+    }
+
+    public function testIntrospectTableToModelNoPrimaryKeyException(): void
+    {
+        $this->createMigrator()
+            ->table('t')
+            ->field('a')
+            ->create();
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Table must contain exactly one primary key');
+        $this->createMigrator()->introspectTableToModel('t');
+    }
+
+    public function testIntrospectTableToModelSetPersistence(): void
+    {
+        $this->createMigrator()
+            ->table('t')
+            ->id()
+            ->field('a')
+            ->create();
+
+        $model = (new Migrator($this->getConnection()))->introspectTableToModel('t');
+        self::assertSame(['id', 'a'], array_keys($model->getFields()));
+        self::assertFalse($model->issetPersistence());
+
+        $model = $this->createMigrator()->introspectTableToModel('t');
+        self::assertTrue($model->issetPersistence());
+        self::assertSame(['id', 'a'], array_keys($model->getFields()));
     }
 }
 

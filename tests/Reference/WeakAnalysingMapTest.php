@@ -17,7 +17,7 @@ class WeakAnalysingMapTest extends TestCase
     {
         // https://github.com/BenMorel/weakmap-polyfill/blob/0.4.0/src/WeakMap.php#L126
         $weakMap = \Closure::bind(static fn () => $map->ownerDestructorHandlers, null, WeakAnalysingMap::class)();
-        count($weakMap); // @phpstan-ignore-line
+        count($weakMap); // @phpstan-ignore function.resultUnused
     }
 
     public function testBasic(): void

@@ -91,7 +91,7 @@ class JoinArrayTest extends TestCase
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $user = new Model($db, ['table' => 'user']);
         $user->addField('name');
-        $user->addField('contact_id', ['type' => 'integer']);
+        $user->addField('contact_id', ['type' => 'bigint']);
         $j = $user->join('contact');
         $j->addField('contact_phone');
 
@@ -150,7 +150,7 @@ class JoinArrayTest extends TestCase
         $user->addField('name');
         $j = $user->join('contact.test_id');
         $j->addField('contact_phone');
-        $j->addField('test_id', ['type' => 'integer']);
+        $j->addField('test_id', ['type' => 'bigint']);
 
         $user2 = $user->createEntity();
         $user2->set('name', 'John');
@@ -209,7 +209,7 @@ class JoinArrayTest extends TestCase
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $user = new Model($db, ['table' => 'user']);
         $user->addField('name');
-        $user->addField('test_id', ['type' => 'integer']);
+        $user->addField('test_id', ['type' => 'bigint']);
         $j = $user->join('contact', ['masterField' => 'test_id']);
         $j->addField('contact_phone');
 
@@ -268,7 +268,7 @@ class JoinArrayTest extends TestCase
         ]);
 
         $user = new Model($db, ['table' => 'user']);
-        $user->addField('contact_id', ['type' => 'integer']);
+        $user->addField('contact_id', ['type' => 'bigint']);
         $user->addField('name');
         $j = $user->join('contact');
         $j->addField('contact_phone');
@@ -306,7 +306,7 @@ class JoinArrayTest extends TestCase
         ]);
 
         $user = new Model($db, ['table' => 'user']);
-        $user->addField('contact_id', ['type' => 'integer']);
+        $user->addField('contact_id', ['type' => 'bigint']);
         $user->addField('name');
         $j = $user->join('contact');
         $j->addField('contact_phone');
@@ -383,7 +383,7 @@ class JoinArrayTest extends TestCase
         ]);
 
         $user = new Model($db, ['table' => 'user']);
-        $user->addField('contact_id', ['type' => 'integer']);
+        $user->addField('contact_id', ['type' => 'bigint']);
         $user->addField('name');
         $j = $user->join('contact');
         $j->addField('contact_phone');
@@ -420,7 +420,7 @@ class JoinArrayTest extends TestCase
         ]);
 
         $user = new Model($db, ['table' => 'user']);
-        $user->addField('contact_id', ['type' => 'integer']);
+        $user->addField('contact_id', ['type' => 'bigint']);
         $user->addField('name');
         $j = $user->join('contact');
         $j->addField('contact_phone');

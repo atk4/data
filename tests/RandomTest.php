@@ -94,13 +94,13 @@ class RandomTest extends TestCase
     {
         $this->setDb([
             'user' => [
-                '_' => ['name' => 'John', 'salary' => 29],
+                '_types' => ['name' => 'string', 'salary' => 'integer'],
             ],
         ]);
 
         $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
-        $m->addField('salary', ['default' => 10]);
+        $m->addField('salary', ['type' => 'integer', 'default' => 10]);
 
         $m->import([['name' => 'Peter'], ['name' => 'Steve', 'salary' => 30]]);
         $m->insert(['name' => 'Sue']);
@@ -108,10 +108,10 @@ class RandomTest extends TestCase
 
         self::assertSame([
             'user' => [
-                1 => ['id' => 1, 'name' => 'Peter', 'salary' => '10'],
-                ['id' => 2, 'name' => 'Steve', 'salary' => '30'],
-                ['id' => 3, 'name' => 'Sue', 'salary' => '10'],
-                ['id' => 4, 'name' => 'John', 'salary' => '40'],
+                1 => ['id' => 1, 'name' => 'Peter', 'salary' => 10],
+                ['id' => 2, 'name' => 'Steve', 'salary' => 30],
+                ['id' => 3, 'name' => 'Sue', 'salary' => 10],
+                ['id' => 4, 'name' => 'John', 'salary' => 40],
             ],
         ], $this->getDb());
     }
@@ -121,13 +121,13 @@ class RandomTest extends TestCase
         $model = new Model(null, ['table' => 'user']);
         $entity = $model->createEntity();
 
-        self::assertTrue(isset($model->table)); // @phpstan-ignore-line
-        self::assertTrue(isset($model->idField)); // @phpstan-ignore-line
-        self::assertTrue(isset($entity->idField)); // @phpstan-ignore-line
+        self::assertTrue(isset($model->table)); // @phpstan-ignore isset.property, staticMethod.alreadyNarrowedType
+        self::assertTrue(isset($model->idField)); // @phpstan-ignore isset.property, staticMethod.alreadyNarrowedType
+        self::assertTrue(isset($entity->idField)); // @phpstan-ignore isset.property, staticMethod.alreadyNarrowedType
 
         $this->expectException(\TypeError::class);
         $this->expectExceptionMessage('Expected model, but instance is an entity');
-        isset($entity->table); // @phpstan-ignore-line
+        isset($entity->table); // @phpstan-ignore isset.property, expr.resultUnused
     }
 
     public function testGetTablePropertyOnEntityException(): void
@@ -141,7 +141,7 @@ class RandomTest extends TestCase
 
         $this->expectException(\TypeError::class);
         $this->expectExceptionMessage('Expected model, but instance is an entity');
-        $entity->table; // @phpstan-ignore-line
+        $entity->table; // @phpstan-ignore expr.resultUnused
     }
 
     public function testAddFields(): void
@@ -588,7 +588,7 @@ class RandomTest extends TestCase
             $runWithDb = false;
         } else {
             $dbSchema = $this->getConnection()->dsql()
-                ->field($this->getConnection()->expr('{{}}', [$this->getDatabasePlatform()->getCurrentDatabaseExpression(true)])) // @phpstan-ignore-line
+                ->field($this->getConnection()->expr('{{}}', [$this->getDatabasePlatform()->getCurrentDatabaseExpression(true)])) // @phpstan-ignore arguments.count
                 ->getOne();
             $userSchema = $dbSchema;
             $docSchema = $dbSchema;

@@ -4,11 +4,19 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Mssql;
 
+use Atk4\Data\Persistence\Sql\PlatformFixColumnCommentTypeHintTrait;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\Index;
 
 trait PlatformTrait
 {
+    use PlatformFixColumnCommentTypeHintTrait;
+
+    /** @var list<string> */
+    private $requireCommentHintTypes = [
+        'text',
+    ];
+
     #[\Override]
     public function getVarcharTypeDeclarationSQL(array $column)
     {
@@ -18,7 +26,6 @@ trait PlatformTrait
     }
 
     // remove once https://github.com/doctrine/dbal/pull/4987 is fixed
-    // and also $this->markDoctrineTypeCommented('text') below
     #[\Override]
     public function getClobTypeDeclarationSQL(array $column)
     {
@@ -26,15 +33,6 @@ trait PlatformTrait
 
         return (str_starts_with($res, 'VARCHAR') ? 'N' : '') . $res;
     }
-
-    // TODO test DBAL DB diff for each supported Field type
-    // then fix using https://github.com/doctrine/dbal/issues/5194#issuecomment-1018790220
-    /* protected function initializeCommentedDoctrineTypes()
-    {
-        parent::initializeCommentedDoctrineTypes();
-
-        $this->markDoctrineTypeCommented('text');
-    } */
 
     #[\Override]
     public function getCurrentDatabaseExpression(bool $includeSchema = false): string

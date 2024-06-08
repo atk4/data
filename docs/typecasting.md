@@ -101,17 +101,17 @@ a different type.
 
 ### Supported types
 
-- 'string' - for storing short strings, such as name of a person. Normalize will trim the value.
-- 'text' - for storing long strings, suchas notes or description. Normalize will trim the value.
-- 'boolean' - normalize will cast value to boolean.
-- 'integer' - normalize will cast value to integer.
-- 'atk4_money' - normalize will round value with 4 digits after dot.
-- 'float' - normalize will cast value to float.
-- 'date' - normalize will convert value to DateTime object.
-- 'datetime' - normalize will convert value to DateTime object.
-- 'time' - normalize will convert value to DateTime object.
-- 'json' - no normalization by default
-- 'object' - no normalization by default
+- `string` - for storing short strings, such as name of a person. Normalize will trim the value.
+- `text` - for storing long strings, suchas notes or description. Normalize will trim the value.
+- `boolean` - normalize will cast value to boolean.
+- `smallint`, `integer`, `bigint` - normalize will cast value to integer.
+- `atk4_money` - normalize will round value with 4 digits after dot.
+- `float` - normalize will cast value to float.
+- `date` - normalize will convert value to DateTime object.
+- `datetime` - normalize will convert value to DateTime object.
+- `time` - normalize will convert value to DateTime object.
+- `json` - no normalization by default
+- `object` - no normalization by default
 
 ### Types and UI
 

@@ -28,6 +28,7 @@ use Doctrine\DBAL\Schema\ForeignKeyConstraint;
 use Doctrine\DBAL\Schema\Identifier;
 use Doctrine\DBAL\Schema\Index;
 use Doctrine\DBAL\Schema\Table;
+use Doctrine\DBAL\Types\Type;
 
 class Migrator
 {
@@ -35,7 +36,8 @@ class Migrator
     public const REF_TYPE_LINK = 1;
     public const REF_TYPE_PRIMARY = 2;
 
-    private Connection $_connection;
+    /** @var Connection|Persistence\Sql */
+    private object $_connection;
 
     public Table $table;
 
@@ -47,12 +49,10 @@ class Migrator
      */
     public function __construct(object $source)
     {
-        if ($source instanceof Connection) {
+        if ($source instanceof Connection || $source instanceof Persistence\Sql) {
             $this->_connection = $source;
-        } elseif ($source instanceof Persistence\Sql) {
-            $this->_connection = $source->getConnection();
-        } elseif ($source instanceof Model && $source->getPersistence() instanceof Persistence\Sql) { // @phpstan-ignore-line
-            $this->_connection = $source->getPersistence()->getConnection();
+        } elseif ($source instanceof Model && $source->getPersistence() instanceof Persistence\Sql) { // @phpstan-ignore instanceof.alwaysTrue
+            $this->_connection = $source->getPersistence();
         } else {
             throw (new Exception('Source must be SQL connection, persistence or initialized model'))
                 ->addMoreInfo('source', $source);
@@ -64,6 +64,18 @@ class Migrator
     }
 
     public function getConnection(): Connection
+    {
+        return $this->_connection instanceof Persistence\Sql
+            ? $this->_connection->getConnection()
+            : $this->_connection;
+    }
+
+    protected function issetPersistence(): bool
+    {
+        return $this->_connection instanceof Persistence\Sql;
+    }
+
+    protected function getPersistence(): Persistence\Sql
     {
         return $this->_connection;
     }
@@ -201,7 +213,7 @@ class Migrator
             $database = substr($tableName, 0, $lastDotPos);
             if ($platform instanceof PostgreSQLPlatform || $platform instanceof SQLServerPlatform) {
                 $currentDatabase = $this->getConnection()->dsql()
-                    ->field($this->getConnection()->expr('{{}}', [$this->getDatabasePlatform()->getCurrentDatabaseExpression(true)])) // @phpstan-ignore-line
+                    ->field($this->getConnection()->expr('{{}}', [$this->getDatabasePlatform()->getCurrentDatabaseExpression(true)])) // @phpstan-ignore arguments.count
                     ->getOne();
             } else {
                 $currentDatabase = $this->getConnection()->getConnection()->getDatabase();
@@ -224,9 +236,6 @@ class Migrator
     {
         $type = $options['type'] ?? 'string';
         unset($options['type']);
-        if ($type === 'time' && $this->getDatabasePlatform() instanceof OraclePlatform) {
-            $type = 'string';
-        }
 
         $refType = $options['ref_type'] ?? self::REF_TYPE_NONE;
         unset($options['ref_type']);
@@ -237,12 +246,12 @@ class Migrator
             $column->setNotnull(false);
         }
 
-        if ($type === 'integer' && $refType !== self::REF_TYPE_NONE) {
+        if (in_array($type, ['smallint', 'integer', 'bigint'], true) && $refType !== self::REF_TYPE_NONE) {
             $column->setUnsigned(true);
         }
 
         // TODO remove, hack for createForeignKey so ID columns are unsigned
-        if ($type === 'integer' && str_ends_with($fieldName, '_id')) {
+        if (in_array($type, ['smallint', 'integer', 'bigint'], true) && str_ends_with($fieldName, '_id')) {
             $column->setUnsigned(true);
         }
 
@@ -266,7 +275,7 @@ class Migrator
     public function id(string $name = 'id', array $options = []): self
     {
         $options = array_merge([
-            'type' => 'integer',
+            'type' => 'bigint',
             'ref_type' => self::REF_TYPE_PRIMARY,
             'nullable' => false,
         ], $options);
@@ -388,6 +397,14 @@ class Migrator
         }
     }
 
+    public function assertTableExists(string $tableName): void
+    {
+        if (!$this->isTableExists($tableName)) {
+            throw (new Exception('Table does not exist'))
+                ->addMoreInfo('table', $tableName);
+        }
+    }
+
     /**
      * DBAL list methods have very broken support for quoted table name
      * and almost no support for table name with database name.
@@ -397,22 +414,61 @@ class Migrator
         $tableName = $this->stripDatabaseFromTableName($tableName);
 
         $platform = $this->getDatabasePlatform();
-        if ($platform instanceof MySQLPlatform || $platform instanceof SQLServerPlatform) {
+        if ($platform instanceof SQLitePlatform // TODO related with https://github.com/doctrine/dbal/issues/6129
+            || $platform instanceof MySQLPlatform
+            || $platform instanceof SQLServerPlatform
+        ) {
             return $tableName;
         }
 
         return $platform->quoteSingleIdentifier($tableName);
     }
 
+    public function introspectTableToModel(string $tableName): Model
+    {
+        $schemaManager = $this->createSchemaManager();
+
+        $columns = $schemaManager->listTableColumns($this->fixTableNameForListMethod($tableName));
+        if ($columns === []) {
+            $this->assertTableExists($tableName);
+        }
+
+        $indexes = $schemaManager->listTableIndexes($this->fixTableNameForListMethod($tableName));
+        $primaryIndexes = array_filter($indexes, static fn ($v) => $v->isPrimary() && count($v->getColumns()) === 1);
+        if (count($primaryIndexes) !== 1) {
+            throw (new Exception('Table must contain exactly one primary key'))
+                ->addMoreInfo('table', $tableName);
+        }
+        $idFieldName = reset($primaryIndexes)->getUnquotedColumns()[0];
+
+        $model = new Model(null, ['table' => $tableName, 'idField' => $idFieldName]);
+        foreach ($columns as $column) {
+            $model->addField($column->getName(), [
+                'type' => Type::getTypeRegistry()->lookupName($column->getType()), // TODO simplify once https://github.com/doctrine/dbal/pull/6130 is merged
+                'nullable' => !$column->getNotnull(),
+            ]);
+        }
+
+        if ($this->issetPersistence()) {
+            $model->setPersistence($this->getPersistence());
+        }
+
+        return $model;
+    }
+
     /**
      * @param list<Field> $fields
      */
-    public function isIndexExists(array $fields, bool $requireUnique): bool
+    public function isIndexExists(array $fields, bool $requireUnique = false): bool
     {
         $fields = array_map(fn ($field) => $this->resolvePersistenceField($field), $fields);
-        $table = reset($fields)->getOwner()->table;
+        $tableName = reset($fields)->getOwner()->table;
 
-        $indexes = $this->createSchemaManager()->listTableIndexes($this->fixTableNameForListMethod($table));
+        $indexes = $this->createSchemaManager()->listTableIndexes($this->fixTableNameForListMethod($tableName));
+        if ($indexes === []) {
+            $this->assertTableExists($tableName);
+        }
+
         $fieldPersistenceNames = array_map(static fn ($field) => $field->getPersistenceName(), $fields);
         foreach ($indexes as $index) {
             $indexPersistenceNames = $index->getUnquotedColumns();
@@ -436,7 +492,7 @@ class Migrator
     public function createIndex(array $fields, bool $isUnique): void
     {
         $fields = array_map(fn ($field) => $this->resolvePersistenceField($field), $fields);
-        $table = reset($fields)->getOwner()->table;
+        $tableName = reset($fields)->getOwner()->table;
 
         $platform = $this->getDatabasePlatform();
 
@@ -451,9 +507,9 @@ class Migrator
         }
 
         $index = new Index(
-            \Closure::bind(static function () use ($table, $fields) {
+            \Closure::bind(static function () use ($tableName, $fields) {
                 return (new Identifier(''))->_generateIdentifierName([
-                    $table,
+                    $tableName,
                     ...array_map(static fn ($field) => $field->getPersistenceName(), $fields),
                 ], 'uniq');
             }, null, Identifier::class)(),
@@ -463,7 +519,7 @@ class Migrator
             $mssqlNullable === false ? ['atk4-not-null'] : []
         );
 
-        $this->createSchemaManager()->createIndex($index, $platform->quoteIdentifier($table));
+        $this->createSchemaManager()->createIndex($index, $platform->quoteIdentifier($tableName));
     }
 
     /**

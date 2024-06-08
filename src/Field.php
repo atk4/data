@@ -178,7 +178,9 @@ class Field implements Expressionable
                     }
 
                     break;
+                case 'smallint':
                 case 'integer':
+                case 'bigint':
                 case 'float':
                 case 'decimal':
                 case 'atk4_money':
@@ -385,7 +387,11 @@ class Field implements Expressionable
             Scope\Condition::OPERATOR_REGEXP,
             Scope\Condition::OPERATOR_NOT_REGEXP,
         ], true)) {
-            $typecastField = new self(['type' => 'text']);
+            $typecastField = new self([
+                'type' => in_array($this->type, ['binary', 'blob'], true)
+                    ? 'blob'
+                    : 'text',
+            ]);
             $typecastField->setOwner(new Model($this->getOwner()->getPersistence(), ['table' => false]));
             $typecastField->shortName = $this->shortName;
         }

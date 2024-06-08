@@ -22,7 +22,9 @@ trait PlatformTrait
         $sqls[] = 'DO' . "\n"
             . '$$' . "\n"
             . 'BEGIN' . "\n"
-            . '    CREATE EXTENSION IF NOT EXISTS citext;' . "\n"
+            . '    IF to_regtype(\'citext\') IS NULL THEN' . "\n"
+            . '        CREATE EXTENSION citext;' . "\n"
+            . '    END IF;' . "\n"
             . implode("\n", array_map(static function (string $domain): string {
                 return '    IF to_regtype(\'' . $domain . '\') IS NULL THEN' . "\n"
                     . '        CREATE DOMAIN ' . $domain . ' AS citext;' . "\n"
@@ -50,6 +52,9 @@ trait PlatformTrait
     protected function initializeDoctrineTypeMappings(): void
     {
         parent::initializeDoctrineTypeMappings();
+
+        $this->doctrineTypeMapping['atk4__cichar'] = 'string';
+        $this->doctrineTypeMapping['atk4__civarchar'] = 'string';
 
         // https://github.com/doctrine/dbal/pull/5495
         $this->doctrineTypeMapping['citext'] = 'text';

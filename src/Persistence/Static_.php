@@ -44,28 +44,28 @@ class Static_ extends Array_
                 }
 
                 if (is_bool($v)) {
-                    $fieldType = 'boolean';
+                    $type = 'boolean';
                 } elseif (is_int($v)) {
-                    $fieldType = 'integer';
+                    $type = 'bigint';
                 } elseif (is_float($v)) {
-                    $fieldType = 'float';
+                    $type = 'float';
                 } elseif ($v instanceof \DateTimeInterface) {
-                    $fieldType = 'datetime';
+                    $type = 'datetime';
                 } elseif (is_array($v)) {
-                    $fieldType = 'json';
+                    $type = 'json';
                 } elseif (is_object($v)) {
-                    $fieldType = 'object';
+                    $type = 'object';
                 } elseif ($v !== null) {
-                    $fieldType = 'string';
+                    $type = 'string';
                 } else {
-                    $fieldType = null;
+                    $type = null;
                 }
 
-                $fieldTypes[$k] = $fieldType;
+                $fieldTypes[$k] = $type;
             }
         }
-        foreach ($fieldTypes as $k => $fieldType) {
-            if ($fieldType === null) {
+        foreach ($fieldTypes as $k => $type) {
+            if ($type === null) {
                 $fieldTypes[$k] = 'string';
             }
         }
@@ -79,8 +79,8 @@ class Static_ extends Array_
         $defTypes = [];
         $keyOverride = [];
         $mustOverride = false;
-        foreach ($fieldTypes as $k => $fieldType) {
-            $defTypes[$k] = ['type' => $fieldType];
+        foreach ($fieldTypes as $k => $type) {
+            $defTypes[$k] = ['type' => $type];
 
             // id information present, use it instead
             if ($k === 'id') {

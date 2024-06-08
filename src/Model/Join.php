@@ -143,7 +143,7 @@ abstract class Join
             }
         }
         if ($fakeModel->idField !== $this->foreignField) {
-            $fakeModel->addField($this->foreignField, ['type' => 'integer']);
+            $fakeModel->addField($this->foreignField, ['type' => 'bigint']);
         }
 
         return $fakeModel;

@@ -17,6 +17,93 @@ class Query extends BaseQuery
     protected string $identifierEscapeChar = '"';
     protected string $expressionClass = Expression::class;
 
+    /**
+     * @param \Closure(string, string): string $makeSqlFx
+     */
+    protected function _renderConditionBinaryReuseBool(string $sqlLeft, string $sqlRight, \Closure $makeSqlFx, bool $nullFromArgsOnly = false): string
+    {
+        $reuse = $this->_renderConditionBinaryReuse($sqlLeft, $sqlRight, static fn () => '') !== '';
+
+        return $this->_renderConditionBinaryReuse(
+            $sqlLeft,
+            $sqlRight,
+            static function ($sqlLeft, $sqlRight) use ($reuse, $makeSqlFx, $nullFromArgsOnly) {
+                $res = $makeSqlFx($sqlLeft, $sqlRight);
+
+                if ($reuse) {
+                    // for Oracle v23 and higher "CASE bool WHEN true THEN 1 ..." should be used
+                    // https://dbfiddle.uk/xYhEngrA
+                    $res = 'case when not(' . $res . ') then 0 else case when '
+                        . ($nullFromArgsOnly ? $sqlLeft . ' is not null and ' . $sqlRight . ' is not null' : $res)
+                        . ' then 1 end end';
+                }
+
+                return $res;
+            }
+        ) . ($reuse ? ' = 1' : '');
+    }
+
+    #[\Override]
+    protected function _renderConditionLikeOperator(bool $negated, string $sqlLeft, string $sqlRight): string
+    {
+        return ($negated ? 'not ' : '') . $this->_renderConditionBinaryReuseBool(
+            $sqlLeft,
+            $sqlRight,
+            function ($sqlLeft, $sqlRight) {
+                $binaryPrefix = "atk4_binary\ru5f8mzx4vsm8g2c9\r";
+
+                $startsWithBinaryPrefixFx = function ($sql) use ($binaryPrefix) {
+                    return $sql . ' like ' . $this->escapeStringLiteral($binaryPrefix . str_repeat('_', 8) . '%');
+                };
+
+                $binaryEncodeWithoutPrefixFx = static function ($sql) use ($binaryPrefix, $startsWithBinaryPrefixFx) {
+                    return 'case when ' . $startsWithBinaryPrefixFx($sql) . ' then to_char(substr(' . $sql . ', ' . (strlen($binaryPrefix) + 9) . '))'
+                        . ' else rawtohex(utl_raw.cast_to_raw(' . $sql . ')) end';
+                };
+
+                $replaceMultiFx = function (string $sql, array $replacements) {
+                    $res = $sql;
+                    foreach ($replacements as $search => $replacement) {
+                        $res = 'replace(' . $res . ', '
+                            . $this->escapeStringLiteral((string) $search) . ', '
+                            . $this->escapeStringLiteral($replacement) . ')';
+                    }
+
+                    return $res;
+                };
+
+                return 'case when ' . $sqlLeft . ' is null or ' . $sqlRight . ' is null then null '
+                    . 'when ' . $startsWithBinaryPrefixFx($sqlLeft) . ' or ' . $startsWithBinaryPrefixFx($sqlRight) . ' then '
+                    . 'case when ' . $this->_renderConditionRegexpOperator(
+                        false,
+                        $binaryEncodeWithoutPrefixFx($sqlLeft),
+                        'concat(' . $this->escapeStringLiteral('^') . ', concat(' . $replaceMultiFx(
+                            $binaryEncodeWithoutPrefixFx($sqlRight),
+                            [
+                                bin2hex('\\\\') => 'x',
+                                bin2hex('\_') => 'y',
+                                bin2hex('\%') => 'z',
+                                bin2hex('\\') => 'x',
+                                bin2hex('_') => '..',
+                                bin2hex('%') => '(..)*',
+                                'x' => bin2hex('\\'),
+                                'y' => bin2hex('_'),
+                                'z' => bin2hex('%'),
+                            ]
+                        ) . ', ' . $this->escapeStringLiteral('$') . '))'
+                    ) . ' then 1 else 0 end'
+                    . ' else '
+                    . 'case when ' . parent::_renderConditionLikeOperator(
+                        false,
+                        $sqlLeft,
+                        $sqlRight
+                    ) . ' then 1 else 0 end'
+                    . ' end = 1';
+            },
+            true
+        );
+    }
+
     #[\Override]
     protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight, bool $binary = false): string
     {
@@ -48,7 +135,7 @@ class Query extends BaseQuery
             $operatorLc = strtolower($operator ?? '=');
 
             if ($field instanceof Field && in_array($field->type, ['binary', 'blob'], true)
-                && in_array($operatorLc, ['like', 'not like', 'regexp', 'not regexp'], true)
+                && in_array($operatorLc, ['regexp', 'not regexp'], true)
             ) {
                 throw (new Exception('Unsupported binary field operator'))
                     ->addMoreInfo('operator', $operator)
@@ -64,10 +151,12 @@ class Query extends BaseQuery
 
                     $row = [$this->expr('dbms_lob.compare([], [])', [$field, $value]), $operator, 0];
                 } elseif (in_array($operatorLc, ['like', 'not like'], true)) {
-                    $field = $this->expr('LOWER([])', [$field]);
-                    $value = $this->expr('LOWER([])', [$value]);
+                    if ($field->type === 'text') {
+                        $field = $this->expr('LOWER([])', [$field]);
+                        $value = $this->expr('LOWER([])', [$value]);
 
-                    $row = [$field, $operator, $value];
+                        $row = [$field, $operator, $value];
+                    }
                 } elseif (!in_array($operatorLc, ['regexp', 'not regexp'], true)) {
                     throw (new Exception('Unsupported CLOB/BLOB field operator'))
                         ->addMoreInfo('operator', $operator)

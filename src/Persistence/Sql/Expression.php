@@ -14,6 +14,8 @@ use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Result as DbalResult;
 use Doctrine\DBAL\Statement;
+use Doctrine\SqlFormatter\NullHighlighter;
+use Doctrine\SqlFormatter\SqlFormatter;
 
 /**
  * @phpstan-implements \ArrayAccess<int|string, mixed>
@@ -21,6 +23,8 @@ use Doctrine\DBAL\Statement;
 abstract class Expression implements Expressionable, \ArrayAccess
 {
     use DiContainerTrait;
+
+    private static ?SqlFormatter $debugFormatter = null;
 
     /** "[]" in template, escape as parameter */
     protected const ESCAPE_PARAM = 'param';
@@ -182,7 +186,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
                     return $expr;
             }
 
-            throw (new Exception('Unexpected escape mode')) // @phpstan-ignore-line
+            throw (new Exception('Unexpected escape mode')) // @phpstan-ignore deadCode.unreachable
                 ->addMoreInfo('escapeMode', $escapeMode);
         }
 
@@ -202,9 +206,9 @@ abstract class Expression implements Expressionable, \ArrayAccess
             if (count($params) > 0) {
                 $kWithoutColon = substr(array_key_last($params), 1);
                 while ($this->renderParamBase !== $kWithoutColon) {
-                    ++$this->renderParamBase; // @phpstan-ignore-line
+                    ++$this->renderParamBase; // @phpstan-ignore preInc.nonNumeric
                 }
-                ++$this->renderParamBase; // @phpstan-ignore-line
+                ++$this->renderParamBase; // @phpstan-ignore preInc.nonNumeric
             }
         } finally {
             $expr->paramBase = $expressionParamBaseBackup;
@@ -225,10 +229,45 @@ abstract class Expression implements Expressionable, \ArrayAccess
     protected function escapeParam($value): string
     {
         $name = ':' . $this->renderParamBase;
-        ++$this->renderParamBase; // @phpstan-ignore-line
+        ++$this->renderParamBase; // @phpstan-ignore preInc.nonNumeric
         $this->renderParams[$name] = $value;
 
         return $name;
+    }
+
+    /**
+     * @template TValue
+     * @template TNode
+     *
+     * @param list<TValue>                        $values
+     * @param int<2, max>                         $n
+     * @param \Closure(list<TValue|TNode>): TNode $mapNodeFx
+     *
+     * @return ($mapNodeFx is null ? TValue|list<TValue|list<mixed>> : TNode)
+     */
+    protected function makeNaryTree(array $values, int $n, ?\Closure $mapNodeFx = null)
+    {
+        if (count($values) <= $n) {
+            return $mapNodeFx === null
+                ? (count($values) === 1
+                    ? reset($values)
+                    : $values)
+                : (count($values) === 1
+                    ? $mapNodeFx($values)
+                    : $mapNodeFx(array_map(static fn ($v) => $mapNodeFx([$v]), $values)));
+        }
+
+        $maxDepth = (int) ceil(log(count($values), $n));
+        $countPerNode = $n ** ($maxDepth - 1);
+
+        $res = array_map(
+            fn ($values) => $this->makeNaryTree($values, $n, $mapNodeFx),
+            array_chunk($values, $countPerNode)
+        );
+
+        return $mapNodeFx === null
+            ? $res
+            : $mapNodeFx($res);
     }
 
     /**
@@ -414,16 +453,32 @@ abstract class Expression implements Expressionable, \ArrayAccess
             $sql
         );
 
-        if (class_exists(\SqlFormatter::class)) { // requires optional "jdorn/sql-formatter" package
-            \Closure::bind(static function () {
-                // fix latest/1.2.17 release from 2014-01-12
-                if (end(\SqlFormatter::$reserved_toplevel) === 'INTERSECT') {
-                    \SqlFormatter::$reserved_toplevel[] = 'OFFSET';
-                    \SqlFormatter::$reserved_toplevel[] = 'FETCH';
+        if (class_exists(SqlFormatter::class)) { // requires optional "doctrine/sql-formatter" package
+            // fix string literal tokenize 1/2
+            // https://github.com/doctrine/sql-formatter/blob/1.4.0/src/Tokenizer.php#L974
+            $origStringTokens = [];
+            $sql = preg_replace_callback('~' . self::QUOTED_TOKEN_REGEX . '~', static function ($matches) use (&$origStringTokens) {
+                $firstChar = substr($matches[0], 0, 1);
+                if (!in_array($firstChar, ['\'', '"', '`', '['], true)) {
+                    return $matches[0];
                 }
-            }, null, \SqlFormatter::class)();
 
-            $sql = preg_replace('~' . self::QUOTED_TOKEN_REGEX . '\K| +(?=\n)|(?<=:) (?=\w)~', '', \SqlFormatter::format($sql, false));
+                $k = $firstChar
+                    . 'atk4' . "\xff" . str_pad((string) count($origStringTokens), 5, '0', \STR_PAD_LEFT)
+                    . ($firstChar === '[' ? ']' : $firstChar);
+                $origStringTokens[$k] = $matches[0];
+
+                return $k;
+            }, $sql);
+
+            if (self::$debugFormatter === null) {
+                self::$debugFormatter = new SqlFormatter(new NullHighlighter());
+            }
+
+            $sql = self::$debugFormatter->format($sql);
+
+            // fix string literal tokenize 2/2
+            $sql = str_replace(array_keys($origStringTokens), $origStringTokens, $sql);
         }
 
         return $sql;
@@ -549,9 +604,11 @@ abstract class Expression implements Expressionable, \ArrayAccess
 
                     if ($platform instanceof PostgreSQLPlatform || $platform instanceof SQLServerPlatform) {
                         $dummyPersistence = (new \ReflectionClass(Persistence\Sql::class))->newInstanceWithoutConstructor();
-                        if (\Closure::bind(static fn () => $dummyPersistence->binaryTypeValueIsEncoded($val), null, Persistence\Sql::class)()) {
-                            $val = \Closure::bind(static fn () => $dummyPersistence->binaryTypeValueDecode($val), null, Persistence\Sql::class)();
-                            $type = ParameterType::BINARY;
+                        if (\Closure::bind(static fn () => $dummyPersistence->explicitCastIsEncoded($val), null, Persistence\Sql::class)()) {
+                            if (\Closure::bind(static fn () => $dummyPersistence->explicitCastIsEncodedBinary($val), null, Persistence\Sql::class)()) {
+                                $type = ParameterType::BINARY;
+                            }
+                            $val = \Closure::bind(static fn () => $dummyPersistence->explicitCastDecode($val), null, Persistence\Sql::class)();
                         }
                     }
                 } elseif (is_resource($val)) {
@@ -643,7 +700,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
         }
 
         // for PostgreSQL/Oracle CLOB/BLOB datatypes and PDO driver
-        if (is_resource($v) && get_resource_type($v) === 'stream') { // @phpstan-ignore-line
+        if (is_resource($v) && get_resource_type($v) === 'stream') { // @phpstan-ignore function.impossibleType
             $platform = $this->connection->getDatabasePlatform();
             if ($platform instanceof PostgreSQLPlatform || $platform instanceof OraclePlatform) {
                 $v = stream_get_contents($v);

@@ -49,7 +49,7 @@ class ModelWithCteTest extends TestCase
 
         if ($this->getDatabasePlatform() instanceof MySQLPlatform
             && !MysqlConnection::isServerMariaDb($this->getConnection())
-            && MysqlConnection::getServerMinorVersion($this->getConnection()) < 800
+            && MysqlConnection::getServerMinorVersion($this->getConnection()) < 600
         ) {
             self::markTestIncomplete('MySQL 5.x does not support WITH clause');
         }

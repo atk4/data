@@ -181,7 +181,7 @@ class BusinessModelTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(\Error::class);
-        $m->set(0, 'foo'); // @phpstan-ignore-line
+        $m->set(0, 'foo'); // @phpstan-ignore argument.type
     }
 
     public function testException2a(): void

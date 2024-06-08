@@ -111,7 +111,7 @@ class ConnectionTest extends TestCase
 
             try {
                 Connection::resolveConnectionClass('dummy2');
-                self::assertFalse(true); // @phpstan-ignore-line
+                self::assertFalse(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
             } catch (Exception $e) {
                 self::assertSame('Driver schema is not registered', $e->getMessage());
             }

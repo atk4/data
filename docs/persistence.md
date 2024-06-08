@@ -664,7 +664,7 @@ $m->onHook(Model::HOOK_BEFORE_SAVE, function (Model $entity) {
     $arc = $this->withPersistence($entity->getApp()->archive_db);
 
     // add some audit fields
-    $arc->addField('original_id', ['type' => 'integer'])->set($this->getId());
+    $arc->addField('original_id', ['type' => 'bigint'])->set($this->getId());
     $arc->addField('saved_by')->set($this->getApp()->user);
 
     $arc->saveAndUnload();

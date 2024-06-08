@@ -265,10 +265,10 @@ This method will use HTML formatting if argument is passed.
 :::
 
 In order for HTML parsing to work and to make your debug queries better
-formatted, install `sql-formatter`:
+formatted, install `doctrine/sql-formatter`:
 
 ```
-composer require jdorn/sql-formatter
+composer require doctrine/sql-formatter
 ```
 
 ## Escaping Methods

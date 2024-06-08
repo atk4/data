@@ -70,8 +70,8 @@ class Query extends BaseQuery
 
                 return $iifByteaSqlFx(
                     $sqlLeft,
-                    $makeSqlFx($escapeNonUtf8Fx($sqlLeft), $escapeNonUtf8Fx($sqlRight, true)),
-                    $makeSqlFx('cast(' . $sqlLeft . ' as citext)', $sqlRight)
+                    $makeSqlFx($escapeNonUtf8Fx($sqlLeft), $escapeNonUtf8Fx($sqlRight)),
+                    $makeSqlFx('cast(' . $sqlLeft . ' as citext)', 'cast(' . $sqlRight . ' as citext)')
                 );
             }
         );
@@ -80,13 +80,13 @@ class Query extends BaseQuery
     #[\Override]
     protected function _renderConditionLikeOperator(bool $negated, string $sqlLeft, string $sqlRight): string
     {
-        return $this->_renderConditionConditionalCastToText($sqlLeft, $sqlRight, function ($sqlLeft, $sqlRight) use ($negated) {
+        return ($negated ? 'not ' : '') . $this->_renderConditionConditionalCastToText($sqlLeft, $sqlRight, function ($sqlLeft, $sqlRight) {
             $sqlRightEscaped = 'regexp_replace(' . $sqlRight . ', '
                 . $this->escapeStringLiteral('(\\\[\\\_%])|(\\\)') . ', '
                 . $this->escapeStringLiteral('\1\2\2') . ', '
                 . $this->escapeStringLiteral('g') . ')';
 
-            return $sqlLeft . ($negated ? ' not' : '') . ' like ' . $sqlRightEscaped
+            return $sqlLeft . ' like ' . $sqlRightEscaped
                 . ' escape ' . $this->escapeStringLiteral('\\');
         });
     }
@@ -95,8 +95,8 @@ class Query extends BaseQuery
     #[\Override]
     protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight, bool $binary = false): string
     {
-        return $this->_renderConditionConditionalCastToText($sqlLeft, $sqlRight, static function ($sqlLeft, $sqlRight) use ($negated) {
-            return $sqlLeft . ' ' . ($negated ? '!' : '') . '~ ' . $sqlRight;
+        return ($negated ? 'not ' : '') . $this->_renderConditionConditionalCastToText($sqlLeft, $sqlRight, static function ($sqlLeft, $sqlRight) {
+            return $sqlLeft . ' ~ ' . $sqlRight;
         });
     }
 

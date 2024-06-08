@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Oracle;
 
+use Atk4\Data\Persistence\Sql\PlatformFixColumnCommentTypeHintTrait;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Schema\AbstractAsset;
 use Doctrine\DBAL\Schema\Index;
@@ -13,6 +14,15 @@ use Doctrine\DBAL\Schema\UniqueConstraint;
 
 trait PlatformTrait
 {
+    use PlatformFixColumnCommentTypeHintTrait;
+
+    /** @var list<string> */
+    private $requireCommentHintTypes = [
+        'binary',
+        'blob',
+        'time',
+    ];
+
     #[\Override]
     public function getVarcharTypeDeclarationSQL(array $column)
     {
@@ -27,7 +37,7 @@ trait PlatformTrait
     #[\Override]
     public function getBinaryTypeDeclarationSQL(array $column)
     {
-        $lengthEncodedAscii = ($column['length'] ?? 255) * 2 + strlen('atk__binary__u5f8mzx4vsm8g2c9__' . hash('crc32b', ''));
+        $lengthEncodedAscii = ($column['length'] ?? 255) * 2 + strlen("atk4_binary\ru5f8mzx4vsm8g2c9\r" . hash('crc32b', ''));
         $column['length'] = intdiv($lengthEncodedAscii + 3, 4);
 
         return $this->getVarcharTypeDeclarationSQL($column);
@@ -46,15 +56,14 @@ trait PlatformTrait
         return 'BINARY_DOUBLE';
     }
 
-    // TODO test DBAL DB diff for each supported Field type
-    // then fix using https://github.com/doctrine/dbal/issues/5194#issuecomment-1018790220
-    /* protected function initializeCommentedDoctrineTypes()
+    // TODO create DBAL PR
+    #[\Override]
+    public function getTimeTypeDeclarationSQL(array $column)
     {
-        parent::initializeCommentedDoctrineTypes();
+        $column['length'] = 26;
 
-        $this->markDoctrineTypeCommented('binary');
-        $this->markDoctrineTypeCommented('blob');
-    } */
+        return parent::getStringTypeDeclarationSQL($column);
+    }
 
     // Oracle DBAL platform autoincrement implementation does not increment like
     // Sqlite or MySQL does, unify the behaviour

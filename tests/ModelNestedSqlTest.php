@@ -21,9 +21,10 @@ class ModelNestedSqlTest extends TestCase
 
         $this->setDb([
             'user' => [
-                ['_id' => 1, 'name' => 'John', '_birthday' => '1980-02-01'],
-                ['_id' => 2, 'name' => 'Sue', '_birthday' => '2005-04-03'],
-                ['_id' => 3, 'name' => 'Veronica', '_birthday' => '2005-04-03'],
+                '_types' => ['_idField' => '_id', '_birthday' => 'date'],
+                ['_id' => 1, 'name' => 'John', '_birthday' => new \DateTime('1980-02-01')],
+                ['_id' => 2, 'name' => 'Sue', '_birthday' => new \DateTime('2005-04-03')],
+                ['_id' => 3, 'name' => 'Veronica', '_birthday' => new \DateTime('2005-04-03')],
             ],
         ]);
     }
@@ -86,7 +87,7 @@ class ModelNestedSqlTest extends TestCase
         ]);
         $mInner->removeField('id');
         $mInner->idField = 'uid';
-        $mInner->addField('uid', ['actual' => '_id', 'type' => 'integer']);
+        $mInner->addField('uid', ['actual' => '_id', 'type' => 'bigint']);
         $mInner->addField('name');
         $mInner->addField('y', ['actual' => '_birthday', 'type' => 'date']);
         $mInner->addCondition('uid', '!=', 3);

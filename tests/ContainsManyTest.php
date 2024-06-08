@@ -237,7 +237,7 @@ class ContainsManyTest extends TestCase
         $exportLines = $i->getModel()->setOrder($i->fieldName()->id)
             ->export(null, null, false)[0][$i->fieldName()->lines];
         $formatDtForCompareFx = static function (\DateTimeInterface $dt): string {
-            $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC')); // @phpstan-ignore-line
+            $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC')); // @phpstan-ignore method.notFound
 
             return $dt->format('Y-m-d H:i:s.u');
         };

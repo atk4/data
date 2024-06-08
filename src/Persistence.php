@@ -340,14 +340,16 @@ abstract class Persistence
     /**
      * @param mixed $value
      *
-     * @return ($value is scalar ? scalar : mixed)
+     * @return ($value is scalar ? scalar|null : mixed)
      */
     private function _typecastPreField(Field $field, $value, bool $fromLoad)
     {
         if (is_string($value)) {
             switch ($field->type) {
                 case 'boolean':
+                case 'smallint':
                 case 'integer':
+                case 'bigint':
                     $value = preg_replace('~\s+|,~', '', $value);
 
                     break;
@@ -359,30 +361,56 @@ abstract class Persistence
                     break;
             }
 
-            switch ($field->type) {
-                case 'boolean':
-                case 'integer':
-                case 'float':
-                case 'decimal':
-                case 'atk4_money':
-                    if ($value === '') {
+            if ($value === '') {
+                // TODO should be handled by DBAL types itself like "json" type already does
+                // https://github.com/doctrine/dbal/blob/4.0.2/src/Types/JsonType.php#L55
+                switch ($field->type) {
+                    case 'boolean':
+                    case 'smallint':
+                    case 'integer':
+                    case 'bigint':
+                    case 'float':
+                    case 'decimal':
+                    case 'atk4_money':
+                    case 'datetime':
+                    case 'date':
+                    case 'time':
+                    case 'object':
                         $value = null;
-                    } elseif (!is_numeric($value)) {
-                        throw new Exception('Must be numeric');
-                    }
 
-                    break;
+                        break;
+                }
+            } else {
+                switch ($field->type) {
+                    case 'boolean':
+                    case 'smallint':
+                    case 'integer':
+                    case 'bigint':
+                    case 'float':
+                    case 'decimal':
+                    case 'atk4_money':
+                        if (!is_numeric($value)) {
+                            throw new Exception('Must be numeric');
+                        }
+
+                        break;
+                }
             }
         } elseif ($value !== null) {
             switch ($field->type) {
                 case 'string':
                 case 'text':
+                case 'boolean':
+                case 'smallint':
                 case 'integer':
+                case 'bigint':
                 case 'float':
                 case 'decimal':
                 case 'atk4_money':
                     if (is_bool($value)) {
-                        throw new Exception('Must not be bool type');
+                        if ($field->type !== 'boolean') {
+                            throw new Exception('Must not be bool type');
+                        }
                     } elseif (is_int($value)) {
                         if ($fromLoad) {
                             $value = (string) $value;
@@ -427,7 +455,7 @@ abstract class Persistence
 
         try {
             $v = $this->_typecastSaveField($field, $value);
-            if ($v !== null && !is_scalar($v)) { // @phpstan-ignore-line
+            if ($v !== null && !is_scalar($v)) { // @phpstan-ignore function.alreadyNarrowedType, booleanAnd.alwaysFalse
                 throw new \TypeError('Unexpected non-scalar value');
             }
 
@@ -454,7 +482,7 @@ abstract class Persistence
     {
         if ($value === null) {
             return null;
-        } elseif (!is_scalar($value)) { // @phpstan-ignore-line
+        } elseif (!is_scalar($value)) { // @phpstan-ignore function.alreadyNarrowedType
             throw new \TypeError('Unexpected non-scalar value');
         }
 
@@ -482,13 +510,10 @@ abstract class Persistence
     {
         $value = $this->_typecastPreField($field, $value, false);
 
-        if (in_array($field->type, ['json', 'object'], true) && $value === '') { // TODO remove later
-            return null;
-        }
-
         // native DBAL DT types have no microseconds support
-        if (in_array($field->type, ['datetime', 'date', 'time'], true)
-            && str_starts_with(get_class(Type::getType($field->type)), 'Doctrine\DBAL\Types\\')) {
+        if ($value !== null && in_array($field->type, ['datetime', 'date', 'time'], true)
+            && str_starts_with(get_class(Type::getType($field->type)), 'Doctrine\DBAL\Types\\')
+        ) {
             if ($value === '') {
                 return null;
             } elseif (!$value instanceof \DateTimeInterface) {
@@ -507,6 +532,7 @@ abstract class Persistence
         }
 
         $res = Type::getType($field->type)->convertToDatabaseValue($value, $this->getDatabasePlatform());
+
         if (is_resource($res) && get_resource_type($res) === 'stream') {
             $res = stream_get_contents($res);
         }
@@ -526,14 +552,10 @@ abstract class Persistence
     {
         $value = $this->_typecastPreField($field, $value, true);
 
-        // TODO casting optionally to null should be handled by type itself solely
-        if ($value === '' && in_array($field->type, ['boolean', 'integer', 'float', 'decimal', 'datetime', 'date', 'time', 'json', 'object'], true)) {
-            return null;
-        }
-
         // native DBAL DT types have no microseconds support
-        if (in_array($field->type, ['datetime', 'date', 'time'], true)
-            && str_starts_with(get_class(Type::getType($field->type)), 'Doctrine\DBAL\Types\\')) {
+        if ($value !== null && in_array($field->type, ['datetime', 'date', 'time'], true)
+            && str_starts_with(get_class(Type::getType($field->type)), 'Doctrine\DBAL\Types\\')
+        ) {
             $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'][$field->type];
             if (str_contains($value, '.')) { // time possibly with microseconds, otherwise invalid format
                 $format = preg_replace('~(?<=H:i:s)(?![. ]*u)~', '.u', $format);
@@ -556,7 +578,10 @@ abstract class Persistence
         }
 
         $res = Type::getType($field->type)->convertToPHPValue($value, $this->getDatabasePlatform());
-        if (is_resource($res) && get_resource_type($res) === 'stream') {
+
+        if ($field->type === 'bigint' && $res === (string) (int) $res) { // once DBAL 3.x support is dropped, it should no longer be needed
+            $res = (int) $res;
+        } elseif (is_resource($res) && get_resource_type($res) === 'stream') {
             $res = stream_get_contents($res);
         }
 

@@ -22,7 +22,7 @@ class ReferenceTest extends TestCase
 
         $order = new Model(null, ['table' => 'order']);
         $order->addField('amount', ['default' => 20]);
-        $order->addField('user_id', ['type' => 'integer']);
+        $order->addField('user_id', ['type' => 'bigint']);
 
         $r1 = $user->getModel()->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
         $o = $user->ref('Orders')->createEntity();
@@ -33,7 +33,7 @@ class ReferenceTest extends TestCase
         $r2 = $user->getModel()->hasMany('BigOrders', ['model' => static function () {
             $m = new Model(null, ['table' => 'big_order']);
             $m->addField('amount', ['default' => 100]);
-            $m->addField('user_id', ['type' => 'integer']);
+            $m->addField('user_id', ['type' => 'bigint']);
 
             return $m;
         }]);
@@ -59,7 +59,7 @@ class ReferenceTest extends TestCase
 
         $order = new Model(null, ['table' => 'order']);
         $order->addField('amount', ['default' => 20]);
-        $order->addField('user_id', ['type' => 'integer']);
+        $order->addField('user_id', ['type' => 'bigint']);
 
         $user->getModel()->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
 
@@ -92,7 +92,7 @@ class ReferenceTest extends TestCase
     {
         $user = new Model(null, ['table' => 'user']);
         $order = new Model();
-        $order->addField('user_id', ['type' => 'integer']);
+        $order->addField('user_id', ['type' => 'bigint']);
 
         $user->hasMany('Orders', ['model' => $order]);
 
@@ -127,7 +127,7 @@ class ReferenceTest extends TestCase
     {
         $user = new Model($this->db, ['table' => 'db1.user']);
         $order = new Model($this->db, ['table' => 'db2.orders']);
-        $order->addField('user_id', ['type' => 'integer']);
+        $order->addField('user_id', ['type' => 'bigint']);
 
         $user->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
         self::assertSame('user_id', $user->getReference('Orders')->getTheirFieldName());
@@ -186,7 +186,7 @@ class ReferenceTest extends TestCase
         self::assertSame(['id' => 'date'], array_map(static fn (Field $f) => $f->type, $userModel->getFields()));
         self::assertSame(['id' => 'date'], array_map(static fn (Field $f) => $f->type, $order->ref('a')->getFields()));
         self::assertSame(['id' => 'date', 'x' => 'float'], array_map(static fn (Field $f) => $f->type, $order->ref('b')->getFields()));
-        self::assertSame(['id' => 'integer', 'user_id' => 'date', 'a' => 'date', 'b' => 'float'], array_map(static fn (Field $f) => $f->type, $order->getFields()));
+        self::assertSame(['id' => 'bigint', 'user_id' => 'date', 'a' => 'date', 'b' => 'float'], array_map(static fn (Field $f) => $f->type, $order->getFields()));
     }
 
     public function testRefTypeMismatchWithDisabledCheck(): void
@@ -199,7 +199,7 @@ class ReferenceTest extends TestCase
 
         self::assertSame('user', $order->ref('placed_by')->table);
         self::assertSame('string', $order->getField('placed_by_user_id')->type);
-        self::assertSame('integer', $order->ref('placed_by')->getIdField()->type);
+        self::assertSame('bigint', $order->ref('placed_by')->getIdField()->type);
     }
 
     public function testCreateTheirModelMissingModelSeedException(): void
@@ -247,7 +247,7 @@ class ReferenceTest extends TestCase
                 $this->addField('name');
 
                 $this->hasMany('orders', ['model' => [self::$orderModelClass], 'theirField' => 'user_id'])
-                    ->addField('orders_count', ['type' => 'integer', 'aggregate' => 'count']);
+                    ->addField('orders_count', ['type' => 'bigint', 'aggregate' => 'count']);
 
                 $this->analysingOrderModelFields = $this->getReference('orders')->createAnalysingTheirModel()->getFields();
 

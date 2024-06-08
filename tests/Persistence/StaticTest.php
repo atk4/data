@@ -149,8 +149,8 @@ class StaticTest extends TestCase
         ]]);
         $m = new Model($p);
 
-        self::assertSame('integer', $m->getField('id')->type);
-        self::assertSame('integer', $m->getField('test_int')->type);
+        self::assertSame('bigint', $m->getField('id')->type);
+        self::assertSame('bigint', $m->getField('test_int')->type);
         self::assertSame('float', $m->getField('test_float')->type);
         // self::assertSame('datetime', $m->getField('test_date')->type);
         // self::assertSame('json', $m->getField('test_array')->type);
@@ -168,7 +168,7 @@ class StaticTest extends TestCase
         $p = new Persistence\Static_([1 => 'hello', 'world']);
         $m = new Model($p);
 
-        self::assertSame('integer', $m->getField('id')->type);
+        self::assertSame('bigint', $m->getField('id')->type);
         self::assertSame('string', $m->getField('name')->type);
     }
 
@@ -186,8 +186,8 @@ class StaticTest extends TestCase
         $p = new Persistence\Static_([1 => ['foo' => null], 2 => ['foo' => 1], 3 => ['foo' => null]]);
         $m = new Model($p);
 
-        self::assertSame('integer', $m->getField('id')->type);
-        self::assertSame('integer', $m->getField('foo')->type);
+        self::assertSame('bigint', $m->getField('id')->type);
+        self::assertSame('bigint', $m->getField('foo')->type);
     }
 
     public function testFieldTypesBasicIntegerNullFirst(): void
@@ -195,8 +195,8 @@ class StaticTest extends TestCase
         $p = new Persistence\Static_([1 => null, 2 => 1, 3 => null]);
         $m = new Model($p);
 
-        self::assertSame('integer', $m->getField('id')->type);
-        self::assertSame('integer', $m->getField('name')->type);
+        self::assertSame('bigint', $m->getField('id')->type);
+        self::assertSame('bigint', $m->getField('name')->type);
     }
 }
 

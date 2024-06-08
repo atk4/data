@@ -40,26 +40,38 @@ class Query extends BaseQuery
     /**
      * @param \Closure(string, string): string $makeSqlFx
      */
-    protected function _renderConditionBinaryReuseBool(string $sqlLeft, string $sqlRight, \Closure $makeSqlFx): string
+    protected function _renderConditionBinaryReuseBool(string $sqlLeft, string $sqlRight, \Closure $makeSqlFx, bool $nullFromArgsOnly = false): string
     {
+        $reuse = $this->_renderConditionBinaryReuse($sqlLeft, $sqlRight, static fn () => '') !== '';
+
         return $this->_renderConditionBinaryReuse(
             $sqlLeft,
             $sqlRight,
-            static fn ($sqlLeft, $sqlRight) => 'iif(' . $makeSqlFx($sqlLeft, $sqlRight) . ', 1, 0)'
-        ) . ' = 1';
+            static function ($sqlLeft, $sqlRight) use ($reuse, $makeSqlFx, $nullFromArgsOnly) {
+                $res = $makeSqlFx($sqlLeft, $sqlRight);
+
+                if ($reuse) {
+                    $res = 'iif(not(' . $res . '), 0, iif('
+                        . ($nullFromArgsOnly ? $sqlLeft . ' is not null and ' . $sqlRight . ' is not null' : $res)
+                        . ', 1, null))';
+                }
+
+                return $res;
+            }
+        ) . ($reuse ? ' = 1' : '');
     }
 
     #[\Override]
     protected function _renderConditionLikeOperator(bool $negated, string $sqlLeft, string $sqlRight): string
     {
-        return $this->_renderConditionBinaryReuseBool(
+        return ($negated ? 'not ' : '') . $this->_renderConditionBinaryReuseBool(
             $sqlLeft,
             $sqlRight,
-            function ($sqlLeft, $sqlRight) use ($negated) {
+            function ($sqlLeft, $sqlRight) {
                 $iifNtextFx = static function ($valueSql, $trueSql, $falseSql) {
                     $isNtextFx = static function ($sql, $negate) {
                         // "select top 0 ..." is always optimized into constant expression
-                        return 'datalength(concat((select top 0 ' . $sql . '), 0x30)) '
+                        return 'datalength(concat((select top 0 ' . $sql . '), 0x' . bin2hex('0') . ')) '
                             . ($negate ? '!' : '') . '= 2';
                     };
 
@@ -67,7 +79,18 @@ class Query extends BaseQuery
                         . ' or (' . $isNtextFx($valueSql, true) . ' and ' . $falseSql . '))';
                 };
 
-                $makeSqlFx = function ($isNtext) use ($sqlLeft, $sqlRight, $negated) {
+                $iifBinaryFx = static function ($valueSql, $trueSql, $falseSql) {
+                    $isBinaryFx = static function ($sql, $negate) {
+                        // "select top 0 ..." is always optimized into constant expression
+                        return 'isnull((select top 0 ' . $sql . '), 0x' . bin2hex('A') . ') '
+                            . ($negate ? '' : '!') . '= 0x' . bin2hex('a');
+                    };
+
+                    return '((' . $isBinaryFx($valueSql, false) . ' and ' . $trueSql . ')'
+                        . ' or (' . $isBinaryFx($valueSql, true) . ' and ' . $falseSql . '))';
+                };
+
+                $makeSqlFx = function ($isNtext, $isBinary) use ($sqlLeft, $sqlRight) {
                     $quoteStringFx = fn (string $v) => $isNtext
                         ? $this->escapeStringLiteral($v)
                         : '0x' . bin2hex($v);
@@ -91,16 +114,22 @@ class Query extends BaseQuery
 
                     $sqlRightEscaped = $replaceFx($sqlRightEscaped, '[', '\[');
 
-                    return $sqlLeft . ($negated ? ' not' : '') . ' like ' . $sqlRightEscaped
+                    return $sqlLeft . ' like ' . $sqlRightEscaped
+                        . ($isBinary ? ' collate Latin1_General_BIN' : '')
                         . ' escape ' . $quoteStringFx('\\');
                 };
 
                 return $iifNtextFx(
                     $sqlLeft,
-                    $makeSqlFx(true),
-                    $makeSqlFx(false)
+                    $makeSqlFx(true, false),
+                    $iifBinaryFx(
+                        $sqlLeft,
+                        $makeSqlFx(false, true),
+                        $makeSqlFx(false, false)
+                    )
                 );
-            }
+            },
+            true
         );
     }
 

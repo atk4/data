@@ -58,6 +58,17 @@ class MigratorFkTest extends TestCase
         return $res;
     }
 
+    public function testIsIndexExistsTableDoesNotExistException(): void
+    {
+        self::assertFalse($this->createMigrator()->isTableExists('client'));
+
+        $client = new Model($this->db, ['table' => 'client']);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Table does not exist');
+        $this->createMigrator()->isIndexExists([$client->getField('id')]);
+    }
+
     public function testCreateIndexNonUnique(): void
     {
         $client = new Model($this->db, ['table' => 'client']);
@@ -65,16 +76,16 @@ class MigratorFkTest extends TestCase
 
         $this->createMigrator($client)->create();
         self::assertSame([], $this->listTableIndexes('client'));
-        self::assertTrue($this->createMigrator()->isIndexExists([$client->getField('id')], false));
+        self::assertTrue($this->createMigrator()->isIndexExists([$client->getField('id')]));
         self::assertTrue($this->createMigrator()->isIndexExists([$client->getField('id')], true));
-        self::assertFalse($this->createMigrator()->isIndexExists([$client->getField('name')], false));
+        self::assertFalse($this->createMigrator()->isIndexExists([$client->getField('name')]));
 
         $this->createMigrator()->createIndex([$client->getField('name')], false);
         self::assertSame([[['name'], false]], $this->listTableIndexes('client'));
-        self::assertTrue($this->createMigrator()->isIndexExists([$client->getField('name')], false));
+        self::assertTrue($this->createMigrator()->isIndexExists([$client->getField('name')]));
         self::assertFalse($this->createMigrator()->isIndexExists([$client->getField('name')], true));
-        self::assertFalse($this->createMigrator()->isIndexExists([$client->getField('id'), $client->getField('name')], false));
-        self::assertFalse($this->createMigrator()->isIndexExists([$client->getField('name'), $client->getField('id')], false));
+        self::assertFalse($this->createMigrator()->isIndexExists([$client->getField('id'), $client->getField('name')]));
+        self::assertFalse($this->createMigrator()->isIndexExists([$client->getField('name'), $client->getField('id')]));
 
         $client->insert(['name' => 'Michael']);
         $client->insert(['name' => 'Denise']);
@@ -102,10 +113,10 @@ class MigratorFkTest extends TestCase
 
         $this->createMigrator()->createIndex([$client->getField('name')], true);
         self::assertSame([[['name'], true]], $this->listTableIndexes('client'));
-        self::assertTrue($this->createMigrator()->isIndexExists([$client->getField('name')], false));
+        self::assertTrue($this->createMigrator()->isIndexExists([$client->getField('name')]));
         self::assertTrue($this->createMigrator()->isIndexExists([$client->getField('name')], true));
-        self::assertFalse($this->createMigrator()->isIndexExists([$client->getField('id'), $client->getField('name')], false));
-        self::assertFalse($this->createMigrator()->isIndexExists([$client->getField('name'), $client->getField('id')], false));
+        self::assertFalse($this->createMigrator()->isIndexExists([$client->getField('id'), $client->getField('name')]));
+        self::assertFalse($this->createMigrator()->isIndexExists([$client->getField('name'), $client->getField('id')]));
 
         $client->insert(['name' => 'Michael']);
         $client->insert(['name' => 'Denise']);
@@ -144,12 +155,12 @@ class MigratorFkTest extends TestCase
 
         $this->createMigrator($client)->createIndex([$client->getField('a'), $client->getField('b')], true);
         self::assertSame([[['a', 'b'], true]], $this->listTableIndexes('client'));
-        self::assertTrue($this->createMigrator()->isIndexExists([$client->getField('a'), $client->getField('b')], false));
+        self::assertTrue($this->createMigrator()->isIndexExists([$client->getField('a'), $client->getField('b')]));
         self::assertTrue($this->createMigrator()->isIndexExists([$client->getField('a'), $client->getField('b')], true));
-        self::assertTrue($this->createMigrator()->isIndexExists([$client->getField('a')], false));
+        self::assertTrue($this->createMigrator()->isIndexExists([$client->getField('a')]));
         self::assertFalse($this->createMigrator()->isIndexExists([$client->getField('a')], true));
-        self::assertFalse($this->createMigrator()->isIndexExists([$client->getField('b')], false));
-        self::assertFalse($this->createMigrator()->isIndexExists([$client->getField('b'), $client->getField('a')], false));
+        self::assertFalse($this->createMigrator()->isIndexExists([$client->getField('b')]));
+        self::assertFalse($this->createMigrator()->isIndexExists([$client->getField('b'), $client->getField('a')]));
     }
 
     public function testForeignKeyViolation(): void
