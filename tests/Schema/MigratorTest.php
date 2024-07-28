@@ -52,11 +52,11 @@ class MigratorTest extends TestCase
             ->mode('insert')
             ->table('user')
             ->setMulti([
-                'id' => 1,
-                'foo' => 'foovalue',
-                'bar' => 123,
-                'baz' => 'long text value',
-            ])->executeStatement();
+                           'id' => 1,
+                           'foo' => 'foovalue',
+                           'bar' => 123,
+                           'baz' => 'long text value',
+                       ])->executeStatement();
     }
 
     public function testCreateTwiceException(): void
@@ -106,10 +106,10 @@ class MigratorTest extends TestCase
         $this->createMigrator($model)->create();
 
         $model->import([
-            ['v' => 'mixedcaseß'],
-            ['v' => 'MIXEDCASEß'],
-            ['v' => 'MixedCaseß'],
-        ]);
+                           ['v' => 'mixedcaseß'],
+                           ['v' => 'MIXEDCASEß'],
+                           ['v' => 'MixedCaseß'],
+                       ]);
 
         if (!$this->getDatabasePlatform() instanceof OraclePlatform || !in_array($type, ['text', 'blob'], true)) {
             $model->setOrder('v');
@@ -158,7 +158,7 @@ class MigratorTest extends TestCase
             }
         } else {
             for ($i = 0; $i <= 0x10FFFF; $i = $i * 1.001 + 1) {
-                $iInt = (int) $i;
+                $iInt = (int)$i;
                 if ($iInt < 0xD800 || $iInt > 0xDFFF) {
                     $baseChars[crc32($length . '_' . $iInt)] = mb_chr($iInt);
                 }
@@ -206,13 +206,16 @@ class MigratorTest extends TestCase
         $this->createMigrator($model)->create();
 
         $model->import([
-            ['v' => $str . (
-                // MSSQL database ignores trailing \0 characters even with binary comparison
-                // https://dba.stackexchange.com/questions/48660/comparing-binary-0x-and-0x00-turns-out-to-be-equal-on-sql-server
-                $isBinary ? ($this->getDatabasePlatform() instanceof SQLServerPlatform ? ' ' : "\0") : '.'
-            )],
-            ['v' => $str],
-        ]);
+                           [
+                               'v' => $str . (
+                                       // MSSQL database ignores trailing \0 characters even with binary comparison
+                                       // https://dba.stackexchange.com/questions/48660/comparing-binary-0x-and-0x00-turns-out-to-be-equal-on-sql-server
+                                   $isBinary ? ($this->getDatabasePlatform(
+                                   ) instanceof SQLServerPlatform ? ' ' : "\0") : '.'
+                                   )
+                           ],
+                           ['v' => $str],
+                       ]);
 
         $model->addCondition('v', $str);
         $rows = $model->export();
@@ -231,7 +234,9 @@ class MigratorTest extends TestCase
 
         // functional test for Expression::escapeStringLiteral() method
         $strRaw = $model->getPersistence()->typecastSaveField($model->getField('v'), $str);
-        $strRawSql = \Closure::bind(static fn () => $model->expr('')->escapeStringLiteral($strRaw), null, Expression::class)();
+        $strRawSql = \Closure::bind(static fn() => $model->expr('')->escapeStringLiteral($strRaw),
+            null,
+            Expression::class)();
         $query = $this->getConnection()->dsql()
             ->field($model->expr($strRawSql));
         $resRaw = $query->getOne();
@@ -255,7 +260,9 @@ class MigratorTest extends TestCase
             }
 
             self::assertSame($length, mb_strlen($str));
-            $strSql = \Closure::bind(static fn () => $model->expr('')->escapeStringLiteral($str), null, Expression::class)();
+            $strSql = \Closure::bind(static fn() => $model->expr('')->escapeStringLiteral($str),
+                null,
+                Expression::class)();
             $query = $this->getConnection()->dsql()
                 ->field($model->expr($strSql));
             $res = $query->getOne();
@@ -314,8 +321,15 @@ class MigratorTest extends TestCase
         $user->createEntity()
             ->save(['name' => 'john', 'is_admin' => true, 'notes' => 'some long notes']);
         self::assertSame([
-            ['id' => 1, 'name' => 'john', 'password' => null, 'is_admin' => true, 'notes' => 'some long notes', 'main_role_id' => null],
-        ], $user->export());
+                             [
+                                 'id' => 1,
+                                 'name' => 'john',
+                                 'password' => null,
+                                 'is_admin' => true,
+                                 'notes' => 'some long notes',
+                                 'main_role_id' => null
+                             ],
+                         ], $user->export());
     }
 
     public function testIntrospectTableToModelBasic(): void
@@ -326,7 +340,8 @@ class MigratorTest extends TestCase
         $expectedFields = [];
         foreach ($creatingMigrator->table->getColumns() as $column) {
             $expectedFields[$column->getName()] = [
-                'type' => Type::getTypeRegistry()->lookupName($column->getType()), // TODO simplify once https://github.com/doctrine/dbal/pull/6130 is merged
+                'type' => Type::getTypeRegistry()->lookupName($column->getType()),
+                // TODO simplify once https://github.com/doctrine/dbal/pull/6130 is merged
                 'nullable' => !$column->getNotnull(),
             ];
         }
@@ -400,6 +415,13 @@ class MigratorTest extends TestCase
         self::assertTrue($model->issetPersistence());
         self::assertSame(['id', 'a'], array_keys($model->getFields()));
     }
+
+    public function testJoinFieldsAreNotCreated(): void
+    {
+        $migrator = $this->createMigrator(new TestUserWithJoin($this->db))->create();
+        $tableColumns = $migrator->table->getColumns();
+        self::assertArrayNotHasKey('role_name', $tableColumns);
+    }
 }
 
 class TestUser extends Model
@@ -431,5 +453,16 @@ class TestRole extends Model
 
         $this->addField('name');
         $this->hasMany('Users', ['model' => [TestUser::class], 'ourField' => 'id', 'theirField' => 'main_role_id']);
+    }
+}
+
+
+class TestUserWithJoin extends TestUser
+{
+    protected function init(): void
+    {
+        parent::init();
+        $leftJoin = $this->leftJoin('role', ['masterField' => 'role_id']);
+        $leftJoin->addField('role_name');
     }
 }
