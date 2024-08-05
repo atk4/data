@@ -466,6 +466,7 @@ class TestUserWithJoin extends TestUser
     protected function init(): void
     {
         parent::init();
+
         $leftJoin = $this->leftJoin('role', ['masterField' => 'role_id']);
         $leftJoin->addField('role_name');
     }
