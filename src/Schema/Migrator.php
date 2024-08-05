@@ -290,7 +290,11 @@ class Migrator
         $this->table($model->table);
 
         foreach ($model->getFields() as $field) {
-            if ($field->neverPersist || $field instanceof SqlExpressionField) {
+            if (
+                $field->neverPersist
+                || $field->hasJoin()
+                || $field instanceof SqlExpressionField
+            ) {
                 continue;
             }
             if ($field->hasJoin()) {
