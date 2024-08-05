@@ -420,6 +420,7 @@ class MigratorTest extends TestCase
     {
         $migrator = $this->createMigrator(new TestUserWithJoin($this->db))->create();
         $tableColumns = $migrator->table->getColumns();
+        //join field should not be created
         self::assertArrayNotHasKey('role_name', $tableColumns);
     }
 }

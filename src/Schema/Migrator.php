@@ -293,6 +293,9 @@ class Migrator
             if ($field->neverPersist || $field instanceof SqlExpressionField) {
                 continue;
             }
+            if ($field->hasJoin()) {
+                continue;
+            }
 
             if ($field->shortName === $model->idField) {
                 $refype = self::REF_TYPE_PRIMARY;
