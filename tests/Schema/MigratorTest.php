@@ -206,14 +206,11 @@ class MigratorTest extends TestCase
         $this->createMigrator($model)->create();
 
         $model->import([
-            [
-                'v' => $str . (
-                    // MSSQL database ignores trailing \0 characters even with binary comparison
-                    // https://dba.stackexchange.com/questions/48660/comparing-binary-0x-and-0x00-turns-out-to-be-equal-on-sql-server
-                    $isBinary ? ($this->getDatabasePlatform(
-                    ) instanceof SQLServerPlatform ? ' ' : "\0") : '.'
-                ),
-            ],
+            ['v' => $str . (
+                // MSSQL database ignores trailing \0 characters even with binary comparison
+                // https://dba.stackexchange.com/questions/48660/comparing-binary-0x-and-0x00-turns-out-to-be-equal-on-sql-server
+                $isBinary ? ($this->getDatabasePlatform() instanceof SQLServerPlatform ? ' ' : "\0") : '.'
+            )],
             ['v' => $str],
         ]);
 
@@ -234,11 +231,7 @@ class MigratorTest extends TestCase
 
         // functional test for Expression::escapeStringLiteral() method
         $strRaw = $model->getPersistence()->typecastSaveField($model->getField('v'), $str);
-        $strRawSql = \Closure::bind(
-            static fn () => $model->expr('')->escapeStringLiteral($strRaw),
-            null,
-            Expression::class
-        )();
+        $strRawSql = \Closure::bind(static fn () => $model->expr('')->escapeStringLiteral($strRaw), null, Expression::class)();
         $query = $this->getConnection()->dsql()
             ->field($model->expr($strRawSql));
         $resRaw = $query->getOne();
@@ -262,11 +255,7 @@ class MigratorTest extends TestCase
             }
 
             self::assertSame($length, mb_strlen($str));
-            $strSql = \Closure::bind(
-                static fn () => $model->expr('')->escapeStringLiteral($str),
-                null,
-                Expression::class
-            )();
+            $strSql = \Closure::bind(static fn () => $model->expr('')->escapeStringLiteral($str), null, Expression::class)();
             $query = $this->getConnection()->dsql()
                 ->field($model->expr($strSql));
             $res = $query->getOne();
@@ -344,8 +333,7 @@ class MigratorTest extends TestCase
         $expectedFields = [];
         foreach ($creatingMigrator->table->getColumns() as $column) {
             $expectedFields[$column->getName()] = [
-                'type' => Type::getTypeRegistry()->lookupName($column->getType()),
-                // TODO simplify once https://github.com/doctrine/dbal/pull/6130 is merged
+                'type' => Type::getTypeRegistry()->lookupName($column->getType()), // TODO simplify once https://github.com/doctrine/dbal/pull/6130 is merged
                 'nullable' => !$column->getNotnull(),
             ];
         }

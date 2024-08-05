@@ -297,9 +297,6 @@ class Migrator
             ) {
                 continue;
             }
-            if ($field->hasJoin()) {
-                continue;
-            }
 
             if ($field->shortName === $model->idField) {
                 $refType = self::REF_TYPE_PRIMARY;
