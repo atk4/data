@@ -422,9 +422,29 @@ class MigratorTest extends TestCase
 
     public function testJoinFieldsAreNotCreated(): void
     {
-        $migrator = $this->createMigrator(new TestUserWithJoin($this->db))->create();
-        $tableColumns = $migrator->table->getColumns();
-        self::assertArrayNotHasKey('role_name', $tableColumns);
+        $model = new TestUserWithJoin($this->db);
+        $migrator = $this->createMigrator($model);
+        self::assertSame([
+            'id',
+            'name',
+            'password',
+            'is_admin',
+            'notes',
+            'main_role_id',
+            'role_id',
+        ], array_keys($migrator->table->getColumns()));
+        $migrator->create();
+
+        $model = $this->createMigrator()->introspectTableToModel('user');
+        self::assertSame([
+            'id',
+            'name',
+            'password',
+            'is_admin',
+            'notes',
+            'main_role_id',
+            'role_id',
+        ], array_keys($model->getFields()));
     }
 }
 
