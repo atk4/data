@@ -40,7 +40,7 @@ class QueryTest extends TestCase
              */
             public function __construct($defaults = [], array $arguments = [])
             {
-                $this->expressionClass = get_class(new class() extends Expression {
+                $this->expressionClass = get_class(new class extends Expression {
                     protected string $identifierEscapeChar = '"';
 
                     #[\Override]

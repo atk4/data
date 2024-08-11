@@ -101,7 +101,7 @@ class UserActionTest extends TestCase
 
     public function testCustomSeedClass(): void
     {
-        $customClass = get_class(new class() extends Model\UserAction {});
+        $customClass = get_class(new class extends Model\UserAction {});
 
         $client = new UaClient($this->pers);
         $client->addUserAction('foo', [$customClass]);

@@ -306,7 +306,7 @@ class TypecastingTest extends TestCase
 
     public function testSaveFieldUnexpectedScalarException(): void
     {
-        $this->executeFxWithTemporaryType('bad-datetime', new class() extends DbalTypes\DateTimeType {
+        $this->executeFxWithTemporaryType('bad-datetime', new class extends DbalTypes\DateTimeType {
             #[\Override] // @phpstan-ignore method.childReturnType (https://github.com/phpstan/phpstan/issues/10210)
             public function convertToDatabaseValue($value, AbstractPlatform $platform): \DateTime
             {
@@ -328,7 +328,7 @@ class TypecastingTest extends TestCase
 
     public function testSaveFieldConvertedWarningNotWrappedException(): void
     {
-        $this->executeFxWithTemporaryType('with-warning', new class() extends DbalTypes\IntegerType {
+        $this->executeFxWithTemporaryType('with-warning', new class extends DbalTypes\IntegerType {
             #[\Override]
             public function convertToDatabaseValue($value, AbstractPlatform $platform)
             {
@@ -343,7 +343,7 @@ class TypecastingTest extends TestCase
 
     public function testLoadFieldConvertedWarningNotWrappedException(): void
     {
-        $this->executeFxWithTemporaryType('with-warning', new class() extends DbalTypes\IntegerType {
+        $this->executeFxWithTemporaryType('with-warning', new class extends DbalTypes\IntegerType {
             #[\Override]
             public function convertToPHPValue($value, AbstractPlatform $platform)
             {
@@ -358,7 +358,7 @@ class TypecastingTest extends TestCase
 
     public function testNormalizeConvertedWarningNotWrappedException(): void
     {
-        $this->executeFxWithTemporaryType('with-warning', new class() extends DbalTypes\IntegerType {
+        $this->executeFxWithTemporaryType('with-warning', new class extends DbalTypes\IntegerType {
             #[\Override]
             public function convertToDatabaseValue($value, AbstractPlatform $platform)
             {

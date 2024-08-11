@@ -307,7 +307,7 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
-        $integerWrappedType = new class() extends DbalTypes\Type {
+        $integerWrappedType = new class extends DbalTypes\Type {
             /**
              * TODO: Remove once DBAL 3.x support is dropped.
              */

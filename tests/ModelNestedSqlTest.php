@@ -31,7 +31,7 @@ class ModelNestedSqlTest extends TestCase
 
     protected function createTestModel(): Model
     {
-        $mWithLoggingClass = get_class(new class() extends Model {
+        $mWithLoggingClass = get_class(new class extends Model {
             /** @var \WeakReference<ModelNestedSqlTest> */
             protected $testCaseWeakRef;
             /** @var string */

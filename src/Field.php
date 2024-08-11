@@ -286,7 +286,7 @@ class Field implements Expressionable
     private function getGenericPersistence(): Persistence
     {
         if ((self::$genericPersistence ?? null) === null) {
-            self::$genericPersistence = new class() extends Persistence {};
+            self::$genericPersistence = new class extends Persistence {};
         }
 
         return self::$genericPersistence;

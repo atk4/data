@@ -348,7 +348,7 @@ class ExpressionTest extends TestCase
             $this->callProtected($this->e(), 'consume', '123', $constants['ESCAPE_NONE'])
         );
 
-        $myField = new class() implements Expressionable {
+        $myField = new class implements Expressionable {
             #[\Override]
             public function getDsqlExpression(Expression $expr): Expression
             {

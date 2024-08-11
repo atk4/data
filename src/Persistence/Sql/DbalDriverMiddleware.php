@@ -29,19 +29,19 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
     protected function replaceDatabasePlatform(AbstractPlatform $platform): AbstractPlatform
     {
         if ($platform instanceof SQLitePlatform) {
-            $platform = new class() extends SQLitePlatform {
+            $platform = new class extends SQLitePlatform {
                 use Sqlite\PlatformTrait;
             };
         } elseif ($platform instanceof PostgreSQLPlatform) {
-            $platform = new class() extends PostgreSQL94Platform { // @phpstan-ignore class.extendsDeprecatedClass
+            $platform = new class extends PostgreSQL94Platform { // @phpstan-ignore class.extendsDeprecatedClass
                 use Postgresql\PlatformTrait;
             };
         } elseif ($platform instanceof SQLServerPlatform) {
-            $platform = new class() extends SQLServer2012Platform { // @phpstan-ignore class.extendsDeprecatedClass
+            $platform = new class extends SQLServer2012Platform { // @phpstan-ignore class.extendsDeprecatedClass
                 use Mssql\PlatformTrait;
             };
         } elseif ($platform instanceof OraclePlatform) {
-            $platform = new class() extends OraclePlatform {
+            $platform = new class extends OraclePlatform {
                 use Oracle\PlatformTrait;
             };
         }
