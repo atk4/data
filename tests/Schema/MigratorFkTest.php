@@ -6,10 +6,12 @@ namespace Atk4\Data\Tests\Schema;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
+use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Schema\ForeignKeyConstraint;
 use Doctrine\DBAL\Schema\Index;
@@ -227,7 +229,12 @@ class MigratorFkTest extends TestCase
 
         $client->insert(['name' => 'Leos', 'country_id' => 10]);
 
-        $this->expectException(DbalException::class);
+        // remove if once https://jira.mariadb.org/browse/MDEV-34892 is fixed
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform && MysqlConnection::isServerMariaDb($this->getConnection())) {
+            self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
+        } else {
+            $this->expectException(DbalException::class);
+        }
         $this->createMigrator()->createForeignKey($client->getReference('country_id'));
     }
 

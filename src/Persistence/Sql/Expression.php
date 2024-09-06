@@ -700,7 +700,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
         }
 
         // for PostgreSQL/Oracle CLOB/BLOB datatypes and PDO driver
-        if (is_resource($v) && get_resource_type($v) === 'stream') { // @phpstan-ignore function.impossibleType
+        if (is_resource($v) && get_resource_type($v) === 'stream') {
             $platform = $this->connection->getDatabasePlatform();
             if ($platform instanceof PostgreSQLPlatform || $platform instanceof OraclePlatform) {
                 $v = stream_get_contents($v);
