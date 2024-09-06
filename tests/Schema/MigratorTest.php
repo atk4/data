@@ -325,6 +325,18 @@ class MigratorTest extends TestCase
         ], $user->export());
     }
 
+    public function testCreateSetModelIgnoreJoinField(): void
+    {
+        $model = new TestUserWithJoin($this->db);
+        $migrator = $this->createMigrator($model);
+
+        $modelFields = array_keys($model->getFields());
+        $migratorFields = array_keys($migrator->table->getColumns());
+
+        self::assertSame(['role_name'], array_values(array_diff($modelFields, $migratorFields)));
+        self::assertSame([], array_values(array_diff($migratorFields, $modelFields)));
+    }
+
     public function testIntrospectTableToModelBasic(): void
     {
         $creatingMigrator = $this->createDemoMigrator('user')->create();
@@ -406,33 +418,6 @@ class MigratorTest extends TestCase
         $model = $this->createMigrator()->introspectTableToModel('t');
         self::assertTrue($model->issetPersistence());
         self::assertSame(['id', 'a'], array_keys($model->getFields()));
-    }
-
-    public function testJoinFieldsAreNotCreated(): void
-    {
-        $model = new TestUserWithJoin($this->db);
-        $migrator = $this->createMigrator($model);
-        self::assertSame([
-            'id',
-            'name',
-            'password',
-            'is_admin',
-            'notes',
-            'main_role_id',
-            'role_id',
-        ], array_keys($migrator->table->getColumns()));
-        $migrator->create();
-
-        $model = $this->createMigrator()->introspectTableToModel('user');
-        self::assertSame([
-            'id',
-            'name',
-            'password',
-            'is_admin',
-            'notes',
-            'main_role_id',
-            'role_id',
-        ], array_keys($model->getFields()));
     }
 }
 
