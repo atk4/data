@@ -229,7 +229,7 @@ class MigratorFkTest extends TestCase
 
         $client->insert(['name' => 'Leos', 'country_id' => 10]);
 
-        // remove if once https://jira.mariadb.org/browse/MDEV-34892 is fixed
+        // remove if once https://jira.mariadb.org/browse/MDEV-34756 is fixed
         if ($this->getDatabasePlatform() instanceof MySQLPlatform && MysqlConnection::isServerMariaDb($this->getConnection())) {
             self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
         } else {
