@@ -12,7 +12,7 @@ use Atk4\Data\Model\Scope\AbstractScope;
 use Atk4\Data\Persistence\Sql\Expressionable;
 
 /**
- * @property array<AbstractScope> $elements
+ * @property array<int|string, AbstractScope> $elements
  */
 class Scope extends AbstractScope
 {
@@ -91,7 +91,7 @@ class Scope extends AbstractScope
     /**
      * Return array of nested conditions.
      *
-     * @return array<AbstractScope>
+     * @return array<int|string, AbstractScope>
      */
     public function getNestedConditions(): array
     {

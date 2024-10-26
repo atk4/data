@@ -1520,7 +1520,7 @@ class Model implements \IteratorAggregate
         }
     }
 
-    private function assertIsWriteable(): void
+    private function assertIsWritable(): void
     {
         if ($this->readOnly) {
             throw new Exception('Model is read-only');
@@ -1536,7 +1536,7 @@ class Model implements \IteratorAggregate
      */
     public function save(array $data = [])
     {
-        $this->getModel()->assertIsWriteable();
+        $this->getModel()->assertIsWritable();
         $this->getModel()->assertHasPersistence();
 
         $this->setMulti($data);
@@ -1891,7 +1891,7 @@ class Model implements \IteratorAggregate
             return $this;
         }
 
-        $this->getModel()->assertIsWriteable();
+        $this->getModel()->assertIsWritable();
         $this->getModel()->assertHasPersistence();
         $this->assertIsLoaded();
 

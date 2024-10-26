@@ -559,7 +559,7 @@ class Sql extends Persistence
     }
 
     /**
-     * @param array<scalar|Expressionable|null> $dataRaw
+     * @param array<string, scalar|Expressionable|null> $dataRaw
      */
     #[\Override]
     protected function insertRaw(Model $model, array $dataRaw)
@@ -596,7 +596,7 @@ class Sql extends Persistence
     }
 
     /**
-     * @param array<scalar|Expressionable|null> $dataRaw
+     * @param array<string, scalar|Expressionable|null> $dataRaw
      */
     #[\Override]
     protected function updateRaw(Model $model, $idRaw, array $dataRaw): void

@@ -56,7 +56,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
      * This property is made public to ease customization and make it accessible
      * from Connection class for example.
      *
-     * @var array<array<mixed>>
+     * @var array<string, array<int|string, mixed>>
      */
     public array $args = ['custom' => []];
 

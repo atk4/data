@@ -198,7 +198,7 @@ abstract class Persistence
     }
 
     /**
-     * @param array<scalar|null> $dataRaw
+     * @param array<string, scalar|null> $dataRaw
      *
      * @return scalar
      */
@@ -246,8 +246,8 @@ abstract class Persistence
     }
 
     /**
-     * @param scalar             $idRaw
-     * @param array<scalar|null> $dataRaw
+     * @param scalar                     $idRaw
+     * @param array<string, scalar|null> $dataRaw
      */
     protected function updateRaw(Model $model, $idRaw, array $dataRaw): void
     {
@@ -299,7 +299,7 @@ abstract class Persistence
      *
      * @param array<string, mixed> $row
      *
-     * @return array<scalar|Persistence\Sql\Expressionable|null>
+     * @return array<string, scalar|Persistence\Sql\Expressionable|null>
      */
     public function typecastSaveRow(Model $model, array $row): array
     {
