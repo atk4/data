@@ -68,7 +68,7 @@ class UserAction
     /** @var array<string, array<string, mixed>|Model> Argument definition. */
     public $args = [];
 
-    /** @var array<int, string>|bool Specify which fields may be dirty when invoking action. APPLIES_TO_NO_RECORDS|APPLIES_TO_SINGLE_RECORD scopes for adding/modifying */
+    /** @var list<string>|bool Specify which fields may be dirty when invoking action. APPLIES_TO_NO_RECORDS|APPLIES_TO_SINGLE_RECORD scopes for adding/modifying */
     public $fields = [];
 
     /** @var bool Atomic action will automatically begin transaction before and commit it after completing. */
