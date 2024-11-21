@@ -9,7 +9,6 @@ use Atk4\Core\Exception as CoreException;
 use Atk4\Core\InitializerTrait;
 use Atk4\Core\TrackableTrait;
 use Atk4\Data\Exception;
-use Atk4\Data\Field;
 use Atk4\Data\Model;
 
 /**
@@ -66,7 +65,7 @@ class UserAction
     /** @var bool system action will be hidden from UI, but can still be explicitly triggered */
     public $system = false;
 
-    /** @var array<string, array<string, mixed>|Field> Argument definition. */
+    /** @var array<string, array<string, mixed>> Argument definition. */
     public $args = [];
 
     /** @var list<string>|bool Specify which fields may be dirty when invoking action. APPLIES_TO_NO_RECORDS|APPLIES_TO_SINGLE_RECORD scopes for adding/modifying */
