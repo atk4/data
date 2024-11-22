@@ -156,7 +156,7 @@ class UserAction
         }
     }
 
-    protected function validateBeforeExecute(): void
+    public function validateBeforeExecute(): void
     {
         if ($this->enabled === false || ($this->enabled instanceof \Closure && ($this->enabled)($this->_getOwner()) === false)) {
             throw new Exception('User action is disabled');
