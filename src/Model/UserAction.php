@@ -40,10 +40,10 @@ class UserAction
     /** @var \Closure<T of Model>(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed|string identical to callback, but would generate preview of action without permanent effect */
     public $preview;
 
-    /** @var string|null caption to put on the button */
+    /** @var string caption to put on the button */
     public $caption;
 
-    /** @var string|\Closure($this): string|null a longer description of this action. */
+    /** @var string|\Closure($this): string a longer description of this action. */
     public $description;
 
     /** @var bool|string|\Closure($this): string Will ask user to confirm. */
@@ -52,17 +52,17 @@ class UserAction
     /** @var bool|\Closure<T of Model>(T): bool setting this to false will disable action. */
     public $enabled = true;
 
-    /** @var bool system action will be hidden from UI, but can still be explicitly triggered */
-    public $system = false;
+    /** System action will be hidden from UI, but can still be explicitly triggered */
+    public bool $system = false;
 
-    /** @var array<string, array<string, mixed>> Argument definition. */
+    /** @var array<string, array<string, mixed>> Arguments definition. */
     public $args = [];
 
     /** @var list<string>|bool Specify which fields may be dirty when invoking action. APPLIES_TO_NO_RECORDS|APPLIES_TO_SINGLE_RECORD scopes for adding/modifying */
     public $fields = [];
 
-    /** @var bool Atomic action will automatically begin transaction before and commit it after completing. */
-    public $atomic = true;
+    /** Atomic action will automatically begin transaction before and commit it after completing. */
+    public bool $atomic = true;
 
     private function _getOwner(): Model
     {
@@ -216,6 +216,11 @@ class UserAction
         }
     }
 
+    public function getCaption(): string
+    {
+        return $this->caption ?? $this->getModel()->readableCaption($this->shortName);
+    }
+
     /**
      * Get description of this current action in a user-understandable language.
      */
@@ -247,10 +252,5 @@ class UserAction
         }
 
         return $this->confirmation;
-    }
-
-    public function getCaption(): string
-    {
-        return $this->caption ?? $this->getModel()->readableCaption($this->shortName);
     }
 }
