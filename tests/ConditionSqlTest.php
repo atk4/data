@@ -373,12 +373,12 @@ class ConditionSqlTest extends TestCase
 
         $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
-        $m->addCondition('name', []); // this should not fail, should be always false
+        $m->addCondition('name', []); // always false condition
         self::assertCount(0, $m->export());
 
         $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
-        $m->addCondition('name', 'not in', []); // this should not fail, should be always true
+        $m->addCondition('name', 'not in', []); // always true condition
         self::assertCount(3, $m->export());
     }
 

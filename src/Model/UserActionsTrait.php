@@ -133,15 +133,13 @@ trait UserActionsTrait
         // declare our basic CRUD actions for the model
         $this->addUserAction('add', [
             'fields' => true,
-            'modifier' => UserAction::MODIFIER_CREATE,
-            'appliesTo' => UserAction::APPLIES_TO_NO_RECORDS,
+            'appliesTo' => UserAction::APPLIES_TO_NO_RECORD,
             'callback' => 'save',
             'description' => 'Add ' . $this->getModelCaption(),
         ]);
 
         $this->addUserAction('edit', [
             'fields' => true,
-            'modifier' => UserAction::MODIFIER_UPDATE,
             'appliesTo' => UserAction::APPLIES_TO_SINGLE_RECORD,
             'callback' => static function (Model $entity) {
                 $entity->assertIsLoaded();
@@ -152,7 +150,6 @@ trait UserActionsTrait
 
         $this->addUserAction('delete', [
             'appliesTo' => UserAction::APPLIES_TO_SINGLE_RECORD,
-            'modifier' => UserAction::MODIFIER_DELETE,
             'callback' => static function (Model $entity) {
                 return $entity->delete();
             },
@@ -161,7 +158,6 @@ trait UserActionsTrait
         $this->addUserAction('validate', [
             // 'appliesTo' => any entity!
             'description' => 'Provided with modified values will validate them but will not save',
-            'modifier' => UserAction::MODIFIER_READ,
             'fields' => true,
             'system' => true, // don't show by default
             'args' => [

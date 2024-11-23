@@ -27,27 +27,17 @@ class UserAction
     use TrackableTrait;
 
     /** Defining records scope of the action */
-    public const APPLIES_TO_NO_RECORDS = 'none'; // e.g. add
-    public const APPLIES_TO_SINGLE_RECORD = 'single'; // e.g. archive
-    public const APPLIES_TO_MULTIPLE_RECORDS = 'multiple'; // e.g. delete
+    public const APPLIES_TO_NO_RECORD = 'none'; // e.g. add
+    public const APPLIES_TO_SINGLE_RECORD = 'single'; // e.g. edit, delete, archive
     public const APPLIES_TO_ALL_RECORDS = 'all'; // e.g. truncate
-
-    /** Defining action modifier */
-    public const MODIFIER_CREATE = 'create'; // create new record(s)
-    public const MODIFIER_UPDATE = 'update'; // update existing record(s)
-    public const MODIFIER_DELETE = 'delete'; // delete record(s)
-    public const MODIFIER_READ = 'read'; // just read, does not modify record(s)
 
     /** @var string by default action is for a single record */
     public $appliesTo = self::APPLIES_TO_SINGLE_RECORD;
 
-    /** @var string How this action interact with record */
-    public $modifier;
-
-    /** @var \Closure<T of Model>(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed|string code to execute. By default will call entity method with same name */
+    /** @var \Closure<T of Model>(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed|string|null code to execute. By default will call entity method with same name */
     public $callback;
 
-    /** @var \Closure<T of Model>(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed|string identical to callback, but would generate preview of action without permanent effect */
+    /** @var \Closure<T of Model>(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed|string|null identical to callback, but would generate preview of action without permanent effect */
     public $preview;
 
     /** @var string|null caption to put on the button */
@@ -62,17 +52,17 @@ class UserAction
     /** @var bool|\Closure<T of Model>(T): bool setting this to false will disable action. */
     public $enabled = true;
 
-    /** @var bool system action will be hidden from UI, but can still be explicitly triggered */
-    public $system = false;
+    /** System action will be hidden from UI, but can still be explicitly triggered */
+    public bool $system = false;
 
-    /** @var array<string, array<string, mixed>> Argument definition. */
+    /** @var array<string, array<string, mixed>> Arguments definition. */
     public $args = [];
 
-    /** @var list<string>|bool Specify which fields may be dirty when invoking action. APPLIES_TO_NO_RECORDS|APPLIES_TO_SINGLE_RECORD scopes for adding/modifying */
+    /** @var list<string>|bool Specify which fields may be dirty when invoking action. APPLIES_TO_NO_RECORD|APPLIES_TO_SINGLE_RECORD scopes for adding/modifying */
     public $fields = [];
 
-    /** @var bool Atomic action will automatically begin transaction before and commit it after completing. */
-    public $atomic = true;
+    /** Atomic action will automatically begin transaction before and commit it after completing. */
+    public bool $atomic = true;
 
     private function _getOwner(): Model
     {
@@ -118,8 +108,46 @@ class UserAction
         throw new Exception('Action instance not found in model');
     }
 
+    public function validateBeforeExecute(): void
+    {
+        if ($this->enabled === false || ($this->enabled instanceof \Closure && ($this->enabled)($this->_getOwner()) === false)) {
+            throw new Exception('User action is disabled');
+        }
+
+        switch ($this->appliesTo) {
+            case self::APPLIES_TO_NO_RECORD:
+                if ($this->getEntity()->isLoaded()) {
+                    throw (new Exception('User action can be executed on new entity only'))
+                        ->addMoreInfo('id', $this->getEntity()->getId());
+                }
+
+                break;
+            case self::APPLIES_TO_SINGLE_RECORD:
+                if (!$this->getEntity()->isLoaded()) {
+                    throw new Exception('User action can be executed on loaded entity only');
+                }
+
+                break;
+            case self::APPLIES_TO_ALL_RECORDS:
+                $this->_getOwner()->assertIsModel();
+
+                break;
+        }
+
+        if (!is_bool($this->fields) && $this->isOwnerEntity()) {
+            $dirtyFields = array_keys($this->getEntity()->getDirtyRef());
+            $tooDirtyFields = array_diff($dirtyFields, $this->fields);
+
+            if ($tooDirtyFields !== []) {
+                throw (new Exception('User action cannot be executed when unrelated fields are dirty'))
+                    ->addMoreInfo('tooDirtyFields', $tooDirtyFields)
+                    ->addMoreInfo('otherDirtyFields', array_diff($dirtyFields, $tooDirtyFields));
+            }
+        }
+    }
+
     /**
-     * Attempt to execute callback of the action.
+     * Execute callback of the action.
      *
      * @param mixed ...$args
      *
@@ -137,8 +165,6 @@ class UserAction
             $fx = $this->callback;
         }
 
-        // todo - ACL tests must allow
-
         try {
             $this->validateBeforeExecute();
 
@@ -153,45 +179,6 @@ class UserAction
             $e->addMoreInfo('action', $this);
 
             throw $e;
-        }
-    }
-
-    public function validateBeforeExecute(): void
-    {
-        if ($this->enabled === false || ($this->enabled instanceof \Closure && ($this->enabled)($this->_getOwner()) === false)) {
-            throw new Exception('User action is disabled');
-        }
-
-        if (!is_bool($this->fields) && $this->isOwnerEntity()) {
-            $dirtyFields = array_keys($this->getEntity()->getDirtyRef());
-            $tooDirtyFields = array_diff($dirtyFields, $this->fields);
-
-            if ($tooDirtyFields !== []) {
-                throw (new Exception('User action cannot be executed when unrelated fields are dirty'))
-                    ->addMoreInfo('tooDirtyFields', $tooDirtyFields)
-                    ->addMoreInfo('otherDirtyFields', array_diff($dirtyFields, $tooDirtyFields));
-            }
-        }
-
-        switch ($this->appliesTo) {
-            case self::APPLIES_TO_NO_RECORDS:
-                if ($this->getEntity()->isLoaded()) {
-                    throw (new Exception('User action can be executed on new entity only'))
-                        ->addMoreInfo('id', $this->getEntity()->getId());
-                }
-
-                break;
-            case self::APPLIES_TO_SINGLE_RECORD:
-                if (!$this->getEntity()->isLoaded()) {
-                    throw new Exception('User action can be executed on loaded entity only');
-                }
-
-                break;
-            case self::APPLIES_TO_MULTIPLE_RECORDS:
-            case self::APPLIES_TO_ALL_RECORDS:
-                $this->_getOwner()->assertIsModel();
-
-                break;
         }
     }
 
@@ -227,6 +214,11 @@ class UserAction
         }
     }
 
+    public function getCaption(): string
+    {
+        return $this->caption ?? $this->getModel()->readableCaption($this->shortName);
+    }
+
     /**
      * Get description of this current action in a user-understandable language.
      */
@@ -249,7 +241,7 @@ class UserAction
         if ($this->confirmation instanceof \Closure) {
             return ($this->confirmation)($this);
         } elseif ($this->confirmation === true) {
-            $confirmation = 'Are you sure you wish to execute '
+            $confirmation = 'Are you sure to execute '
                 . $this->getCaption()
                 . ($this->isOwnerEntity() && $this->getEntity()->getTitle() ? ' using ' . $this->getEntity()->getTitle() : '')
                 . '?';
@@ -258,10 +250,5 @@ class UserAction
         }
 
         return $this->confirmation;
-    }
-
-    public function getCaption(): string
-    {
-        return $this->caption ?? $this->getModel()->readableCaption($this->shortName);
     }
 }
