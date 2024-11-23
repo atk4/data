@@ -9,7 +9,7 @@ use Doctrine\DBAL\Schema\Table;
 
 trait PlatformTrait
 {
-    // standard PostgreSQL character types are case sensitive, unify the behaviour with other databases
+    // standard PostgreSQL character types are case sensitive, unify the behavior with other databases
     // with custom case insensitive types
 
     /**
@@ -77,7 +77,7 @@ trait PlatformTrait
     }
 
     // PostgreSQL DBAL platform uses SERIAL column type for autoincrement which does not increment
-    // when a row with a not-null PK is inserted like Sqlite or MySQL does, unify the behaviour
+    // when a row with a not-null PK is inserted like Sqlite or MySQL does, unify the behavior
 
     private function getPrimaryKeyColumn(Table $table): ?Column
     {

@@ -314,7 +314,7 @@ abstract class Query extends Expression
         $j = [];
 
         // try to find alias in foreign table definition
-        // TODO this behaviour should be deprecated
+        // TODO this behavior should be deprecated
         if ($foreignAlias === null) {
             [$foreignTable, $foreignAlias] = array_pad(explode(' ', $foreignTable, 2), 2, null);
         }

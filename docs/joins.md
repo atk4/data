@@ -170,30 +170,30 @@ of master id.
 
 When it comes to deleting record, there are three possible conditions:
 
-1. `[delete_behaviour = cascade, reverse = false]`
+1. `[deleteBehavior = cascade, reverse = false]`
 
    If we are using strong join and master table contains ID of foreign table,
    then foreign master table record is deleted first. Foreign table record is
    deleted after. This is done to avoid error with foreign constraints.
 
-2. `[deleteBehaviour = cascade, reverse = true]`
+2. `[deleteBehavior = cascade, reverse = true]`
 
    If we are using strong join and foreign table contains ID of master table,
    then foreign table record is deleted first followed by the master table record.
 
-3. `[deleteBehaviour = ignore, reverse = false]`
+3. `[deleteBehavior = ignore, reverse = false]`
 
    If we are using weak join and the master table contains ID of foreign table,
    then master table is deleted first. Foreign table record is not deleted.
 
-4. `[deleteBehaviour = setnull, reverse = true]`
+4. `[deleteBehavior = setnull, reverse = true]`
 
    If we are using weak join and foreign table contains ID of master table,
    then foreign table is updated to set ID of master table to NULL first.
    Then the master table record is deleted.
 
 Based on the way how you define join an appropriate strategy is selected and
-Join will automatically decide on $deleteBehaviour and $reverse values.
+Join will automatically decide on $deleteBehavior and $reverse values.
 There are situations, however when it's impossible to determine in which order
 the operations have to be performed. A good example is when you define both
 master/foreign fields.
@@ -201,7 +201,7 @@ master/foreign fields.
 In this case system will default to "reverse=false" and will delete master
 record first, however you can specify a different value for "reverse".
 
-Sometimes it's also sensible to set deleteBehaviour = ignore and perform your
+Sometimes it's also sensible to set deleteBehavior = ignore and perform your
 own delete operation yourself.
 
 ### Implementation Detail
@@ -214,7 +214,7 @@ Joins are implemented like this:
   When save is executed, it will execute additional query to update foreign table.
 - while $model->getId() stores the ID of the main table active record, $join->id
   stores ID of the foreign record and will be used when updating.
-- option 'deleteBehaviour' is 'cascade' for strong joins and 'ignore' for weak
+- option 'deleteBehavior' is 'cascade' for strong joins and 'ignore' for weak
   joins, but you can set some other value. If you use "setnull" value and you
   are using reverse join, then foreign table record will not be updated, but
   value of the foreign field will be set to null.
