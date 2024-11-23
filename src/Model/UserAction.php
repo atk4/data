@@ -29,7 +29,6 @@ class UserAction
     /** Defining records scope of the action */
     public const APPLIES_TO_NO_RECORDS = 'none'; // e.g. add
     public const APPLIES_TO_SINGLE_RECORD = 'single'; // e.g. edit, delete, archive
-    public const APPLIES_TO_MULTIPLE_RECORDS = 'multiple'; // e.g. delete
     public const APPLIES_TO_ALL_RECORDS = 'all'; // e.g. truncate
 
     /** @var string by default action is for a single record */
@@ -140,7 +139,6 @@ class UserAction
                 }
 
                 break;
-            case self::APPLIES_TO_MULTIPLE_RECORDS:
             case self::APPLIES_TO_ALL_RECORDS:
                 $this->_getOwner()->assertIsModel();
 
