@@ -201,7 +201,7 @@ class UserActionTest extends TestCase
     public function testAppliesToNoRecordsLoadedRecordException(): void
     {
         $client = new UaClient($this->pers);
-        $client->addUserAction('new_client', ['appliesTo' => Model\UserAction::APPLIES_TO_NO_RECORDS]);
+        $client->addUserAction('new_client', ['appliesTo' => Model\UserAction::APPLIES_TO_NO_RECORD]);
         $client = $client->load(1);
 
         $this->expectException(Exception::class);

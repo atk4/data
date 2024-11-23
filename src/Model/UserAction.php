@@ -27,7 +27,7 @@ class UserAction
     use TrackableTrait;
 
     /** Defining records scope of the action */
-    public const APPLIES_TO_NO_RECORDS = 'none'; // e.g. add
+    public const APPLIES_TO_NO_RECORD = 'none'; // e.g. add
     public const APPLIES_TO_SINGLE_RECORD = 'single'; // e.g. edit, delete, archive
     public const APPLIES_TO_ALL_RECORDS = 'all'; // e.g. truncate
 
@@ -58,7 +58,7 @@ class UserAction
     /** @var array<string, array<string, mixed>> Arguments definition. */
     public $args = [];
 
-    /** @var list<string>|bool Specify which fields may be dirty when invoking action. APPLIES_TO_NO_RECORDS|APPLIES_TO_SINGLE_RECORD scopes for adding/modifying */
+    /** @var list<string>|bool Specify which fields may be dirty when invoking action. APPLIES_TO_NO_RECORD|APPLIES_TO_SINGLE_RECORD scopes for adding/modifying */
     public $fields = [];
 
     /** Atomic action will automatically begin transaction before and commit it after completing. */
@@ -115,7 +115,7 @@ class UserAction
         }
 
         switch ($this->appliesTo) {
-            case self::APPLIES_TO_NO_RECORDS:
+            case self::APPLIES_TO_NO_RECORD:
                 if ($this->getEntity()->isLoaded()) {
                     throw (new Exception('User action can be executed on new entity only'))
                         ->addMoreInfo('id', $this->getEntity()->getId());

@@ -133,7 +133,7 @@ trait UserActionsTrait
         // declare our basic CRUD actions for the model
         $this->addUserAction('add', [
             'fields' => true,
-            'appliesTo' => UserAction::APPLIES_TO_NO_RECORDS,
+            'appliesTo' => UserAction::APPLIES_TO_NO_RECORD,
             'callback' => 'save',
             'description' => 'Add ' . $this->getModelCaption(),
         ]);
