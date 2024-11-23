@@ -34,16 +34,16 @@ class UserAction
     /** @var string by default action is for a single record */
     public $appliesTo = self::APPLIES_TO_SINGLE_RECORD;
 
-    /** @var \Closure<T of Model>(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed|string code to execute. By default will call entity method with same name */
+    /** @var \Closure<T of Model>(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed|string|null code to execute. By default will call entity method with same name */
     public $callback;
 
-    /** @var \Closure<T of Model>(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed|string identical to callback, but would generate preview of action without permanent effect */
+    /** @var \Closure<T of Model>(T, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed, mixed): mixed|string|null identical to callback, but would generate preview of action without permanent effect */
     public $preview;
 
-    /** @var string caption to put on the button */
+    /** @var string|null caption to put on the button */
     public $caption;
 
-    /** @var string|\Closure($this): string a longer description of this action. */
+    /** @var string|\Closure($this): string|null a longer description of this action. */
     public $description;
 
     /** @var bool|string|\Closure($this): string Will ask user to confirm. */
