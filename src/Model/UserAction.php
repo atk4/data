@@ -109,44 +109,6 @@ class UserAction
         throw new Exception('Action instance not found in model');
     }
 
-    /**
-     * Attempt to execute callback of the action.
-     *
-     * @param mixed ...$args
-     *
-     * @return mixed
-     */
-    public function execute(...$args)
-    {
-        $passOwner = false;
-        if ($this->callback === null) {
-            $fx = \Closure::fromCallable([$this->_getOwner(), $this->shortName]);
-        } elseif (is_string($this->callback)) {
-            $fx = \Closure::fromCallable([$this->_getOwner(), $this->callback]);
-        } else {
-            $passOwner = true;
-            $fx = $this->callback;
-        }
-
-        // todo - ACL tests must allow
-
-        try {
-            $this->validateBeforeExecute();
-
-            if ($passOwner) {
-                array_unshift($args, $this->_getOwner());
-            }
-
-            return $this->atomic === false
-                ? $fx(...$args)
-                : $this->_getOwner()->atomic(static fn () => $fx(...$args));
-        } catch (CoreException $e) {
-            $e->addMoreInfo('action', $this);
-
-            throw $e;
-        }
-    }
-
     public function validateBeforeExecute(): void
     {
         if ($this->enabled === false || ($this->enabled instanceof \Closure && ($this->enabled)($this->_getOwner()) === false)) {
@@ -183,6 +145,44 @@ class UserAction
                 $this->_getOwner()->assertIsModel();
 
                 break;
+        }
+    }
+
+    /**
+     * Attempt to execute callback of the action.
+     *
+     * @param mixed ...$args
+     *
+     * @return mixed
+     */
+    public function execute(...$args)
+    {
+        $passOwner = false;
+        if ($this->callback === null) {
+            $fx = \Closure::fromCallable([$this->_getOwner(), $this->shortName]);
+        } elseif (is_string($this->callback)) {
+            $fx = \Closure::fromCallable([$this->_getOwner(), $this->callback]);
+        } else {
+            $passOwner = true;
+            $fx = $this->callback;
+        }
+
+        // todo - ACL tests must allow
+
+        try {
+            $this->validateBeforeExecute();
+
+            if ($passOwner) {
+                array_unshift($args, $this->_getOwner());
+            }
+
+            return $this->atomic === false
+                ? $fx(...$args)
+                : $this->_getOwner()->atomic(static fn () => $fx(...$args));
+        } catch (CoreException $e) {
+            $e->addMoreInfo('action', $this);
+
+            throw $e;
         }
     }
 
