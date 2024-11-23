@@ -288,7 +288,7 @@ class UserActionTest extends TestCase
         self::assertFalse($action->getConfirmation());
 
         $action->confirmation = true;
-        self::assertSame('Are you sure you wish to execute Test using John?', $action->getConfirmation());
+        self::assertSame('Are you sure to execute Test using John?', $action->getConfirmation());
 
         $action->confirmation = 'Are you sure?';
         self::assertSame('Are you sure?', $action->getConfirmation());

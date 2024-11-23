@@ -240,7 +240,7 @@ class UserAction
         if ($this->confirmation instanceof \Closure) {
             return ($this->confirmation)($this);
         } elseif ($this->confirmation === true) {
-            $confirmation = 'Are you sure you wish to execute '
+            $confirmation = 'Are you sure to execute '
                 . $this->getCaption()
                 . ($this->isOwnerEntity() && $this->getEntity()->getTitle() ? ' using ' . $this->getEntity()->getTitle() : '')
                 . '?';
