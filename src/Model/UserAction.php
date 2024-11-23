@@ -114,17 +114,6 @@ class UserAction
             throw new Exception('User action is disabled');
         }
 
-        if (!is_bool($this->fields) && $this->isOwnerEntity()) {
-            $dirtyFields = array_keys($this->getEntity()->getDirtyRef());
-            $tooDirtyFields = array_diff($dirtyFields, $this->fields);
-
-            if ($tooDirtyFields !== []) {
-                throw (new Exception('User action cannot be executed when unrelated fields are dirty'))
-                    ->addMoreInfo('tooDirtyFields', $tooDirtyFields)
-                    ->addMoreInfo('otherDirtyFields', array_diff($dirtyFields, $tooDirtyFields));
-            }
-        }
-
         switch ($this->appliesTo) {
             case self::APPLIES_TO_NO_RECORDS:
                 if ($this->getEntity()->isLoaded()) {
@@ -143,6 +132,17 @@ class UserAction
                 $this->_getOwner()->assertIsModel();
 
                 break;
+        }
+
+        if (!is_bool($this->fields) && $this->isOwnerEntity()) {
+            $dirtyFields = array_keys($this->getEntity()->getDirtyRef());
+            $tooDirtyFields = array_diff($dirtyFields, $this->fields);
+
+            if ($tooDirtyFields !== []) {
+                throw (new Exception('User action cannot be executed when unrelated fields are dirty'))
+                    ->addMoreInfo('tooDirtyFields', $tooDirtyFields)
+                    ->addMoreInfo('otherDirtyFields', array_diff($dirtyFields, $tooDirtyFields));
+            }
         }
     }
 
