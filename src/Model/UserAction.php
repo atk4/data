@@ -165,8 +165,6 @@ class UserAction
             $fx = $this->callback;
         }
 
-        // todo - ACL tests must allow
-
         try {
             $this->validateBeforeExecute();
 
