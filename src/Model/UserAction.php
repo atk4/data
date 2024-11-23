@@ -28,7 +28,7 @@ class UserAction
 
     /** Defining records scope of the action */
     public const APPLIES_TO_NO_RECORDS = 'none'; // e.g. add
-    public const APPLIES_TO_SINGLE_RECORD = 'single'; // e.g. archive
+    public const APPLIES_TO_SINGLE_RECORD = 'single'; // e.g. edit, delete, archive
     public const APPLIES_TO_MULTIPLE_RECORDS = 'multiple'; // e.g. delete
     public const APPLIES_TO_ALL_RECORDS = 'all'; // e.g. truncate
 
@@ -149,7 +149,7 @@ class UserAction
     }
 
     /**
-     * Attempt to execute callback of the action.
+     * Execute callback of the action.
      *
      * @param mixed ...$args
      *
