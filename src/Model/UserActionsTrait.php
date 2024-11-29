@@ -156,7 +156,7 @@ trait UserActionsTrait
         ]);
 
         $this->addUserAction('validate', [
-            // 'appliesTo' => any entity!
+            'appliesTo' => UserAction::APPLIES_TO_SINGLE_RECORD,
             'description' => 'Provided with modified values will validate them but will not save',
             'fields' => true,
             'system' => true, // don't show by default
