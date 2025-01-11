@@ -64,6 +64,13 @@ class HasOneSql extends HasOne
         return $fieldExpression;
     }
 
+    private function getOurFieldCaptionWithoutReferenceSuffix(Model $theirModel): string
+    {
+        $theirField = $theirModel->getField($this->getTheirFieldName($theirModel));
+
+        return preg_replace('~ (' . preg_quote($theirField->getCaption(), '~') . '|ID)$~i', '', $this->getOurField()->getCaption());
+    }
+
     /**
      * Creates expression which sub-selects a field inside related model.
      *
@@ -76,14 +83,14 @@ class HasOneSql extends HasOne
         }
 
         $ourModel = $this->getOurModel();
+        $analysingTheirModel = $ourModel->getReference($this->link)->createAnalysingTheirModel();
 
         // if caption/type is not defined in $defaults then infer it from their field
-        $analysingTheirModel = $ourModel->getReference($this->link)->createAnalysingTheirModel();
         $analysingTheirField = $analysingTheirModel->getField($theirFieldName);
         $defaults['type'] ??= $analysingTheirField->type;
         $defaults['enum'] ??= $analysingTheirField->enum;
         $defaults['values'] ??= $analysingTheirField->values;
-        $defaults['caption'] ??= $analysingTheirField->caption;
+        $defaults['caption'] ??= $this->getOurFieldCaptionWithoutReferenceSuffix($analysingTheirModel) . ' ' . $analysingTheirField->getCaption();
         $defaults['ui'] = array_merge($defaults['ui'] ?? $analysingTheirField->ui, ['editable' => false]);
 
         $fieldExpression = $this->_addField($fieldName, false, $theirFieldName, $defaults);

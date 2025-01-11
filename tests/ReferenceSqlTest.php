@@ -927,12 +927,38 @@ class ReferenceSqlTest extends TestCase
         $orderUserRef = $o->hasOne('my_user', ['model' => $u, 'ourField' => 'user_id']);
         $orderUserRef->addField('user_last_name', 'last_name');
 
-        $referencedCaption = $o->getField('user_last_name')->getCaption();
-
         // $field->caption for the field 'last_name' is defined in referenced model (User)
         // When Order add field from Referenced model User
         // caption will be passed to Order field user_last_name
-        self::assertSame('Surname', $referencedCaption);
+        $referencedCaption = $o->getField('user_last_name')->getCaption();
+        self::assertSame('User Surname', $referencedCaption);
+    }
+
+    public function testHasOneReferenceCaptionNonIdField(): void
+    {
+        $this->setDb([
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'last_name' => 'Doe'],
+                ['id' => 2, 'name' => 'Peter', 'last_name' => 'Foo'],
+                ['id' => 3, 'name' => 'Goofy', 'last_name' => 'Goo'],
+            ],
+            'order' => [
+                1 => ['id' => 1, 'user_name' => 'John'],
+                ['id' => 2, 'user_name' => 'Peter'],
+                ['id' => 3, 'user_name' => 'John'],
+            ],
+        ]);
+
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name');
+        $u->addField('last_name', ['caption' => 'Surname']);
+
+        $o = (new Model($this->db, ['table' => 'order']));
+        $orderUserRef = $o->hasOne('my_user', ['model' => $u, 'ourField' => 'user_name', 'theirField' => 'name']);
+        $orderUserRef->addField('user_last_name', 'last_name');
+
+        $referencedCaption = $o->getField('user_last_name')->getCaption();
+        self::assertSame('User Surname', $referencedCaption);
     }
 
     /**
