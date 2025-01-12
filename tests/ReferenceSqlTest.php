@@ -769,6 +769,31 @@ class ReferenceSqlTest extends TestCase
         self::assertSame($o->getField('user_id')->isVisible(), true);
     }
 
+    public function testAddTitleWholeIdField(): void
+    {
+        $this->setDb([
+            'user' => [
+                1 => ['user_id' => 1, 'name' => 'John'],
+            ],
+            'order' => [
+                ['amount' => '20', 'user_id' => 1],
+                ['amount' => '15', 'user_id' => 2],
+            ],
+        ]);
+
+        $u = new Model($this->db, ['table' => 'user', 'idField' => 'user_id']);
+        $u->addField('name');
+
+        $o = new Model($this->db, ['table' => 'order']);
+        $o->addField('amount');
+
+        $o->hasOne('user_id', ['model' => $u]);
+        $titleField = $o->getReference('user_id')->addTitle();
+
+        self::assertSame('user', $titleField->shortName);
+        self::assertSame('User', $titleField->getCaption());
+    }
+
     /**
      * Tests that if we change hasOne->addTitle() field value then it will also update
      * link field value when saved.
