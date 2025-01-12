@@ -64,11 +64,12 @@ class HasOneSql extends HasOne
         return $fieldExpression;
     }
 
-    private function getLinkNameWithoutIdSuffix(): string
+    private function getLinkNameWithoutReferenceSuffix(Model $theirModel): string
     {
         $ourModel = $this->getOurModel();
+        $theirFieldName = $this->getTheirFieldName($theirModel);
 
-        return preg_replace('~_(' . preg_quote($ourModel->idField, '~') . '|id)$~', '', $this->link);
+        return preg_replace('~_(' . preg_quote($theirFieldName, '~') . '|' . preg_quote($ourModel->idField, '~') . '|id)$~', '', $this->link);
     }
 
     private function getOurFieldCaptionWithoutReferenceSuffix(Model $theirModel): string
@@ -182,7 +183,10 @@ class HasOneSql extends HasOne
      */
     public function addTitle(array $defaults = []): SqlExpressionField
     {
-        $fieldName = $defaults['field'] ?? $this->getLinkNameWithoutIdSuffix();
+        $ourModel = $this->getOurModel();
+        $analysingTheirModel = $ourModel->getReference($this->link)->createAnalysingTheirModel();
+
+        $fieldName = $defaults['field'] ?? $this->getLinkNameWithoutReferenceSuffix($analysingTheirModel);
 
         $defaults['ui'] = array_merge(['visible' => true], $defaults['ui'] ?? [], ['editable' => false]);
 

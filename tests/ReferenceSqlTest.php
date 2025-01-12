@@ -788,10 +788,10 @@ class ReferenceSqlTest extends TestCase
         $o->addField('amount');
 
         $o->hasOne('user_id', ['model' => $u]);
-        $titleField = $o->getReference('user_id')->addTitle();
+        $referencedTitleField = $o->getReference('user_id')->addTitle();
 
-        self::assertSame('user', $titleField->shortName);
-        self::assertSame('User', $titleField->getCaption());
+        self::assertSame('user', $referencedTitleField->shortName);
+        self::assertSame('User', $referencedTitleField->getCaption());
     }
 
     /**
@@ -981,6 +981,16 @@ class ReferenceSqlTest extends TestCase
 
         $referencedCaption = $o->getField('user_last_name')->getCaption();
         self::assertSame('User Surname', $referencedCaption);
+
+        $referencedTitleField = $orderUserRef->addTitle();
+        self::assertSame('my_user', $referencedTitleField->shortName);
+        self::assertSame('My User', $referencedTitleField->getCaption());
+
+        $orderUserRef2 = $o->hasOne('my_user2_name', ['model' => $u, 'ourField' => 'user_name', 'theirField' => 'name']);
+        $referenced2TitleField = $orderUserRef2->addTitle();
+
+        self::assertSame('my_user2', $referenced2TitleField->shortName);
+        self::assertSame('My User 2', $referenced2TitleField->getCaption());
     }
 
     /**
