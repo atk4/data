@@ -927,9 +927,6 @@ class ReferenceSqlTest extends TestCase
         $orderUserRef = $o->hasOne('my_user', ['model' => $u, 'ourField' => 'user_id']);
         $orderUserRef->addField('user_last_name', 'last_name');
 
-        // $field->caption for the field 'last_name' is defined in referenced model (User)
-        // When Order add field from Referenced model User
-        // caption will be passed to Order field user_last_name
         $referencedCaption = $o->getField('user_last_name')->getCaption();
         self::assertSame('User Surname', $referencedCaption);
     }
