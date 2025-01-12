@@ -769,6 +769,31 @@ class ReferenceSqlTest extends TestCase
         self::assertSame($o->getField('user_id')->isVisible(), true);
     }
 
+    public function testHasOneTitleWholeIdField(): void
+    {
+        $this->setDb([
+            'user' => [
+                1 => ['user_id' => 1, 'name' => 'John'],
+            ],
+            'order' => [
+                ['amount' => '20', 'user_id' => 1],
+                ['amount' => '15', 'user_id' => 2],
+            ],
+        ]);
+
+        $u = new Model($this->db, ['table' => 'user', 'idField' => 'user_id']);
+        $u->addField('name');
+
+        $o = new Model($this->db, ['table' => 'order']);
+        $o->addField('amount');
+
+        $o->hasOne('user_id', ['model' => $u]);
+        $referencedTitleField = $o->getReference('user_id')->addTitle();
+
+        self::assertSame('user', $referencedTitleField->shortName);
+        self::assertSame('User', $referencedTitleField->getCaption());
+    }
+
     /**
      * Tests that if we change hasOne->addTitle() field value then it will also update
      * link field value when saved.
@@ -928,11 +953,44 @@ class ReferenceSqlTest extends TestCase
         $orderUserRef->addField('user_last_name', 'last_name');
 
         $referencedCaption = $o->getField('user_last_name')->getCaption();
+        self::assertSame('User Surname', $referencedCaption);
+    }
 
-        // $field->caption for the field 'last_name' is defined in referenced model (User)
-        // When Order add field from Referenced model User
-        // caption will be passed to Order field user_last_name
-        self::assertSame('Surname', $referencedCaption);
+    public function testHasOneReferenceCaptionNonIdField(): void
+    {
+        $this->setDb([
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'last_name' => 'Doe'],
+                ['id' => 2, 'name' => 'Peter', 'last_name' => 'Foo'],
+                ['id' => 3, 'name' => 'Goofy', 'last_name' => 'Goo'],
+            ],
+            'order' => [
+                1 => ['id' => 1, 'user_name' => 'John'],
+                ['id' => 2, 'user_name' => 'Peter'],
+                ['id' => 3, 'user_name' => 'John'],
+            ],
+        ]);
+
+        $u = new Model($this->db, ['table' => 'user']);
+        $u->addField('name');
+        $u->addField('last_name', ['caption' => 'Surname']);
+
+        $o = (new Model($this->db, ['table' => 'order']));
+        $orderUserRef = $o->hasOne('my_user', ['model' => $u, 'ourField' => 'user_name', 'theirField' => 'name']);
+        $orderUserRef->addField('user_last_name', 'last_name');
+
+        $referencedCaption = $o->getField('user_last_name')->getCaption();
+        self::assertSame('User Surname', $referencedCaption);
+
+        $referencedTitleField = $orderUserRef->addTitle();
+        self::assertSame('my_user', $referencedTitleField->shortName);
+        self::assertSame('My User', $referencedTitleField->getCaption());
+
+        $orderUserRef2 = $o->hasOne('my_user2_name', ['model' => $u, 'ourField' => 'user_name', 'theirField' => 'name']);
+        $referenced2TitleField = $orderUserRef2->addTitle();
+
+        self::assertSame('my_user2', $referenced2TitleField->shortName);
+        self::assertSame('My User 2', $referenced2TitleField->getCaption());
     }
 
     /**

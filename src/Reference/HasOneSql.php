@@ -64,6 +64,22 @@ class HasOneSql extends HasOne
         return $fieldExpression;
     }
 
+    private function getLinkNameWithoutReferenceSuffix(Model $theirModel): string
+    {
+        $ourModel = $this->getOurModel();
+        $theirFieldName = $this->getTheirFieldName($theirModel);
+
+        return preg_replace('~_(' . preg_quote($theirFieldName, '~') . '|' . preg_quote($ourModel->idField, '~') . '|id)$~', '', $this->link);
+    }
+
+    private function getOurFieldCaptionWithoutReferenceSuffix(Model $theirModel): string
+    {
+        $ourModel = $this->getOurModel();
+        $theirField = $theirModel->getField($this->getTheirFieldName($theirModel));
+
+        return preg_replace('~ (' . preg_quote($theirField->getCaption(), '~') . '|' . preg_quote($ourModel->getIdField()->getCaption(), '~') . '|ID)$~i', '', $this->getOurField()->getCaption());
+    }
+
     /**
      * Creates expression which sub-selects a field inside related model.
      *
@@ -76,14 +92,14 @@ class HasOneSql extends HasOne
         }
 
         $ourModel = $this->getOurModel();
+        $analysingTheirModel = $ourModel->getReference($this->link)->createAnalysingTheirModel();
 
         // if caption/type is not defined in $defaults then infer it from their field
-        $analysingTheirModel = $ourModel->getReference($this->link)->createAnalysingTheirModel();
         $analysingTheirField = $analysingTheirModel->getField($theirFieldName);
         $defaults['type'] ??= $analysingTheirField->type;
         $defaults['enum'] ??= $analysingTheirField->enum;
         $defaults['values'] ??= $analysingTheirField->values;
-        $defaults['caption'] ??= $analysingTheirField->caption;
+        $defaults['caption'] ??= $this->getOurFieldCaptionWithoutReferenceSuffix($analysingTheirModel) . ' ' . $analysingTheirField->getCaption();
         $defaults['ui'] = array_merge($defaults['ui'] ?? $analysingTheirField->ui, ['editable' => false]);
 
         $fieldExpression = $this->_addField($fieldName, false, $theirFieldName, $defaults);
@@ -168,8 +184,9 @@ class HasOneSql extends HasOne
     public function addTitle(array $defaults = []): SqlExpressionField
     {
         $ourModel = $this->getOurModel();
+        $analysingTheirModel = $ourModel->getReference($this->link)->createAnalysingTheirModel();
 
-        $fieldName = $defaults['field'] ?? preg_replace('~_(' . preg_quote($ourModel->idField, '~') . '|id)$~', '', $this->link);
+        $fieldName = $defaults['field'] ?? $this->getLinkNameWithoutReferenceSuffix($analysingTheirModel);
 
         $defaults['ui'] = array_merge(['visible' => true], $defaults['ui'] ?? [], ['editable' => false]);
 
