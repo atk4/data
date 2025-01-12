@@ -769,7 +769,7 @@ class ReferenceSqlTest extends TestCase
         self::assertSame($o->getField('user_id')->isVisible(), true);
     }
 
-    public function testAddTitleWholeIdField(): void
+    public function testHasOneTitleWholeIdField(): void
     {
         $this->setDb([
             'user' => [
