@@ -14,7 +14,6 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinxcontrib.phpdomain',
-    #'sphinxcontrib_phpautodoc',
     'myst_parser',
 ]
 
@@ -26,7 +25,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Agile Data'
-copyright = u'2016, Agile Toolkit'
+copyright = u'2016-2025, Agile Toolkit'
 
 exclude_patterns = ['_build']
 
