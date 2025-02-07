@@ -2096,9 +2096,13 @@ class Model implements \IteratorAggregate
             ];
         }
 
-        return [
-            'table' => $this->table,
-            'scope' => $this->scope()->toWords(),
-        ];
+        return array_merge([
+                'table' => $this->table,
+                'scope' => $this->scope()->toWords(),
+            ],
+            $this->getPersistence() instanceof Persistence\Sql
+                ? ['sql' => $this->action('select')->getDebugQuery()]
+                : []
+            );
     }
 }
