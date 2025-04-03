@@ -125,10 +125,6 @@ parameters:
         -
             identifier: method.notFound
             message: '~^Call to an undefined method Atk4\\Data\\Persistence::exprNow\(\)\.$~'
-        # for src/Reference/HasMany.php
-        -
-            identifier: method.notFound
-            message: '~^Call to an undefined method Atk4\\Data\\Model::dsql\(\)\.$~'
         # for tests/FieldTest.php
         -
             identifier: method.notFound
