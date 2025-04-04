@@ -19,7 +19,7 @@ class Folder extends Model
         $this->addField('name');
 
         $this->hasMany('SubFolder', ['model' => [self::class], 'theirField' => 'parent_id'])
-            ->addField('count', ['aggregate' => 'count', 'field' => $this->getPersistence()->expr($this, '*')]);
+            ->addField('count', ['aggregate' => 'count', 'field' => $this->getPersistence()->expr($this, '*')]); // @phpstan-ignore method.notFound
 
         $this->hasOne('parent_id', ['model' => [self::class]])
             ->addTitle();

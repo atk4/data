@@ -547,7 +547,7 @@ class ConditionSqlTest extends TestCase
             $t = (clone $u)->addCondition($field, ($negated ? 'not ' : '') . 'like', $value);
             $res = array_keys($t->export(null, 'id'));
 
-            $t = (clone $u)->addCondition($field, ($negated ? 'not ' : '') . 'like', $u->dsql()->field($u->expr('[]', [$value])));
+            $t = (clone $u)->addCondition($field, ($negated ? 'not ' : '') . 'like', $u->getPersistence()->dsql()->field($u->expr('[]', [$value])));
             if (!$this->getConnection()->getConnection()->getNativeConnection() instanceof \mysqli // https://bugs.mysql.com/bug.php?id=114659
                 && (!$this->getDatabasePlatform() instanceof SQLServerPlatform || !$isBinary) // string encoding of bound variable is UTF-16
             ) {
@@ -681,7 +681,7 @@ class ConditionSqlTest extends TestCase
             $t = (clone $u)->addCondition($field, ($negated ? 'not ' : '') . 'regexp', $value);
             $res = array_keys($t->export(null, 'id'));
 
-            $t = (clone $u)->addCondition($field, ($negated ? 'not ' : '') . 'regexp', $u->dsql()->field($u->expr('[]', [$value])));
+            $t = (clone $u)->addCondition($field, ($negated ? 'not ' : '') . 'regexp', $u->getPersistence()->dsql()->field($u->expr('[]', [$value])));
             if (!$this->getConnection()->getConnection()->getNativeConnection() instanceof \mysqli) { // https://bugs.mysql.com/bug.php?id=114659
                 self::assertSame(array_keys($t->export(null, 'id')), $res);
             }
