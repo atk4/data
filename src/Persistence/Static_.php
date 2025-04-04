@@ -17,10 +17,10 @@ use Atk4\Data\Model;
 class Static_ extends Array_
 {
     /** @var string This will be the title field for the model. */
-    public $titleFieldForModel;
+    public ?string $titleFieldForModel = null;
 
     /** @var array<string, array<mixed>> Populate the following fields for the model. */
-    public $fieldsForModel = [];
+    public array $fieldsForModel;
 
     /**
      * @param array<int|string, mixed> $data
@@ -88,7 +88,7 @@ class Static_ extends Array_
             }
 
             // if title is not set, use first key
-            if (!$this->titleFieldForModel) {
+            if ($this->titleFieldForModel === null) {
                 if (is_int($k)) {
                     $keyOverride[$k] = 'name';
                     $this->titleFieldForModel = 'name';
@@ -162,7 +162,7 @@ class Static_ extends Array_
      */
     protected function addMissingFieldsToModel(Model $model): void
     {
-        if ($this->titleFieldForModel) {
+        if ($this->titleFieldForModel !== null) {
             $model->titleField = $this->titleFieldForModel;
         }
 

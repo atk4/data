@@ -380,7 +380,7 @@ Read more about {php:class}`Model\UserAction`
 
 ### Hooks
 
-Hooks (behaviours) can allow you to define callbacks which would trigger
+Hooks (behaviors) can allow you to define callbacks which would trigger
 when data is loaded, saved, deleted etc. Hooks are typically defined in
 {php:meth}`Model::init()` but will be executed accordingly.
 

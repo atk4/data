@@ -211,7 +211,7 @@ class TestCaseTest extends TestCase
     /**
      * @param int<1, 12> $month
      *
-     * @return array<mixed>
+     * @return array<mixed, mixed>
      */
     private function createAssertSameExportUnorderedTestRow(int $month): array
     {

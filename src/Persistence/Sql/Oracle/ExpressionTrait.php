@@ -57,7 +57,7 @@ trait ExpressionTrait
     /**
      * Like mb_str_split() function, but split by length in bytes.
      *
-     * @return array<string>
+     * @return list<string>
      */
     private function splitLongString(string $value, int $lengthBytes): array
     {

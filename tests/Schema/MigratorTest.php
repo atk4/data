@@ -314,8 +314,27 @@ class MigratorTest extends TestCase
         $user->createEntity()
             ->save(['name' => 'john', 'is_admin' => true, 'notes' => 'some long notes']);
         self::assertSame([
-            ['id' => 1, 'name' => 'john', 'password' => null, 'is_admin' => true, 'notes' => 'some long notes', 'main_role_id' => null],
+            [
+                'id' => 1,
+                'name' => 'john',
+                'password' => null,
+                'is_admin' => true,
+                'notes' => 'some long notes',
+                'main_role_id' => null,
+            ],
         ], $user->export());
+    }
+
+    public function testCreateSetModelIgnoreJoinField(): void
+    {
+        $model = new TestUserWithJoin($this->db);
+        $migrator = $this->createMigrator($model);
+
+        $modelFields = array_keys($model->getFields());
+        $migratorFields = array_keys($migrator->table->getColumns());
+
+        self::assertSame(['role_name'], array_values(array_diff($modelFields, $migratorFields)));
+        self::assertSame([], array_values(array_diff($migratorFields, $modelFields)));
     }
 
     public function testIntrospectTableToModelBasic(): void
@@ -431,5 +450,17 @@ class TestRole extends Model
 
         $this->addField('name');
         $this->hasMany('Users', ['model' => [TestUser::class], 'ourField' => 'id', 'theirField' => 'main_role_id']);
+    }
+}
+
+class TestUserWithJoin extends TestUser
+{
+    #[\Override]
+    protected function init(): void
+    {
+        parent::init();
+
+        $leftJoin = $this->leftJoin('role', ['masterField' => 'role_id']);
+        $leftJoin->addField('role_name');
     }
 }

@@ -227,7 +227,7 @@ change them (`$m->set('paid_amount', 123);`), you will receive exception.
 ### Available Aggregation Functions
 
 The mathematical aggregate `sum` will automatically
-default to 0 if no respective rows were provided. The default SQL behaviour is to
+default to 0 if no respective rows were provided. The default SQL behavior is to
 return NULL, but this does go well with the cascading formulas:
 
 ```

@@ -222,7 +222,7 @@ class ReferenceTest extends TestCase
 
     public function testCreateAnalysingTheirModelRecursiveInit(): void
     {
-        $userModelClass = get_class(new class() extends Model {
+        $userModelClass = get_class(new class extends Model {
             /** @var list<string> */
             public static array $logs = [];
 
@@ -256,7 +256,7 @@ class ReferenceTest extends TestCase
         });
         $userModelClass::$c = -1;
 
-        $orderModelClass = get_class(new class() extends Model {
+        $orderModelClass = get_class(new class extends Model {
             public static int $c;
 
             /** @var class-string<Model> */
@@ -311,7 +311,7 @@ class ReferenceTest extends TestCase
 
     public function testCreateAnalysingTheirModelKeepReferencedByPersistenceIfSeedIsClassNameOnly(): void
     {
-        $theirModelClass = get_class(new class() extends Model {
+        $theirModelClass = get_class(new class extends Model {
             public $table = 'foo';
 
             /** @var list<string> */
@@ -401,7 +401,7 @@ class ReferenceTest extends TestCase
 
     public function testCreateAnalysingTheirModelKeepReferencedByPersistenceIfSeedIsUnboundClosure(): void
     {
-        $modelClass = get_class(new class() extends Model {
+        $modelClass = get_class(new class extends Model {
             public $table = 'main';
 
             /** @var list<string> */
@@ -474,7 +474,7 @@ class ReferenceTest extends TestCase
         $m = new Model($this->db, ['table' => 'user']);
 
         $createModelFx = static function () {
-            return new class() extends Model {
+            return new class extends Model {
                 #[\Override]
                 protected function init(): void
                 {

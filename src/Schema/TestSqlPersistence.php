@@ -32,7 +32,7 @@ class TestSqlPersistence extends Persistence\Sql
 
                 $this->getConnection()->getConnection()->getConfiguration()->setSQLLogger( // @phpstan-ignore method.deprecated
                     // @phpstan-ignore class.implementsDeprecatedInterface (TODO PHP CS Fixer should allow comment on the same line)
-                    new class() implements SQLLogger {
+                    new class implements SQLLogger {
                         #[\Override]
                         public function startQuery($sql, ?array $params = null, ?array $types = null): void
                         {

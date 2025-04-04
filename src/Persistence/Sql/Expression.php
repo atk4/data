@@ -56,7 +56,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
      * This property is made public to ease customization and make it accessible
      * from Connection class for example.
      *
-     * @var array<array<mixed>>
+     * @var array<string, array<int|string, mixed>>
      */
     public array $args = ['custom' => []];
 
@@ -700,7 +700,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
         }
 
         // for PostgreSQL/Oracle CLOB/BLOB datatypes and PDO driver
-        if (is_resource($v) && get_resource_type($v) === 'stream') { // @phpstan-ignore function.impossibleType
+        if (is_resource($v) && get_resource_type($v) === 'stream') {
             $platform = $this->connection->getDatabasePlatform();
             if ($platform instanceof PostgreSQLPlatform || $platform instanceof OraclePlatform) {
                 $v = stream_get_contents($v);

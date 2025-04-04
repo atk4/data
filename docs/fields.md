@@ -98,7 +98,7 @@ if needed (see Field::actual)
 
 ### Basic Properties
 
-Fields have properties, which define its behaviour. Some properties apply on how
+Fields have properties, which define its behavior. Some properties apply on how
 the values are handled or restrictions on interaction, other values can even
 help with data visualization. For example if {php:attr}`Field::$enum` is used
 with Agile UI form, it will be displayed as radio button or a drop-down:

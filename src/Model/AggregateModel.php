@@ -40,7 +40,7 @@ class AggregateModel extends Model
 {
     public const HOOK_INIT_AGGREGATE_SELECT_QUERY = self::class . '@initAggregateSelectQuery';
 
-    /** @var array<int, string|Expression> */
+    /** @var list<string|Expression> */
     public $groupByFields = [];
 
     /**
@@ -71,14 +71,16 @@ class AggregateModel extends Model
      */
     public function setGroupBy(array $fields, array $aggregateExpressions = [])
     {
-        $this->groupByFields = array_unique(array_merge($this->groupByFields, $fields));
-
         foreach ($fields as $fieldName) {
             if ($fieldName instanceof Expression || $this->hasField($fieldName)) {
                 continue;
             }
 
             $this->addField($fieldName);
+        }
+
+        foreach ($fields as $fieldName) {
+            $this->groupByFields[] = $fieldName;
         }
 
         foreach ($aggregateExpressions as $name => $seed) {

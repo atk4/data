@@ -66,7 +66,7 @@ trait PlatformTrait
     }
 
     // Oracle DBAL platform autoincrement implementation does not increment like
-    // Sqlite or MySQL does, unify the behaviour
+    // Sqlite or MySQL does, unify the behavior
 
     #[\Override]
     public function getCreateSequenceSQL(Sequence $sequence)

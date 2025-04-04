@@ -22,7 +22,7 @@ abstract class Query extends Expression
 
     public bool $wrapInParentheses = true;
 
-    /** @var array<string> */
+    /** @var list<string> */
     protected array $supportedOperators = ['=', '!=', '<', '>', '<=', '>=', 'in', 'not in', 'like', 'not like', 'regexp', 'not regexp'];
 
     protected string $templateSelect = '[with]select[option] [field] [from] [table][join][where][group][having][order][limit]';
@@ -314,7 +314,7 @@ abstract class Query extends Expression
         $j = [];
 
         // try to find alias in foreign table definition
-        // TODO this behaviour should be deprecated
+        // TODO this behavior should be deprecated
         if ($foreignAlias === null) {
             [$foreignTable, $foreignAlias] = array_pad(explode(' ', $foreignTable, 2), 2, null);
         }

@@ -101,7 +101,7 @@ class UserActionTest extends TestCase
 
     public function testCustomSeedClass(): void
     {
-        $customClass = get_class(new class() extends Model\UserAction {});
+        $customClass = get_class(new class extends Model\UserAction {});
 
         $client = new UaClient($this->pers);
         $client->addUserAction('foo', [$customClass]);
@@ -201,7 +201,7 @@ class UserActionTest extends TestCase
     public function testAppliesToNoRecordsLoadedRecordException(): void
     {
         $client = new UaClient($this->pers);
-        $client->addUserAction('new_client', ['appliesTo' => Model\UserAction::APPLIES_TO_NO_RECORDS]);
+        $client->addUserAction('new_client', ['appliesTo' => Model\UserAction::APPLIES_TO_NO_RECORD]);
         $client = $client->load(1);
 
         $this->expectException(Exception::class);
@@ -288,7 +288,7 @@ class UserActionTest extends TestCase
         self::assertFalse($action->getConfirmation());
 
         $action->confirmation = true;
-        self::assertSame('Are you sure you wish to execute Test using John?', $action->getConfirmation());
+        self::assertSame('Are you sure to execute Test using John?', $action->getConfirmation());
 
         $action->confirmation = 'Are you sure?';
         self::assertSame('Are you sure?', $action->getConfirmation());

@@ -100,8 +100,8 @@ class ConnectionTest extends TestCase
 
     public function testConnectionRegistry(): void
     {
-        $dummyConnectionClass = get_class(\Closure::bind(static fn () => new class() extends Connection {}, null, Connection::class)());
-        $dummyConnectionClass2 = get_class(\Closure::bind(static fn () => new class() extends Connection {}, null, Connection::class)());
+        $dummyConnectionClass = get_class(\Closure::bind(static fn () => new class extends Connection {}, null, Connection::class)());
+        $dummyConnectionClass2 = get_class(\Closure::bind(static fn () => new class extends Connection {}, null, Connection::class)());
         self::assertNotSame($dummyConnectionClass, $dummyConnectionClass2);
 
         $registryBackup = \Closure::bind(static fn () => Connection::$connectionClassRegistry, null, Connection::class)();

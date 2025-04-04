@@ -174,7 +174,7 @@ class LocalObjectTypeTest extends TestCase
         $platform = $this->getDatabasePlatform();
 
         $obj1 = new LocalObjectDummyClassWithLongNameAWithLongNameBWithLongNameCWithLongNameDWithLongNameEWithLongNameFWithLongNameGWithLongNameHWithLongNameIWithLongNameJWithLongNameKWithLongNameL();
-        $obj2 = new class() extends LocalObjectDummyClassWithLongNameAWithLongNameBWithLongNameCWithLongNameDWithLongNameEWithLongNameFWithLongNameGWithLongNameHWithLongNameIWithLongNameJWithLongNameKWithLongNameL {};
+        $obj2 = new class extends LocalObjectDummyClassWithLongNameAWithLongNameBWithLongNameCWithLongNameDWithLongNameEWithLongNameFWithLongNameGWithLongNameHWithLongNameIWithLongNameJWithLongNameKWithLongNameL {};
 
         $v1 = $t->convertToDatabaseValue($obj1, $platform);
         $v2 = $t->convertToDatabaseValue($obj2, $platform);

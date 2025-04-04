@@ -290,27 +290,31 @@ class Migrator
         $this->table($model->table);
 
         foreach ($model->getFields() as $field) {
-            if ($field->neverPersist || $field instanceof SqlExpressionField) {
+            if (
+                $field->neverPersist
+                || $field->hasJoin()
+                || $field instanceof SqlExpressionField
+            ) {
                 continue;
             }
 
             if ($field->shortName === $model->idField) {
-                $refype = self::REF_TYPE_PRIMARY;
+                $refType = self::REF_TYPE_PRIMARY;
                 $persistField = $field;
             } else {
                 $refField = $field->hasReference() ? $this->getReferenceField($field) : null;
                 if ($refField !== null) {
-                    $refype = self::REF_TYPE_LINK;
+                    $refType = self::REF_TYPE_LINK;
                     $persistField = $refField;
                 } else {
-                    $refype = self::REF_TYPE_NONE;
+                    $refType = self::REF_TYPE_NONE;
                     $persistField = $field;
                 }
             }
 
             $options = [
                 'type' => $persistField->type,
-                'ref_type' => $refype,
+                'ref_type' => $refType,
                 'nullable' => ($field->nullable && !$field->required) || ($persistField->nullable && !$persistField->required),
             ];
 

@@ -281,7 +281,7 @@ class ModelAggregateTest extends TestCase
 
         // TODO subselect should not select "client" field
         $aggregate->removeField('client');
-        $aggregate->groupByFields = array_diff($aggregate->groupByFields, ['client']);
+        $aggregate->groupByFields = array_filter($aggregate->groupByFields, static fn ($v) => $v !== 'client');
         $this->assertSameSql(
             'select `client_id`, sum(`amount`) `amount` from (select `id`, `client_id`, `name`, `amount`, (select `name` from `client` `_c_2bfe9d72a4aa` where `id` = `invoice`.`client_id`) `client` from `invoice`) `_tm` group by `client_id` order by `client_id`',
             $aggregate->action('select')->render()[0]
