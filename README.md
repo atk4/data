@@ -663,7 +663,7 @@ $salary
     ->table('salary')
     ->field(['emp_no', 'max_salary' => $eMs, 'months' => $eDf])
     ->group('emp_no')
-    ->order('-max_salary')
+    ->order('-max_salary');
 
 // define sub-query for employee "id" with certain birth-date
 $employees = $salary->dsql()
