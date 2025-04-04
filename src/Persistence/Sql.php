@@ -129,7 +129,7 @@ class Sql extends Persistence
     protected function initPersistence(Model $model): void
     {
         $model->addMethod('expr', static function (Model $m, ...$args) {
-            return $m->getPersistence()->expr($m, ...$args);
+            return self::assertInstanceOf($m->getPersistence())->expr($m, ...$args);
         });
     }
 
