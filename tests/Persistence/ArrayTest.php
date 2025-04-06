@@ -274,6 +274,34 @@ class ArrayTest extends TestCase
         ], $q->getRows());
     }
 
+    public function testConditionNull(): void
+    {
+        $dbData = [
+            1 => ['code' => 2],
+            ['code' => 3],
+            ['code' => null],
+        ];
+
+        $p = new Persistence\Array_($dbData);
+        $m = new Model($p);
+        $m->addField('code', ['type' => 'integer']);
+
+        $m->scope()->clear();
+        $m->addCondition('code', '=', null);
+        self::assertCount(1, $m->export());
+
+        $m->scope()->clear();
+        $m->addCondition('code', '!=', null);
+        self::assertCount(2, $m->export());
+
+        $m->scope()->clear();
+        $m->addCondition('code', '>', null);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unsupported operator for null value');
+        $m->export();
+    }
+
     public function testConditionLike(): void
     {
         $dbData = ['countries' => [
@@ -378,15 +406,6 @@ class ArrayTest extends TestCase
         $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '%ABC%');
         self::assertCount(0, $m->export());
-
-        // null value
-        $m->scope()->clear();
-        $m->addCondition('code', '=', null);
-        self::assertCount(1, $m->export());
-
-        $m->scope()->clear();
-        $m->addCondition('code', '!=', null);
-        self::assertCount(9, $m->export());
     }
 
     public function testConditionRegexp(): void
