@@ -381,7 +381,7 @@ Model::addCondition method
 
 Creates condition object based on provided arguments. It acts similar to Model::addCondition
 
-$key can be Model field name, Field object, Expression object, FALSE (interpreted as Expression('false')), TRUE (interpreted as empty condition) or an array in the form of [$key, $operator, $value]
+$key can be Model field name, Field object or Expression object
 $operator can be one of the supported operators >, <, >=, <=, !=, in, not in, like, not like, regexp, not regexp
 $value can be Field object, Expression object, array (interpreted as 'any of the values') or other scalar value
 
