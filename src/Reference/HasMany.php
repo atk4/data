@@ -87,6 +87,9 @@ class HasMany extends Reference
 
         return $this->createTheirModel($defaults)->addCondition(
             $this->getTheirFieldName(),
+            $ourModelOrEntity->isEntity()
+                ? '='
+                : 'in',
             $this->getOurFieldValueForRefCondition($ourModelOrEntity)
         );
     }

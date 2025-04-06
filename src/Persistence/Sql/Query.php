@@ -596,18 +596,10 @@ abstract class Query extends Expression
         }
 
         if ($operator === null) {
-            if ($value instanceof Expressionable) {
-                $value = $value->getDsqlExpression($this);
-            }
-
-            if ($value instanceof self && $value->mode === 'select') {
-                $operator = 'in';
-            } else {
-                $operator = '=';
-            }
-        } else {
-            $operator = strtolower($operator);
+            $operator = '=';
         }
+
+        $operator = strtolower($operator);
 
         if (!in_array($operator, $this->supportedOperators, true)) {
             throw (new Exception('Unsupported operator'))

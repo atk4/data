@@ -650,7 +650,7 @@ class QueryTest extends TestCase
             $this->q('[where]')->where('id', 'in', [1, 2])->render()[0]
         );
         self::assertSame(
-            'where "id" in (select * from "user")',
+            'where "id" = (select * from "user")',
             $this->q('[where]')->where('id', $this->q()->table('user'))->render()[0]
         );
 
