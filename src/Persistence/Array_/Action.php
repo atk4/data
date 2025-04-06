@@ -175,6 +175,10 @@ class Action
                 $res = is_array($v2) ? $this->evaluateIf($v1, 'IN', $v2) : $v1 === $v2;
 
                 break;
+            case '!=':
+                $res = !$this->evaluateIf($v1, '=', $v2);
+
+                break;
             case '>':
                 $res = $v1 > $v2;
 
@@ -189,10 +193,6 @@ class Action
                 break;
             case '<=':
                 $res = $v1 <= $v2;
-
-                break;
-            case '!=':
-                $res = !$this->evaluateIf($v1, '=', $v2);
 
                 break;
             case 'IN':
