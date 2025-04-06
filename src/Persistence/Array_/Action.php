@@ -165,6 +165,12 @@ class Action
                 ->addMoreInfo('class', get_class($v2));
         }
 
+        if (is_array($v2) && count($v2) > 0 && !is_array(reset($v2)) && in_array($operator, ['=', '!='], true)) {
+            $operator = $operator === '='
+                ? 'IN'
+                : 'NOT IN';
+        }
+
         if (($v1 === null || $v2 === null) && !in_array($operator, ['=', '!='])) {
             throw (new Exception('Unsupported operator for null value'))
                 ->addMoreInfo('operator', $operator);
@@ -172,7 +178,7 @@ class Action
 
         switch (strtoupper($operator)) {
             case '=':
-                $res = is_array($v2) ? $this->evaluateIf($v1, 'IN', $v2) : $v1 === $v2;
+                $res = $v1 === $v2;
 
                 break;
             case '!=':
@@ -197,7 +203,7 @@ class Action
                 break;
             case 'IN':
                 $res = false;
-                foreach ($v2 as $v2Item) { // TODO flatten rows, this looses column names!
+                foreach ($v2 as $v2Item) {
                     if ($this->evaluateIf($v1, '=', $v2Item)) {
                         $res = true;
 
