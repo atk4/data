@@ -600,9 +600,7 @@ abstract class Query extends Expression
                 $value = $value->getDsqlExpression($this);
             }
 
-            if (is_array($value)) {
-                $operator = 'in';
-            } elseif ($value instanceof self && $value->mode === 'select') {
+            if ($value instanceof self && $value->mode === 'select') {
                 $operator = 'in';
             } else {
                 $operator = '=';
