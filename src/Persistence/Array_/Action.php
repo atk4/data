@@ -178,7 +178,7 @@ class Action
 
             if ($values === []) {
                 return null;
-            } else if (count($values) === 1) {
+            } elseif (count($values) === 1) {
                 return reset($values);
             }
 
@@ -217,7 +217,7 @@ class Action
 
         foreach ([$v1, ...($v2Array ? $v2 : [$v2])] as $v) {
             if ($v === null) {
-                if (in_array($operator, ['=', '!='])) {
+                if (in_array($operator, ['=', '!='], true)) {
                     continue;
                 }
 
