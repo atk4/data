@@ -204,7 +204,7 @@ class Action
                 ->addMoreInfo('class', get_class($v2));
         }
 
-        if (is_array($v2) && count($v2) > 0 && !is_array(reset($v2)) && in_array($operator, ['=', '!='], true)) {
+        if (is_array($this->tryConvertTableToValue($v2, true)) && in_array($operator, ['=', '!='], true)) {
             $operator = $operator === '='
                 ? 'IN'
                 : 'NOT IN';
