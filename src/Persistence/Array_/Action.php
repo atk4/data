@@ -204,12 +204,6 @@ class Action
                 ->addMoreInfo('class', get_class($v2));
         }
 
-        if (is_array($this->tryConvertTableToValue($v2, true)) && in_array($operator, ['=', '!='], true)) {
-            $operator = $operator === '='
-                ? 'IN'
-                : 'NOT IN';
-        }
-
         $v2Array = in_array(strtoupper($operator), ['IN', 'NOT IN'], true);
 
         $v1 = $this->tryConvertTableToValue($v1, false);

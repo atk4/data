@@ -650,7 +650,7 @@ class QueryTest extends TestCase
             $this->q('[where]')->where('id', 'in', [1, 2])->render()[0]
         );
         self::assertSame(
-            'where "id" in (select * from "user")',
+            'where "id" = (select * from "user")',
             $this->q('[where]')->where('id', $this->q()->table('user'))->render()[0]
         );
 
@@ -715,6 +715,15 @@ class QueryTest extends TestCase
     {
         $this->expectException(Exception::class);
         $this->q('[where]')->where('a', '!=', new \DateTime());
+    }
+
+    public function testWhereNoOperatorWithArrayException(): void
+    {
+        $q = $this->q('[where]')->where('a', [1, 2]);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unsupported operator for array value');
+        $q->render();
     }
 
     /**

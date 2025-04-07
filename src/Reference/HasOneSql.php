@@ -151,7 +151,7 @@ class HasOneSql extends HasOne
             $ourFieldExpression = $ourModelOrEntity->action('field', [$this->getOurField()]);
 
             $theirModel->getModel(true)
-                ->addCondition($this->getTheirFieldName($theirModel), $ourFieldExpression);
+                ->addCondition($this->getTheirFieldName($theirModel), 'in', $ourFieldExpression);
         }
 
         return $theirModel;

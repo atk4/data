@@ -93,7 +93,7 @@ parameters:
             path: 'src/Persistence/Sql/Query.php'
             identifier: variable.undefined
             message: '~^(Undefined variable: \$(operator|value)|Variable \$value might not be defined\.)$~'
-            count: 3
+            count: 2
 
         # TODO these rules are generated, this ignores should be fixed in the code
         # for src/Schema/TestCase.php

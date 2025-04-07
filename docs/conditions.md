@@ -122,7 +122,7 @@ If you are building multiple conditions against the same field, you can use this
 format:
 
 ```
-$m->addCondition('name', ['John', 'Joe']);
+$m->addCondition('name', 'in', ['John', 'Joe']);
 ```
 
 For all other cases you can implement them with {php:meth}`Model::expr`:
@@ -383,7 +383,7 @@ Creates condition object based on provided arguments. It acts similar to Model::
 
 $key can be Model field name, Field object or Expression object
 $operator can be one of the supported operators >, <, >=, <=, !=, in, not in, like, not like, regexp, not regexp
-$value can be Field object, Expression object, array (interpreted as 'any of the values') or other scalar value
+$value can be Field object, Expression object or any scalar value
 
 If $value is omitted as argument then $operator is considered as $value and '=' is used as operator
 
