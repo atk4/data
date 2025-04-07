@@ -151,6 +151,45 @@ class Action
     }
 
     /**
+     * @param mixed $value
+     *
+     * @return mixed
+     */
+    private function tryConvertTableToValue($value, bool $toArray)
+    {
+        if (is_array($value)) {
+            $values = [];
+            foreach ($value as $k => $row) {
+                if (!is_array($row)) {
+                    return $value;
+                }
+
+                if (count($row) !== 1) {
+                    throw (new Exception('Unable to get value from table with more than 1 column'))
+                        ->addMoreInfo('table', $value);
+                }
+
+                $values[$k] = reset($row);
+            }
+
+            if ($toArray) {
+                return $values;
+            }
+
+            if ($values === []) {
+                return null;
+            } elseif (count($values) === 1) {
+                return reset($values);
+            }
+
+            throw (new Exception('Unable to get value from table with more than 1 row'))
+                ->addMoreInfo('table', $value);
+        }
+
+        return $value;
+    }
+
+    /**
      * @param mixed $v1
      * @param mixed $v2
      */
@@ -165,9 +204,40 @@ class Action
                 ->addMoreInfo('class', get_class($v2));
         }
 
+        if (is_array($this->tryConvertTableToValue($v2, true)) && in_array($operator, ['=', '!='], true)) {
+            $operator = $operator === '='
+                ? 'IN'
+                : 'NOT IN';
+        }
+
+        $v2Array = in_array(strtoupper($operator), ['IN', 'NOT IN'], true);
+
+        $v1 = $this->tryConvertTableToValue($v1, false);
+        $v2 = $this->tryConvertTableToValue($v2, $v2Array);
+
+        foreach ([$v1, ...($v2Array ? $v2 : [$v2])] as $v) {
+            if ($v === null) {
+                if (in_array($operator, ['=', '!='], true)) {
+                    continue;
+                }
+
+                throw (new Exception('Unsupported operator for null value'))
+                    ->addMoreInfo('operator', $operator);
+            }
+
+            if (!is_scalar($v)) {
+                throw (new Exception('Only scalar values can be compared'))
+                    ->addMoreInfo('value', $v);
+            }
+        }
+
         switch (strtoupper($operator)) {
             case '=':
-                $res = is_array($v2) ? $this->evaluateIf($v1, 'IN', $v2) : $v1 === $v2;
+                $res = $v1 === $v2;
+
+                break;
+            case '!=':
+                $res = !$this->evaluateIf($v1, '=', $v2);
 
                 break;
             case '>':
@@ -186,13 +256,9 @@ class Action
                 $res = $v1 <= $v2;
 
                 break;
-            case '!=':
-                $res = !$this->evaluateIf($v1, '=', $v2);
-
-                break;
             case 'IN':
                 $res = false;
-                foreach ($v2 as $v2Item) { // TODO flatten rows, this looses column names!
+                foreach ($v2 as $v2Item) {
                     if ($this->evaluateIf($v1, '=', $v2Item)) {
                         $res = true;
 

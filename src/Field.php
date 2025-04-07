@@ -396,7 +396,7 @@ class Field implements Expressionable
             $typecastField->shortName = $this->shortName;
         }
 
-        if ($value instanceof Persistence\Array_\Action) { // needed to pass hintable tests
+        if ($value instanceof Persistence\Array_\Action) {
             $v = $value;
         } elseif (is_array($value)) {
             $v = array_map(static fn ($value) => $value === null ? null : $typecastField->typecastSaveField($value), $value);

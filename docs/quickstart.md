@@ -386,9 +386,10 @@ The `$dsn` can also be using the PEAR-style DSN format, such as:
 For some persistence classes, you should use constructor directly:
 
 ```
-$array = [];
-$array[1] = ['name' => 'John'];
-$array[2] = ['name' => 'Peter'];
+$array = [
+    1 => ['name' => 'John'],
+    2 => ['name' => 'Peter'],
+];
 
 $db = new Persistence\Array_($array);
 $m = new Model($db);
@@ -401,7 +402,10 @@ There are several Persistence classes that deal with different data sources.
 Lets load up our console and try out a different persistence:
 
 ```
-$a = ['user' => [], 'contact_info' => []];
+$a = [
+    'user' => [],
+    'contact_info' => [],
+];
 $ar = new Persistence\Array_($a);
 $m = new Model_User($ar);
 $m->set('username', 'test');

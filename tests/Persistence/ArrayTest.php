@@ -8,6 +8,7 @@ use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\Array_\Action;
 use Atk4\Data\Tests\Model\Female;
 use Atk4\Data\Tests\Model\Male;
 
@@ -274,6 +275,34 @@ class ArrayTest extends TestCase
         ], $q->getRows());
     }
 
+    public function testConditionNull(): void
+    {
+        $dbData = [
+            1 => ['code' => 2],
+            ['code' => 3],
+            ['code' => null],
+        ];
+
+        $p = new Persistence\Array_($dbData);
+        $m = new Model($p);
+        $m->addField('code', ['type' => 'integer']);
+
+        $m->scope()->clear();
+        $m->addCondition('code', '=', null);
+        self::assertCount(1, $m->export());
+
+        $m->scope()->clear();
+        $m->addCondition('code', '!=', null);
+        self::assertCount(2, $m->export());
+
+        $m->scope()->clear();
+        $m->addCondition('code', '>', null);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unsupported operator for null value');
+        $m->export();
+    }
+
     public function testConditionLike(): void
     {
         $dbData = ['countries' => [
@@ -378,15 +407,6 @@ class ArrayTest extends TestCase
         $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '%ABC%');
         self::assertCount(0, $m->export());
-
-        // null value
-        $m->scope()->clear();
-        $m->addCondition('code', '=', null);
-        self::assertCount(1, $m->export());
-
-        $m->scope()->clear();
-        $m->addCondition('code', '!=', null);
-        self::assertCount(9, $m->export());
     }
 
     public function testConditionRegexp(): void
@@ -480,6 +500,57 @@ class ArrayTest extends TestCase
             $dbDataCountries[8],
             $dbDataCountries[9],
         ], $m->action('select')->getRows());
+    }
+
+    public function testConditionNoScalarException(): void
+    {
+        $dbData = [
+            1 => ['code' => 2],
+        ];
+
+        $p = new Persistence\Array_($dbData);
+        $m = new Model($p);
+        $m->addField('code', ['type' => 'integer']);
+
+        $m->addCondition('code', '>', new Action([['a' => new \DateTime()]]));
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Only scalar values can be compared');
+        $m->action('select')->getRows();
+    }
+
+    public function testConditionTableMoreThanOneRowException(): void
+    {
+        $dbData = [
+            1 => ['code' => 2],
+        ];
+
+        $p = new Persistence\Array_($dbData);
+        $m = new Model($p);
+        $m->addField('code', ['type' => 'integer']);
+
+        $m->addCondition('code', '>', new Action([['a' => 11], ['a' => 12]]));
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unable to get value from table with more than 1 row');
+        $m->action('select')->getRows();
+    }
+
+    public function testConditionTableMoreThanOneColumnException(): void
+    {
+        $dbData = [
+            1 => ['code' => 2],
+        ];
+
+        $p = new Persistence\Array_($dbData);
+        $m = new Model($p);
+        $m->addField('code', ['type' => 'integer']);
+
+        $m->addCondition('code', '>', new Action([['a' => 11, 'b' => 12]]));
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unable to get value from table with more than 1 column');
+        $m->action('select')->getRows();
     }
 
     public function testAggregates(): void
