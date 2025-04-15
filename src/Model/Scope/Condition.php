@@ -143,7 +143,7 @@ class Condition extends AbstractScope
                 $field = $model->getField($field);
             }
 
-            if ($field instanceof Field && in_array($field->type, ['string', 'integer', 'bigint'], true)) {
+            if ($field instanceof Field && in_array($field->type, ['string', 'text', 'boolean', 'smallint', 'integer', 'bigint', 'float', 'decimal', 'atk4_money'], true)) { // common scalar DBAL types
                 foreach ($this->value as $v) {
                     if (is_array($v)) {
                         throw (new Exception('Multi-dimensional array as condition value is not supported'))
