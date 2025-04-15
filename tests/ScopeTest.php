@@ -231,16 +231,20 @@ class ScopeTest extends TestCase
 
     public function testConditionUnsupportedOperatorWithArrayValueException(): void
     {
+        $country = new SCountry($this->db);
+
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Operator is not supported for array condition value');
-        new Condition('name', '>', ['a', 'b']);
+        $country->addCondition('name', '>', ['a', 'b']);
     }
 
     public function testConditionMultiDimensionalArrayException(): void
     {
+        $country = new SCountry($this->db);
+
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Multi-dimensional array as condition value is not supported');
-        new Condition('name', ['a', 'b' => ['c']]);
+        $country->addCondition('name', ['a', 'b' => ['c']]);
     }
 
     public function testConditionNestedException(): void

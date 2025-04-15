@@ -126,21 +126,6 @@ class Condition extends AbstractScope
                     ->addMoreInfo('operator', $operator);
             }
         }
-
-        if (is_array($value)) {
-            foreach ($value as $v) {
-                if (is_array($v)) {
-                    throw (new Exception('Multi-dimensional array as condition value is not supported'))
-                        ->addMoreInfo('value', $value);
-                }
-            }
-
-            if (!in_array($this->operator, [self::OPERATOR_IN, self::OPERATOR_NOT_IN], true)) {
-                throw (new Exception('Operator is not supported for array condition value'))
-                    ->addMoreInfo('operator', $operator)
-                    ->addMoreInfo('value', $value);
-            }
-        }
     }
 
     #[\Override]
@@ -151,10 +136,33 @@ class Condition extends AbstractScope
             return;
         }
 
+        if (is_array($this->value)) {
+            // field containing '/' means chained references and it is handled in toQueryArguments method
+            $field = $this->field;
+            if (is_string($field) && !str_contains($field, '/')) {
+                $field = $model->getField($field);
+            }
+
+            if ($field instanceof Field && in_array($field->type, ['string', 'integer', 'bigint'], true)) {
+                foreach ($this->value as $v) {
+                    if (is_array($v)) {
+                        throw (new Exception('Multi-dimensional array as condition value is not supported'))
+                            ->addMoreInfo('value', $this->value);
+                    }
+                }
+
+                if (!in_array($this->operator, [self::OPERATOR_IN, self::OPERATOR_NOT_IN], true)) {
+                    throw (new Exception('Operator is not supported for array condition value'))
+                        ->addMoreInfo('operator', $this->operator)
+                        ->addMoreInfo('value', $this->value);
+                }
+            }
+        }
+
         // if we have a definitive equal condition set the value as default value for field
         // new records will automatically get this value assigned for the field
         // TODO: fix when condition is part of OR scope
-        if ($this->operator === self::OPERATOR_EQUALS && !is_array($this->value)
+        if ($this->operator === self::OPERATOR_EQUALS
             && !$this->value instanceof Expressionable
             && !$this->value instanceof Persistence\Array_\Action // needed to pass hintable tests
         ) {
