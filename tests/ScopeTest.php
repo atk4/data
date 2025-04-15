@@ -546,6 +546,35 @@ class ScopeTest extends TestCase
         self::assertEmpty($scope->toWords($user));
     }
 
+    public function testDatetimeObject(): void
+    {
+        $this->setupTables();
+
+        $country = new SCountry($this->db);
+        $country->getField('name')->type = 'datetime';
+
+        $value = new \DateTime('2024-02-20 10:20:40 UTC');
+
+        $entity = $country->createEntity()->save(['name' => $value]);
+
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            // TODO setup table with native TIMESTAMP type column
+            self::markTestIncomplete('PostgreSQL: operator does not exist: atk4__civarchar = timestamp without time zone');
+        }
+
+        $countryEqual = clone $country;
+        $countryEqual->addCondition('name', $value);
+        self::assertSame($entity->getId(), $countryEqual->loadOne()->getId());
+
+        $countryIn = clone $country;
+        $countryIn->addCondition('name', 'IN', [$value]);
+        self::assertSame($entity->getId(), $countryEqual->loadOne()->getId());
+
+        self::assertSame('', $country->scope()->toWords());
+        self::assertSame('Name is equal to 2024-02-20 10:20:40.000000', $countryEqual->scope()->toWords());
+        self::assertSame('Name is one of 2024-02-20 10:20:40.000000', $countryIn->scope()->toWords());
+    }
+
     /**
      * @param array<mixed> $value
      *
