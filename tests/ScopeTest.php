@@ -10,6 +10,8 @@ use Atk4\Data\Model\Scope;
 use Atk4\Data\Model\Scope\Condition;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
+use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
 use PHPUnit\Framework\Attributes\DataProvider;
 
@@ -566,7 +568,7 @@ class ScopeTest extends TestCase
 
         $countryIn = clone $country;
         $countryIn->addCondition('name', 'IN', [$value]);
-        self::assertSame($entity->getId(), $countryEqual->loadOne()->getId());
+        self::assertSame($entity->getId(), $countryIn->loadOne()->getId());
 
         self::assertSame('', $country->scope()->toWords());
         self::assertSame('Name is equal to 2024-02-20 10:20:40.000000', $countryEqual->scope()->toWords());
@@ -597,11 +599,19 @@ class ScopeTest extends TestCase
 
         $countryEqual = clone $country;
         $countryEqual->addCondition('name', $value);
-        self::assertSame($entity->getId(), $countryEqual->loadOne()->getId());
 
         $countryIn = clone $country;
         $countryIn->addCondition('name', 'IN', [$value]);
-        self::assertSame($entity->getId(), $countryEqual->loadOne()->getId());
+
+        if ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            // inconsistent datatypes: expected - got CLOB
+        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            // operator does not exist: json = json
+        } else {
+            self::assertSame($entity->getId(), $countryEqual->loadOne()->getId());
+
+            self::assertSame($entity->getId(), $countryIn->loadOne()->getId());
+        }
 
         self::assertSame('', $country->scope()->toWords());
         self::assertSame($expectedToWords, $countryEqual->scope()->toWords());
