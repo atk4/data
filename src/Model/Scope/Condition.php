@@ -369,7 +369,7 @@ class Condition extends AbstractScope
                 : '';
         }
 
-        if (is_array($value)) {
+        if (is_array($value) && in_array($this->operator, [self::OPERATOR_IN, self::OPERATOR_NOT_IN], true)) {
             $res = [];
             foreach ($value as $v) {
                 $res[] = $this->valueToWords($model, $v);
@@ -386,8 +386,6 @@ class Condition extends AbstractScope
             if ($value instanceof Expressionable) {
                 return 'expression \'' . $value->getDsqlExpression(new SqliteExpression())->getDebugQuery() . '\'';
             }
-
-            return 'object ' . print_r($value, true);
         }
 
         // handling of scope on references
