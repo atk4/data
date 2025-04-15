@@ -147,29 +147,31 @@ class Condition extends AbstractScope
     protected function onChangeModel(): void
     {
         $model = $this->getModel();
-        if ($model !== null) {
-            // if we have a definitive equal condition set the value as default value for field
-            // new records will automatically get this value assigned for the field
-            // TODO: fix when condition is part of OR scope
-            if ($this->operator === self::OPERATOR_EQUALS && !is_array($this->value)
-                && !$this->value instanceof Expressionable
-                && !$this->value instanceof Persistence\Array_\Action // needed to pass hintable tests
-            ) {
-                // field containing '/' means chained references and it is handled in toQueryArguments method
-                $field = $this->field;
-                if (is_string($field) && !str_contains($field, '/')) {
-                    $field = $model->getField($field);
-                }
+        if ($model === null) {
+            return;
+        }
 
-                // TODO Model/field should not be mutated, see:
-                // https://github.com/atk4/data/issues/662
-                // for now, do not set default at least for PK/ID
-                if ($field instanceof Field && $field->shortName !== $field->getOwner()->idField) {
-                    $field->system = true;
-                    $fakePersistence = new Persistence\Array_();
-                    $valueCloned = $fakePersistence->typecastLoadField($field, $fakePersistence->typecastSaveField($field, $this->value));
-                    $field->default = $valueCloned;
-                }
+        // if we have a definitive equal condition set the value as default value for field
+        // new records will automatically get this value assigned for the field
+        // TODO: fix when condition is part of OR scope
+        if ($this->operator === self::OPERATOR_EQUALS && !is_array($this->value)
+            && !$this->value instanceof Expressionable
+            && !$this->value instanceof Persistence\Array_\Action // needed to pass hintable tests
+        ) {
+            // field containing '/' means chained references and it is handled in toQueryArguments method
+            $field = $this->field;
+            if (is_string($field) && !str_contains($field, '/')) {
+                $field = $model->getField($field);
+            }
+
+            // TODO Model/field should not be mutated, see:
+            // https://github.com/atk4/data/issues/662
+            // for now, do not set default at least for PK/ID
+            if ($field instanceof Field && $field->shortName !== $field->getOwner()->idField) {
+                $field->system = true;
+                $fakePersistence = new Persistence\Array_();
+                $valueCloned = $fakePersistence->typecastLoadField($field, $fakePersistence->typecastSaveField($field, $this->value));
+                $field->default = $valueCloned;
             }
         }
     }
