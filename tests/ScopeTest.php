@@ -10,7 +10,6 @@ use Atk4\Data\Model\Scope;
 use Atk4\Data\Model\Scope\Condition;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
-use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
 use PHPUnit\Framework\Attributes\DataProvider;
 
@@ -548,19 +547,18 @@ class ScopeTest extends TestCase
 
     public function testDatetimeObject(): void
     {
-        $this->setupTables();
+        $country = new Model($this->db, ['table' => 't']);
+        $country->addField('name', ['type' => 'datetime']);
 
-        $country = new SCountry($this->db);
-        $country->getField('name')->type = 'datetime';
+        $this->createMigrator($country)->create();
+        $country->import([
+            ['name' => null],
+            ['name' => new \DateTime()],
+        ]);
 
         $value = new \DateTime('2024-02-20 10:20:40 UTC');
 
         $entity = $country->createEntity()->save(['name' => $value]);
-
-        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            // TODO setup table with native TIMESTAMP type column
-            self::markTestIncomplete('PostgreSQL: operator does not exist: atk4__civarchar = timestamp without time zone');
-        }
 
         $countryEqual = clone $country;
         $countryEqual->addCondition('name', $value);
@@ -583,17 +581,19 @@ class ScopeTest extends TestCase
     #[DataProvider('provideJsonArrayCases')]
     public function testJsonArray(array $value, string $expectedToWords): void
     {
-        $this->setupTables();
+        $country = new Model($this->db, ['table' => 't']);
+        $country->addField('name', ['type' => 'json']);
 
-        $country = new SCountry($this->db);
-        $country->getField('name')->type = 'json';
+        $this->createMigrator($country)->create();
+        $country->import([
+            ['name' => null],
+            ['name' => []],
+            ['name' => ['']],
+            ['name' => [1]],
+            ['name' => ['foo']],
+        ]);
 
         $entity = $country->createEntity()->save(['name' => $value]);
-
-        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            // TODO setup table with native JSON type column
-            self::markTestIncomplete('PostgreSQL: operator does not exist: atk4__civarchar = json');
-        }
 
         $countryEqual = clone $country;
         $countryEqual->addCondition('name', $value);
