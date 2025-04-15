@@ -10,7 +10,9 @@ use Atk4\Data\Model\Scope;
 use Atk4\Data\Model\Scope\Condition;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class SCountry extends Model
 {
@@ -542,5 +544,48 @@ class ScopeTest extends TestCase
 
         self::assertTrue($scope->isEmpty());
         self::assertEmpty($scope->toWords($user));
+    }
+
+    /**
+     * @param array<mixed> $value
+     *
+     * @dataProvider provideJsonArrayCases
+     */
+    #[DataProvider('provideJsonArrayCases')]
+    public function testJsonArray(array $value, string $expectedToWords): void
+    {
+        $this->setupTables();
+
+        $country = new SCountry($this->db);
+        $country->getField('name')->type = 'json';
+
+        $entity = $country->createEntity()->save(['name' => $value]);
+
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            // TODO setup table with native JSON type column
+            self::markTestIncomplete('PostgreSQL: operator does not exist: atk4__civarchar = json');
+        }
+
+        $countryEqual = clone $country;
+        $countryEqual->addCondition('name', $value);
+        self::assertSame($entity->getId(), $countryEqual->loadOne()->getId());
+
+        $countryIn = clone $country;
+        $countryIn->addCondition('name', 'IN', [$value]);
+        self::assertSame($entity->getId(), $countryEqual->loadOne()->getId());
+
+        self::assertSame('', $country->scope()->toWords());
+        self::assertSame($expectedToWords, $countryEqual->scope()->toWords());
+        self::assertSame(str_replace(' equal to ', ' one of ', $expectedToWords), $countryIn->scope()->toWords());
+    }
+
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideJsonArrayCases(): iterable
+    {
+        yield [['list', 'v2'], 'Name is equal to ["list","v2"]'];
+        yield [['assoc' => 'v', 'v2'], 'Name is equal to {"assoc":"v","0":"v2"}'];
+        yield [['assoc' => 'v', ['nested' => 'v2']], 'Name is equal to {"assoc":"v","0":{"nested":"v2"}}'];
     }
 }

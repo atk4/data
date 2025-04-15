@@ -372,7 +372,9 @@ class Condition extends AbstractScope
         if (is_array($value) && in_array($this->operator, [self::OPERATOR_IN, self::OPERATOR_NOT_IN], true)) {
             $res = [];
             foreach ($value as $v) {
-                $res[] = $this->valueToWords($model, $v);
+                $thisCloned = $this;
+                $thisCloned->operator = self::OPERATOR_EQUALS;
+                $res[] = $thisCloned->valueToWords($model, $v);
             }
 
             return implode(' or ', $res);
@@ -426,8 +428,11 @@ class Condition extends AbstractScope
             $valueStr = (string) $value;
         } elseif (is_float($value)) {
             $valueStr = Expression::castFloatToString($value);
+        } elseif (is_string($value)) {
+            $valueStr = '\'' . $value . '\'';
         } else {
-            $valueStr = '\'' . (string) $value . '\'';
+            $genericPersistence = new class extends Persistence {};
+            $valueStr = $genericPersistence->typecastSaveField($field, $value); // @phpstan-ignore argument.type
         }
 
         return $valueStr . ($title !== null ? ' (\'' . $title . '\')' : '');
