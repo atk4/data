@@ -608,9 +608,8 @@ class ScopeTest extends TestCase
             && !MysqlConnection::isServerMariaDb($this->getConnection())
             && MysqlConnection::getServerMinorVersion($this->getConnection()) >= 800
         ) {
-            // Atk4\Data\Exception: No record was found
-            // TODO investigate and workaround
-            self::markTestIncomplete('MySQL 8.x has broken JSON = JSON support');
+            // https://dbfiddle.uk/XbGfYE1F
+            self::markTestIncomplete('MySQL 8.x does not support native JSON = string JSON comparison');
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
             // inconsistent datatypes: expected - got CLOB
         } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
