@@ -372,7 +372,7 @@ class Condition extends AbstractScope
         if (is_array($value) && in_array($this->operator, [self::OPERATOR_IN, self::OPERATOR_NOT_IN], true)) {
             $res = [];
             foreach ($value as $v) {
-                $thisCloned = $this;
+                $thisCloned = clone $this;
                 $thisCloned->operator = self::OPERATOR_EQUALS;
                 $res[] = $thisCloned->valueToWords($model, $v);
             }
