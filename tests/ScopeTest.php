@@ -550,30 +550,30 @@ class ScopeTest extends TestCase
 
     public function testDatetimeObject(): void
     {
-        $country = new Model($this->db, ['table' => 't']);
-        $country->addField('name', ['type' => 'datetime']);
+        $model = new Model($this->db, ['table' => 't']);
+        $model->addField('name', ['type' => 'datetime']);
 
-        $this->createMigrator($country)->create();
-        $country->import([
+        $this->createMigrator($model)->create();
+        $model->import([
             ['name' => null],
             ['name' => new \DateTime()],
         ]);
 
         $value = new \DateTime('2024-02-20 10:20:40 UTC');
 
-        $entity = $country->createEntity()->save(['name' => $value]);
+        $entity = $model->createEntity()->save(['name' => $value]);
 
-        $countryEqual = clone $country;
-        $countryEqual->addCondition('name', $value);
-        self::assertSame($entity->getId(), $countryEqual->loadOne()->getId());
+        $modelEqual = clone $model;
+        $modelEqual->addCondition('name', $value);
+        self::assertSame($entity->getId(), $modelEqual->loadOne()->getId());
 
-        $countryIn = clone $country;
-        $countryIn->addCondition('name', 'IN', [$value]);
-        self::assertSame($entity->getId(), $countryIn->loadOne()->getId());
+        $modelIn = clone $model;
+        $modelIn->addCondition('name', 'IN', [$value]);
+        self::assertSame($entity->getId(), $modelIn->loadOne()->getId());
 
-        self::assertSame('', $country->scope()->toWords());
-        self::assertSame('Name is equal to 2024-02-20 10:20:40.000000', $countryEqual->scope()->toWords());
-        self::assertSame('Name is one of 2024-02-20 10:20:40.000000', $countryIn->scope()->toWords());
+        self::assertSame('', $model->scope()->toWords());
+        self::assertSame('Name is equal to 2024-02-20 10:20:40.000000', $modelEqual->scope()->toWords());
+        self::assertSame('Name is one of 2024-02-20 10:20:40.000000', $modelIn->scope()->toWords());
     }
 
     /**
@@ -584,11 +584,11 @@ class ScopeTest extends TestCase
     #[DataProvider('provideJsonArrayCases')]
     public function testJsonArray(array $value, string $expectedToWords): void
     {
-        $country = new Model($this->db, ['table' => 't']);
-        $country->addField('name', ['type' => 'json']);
+        $model = new Model($this->db, ['table' => 't']);
+        $model->addField('name', ['type' => 'json']);
 
-        $this->createMigrator($country)->create();
-        $country->import([
+        $this->createMigrator($model)->create();
+        $model->import([
             ['name' => null],
             ['name' => []],
             ['name' => ['']],
@@ -596,13 +596,13 @@ class ScopeTest extends TestCase
             ['name' => ['foo']],
         ]);
 
-        $entity = $country->createEntity()->save(['name' => $value]);
+        $entity = $model->createEntity()->save(['name' => $value]);
 
-        $countryEqual = clone $country;
-        $countryEqual->addCondition('name', $value);
+        $modelEqual = clone $model;
+        $modelEqual->addCondition('name', $value);
 
-        $countryIn = clone $country;
-        $countryIn->addCondition('name', 'IN', [$value]);
+        $modelIn = clone $model;
+        $modelIn->addCondition('name', 'IN', [$value]);
 
         if ($this->getDatabasePlatform() instanceof MySQLPlatform
             && !MysqlConnection::isServerMariaDb($this->getConnection())
@@ -615,14 +615,14 @@ class ScopeTest extends TestCase
         } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             // operator does not exist: json = json
         } else {
-            self::assertSame($entity->getId(), $countryEqual->loadOne()->getId());
+            self::assertSame($entity->getId(), $modelEqual->loadOne()->getId());
 
-            self::assertSame($entity->getId(), $countryIn->loadOne()->getId());
+            self::assertSame($entity->getId(), $modelIn->loadOne()->getId());
         }
 
-        self::assertSame('', $country->scope()->toWords());
-        self::assertSame($expectedToWords, $countryEqual->scope()->toWords());
-        self::assertSame(str_replace(' equal to ', ' one of ', $expectedToWords), $countryIn->scope()->toWords());
+        self::assertSame('', $model->scope()->toWords());
+        self::assertSame($expectedToWords, $modelEqual->scope()->toWords());
+        self::assertSame(str_replace(' equal to ', ' one of ', $expectedToWords), $modelIn->scope()->toWords());
     }
 
     /**
