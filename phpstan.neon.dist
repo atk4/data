@@ -61,13 +61,6 @@ parameters:
             message: '~^Class Doctrine\\DBAL\\(Platforms\\SqlitePlatform|Schema\\SqliteSchemaManager) referenced with incorrect case: Doctrine\\DBAL\\(Platforms\\SQLitePlatform|Schema\\SQLiteSchemaManager)\.$~'
             count: 24
 
-        # remove once https://github.com/phpstan/phpstan/issues/12792 is fixed
-        -
-            path: 'src/*.php'
-            identifier: identical.alwaysFalse
-            message: '~^Strict comparison using === between non-empty-string and '''' will always evaluate to false\.$~'
-            count: 18
-
         # remove once https://github.com/phpstan/phpstan/issues/11488 is fixed
         -
             path: 'src/Persistence/Sql/Oracle/Query.php'

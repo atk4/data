@@ -571,7 +571,6 @@ Start by installing Agile Data through composer:
 
 ```bash
 composer require atk4/data
-composer g require psy/psysh:@stable # optional, but handy for debugging!
 ```
 
 Define your first model class:
