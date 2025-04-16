@@ -398,10 +398,17 @@ class Field implements Expressionable
 
         if ($value instanceof Persistence\Array_\Action) {
             $v = $value;
-        } elseif (is_array($value)) {
-            $v = array_map(static fn ($value) => $value === null ? null : $typecastField->typecastSaveField($value), $value);
+        } elseif (is_array($value) && in_array($operator, [Scope\Condition::OPERATOR_IN, Scope\Condition::OPERATOR_NOT_IN], true)) {
+            $v = array_map(
+                static fn ($value) => $value === null
+                    ? null
+                    : $typecastField->typecastSaveField($value),
+                $value
+            );
         } else {
-            $v = $value === null ? null : $typecastField->typecastSaveField($value);
+            $v = $value === null
+                ? null
+                : $typecastField->typecastSaveField($value);
         }
 
         return [$this, $operator, $v];

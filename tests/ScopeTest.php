@@ -8,9 +8,13 @@ use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Model\Scope;
 use Atk4\Data\Model\Scope\Condition;
+use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
+use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class SCountry extends Model
 {
@@ -231,16 +235,20 @@ class ScopeTest extends TestCase
 
     public function testConditionUnsupportedOperatorWithArrayValueException(): void
     {
+        $country = new SCountry($this->db);
+
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Operator is not supported for array condition value');
-        new Condition('name', '>', ['a', 'b']);
+        $country->addCondition('name', '>', ['a', 'b']);
     }
 
     public function testConditionMultiDimensionalArrayException(): void
     {
+        $country = new SCountry($this->db);
+
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Multi-dimensional array as condition value is not supported');
-        new Condition('name', ['a', 'b' => ['c']]);
+        $country->addCondition('name', ['a', 'b' => ['c']]);
     }
 
     public function testConditionNestedException(): void
@@ -538,5 +546,92 @@ class ScopeTest extends TestCase
 
         self::assertTrue($scope->isEmpty());
         self::assertEmpty($scope->toWords($user));
+    }
+
+    public function testDatetimeObject(): void
+    {
+        $model = new Model($this->db, ['table' => 't']);
+        $model->addField('name', ['type' => 'datetime']);
+
+        $this->createMigrator($model)->create();
+        $model->import([
+            ['name' => null],
+            ['name' => new \DateTime()],
+        ]);
+
+        $value = new \DateTime('2024-02-20 10:20:40 UTC');
+
+        $entity = $model->createEntity()->save(['name' => $value]);
+
+        $modelEqual = clone $model;
+        $modelEqual->addCondition('name', $value);
+        self::assertSame($entity->getId(), $modelEqual->loadOne()->getId());
+
+        $modelIn = clone $model;
+        $modelIn->addCondition('name', 'IN', [$value]);
+        self::assertSame($entity->getId(), $modelIn->loadOne()->getId());
+
+        self::assertSame('', $model->scope()->toWords());
+        self::assertSame('Name is equal to 2024-02-20 10:20:40.000000', $modelEqual->scope()->toWords());
+        self::assertSame('Name is one of 2024-02-20 10:20:40.000000', $modelIn->scope()->toWords());
+    }
+
+    /**
+     * @param array<mixed> $value
+     *
+     * @dataProvider provideJsonArrayCases
+     */
+    #[DataProvider('provideJsonArrayCases')]
+    public function testJsonArray(array $value, string $expectedToWords): void
+    {
+        $model = new Model($this->db, ['table' => 't']);
+        $model->addField('name', ['type' => 'json']);
+
+        $this->createMigrator($model)->create();
+        $model->import([
+            ['name' => null],
+            ['name' => []],
+            ['name' => ['']],
+            ['name' => [1]],
+            ['name' => ['foo']],
+        ]);
+
+        $entity = $model->createEntity()->save(['name' => $value]);
+
+        $modelEqual = clone $model;
+        $modelEqual->addCondition('name', $value);
+
+        $modelIn = clone $model;
+        $modelIn->addCondition('name', 'IN', [$value]);
+
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform
+            && !MysqlConnection::isServerMariaDb($this->getConnection())
+            && MysqlConnection::getServerMinorVersion($this->getConnection()) >= 800
+        ) {
+            // https://dbfiddle.uk/XbGfYE1F
+            self::markTestIncomplete('MySQL 8.x does not support native JSON = string JSON comparison');
+        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            // inconsistent datatypes: expected - got CLOB
+        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            // operator does not exist: json = json
+        } else {
+            self::assertSame($entity->getId(), $modelEqual->loadOne()->getId());
+
+            self::assertSame($entity->getId(), $modelIn->loadOne()->getId());
+        }
+
+        self::assertSame('', $model->scope()->toWords());
+        self::assertSame($expectedToWords, $modelEqual->scope()->toWords());
+        self::assertSame(str_replace(' equal to ', ' one of ', $expectedToWords), $modelIn->scope()->toWords());
+    }
+
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideJsonArrayCases(): iterable
+    {
+        yield [['list', 'v2'], 'Name is equal to ["list","v2"]'];
+        yield [['assoc' => 'v', 'v2'], 'Name is equal to {"assoc":"v","0":"v2"}'];
+        yield [['assoc' => 'v', ['nested' => 'v2']], 'Name is equal to {"assoc":"v","0":{"nested":"v2"}}'];
     }
 }

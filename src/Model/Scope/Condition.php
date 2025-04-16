@@ -126,50 +126,60 @@ class Condition extends AbstractScope
                     ->addMoreInfo('operator', $operator);
             }
         }
-
-        if (is_array($value)) {
-            foreach ($value as $v) {
-                if (is_array($v)) {
-                    throw (new Exception('Multi-dimensional array as condition value is not supported'))
-                        ->addMoreInfo('value', $value);
-                }
-            }
-
-            if (!in_array($this->operator, [self::OPERATOR_IN, self::OPERATOR_NOT_IN], true)) {
-                throw (new Exception('Operator is not supported for array condition value'))
-                    ->addMoreInfo('operator', $operator)
-                    ->addMoreInfo('value', $value);
-            }
-        }
     }
 
     #[\Override]
     protected function onChangeModel(): void
     {
         $model = $this->getModel();
-        if ($model !== null) {
-            // if we have a definitive equal condition set the value as default value for field
-            // new records will automatically get this value assigned for the field
-            // TODO: fix when condition is part of OR scope
-            if ($this->operator === self::OPERATOR_EQUALS && !is_array($this->value)
-                && !$this->value instanceof Expressionable
-                && !$this->value instanceof Persistence\Array_\Action // needed to pass hintable tests
-            ) {
-                // field containing '/' means chained references and it is handled in toQueryArguments method
-                $field = $this->field;
-                if (is_string($field) && !str_contains($field, '/')) {
-                    $field = $model->getField($field);
+        if ($model === null) {
+            return;
+        }
+
+        if (is_array($this->value)) {
+            // field containing '/' means chained references and it is handled in toQueryArguments method
+            $field = $this->field;
+            if (is_string($field) && !str_contains($field, '/')) {
+                $field = $model->getField($field);
+            }
+
+            if ($field instanceof Field && in_array($field->type, ['string', 'text', 'boolean', 'smallint', 'integer', 'bigint', 'float', 'decimal', 'atk4_money'], true)) { // common scalar DBAL types
+                foreach ($this->value as $v) {
+                    if (is_array($v)) {
+                        throw (new Exception('Multi-dimensional array as condition value is not supported'))
+                            ->addMoreInfo('value', $this->value);
+                    }
                 }
 
-                // TODO Model/field should not be mutated, see:
-                // https://github.com/atk4/data/issues/662
-                // for now, do not set default at least for PK/ID
-                if ($field instanceof Field && $field->shortName !== $field->getOwner()->idField) {
-                    $field->system = true;
-                    $fakePersistence = new Persistence\Array_();
-                    $valueCloned = $fakePersistence->typecastLoadField($field, $fakePersistence->typecastSaveField($field, $this->value));
-                    $field->default = $valueCloned;
+                if (!in_array($this->operator, [self::OPERATOR_IN, self::OPERATOR_NOT_IN], true)) {
+                    throw (new Exception('Operator is not supported for array condition value'))
+                        ->addMoreInfo('operator', $this->operator)
+                        ->addMoreInfo('value', $this->value);
                 }
+            }
+        }
+
+        // if we have a definitive equal condition set the value as default value for field
+        // new records will automatically get this value assigned for the field
+        // TODO: fix when condition is part of OR scope
+        if ($this->operator === self::OPERATOR_EQUALS
+            && !$this->value instanceof Expressionable
+            && !$this->value instanceof Persistence\Array_\Action // needed to pass hintable tests
+        ) {
+            // field containing '/' means chained references and it is handled in toQueryArguments method
+            $field = $this->field;
+            if (is_string($field) && !str_contains($field, '/')) {
+                $field = $model->getField($field);
+            }
+
+            // TODO Model/field should not be mutated, see:
+            // https://github.com/atk4/data/issues/662
+            // for now, do not set default at least for PK/ID
+            if ($field instanceof Field && $field->shortName !== $field->getOwner()->idField) {
+                $field->system = true;
+                $fakePersistence = new Persistence\Array_();
+                $valueCloned = $fakePersistence->typecastLoadField($field, $fakePersistence->typecastSaveField($field, $this->value));
+                $field->default = $valueCloned;
             }
         }
     }
@@ -359,10 +369,12 @@ class Condition extends AbstractScope
                 : '';
         }
 
-        if (is_array($value)) {
+        if (is_array($value) && in_array($this->operator, [self::OPERATOR_IN, self::OPERATOR_NOT_IN], true)) {
             $res = [];
             foreach ($value as $v) {
-                $res[] = $this->valueToWords($model, $v);
+                $thisCloned = clone $this;
+                $thisCloned->operator = self::OPERATOR_EQUALS;
+                $res[] = $thisCloned->valueToWords($model, $v);
             }
 
             return implode(' or ', $res);
@@ -376,8 +388,6 @@ class Condition extends AbstractScope
             if ($value instanceof Expressionable) {
                 return 'expression \'' . $value->getDsqlExpression(new SqliteExpression())->getDebugQuery() . '\'';
             }
-
-            return 'object ' . print_r($value, true);
         }
 
         // handling of scope on references
@@ -418,8 +428,11 @@ class Condition extends AbstractScope
             $valueStr = (string) $value;
         } elseif (is_float($value)) {
             $valueStr = Expression::castFloatToString($value);
+        } elseif (is_string($value)) {
+            $valueStr = '\'' . $value . '\'';
         } else {
-            $valueStr = '\'' . (string) $value . '\'';
+            $genericPersistence = new class extends Persistence {};
+            $valueStr = $genericPersistence->typecastSaveField($field, $value); // @phpstan-ignore argument.type
         }
 
         return $valueStr . ($title !== null ? ' (\'' . $title . '\')' : '');
