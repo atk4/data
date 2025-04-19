@@ -148,6 +148,7 @@ class SelectTest extends TestCase
     {
         $this->setupTables();
 
+        // truncate
         $this->q('employee')->mode('truncate')->executeStatement();
         self::assertSame(
             '0',
@@ -210,9 +211,8 @@ class SelectTest extends TestCase
         $this->setupTables();
 
         $this->q('employee')->mode('truncate')->executeStatement();
-        $q = $this->q('employee');
 
-        self::assertNull($q->getRow());
+        self::assertNull($this->q('employee')->getRow());
     }
 
     public function testGetOneEmptyException(): void
@@ -220,6 +220,7 @@ class SelectTest extends TestCase
         $this->setupTables();
 
         $this->q('employee')->mode('truncate')->executeStatement();
+
         $q = $this->q('employee')->field('name');
 
         $this->expectException(Exception::class);
