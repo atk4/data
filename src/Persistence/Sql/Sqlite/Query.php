@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Sqlite;
 
+use Atk4\Data\Persistence\Sql\ExecuteException;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
+use Doctrine\DBAL\Exception\TableNotFoundException;
 
 class Query extends BaseQuery
 {
@@ -13,7 +15,36 @@ class Query extends BaseQuery
     protected string $identifierEscapeChar = '`';
     protected string $expressionClass = Expression::class;
 
-    protected string $templateTruncate = 'delete [from] [tableNoalias]';
+    #[\Override]
+    protected function _execute(?object $connection, bool $fromExecuteStatement)
+    {
+        // workaround https://sqlite.org/forum/forumpost/e434490a01
+        if ($this->mode === 'truncate' && $this->template === $this->templateTruncate && preg_match('~^truncate table (`([^`]+)`\.)?`([^`]+)`$~i', $this->render()[0], $matches)) {
+            $this->template = 'delete [from] [tableNoalias]';
+            try {
+                $res = parent::_execute($connection, $fromExecuteStatement);
+            } finally {
+                $this->template = $this->templateTruncate;
+            }
+
+            $resetAutoincrementQuery = $this->dsql()
+                ->mode('delete')
+                ->table(($matches[2] !== '' ? $matches[2] : 'main') . '.sqlite_sequence')
+                ->where('name', $matches[3]);
+
+            try {
+                $resetAutoincrementQuery->_execute($connection, true);
+            } catch (ExecuteException $e) {
+                if (!$e->getPrevious() instanceof TableNotFoundException) {
+                    throw $e;
+                }
+            }
+
+            return $res;
+        }
+
+        return parent::_execute($connection, $fromExecuteStatement);
+    }
 
     #[\Override]
     protected function _renderConditionBinaryReuse(

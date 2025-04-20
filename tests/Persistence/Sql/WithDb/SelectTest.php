@@ -884,11 +884,9 @@ class SelectTest extends TestCase
             ->setMulti(['name' => 'Jane'])
             ->mode('insert')->executeStatement();
 
-        $isSqlite = $this->getDatabasePlatform() instanceof SQLitePlatform; // TODO https://sqlite.org/forum/forumpost/e434490a01
-
         self::assertSameExportUnordered([
-            ['id' => $isSqlite ? '5' : '1', 'name' => 'John'],
-            ['id' => $isSqlite ? '6' : '2', 'name' => 'Jane'],
+            ['id' => '1', 'name' => 'John'],
+            ['id' => '2', 'name' => 'Jane'],
         ], $this->q('employee')->field('id')->field('name')->getRows());
     }
 
