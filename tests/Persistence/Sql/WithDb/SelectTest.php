@@ -846,6 +846,52 @@ class SelectTest extends TestCase
         ]), $m->export());
     }
 
+    public function testAutoincrementAfterDeleteWithoutWhere(): void
+    {
+        $this->setupTables();
+
+        self::assertSame('4', $this->q('employee')->field($this->e('max(id)'))->getOne());
+
+        $this->q('employee')->mode('delete')->executeStatement();
+
+        $this->q('employee')
+            ->setMulti(['name' => 'John'])
+            ->mode('insert')->executeStatement();
+
+        $this->q('employee')
+            ->setMulti(['name' => 'Jane'])
+            ->mode('insert')->executeStatement();
+
+        self::assertSameExportUnordered([
+            ['id' => '5', 'name' => 'John'],
+            ['id' => '6', 'name' => 'Jane'],
+        ], $this->q('employee')->field('id')->field('name')->getRows());
+    }
+
+    public function testAutoincrementAfterTruncate(): void
+    {
+        $this->setupTables();
+
+        self::assertSame('4', $this->q('employee')->field($this->e('max(id)'))->getOne());
+
+        $this->q('employee')->mode('truncate')->executeStatement();
+
+        $this->q('employee')
+            ->setMulti(['name' => 'John'])
+            ->mode('insert')->executeStatement();
+
+        $this->q('employee')
+            ->setMulti(['name' => 'Jane'])
+            ->mode('insert')->executeStatement();
+
+        $isSqlite = $this->getDatabasePlatform() instanceof SQLitePlatform; // TODO https://sqlite.org/forum/forumpost/e434490a01
+
+        self::assertSameExportUnordered([
+            ['id' => $isSqlite ? '5' : '1', 'name' => 'John'],
+            ['id' => $isSqlite ? '6' : '2', 'name' => 'Jane'],
+        ], $this->q('employee')->field('id')->field('name')->getRows());
+    }
+
     public function testOrderDuplicate(): void
     {
         $this->setupTables();
