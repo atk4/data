@@ -568,11 +568,11 @@ abstract class Expression implements Expressionable, \ArrayAccess
      */
     protected function _execute(?object $connection, bool $fromExecuteStatement)
     {
-        if ($connection === null) {
-            $connection = $this->connection;
-        }
-
         if (!$connection instanceof DbalConnection) {
+            if ($connection === null) {
+                $connection = $this->connection;
+            }
+
             if ($fromExecuteStatement) {
                 return $connection->executeStatement($this);
             }
