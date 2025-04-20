@@ -165,7 +165,7 @@ class Query extends BaseQuery
     protected function _execute(?object $connection, bool $fromExecuteStatement)
     {
         // workaround https://sqlite.org/forum/forumpost/e434490a01
-        if ($this->mode === 'truncate' && $this->template === $this->templateTruncate && preg_match('~^truncate table (`([^`]+)`\.)?`([^`]+)`$~i', $this->render()[0], $matches)) {
+        if ($this->mode === 'truncate' && $this->template === $this->templateTruncate && preg_match('~^truncate table (?:`([^`]+)`\.)?`([^`]+)`$~i', $this->render()[0], $matches)) {
             $this->template = 'delete [from] [tableNoalias]';
             try {
                 $res = parent::_execute($connection, $fromExecuteStatement);
@@ -175,8 +175,8 @@ class Query extends BaseQuery
 
             $resetAutoincrementQuery = $this->dsql()
                 ->mode('delete')
-                ->table(($matches[2] !== '' ? $matches[2] : 'main') . '.sqlite_sequence')
-                ->where('name', $matches[3]);
+                ->table(($matches[1] !== '' ? $matches[1] : 'main') . '.sqlite_sequence')
+                ->where('name', $matches[2]);
 
             try {
                 $resetAutoincrementQuery->_execute($connection, true);
