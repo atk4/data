@@ -710,6 +710,25 @@ class SelectTest extends TestCase
         );
     }
 
+    public function testTruncateWithoutPrimaryKey(): void
+    {
+        $m = new Model($this->db, ['table' => 'without_pk', 'idField' => false]);
+        $m->addField('name');
+        $this->createMigrator($m)->create();
+
+        $this->q('without_pk')
+            ->setMulti(['name' => 'John'])
+            ->mode('insert')->executeStatement();
+
+        self::assertSame([
+            ['name' => 'John'],
+        ], $this->q('without_pk')->getRows());
+
+        $this->q('without_pk')->mode('truncate')->executeStatement();
+
+        self::assertSame([], $this->q('without_pk')->getRows());
+    }
+
     public function testImportAndAutoincrement(): void
     {
         $m = new Model($this->db, ['table' => 'test']);
