@@ -6,6 +6,7 @@ namespace Atk4\Data\Persistence\Sql\Sqlite;
 
 use Atk4\Data\Persistence\Sql\ExecuteException;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
+use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Exception\TableNotFoundException;
 
 class Query extends BaseQuery
@@ -165,7 +166,7 @@ class Query extends BaseQuery
     protected function _execute(?object $connection, bool $fromExecuteStatement)
     {
         // workaround https://sqlite.org/forum/forumpost/e434490a01
-        if ($this->mode === 'truncate' && $this->template === $this->templateTruncate && preg_match('~^truncate table (?:`([^`]+)`\.)?`([^`]+)`$~i', $this->render()[0], $matches)) {
+        if ($this->mode === 'truncate' && $connection instanceof DbalConnection && $this->template === $this->templateTruncate && preg_match('~^truncate table (?:`([^`]+)`\.)?`([^`]+)`$~i', $this->render()[0], $matches)) {
             $this->template = 'delete [from] [tableNoalias]';
             try {
                 $res = parent::_execute($connection, $fromExecuteStatement);
