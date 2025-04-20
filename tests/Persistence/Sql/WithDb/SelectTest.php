@@ -850,7 +850,7 @@ class SelectTest extends TestCase
     {
         $this->setupTables();
 
-        self::assertSame('4', $this->q('employee')->field($this->e('max(id)'))->getOne());
+        self::assertSame('4', $this->q('employee')->field($this->e('max({})', ['id']))->getOne());
 
         $this->q('employee')->mode('delete')->executeStatement();
 
@@ -872,7 +872,7 @@ class SelectTest extends TestCase
     {
         $this->setupTables();
 
-        self::assertSame('4', $this->q('employee')->field($this->e('max(id)'))->getOne());
+        self::assertSame('4', $this->q('employee')->field($this->e('max({})', ['id']))->getOne());
 
         $this->q('employee')->mode('truncate')->executeStatement();
 
