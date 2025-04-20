@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Sqlite;
 
+use Atk4\Data\Persistence\Sql\ExecuteException;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
+use Doctrine\DBAL\Connection as DbalConnection;
+use Doctrine\DBAL\Exception\TableNotFoundException;
 
 class Query extends BaseQuery
 {
@@ -12,8 +15,6 @@ class Query extends BaseQuery
 
     protected string $identifierEscapeChar = '`';
     protected string $expressionClass = Expression::class;
-
-    protected string $templateTruncate = 'delete [from] [tableNoalias]';
 
     #[\Override]
     protected function _renderConditionBinaryReuse(
@@ -159,5 +160,36 @@ class Query extends BaseQuery
     public function groupConcat($field, string $separator = ',')
     {
         return $this->expr('group_concat({}, [])', [$field, $separator]);
+    }
+
+    #[\Override]
+    protected function _execute(?object $connection, bool $fromExecuteStatement)
+    {
+        // workaround https://sqlite.org/forum/forumpost/e434490a01
+        if ($this->mode === 'truncate' && $connection instanceof DbalConnection && $this->template === $this->templateTruncate && preg_match('~^truncate table (?:`([^`]+)`\.)?`([^`]+)`$~i', $this->render()[0], $matches)) {
+            $this->template = 'delete [from] [tableNoalias]';
+            try {
+                $res = parent::_execute($connection, $fromExecuteStatement);
+            } finally {
+                $this->template = $this->templateTruncate;
+            }
+
+            $resetAutoincrementQuery = $this->dsql()
+                ->mode('delete')
+                ->table(($matches[1] !== '' ? $matches[1] : 'main') . '.sqlite_sequence')
+                ->where('name', $matches[2]);
+
+            try {
+                $resetAutoincrementQuery->_execute($connection, true);
+            } catch (ExecuteException $e) {
+                if (!$e->getPrevious() instanceof TableNotFoundException) {
+                    throw $e;
+                }
+            }
+
+            return $res;
+        }
+
+        return parent::_execute($connection, $fromExecuteStatement);
     }
 }

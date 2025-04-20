@@ -6,7 +6,10 @@ namespace Atk4\Data\Persistence\Sql\Oracle;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
+use Atk4\Data\Persistence\Sql\ExecuteException;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
+use Doctrine\DBAL\Connection as DbalConnection;
+use Doctrine\DBAL\Exception\DatabaseObjectNotFoundException;
 
 class Query extends BaseQuery
 {
@@ -194,5 +197,29 @@ class Query extends BaseQuery
         return $this->dsql()->mode('select')->field(
             $this->dsql()->expr('case when exists[] then 1 else 0 end', [$this])
         );
+    }
+
+    #[\Override]
+    protected function _execute(?object $connection, bool $fromExecuteStatement)
+    {
+        $res = parent::_execute($connection, $fromExecuteStatement);
+
+        // TODO submit PR to DBAL to handle this using DB trigger
+        if ($this->mode === 'truncate' && $connection instanceof DbalConnection && $this->template === $this->templateTruncate && preg_match('~^truncate table ((?:"[^"]+"\.)?"[^"]+")$~i', $this->render()[0], $matches)) {
+            $platform = $connection->getDatabasePlatform();
+            $pkSequenceName = str_replace('"', '', $platform->getIdentitySequenceName($matches[1], '')); // @phpstan-ignore method.deprecated
+
+            $resetAutoincrementQuery = $this->expr('alter sequence {} restart', [$pkSequenceName]);
+
+            try {
+                $resetAutoincrementQuery->_execute($connection, true);
+            } catch (ExecuteException $e) {
+                if (!$e->getPrevious() instanceof DatabaseObjectNotFoundException) {
+                    throw $e;
+                }
+            }
+        }
+
+        return $res;
     }
 }

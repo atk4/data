@@ -148,6 +148,7 @@ class SelectTest extends TestCase
     {
         $this->setupTables();
 
+        // truncate
         $this->q('employee')->mode('truncate')->executeStatement();
         self::assertSame(
             '0',
@@ -210,9 +211,8 @@ class SelectTest extends TestCase
         $this->setupTables();
 
         $this->q('employee')->mode('truncate')->executeStatement();
-        $q = $this->q('employee');
 
-        self::assertNull($q->getRow());
+        self::assertNull($this->q('employee')->getRow());
     }
 
     public function testGetOneEmptyException(): void
@@ -220,6 +220,7 @@ class SelectTest extends TestCase
         $this->setupTables();
 
         $this->q('employee')->mode('truncate')->executeStatement();
+
         $q = $this->q('employee')->field('name');
 
         $this->expectException(Exception::class);
@@ -709,6 +710,25 @@ class SelectTest extends TestCase
         );
     }
 
+    public function testTruncateWithoutPrimaryKey(): void
+    {
+        $m = new Model($this->db, ['table' => 'without_pk', 'idField' => false]);
+        $m->addField('name');
+        $this->createMigrator($m)->create();
+
+        $this->q('without_pk')
+            ->setMulti(['name' => 'John'])
+            ->mode('insert')->executeStatement();
+
+        self::assertSame([
+            ['name' => 'John'],
+        ], $this->q('without_pk')->getRows());
+
+        $this->q('without_pk')->mode('truncate')->executeStatement();
+
+        self::assertSame([], $this->q('without_pk')->getRows());
+    }
+
     public function testImportAndAutoincrement(): void
     {
         $m = new Model($this->db, ['table' => 'test']);
@@ -843,6 +863,50 @@ class SelectTest extends TestCase
         self::assertSame(array_merge($expectedRows, [
             ['id' => 109, 'f1' => 'P'],
         ]), $m->export());
+    }
+
+    public function testAutoincrementAfterDeleteWithoutWhere(): void
+    {
+        $this->setupTables();
+
+        self::assertSame('4', $this->q('employee')->field($this->e('max({})', ['id']))->getOne());
+
+        $this->q('employee')->mode('delete')->executeStatement();
+
+        $this->q('employee')
+            ->setMulti(['name' => 'John'])
+            ->mode('insert')->executeStatement();
+
+        $this->q('employee')
+            ->setMulti(['name' => 'Jane'])
+            ->mode('insert')->executeStatement();
+
+        self::assertSameExportUnordered([
+            ['id' => '5', 'name' => 'John'],
+            ['id' => '6', 'name' => 'Jane'],
+        ], $this->q('employee')->field('id')->field('name')->getRows());
+    }
+
+    public function testAutoincrementAfterTruncate(): void
+    {
+        $this->setupTables();
+
+        self::assertSame('4', $this->q('employee')->field($this->e('max({})', ['id']))->getOne());
+
+        $this->q('employee')->mode('truncate')->executeStatement();
+
+        $this->q('employee')
+            ->setMulti(['name' => 'John'])
+            ->mode('insert')->executeStatement();
+
+        $this->q('employee')
+            ->setMulti(['name' => 'Jane'])
+            ->mode('insert')->executeStatement();
+
+        self::assertSameExportUnordered([
+            ['id' => '1', 'name' => 'John'],
+            ['id' => '2', 'name' => 'Jane'],
+        ], $this->q('employee')->field('id')->field('name')->getRows());
     }
 
     public function testOrderDuplicate(): void

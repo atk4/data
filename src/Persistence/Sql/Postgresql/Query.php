@@ -18,6 +18,7 @@ class Query extends BaseQuery
 
     protected string $templateUpdate = 'update [table][join] set [set] [where]';
     protected string $templateReplace;
+    protected string $templateTruncate = 'truncate table [tableNoalias] restart identity';
 
     /**
      * @param \Closure(string, string): string $makeSqlFx
