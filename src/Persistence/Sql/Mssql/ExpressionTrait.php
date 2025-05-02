@@ -130,7 +130,7 @@ trait ExpressionTrait
             try {
                 while ($driverPdoResult->nextRowset());
             } catch (\PDOException $e) {
-                $e = $connection->convertException(DbalDriverPdoException::new($e));
+                $e = $connection->convertException(DbalDriverPdoException::new($e)); // @phpstan-ignore method.internal, staticMethod.internalClass
 
                 $firstException = $e;
                 while ($firstException->getPrevious() !== null) {

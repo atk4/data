@@ -411,7 +411,7 @@ class TypecastingTest extends TestCase
             || $this->getDatabasePlatform() instanceof SQLServerPlatform
             || $this->getDatabasePlatform() instanceof OraclePlatform
         ) {
-            $this->expectException(ExpectationFailedException::class);
+            $this->expectException(ExpectationFailedException::class); // @phpstan-ignore classConstant.internalClass
         }
         self::assertSame('2013-02-21 05:00:12.235689', $mm->get('datetime')->format('Y-m-d H:i:s.u'));
         self::assertSame('2013-02-20', $mm->get('date')->format('Y-m-d'));

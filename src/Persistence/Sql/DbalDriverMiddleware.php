@@ -121,7 +121,7 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
     public function getExceptionConverter(): ExceptionConverter
     {
         $exceptionConverter = parent::getExceptionConverter();
-        if ($exceptionConverter instanceof SQLServerExceptionConverter) {
+        if ($exceptionConverter instanceof SQLServerExceptionConverter) { // @phpstan-ignore instanceof.internalClass
             $exceptionConverter = $this->createExceptionConvertorMiddleware(
                 $exceptionConverter,
                 static function (DbalDriverConvertedException $convertedException, ?DbalQuery $query): DbalDriverConvertedException {

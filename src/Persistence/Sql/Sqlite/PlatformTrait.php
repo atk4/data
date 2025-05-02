@@ -34,8 +34,8 @@ trait PlatformTrait
     {
         // fix https://github.com/doctrine/dbal/pull/5501
         $diff = clone $diff;
-        $diff->fromTable = clone $diff->fromTable;
-        foreach ($diff->fromTable->getForeignKeys() as $foreignKey) {
+        $diff->fromTable = clone $diff->fromTable; // @phpstan-ignore property.internal, property.internal
+        foreach ($diff->fromTable->getForeignKeys() as $foreignKey) { // @phpstan-ignore property.internal
             \Closure::bind(static function () use ($foreignKey) {
                 $foreignKey->_localColumnNames = $foreignKey->createIdentifierMap($foreignKey->getUnquotedLocalColumns());
             }, null, ForeignKeyConstraint::class)();
@@ -44,7 +44,7 @@ trait PlatformTrait
         // fix no indexes, alter table drops and recreates the table newly, so indexes must be recreated as well
         // https://github.com/doctrine/dbal/pull/5486#issuecomment-1184957078
         $diff = clone $diff;
-        $diff->addedIndexes = array_merge($diff->addedIndexes, $diff->fromTable->getIndexes());
+        $diff->addedIndexes = array_merge($diff->addedIndexes, $diff->fromTable->getIndexes()); // @phpstan-ignore property.internal, property.internal, property.internal
 
         return parent::getAlterTableSQL($diff);
     }

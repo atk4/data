@@ -30,15 +30,9 @@ parameters:
             message: '~^Parameter #1 \$key of method Atk4\\Data\\Reference\\WeakAnalysingMap<list<mixed>,Closure,Atk4\\Data\\Model\|Atk4\\Data\\Persistence>::(get|set)\(\) expects list<mixed>, array\{0: Atk4\\Data\\Reference\\WeakAnalysingMap<list<mixed>, Closure, Atk4\\Data\\Model\|Atk4\\Data\\Persistence>, 1: non-falsy-string, 2: class-string<object>\|null, 3\?: object\|null, 4\?: non-empty-array\} given\.$~'
             count: 2
 
-        # fix https://github.com/phpstan/phpstan-deprecation-rules/issues/52 and https://github.com/phpstan/phpstan/issues/6444
-        -
-            path: '*'
-            identifier: staticMethod.deprecatedClass
-            message: '~^Call to method (getVarcharTypeDeclarationSQL|getClobTypeDeclarationSQL|getCreateIndexSQL|getCreateTableSQL|getCurrentDatabaseExpression|initializeDoctrineTypeMappings)\(\) of deprecated class Doctrine\\DBAL\\Platforms\\(PostgreSQLPlatform|SQLServerPlatform|AbstractPlatform):\nUse.+instead\.$~'
-            count: 6
         # https://github.com/phpstan/phpstan-deprecation-rules/issues/75
         -
-            path: '*'
+            path: 'src/Persistence/Sql/Oracle/PlatformTrait.php'
             identifier: method.deprecated
             message: '~^Call to deprecated method getVarcharTypeDeclarationSQL\(\) of class AnonymousClass\w+:\nUse \{@link getStringTypeDeclarationSQL\(\)\} instead\.$~'
             count: 1

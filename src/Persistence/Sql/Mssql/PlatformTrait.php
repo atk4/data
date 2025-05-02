@@ -76,7 +76,7 @@ trait PlatformTrait
             $schemaName = 'dbo';
         }
 
-        return $this->getAddExtendedPropertySQL(
+        return $this->getAddExtendedPropertySQL( // @phpstan-ignore method.internal
             'MS_Description',
             $comment,
             'SCHEMA',
@@ -97,7 +97,7 @@ trait PlatformTrait
             $schemaName = 'dbo';
         }
 
-        return $this->getUpdateExtendedPropertySQL(
+        return $this->getUpdateExtendedPropertySQL( // @phpstan-ignore method.internal
             'MS_Description',
             $comment,
             'SCHEMA',
@@ -118,7 +118,7 @@ trait PlatformTrait
             $schemaName = 'dbo';
         }
 
-        return $this->getDropExtendedPropertySQL(
+        return $this->getDropExtendedPropertySQL( // @phpstan-ignore method.internal
             'MS_Description',
             'SCHEMA',
             $this->quoteStringLiteral($this->unquoteSingleIdentifier($schemaName)),

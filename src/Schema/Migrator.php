@@ -192,11 +192,11 @@ class Migrator
         // https://github.com/doctrine/dbal/issues/4997
         if ($this->getDatabasePlatform() instanceof OraclePlatform) {
             $schemaManager = $this->createSchemaManager();
-            $dropTriggerSql = $this->getDatabasePlatform()
+            $dropTriggerSql = $this->getDatabasePlatform() // @phpstan-ignore method.internal
                 ->getDropAutoincrementSql($this->table->getQuotedName($this->getDatabasePlatform()))[1];
             try {
                 \Closure::bind(static function () use ($schemaManager, $dropTriggerSql) {
-                    $schemaManager->_execSql($dropTriggerSql);
+                    $schemaManager->_execSql($dropTriggerSql); // @phpstan-ignore method.internal
                 }, null, AbstractSchemaManager::class)();
             } catch (DatabaseObjectNotFoundException $e) {
             }

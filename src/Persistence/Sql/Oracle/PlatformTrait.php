@@ -79,7 +79,7 @@ trait PlatformTrait
     #[\Override]
     public function getCreateAutoincrementSql($name, $table, $start = 1)
     {
-        $sqls = parent::getCreateAutoincrementSql($name, $table, $start);
+        $sqls = parent::getCreateAutoincrementSql($name, $table, $start); // @phpstan-ignore method.internal
 
         // fix table name when name /w schema is used
         // TODO submit a PR with fixed OraclePlatform to DBAL
@@ -89,7 +89,7 @@ trait PlatformTrait
         $tableIdentifier = \Closure::bind(fn () => $this->normalizeIdentifier($table), $this, OraclePlatform::class)();
         $nameIdentifier = \Closure::bind(fn () => $this->normalizeIdentifier($name), $this, OraclePlatform::class)();
         $aiTriggerName = \Closure::bind(fn () => $this->getAutoincrementIdentifierName($tableIdentifier), $this, OraclePlatform::class)();
-        $aiSequenceName = $this->getIdentitySequenceName($tableIdentifier->getQuotedName($this), $nameIdentifier->getQuotedName($this));
+        $aiSequenceName = $this->getIdentitySequenceName($tableIdentifier->getQuotedName($this), $nameIdentifier->getQuotedName($this)); // @phpstan-ignore method.internal
         assert(str_starts_with($sqls[count($sqls) - 1], 'CREATE TRIGGER ' . $aiTriggerName . "\n"));
 
         $pkSeq = \Closure::bind(fn () => $this->normalizeIdentifier($aiSequenceName), $this, OraclePlatform::class)()->getName();
