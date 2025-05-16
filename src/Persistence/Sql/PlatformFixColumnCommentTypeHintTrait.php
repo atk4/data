@@ -20,7 +20,7 @@ trait PlatformFixColumnCommentTypeHintTrait
     #[\Override]
     protected function getColumnComment(Column $column)
     {
-        $tmpType = new class extends Type {
+        $tmpType = new class extends Type { // @phpstan-ignore method.internal
             private Type $type;
 
             private bool $requireCommentHint;

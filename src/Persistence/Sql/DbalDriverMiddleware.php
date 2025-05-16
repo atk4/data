@@ -131,7 +131,7 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
                         $exception = self::getUnconvertedException($convertedException);
                         $exceptionMessageLc = strtolower($exception->getMessage());
                         if (str_contains($exceptionMessageLc, 'cannot drop the table') && !$convertedException instanceof TableNotFoundException) {
-                            return new TableNotFoundException($exception, $query);
+                            return new TableNotFoundException($exception, $query); // @phpstan-ignore method.internal
                         }
                     }
 
