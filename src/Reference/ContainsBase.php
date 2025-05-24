@@ -59,6 +59,7 @@ abstract class ContainsBase extends Reference
                 // also, allowing null value to be set will not fire any HOOK_BEFORE_DELETE/HOOK_AFTER_DELETE hook
                 return;
             }
+            //TODO maybe compare if a change happened to the field value and only throw if a change happened?
 
             foreach (array_slice(debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS), 1) as $frame) {
                 if (($frame['class'] ?? null) === static::class) {
