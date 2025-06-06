@@ -87,14 +87,13 @@ class Tester
                 $possibleQueries[] = 'SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED';
                 $possibleQueries[] = 'start transaction';
             } else {
-                if (random_int(0, 5) === 0) {
+                if (random_int(0, 3) === 0) {
                     $possibleQueries[] = 'commit';
-                } elseif (random_int(0, 10) === 0) {
                     $possibleQueries[] = 'rollback';
                 }
             }
 
-            if ($conn->inTransaction || random_int(0, 10) === 0) {
+            if ($conn->inTransaction || random_int(0, 5) === 0) {
                 $possibleQueries[] = 'update $TTT set value = $XXX';
                 $possibleQueries[] = 'update $TTT set value = $XXX where name = \'a\'';
                 $possibleQueries[] = 'update $TTT set value = $XXX where name = \'b\'';
@@ -106,13 +105,13 @@ class Tester
 
                 // TODO !
                 foreach ([
-                    //   'select * from $TTT',
+                    'select * from $TTT',
                     'select * from $TTT where name = \'a\'',
                     'select * from $TTT where name = \'b\'',
                     'select * from $TTT where name != \'b\'',
-                    //    'select * from $TTT where value > 50',
+                    'select * from $TTT where value > 50',
                 ] as $q) {
-                    if (random_int(0, 5) === 0) {
+                    if (random_int(0, 3) === 0) {
                         $possibleQueries[] = $q;
                         $possibleQueries[] = $q . ' lock in share mode';
                     }

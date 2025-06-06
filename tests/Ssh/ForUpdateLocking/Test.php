@@ -136,8 +136,38 @@ class Test extends TestCase
     {
         self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
 
-        $table = $this->makeRandomTableName();
-        $tester = new Tester(fn () => $this->createConnection($table), 3);
-        $tester->run(90.0);
+        $maxTime = 180.0;
+        $startTs = microtime(true);
+        $lastDumpTs = 0;
+
+        for ($i = 1;; ++$i) {
+            $ts = microtime(true);
+            if ($ts >= $startTs + $maxTime) {
+                return;
+            }
+
+            \Closure::bind(static function () {
+                MysqlConnection::$nextId = 0;
+            }, null, MysqlConnection::class)();
+
+            $table = $this->makeRandomTableName();
+            try {
+                ob_start();
+
+                $tester = new Tester(fn () => $this->createConnection($table), 3);
+                $tester->run(5.0);
+
+                ob_end_clean();
+            } catch (\Throwable $e) {
+                ob_end_flush();
+
+                throw $e;
+            }
+
+            if ($ts > $lastDumpTs + 15) {
+                $lastDumpTs = $ts;
+                echo '==== ' . round($ts - $startTs, 2) . ' run ' . $i . ' ================' . "\n";
+            }
+        }
     }
 }
