@@ -36,7 +36,7 @@ class CreateRegexpReplaceFunctionMiddleware implements Middleware
                         $flags = str_replace('-u', '', $flags);
                         $binary = true;
                     } else {
-                        $binary = \PHP_VERSION_ID < 80200
+                        $binary = \PHP_VERSION_ID < 8_02_00
                             ? preg_match('~~u', $pattern) !== 1 // much faster in PHP 8.1 and lower
                                 || preg_match('~~u', $value) !== 1
                                 || preg_match('~~u', $replacement) !== 1
