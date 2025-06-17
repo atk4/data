@@ -12,6 +12,9 @@ use Atk4\Data\Tests\Model\Person;
 
 class CsvTest extends TestCase
 {
+    /** Remove once PHP 8.x support is dropped. */
+    protected const SEPARATOR_ENCLOSURE_ESCAPE_CHARS = [',', '"', ''];
+
     /** @var resource */
     protected $file;
     /** @var resource */
@@ -82,9 +85,9 @@ class CsvTest extends TestCase
     protected function setDb(array $data): void
     {
         ftruncate($this->file, 0);
-        fputcsv($this->file, array_keys(reset($data)));
+        fputcsv($this->file, array_keys(reset($data)), ...self::SEPARATOR_ENCLOSURE_ESCAPE_CHARS);
         foreach ($data as $row) {
-            fputcsv($this->file, $row);
+            fputcsv($this->file, $row, ...self::SEPARATOR_ENCLOSURE_ESCAPE_CHARS);
         }
 
         ftruncate($this->file2, 0);
@@ -96,10 +99,10 @@ class CsvTest extends TestCase
     protected function getDb(): array
     {
         fseek($this->file, 0);
-        $keys = fgetcsv($this->file);
+        $header = fgetcsv($this->file, 0, ...self::SEPARATOR_ENCLOSURE_ESCAPE_CHARS);
         $data = [];
-        while ($row = fgetcsv($this->file)) {
-            $data[] = array_combine($keys, $row);
+        while ($row = fgetcsv($this->file, 0, ...self::SEPARATOR_ENCLOSURE_ESCAPE_CHARS)) {
+            $data[] = array_combine($header, $row);
         }
 
         return $data;

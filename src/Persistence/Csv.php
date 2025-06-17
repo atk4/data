@@ -27,6 +27,9 @@ use Atk4\Data\Persistence;
  */
 class Csv extends Persistence
 {
+    /** Remove once PHP 8.x support is dropped. */
+    public const ESCAPE_CHAR = '';
+
     /** @var string Name of the file. */
     public $file;
 
@@ -48,8 +51,6 @@ class Csv extends Persistence
     public $delimiter = ',';
     /** @var string Enclosure in CSV file. */
     public $enclosure = '"';
-    /** @var string Escape character in CSV file. */
-    public $escapeChar = '\\';
 
     /** @var array<int, string>|null Array of field names. */
     public ?array $header = null;
@@ -102,7 +103,7 @@ class Csv extends Persistence
      */
     public function getLine(bool $reindexWithHeader): ?array
     {
-        $data = fgetcsv($this->handle, 0, $this->delimiter, $this->enclosure, $this->escapeChar);
+        $data = fgetcsv($this->handle, 0, $this->delimiter, $this->enclosure, self::ESCAPE_CHAR);
         if ($data === false) {
             return null;
         }
@@ -123,7 +124,7 @@ class Csv extends Persistence
      */
     public function putLine(array $data): void
     {
-        $ok = fputcsv($this->handle, $data, $this->delimiter, $this->enclosure, $this->escapeChar);
+        $ok = fputcsv($this->handle, $data, $this->delimiter, $this->enclosure, self::ESCAPE_CHAR);
         if ($ok === false) {
             throw new Exception('Cannot write to CSV file');
         }
