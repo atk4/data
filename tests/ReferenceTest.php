@@ -458,7 +458,7 @@ class ReferenceTest extends TestCase
         self::assertSame(['main', 'bound'], $modelClass::$logs);
         $modelClass::$logs = [];
 
-        if (\PHP_VERSION_ID >= 80300) {
+        if (\PHP_VERSION_ID >= 8_03_00) {
             $weakM = \WeakReference::create($m);
             unset($m);
             gc_collect_cycles();

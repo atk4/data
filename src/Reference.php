@@ -355,7 +355,7 @@ class Reference
                         . '-' . $fxRefl->getEndLine() . '-' . $fxRefl->getName(), // https://github.com/php/php-src/issues/11391
                     $fxRefl->getClosureScopeClass() !== null ? $fxRefl->getClosureScopeClass()->getName() : null,
                     $fxRefl->getClosureThis(),
-                    \PHP_VERSION_ID < 80100 ? $fxRefl->getStaticVariables() : $fxRefl->getClosureUsedVariables(),
+                    \PHP_VERSION_ID < 8_01_00 ? $fxRefl->getStaticVariables() : $fxRefl->getClosureUsedVariables(),
                 ];
 
                 // optimization - simplify key to improve hashing speed
@@ -403,7 +403,7 @@ class Reference
             } elseif ($this->model instanceof \Closure) {
                 $fxRefl = new \ReflectionFunction($this->model);
                 if ($fxRefl->getClosureThis() === null
-                    && (\PHP_VERSION_ID < 80100 ? $fxRefl->getStaticVariables() : $fxRefl->getClosureUsedVariables()) === []) {
+                    && (\PHP_VERSION_ID < 8_01_00 ? $fxRefl->getStaticVariables() : $fxRefl->getClosureUsedVariables()) === []) {
                     $analysingOwner = $ourPersistence;
                 }
             }

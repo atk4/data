@@ -62,7 +62,7 @@ abstract class TestCase extends BaseTestCase
             $this->debug = $debugOrig;
         }
 
-        if (\PHP_VERSION_ID < 80300) {
+        if (\PHP_VERSION_ID < 8_03_00) {
             // workaround https://github.com/php/php-src/issues/10043
             \Closure::bind(static function () {
                 if ((Reference::$analysingClosureMap ?? null) !== null) {
