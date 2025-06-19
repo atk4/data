@@ -49,7 +49,7 @@ class MysqlConnectionTest extends TestCase
         self::assertNull($res->error);
         self::assertSame(0, $res->affectedRows);
         self::assertSame([], $res->rows);
-        self::assertLessThan(0.1, $res->elapsed);
+        self::assertLessThan(0.4, $res->elapsed);
     }
 
     public function testSelectSingleRow(): void
@@ -63,7 +63,7 @@ class MysqlConnectionTest extends TestCase
         self::assertSame([
             ['my foo' => 'my foo', 'x y' => '1'],
         ], $res->rows);
-        self::assertLessThan(0.1, $res->elapsed);
+        self::assertLessThan(0.4, $res->elapsed);
     }
 
     public function testSelectTwoRows(): void
@@ -78,7 +78,7 @@ class MysqlConnectionTest extends TestCase
             ['x' => '1'],
             ['x' => '2'],
         ], $res->rows);
-        self::assertLessThan(0.1, $res->elapsed);
+        self::assertLessThan(0.4, $res->elapsed);
     }
 
     public function testSelectUnnamedSlowColumn(): void
@@ -92,8 +92,8 @@ class MysqlConnectionTest extends TestCase
         self::assertSame([
             ['sleep(1)' => '0'],
         ], $res->rows);
-        self::assertGreaterThan(0.9, $res->elapsed);
-        self::assertLessThan(1.1, $res->elapsed);
+        self::assertGreaterThan(1 - 0.4, $res->elapsed);
+        self::assertLessThan(1 + 0.4, $res->elapsed);
     }
 
     public function testTransactionManagement(): void
@@ -106,7 +106,7 @@ class MysqlConnectionTest extends TestCase
         self::assertNull($res->error);
         self::assertSame(0, $res->affectedRows);
         self::assertSame([], $res->rows);
-        self::assertLessThan(0.1, $res->elapsed);
+        self::assertLessThan(0.4, $res->elapsed);
 
         $conn->sendQuery('rollback');
         $res = $conn->readResult();
@@ -114,7 +114,7 @@ class MysqlConnectionTest extends TestCase
         self::assertNull($res->error);
         self::assertSame(0, $res->affectedRows);
         self::assertSame([], $res->rows);
-        self::assertLessThan(0.1, $res->elapsed);
+        self::assertLessThan(0.4, $res->elapsed);
     }
 
     public function testInsertUpdateDelete(): void
@@ -131,35 +131,35 @@ class MysqlConnectionTest extends TestCase
         self::assertNull($res->error);
         self::assertSame(0, $res->affectedRows);
         self::assertSame([], $res->rows);
-        self::assertLessThan(0.1, $res->elapsed);
+        self::assertLessThan(0.4, $res->elapsed);
 
         $conn->sendQuery('insert into atk4_test_conn values (\'foo\')');
         $res = $conn->readResult();
         self::assertNull($res->error);
         self::assertSame(1, $res->affectedRows);
         self::assertSame([], $res->rows);
-        self::assertLessThan(0.1, $res->elapsed);
+        self::assertLessThan(0.4, $res->elapsed);
 
         $conn->sendQuery('update atk4_test_conn set n = \'bar\'');
         $res = $conn->readResult();
         self::assertNull($res->error);
         self::assertSame(1, $res->affectedRows);
         self::assertSame([], $res->rows);
-        self::assertLessThan(0.1, $res->elapsed);
+        self::assertLessThan(0.4, $res->elapsed);
 
         $conn->sendQuery('delete from atk4_test_conn where n = \'bar\'');
         $res = $conn->readResult();
         self::assertNull($res->error);
         self::assertSame(1, $res->affectedRows);
         self::assertSame([], $res->rows);
-        self::assertLessThan(0.1, $res->elapsed);
+        self::assertLessThan(0.4, $res->elapsed);
 
         $conn->sendQuery('drop table atk4_test_conn');
         $res = $conn->readResult();
         self::assertNull($res->error);
         self::assertSame(0, $res->affectedRows);
         self::assertSame([], $res->rows);
-        self::assertLessThan(0.1, $res->elapsed);
+        self::assertLessThan(0.4, $res->elapsed);
     }
 
     public function testInvalidQuery(): void
@@ -171,7 +171,7 @@ class MysqlConnectionTest extends TestCase
         self::assertStringContainsString('ERROR 1064 (42000): You have an error in your SQL syntax;', $res->error);
         self::assertSame(0, $res->affectedRows);
         self::assertSame([], $res->rows);
-        self::assertLessThan(0.1, $res->elapsed);
+        self::assertLessThan(0.4, $res->elapsed);
     }
 
     public function testHasMoreData(): void

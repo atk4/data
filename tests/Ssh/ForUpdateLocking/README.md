@@ -10,7 +10,7 @@ https://stackoverflow.com/questions/26620966/getting-the-current-transaction-id-
 https://dba.stackexchange.com/questions/128726/transaction-identifier-possible-with-mysql
 https://vladmihalcea.com/current-database-transaction-id/
 
-- https://dba.stackexchange.com/questions/128726/transaction-identifier-possible-with-mysql#comment239993_129055 seems the best solution
+- https://dba.stackexchange.com/questions/128726/transaction-identifier-possible-with-mysql#comment239993_129055 seems the best solution, however not easy to use in subquery, because of https://bugs.mysql.com/bug.php?id=87645
 
 # isolation - "general"
 

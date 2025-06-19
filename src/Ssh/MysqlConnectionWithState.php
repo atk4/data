@@ -30,8 +30,8 @@ class MysqlConnectionWithState extends MysqliAsyncConnection
 
         $serverVersionCacheKey = $dbHost . ':' . $dbPort;
         if (!isset(self::$serverVersionCache[$serverVersionCacheKey])) {
-            $this->sendQuery('select version()');
-            $res = $this->readResult();
+            parent::sendQuery('select version()');
+            $res = parent::readResult();
             assert($res->error === null);
             assert(preg_match('~(\d+\.\d+\.\d+)(.*MariaDB)?~i', reset($res->rows[0]), $matches));
             self::$serverVersionCache[$serverVersionCacheKey] = [
@@ -47,6 +47,18 @@ class MysqlConnectionWithState extends MysqliAsyncConnection
     public ?string $isolationLevel = null;
 
     public bool $inTransaction = false;
+
+    private int $startTransactionCounter = 0;
+
+    private function assertInTransactionIsCorrect(): void
+    {
+        $inTransactionActual = $this->queryInTransaction();
+        if ($this->inTransaction !== $inTransactionActual) {
+            throw (new Exception('Wrong "inTransaction" assumed'))
+                ->addMoreInfo('tracked', $this->inTransaction)
+                ->addMoreInfo('actual', $inTransactionActual);
+        }
+    }
 
     #[\Override]
     public function sendQuery(string $sql): void
@@ -74,6 +86,7 @@ class MysqlConnectionWithState extends MysqliAsyncConnection
 
         if (str_contains($sqlLower, 'start transaction') && $res->error === null) {
             $this->inTransaction = true;
+            ++$this->startTransactionCounter;
         } elseif (str_contains($sqlLower, 'commit') || str_contains($sqlLower, 'rollback')) {
             $this->inTransaction = false;
         }
@@ -94,7 +107,7 @@ class MysqlConnectionWithState extends MysqliAsyncConnection
                 ->addMoreInfo('sql', $this->lastQuery);
         }
 
-        assert($this->inTransaction === $this->queryInTransaction());
+        $this->assertInTransactionIsCorrect();
 
         if (str_contains($sqlLower, ' transaction isolation level')) {
             assert(str_contains($sqlLower, 'set session transaction isolation level'));
@@ -117,22 +130,33 @@ class MysqlConnectionWithState extends MysqliAsyncConnection
     }
 
     /**
-     * @return array{string, string}
+     * @return array{string, string, ?bool, ?int<0, max>}
      */
     private function queryIsolationLevelRaw(): array
     {
-        parent::sendQuery('show session variables where Variable_name = \'tx_isolation\' or Variable_name = \'transaction_isolation\'');
-        $res = parent::readResult();
-        if ($res->error === null && count($res->rows) === 2) {
-            if (reset($res->rows)['Variable_name'] === 'tx_isolation') {
-                array_shift($res->rows);
-            } else {
-                array_pop($res->rows);
-            }
-        }
-        assert($res->error === null && count($res->rows) === 1);
+        $hasInfoTable = $this->serverIsMariaDB ? true : version_compare($this->serverVersion, '5.7') < 0;
 
-        return [reset($res->rows)['Variable_name'], reset($res->rows)['Value']];
+        parent::sendQuery($hasInfoTable
+            ? <<<'EOD'
+                (select LOWER(VARIABLE_NAME) as Variable_name, VARIABLE_VALUE as Value from information_schema.SESSION_VARIABLES where VARIABLE_NAME IN('TX_ISOLATION', 'TRANSACTION_ISOLATION', 'IN_TRANSACTION'))
+                union all
+                (select * from information_schema.SESSION_STATUS where VARIABLE_NAME = 'COM_BEGIN')
+                EOD
+            : 'show session variables where Variable_name = \'tx_isolation\' or Variable_name = \'transaction_isolation\'');
+        $res = parent::readResult();
+        assert($res->error === null);
+
+        $resCol = array_column($res->rows, 'Value', 'Variable_name');
+
+        $isolationLevel = $resCol['transaction_isolation'] ?? $resCol['tx_isolation'];
+        assert($isolationLevel === ($resCol['tx_isolation'] ?? $resCol['transaction_isolation']));
+
+        return [
+            isset($resCol['transaction_isolation']) ? 'transaction_isolation' : 'tx_isolation',
+            $isolationLevel,
+            $this->serverIsMariaDB ? (bool) $resCol['in_transaction'] : null,
+            $hasInfoTable ? (int) $resCol['COM_BEGIN'] : null,
+        ];
     }
 
     private function queryInTransaction(): bool
@@ -143,12 +167,20 @@ class MysqlConnectionWithState extends MysqliAsyncConnection
         $enableDebugPrintOrig = $this->enableDebugPrint;
         $this->enableDebugPrint = false;
         try {
-            [$isolationLevelVariableName, $isolationLevelOrig] = $this->queryIsolationLevelRaw();
+            [$isolationLevelVariableName, $isolationLevelOrig, $inTransactionMariadb, $comBegin] = $this->queryIsolationLevelRaw();
+
+            if ($comBegin !== null) {
+                assert($this->startTransactionCounter === $comBegin);
+            }
 
             parent::sendQuery('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE');
             $res = parent::readResult();
             // ERROR 1568 (25001): Transaction isolation level can't be changed while a transaction is in progress"
             if ($res->error !== null && str_contains($res->error, 'ERROR 1568 (')) {
+                if ($inTransactionMariadb !== null) {
+                    assert($inTransactionMariadb);
+                }
+
                 return true;
             }
             assert($res->error === null);
@@ -158,6 +190,10 @@ class MysqlConnectionWithState extends MysqliAsyncConnection
             assert($res->error === null);
         } finally {
             $this->enableDebugPrint = $enableDebugPrintOrig;
+        }
+
+        if ($inTransactionMariadb !== null) {
+            assert(!$inTransactionMariadb);
         }
 
         return false;
