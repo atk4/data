@@ -228,7 +228,7 @@ class TestCaseTest extends TestCase
             $this->createAssertSameExportUnorderedTestRow(1),
         ]);
 
-        $this->expectException(ExpectationFailedException::class); // @phpstan-ignore classConstant.internalClass
+        $this->expectException(ExpectationFailedException::class);
         $this->expectExceptionMessage('Failed asserting that two arrays are identical.');
         self::assertSameExportUnordered([
             $this->createAssertSameExportUnorderedTestRow(1),
@@ -247,7 +247,7 @@ class TestCaseTest extends TestCase
             1 => $this->createAssertSameExportUnorderedTestRow(1),
         ]);
 
-        $this->expectException(ExpectationFailedException::class); // @phpstan-ignore classConstant.internalClass
+        $this->expectException(ExpectationFailedException::class);
         $this->expectExceptionMessage('Failed asserting that two arrays are identical.');
         self::assertSameExportUnordered([
             1 => $this->createAssertSameExportUnorderedTestRow(1),
