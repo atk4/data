@@ -344,7 +344,7 @@ class DeepCopyTest extends TestCase
     {
         $quote = $this->createTestQuote();
 
-        \Closure::bind(function () use ($quote) {
+        \Closure::bind(static function () use ($quote) {
             $quote->getModel()->getReference('client_id')->model = [get_class(new class extends DcClient {
                 #[\Override]
                 protected function init(): void

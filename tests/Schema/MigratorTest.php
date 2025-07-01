@@ -224,8 +224,8 @@ class MigratorTest extends TestCase
         self::assertSame(strlen($str), strlen($row['v']));
         self::assertTrue($str === $row['v']);
 
-        // remove once https://github.com/php/php-src/issues/8928 is fixed
-        if (str_starts_with($_ENV['DB_DSN'], 'oci8') && $length > 1000) {
+        // https://github.com/php/php-src/issues/8928 and https://github.com/php/php-src/issues/18873
+        if (\PHP_VERSION_ID < 8_02_00 && str_starts_with($_ENV['DB_DSN'], 'oci8') && $length > 1000) {
             return;
         }
 

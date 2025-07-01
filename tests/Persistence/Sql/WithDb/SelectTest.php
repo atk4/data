@@ -597,8 +597,8 @@ class SelectTest extends TestCase
             $str = mb_convert_encoding($str, 'UTF-8', 'UTF-8');
         }
 
-        // remove once https://github.com/php/php-src/issues/8928 is fixed
-        if (str_starts_with($_ENV['DB_DSN'], 'oci8')) {
+        // https://github.com/php/php-src/issues/8928 and https://github.com/php/php-src/issues/18873
+        if (\PHP_VERSION_ID < 8_02_00 && str_starts_with($_ENV['DB_DSN'], 'oci8')) {
             $str = substr($str, 0, 1000);
         }
 
