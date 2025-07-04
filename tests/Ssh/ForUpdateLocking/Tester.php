@@ -124,7 +124,7 @@ class Tester
             }
 
             if (random_int(0, 25) === 0) {
-                // $possibleQueries[] = 'kill query ' . $this->pick($this->conns)->threadId;
+                $possibleQueries[] = 'kill query ' . $this->pick($this->conns)->threadId;
             }
 
             $sql = $this->pick($possibleQueries);
