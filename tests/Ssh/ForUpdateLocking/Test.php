@@ -204,6 +204,83 @@ class Test extends TestCase
     }
 
     /**
+     * Reported as https://jira.mariadb.org/browse/MDEV-37198 .
+     */
+    public function testIssueKillWithoutErrorAffectsTransaction(): void
+    {
+        $table = $this->makeRandomTableName();
+        $this->createTestTable($table);
+
+        $reproduced = false;
+        for ($i = 0; $i < 1_000; ++$i) {
+            $connA = $this->createConnection($table);
+            $connB = $this->createConnection($table);
+
+            $connA->sendQuery('SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED');
+            $connA->readResult();
+
+            $connA->sendQuery('start transaction');
+            $connA->readResult();
+
+            $connA->sendQuery('update $TTT set value = 10 where name != \'b\'');
+            $connA->readResult();
+
+            $connA->sendQuery('update $TTT set value = 20 where name = \'a\'');
+
+            $connB->sendQuery('kill query ' . $connA->threadId);
+            $e = null;
+            try {
+                $connA->readResult();
+            } catch (MysqlException $e) {
+                self::assertSame(1317, $e->getCode());
+            }
+            $connB->readResult();
+
+            if ($e === null && !$connA->serverIsMariaDB) {
+                $connA->sendQuery('select * from $TTT where name = \'a\' for update');
+                $e2 = null;
+                try {
+                    $connA->readResult();
+                } catch (MysqlException $e2) {
+                    self::assertSame(1317, $e2->getCode());
+                }
+                // self::assertNotNull($e2);
+            }
+
+            $connA->sendQuery('select * from $TTT where name = \'a\' for update');
+            try {
+                $connA->readResult();
+            } catch (Exception $e2) {
+                self::assertSame('Tracked locked value does not match actual value', $e2->getMessage());
+
+                if ($e === null) {
+                    $reproduced = true;
+
+                    break;
+                }
+            }
+
+            gc_collect_cycles();
+            do {
+                $connB->sendQuery('show status where `variable_name` = \'Threads_connected\'');
+                $res = $connB->readResult();
+                $activeConnections = (int) $res->rows[0]['Value'];
+            } while ($activeConnections > 50);
+        }
+
+        self::assertSame(
+            $connA->serverIsMariaDB && ( // @phpstan-ignore variable.undefined
+                (version_compare($connA->serverVersion, '10.6.19') >= 0 && version_compare($connA->serverVersion, '10.7') < 0) // @phpstan-ignore variable.undefined, variable.undefined
+                || (version_compare($connA->serverVersion, '10.11.9') >= 0 && version_compare($connA->serverVersion, '10.12') < 0) // @phpstan-ignore variable.undefined, variable.undefined
+                || (version_compare($connA->serverVersion, '11.1.6') >= 0 && version_compare($connA->serverVersion, '11.2') < 0) // @phpstan-ignore variable.undefined, variable.undefined
+                || (version_compare($connA->serverVersion, '11.2.5') >= 0 && version_compare($connA->serverVersion, '11.3') < 0) // @phpstan-ignore variable.undefined, variable.undefined
+                || version_compare($connA->serverVersion, '11.4') >= 0 // @phpstan-ignore variable.undefined
+            ),
+            $reproduced
+        );
+    }
+
+    /**
      * @param MysqlConnectionWithState::ISOLATION_LEVEL_* $isolationLevel
      *
      * @dataProvider provideIsolationLevelCases
