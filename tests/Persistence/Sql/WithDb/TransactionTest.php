@@ -94,7 +94,7 @@ class TransactionTest extends TestCase
         } finally {
             $rowsAfter = $this->q('employee')->getRows();
             self::assertSame($rowsBefore, array_slice($rowsAfter, 0, -1));
-            self::assertSame('John', end($rowsAfter)['name']);
+            self::assertSame('John', array_last($rowsAfter)['name']);
         }
     }
 

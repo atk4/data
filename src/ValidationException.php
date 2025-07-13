@@ -23,7 +23,7 @@ class ValidationException extends Exception
         $this->errors = $errors;
 
         if (count($errors) === 1) {
-            parent::__construct(reset($errors));
+            parent::__construct(array_first($errors));
 
             $this->addMoreInfo('field', array_key_first($errors));
         } else {

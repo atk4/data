@@ -443,7 +443,7 @@ class Migrator
             throw (new Exception('Table must contain exactly one primary key'))
                 ->addMoreInfo('table', $tableName);
         }
-        $idFieldName = reset($primaryIndexes)->getUnquotedColumns()[0];
+        $idFieldName = array_first($primaryIndexes)->getUnquotedColumns()[0];
 
         $model = new Model(null, ['table' => $tableName, 'idField' => $idFieldName]);
         foreach ($columns as $column) {
@@ -466,7 +466,7 @@ class Migrator
     public function isIndexExists(array $fields, bool $requireUnique = false): bool
     {
         $fields = array_map(fn ($field) => $this->resolvePersistenceField($field), $fields);
-        $tableName = reset($fields)->getOwner()->table;
+        $tableName = array_first($fields)->getOwner()->table;
 
         $indexes = $this->createSchemaManager()->listTableIndexes($this->fixTableNameForListMethod($tableName));
         if ($indexes === []) {
@@ -496,7 +496,7 @@ class Migrator
     public function createIndex(array $fields, bool $isUnique): void
     {
         $fields = array_map(fn ($field) => $this->resolvePersistenceField($field), $fields);
-        $tableName = reset($fields)->getOwner()->table;
+        $tableName = array_first($fields)->getOwner()->table;
 
         $platform = $this->getDatabasePlatform();
 

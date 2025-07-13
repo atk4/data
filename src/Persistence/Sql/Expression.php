@@ -250,7 +250,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
         if (count($values) <= $n) {
             return $mapNodeFx === null
                 ? (count($values) === 1
-                    ? reset($values)
+                    ? array_first($values)
                     : $values)
                 : (count($values) === 1
                     ? $mapNodeFx($values)
@@ -793,7 +793,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
                 ->addMoreInfo('query', $this->getDebugQuery());
         }
 
-        return $this->castGetValue(reset($row));
+        return $this->castGetValue(array_first($row));
     }
 
     // }}}

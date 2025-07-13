@@ -169,7 +169,7 @@ class Action
                         ->addMoreInfo('table', $value);
                 }
 
-                $values[$k] = reset($row);
+                $values[$k] = array_first($row);
             }
 
             if ($toArray) {
@@ -179,7 +179,7 @@ class Action
             if ($values === []) {
                 return null;
             } elseif (count($values) === 1) {
-                return reset($values);
+                return array_first($values);
             }
 
             throw (new Exception('Unable to get value from table with more than 1 row'))
@@ -387,6 +387,6 @@ class Action
     {
         $data = $this->getRow();
 
-        return reset($data);
+        return array_first($data);
     }
 }

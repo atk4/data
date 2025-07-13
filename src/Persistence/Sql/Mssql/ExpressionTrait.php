@@ -51,7 +51,7 @@ trait ExpressionTrait
 
         return $this->makeNaryTree($parts, 10, static function (array $parts) {
             if (count($parts) === 1) {
-                return reset($parts);
+                return array_first($parts);
             }
 
             $parts[0] = 'cast(' . $parts[0] . ' as NVARCHAR(MAX))';

@@ -157,7 +157,7 @@ class Scope extends AbstractScope
             return $this;
         }
 
-        $component = reset($this->elements);
+        $component = array_first($this->elements);
 
         return $component->simplify();
     }

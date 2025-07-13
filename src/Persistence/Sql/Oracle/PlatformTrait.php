@@ -90,10 +90,10 @@ trait PlatformTrait
         $nameIdentifier = \Closure::bind(fn () => $this->normalizeIdentifier($name), $this, OraclePlatform::class)();
         $aiTriggerName = \Closure::bind(fn () => $this->getAutoincrementIdentifierName($tableIdentifier), $this, OraclePlatform::class)();
         $aiSequenceName = $this->getIdentitySequenceName($tableIdentifier->getQuotedName($this), $nameIdentifier->getQuotedName($this)); // @phpstan-ignore method.internal
-        assert(str_starts_with($sqls[count($sqls) - 1], 'CREATE TRIGGER ' . $aiTriggerName . "\n"));
+        assert(str_starts_with($sqls[array_key_last($sqls)], 'CREATE TRIGGER ' . $aiTriggerName . "\n"));
 
         $pkSeq = \Closure::bind(fn () => $this->normalizeIdentifier($aiSequenceName), $this, OraclePlatform::class)()->getName();
-        $sqls[count($sqls) - 1] = (new Expression(
+        $sqls[array_key_last($sqls)] = (new Expression(
             // else branch should be maybe (because of concurrency) put into after update trigger
             str_replace('[pk_seq]', '\'' . str_replace('\'', '\'\'', $pkSeq) . '\'', <<<'EOF'
                 CREATE TRIGGER {{trigger}}

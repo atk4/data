@@ -14,7 +14,7 @@ trait ExpressionTrait
         if (count($parts) > 1) {
             return $this->makeNaryTree($parts, 2, function (array $parts) {
                 if (count($parts) === 1) {
-                    return 'TO_CLOB(' . $this->escapeStringLiteral(reset($parts)) . ')';
+                    return 'TO_CLOB(' . $this->escapeStringLiteral(array_first($parts)) . ')';
                 }
 
                 return 'concat(' . implode(', ', $parts) . ')';
@@ -47,7 +47,7 @@ trait ExpressionTrait
 
         return $this->makeNaryTree($parts, 2, static function (array $parts) {
             if (count($parts) === 1) {
-                return reset($parts);
+                return array_first($parts);
             }
 
             return 'concat(' . implode(', ', $parts) . ')';
@@ -102,7 +102,7 @@ trait ExpressionTrait
         $sqlArgs = [];
         $sql = $this->makeNaryTree($parts, 2, static function (array $parts) use (&$sqlArgs) {
             if (count($parts) === 1) {
-                $sqlArgs[] = reset($parts);
+                $sqlArgs[] = array_first($parts);
 
                 return 'TO_CLOB([])';
             }
