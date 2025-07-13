@@ -85,7 +85,7 @@ class CsvTest extends TestCase
     protected function setDb(array $data): void
     {
         ftruncate($this->file, 0);
-        fputcsv($this->file, array_keys(reset($data)), ...self::SEPARATOR_ENCLOSURE_ESCAPE_CHARS);
+        fputcsv($this->file, array_keys(array_first($data)), ...self::SEPARATOR_ENCLOSURE_ESCAPE_CHARS);
         foreach ($data as $row) {
             fputcsv($this->file, $row, ...self::SEPARATOR_ENCLOSURE_ESCAPE_CHARS);
         }

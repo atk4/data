@@ -1695,7 +1695,7 @@ class Model implements \IteratorAggregate
     public function import(array $rows)
     {
         if (count($rows) === 1) {
-            $this->insert(reset($rows));
+            $this->insert(array_first($rows));
         } elseif (count($rows) !== 0) {
             $this->atomic(function () use ($rows) {
                 foreach ($rows as $row) {

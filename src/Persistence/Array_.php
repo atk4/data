@@ -44,8 +44,8 @@ class Array_ extends Persistence
         // if there is no model table specified, then create fake one named 'data'
         // and put all persistence data in there 1/2
         if (count($this->seedData) > 0 && !isset($this->seedData['data'])) {
-            $rowSample = reset($this->seedData);
-            if (is_array($rowSample) && $rowSample !== [] && !is_array(reset($rowSample))) {
+            $rowSample = array_first($this->seedData);
+            if (is_array($rowSample) && $rowSample !== [] && !is_array(array_first($rowSample))) {
                 $this->seedData = ['data' => $this->seedData];
             }
         }
@@ -238,7 +238,7 @@ class Array_ extends Persistence
                     ->addMoreInfo('id', null);
             }
 
-            $idRaw = reset($rowsRaw)[$model->idField];
+            $idRaw = array_first($rowsRaw)[$model->idField];
 
             return $this->tryLoad($model, $idRaw);
         }

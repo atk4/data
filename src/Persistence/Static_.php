@@ -27,7 +27,7 @@ class Static_ extends Array_
      */
     public function __construct(array $data = [])
     {
-        if (count($data) > 0 && !is_array(reset($data))) {
+        if (count($data) > 0 && !is_array(array_first($data))) {
             $dataOrig = $data;
             $data = [];
             foreach ($dataOrig as $k => $v) {

@@ -217,7 +217,7 @@ class MigratorTest extends TestCase
         $model->addCondition('v', $str);
         $rows = $model->export();
         self::assertCount(1, $rows);
-        $row = reset($rows);
+        $row = array_first($rows);
         unset($rows);
         self::assertSame(['id', 'v'], array_keys($row));
         self::assertSame(2, $row['id']);

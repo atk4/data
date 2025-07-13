@@ -97,8 +97,8 @@ class UserAction
     public function getActionForEntity(Model $entity): self
     {
         $owner = $this->_getOwner();
-
         $entity->assertIsEntity($owner);
+
         foreach ($owner->getUserActions() as $name => $action) {
             if ($action === $this) {
                 return $entity->getUserAction($name); // @phpstan-ignore return.type
