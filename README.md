@@ -13,9 +13,9 @@ Agile Data is a framework for defining your "business layer" which is separate f
 - Agile Data is extensible - field types, persistence types, relations and action types can be extended.
 
 [![Build](https://github.com/atk4/data/actions/workflows/test-unit.yml/badge.svg?branch=develop)](https://github.com/atk4/data/actions?query=branch:develop)
-[![CodeCov](https://codecov.io/gh/atk4/data/branch/develop/graph/badge.svg)](https://codecov.io/gh/atk4/data)
-[![GitHub release](https://img.shields.io/github/release/atk4/data.svg)](https://github.com/atk4/data/releases)
-[![Code Climate](https://codeclimate.com/github/atk4/data/badges/gpa.svg)](https://codeclimate.com/github/atk4/data)
+[![Coverage](https://codecov.io/gh/atk4/data/branch/develop/graph/badge.svg)](https://codecov.io/gh/atk4/data)
+[![Release](https://img.shields.io/github/release/atk4/data.svg)](https://github.com/atk4/data/releases)
+[![Downloads](https://img.shields.io/packagist/dt/atk4/data.svg)](https://github.com/atk4/data/releases)
 
 Quick-Links: [Documentation](https://atk4-data.readthedocs.io) | [Discord channel](https://discord.gg/QVKSk2B) | [ATK UI](https://github.com/atk4/ui)
 
