@@ -517,7 +517,7 @@ class Test extends TestCase
     {
         self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
 
-        $maxTime = 4 * 3600.0;
+        $maxTime = 15.0;
         $startTs = microtime(true);
         $lastDumpTs = $startTs;
 
