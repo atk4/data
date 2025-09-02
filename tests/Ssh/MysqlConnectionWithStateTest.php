@@ -7,6 +7,8 @@ namespace Atk4\Data\Tests\Ssh;
 use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Exception;
 use Atk4\Data\Ssh\MysqlConnectionWithState;
+use Atk4\Data\Ssh\MysqlException;
+use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 
 /**
@@ -48,6 +50,17 @@ class MysqlConnectionWithStateTest extends TestCase
         self::assertLessThan(0.5, abs(microtime(true) - $conn->inQuerySinceTs));
         $conn->readResult();
         self::assertNull($conn->inQuerySinceTs);
+    }
+
+    public function testInvalidQueryException(): void
+    {
+        $conn = $this->createConnection();
+        $conn->sendQuery('xxx');
+
+        $this->expectException(MysqlException::class);
+        $this->expectExceptionCode(1064);
+        $this->expectExceptionMessage('Query error: ERROR 1064 (42000): You have an error in your SQL syntax;');
+        $conn->readResult();
     }
 
     public function testIsolationLevel(): void
@@ -132,8 +145,7 @@ class MysqlConnectionWithStateTest extends TestCase
         $conn = $this->createConnection();
 
         $conn->sendQuery('start transaction');
-        $res = $conn->readResult();
-        self::assertNull($res->error);
+        $conn->readResult();
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Cannot start transaction when in transaction already');
@@ -145,9 +157,94 @@ class MysqlConnectionWithStateTest extends TestCase
         $conn = $this->createConnection();
 
         $this->expectException(Exception::class);
+        $this->expectExceptionCode(1146);
         $this->expectExceptionMessage('Query error: ERROR 1146 (');
         $conn->sendQuery('select 1 from atk4_test_wrong_table');
         $conn->readResult();
+    }
+
+    public function testExecuteAndRetryOnInterruptedQuery(): void
+    {
+        // fix test reliability (failure rate is about 10 ppm in Github Actions)
+        for ($i = 0;; ++$i) {
+            try {
+                $this->_testExecuteAndRetryOnInterruptedQuery();
+
+                return;
+            } catch (AssertionFailedError $e) { // @phpstan-ignore catch.internalClass
+                if ($i >= 4) {
+                    throw $e;
+                }
+            }
+        }
+    }
+
+    private function _testExecuteAndRetryOnInterruptedQuery(): void
+    {
+        $conn = $this->createConnection();
+        $connOther = $this->createConnection();
+
+        for ($j = 0; $j < 5_000; ++$j) { // loop to test MysqlConnectionWithState::waitUntilQueryIsExecuting() extensively
+            $conn->sendQuery('select sleep(60)');
+            $conn->waitUntilQueryIsExecuting($connOther);
+
+            $connOther->sendQuery('kill query ' . $conn->threadId);
+            $connOther->readResult();
+
+            $i = 0;
+            $conn->executeAndRetryOnInterruptedQuery(function () use ($conn, &$i, $j) {
+                if (++$i > 1) {
+                    return;
+                }
+
+                $e = null;
+                try {
+                    $conn->readResult();
+                } catch (MysqlException $e) {
+                    self::assertSame(1317, $e->getCode());
+                }
+                if ($conn->serverIsMariaDB ? version_compare($conn->serverVersion, '10.5.6') <= 0 : true) {
+                    // MySQL and MariaDB 10.5.6 and lower do not emit an error when "select sleep(10)" is interrupted
+                    self::assertNull($e);
+                    $this->expectException(AssertionFailedError::class); // @phpstan-ignore classConstant.internalClass
+                }
+                self::assertNotNull($e, 'iter: ' . $j);
+
+                throw $e;
+            });
+            self::assertSame(2, $i);
+
+            $conn->sendQuery('select CONNECTION_ID()');
+            $res = $conn->readResult();
+            self::assertSame([['CONNECTION_ID()' => (string) $conn->threadId]], $res->rows);
+        }
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Too many interrupted query retries');
+        $i = 0;
+        try {
+            $conn->executeAndRetryOnInterruptedQuery(static function () use ($conn, $connOther, &$i) {
+                ++$i;
+
+                $conn->sendQuery('select sleep(60)');
+                $conn->waitUntilQueryIsExecuting($connOther);
+
+                $connOther->sendQuery('kill query ' . $conn->threadId);
+                $connOther->readResult();
+
+                $e = null;
+                try {
+                    $conn->readResult();
+                } catch (MysqlException $e) {
+                    self::assertSame(1317, $e->getCode());
+                }
+                self::assertNotNull($e);
+
+                throw $e;
+            });
+        } finally {
+            self::assertSame(50, $i);
+        }
     }
 
     public function testQueryInTransaction(): void

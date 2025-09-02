@@ -8,6 +8,7 @@ use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Exception;
 use Atk4\Data\Ssh\MysqlConnection;
 use Atk4\Data\Ssh\MysqlConnectionWithState;
+use Atk4\Data\Ssh\MysqlException;
 use Atk4\Data\Tests\Ssh\MysqlConnectionTest;
 use Atk4\Data\Tests\Ssh\MysqliAsyncConnectionTest;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -61,7 +62,6 @@ class Test extends TestCase
             ...($this->isMvorisekLocal() ? ['10.8.128.25', 4050, 'root', 'r', 'd'] : MysqlConnectionTest::getMysqlConfig()),
             ...[$table]
         );
-        $conn->enableDebugPrint = true;
 
         return $conn;
     }
@@ -74,7 +74,6 @@ class Test extends TestCase
     protected function createTestTable(string $table): void
     {
         $conn = $this->createConnection($table);
-        $conn->enableDebugPrint = false;
 
         $conn->sendQuery(<<<'EOD'
             CREATE TABLE $TTT (
@@ -97,10 +96,8 @@ class Test extends TestCase
         $table = $this->makeRandomTableName();
         $this->createTestTable($table);
         $connA = $this->createConnection($table);
-        $connA->enableDebugPrint = false;
         $connA->enableAssertInTransactionUsingQuery = true;
         $connB = $this->createConnection($table);
-        $connB->enableDebugPrint = false;
 
         $connA->sendQuery('start transaction');
         $connA->readResult();
@@ -112,11 +109,21 @@ class Test extends TestCase
         $connA->readResult();
 
         $connB->sendQuery('update $TTT set value = 795 where name != \'b\'');
+        usleep(100_000); // MysqlConnectionWithState::waitUntilQueryIsExecuting() is not working on MySQL and also it must detect already executed/finished query
 
         $connA->sendQuery('update $TTT set value = 944 where name != \'b\'');
-        // ERROR 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+
         // here we read "not in transaction"
-        $connA->readResult();
+        $e = null;
+        try {
+            $connA->readResult();
+        } catch (MysqlException $e) {
+            // ERROR 1205 (HY000): Lock wait timeout exceeded; try restarting transaction
+            // ERROR 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+            self::assertContains($e->getCode(), [1205, 1213]);
+        }
+        self::assertNotNull($e);
+
         $connB->readResult();
 
         $connA->sendQuery('update $TTT set value = 646');
@@ -150,10 +157,8 @@ class Test extends TestCase
         $table = $this->makeRandomTableName();
         $this->createTestTable($table);
         $connA = $this->createConnection($table);
-        $connA->enableDebugPrint = false;
         $connA->enableAssertInTransactionUsingQuery = true;
         $connB = $this->createConnection($table);
-        $connB->enableDebugPrint = false;
 
         $connA->sendQuery('start transaction');
         $connA->readResult();
@@ -168,10 +173,16 @@ class Test extends TestCase
 
         $connB->sendQuery('select * from $TTT where name = \'a\' for update');
 
-        // ERROR 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
-        // or ERROR 1205 (HY000): Lock wait timeout exceeded; try restarting transaction
         // here we read "not in transaction" - see condition below since which MySQL/MariaDB version the issue is no longer present
-        $connA->readResult();
+        $e = null;
+        try {
+            $connA->readResult();
+        } catch (MysqlException $e) {
+            // ERROR 1205 (HY000): Lock wait timeout exceeded; try restarting transaction
+            // ERROR 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+            self::assertContains($e->getCode(), [1205, 1213]);
+        }
+        self::assertNotNull($e);
 
         $connA->sendQuery('select * from $TTT where name = \'a\'');
 
@@ -203,9 +214,7 @@ class Test extends TestCase
         $table = $this->makeRandomTableName();
         $this->createTestTable($table);
         $connA = $this->createConnection($table);
-        $connA->enableDebugPrint = false;
         $connB = $this->createConnection($table);
-        $connB->enableDebugPrint = false;
 
         $connA->sendQuery('SET SESSION TRANSACTION ISOLATION LEVEL ' . $isolationLevel);
         $connA->readResult();
@@ -223,13 +232,16 @@ class Test extends TestCase
         $connA->readResult();
 
         $connA->sendQuery('select * from $TTT where name = \'b\'');
-        $res = $connA->readResult();
-        self::assertSame(
-            $isolationLevel === MysqlConnectionWithState::ISOLATION_LEVEL_SERIALIZABLE
-                ? []
-                : [['name' => 'b', 'value' => $isolationLevel === MysqlConnectionWithState::ISOLATION_LEVEL_READ_UNCOMMITTED ? '10' : '200']],
-            $res->rows
-        );
+        $e = null;
+        try {
+            $res = $connA->readResult();
+        } catch (MysqlException $e) {
+            self::assertSame(1205, $e->getCode());
+        }
+        self::assertSame($isolationLevel === MysqlConnectionWithState::ISOLATION_LEVEL_SERIALIZABLE, $e !== null);
+        if ($e === null) {
+            self::assertSame([['name' => 'b', 'value' => $isolationLevel === MysqlConnectionWithState::ISOLATION_LEVEL_READ_UNCOMMITTED ? '10' : '200']], $res->rows);
+        }
 
         $connB->sendQuery('commit');
         $connB->readResult();
@@ -239,8 +251,16 @@ class Test extends TestCase
                 && $connA->serverIsMariaDB && version_compare($connA->serverVersion, '11.6') >= 0;
 
             $connA->sendQuery('select * from $TTT where name != \'b\' for update');
-            $res = $connA->readResult();
-            self::assertSame($isRepeatableReadMariaDb116 && $i === 0 ? [] : [['name' => 'a', 'value' => '10']], $res->rows);
+            $e = null;
+            try {
+                $res = $connA->readResult();
+            } catch (MysqlException $e) {
+                self::assertSame(1020, $e->getCode());
+            }
+            self::assertSame($isRepeatableReadMariaDb116 && $i === 0, $e !== null);
+            if ($e === null) {
+                self::assertSame([['name' => 'a', 'value' => '10']], $res->rows); // @phpstan-ignore variable.undefined
+            }
 
             $connA->sendQuery('select * from $TTT where name != \'b\'');
             $res = $connA->readResult();
@@ -253,7 +273,6 @@ class Test extends TestCase
         $table = $this->makeRandomTableName();
         $this->createTestTable($table);
         $conn = $this->createConnection($table);
-        $conn->enableDebugPrint = false;
 
         self::assertNull($conn->lockedValue);
 
@@ -331,7 +350,6 @@ class Test extends TestCase
         $table = $this->makeRandomTableName();
         $this->createTestTable($table);
         $conn = $this->createConnection($table);
-        $conn->enableDebugPrint = false;
 
         $conn->sendQuery('start transaction');
         $conn->readResult();
@@ -348,7 +366,6 @@ class Test extends TestCase
         $table = $this->makeRandomTableName();
         $this->createTestTable($table);
         $conn = $this->createConnection($table);
-        $conn->enableDebugPrint = false;
 
         $conn->sendQuery('start transaction');
         $conn->readResult();
@@ -374,9 +391,7 @@ class Test extends TestCase
         $table = $this->makeRandomTableName();
         $this->createTestTable($table);
         $conn = $this->createConnection($table);
-        $conn->enableDebugPrint = false;
         $connOther = $this->createConnection($table);
-        $connOther->enableDebugPrint = false;
 
         $conn->sendQuery('SET SESSION TRANSACTION ISOLATION LEVEL ' . $isolationLevel);
         $conn->readResult();
@@ -393,16 +408,20 @@ class Test extends TestCase
         self::assertNull($connOther->lockedValue);
 
         $connOther->sendQuery('update $TTT set value = 20 where name = \'a\'');
-        $res = $connOther->readResult();
+        $e = null;
+        try {
+            $connOther->readResult();
+        } catch (MysqlException $e) {
+            self::assertSame(1205, $e->getCode());
+        }
+        self::assertNotNull($e);
         self::assertSame(10, $conn->lockedValue);
         self::assertNull($connOther->lockedValue);
-        self::assertNotNull($res->error);
-        self::assertStringContainsString('ERROR 1205 (HY000): Lock wait timeout exceeded', $res->error);
         if (version_compare($conn->serverVersion, $conn->serverIsMariaDB ? '10.6' : '8.0.28') < 0) { // https://jira.mariadb.org/browse/MDEV-36960
-            self::assertGreaterThan(1 - 0.6, $res->elapsed);
-            self::assertLessThan(1 + 2.5, $res->elapsed);
+            self::assertGreaterThan(1 - 0.6, $e->elapsed);
+            self::assertLessThan(1 + 2.5, $e->elapsed);
         } else {
-            self::assertEqualsWithDelta(1.0, $res->elapsed, 0.6);
+            self::assertEqualsWithDelta(1.0, $e->elapsed, 0.6);
         }
     }
 
@@ -425,6 +444,8 @@ class Test extends TestCase
         $startTs = microtime(true);
         $lastDumpTs = $startTs;
 
+        $maxQueries = random_int(0, 10) === 0 ? \PHP_INT_MAX : 15;
+
         for ($i = 1;; ++$i) {
             $ts = microtime(true);
             if ($ts >= $startTs + $maxTime) {
@@ -441,8 +462,14 @@ class Test extends TestCase
             try {
                 ob_start();
 
-                $tester = new Tester(fn () => $this->createConnection($table), 3);
-                $tester->run(5.0);
+                $tester = new Tester(function () use ($table) {
+                    $conn = $this->createConnection($table);
+                    $conn->enableDebugPrint = true;
+                    $conn->enableAssertInTransactionUsingQuery = random_int(0, 3) === 0;
+
+                    return $conn;
+                }, random_int(0, 10) === 0 ? 3 : 2);
+                $tester->run(5.0, $maxQueries, random_int(0, 10) === 0);
 
                 ob_end_clean();
             } catch (\Throwable $e) {
@@ -453,7 +480,7 @@ class Test extends TestCase
 
             if ($ts > $lastDumpTs + 20) {
                 $lastDumpTs = $ts;
-                echo '==== ' . round($ts - $startTs, 2) . ' run ' . $i . ' ================' . "\n";
+                echo '==== elapsed ' . round($ts - $startTs) . ' s, iter ' . $i . ' ================' . "\n";
             }
         }
     }

@@ -6,7 +6,7 @@ namespace Atk4\Data\Ssh;
 
 use Atk4\Data\Exception;
 
-class MysqlConnection
+abstract class MysqlConnection
 {
     private static int $nextId = 1;
 
@@ -22,6 +22,8 @@ class MysqlConnection
     protected $stderr;
 
     public bool $enableDebugPrint = false;
+
+    public int $threadId;
 
     public function __construct(string $sshHost, string $sshUser, string $dbHost, int $dbPort, string $dbUser, string $dbPassword, string $dbDatabase)
     {
@@ -85,6 +87,11 @@ class MysqlConnection
 
             return str_contains($v, 'Server version: ') && str_contains($v, "\n" . 'mysql> ');
         });
+
+        self::sendQuery('select CONNECTION_ID()');
+        $res = self::readResult();
+        assert($res->error === null);
+        $this->threadId = (int) $res->rows[0]['CONNECTION_ID()'];
     }
 
     public function __destruct()

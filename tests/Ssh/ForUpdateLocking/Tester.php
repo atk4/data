@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests\Ssh\ForUpdateLocking;
 
 use Atk4\Data\Exception;
+use Atk4\Data\Ssh\MysqlException;
 
 class Tester
 {
@@ -18,13 +19,7 @@ class Tester
     public function __construct(\Closure $connectionFactoryFx, int $connCount)
     {
         for ($i = 0; $i < $connCount; ++$i) {
-            $conn = $connectionFactoryFx();
-
-            if (random_int(0, 3) === 0) {
-                $conn->enableAssertInTransactionUsingQuery = true;
-            }
-
-            $this->conns[] = $conn;
+            $this->conns[] = $connectionFactoryFx();
         }
     }
 
@@ -42,19 +37,21 @@ class Tester
         return $values[$i];
     }
 
-    public function run(float $maxTime): void
+    public function run(float $maxTime, int $maxQueries, bool $allowSleep): void
     {
         $startTs = microtime(true);
-        $lastDumpTs = 0;
         $queryCount = 0;
 
         while (true) {
             $ts = microtime(true);
-            if ($ts >= $startTs + $maxTime) {
+            if ($ts >= $startTs + $maxTime || $queryCount >= $maxQueries) {
                 return;
-            } elseif ($ts > $lastDumpTs + 1) {
-                $lastDumpTs = $ts;
-                echo "\n*** elapsed: " . date('H:i:s', (int) ($ts - $startTs)) . ', total queries: ' . $queryCount . " ***\n";
+            }
+
+            if ($allowSleep && random_int(0, 3) === 0) {
+                $sleepMs = 10 ** random_int(1, 3);
+                echo '    sleeping ' . $sleepMs . ' ms' . "\n";
+                usleep($sleepMs * 1_050);
             }
 
             $conn = $this->pick($this->conns);
@@ -66,12 +63,21 @@ class Tester
 
                 if ($conn->hasMoreData()) {
                     $inTransactionBeforeRead = $conn->inTransaction;
-                    $res = $conn->readResult();
-
-                    // fix Test::testIssueTransactionTemporaryTurnedOffAfterDeadlock()
-                    if ($res->error !== null && $inTransactionBeforeRead && !$conn->inTransaction && (str_starts_with($res->error, 'ERROR 1213 (') || str_starts_with($res->error, 'ERROR 1020 ('))) {
-                        $conn->sendQuery('rollback');
+                    try {
                         $conn->readResult();
+                    } catch (MysqlException $e) {
+                        // fix Test::testIssueTransactionTemporaryTurnedOffAfterDeadlock()
+                        if ($inTransactionBeforeRead && !$conn->inTransaction && in_array($e->getCode(), [1020, 1213], true)) {
+                            $conn->executeAndRetryOnInterruptedQuery(static function () use ($conn) {
+                                $conn->sendQuery('rollback');
+                                $conn->readResult();
+                            });
+                        }
+
+                        // throw on any other than expected/known error
+                        if (!in_array($e->getCode(), [1020, 1205, 1213, 1317], true)) {
+                            throw $e;
+                        }
                     }
                 }
 
@@ -115,6 +121,10 @@ class Tester
                     }
                     $possibleQueries[] = $q . ' for update';
                 }
+            }
+
+            if (random_int(0, 25) === 0) {
+                // $possibleQueries[] = 'kill query ' . $this->pick($this->conns)->threadId;
             }
 
             $sql = $this->pick($possibleQueries);

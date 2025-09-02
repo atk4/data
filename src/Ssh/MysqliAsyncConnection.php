@@ -6,7 +6,7 @@ namespace Atk4\Data\Ssh;
 
 use Atk4\Data\Exception;
 
-class MysqliAsyncConnection extends MysqlConnection
+abstract class MysqliAsyncConnection extends MysqlConnection
 {
     protected ?\mysqli $mysqli = null;
 
@@ -27,6 +27,8 @@ class MysqliAsyncConnection extends MysqlConnection
         mysqli_report(\MYSQLI_REPORT_OFF);
 
         $this->mysqli = new \mysqli($dbHost, $dbUser, $dbPassword, $dbDatabase, $dbPort);
+
+        $this->threadId = $this->mysqli->thread_id;
     }
 
     #[\Override]
@@ -136,6 +138,8 @@ class MysqliAsyncConnection extends MysqlConnection
         $queryRes->elapsed = $elapsed;
 
         if ($mysqliRes === false) {
+            assert($this->mysqli->errno > 0);
+
             $queryRes->error = 'ERROR ' . $this->mysqli->errno . ' (' . $this->mysqli->sqlstate . '): ' . $this->mysqli->error;
             if ($this->enableDebugPrint) {
                 echo '    query error: ' . $queryRes->error . "\n";
@@ -143,6 +147,8 @@ class MysqliAsyncConnection extends MysqlConnection
 
             return $queryRes;
         }
+
+        assert($this->mysqli->errno === 0);
 
         $queryRes->error = null;
         if ($rows === []) {

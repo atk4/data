@@ -6,7 +6,7 @@ namespace Atk4\Data\Tests\Ssh\ForUpdateLocking;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Ssh\MysqlConnectionWithState;
-use Atk4\Data\Ssh\MysqlResult;
+use Atk4\Data\Ssh\MysqlResultWithoutError;
 
 class ConnectionWithValue extends MysqlConnectionWithState
 {
@@ -40,14 +40,9 @@ class ConnectionWithValue extends MysqlConnectionWithState
     }
 
     #[\Override]
-    public function readResult(): MysqlResult
+    public function readResult(): MysqlResultWithoutError
     {
         $res = parent::readResult();
-
-        if ($res->error !== null) {
-            // all errors except deadlock do throw in parent class
-            return $res;
-        }
 
         if (!$this->inTransaction) {
             $this->lockedValue = null;

@@ -26,7 +26,7 @@ class MysqliAsyncConnectionTest extends MysqlConnectionTest
     #[\Override]
     protected function createConnection(): MysqliAsyncConnection
     {
-        return new MysqliAsyncConnection(...static::getSshConfig(), ...static::getMysqlConfig());
+        return new class(...static::getSshConfig(), ...static::getMysqlConfig()) extends MysqliAsyncConnection {};
     }
 
     #[\Override]

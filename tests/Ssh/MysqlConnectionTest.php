@@ -37,7 +37,7 @@ class MysqlConnectionTest extends TestCase
 
     protected function createConnection(): MysqlConnection
     {
-        return new MysqlConnection(...static::getSshConfig(), ...static::getMysqlConfig());
+        return new class(...static::getSshConfig(), ...static::getMysqlConfig()) extends MysqlConnection {};
     }
 
     public function testSelectEmpty(): void
@@ -168,6 +168,7 @@ class MysqlConnectionTest extends TestCase
         $res = $conn->readResult();
 
         self::assertStringContainsString('ERROR 1064 (42000): You have an error in your SQL syntax;', $res->error);
+        self::assertSame(1064, $res->getErrorCode());
         self::assertSame(0, $res->affectedRows);
         self::assertSame([], $res->rows);
         self::assertLessThan(0.4, $res->elapsed);
@@ -210,5 +211,17 @@ class MysqlConnectionTest extends TestCase
             $conn = $this->createConnection();
             $conns[] = $conn;
         }
+    }
+
+    public function testThreadId(): void
+    {
+        $conn = $this->createConnection();
+        $conn->sendQuery('select CONNECTION_ID()');
+        $res = $conn->readResult();
+
+        self::assertNull($res->error);
+        self::assertSame(0, $res->affectedRows);
+        self::assertSame([['CONNECTION_ID()' => (string) $conn->threadId]], $res->rows);
+        self::assertLessThan(0.4, $res->elapsed);
     }
 }
