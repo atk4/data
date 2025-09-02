@@ -130,7 +130,13 @@ class Test extends TestCase
 
         $connB->sendQuery('commit');
 
-        if ($connA->serverIsMariaDB || version_compare($connA->serverVersion, '5.7') < 0) {
+        if (
+            $connA->serverIsMariaDB
+                ? (version_compare($connA->serverVersion, '10.11.13') <= 0
+                    || (version_compare($connA->serverVersion, '11.0') >= 0 && version_compare($connA->serverVersion, '11.4.7') <= 0)
+                    || (version_compare($connA->serverVersion, '11.5') >= 0 && version_compare($connA->serverVersion, '11.8.2') <= 0))
+                : version_compare($connA->serverVersion, '5.7') < 0
+        ) {
             $this->expectException(Exception::class);
             $this->expectExceptionMessage('Wrong "inTransaction" assumed');
         } else {
@@ -142,7 +148,7 @@ class Test extends TestCase
     }
 
     /**
-     * Not reported yet. Retest once testIssueTransactionTemporaryTurnedOffAfterDeadlock test is fixed by MariaDB.
+     * Seem related with testIssueTransactionTemporaryTurnedOffAfterDeadlock test as fixed by the same issue/release.
      */
     public function testIssueTransactionTemporaryTurnedOffAfterLockInShareMode(): void
     {
@@ -188,9 +194,9 @@ class Test extends TestCase
 
         if (
             $connA->serverIsMariaDB
-                ? version_compare($connA->serverVersion, '11.7') < 0
-                    && $connA->serverVersion !== '10.5.15' // maybe also 10.5.14 which was unreleased by MariaDB
-                    && !(version_compare($connA->serverVersion, '11.4.5') >= 0 && version_compare($connA->serverVersion, '11.5.0') < 0)
+                ? ((version_compare($connA->serverVersion, '10.11.13') <= 0 && $connA->serverVersion !== '10.5.15') // maybe also != 10.5.14 which was unreleased by MariaDB
+                    || (version_compare($connA->serverVersion, '11.0') >= 0 && version_compare($connA->serverVersion, '11.4.4') <= 0)
+                    || (version_compare($connA->serverVersion, '11.5') >= 0 && version_compare($connA->serverVersion, '11.7') < 0))
                 : version_compare($connA->serverVersion, '5.7') < 0
         ) {
             $this->expectException(Exception::class);
@@ -326,6 +332,8 @@ class Test extends TestCase
         for ($i = 0; $i < 2; ++$i) {
             $isRepeatableReadMariaDb116 = $isolationLevel === MysqlConnectionWithState::ISOLATION_LEVEL_REPEATABLE_READ
                 && $connA->serverIsMariaDB && version_compare($connA->serverVersion, '11.6') >= 0;
+            $isSerializableMariaDb1183 = $isolationLevel === MysqlConnectionWithState::ISOLATION_LEVEL_SERIALIZABLE
+                && $connA->serverIsMariaDB && version_compare($connA->serverVersion, '11.8.3') >= 0;
 
             $connA->sendQuery('select * from $TTT where name != \'b\' for update');
             $e = null;
@@ -334,7 +342,7 @@ class Test extends TestCase
             } catch (MysqlException $e) {
                 self::assertSame(1020, $e->getCode());
             }
-            self::assertSame($isRepeatableReadMariaDb116 && $i === 0, $e !== null);
+            self::assertSame(($isRepeatableReadMariaDb116 || $isSerializableMariaDb1183) && $i === 0, $e !== null);
             if ($e === null) {
                 self::assertSame([['name' => 'a', 'value' => '10']], $res->rows); // @phpstan-ignore variable.undefined
             }
