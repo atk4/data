@@ -83,12 +83,66 @@ class Test extends TestCase
         $conn->readResult();
     }
 
-    public function testIssueTransactionTemporaryTurnedOffAfterLockInShareMode(): void
+    /**
+     * Reported as https://jira.mariadb.org/browse/MDEV-36959 .
+     */
+    public function testIssueTransactionTemporaryTurnedOffAfterDeadlock(): void
     {
         $table = $this->makeRandomTableName();
         $this->createTestTable($table);
         $connA = $this->createConnection($table);
         $connA->enableDebugPrint = false;
+        $connA->enableAssertInTransactionUsingQuery = true;
+        $connB = $this->createConnection($table);
+        $connB->enableDebugPrint = false;
+
+        $connA->sendQuery('start transaction');
+        $connA->readResult();
+
+        $connB->sendQuery('start transaction');
+        $connB->readResult();
+
+        $connA->sendQuery('update $TTT set value = 703 where name = \'b\'');
+        $connA->readResult();
+
+        $connB->sendQuery('update $TTT set value = 795 where name != \'b\'');
+
+        $connA->sendQuery('update $TTT set value = 944 where name != \'b\'');
+        // ERROR 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+        // here we read "not in transaction"
+        $connA->readResult();
+        $connB->readResult();
+
+        $connA->sendQuery('update $TTT set value = 646');
+
+        $connB->sendQuery('commit');
+
+        if ($connA->serverIsMariaDB || version_compare($connA->serverVersion, '5.7') < 0) {
+            $this->expectException(Exception::class);
+            $this->expectExceptionMessage('Wrong "inTransaction" assumed');
+        } else {
+            self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
+        }
+
+        // here we read "in transaction"
+        $connA->readResult();
+    }
+
+    public function testIssueTransactionTemporaryTurnedOffAfterLockInShareMode(): void
+    {
+        // fix test reliability (failure rate is about 1 % in Github Actions)
+        for ($i = 0; $i < 4; ++$i) {
+            $this->_testIssueTransactionTemporaryTurnedOffAfterLockInShareMode();
+        }
+    }
+
+    private function _testIssueTransactionTemporaryTurnedOffAfterLockInShareMode(): void
+    {
+        $table = $this->makeRandomTableName();
+        $this->createTestTable($table);
+        $connA = $this->createConnection($table);
+        $connA->enableDebugPrint = false;
+        $connA->enableAssertInTransactionUsingQuery = true;
         $connB = $this->createConnection($table);
         $connB->enableDebugPrint = false;
 
@@ -119,24 +173,21 @@ class Test extends TestCase
                     && !(version_compare($connA->serverVersion, '11.4.5') >= 0 && version_compare($connA->serverVersion, '11.5.0') < 0)
                 : version_compare($connA->serverVersion, '5.7') < 0
         ) {
-            $this->expectException(Exception::class); // later convert to dedicated exception!
+            $this->expectException(Exception::class);
             $this->expectExceptionMessage('Wrong "inTransaction" assumed');
+        } else {
+            self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
         }
 
         // here we read "in transaction"
         $connA->readResult();
-
-        // not needed
-        // $connB->readResult();
-
-        self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
     }
 
     public function testRunForUpdateTester(): void
     {
         self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
 
-        $maxTime = 180.0;
+        $maxTime = 0.0;
         $startTs = microtime(true);
         $lastDumpTs = 0;
 

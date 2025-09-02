@@ -24,6 +24,8 @@ class MysqlConnectionWithState extends MysqliAsyncConnection
 
     public string $serverVersion;
 
+    public bool $enableAssertInTransactionUsingQuery = false;
+
     public function __construct(string $sshHost, string $sshUser, string $dbHost, int $dbPort, string $dbUser, string $dbPassword, string $dbDatabase)
     {
         parent::__construct($sshHost, $sshUser, $dbHost, $dbPort, $dbUser, $dbPassword, $dbDatabase);
@@ -52,6 +54,10 @@ class MysqlConnectionWithState extends MysqliAsyncConnection
 
     private function assertInTransactionIsCorrect(): void
     {
+        if (!$this->enableAssertInTransactionUsingQuery) {
+            return;
+        }
+
         $inTransactionActual = $this->queryInTransaction();
         if ($this->inTransaction !== $inTransactionActual) {
             throw (new Exception('Wrong "inTransaction" assumed'))

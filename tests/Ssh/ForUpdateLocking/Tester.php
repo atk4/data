@@ -32,7 +32,13 @@ class Tester
         $iniConn->readResult();
 
         for ($i = 0; $i < $connCount; ++$i) {
-            $this->conns[] = $connectionFactoryFx();
+            $conn = $connectionFactoryFx();
+
+            if (random_int(0, 3) === 0) {
+                $conn->enableAssertInTransactionUsingQuery = true;
+            }
+
+            $this->conns[] = $conn;
         }
     }
 
@@ -73,7 +79,14 @@ class Tester
                 }
 
                 if ($conn->hasMoreData()) {
-                    $conn->readResult();
+                    $inTransactionBeforeRead = $conn->inTransaction;
+                    $res = $conn->readResult();
+
+                    // fix Test::testIssueTransactionTemporaryTurnedOffAfterDeadlock()
+                    if ($res->error !== null && $inTransactionBeforeRead && !$conn->inTransaction && (str_starts_with($res->error, 'ERROR 1213 (') || str_starts_with($res->error, 'ERROR 1020 ('))) {
+                        $conn->sendQuery('rollback');
+                        $conn->readResult();
+                    }
                 }
 
                 continue;

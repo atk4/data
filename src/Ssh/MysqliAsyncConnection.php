@@ -122,7 +122,7 @@ class MysqliAsyncConnection extends MysqlConnection
         while (!$this->hasMoreData());
 
         try {
-            $mysqliRes = $this->mysqli->reap_async_query();
+            $mysqliRes = @$this->mysqli->reap_async_query();
             $rows = is_bool($mysqliRes)
                 ? []
                 : $mysqliRes->fetch_all(\MYSQLI_ASSOC);
