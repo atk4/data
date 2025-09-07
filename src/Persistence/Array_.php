@@ -376,7 +376,7 @@ class Array_ extends Persistence
     /**
      * Typecast data and return Action of data array.
      *
-     * @param array<int, string>|null $fields
+     * @param list<string>|null $fields
      */
     public function initAction(Model $model, ?array $fields = null): Action
     {
@@ -384,6 +384,7 @@ class Array_ extends Persistence
             $tableAction = $this->action($model->table, 'select');
 
             $rows = $tableAction->getRows();
+            $columns = $tableAction->getColumns();
         } else {
             $table = $this->seedDataAndGetTable($model);
 
@@ -391,19 +392,26 @@ class Array_ extends Persistence
             foreach ($table->getRows() as $row) {
                 $rows[$row->getValue($model->getIdField()->getPersistenceName())] = $row->getData();
             }
+
+            $columns = $table->getColumnNames();
         }
 
         foreach ($rows as $rowIndex => $row) {
             $rows[$rowIndex] = $this->remapLoadRow($model, $this->filterRowDataOnlyModelFields($model, $row));
         }
 
+        $columns = array_keys($this->remapLoadRow($model, $this->filterRowDataOnlyModelFields($model, array_flip($columns))));
+
         if ($fields !== null) {
             $rows = array_map(static function (array $row) use ($fields) {
                 return array_intersect_key($row, array_flip($fields));
             }, $rows);
+
+            $columns = array_values(array_intersect($columns, $fields));
+            assert(count($columns) === count($fields));
         }
 
-        return new Action($rows);
+        return new Action($rows, $columns);
     }
 
     /**
@@ -479,6 +487,9 @@ class Array_ extends Persistence
 
                 if (isset($args['alias'])) {
                     $action->generator = new RenameColumnIterator($action->generator, $field, $args['alias']);
+                    \Closure::bind(static function () use ($action, $args) {
+                        $action->columns = [$args['alias']];
+                    }, null, Action::class)();
                 }
 
                 return $action;

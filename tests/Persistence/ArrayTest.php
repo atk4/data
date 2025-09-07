@@ -505,7 +505,7 @@ class ArrayTest extends TestCase
         $m = new Model($p);
         $m->addField('code', ['type' => 'integer']);
 
-        $m->addCondition('code', '>', new Action([['a' => new \DateTime()]]));
+        $m->addCondition('code', '>', new Action([['a' => new \DateTime()]], ['a']));
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Only scalar values can be compared');
@@ -522,7 +522,7 @@ class ArrayTest extends TestCase
         $m = new Model($p);
         $m->addField('code', ['type' => 'integer']);
 
-        $m->addCondition('code', '>', new Action([['a' => 11], ['a' => 12]]));
+        $m->addCondition('code', '>', new Action([['a' => 11], ['a' => 12]], ['a']));
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Unable to get value from table with more than 1 row');
@@ -539,11 +539,20 @@ class ArrayTest extends TestCase
         $m = new Model($p);
         $m->addField('code', ['type' => 'integer']);
 
-        $m->addCondition('code', '>', new Action([['a' => 11, 'b' => 12]]));
+        $m->addCondition('code', '>', new Action([['a' => 11, 'b' => 12]], ['a', 'b']));
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Unable to get value from table with more than 1 column');
         $m->action('select')->getRows();
+    }
+
+    public function testWrongColumnNamesException(): void
+    {
+        $action = new Action([['a' => 1]], ['b']);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Column names mismatch');
+        $action->getRows();
     }
 
     public function testAggregates(): void
