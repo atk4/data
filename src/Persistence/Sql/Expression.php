@@ -90,10 +90,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
 
         $this->setDefaults($template);
 
-        if ($arguments !== []) {
-            assert($this->args['custom'] === []);
-            $this->args['custom'] = $arguments;
-        }
+        $this->args['custom'] = $arguments;
     }
 
     /**

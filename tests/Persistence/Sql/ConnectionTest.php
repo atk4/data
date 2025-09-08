@@ -20,21 +20,6 @@ class ConnectionTest extends TestCase
         );
     }
 
-    public function testDsqlWithArguments(): void
-    {
-        $c = Connection::connect('sqlite::memory:');
-
-        $query = $c->dsql([
-            'template' => 'hello, [who]',
-            'args' => ['custom' => ['who' => 'world']],
-        ]);
-
-        self::assertSame([
-            'hello, :a',
-            [':a' => 'world'],
-        ], $query->render());
-    }
-
     public function testDsnNormalize(): void
     {
         // standard
