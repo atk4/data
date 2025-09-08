@@ -11,6 +11,66 @@ use Atk4\Data\Persistence\Array_ as ArrayPersistence;
 
 class JoinTest extends TestCase
 {
+    /**
+     * @return mixed
+     */
+    private function getProtected(object $obj, string $name)
+    {
+        return \Closure::bind(static fn () => $obj->{$name}, null, $obj)();
+    }
+
+    public function testDirection(): void
+    {
+        $db = new ArrayPersistence(['user' => [], 'contact' => []]);
+        $m = new Model($db, ['table' => 'user']);
+        $m->addField('contact_id', ['type' => 'bigint']);
+        $m->addField('test_id', ['type' => 'bigint']);
+
+        $j = $m->join('contact');
+        self::assertFalse($j->reverse);
+        self::assertSame('contact_id', $this->getProtected($j, 'masterField'));
+        self::assertSame('id', $this->getProtected($j, 'foreignField'));
+
+        $j = $m->join('contact2.test_id');
+        self::assertTrue($j->reverse);
+        self::assertSame('id', $this->getProtected($j, 'masterField'));
+        self::assertSame('test_id', $this->getProtected($j, 'foreignField'));
+
+        $j = $m->join('contact3', ['masterField' => 'test_id']);
+        self::assertFalse($j->reverse);
+        self::assertSame('test_id', $this->getProtected($j, 'masterField'));
+        self::assertSame('id', $this->getProtected($j, 'foreignField'));
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Joining tables on non-id fields is not implemented yet');
+        $j = $m->join('contact4.foo_id', ['masterField' => 'test_id', 'reverse' => true]);
+        // self::assertTrue($j->reverse);
+        // self::assertSame('test_id', $this->getProtected($j, 'masterField'));
+        // self::assertSame('foo_id', $this->getProtected($j, 'foreignField'));
+    }
+
+    public function testDirectionException(): void
+    {
+        $db = new ArrayPersistence(['user' => [], 'contact' => []]);
+        $m = new Model($db, ['table' => 'user']);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Joining tables on non-id fields is not implemented yet');
+        $m->join('contact.foo_id', ['masterField' => 'test_id']);
+    }
+
+    public function testAddJoinDuplicateNameException(): void
+    {
+        $db = new ArrayPersistence();
+        $m = new Model($db);
+        $m->addField('foo_id', ['type' => 'bigint']);
+        $m->join('foo');
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Join with such name already exists');
+        $m->join('foo');
+    }
+
     public function testTypeMismatchException(): void
     {
         $db = new ArrayPersistence();
@@ -39,5 +99,22 @@ class JoinTest extends TestCase
         self::assertSame('user', $j->getForeignModel()->table);
         self::assertSame('string', $order->getField('placed_by_user_id')->type);
         self::assertSame('bigint', $j->getForeignModel()->getIdField()->type);
+    }
+
+    public function testForeignFieldNameGuessTableWithSchema(): void
+    {
+        $db = new ArrayPersistence();
+
+        $m = new Model($db, ['table' => 'db.user']);
+        $m->addField('contact_id', ['type' => 'bigint']);
+        $j = $m->join('contact');
+        self::assertFalse($j->reverse);
+        self::assertSame('contact_id', $this->getProtected($j, 'masterField'));
+        self::assertSame('id', $this->getProtected($j, 'foreignField'));
+
+        $j = $m->join('contact2', ['reverse' => true]);
+        self::assertTrue($j->reverse);
+        self::assertSame('id', $this->getProtected($j, 'masterField'));
+        self::assertSame('user_id', $this->getProtected($j, 'foreignField'));
     }
 }
