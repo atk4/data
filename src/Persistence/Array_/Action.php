@@ -24,8 +24,8 @@ class Action
     private array $_filterFxs = [];
 
     /**
-     * @param array<int, array<string, mixed>> $data
-     * @param list<string>                     $columns
+     * @param list<array<string, mixed>> $data
+     * @param list<string>               $columns
      */
     public function __construct(array $data, array $columns)
     {

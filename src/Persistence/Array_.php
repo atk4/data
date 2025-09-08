@@ -390,14 +390,14 @@ class Array_ extends Persistence
 
             $rows = [];
             foreach ($table->getRows() as $row) {
-                $rows[$row->getValue($model->getIdField()->getPersistenceName())] = $row->getData();
+                $rows[] = $row->getData();
             }
 
             $columns = $table->getColumnNames();
         }
 
-        foreach ($rows as $rowIndex => $row) {
-            $rows[$rowIndex] = $this->remapLoadRow($model, $this->filterRowDataOnlyModelFields($model, $row));
+        foreach ($rows as $k => $row) {
+            $rows[$k] = $this->remapLoadRow($model, $this->filterRowDataOnlyModelFields($model, $row));
         }
 
         $columns = array_keys($this->remapLoadRow($model, $this->filterRowDataOnlyModelFields($model, array_flip($columns))));
