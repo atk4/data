@@ -41,6 +41,8 @@ class JoinArrayTest extends TestCase
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $m = new Model($db, ['table' => 'user']);
+        $m->addField('contact_id', ['type' => 'bigint']);
+        $m->addField('test_id', ['type' => 'bigint']);
 
         $j = $m->join('contact');
         self::assertFalse($j->reverse);
@@ -79,6 +81,7 @@ class JoinArrayTest extends TestCase
     {
         $db = new Persistence\Array_();
         $m = new Model($db);
+        $m->addField('foo_id', ['type' => 'bigint']);
         $m->join('foo');
 
         $this->expectException(Exception::class);
@@ -435,6 +438,7 @@ class JoinArrayTest extends TestCase
         $db = new Persistence\Array_();
 
         $m = new Model($db, ['table' => 'db.user']);
+        $m->addField('contact_id', ['type' => 'bigint']);
         $j = $m->join('contact');
         self::assertFalse($j->reverse);
         self::assertSame('contact_id', $this->getProtected($j, 'masterField'));
