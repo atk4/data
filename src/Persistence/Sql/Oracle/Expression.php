@@ -10,5 +10,7 @@ class Expression extends BaseExpression
 {
     use ExpressionTrait;
 
+    protected string $paramBase = 'xxaaaa';
+
     protected string $identifierEscapeChar = '"';
 }

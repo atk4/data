@@ -8,6 +8,7 @@ use Atk4\Data\Persistence\Array_\Action as ArrayAction;
 use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\MaterializedArrayAction;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Platforms\OraclePlatform;
 
 class MaterializedArrayActionTest extends TestCase
 {
@@ -24,33 +25,40 @@ class MaterializedArrayActionTest extends TestCase
         $action = new ArrayAction([], ['a', 'bar']);
         $expr = new MaterializedArrayAction($action);
 
-        self::assertSameSql('(select :a `a`, :b `bar`)', $this->renderExpressionable($expr)[0]);
+        $fromClause = $this->getDatabasePlatform() instanceof OraclePlatform
+            ? ' from "DUAL"'
+            : '';
+        $fixParamNameFx = fn ($v) => $this->getDatabasePlatform() instanceof OraclePlatform
+            ? ':xxaaa' . substr($v, 1)
+            : $v;
+
+        self::assertSameSql('(select :a `a`, :b `bar`' . $fromClause . ')', $this->renderExpressionable($expr)[0]);
         self::assertSame([
-            ':a' => null,
-            ':b' => null,
+            $fixParamNameFx(':a') => null,
+            $fixParamNameFx(':b') => null,
         ], $this->renderExpressionable($expr)[1]);
 
         $action->generator = new \ArrayIterator([['a' => 1, 'bar' => 'u']]);
-        self::assertSameSql('(select :a `a`, :b `bar`)', $this->renderExpressionable($expr)[0]);
+        self::assertSameSql('(select :a `a`, :b `bar`' . $fromClause . ')', $this->renderExpressionable($expr)[0]);
         self::assertSame([
-            ':a' => 1,
-            ':b' => 'u',
+            $fixParamNameFx(':a') => 1,
+            $fixParamNameFx(':b') => 'u',
         ], $this->renderExpressionable($expr)[1]);
 
         $action->generator = new \ArrayIterator([['a' => 1, 'bar' => 'u'], ['a' => null, 'bar' => 'v']]);
-        self::assertSameSql('(select :a `a`, :b `bar` union all select :c, :d)', $this->renderExpressionable($expr)[0]);
+        self::assertSameSql('(select :a `a`, :b `bar`' . $fromClause . ' union all select :c, :d' . $fromClause . ')', $this->renderExpressionable($expr)[0]);
         self::assertSame([
-            ':a' => 1,
-            ':b' => 'u',
-            ':c' => null,
-            ':d' => 'v',
+            $fixParamNameFx(':a') => 1,
+            $fixParamNameFx(':b') => 'u',
+            $fixParamNameFx(':c') => null,
+            $fixParamNameFx(':d') => 'v',
         ], $this->renderExpressionable($expr)[1]);
 
         $action->generator = new \ArrayIterator([]);
-        self::assertSameSql('(select :a `a`, :b `bar`)', $this->renderExpressionable($expr)[0]);
+        self::assertSameSql('(select :a `a`, :b `bar`' . $fromClause . ')', $this->renderExpressionable($expr)[0]);
         self::assertSame([
-            ':a' => null,
-            ':b' => null,
+            $fixParamNameFx(':a') => null,
+            $fixParamNameFx(':b') => null,
         ], $this->renderExpressionable($expr)[1]);
     }
 }
