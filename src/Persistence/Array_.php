@@ -60,7 +60,10 @@ class Array_ extends Persistence
 
         $this->data[$tableName] = new Table($tableName);
 
-        if (isset($this->seedData[$tableName])) {
+        if (($this->seedData[$tableName] ?? []) === []) {
+            // initialize with at least 1 column
+            $this->data[$tableName]->addColumnName($model->getIdField()->getPersistenceName());
+        } else {
             $rows = $this->seedData[$tableName];
             unset($this->seedData[$tableName]);
 

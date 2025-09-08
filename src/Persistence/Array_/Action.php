@@ -14,27 +14,29 @@ use Atk4\Data\Model;
  */
 class Action
 {
-    /** @var \Iterator<int, array<string, mixed>> */
+    /** @var \Iterator<int, non-empty-array<string, mixed>> */
     public \Iterator $generator;
 
-    /** @var list<string> */
+    /** @var non-empty-list<string> */
     private array $columns;
 
     /** @var list<\Closure(array<string, mixed>): bool> hack for GC for PHP 8.1.3 or older */
     private array $_filterFxs = [];
 
     /**
-     * @param list<array<string, mixed>> $data
-     * @param list<string>               $columns
+     * @param list<non-empty-array<string, mixed>> $data
+     * @param non-empty-list<string>               $columns
      */
     public function __construct(array $data, array $columns)
     {
+        assert($columns !== []); // @phpstan-ignore function.alreadyNarrowedType, notIdentical.alwaysTrue
+
         $this->generator = new \ArrayIterator($data);
         $this->columns = $columns;
     }
 
     /**
-     * @return list<string>
+     * @return non-empty-list<string>
      */
     public function getColumns(): array
     {
@@ -118,7 +120,7 @@ class Action
     /**
      * Checks if $row matches $condition.
      *
-     * @param array<string, mixed> $row
+     * @param non-empty-array<string, mixed> $row
      */
     protected function match(array $row, Model\Scope\AbstractScope $condition): bool
     {
@@ -371,7 +373,7 @@ class Action
     }
 
     /**
-     * @param list<string> $columns
+     * @param non-empty-list<string> $columns
      */
     private function assertExpectedColumns(array $columns): void
     {
@@ -387,7 +389,7 @@ class Action
     /**
      * Return all data inside array.
      *
-     * @return list<array<string, mixed>>
+     * @return list<non-empty-array<string, mixed>>
      */
     public function getRows(): array
     {
@@ -403,7 +405,7 @@ class Action
     /**
      * Return one row of data.
      *
-     * @return array<string, mixed>|null
+     * @return non-empty-array<string, mixed>|null
      */
     public function getRow(): ?array
     {
