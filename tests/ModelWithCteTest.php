@@ -6,9 +6,7 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
 
 class ModelWithCteTest extends TestCase
 {
@@ -47,12 +45,7 @@ class ModelWithCteTest extends TestCase
             $m->action('select')->render()[0]
         );
 
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform
-            && !MysqlConnection::isServerMariaDb($this->getConnection())
-            && MysqlConnection::getServerMinorVersion($this->getConnection()) < 600
-        ) {
-            self::markTestIncomplete('MySQL 5.x does not support WITH clause');
-        }
+        self::markTestIncompleteOnMySQL5xPlatformAsWithClauseIsNotSupported();
 
         self::assertSameExportUnordered([
             ['id' => 10, 'name' => 'John', 'salary' => 2500, 'invoiced' => 500],
