@@ -1050,11 +1050,9 @@ abstract class Query extends Expression
      *
      * By default it is in SELECT mode
      *
-     * @param string $mode
-     *
      * @return $this
      */
-    public function mode($mode)
+    public function mode(string $mode)
     {
         $templatePropertyName = 'template' . ucfirst($mode);
 
