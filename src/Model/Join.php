@@ -270,7 +270,7 @@ abstract class Join
         $this->getForeignModel(); // assert valid foreignTable
 
         if ($this->reverse && $this->masterField !== $idField) { // TODO not implemented yet, see https://github.com/atk4/data/issues/803
-            throw (new Exception('Joining tables on non-id fields is not implemented yet'))
+            throw (new Exception('Reverse join with non-ID master field is not implemented yet'))
                 ->addMoreInfo('masterField', $this->masterField)
                 ->addMoreInfo('idField', $idField);
         }

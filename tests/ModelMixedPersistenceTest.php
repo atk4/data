@@ -50,12 +50,13 @@ class ModelMixedPersistenceTest extends TestCase
         ], $m->export());
     }
 
-    public function testArrayWith(): void
+    public function testArrayWithJoinUsingId(): void
     {
         $this->setDb([
             'user' => [
                 10 => ['id' => 10, 'name' => 'John'],
                 20 => ['id' => 20, 'name' => 'Peter'],
+                30 => ['id' => 30, 'name' => 'Maria'],
             ],
         ]);
 
@@ -76,7 +77,7 @@ class ModelMixedPersistenceTest extends TestCase
 
         $m = clone $mUser;
         $m->addCteModel('config', $mArray);
-        $jConfig = $m->join('config.userId'); // TODO join using "name" field once non-ID join is supported
+        $jConfig = $m->join('config.userId');
         $jConfig->addField('path');
         $jConfig->addField('float', ['type' => 'float']);
 
@@ -104,6 +105,62 @@ class ModelMixedPersistenceTest extends TestCase
         self::assertSameExportUnordered([
             ['id' => 10, 'name' => 'John', 'path' => 'new path', 'float' => 0.0],
             ['id' => 20, 'name' => 'Peter', 'path' => '/home/p', 'float' => 2.0],
+        ], $m->export());
+    }
+
+    public function testArrayWithJoinUsingName(): void
+    {
+        $this->setDb([
+            'user' => [
+                10 => ['id' => 10, 'name' => 'John'],
+                20 => ['id' => 20, 'name' => 'Peter'],
+                30 => ['id' => 30, 'name' => 'Maria'],
+            ],
+        ]);
+
+        $mUser = new Model($this->db, ['table' => 'user']);
+        $mUser->addField('name');
+
+        $dbArray = new Persistence\Array_([
+            'config' => [
+                1 => ['id' => 1, 'user_name' => 'John', 'path' => '/home/john'],
+                ['id' => 2, 'user_name' => 'Peter', 'path' => '/home/p'],
+            ],
+        ]);
+
+        $mArray = new Model($dbArray, ['table' => 'config']);
+        $mArray->addField('userName', ['actual' => 'user_name']);
+        $mArray->addField('path');
+
+        $m = clone $mUser;
+        $m->addCteModel('config', $mArray);
+        $jConfig = $m->join('config.userName', ['masterField' => 'name', 'reverse' => false]);
+        $jConfig->addField('path');
+
+        $fromClause = $this->getDatabasePlatform() instanceof OraclePlatform
+            ? ' from "DUAL"'
+            : '';
+
+        $this->assertSameSql(
+            'with `config` as (select :a `id`, :b `userName`, :c `path`' . $fromClause . ' union all select :d, :e, :f' . $fromClause . ')' . "\n"
+                . 'select `user`.`id`, `user`.`name`, `_config`.`path` from `user` inner join `config` `_config` on `_config`.`userName` = `user`.`name`',
+            $m->action('select')->render()[0]
+        );
+
+        self::markTestIncompleteOnMySQL5xPlatformAsWithClauseIsNotSupported();
+
+        self::assertSameExportUnordered([
+            ['id' => 10, 'name' => 'John', 'path' => '/home/john'],
+            ['id' => 20, 'name' => 'Peter', 'path' => '/home/p'],
+        ], $m->export());
+
+        $john = $m->load(10);
+        $john->set('path', 'new path');
+        $john->save();
+
+        self::assertSameExportUnordered([
+            ['id' => 10, 'name' => 'John', 'path' => 'new path'],
+            ['id' => 20, 'name' => 'Peter', 'path' => '/home/p'],
         ], $m->export());
     }
 }
