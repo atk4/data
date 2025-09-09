@@ -49,9 +49,11 @@ class Table
      */
     protected function assertValidValue($value): void
     {
-        if ($value instanceof self || $value instanceof Row) {
-            throw new Exception('Value cannot be an ' . get_class($value) . ' object');
-        } elseif (!is_scalar($value) && $value !== null) {
+        if (!is_scalar($value) && $value !== null) {
+            if ($value instanceof self || $value instanceof Row) {
+                throw new Exception('Value cannot be an ' . get_class($value) . ' object');
+            }
+
             throw (new Exception('Value must be scalar'))
                 ->addMoreInfo('value', $value);
         }
