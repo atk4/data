@@ -137,16 +137,16 @@ class UserActionTest extends TestCase
     public function testPreview(): void
     {
         $client = new UaClient($this->pers);
-        $client->addUserAction('say_name', static function (UaClient $m) {
-            return $m->get('name');
+        $client->addUserAction('say_name', static function (UaClient $entity) {
+            return $entity->get('name');
         });
 
         $client = $client->load(1);
 
         self::assertSame('John', $client->getUserAction('say_name')->execute());
 
-        $client->getUserAction('say_name')->preview = static function (UaClient $m) {
-            return 'will say ' . $m->get('name');
+        $client->getUserAction('say_name')->preview = static function (UaClient $entity) {
+            return 'will say ' . $entity->get('name');
         };
         self::assertSame('will say John', $client->getUserAction('say_name')->preview());
 
@@ -235,12 +235,12 @@ class UserActionTest extends TestCase
         $client = new UaClient($this->pers);
         $client = $client->load(1);
 
-        $client->getUserAction('sendReminder')->enabled = static function (UaClient $m) {
+        $client->getUserAction('sendReminder')->enabled = static function (UaClient $entity) {
             return true;
         };
         $client->getUserAction('sendReminder')->execute();
 
-        $client->getUserAction('sendReminder')->enabled = static function (UaClient $m) {
+        $client->getUserAction('sendReminder')->enabled = static function (UaClient $entity) {
             return false;
         };
 

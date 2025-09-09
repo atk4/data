@@ -418,6 +418,16 @@ abstract class TestCase extends BaseTestCase
         }
     }
 
+    protected function markTestIncompleteOnMySQL5xPlatformAsWithClauseIsNotSupported(): void
+    {
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform
+            && !MysqlConnection::isServerMariaDb($this->getConnection())
+            && MysqlConnection::getServerMinorVersion($this->getConnection()) < 600
+        ) {
+            self::markTestIncomplete('MySQL 5.x does not support WITH clause');
+        }
+    }
+
     protected function markTestIncompleteOnMySQL56PlatformAsCreateUniqueStringIndexHasLengthLimit(): void
     {
         if ($this->getDatabasePlatform() instanceof MySQLPlatform

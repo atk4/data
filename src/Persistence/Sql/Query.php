@@ -226,7 +226,7 @@ abstract class Query extends Expression
      *
      * @return $this
      */
-    public function with(self $cursor, string $alias, ?array $fields = null, bool $recursive = false)
+    public function with(Expressionable $cursor, string $alias, ?array $fields = null, bool $recursive = false)
     {
         $this->_setArgs('with', $alias, [
             'cursor' => $cursor,
@@ -1050,11 +1050,9 @@ abstract class Query extends Expression
      *
      * By default it is in SELECT mode
      *
-     * @param string $mode
-     *
      * @return $this
      */
-    public function mode($mode)
+    public function mode(string $mode)
     {
         $templatePropertyName = 'template' . ucfirst($mode);
 

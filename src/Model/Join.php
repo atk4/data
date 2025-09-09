@@ -23,6 +23,7 @@ abstract class Join
     use DiContainerTrait;
     use InitializerTrait {
         init as private _init;
+        invokeInit as private _invokeInit;
     }
     use JoinLinkTrait;
     use TrackableTrait {
@@ -79,6 +80,12 @@ abstract class Join
      * By default it's 'id'.
      */
     public ?string $foreignIdField = null;
+
+    /**
+     * Database our/their field types must always match, but DBAL types can be different in theory,
+     * set this to false when the DBAL types are intentionally different.
+     */
+    public bool $checkTheirType = true;
 
     /**
      * When $prefix is set, then all the fields generated through
@@ -293,6 +300,27 @@ abstract class Join
             $this->onHookToOwnerEntity(Model::HOOK_BEFORE_INSERT, $createHookFxWithCleanup('beforeInsert'), [], -5);
             $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, $createHookFxWithCleanup('beforeUpdate'), [], -5);
             $this->onHookToOwnerEntity(Model::HOOK_AFTER_DELETE, $createHookFxWithCleanup('afterDelete'), [], 2);
+        }
+    }
+
+    public function invokeInit(): void
+    {
+        $this->_invokeInit();
+
+        if ($this->checkTheirType) {
+            $foreignModel = $this->getForeignModel();
+
+            $ourField = $this->getOwner()->getField($this->masterField);
+            $ourField = $this->getMasterField();
+            $theirField = $foreignModel->getField($this->foreignField);
+
+            if ($theirField->type !== $ourField->type) {
+                throw (new Exception('Join reference type mismatch'))
+                    ->addMoreInfo('ourField', $ourField)
+                    ->addMoreInfo('ourFieldType', $ourField->type)
+                    ->addMoreInfo('theirField', $theirField)
+                    ->addMoreInfo('theirFieldType', $theirField->type);
+            }
         }
     }
 

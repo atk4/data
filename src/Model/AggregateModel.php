@@ -9,8 +9,8 @@ use Atk4\Data\Field;
 use Atk4\Data\Field\SqlExpressionField;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\Sql\AggregateField;
 use Atk4\Data\Persistence\Sql\Expression;
-use Atk4\Data\Persistence\Sql\MaterializedField;
 use Atk4\Data\Persistence\Sql\Query;
 
 /**
@@ -94,7 +94,7 @@ class AggregateModel extends Model
 
             // convert base model fields to aliases, they are always already materialized as the base model is SQL inner table
             foreach ($seed['expr']->args['custom'] as $argK => $argV) {
-                $seed['expr']->args['custom'][$argK] = new MaterializedField($this->table, $argV);
+                $seed['expr']->args['custom'][$argK] = new AggregateField($this->table, $argV);
             }
 
             $this->addExpression($name, $seed);
@@ -169,7 +169,7 @@ class AggregateModel extends Model
             if ($field instanceof Expression) {
                 $expression = $field;
             } else {
-                $expression = new MaterializedField($this->table, $this->table->getField($field));
+                $expression = new AggregateField($this->table, $this->table->getField($field));
             }
 
             $query->group($expression);

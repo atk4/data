@@ -14,18 +14,33 @@ use Atk4\Data\Model;
  */
 class Action
 {
-    /** @var \Iterator<int, array<string, mixed>> */
-    public $generator;
+    /** @var \Iterator<int, non-empty-array<string, mixed>> */
+    public \Iterator $generator;
+
+    /** @var non-empty-list<string> */
+    private array $columns;
 
     /** @var list<\Closure(array<string, mixed>): bool> hack for GC for PHP 8.1.3 or older */
     private array $_filterFxs = [];
 
     /**
-     * @param array<int, array<string, mixed>> $data
+     * @param list<non-empty-array<string, mixed>> $data
+     * @param non-empty-list<string>               $columns
      */
-    public function __construct(array $data)
+    public function __construct(array $data, array $columns)
     {
+        assert($columns !== []); // @phpstan-ignore function.alreadyNarrowedType, notIdentical.alwaysTrue
+
         $this->generator = new \ArrayIterator($data);
+        $this->columns = $columns;
+    }
+
+    /**
+     * @return non-empty-list<string>
+     */
+    public function getColumns(): array
+    {
+        return $this->columns;
     }
 
     /**
@@ -97,6 +112,7 @@ class Action
         }
 
         $this->generator = new \ArrayIterator([['v' => $res]]);
+        $this->columns = ['v'];
 
         return $this;
     }
@@ -104,7 +120,7 @@ class Action
     /**
      * Checks if $row matches $condition.
      *
-     * @param array<string, mixed> $row
+     * @param non-empty-array<string, mixed> $row
      */
     protected function match(array $row, Model\Scope\AbstractScope $condition): bool
     {
@@ -337,6 +353,7 @@ class Action
     public function count()
     {
         $this->generator = new \ArrayIterator([['v' => iterator_count($this->generator)]]);
+        $this->columns = ['v'];
 
         return $this;
     }
@@ -350,30 +367,53 @@ class Action
     {
         $this->generator->rewind();
         $this->generator = new \ArrayIterator([['v' => $this->generator->valid() ? 1 : 0]]);
+        $this->columns = ['v'];
 
         return $this;
     }
 
     /**
+     * @param non-empty-list<string> $columns
+     */
+    private function assertExpectedColumns(array $columns): void
+    {
+        $expected = $this->getColumns();
+
+        if ($columns !== $expected) {
+            throw (new Exception('Column names mismatch'))
+                ->addMoreInfo('actual', $columns)
+                ->addMoreInfo('expected', $expected);
+        }
+    }
+
+    /**
      * Return all data inside array.
      *
-     * @return list<array<string, mixed>>
+     * @return list<non-empty-array<string, mixed>>
      */
     public function getRows(): array
     {
-        return iterator_to_array($this->generator, false);
+        $res = iterator_to_array($this->generator, false);
+
+        foreach ($res as $row) {
+            $this->assertExpectedColumns(array_keys($row));
+        }
+
+        return $res;
     }
 
     /**
      * Return one row of data.
      *
-     * @return array<string, mixed>|null
+     * @return non-empty-array<string, mixed>|null
      */
     public function getRow(): ?array
     {
         $this->generator->rewind(); // TODO alternatively allow to fetch only once
         $row = $this->generator->current();
         $this->generator->next();
+
+        $this->assertExpectedColumns(array_keys($row));
 
         return $row;
     }

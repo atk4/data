@@ -11,7 +11,7 @@ use Atk4\Data\Model;
 /**
  * TODO shortName should be used by DSQL automatically when in GROUP BY, HAVING, ...
  */
-class MaterializedField implements Expressionable
+class AggregateField implements Expressionable
 {
     use WarnDynamicPropertyTrait;
 

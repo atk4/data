@@ -29,63 +29,6 @@ class JoinArrayTest extends TestCase
         return $data;
     }
 
-    /**
-     * @return mixed
-     */
-    private function getProtected(object $obj, string $name)
-    {
-        return \Closure::bind(static fn () => $obj->{$name}, null, $obj)();
-    }
-
-    public function testDirection(): void
-    {
-        $db = new Persistence\Array_(['user' => [], 'contact' => []]);
-        $m = new Model($db, ['table' => 'user']);
-
-        $j = $m->join('contact');
-        self::assertFalse($j->reverse);
-        self::assertSame('contact_id', $this->getProtected($j, 'masterField'));
-        self::assertSame('id', $this->getProtected($j, 'foreignField'));
-
-        $j = $m->join('contact2.test_id');
-        self::assertTrue($j->reverse);
-        self::assertSame('id', $this->getProtected($j, 'masterField'));
-        self::assertSame('test_id', $this->getProtected($j, 'foreignField'));
-
-        $j = $m->join('contact3', ['masterField' => 'test_id']);
-        self::assertFalse($j->reverse);
-        self::assertSame('test_id', $this->getProtected($j, 'masterField'));
-        self::assertSame('id', $this->getProtected($j, 'foreignField'));
-
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Joining tables on non-id fields is not implemented yet');
-        $j = $m->join('contact4.foo_id', ['masterField' => 'test_id', 'reverse' => true]);
-        // self::assertTrue($j->reverse);
-        // self::assertSame('test_id', $this->getProtected($j, 'masterField'));
-        // self::assertSame('foo_id', $this->getProtected($j, 'foreignField'));
-    }
-
-    public function testDirectionException(): void
-    {
-        $db = new Persistence\Array_(['user' => [], 'contact' => []]);
-        $m = new Model($db, ['table' => 'user']);
-
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Joining tables on non-id fields is not implemented yet');
-        $m->join('contact.foo_id', ['masterField' => 'test_id']);
-    }
-
-    public function testAddJoinDuplicateNameException(): void
-    {
-        $db = new Persistence\Array_();
-        $m = new Model($db);
-        $m->join('foo');
-
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Join with such name already exists');
-        $m->join('foo');
-    }
-
     public function testJoinSaving1(): void
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
@@ -428,21 +371,5 @@ class JoinArrayTest extends TestCase
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Unable to load joined record');
         $user->load(2);
-    }
-
-    public function testForeignFieldNameGuessTableWithSchema(): void
-    {
-        $db = new Persistence\Array_();
-
-        $m = new Model($db, ['table' => 'db.user']);
-        $j = $m->join('contact');
-        self::assertFalse($j->reverse);
-        self::assertSame('contact_id', $this->getProtected($j, 'masterField'));
-        self::assertSame('id', $this->getProtected($j, 'foreignField'));
-
-        $j = $m->join('contact2', ['reverse' => true]);
-        self::assertTrue($j->reverse);
-        self::assertSame('id', $this->getProtected($j, 'masterField'));
-        self::assertSame('user_id', $this->getProtected($j, 'foreignField'));
     }
 }

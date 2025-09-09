@@ -9,10 +9,12 @@ use Atk4\Data\Field;
 use Atk4\Data\Field\SqlExpressionField;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\Array_\Action as ArrayAction;
 use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Exception as SqlException;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Expressionable;
+use Atk4\Data\Persistence\Sql\MaterializedArrayAction;
 use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Reference\HasOneSql;
 use Doctrine\DBAL\Connection as DbalConnection;
@@ -179,6 +181,16 @@ class Sql extends Persistence
     }
 
     /**
+     * @param Query|ArrayAction $action
+     */
+    private function createTableFromAction(object $action): Expressionable
+    {
+        return $action instanceof ArrayAction
+            ? new MaterializedArrayAction($action)
+            : $action;
+    }
+
+    /**
      * Initializes base query for model $m.
      */
     public function initQuery(Model $model): Query
@@ -190,8 +202,12 @@ class Sql extends Persistence
         $query = $this->dsql();
 
         if ($model->table) {
+            $table = is_object($model->table)
+                ? $this->createTableFromAction($model->table->action('select'))
+                : $model->table;
+
             $query->table(
-                is_object($model->table) ? $model->table->action('select') : $model->table,
+                $table,
                 $model->tableAlias ?? (is_object($model->table) ? '_tm' : null)
             );
         }
@@ -204,7 +220,8 @@ class Sql extends Persistence
     public function initWithCursors(Model $model, Query $query): void
     {
         foreach ($model->cteModels as $withAlias => ['model' => $withModel, 'recursive' => $withRecursive]) {
-            $subQuery = $withModel->action('select');
+            $subQuery = $this->createTableFromAction($withModel->action('select'));
+
             $query->with($subQuery, $withAlias, null, $withRecursive);
         }
     }
