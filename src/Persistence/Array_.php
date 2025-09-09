@@ -62,7 +62,7 @@ class Array_ extends Persistence
 
         if (($this->seedData[$tableName] ?? []) === []) {
             // initialize with at least 1 column
-            $this->data[$tableName]->addColumnName($model->getIdField()->getPersistenceName());
+            $this->data[$tableName]->addColumn($model->getIdField()->getPersistenceName());
         } else {
             $rows = $this->seedData[$tableName];
             unset($this->seedData[$tableName]);
@@ -158,8 +158,8 @@ class Array_ extends Persistence
         $row = $table->getRowById($model, $id);
         if ($row !== null) {
             foreach (array_keys($rowData) as $columnName) {
-                if (!$table->hasColumnName($columnName)) {
-                    $table->addColumnName($columnName);
+                if (!$table->hasColumn($columnName)) {
+                    $table->addColumn($columnName);
                 }
             }
             $row->updateValues($rowData);
