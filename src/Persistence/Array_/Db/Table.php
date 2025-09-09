@@ -189,8 +189,10 @@ class Table
      */
     public function getRowById(Model $model, $idRaw): ?Row
     {
+        $idFieldRaw = $model->getIdField()->getPersistenceName();
+
         foreach ($this->getRows() as $row) {
-            if ($row->getValue($model->getIdField()->getPersistenceName()) === $idRaw) {
+            if ($row->getValue($idFieldRaw) === $idRaw) {
                 return $row;
             }
         }
