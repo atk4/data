@@ -73,14 +73,12 @@ class Row
         } else {
             $oldData = [];
             foreach ($data as $columnName => $newValue) {
-                $oldValue = $this->data[$columnName] ?? -2;
-                $hadColumn = $oldValue !== -2 || array_key_exists($columnName, $this->data);
-                if (!$hadColumn) {
-                    $owner->assertHasColumn($columnName);
-                }
-
-                if ($newValue !== $oldValue) {
-                    if ($hadColumn) {
+                $oldValue = $this->data[$columnName] ?? null;
+                $hadColumn = $oldValue !== null || array_key_exists($columnName, $this->data);
+                if (!$hadColumn || $newValue !== $oldValue) {
+                    if (!$hadColumn) {
+                        $owner->assertHasColumn($columnName);
+                    } else {
                         $oldData[$columnName] = $oldValue;
                     }
                     $newData[$columnName] = $newValue;
@@ -105,8 +103,8 @@ class Row
             }
         }
 
-        \Closure::bind(static function () use ($owner, $thisRow, $oldData) {
-            $owner->afterUpdateRow($thisRow, $oldData);
+        \Closure::bind(static function () use ($owner, $thisRow, $oldData, $newData) {
+            $owner->afterUpdateRow($thisRow, $oldData, $newData);
         }, null, Table::class)();
     }
 

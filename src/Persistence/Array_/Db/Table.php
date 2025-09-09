@@ -16,6 +16,9 @@ class Table
     /** @var array<int, Row> */
     private array $rows = [];
 
+    /** @var array<string, HashIndex> */
+    private array $indexes = [];
+
     public function __construct(string $tableName)
     {
         $this->tableName = $tableName;
@@ -50,7 +53,7 @@ class Table
     protected function assertValidValue($value): void
     {
         if (!is_scalar($value) && $value !== null) {
-            throw (new Exception('Value must be scalar'))
+            throw (new Exception('Value must be scalar or null'))
                 ->addMoreInfo('value', $value);
         }
     }
@@ -171,29 +174,97 @@ class Table
 
     /**
      * @param array<string, mixed> $oldData
+     * @param array<string, mixed> $newData
      */
-    protected function afterUpdateRow(Row $row, $oldData): void
+    protected function afterUpdateRow(Row $row, $oldData, $newData): void
     {
-        foreach ($oldData as $columnName => $newValue) {
-            // update index here
+        foreach ($oldData as $columnName => $oldValue) {
+            $index = $this->indexes[$columnName] ?? null;
+            if ($index === null) {
+                continue;
+            }
+
+            \Closure::bind(static function () use ($index, $row, $oldValue) {
+                $index->deleteRow($row->getRowIndex(), $oldValue);
+            }, null, HashIndex::class)();
+        }
+
+        foreach ($newData as $columnName => $newValue) {
+            $index = $this->indexes[$columnName] ?? null;
+            if ($index === null) {
+                continue;
+            }
+
+            \Closure::bind(static function () use ($index, $row, $newValue) {
+                $index->addRow($row->getRowIndex(), $newValue);
+            }, null, HashIndex::class)();
         }
     }
 
+    protected function addIndex(string $columnName): void
+    {
+        assert(!isset($this->indexes[$columnName]));
+
+        $index = new HashIndex();
+
+        foreach ($this->getRows() as $row) {
+            \Closure::bind(static function () use ($index, $row, $columnName) {
+                $index->addRow($row->getRowIndex(), $row->getValue($columnName));
+            }, null, HashIndex::class)();
+        }
+
+        $this->indexes[$columnName] = $index;
+    }
+
     /**
-     * TODO rewrite with hash index support.
+     * @param scalar|null $value
      *
-     * @param scalar $idRaw
+     * @return list<Row>
+     */
+    public function getRowsUsingIndex(string $columnName, $value): array
+    {
+        if (!isset($this->indexes[$columnName])) {
+            $this->addIndex($columnName);
+        }
+
+        $index = $this->indexes[$columnName];
+        $possibleRowIndexes = $index->findPossibleRowIndexes($value);
+
+        $res = [];
+        foreach ($possibleRowIndexes as $rowIndex) {
+            $row = $this->rows[$rowIndex];
+            $rowValue = $row->getValue($columnName);
+            if ($rowValue === $value) {
+                $res[] = $row;
+            }
+        }
+
+        return $res;
+    }
+
+    /**
+     * @param scalar|null $value
+     */
+    public function getRowUsingIndex(string $columnName, $value): ?Row
+    {
+        $rows = $this->getRowsUsingIndex($columnName, $value);
+
+        if ($rows === []) {
+            return null;
+        } elseif (count($rows) === 1) {
+            return $rows[0];
+        }
+
+        throw new Exception('Column is not unique');
+    }
+
+    /**
+     * @param scalar|null $idRaw
      */
     public function getRowById(Model $model, $idRaw): ?Row
     {
         $idFieldRaw = $model->getIdField()->getPersistenceName();
 
-        foreach ($this->getRows() as $row) {
-            if ($row->getValue($idFieldRaw) === $idRaw) {
-                return $row;
-            }
-        }
-
-        return null;
+        return $this->getRowUsingIndex($idFieldRaw, $idRaw);
     }
 }
