@@ -22,7 +22,7 @@ class Row
         $this->rowIndex = self::getNextRowIndex();
     }
 
-    public static function getNextRowIndex(): int
+    protected static function getNextRowIndex(): int
     {
         return ++self::$nextRowIndex;
     }
@@ -84,9 +84,9 @@ class Row
             }
         }
 
-        $that = $this;
-        \Closure::bind(static function () use ($owner, $that, $newData) {
-            $owner->beforeValuesSet($that, $newData);
+        $thisRow = $this;
+        \Closure::bind(static function () use ($owner, $thisRow, $newData) {
+            $owner->beforeValuesSet($thisRow, $newData);
         }, null, $owner)();
 
         foreach ($newData as $columnName => $newValue) {

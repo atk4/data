@@ -131,11 +131,11 @@ class Table
      */
     public function addRow(string $rowClass, array $rowData): Row
     {
-        $that = $this;
+        $thisTable = $this;
         $columnNames = $this->getColumnNames();
-        /** @var Row $row */
-        $row = \Closure::bind(static function () use ($that, $rowClass, $columnNames) {
-            $row = new $rowClass($that);
+
+        $row = \Closure::bind(static function () use ($thisTable, $rowClass, $columnNames) {
+            $row = new $rowClass($thisTable);
             foreach ($columnNames as $columnName) {
                 $row->initValue($columnName);
             }
