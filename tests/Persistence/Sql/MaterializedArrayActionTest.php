@@ -32,7 +32,7 @@ class MaterializedArrayActionTest extends TestCase
             ? ':xxaaa' . substr($v, 1)
             : $v;
 
-        self::assertSameSql('(select :a `a`, :b `bar`' . $fromClause . ')', $this->renderExpressionable($expr)[0]);
+        self::assertSameSql('(select :a `a`, :b `bar`' . $fromClause . ' limit 0, 0)', $this->renderExpressionable($expr)[0]);
         self::assertSame([
             $fixParamNameFx(':a') => null,
             $fixParamNameFx(':b') => null,
@@ -55,10 +55,18 @@ class MaterializedArrayActionTest extends TestCase
         ], $this->renderExpressionable($expr)[1]);
 
         $action->generator = new \ArrayIterator([]);
-        self::assertSameSql('(select :a `a`, :b `bar`' . $fromClause . ')', $this->renderExpressionable($expr)[0]);
+        self::assertSameSql('(select :a `a`, :b `bar`' . $fromClause . ' limit 0, 0)', $this->renderExpressionable($expr)[0]);
         self::assertSame([
             $fixParamNameFx(':a') => null,
             $fixParamNameFx(':b') => null,
         ], $this->renderExpressionable($expr)[1]);
+    }
+
+    public function testZeroRows(): void
+    {
+        $action = new ArrayAction([], ['a']);
+        $expr = new MaterializedArrayAction($action);
+
+        self::assertSame([], $expr->getDsqlExpression($this->getConnection()->expr())->getRows());
     }
 }
