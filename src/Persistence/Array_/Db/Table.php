@@ -11,7 +11,7 @@ class Table
 {
     /** @readonly */
     private string $tableName;
-    /** @var array<string, string> */
+    /** @var array<string, true> */
     private array $columnNames = [];
     /** @var array<int, Row> */
     private array $rows = [];
@@ -82,7 +82,7 @@ class Table
      */
     public function getColumnNames(): array
     {
-        return array_values($this->columnNames);
+        return array_keys($this->columnNames);
     }
 
     /**
@@ -98,7 +98,7 @@ class Table
                 ->addMoreInfo('column_name', $columnName);
         }
 
-        $this->columnNames[$columnName] = $columnName;
+        $this->columnNames[$columnName] = true;
 
         foreach ($this->getRows() as $row) {
             $row->updateValues([$columnName => null]);
