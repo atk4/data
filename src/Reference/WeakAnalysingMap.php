@@ -229,7 +229,7 @@ class WeakAnalysingMap
 
         foreach ($this->keyByIndexByHash[$hash] ?? [] as $index => $k) {
             if ($this->unboxValue($k->get()) === $key) {
-                throw (new Exception('Analysing key is already present'))
+                throw (new Exception('Analysing key already exists'))
                     ->addMoreInfo('key', $key);
             }
         }

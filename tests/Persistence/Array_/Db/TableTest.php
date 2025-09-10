@@ -36,6 +36,17 @@ class TableTest extends TestCase
         $table->addColumn('10.0');
     }
 
+    public function testAddColumnDuplicateException(): void
+    {
+        $table = new Table('t');
+
+        $table->addColumn('foo');
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Column name already exists');
+        $table->addColumn('foo');
+    }
+
     public function testBeforeAfterUpdateRow(): void
     {
         $table = new class('t') extends Table {
@@ -125,5 +136,41 @@ class TableTest extends TestCase
             ['after', $rowA, ['foo' => 2, 'bar' => null], []],
         ], $table->getAndClearLog());
         self::assertSame([$rowB->getRowIndex() => $rowB], iterator_to_array($table->getRows()));
+    }
+
+    public function testGetRowsUsingIndex(): void
+    {
+        $table = new Table('t');
+        $table->addColumn('foo');
+
+        $rowA = $table->addRow(Row::class, ['foo' => 1]);
+        $rowB = $table->addRow(Row::class, ['foo' => 1]);
+        $rowC = $table->addRow(Row::class, ['foo' => '1']);
+
+        self::assertSame([$rowA, $rowB], $table->getRowsUsingIndex('foo', 1));
+        self::assertSame([$rowC], $table->getRowsUsingIndex('foo', '1'));
+
+        $rowD = $table->addRow(Row::class, ['foo' => null]);
+        $rowE = $table->addRow(Row::class, ['foo' => null]);
+        $rowF = $table->addRow(Row::class, ['foo' => '']);
+
+        self::assertSame([$rowD, $rowE], $table->getRowsUsingIndex('foo', null));
+        self::assertSame([$rowF], $table->getRowsUsingIndex('foo', ''));
+    }
+
+    public function testGetRowUsingIndex(): void
+    {
+        $table = new Table('t');
+        $table->addColumn('foo');
+
+        $table->addRow(Row::class, ['foo' => 1]);
+        $table->addRow(Row::class, ['foo' => 1]);
+        $rowC = $table->addRow(Row::class, ['foo' => '1']);
+
+        self::assertSame($rowC, $table->getRowUsingIndex('foo', '1'));
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Index is not unique, more than one row was found');
+        $table->getRowUsingIndex('foo', 1);
     }
 }

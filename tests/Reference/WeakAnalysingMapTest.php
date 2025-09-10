@@ -131,7 +131,7 @@ class WeakAnalysingMapTest extends TestCase
         self::assertNull($weakOwner->get());
     }
 
-    public function testSetKeyAlreadyPresentException(): void
+    public function testSetKeyDuplicateException(): void
     {
         $map = new WeakAnalysingMap();
 
@@ -153,7 +153,7 @@ class WeakAnalysingMapTest extends TestCase
             $this->forceWeakMapPolyfillHousekeeping($map);
             self::assertNull($map->get($key, $key));
         }
-        self::assertSame('Analysing key is already present', $e);
+        self::assertSame('Analysing key already exists', $e);
     }
 
     public function testGetSetKeyWithHashCollision(): void

@@ -95,7 +95,7 @@ class Table
         $this->assertValidName($columnName);
 
         if ($this->hasColumn($columnName)) {
-            throw (new Exception('Column name is already present'))
+            throw (new Exception('Column name already exists'))
                 ->addMoreInfo('table_name', $this->getTableName())
                 ->addMoreInfo('column_name', $columnName);
         }
@@ -257,7 +257,7 @@ class Table
             return $rows[0];
         }
 
-        throw new Exception('Column is not unique');
+        throw new Exception('Index is not unique, more than one row was found');
     }
 
     /**
