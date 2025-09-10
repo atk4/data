@@ -311,7 +311,6 @@ abstract class Join
             $foreignModel = $this->getForeignModel();
 
             $ourField = $this->getOwner()->getField($this->masterField);
-            $ourField = $this->getMasterField();
             $theirField = $foreignModel->getField($this->foreignField);
 
             if ($theirField->type !== $ourField->type) {
