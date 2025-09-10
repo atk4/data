@@ -86,20 +86,11 @@ class JoinSqlTest extends TestCase
         self::assertFalse($m->hasJoin('contact8'));
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Joining tables on non-id fields is not implemented yet'); // https://github.com/atk4/data/issues/803
+        $this->expectExceptionMessage('Reverse join with non-ID master field is not implemented yet');
         $j4 = $m->join('contact4.foo_id', ['masterField' => 'test_id', 'reverse' => true]);
         // self::assertTrue($j4->reverse);
         // self::assertSame('test_id', $this->getProtected($j4, 'masterField'));
         // self::assertSame('foo_id', $this->getProtected($j4, 'foreignField'));
-    }
-
-    public function testDirectionException(): void
-    {
-        $m = new Model($this->db, ['table' => 'user']);
-
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Joining tables on non-id fields is not implemented yet');
-        $m->join('contact.foo_id', ['masterField' => 'test_id']);
     }
 
     public function testJoinSaving1(): void

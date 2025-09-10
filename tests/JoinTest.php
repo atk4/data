@@ -42,7 +42,7 @@ class JoinTest extends TestCase
         self::assertSame('id', $this->getProtected($j, 'foreignField'));
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Joining tables on non-id fields is not implemented yet');
+        $this->expectExceptionMessage('Reverse join with non-ID master field is not implemented yet');
         $j = $m->join('contact4.foo_id', ['masterField' => 'test_id', 'reverse' => true]);
         // self::assertTrue($j->reverse);
         // self::assertSame('test_id', $this->getProtected($j, 'masterField'));
@@ -51,11 +51,11 @@ class JoinTest extends TestCase
 
     public function testDirectionException(): void
     {
-        $db = new ArrayPersistence(['user' => [], 'contact' => []]);
+        $db = new ArrayPersistence();
         $m = new Model($db, ['table' => 'user']);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Joining tables on non-id fields is not implemented yet');
+        $this->expectExceptionMessage('Reverse join with non-ID master field is not implemented yet');
         $m->join('contact.foo_id', ['masterField' => 'test_id']);
     }
 

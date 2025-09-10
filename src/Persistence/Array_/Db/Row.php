@@ -6,25 +6,21 @@ namespace Atk4\Data\Persistence\Array_\Db;
 
 class Row
 {
-    /** @var int */
-    private static $nextRowIndex = -1;
+    private const DATA_DELETE = [self::class . '@delete'];
 
-    /** @var Table Immutable */
-    private $owner;
-    /** @var int Immutable */
-    private $rowIndex;
+    private static int $lastRowIndex = -1;
+
+    /** @readonly */
+    private ?Table $owner;
+    /** @readonly */
+    private int $rowIndex;
     /** @var array<string, mixed> */
-    private $data = [];
+    private array $data = [];
 
-    public function __construct(Table $owner)
+    protected function __construct(Table $owner)
     {
         $this->owner = $owner;
-        $this->rowIndex = self::getNextRowIndex();
-    }
-
-    public static function getNextRowIndex(): int
-    {
-        return ++self::$nextRowIndex;
+        $this->rowIndex = ++self::$lastRowIndex;
     }
 
     /**
@@ -64,42 +60,57 @@ class Row
         return $this->data;
     }
 
-    protected function initValue(string $columnName): void
-    {
-        $this->data[$columnName] = null;
-    }
-
     /**
-     * @param array<string, mixed> $data
+     * @param array<string, mixed>|self::DATA_DELETE $data
      */
     public function updateValues(array $data): void
     {
         $owner = $this->getOwner();
 
         $newData = [];
-        foreach ($data as $columnName => $newValue) {
-            $owner->assertHasColumnName($columnName);
-            if ($newValue !== $this->data[$columnName]) {
-                $newData[$columnName] = $newValue;
+        if ($data === self::DATA_DELETE) {
+            $oldData = $this->data;
+        } else {
+            $oldData = [];
+            foreach ($data as $columnName => $newValue) {
+                $oldValue = $this->data[$columnName] ?? null;
+                $hadColumn = $oldValue !== null || array_key_exists($columnName, $this->data);
+                if (!$hadColumn || $newValue !== $oldValue) {
+                    if (!$hadColumn) {
+                        $owner->assertHasColumn($columnName);
+                    } else {
+                        $oldData[$columnName] = $oldValue;
+                    }
+                    $newData[$columnName] = $newValue;
+                }
+            }
+
+            if ($newData === []) {
+                return;
             }
         }
 
-        $that = $this;
-        \Closure::bind(static function () use ($owner, $that, $newData) {
-            $owner->beforeValuesSet($that, $newData);
-        }, null, $owner)();
+        $thisRow = $this;
+        \Closure::bind(static function () use ($owner, $thisRow, $newData) {
+            $owner->beforeUpdateRow($thisRow, $newData);
+        }, null, Table::class)();
 
-        foreach ($newData as $columnName => $newValue) {
-            $this->data[$columnName] = $newValue;
+        if ($data === self::DATA_DELETE) {
+            $this->data = [];
+        } else {
+            foreach ($newData as $columnName => $newValue) {
+                $this->data[$columnName] = $newValue;
+            }
         }
+
+        \Closure::bind(static function () use ($owner, $thisRow, $oldData, $newData) {
+            $owner->afterUpdateRow($thisRow, $oldData, $newData);
+        }, null, Table::class)();
     }
 
-    protected function beforeDelete(): void
+    protected function delete(): void
     {
-        $this->updateValues(array_map(static function () {
-            return null;
-        }, $this->data));
-
-        $this->owner = null; // @phpstan-ignore assign.propertyType
+        $this->updateValues(self::DATA_DELETE);
+        $this->owner = null; // @phpstan-ignore property.readOnlyByPhpDocAssignNotInConstructor
     }
 }

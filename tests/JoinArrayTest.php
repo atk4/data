@@ -175,7 +175,7 @@ class JoinArrayTest extends TestCase
         $user->addField('name');
         $user->addField('code');
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Joining tables on non-id fields is not implemented yet');
+        $this->expectExceptionMessage('Reverse join with non-ID master field is not implemented yet');
         $j = $user->join('contact.code', ['masterField' => 'code']);
         /* $j->addField('contact_phone');
 

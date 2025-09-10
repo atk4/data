@@ -9,15 +9,20 @@ use Atk4\Data\Model;
 
 class Table
 {
-    /** @var string Immutable */
-    private $tableName;
-    /** @var array<string, string> */
-    private $columnNames = [];
+    /** @readonly */
+    private string $tableName;
+    /** @var array<string, true> */
+    private array $columnNames = [];
     /** @var array<int, Row> */
-    private $rows = [];
+    private array $rows = [];
+
+    /** @var array<string, HashIndex> */
+    private array $indexes = [];
 
     public function __construct(string $tableName)
     {
+        $this->assertValidName($tableName);
+
         $this->tableName = $tableName;
     }
 
@@ -29,17 +34,17 @@ class Table
         return [
             'table_name' => $this->getTableName(),
             'column_names' => $this->getColumnNames(),
-            'row_count' => count($this->rows),
+            'row_count' => count($this->getRows()),
         ];
     }
 
     /**
      * @param string $name
      */
-    protected function assertValidIdentifier($name): void
+    protected function assertValidName($name): void
     {
         if (!is_string($name) || $name === '' || is_numeric($name)) { // @phpstan-ignore function.alreadyNarrowedType
-            throw (new Exception('Name must be a non-empty non-numeric string'))
+            throw (new Exception('Name must be a non-empty and non-numeric'))
                 ->addMoreInfo('name', $name);
         }
     }
@@ -49,10 +54,8 @@ class Table
      */
     protected function assertValidValue($value): void
     {
-        if ($value instanceof self || $value instanceof Row) {
-            throw new Exception('Value cannot be an ' . get_class($value) . ' object');
-        } elseif (!is_scalar($value) && $value !== null) {
-            throw (new Exception('Value must be scalar'))
+        if (!is_scalar($value) && $value !== null) {
+            throw (new Exception('Value must be scalar or null'))
                 ->addMoreInfo('value', $value);
         }
     }
@@ -62,14 +65,14 @@ class Table
         return $this->tableName;
     }
 
-    public function hasColumnName(string $columnName): bool
+    public function hasColumn(string $columnName): bool
     {
         return isset($this->columnNames[$columnName]);
     }
 
-    public function assertHasColumnName(string $columnName): void
+    public function assertHasColumn(string $columnName): void
     {
-        if (!isset($this->columnNames[$columnName])) {
+        if (!$this->hasColumn($columnName)) {
             throw (new Exception('Column name does not exist'))
                 ->addMoreInfo('table_name', $this->getTableName())
                 ->addMoreInfo('column_name', $columnName);
@@ -77,34 +80,33 @@ class Table
     }
 
     /**
-     * @return $this
-     */
-    public function addColumnName(string $columnName): self
-    {
-        $this->assertValidIdentifier($columnName);
-        if (isset($this->columnNames[$columnName])) {
-            throw (new Exception('Column name is already present'))
-                ->addMoreInfo('table_name', $this->getTableName())
-                ->addMoreInfo('column_name', $columnName);
-        }
-
-        $this->columnNames[$columnName] = $columnName;
-
-        foreach ($this->getRows() as $row) {
-            \Closure::bind(static function () use ($row, $columnName) {
-                $row->initValue($columnName);
-            }, null, $row)();
-        }
-
-        return $this;
-    }
-
-    /**
      * @return list<string>
      */
     public function getColumnNames(): array
     {
-        return array_values($this->columnNames);
+        return array_keys($this->columnNames);
+    }
+
+    /**
+     * @return $this
+     */
+    public function addColumn(string $columnName): self
+    {
+        $this->assertValidName($columnName);
+
+        if ($this->hasColumn($columnName)) {
+            throw (new Exception('Column name already exists'))
+                ->addMoreInfo('table_name', $this->getTableName())
+                ->addMoreInfo('column_name', $columnName);
+        }
+
+        $this->columnNames[$columnName] = true;
+
+        foreach ($this->getRows() as $row) {
+            $row->updateValues([$columnName => null]);
+        }
+
+        return $this;
     }
 
     public function hasRow(int $rowIndex): bool
@@ -114,41 +116,41 @@ class Table
 
     public function getRow(int $rowIndex): Row
     {
-        if (!isset($this->rows[$rowIndex])) {
+        $row = $this->rows[$rowIndex] ?? null;
+
+        if ($row === null) {
             throw (new Exception('Row with given index was not found'))
                 ->addMoreInfo('table_name', $this->getTableName())
                 ->addMoreInfo('row_index', $rowIndex);
         }
 
-        return $this->rows[$rowIndex];
+        return $row;
+    }
+
+    /**
+     * @return \Iterator<Row>&\Countable
+     */
+    public function getRows(): \Iterator
+    {
+        return new \ArrayIterator($this->rows);
     }
 
     /**
      * @param class-string<Row>    $rowClass
-     * @param array<string, mixed> $rowData
+     * @param array<string, mixed> $data
      */
-    public function addRow(string $rowClass, array $rowData): Row
+    public function addRow(string $rowClass, array $data): Row
     {
-        $that = $this;
-        $columnNames = $this->getColumnNames();
-        /** @var Row $row */
-        $row = \Closure::bind(static function () use ($that, $rowClass, $columnNames) {
-            $row = new $rowClass($that);
-            foreach ($columnNames as $columnName) {
-                $row->initValue($columnName);
-            }
-
-            return $row;
-        }, null, $rowClass)();
-        $this->rows[$row->getRowIndex()] = $row;
-
-        foreach ($rowData as $columnName => $value) {
-            if (!$this->hasColumnName($columnName)) {
-                $this->addColumnName($columnName);
+        foreach ($data as $columnName => $value) {
+            if (!$this->hasColumn($columnName)) {
+                $this->addColumn($columnName);
             }
         }
 
-        $row->updateValues($rowData);
+        $thisTable = $this;
+        $row = \Closure::bind(static fn () => new $rowClass($thisTable), null, Row::class)();
+        $this->rows[$row->getRowIndex()] = $row;
+        $row->updateValues(array_merge(array_fill_keys($this->getColumnNames(), null), $data));
 
         return $row;
     }
@@ -156,45 +158,115 @@ class Table
     public function deleteRow(Row $row): void
     {
         \Closure::bind(static function () use ($row) {
-            $row->beforeDelete();
-        }, null, $row)();
+            $row->delete();
+        }, null, Row::class)();
 
         unset($this->rows[$row->getRowIndex()]);
     }
 
     /**
-     * @return \Traversable<Row>
+     * @param array<string, mixed> $newData
      */
-    public function getRows(): \Traversable
+    protected function beforeUpdateRow(Row $row, $newData): void
     {
-        return new \ArrayIterator($this->rows);
-    }
-
-    /**
-     * @param array<string, mixed> $newRowData
-     */
-    protected function beforeValuesSet(Row $childRow, $newRowData): void
-    {
-        foreach ($newRowData as $columnName => $newValue) {
+        foreach ($newData as $columnName => $newValue) {
             $this->assertValidValue($newValue);
-
-            // update index here
         }
     }
 
     /**
-     * TODO rewrite with hash index support.
-     *
-     * @param scalar $idRaw
+     * @param array<string, mixed> $oldData
+     * @param array<string, mixed> $newData
      */
-    public function getRowById(Model $model, $idRaw): ?Row
+    protected function afterUpdateRow(Row $row, $oldData, $newData): void
     {
+        foreach ($oldData as $columnName => $oldValue) {
+            $index = $this->indexes[$columnName] ?? null;
+            if ($index === null) {
+                continue;
+            }
+
+            \Closure::bind(static function () use ($index, $row, $oldValue) {
+                $index->deleteRow($row->getRowIndex(), $oldValue);
+            }, null, HashIndex::class)();
+        }
+
+        foreach ($newData as $columnName => $newValue) {
+            $index = $this->indexes[$columnName] ?? null;
+            if ($index === null) {
+                continue;
+            }
+
+            \Closure::bind(static function () use ($index, $row, $newValue) {
+                $index->addRow($row->getRowIndex(), $newValue);
+            }, null, HashIndex::class)();
+        }
+    }
+
+    protected function addIndex(string $columnName): void
+    {
+        assert(!isset($this->indexes[$columnName]));
+
+        $index = new HashIndex();
+
         foreach ($this->getRows() as $row) {
-            if ($row->getValue($model->getIdField()->getPersistenceName()) === $idRaw) {
-                return $row;
+            \Closure::bind(static function () use ($index, $row, $columnName) {
+                $index->addRow($row->getRowIndex(), $row->getValue($columnName));
+            }, null, HashIndex::class)();
+        }
+
+        $this->indexes[$columnName] = $index;
+    }
+
+    /**
+     * @param scalar|null $value
+     *
+     * @return list<Row>
+     */
+    public function getRowsUsingIndex(string $columnName, $value): array
+    {
+        if (!isset($this->indexes[$columnName])) {
+            $this->addIndex($columnName);
+        }
+
+        $index = $this->indexes[$columnName];
+        $possibleRowIndexes = $index->findPossibleRowIndexes($value);
+
+        $res = [];
+        foreach ($possibleRowIndexes as $rowIndex) {
+            $row = $this->rows[$rowIndex];
+            $rowValue = $row->getValue($columnName);
+            if ($rowValue === $value) {
+                $res[] = $row;
             }
         }
 
-        return null;
+        return $res;
+    }
+
+    /**
+     * @param scalar|null $value
+     */
+    public function getRowUsingIndex(string $columnName, $value): ?Row
+    {
+        $rows = $this->getRowsUsingIndex($columnName, $value);
+
+        if ($rows === []) {
+            return null;
+        } elseif (count($rows) === 1) {
+            return $rows[0];
+        }
+
+        throw new Exception('Index is not unique, more than one row was found');
+    }
+
+    /**
+     * @param scalar|null $idRaw
+     */
+    public function getRowById(Model $model, $idRaw): ?Row
+    {
+        $idFieldRaw = $model->getIdField()->getPersistenceName();
+
+        return $this->getRowUsingIndex($idFieldRaw, $idRaw);
     }
 }
