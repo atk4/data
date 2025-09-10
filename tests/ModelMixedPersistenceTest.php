@@ -50,6 +50,43 @@ class ModelMixedPersistenceTest extends TestCase
         ], $m->export());
     }
 
+    public function testArrayTableFloatId(): void
+    {
+        $dbArray = new Persistence\Array_([
+            'user' => [
+                '1.0' => ['id' => 1.0, 'name' => 'John'],
+                '1.2' => ['id' => 1.2, 'name' => 'Peter'],
+            ],
+        ]);
+
+        $mArray = new Model(null, ['table' => 'user']);
+        $mArray->addField('id', ['type' => 'float']);
+        $mArray->addField('name');
+        $mArray->setPersistence($dbArray);
+
+        $m = new Model($this->db, ['table' => $mArray]);
+        $m->getIdField()->type = 'float';
+        $m->addField('name');
+
+        self::assertSameExportUnordered([
+            ['id' => 1.0, 'name' => 'John'],
+            ['id' => 1.2, 'name' => 'Peter'],
+        ], $m->export());
+
+        $john = $m->load(1.0);
+        $john->set('name', 'Johny');
+        $john->save();
+
+        self::assertSameExportUnordered([
+            ['id' => 1.0, 'name' => 'Johny'],
+            ['id' => 1.2, 'name' => 'Peter'],
+        ], $m->export());
+
+        self::assertSame('Peter', $m->load(1.2)->get('name'));
+        self::assertNull($m->tryLoad(1.21));
+        self::assertSame('Johny', $m->load(1)->get('name'));
+    }
+
     public function testArrayWithJoinUsingId(): void
     {
         $this->setDb([
