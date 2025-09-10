@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Array_\Db;
 
+use Atk4\Data\Persistence\Sql\Expression;
+
 class HashIndex
 {
     /** @var array<int|string, array<int, true>> */
@@ -14,19 +16,28 @@ class HashIndex
      *
      * @return int|string
      */
-    protected function makeIndexKeyFromValue($value)
+    protected function makeKeyFromValue($value)
     {
         assert(is_scalar($value) || $value === null); // @phpstan-ignore identical.alwaysTrue, booleanOr.alwaysTrue, function.alreadyNarrowedType
 
         if (is_float($value)) {
-            $value = $value === (float) (int) $value
-                ? (int) $value
-                : pack('e', $value);
+            $value = Expression::castFloatToString($value);
+            if (str_ends_with($value, '.0')) {
+                $value = substr($value, 0, -2);
+            }
+        } elseif ($value === false) {
+            $value = 0;
         }
 
-        return is_int($value)
-            ? $value
-            : (string) $value;
+        if (!is_int($value)) {
+            $value = (string) $value;
+
+            if ($value === (string) (int) $value) {
+                $value = (int) $value;
+            }
+        }
+
+        return $value;
     }
 
     /**
@@ -34,9 +45,9 @@ class HashIndex
      */
     protected function addRow(int $rowIndex, $value): void
     {
-        $ik = $this->makeIndexKeyFromValue($value);
+        $key = $this->makeKeyFromValue($value);
 
-        $this->data[$ik][$rowIndex] = true;
+        $this->data[$key][$rowIndex] = true;
     }
 
     /**
@@ -44,12 +55,12 @@ class HashIndex
      */
     protected function deleteRow(int $rowIndex, $value): void
     {
-        $ik = $this->makeIndexKeyFromValue($value);
+        $key = $this->makeKeyFromValue($value);
 
-        if (isset($this->data[$ik])) {
-            unset($this->data[$ik][$rowIndex]);
-            if ($this->data[$ik] === []) {
-                unset($this->data[$ik]);
+        if (isset($this->data[$key])) {
+            unset($this->data[$key][$rowIndex]);
+            if ($this->data[$key] === []) {
+                unset($this->data[$key]);
             }
         }
     }
@@ -61,8 +72,8 @@ class HashIndex
      */
     public function findPossibleRowIndexes($value): array
     {
-        $ik = $this->makeIndexKeyFromValue($value);
+        $key = $this->makeKeyFromValue($value);
 
-        return array_keys($this->data[$ik] ?? []);
+        return array_keys($this->data[$key] ?? []);
     }
 }
