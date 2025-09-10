@@ -21,6 +21,8 @@ class Table
 
     public function __construct(string $tableName)
     {
+        $this->assertValidName($tableName);
+
         $this->tableName = $tableName;
     }
 
@@ -42,7 +44,7 @@ class Table
     protected function assertValidName($name): void
     {
         if (!is_string($name) || $name === '' || is_numeric($name)) { // @phpstan-ignore function.alreadyNarrowedType
-            throw (new Exception('Name must be a non-empty non-numeric string'))
+            throw (new Exception('Name must be a non-empty and non-numeric'))
                 ->addMoreInfo('name', $name);
         }
     }
