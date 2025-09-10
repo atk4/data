@@ -29,7 +29,7 @@ abstract class Persistence
     public const ID_LOAD_ANY = self::class . '@idLoadAny-qZ5TJwMVJ4LzVhuN';
 
     /** @internal prevent recursion */
-    private bool $typecastSaveSkipNormalize = false;
+    private bool $typecastSaveSkipNormalize = false; // @phpstan-ignore property.tooWideBool
 
     /**
      * Connects database.
