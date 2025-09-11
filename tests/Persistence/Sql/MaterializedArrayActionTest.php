@@ -17,15 +17,22 @@ class MaterializedArrayActionTest extends TestCase
     /**
      * @return array{string, array<string, mixed>}
      */
-    protected function renderExpressionable(Expressionable $v): array
+    private function renderQuery(Expressionable $query): array
     {
-        return $this->getConnection()->expr('[]', [$v])->render();
+        $render = $query->getDsqlExpression($this->getConnection()->expr())->render();
+
+        self::assertSame([
+            '(' . $render[0] . ')',
+            $render[1]
+        ], $this->getConnection()->expr('[]', [$query])->render());
+
+        return $render;
     }
 
     public function testBasic(): void
     {
         $action = new ArrayAction([], ['a', 'bar']);
-        $expr = new MaterializedArrayAction($action);
+        $query = new MaterializedArrayAction($action);
 
         $fromClause = $this->getDatabasePlatform() instanceof OraclePlatform
             ? ' from "DUAL"'
@@ -35,34 +42,34 @@ class MaterializedArrayActionTest extends TestCase
             : $v;
 
         if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            self::assertSameSql('(select :a `a`, :b `bar` limit 0 offset 0)', $this->renderExpressionable($expr)[0]);
+            self::assertSameSql('select :a `a`, :b `bar` limit 0 offset 0', $this->renderQuery($query)[0]);
         } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            self::assertSameSql('(select :a `a`, :b `bar` order by (select null) offset 9223372036854775807 rows fetch next 1 rows only)', $this->renderExpressionable($expr)[0]);
+            self::assertSameSql('select :a `a`, :b `bar` order by (select null) offset 9223372036854775807 rows fetch next 1 rows only', $this->renderQuery($query)[0]);
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            self::assertSameSql('(select :a `a`, :b `bar` from "DUAL" fetch next 0 rows only)', $this->renderExpressionable($expr)[0]);
+            self::assertSameSql('select :a `a`, :b `bar` from "DUAL" fetch next 0 rows only', $this->renderQuery($query)[0]);
         } else {
-            self::assertSameSql('(select :a `a`, :b `bar` limit 0, 0)', $this->renderExpressionable($expr)[0]);
+            self::assertSameSql('select :a `a`, :b `bar` limit 0, 0', $this->renderQuery($query)[0]);
         }
         self::assertSame([
             $fixParamNameFx(':a') => null,
             $fixParamNameFx(':b') => null,
-        ], $this->renderExpressionable($expr)[1]);
+        ], $this->renderQuery($query)[1]);
 
         $action->generator = new \ArrayIterator([['a' => 1, 'bar' => 'u']]);
-        self::assertSameSql('(select :a `a`, :b `bar`' . $fromClause . ')', $this->renderExpressionable($expr)[0]);
+        self::assertSameSql('select :a `a`, :b `bar`' . $fromClause, $this->renderQuery($query)[0]);
         self::assertSame([
             $fixParamNameFx(':a') => 1,
             $fixParamNameFx(':b') => 'u',
-        ], $this->renderExpressionable($expr)[1]);
+        ], $this->renderQuery($query)[1]);
 
         $action->generator = new \ArrayIterator([['a' => 1, 'bar' => 'u'], ['a' => null, 'bar' => 'v']]);
-        self::assertSameSql('(select :a `a`, :b `bar`' . $fromClause . ' union all select :c, :d' . $fromClause . ')', $this->renderExpressionable($expr)[0]);
+        self::assertSameSql('select :a `a`, :b `bar`' . $fromClause . ' union all select :c, :d' . $fromClause, $this->renderQuery($query)[0]);
         self::assertSame([
             $fixParamNameFx(':a') => 1,
             $fixParamNameFx(':b') => 'u',
             $fixParamNameFx(':c') => null,
             $fixParamNameFx(':d') => 'v',
-        ], $this->renderExpressionable($expr)[1]);
+        ], $this->renderQuery($query)[1]);
     }
 
     public function testZeroRows(): void
