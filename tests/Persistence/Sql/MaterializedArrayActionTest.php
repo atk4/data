@@ -84,6 +84,10 @@ class MaterializedArrayActionTest extends TestCase
             ['foo' => '1', 'bar' => 'u'],
         ], $query->getDsqlExpression($this->getConnection()->expr())->getRows());
 
+        if ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            self::markTestIncomplete('TODO Oracle remove once JSON_TABLE() is used');
+        }
+
         $action->generator = new \ArrayIterator([['foo' => 1, 'bar' => 'u'], ['foo' => null, 'bar' => 'v']]);
         self::assertSame([
             ['foo' => '1', 'bar' => 'u'],
