@@ -72,11 +72,25 @@ class MaterializedArrayActionTest extends TestCase
         ], $this->renderQuery($query)[1]);
     }
 
-    public function testZeroRows(): void
+    public function testGetRowsUpdatedGenerator(): void
     {
-        $action = new ArrayAction([], ['a']);
-        $expr = new MaterializedArrayAction($action);
+        $action = new ArrayAction([], ['foo', 'bar']);
+        $query = new MaterializedArrayAction($action);
 
-        self::assertSame([], $expr->getDsqlExpression($this->getConnection()->expr())->getRows());
+        self::assertSame([], $query->getDsqlExpression($this->getConnection()->expr())->getRows());
+
+        $action->generator = new \ArrayIterator([['foo' => 1, 'bar' => 'u']]);
+        self::assertSame([
+            ['foo' => '1', 'bar' => 'u'],
+        ], $query->getDsqlExpression($this->getConnection()->expr())->getRows());
+
+        $action->generator = new \ArrayIterator([['foo' => 1, 'bar' => 'u'], ['foo' => null, 'bar' => 'v']]);
+        self::assertSame([
+            ['foo' => '1', 'bar' => 'u'],
+            ['foo' => null, 'bar' => 'v'],
+        ], $query->getDsqlExpression($this->getConnection()->expr())->getRows());
+
+        $action->generator = new \ArrayIterator([]);
+        self::assertSame([], $query->getDsqlExpression($this->getConnection()->expr())->getRows());
     }
 }
