@@ -23,7 +23,7 @@ class MaterializedArrayActionTest extends TestCase
 
         self::assertSame([
             '(' . $render[0] . ')',
-            $render[1]
+            $render[1],
         ], $this->getConnection()->expr('[]', [$query])->render());
 
         return $render;
