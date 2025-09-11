@@ -25,10 +25,10 @@ abstract class Query extends Expression
     /** @var list<string> */
     protected array $supportedOperators = ['=', '!=', '<', '>', '<=', '>=', 'in', 'not in', 'like', 'not like', 'regexp', 'not regexp'];
 
-    protected string $templateSelect = '[with]select[option] [field] [from] [table][join][where][group][having][order][limit]';
+    protected string $templateSelect = '[with]select[option] [field][from][table][join][where][group][having][order][limit]';
     protected string $templateInsert = 'insert[option] into [tableNoalias] ([setFields]) values ([setValues])';
     protected string $templateReplace = 'replace[option] into [tableNoalias] ([setFields]) values ([setValues])';
-    protected string $templateDelete = '[with]delete [from] [tableNoalias][where][having]';
+    protected string $templateDelete = '[with]delete[from][tableNoalias][where][having]';
     protected string $templateUpdate = '[with]update [tableNoalias] set [set] [where]';
     protected string $templateTruncate = 'truncate table [tableNoalias]';
 
@@ -212,7 +212,7 @@ abstract class Query extends Expression
 
     protected function _renderFrom(): ?string
     {
-        return isset($this->args['table']) ? 'from' : '';
+        return isset($this->args['table']) ? ' from ' : '';
     }
 
     // }}}

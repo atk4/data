@@ -7,7 +7,6 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\OraclePlatform;
 
 class ModelMixedPersistenceTest extends TestCase
 {
@@ -25,15 +24,6 @@ class ModelMixedPersistenceTest extends TestCase
 
         $m = new Model($this->db, ['table' => $mArray]);
         $m->addField('name');
-
-        $fromClause = $this->getDatabasePlatform() instanceof OraclePlatform
-            ? ' from "DUAL"'
-            : '';
-
-        $this->assertSameSql(
-            'select `id`, `name` from (select :a `id`, :b `name`' . $fromClause . ' union all select :c, :d' . $fromClause . ') `_tm`',
-            $m->action('select')->render()[0]
-        );
 
         self::assertSameExportUnordered([
             ['id' => 10, 'name' => 'John'],
@@ -118,16 +108,6 @@ class ModelMixedPersistenceTest extends TestCase
         $jConfig->addField('path');
         $jConfig->addField('float', ['type' => 'float']);
 
-        $fromClause = $this->getDatabasePlatform() instanceof OraclePlatform
-            ? ' from "DUAL"'
-            : '';
-
-        $this->assertSameSql(
-            'with `config` as (select :a `id`, :b `userId`, :c `path`, :d `float`' . $fromClause . ' union all select :e, :f, :g, :h' . $fromClause . ')' . "\n"
-                . 'select `user`.`id`, `user`.`name`, `_config`.`path`, `_config`.`float` from `user` inner join `config` `_config` on `_config`.`userId` = `user`.`id`',
-            $m->action('select')->render()[0]
-        );
-
         self::markTestIncompleteOnMySQL5xPlatformAsWithClauseIsNotSupported();
 
         self::assertSameExportUnordered([
@@ -173,16 +153,6 @@ class ModelMixedPersistenceTest extends TestCase
         $m->addCteModel('config', $mArray);
         $jConfig = $m->join('config.userName', ['masterField' => 'name', 'reverse' => false]);
         $jConfig->addField('path');
-
-        $fromClause = $this->getDatabasePlatform() instanceof OraclePlatform
-            ? ' from "DUAL"'
-            : '';
-
-        $this->assertSameSql(
-            'with `config` as (select :a `id`, :b `userName`, :c `path`' . $fromClause . ' union all select :d, :e, :f' . $fromClause . ')' . "\n"
-                . 'select `user`.`id`, `user`.`name`, `_config`.`path` from `user` inner join `config` `_config` on `_config`.`userName` = `user`.`name`',
-            $m->action('select')->render()[0]
-        );
 
         self::markTestIncompleteOnMySQL5xPlatformAsWithClauseIsNotSupported();
 

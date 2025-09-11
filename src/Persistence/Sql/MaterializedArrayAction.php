@@ -28,6 +28,7 @@ class MaterializedArrayAction implements Expressionable
             foreach ($this->action->getColumns() as $k) {
                 $query->field($query->expr('[]', [null]), $k);
             }
+            $query->limit(0);
 
             return $query;
         }
