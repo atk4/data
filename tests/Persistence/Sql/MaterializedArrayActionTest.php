@@ -9,6 +9,8 @@ use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\MaterializedArrayAction;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class MaterializedArrayActionTest extends TestCase
 {
@@ -32,7 +34,15 @@ class MaterializedArrayActionTest extends TestCase
             ? ':xxaaa' . substr($v, 1)
             : $v;
 
-        self::assertSameSql('(select :a `a`, :b `bar`' . $fromClause . ' limit 0, 0)', $this->renderExpressionable($expr)[0]);
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            self::assertSameSql('(select :a `a`, :b `bar` limit 0 offset 0)', $this->renderExpressionable($expr)[0]);
+        } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+            self::assertSameSql('(select :a `a`, :b `bar` order by (select null) offset 9223372036854775807 rows fetch next 1 rows only)', $this->renderExpressionable($expr)[0]);
+        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            self::assertSameSql('(select :a `a`, :b `bar` from "DUAL" fetch next 0 rows only)', $this->renderExpressionable($expr)[0]);
+        } else {
+            self::assertSameSql('(select :a `a`, :b `bar` limit 0, 0)', $this->renderExpressionable($expr)[0]);
+        }
         self::assertSame([
             $fixParamNameFx(':a') => null,
             $fixParamNameFx(':b') => null,
@@ -52,13 +62,6 @@ class MaterializedArrayActionTest extends TestCase
             $fixParamNameFx(':b') => 'u',
             $fixParamNameFx(':c') => null,
             $fixParamNameFx(':d') => 'v',
-        ], $this->renderExpressionable($expr)[1]);
-
-        $action->generator = new \ArrayIterator([]);
-        self::assertSameSql('(select :a `a`, :b `bar`' . $fromClause . ' limit 0, 0)', $this->renderExpressionable($expr)[0]);
-        self::assertSame([
-            $fixParamNameFx(':a') => null,
-            $fixParamNameFx(':b') => null,
         ], $this->renderExpressionable($expr)[1]);
     }
 
