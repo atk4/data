@@ -11,9 +11,10 @@ class RawExpression extends Expression
     {
         $dummyExpression = $this->connection->expr();
 
-        // Closure rebind should not be needed
         // https://github.com/php/php-src/issues/14009
-        return \Closure::bind(static fn () => $dummyExpression->escapeStringLiteral($value), null, parent::class)();
+        return \PHP_VERSION_ID < 8_03_08
+            ? \Closure::bind(static fn () => $dummyExpression->escapeStringLiteral($value), null, parent::class)()
+            : $dummyExpression->escapeStringLiteral($value);
     }
 
     #[\Override]
