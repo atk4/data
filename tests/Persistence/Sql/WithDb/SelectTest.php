@@ -255,11 +255,11 @@ class SelectTest extends TestCase
         ];
 
         $query = $this->q();
-        foreach ($values as $v) {
-            $query->field($this->e('[]', [$v]));
+        foreach ($values as $k => $v) {
+            $query->field($this->e('[]', [$v]), (string) $k);
         }
 
-        self::{'assertEquals'}($values, array_values($query->getRow()));
+        self::{'assertEquals'}($values, $query->getRow());
     }
 
     public function testWhereExpression(): void
