@@ -268,7 +268,7 @@ class SelectTest extends TestCase
         // fix CI with old SQLite
         // fixed probably by "long double" hardware support - https://www.sqlite.org/releaselog/3_44_0.html
         if ($this->getDatabasePlatform() instanceof SQLitePlatform && version_compare(SqliteConnection::getDriverVersion(), '3.44') < 0) {
-            if ($res[5] >= 0.999999999999999e-50 && $res[5] <= 1.00000000000001e+308) { // @phpstan-ignore offsetAccess.notFound
+            if ($res[5] >= 0.999999999999999e-50 && $res[5] <= 1.00000000000001e-50) { // @phpstan-ignore offsetAccess.notFound
                 $res[5] = 1e-50;
             }
             if ($res[6] >= 1.79769313486231e+308 && $res[6] <= 1.79769313486232e+308) {
