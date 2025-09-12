@@ -10,6 +10,7 @@ use Atk4\Data\Persistence\Sql\ExecuteException;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Persistence\Sql\Query;
+use Atk4\Data\Persistence\Sql\Sqlite\Connection as SqliteConnection;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
@@ -261,7 +262,16 @@ class SelectTest extends TestCase
             $query->field($this->e('[]', [$v]), (string) $k);
         }
 
-        self::{'assertEquals'}($values, $query->getRow());
+        $res = $query->getRow();
+
+        // fix CI with old SQLite
+        // fixed probably by "long double" hardware support - https://www.sqlite.org/releaselog/3_44_0.html
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform && version_compare(SqliteConnection::getDriverVersion(), '3.44') < 0
+                && $res[5] >= 1.79769313486231e+308 && $res[5] <= 1.79769313486232e+308) { // @phpstan-ignore offsetAccess.notFound
+            $res[5] = 1.79769313486231e+308;
+        }
+
+        self::{'assertEquals'}($values, $res);
     }
 
     public function testWhereExpression(): void
