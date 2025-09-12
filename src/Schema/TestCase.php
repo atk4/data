@@ -101,7 +101,7 @@ abstract class TestCase extends BaseTestCase
         $i = 0;
         $quotedTokenRegex = $this->getConnection()->expr()::QUOTED_TOKEN_REGEX;
         $sql = preg_replace_callback(
-            '~' . $quotedTokenRegex . '\K|(\?)|cast\((\?|:\w+) as (BOOLEAN|INTEGER|BIGINT|DOUBLE(?: PRECISION)?|BINARY_DOUBLE|citext|bytea|unknown)\)~',
+            '~' . $quotedTokenRegex . '\K|(\?)|cast\((\?|:\w+) as (BOOLEAN|INTEGER|BIGINT|DOUBLE PRECISION|BINARY_DOUBLE|citext|bytea|unknown)\)|\((\?|:\w+) \+ 0\.00\)~',
             static function ($matches) use (&$types, &$params, &$i) {
                 if ($matches[0] === '') {
                     return '';
@@ -113,9 +113,9 @@ abstract class TestCase extends BaseTestCase
                     return $matches[0];
                 }
 
-                $k = $matches[2] === '?'
-                    ? ++$i
-                    : $matches[2];
+                $k = isset($matches[4])
+                    ? ($matches[4] === '?' ? ++$i : $matches[4])
+                    : ($matches[2] === '?' ? ++$i : $matches[2]);
 
                 if ($matches[3] === 'BOOLEAN' && ($types[$k] === ParameterType::BOOLEAN || $types[$k] === ParameterType::INTEGER)
                     && (is_bool($params[$k]) || $params[$k] === '0' || $params[$k] === '1')
@@ -123,16 +123,16 @@ abstract class TestCase extends BaseTestCase
                     $types[$k] = ParameterType::BOOLEAN;
                     $params[$k] = (bool) $params[$k];
 
-                    return $matches[2];
+                    return $matches[4] ?? $matches[2];
                 } elseif (($matches[3] === 'INTEGER' || $matches[3] === 'BIGINT') && $types[$k] === ParameterType::INTEGER && is_int($params[$k])) {
-                    return $matches[2];
-                } elseif (($matches[3] === 'DOUBLE' || $matches[3] === 'DOUBLE PRECISION' || $matches[3] === 'BINARY_DOUBLE' || isset($matches[4]))
+                    return $matches[4] ?? $matches[2];
+                } elseif (($matches[3] === 'DOUBLE PRECISION' || $matches[3] === 'BINARY_DOUBLE' || isset($matches[4]))
                     && $types[$k] === ParameterType::STRING && is_string($params[$k]) && is_numeric($params[$k])
                 ) {
                     // $types[$k] = ParameterType::FLOAT; is not supported yet by DBAL
                     $params[$k] = (float) $params[$k];
 
-                    return $matches[2];
+                    return $matches[4] ?? $matches[2];
                 } elseif (($matches[3] === 'citext' || $matches[3] === 'bytea') && is_string($params[$k])) {
                     return $matches[2];
                 } elseif ($matches[3] === 'unknown' && $params[$k] === null) {
