@@ -10,6 +10,7 @@ use Atk4\Data\Persistence\Sql\ExecuteException;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Persistence\Sql\Query;
+use Atk4\Data\Persistence\Sql\Sqlite\Connection as SqliteConnection;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
@@ -237,6 +238,45 @@ class SelectTest extends TestCase
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('An exception occurred while executing a query: ');
         $q->executeStatement();
+    }
+
+    public function testSelectExtremeNumbers(): void
+    {
+        $values = [
+            0,
+            \PHP_INT_MIN,
+            \PHP_INT_MAX,
+            0.0,
+            -1.5,
+            1e-50,
+            // https://github.com/atk4/data/blob/6.0.0/tests/TypecastingTest.php#L128
+            $this->getDatabasePlatform() instanceof SQLitePlatform
+                ? 1.79769313486231e+308
+                : 1.7976931348623157e+308,
+            $this->getDatabasePlatform() instanceof SQLServerPlatform
+                ? 2.2250738585072014e-308
+                : 5e-324,
+        ];
+
+        $query = $this->q();
+        foreach ($values as $k => $v) {
+            $query->field($this->e('[]', [$v]), (string) $k);
+        }
+
+        $res = $query->getRow();
+
+        // fix CI with old SQLite
+        // fixed probably by "long double" hardware support - https://www.sqlite.org/releaselog/3_44_0.html
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform && version_compare(SqliteConnection::getDriverVersion(), '3.44') < 0) {
+            if ($res[5] >= 0.999999999999999e-50 && $res[5] <= 1.00000000000001e+308) { // @phpstan-ignore offsetAccess.notFound
+                $res[5] = 1e-50;
+            }
+            if ($res[6] >= 1.79769313486231e+308 && $res[6] <= 1.79769313486232e+308) {
+                $res[6] = 1.79769313486231e+308;
+            }
+        }
+
+        self::{'assertEquals'}($values, $res);
     }
 
     public function testWhereExpression(): void

@@ -206,9 +206,9 @@ abstract class Expression implements Expressionable, \ArrayAccess
             if (count($params) > 0) {
                 $kWithoutColon = substr(array_key_last($params), 1);
                 while ($this->renderParamBase !== $kWithoutColon) {
-                    ++$this->renderParamBase; // @phpstan-ignore preInc.nonNumeric
+                    $this->renderParamBase = str_increment($this->renderParamBase);
                 }
-                ++$this->renderParamBase; // @phpstan-ignore preInc.nonNumeric
+                $this->renderParamBase = str_increment($this->renderParamBase);
             }
         } finally {
             $expr->paramBase = $expressionParamBaseBackup;
@@ -229,7 +229,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
     protected function escapeParam($value): string
     {
         $name = ':' . $this->renderParamBase;
-        ++$this->renderParamBase; // @phpstan-ignore preInc.nonNumeric
+        $this->renderParamBase = str_increment($this->renderParamBase);
         $this->renderParams[$name] = $value;
 
         return $name;
