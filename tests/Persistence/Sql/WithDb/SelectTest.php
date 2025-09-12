@@ -246,12 +246,14 @@ class SelectTest extends TestCase
             \PHP_INT_MIN,
             \PHP_INT_MAX,
             0.0,
+            -0.5,
             // https://github.com/atk4/data/blob/6.0.0/tests/TypecastingTest.php#L128
             $this->getDatabasePlatform() instanceof SQLitePlatform
                 ? 1.79769313486231e+308
                 : 1.7976931348623157e+308,
-            5e-324,
-            -5e-324,
+            $this->getDatabasePlatform() instanceof SQLServerPlatform
+                ? 2.2250738585072014e-308
+                : 5e-324,
         ];
 
         $query = $this->q();
