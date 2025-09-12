@@ -57,7 +57,7 @@ trait ExpressionTrait
                 // emulate bind param support for float type
                 // TODO open php-src feature request
                 if (is_float($value)) {
-                    $sql = '(' . $sql . ' + 0E0)';
+                    $sql = '(' . $sql . ' + 0e0)';
                 }
 
                 return $sql;
