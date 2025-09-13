@@ -248,6 +248,9 @@ class SelectTest extends TestCase
             \PHP_INT_MAX,
             0.0,
             -1.5,
+            1e25,
+            1e50,
+            1e-25,
             1e-50,
             // https://github.com/atk4/data/blob/6.0.0/tests/TypecastingTest.php#L128
             $this->getDatabasePlatform() instanceof SQLitePlatform
@@ -268,11 +271,14 @@ class SelectTest extends TestCase
         // fix CI with old SQLite
         // fixed probably by "long double" hardware support - https://www.sqlite.org/releaselog/3_44_0.html
         if ($this->getDatabasePlatform() instanceof SQLitePlatform && version_compare(SqliteConnection::getDriverVersion(), '3.44') < 0) {
-            if ($res[5] >= 0.999999999999999e-50 && $res[5] <= 1.00000000000001e-50) { // @phpstan-ignore offsetAccess.notFound
-                $res[5] = 1e-50;
+            if ($res[7] >= 0.999999999999999e-25 && $res[7] <= 1.00000000000001e-25) { // @phpstan-ignore offsetAccess.notFound
+                $res[7] = 1e-25;
             }
-            if ($res[6] >= 1.79769313486231e+308 && $res[6] <= 1.79769313486232e+308) {
-                $res[6] = 1.79769313486231e+308;
+            if ($res[8] >= 0.999999999999999e-50 && $res[8] <= 1.00000000000001e-50) {
+                $res[8] = 1e-50;
+            }
+            if ($res[9] >= 1.79769313486231e+308 && $res[9] <= 1.79769313486232e+308) {
+                $res[9] = 1.79769313486231e+308;
             }
         }
 
