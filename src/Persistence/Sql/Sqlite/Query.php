@@ -6,6 +6,7 @@ namespace Atk4\Data\Persistence\Sql\Sqlite;
 
 use Atk4\Data\Persistence\Sql\ExecuteException;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
+use Atk4\Data\Persistence\Sql\RawExpression;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Exception\TableNotFoundException;
 
@@ -160,6 +161,34 @@ class Query extends BaseQuery
     public function groupConcat($field, string $separator = ',')
     {
         return $this->expr('group_concat({}, [])', [$field, $separator]);
+    }
+
+    #[\Override]
+    protected function makeArrayTable(array $rows, array $columnTypes)
+    {
+        $jsonData = [];
+        foreach ($rows as $row) {
+            $jsonRow = [];
+            foreach ($row as $v) {
+                $jsonRow[] = $v;
+            }
+            $jsonData[] = $jsonRow;
+        }
+
+        $json = json_encode($jsonData, \JSON_PRESERVE_ZERO_FRACTION | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
+
+        $query = $this->connection->dsql();
+        $i = 0;
+        foreach ($columnTypes as $k => $type) {
+            $query->field($query->expr('json_extract(value, [])', [
+                new RawExpression($this->escapeStringLiteral('$[' . $i . ']')),
+            ]), $k);
+
+            ++$i;
+        }
+        $query->table($this->expr('json_each([])', [$json]));
+
+        return $query;
     }
 
     #[\Override]
