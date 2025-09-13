@@ -1137,6 +1137,44 @@ abstract class Query extends Expression
     }
 
     /**
+     * @param list<array<string, scalar|null>>                   $rows
+     * @param array<string, 'boolean'|'bigint'|'float'|'string'> $columnTypes
+     *
+     * @return Expression
+     */
+    protected function makeArrayTable(array $rows, array $columnTypes)
+    {
+        if ($rows === []) {
+            $query = $this->connection->dsql();
+            foreach ($columnTypes as $k => $type) {
+                $query->field($query->expr('[]', [null]), $k);
+            }
+            $query->limit(0);
+
+            return $query;
+        }
+
+        // TODO simplify once https://github.com/atk4/data/pull/677 is merged
+        $queries = [];
+        $isFirst = true;
+        foreach ($rows as $row) {
+            $query = $this->connection->dsql();
+            $query->wrapInParentheses = false;
+            foreach ($row as $k => $v) {
+                $query->field($query->expr('[]', [$v]), $isFirst ? $k : null);
+            }
+
+            $queries[] = $query;
+            $isFirst = false;
+        }
+
+        return $this->expr([
+            'template' => implode(' union all ', array_map(static fn () => '[]', $queries)),
+            'wrapInParentheses' => true,
+        ], $queries);
+    }
+
+    /**
      * Returns Query object of [case] expression.
      *
      * @param string|Expressionable|null $operand optional operand for case expression

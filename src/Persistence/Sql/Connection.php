@@ -30,6 +30,8 @@ abstract class Connection
 
     private DbalConnection $_connection;
 
+    private ?string $serverVersionRaw = null;
+
     /** @var array<string, class-string<self>> */
     protected static $connectionClassRegistry = [
         'pdo_sqlite' => Sqlite\Connection::class,
@@ -421,6 +423,32 @@ abstract class Connection
         $res = $this->getConnection()->lastInsertId($sequence);
 
         return is_int($res) ? (string) $res : $res;
+    }
+
+    /**
+     * @return non-empty-string
+     */
+    public function getServerVersion(bool $raw = false): string
+    {
+        if ($this->serverVersionRaw === null) {
+            $this->serverVersionRaw = $this->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore method.deprecated, method.notFound
+        }
+
+        assert(preg_match('~(\d+)\.(\d+)(?:\.(\d+))?~', $this->serverVersionRaw, $matches) === 1);
+
+        $version = [
+            (int) $matches[1],
+            (int) $matches[2],
+            isset($matches[3]) ? (int) $matches[3] : null,
+        ];
+
+        assert($version[0] > 0 || $version[1] > 0);
+
+        return $raw
+            ? $this->serverVersionRaw
+            : $version[0]
+                . '.' . $version[1]
+                . (isset($version[2]) ? '.' . $version[2] : '');
     }
 
     public function getDatabasePlatform(): AbstractPlatform

@@ -23,33 +23,32 @@ class MaterializedArrayAction implements Expressionable
     {
         $rows = $this->action->getRows();
 
-        if ($rows === []) {
-            $query = $expression->connection->dsql();
-            foreach ($this->action->getColumns() as $k) {
-                $query->field($query->expr('[]', [null]), $k);
-            }
-            $query->limit(0);
-
-            return $query;
-        }
-
-        // TODO simplify once https://github.com/atk4/data/pull/677 is merged
-        $queries = [];
-        $isFirst = true;
+        $columnTypes = [];
         foreach ($rows as $row) {
-            $query = $expression->connection->dsql();
-            $query->wrapInParentheses = false;
-            foreach ($row as $k => $v) {
-                $query->field($query->expr('[]', [$v]), $isFirst ? $k : null);
+            foreach ($row as $columnName => $v) {
+                if ($v === null) {
+                    continue;
+                } elseif (is_bool($v)) {
+                    $type = 'boolean';
+                } elseif (is_int($v)) {
+                    $type = 'bigint';
+                } elseif (is_float($v)) {
+                    $type = 'float';
+                } else {
+                    $type = 'string';
+                }
+
+                if (!isset($columnTypes[$columnName])) {
+                    $columnTypes[$columnName] = $type;
+                } elseif ($type !== $columnTypes[$columnName]) {
+                    throw (new Exception('Column consists of more than one type'))
+                        ->addMoreInfo('typeA', $columnTypes[$columnName])
+                        ->addMoreInfo('typeB', $type);
+                }
             }
-
-            $queries[] = $query;
-            $isFirst = false;
         }
+        $columnTypes = array_merge(array_fill_keys($this->action->getColumns(), 'string'), $columnTypes);
 
-        return $expression->expr([
-            'template' => implode(' union all ', array_map(static fn () => '[]', $queries)),
-            'wrapInParentheses' => true,
-        ], $queries);
+        return \Closure::bind(static fn () => $expression->connection->dsql()->makeArrayTable($rows, $columnTypes), null, Expression::class)();
     }
 }

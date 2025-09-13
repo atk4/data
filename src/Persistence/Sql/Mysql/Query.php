@@ -21,7 +21,7 @@ class Query extends BaseQuery
     protected function _renderConditionLikeOperator(bool $negated, string $sqlLeft, string $sqlRight): string
     {
         $isMysql5x = !Connection::isServerMariaDb($this->connection)
-            && Connection::getServerMinorVersion($this->connection) < 600;
+            && version_compare($this->connection->getServerVersion(), '6.0') < 0;
 
         if ($isMysql5x) {
             $replaceSqlFx = function (string $sql, string $search, string $replacement) {
@@ -57,7 +57,7 @@ class Query extends BaseQuery
     protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight, bool $binary = false): string
     {
         $isMysql5x = !Connection::isServerMariaDb($this->connection)
-            && Connection::getServerMinorVersion($this->connection) < 600;
+            && version_compare($this->connection->getServerVersion(), '6.0') < 0;
 
         return $sqlLeft . ($negated ? ' not' : '') . ' regexp ' . (
             $isMysql5x

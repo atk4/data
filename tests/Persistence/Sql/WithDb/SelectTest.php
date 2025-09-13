@@ -248,11 +248,14 @@ class SelectTest extends TestCase
             \PHP_INT_MAX,
             0.0,
             -1.5,
+            1e25,
+            1e50,
+            1e-25,
             1e-50,
             // https://github.com/atk4/data/blob/6.0.0/tests/TypecastingTest.php#L128
             $this->getDatabasePlatform() instanceof SQLitePlatform
-                ? 1.79769313486231e+308
-                : 1.7976931348623157e+308,
+                ? 1.79769313486231e308
+                : 1.7976931348623157e308,
             $this->getDatabasePlatform() instanceof SQLServerPlatform
                 ? 2.2250738585072014e-308
                 : 5e-324,
@@ -268,15 +271,24 @@ class SelectTest extends TestCase
         // fix CI with old SQLite
         // fixed probably by "long double" hardware support - https://www.sqlite.org/releaselog/3_44_0.html
         if ($this->getDatabasePlatform() instanceof SQLitePlatform && version_compare(SqliteConnection::getDriverVersion(), '3.44') < 0) {
-            if ($res[5] >= 0.999999999999999e-50 && $res[5] <= 1.00000000000001e+308) { // @phpstan-ignore offsetAccess.notFound
-                $res[5] = 1e-50;
+            if ($res[7] >= 0.999999999999999e-25 && $res[7] <= 1.00000000000001e-25) { // @phpstan-ignore offsetAccess.notFound
+                $res[7] = 1e-25;
             }
-            if ($res[6] >= 1.79769313486231e+308 && $res[6] <= 1.79769313486232e+308) {
-                $res[6] = 1.79769313486231e+308;
+            if ($res[8] >= 0.999999999999999e-50 && $res[8] <= 1.00000000000001e-50) {
+                $res[8] = 1e-50;
+            }
+            if ($res[9] >= 1.79769313486231e308 && $res[9] <= 1.79769313486232e308) {
+                $res[9] = 1.79769313486231e308;
             }
         }
 
         self::{'assertEquals'}($values, $res);
+    }
+
+    public function testConnectionGetServerVersion(): void
+    {
+        self::assertTrue(version_compare($this->getConnection()->getServerVersion(), '2.0') > 0);
+        self::assertTrue(version_compare($this->getConnection()->getServerVersion(), '1000.0') < 0);
     }
 
     public function testWhereExpression(): void
