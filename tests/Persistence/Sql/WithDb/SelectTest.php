@@ -285,6 +285,12 @@ class SelectTest extends TestCase
         self::{'assertEquals'}($values, $res);
     }
 
+    public function testConnectionGetServerVersion(): void
+    {
+        self::assertTrue(version_compare($this->getConnection()->getServerVersion(), '2.0') > 0);
+        self::assertTrue(version_compare($this->getConnection()->getServerVersion(), '1000.0') < 0);
+    }
+
     public function testWhereExpression(): void
     {
         $this->setupTables();

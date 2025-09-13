@@ -422,7 +422,7 @@ abstract class TestCase extends BaseTestCase
     {
         if ($this->getDatabasePlatform() instanceof MySQLPlatform
             && !MysqlConnection::isServerMariaDb($this->getConnection())
-            && MysqlConnection::getServerMinorVersion($this->getConnection()) < 600
+            && version_compare($this->getConnection()->getServerVersion(), '6.0') < 0
         ) {
             self::markTestIncomplete('MySQL 5.x does not support WITH clause');
         }
@@ -432,7 +432,7 @@ abstract class TestCase extends BaseTestCase
     {
         if ($this->getDatabasePlatform() instanceof MySQLPlatform
             && !MysqlConnection::isServerMariaDb($this->getConnection())
-            && MysqlConnection::getServerMinorVersion($this->getConnection()) < 570
+            && version_compare($this->getConnection()->getServerVersion(), '5.7') < 0
         ) {
             self::markTestIncomplete('TODO MySQL 5.6: Unique key exceed max key (767 bytes) length');
         }
@@ -442,7 +442,7 @@ abstract class TestCase extends BaseTestCase
     {
         if ($this->getDatabasePlatform() instanceof MySQLPlatform && $isBinary
             && !MysqlConnection::isServerMariaDb($this->getConnection())
-            && MysqlConnection::getServerMinorVersion($this->getConnection()) >= 800
+            && version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0
         ) {
             // MySQL v8.0.22 and higher throws SQLSTATE[HY000]: General error: 3995 Character set 'binary'
             // cannot be used in conjunction with 'utf8mb4_0900_ai_ci' in call to regexp_like.

@@ -723,7 +723,7 @@ class ConditionSqlTest extends TestCase
         $isMariadb = $this->getDatabasePlatform() instanceof MySQLPlatform
             && MysqlConnection::isServerMariaDb($this->getConnection());
         $isMysql5x = $this->getDatabasePlatform() instanceof MySQLPlatform && !$isMariadb
-            && MysqlConnection::getServerMinorVersion($this->getConnection()) < 600;
+            && version_compare($this->getConnection()->getServerVersion(), '6.0') < 0;
 
         $this->markTestIncompleteOnMySQL8xPlatformAsBinaryLikeIsBroken($isBinary);
 

@@ -606,7 +606,7 @@ class ScopeTest extends TestCase
 
         if ($this->getDatabasePlatform() instanceof MySQLPlatform
             && !MysqlConnection::isServerMariaDb($this->getConnection())
-            && MysqlConnection::getServerMinorVersion($this->getConnection()) >= 800
+            && version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0
         ) {
             // https://dbfiddle.uk/XbGfYE1F
             self::markTestIncomplete('MySQL 8.x does not support native JSON = string JSON comparison');
