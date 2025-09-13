@@ -254,8 +254,8 @@ class SelectTest extends TestCase
             1e-50,
             // https://github.com/atk4/data/blob/6.0.0/tests/TypecastingTest.php#L128
             $this->getDatabasePlatform() instanceof SQLitePlatform
-                ? 1.79769313486231e+308
-                : 1.7976931348623157e+308,
+                ? 1.79769313486231e308
+                : 1.7976931348623157e308,
             $this->getDatabasePlatform() instanceof SQLServerPlatform
                 ? 2.2250738585072014e-308
                 : 5e-324,
@@ -277,8 +277,8 @@ class SelectTest extends TestCase
             if ($res[8] >= 0.999999999999999e-50 && $res[8] <= 1.00000000000001e-50) {
                 $res[8] = 1e-50;
             }
-            if ($res[9] >= 1.79769313486231e+308 && $res[9] <= 1.79769313486232e+308) {
-                $res[9] = 1.79769313486231e+308;
+            if ($res[9] >= 1.79769313486231e308 && $res[9] <= 1.79769313486232e308) {
+                $res[9] = 1.79769313486231e308;
             }
         }
 
