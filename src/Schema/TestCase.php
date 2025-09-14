@@ -434,7 +434,7 @@ abstract class TestCase extends BaseTestCase
             && !MysqlConnection::isServerMariaDb($this->getConnection())
             && version_compare($this->getConnection()->getServerVersion(), '5.7') < 0
         ) {
-            self::markTestIncomplete('TODO MySQL 5.6: Unique key exceed max key (767 bytes) length');
+            self::markTestIncomplete('MySQL 5.6: Unique key exceed max key (767 bytes) length');
         }
     }
 
