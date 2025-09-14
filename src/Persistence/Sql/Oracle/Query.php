@@ -34,7 +34,7 @@ class Query extends BaseQuery
                 $res = $makeSqlFx($sqlLeft, $sqlRight);
 
                 if ($reuse) {
-                    // for Oracle v23 and higher "CASE bool WHEN true THEN 1 ..." should be used
+                    // for Oracle v23 or higher "CASE bool WHEN true THEN 1 ..." should be used
                     // https://dbfiddle.uk/xYhEngrA
                     $res = 'case when not(' . $res . ') then 0 else case when '
                         . ($nullFromArgsOnly ? $sqlLeft . ' is not null and ' . $sqlRight . ' is not null' : $res)

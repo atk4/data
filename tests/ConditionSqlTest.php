@@ -836,7 +836,7 @@ class ConditionSqlTest extends TestCase
 
         $hugeList = array_map(static fn ($i) => 'foo' . $i, range(0, $this->getDatabasePlatform() instanceof OraclePlatform ? 19 : 2_000));
         self::assertSame([1], $findIdsRegexFx('name', implode('|', $hugeList) . '|John'));
-        if (!$this->getDatabasePlatform() instanceof PostgreSQLPlatform) { // very slow on PostgreSQL 14 and lower, on PostgreSQL 15 and 16 the queries are still slow (~10 seconds)
+        if (!$this->getDatabasePlatform() instanceof PostgreSQLPlatform) { // very slow on PostgreSQL 14 or lower, on PostgreSQL 15 and 16 the queries are still slow (~10 seconds)
             self::assertSame([1], $findIdsRegexFx('name', str_repeat('(', 99) . implode('|', $hugeList) . '|John' . str_repeat(')', 99)));
             self::assertSame([1], $findIdsRegexFx('name', implode('', array_map(static fn ($v) => '(' . $v . ')?', $hugeList)) . 'John'));
         }
