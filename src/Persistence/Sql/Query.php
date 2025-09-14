@@ -1161,6 +1161,22 @@ abstract class Query extends Expression
     }
 
     /**
+     * @param list<array<string, scalar|null>> $rows
+     * @param list<string>                     $columnNames
+     */
+    protected function makeArrayTableMakeJson(array $rows, array $columnNames): string
+    {
+        $jsonData = [];
+        foreach ($rows as $row) {
+            assert(array_keys($row) === $columnNames);
+
+            $jsonData[] = array_values($row);
+        }
+
+        return json_encode($jsonData, \JSON_PRESERVE_ZERO_FRACTION | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
+    }
+
+    /**
      * @param list<array<string, scalar|null>>                   $rows
      * @param array<string, 'boolean'|'bigint'|'float'|'string'> $columnTypes
      *

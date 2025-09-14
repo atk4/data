@@ -80,16 +80,7 @@ class Query extends BaseQuery
             return parent::makeArrayTable($rows, $columnTypes);
         }
 
-        $jsonData = [];
-        foreach ($rows as $row) {
-            $jsonRow = [];
-            foreach ($row as $v) {
-                $jsonRow[] = $v;
-            }
-            $jsonData[] = $jsonRow;
-        }
-
-        $json = json_encode($jsonData, \JSON_PRESERVE_ZERO_FRACTION | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
+        $json = $this->makeArrayTableMakeJson($rows, array_keys($columnTypes));
 
         $query = $this->connection->dsql();
         $i = 0;
