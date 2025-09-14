@@ -56,14 +56,14 @@ class MaterializedArrayActionTest extends TestCase
             self::assertSame([':a' => '[]'], $render[1]);
         } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform && !$this->isServerMysql5x()) {
             self::assertSame([':a' => '[]'], $render[1]);
-        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform && !$this->isServerPostgreSQL16OrLower()) {
-            self::assertSame([':a' => '[]'], $render[1]);
+        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            self::assertSame($this->isServerPostgreSQL16OrLower() ? [':a' => '<t></t>'] : [':a' => '[]'], $render[1]);
         } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             self::assertSame([':a' => '[]'], $render[1]);
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
             self::assertSame([':xxaaaa' => '[]'], $render[1]);
         } else {
-            self::assertSameSql('select :a `bool`, :b `int`, :c `float`, :d `string` limit ' . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? '0 offset 0' : '0, 0'), $render[0]);
+            self::assertSameSql('select :a `bool`, :b `int`, :c `float`, :d `string` limit 0, 0', $render[0]);
             self::assertSame([':a' => null, ':b' => null, ':c' => null, ':d' => null], $render[1]);
         }
 
@@ -82,8 +82,8 @@ class MaterializedArrayActionTest extends TestCase
             self::assertSame([':a' => '[[false,0,0.0,"Mark"]]'], $render[1]);
         } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform && !$this->isServerMysql5x()) {
             self::assertSame([':a' => '[[false,0,0.0,"Mark"]]'], $render[1]);
-        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform && !$this->isServerPostgreSQL16OrLower()) {
-            self::assertSame([':a' => '[[false,0,0.0,"Mark"]]'], $render[1]);
+        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            self::assertSame($this->isServerPostgreSQL16OrLower() ? [':a' => '<t><r c0="0" c1="0" c2="0" c3="Mark"/></t>'] : [':a' => '[[false,0,0.0,"Mark"]]'], $render[1]);
         } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             self::assertSame([':a' => '[[false,0,0.0,"Mark"]]'], $render[1]);
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
@@ -102,34 +102,39 @@ class MaterializedArrayActionTest extends TestCase
     {
         $action = new ArrayAction([
             ['bool' => true, 'int' => \PHP_INT_MIN, 'float' => -1e-20, 'string' => ''],
-            ['bool' => null, 'int' => \PHP_INT_MAX, 'float' => 1.0123456789123e50, 'string' => ' foo' . "\n"],
+            ['bool' => null, 'int' => \PHP_INT_MAX, 'float' => 1.0123456789123e50, 'string' => ' <foo>&"\'🔥' . "\n"],
         ], ['bool', 'int', 'float', 'string']);
         $query = new MaterializedArrayAction($action);
 
         $render = $this->renderQuery($query);
         if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
             self::assertSameSql('select json_extract(value, \'$[0]\') `bool`, json_extract(value, \'$[1]\') `int`, json_extract(value, \'$[2]\') `float`, json_extract(value, \'$[3]\') `string` from json_each(:a)', $render[0]);
-            self::assertSame([':a' => '[[true,-9223372036854775808,-1.0e-20,""],[null,9223372036854775807,1.0123456789123e+50," foo\n"]]'], $render[1]);
+            self::assertSame([':a' => '[[true,-9223372036854775808,-1.0e-20,""],[null,9223372036854775807,1.0123456789123e+50," <foo>&\"\'🔥\n"]]'], $render[1]);
         } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform && !$this->isServerMysql5x()) {
             self::assertSameSql('select `c0` `bool`, `c1` `int`, `c2` `float`, `c3` `string` from json_table(:a, \'$[*]\' columns (`c0` TINYINT(1) path \'$[0]\', `c1` BIGINT path \'$[1]\', `c2` DOUBLE PRECISION path \'$[2]\', `c3` VARCHAR(255) COLLATE `utf8mb4_unicode_ci` path \'$[3]\')) `t`', $render[0]);
-            self::assertSame([':a' => '[[true,-9223372036854775808,-1.0e-20,""],[null,9223372036854775807,1.0123456789123e+50," foo\n"]]'], $render[1]);
-        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform && !$this->isServerPostgreSQL16OrLower()) {
-            self::assertSameSql('select `c0` `bool`, `c1` `int`, `c2` `float`, `c3` `string` from json_table(:a, \'$[*]\' columns (`c0` BOOLEAN path \'$[0]\', `c1` BIGINT path \'$[1]\', `c2` DOUBLE PRECISION path \'$[2]\', `c3` ATK4__CIVARCHAR path \'$[3]\')) `t`', $render[0]);
-            self::assertSame([':a' => '[[true,-9223372036854775808,-1.0e-20,""],[null,9223372036854775807,1.0123456789123e+50," foo\n"]]'], $render[1]);
+            self::assertSame([':a' => '[[true,-9223372036854775808,-1.0e-20,""],[null,9223372036854775807,1.0123456789123e+50," <foo>&\"\'🔥\n"]]'], $render[1]);
+        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            if ($this->isServerPostgreSQL16OrLower()) {
+                self::assertSameSql('select `c0` `bool`, `c1` `int`, `c2` `float`, `c3` `string` from xmltable(\'/t/r\' passing xmlparse(document :a) columns `c0` BOOLEAN path \'@c0\', `c1` BIGINT path \'@c1\', `c2` DOUBLE PRECISION path \'@c2\', `c3` ATK4__CIVARCHAR path \'@c3\') `t`', $render[0]);
+                self::assertSame([':a' => '<t><r c0="1" c1="-9223372036854775808" c2="-1.0E-20" c3=""/><r c1="9223372036854775807" c2="1.0123456789123E+50" c3=" &#x3c;foo>&#x26;&#x22;\'🔥&#xa;"/></t>'], $render[1]);
+            } else {
+                self::assertSameSql('select `c0` `bool`, `c1` `int`, `c2` `float`, `c3` `string` from json_table(:a, \'$[*]\' columns (`c0` BOOLEAN path \'$[0]\', `c1` BIGINT path \'$[1]\', `c2` DOUBLE PRECISION path \'$[2]\', `c3` ATK4__CIVARCHAR path \'$[3]\')) `t`', $render[0]);
+                self::assertSame([':a' => '[[true,-9223372036854775808,-1.0e-20,""],[null,9223372036854775807,1.0123456789123e+50," <foo>&\"\'🔥\n"]]'], $render[1]);
+            }
         } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             self::assertSameSql('select `c0` `bool`, `c1` `int`, `c2` `float`, `c3` `string` from openjson(:a) with (`c0` BIT \'$[0]\', `c1` BIGINT \'$[1]\', `c2` DOUBLE PRECISION \'$[2]\', `c3` NVARCHAR(1020) \'$[3]\') `t`', $render[0]);
-            self::assertSame([':a' => '[[true,-9223372036854775808,-1.0e-20,""],[null,9223372036854775807,1.0123456789123e+50," foo\n"]]'], $render[1]);
+            self::assertSame([':a' => '[[true,-9223372036854775808,-1.0e-20,""],[null,9223372036854775807,1.0123456789123e+50," <foo>&\"\'🔥\n"]]'], $render[1]);
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
             self::assertSameSql('select `c0` `bool`, `c1` `int`, `c2` `float`, `c3` `string` from json_table(:a, \'$[*]\' columns (`c0` NUMBER(1) path \'$[0]\', `c1` NUMBER(20) path \'$[1]\', `c2` NUMBER path \'$[2]\', `c3` VARCHAR2 path \'$[3]\')) `t`', $render[0]);
-            self::assertSame([':xxaaaa' => '[[true,-9223372036854775808,-1.0e-20,""],[null,9223372036854775807,1.0123456789123e+50," foo\n"]]'], $render[1]);
+            self::assertSame([':xxaaaa' => '[[true,-9223372036854775808,-1.0e-20,""],[null,9223372036854775807,1.0123456789123e+50," <foo>&\"\'🔥\n"]]'], $render[1]);
         } else {
             self::assertSameSql('select :a `bool`, :b `int`, :c `float`, :d `string` union all select :e, :f, :g, :h', $render[0]);
-            self::assertSame([':a' => true, ':b' => \PHP_INT_MIN, ':c' => -1e-20, ':d' => '', ':e' => null, ':f' => \PHP_INT_MAX, ':g' => 1.0123456789123e50, ':h' => ' foo' . "\n"], $render[1]);
+            self::assertSame([':a' => true, ':b' => \PHP_INT_MIN, ':c' => -1e-20, ':d' => '', ':e' => null, ':f' => \PHP_INT_MAX, ':g' => 1.0123456789123e50, ':h' => ' <foo>&"\'🔥' . "\n"], $render[1]);
         }
 
         self::{'assertEquals'}([
             ['bool' => '1', 'int' => \PHP_INT_MIN, 'float' => -1e-20, 'string' => ''],
-            ['bool' => null, 'int' => \PHP_INT_MAX, 'float' => 1.0123456789123e50, 'string' => ' foo' . "\n"],
+            ['bool' => null, 'int' => \PHP_INT_MAX, 'float' => 1.0123456789123e50, 'string' => ' <foo>&"\'🔥' . "\n"],
         ], $query->getDsqlExpression($this->getConnection()->expr())->getRows());
     }
 
