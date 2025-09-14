@@ -76,7 +76,7 @@ class Query extends BaseQuery
     #[\Override]
     protected function makeArrayTable(array $rows, array $columnTypes)
     {
-        if ($this->isServerMysql5x()) {
+        if ($this->isServerMysql5x() || (Connection::isServerMariaDb($this->connection) && version_compare($this->connection->getServerVersion(), '10.6') < 0)) {
             return parent::makeArrayTable($rows, $columnTypes);
         }
 
