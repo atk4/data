@@ -30,7 +30,7 @@ abstract class Connection
 
     private DbalConnection $_connection;
 
-    private ?string $serverVersionRaw = null;
+    private string $serverVersionRaw;
 
     /** @var array<string, class-string<self>> */
     protected static $connectionClassRegistry = [
@@ -430,7 +430,7 @@ abstract class Connection
      */
     public function getServerVersion(bool $raw = false): string
     {
-        if ($this->serverVersionRaw === null) {
+        if (($this->serverVersionRaw ?? null) === null) {
             $this->serverVersionRaw = $this->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore method.deprecated, method.notFound
         }
 

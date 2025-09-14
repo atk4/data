@@ -43,8 +43,12 @@ class Connection extends BaseConnection
     public static function getDriverVersion(): string
     {
         if ((self::$driverVersion ?? null) === null) {
-            $dbalConnection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true]);
-            self::$driverVersion = $dbalConnection->getWrappedConnection()->getServerVersion(); // @phpstan-ignore method.deprecated, method.notFound
+            $connection = new self();
+            \Closure::bind(static function () use ($connection) {
+                $connection->_connection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true]);
+            }, null, BaseConnection::class)();
+
+            self::$driverVersion = $connection->getServerVersion();
         }
 
         return self::$driverVersion;
