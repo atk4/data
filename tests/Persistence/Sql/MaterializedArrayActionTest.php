@@ -56,8 +56,7 @@ class MaterializedArrayActionTest extends TestCase
         } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             self::assertSame([':a' => '[]'], $render[1]);
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            self::assertSameSql('select :a `bool`, :b `int`, :c `float`, :d `string` from "DUAL" fetch next 0 rows only', $render[0]);
-            self::assertSame([':xxaaaa' => null, ':xxaaab' => null, ':xxaaac' => null, ':xxaaad' => null], $render[1]);
+            self::assertSame([':xxaaaa' => '[]'], $render[1]);
         } else {
             self::assertSameSql('select :a `bool`, :b `int`, :c `float`, :d `string` limit 0, 0', $render[0]);
             self::assertSame([':a' => null, ':b' => null, ':c' => null, ':d' => null], $render[1]);
@@ -84,8 +83,7 @@ class MaterializedArrayActionTest extends TestCase
         } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             self::assertSame([':a' => '[[false,0,0.0,"Mark"]]'], $render[1]);
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            self::assertSameSql('select :a `bool`, :b `int`, :c `float`, :d `string` from "DUAL"', $render[0]);
-            self::assertSame([':xxaaaa' => false, ':xxaaab' => 0, ':xxaaac' => 0.0, ':xxaaad' => 'Mark'], $render[1]);
+            self::assertSame([':xxaaaa' => '[[false,0,0.0,"Mark"]]'], $render[1]);
         } else {
             self::assertSameSql('select :a `bool`, :b `int`, :c `float`, :d `string`', $render[0]);
             self::assertSame([':a' => false, ':b' => 0, ':c' => 0.0, ':d' => 'Mark'], $render[1]);
@@ -118,15 +116,11 @@ class MaterializedArrayActionTest extends TestCase
             self::assertSameSql('select `c0` `bool`, `c1` `int`, `c2` `float`, `c3` `string` from openjson(:a) with (`c0` BIT \'$[0]\', `c1` BIGINT \'$[1]\', `c2` DOUBLE PRECISION \'$[2]\', `c3` NVARCHAR(1020) \'$[3]\') `t`', $render[0]);
             self::assertSame([':a' => '[[true,-9223372036854775808,-1.0e-20,""],[null,9223372036854775807,1.0123456789123e+50," foo\n"]]'], $render[1]);
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            self::assertSameSql('select :a `bool`, :b `int`, :c `float`, :d `string` from "DUAL" union all select :e, :f, :g, :h from "DUAL"', $render[0]);
-            self::assertSame([':xxaaaa' => true, ':xxaaab' => \PHP_INT_MIN, ':xxaaac' => -1e-20, ':xxaaad' => '', ':xxaaae' => null, ':xxaaaf' => \PHP_INT_MAX, ':xxaaag' => 1.0123456789123e50, ':xxaaah' => ' foo' . "\n"], $render[1]);
+            self::assertSameSql('select `c0` `bool`, `c1` `int`, `c2` `float`, `c3` `string` from json_table(:a, \'$[*]\' columns (`c0` NUMBER(1) path \'$[0]\', `c1` NUMBER(20) path \'$[1]\', `c2` NUMBER path \'$[2]\', `c3` VARCHAR2 path \'$[3]\')) `t`', $render[0]);
+            self::assertSame([':xxaaaa' => '[[true,-9223372036854775808,-1.0e-20,""],[null,9223372036854775807,1.0123456789123e+50," foo\n"]]'], $render[1]);
         } else {
             self::assertSameSql('select :a `bool`, :b `int`, :c `float`, :d `string` union all select :e, :f, :g, :h', $render[0]);
             self::assertSame([':a' => true, ':b' => \PHP_INT_MIN, ':c' => -1e-20, ':d' => '', ':e' => null, ':f' => \PHP_INT_MAX, ':g' => 1.0123456789123e50, ':h' => ' foo' . "\n"], $render[1]);
-        }
-
-        if ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            self::markTestIncomplete('TODO Oracle remove once JSON_TABLE() is used');
         }
 
         self::{'assertEquals'}([
@@ -156,10 +150,6 @@ class MaterializedArrayActionTest extends TestCase
         self::assertSame([
             ['foo' => '1', 'bar' => 'u'],
         ], $query->getDsqlExpression($this->getConnection()->expr())->getRows());
-
-        if ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            self::markTestIncomplete('TODO Oracle remove once JSON_TABLE() is used');
-        }
 
         $action->generator = new \ArrayIterator([['foo' => 1, 'bar' => 'u'], ['foo' => null, 'bar' => 'v']]);
         self::assertSame([

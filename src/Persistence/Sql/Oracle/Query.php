@@ -8,6 +8,7 @@ use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Persistence\Sql\ExecuteException;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
+use Atk4\Data\Persistence\Sql\RawExpression;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Exception\DatabaseObjectNotFoundException;
 
@@ -189,6 +190,42 @@ class Query extends BaseQuery
     public function groupConcat($field, string $separator = ',')
     {
         return $this->expr('listagg({field}, []) within group (order by {field})', ['field' => $field, $separator]);
+    }
+
+    #[\Override]
+    protected function makeArrayTable(array $rows, array $columnTypes)
+    {
+        $jsonData = [];
+        foreach ($rows as $row) {
+            $jsonRow = [];
+            foreach ($row as $v) {
+                $jsonRow[] = $v;
+            }
+            $jsonData[] = $jsonRow;
+        }
+
+        $json = json_encode($jsonData, \JSON_PRESERVE_ZERO_FRACTION | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
+
+        $query = $this->connection->dsql();
+        $i = 0;
+        $defTemplates = [];
+        $defParams = [];
+        foreach ($columnTypes as $k => $type) {
+            $query->field($query->expr('{}', ['c' . $i]), $k);
+
+            // https://web.archive.org/web/20250615224942/https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/JSON_VALUE.html#GUID-C7F19D36-1E75-4CB2-AE67-ADFBAD23CBC2__CJABCIJE
+            $defTemplates[] = '{} ' . (['boolean' => 'NUMBER(1)', 'bigint' => 'NUMBER(20)', 'float' => 'NUMBER'][$type] ?? 'VARCHAR2') . ' path []';
+            $defParams[] = 'c' . $i;
+            $defParams[] = new RawExpression($this->escapeStringLiteral('$[' . $i . ']'));
+
+            ++$i;
+        }
+        $query->table($this->expr(
+            'json_table([], [] columns (' . implode(', ', $defTemplates) . '))',
+            [$json, new RawExpression($this->escapeStringLiteral('$[*]')), ...$defParams]
+        ), 't');
+
+        return $query;
     }
 
     #[\Override]
