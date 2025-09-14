@@ -1194,6 +1194,10 @@ abstract class Query extends Expression
             return $query;
         }
 
+        // this fallback approach is resource intensive, limit the maximum row count
+        // as it is limited by maximum unioned queries and maximum bound variables anyway
+        assert(count($rows) <= 5_000);
+
         // TODO simplify once https://github.com/atk4/data/pull/677 is merged
         $queries = [];
         $isFirst = true;
