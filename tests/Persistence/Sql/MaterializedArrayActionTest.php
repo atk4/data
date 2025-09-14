@@ -40,6 +40,12 @@ class MaterializedArrayActionTest extends TestCase
             && version_compare($this->getConnection()->getServerVersion(), '6.0') < 0;
     }
 
+    private function isServerPostgreSQL16OrLower(): bool
+    {
+        return $this->getDatabasePlatform() instanceof PostgreSQLPlatform
+            && version_compare($this->getConnection()->getServerVersion(), '17.0') < 0;
+    }
+
     public function testRenderZeroRows(): void
     {
         $action = new ArrayAction([], ['bool', 'int', 'float', 'string']);
@@ -50,15 +56,14 @@ class MaterializedArrayActionTest extends TestCase
             self::assertSame([':a' => '[]'], $render[1]);
         } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform && !$this->isServerMysql5x()) {
             self::assertSame([':a' => '[]'], $render[1]);
-        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            self::assertSameSql('select :a `bool`, :b `int`, :c `float`, :d `string` limit 0 offset 0', $render[0]);
-            self::assertSame([':a' => null, ':b' => null, ':c' => null, ':d' => null], $render[1]);
+        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform && !$this->isServerPostgreSQL16OrLower()) {
+            self::assertSame([':a' => '[]'], $render[1]);
         } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             self::assertSame([':a' => '[]'], $render[1]);
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
             self::assertSame([':xxaaaa' => '[]'], $render[1]);
         } else {
-            self::assertSameSql('select :a `bool`, :b `int`, :c `float`, :d `string` limit 0, 0', $render[0]);
+            self::assertSameSql('select :a `bool`, :b `int`, :c `float`, :d `string` limit ' . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? '0 offset 0' : '0, 0'), $render[0]);
             self::assertSame([':a' => null, ':b' => null, ':c' => null, ':d' => null], $render[1]);
         }
 
@@ -77,9 +82,8 @@ class MaterializedArrayActionTest extends TestCase
             self::assertSame([':a' => '[[false,0,0.0,"Mark"]]'], $render[1]);
         } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform && !$this->isServerMysql5x()) {
             self::assertSame([':a' => '[[false,0,0.0,"Mark"]]'], $render[1]);
-        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            self::assertSameSql('select :a `bool`, :b `int`, :c `float`, :d `string`', $render[0]);
-            self::assertSame([':a' => false, ':b' => 0, ':c' => 0.0, ':d' => 'Mark'], $render[1]);
+        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform && !$this->isServerPostgreSQL16OrLower()) {
+            self::assertSame([':a' => '[[false,0,0.0,"Mark"]]'], $render[1]);
         } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             self::assertSame([':a' => '[[false,0,0.0,"Mark"]]'], $render[1]);
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
@@ -109,9 +113,9 @@ class MaterializedArrayActionTest extends TestCase
         } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform && !$this->isServerMysql5x()) {
             self::assertSameSql('select `c0` `bool`, `c1` `int`, `c2` `float`, `c3` `string` from json_table(:a, \'$[*]\' columns (`c0` TINYINT(1) path \'$[0]\', `c1` BIGINT path \'$[1]\', `c2` DOUBLE PRECISION path \'$[2]\', `c3` VARCHAR(255) COLLATE `utf8mb4_unicode_ci` path \'$[3]\')) `t`', $render[0]);
             self::assertSame([':a' => '[[true,-9223372036854775808,-1.0e-20,""],[null,9223372036854775807,1.0123456789123e+50," foo\n"]]'], $render[1]);
-        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            self::assertSameSql('select :a `bool`, :b `int`, :c `float`, :d `string` union all select :e, :f, :g, :h', $render[0]);
-            self::assertSame([':a' => true, ':b' => \PHP_INT_MIN, ':c' => -1e-20, ':d' => '', ':e' => null, ':f' => \PHP_INT_MAX, ':g' => 1.0123456789123e50, ':h' => ' foo' . "\n"], $render[1]);
+        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform && !$this->isServerPostgreSQL16OrLower()) {
+            self::assertSameSql('select `c0` `bool`, `c1` `int`, `c2` `float`, `c3` `string` from json_table(:a, \'$[*]\' columns (`c0` BOOLEAN path \'$[0]\', `c1` BIGINT path \'$[1]\', `c2` DOUBLE PRECISION path \'$[2]\', `c3` ATK4__CIVARCHAR path \'$[3]\')) `t`', $render[0]);
+            self::assertSame([':a' => '[[true,-9223372036854775808,-1.0e-20,""],[null,9223372036854775807,1.0123456789123e+50," foo\n"]]'], $render[1]);
         } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             self::assertSameSql('select `c0` `bool`, `c1` `int`, `c2` `float`, `c3` `string` from openjson(:a) with (`c0` BIT \'$[0]\', `c1` BIGINT \'$[1]\', `c2` DOUBLE PRECISION \'$[2]\', `c3` NVARCHAR(1020) \'$[3]\') `t`', $render[0]);
             self::assertSame([':a' => '[[true,-9223372036854775808,-1.0e-20,""],[null,9223372036854775807,1.0123456789123e+50," foo\n"]]'], $render[1]);

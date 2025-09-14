@@ -6,6 +6,8 @@ namespace Atk4\Data\Persistence\Sql\Postgresql;
 
 use Atk4\Data\Persistence\Sql\Expression as BaseExpression;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
+use Atk4\Data\Persistence\Sql\RawExpression;
+use Doctrine\DBAL\Types\Type;
 
 class Query extends BaseQuery
 {
@@ -116,5 +118,44 @@ class Query extends BaseQuery
     public function groupConcat($field, string $separator = ','): BaseExpression
     {
         return $this->expr('string_agg({}, [])', [$field, $separator]);
+    }
+
+    #[\Override]
+    protected function makeArrayTable(array $rows, array $columnTypes)
+    {
+        if (version_compare($this->connection->getServerVersion(), '17.0') < 0) {
+            return parent::makeArrayTable($rows, $columnTypes);
+        }
+
+        $jsonData = [];
+        foreach ($rows as $row) {
+            $jsonRow = [];
+            foreach ($row as $v) {
+                $jsonRow[] = $v;
+            }
+            $jsonData[] = $jsonRow;
+        }
+
+        $json = json_encode($jsonData, \JSON_PRESERVE_ZERO_FRACTION | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
+
+        $query = $this->connection->dsql();
+        $i = 0;
+        $defTemplates = [];
+        $defParams = [];
+        foreach ($columnTypes as $k => $type) {
+            $query->field($query->expr('{}', ['c' . $i]), $k);
+
+            $defTemplates[] = '{} ' . Type::getType($type)->getSQLDeclaration([], $this->connection->getDatabasePlatform()) . ' path []';
+            $defParams[] = 'c' . $i;
+            $defParams[] = new RawExpression($this->escapeStringLiteral('$[' . $i . ']'));
+
+            ++$i;
+        }
+        $query->table($this->expr(
+            'json_table([], [] columns (' . implode(', ', $defTemplates) . '))',
+            [$json, new RawExpression($this->escapeStringLiteral('$[*]')), ...$defParams]
+        ), 't');
+
+        return $query;
     }
 }
