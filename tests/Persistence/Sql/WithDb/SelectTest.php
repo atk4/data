@@ -207,7 +207,7 @@ class SelectTest extends TestCase
         ], $this->q('employee')->field('id')->field('name')->getRows());
     }
 
-    public function testInsertFromArrayData(): void
+    public function testInsertFromArrayTable(): void
     {
         $this->setupTables();
 
