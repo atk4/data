@@ -1437,15 +1437,6 @@ class QueryTest extends TestCase
     }
 
     /**
-     * Value of type array is not supported by SQL.
-     */
-    public function testSetException1(): void
-    {
-        $this->expectException(Exception::class);
-        $this->q()->set('name', []);
-    }
-
-    /**
      * Field name can be expression.
      *
      * @doesNotPerformAssertions

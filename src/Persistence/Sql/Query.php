@@ -756,12 +756,6 @@ abstract class Query extends Expression
      */
     public function set($field, $value = null)
     {
-        if (is_array($value)) { // @phpstan-ignore function.impossibleType
-            throw (new Exception('Array values are not supported by SQL'))
-                ->addMoreInfo('field', $field)
-                ->addMoreInfo('value', $value);
-        }
-
         $this->args['set'][] = [$field, $value];
 
         return $this;
