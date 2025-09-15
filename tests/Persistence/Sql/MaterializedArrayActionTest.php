@@ -132,7 +132,7 @@ class MaterializedArrayActionTest extends TestCase
             self::assertSameSql('select `c0` `bool`, `c1` `int`, `c2` `float`, `c3` `string` from openjson(:a) with (`c0` BIT \'$[0]\', `c1` BIGINT \'$[1]\', `c2` DOUBLE PRECISION \'$[2]\', `c3` NVARCHAR(1020) \'$[3]\') `t`', $render[0]);
             self::assertSame([':a' => '[[true,-9223372036854775808,-1.0e-20,""],[null,9223372036854775807,1.0123456789123e+50," <foo>&\"\'🔥\n"]]'], $render[1]);
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            self::assertSameSql('select `c0` `bool`, `c1` `int`, `c2` `float`, `c3` `string` from json_table(:a, \'$[*]\' columns (`c0` NUMBER(1) path \'$[0]\', `c1` NUMBER(20) path \'$[1]\', `c2` NUMBER path \'$[2]\', `c3` VARCHAR2 path \'$[3]\')) `t`', $render[0]);
+            self::assertSameSql('select `c0` `bool`, `c1` `int`, `c2` `float`, `c3` `string` from json_table(:a, \'$[*]\' columns (`c0` NUMBER(1) path \'$[0]\'' . (version_compare($this->getConnection()->getServerVersion(), '21.0') >= 0 ? ' ALLOW BOOLEAN TO NUMBER' : '') . ', `c1` NUMBER(20) path \'$[1]\', `c2` NUMBER path \'$[2]\', `c3` VARCHAR2 path \'$[3]\')) `t`', $render[0]);
             self::assertSame([':xxaaaa' => '[[true,-9223372036854775808,-1.0e-20,""],[null,9223372036854775807,1.0123456789123e+50," <foo>&\"\'🔥\n"]]'], $render[1]);
         } else {
             self::assertSameSql('select :a `bool`, :b `int`, :c `float`, :d `string` union all select :e, :f, :g, :h', $render[0]);

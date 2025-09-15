@@ -213,8 +213,10 @@ class Query extends BaseQuery
         foreach ($columnTypes as $k => $type) {
             $query->field($query->expr('{}', ['c' . $i]), $k);
 
-            // https://web.archive.org/web/20250615224942/https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/JSON_VALUE.html#GUID-C7F19D36-1E75-4CB2-AE67-ADFBAD23CBC2__CJABCIJE
-            $defTemplates[] = '{} ' . (['boolean' => 'NUMBER(1)', 'bigint' => 'NUMBER(20)', 'float' => 'NUMBER'][$type] ?? 'VARCHAR2') . ' path []';
+            $defTemplates[] = '{} '
+                . (['boolean' => 'NUMBER(1)', 'bigint' => 'NUMBER(20)', 'float' => 'NUMBER'][$type] ?? 'VARCHAR2')
+                . ' path []'
+                . ($type === 'boolean' && version_compare($this->connection->getServerVersion(), '21.0') >= 0 ? ' ALLOW BOOLEAN TO NUMBER' : '');
             $defParams[] = 'c' . $i;
             $defParams[] = new RawExpression($this->escapeStringLiteral('$[' . $i . ']'));
 
