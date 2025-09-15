@@ -26,8 +26,8 @@ abstract class Query extends Expression
     protected array $supportedOperators = ['=', '!=', '<', '>', '<=', '>=', 'in', 'not in', 'like', 'not like', 'regexp', 'not regexp'];
 
     protected string $templateSelect = '[with]select[option] [field][from][table][join][where][group][having][order][limit]';
-    protected string $templateInsert = 'insert[option] into [tableNoalias] ([setFields]) values ([setValues])';
-    protected string $templateReplace = 'replace[option] into [tableNoalias] ([setFields]) values ([setValues])';
+    protected string $templateInsert = 'insert[option] into [tableNoalias][setFields] [setValues]';
+    protected string $templateReplace = 'replace[option] into [tableNoalias][setFields] [setValues]';
     protected string $templateDelete = '[with]delete[from][tableNoalias][where][having]';
     protected string $templateUpdate = '[with]update [tableNoalias] set [set] [where]';
     protected string $templateTruncate = 'truncate table [tableNoalias]';
@@ -749,14 +749,14 @@ abstract class Query extends Expression
     /**
      * Sets field value for INSERT or UPDATE statements.
      *
-     * @param string|Expressionable $field Name of the field
-     * @param mixed                 $value Value of the field
+     * @param string|Expressionable      $field Name of the field
+     * @param scalar|Expressionable|null $value Value of the field
      *
      * @return $this
      */
     public function set($field, $value = null)
     {
-        if (is_array($value)) {
+        if (is_array($value)) { // @phpstan-ignore function.impossibleType
             throw (new Exception('Array values are not supported by SQL'))
                 ->addMoreInfo('field', $field)
                 ->addMoreInfo('value', $value);
@@ -768,7 +768,7 @@ abstract class Query extends Expression
     }
 
     /**
-     * @param array<string, mixed> $fields
+     * @param array<string, scalar|Expressionable|null> $fields
      *
      * @return $this
      */
@@ -777,6 +777,20 @@ abstract class Query extends Expression
         foreach ($fields as $k => $v) {
             $this->set($k, $v);
         }
+
+        return $this;
+    }
+
+    /**
+     * @param non-empty-array<string|Expressionable> $fields
+     *
+     * @return $this
+     */
+    public function setSelect(Expression $query, array $fields)
+    {
+        assert(!isset($this->args['set']));
+
+        $this->args['set'] = [$query, $fields];
 
         return $this;
     }
@@ -796,18 +810,34 @@ abstract class Query extends Expression
 
     protected function _renderSetFields(): ?string
     {
+        $fields = !is_array($this->args['set'][0])
+            ? $this->args['set'][1]
+            : array_map(static fn ($v) => $v[0], $this->args['set']);
+
         $res = [];
-        foreach ($this->args['set'] as $pair) {
-            $field = $this->consume($pair[0], self::ESCAPE_IDENTIFIER);
+        foreach ($fields as $field) {
+            $field = $this->consume($field, self::ESCAPE_IDENTIFIER);
 
             $res[] = $field;
         }
 
-        return implode(', ', $res);
+        return ' (' . implode(', ', $res) . ')';
     }
 
     protected function _renderSetValues(): ?string
     {
+        if (!is_array($this->args['set'][0])) {
+            $query = $this->args['set'][0];
+            $wrapInParenthesesOrig = $query->wrapInParentheses;
+            try {
+                $query->wrapInParentheses = false;
+
+                return $this->consume($query, self::ESCAPE_PARAM);
+            } finally {
+                $query->wrapInParentheses = $wrapInParenthesesOrig;
+            }
+        }
+
         $res = [];
         foreach ($this->args['set'] as $pair) {
             $value = $this->consume($pair[1], self::ESCAPE_PARAM);
@@ -815,7 +845,7 @@ abstract class Query extends Expression
             $res[] = $value;
         }
 
-        return implode(', ', $res);
+        return 'values (' . implode(', ', $res) . ')';
     }
 
     // }}}

@@ -57,6 +57,14 @@ class MigratorTest extends TestCase
                 'bar' => 123,
                 'baz' => 'long text value',
             ])->executeStatement();
+
+        self::assertSame(
+            [['foo' => 'foovalue']],
+            $this->db->dsql()
+                ->field('foo')
+                ->table('user')
+                ->getRows()
+        );
     }
 
     public function testCreateTwiceException(): void
