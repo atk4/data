@@ -1161,6 +1161,22 @@ abstract class Query extends Expression
     }
 
     /**
+     * @param list<array<string, scalar|null>> $rows
+     * @param list<string>                     $columnNames
+     */
+    protected function makeArrayTableMakeJson(array $rows, array $columnNames): string
+    {
+        $jsonData = [];
+        foreach ($rows as $row) {
+            assert(array_keys($row) === $columnNames);
+
+            $jsonData[] = array_values($row);
+        }
+
+        return json_encode($jsonData, \JSON_PRESERVE_ZERO_FRACTION | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
+    }
+
+    /**
      * @param list<array<string, scalar|null>>                   $rows
      * @param array<string, 'boolean'|'bigint'|'float'|'string'> $columnTypes
      *
@@ -1177,6 +1193,10 @@ abstract class Query extends Expression
 
             return $query;
         }
+
+        // this fallback approach is resource intensive, limit the maximum row count
+        // as it is limited by maximum unioned queries and maximum bound variables anyway
+        assert(count($rows) <= 5_000);
 
         // TODO simplify once https://github.com/atk4/data/pull/677 is merged
         $queries = [];

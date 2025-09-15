@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Atk4\Data\Persistence\Sql\Mssql;
 
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
+use Atk4\Data\Persistence\Sql\RawExpression;
+use Doctrine\DBAL\Types\Type;
 
 class Query extends BaseQuery
 {
@@ -171,6 +173,32 @@ class Query extends BaseQuery
     public function groupConcat($field, string $separator = ',')
     {
         return $this->expr('string_agg({}, ' . $this->escapeStringLiteral($separator) . ')', [$field]);
+    }
+
+    #[\Override]
+    protected function makeArrayTable(array $rows, array $columnTypes)
+    {
+        $json = $this->makeArrayTableMakeJson($rows, array_keys($columnTypes));
+
+        $query = $this->connection->dsql();
+        $i = 0;
+        $defTemplates = [];
+        $defParams = [];
+        foreach ($columnTypes as $k => $type) {
+            $query->field($query->expr('{}', ['c' . $i]), $k);
+
+            $defTemplates[] = '{} ' . Type::getType($type)->getSQLDeclaration([], $this->connection->getDatabasePlatform()) . ' []';
+            $defParams[] = 'c' . $i;
+            $defParams[] = new RawExpression($this->escapeStringLiteral('$[' . $i . ']'));
+
+            ++$i;
+        }
+        $query->table($this->expr(
+            'openjson([]) with (' . implode(', ', $defTemplates) . ')',
+            [$json, ...$defParams]
+        ), 't');
+
+        return $query;
     }
 
     #[\Override]

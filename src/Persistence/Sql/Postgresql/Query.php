@@ -6,6 +6,8 @@ namespace Atk4\Data\Persistence\Sql\Postgresql;
 
 use Atk4\Data\Persistence\Sql\Expression as BaseExpression;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
+use Atk4\Data\Persistence\Sql\RawExpression;
+use Doctrine\DBAL\Types\Type;
 
 class Query extends BaseQuery
 {
@@ -116,5 +118,69 @@ class Query extends BaseQuery
     public function groupConcat($field, string $separator = ','): BaseExpression
     {
         return $this->expr('string_agg({}, [])', [$field, $separator]);
+    }
+
+    private function jsonTableToXml(string $json): string
+    {
+        $rows = json_decode($json, true, 512, \JSON_BIGINT_AS_STRING | \JSON_THROW_ON_ERROR);
+
+        return '<t>'
+            . implode('', array_map(function ($row) {
+                assert($row === array_values($row));
+
+                $parts = [];
+                foreach ($row as $i => $v) {
+                    if ($v === null) {
+                        continue;
+                    }
+
+                    $vStr = \Closure::bind(fn () => $this->castGetValue($v), $this, BaseExpression::class)();
+
+                    $parts[] = ' c' . $i . '="'
+                        . preg_replace_callback('~[\x00-\x1f"&<\x7f]~', static fn ($matches) => '&#x' . dechex(ord($matches[0])) . ';', $vStr)
+                        . '"';
+                }
+
+                return '<r' . implode('', $parts) . '/>';
+            }, $rows))
+            . '</t>';
+    }
+
+    #[\Override]
+    protected function makeArrayTable(array $rows, array $columnTypes)
+    {
+        $json = $this->makeArrayTableMakeJson($rows, array_keys($columnTypes));
+
+        $asXml = version_compare($this->connection->getServerVersion(), '17.0') < 0;
+
+        $query = $this->connection->dsql();
+        $i = 0;
+        $defTemplates = [];
+        $defParams = [];
+        foreach ($columnTypes as $k => $type) {
+            $query->field($query->expr('{}', ['c' . $i]), $k);
+
+            $defTemplates[] = '{} ' . Type::getType($type)->getSQLDeclaration([], $this->connection->getDatabasePlatform()) . ' path []';
+            $defParams[] = 'c' . $i;
+            $defParams[] = new RawExpression($this->escapeStringLiteral($asXml ? '@c' . $i : '$[' . $i . ']'));
+
+            ++$i;
+        }
+
+        if ($asXml) {
+            $xml = $this->jsonTableToXml($json);
+
+            $query->table($this->expr(
+                'xmltable([] passing xmlparse(document []) columns ' . implode(', ', $defTemplates) . ')',
+                [new RawExpression($this->escapeStringLiteral('/t/r')), $xml, ...$defParams]
+            ), 't');
+        } else {
+            $query->table($this->expr(
+                'json_table([], [] columns (' . implode(', ', $defTemplates) . '))',
+                [$json, new RawExpression($this->escapeStringLiteral('$[*]')), ...$defParams]
+            ), 't');
+        }
+
+        return $query;
     }
 }

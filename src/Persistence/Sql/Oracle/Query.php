@@ -8,6 +8,7 @@ use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Persistence\Sql\ExecuteException;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
+use Atk4\Data\Persistence\Sql\RawExpression;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Exception\DatabaseObjectNotFoundException;
 
@@ -189,6 +190,35 @@ class Query extends BaseQuery
     public function groupConcat($field, string $separator = ',')
     {
         return $this->expr('listagg({field}, []) within group (order by {field})', ['field' => $field, $separator]);
+    }
+
+    #[\Override]
+    protected function makeArrayTable(array $rows, array $columnTypes)
+    {
+        $json = $this->makeArrayTableMakeJson($rows, array_keys($columnTypes));
+
+        $query = $this->connection->dsql();
+        $i = 0;
+        $defTemplates = [];
+        $defParams = [];
+        foreach ($columnTypes as $k => $type) {
+            $query->field($query->expr('{}', ['c' . $i]), $k);
+
+            $defTemplates[] = '{} '
+                . (['boolean' => 'NUMBER(1)', 'bigint' => 'NUMBER(20)', 'float' => 'NUMBER'][$type] ?? 'VARCHAR2')
+                . ' path []'
+                . ($type === 'boolean' && version_compare($this->connection->getServerVersion(), '21.0') >= 0 ? ' ALLOW BOOLEAN TO NUMBER' : '');
+            $defParams[] = 'c' . $i;
+            $defParams[] = new RawExpression($this->escapeStringLiteral('$[' . $i . ']'));
+
+            ++$i;
+        }
+        $query->table($this->expr(
+            'json_table([], [] columns (' . implode(', ', $defTemplates) . '))',
+            [$json, new RawExpression($this->escapeStringLiteral('$[*]')), ...$defParams]
+        ), 't');
+
+        return $query;
     }
 
     #[\Override]
