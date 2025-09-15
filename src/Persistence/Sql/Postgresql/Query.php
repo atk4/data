@@ -92,7 +92,7 @@ class Query extends BaseQuery
         });
     }
 
-    // needed for PostgreSQL v14 and lower
+    // needed for PostgreSQL v14 or lower
     #[\Override]
     protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight, bool $binary = false): string
     {

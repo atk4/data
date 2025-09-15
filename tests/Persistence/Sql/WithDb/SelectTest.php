@@ -207,6 +207,28 @@ class SelectTest extends TestCase
         ], $this->q('employee')->field('id')->field('name')->getRows());
     }
 
+    public function testInsertFromArrayData(): void
+    {
+        $this->setupTables();
+
+        $this->q('employee')->mode('truncate')->executeStatement();
+
+        $this->q('employee')
+            ->setSelect(
+                \Closure::bind(static fn ($q) => $q->makeArrayTable([
+                    ['id' => 1, 'name' => 'John', 'retired' => true],
+                    ['id' => 2, 'name' => 'Jane', 'retired' => false],
+                ], ['id' => 'integer', 'name' => 'string', 'retired' => 'boolean']), null, Expression::class)($this->q()),
+                ['id', 'name', 'retired']
+            )
+            ->mode('insert')->executeStatement();
+
+        self::assertSame([
+            ['id' => '1', 'name' => 'John', 'retired' => '1'],
+            ['id' => '2', 'name' => 'Jane', 'retired' => '0'],
+        ], $this->q('employee')->field('id')->field('name')->field('retired')->order('id')->getRows());
+    }
+
     public function testGetRowEmpty(): void
     {
         $this->setupTables();

@@ -20,12 +20,12 @@ class Query extends BaseQuery
 
     protected string $templateInsert = <<<'EOF'
         begin try
-          insert[option] into [tableNoalias] ([setFields]) values ([setValues]);
+          insert[option] into [tableNoalias][setFields] [setValues];
         end try begin catch
           if ERROR_NUMBER() = 544 begin
             set IDENTITY_INSERT [tableNoalias] on;
             begin try
-              insert[option] into [tableNoalias] ([setFields]) values ([setValues]);
+              insert[option] into [tableNoalias][setFields] [setValues];
               set IDENTITY_INSERT [tableNoalias] off;
             end try begin catch
               set IDENTITY_INSERT [tableNoalias] off;

@@ -1362,12 +1362,22 @@ class QueryTest extends TestCase
                 ->render()[0]
         );
 
-        // set as array
+        // set multiple fields using array
         self::assertSame(
             'insert into "employee" ("time", "name") values (now(), :a)',
             $this->q()
                 ->table('employee')
                 ->setMulti(['time' => $this->e('now()'), 'name' => 'unknown'])
+                ->mode('insert')
+                ->render()[0]
+        );
+
+        // set using select
+        self::assertSame(
+            'insert into "employee" ("name", "salary") select * from "src"',
+            $this->q()
+                ->table('employee')
+                ->setSelect($this->q()->table('src'), ['name', 'salary'])
                 ->mode('insert')
                 ->render()[0]
         );
@@ -1424,15 +1434,6 @@ class QueryTest extends TestCase
     {
         $q = $this->q();
         self::assertSame($q, $q->set('id', 1));
-    }
-
-    /**
-     * Value of type array is not supported by SQL.
-     */
-    public function testSetException1(): void
-    {
-        $this->expectException(Exception::class);
-        $this->q()->set('name', []);
     }
 
     /**
