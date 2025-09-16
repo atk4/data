@@ -1161,32 +1161,81 @@ abstract class Query extends Expression
     }
 
     /**
-     * @param list<array<string, scalar|null>> $rows
-     * @param list<string>                     $columnNames
+     * @param array<mixed, mixed> $data
+     *
+     * @return mixed
      */
-    protected function makeArrayTableMakeJson(array $rows, array $columnNames): string
+    private function jsonArrayExtract(array $data, string $path, bool $requireRoot = true)
     {
-        $jsonData = [];
-        foreach ($rows as $row) {
-            assert(array_keys($row) === $columnNames);
-
-            $jsonData[] = array_values($row);
+        if ($requireRoot) {
+            assert(str_starts_with($path, '$'));
+            $path = substr($path, 1);
         }
 
-        return json_encode($jsonData, \JSON_PRESERVE_ZERO_FRACTION | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
+        if ($path === '') {
+            return $data;
+        }
+
+        assert(preg_match('~^((?:\.(")?((?(2)[^"]+|[^.["]+))(?(2)")|\[(\d+|\*)\])((?1)?))$~', $path, $matches, \PREG_UNMATCHED_AS_NULL));
+
+        $k = $matches[3] ?? $matches[4];
+        $remainingPath = $matches[5];
+
+        if ($k === '*') {
+            return array_values(array_map(fn ($v) => $this->jsonArrayExtract($v, $remainingPath, false), $data));
+        }
+
+        $v = $data[$k] ?? null;
+
+        return $remainingPath === ''
+            ? $v
+            : $this->jsonArrayExtract($v, $remainingPath, false);
     }
 
     /**
-     * @param list<array<string, scalar|null>>                   $rows
-     * @param array<string, 'boolean'|'bigint'|'float'|'string'> $columnTypes
+     * @param array<string, string> $columnPaths
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function jsonTableToArray(Expressionable $json, array $columnPaths, string $rowsPath)
+    {
+        assert($json instanceof Expression);
+        assert($json->template === '[]');
+        assert(array_keys($json->args) === ['custom']);
+        assert(array_keys($json->args['custom']) === [0]);
+        assert(is_string($json->args['custom'][0]));
+        $jsonStr = $json->args['custom'][0];
+
+        $rows = $this->jsonArrayExtract(
+            json_decode($jsonStr, true, 512, \JSON_BIGINT_AS_STRING | \JSON_THROW_ON_ERROR),
+            $rowsPath
+        );
+
+        $res = [];
+        foreach ($rows as $row) {
+            $res[] = array_map(function ($path) use ($row) {
+                $v = $this->jsonArrayExtract($row, $path);
+                assert(is_scalar($v) || $v === null);
+
+                return $v;
+            }, $columnPaths);
+        }
+
+        return $res;
+    }
+
+    /**
+     * @param non-empty-array<string, array{path: string, type: 'boolean'|'bigint'|'float'|'string'}> $columns
      *
      * @return Expression
      */
-    protected function makeArrayTable(array $rows, array $columnTypes)
+    public function jsonTable(Expressionable $json, array $columns, string $rowsPath = '$[*]')
     {
+        $rows = $this->jsonTableToArray($json, array_map(static fn ($v) => $v['path'], $columns), $rowsPath);
+
         if ($rows === []) {
             $query = $this->connection->dsql();
-            foreach ($columnTypes as $k => $type) {
+            foreach ($columns as $k => $column) {
                 $query->field($query->expr('[]', [null]), $k);
             }
             $query->limit(0);
@@ -1204,8 +1253,8 @@ abstract class Query extends Expression
         foreach ($rows as $row) {
             $query = $this->connection->dsql();
             $query->wrapInParentheses = false;
-            foreach ($row as $k => $v) {
-                $query->field($query->expr('[]', [$v]), $isFirst ? $k : null);
+            foreach ($columns as $k => $column) {
+                $query->field($query->expr('[]', [$row[$k]]), $isFirst ? $k : null);
             }
 
             $queries[] = $query;
@@ -1216,6 +1265,36 @@ abstract class Query extends Expression
             'template' => implode(' union all ', array_map(static fn () => '[]', $queries)),
             'wrapInParentheses' => true,
         ], $queries);
+    }
+
+    /**
+     * @param list<array<string, scalar|null>>                   $rows
+     * @param array<string, 'boolean'|'bigint'|'float'|'string'> $columnTypes
+     *
+     * @return Expression
+     */
+    protected function makeArrayTable(array $rows, array $columnTypes)
+    {
+        $columnNames = array_keys($columnTypes);
+
+        $jsonRows = [];
+        foreach ($rows as $row) {
+            assert(array_keys($row) === $columnNames);
+
+            $jsonRows[] = array_values($row);
+        }
+
+        $json = json_encode($jsonRows, \JSON_PRESERVE_ZERO_FRACTION | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
+
+        $columns = [];
+        $i = 0;
+        foreach ($columnTypes as $k => $type) {
+            $columns[$k] = ['path' => '$[' . $i . ']', 'type' => $type];
+
+            ++$i;
+        }
+
+        return $this->jsonTable($this->expr('[]', [$json]), $columns);
     }
 
     /**

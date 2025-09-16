@@ -207,6 +207,31 @@ class SelectTest extends TestCase
         ], $this->q('employee')->field('id')->field('name')->getRows());
     }
 
+    public function testJsonTable(): void
+    {
+        self::assertSame([], $this->q()->jsonTable($this->e('[]', ['[]']), ['foo' => ['path' => '$.v', 'type' => 'bigint']])->getRows());
+
+        self::assertSame([
+            ['foo' => '10'],
+            ['foo' => '20'],
+        ], $this->q()->jsonTable($this->e('[]', ['[{"v":10},{"v":20}]']), ['foo' => ['path' => '$.v', 'type' => 'bigint']])->getRows());
+
+        self::assertSame([
+            ['foo' => '10'],
+            ['foo' => '20'],
+        ], $this->q()->jsonTable($this->e('[]', ['{"x":[{"v":10},{"v":20}]}']), ['foo' => ['path' => '$.v', 'type' => 'bigint']], '$.x[*]')->getRows());
+
+        self::assertSame([
+            ['foo' => '10'],
+            ['foo' => '20'],
+        ], $this->q()->jsonTable($this->e('[]', ['[[{"v":1},{"v":10}],[{},{"v":20}]]']), ['foo' => ['path' => '$[1].v', 'type' => 'bigint']])->getRows());
+
+        self::assertSame([
+            ['foo' => '10'],
+            ['foo' => '20'],
+        ], $this->q()->jsonTable($this->e('[]', ['[{"v.[* ":10},{"v.[* ":20}]']), ['foo' => ['path' => '$."v.[* "', 'type' => 'bigint']])->getRows());
+    }
+
     public function testInsertFromArrayTable(): void
     {
         $this->setupTables();

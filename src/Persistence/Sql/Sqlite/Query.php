@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Persistence\Sql\Sqlite;
 
 use Atk4\Data\Persistence\Sql\ExecuteException;
+use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 use Atk4\Data\Persistence\Sql\RawExpression;
 use Doctrine\DBAL\Connection as DbalConnection;
@@ -164,20 +165,24 @@ class Query extends BaseQuery
     }
 
     #[\Override]
-    protected function makeArrayTable(array $rows, array $columnTypes)
+    public function jsonTable(Expressionable $json, array $columns, string $rowsPath = '$[*]')
     {
-        $json = $this->makeArrayTableMakeJson($rows, array_keys($columnTypes));
+        assert(!str_contains($rowsPath, '[\''));
+        assert(str_ends_with($rowsPath, '[*]'));
+        $rowsPath = substr($rowsPath, 0, -3);
 
         $query = $this->connection->dsql();
         $i = 0;
-        foreach ($columnTypes as $k => $type) {
+        foreach ($columns as $k => $column) {
+            assert(!str_contains($column['path'], '[\''));
+
             $query->field($query->expr('json_extract(value, [])', [
-                new RawExpression($this->escapeStringLiteral('$[' . $i . ']')),
+                new RawExpression($this->escapeStringLiteral($column['path'])),
             ]), $k);
 
             ++$i;
         }
-        $query->table($this->expr('json_each([])', [$json]));
+        $query->table($this->expr('json_each([], [])', [$json, new RawExpression($this->escapeStringLiteral($rowsPath))]));
 
         return $query;
     }

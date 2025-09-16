@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Mysql;
 
+use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 use Atk4\Data\Persistence\Sql\RawExpression;
 use Doctrine\DBAL\Types\Type;
@@ -74,22 +75,20 @@ class Query extends BaseQuery
     }
 
     #[\Override]
-    protected function makeArrayTable(array $rows, array $columnTypes)
+    public function jsonTable(Expressionable $json, array $columns, string $rowsPath = '$[*]')
     {
         if ($this->isServerMysql5x() || (Connection::isServerMariaDb($this->connection) && version_compare($this->connection->getServerVersion(), '10.6') < 0)) {
-            return parent::makeArrayTable($rows, $columnTypes);
+            return parent::jsonTable($json, $columns, $rowsPath);
         }
-
-        $json = $this->makeArrayTableMakeJson($rows, array_keys($columnTypes));
 
         $query = $this->connection->dsql();
         $i = 0;
         $defTemplates = [];
         $defParams = [];
-        foreach ($columnTypes as $k => $type) {
+        foreach ($columns as $k => $column) {
             $query->field($query->expr('{}', ['c' . $i]), $k);
 
-            $defType = Type::getType($type)->getSQLDeclaration([], $this->connection->getDatabasePlatform());
+            $defType = Type::getType($column['type'])->getSQLDeclaration([], $this->connection->getDatabasePlatform());
             $defCollation = preg_match('~char|text~i', $defType)
                 // https://github.com/atk4/data/blob/6.0.0/src/Schema/Migrator.php#L128
                 // https://github.com/doctrine/dbal/blob/3.10.2/src/Platforms/AbstractMySQLPlatform.php#L597
@@ -98,13 +97,13 @@ class Query extends BaseQuery
                 : null;
             $defTemplates[] = '{} ' . $defType . ($defCollation !== null ? ' COLLATE ' . $this->escapeIdentifier($defCollation) : '') . ' path []';
             $defParams[] = 'c' . $i;
-            $defParams[] = new RawExpression($this->escapeStringLiteral('$[' . $i . ']'));
+            $defParams[] = new RawExpression($this->escapeStringLiteral($column['path']));
 
             ++$i;
         }
         $query->table($this->expr(
             'json_table([], [] columns (' . implode(', ', $defTemplates) . '))',
-            [$json, new RawExpression($this->escapeStringLiteral('$[*]')), ...$defParams]
+            [$json, new RawExpression($this->escapeStringLiteral($rowsPath)), ...$defParams]
         ), 't');
 
         return $query;
