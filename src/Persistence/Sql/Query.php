@@ -1161,11 +1161,11 @@ abstract class Query extends Expression
     }
 
     /**
-     * @param array<mixed, mixed> $data
+     * @param mixed $data
      *
      * @return mixed
      */
-    private function jsonArrayExtract(array $data, string $path, bool $requireRoot = true)
+    private function jsonArrayExtract($data, string $path, bool $requireRoot = true)
     {
         if ($requireRoot) {
             assert(str_starts_with($path, '$'));
@@ -1174,9 +1174,11 @@ abstract class Query extends Expression
 
         if ($path === '') {
             return $data;
+        } elseif (!is_array($data)) {
+            return null;
         }
 
-        assert(preg_match('~^((?:\.(")?((?(2)[^"]+|[^.["]+))(?(2)")|\[(\d+|\*)\])((?1)?))$~', $path, $matches, \PREG_UNMATCHED_AS_NULL));
+        assert(preg_match('~^((?:\.(")?((?(2)[^"]+|[^.[" (]+))(?(2)")|\[(\d+|\*)\])((?1)?))$~', $path, $matches, \PREG_UNMATCHED_AS_NULL));
 
         $k = $matches[3] ?? $matches[4];
         $remainingPath = $matches[5];
@@ -1187,9 +1189,7 @@ abstract class Query extends Expression
 
         $v = $data[$k] ?? null;
 
-        return $remainingPath === ''
-            ? $v
-            : $this->jsonArrayExtract($v, $remainingPath, false);
+        return $this->jsonArrayExtract($v, $remainingPath, false);
     }
 
     /**
@@ -1212,12 +1212,13 @@ abstract class Query extends Expression
         );
 
         $res = [];
-        foreach ($rows as $row) {
+        foreach ($rows ?? [] as $row) {
             $res[] = array_map(function ($path) use ($row) {
                 $v = $this->jsonArrayExtract($row, $path);
-                assert(is_scalar($v) || $v === null);
 
-                return $v;
+                return !is_array($v)
+                    ? $v
+                    : null;
             }, $columnPaths);
         }
 

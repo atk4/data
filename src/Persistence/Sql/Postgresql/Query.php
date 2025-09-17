@@ -173,7 +173,7 @@ class Query extends BaseQuery
         } else {
             $query->table($this->expr(
                 'json_table([], [] columns (' . implode(', ', $defTemplates) . '))',
-                [$json, new RawExpression($this->escapeStringLiteral($rowsPath)), ...$defParams]
+                [$json, new RawExpression($this->escapeStringLiteral('strict ' . $rowsPath)), ...$defParams]
             ), 't');
         }
 

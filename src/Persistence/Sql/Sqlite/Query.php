@@ -167,17 +167,16 @@ class Query extends BaseQuery
     #[\Override]
     public function jsonTable(Expressionable $json, array $columns, string $rowsPath = '$[*]')
     {
-        assert(!str_contains($rowsPath, '[\''));
         assert(str_ends_with($rowsPath, '[*]'));
         $rowsPath = substr($rowsPath, 0, -3);
 
         $query = $this->connection->dsql();
         $i = 0;
         foreach ($columns as $k => $column) {
-            assert(!str_contains($column['path'], '[\''));
-
-            $query->field($query->expr('json_extract(value, [])', [
-                new RawExpression($this->escapeStringLiteral($column['path'])),
+            $query->field($query->expr('case when json_type(value, [path]) not in([], []) then json_extract(value, [path]) end', [
+                'path' => new RawExpression($this->escapeStringLiteral($column['path'])),
+                new RawExpression($this->escapeStringLiteral('array')),
+                new RawExpression($this->escapeStringLiteral('object')),
             ]), $k);
 
             ++$i;
