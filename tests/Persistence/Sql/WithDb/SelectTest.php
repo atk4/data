@@ -269,7 +269,7 @@ class SelectTest extends TestCase
             self::assertSame([], $this->q()->jsonTable($this->e('[]', ['1']), ['foo' => ['path' => '$', 'type' => 'bigint']])->getRows());
         }
 
-        if (!$this->getDatabasePlatform() instanceof MySQLPlatform /* TODO fix using [*][0] hack */ && !$this->getDatabasePlatform() instanceof PostgreSQLPlatform && !$this->getDatabasePlatform() instanceof OraclePlatform) {
+        if (!$this->getDatabasePlatform() instanceof MySQLPlatform /* TODO fix using [*][0] hack */ && !$this->getDatabasePlatform() instanceof OraclePlatform) {
             self::assertSame([
                 ['foo' => '10'],
                 ['foo' => null],

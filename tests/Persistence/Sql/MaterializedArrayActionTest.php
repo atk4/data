@@ -125,7 +125,7 @@ class MaterializedArrayActionTest extends TestCase
                 self::assertSameSql('select `c0` `bool`, `c1` `int`, `c2` `float`, `c3` `string` from xmltable(\'/t/r\' passing xmlparse(document :a) columns `c0` BOOLEAN path \'@c0\', `c1` BIGINT path \'@c1\', `c2` DOUBLE PRECISION path \'@c2\', `c3` ATK4__CIVARCHAR path \'@c3\') `t`', $render[0]);
                 self::assertSame([':a' => '<t><r c0="1" c1="-9223372036854775808" c2="-1.0E-20" c3=""/><r c1="9223372036854775807" c2="1.0123456789123E+50" c3=" &#x3c;foo>&#x26;&#x22;\'🔥&#xa;"/></t>'], $render[1]);
             } else {
-                self::assertSameSql('select `c0` `bool`, `c1` `int`, `c2` `float`, `c3` `string` from json_table(:a, \'strict $[*]\' columns (`c0` BOOLEAN path \'$[0]\', `c1` BIGINT path \'$[1]\', `c2` DOUBLE PRECISION path \'$[2]\', `c3` ATK4__CIVARCHAR path \'$[3]\')) `t`', $render[0]);
+                self::assertSameSql('select `c0` `bool`, `c1` `int`, `c2` `float`, `c3` `string` from json_table(:a, \'strict $[*]\' columns (`c0` BOOLEAN path \'strict $[0]\', `c1` BIGINT path \'strict $[1]\', `c2` DOUBLE PRECISION path \'strict $[2]\', `c3` ATK4__CIVARCHAR path \'strict $[3]\')) `t`', $render[0]);
                 self::assertSame([':a' => '[[true,-9223372036854775808,-1.0e-20,""],[null,9223372036854775807,1.0123456789123e+50," <foo>&\"\'🔥\n"]]'], $render[1]);
             }
         } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {

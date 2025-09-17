@@ -135,7 +135,7 @@ class Query extends BaseQuery
 
             $defTemplates[] = '{} ' . Type::getType($column['type'])->getSQLDeclaration([], $this->connection->getDatabasePlatform()) . ' path []';
             $defParams[] = 'c' . $i;
-            $defParams[] = new RawExpression($this->escapeStringLiteral($asXml ? '@c' . $i : $column['path']));
+            $defParams[] = new RawExpression($this->escapeStringLiteral($asXml ? '@c' . $i : 'strict ' . $column['path']));
 
             ++$i;
         }
