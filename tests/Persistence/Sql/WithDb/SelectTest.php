@@ -207,74 +207,102 @@ class SelectTest extends TestCase
         ], $this->q('employee')->field('id')->field('name')->getRows());
     }
 
-    public function testJsonTable(): void
+    /**
+     * @dataProvider provideJsonTableCases
+     *
+     * @param non-empty-array<string, array{path: string, type: 'boolean'|'bigint'|'float'|'string'}> $columns
+     * @param list<array<string, string|null>>                                                        $expectedRows
+     */
+    #[DataProvider('provideJsonTableCases')]
+    public function testJsonTable(string $json, ?string $rowsPath, array $columns, array $expectedRows): void
     {
-        self::assertSame([], $this->q()->jsonTable($this->e('[]', ['[]']), ['foo' => ['path' => '$.v', 'type' => 'bigint']])->getRows());
+        // root path is defined as '$' instead of '$[*]' (TODO '$[*]' will be supported in MSSQL 2025)
+        if (($json === 'null' || $json === '1') && $expectedRows === [] && ($this->getDatabasePlatform() instanceof SQLitePlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform)) {
+            self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
 
-        self::assertSame([
-            ['foo' => '10'],
-            ['foo' => null],
-        ], $this->q()->jsonTable($this->e('[]', ['[10,null]']), ['foo' => ['path' => '$', 'type' => 'bigint']])->getRows());
-
-        self::assertSame([
-            ['foo' => '10'],
-            ['foo' => '20'],
-        ], $this->q()->jsonTable($this->e('[]', ['[{"v":10},{"v":20}]']), ['foo' => ['path' => '$.v', 'type' => 'bigint']])->getRows());
-
-        self::assertSame([
-            ['foo' => '10'],
-            ['foo' => '20'],
-        ], $this->q()->jsonTable($this->e('[]', ['{"x":[{"v":10},{"v":20}]}']), ['foo' => ['path' => '$.v', 'type' => 'bigint']], '$.x[*]')->getRows());
-
-        self::assertSame([
-            ['foo' => '10'],
-            ['foo' => '20'],
-        ], $this->q()->jsonTable($this->e('[]', ['[[{"v":1},{"v":10}],[[],{"v":20}]]']), ['foo' => ['path' => '$[1].v', 'type' => 'bigint']])->getRows());
-
-        self::assertSame([
-            ['foo' => '10'],
-            ['foo' => '20'],
-        ], $this->q()->jsonTable($this->e('[]', ['[{"v.[* ":10},{"v.[* ":20}]']), ['foo' => ['path' => '$."v.[* "', 'type' => 'bigint']])->getRows());
-
-        self::assertSame([
-            ['foo' => '10'],
-            ['foo' => null],
-        ], $this->q()->jsonTable($this->e('[]', ['[{"v":10},{}]']), ['foo' => ['path' => '$.v', 'type' => 'bigint']])->getRows());
-
-        self::assertSame([
-            ['foo' => '10'],
-            ['foo' => null],
-        ], $this->q()->jsonTable($this->e('[]', ['[{"v":[10]},{}]']), ['foo' => ['path' => '$.v[0]', 'type' => 'bigint']])->getRows());
-
-        self::assertSame([
-            ['foo' => null],
-            ['foo' => null],
-        ], $this->q()->jsonTable($this->e('[]', ['[{},{}]']), ['foo' => ['path' => '$.v', 'type' => 'bigint']])->getRows());
-
-        self::assertSame([
-            ['foo' => null],
-            ['foo' => null],
-        ], $this->q()->jsonTable($this->e('[]', ['[{"v":[10]},{"v":{"w":20}}]']), ['foo' => ['path' => '$.v', 'type' => 'bigint']])->getRows());
-
-        self::assertSame([
-            ['foo' => '10'],
-            ['foo' => null],
-        ], $this->q()->jsonTable($this->e('[]', ['[{"v":10},20]']), ['foo' => ['path' => '$.v', 'type' => 'bigint']])->getRows());
-
-        if (!$this->getDatabasePlatform() instanceof SQLitePlatform && !$this->getDatabasePlatform() instanceof SQLServerPlatform) { // root path is defined as '$' instead of '$[*]' (TODO '$[*]' will be supported in MSSQL 2025)
-            self::assertSame([], $this->q()->jsonTable($this->e('[]', ['null']), ['foo' => ['path' => '$.v', 'type' => 'bigint']])->getRows());
-            self::assertSame([], $this->q()->jsonTable($this->e('[]', ['1']), ['foo' => ['path' => '$.v', 'type' => 'bigint']])->getRows());
-
-            self::assertSame([], $this->q()->jsonTable($this->e('[]', ['null']), ['foo' => ['path' => '$', 'type' => 'bigint']])->getRows());
-            self::assertSame([], $this->q()->jsonTable($this->e('[]', ['1']), ['foo' => ['path' => '$', 'type' => 'bigint']])->getRows());
+            return;
         }
 
-        if (!$this->getDatabasePlatform() instanceof MySQLPlatform && !$this->getDatabasePlatform() instanceof OraclePlatform) {
-            self::assertSame([
-                ['foo' => '10'],
-                ['foo' => null],
-            ], $this->q()->jsonTable($this->e('[]', ['[[10],20]']), ['foo' => ['path' => '$[0]', 'type' => 'bigint']])->getRows());
+        if ($json === '[[10],20]' && $expectedRows === [['foo' => '10'], ['foo' => null]] && ($this->getDatabasePlatform() instanceof MySQLPlatform || $this->getDatabasePlatform() instanceof OraclePlatform)) {
+            self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
+
+            return;
         }
+
+        self::assertSame(
+            $expectedRows,
+            $this->q()->jsonTable($this->e('[]', [$json]), $columns, $rowsPath ?? '$[*]')->getRows()
+        );
+    }
+
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideJsonTableCases(): iterable
+    {
+        yield ['[]', null, ['foo' => ['path' => '$.v', 'type' => 'bigint']], []];
+        yield ['[]', null, ['foo' => ['path' => '$', 'type' => 'bigint']], []];
+
+        yield ['[10,null]', null, ['foo' => ['path' => '$', 'type' => 'bigint']], [
+            ['foo' => '10'],
+            ['foo' => null],
+        ]];
+
+        yield ['[{"v":10},{"v":20}]', null, ['foo' => ['path' => '$.v', 'type' => 'bigint']], [
+            ['foo' => '10'],
+            ['foo' => '20'],
+        ]];
+
+        yield ['{"x":[{"v":10},{"v":20}]}', '$.x[*]', ['foo' => ['path' => '$.v', 'type' => 'bigint']], [
+            ['foo' => '10'],
+            ['foo' => '20'],
+        ]];
+
+        yield ['[[{"v":1},{"v":10}],[[],{"v":20}]]', null, ['foo' => ['path' => '$[1].v', 'type' => 'bigint']], [
+            ['foo' => '10'],
+            ['foo' => '20'],
+        ]];
+
+        yield ['[{"v.[* ":10},{"v.[* ":20}]', null, ['foo' => ['path' => '$."v.[* "', 'type' => 'bigint']], [
+            ['foo' => '10'],
+            ['foo' => '20'],
+        ]];
+
+        yield ['[{"v":10},{}]', null, ['foo' => ['path' => '$.v', 'type' => 'bigint']], [
+            ['foo' => '10'],
+            ['foo' => null],
+        ]];
+
+        yield ['[{"v":[10]},{}]', null, ['foo' => ['path' => '$.v[0]', 'type' => 'bigint']], [
+            ['foo' => '10'],
+            ['foo' => null],
+        ]];
+
+        yield ['[{},{}]', null, ['foo' => ['path' => '$.v', 'type' => 'bigint']], [
+            ['foo' => null],
+            ['foo' => null],
+        ]];
+
+        yield ['[{"v":[10]},{"v":{"w":20}}]', null, ['foo' => ['path' => '$.v', 'type' => 'bigint']], [
+            ['foo' => null],
+            ['foo' => null],
+        ]];
+
+        yield ['[{"v":10},20]', null, ['foo' => ['path' => '$.v', 'type' => 'bigint']], [
+            ['foo' => '10'],
+            ['foo' => null],
+        ]];
+
+        yield ['null', null, ['foo' => ['path' => '$.v', 'type' => 'bigint']], []];
+        yield ['1', null, ['foo' => ['path' => '$.v', 'type' => 'bigint']], []];
+
+        yield ['null', null, ['foo' => ['path' => '$', 'type' => 'bigint']], []];
+        yield ['1', null, ['foo' => ['path' => '$', 'type' => 'bigint']], []];
+
+        yield ['[[10],20]', null, ['foo' => ['path' => '$[0]', 'type' => 'bigint']], [
+            ['foo' => '10'],
+            ['foo' => null],
+        ]];
     }
 
     public function testInsertFromArrayTable(): void
