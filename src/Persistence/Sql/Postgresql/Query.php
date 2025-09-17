@@ -141,7 +141,7 @@ class Query extends BaseQuery
         }
 
         if ($asXml) {
-            $rows = \Closure::bind(fn () => $this->jsonTableToArray($json, array_map(static fn ($v) => $v['path'], $columns), $rowsPath), $this, BaseQuery::class)();
+            $rows = \Closure::bind(fn () => $this->jsonToArrayTable($json, array_map(static fn ($v) => $v['path'], $columns), $rowsPath), $this, BaseQuery::class)();
 
             $xml = '<t>'
                 . implode('', array_map(function ($row) use ($columns) {

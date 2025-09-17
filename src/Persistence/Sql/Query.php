@@ -1193,11 +1193,11 @@ abstract class Query extends Expression
     }
 
     /**
-     * @param array<string, string> $columnPaths
+     * @param non-empty-array<string, string> $columnPaths
      *
-     * @return list<array<string, mixed>>
+     * @return list<non-empty-array<string, mixed>>
      */
-    private function jsonTableToArray(Expressionable $json, array $columnPaths, string $rowsPath)
+    private function jsonToArrayTable(Expressionable $json, array $columnPaths, string $rowsPath)
     {
         assert($json instanceof Expression);
         assert($json->template === '[]');
@@ -1232,7 +1232,7 @@ abstract class Query extends Expression
      */
     public function jsonTable(Expressionable $json, array $columns, string $rowsPath = '$[*]')
     {
-        $rows = $this->jsonTableToArray($json, array_map(static fn ($v) => $v['path'], $columns), $rowsPath);
+        $rows = $this->jsonToArrayTable($json, array_map(static fn ($v) => $v['path'], $columns), $rowsPath);
 
         if ($rows === []) {
             $query = $this->connection->dsql();
@@ -1269,8 +1269,8 @@ abstract class Query extends Expression
     }
 
     /**
-     * @param list<array<string, scalar|null>>                   $rows
-     * @param array<string, 'boolean'|'bigint'|'float'|'string'> $columnTypes
+     * @param list<non-empty-array<string, scalar|null>>                   $rows
+     * @param non-empty-array<string, 'boolean'|'bigint'|'float'|'string'> $columnTypes
      *
      * @return Expression
      */
