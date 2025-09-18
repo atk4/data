@@ -193,6 +193,18 @@ class Query extends BaseQuery
         return $this->expr('listagg({field}, []) within group (order by {field})', ['field' => $field, $separator]);
     }
 
+    private function makeReturningClauseType(string $type): string
+    {
+        return ['boolean' => 'NUMBER(1)', 'bigint' => 'NUMBER(20)', 'float' => 'NUMBER'][$type] ?? 'VARCHAR2';
+    }
+
+    private function makeReturningClauseAllowConversion(string $type): string
+    {
+        return $type === 'boolean' && version_compare($this->connection->getServerVersion(), '21.0') >= 0
+            ? ' ALLOW BOOLEAN TO NUMBER'
+            : '';
+    }
+
     #[\Override]
     public function jsonTable(Expressionable $json, array $columns, string $rowsPath = '$[*]')
     {
@@ -204,9 +216,9 @@ class Query extends BaseQuery
             $query->field($query->expr('{}', ['c' . $i]), $k);
 
             $defTemplates[] = '{} '
-                . (['boolean' => 'NUMBER(1)', 'bigint' => 'NUMBER(20)', 'float' => 'NUMBER'][$column['type']] ?? 'VARCHAR2')
+                . $this->makeReturningClauseType($column['type'])
                 . ' path []'
-                . ($column['type'] === 'boolean' && version_compare($this->connection->getServerVersion(), '21.0') >= 0 ? ' ALLOW BOOLEAN TO NUMBER' : '');
+                . $this->makeReturningClauseAllowConversion($column['type']);
             $defParams[] = 'c' . $i;
             $defParams[] = new RawExpression($this->escapeStringLiteral($column['path']));
 

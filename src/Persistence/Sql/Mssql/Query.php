@@ -176,9 +176,21 @@ class Query extends BaseQuery
         return $this->expr('string_agg({}, ' . $this->escapeStringLiteral($separator) . ')', [$field]);
     }
 
+    private function jsonWrapInArray(Expressionable $json): Expressionable
+    {
+        return $this->expr('concat([], [], [])', [
+            new RawExpression($this->escapeStringLiteral('[')),
+            $json,
+            new RawExpression($this->escapeStringLiteral(']')),
+        ]);
+    }
+
     #[\Override]
     public function jsonTable(Expressionable $json, array $columns, string $rowsPath = '$[*]')
     {
+        assert(str_starts_with($rowsPath, '$'));
+        $rowsPath = '$[0]' . substr($rowsPath, 1);
+
         assert(str_ends_with($rowsPath, '[*]'));
         $rowsPath = substr($rowsPath, 0, -3);
 
@@ -197,7 +209,7 @@ class Query extends BaseQuery
         }
         $query->table($this->expr(
             'openjson([], []) with (' . implode(', ', $defTemplates) . ')',
-            [$json, new RawExpression($this->escapeStringLiteral($rowsPath)), ...$defParams]
+            [$this->jsonWrapInArray($json), new RawExpression($this->escapeStringLiteral($rowsPath)), ...$defParams]
         ), 't');
 
         return $query;

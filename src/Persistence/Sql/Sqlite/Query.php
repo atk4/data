@@ -164,6 +164,16 @@ class Query extends BaseQuery
         return $this->expr('group_concat({}, [])', [$field, $separator]);
     }
 
+    private function fxJsonValue(Expressionable $json, string $path, string $type): Expressionable
+    {
+        return $this->expr('case when json_type([json], [path]) not in([], []) then json_extract([json], [path]) end', [
+            'json' => $json,
+            'path' => new RawExpression($this->escapeStringLiteral($path)),
+            new RawExpression($this->escapeStringLiteral('array')),
+            new RawExpression($this->escapeStringLiteral('object')),
+        ]);
+    }
+
     #[\Override]
     public function jsonTable(Expressionable $json, array $columns, string $rowsPath = '$[*]')
     {
@@ -171,15 +181,8 @@ class Query extends BaseQuery
         $rowsPath = substr($rowsPath, 0, -3);
 
         $query = $this->connection->dsql();
-        $i = 0;
         foreach ($columns as $k => $column) {
-            $query->field($query->expr('case when json_type(value, [path]) not in([], []) then json_extract(value, [path]) end', [
-                'path' => new RawExpression($this->escapeStringLiteral($column['path'])),
-                new RawExpression($this->escapeStringLiteral('array')),
-                new RawExpression($this->escapeStringLiteral('object')),
-            ]), $k);
-
-            ++$i;
+            $query->field($this->fxJsonValue($this->expr('{}', ['value']), $column['path'], $column['type']), $k);
         }
         $query->table($this->expr('json_each([], [])', [$json, new RawExpression($this->escapeStringLiteral($rowsPath))]));
 

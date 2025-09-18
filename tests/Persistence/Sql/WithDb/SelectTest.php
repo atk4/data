@@ -216,8 +216,7 @@ class SelectTest extends TestCase
     #[DataProvider('provideJsonTableCases')]
     public function testJsonTable(string $json, ?string $rowsPath, array $columns, array $expectedRows): void
     {
-        // root path is defined as '$' instead of '$[*]' (TODO '$[*]' will be supported in MSSQL 2025)
-        if (($json === 'null' || $json === '1') && $expectedRows === [] && ($this->getDatabasePlatform() instanceof SQLitePlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform)) {
+        if (($json === 'null' || $json === '1') && $expectedRows === [] && $this->getDatabasePlatform() instanceof SQLitePlatform) {
             self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
 
             return;
@@ -231,7 +230,9 @@ class SelectTest extends TestCase
 
         self::assertSame(
             $expectedRows,
-            $this->q()->jsonTable($this->e('[]', [$json]), $columns, $rowsPath ?? '$[*]')->getRows()
+            $this->q()
+                ->jsonTable($this->e('[]', [$json]), $columns, $rowsPath ?? '$[*]')
+                ->getRows()
         );
     }
 
