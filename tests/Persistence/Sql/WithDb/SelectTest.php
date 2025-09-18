@@ -216,12 +216,6 @@ class SelectTest extends TestCase
     #[DataProvider('provideJsonTableCases')]
     public function testJsonTable(string $json, ?string $rowsPath, array $columns, array $expectedRows): void
     {
-        if (($json === 'null' || $json === '1') && $expectedRows === [] && $this->getDatabasePlatform() instanceof SQLitePlatform) {
-            self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
-
-            return;
-        }
-
         if ($json === '[[10],20]' && $expectedRows === [['foo' => '10'], ['foo' => null]] && ($this->getDatabasePlatform() instanceof MySQLPlatform || $this->getDatabasePlatform() instanceof OraclePlatform)) {
             self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
 

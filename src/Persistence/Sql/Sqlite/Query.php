@@ -185,6 +185,7 @@ class Query extends BaseQuery
             $query->field($this->fxJsonValue($this->expr('{}', ['value']), $column['path'], $column['type']), $k);
         }
         $query->table($this->expr('json_each([], [])', [$json, new RawExpression($this->escapeStringLiteral($rowsPath))]));
+        $query->where('key', '!=', null);
 
         return $query;
     }
