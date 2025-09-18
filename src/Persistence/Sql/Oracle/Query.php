@@ -193,6 +193,23 @@ class Query extends BaseQuery
         return $this->expr('listagg({field}, []) within group (order by {field})', ['field' => $field, $separator]);
     }
 
+    #[\Override]
+    protected function fxConcat(...$values)
+    {
+        $sqlArgs = [];
+        $sql = $this->makeNaryTree($values, 2, static function (array $values) use (&$sqlArgs) {
+            if (count($values) === 1) {
+                $sqlArgs[] = array_first($values);
+
+                return 'TO_CLOB([])';
+            }
+
+            return 'concat(' . implode(', ', $values) . ')'; // @phpstan-ignore argument.type
+        });
+
+        return $this->expr($sql, $sqlArgs);
+    }
+
     private function makeReturningClauseType(string $type): string
     {
         return ['boolean' => 'NUMBER(1)', 'bigint' => 'NUMBER(20)', 'float' => 'NUMBER'][$type] ?? 'VARCHAR2';

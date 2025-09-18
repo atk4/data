@@ -207,6 +207,103 @@ class SelectTest extends TestCase
         ], $this->q('employee')->field('id')->field('name')->getRows());
     }
 
+    private function isServerMysql5x(): bool
+    {
+        return $this->getDatabasePlatform() instanceof MySQLPlatform
+            && !MysqlConnection::isServerMariaDb($this->getConnection())
+            && version_compare($this->getConnection()->getServerVersion(), '6.0') < 0;
+    }
+
+    private function isServerMariadb105OrLower(): bool
+    {
+        return $this->getDatabasePlatform() instanceof MySQLPlatform
+            && MysqlConnection::isServerMariaDb($this->getConnection())
+            && version_compare($this->getConnection()->getServerVersion(), '10.6') < 0;
+    }
+
+    public function testFxJsonValueRender(): void
+    {
+        $expr = $this->q()->fxJsonValue($this->e('[]', ['{"v":10}']), '$.v', 'bigint');
+
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
+            self::assertSameSql('case when json_type(:a, \'$.v\') not in(\'array\', \'object\') then json_extract(:b, \'$.v\') end', $expr->render()[0]);
+            self::assertSame([':a' => '{"v":10}', ':b' => '{"v":10}'], $expr->render()[1]);
+        } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform && !$this->isServerMysql5x() && !$this->isServerMariadb105OrLower()) {
+            self::assertSameSql('select `c0` `cv` from json_table(concat(\'[\', :a, \']\'), \'$[*]\' columns (`c0` BIGINT path \'$.v\')) `t`', $expr->render()[0]);
+            self::assertSame([':a' => '{"v":10}'], $expr->render()[1]);
+        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            if (version_compare($this->getConnection()->getServerVersion(), '17.0') < 0) {
+                self::assertSameSql('select `c0` `cv` from xmltable(\'/t/r\' passing xmlparse(document :a) columns `c0` BIGINT path \'@c0\') `t`', $expr->render()[0]);
+                self::assertSame([':a' => '<t><r c0="10"/></t>'], $expr->render()[1]);
+            } else {
+                self::assertSameSql('select `c0` `cv` from json_table(concat(\'[\', :a, \']\'), \'strict $[*]\' columns (`c0` BIGINT path \'strict $.v\')) `t`', $expr->render()[0]);
+                self::assertSame([':a' => '{"v":10}'], $expr->render()[1]);
+            }
+        } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+            self::assertSameSql('select `c0` `cv` from openjson(concat(\'[\', concat(\'[\', :a, \']\'), \']\'), \'$[0]\') with (`c0` BIGINT \'$.v\') `t`', $expr->render()[0]);
+            self::assertSame([':a' => '{"v":10}'], $expr->render()[1]);
+        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            self::assertSameSql('select `c0` `cv` from json_table(concat(concat(TO_CLOB(\'[\'), TO_CLOB(:a)), TO_CLOB(\']\')), \'$[*]\' columns (`c0` NUMBER(20) path \'$.v\')) `t`', $expr->render()[0]);
+            self::assertSame([':xxaaaa' => '{"v":10}'], $expr->render()[1]);
+        } else {
+            self::assertSameSql('select :a `cv`', $expr->render()[0]);
+            self::assertSame([':a' => 10], $expr->render()[1]);
+        }
+    }
+
+    /**
+     * @dataProvider provideFxJsonValueCases
+     *
+     * @param 'boolean'|'bigint'|'float'|'string' $type
+     * @param string|null                         $expectedValue
+     */
+    #[DataProvider('provideFxJsonValueCases')]
+    public function testFxJsonValue(string $json, string $path, string $type, $expectedValue): void
+    {
+        if ($json === '10' && $path === '$[0]' && $expectedValue === null && ($this->getDatabasePlatform() instanceof MySQLPlatform || $this->getDatabasePlatform() instanceof OraclePlatform)) {
+            self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
+
+            return;
+        }
+
+        // TODO Oracle always converts empty string to null
+        // https://stackoverflow.com/questions/13278773/null-vs-empty-string-in-oracle#13278879
+        if ($expectedValue === '' && $this->getDatabasePlatform() instanceof OraclePlatform) {
+            $expectedValue = null;
+        }
+
+        self::assertSame(
+            $expectedValue,
+            $this->q()
+                ->field($this->q()->fxJsonValue($this->e('[]', [$json]), $path, $type))
+                ->getOne()
+        );
+    }
+
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideFxJsonValueCases(): iterable
+    {
+        yield ['null', '$', 'bigint', null];
+        yield ['10', '$', 'bigint', '10'];
+        yield ['{"v":10}', '$.v', 'bigint', '10'];
+        yield ['[{"v":1},{"v":10}]', '$[1].v', 'bigint', '10'];
+        yield ['{"v.[* ":10}', '$."v.[* "', 'bigint', '10'];
+
+        yield ['[]', '$.v', 'bigint', null];
+        yield ['{}', '$.v', 'bigint', null];
+        yield ['{"v":[10]}', '$.v', 'bigint', null];
+        yield ['{"v":{"w":20}}', '$.v', 'bigint', null];
+        yield ['10', '$.v', 'bigint', null];
+        yield ['10', '$[0]', 'bigint', null];
+
+        yield ['false', '$', 'boolean', '0'];
+        yield ['true', '$', 'boolean', '1'];
+        yield ['"null"', '$', 'string', 'null'];
+        yield ['""', '$', 'string', ''];
+    }
+
     /**
      * @dataProvider provideJsonTableCases
      *

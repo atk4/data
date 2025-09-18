@@ -178,11 +178,11 @@ class Query extends BaseQuery
 
     private function jsonWrapInArray(Expressionable $json): Expressionable
     {
-        return $this->expr('concat([], [], [])', [
+        return $this->fxConcat(
             new RawExpression($this->escapeStringLiteral('[')),
             $json,
             new RawExpression($this->escapeStringLiteral(']')),
-        ]);
+        );
     }
 
     #[\Override]

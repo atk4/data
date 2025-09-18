@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Oracle;
 
+use Atk4\Data\Persistence\Sql\Expression as BaseExpression;
+
 trait ExpressionTrait
 {
     #[\Override]
@@ -94,23 +96,12 @@ trait ExpressionTrait
         return $res;
     }
 
-    protected function convertLongStringToClobExpr(string $value): Expression
+    protected function convertLongStringToClobExpr(string $value): BaseExpression
     {
         // Oracle (multibyte) string literal is limited to 1332 bytes
         $parts = $this->splitLongString($value, 1000);
 
-        $sqlArgs = [];
-        $sql = $this->makeNaryTree($parts, 2, static function (array $parts) use (&$sqlArgs) {
-            if (count($parts) === 1) {
-                $sqlArgs[] = array_first($parts);
-
-                return 'TO_CLOB([])';
-            }
-
-            return 'concat(' . implode(', ', $parts) . ')';
-        });
-
-        return $this->expr($sql, $sqlArgs); // @phpstan-ignore return.type
+        return $this->dsql()->fxConcat(...$parts); // @phpstan-ignore method.notFound
     }
 
     #[\Override]

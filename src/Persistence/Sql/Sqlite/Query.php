@@ -164,7 +164,8 @@ class Query extends BaseQuery
         return $this->expr('group_concat({}, [])', [$field, $separator]);
     }
 
-    private function fxJsonValue(Expressionable $json, string $path, string $type): Expressionable
+    #[\Override]
+    public function fxJsonValue(Expressionable $json, string $path, string $type)
     {
         return $this->expr('case when json_type([json], [path]) not in([], []) then json_extract([json], [path]) end', [
             'json' => $json,

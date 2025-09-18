@@ -1161,6 +1161,19 @@ abstract class Query extends Expression
     }
 
     /**
+     * @param string|Expressionable ...$values
+     *
+     * @return Expression
+     */
+    protected function fxConcat(...$values)
+    {
+        return $this->expr(
+            'concat(' . implode(', ', array_fill(0, count($values), '[]')) . ')',
+            $values
+        );
+    }
+
+    /**
      * @param mixed $data
      *
      * @return mixed
@@ -1199,30 +1212,60 @@ abstract class Query extends Expression
      */
     private function jsonToArrayTable(Expressionable $json, array $columnPaths, string $rowsPath)
     {
+        if ($json instanceof Expression && $json->template === 'concat([], [], [])') {
+            assert(array_keys($json->args) === ['custom']);
+            assert(array_keys($json->args['custom']) === [0, 1, 2]);
+            assert($json->args['custom'][0] instanceof Expression);
+            assert($json->args['custom'][0]->template === $this->escapeStringLiteral('['));
+            assert($json->args['custom'][2] instanceof Expression);
+            assert($json->args['custom'][2]->template === $this->escapeStringLiteral(']'));
+            $json = $json->args['custom'][1];
+            assert($json instanceof Expression);
+            assert(is_string($json->args['custom'][0]));
+            $json->args['custom'][0] = '[' . $json->args['custom'][0] . ']';
+        }
+
         assert($json instanceof Expression);
         assert($json->template === '[]');
         assert(array_keys($json->args) === ['custom']);
         assert(array_keys($json->args['custom']) === [0]);
         assert(is_string($json->args['custom'][0]));
-        $jsonStr = $json->args['custom'][0];
 
-        $rows = $this->jsonArrayExtract(
-            json_decode($jsonStr, true, 512, \JSON_BIGINT_AS_STRING | \JSON_THROW_ON_ERROR),
-            $rowsPath
-        );
+        $jsonData = json_decode($json->args['custom'][0], true, 512, \JSON_BIGINT_AS_STRING | \JSON_THROW_ON_ERROR);
+
+        $rows = $this->jsonArrayExtract($jsonData, $rowsPath);
 
         $res = [];
         foreach ($rows ?? [] as $row) {
             $res[] = array_map(function ($path) use ($row) {
                 $v = $this->jsonArrayExtract($row, $path);
 
-                return !is_array($v)
-                    ? $v
-                    : null;
+                if (is_array($v)) {
+                    $v = null;
+                }
+
+                return $v;
             }, $columnPaths);
         }
 
         return $res;
+    }
+
+    /**
+     * @param 'boolean'|'bigint'|'float'|'string' $type
+     *
+     * @return Expression
+     */
+    public function fxJsonValue(Expressionable $json, string $path, string $type)
+    {
+        return $this->jsonTable(
+            $this->fxConcat(
+                new RawExpression($this->escapeStringLiteral('[')),
+                $json,
+                new RawExpression($this->escapeStringLiteral(']')),
+            ),
+            ['cv' => ['path' => $path, 'type' => $type]]
+        );
     }
 
     /**
