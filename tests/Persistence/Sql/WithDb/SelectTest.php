@@ -236,7 +236,7 @@ class SelectTest extends TestCase
                 self::assertSameSql('select `c0` `cv` from xmltable(\'/t/r\' passing xmlparse(document :a) columns `c0` BIGINT path \'@c0\') `t`', $expr->render()[0]);
                 self::assertSame([':a' => '<t><r c0="10"/></t>'], $expr->render()[1]);
             } else {
-                self::assertSameSql('select `c0` `cv` from json_table(concat(\'[\', :a, \']\'), \'strict $[*]\' columns (`c0` BIGINT path \'strict $.v\')) `t`', $expr->render()[0]);
+                self::assertSameSql('json_value(:a, \'strict $.v\' returning BIGINT)', $expr->render()[0]);
                 self::assertSame([':a' => '{"v":10}'], $expr->render()[1]);
             }
         } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {

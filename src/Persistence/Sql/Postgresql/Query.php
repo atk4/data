@@ -122,6 +122,20 @@ class Query extends BaseQuery
     }
 
     #[\Override]
+    public function fxJsonValue(Expressionable $json, string $path, string $type)
+    {
+        if (version_compare($this->connection->getServerVersion(), '17.0') < 0) {
+            return parent::fxJsonValue($json, $path, $type);
+        }
+
+        return $this->expr('json_value([], [] returning [])', [
+            $json,
+            new RawExpression($this->escapeStringLiteral('strict ' . $path)),
+            new RawExpression(Type::getType($type)->getSQLDeclaration([], $this->connection->getDatabasePlatform())),
+        ]);
+    }
+
+    #[\Override]
     public function jsonTable(Expressionable $json, array $columns, string $rowsPath = '$[*]')
     {
         $asXml = version_compare($this->connection->getServerVersion(), '17.0') < 0;
