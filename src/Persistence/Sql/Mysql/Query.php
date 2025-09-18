@@ -81,7 +81,7 @@ class Query extends BaseQuery
             return parent::jsonTable($json, $columns, $rowsPath);
         }
 
-        $query = $this->connection->dsql();
+        $query = $this->dsql();
         $i = 0;
         $defTemplates = [];
         $defParams = [];

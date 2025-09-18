@@ -180,7 +180,7 @@ class Query extends BaseQuery
         assert(str_ends_with($rowsPath, '[*]'));
         $rowsPath = substr($rowsPath, 0, -3);
 
-        $query = $this->connection->dsql();
+        $query = $this->dsql();
         foreach ($columns as $k => $column) {
             $query->field($this->fxJsonValue($this->expr('{}', ['value']), $column['path'], $column['type']), $k);
         }

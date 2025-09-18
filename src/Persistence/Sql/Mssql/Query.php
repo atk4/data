@@ -194,7 +194,7 @@ class Query extends BaseQuery
         assert(str_ends_with($rowsPath, '[*]'));
         $rowsPath = substr($rowsPath, 0, -3);
 
-        $query = $this->connection->dsql();
+        $query = $this->dsql();
         $i = 0;
         $defTemplates = [];
         $defParams = [];

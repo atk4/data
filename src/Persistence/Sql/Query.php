@@ -1235,7 +1235,7 @@ abstract class Query extends Expression
         $rows = $this->jsonToArrayTable($json, array_map(static fn ($v) => $v['path'], $columns), $rowsPath);
 
         if ($rows === []) {
-            $query = $this->connection->dsql();
+            $query = $this->dsql();
             foreach ($columns as $k => $column) {
                 $query->field($query->expr('[]', [null]), $k);
             }
@@ -1252,7 +1252,7 @@ abstract class Query extends Expression
         $queries = [];
         $isFirst = true;
         foreach ($rows as $row) {
-            $query = $this->connection->dsql();
+            $query = $this->dsql();
             $query->wrapInParentheses = false;
             foreach ($columns as $k => $column) {
                 $query->field($query->expr('[]', [$row[$k]]), $isFirst ? $k : null);

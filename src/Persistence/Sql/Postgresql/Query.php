@@ -126,7 +126,7 @@ class Query extends BaseQuery
     {
         $asXml = version_compare($this->connection->getServerVersion(), '17.0') < 0;
 
-        $query = $this->connection->dsql();
+        $query = $this->dsql();
         $i = 0;
         $defTemplates = [];
         $defParams = [];

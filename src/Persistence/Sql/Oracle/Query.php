@@ -208,7 +208,7 @@ class Query extends BaseQuery
     #[\Override]
     public function jsonTable(Expressionable $json, array $columns, string $rowsPath = '$[*]')
     {
-        $query = $this->connection->dsql();
+        $query = $this->dsql();
         $i = 0;
         $defTemplates = [];
         $defParams = [];
