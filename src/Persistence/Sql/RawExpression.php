@@ -9,7 +9,7 @@ class RawExpression extends Expression
     #[\Override]
     protected function escapeStringLiteral(string $value): string
     {
-        $dummyExpression = $this->connection->expr();
+        $dummyExpression = $this->expr();
 
         // https://github.com/php/php-src/issues/14009
         return \PHP_VERSION_ID < 8_03_08

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Mssql;
 
+use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 use Atk4\Data\Persistence\Sql\RawExpression;
 use Doctrine\DBAL\Types\Type;
@@ -175,27 +176,40 @@ class Query extends BaseQuery
         return $this->expr('string_agg({}, ' . $this->escapeStringLiteral($separator) . ')', [$field]);
     }
 
-    #[\Override]
-    protected function makeArrayTable(array $rows, array $columnTypes)
+    private function jsonWrapInArray(Expressionable $json): Expressionable
     {
-        $json = $this->makeArrayTableMakeJson($rows, array_keys($columnTypes));
+        return $this->expr('concat([], [], [])', [
+            new RawExpression($this->escapeStringLiteral('[')),
+            $json,
+            new RawExpression($this->escapeStringLiteral(']')),
+        ]);
+    }
+
+    #[\Override]
+    public function jsonTable(Expressionable $json, array $columns, string $rowsPath = '$[*]')
+    {
+        assert(str_starts_with($rowsPath, '$'));
+        $rowsPath = '$[0]' . substr($rowsPath, 1);
+
+        assert(str_ends_with($rowsPath, '[*]'));
+        $rowsPath = substr($rowsPath, 0, -3);
 
         $query = $this->connection->dsql();
         $i = 0;
         $defTemplates = [];
         $defParams = [];
-        foreach ($columnTypes as $k => $type) {
+        foreach ($columns as $k => $column) {
             $query->field($query->expr('{}', ['c' . $i]), $k);
 
-            $defTemplates[] = '{} ' . Type::getType($type)->getSQLDeclaration([], $this->connection->getDatabasePlatform()) . ' []';
+            $defTemplates[] = '{} ' . Type::getType($column['type'])->getSQLDeclaration([], $this->connection->getDatabasePlatform()) . ' []';
             $defParams[] = 'c' . $i;
-            $defParams[] = new RawExpression($this->escapeStringLiteral('$[' . $i . ']'));
+            $defParams[] = new RawExpression($this->escapeStringLiteral($column['path']));
 
             ++$i;
         }
         $query->table($this->expr(
-            'openjson([]) with (' . implode(', ', $defTemplates) . ')',
-            [$json, ...$defParams]
+            'openjson([], []) with (' . implode(', ', $defTemplates) . ')',
+            [$this->jsonWrapInArray($json), new RawExpression($this->escapeStringLiteral($rowsPath)), ...$defParams]
         ), 't');
 
         return $query;

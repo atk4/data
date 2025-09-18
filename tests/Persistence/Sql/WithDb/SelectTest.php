@@ -207,7 +207,106 @@ class SelectTest extends TestCase
         ], $this->q('employee')->field('id')->field('name')->getRows());
     }
 
-    public function testInsertFromArrayData(): void
+    /**
+     * @dataProvider provideJsonTableCases
+     *
+     * @param non-empty-array<string, array{path: string, type: 'boolean'|'bigint'|'float'|'string'}> $columns
+     * @param list<array<string, string|null>>                                                        $expectedRows
+     */
+    #[DataProvider('provideJsonTableCases')]
+    public function testJsonTable(string $json, ?string $rowsPath, array $columns, array $expectedRows): void
+    {
+        if (($json === 'null' || $json === '1') && $expectedRows === [] && $this->getDatabasePlatform() instanceof SQLitePlatform) {
+            self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
+
+            return;
+        }
+
+        if ($json === '[[10],20]' && $expectedRows === [['foo' => '10'], ['foo' => null]] && ($this->getDatabasePlatform() instanceof MySQLPlatform || $this->getDatabasePlatform() instanceof OraclePlatform)) {
+            self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
+
+            return;
+        }
+
+        self::assertSame(
+            $expectedRows,
+            $this->q()
+                ->jsonTable($this->e('[]', [$json]), $columns, $rowsPath ?? '$[*]')
+                ->getRows()
+        );
+    }
+
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideJsonTableCases(): iterable
+    {
+        yield ['[]', null, ['foo' => ['path' => '$.v', 'type' => 'bigint']], []];
+        yield ['[]', null, ['foo' => ['path' => '$', 'type' => 'bigint']], []];
+
+        yield ['[10,null]', null, ['foo' => ['path' => '$', 'type' => 'bigint']], [
+            ['foo' => '10'],
+            ['foo' => null],
+        ]];
+
+        yield ['[{"v":10},{"v":20}]', null, ['foo' => ['path' => '$.v', 'type' => 'bigint']], [
+            ['foo' => '10'],
+            ['foo' => '20'],
+        ]];
+
+        yield ['{"x":[{"v":10},{"v":20}]}', '$.x[*]', ['foo' => ['path' => '$.v', 'type' => 'bigint']], [
+            ['foo' => '10'],
+            ['foo' => '20'],
+        ]];
+
+        yield ['[[{"v":1},{"v":10}],[[],{"v":20}]]', null, ['foo' => ['path' => '$[1].v', 'type' => 'bigint']], [
+            ['foo' => '10'],
+            ['foo' => '20'],
+        ]];
+
+        yield ['[{"v.[* ":10},{"v.[* ":20}]', null, ['foo' => ['path' => '$."v.[* "', 'type' => 'bigint']], [
+            ['foo' => '10'],
+            ['foo' => '20'],
+        ]];
+
+        yield ['[{"v":10},{}]', null, ['foo' => ['path' => '$.v', 'type' => 'bigint']], [
+            ['foo' => '10'],
+            ['foo' => null],
+        ]];
+
+        yield ['[{"v":[10]},{}]', null, ['foo' => ['path' => '$.v[0]', 'type' => 'bigint']], [
+            ['foo' => '10'],
+            ['foo' => null],
+        ]];
+
+        yield ['[{},{}]', null, ['foo' => ['path' => '$.v', 'type' => 'bigint']], [
+            ['foo' => null],
+            ['foo' => null],
+        ]];
+
+        yield ['[{"v":[10]},{"v":{"w":20}}]', null, ['foo' => ['path' => '$.v', 'type' => 'bigint']], [
+            ['foo' => null],
+            ['foo' => null],
+        ]];
+
+        yield ['[{"v":10},20]', null, ['foo' => ['path' => '$.v', 'type' => 'bigint']], [
+            ['foo' => '10'],
+            ['foo' => null],
+        ]];
+
+        yield ['null', null, ['foo' => ['path' => '$.v', 'type' => 'bigint']], []];
+        yield ['1', null, ['foo' => ['path' => '$.v', 'type' => 'bigint']], []];
+
+        yield ['null', null, ['foo' => ['path' => '$', 'type' => 'bigint']], []];
+        yield ['1', null, ['foo' => ['path' => '$', 'type' => 'bigint']], []];
+
+        yield ['[[10],20]', null, ['foo' => ['path' => '$[0]', 'type' => 'bigint']], [
+            ['foo' => '10'],
+            ['foo' => null],
+        ]];
+    }
+
+    public function testInsertFromArrayTable(): void
     {
         $this->setupTables();
 

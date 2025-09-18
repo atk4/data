@@ -7,6 +7,7 @@ namespace Atk4\Data\Persistence\Sql\Oracle;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Persistence\Sql\ExecuteException;
+use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 use Atk4\Data\Persistence\Sql\RawExpression;
 use Doctrine\DBAL\Connection as DbalConnection;
@@ -192,30 +193,40 @@ class Query extends BaseQuery
         return $this->expr('listagg({field}, []) within group (order by {field})', ['field' => $field, $separator]);
     }
 
-    #[\Override]
-    protected function makeArrayTable(array $rows, array $columnTypes)
+    private function makeReturningClauseType(string $type): string
     {
-        $json = $this->makeArrayTableMakeJson($rows, array_keys($columnTypes));
+        return ['boolean' => 'NUMBER(1)', 'bigint' => 'NUMBER(20)', 'float' => 'NUMBER'][$type] ?? 'VARCHAR2';
+    }
 
+    private function makeReturningClauseAllowConversion(string $type): string
+    {
+        return $type === 'boolean' && version_compare($this->connection->getServerVersion(), '21.0') >= 0
+            ? ' ALLOW BOOLEAN TO NUMBER'
+            : '';
+    }
+
+    #[\Override]
+    public function jsonTable(Expressionable $json, array $columns, string $rowsPath = '$[*]')
+    {
         $query = $this->connection->dsql();
         $i = 0;
         $defTemplates = [];
         $defParams = [];
-        foreach ($columnTypes as $k => $type) {
+        foreach ($columns as $k => $column) {
             $query->field($query->expr('{}', ['c' . $i]), $k);
 
             $defTemplates[] = '{} '
-                . (['boolean' => 'NUMBER(1)', 'bigint' => 'NUMBER(20)', 'float' => 'NUMBER'][$type] ?? 'VARCHAR2')
+                . $this->makeReturningClauseType($column['type'])
                 . ' path []'
-                . ($type === 'boolean' && version_compare($this->connection->getServerVersion(), '21.0') >= 0 ? ' ALLOW BOOLEAN TO NUMBER' : '');
+                . $this->makeReturningClauseAllowConversion($column['type']);
             $defParams[] = 'c' . $i;
-            $defParams[] = new RawExpression($this->escapeStringLiteral('$[' . $i . ']'));
+            $defParams[] = new RawExpression($this->escapeStringLiteral($column['path']));
 
             ++$i;
         }
         $query->table($this->expr(
             'json_table([], [] columns (' . implode(', ', $defTemplates) . '))',
-            [$json, new RawExpression($this->escapeStringLiteral('$[*]')), ...$defParams]
+            [$json, new RawExpression($this->escapeStringLiteral($rowsPath)), ...$defParams]
         ), 't');
 
         return $query;

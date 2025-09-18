@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Persistence\Sql\Sqlite;
 
 use Atk4\Data\Persistence\Sql\ExecuteException;
+use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 use Atk4\Data\Persistence\Sql\RawExpression;
 use Doctrine\DBAL\Connection as DbalConnection;
@@ -163,21 +164,27 @@ class Query extends BaseQuery
         return $this->expr('group_concat({}, [])', [$field, $separator]);
     }
 
-    #[\Override]
-    protected function makeArrayTable(array $rows, array $columnTypes)
+    private function fxJsonValue(Expressionable $json, string $path, string $type): Expressionable
     {
-        $json = $this->makeArrayTableMakeJson($rows, array_keys($columnTypes));
+        return $this->expr('case when json_type([json], [path]) not in([], []) then json_extract([json], [path]) end', [
+            'json' => $json,
+            'path' => new RawExpression($this->escapeStringLiteral($path)),
+            new RawExpression($this->escapeStringLiteral('array')),
+            new RawExpression($this->escapeStringLiteral('object')),
+        ]);
+    }
+
+    #[\Override]
+    public function jsonTable(Expressionable $json, array $columns, string $rowsPath = '$[*]')
+    {
+        assert(str_ends_with($rowsPath, '[*]'));
+        $rowsPath = substr($rowsPath, 0, -3);
 
         $query = $this->connection->dsql();
-        $i = 0;
-        foreach ($columnTypes as $k => $type) {
-            $query->field($query->expr('json_extract(value, [])', [
-                new RawExpression($this->escapeStringLiteral('$[' . $i . ']')),
-            ]), $k);
-
-            ++$i;
+        foreach ($columns as $k => $column) {
+            $query->field($this->fxJsonValue($this->expr('{}', ['value']), $column['path'], $column['type']), $k);
         }
-        $query->table($this->expr('json_each([])', [$json]));
+        $query->table($this->expr('json_each([], [])', [$json, new RawExpression($this->escapeStringLiteral($rowsPath))]));
 
         return $query;
     }
