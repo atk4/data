@@ -243,7 +243,11 @@ class SelectTest extends TestCase
             self::assertSameSql('select `c0` `cv` from openjson(concat(\'[\', concat(\'[\', :a, \']\'), \']\'), \'$[0]\') with (`c0` BIGINT \'$.v\') `t`', $expr->render()[0]);
             self::assertSame([':a' => '{"v":10}'], $expr->render()[1]);
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            self::assertSameSql('select `c0` `cv` from json_table(concat(concat(TO_CLOB(\'[\'), TO_CLOB(:a)), TO_CLOB(\']\')), \'$[*]\' columns (`c0` NUMBER(20) path \'$.v\')) `t`', $expr->render()[0]);
+            if (version_compare($this->getConnection()->getServerVersion(), '21.0') < 0) {
+                self::assertSameSql('json_value(concat(concat(TO_CLOB(\'[\'), TO_CLOB(:a)), TO_CLOB(\']\')), \'$[0].v\' returning NUMBER(20))', $expr->render()[0]);
+            } else {
+                self::assertSameSql('json_value(:a, \'$.v\' returning NUMBER(20))', $expr->render()[0]);
+            }
             self::assertSame([':xxaaaa' => '{"v":10}'], $expr->render()[1]);
         } else {
             self::assertSameSql('select :a `cv`', $expr->render()[0]);

@@ -223,6 +223,27 @@ class Query extends BaseQuery
     }
 
     #[\Override]
+    public function fxJsonValue(Expressionable $json, string $path, string $type)
+    {
+        if (version_compare($this->connection->getServerVersion(), '21.0') < 0) {
+            assert(str_starts_with($path, '$'));
+            $path = '$[0]' . substr($path, 1);
+
+            $json = $this->fxConcat(
+                new RawExpression($this->escapeStringLiteral('[')),
+                $json,
+                new RawExpression($this->escapeStringLiteral(']')),
+            );
+        }
+
+        return $this->expr('json_value([], [] returning [])', [
+            $json,
+            new RawExpression($this->escapeStringLiteral($path)),
+            new RawExpression($this->makeReturningClauseType($type) . $this->makeReturningClauseAllowConversion($type)),
+        ]);
+    }
+
+    #[\Override]
     public function jsonTable(Expressionable $json, array $columns, string $rowsPath = '$[*]')
     {
         $query = $this->dsql();
