@@ -289,7 +289,11 @@ class SelectTest extends TestCase
      */
     public static function provideFxJsonValueCases(): iterable
     {
+        yield ['null', '$', 'boolean', null];
         yield ['null', '$', 'bigint', null];
+        yield ['null', '$', 'float', null];
+        yield ['null', '$', 'string', null];
+
         yield ['10', '$', 'bigint', '10'];
         yield ['{"v":10}', '$.v', 'bigint', '10'];
         yield ['[{"v":1},{"v":10}]', '$[1].v', 'bigint', '10'];
