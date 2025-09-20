@@ -207,20 +207,6 @@ class SelectTest extends TestCase
         ], $this->q('employee')->field('id')->field('name')->getRows());
     }
 
-    private function isServerMysql5x(): bool
-    {
-        return $this->getDatabasePlatform() instanceof MySQLPlatform
-            && !MysqlConnection::isServerMariaDb($this->getConnection())
-            && version_compare($this->getConnection()->getServerVersion(), '6.0') < 0;
-    }
-
-    private function isServerMariadb105OrLower(): bool
-    {
-        return $this->getDatabasePlatform() instanceof MySQLPlatform
-            && MysqlConnection::isServerMariaDb($this->getConnection())
-            && version_compare($this->getConnection()->getServerVersion(), '10.6') < 0;
-    }
-
     public function testFxJsonValueRender(): void
     {
         $expr = $this->q()->fxJsonValue($this->e('[]', ['{"v":10}']), '$.v', 'bigint');
@@ -228,8 +214,12 @@ class SelectTest extends TestCase
         if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
             self::assertSameSql('case when json_type(:a, \'$.v\') not in(\'array\', \'object\') then json_extract(:b, \'$.v\') end', $expr->render()[0]);
             self::assertSame([':a' => '{"v":10}', ':b' => '{"v":10}'], $expr->render()[1]);
-        } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform && !$this->isServerMysql5x() && !$this->isServerMariadb105OrLower()) {
-            self::assertSameSql('select `c0` `cv` from json_table(concat(\'[\', :a, \']\'), \'$[*]\' columns (`c0` BIGINT path \'$.v\')) `t`', $expr->render()[0]);
+        } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform && (MysqlConnection::isServerMariaDb($this->getConnection()) || version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0)) {
+            if (MysqlConnection::isServerMariaDb($this->getConnection())) {
+                self::assertSameSql('json_value(:a, \'$.v\') + 0', $expr->render()[0]);
+            } else {
+                self::assertSameSql('json_value(cast(:a as JSON), \'$.v\' returning SIGNED)', $expr->render()[0]);
+            }
             self::assertSame([':a' => '{"v":10}'], $expr->render()[1]);
         } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             if (version_compare($this->getConnection()->getServerVersion(), '17.0') < 0) {
@@ -264,10 +254,49 @@ class SelectTest extends TestCase
     #[DataProvider('provideFxJsonValueCases')]
     public function testFxJsonValue(string $json, string $path, string $type, $expectedValue): void
     {
-        if ($json === '10' && $path === '$[0]' && $expectedValue === null && ($this->getDatabasePlatform() instanceof MySQLPlatform || $this->getDatabasePlatform() instanceof OraclePlatform)) {
-            self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
+        if ($json === '10' && $path === '$[0]' && $expectedValue === null && $this->getDatabasePlatform() instanceof MySQLPlatform && (
+            MysqlConnection::isServerMariaDb($this->getConnection())
+            || version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0
+        )) {
+            $expectedValue = '10';
+        }
 
-            return;
+        if ($json === '10' && $path === '$[0]' && $expectedValue === null && $this->getDatabasePlatform() instanceof OraclePlatform) {
+            $expectedValue = '10';
+        }
+
+        // TODO report to MariaDB
+        if ($json === '""' && $path === '$' && $expectedValue === '' && $this->getDatabasePlatform() instanceof MySQLPlatform
+            && MysqlConnection::isServerMariaDb($this->getConnection()) && (
+                version_compare($this->getConnection()->getServerVersion(), '10.11.14') === 0
+                || version_compare($this->getConnection()->getServerVersion(), '11.4.8') === 0
+                || version_compare($this->getConnection()->getServerVersion(), '11.8.3') === 0
+                || version_compare($this->getConnection()->getServerVersion(), '12.0.2') === 0
+            )) {
+            $expectedValue = null;
+        }
+
+        // https://jira.mariadb.org/browse/MDEV-27151
+        if ($json === 'null' && $path === '$' && $expectedValue === null && $this->getDatabasePlatform() instanceof MySQLPlatform
+            && MysqlConnection::isServerMariaDb($this->getConnection()) && (
+                version_compare($this->getConnection()->getServerVersion(), '10.3.36') <= 0
+                || (version_compare($this->getConnection()->getServerVersion(), '10.4') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.4.26') <= 0)
+                || (version_compare($this->getConnection()->getServerVersion(), '10.5') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.5.17') <= 0)
+                || (version_compare($this->getConnection()->getServerVersion(), '10.6') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.6.9') <= 0)
+                || (version_compare($this->getConnection()->getServerVersion(), '10.7') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.7.5') <= 0)
+                || (version_compare($this->getConnection()->getServerVersion(), '10.8') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.8.4') <= 0)
+                || (version_compare($this->getConnection()->getServerVersion(), '10.9') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.9.2') <= 0)
+            )) {
+            $expectedValue = $type === 'string' ? 'null' : '0';
+        }
+
+        // https://jira.mariadb.org/browse/MDEV-15905
+        if ($json === 'true' && $path === '$' && $expectedValue === '1' && $this->getDatabasePlatform() instanceof MySQLPlatform
+            && MysqlConnection::isServerMariaDb($this->getConnection()) && (
+                version_compare($this->getConnection()->getServerVersion(), '10.2.15') <= 0
+                || (version_compare($this->getConnection()->getServerVersion(), '10.3') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.3.7') <= 0)
+            )) {
+            $expectedValue = '0';
         }
 
         // TODO Oracle always converts empty string to null
@@ -321,10 +350,16 @@ class SelectTest extends TestCase
     #[DataProvider('provideJsonTableCases')]
     public function testJsonTable(string $json, ?string $rowsPath, array $columns, array $expectedRows): void
     {
-        if ($json === '[[10],20]' && $expectedRows === [['foo' => '10'], ['foo' => null]] && ($this->getDatabasePlatform() instanceof MySQLPlatform || $this->getDatabasePlatform() instanceof OraclePlatform)) {
-            self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
+        if ($json === '[[10],20]' && $expectedRows === [['foo' => '10'], ['foo' => null]] && $this->getDatabasePlatform() instanceof MySQLPlatform && (
+            MysqlConnection::isServerMariaDb($this->getConnection())
+                ? version_compare($this->getConnection()->getServerVersion(), '10.6') >= 0
+                : version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0
+        )) {
+            $expectedRows = [['foo' => '10'], ['foo' => '20']];
+        }
 
-            return;
+        if ($json === '[[10],20]' && $expectedRows === [['foo' => '10'], ['foo' => null]] && $this->getDatabasePlatform() instanceof OraclePlatform) {
+            $expectedRows = [['foo' => '10'], ['foo' => '20']];
         }
 
         self::assertSame(
