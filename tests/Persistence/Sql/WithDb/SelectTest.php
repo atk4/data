@@ -265,7 +265,7 @@ class SelectTest extends TestCase
             $expectedValue = '10';
         }
 
-        // TODO report to MariaDB
+        // https://jira.mariadb.org/browse/MDEV-37701
         if ($json === '""' && $path === '$' && $expectedValue === '' && $this->getDatabasePlatform() instanceof MySQLPlatform
             && MysqlConnection::isServerMariaDb($this->getConnection()) && (
                 version_compare($this->getConnection()->getServerVersion(), '10.11.14') === 0
