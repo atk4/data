@@ -452,4 +452,22 @@ abstract class TestCase extends BaseTestCase
             self::markTestIncomplete('MySQL 8.x has broken binary LIKE support');
         }
     }
+
+    /**
+     * https://jira.mariadb.org/browse/MDEV-27412 .
+     */
+    protected function fixExpectedJsonValueUnquoteForMariadb106To115(string $value): string
+    {
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform && MysqlConnection::isServerMariaDb($this->getConnection()) && (
+            (version_compare($this->getConnection()->getServerVersion(), '10.6') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.6.19') <= 0)
+            || (version_compare($this->getConnection()->getServerVersion(), '10.7') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.11.9') <= 0)
+            || (version_compare($this->getConnection()->getServerVersion(), '11.0') >= 0 && version_compare($this->getConnection()->getServerVersion(), '11.2.5') <= 0)
+            || (version_compare($this->getConnection()->getServerVersion(), '11.3') >= 0 && version_compare($this->getConnection()->getServerVersion(), '11.4.3') <= 0)
+            || (version_compare($this->getConnection()->getServerVersion(), '11.5') >= 0 && version_compare($this->getConnection()->getServerVersion(), '11.6') < 0)
+        )) {
+            $value = str_replace(['/', '"', "\n"], ['\/', '\"', '\n'], $value);
+        }
+
+        return $value;
+    }
 }

@@ -111,8 +111,8 @@ class ModelMixedPersistenceTest extends TestCase
         self::markTestIncompleteOnMySQL5xPlatformAsWithClauseIsNotSupported();
 
         self::assertSameExportUnordered([
-            ['id' => 10, 'name' => 'John', 'path' => '/home/john', 'float' => 0.0],
-            ['id' => 20, 'name' => 'Peter', 'path' => '/home/p', 'float' => 2.0],
+            ['id' => 10, 'name' => 'John', 'path' => $this->fixExpectedJsonValueUnquoteForMariadb106To115('/home/john'), 'float' => 0.0],
+            ['id' => 20, 'name' => 'Peter', 'path' => $this->fixExpectedJsonValueUnquoteForMariadb106To115('/home/p'), 'float' => 2.0],
         ], $m->export());
 
         $john = $m->load(10);
@@ -121,7 +121,7 @@ class ModelMixedPersistenceTest extends TestCase
 
         self::assertSameExportUnordered([
             ['id' => 10, 'name' => 'John', 'path' => 'new path', 'float' => 0.0],
-            ['id' => 20, 'name' => 'Peter', 'path' => '/home/p', 'float' => 2.0],
+            ['id' => 20, 'name' => 'Peter', 'path' => $this->fixExpectedJsonValueUnquoteForMariadb106To115('/home/p'), 'float' => 2.0],
         ], $m->export());
     }
 
@@ -157,8 +157,8 @@ class ModelMixedPersistenceTest extends TestCase
         self::markTestIncompleteOnMySQL5xPlatformAsWithClauseIsNotSupported();
 
         self::assertSameExportUnordered([
-            ['id' => 10, 'name' => 'John', 'path' => '/home/john'],
-            ['id' => 20, 'name' => 'Peter', 'path' => '/home/p'],
+            ['id' => 10, 'name' => 'John', 'path' => $this->fixExpectedJsonValueUnquoteForMariadb106To115('/home/john')],
+            ['id' => 20, 'name' => 'Peter', 'path' => $this->fixExpectedJsonValueUnquoteForMariadb106To115('/home/p')],
         ], $m->export());
 
         $john = $m->load(10);
@@ -167,7 +167,7 @@ class ModelMixedPersistenceTest extends TestCase
 
         self::assertSameExportUnordered([
             ['id' => 10, 'name' => 'John', 'path' => 'new path'],
-            ['id' => 20, 'name' => 'Peter', 'path' => '/home/p'],
+            ['id' => 20, 'name' => 'Peter', 'path' => $this->fixExpectedJsonValueUnquoteForMariadb106To115('/home/p')],
         ], $m->export());
     }
 }

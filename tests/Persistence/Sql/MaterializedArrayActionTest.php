@@ -141,7 +141,7 @@ class MaterializedArrayActionTest extends TestCase
 
         self::{'assertEquals'}([
             ['bool' => '1', 'int' => \PHP_INT_MIN, 'float' => -1e-20, 'string' => ''],
-            ['bool' => null, 'int' => \PHP_INT_MAX, 'float' => 1.0123456789123e50, 'string' => ' <foo>&"\'🔥' . "\n"],
+            ['bool' => null, 'int' => \PHP_INT_MAX, 'float' => 1.0123456789123e50, 'string' => $this->fixExpectedJsonValueUnquoteForMariadb106To115(' <foo>&"\'🔥' . "\n")],
         ], $query->getDsqlExpression($this->getConnection()->expr())->getRows());
     }
 
