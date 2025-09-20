@@ -74,7 +74,10 @@ class Query extends BaseQuery
         return $this->expr('group_concat({} separator ' . $this->escapeStringLiteral($separator) . ')', [$field]);
     }
 
-    private function makeReturningClauseType(string $type): string
+    /**
+     * @return ($forJsonValue is true ? array{string, string} : string)
+     */
+    private function makeReturningClauseType(string $type, bool $forJsonValue = false)
     {
         $defType = Type::getType($type)->getSQLDeclaration([], $this->connection->getDatabasePlatform());
         $defCollation = preg_match('~char|text~i', $defType)
@@ -83,6 +86,20 @@ class Query extends BaseQuery
             // TODO DBAL 4.0 https://github.com/doctrine/dbal/pull/4644
             ? 'utf8mb4_unicode_ci'
             : null;
+
+        if ($forJsonValue) {
+            $castTypeNonChar = ['boolean' => 'UNSIGNED', 'bigint' => 'SIGNED', 'float' => 'DOUBLE'][$type] ?? null;
+
+            assert(($defCollation === null) !== ($castTypeNonChar === null));
+
+            if (Connection::isServerMariaDb($this->connection)) {
+                return ['', ['boolean' => ' + 0', 'bigint' => ' + 0', 'float' => ' + 0e0'][$type] ?? ''];
+            }
+
+            return $castTypeNonChar !== null
+                ? [' returning ' . $castTypeNonChar, '']
+                : [' returning CHAR', ' COLLATE ' . $this->escapeIdentifier($defCollation)];
+        }
 
         return $defType . ($defCollation !== null ? ' COLLATE ' . $this->escapeIdentifier($defCollation) : '');
     }
@@ -94,7 +111,14 @@ class Query extends BaseQuery
             return parent::fxJsonValue($json, $path, $type);
         }
 
-        return parent::fxJsonValue($json, $path, $type); // TODO
+        $returningTypeParts = $this->makeReturningClauseType($type, true);
+
+        return $this->expr(
+            'json_value('
+                . (Connection::isServerMariaDb($this->connection) ? '[]' : 'cast([] as JSON)')
+                . ', []' . $returningTypeParts[0] . ')' . $returningTypeParts[1],
+            [$json, new RawExpression($this->escapeStringLiteral($path))]
+        );
     }
 
     #[\Override]
