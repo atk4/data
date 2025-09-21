@@ -1314,8 +1314,8 @@ abstract class Query extends Expression
     }
 
     /**
-     * @param list<non-empty-array<string, scalar|null>>                   $rows
-     * @param non-empty-array<string, 'boolean'|'bigint'|'float'|'string'> $columnTypes
+     * @param list<non-empty-array<string, scalar|null>>                          $rows
+     * @param non-empty-array<string, 'boolean'|'bigint'|'float'|'string'|'json'> $columnTypes
      *
      * @return Expression
      */

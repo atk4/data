@@ -165,28 +165,30 @@ class Query extends BaseQuery
     }
 
     #[\Override]
-    public function fxJsonValue(Expressionable $json, string $path, string $type)
+    public function fxJsonValue(Expressionable $json, string $path, string $type, ?Expressionable $jsonRootType = null)
     {
+        $jsonType = $jsonRootType !== null && $path === '$'
+            ? $jsonRootType
+            : $this->expr('json_type([], [])', [$json, new RawExpression($this->escapeStringLiteral($path))]);
+
         return $type === 'json'
-            ? $this->expr('case when json_type([json], [path]) in([], [], [], []) then json_extract([json], [path]) else'
-                . ' case json_type([json], [path])'
-                . ' when [] then json_quote(json_extract([json], [path]))'
+            ? $this->expr('case [jsonType]'
+                . ' when [] then json_quote([jsonValue])'
                 . ' when [false] then [false]'
                 . ' when [true] then [true]'
-                . ' end'
+                . ' else [jsonValue]'
                 . ' end', [
-                    'json' => $json,
-                    'path' => new RawExpression($this->escapeStringLiteral($path)),
-                    new RawExpression($this->escapeStringLiteral('array')),
-                    new RawExpression($this->escapeStringLiteral('object')),
-                    new RawExpression($this->escapeStringLiteral('integer')),
-                    new RawExpression($this->escapeStringLiteral('real')),
+                    'jsonType' => $jsonType,
+                    'jsonValue' => $jsonRootType !== null && $path === '$'
+                        ? $json
+                        : $this->expr('json_extract([], [])', [$json, new RawExpression($this->escapeStringLiteral($path))]),
                     new RawExpression($this->escapeStringLiteral('text')),
                     'false' => new RawExpression($this->escapeStringLiteral('false')),
                     'true' => new RawExpression($this->escapeStringLiteral('true')),
                 ])
-            : $this->expr('case when json_type([json], [path]) not in([], []) then json_extract([json], [path]) end', [
+            : $this->expr('case when [jsonType] not in([], []) then json_extract([json], [path]) end', [
                 'json' => $json,
+                'jsonType' => $jsonType,
                 'path' => new RawExpression($this->escapeStringLiteral($path)),
                 new RawExpression($this->escapeStringLiteral('array')),
                 new RawExpression($this->escapeStringLiteral('object')),
@@ -201,7 +203,7 @@ class Query extends BaseQuery
 
         $query = $this->dsql();
         foreach ($columns as $k => $column) {
-            $query->field($this->fxJsonValue($this->expr('{}', ['value']), $column['path'], $column['type']), $k);
+            $query->field($this->fxJsonValue($this->expr('{}', ['value']), $column['path'], $column['type'], $this->expr('{}', ['type'])), $k);
         }
         $query->table($this->expr('json_each([], [])', [$json, new RawExpression($this->escapeStringLiteral($rowsPath))]));
         $query->where('key', '!=', null);

@@ -370,6 +370,7 @@ class SelectTest extends TestCase
         ] as $json) {
             if ($json !== 'null') {
                 yield [$json, '$', 'json', $json];
+                yield ['[' . $json . ']', '$[0]', 'json', $json];
             }
             yield ['[' . $json . ']', '$', 'json', '[' . $json . ']'];
         }
@@ -379,8 +380,8 @@ class SelectTest extends TestCase
     /**
      * @dataProvider provideJsonTableCases
      *
-     * @param non-empty-array<string, array{path: string, type: 'boolean'|'bigint'|'float'|'string'}> $columns
-     * @param list<array<string, string|null>>                                                        $expectedRows
+     * @param non-empty-array<string, array{path: string, type: 'boolean'|'bigint'|'float'|'string'|'json'}> $columns
+     * @param list<array<string, string|null>>                                                               $expectedRows
      */
     #[DataProvider('provideJsonTableCases')]
     public function testJsonTable(string $json, ?string $rowsPath, array $columns, array $expectedRows): void
@@ -472,6 +473,25 @@ class SelectTest extends TestCase
             ['foo' => '10'],
             ['foo' => null],
         ]];
+
+        $jsons = [];
+        foreach (self::provideFxJsonValueCases() as [$json, $path, $type]) {
+            if ($type === 'json' && $path === '$') {
+                $jsons[] = $json;
+            }
+        }
+        yield [
+            '[' . implode(',', $jsons) . ']',
+            null,
+            ['foo' => ['path' => '$', 'type' => 'json']],
+            array_map(static fn ($v) => ['foo' => $v], $jsons),
+        ];
+        yield [
+            '[' . implode(',', array_map(static fn ($v) => '[' . $v . ']', $jsons)) . ']',
+            null,
+            ['foo' => ['path' => '$[0]', 'type' => 'json']],
+            array_map(static fn ($v) => ['foo' => $v], $jsons),
+        ];
     }
 
     public function testInsertFromArrayTable(): void

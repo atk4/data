@@ -49,6 +49,8 @@ class MaterializedArrayAction implements Expressionable
         }
         $columnTypes = array_merge(array_fill_keys($this->action->getColumns(), 'string'), $columnTypes);
 
+        // TODO add "json" type support, needs ArrayAction optional type support + add test to MaterializedArrayActionTest::testRenderXxxRows
+
         return \Closure::bind(static fn () => $expression->connection->dsql()->makeArrayTable($rows, $columnTypes), null, Expression::class)();
     }
 }
