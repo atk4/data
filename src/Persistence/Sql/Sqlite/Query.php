@@ -164,7 +164,8 @@ class Query extends BaseQuery
         return $this->expr('group_concat({}, [])', [$field, $separator]);
     }
 
-    private function fxJsonValue(Expressionable $json, string $path, string $type): Expressionable
+    #[\Override]
+    public function fxJsonValue(Expressionable $json, string $path, string $type)
     {
         return $this->expr('case when json_type([json], [path]) not in([], []) then json_extract([json], [path]) end', [
             'json' => $json,
@@ -180,11 +181,12 @@ class Query extends BaseQuery
         assert(str_ends_with($rowsPath, '[*]'));
         $rowsPath = substr($rowsPath, 0, -3);
 
-        $query = $this->connection->dsql();
+        $query = $this->dsql();
         foreach ($columns as $k => $column) {
             $query->field($this->fxJsonValue($this->expr('{}', ['value']), $column['path'], $column['type']), $k);
         }
         $query->table($this->expr('json_each([], [])', [$json, new RawExpression($this->escapeStringLiteral($rowsPath))]));
+        $query->where('key', '!=', null);
 
         return $query;
     }

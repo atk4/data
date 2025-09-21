@@ -604,6 +604,11 @@ class ConditionSqlTest extends TestCase
         self::assertSame([5, 6, 7], $findIdsLikeFx('name', '%ro%li%'));
         self::assertSame([5], $findIdsLikeFx('name', '%ro\%li%'));
 
+        $isMariadb102To103 = $this->getDatabasePlatform() instanceof MySQLPlatform && MysqlConnection::isServerMariaDb($this->getConnection()) && (
+            version_compare($this->getConnection()->getServerVersion(), '10.2.18') <= 0
+            || (version_compare($this->getConnection()->getServerVersion(), '10.3') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.3.10') <= 0)
+        );
+
         self::assertSame([], $findIdsLikeFx('name', '%line%'));
         self::assertSame([5], $findIdsLikeFx('name', '%li\ne%'));
         self::assertSame([5], $findIdsLikeFx('name', '%li\\\ne%'));
@@ -612,12 +617,12 @@ class ConditionSqlTest extends TestCase
         self::assertSame([], $findIdsLikeFx('name', '%li\\\\\\\\\ne%'));
         self::assertSame([], $findIdsLikeFx('name', '%li\\\\\\\\\\\ne%'));
         self::assertSame([5, 6, 7], $findIdsLikeFx('name', '%li%ne%'));
-        self::assertSame([5, 6], $findIdsLikeFx('name', '%li%\ne%'));
-        self::assertSame([5, 6], $findIdsLikeFx('name', '%li%\\\ne%'));
-        self::assertSame([6], $findIdsLikeFx('name', '%li%\\\\\ne%'));
-        self::assertSame([6], $findIdsLikeFx('name', '%li%\\\\\\\ne%'));
-        self::assertSame([], $findIdsLikeFx('name', '%li%\\\\\\\\\ne%'));
-        self::assertSame([], $findIdsLikeFx('name', '%li%\\\\\\\\\\\ne%'));
+        self::assertSame(!$isBinary && $isMariadb102To103 ? [] : [5, 6], $findIdsLikeFx('name', '%li%\ne%'));
+        self::assertSame(!$isBinary && $isMariadb102To103 ? [] : [5, 6], $findIdsLikeFx('name', '%li%\\\ne%'));
+        self::assertSame(!$isBinary && $isMariadb102To103 ? [5, 6] : [6], $findIdsLikeFx('name', '%li%\\\\\ne%'));
+        self::assertSame(!$isBinary && $isMariadb102To103 ? [5, 6] : [6], $findIdsLikeFx('name', '%li%\\\\\\\ne%'));
+        self::assertSame(!$isBinary && $isMariadb102To103 ? [6] : [], $findIdsLikeFx('name', '%li%\\\\\\\\\ne%'));
+        self::assertSame(!$isBinary && $isMariadb102To103 ? [6] : [], $findIdsLikeFx('name', '%li%\\\\\\\\\\\ne%'));
         self::assertSame([], $findIdsLikeFx('name', '%li\%ne%'));
         self::assertSame([5, 6], $findIdsLikeFx('name', '%li\\\%ne%'));
         self::assertSame([], $findIdsLikeFx('name', '%li\\\\\%ne%'));
@@ -639,7 +644,7 @@ class ConditionSqlTest extends TestCase
 
         self::assertSame([5], $findIdsLikeFx('name', '%l_\ne%'));
         self::assertSame([6], $findIdsLikeFx('name', '%l__\ne%'));
-        self::assertSame([5, 6], $findIdsLikeFx('name', '%li%%\ne%'));
+        self::assertSame(!$isBinary && $isMariadb102To103 ? [] : [5, 6], $findIdsLikeFx('name', '%li%%\ne%'));
         self::assertSame([6], $findIdsLikeFx('name', '%.%'));
         self::assertSame([6], $findIdsLikeFx('name', '%.li%ne'));
         self::assertSame([], $findIdsLikeFx('name', '%.li%ne\\'));
@@ -649,9 +654,9 @@ class ConditionSqlTest extends TestCase
         self::assertSame([7, 9], $findIdsLikeFx('name', '%^%'));
         self::assertSame([7], $findIdsLikeFx('name', '%$%'));
         self::assertSame([8, 9], $findIdsLikeFx('name', '%[%'));
-        self::assertSame([9], $findIdsLikeFx('name', '%\[%'));
-        self::assertSame([9], $findIdsLikeFx('name', '%\\\[%'));
-        self::assertSame([], $findIdsLikeFx('name', '%\\\\\[%'));
+        self::assertSame(!$isBinary && $isMariadb102To103 ? [] : [9], $findIdsLikeFx('name', '%\[%'));
+        self::assertSame(!$isBinary && $isMariadb102To103 ? [] : [9], $findIdsLikeFx('name', '%\\\[%'));
+        self::assertSame(!$isBinary && $isMariadb102To103 ? [9] : [], $findIdsLikeFx('name', '%\\\\\[%'));
         self::assertSame([8, 9], $findIdsLikeFx('name', '%]%'));
         self::assertSame([8], $findIdsLikeFx('name', '%[n]%'));
         self::assertSame([9], $findIdsLikeFx('name', '%^n%'));

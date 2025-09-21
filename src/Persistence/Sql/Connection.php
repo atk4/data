@@ -432,6 +432,11 @@ abstract class Connection
     {
         if (($this->serverVersionRaw ?? null) === null) {
             $this->serverVersionRaw = $this->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore method.deprecated, method.notFound
+
+            // https://github.com/php/php-src/issues/7972
+            if (\PHP_VERSION_ID < 8_01_03) {
+                $this->serverVersionRaw = preg_replace('~^5\.5\.5-(?=\d+\.\d+\.\d+.*-MariaDB-)~', '', $this->serverVersionRaw);
+            }
         }
 
         assert(preg_match('~(\d+)\.(\d+)(?:\.(\d+))?~', $this->serverVersionRaw, $matches) === 1);

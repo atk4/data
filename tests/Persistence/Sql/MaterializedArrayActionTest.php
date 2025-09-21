@@ -115,7 +115,7 @@ class MaterializedArrayActionTest extends TestCase
 
         $render = $this->renderQuery($query);
         if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
-            self::assertSameSql('select case when json_type(`value`, \'$[0]\') not in(\'array\', \'object\') then json_extract(`value`, \'$[0]\') end `bool`, case when json_type(`value`, \'$[1]\') not in(\'array\', \'object\') then json_extract(`value`, \'$[1]\') end `int`, case when json_type(`value`, \'$[2]\') not in(\'array\', \'object\') then json_extract(`value`, \'$[2]\') end `float`, case when json_type(`value`, \'$[3]\') not in(\'array\', \'object\') then json_extract(`value`, \'$[3]\') end `string` from json_each(:a, \'$\')', $render[0]);
+            self::assertSameSql('select case when json_type(`value`, \'$[0]\') not in(\'array\', \'object\') then json_extract(`value`, \'$[0]\') end `bool`, case when json_type(`value`, \'$[1]\') not in(\'array\', \'object\') then json_extract(`value`, \'$[1]\') end `int`, case when json_type(`value`, \'$[2]\') not in(\'array\', \'object\') then json_extract(`value`, \'$[2]\') end `float`, case when json_type(`value`, \'$[3]\') not in(\'array\', \'object\') then json_extract(`value`, \'$[3]\') end `string` from json_each(:a, \'$\') where `key` is not null', $render[0]);
             self::assertSame([':a' => '[[true,-9223372036854775808,-1.0e-20,""],[null,9223372036854775807,1.0123456789123e+50," <foo>&\"\'🔥\n"]]'], $render[1]);
         } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform && !$this->isServerMysql5x() && !$this->isServerMariadb105OrLower()) {
             self::assertSameSql('select `c0` `bool`, `c1` `int`, `c2` `float`, `c3` `string` from json_table(:a, \'$[*]\' columns (`c0` TINYINT(1) path \'$[0]\', `c1` BIGINT path \'$[1]\', `c2` DOUBLE PRECISION path \'$[2]\', `c3` VARCHAR(255) COLLATE `utf8mb4_unicode_ci` path \'$[3]\')) `t`', $render[0]);
@@ -141,7 +141,7 @@ class MaterializedArrayActionTest extends TestCase
 
         self::{'assertEquals'}([
             ['bool' => '1', 'int' => \PHP_INT_MIN, 'float' => -1e-20, 'string' => ''],
-            ['bool' => null, 'int' => \PHP_INT_MAX, 'float' => 1.0123456789123e50, 'string' => ' <foo>&"\'🔥' . "\n"],
+            ['bool' => null, 'int' => \PHP_INT_MAX, 'float' => 1.0123456789123e50, 'string' => $this->fixExpectedJsonValueUnquoteForMariadb106To115(' <foo>&"\'🔥' . "\n")],
         ], $query->getDsqlExpression($this->getConnection()->expr())->getRows());
     }
 

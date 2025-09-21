@@ -193,6 +193,23 @@ class Query extends BaseQuery
         return $this->expr('listagg({field}, []) within group (order by {field})', ['field' => $field, $separator]);
     }
 
+    #[\Override]
+    protected function fxConcat(...$values)
+    {
+        $sqlArgs = [];
+        $sql = $this->makeNaryTree($values, 2, static function (array $values) use (&$sqlArgs) {
+            if (count($values) === 1) {
+                $sqlArgs[] = array_first($values);
+
+                return 'TO_CLOB([])';
+            }
+
+            return 'concat(' . implode(', ', $values) . ')'; // @phpstan-ignore argument.type
+        });
+
+        return $this->expr($sql, $sqlArgs);
+    }
+
     private function makeReturningClauseType(string $type): string
     {
         return ['boolean' => 'NUMBER(1)', 'bigint' => 'NUMBER(20)', 'float' => 'NUMBER'][$type] ?? 'VARCHAR2';
@@ -206,9 +223,30 @@ class Query extends BaseQuery
     }
 
     #[\Override]
+    public function fxJsonValue(Expressionable $json, string $path, string $type)
+    {
+        if (version_compare($this->connection->getServerVersion(), '21.0') < 0) {
+            assert(str_starts_with($path, '$'));
+            $path = '$[0]' . substr($path, 1);
+
+            $json = $this->fxConcat(
+                new RawExpression($this->escapeStringLiteral('[')),
+                $json,
+                new RawExpression($this->escapeStringLiteral(']')),
+            );
+        }
+
+        return $this->expr('json_value([], [] returning [])', [
+            $json,
+            new RawExpression($this->escapeStringLiteral($path)),
+            new RawExpression($this->makeReturningClauseType($type) . $this->makeReturningClauseAllowConversion($type)),
+        ]);
+    }
+
+    #[\Override]
     public function jsonTable(Expressionable $json, array $columns, string $rowsPath = '$[*]')
     {
-        $query = $this->connection->dsql();
+        $query = $this->dsql();
         $i = 0;
         $defTemplates = [];
         $defParams = [];
