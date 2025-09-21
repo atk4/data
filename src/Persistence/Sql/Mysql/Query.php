@@ -90,9 +90,9 @@ class Query extends BaseQuery
         if ($forJsonValue) {
             $castTypeNonChar = ['boolean' => 'UNSIGNED', 'bigint' => 'SIGNED', 'float' => 'DOUBLE'][$type] ?? null;
 
-            assert(($defCollation === null) !== ($castTypeNonChar === null));
+            assert(($defCollation === null) !== ($castTypeNonChar === null) || $type === 'json');
 
-            if (Connection::isServerMariaDb($this->connection)) {
+            if (Connection::isServerMariaDb($this->connection) || $type === 'json') {
                 return ['', ['boolean' => ' + 0', 'bigint' => ' + 0', 'float' => ' + 0e0'][$type] ?? ''];
             }
 
@@ -114,7 +114,7 @@ class Query extends BaseQuery
         $returningTypeParts = $this->makeReturningClauseType($type, true);
 
         return $this->expr(
-            'json_value('
+            ($type === 'json' ? 'json_extract' : 'json_value') . '('
                 . (Connection::isServerMariaDb($this->connection) ? '[]' : 'cast([] as JSON)')
                 . ', []' . $returningTypeParts[0] . ')' . $returningTypeParts[1],
             [$json, new RawExpression($this->escapeStringLiteral($path))]

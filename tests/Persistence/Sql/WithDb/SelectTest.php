@@ -254,14 +254,13 @@ class SelectTest extends TestCase
     #[DataProvider('provideFxJsonValueCases')]
     public function testFxJsonValue(string $json, string $path, string $type, $expectedValue): void
     {
-        if ($json === '10' && $path === '$[0]' && $expectedValue === null && $this->getDatabasePlatform() instanceof MySQLPlatform && (
-            MysqlConnection::isServerMariaDb($this->getConnection())
-            || version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0
+        if ($json === '10' && $path === '$[0]' && $expectedValue === null && (
+            ($this->getDatabasePlatform() instanceof MySQLPlatform && (
+                MysqlConnection::isServerMariaDb($this->getConnection())
+                || version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0
+            ))
+            || $this->getDatabasePlatform() instanceof OraclePlatform
         )) {
-            $expectedValue = '10';
-        }
-
-        if ($json === '10' && $path === '$[0]' && $expectedValue === null && $this->getDatabasePlatform() instanceof OraclePlatform) {
             $expectedValue = '10';
         }
 
@@ -295,17 +294,21 @@ class SelectTest extends TestCase
             $expectedValue = '0';
         }
 
-        if ($type === 'json' && $expectedValue !== null && $this->getDatabasePlatform() instanceof PostgreSQLPlatform && version_compare($this->getConnection()->getServerVersion(), '17.0') >= 0) {
+        if ($type === 'json' && $expectedValue !== null && (
+            $this->getDatabasePlatform() instanceof MySQLPlatform && (
+                MysqlConnection::isServerMariaDb($this->getConnection())
+                || version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0
+            )
+            || ($this->getDatabasePlatform() instanceof PostgreSQLPlatform && version_compare($this->getConnection()->getServerVersion(), '17.0') >= 0)
+        )) {
             $expectedValue = str_replace('":', '": ', $expectedValue);
         }
 
         // TODO
-        if ($type === 'json' && in_array($expectedValue, ['10', '"10"', '"10.0"', '"10.00"', 'false', 'true'], true) && $this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            $expectedValue = null;
-        }
-
-        // TODO
-        if ($type === 'json' && in_array($expectedValue, ['10', '"10"', '"10.0"', '"10.00"', 'false', 'true'], true) && $this->getDatabasePlatform() instanceof OraclePlatform && version_compare($this->getConnection()->getServerVersion(), '21.0') < 0) {
+        if ($type === 'json' && in_array($expectedValue, ['10', '"10"', '"10.0"', '"10.00"', 'false', 'true'], true) && (
+            $this->getDatabasePlatform() instanceof SQLServerPlatform
+            || ($this->getDatabasePlatform() instanceof OraclePlatform && version_compare($this->getConnection()->getServerVersion(), '21.0') < 0)
+        )) {
             $expectedValue = null;
         }
 
@@ -382,15 +385,14 @@ class SelectTest extends TestCase
     #[DataProvider('provideJsonTableCases')]
     public function testJsonTable(string $json, ?string $rowsPath, array $columns, array $expectedRows): void
     {
-        if ($json === '[[10],20]' && $expectedRows === [['foo' => '10'], ['foo' => null]] && $this->getDatabasePlatform() instanceof MySQLPlatform && (
-            MysqlConnection::isServerMariaDb($this->getConnection())
-                ? version_compare($this->getConnection()->getServerVersion(), '10.6') >= 0
-                : version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0
+        if ($json === '[[10],20]' && $expectedRows === [['foo' => '10'], ['foo' => null]] && (
+            ($this->getDatabasePlatform() instanceof MySQLPlatform && (
+                MysqlConnection::isServerMariaDb($this->getConnection())
+                    ? version_compare($this->getConnection()->getServerVersion(), '10.6') >= 0
+                    : version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0
+            ))
+            || $this->getDatabasePlatform() instanceof OraclePlatform
         )) {
-            $expectedRows = [['foo' => '10'], ['foo' => '20']];
-        }
-
-        if ($json === '[[10],20]' && $expectedRows === [['foo' => '10'], ['foo' => null]] && $this->getDatabasePlatform() instanceof OraclePlatform) {
             $expectedRows = [['foo' => '10'], ['foo' => '20']];
         }
 
