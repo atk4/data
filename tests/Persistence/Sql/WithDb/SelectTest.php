@@ -248,8 +248,8 @@ class SelectTest extends TestCase
     /**
      * @dataProvider provideFxJsonValueCases
      *
-     * @param 'boolean'|'bigint'|'float'|'string' $type
-     * @param string|null                         $expectedValue
+     * @param 'boolean'|'bigint'|'float'|'string'|'json' $type
+     * @param string|null                                $expectedValue
      */
     #[DataProvider('provideFxJsonValueCases')]
     public function testFxJsonValue(string $json, string $path, string $type, $expectedValue): void
@@ -318,6 +318,7 @@ class SelectTest extends TestCase
         yield ['null', '$', 'bigint', null];
         yield ['null', '$', 'float', null];
         yield ['null', '$', 'string', null];
+        yield ['null', '$', 'json', null];
 
         yield ['10', '$', 'bigint', '10'];
         yield ['{"v":10}', '$.v', 'bigint', '10'];
@@ -335,6 +336,27 @@ class SelectTest extends TestCase
         yield ['true', '$', 'boolean', '1'];
         yield ['"null"', '$', 'string', 'null'];
         yield ['""', '$', 'string', ''];
+
+        foreach ([
+            '[]',
+            '[[[[1]]]]',
+            // TODO '{}',
+            '{"k":{"k":{"k":{"k":1}}}}',
+            '10',
+            // TODO '10.0',
+            '"10"',
+            '"10.0"',
+            '"10.00"',
+            'false',
+            'true',
+            'null',
+        ] as $json) {
+            if ($json !== 'null') {
+                yield [$json, '$', 'json', $json];
+            }
+            yield ['[' . $json . ']', '$', 'json', '[' . $json . ']'];
+        }
+        yield ['{"010":10}', '$', 'json', '{"010":10}'];
     }
 
     /**

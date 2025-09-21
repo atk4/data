@@ -167,12 +167,30 @@ class Query extends BaseQuery
     #[\Override]
     public function fxJsonValue(Expressionable $json, string $path, string $type)
     {
-        return $this->expr('case when json_type([json], [path]) not in([], []) then json_extract([json], [path]) end', [
-            'json' => $json,
-            'path' => new RawExpression($this->escapeStringLiteral($path)),
-            new RawExpression($this->escapeStringLiteral('array')),
-            new RawExpression($this->escapeStringLiteral('object')),
-        ]);
+        return $type === 'json'
+            ? $this->expr('case when json_type([json], [path]) in([], [], [], []) then json_extract([json], [path]) else'
+                . ' case json_type([json], [path])'
+                . ' when [] then json_quote(json_extract([json], [path]))'
+                . ' when [false] then [false]'
+                . ' when [true] then [true]'
+                . ' end'
+                . ' end', [
+                    'json' => $json,
+                    'path' => new RawExpression($this->escapeStringLiteral($path)),
+                    new RawExpression($this->escapeStringLiteral('array')),
+                    new RawExpression($this->escapeStringLiteral('object')),
+                    new RawExpression($this->escapeStringLiteral('integer')),
+                    new RawExpression($this->escapeStringLiteral('real')),
+                    new RawExpression($this->escapeStringLiteral('text')),
+                    'false' => new RawExpression($this->escapeStringLiteral('false')),
+                    'true' => new RawExpression($this->escapeStringLiteral('true')),
+                ])
+            : $this->expr('case when json_type([json], [path]) not in([], []) then json_extract([json], [path]) end', [
+                'json' => $json,
+                'path' => new RawExpression($this->escapeStringLiteral($path)),
+                new RawExpression($this->escapeStringLiteral('array')),
+                new RawExpression($this->escapeStringLiteral('object')),
+            ]);
     }
 
     #[\Override]
