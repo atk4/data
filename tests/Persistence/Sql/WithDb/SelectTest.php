@@ -295,6 +295,10 @@ class SelectTest extends TestCase
             $expectedValue = '0';
         }
 
+        if ($type === 'json' && $expectedValue !== null && $this->getDatabasePlatform() instanceof PostgreSQLPlatform && version_compare($this->getConnection()->getServerVersion(), '17.0') >= 0) {
+            $expectedValue = str_replace('":', '": ', $expectedValue);
+        }
+
         // TODO
         if ($type === 'json' && in_array($expectedValue, ['10', '"10"', '"10.0"', '"10.00"', 'false', 'true'], true) && $this->getDatabasePlatform() instanceof OraclePlatform && version_compare($this->getConnection()->getServerVersion(), '21.0') < 0) {
             $expectedValue = null;
