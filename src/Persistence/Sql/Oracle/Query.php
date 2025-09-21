@@ -12,6 +12,7 @@ use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 use Atk4\Data\Persistence\Sql\RawExpression;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Exception\DatabaseObjectNotFoundException;
+use Doctrine\DBAL\Types\Type;
 
 class Query extends BaseQuery
 {
@@ -236,11 +237,17 @@ class Query extends BaseQuery
             );
         }
 
-        return $this->expr('json_value([], [] returning [])', [
-            $json,
-            new RawExpression($this->escapeStringLiteral($path)),
-            new RawExpression($this->makeReturningClauseType($type) . $this->makeReturningClauseAllowConversion($type)),
-        ]);
+        return $type === 'json'
+            ? $this->expr('json_query([], [] returning [])', [
+                $json,
+                new RawExpression($this->escapeStringLiteral($path)),
+                new RawExpression(Type::getType($type)->getSQLDeclaration([], $this->connection->getDatabasePlatform())),
+            ])
+            : $this->expr('json_value([], [] returning [])', [
+                $json,
+                new RawExpression($this->escapeStringLiteral($path)),
+                new RawExpression($this->makeReturningClauseType($type) . $this->makeReturningClauseAllowConversion($type)),
+            ]);
     }
 
     #[\Override]
