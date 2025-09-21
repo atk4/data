@@ -267,12 +267,8 @@ class SelectTest extends TestCase
 
         // https://jira.mariadb.org/browse/MDEV-37701
         if ($json === '""' && $path === '$' && $expectedValue === '' && $this->getDatabasePlatform() instanceof MySQLPlatform
-            && MysqlConnection::isServerMariaDb($this->getConnection()) && (
-                version_compare($this->getConnection()->getServerVersion(), '10.11.14') === 0
-                || version_compare($this->getConnection()->getServerVersion(), '11.4.8') === 0
-                || version_compare($this->getConnection()->getServerVersion(), '11.8.3') === 0
-                || version_compare($this->getConnection()->getServerVersion(), '12.0.2') === 0
-            )) {
+            && MysqlConnection::isServerMariaDb($this->getConnection())
+            && in_array($this->getConnection()->getServerVersion(), ['10.11.14', '11.4.8', '11.8.3', '12.0.2'], true)) {
             $expectedValue = null;
         }
 
