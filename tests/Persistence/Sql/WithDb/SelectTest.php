@@ -408,6 +408,16 @@ class SelectTest extends TestCase
             }
         }
 
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform
+            || ($this->getDatabasePlatform() instanceof OraclePlatform && version_compare($this->getConnection()->getServerVersion(), '21.0') < 0)
+        ) {
+            foreach ($columns as $k => $column) {
+                if ($column['type'] === 'json') {
+                    $expectedRows = array_map(static fn ($row) => array_map(static fn ($v) => is_scalar(json_decode($v ?? '[]', true)) ? null : $v, $row), $expectedRows);
+                }
+            }
+        }
+
         self::assertSame(
             $expectedRows,
             $this->q()

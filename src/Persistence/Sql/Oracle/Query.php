@@ -262,6 +262,7 @@ class Query extends BaseQuery
 
             $defTemplates[] = '{} '
                 . $this->makeReturningClauseType($column['type'])
+                . ($column['type'] === 'json' ? ' format json' : '')
                 . ' path []'
                 . $this->makeReturningClauseAllowConversion($column['type']);
             $defParams[] = 'c' . $i;
