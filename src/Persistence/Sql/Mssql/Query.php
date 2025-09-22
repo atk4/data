@@ -192,7 +192,8 @@ class Query extends BaseQuery
         foreach ($columns as $k => $column) {
             $query->field($query->expr('{}', ['c' . $i]), $k);
 
-            $defTemplates[] = '{} ' . Type::getType($column['type'])->getSQLDeclaration([], $this->connection->getDatabasePlatform()) . ' []';
+            $defTemplates[] = '{} ' . Type::getType($column['type'])->getSQLDeclaration([], $this->connection->getDatabasePlatform()) . ' []'
+                . ($column['type'] === 'json' ? ' as json' : '');
             $defParams[] = 'c' . $i;
             $defParams[] = new RawExpression($this->escapeStringLiteral($column['path']));
 

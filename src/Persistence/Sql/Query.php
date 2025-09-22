@@ -1237,22 +1237,14 @@ abstract class Query extends Expression
 
         $res = [];
         foreach ($rows ?? [] as $row) {
-            $res[] = array_map(function ($path) use ($row) {
-                $v = $this->jsonArrayExtract($row, $path);
-
-                if (is_array($v)) {
-                    $v = null;
-                }
-
-                return $v;
-            }, $columnPaths);
+            $res[] = array_map(fn ($path) => $this->jsonArrayExtract($row, $path), $columnPaths);
         }
 
         return $res;
     }
 
     /**
-     * @param 'boolean'|'bigint'|'float'|'string' $type
+     * @param 'boolean'|'bigint'|'float'|'string'|'json' $type
      *
      * @return Expression
      */
@@ -1269,7 +1261,7 @@ abstract class Query extends Expression
     }
 
     /**
-     * @param non-empty-array<string, array{path: string, type: 'boolean'|'bigint'|'float'|'string'}> $columns
+     * @param non-empty-array<string, array{path: string, type: 'boolean'|'bigint'|'float'|'string'|'json'}> $columns
      *
      * @return Expression
      */
@@ -1298,7 +1290,17 @@ abstract class Query extends Expression
             $query = $this->dsql();
             $query->wrapInParentheses = false;
             foreach ($columns as $k => $column) {
-                $query->field($query->expr('[]', [$row[$k]]), $isFirst ? $k : null);
+                $v = $row[$k];
+
+                if ($v !== null) {
+                    if ($column['type'] === 'json') {
+                        $v = json_encode($v, \JSON_PRESERVE_ZERO_FRACTION | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
+                    } elseif (is_array($v)) {
+                        $v = null;
+                    }
+                }
+
+                $query->field($query->expr('[]', [$v]), $isFirst ? $k : null);
             }
 
             $queries[] = $query;
@@ -1312,8 +1314,8 @@ abstract class Query extends Expression
     }
 
     /**
-     * @param list<non-empty-array<string, scalar|null>>                   $rows
-     * @param non-empty-array<string, 'boolean'|'bigint'|'float'|'string'> $columnTypes
+     * @param list<non-empty-array<string, scalar|null>>                          $rows
+     * @param non-empty-array<string, 'boolean'|'bigint'|'float'|'string'|'json'> $columnTypes
      *
      * @return Expression
      */

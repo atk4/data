@@ -128,7 +128,7 @@ class Query extends BaseQuery
             return parent::fxJsonValue($json, $path, $type);
         }
 
-        return $this->expr('json_value([], [] returning [])', [
+        return $this->expr(($type === 'json' ? 'json_query' : 'json_value') . '([], [] returning [])', [
             $json,
             new RawExpression($this->escapeStringLiteral('strict ' . $path)),
             new RawExpression(Type::getType($type)->getSQLDeclaration([], $this->connection->getDatabasePlatform())),
@@ -164,6 +164,14 @@ class Query extends BaseQuery
                     foreach ($columns as $k => $column) {
                         $v = $row[$k];
                         ++$i;
+
+                        if ($v !== null) {
+                            if ($column['type'] === 'json') {
+                                $v = json_encode($v, \JSON_PRESERVE_ZERO_FRACTION | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
+                            } elseif (is_array($v)) {
+                                $v = null;
+                            }
+                        }
 
                         if ($v === null) {
                             continue;

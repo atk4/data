@@ -207,7 +207,7 @@ class SelectTest extends TestCase
         ], $this->q('employee')->field('id')->field('name')->getRows());
     }
 
-    public function testFxJsonValueRender(): void
+    public function testFxJsonValueRenderInt(): void
     {
         $expr = $this->q()->fxJsonValue($this->e('[]', ['{"v":10}']), '$.v', 'bigint');
 
@@ -245,27 +245,64 @@ class SelectTest extends TestCase
         }
     }
 
+    public function testFxJsonValueRenderJson(): void
+    {
+        $expr = $this->q()->fxJsonValue($this->e('[]', ['{"v":10}']), '$.v', 'json');
+
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
+            self::assertSameSql('case json_type(:a, \'$.v\') when \'text\' then json_quote(json_extract(:b, \'$.v\')) when \'false\' then \'false\' when \'true\' then \'true\' else json_extract(:c, \'$.v\') end', $expr->render()[0]);
+            self::assertSame([':a' => '{"v":10}', ':b' => '{"v":10}', ':c' => '{"v":10}'], $expr->render()[1]);
+        } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform && (MysqlConnection::isServerMariaDb($this->getConnection()) || version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0)) {
+            if (MysqlConnection::isServerMariaDb($this->getConnection())) {
+                self::assertSameSql('json_extract(:a, \'$.v\')', $expr->render()[0]);
+            } else {
+                self::assertSameSql('json_extract(cast(:a as JSON), \'$.v\')', $expr->render()[0]);
+            }
+            self::assertSame([':a' => '{"v":10}'], $expr->render()[1]);
+        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            if (version_compare($this->getConnection()->getServerVersion(), '17.0') < 0) {
+                self::assertSameSql('select `c0` `cv` from xmltable(\'/t/r\' passing xmlparse(document :a) columns `c0` JSON path \'@c0\') `t`', $expr->render()[0]);
+                self::assertSame([':a' => '<t><r c0="10"/></t>'], $expr->render()[1]);
+            } else {
+                self::assertSameSql('json_query(:a, \'strict $.v\' returning JSON)', $expr->render()[0]);
+                self::assertSame([':a' => '{"v":10}'], $expr->render()[1]);
+            }
+        } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+            self::assertSameSql('select `c0` `cv` from openjson(concat(\'[\', concat(\'[\', :a, \']\'), \']\'), \'$[0]\') with (`c0` NVARCHAR(MAX) \'$.v\' as json) `t`', $expr->render()[0]);
+            self::assertSame([':a' => '{"v":10}'], $expr->render()[1]);
+        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            if (version_compare($this->getConnection()->getServerVersion(), '21.0') < 0) {
+                self::assertSameSql('json_query(concat(concat(TO_CLOB(\'[\'), TO_CLOB(:a)), TO_CLOB(\']\')), \'$[0].v\' returning CLOB)', $expr->render()[0]);
+            } else {
+                self::assertSameSql('json_query(:a, \'$.v\' returning CLOB)', $expr->render()[0]);
+            }
+            self::assertSame([':xxaaaa' => '{"v":10}'], $expr->render()[1]);
+        } else {
+            self::assertSameSql('select :a `cv`', $expr->render()[0]);
+            self::assertSame([':a' => '10'], $expr->render()[1]);
+        }
+    }
+
     /**
      * @dataProvider provideFxJsonValueCases
      *
-     * @param 'boolean'|'bigint'|'float'|'string' $type
-     * @param string|null                         $expectedValue
+     * @param 'boolean'|'bigint'|'float'|'string'|'json' $type
+     * @param string|null                                $expectedValue
      */
     #[DataProvider('provideFxJsonValueCases')]
     public function testFxJsonValue(string $json, string $path, string $type, $expectedValue): void
     {
-        if ($json === '10' && $path === '$[0]' && $expectedValue === null && $this->getDatabasePlatform() instanceof MySQLPlatform && (
-            MysqlConnection::isServerMariaDb($this->getConnection())
-            || version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0
+        if ($json === '10' && $path === '$[0]' && $expectedValue === null && (
+            ($this->getDatabasePlatform() instanceof MySQLPlatform && (
+                MysqlConnection::isServerMariaDb($this->getConnection())
+                || version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0
+            ))
+            || $this->getDatabasePlatform() instanceof OraclePlatform
         )) {
             $expectedValue = '10';
         }
 
-        if ($json === '10' && $path === '$[0]' && $expectedValue === null && $this->getDatabasePlatform() instanceof OraclePlatform) {
-            $expectedValue = '10';
-        }
-
-        // https://jira.mariadb.org/browse/MDEV-37701
+        // https://jira.mariadb.org/browse/MDEV-37428
         if ($json === '""' && $path === '$' && $expectedValue === '' && $this->getDatabasePlatform() instanceof MySQLPlatform
             && MysqlConnection::isServerMariaDb($this->getConnection())
             && in_array($this->getConnection()->getServerVersion(), ['10.11.14', '11.4.8', '11.8.3', '12.0.2'], true)) {
@@ -295,6 +332,23 @@ class SelectTest extends TestCase
             $expectedValue = '0';
         }
 
+        if ($type === 'json' && $expectedValue !== null && (
+            $this->getDatabasePlatform() instanceof MySQLPlatform && (
+                MysqlConnection::isServerMariaDb($this->getConnection())
+                || version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0
+            )
+            || ($this->getDatabasePlatform() instanceof PostgreSQLPlatform && version_compare($this->getConnection()->getServerVersion(), '17.0') >= 0)
+        )) {
+            $expectedValue = str_replace('":', '": ', $expectedValue);
+        }
+
+        if ($type === 'json' && in_array($expectedValue, ['10', '"10"', '"10.0"', '"10.00"', 'false', 'true'], true) && (
+            $this->getDatabasePlatform() instanceof SQLServerPlatform // TODO https://stackoverflow.com/questions/73282836/how-to-query-a-key-in-a-sql-server-json-column-if-it-could-be-a-scalar-value-or
+            || ($this->getDatabasePlatform() instanceof OraclePlatform && version_compare($this->getConnection()->getServerVersion(), '21.0') < 0)
+        )) {
+            $expectedValue = null;
+        }
+
         // TODO Oracle always converts empty string to null
         // https://stackoverflow.com/questions/13278773/null-vs-empty-string-in-oracle#13278879
         if ($expectedValue === '' && $this->getDatabasePlatform() instanceof OraclePlatform) {
@@ -318,6 +372,7 @@ class SelectTest extends TestCase
         yield ['null', '$', 'bigint', null];
         yield ['null', '$', 'float', null];
         yield ['null', '$', 'string', null];
+        // TODO yield ['null', '$', 'json', null];
 
         yield ['10', '$', 'bigint', '10'];
         yield ['{"v":10}', '$.v', 'bigint', '10'];
@@ -335,27 +390,69 @@ class SelectTest extends TestCase
         yield ['true', '$', 'boolean', '1'];
         yield ['"null"', '$', 'string', 'null'];
         yield ['""', '$', 'string', ''];
+
+        foreach ([
+            '[]',
+            '[[[[1]]]]',
+            // TODO '{}',
+            '{"k":{"k":{"k":{"k":1}}}}',
+            '10',
+            // TODO '10.0',
+            '"10"',
+            '"10.0"',
+            '"10.00"',
+            'false',
+            'true',
+            'null',
+        ] as $json) {
+            if ($json !== 'null') {
+                yield [$json, '$', 'json', $json];
+                yield ['[' . $json . ']', '$[0]', 'json', $json];
+            }
+            yield ['[' . $json . ']', '$', 'json', '[' . $json . ']'];
+        }
+        yield ['{"010":10}', '$', 'json', '{"010":10}'];
     }
 
     /**
      * @dataProvider provideJsonTableCases
      *
-     * @param non-empty-array<string, array{path: string, type: 'boolean'|'bigint'|'float'|'string'}> $columns
-     * @param list<array<string, string|null>>                                                        $expectedRows
+     * @param non-empty-array<string, array{path: string, type: 'boolean'|'bigint'|'float'|'string'|'json'}> $columns
+     * @param list<array<string, string|null>>                                                               $expectedRows
      */
     #[DataProvider('provideJsonTableCases')]
     public function testJsonTable(string $json, ?string $rowsPath, array $columns, array $expectedRows): void
     {
-        if ($json === '[[10],20]' && $expectedRows === [['foo' => '10'], ['foo' => null]] && $this->getDatabasePlatform() instanceof MySQLPlatform && (
-            MysqlConnection::isServerMariaDb($this->getConnection())
-                ? version_compare($this->getConnection()->getServerVersion(), '10.6') >= 0
-                : version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0
+        if ($json === '[[10],20]' && $expectedRows === [['foo' => '10'], ['foo' => null]] && (
+            ($this->getDatabasePlatform() instanceof MySQLPlatform && (
+                MysqlConnection::isServerMariaDb($this->getConnection())
+                    ? version_compare($this->getConnection()->getServerVersion(), '10.6') >= 0
+                    : version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0
+            ))
+            || $this->getDatabasePlatform() instanceof OraclePlatform
         )) {
             $expectedRows = [['foo' => '10'], ['foo' => '20']];
         }
 
-        if ($json === '[[10],20]' && $expectedRows === [['foo' => '10'], ['foo' => null]] && $this->getDatabasePlatform() instanceof OraclePlatform) {
-            $expectedRows = [['foo' => '10'], ['foo' => '20']];
+        if (($this->getDatabasePlatform() instanceof MySQLPlatform && !MysqlConnection::isServerMariaDb($this->getConnection())
+            && version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0)
+            || ($this->getDatabasePlatform() instanceof PostgreSQLPlatform && version_compare($this->getConnection()->getServerVersion(), '17.0') >= 0)
+        ) {
+            foreach ($columns as $k => $column) {
+                if ($column['type'] === 'json') {
+                    $expectedRows = array_map(static fn ($row) => array_map(static fn ($v) => $v !== null ? str_replace('":', '": ', $v) : null, $row), $expectedRows);
+                }
+            }
+        }
+
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform // TODO
+            || ($this->getDatabasePlatform() instanceof OraclePlatform && version_compare($this->getConnection()->getServerVersion(), '21.0') < 0)
+        ) {
+            foreach ($columns as $k => $column) {
+                if ($column['type'] === 'json') {
+                    $expectedRows = array_map(static fn ($row) => array_map(static fn ($v) => is_scalar(json_decode($v ?? '[]', true)) ? null : $v, $row), $expectedRows);
+                }
+            }
         }
 
         self::assertSame(
@@ -434,6 +531,31 @@ class SelectTest extends TestCase
             ['foo' => '10'],
             ['foo' => null],
         ]];
+
+        $jsons = [];
+        foreach (self::provideFxJsonValueCases() as [$json, $path, $type]) {
+            if ($type === 'json' && $path === '$') {
+                $jsons[] = $json;
+            }
+        }
+        yield [
+            '[' . implode(',', $jsons) . ']',
+            null,
+            ['foo' => ['path' => '$', 'type' => 'json']],
+            array_map(static fn ($v) => ['foo' => $v !== 'null' ? $v : null], $jsons),
+        ];
+        yield [
+            '[' . implode(',', array_map(static fn ($v) => '[' . $v . ']', $jsons)) . ']',
+            null,
+            ['foo' => ['path' => '$[0]', 'type' => 'json']],
+            array_map(static fn ($v) => ['foo' => $v !== 'null' ? $v : null], $jsons),
+        ];
+        yield [
+            '[' . implode(',', array_map(static fn ($v) => '[' . $v . ']', $jsons)) . ']',
+            null,
+            ['foo' => ['path' => '$', 'type' => 'json']],
+            array_map(static fn ($v) => ['foo' => '[' . $v . ']'], $jsons),
+        ];
     }
 
     public function testInsertFromArrayTable(): void
