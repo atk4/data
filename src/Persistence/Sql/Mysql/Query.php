@@ -80,6 +80,9 @@ class Query extends BaseQuery
     private function makeReturningClauseType(string $type, bool $forJsonValue = false)
     {
         $defType = Type::getType($type)->getSQLDeclaration([], $this->connection->getDatabasePlatform());
+        if ($type === 'json' && Connection::isServerMariaDb($this->connection)) { // TODO remove once DBAL 3.x support is dropped
+            $defType = 'JSON';
+        }
         $defCollation = preg_match('~char|text~i', $defType)
             // https://github.com/atk4/data/blob/6.0.0/src/Schema/Migrator.php#L128
             // https://github.com/doctrine/dbal/blob/3.10.2/src/Platforms/AbstractMySQLPlatform.php#L597
@@ -88,9 +91,9 @@ class Query extends BaseQuery
             : null;
 
         if ($forJsonValue) {
-            $castTypeNonChar = ['boolean' => 'UNSIGNED', 'bigint' => 'SIGNED', 'float' => 'DOUBLE'][$type] ?? null;
+            $castTypeNonChar = ['boolean' => 'UNSIGNED', 'bigint' => 'SIGNED', 'float' => 'DOUBLE', 'json' => 'JSON'][$type] ?? null;
 
-            assert(($defCollation === null) !== ($castTypeNonChar === null) || $type === 'json');
+            assert(($defCollation === null) !== ($castTypeNonChar === null));
 
             if (Connection::isServerMariaDb($this->connection) || $type === 'json') {
                 return ['', ['boolean' => ' + 0', 'bigint' => ' + 0', 'float' => ' + 0e0'][$type] ?? ''];

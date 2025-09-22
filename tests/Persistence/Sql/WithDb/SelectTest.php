@@ -397,6 +397,17 @@ class SelectTest extends TestCase
             $expectedRows = [['foo' => '10'], ['foo' => '20']];
         }
 
+        if (($this->getDatabasePlatform() instanceof MySQLPlatform && !MysqlConnection::isServerMariaDb($this->getConnection())
+            && version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0)
+            || ($this->getDatabasePlatform() instanceof PostgreSQLPlatform && version_compare($this->getConnection()->getServerVersion(), '17.0') >= 0)
+        ) {
+            foreach ($columns as $k => $column) {
+                if ($column['type'] === 'json') {
+                    $expectedRows = array_map(static fn ($row) => array_map(static fn ($v) => $v !== null ? str_replace('":', '": ', $v) : null, $row), $expectedRows);
+                }
+            }
+        }
+
         self::assertSame(
             $expectedRows,
             $this->q()
@@ -491,6 +502,12 @@ class SelectTest extends TestCase
             null,
             ['foo' => ['path' => '$[0]', 'type' => 'json']],
             array_map(static fn ($v) => ['foo' => $v], $jsons),
+        ];
+        yield [
+            '[' . implode(',', array_map(static fn ($v) => '[' . $v . ']', $jsons)) . ']',
+            null,
+            ['foo' => ['path' => '$', 'type' => 'json']],
+            array_map(static fn ($v) => ['foo' => '[' . $v . ']'], $jsons),
         ];
     }
 
