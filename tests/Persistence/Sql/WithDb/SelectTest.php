@@ -264,7 +264,7 @@ class SelectTest extends TestCase
             $expectedValue = '10';
         }
 
-        // https://jira.mariadb.org/browse/MDEV-37701
+        // https://jira.mariadb.org/browse/MDEV-37428
         if ($json === '""' && $path === '$' && $expectedValue === '' && $this->getDatabasePlatform() instanceof MySQLPlatform
             && MysqlConnection::isServerMariaDb($this->getConnection())
             && in_array($this->getConnection()->getServerVersion(), ['10.11.14', '11.4.8', '11.8.3', '12.0.2'], true)) {
@@ -304,9 +304,8 @@ class SelectTest extends TestCase
             $expectedValue = str_replace('":', '": ', $expectedValue);
         }
 
-        // TODO
         if ($type === 'json' && in_array($expectedValue, ['10', '"10"', '"10.0"', '"10.00"', 'false', 'true'], true) && (
-            $this->getDatabasePlatform() instanceof SQLServerPlatform
+            $this->getDatabasePlatform() instanceof SQLServerPlatform // TODO https://stackoverflow.com/questions/73282836/how-to-query-a-key-in-a-sql-server-json-column-if-it-could-be-a-scalar-value-or
             || ($this->getDatabasePlatform() instanceof OraclePlatform && version_compare($this->getConnection()->getServerVersion(), '21.0') < 0)
         )) {
             $expectedValue = null;
@@ -408,7 +407,7 @@ class SelectTest extends TestCase
             }
         }
 
-        if ($this->getDatabasePlatform() instanceof SQLServerPlatform
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform // TODO
             || ($this->getDatabasePlatform() instanceof OraclePlatform && version_compare($this->getConnection()->getServerVersion(), '21.0') < 0)
         ) {
             foreach ($columns as $k => $column) {
@@ -505,13 +504,13 @@ class SelectTest extends TestCase
             '[' . implode(',', $jsons) . ']',
             null,
             ['foo' => ['path' => '$', 'type' => 'json']],
-            array_map(static fn ($v) => ['foo' => $v], $jsons),
+            array_map(static fn ($v) => ['foo' => $v !== 'null' ? $v : null], $jsons),
         ];
         yield [
             '[' . implode(',', array_map(static fn ($v) => '[' . $v . ']', $jsons)) . ']',
             null,
             ['foo' => ['path' => '$[0]', 'type' => 'json']],
-            array_map(static fn ($v) => ['foo' => $v], $jsons),
+            array_map(static fn ($v) => ['foo' => $v !== 'null' ? $v : null], $jsons),
         ];
         yield [
             '[' . implode(',', array_map(static fn ($v) => '[' . $v . ']', $jsons)) . ']',
