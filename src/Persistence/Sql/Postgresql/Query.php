@@ -121,6 +121,14 @@ class Query extends BaseQuery
         return $this->expr('string_agg({}, [])', [$field, $separator]);
     }
 
+    private function replaceNullJsonToNull(BaseExpression $v): BaseExpression
+    {
+        return $this->expr(
+            'case when json_typeof({v}) != [] then {v} end',
+            ['v' => $v, new RawExpression($this->escapeStringLiteral('null'))]
+        );
+    }
+
     #[\Override]
     public function fxJsonValue(Expressionable $json, string $path, string $type)
     {
@@ -128,11 +136,17 @@ class Query extends BaseQuery
             return parent::fxJsonValue($json, $path, $type);
         }
 
-        return $this->expr(($type === 'json' ? 'json_query' : 'json_value') . '([], [] returning [])', [
-            $json,
-            new RawExpression($this->escapeStringLiteral('strict ' . $path)),
-            new RawExpression(Type::getType($type)->getSQLDeclaration([], $this->connection->getDatabasePlatform())),
-        ]);
+        return $type === 'json'
+            ? $this->replaceNullJsonToNull($this->expr('json_query([], [] returning [])', [
+                $json,
+                new RawExpression($this->escapeStringLiteral('strict ' . $path)),
+                new RawExpression(Type::getType($type)->getSQLDeclaration([], $this->connection->getDatabasePlatform())),
+            ]))
+            : $this->expr('json_value([], [] returning [])', [
+                $json,
+                new RawExpression($this->escapeStringLiteral('strict ' . $path)),
+                new RawExpression(Type::getType($type)->getSQLDeclaration([], $this->connection->getDatabasePlatform())),
+            ]);
     }
 
     #[\Override]
@@ -145,7 +159,11 @@ class Query extends BaseQuery
         $defTemplates = [];
         $defParams = [];
         foreach ($columns as $k => $column) {
-            $query->field($query->expr('{}', ['c' . $i]), $k);
+            $v = $query->expr('{}', ['c' . $i]);
+            if ($column['type'] === 'json' && !$asXml) {
+                $v = $this->replaceNullJsonToNull($v);
+            }
+            $query->field($v, $k);
 
             $defTemplates[] = '{} ' . Type::getType($column['type'])->getSQLDeclaration([], $this->connection->getDatabasePlatform()) . ' path []';
             $defParams[] = 'c' . $i;

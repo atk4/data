@@ -264,8 +264,8 @@ class SelectTest extends TestCase
                 self::assertSameSql('select `c0` `cv` from xmltable(\'/t/r\' passing xmlparse(document :a) columns `c0` JSON path \'@c0\') `t`', $expr->render()[0]);
                 self::assertSame([':a' => '<t><r c0="10"/></t>'], $expr->render()[1]);
             } else {
-                self::assertSameSql('json_query(:a, \'strict $.v\' returning JSON)', $expr->render()[0]);
-                self::assertSame([':a' => '{"v":10}'], $expr->render()[1]);
+                self::assertSameSql('case when json_typeof(json_query(:a, \'strict $.v\' returning JSON)) != \'null\' then json_query(:b, \'strict $.v\' returning JSON) end', $expr->render()[0]);
+                self::assertSame([':a' => '{"v":10}', ':b' => '{"v":10}'], $expr->render()[1]);
             }
         } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             self::assertSameSql('select `c0` `cv` from openjson(concat(\'[\', concat(\'[\', :a, \']\'), \']\'), \'$[0]\') with (`c0` NVARCHAR(MAX) \'$.v\' as json) `t`', $expr->render()[0]);
