@@ -678,7 +678,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
         try {
             $valueStr = (string) $value;
 
-            return is_finite($value) && str_contains($valueStr, '.') === false
+            return is_finite($value) && !str_contains($valueStr, '.')
                 ? $valueStr . '.0'
                 : $valueStr;
         } finally {
