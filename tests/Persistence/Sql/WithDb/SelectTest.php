@@ -399,7 +399,7 @@ class SelectTest extends TestCase
         foreach ([
             '[]',
             '[[[[1]]]]',
-            // TODO '{}',
+            // '{}',
             '{"010":"020"}',
             '{"k":{"k":{"k":{"k":1}}}}',
             '10',
