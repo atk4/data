@@ -111,8 +111,8 @@ class Query extends BaseQuery
     private function replaceNullJsonToNull(BaseExpression $v): BaseExpression
     {
         return $this->expr(
-            'case when {v} != ' . (Connection::isServerMariaDb($this->connection) ? '[]' : 'cast([] as JSON)') . ' then {v} end',
-            ['v' => $v, new RawExpression($this->escapeStringLiteral('null'))]
+            'case when json_type({v}) != [] then {v} end',
+            ['v' => $v, new RawExpression($this->escapeStringLiteral('NULL'))]
         );
     }
 

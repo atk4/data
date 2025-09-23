@@ -254,9 +254,9 @@ class SelectTest extends TestCase
             self::assertSame([':a' => '{"v":10}', ':b' => '{"v":10}', ':c' => '{"v":10}'], $expr->render()[1]);
         } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform && (MysqlConnection::isServerMariaDb($this->getConnection()) || version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0)) {
             if (MysqlConnection::isServerMariaDb($this->getConnection())) {
-                self::assertSameSql('case when json_extract(:a, \'$.v\') != \'null\' then json_extract(:b, \'$.v\') end', $expr->render()[0]);
+                self::assertSameSql('case when json_type(json_extract(:a, \'$.v\')) != \'NULL\' then json_extract(:b, \'$.v\') end', $expr->render()[0]);
             } else {
-                self::assertSameSql('case when json_extract(cast(:a as JSON), \'$.v\') != cast(\'null\' as JSON) then json_extract(cast(:b as JSON), \'$.v\') end', $expr->render()[0]);
+                self::assertSameSql('case when json_type(json_extract(cast(:a as JSON), \'$.v\')) != \'NULL\' then json_extract(cast(:b as JSON), \'$.v\') end', $expr->render()[0]);
             }
             self::assertSame([':a' => '{"v":10}', ':b' => '{"v":10}'], $expr->render()[1]);
         } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
