@@ -342,7 +342,7 @@ class SelectTest extends TestCase
             $expectedValue = str_replace('":', '": ', $expectedValue);
         }
 
-        if ($type === 'json' && in_array($expectedValue, ['10', '"10"', '"10.0"', '"10.00"', 'false', 'true'], true) && (
+        if ($type === 'json' && is_scalar(json_decode($expectedValue ?? '[]', true)) && (
             $this->getDatabasePlatform() instanceof SQLServerPlatform // TODO https://stackoverflow.com/questions/73282836/how-to-query-a-key-in-a-sql-server-json-column-if-it-could-be-a-scalar-value-or
             || ($this->getDatabasePlatform() instanceof OraclePlatform && version_compare($this->getConnection()->getServerVersion(), '21.0') < 0)
         )) {
@@ -374,6 +374,8 @@ class SelectTest extends TestCase
         }
 
         yield ['10', '$', 'bigint', '10'];
+        yield [(string) \PHP_INT_MAX, '$', 'bigint', (string) \PHP_INT_MAX];
+        yield [(string) \PHP_INT_MIN, '$', 'bigint', (string) \PHP_INT_MIN];
         yield ['{"v":10}', '$.v', 'bigint', '10'];
         yield ['[{"v":1},{"v":10}]', '$[1].v', 'bigint', '10'];
         yield ['{"v.[* ":10}', '$."v.[* "', 'bigint', '10'];
@@ -399,6 +401,8 @@ class SelectTest extends TestCase
             '{"010":"020"}',
             '{"k":{"k":{"k":{"k":1}}}}',
             '10',
+            (string) \PHP_INT_MAX,
+            (string) \PHP_INT_MIN,
             // TODO '10.0',
             '"10"',
             '"10.0"',
