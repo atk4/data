@@ -47,6 +47,7 @@ class ExpressionTest extends TestCase
     public function testConstructorNoTemplateException(): void
     {
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Template is not defined');
         $this->e()->render();
     }
 
@@ -366,6 +367,7 @@ class ExpressionTest extends TestCase
     public function testConsumeUnsupportedEscapeModeException(): void
     {
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unexpected escape mode');
         $this->callProtected($this->e(), 'consume', 123, 'blahblah');
     }
 
@@ -373,6 +375,18 @@ class ExpressionTest extends TestCase
     {
         $this->expectException(\Error::class);
         $this->callProtected($this->e(), 'consume', new \stdClass());
+    }
+
+    public function testConsumeDifferentConnectionException(): void
+    {
+        $c1 = Connection::connect('sqlite::memory:');
+        $c2 = Connection::connect('sqlite::memory:');
+
+        $c1->expr('[]', [$c1->expr('foo')])->render();
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Connection instance does not match');
+        $c1->expr('[]', [$c2->expr('foo')])->render();
     }
 
     public function testRenderNoTagException(): void
