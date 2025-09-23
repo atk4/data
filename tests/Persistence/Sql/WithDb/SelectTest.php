@@ -396,6 +396,7 @@ class SelectTest extends TestCase
             '[]',
             '[[[[1]]]]',
             // TODO '{}',
+            '{"010":"020"}',
             '{"k":{"k":{"k":{"k":1}}}}',
             '10',
             // TODO '10.0',
@@ -404,13 +405,12 @@ class SelectTest extends TestCase
             '"10.00"',
             'false',
             'true',
+            '[null]',
         ] as $json) {
             yield [$json, '$', 'json', $json];
             yield ['[' . $json . ']', '$[0]', 'json', $json];
             yield ['[' . $json . ']', '$', 'json', '[' . $json . ']'];
         }
-        yield ['[null]', '$', 'json', '[null]'];
-        yield ['{"010":10}', '$', 'json', '{"010":10}'];
     }
 
     /**
