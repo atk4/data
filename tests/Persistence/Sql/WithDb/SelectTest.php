@@ -111,8 +111,8 @@ class SelectTest extends TestCase
                 $this->q()->field($this->e('CAST([] AS int) + CAST([] AS int)', [3, 3]), 'now')->getRows()
             );
         } else {
-            self::assertSame(
-                [['now' => '6']],
+            self::{'assertEquals'}(
+                [['now' => 6]],
                 $this->q()->field($this->e('[] + []', [3, 3]), 'now')->getRows()
             );
         }
@@ -320,7 +320,9 @@ class SelectTest extends TestCase
                 || (version_compare($this->getConnection()->getServerVersion(), '10.8') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.8.4') <= 0)
                 || (version_compare($this->getConnection()->getServerVersion(), '10.9') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.9.2') <= 0)
             )) {
-            $expectedValue = $type === 'string' ? 'null' : '0';
+            $expectedValue = $type === 'string'
+                ? 'null'
+                : ($type === 'float' ? '0.0' : '0');
         }
 
         // https://jira.mariadb.org/browse/MDEV-15905
