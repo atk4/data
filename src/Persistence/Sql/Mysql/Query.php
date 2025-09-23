@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Mysql;
 
+use Atk4\Data\Persistence\Sql\Expression as BaseExpression;
 use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 use Atk4\Data\Persistence\Sql\RawExpression;
@@ -107,6 +108,14 @@ class Query extends BaseQuery
         return $defType . ($defCollation !== null ? ' COLLATE ' . $this->escapeIdentifier($defCollation) : '');
     }
 
+    private function replaceNullJsonToNull(BaseExpression $v): BaseExpression
+    {
+        return $this->expr(
+            'case when json_type({v}) != [] then {v} end',
+            ['v' => $v, new RawExpression($this->escapeStringLiteral('NULL'))]
+        );
+    }
+
     #[\Override]
     public function fxJsonValue(Expressionable $json, string $path, string $type)
     {
@@ -116,12 +125,19 @@ class Query extends BaseQuery
 
         $returningTypeParts = $this->makeReturningClauseType($type, true);
 
-        return $this->expr(
-            ($type === 'json' ? 'json_extract' : 'json_value') . '('
-                . (Connection::isServerMariaDb($this->connection) ? '[]' : 'cast([] as JSON)')
-                . ', []' . $returningTypeParts[0] . ')' . $returningTypeParts[1],
-            [$json, new RawExpression($this->escapeStringLiteral($path))]
-        );
+        return $type === 'json'
+            ? $this->replaceNullJsonToNull($this->expr(
+                'json_extract('
+                    . (Connection::isServerMariaDb($this->connection) ? '[]' : 'cast([] as JSON)')
+                    . ', []' . $returningTypeParts[0] . ')' . $returningTypeParts[1],
+                [$json, new RawExpression($this->escapeStringLiteral($path))]
+            ))
+            : $this->expr(
+                'json_value('
+                    . (Connection::isServerMariaDb($this->connection) ? '[]' : 'cast([] as JSON)')
+                    . ', []' . $returningTypeParts[0] . ')' . $returningTypeParts[1],
+                [$json, new RawExpression($this->escapeStringLiteral($path))]
+            );
     }
 
     #[\Override]
@@ -136,7 +152,11 @@ class Query extends BaseQuery
         $defTemplates = [];
         $defParams = [];
         foreach ($columns as $k => $column) {
-            $query->field($query->expr('{}', ['c' . $i]), $k);
+            $v = $query->expr('{}', ['c' . $i]);
+            if ($column['type'] === 'json' && Connection::isServerMariaDb($this->connection)) {
+                $v = $this->replaceNullJsonToNull($v);
+            }
+            $query->field($v, $k);
 
             $defTemplates[] = '{} ' . $this->makeReturningClauseType($column['type']) . ' path []';
             $defParams[] = 'c' . $i;

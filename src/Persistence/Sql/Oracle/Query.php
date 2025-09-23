@@ -7,6 +7,7 @@ namespace Atk4\Data\Persistence\Sql\Oracle;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Persistence\Sql\ExecuteException;
+use Atk4\Data\Persistence\Sql\Expression as BaseExpression;
 use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 use Atk4\Data\Persistence\Sql\RawExpression;
@@ -223,6 +224,14 @@ class Query extends BaseQuery
             : '';
     }
 
+    private function replaceNullJsonToNull(BaseExpression $v): BaseExpression
+    {
+        return $this->expr(
+            'case when not json_equal({v}, []) then {v} end',
+            ['v' => $v, new RawExpression($this->escapeStringLiteral('null'))]
+        );
+    }
+
     #[\Override]
     public function fxJsonValue(Expressionable $json, string $path, string $type)
     {
@@ -238,11 +247,11 @@ class Query extends BaseQuery
         }
 
         return $type === 'json'
-            ? $this->expr('json_query([], [] returning [])', [
+            ? $this->replaceNullJsonToNull($this->expr('json_query([], [] returning [])', [
                 $json,
                 new RawExpression($this->escapeStringLiteral($path)),
                 new RawExpression(Type::getType($type)->getSQLDeclaration([], $this->connection->getDatabasePlatform())),
-            ])
+            ]))
             : $this->expr('json_value([], [] returning [])', [
                 $json,
                 new RawExpression($this->escapeStringLiteral($path)),
@@ -258,7 +267,11 @@ class Query extends BaseQuery
         $defTemplates = [];
         $defParams = [];
         foreach ($columns as $k => $column) {
-            $query->field($query->expr('{}', ['c' . $i]), $k);
+            $v = $query->expr('{}', ['c' . $i]);
+            if ($column['type'] === 'json') {
+                $v = $this->replaceNullJsonToNull($v);
+            }
+            $query->field($v, $k);
 
             $defTemplates[] = '{} '
                 . $this->makeReturningClauseType($column['type'])
