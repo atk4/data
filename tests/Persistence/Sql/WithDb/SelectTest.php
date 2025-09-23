@@ -254,11 +254,11 @@ class SelectTest extends TestCase
             self::assertSame([':a' => '{"v":10}', ':b' => '{"v":10}', ':c' => '{"v":10}'], $expr->render()[1]);
         } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform && (MysqlConnection::isServerMariaDb($this->getConnection()) || version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0)) {
             if (MysqlConnection::isServerMariaDb($this->getConnection())) {
-                self::assertSameSql('json_extract(:a, \'$.v\')', $expr->render()[0]);
+                self::assertSameSql('case when json_extract(:a, \'$.v\') != \'null\' then json_extract(:b, \'$.v\') end', $expr->render()[0]);
             } else {
-                self::assertSameSql('json_extract(cast(:a as JSON), \'$.v\')', $expr->render()[0]);
+                self::assertSameSql('case when json_extract(cast(:a as JSON), \'$.v\') != cast(\'null\' as JSON) then json_extract(cast(:b as JSON), \'$.v\') end', $expr->render()[0]);
             }
-            self::assertSame([':a' => '{"v":10}'], $expr->render()[1]);
+            self::assertSame([':a' => '{"v":10}', ':b' => '{"v":10}'], $expr->render()[1]);
         } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             if (version_compare($this->getConnection()->getServerVersion(), '17.0') < 0) {
                 self::assertSameSql('select `c0` `cv` from xmltable(\'/t/r\' passing xmlparse(document :a) columns `c0` JSON path \'@c0\') `t`', $expr->render()[0]);
@@ -310,7 +310,7 @@ class SelectTest extends TestCase
         }
 
         // https://jira.mariadb.org/browse/MDEV-27151
-        if ($json === 'null' && $path === '$' && $expectedValue === null && $this->getDatabasePlatform() instanceof MySQLPlatform
+        if ($json === 'null' && $path === '$' && $type !== 'json' && $expectedValue === null && $this->getDatabasePlatform() instanceof MySQLPlatform
             && MysqlConnection::isServerMariaDb($this->getConnection()) && (
                 version_compare($this->getConnection()->getServerVersion(), '10.3.36') <= 0
                 || (version_compare($this->getConnection()->getServerVersion(), '10.4') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.4.26') <= 0)
@@ -372,7 +372,7 @@ class SelectTest extends TestCase
         yield ['null', '$', 'bigint', null];
         yield ['null', '$', 'float', null];
         yield ['null', '$', 'string', null];
-        // TODO yield ['null', '$', 'json', null];
+        yield ['null', '$', 'json', null];
 
         yield ['10', '$', 'bigint', '10'];
         yield ['{"v":10}', '$.v', 'bigint', '10'];
