@@ -216,7 +216,7 @@ class SelectTest extends TestCase
             self::assertSame([':a' => '{"v":10}', ':b' => '{"v":10}'], $expr->render()[1]);
         } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform && (MysqlConnection::isServerMariaDb($this->getConnection()) || version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0)) {
             if (MysqlConnection::isServerMariaDb($this->getConnection())) {
-                self::assertSameSql('json_value(:a, \'$.v\') + 0', $expr->render()[0]);
+                self::assertSameSql('cast(json_value(:a, \'$.v\') as SIGNED)', $expr->render()[0]);
             } else {
                 self::assertSameSql('json_value(cast(:a as JSON), \'$.v\' returning SIGNED)', $expr->render()[0]);
             }

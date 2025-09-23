@@ -76,7 +76,7 @@ class Query extends BaseQuery
     }
 
     /**
-     * @return ($forJsonValue is true ? array{string, string} : string)
+     * @return ($forJsonValue is true ? array{string, string, string|null} : string)
      */
     private function makeReturningClauseType(string $type, bool $forJsonValue = false)
     {
@@ -96,13 +96,17 @@ class Query extends BaseQuery
 
             assert(($defCollation === null) !== ($castTypeNonChar === null));
 
-            if (Connection::isServerMariaDb($this->connection) || $type === 'json') {
-                return ['', ['boolean' => ' + 0', 'bigint' => ' + 0', 'float' => ' + 0e0'][$type] ?? ''];
+            if ($type === 'json') {
+                return ['', '', null];
+            }
+
+            if (Connection::isServerMariaDb($this->connection)) {
+                return ['', '', $castTypeNonChar];
             }
 
             return $castTypeNonChar !== null
-                ? [' returning ' . $castTypeNonChar, '']
-                : [' returning CHAR', ' COLLATE ' . $this->escapeIdentifier($defCollation)];
+                ? [' returning ' . $castTypeNonChar, '', null]
+                : [' returning CHAR', ' COLLATE ' . $this->escapeIdentifier($defCollation), null];
         }
 
         return $defType . ($defCollation !== null ? ' COLLATE ' . $this->escapeIdentifier($defCollation) : '');
@@ -125,7 +129,7 @@ class Query extends BaseQuery
 
         $returningTypeParts = $this->makeReturningClauseType($type, true);
 
-        return $type === 'json'
+        $res = $type === 'json'
             ? $this->replaceNullJsonToNull($this->expr(
                 'json_extract('
                     . (Connection::isServerMariaDb($this->connection) ? '[]' : 'cast([] as JSON)')
@@ -138,6 +142,10 @@ class Query extends BaseQuery
                     . ', []' . $returningTypeParts[0] . ')' . $returningTypeParts[1],
                 [$json, new RawExpression($this->escapeStringLiteral($path))]
             );
+
+        return $returningTypeParts[2] !== null
+            ? $this->expr('cast([] as ' . $returningTypeParts[2] . ')', [$res])
+            : $res;
     }
 
     #[\Override]
