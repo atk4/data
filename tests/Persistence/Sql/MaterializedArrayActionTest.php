@@ -90,7 +90,7 @@ class MaterializedArrayActionTest extends TestCase
         } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform && !$this->isServerMysql5x() && !$this->isServerMariadb105OrLower()) {
             self::assertSame([':a' => '[[false,0,0.0,"Mark"]]'], $render[1]);
         } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            self::assertSame($this->isServerPostgreSQL16OrLower() ? [':a' => '<t><r c0="0" c1="0" c2="0" c3="Mark"/></t>'] : [':a' => '[[false,0,0.0,"Mark"]]'], $render[1]);
+            self::assertSame($this->isServerPostgreSQL16OrLower() ? [':a' => '<t><r c0="0" c1="0" c2="0.0" c3="Mark"/></t>'] : [':a' => '[[false,0,0.0,"Mark"]]'], $render[1]);
         } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             self::assertSame([':a' => '[[false,0,0.0,"Mark"]]'], $render[1]);
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {

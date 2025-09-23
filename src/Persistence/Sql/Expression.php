@@ -678,7 +678,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
         try {
             $valueStr = (string) $value;
 
-            return is_finite($value) && str_contains($valueStr, '.') === false
+            return is_finite($value) && !str_contains($valueStr, '.')
                 ? $valueStr . '.0'
                 : $valueStr;
         } finally {
@@ -696,13 +696,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
         } elseif (is_int($v)) {
             return (string) $v;
         } elseif (is_float($v)) {
-            $res = self::castFloatToString($v);
-            // most DB drivers fetch float as string
-            if (str_ends_with($res, '.0')) {
-                $res = substr($res, 0, -2);
-            }
-
-            return $res;
+            return self::castFloatToString($v);
         }
 
         // for PostgreSQL/Oracle CLOB/BLOB datatypes and PDO driver
