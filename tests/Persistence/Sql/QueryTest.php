@@ -25,7 +25,7 @@ use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
 
 class QueryTest extends TestCase
 {
-    private SqliteConnection $dummyConnection;
+    private ?SqliteConnection $dummyConnection = null;
 
     /**
      * @param string|array<string, mixed> $template
@@ -63,7 +63,7 @@ class QueryTest extends TestCase
         };
 
         if (($query->connection ?? null) === null) {
-            if (($this->dummyConnection ?? null) === null) {
+            if ($this->dummyConnection === null) {
                 $this->dummyConnection = \Closure::bind(static function () use ($query) {
                     $connection = new SqliteConnection();
                     $connection->expressionClass = \Closure::bind(static fn () => $query->expressionClass, null, Query::class)();
