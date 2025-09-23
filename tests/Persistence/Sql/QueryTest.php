@@ -25,6 +25,8 @@ use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
 
 class QueryTest extends TestCase
 {
+    private ?SqliteConnection $dummyConnection = null;
+
     /**
      * @param string|array<string, mixed> $template
      * @param array<int|string, mixed>    $arguments
@@ -61,13 +63,17 @@ class QueryTest extends TestCase
         };
 
         if (($query->connection ?? null) === null) {
-            $query->connection = \Closure::bind(static function () use ($query) {
-                $connection = new SqliteConnection();
-                $connection->expressionClass = \Closure::bind(static fn () => $query->expressionClass, null, Query::class)();
-                $connection->queryClass = get_class($query);
+            if ($this->dummyConnection === null) {
+                $this->dummyConnection = \Closure::bind(static function () use ($query) {
+                    $connection = new SqliteConnection();
+                    $connection->expressionClass = \Closure::bind(static fn () => $query->expressionClass, null, Query::class)();
+                    $connection->queryClass = get_class($query);
 
-                return $connection;
-            }, null, Connection::class)();
+                    return $connection;
+                }, null, Connection::class)();
+            }
+
+            $query->connection = $this->dummyConnection;
         }
 
         return $query;
@@ -911,15 +917,16 @@ class QueryTest extends TestCase
                         EOF,
                 $this->createMysqlQuery($serverVersion, '[where]')->where('name', 'like', 'foo')->render()[0]
             );
+            $mysqlQuery = $this->createMysqlQuery($serverVersion, '[where]');
             self::assertSame(
                 $serverVersion === '5.7.0'
                     ? <<<'EOF'
-                        where sum("a") not like replace(replace(replace(replace(replace(replace(replace(replace(sum("b"), '\\\\', '\\\\*'), '\\_', '\\_*'), '\\%', '\\%*'), '\\', '\\\\'), '\\\\_*', '\\_'), '\\\\%*', '\\%'), '\\\\\\\\*', '\\\\'), '%\\', '%\\\\') escape '\\'
+                        where sum(`a`) not like replace(replace(replace(replace(replace(replace(replace(replace(sum(`b`), '\\\\', '\\\\*'), '\\_', '\\_*'), '\\%', '\\%*'), '\\', '\\\\'), '\\\\_*', '\\_'), '\\\\%*', '\\%'), '\\\\\\\\*', '\\\\'), '%\\', '%\\\\') escape '\\'
                         EOF
                     : <<<'EOF'
-                        where sum("a") not like regexp_replace(sum("b"), '\\\\\\\\|\\\\(?![_%])', '\\\\\\\\') escape '\\'
+                        where sum(`a`) not like regexp_replace(sum(`b`), '\\\\\\\\|\\\\(?![_%])', '\\\\\\\\') escape '\\'
                         EOF,
-                $this->createMysqlQuery($serverVersion, '[where]')->where($this->e('sum({})', ['a']), 'not like', $this->e('sum({})', ['b']))->render()[0]
+                $mysqlQuery->where($mysqlQuery->expr('sum({})', ['a']), 'not like', $mysqlQuery->expr('sum({})', ['b']))->render()[0]
             );
         }
 
@@ -999,11 +1006,12 @@ class QueryTest extends TestCase
                     : 'where `name` regexp concat(\'(?s)\', :a)',
                 $this->createMysqlQuery($serverVersion, '[where]')->where('name', 'regexp', 'foo')->render()[0]
             );
+            $mysqlQuery = $this->createMysqlQuery($serverVersion, '[where]');
             self::assertSame(
                 $serverVersion === '5.7.0'
-                    ? 'where sum("a") not regexp concat(\'@?\', sum("b"))'
-                    : 'where sum("a") not regexp concat(\'(?s)\', sum("b"))',
-                $this->createMysqlQuery($serverVersion, '[where]')->where($this->e('sum({})', ['a']), 'not regexp', $this->e('sum({})', ['b']))->render()[0]
+                    ? 'where sum(`a`) not regexp concat(\'@?\', sum(`b`))'
+                    : 'where sum(`a`) not regexp concat(\'(?s)\', sum(`b`))',
+                $mysqlQuery->where($mysqlQuery->expr('sum({})', ['a']), 'not regexp', $mysqlQuery->expr('sum({})', ['b']))->render()[0]
             );
         }
 

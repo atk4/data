@@ -192,6 +192,12 @@ abstract class Expression implements Expressionable, \ArrayAccess
 
         $expr = $expr->getDsqlExpression($this);
 
+        $thisConnection = $this->connection ?? null;
+        $exprConnection = $expr->connection ?? null;
+        if ($thisConnection !== null && $exprConnection !== null && $exprConnection !== $thisConnection) {
+            throw new Exception('Connection instance does not match');
+        }
+
         // render given expression into params of the current expression
         $expressionParamBaseBackup = $expr->paramBase;
         try {
@@ -390,7 +396,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
     public function render(): array
     {
         if ($this->template === null) {
-            throw new Exception('Template is not defined for Expression');
+            throw new Exception('Template is not defined');
         }
 
         try {
