@@ -403,7 +403,7 @@ class SelectTest extends TestCase
             '10',
             (string) \PHP_INT_MAX,
             (string) \PHP_INT_MIN,
-            // TODO '10.0',
+            '10.0',
             '"10"',
             '"10.0"',
             '"10.00"',
