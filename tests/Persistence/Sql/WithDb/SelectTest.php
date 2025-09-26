@@ -746,7 +746,7 @@ class SelectTest extends TestCase
         }
 
         self::assertSame(
-            [['where' => '1', 'having' => '1', 'where_sub' => [$exprLeft, $operator, $exprRight] === [['4'], '=', ['[]', ['4.0']]] && $this->getDatabasePlatform() instanceof MySQLPlatform && !MysqlConnection::isServerMariaDb($this->getConnection()) && $this->getConnection()->getServerVersion() === '8.0.29' && $this->getConnection()->getConnection()->getNativeConnection() instanceof \mysqli ? null : '1', 'where_in' => '1']],
+            [['where' => '1', 'having' => '1', 'where_sub' => '1', 'where_in' => '1']],
             $rows
         );
     }
