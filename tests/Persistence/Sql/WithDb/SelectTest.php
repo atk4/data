@@ -568,6 +568,37 @@ class SelectTest extends TestCase
         ];
     }
 
+    public function testJsonTableHuge(): void
+    {
+        $columns = [];
+        for ($i = 0; $i < 10; ++$i) {
+            $columns['i' . $i] = ['path' => '$.v' . $i . '[0]', 'type' => 'bigint'];
+            $columns['s' . $i] = ['path' => '$.v' . $i . '[1]', 'type' => 'string'];
+        }
+
+        $jsonRows = [];
+        $expectedRows = [];
+        for ($i = 0; $i < 2_000; ++$i) {
+            $jsonRow = [];
+            $expectedRow = [];
+            for ($j = 0; $j < count($columns) / 2; ++$j) {
+                $jsonRow['v' . $j] = [$i * $i, $i . '_' . $j];
+                $expectedRow['i' . $j] = (string) array_last($jsonRow)[0];
+                $expectedRow['s' . $j] = array_last($jsonRow)[1];
+            }
+
+            $jsonRows[] = $jsonRow;
+            $expectedRows[] = $expectedRow;
+        }
+
+        self::assertSame(
+            $expectedRows,
+            $this->q()
+                ->jsonTable($this->e('[]', [json_encode($jsonRows)]), $columns)
+                ->getRows()
+        );
+    }
+
     public function testInsertFromArrayTable(): void
     {
         $this->setupTables();
