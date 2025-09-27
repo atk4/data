@@ -1165,7 +1165,7 @@ abstract class Query extends Expression
      *
      * @return Expression
      */
-    protected function fxConcat(...$values)
+    public function fxConcat(...$values)
     {
         return $this->expr(
             'concat(' . implode(', ', array_fill(0, count($values), '[]')) . ')',

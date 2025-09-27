@@ -207,6 +207,21 @@ class SelectTest extends TestCase
         ], $this->q('employee')->field('id')->field('name')->getRows());
     }
 
+    public function testFxConcat(): void
+    {
+        $parts = [];
+        for ($i = 0; $i < 50; ++$i) {
+            $parts[] = '_' . $i;
+        }
+
+        self::assertSame(
+            implode('', $parts),
+            $this->q()
+                ->field($this->q()->fxConcat(...$parts))
+                ->getOne()
+        );
+    }
+
     public function testFxJsonValueRenderInt(): void
     {
         $expr = $this->q()->fxJsonValue($this->e('[]', ['{"v":10}']), '$.v', 'bigint');
