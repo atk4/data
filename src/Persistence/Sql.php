@@ -153,11 +153,12 @@ class Sql extends Persistence
 
                 $identifier = substr($matches[0], 1, -1);
                 if ($identifier !== '' && !isset($arguments[$identifier])) {
-                    $arguments[$identifier] = $model->getField($identifier);
-
                     // TODO horrible hack to render the field with a table prefix,
                     // find a solution how to wrap the field inside custom Field (without owner?)
-                    $model->persistenceData['use_table_prefixes'] = true;
+                    $modelCloned = clone $model;
+                    $modelCloned->persistenceData['use_table_prefixes'] = true;
+
+                    $arguments[$identifier] = $modelCloned->getField($identifier);
                 }
 
                 return $matches[0];
