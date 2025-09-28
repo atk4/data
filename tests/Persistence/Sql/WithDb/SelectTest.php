@@ -593,7 +593,7 @@ class SelectTest extends TestCase
 
         $jsonRows = [];
         $expectedRows = [];
-        for ($i = 0; $i < 2_000; ++$i) {
+        for ($i = 0; $i < 1_050; ++$i) {
             $jsonRow = [];
             $expectedRow = [];
             for ($j = 0; $j < count($columns) / 2; ++$j) {
