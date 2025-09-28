@@ -195,7 +195,7 @@ class ScopeTest extends TestCase
 
         if ($this->getDatabasePlatform() instanceof SQLitePlatform || $this->getDatabasePlatform() instanceof MySQLPlatform) {
             $condition = new Condition('name', $user->expr('[surname]'));
-            self::assertSame('Name is equal to expression \'`surname`\'', $condition->toWords($user));
+            self::assertSame('Name is equal to expression \'`user`.`surname`\'', $condition->toWords($user));
         }
 
         $condition = new Condition('country_id', null);
