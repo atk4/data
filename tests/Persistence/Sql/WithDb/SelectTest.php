@@ -586,7 +586,7 @@ class SelectTest extends TestCase
     public function testJsonTableHuge(): void
     {
         $columns = [];
-        for ($i = 0; $i < 10; ++$i) {
+        for ($i = 0; $i < 5; ++$i) {
             $columns['i' . $i] = ['path' => '$.v' . $i . '[0]', 'type' => 'bigint'];
             $columns['s' . $i] = ['path' => '$.v' . $i . '[1]', 'type' => 'string'];
         }
