@@ -48,7 +48,7 @@ class ExpressionSqlTest extends TestCase
         $i->addExpression('double_total_gross', ['expr' => '[total_gross] * 2', 'type' => 'float']);
 
         self::assertSameSql(
-            'select `invoice`.`id`, `invoice`.`total_net`, `invoice`.`total_vat`, (`invoice`.`total_net` + `invoice`.`total_vat`) `total_gross`, ((`invoice`.`total_net` + `invoice`.`total_vat`) * 2) `double_total_gross` from `invoice`',
+            'select `id`, `total_net`, `total_vat`, (`invoice`.`total_net` + `invoice`.`total_vat`) `total_gross`, ((`invoice`.`total_net` + `invoice`.`total_vat`) * 2) `double_total_gross` from `invoice`',
             $i->action('select')->render()[0]
         );
 
@@ -143,7 +143,7 @@ class ExpressionSqlTest extends TestCase
 
         $concatSql = preg_replace('~\[(\w+)\]~', '`user`.`$1`', $concatExpr);
         $this->assertSameSql(
-            'select `user`.`id`, `user`.`name`, `user`.`surname`, `user`.`cached_name`, (' . $concatSql . ') `full_name` from `user` where ((' . $concatSql . ') != `user`.`cached_name`)',
+            'select `id`, `name`, `surname`, `cached_name`, (' . $concatSql . ') `full_name` from `user` where ((' . $concatSql . ') != `user`.`cached_name`)',
             $m->action('select')->render()[0]
         );
 
