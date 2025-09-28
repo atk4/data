@@ -19,7 +19,7 @@ class AggregateField implements Expressionable
 
     public function __construct(Model $context, Field $field)
     {
-        $field->getOwner()->assertIsModel($context);
+        // $field->getOwner()->assertIsModel($context);
 
         $this->field = $field;
     }
