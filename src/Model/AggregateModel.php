@@ -94,6 +94,12 @@ class AggregateModel extends Model
 
             // convert base model fields to aliases, they are always already materialized as the base model is SQL inner table
             foreach ($seed['expr']->args['custom'] as $argK => $argV) {
+                // restore field with original model cloned in "TODO horrible hack to render the field with a table prefix" in Persistence\Sql::expr()
+                assert($argV instanceof Field);
+                if ($argV->getOwner() !== $this->table && $argV->getOwner()->table === $this->table->table && $argV->getOwner()->tableAlias === $this->table->tableAlias) {
+                    $argV = $this->table->getField($argV->shortName);
+                }
+
                 $seed['expr']->args['custom'][$argK] = new AggregateField($this->table, $argV);
             }
 
