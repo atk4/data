@@ -411,9 +411,6 @@ class SelectTest extends TestCase
         yield ['"false"', '$', 'string', 'false'];
         yield ['""', '$', 'string', ''];
 
-        // TODO report to PHP/Oracle
-        $isOracle = str_starts_with($_ENV['DB_DSN'], 'oci8') || str_starts_with($_ENV['DB_DSN'], 'pdo_oci');
-
         foreach ([
             '[]',
             '[[[[1]]]]',
@@ -427,8 +424,6 @@ class SelectTest extends TestCase
             '"10"',
             '"10.0"',
             '"10.00"',
-            '"' . str_repeat('x', $isOracle ? 160 : 80_000) . '"',
-            '"' . str_repeat('🔥', $isOracle ? 40 : 20_000) . '"',
             'false',
             'true',
             '[null]',
@@ -436,6 +431,16 @@ class SelectTest extends TestCase
             yield [$json, '$', 'json', $json];
             yield ['[' . $json . ']', '$[0]', 'json', $json];
             yield ['[' . $json . ']', '$', 'json', '[' . $json . ']'];
+        }
+
+        // TODO report to PHP/Oracle
+        $isOracle = str_starts_with($_ENV['DB_DSN'], 'oci8') || str_starts_with($_ENV['DB_DSN'], 'pdo_oci');
+
+        foreach ([
+            '"' . str_repeat('x', $isOracle ? 160 : 80_000) . '"',
+            '"' . str_repeat('🔥', $isOracle ? 40 : 20_000) . '"',
+        ] as $json) {
+            yield [$json, '$', 'json', $json];
         }
     }
 
