@@ -1036,6 +1036,8 @@ class Model implements \IteratorAggregate
                 ->addMoreInfo('name', $name);
         }
 
+        $this->persistenceData['use_table_prefixes'] = true;
+
         $this->cteModels[$name] = [
             'model' => $model,
             'recursive' => $recursive,
