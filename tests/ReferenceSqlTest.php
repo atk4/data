@@ -535,8 +535,8 @@ class ReferenceSqlTest extends TestCase
                 'items_code' => ['aggregate' => 'count', 'field' => 'code', 'type' => 'integer'], // counts only not-null values
                 'items_star' => ['aggregate' => 'count', 'type' => 'integer'], // no field set, counts all rows with count(*)
                 'items_c:' => ['concat' => '::', 'field' => 'name'],
-                'items_c-' => ['aggregate' => $i->getPersistence()->dsql()->groupConcat($i->expr('[name]'), '-')],
-                'len' => ['aggregate' => $i->expr('SUM(' . $makeLengthSqlFx('[name]') . ')'), 'type' => 'integer'],
+                'items_c-' => ['aggregate' => $i->getPersistence()->dsql()->groupConcat($l->getReference('Items')->createTheirModel()->expr('[name]'), '-')],
+                'len' => ['aggregate' => $l->getReference('Items')->createTheirModel()->expr('SUM(' . $makeLengthSqlFx('[name]') . ')'), 'type' => 'integer'],
                 'len2' => ['expr' => 'SUM(' . $makeLengthSqlFx('[name]') . ')', 'type' => 'integer'],
                 'chicken5' => ['expr' => 'SUM([])', 'args' => [5], 'type' => 'integer'],
             ]);
