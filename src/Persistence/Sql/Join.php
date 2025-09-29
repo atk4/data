@@ -21,8 +21,10 @@ class Join extends Model\Join
     {
         parent::init();
 
-        // TODO this mutates the owner model!
-        $this->getOwner()->persistenceData['use_table_prefixes'] = true;
+        if (!isset($this->getOwner()->cteModels[$this->foreignTable])) {
+            // TODO this mutates the owner model!
+            $this->getOwner()->persistenceData['use_table_prefixes'] = true;
+        }
 
         // our short name will be unique
         // TODO this should be removed, short name is not guaranteed to be unique with nested model/query

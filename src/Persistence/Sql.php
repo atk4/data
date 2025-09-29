@@ -712,7 +712,6 @@ class Sql extends Persistence
                 $field->getPersistenceName(),
             ];
         } else {
-            // references set flag use_table_prefixes, so no need to check them here
             $mask = '{}';
             $prop = [
                 $field->getPersistenceName(),

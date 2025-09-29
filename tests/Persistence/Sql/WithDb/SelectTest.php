@@ -207,6 +207,21 @@ class SelectTest extends TestCase
         ], $this->q('employee')->field('id')->field('name')->getRows());
     }
 
+    public function testFxConcat(): void
+    {
+        $parts = [];
+        for ($i = 0; $i < 50; ++$i) {
+            $parts[] = '_' . $i;
+        }
+
+        self::assertSame(
+            implode('', $parts),
+            $this->q()
+                ->field($this->q()->fxConcat(...$parts))
+                ->getOne()
+        );
+    }
+
     public function testFxJsonValueRenderInt(): void
     {
         $expr = $this->q()->fxJsonValue($this->e('[]', ['{"v":10}']), '$.v', 'bigint');
@@ -417,6 +432,16 @@ class SelectTest extends TestCase
             yield ['[' . $json . ']', '$[0]', 'json', $json];
             yield ['[' . $json . ']', '$', 'json', '[' . $json . ']'];
         }
+
+        // TODO report to PHP/Oracle
+        $isOracle = str_starts_with($_ENV['DB_DSN'], 'oci8') || str_starts_with($_ENV['DB_DSN'], 'pdo_oci');
+
+        foreach ([
+            '"' . str_repeat('x', $isOracle ? 160 : 80_000) . '"',
+            '"' . str_repeat('🔥', $isOracle ? 40 : 20_000) . '"',
+        ] as $json) {
+            yield [$json, '$', 'json', $json];
+        }
     }
 
     /**
@@ -561,6 +586,37 @@ class SelectTest extends TestCase
             ['foo' => ['path' => '$', 'type' => 'json']],
             array_map(static fn ($v) => ['foo' => '[' . $v . ']'], $jsons),
         ];
+    }
+
+    public function testJsonTableHuge(): void
+    {
+        $columns = [];
+        for ($i = 0; $i < 5; ++$i) {
+            $columns['i' . $i] = ['path' => '$.v' . $i . '[0]', 'type' => 'bigint'];
+            $columns['s' . $i] = ['path' => '$.v' . $i . '[1]', 'type' => 'string'];
+        }
+
+        $jsonRows = [];
+        $expectedRows = [];
+        for ($i = 0; $i < 1_050; ++$i) {
+            $jsonRow = [];
+            $expectedRow = [];
+            for ($j = 0; $j < count($columns) / 2; ++$j) {
+                $jsonRow['v' . $j] = [$i * $i, $i . '_' . $j];
+                $expectedRow['i' . $j] = (string) array_last($jsonRow)[0];
+                $expectedRow['s' . $j] = array_last($jsonRow)[1];
+            }
+
+            $jsonRows[] = $jsonRow;
+            $expectedRows[] = $expectedRow;
+        }
+
+        self::assertSame(
+            $expectedRows,
+            $this->q()
+                ->jsonTable($this->e('[]', [json_encode($jsonRows)]), $columns)
+                ->getRows()
+        );
     }
 
     public function testInsertFromArrayTable(): void
@@ -746,7 +802,7 @@ class SelectTest extends TestCase
         }
 
         self::assertSame(
-            [['where' => '1', 'having' => '1', 'where_sub' => [$exprLeft, $operator, $exprRight] === [['4'], '=', ['[]', ['4.0']]] && $this->getDatabasePlatform() instanceof MySQLPlatform && !MysqlConnection::isServerMariaDb($this->getConnection()) && $this->getConnection()->getServerVersion() === '8.0.29' ? null : '1', 'where_in' => '1']],
+            [['where' => '1', 'having' => '1', 'where_sub' => '1', 'where_in' => '1']],
             $rows
         );
     }

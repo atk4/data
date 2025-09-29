@@ -196,7 +196,7 @@ class Query extends BaseQuery
     }
 
     #[\Override]
-    protected function fxConcat(...$values)
+    public function fxConcat(...$values)
     {
         $sqlArgs = [];
         $sql = $this->makeNaryTree($values, 2, static function (array $values) use (&$sqlArgs) {
