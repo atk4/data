@@ -143,10 +143,11 @@ class Sql extends Persistence
     public function expr(Model $model, string $template, array $arguments = []): Expression
     {
         $quotedTokenRegex = $this->getConnection()->expr()::QUOTED_TOKEN_REGEX;
+        $modelCloned = null;
 
         preg_replace_callback(
             '~(?!\[\w*\])' . $quotedTokenRegex . '\K|\[\w*\]|\{\w*\}~',
-            static function ($matches) use ($model, &$arguments) {
+            static function ($matches) use ($model, &$arguments, &$modelCloned) {
                 if ($matches[0] === '') {
                     return '';
                 }
@@ -155,8 +156,10 @@ class Sql extends Persistence
                 if ($identifier !== '' && !isset($arguments[$identifier])) {
                     // TODO horrible hack to render the field with a table prefix,
                     // find a solution how to wrap the field inside custom Field (without owner?)
-                    $modelCloned = clone $model;
-                    $modelCloned->persistenceData['use_table_prefixes'] = true;
+                    if ($modelCloned === null) {
+                        $modelCloned = clone $model;
+                        $modelCloned->persistenceData['use_table_prefixes'] = true;
+                    }
 
                     $arguments[$identifier] = $modelCloned->getField($identifier);
                 }
