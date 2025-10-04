@@ -76,6 +76,14 @@ abstract class ContainsBase extends Reference
         return new Persistence\Array_();
     }
 
+    #[\Override]
+    protected function createTheirModelBeforeInit(array $defaults): Model
+    {
+        $defaults['table'] = $this->tableAlias;
+
+        return parent::createTheirModelBeforeInit($defaults);
+    }
+
     /**
      * @param array<int, mixed> $data
      */
