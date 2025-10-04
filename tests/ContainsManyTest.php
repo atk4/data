@@ -281,11 +281,19 @@ class ContainsManyTest extends TestCase
         );
     }
 
-    public function testRefGetOriginalPersistence(): void
+    public function testCreateTheirModelContainedInPersistence(): void
+    {
+        $i = new Invoice($this->db);
+        self::assertNotSame($i->getPersistence(), $i->lines->getPersistence());
+        self::assertSame($i->getPersistence(), $i->lines->getField($i->lines->fieldName()->vat_rate_id)->getReference()->createTheirModel()->getPersistence());
+    }
+
+    public function testRefContainedInPersistence(): void
     {
         $i = new Invoice($this->db);
         self::assertNotSame($i->getPersistence(), $i->lines->getPersistence());
         self::assertSame($i->getPersistence(), $i->lines->vat_rate_id->getPersistence());
+        self::assertSame($i->getPersistence(), $i->lines->discounts->containedInPersistence);
     }
 
     public function testUnmanagedDataModificationException(): void

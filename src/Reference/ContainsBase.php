@@ -81,6 +81,9 @@ abstract class ContainsBase extends Reference
     {
         $defaults['table'] = $this->tableAlias;
 
+        $defaults['containedInPersistence'] ??= $this->getOwner()->containedInPersistence
+            ?? $this->getOwner()->getPersistence();
+
         return parent::createTheirModelBeforeInit($defaults);
     }
 

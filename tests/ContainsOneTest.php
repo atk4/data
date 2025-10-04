@@ -200,11 +200,19 @@ class ContainsOneTest extends TestCase
         self::{'assertEquals'}($row, $a->get());
     }
 
-    public function testRefGetOriginalPersistence(): void
+    public function testCreateTheirModelContainedInPersistence(): void
+    {
+        $i = new Invoice($this->db);
+        self::assertNotSame($i->getPersistence(), $i->addr->getPersistence());
+        self::assertSame($i->getPersistence(), $i->addr->getField($i->addr->fieldName()->country_id)->getReference()->createTheirModel()->getPersistence());
+    }
+
+    public function testRefContainedInPersistence(): void
     {
         $i = new Invoice($this->db);
         self::assertNotSame($i->getPersistence(), $i->addr->getPersistence());
         self::assertSame($i->getPersistence(), $i->addr->country_id->getPersistence());
+        self::assertSame($i->getPersistence(), $i->addr->door_code->containedInPersistence);
     }
 
     public function testUnmanagedDataModificationException(): void
