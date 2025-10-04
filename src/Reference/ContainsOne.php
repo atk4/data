@@ -16,7 +16,6 @@ class ContainsOne extends ContainsBase
 
         $theirModel = $this->createTheirModel(array_merge($defaults, [
             'containedInEntity' => $ourModelOrEntity->isEntity() ? $ourModelOrEntity : null,
-            'table' => $this->tableAlias,
         ]));
 
         $this->setTheirModelPersistenceSeedData(
