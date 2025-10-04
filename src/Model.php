@@ -221,6 +221,13 @@ class Model implements \IteratorAggregate
     public bool $reloadAfterSave = true;
 
     /**
+     * If this model is "contained into" another model by using ContainsOne
+     * or ContainsMany reference, then this property will contain reference
+     * to owning model persistence.
+     */
+    public ?Persistence $containedInPersistence = null;
+
+    /**
      * If this model is "contained into" another entity by using ContainsOne
      * or ContainsMany reference, then this property will contain reference
      * to owning entity.

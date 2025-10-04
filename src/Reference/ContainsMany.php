@@ -15,6 +15,7 @@ class ContainsMany extends ContainsBase
         $this->assertOurModelOrEntity($ourModelOrEntity);
 
         $theirModel = $this->createTheirModel(array_merge($defaults, [
+            'containedInPersistence' => $ourModelOrEntity->getModel(true)->getPersistence(),
             'containedInEntity' => $ourModelOrEntity->isEntity() ? $ourModelOrEntity : null,
             'table' => $this->tableAlias,
         ]));
