@@ -243,9 +243,7 @@ class Reference
         $ourModel = $this->getOurModel();
 
         if ($ourModel->containedInPersistence !== null) {
-            if ($ourModel->containedInEntity !== null) {
-                assert($ourModel->containedInEntity->getModel()->getPersistence() === $ourModel->containedInPersistence);
-            }
+            assert($ourModel->containedInEntity === null || $ourModel->containedInPersistence === $ourModel->containedInEntity->getModel()->getPersistence());
 
             return $ourModel->containedInPersistence;
         }
