@@ -426,7 +426,7 @@ class SelectTest extends TestCase
         yield ['""', '$', 'string', ''];
 
         $strAllChars = '';
-        for ($i = 1; $i < 300; ++$i) {
+        for ($i = 1; $i < (str_starts_with($_ENV['DB_DSN'], 'pdo_oci') ? 150 : 600); ++$i) {
             $strAllChars .= mb_chr($i);
         }
 
