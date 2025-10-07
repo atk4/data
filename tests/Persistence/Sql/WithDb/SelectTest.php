@@ -425,6 +425,11 @@ class SelectTest extends TestCase
         yield ['"false"', '$', 'string', 'false'];
         yield ['""', '$', 'string', ''];
 
+        $strAllChars = '';
+        for ($i = 1; $i < 300; ++$i) {
+            $strAllChars .= mb_chr($i);
+        }
+
         foreach ([
             '[]',
             '[[[[1]]]]',
@@ -438,6 +443,7 @@ class SelectTest extends TestCase
             '"10"',
             '"10.0"',
             '"10.00"',
+            json_encode($strAllChars, \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE),
             'false',
             'true',
             '[null]',
