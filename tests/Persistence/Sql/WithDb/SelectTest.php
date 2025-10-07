@@ -298,6 +298,26 @@ class SelectTest extends TestCase
         }
     }
 
+    private function fixExpectedJsonUsingPlatform(string $json, bool $forJsonValue): string
+    {
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform && (
+            MysqlConnection::isServerMariaDb($this->getConnection())
+                ? $forJsonValue
+                : version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0
+        )
+        || ($this->getDatabasePlatform() instanceof PostgreSQLPlatform && version_compare($this->getConnection()->getServerVersion(), '17.0') >= 0)
+        ) {
+            $json = str_replace('":', '": ', $json);
+        }
+
+        if ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            $json = preg_replace_callback('~(?<=\\\u)00[01][a-f]~', static fn ($matches) => strtoupper($matches[0]), $json);
+            $json = str_replace(chr(0x7F), '\u007F', $json);
+        }
+
+        return $json;
+    }
+
     /**
      * @dataProvider provideFxJsonValueCases
      *
@@ -349,14 +369,8 @@ class SelectTest extends TestCase
             $expectedValue = '0';
         }
 
-        if ($type === 'json' && $expectedValue !== null && (
-            $this->getDatabasePlatform() instanceof MySQLPlatform && (
-                MysqlConnection::isServerMariaDb($this->getConnection())
-                || version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0
-            )
-            || ($this->getDatabasePlatform() instanceof PostgreSQLPlatform && version_compare($this->getConnection()->getServerVersion(), '17.0') >= 0)
-        )) {
-            $expectedValue = str_replace('":', '": ', $expectedValue);
+        if ($type === 'json' && $expectedValue !== null) {
+            $expectedValue = $this->fixExpectedJsonUsingPlatform($expectedValue, true);
         }
 
         if ($type === 'json' && is_scalar(json_decode($expectedValue ?? '[]', true)) && (
@@ -464,14 +478,9 @@ class SelectTest extends TestCase
             $expectedRows = [['foo' => '10'], ['foo' => '20']];
         }
 
-        if (($this->getDatabasePlatform() instanceof MySQLPlatform && !MysqlConnection::isServerMariaDb($this->getConnection())
-            && version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0)
-            || ($this->getDatabasePlatform() instanceof PostgreSQLPlatform && version_compare($this->getConnection()->getServerVersion(), '17.0') >= 0)
-        ) {
-            foreach ($columns as $k => $column) {
-                if ($column['type'] === 'json') {
-                    $expectedRows = array_map(static fn ($row) => array_map(static fn ($v) => $v !== null ? str_replace('":', '": ', $v) : null, $row), $expectedRows);
-                }
+        foreach ($columns as $k => $column) {
+            if ($column['type'] === 'json') {
+                $expectedRows = array_map(fn ($row) => array_map(fn ($v) => $v !== null ? $this->fixExpectedJsonUsingPlatform($v, false) : null, $row), $expectedRows);
             }
         }
 
