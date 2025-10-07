@@ -185,7 +185,7 @@ class Query extends BaseQuery
 
                         if ($v !== null) {
                             if ($column['type'] === 'json') {
-                                $v = json_encode($v, \JSON_PRESERVE_ZERO_FRACTION | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
+                                $v = json_encode($v, \JSON_PRESERVE_ZERO_FRACTION | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
                             } elseif (is_array($v)) {
                                 $v = null;
                             }
