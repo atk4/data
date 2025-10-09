@@ -226,6 +226,16 @@ class Query extends BaseQuery
     }
 
     #[\Override]
+    public function fxJsonArrayAgg(Expressionable $value)
+    {
+        if (version_compare($this->connection->getServerVersion(), '17') < 0) {
+            return parent::fxJsonArrayAgg($value);
+        }
+
+        return $this->expr('json_arrayagg([] null on null)', [$value]);
+    }
+
+    #[\Override]
     public function jsonTable(Expressionable $json, array $columns, string $rowsPath = '$[*]')
     {
         assert(str_starts_with($rowsPath, '$'));

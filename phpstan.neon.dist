@@ -46,7 +46,7 @@ parameters:
             path: '*'
             identifier: class.nameCase
             message: '~^Class Doctrine\\DBAL\\(Platforms\\SqlitePlatform|Schema\\SqliteSchemaManager) referenced with incorrect case: Doctrine\\DBAL\\(Platforms\\SQLitePlatform|Schema\\SQLiteSchemaManager)\.$~'
-            count: 32
+            count: 33
 
         # remove once https://github.com/phpstan/phpstan/issues/11488 is fixed
         -

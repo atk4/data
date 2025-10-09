@@ -1231,6 +1231,24 @@ abstract class Query extends Expression
     }
 
     /**
+     * @return Expression
+     */
+    public function fxJsonArrayAgg(Expressionable $value)
+    {
+        $jsonExpr = $this->valueToJson($value);
+
+        return $this->fxConcat(
+            new RawExpression($this->escapeStringLiteral('[')),
+            $this->expr('replace([], [], [])', [
+                $this->groupConcat($jsonExpr, '-""-'),
+                new RawExpression($this->escapeStringLiteral('-""-')),
+                new RawExpression($this->escapeStringLiteral(', ')),
+            ]),
+            new RawExpression($this->escapeStringLiteral(']'))
+        );
+    }
+
+    /**
      * @param mixed $data
      *
      * @return mixed

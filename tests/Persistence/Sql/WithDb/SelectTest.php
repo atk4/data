@@ -357,6 +357,53 @@ class SelectTest extends TestCase
         );
     }
 
+    /**
+     * @dataProvider provideFxJsonArrayCases
+     *
+     * @param list<scalar|null> $values
+     */
+    #[DataProvider('provideFxJsonArrayCases')]
+    public function testFxJsonArrayAgg(array $values): void
+    {
+        if ($values === []) {
+            $tableExpr = $this->q()->field($this->e('1'), 'v')->limit(0);
+        } else {
+            $tableExpr = $this->e(
+                implode(' union all ', array_fill(0, count($values), '[]')),
+                array_map(function ($v) {
+                    $q = $this->q()->field($this->e('[]' . ($v === null && $this->getDatabasePlatform() instanceof PostgreSQLPlatform ? '::text' : ''), [$v]), 'v');
+                    $q->wrapInParentheses = false;
+
+                    return $q;
+                }, $values)
+            );
+            $tableExpr->wrapInParentheses = true;
+        }
+
+        $res = $this->q()
+            ->field($this->q()->fxJsonArrayAgg($this->e('{}', ['v'])))
+            ->table($tableExpr, 't')
+            ->getRows();
+
+        self::assertCount(1, $res);
+        self::assertCount(1, $res[0]);
+        $res = array_first($res[0]);
+
+        if ($values === []) {
+            if ($res === '[]' && ($this->getDatabasePlatform() instanceof SQLitePlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform)) {
+                $res = null;
+            }
+
+            self::assertNull($res);
+        } else {
+            self::assertStringStartsWith('[', $res);
+            self::{'assertEquals'}(
+                $values,
+                json_decode($res)
+            );
+        }
+    }
+
     public function testFxJsonValueRenderInt(): void
     {
         $expr = $this->q()->fxJsonValue($this->e('[]', ['{"v":10}']), '$.v', 'bigint');

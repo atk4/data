@@ -129,6 +129,12 @@ class Query extends BaseQuery
         ]);
     }
 
+    #[\Override]
+    public function fxJsonArrayAgg(Expressionable $value)
+    {
+        return $this->expr('json_agg([])', [$value]);
+    }
+
     private function replaceNullJsonToNull(BaseExpression $v): BaseExpression
     {
         return $this->expr(
