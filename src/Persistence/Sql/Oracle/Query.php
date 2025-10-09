@@ -212,6 +212,18 @@ class Query extends BaseQuery
         return $this->expr($sql, $sqlArgs);
     }
 
+    #[\Override]
+    public function fxJsonArray(array $values)
+    {
+        if ($values === []) {
+            return $this->expr('[]', [new RawExpression($this->escapeStringLiteral('[]'))]);
+        }
+
+        return $this->expr('json_array(' . implode(', ', array_fill(0, count($values), '[]')) . ' null on null returning CLOB)', [
+            ...$values,
+        ]);
+    }
+
     private function makeReturningClauseType(string $type): string
     {
         return ['boolean' => 'NUMBER(1)', 'bigint' => 'NUMBER(20)', 'float' => 'NUMBER'][$type] ?? 'VARCHAR2';

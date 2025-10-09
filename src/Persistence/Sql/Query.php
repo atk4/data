@@ -1173,6 +1173,63 @@ abstract class Query extends Expression
         );
     }
 
+    private function valueToJson(Expressionable $value): Expressionable
+    {
+        $makeReplaceFx = function ($v, $from, $to) {
+            return $this->expr('replace([], [], [])', [
+                $v,
+                new RawExpression($this->escapeStringLiteral($from)),
+                new RawExpression($this->escapeStringLiteral($to)),
+            ]);
+        };
+
+        $res = $makeReplaceFx($value, '"', '\"');
+        $res = $makeReplaceFx($res, '\\', '\\\\');
+        $res = $makeReplaceFx($res, '\\\"', '\"');
+
+        foreach ([...range(1, 0x1F), 0x7F] as $i) {
+            $res = $makeReplaceFx($res, chr($i), '\u' . str_pad(dechex($i), 4, '0', \STR_PAD_LEFT));
+        }
+
+        $res = $this->fxConcat(
+            new RawExpression($this->escapeStringLiteral('"')),
+            $res,
+            new RawExpression($this->escapeStringLiteral('"'))
+        );
+
+        return $this->expr('case when [] is not null then [] else [] end', [
+            $value,
+            $res,
+            new RawExpression($this->escapeStringLiteral('null')),
+        ]);
+    }
+
+    /**
+     * @param list<Expressionable> $values
+     *
+     * @return Expression
+     */
+    public function fxJsonArray(array $values)
+    {
+        $parts = [];
+        $isFirst = true;
+        foreach ($values as $v) {
+            if ($isFirst) {
+                $isFirst = false;
+            } else {
+                $parts[] = new RawExpression($this->escapeStringLiteral(', '));
+            }
+
+            $parts[] = $this->valueToJson($v);
+        }
+
+        return $this->fxConcat(
+            new RawExpression($this->escapeStringLiteral('[')),
+            ...$parts,
+            ...[new RawExpression($this->escapeStringLiteral(']'))]
+        );
+    }
+
     /**
      * @param mixed $data
      *
@@ -1294,7 +1351,7 @@ abstract class Query extends Expression
 
                 if ($v !== null) {
                     if ($column['type'] === 'json') {
-                        $v = json_encode($v, \JSON_PRESERVE_ZERO_FRACTION | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
+                        $v = json_encode($v, \JSON_PRESERVE_ZERO_FRACTION | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
                     } elseif (is_array($v)) {
                         $v = null;
                     }
@@ -1330,7 +1387,7 @@ abstract class Query extends Expression
             $jsonRows[] = array_values($row);
         }
 
-        $json = json_encode($jsonRows, \JSON_PRESERVE_ZERO_FRACTION | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
+        $json = json_encode($jsonRows, \JSON_PRESERVE_ZERO_FRACTION | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
 
         $columns = [];
         $i = 0;

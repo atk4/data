@@ -121,6 +121,14 @@ class Query extends BaseQuery
         return $this->expr('string_agg({}, [])', [$field, $separator]);
     }
 
+    #[\Override]
+    public function fxJsonArray(array $values)
+    {
+        return $this->expr('json_build_array(' . implode(', ', array_fill(0, count($values), '[]')) . ')', [
+            ...$values,
+        ]);
+    }
+
     private function replaceNullJsonToNull(BaseExpression $v): BaseExpression
     {
         return $this->expr(
@@ -185,7 +193,7 @@ class Query extends BaseQuery
 
                         if ($v !== null) {
                             if ($column['type'] === 'json') {
-                                $v = json_encode($v, \JSON_PRESERVE_ZERO_FRACTION | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
+                                $v = json_encode($v, \JSON_PRESERVE_ZERO_FRACTION | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
                             } elseif (is_array($v)) {
                                 $v = null;
                             }
