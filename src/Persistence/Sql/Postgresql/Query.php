@@ -121,6 +121,14 @@ class Query extends BaseQuery
         return $this->expr('string_agg({}, [])', [$field, $separator]);
     }
 
+    #[\Override]
+    public function fxJsonArray(array $values)
+    {
+        return $this->expr('json_build_array(' . implode(', ', array_fill(0, count($values), '[]')) . ')', [
+            ...$values,
+        ]);
+    }
+
     private function replaceNullJsonToNull(BaseExpression $v): BaseExpression
     {
         return $this->expr(

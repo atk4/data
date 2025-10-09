@@ -222,6 +222,89 @@ class SelectTest extends TestCase
         );
     }
 
+    public function testFxJsonArrayRender(): void
+    {
+        $expr = $this->q()->fxJsonArray([$this->e('{} + []', ['u', 10])]);
+
+        $makeReplaceControlCharsFx = static function ($v) {
+            $makeReplaceFx = static function ($v, $i) {
+                return 'replace(' . $v . ', \'' . chr($i) . '\', \'\u' . str_pad(dechex($i), 4, '0', \STR_PAD_LEFT) . '\')';
+            };
+
+            foreach ([...range(1, 0x1F), 0x7F] as $i) {
+                $v = $makeReplaceFx($v, $i);
+            }
+
+            return $v;
+        };
+
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            if (!MysqlConnection::isServerMariaDb($this->getConnection()) && version_compare($this->getConnection()->getServerVersion(), '5.7.8') < 0) {
+                self::assertSameSql('concat(\'[\', case when `u` + :a is not null then concat(\'"\', ' . $makeReplaceControlCharsFx('replace(replace(replace(`u` + :b, \'"\', \'\"\'), \'\\\', \'\\\\\'), \'\\\"\', \'\"\')') . ', \'"\') else \'null\' end, \']\')', $expr->render()[0]);
+                self::assertSame([':a' => 10, ':b' => 10], $expr->render()[1]);
+            } else {
+                self::assertSameSql('json_array(`u` + :a)', $expr->render()[0]);
+                self::assertSame([':a' => 10], $expr->render()[1]);
+            }
+        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            self::assertSameSql('json_build_array(`u` + :a)', $expr->render()[0]);
+            self::assertSame([':a' => 10], $expr->render()[1]);
+        } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+            if (version_compare($this->getConnection()->getServerVersion(), '16') < 0) {
+                self::assertSameSql('concat(\'[\', case when `u` + :a is not null then concat(\'"\', ' . $makeReplaceControlCharsFx('replace(replace(replace(`u` + :b, \'"\', \'\"\'), \'\\\', \'\\\\\'), \'\\\"\', \'\"\')') . ', \'"\') else \'null\' end, \']\')', $expr->render()[0]);
+                self::assertSame([':a' => 10, ':b' => 10], $expr->render()[1]);
+            } else {
+                self::assertSameSql('json_array(`u` + :a null on null)', $expr->render()[0]);
+                self::assertSame([':a' => 10], $expr->render()[1]);
+            }
+        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            self::assertSameSql('json_array(`u` + :a null on null returning CLOB)', $expr->render()[0]);
+            self::assertSame([':xxaaaa' => 10], $expr->render()[1]);
+        } else {
+            self::assertSameSql('json_array(`u` + :a)', $expr->render()[0]);
+            self::assertSame([':a' => 10], $expr->render()[1]);
+        }
+    }
+
+    /**
+     * @dataProvider provideFxJsonArrayCases
+     *
+     * @param list<scalar|null> $values
+     */
+    #[DataProvider('provideFxJsonArrayCases')]
+    public function testFxJsonArray(array $values): void
+    {
+        $res = $this->q()
+            ->field($this->q()->fxJsonArray(
+                array_map(fn ($v) => $this->e('[]' . ($v === null && $this->getDatabasePlatform() instanceof PostgreSQLPlatform ? '::text' : ''), [$v]), $values)
+            ))
+            ->getOne();
+
+        self::assertStringStartsWith('[', $res);
+        self::{'assertEquals'}(
+            $values,
+            json_decode($res)
+        );
+    }
+
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideFxJsonArrayCases(): iterable
+    {
+        yield [[]];
+
+        foreach (self::provideFxJsonValueCases() as [$json, $path, $type]) {
+            if ($path === '$' && $type === 'json') {
+                $value = json_decode($json, true);
+
+                if (is_scalar($value) || $value === null) {
+                    yield [[$value, $value]];
+                }
+            }
+        }
+    }
+
     public function testFxJsonValueRenderInt(): void
     {
         $expr = $this->q()->fxJsonValue($this->e('[]', ['{"v":10}']), '$.v', 'bigint');

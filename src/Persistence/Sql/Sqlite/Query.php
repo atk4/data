@@ -165,6 +165,14 @@ class Query extends BaseQuery
     }
 
     #[\Override]
+    public function fxJsonArray(array $values)
+    {
+        return $this->expr('json_array(' . implode(', ', array_fill(0, count($values), '[]')) . ')', [
+            ...$values,
+        ]);
+    }
+
+    #[\Override]
     public function fxJsonValue(Expressionable $json, string $path, string $type, ?Expressionable $jsonRootType = null)
     {
         $jsonType = $jsonRootType !== null && $path === '$'

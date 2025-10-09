@@ -75,6 +75,18 @@ class Query extends BaseQuery
         return $this->expr('group_concat({} separator ' . $this->escapeStringLiteral($separator) . ')', [$field]);
     }
 
+    #[\Override]
+    public function fxJsonArray(array $values)
+    {
+        if (!Connection::isServerMariaDb($this->connection) && version_compare($this->connection->getServerVersion(), '5.7.8') < 0) {
+            return parent::fxJsonArray($values);
+        }
+
+        return $this->expr('json_array(' . implode(', ', array_fill(0, count($values), '[]')) . ')', [
+            ...$values,
+        ]);
+    }
+
     /**
      * @return ($forJsonValue is true ? array{string, string, string|null} : string)
      */
