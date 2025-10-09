@@ -293,6 +293,7 @@ class SelectTest extends TestCase
     public static function provideFxJsonArrayCases(): iterable
     {
         yield [[]];
+        yield [['foo']];
 
         foreach (self::provideFxJsonValueCases() as [$json, $path, $type]) {
             if ($path === '$' && $type === 'json') {
