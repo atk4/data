@@ -305,6 +305,30 @@ class SelectTest extends TestCase
         }
     }
 
+    public function testFxJsonArrayJson(): void
+    {
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform && version_compare($this->getConnection()->getServerVersion(), MysqlConnection::isServerMariaDb($this->getConnection()) ? '10.6' : '8.0') < 0
+            || $this->getDatabasePlatform() instanceof SQLServerPlatform && version_compare($this->getConnection()->getServerVersion(), '16') < 0
+            || $this->getDatabasePlatform() instanceof OraclePlatform && version_compare($this->getConnection()->getServerVersion(), '21.0') < 0
+        ) {
+            self::markTestIncomplete('JSON type is not supported by some older databases');
+        }
+
+        $json = '{"v":10}';
+
+        $res = $this->q()
+            ->field($this->q()->fxJsonArray([
+                $this->q()->fxJsonValue($this->e('[]', [$json]), '$', 'json'),
+            ]))
+            ->getOne();
+
+        self::assertStringStartsWith('[', $res);
+        self::assertSame(
+            [['v' => 10]],
+            json_decode($res, true)
+        );
+    }
+
     public function testFxJsonValueRenderInt(): void
     {
         $expr = $this->q()->fxJsonValue($this->e('[]', ['{"v":10}']), '$.v', 'bigint');
