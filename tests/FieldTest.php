@@ -898,6 +898,7 @@ class FieldTest extends TestCase
         });
 
         $entity = $m->createEntity();
+        self::assertNull($entity->get('foo'));
         $entity->set('foo', 'y');
         self::assertSame('x', $entity->get('foo'));
     }
