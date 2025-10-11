@@ -64,17 +64,20 @@ abstract class ContainsBase extends Reference
                 return;
             }
 
-            // allow load/save from ContainsOne hooks
-            foreach (array_slice(debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS), 1) as $frame) {
-                if (($frame['class'] ?? null) === static::class) {
+            $calledFromModelSet = false;
+            foreach (debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS | \DEBUG_BACKTRACE_PROVIDE_OBJECT) as $frame) {
+                if ($frame['function'] === 'set' && ($frame['object'] ?? null) instanceof Model && $frame['object']->getModel() === $this->getOurModel()) {
+                    $calledFromModelSet = true;
+                }
+
+                // allow save from ContainsOne hooks
+                if ($calledFromModelSet && ($frame['object'] ?? null) === $this) {
                     return;
                 }
             }
 
-            foreach (debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS | \DEBUG_BACKTRACE_PROVIDE_OBJECT) as $frame) {
-                if ($frame['function'] === 'set' && ($frame['object'] ?? null) instanceof Model && $frame['object']->getModel() === $this->getOurModel()) {
-                    throw new Exception('ContainsXxx does not support unmanaged data modification');
-                }
+            if ($calledFromModelSet) {
+                throw new Exception('ContainsXxx does not support unmanaged data modification');
             }
         });
     }
