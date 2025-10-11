@@ -131,7 +131,7 @@ class Field implements Expressionable
     public function normalize($value)
     {
         try {
-            if ($this->issetOwner() && $this->getOwner()->hook(Model::HOOK_NORMALIZE, [$this, $value]) === false) {
+            if ($this->issetOwner() && $this->getOwner()->hook(Model::HOOK_NORMALIZE, [$this, &$value]) === false) {
                 return $value;
             }
 
