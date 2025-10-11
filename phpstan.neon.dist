@@ -10,7 +10,7 @@ parameters:
         - vendor
 
     featureToggles:
-        tooWideImplicitThrows: false # TODO remove once https://github.com/phpstan/phpstan/issues/13671 is fixed
+        tooWideImplicitThrows: false # https://github.com/phpstan/phpstan/issues/13671
 
     ignoreErrors:
         - '~^Unsafe usage of new static\(\)\.$~'
