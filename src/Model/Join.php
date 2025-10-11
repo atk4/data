@@ -529,7 +529,12 @@ abstract class Join
     {
         foreach ($entity->get() as $name => $value) {
             $field = $entity->getField($name);
-            if (!$field->hasJoin() || $field->getJoin()->shortName !== $this->shortName || $field->readOnly || $field->neverPersist || $field->neverSave) {
+            if (!$field->hasJoin() || $field->getJoin()->shortName !== $this->shortName) {
+                continue;
+            }
+            assert($field->getJoin() === $this);
+
+            if ($field->readOnly || $field->neverPersist || $field->neverSave) {
                 continue;
             }
 
