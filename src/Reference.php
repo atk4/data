@@ -443,7 +443,7 @@ class Reference
      *
      * @param array<string, mixed> $defaults
      */
-    public function ref(Model $ourModel, array $defaults = []): Model
+    public function ref(Model $ourModelOrEntity, array $defaults = []): Model
     {
         return $this->createTheirModel($defaults);
     }
