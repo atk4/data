@@ -71,7 +71,11 @@ abstract class ContainsBase extends Reference
                 }
             }
 
-            throw new Exception('ContainsXxx does not support unmanaged data modification');
+            foreach (debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS | \DEBUG_BACKTRACE_PROVIDE_OBJECT) as $frame) {
+                if ($frame['function'] === 'set' && ($frame['object'] ?? null) instanceof Model && $frame['object']->getModel() === $this->getOurModel()) {
+                    throw new Exception('ContainsXxx does not support unmanaged data modification');
+                }
+            }
         });
     }
 
