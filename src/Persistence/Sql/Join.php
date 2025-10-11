@@ -34,7 +34,9 @@ class Join extends Model\Join
 
         // TODO this mutates the owner model/joins!
         if (!$this->reverse && !$this->getOwner()->hasField($this->masterField)) {
-            $owner = $this->hasJoin() ? $this->getJoin() : $this->getOwner();
+            $owner = $this->hasJoin()
+                ? $this->getJoin()
+                : $this->getOwner();
             $field = $owner->addField($this->masterField, ['type' => 'bigint', 'system' => true, 'readOnly' => true]);
             $this->masterField = $field->shortName; // TODO this mutates the join!
         } elseif ($this->reverse && !$this->getOwner()->hasField($this->foreignField) && $this->hasJoin()) {
