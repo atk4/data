@@ -32,6 +32,8 @@ class Join extends Model\Join
         $dataRef = &$entity->getDataRef();
         foreach ($model->getFields() as $field) {
             if ($field->hasJoin() && $field->getJoin()->shortName === $this->shortName) {
+                assert($field->getJoin() === $this);
+
                 $dataRef[$field->shortName] = $foreignData[$field->getPersistenceName()];
             }
         }

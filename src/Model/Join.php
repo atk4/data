@@ -141,6 +141,8 @@ abstract class Join
         ]);
         foreach ($this->getOwner()->getFields() as $ownerField) {
             if ($ownerField->hasJoin() && $ownerField->getJoin()->shortName === $this->shortName) {
+                assert($ownerField->getJoin() === $this);
+
                 $ownerFieldPersistenceName = $ownerField->getPersistenceName();
                 if ($ownerFieldPersistenceName !== $fakeModel->idField && $ownerFieldPersistenceName !== $this->foreignField) {
                     $fakeModel->addField($ownerFieldPersistenceName, [
@@ -457,6 +459,8 @@ abstract class Join
         $res = [];
         foreach ($this->getOwner()->getJoins() as $join) {
             if ($join->hasJoin() && $join->getJoin()->shortName === $this->shortName) {
+                assert($join->getJoin() === $this);
+
                 $res[] = $join;
             }
         }
@@ -529,7 +533,12 @@ abstract class Join
     {
         foreach ($entity->get() as $name => $value) {
             $field = $entity->getField($name);
-            if (!$field->hasJoin() || $field->getJoin()->shortName !== $this->shortName || $field->readOnly || $field->neverPersist || $field->neverSave) {
+            if (!$field->hasJoin() || $field->getJoin()->shortName !== $this->shortName) {
+                continue;
+            }
+            assert($field->getJoin() === $this);
+
+            if ($field->readOnly || $field->neverPersist || $field->neverSave) {
                 continue;
             }
 

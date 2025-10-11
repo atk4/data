@@ -687,7 +687,7 @@ abstract class Expression implements Expressionable, \ArrayAccess
     }
 
     /**
-     * @param string|int|float|bool|null $v
+     * @param string|resource|int|float|bool|null $v
      */
     private function castGetValue($v): ?string
     {

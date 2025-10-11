@@ -9,6 +9,9 @@ parameters:
     excludePaths:
         - vendor
 
+    featureToggles:
+        tooWideImplicitThrows: false # https://github.com/phpstan/phpstan/issues/13671
+
     ignoreErrors:
         - '~^Unsafe usage of new static\(\)\.$~'
 

@@ -889,6 +889,20 @@ class FieldTest extends TestCase
         $m->set('c', null);
     }
 
+    public function testNormalizeMutateFromHook(): void
+    {
+        $m = new Model();
+        $m->addField('foo');
+        $m->onHookShort(Model::HOOK_NORMALIZE, static function (Field $field, &$value) {
+            $value = 'x';
+        });
+
+        $entity = $m->createEntity();
+        self::assertNull($entity->get('foo'));
+        $entity->set('foo', 'y');
+        self::assertSame('x', $entity->get('foo'));
+    }
+
     public function testEntityFieldPair(): void
     {
         $m = new Model();

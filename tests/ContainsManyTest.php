@@ -301,6 +301,8 @@ class ContainsManyTest extends TestCase
         $i = new Invoice($this->db);
         $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
 
+        $i->getField($i->fieldName()->lines)->normalize([]);
+
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('ContainsXxx does not support unmanaged data modification');
         $i->set($i->fieldName()->lines, [0]);
