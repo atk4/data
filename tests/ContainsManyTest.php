@@ -108,6 +108,8 @@ class ContainsManyTest extends TestCase
         ];
 
         foreach ($rows as $row) {
+            unset($row[$l->fieldName()->discounts]);
+
             $l->insert($row);
         }
 
@@ -125,7 +127,6 @@ class ContainsManyTest extends TestCase
                 $l->fieldName()->vat_rate_id => 2,
                 $l->fieldName()->price => 50,
                 $l->fieldName()->qty => 3,
-                $l->fieldName()->discounts => null,
                 $l->fieldName()->add_date => new \DateTime('2019-01-01'),
             ]);
         $rows = [

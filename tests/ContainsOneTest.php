@@ -47,12 +47,10 @@ class ContainsOneTest extends TestCase
             [
                 $m->fieldName()->id => 1,
                 $m->fieldName()->ref_no => 'A1',
-                $m->fieldName()->addr => null,
             ],
             [
                 $m->fieldName()->id => 2,
                 $m->fieldName()->ref_no => 'A2',
-                $m->fieldName()->addr => null,
             ],
         ]);
     }
@@ -87,8 +85,8 @@ class ContainsOneTest extends TestCase
             $a->fieldName()->address => 'foo',
             $a->fieldName()->built_date => new \DateTime('2019-01-01'),
             $a->fieldName()->tags => ['foo', 'bar'],
-            $a->fieldName()->door_code => null,
         ]);
+        $row[$a->fieldName()->door_code] = null;
         $a->save();
 
         // now reload invoice and see if it is saved
@@ -179,8 +177,8 @@ class ContainsOneTest extends TestCase
             $a->fieldName()->address => 'foo',
             $a->fieldName()->built_date => new \DateTime('2019-01-01'),
             $a->fieldName()->tags => [],
-            $a->fieldName()->door_code => null,
         ]);
+        $row[$a->fieldName()->door_code] = null;
         $a->save();
 
         // now let's add one more field in address model and save
@@ -334,5 +332,20 @@ class ContainsOneTest extends TestCase
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Contained model data cannot be modified directly');
         $i->set($i->fieldName()->addr, [0]);
+    }
+
+    public function testUnmanagedDataModificationSetNullException(): void
+    {
+        $i = new Invoice($this->db);
+        $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
+
+        $i->getField($i->fieldName()->addr)
+            ->getReference()->ref($i)
+            ->save(['address' => 'foo']);
+        self::assertSame('foo', $i->addr->address);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Contained model data cannot be modified directly');
+        $i->setNull($i->fieldName()->addr);
     }
 }

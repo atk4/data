@@ -61,27 +61,24 @@ abstract class ContainsBase extends Reference
             }
             assert($field->getReference() === $this);
 
-            // TODO allowing null value to be set will not fire any HOOK_BEFORE_DELETE/HOOK_AFTER_DELETE hook
-            if ($value === null) {
-                return;
-            }
-
             $calledFromModelSet = false;
             foreach (debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS | \DEBUG_BACKTRACE_PROVIDE_OBJECT) as $frame) {
-                if ($frame['function'] === 'set' && ($frame['object'] ?? null) instanceof Model && $frame['object']->getModel() === $this->getOurModel()) {
-                    $calledFromModelSet = true;
-                }
-
-                // allow save from ContainsOne hooks
-                if ($calledFromModelSet && ($frame['object'] ?? null) === $this) {
-                    return;
+                if (!$calledFromModelSet) {
+                    if ($frame['function'] === 'set' && ($frame['object'] ?? null) instanceof Model && $frame['object']->getModel() === $this->getOurModel()) {
+                        $calledFromModelSet = true;
+                    }
+                } else {
+                    // allow save from ContainsOne hooks
+                    if (($frame['object'] ?? null) === $this) {
+                        return;
+                    }
                 }
             }
 
             if ($calledFromModelSet) {
                 throw new Exception('Contained model data cannot be modified directly');
             }
-        });
+        }, [], \PHP_INT_MIN);
 
         $this->onHookToOurModel(Model::HOOK_BEFORE_DELETE, function (Model $ourEntity) {
             $this->deleteTheirEntities($ourEntity);

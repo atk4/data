@@ -784,7 +784,7 @@ class Model implements \IteratorAggregate
         // set temporary hook to disable any normalization (null validation)
         $hookIndex = $this->getModel()->onHookShort(self::HOOK_NORMALIZE, static function () {
             throw new HookBreaker(false);
-        }, [], \PHP_INT_MIN);
+        }, [], \PHP_INT_MIN + 1_000);
         try {
             return $this->set($field, null);
         } finally {
