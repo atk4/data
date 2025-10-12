@@ -18,10 +18,19 @@ class ContainsMany extends ContainsBase
             'containedInEntity' => $ourModelOrEntity->isEntity() ? $ourModelOrEntity : null,
         ]));
 
+        $makeSeedDataFx = static function (array $ourValue) use ($theirModel) {
+            $idKey = $theirModel->getIdField()->getPersistenceName();
+
+            return array_combine(
+                array_map(static fn ($v) => $v[$idKey], $ourValue),
+                $ourValue
+            );
+        };
+
         $this->setTheirModelPersistenceSeedData(
             $theirModel,
             $ourModelOrEntity->isEntity() && $this->getOurFieldValue($ourModelOrEntity) !== null
-                ? $this->getOurFieldValue($ourModelOrEntity)
+                ? $makeSeedDataFx($this->getOurFieldValue($ourModelOrEntity))
                 : []
         );
 
@@ -33,7 +42,7 @@ class ContainsMany extends ContainsBase
 
                 $persistence = Persistence\Array_::assertInstanceOf($theirEntity->getModel()->getPersistence());
                 $rows = $persistence->getRawDataByTable($theirEntity->getModel(), $this->tableAlias); // @phpstan-ignore method.deprecated
-                $ourEntity->save([$this->getOurFieldName() => $rows !== [] ? $rows : null]);
+                $ourEntity->save([$this->getOurFieldName() => $rows !== [] ? array_values($rows) : null]);
             });
         }
 

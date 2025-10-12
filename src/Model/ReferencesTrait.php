@@ -67,7 +67,7 @@ trait ReferencesTrait
      *
      * @param array<string, mixed> $defaults
      *
-     * @return Reference\HasOne|Reference\HasOneSql
+     * @return Reference\HasOne
      */
     public function hasOne(string $link, array $defaults): Reference
     {
