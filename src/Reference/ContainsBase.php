@@ -68,7 +68,7 @@ abstract class ContainsBase extends Reference
                         $calledFromModelSet = true;
                     }
                 } else {
-                    // allow save from ContainsOne hooks
+                    // allow save from ContainsOne/ContainsMany hooks
                     if (($frame['object'] ?? null) === $this) {
                         return;
                     }
