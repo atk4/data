@@ -173,25 +173,20 @@ class ContainsManyTest extends TestCase
         // now let's add some lines
         $l = $i->lines;
 
-        $rows = [
-            1 => [
-                $l->fieldName()->id => 1,
-                $l->fieldName()->vat_rate_id => 1,
-                $l->fieldName()->price => 10,
-                $l->fieldName()->qty => 2,
-                $l->fieldName()->add_date => new \DateTime('2019-06-01'),
-            ],
-            [
-                $l->fieldName()->id => 2,
-                $l->fieldName()->vat_rate_id => 2,
-                $l->fieldName()->price => 15,
-                $l->fieldName()->qty => 5,
-                $l->fieldName()->add_date => new \DateTime('2019-07-01'),
-            ],
-        ];
-        foreach ($rows as $row) {
-            $l->insert($row);
-        }
+        $l->insert([
+            $l->fieldName()->id => 1,
+            $l->fieldName()->vat_rate_id => 1,
+            $l->fieldName()->price => 10,
+            $l->fieldName()->qty => 2,
+            $l->fieldName()->add_date => new \DateTime('2019-06-01'),
+        ]);
+        $l->insert([
+            $l->fieldName()->id => 2,
+            $l->fieldName()->vat_rate_id => 2,
+            $l->fieldName()->price => 15,
+            $l->fieldName()->qty => 5,
+            $l->fieldName()->add_date => new \DateTime('2019-07-01'),
+        ]);
 
         // add some discounts
         $l->load(1)->discounts->insert([
@@ -243,14 +238,14 @@ class ContainsManyTest extends TestCase
         };
         self::assertJsonStringEqualsJsonString(
             json_encode([
-                1 => [
+                [
                     $i->lines->fieldName()->id => 1,
                     $i->lines->fieldName()->vat_rate_id => 1,
                     $i->lines->fieldName()->price => 10.0,
                     $i->lines->fieldName()->qty => 2,
                     $i->lines->fieldName()->add_date => $formatDtForCompareFx(new \DateTime('2019-06-01')),
                     $i->lines->fieldName()->discounts => json_encode([
-                        1 => [
+                        [
                             $i->lines->discounts->fieldName()->id => 1,
                             $i->lines->discounts->fieldName()->percent => 5,
                             $i->lines->discounts->fieldName()->valid_till => $formatDtForCompareFx(new \DateTime('2019-07-15')),
@@ -269,7 +264,7 @@ class ContainsManyTest extends TestCase
                     $i->lines->fieldName()->qty => 5,
                     $i->lines->fieldName()->add_date => $formatDtForCompareFx(new \DateTime('2019-07-01')),
                     $i->lines->fieldName()->discounts => json_encode([
-                        1 => [
+                        [
                             $i->lines->discounts->fieldName()->id => 1,
                             $i->lines->discounts->fieldName()->percent => 20,
                             $i->lines->discounts->fieldName()->valid_till => $formatDtForCompareFx(new \DateTime('2019-12-31')),
