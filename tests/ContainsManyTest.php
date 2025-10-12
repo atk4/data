@@ -299,7 +299,7 @@ class ContainsManyTest extends TestCase
         $i->getField($i->fieldName()->lines)->normalize([]);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('ContainsXxx does not support unmanaged data modification');
+        $this->expectExceptionMessage('Contained model data cannot be modified directly');
         $i->set($i->fieldName()->lines, [0]);
     }
 }

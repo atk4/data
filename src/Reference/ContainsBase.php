@@ -51,8 +51,8 @@ abstract class ContainsBase extends Reference
             ]);
         }
 
-        // TODO https://github.com/atk4/data/issues/881
-        // prevent unmanaged ContainsXxx data modification (/wo proper normalize, hooks, ...)
+        // prevent unmanaged data modification
+        // https://github.com/atk4/data/issues/881
         $this->onHookToOurModel(Model::HOOK_NORMALIZE, function (Model $ourModel, Field $field, $value) {
             if (!$field->hasReference() || $field->shortName !== $this->getOurFieldName()) {
                 return;
@@ -77,7 +77,7 @@ abstract class ContainsBase extends Reference
             }
 
             if ($calledFromModelSet) {
-                throw new Exception('ContainsXxx does not support unmanaged data modification');
+                throw new Exception('Contained model data cannot be modified directly');
             }
         });
     }

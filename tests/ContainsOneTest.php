@@ -223,7 +223,7 @@ class ContainsOneTest extends TestCase
         $i->getField($i->fieldName()->addr)->normalize([]);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('ContainsXxx does not support unmanaged data modification');
+        $this->expectExceptionMessage('Contained model data cannot be modified directly');
         $i->set($i->fieldName()->addr, [0]);
     }
 }
