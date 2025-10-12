@@ -35,7 +35,7 @@ class ContainsOne extends ContainsBase
                 $row = $persistence->getRawDataByTable($theirEntity->getModel(), $this->tableAlias); // @phpstan-ignore method.deprecated
                 $row = $row ? array_shift($row) : null; // get first and only one record from array persistence
                 $ourEntity->save([$this->getOurFieldName() => $row]);
-            });
+            }, [], self::EARLY_HOOK_PRIORITY);
         }
 
         if ($ourModelOrEntity->isEntity()) {

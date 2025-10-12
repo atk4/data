@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests;
 
 use Atk4\Data\Exception;
+use Atk4\Data\Model;
+use Atk4\Data\Reference;
 use Atk4\Data\Schema\TestCase;
 use Atk4\Data\Tests\ContainsOne\Address;
 use Atk4\Data\Tests\ContainsOne\Country;
@@ -213,6 +215,105 @@ class ContainsOneTest extends TestCase
         self::assertNotSame($i->getPersistence(), $i->addr->getPersistence());
         self::assertSame($i->getPersistence(), $i->addr->country_id->getPersistence());
         self::assertSame($i->getPersistence(), $i->addr->door_code->containedInPersistence);
+    }
+
+    /**
+     * @param mixed $log
+     *
+     * @param-out list<array{class-string<Model>, Model::HOOK_*}> $log
+     */
+    private function createInvoiceEntityWithLogger(&$log): Invoice
+    {
+        $log = [];
+        $addLogHooksFx = static function (Model $m) use (&$log) {
+            foreach ([Model::HOOK_BEFORE_SAVE, Model::HOOK_AFTER_SAVE, Model::HOOK_BEFORE_DELETE, Model::HOOK_AFTER_DELETE] as $spot) {
+                foreach ([\PHP_INT_MIN, \PHP_INT_MAX] as $priority) {
+                    $m->onHook($spot, static function (Model $m) use (&$log, $spot, $priority) {
+                        $log[] = [get_class($m), $spot, $priority === \PHP_INT_MIN ? '>' : '<'];
+                    }, [], $priority);
+                }
+            }
+        };
+
+        $invoice = new Invoice($this->db);
+        $addLogHooksFx($invoice);
+
+        $createTheirModelFx = static function () use ($addLogHooksFx) {
+            $address = new Address();
+            $addLogHooksFx($address);
+
+            return $address;
+        };
+        \Closure::bind(static fn () => $invoice->getField($invoice->fieldName()->addr)->getReference()->model = $createTheirModelFx, null, Reference::class)();
+
+        $invoiceEntity = $invoice->loadBy($invoice->fieldName()->ref_no, 'A1');
+
+        $invoice->getField($invoice->fieldName()->addr)
+            ->getReference()->ref($invoiceEntity)
+            ->save(['address' => 'foo']);
+        self::assertSame(1, $invoiceEntity->addr->id);
+        self::assertSame('foo', $invoiceEntity->addr->address);
+
+        return $invoiceEntity;
+    }
+
+    public function testSaveHooks(): void
+    {
+        $i = $this->createInvoiceEntityWithLogger($log);
+
+        $expectedLog = [
+            [Address::class, Model::HOOK_BEFORE_SAVE, '>'],
+            [Address::class, Model::HOOK_BEFORE_SAVE, '<'],
+            [Address::class, Model::HOOK_AFTER_SAVE, '>'],
+            [Invoice::class, Model::HOOK_BEFORE_SAVE, '>'],
+            [Invoice::class, Model::HOOK_BEFORE_SAVE, '<'],
+            [Invoice::class, Model::HOOK_AFTER_SAVE, '>'],
+            [Invoice::class, Model::HOOK_AFTER_SAVE, '<'],
+            [Address::class, Model::HOOK_AFTER_SAVE, '<'],
+        ];
+        self::assertSame($expectedLog, $log);
+
+        $log = [];
+        $address = $i->addr;
+        $address->address = 'bar';
+        self::assertSame([], $log);
+        $address->save();
+
+        self::assertSame($expectedLog, $log);
+    }
+
+    public function testDeleteHooksOnOwnerDelete(): void
+    {
+        $i = $this->createInvoiceEntityWithLogger($log);
+
+        $log = [];
+        $i->delete();
+
+        self::assertSame([
+            [Invoice::class, Model::HOOK_BEFORE_DELETE, '>'],
+            [Invoice::class, Model::HOOK_BEFORE_DELETE, '<'],
+            [Invoice::class, Model::HOOK_AFTER_DELETE, '>'],
+            [Invoice::class, Model::HOOK_AFTER_DELETE, '<'],
+        ], $log);
+    }
+
+    public function testDeleteHooksOnContainedDelete(): void
+    {
+        $i = $this->createInvoiceEntityWithLogger($log);
+
+        $log = [];
+        $i->addr->delete();
+
+        self::assertSame([
+            [Address::class, Model::HOOK_BEFORE_DELETE, '>'],
+            [Address::class, Model::HOOK_BEFORE_DELETE, '<'],
+            [Address::class, Model::HOOK_AFTER_DELETE, '>'],
+            [Invoice::class, Model::HOOK_BEFORE_SAVE, '>'],
+            [Invoice::class, Model::HOOK_BEFORE_SAVE, '<'],
+            [Invoice::class, Model::HOOK_AFTER_SAVE, '>'],
+            [Invoice::class, Model::HOOK_AFTER_SAVE, '<'],
+            [Address::class, Model::HOOK_AFTER_DELETE, '<'],
+        ], $log);
     }
 
     public function testUnmanagedDataModificationException(): void

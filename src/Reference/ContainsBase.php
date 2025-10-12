@@ -12,6 +12,8 @@ use Atk4\Data\Reference;
 
 abstract class ContainsBase extends Reference
 {
+    protected const EARLY_HOOK_PRIORITY = -500;
+
     public bool $checkTheirType = false;
 
     /** Field type. */

@@ -29,7 +29,7 @@ class Line extends Model
         $this->addField($this->fieldName()->add_date, ['type' => 'datetime']);
 
         $this->addExpression($this->fieldName()->total_gross, ['expr' => static function (self $m) {
-            return $m->price * $m->qty * (1 + $m->vat_rate_id->rate / 100);
+            return $m->price * $m->qty * (1 + ($m->vat_rate_id !== null ? $m->vat_rate_id->rate : 0) / 100); // @phpstan-ignore notIdentical.alwaysTrue
         }, 'type' => 'float']);
 
         // each line can have multiple discounts and calculate total of these discounts

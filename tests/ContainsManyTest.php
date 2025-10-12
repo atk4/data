@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests;
 
 use Atk4\Data\Exception;
+use Atk4\Data\Model;
+use Atk4\Data\Reference;
 use Atk4\Data\Schema\TestCase;
 use Atk4\Data\Tests\ContainsMany\Invoice;
 use Atk4\Data\Tests\ContainsMany\Line;
@@ -289,6 +291,132 @@ class ContainsManyTest extends TestCase
         self::assertNotSame($i->getPersistence(), $i->lines->getPersistence());
         self::assertSame($i->getPersistence(), $i->lines->vat_rate_id->getPersistence());
         self::assertSame($i->getPersistence(), $i->lines->discounts->containedInPersistence);
+    }
+
+    /**
+     * @param mixed $log
+     *
+     * @param-out list<array{class-string<Model>, Model::HOOK_*}> $log
+     */
+    private function createInvoiceEntityWithLogger(&$log): Invoice
+    {
+        $log = [];
+        $addLogHooksFx = static function (Model $m) use (&$log) {
+            foreach ([Model::HOOK_BEFORE_SAVE, Model::HOOK_AFTER_SAVE, Model::HOOK_BEFORE_DELETE, Model::HOOK_AFTER_DELETE] as $spot) {
+                foreach ([\PHP_INT_MIN, \PHP_INT_MAX] as $priority) {
+                    $m->onHook($spot, static function (Model $m) use (&$log, $spot, $priority) {
+                        $log[] = [get_class($m), $spot, $priority === \PHP_INT_MIN ? '>' : '<'];
+                    }, [], $priority);
+                }
+            }
+        };
+
+        $invoice = new Invoice($this->db);
+        $addLogHooksFx($invoice);
+
+        $createTheirModelFx = static function () use ($addLogHooksFx) {
+            $line = new Line();
+            $addLogHooksFx($line);
+
+            return $line;
+        };
+        \Closure::bind(static fn () => $invoice->getField($invoice->fieldName()->lines)->getReference()->model = $createTheirModelFx, null, Reference::class)();
+
+        $invoiceEntity = $invoice->loadBy($invoice->fieldName()->ref_no, 'A1');
+
+        $invoice->getField($invoice->fieldName()->lines)
+            ->getReference()->ref($invoiceEntity)
+            ->import([
+                [$invoice->lines->fieldName()->price => 5, $invoice->lines->fieldName()->qty => 10],
+                [$invoice->lines->fieldName()->price => 6, $invoice->lines->fieldName()->qty => 20],
+            ]);
+        self::assertSame([
+            [$invoice->lines->fieldName()->id => 1, $invoice->lines->fieldName()->price => 5.0],
+            [$invoice->lines->fieldName()->id => 2, $invoice->lines->fieldName()->price => 6.0],
+        ], $invoiceEntity->lines->export([$invoice->lines->fieldName()->id, $invoice->lines->fieldName()->price]));
+
+        return $invoiceEntity;
+    }
+
+    public function testSaveHooks(): void
+    {
+        $i = $this->createInvoiceEntityWithLogger($log);
+
+        self::assertSame([
+            [Line::class, Model::HOOK_BEFORE_SAVE, '>'],
+            [Line::class, Model::HOOK_BEFORE_SAVE, '<'],
+            [Line::class, Model::HOOK_AFTER_SAVE, '>'],
+            [Invoice::class, Model::HOOK_BEFORE_SAVE, '>'],
+            [Invoice::class, Model::HOOK_BEFORE_SAVE, '<'],
+            [Invoice::class, Model::HOOK_AFTER_SAVE, '>'],
+            [Invoice::class, Model::HOOK_AFTER_SAVE, '<'],
+            [Line::class, Model::HOOK_AFTER_SAVE, '<'],
+            [Line::class, Model::HOOK_BEFORE_SAVE, '>'],
+            [Line::class, Model::HOOK_BEFORE_SAVE, '<'],
+            [Line::class, Model::HOOK_AFTER_SAVE, '>'],
+            [Invoice::class, Model::HOOK_BEFORE_SAVE, '>'],
+            [Invoice::class, Model::HOOK_BEFORE_SAVE, '<'],
+            [Invoice::class, Model::HOOK_AFTER_SAVE, '>'],
+            [Invoice::class, Model::HOOK_AFTER_SAVE, '<'],
+            [Line::class, Model::HOOK_AFTER_SAVE, '<'],
+        ], $log);
+
+        $log = [];
+        $line = $i->lines->loadBy($i->lines->fieldName()->price, 5.0);
+        $line->price = 8;
+        self::assertSame([], $log);
+        $line->save();
+
+        self::assertSame([
+            [Line::class, Model::HOOK_BEFORE_SAVE, '>'],
+            [Line::class, Model::HOOK_BEFORE_SAVE, '<'],
+            [Line::class, Model::HOOK_AFTER_SAVE, '>'],
+            [Invoice::class, Model::HOOK_BEFORE_SAVE, '>'],
+            [Invoice::class, Model::HOOK_BEFORE_SAVE, '<'],
+            [Invoice::class, Model::HOOK_AFTER_SAVE, '>'],
+            [Invoice::class, Model::HOOK_AFTER_SAVE, '<'],
+            [Line::class, Model::HOOK_AFTER_SAVE, '<'],
+        ], $log);
+    }
+
+    public function testDeleteHooksOnOwnerDelete(): void
+    {
+        $i = $this->createInvoiceEntityWithLogger($log);
+
+        $log = [];
+        $i->delete();
+
+        self::assertSame([
+            [Invoice::class, Model::HOOK_BEFORE_DELETE, '>'],
+            [Invoice::class, Model::HOOK_BEFORE_DELETE, '<'],
+            [Invoice::class, Model::HOOK_AFTER_DELETE, '>'],
+            [Invoice::class, Model::HOOK_AFTER_DELETE, '<'],
+        ], $log);
+    }
+
+    public function testDeleteHooksOnContainedDelete(): void
+    {
+        $i = $this->createInvoiceEntityWithLogger($log);
+
+        $log = [];
+        $i->lines->loadBy($i->lines->fieldName()->price, 5.0)->delete();
+
+        $expectedLog = [
+            [Line::class, Model::HOOK_BEFORE_DELETE, '>'],
+            [Line::class, Model::HOOK_BEFORE_DELETE, '<'],
+            [Line::class, Model::HOOK_AFTER_DELETE, '>'],
+            [Invoice::class, Model::HOOK_BEFORE_SAVE, '>'],
+            [Invoice::class, Model::HOOK_BEFORE_SAVE, '<'],
+            [Invoice::class, Model::HOOK_AFTER_SAVE, '>'],
+            [Invoice::class, Model::HOOK_AFTER_SAVE, '<'],
+            [Line::class, Model::HOOK_AFTER_DELETE, '<'],
+        ];
+        self::assertSame($expectedLog, $log);
+
+        $log = [];
+        $i->lines->loadOne()->delete();
+
+        self::assertSame($expectedLog, $log);
     }
 
     public function testUnmanagedDataModificationException(): void
