@@ -12,6 +12,8 @@ use Atk4\Data\Reference;
 
 abstract class ContainsBase extends Reference
 {
+    protected const EARLY_HOOK_PRIORITY = -500;
+
     public bool $checkTheirType = false;
 
     /** Field type. */
@@ -51,34 +53,35 @@ abstract class ContainsBase extends Reference
             ]);
         }
 
-        // TODO https://github.com/atk4/data/issues/881
-        // prevent unmanaged ContainsXxx data modification (/wo proper normalize, hooks, ...)
+        // prevent unmanaged data modification
+        // https://github.com/atk4/data/issues/881
         $this->onHookToOurModel(Model::HOOK_NORMALIZE, function (Model $ourModel, Field $field, $value) {
             if (!$field->hasReference() || $field->shortName !== $this->getOurFieldName()) {
                 return;
             }
             assert($field->getReference() === $this);
 
-            // TODO allowing null value to be set will not fire any HOOK_BEFORE_DELETE/HOOK_AFTER_DELETE hook
-            if ($value === null) {
-                return;
-            }
-
             $calledFromModelSet = false;
             foreach (debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS | \DEBUG_BACKTRACE_PROVIDE_OBJECT) as $frame) {
-                if ($frame['function'] === 'set' && ($frame['object'] ?? null) instanceof Model && $frame['object']->getModel() === $this->getOurModel()) {
-                    $calledFromModelSet = true;
-                }
-
-                // allow save from ContainsOne hooks
-                if ($calledFromModelSet && ($frame['object'] ?? null) === $this) {
-                    return;
+                if (!$calledFromModelSet) {
+                    if ($frame['function'] === 'set' && ($frame['object'] ?? null) instanceof Model && $frame['object']->getModel() === $this->getOurModel()) {
+                        $calledFromModelSet = true;
+                    }
+                } else {
+                    // allow save from ContainsOne/ContainsMany hooks
+                    if (($frame['object'] ?? null) === $this) {
+                        return;
+                    }
                 }
             }
 
             if ($calledFromModelSet) {
-                throw new Exception('ContainsXxx does not support unmanaged data modification');
+                throw new Exception('Contained model data cannot be modified directly');
             }
+        }, [], \PHP_INT_MIN);
+
+        $this->onHookToOurModel(Model::HOOK_BEFORE_DELETE, function (Model $ourEntity) {
+            $this->deleteTheirEntities($ourEntity);
         });
     }
 
@@ -110,5 +113,24 @@ abstract class ContainsBase extends Reference
             $persistence->seedData = [$tableName => $data];
             $persistence->data = [];
         }, null, Persistence\Array_::class)();
+    }
+
+    protected function deleteTheirEntities(Model $ourEntity): void
+    {
+        $theirModelOrEntity = $this->ref($ourEntity);
+
+        if ($theirModelOrEntity->isEntity()) {
+            // ContainsOne::ref() method returns an unloaded entity when traversing entity is not found
+            // https://github.com/atk4/data/blob/6.0.0/src/Reference/ContainsOne.php#L47
+            if (!$theirModelOrEntity->isLoaded()) {
+                $theirModelOrEntity = [];
+            } else {
+                $theirModelOrEntity = [$theirModelOrEntity];
+            }
+        }
+
+        foreach ($theirModelOrEntity as $theirEntity) {
+            $theirEntity->delete();
+        }
     }
 }

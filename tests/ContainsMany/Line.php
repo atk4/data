@@ -22,7 +22,7 @@ class Line extends Model
     {
         parent::init();
 
-        $this->hasOne($this->fieldName()->vat_rate_id, ['model' => [VatRate::class]]);
+        $this->hasOne($this->fieldName()->vat_rate_id, ['model' => [VatRate::class], 'required' => true]);
 
         $this->addField($this->fieldName()->price, ['type' => 'atk4_money', 'required' => true]);
         $this->addField($this->fieldName()->qty, ['type' => 'float', 'required' => true]);
