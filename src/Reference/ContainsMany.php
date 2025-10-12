@@ -18,10 +18,13 @@ class ContainsMany extends ContainsBase
             'containedInEntity' => $ourModelOrEntity->isEntity() ? $ourModelOrEntity : null,
         ]));
 
-        $makeSeedDataFx = function (array $ourValue) use ($theirModel) {
-            $theirModelIdPersistenceName = $theirModel->getIdField()->getPersistenceName();
+        $makeSeedDataFx = static function (array $ourValue) use ($theirModel) {
+            $idKey = $theirModel->getIdField()->getPersistenceName();
 
-            return array_combine(array_map(static fn ($v) => $v[$theirModelIdPersistenceName], $ourValue), $ourValue);
+            return array_combine(
+                array_map(static fn ($v) => $v[$idKey], $ourValue),
+                $ourValue
+            );
         };
 
         $this->setTheirModelPersistenceSeedData(
