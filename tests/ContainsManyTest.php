@@ -330,8 +330,8 @@ class ContainsManyTest extends TestCase
         $invoice->getField($invoice->fieldName()->lines)
             ->getReference()->ref($invoiceEntity)
             ->import([
-                [$invoice->lines->fieldName()->price => 5, $invoice->lines->fieldName()->qty => 10],
-                [$invoice->lines->fieldName()->price => 6, $invoice->lines->fieldName()->qty => 20],
+                [$invoice->lines->fieldName()->vat_rate_id => $invoice->lines->vat_rate_id->load(1)->id, $invoice->lines->fieldName()->price => 5, $invoice->lines->fieldName()->qty => 10],
+                [$invoice->lines->fieldName()->vat_rate_id => $invoice->lines->vat_rate_id->load(1)->id, $invoice->lines->fieldName()->price => 6, $invoice->lines->fieldName()->qty => 20],
             ]);
         self::assertSame([
             [$invoice->lines->fieldName()->id => 1, $invoice->lines->fieldName()->price => 5.0],
