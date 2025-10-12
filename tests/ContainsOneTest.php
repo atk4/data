@@ -291,6 +291,14 @@ class ContainsOneTest extends TestCase
 
         self::assertSame([
             [Invoice::class, Model::HOOK_BEFORE_DELETE, '>'],
+            [Address::class, Model::HOOK_BEFORE_DELETE, '>'],
+            [Address::class, Model::HOOK_BEFORE_DELETE, '<'],
+            [Address::class, Model::HOOK_AFTER_DELETE, '>'],
+            [Invoice::class, Model::HOOK_BEFORE_SAVE, '>'],
+            [Invoice::class, Model::HOOK_BEFORE_SAVE, '<'],
+            [Invoice::class, Model::HOOK_AFTER_SAVE, '>'],
+            [Invoice::class, Model::HOOK_AFTER_SAVE, '<'],
+            [Address::class, Model::HOOK_AFTER_DELETE, '<'],
             [Invoice::class, Model::HOOK_BEFORE_DELETE, '<'],
             [Invoice::class, Model::HOOK_AFTER_DELETE, '>'],
             [Invoice::class, Model::HOOK_AFTER_DELETE, '<'],

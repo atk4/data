@@ -82,6 +82,10 @@ abstract class ContainsBase extends Reference
                 throw new Exception('Contained model data cannot be modified directly');
             }
         });
+
+        $this->onHookToOurModel(Model::HOOK_BEFORE_DELETE, function (Model $ourEntity) {
+            $this->deleteTheirEntities($ourEntity);
+        });
     }
 
     #[\Override]
@@ -112,5 +116,24 @@ abstract class ContainsBase extends Reference
             $persistence->seedData = [$tableName => $data];
             $persistence->data = [];
         }, null, Persistence\Array_::class)();
+    }
+
+    protected function deleteTheirEntities(Model $ourEntity): void
+    {
+        $theirModelOrEntity = $this->ref($ourEntity);
+
+        if ($theirModelOrEntity->isEntity()) {
+            // ContainsOne::ref() method returns an unloaded entity when traversing entity is not found
+            // https://github.com/atk4/data/blob/6.0.0/src/Reference/ContainsOne.php#L47
+            if (!$theirModelOrEntity->isLoaded()) {
+                $theirModelOrEntity = [];
+            } else {
+                $theirModelOrEntity = [$theirModelOrEntity];
+            }
+        }
+
+        foreach ($theirModelOrEntity as $theirEntity) {
+            $theirEntity->delete();
+        }
     }
 }
