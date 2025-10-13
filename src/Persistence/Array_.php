@@ -119,12 +119,24 @@ class Array_ extends Persistence
     }
 
     /**
+     * @param int|string $idRaw
+     *
+     * @return int|string
+     */
+    private function normalizeIdRaw(Field $idField, $idRaw)
+    {
+        $id = $this->typecastLoadField($idField, $idRaw);
+
+        return $this->typecastSaveField($idField, $id);
+    }
+
+    /**
      * @param int|string|null $idFromRow
      * @param int|string      $idRaw
      */
     private function assertNoIdMismatch(Field $idField, $idFromRow, $idRaw): void
     {
-        if ($idFromRow !== null && !$idField->compare($idFromRow, $idRaw)) {
+        if ($idFromRow !== null && $this->normalizeIdRaw($idField, $idFromRow) !== $this->normalizeIdRaw($idField, $idRaw)) {
             throw (new Exception('Row contains ID column, but it does not match the row ID'))
                 ->addMoreInfo('idFromKey', $idRaw)
                 ->addMoreInfo('idFromData', $idFromRow);
@@ -139,7 +151,7 @@ class Array_ extends Persistence
     {
         if ($model->idField) {
             $idField = $model->getIdField();
-            $idRaw = $idField->normalize($idRaw);
+            $idRaw = $this->normalizeIdRaw($idField, $idRaw);
             $idColumnName = $idField->getPersistenceName();
             if (array_key_exists($idColumnName, $rowData)) {
                 $this->assertNoIdMismatch($idField, $rowData[$idColumnName], $idRaw);
