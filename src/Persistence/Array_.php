@@ -122,9 +122,9 @@ class Array_ extends Persistence
      * @param int|string|null $idFromRow
      * @param int|string      $idRaw
      */
-    private function assertNoIdMismatch(Model $model, $idFromRow, $idRaw): void
+    private function assertNoIdMismatch(Field $idField, $idFromRow, $idRaw): void
     {
-        if ($idFromRow !== null && !$model->getIdField()->compare($idFromRow, $idRaw)) {
+        if ($idFromRow !== null && !$idField->compare($idFromRow, $idRaw)) {
             throw (new Exception('Row contains ID column, but it does not match the row ID'))
                 ->addMoreInfo('idFromKey', $idRaw)
                 ->addMoreInfo('idFromData', $idFromRow);
@@ -142,7 +142,7 @@ class Array_ extends Persistence
             $idRaw = $idField->normalize($idRaw);
             $idColumnName = $idField->getPersistenceName();
             if (array_key_exists($idColumnName, $rowData)) {
-                $this->assertNoIdMismatch($model, $rowData[$idColumnName], $idRaw);
+                $this->assertNoIdMismatch($idField, $rowData[$idColumnName], $idRaw);
                 unset($rowData[$idColumnName]);
             }
 
