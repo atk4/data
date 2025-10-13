@@ -254,8 +254,9 @@ class Array_ extends Persistence
             }
 
             $idRaw = array_first($rowsRaw)[$model->idField];
+            $id = $this->typecastLoadField($model->getIdField(), $idRaw);
 
-            return $this->tryLoad($model, $idRaw);
+            return $this->tryLoad($model, $id);
         }
 
         if (is_object($model->table)) {
@@ -271,7 +272,8 @@ class Array_ extends Persistence
         } else {
             $table = $this->seedDataAndGetTable($model);
 
-            $row = $table->getRowById($model, $id);
+            $idRaw = $this->typecastSaveField($model->getIdField(), $id);
+            $row = $table->getRowById($model, $idRaw);
             if ($row === null) {
                 return null;
             }

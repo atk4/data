@@ -186,6 +186,36 @@ class ArrayTest extends TestCase
         self::assertSame('JohnSarah', $output);
     }
 
+    public function testObjectId(): void
+    {
+        $p = new Persistence\Array_([
+            'user' => [
+                '1980-2-1' => ['name' => 'John', 'birthday' => '1980-2-1'],
+                '2005-4-3' => ['name' => 'Sarah', 'birthday' => '2005-4-3'],
+            ],
+        ]);
+
+        $m = new Model(null, ['table' => 'user']);
+        $m->addField('id', ['type' => 'date', 'actual' => 'birthday']);
+        $m->addField('name');
+        $m->setPersistence($p);
+
+        $entity = $m->load(new \DateTime('1980-2-1'));
+        $entity->set('name', 'Michael');
+        $entity->save();
+
+        self::assertSame([
+            ['id' => '1980-02-01', 'name' => 'Michael'],
+            ['id' => '2005-04-03', 'name' => 'Sarah'],
+        ], $m->export(null, null, false));
+
+        $m->loadBy('name', 'Michael')->delete();
+
+        self::assertSame([
+            ['id' => '2005-04-03', 'name' => 'Sarah'],
+        ], $m->export(null, null, false));
+    }
+
     public function testShortFormat(): void
     {
         $p = new Persistence\Array_([
