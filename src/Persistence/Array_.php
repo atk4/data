@@ -67,8 +67,8 @@ class Array_ extends Persistence
             $rows = $this->seedData[$tableName];
             unset($this->seedData[$tableName]);
 
-            foreach ($rows as $id => $row) {
-                $this->saveRow($model, $row, $id);
+            foreach ($rows as $idRaw => $row) {
+                $this->saveRow($model, $row, $idRaw);
             }
         }
 
@@ -119,43 +119,55 @@ class Array_ extends Persistence
     }
 
     /**
-     * @param int|string|null $idFromRow
-     * @param int|string      $id
+     * @param int|string $idRaw
+     *
+     * @return int|string
      */
-    private function assertNoIdMismatch(Model $model, $idFromRow, $id): void
+    private function normalizeIdRaw(Field $idField, $idRaw)
     {
-        if ($idFromRow !== null && !$model->getIdField()->compare($idFromRow, $id)) {
+        $id = $this->typecastLoadField($idField, $idRaw);
+
+        return $this->typecastSaveField($idField, $id);
+    }
+
+    /**
+     * @param int|string|null $idFromRow
+     * @param int|string      $idRaw
+     */
+    private function assertNoIdMismatch(Field $idField, $idFromRow, $idRaw): void
+    {
+        if ($idFromRow !== null && $this->normalizeIdRaw($idField, $idFromRow) !== $this->normalizeIdRaw($idField, $idRaw)) {
             throw (new Exception('Row contains ID column, but it does not match the row ID'))
-                ->addMoreInfo('idFromKey', $id)
+                ->addMoreInfo('idFromKey', $idRaw)
                 ->addMoreInfo('idFromData', $idFromRow);
         }
     }
 
     /**
      * @param array<string, mixed> $rowData
-     * @param mixed                $id
+     * @param mixed                $idRaw
      */
-    private function saveRow(Model $model, array $rowData, $id): void
+    private function saveRow(Model $model, array $rowData, $idRaw): void
     {
         if ($model->idField) {
             $idField = $model->getIdField();
-            $id = $idField->normalize($id);
+            $idRaw = $this->normalizeIdRaw($idField, $idRaw);
             $idColumnName = $idField->getPersistenceName();
             if (array_key_exists($idColumnName, $rowData)) {
-                $this->assertNoIdMismatch($model, $rowData[$idColumnName], $id);
+                $this->assertNoIdMismatch($idField, $rowData[$idColumnName], $idRaw);
                 unset($rowData[$idColumnName]);
             }
 
-            $rowData = [$idColumnName => $id] + $rowData;
+            $rowData = [$idColumnName => $idRaw] + $rowData;
         }
 
-        if ($id > ($this->maxSeenIdByTable[$model->table] ?? 0)) {
-            $this->maxSeenIdByTable[$model->table] = $id;
+        if ($idRaw > ($this->maxSeenIdByTable[$model->table] ?? 0)) {
+            $this->maxSeenIdByTable[$model->table] = $idRaw;
         }
 
         $table = $this->data[$model->table];
 
-        $row = $table->getRowById($model, $id);
+        $row = $table->getRowById($model, $idRaw);
         if ($row !== null) {
             foreach (array_keys($rowData) as $columnName) {
                 if (!$table->hasColumn($columnName)) {
@@ -242,8 +254,9 @@ class Array_ extends Persistence
             }
 
             $idRaw = array_first($rowsRaw)[$model->idField];
+            $id = $this->typecastLoadField($model->getIdField(), $idRaw);
 
-            return $this->tryLoad($model, $idRaw);
+            return $this->tryLoad($model, $id);
         }
 
         if (is_object($model->table)) {
@@ -259,7 +272,8 @@ class Array_ extends Persistence
         } else {
             $table = $this->seedDataAndGetTable($model);
 
-            $row = $table->getRowById($model, $id);
+            $idRaw = $this->typecastSaveField($model->getIdField(), $id);
+            $row = $table->getRowById($model, $idRaw);
             if ($row === null) {
                 return null;
             }
