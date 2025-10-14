@@ -112,7 +112,7 @@ class Array_ extends Persistence
 
         $rows = [];
         foreach ($this->data[$table]->getRows() as $row) {
-            $rows[$row->getValue($model->idField)] = $row->getData();
+            $rows[$row->getValue($model->getIdField()->getPersistenceName())] = $row->getData();
         }
 
         return $rows;
