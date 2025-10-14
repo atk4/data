@@ -68,7 +68,7 @@ class Array_ extends Persistence
             unset($this->seedData[$tableName]);
 
             foreach ($rows as $idRaw => $row) {
-                $this->saveRow($model, $row, $idRaw);
+                $this->saveRow($model, $row, $idRaw, false);
             }
         }
 
@@ -112,7 +112,7 @@ class Array_ extends Persistence
 
         $rows = [];
         foreach ($this->data[$table]->getRows() as $row) {
-            $rows[$row->getValue($model->idField)] = $row->getData();
+            $rows[$row->getValue($model->getIdField()->getPersistenceName())] = $row->getData();
         }
 
         return $rows;
@@ -147,7 +147,7 @@ class Array_ extends Persistence
      * @param array<string, mixed> $rowData
      * @param mixed                $idRaw
      */
-    private function saveRow(Model $model, array $rowData, $idRaw): void
+    private function saveRow(Model $model, array $rowData, $idRaw, bool $update): void
     {
         if ($model->idField) {
             $idField = $model->getIdField();
@@ -169,6 +169,12 @@ class Array_ extends Persistence
 
         $row = $table->getRowById($model, $idRaw);
         if ($row !== null) {
+            if (!$update) {
+                throw (new Exception('Row to insert has ID that already exists'))
+                    ->addMoreInfo('model', $model)
+                    ->addMoreInfo('id', $idRaw);
+            }
+
             foreach (array_keys($rowData) as $columnName) {
                 if (!$table->hasColumn($columnName)) {
                     $table->addColumn($columnName);
@@ -176,6 +182,8 @@ class Array_ extends Persistence
             }
             $row->updateValues($rowData);
         } else {
+            assert(!$update);
+
             $row = $table->addRow(Row::class, $rowData);
         }
     }
@@ -289,9 +297,9 @@ class Array_ extends Persistence
     {
         $this->seedData($model);
 
-        $idRaw = $dataRaw[$model->idField] ?? $this->generateNewId($model);
+        $idRaw = $dataRaw[$model->getIdField()->getPersistenceName()] ?? $this->generateNewId($model);
 
-        $this->saveRow($model, $dataRaw, $idRaw);
+        $this->saveRow($model, $dataRaw, $idRaw, false);
 
         return $idRaw;
     }
@@ -301,7 +309,14 @@ class Array_ extends Persistence
     {
         $table = $this->seedDataAndGetTable($model);
 
-        $this->saveRow($model, array_merge($this->filterRowDataOnlyModelFields($model, $table->getRowById($model, $idRaw)->getData()), $dataRaw), $idRaw);
+        $row = $table->getRowById($model, $idRaw);
+        if ($row === null) {
+            throw (new Exception('Row to update does not exist'))
+                ->addMoreInfo('model', $model)
+                ->addMoreInfo('id', $idRaw);
+        }
+
+        $this->saveRow($model, array_merge($this->filterRowDataOnlyModelFields($model, $row->getData()), $dataRaw), $idRaw, true);
     }
 
     #[\Override]
