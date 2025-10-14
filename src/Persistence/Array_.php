@@ -289,7 +289,7 @@ class Array_ extends Persistence
     {
         $this->seedData($model);
 
-        $idRaw = $dataRaw[$model->idField] ?? $this->generateNewId($model);
+        $idRaw = $dataRaw[$model->getIdField()->getPersistenceName()] ?? $this->generateNewId($model);
 
         $this->saveRow($model, $dataRaw, $idRaw);
 

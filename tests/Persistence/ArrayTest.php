@@ -186,6 +186,60 @@ class ArrayTest extends TestCase
         self::assertSame('JohnSarah', $output);
     }
 
+    public function testActualId(): void
+    {
+        $p = new Persistence\Array_([
+            'user' => [
+                1 => ['uid' => 1, 'name' => 'John'],
+                ['uid' => 2, 'name' => 'Sarah'],
+            ],
+        ]);
+
+        $m = new Model(null, ['table' => 'user']);
+        $m->addField('id', ['actual' => 'uid', 'type' => 'integer']);
+        $m->addField('name');
+        $m->setPersistence($p);
+
+        $entity = $m->load(2);
+        $entity->set('name', 'Mia');
+        $entity->save();
+
+        self::assertSame([
+            ['id' => 1, 'name' => 'John'],
+            ['id' => 2, 'name' => 'Mia'],
+        ], $m->export());
+
+        $m->loadBy('name', 'John')->delete();
+
+        self::assertSame([
+            ['id' => 2, 'name' => 'Mia'],
+        ], $m->export());
+
+        $m->createEntity()->save();
+
+        self::assertSame([
+            ['id' => 2, 'name' => 'Mia'],
+            ['id' => 3, 'name' => null],
+        ], $m->export());
+
+        $m->createEntity()->save(['id' => 5]);
+
+        self::assertSame([
+            ['id' => 2, 'name' => 'Mia'],
+            ['id' => 3, 'name' => null],
+            ['id' => 5, 'name' => null],
+        ], $m->export());
+
+        $m->createEntity()->save();
+
+        self::assertSame([
+            ['id' => 2, 'name' => 'Mia'],
+            ['id' => 3, 'name' => null],
+            ['id' => 5, 'name' => null],
+            ['id' => 6, 'name' => null],
+        ], $m->export());
+    }
+
     public function testObjectId(): void
     {
         $p = new Persistence\Array_([
