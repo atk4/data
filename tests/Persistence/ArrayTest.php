@@ -270,6 +270,39 @@ class ArrayTest extends TestCase
         ], $m->export(null, null, false));
     }
 
+    public function testInsertDuplicateIdException(): void
+    {
+        $p = new Persistence\Array_([
+            'user' => [
+                1 => ['name' => 'John'],
+            ],
+        ]);
+
+        $m = new Model($p, ['table' => 'user']);
+        $m->addField('name');
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Row to insert has ID that already exists');
+        $m->createEntity()->save(['id' => 1]);
+    }
+
+    public function testUpdateNotExistingIdException(): void
+    {
+        $p = new Persistence\Array_();
+        $m = new Model($p, ['table' => 'user']);
+        $m->addField('name');
+
+        $m->createEntity()->save();
+
+        $entity = $m->load(1);
+
+        $m->load(1)->delete();
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Row to update does not exist');
+        $entity->save(['name' => 'Ava']);
+    }
+
     public function testShortFormat(): void
     {
         $p = new Persistence\Array_([
