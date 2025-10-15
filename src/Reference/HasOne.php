@@ -105,7 +105,7 @@ class HasOne extends Reference
                     : $theirEntity->getId();
 
                 if (!$this->getOurField()->compare($this->getOurFieldValue($ourModelOrEntity), $theirValue)) {
-                    $ourModelOrEntity->set($this->getOurFieldName(), $theirValue)->save();
+                    $ourModelOrEntity->save([$this->getOurFieldName() => $theirValue]);
                 }
 
                 $theirEntity->reload();
