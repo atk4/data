@@ -120,17 +120,17 @@ abstract class ContainsBase extends Reference
         $theirModelOrEntity = $this->ref($ourEntity);
 
         if ($theirModelOrEntity->isEntity()) {
-            // ContainsOne::ref() method returns an unloaded entity when traversing entity is not found
-            // https://github.com/atk4/data/blob/6.0.0/src/Reference/ContainsOne.php#L47
-            if (!$theirModelOrEntity->isLoaded()) {
-                $theirModelOrEntity = [];
-            } else {
-                $theirModelOrEntity = [$theirModelOrEntity];
+            if ($theirModelOrEntity->isLoaded()) {
+                $theirModelOrEntity->delete();
             }
+
+            return;
         }
 
-        foreach ($theirModelOrEntity as $theirEntity) {
-            $theirEntity->delete();
-        }
+        $theirModelOrEntity->atomic(static function () use ($theirModelOrEntity) {
+            foreach ($theirModelOrEntity as $theirEntity) {
+                $theirEntity->delete();
+            }
+        });
     }
 }
