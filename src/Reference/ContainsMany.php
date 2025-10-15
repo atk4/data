@@ -43,7 +43,7 @@ class ContainsMany extends ContainsBase
                 $persistence = Persistence\Array_::assertInstanceOf($theirEntity->getModel()->getPersistence());
                 $rows = $persistence->getRawDataByTable($theirEntity->getModel(), $this->tableAlias); // @phpstan-ignore method.deprecated
                 $ourEntity->save([$this->getOurFieldName() => $rows !== [] ? array_values($rows) : null]);
-            }, [], self::EARLY_HOOK_PRIORITY);
+            }, [], self::HOOK_PRIORITY_EARLY);
         }
 
         return $theirModel;

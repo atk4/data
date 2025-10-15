@@ -12,7 +12,7 @@ use Atk4\Data\Reference;
 
 abstract class ContainsBase extends Reference
 {
-    protected const EARLY_HOOK_PRIORITY = -500;
+    protected const HOOK_PRIORITY_EARLY = -500;
 
     public bool $checkTheirType = false;
 
