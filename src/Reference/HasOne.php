@@ -13,6 +13,8 @@ class HasOne extends Reference
     use Model\FieldPropertiesTrait;
     use Model\JoinLinkTrait;
 
+    protected const HOOK_PRIORITY_EARLY = -500;
+
     #[\Override]
     protected function init(): void
     {
@@ -107,12 +109,12 @@ class HasOne extends Reference
                 }
 
                 $theirEntity->reload();
-            });
+            }, [], self::HOOK_PRIORITY_EARLY);
             $theirModel->reloadAfterSave = false;
 
             $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_DELETE, function (Model $theirEntity) use ($ourModelOrEntity) {
                 $ourModelOrEntity->setNull($this->getOurFieldName());
-            });
+            }, [], self::HOOK_PRIORITY_EARLY);
 
             $ourValue = $this->getOurFieldValue($ourModelOrEntity);
 
