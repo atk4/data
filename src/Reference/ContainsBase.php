@@ -13,6 +13,7 @@ use Atk4\Data\Reference;
 abstract class ContainsBase extends Reference
 {
     protected const HOOK_PRIORITY_EARLY = -500;
+    protected const HOOK_PRIORITY_LATE = 500;
 
     public bool $checkTheirType = false;
 
@@ -82,7 +83,7 @@ abstract class ContainsBase extends Reference
 
         $this->onHookToOurModel(Model::HOOK_BEFORE_DELETE, function (Model $ourEntity) {
             $this->deleteTheirEntities($ourEntity);
-        });
+        }, [], self::HOOK_PRIORITY_LATE);
     }
 
     #[\Override]
