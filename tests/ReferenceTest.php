@@ -498,4 +498,17 @@ class ReferenceTest extends TestCase
         $this->expectExceptionMessage('Object was not initialized');
         $m->hasOne('foo', ['model' => $createModelFx]);
     }
+
+    public function testIsOneToOne(): void
+    {
+        foreach ([
+            Reference::class => false,
+            Reference\HasOne::class => true,
+            Reference\HasMany::class => false,
+            Reference\ContainsOne::class => true,
+            Reference\ContainsMany::class => false,
+        ] as $class => $expected) {
+            self::assertSame($expected, (new $class('foo'))->isOneToOne());
+        }
+    }
 }

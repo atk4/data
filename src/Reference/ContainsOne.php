@@ -10,6 +10,12 @@ use Atk4\Data\Persistence;
 class ContainsOne extends ContainsBase
 {
     #[\Override]
+    public function isOneToOne(): bool
+    {
+        return true;
+    }
+
+    #[\Override]
     public function ref(Model $ourModelOrEntity, array $defaults = []): Model
     {
         $this->assertOurModelOrEntity($ourModelOrEntity);

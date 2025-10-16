@@ -64,6 +64,12 @@ class HasOne extends Reference
         }
     }
 
+    #[\Override]
+    public function isOneToOne(): bool
+    {
+        return true;
+    }
+
     /**
      * Returns our field or id field.
      */
