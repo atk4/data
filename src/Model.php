@@ -1613,7 +1613,7 @@ class Model implements \IteratorAggregate
                 }
                 $this->validateEntityScope();
                 $this->getModel()->getPersistence()->update($this->getModel(), $this->getId(), $data);
-                $this->hook(self::HOOK_AFTER_UPDATE, [&$data]);
+                $this->hook(self::HOOK_AFTER_UPDATE, [$data]);
             }
 
             $dirtyRef = &$this->getDirtyRef();
