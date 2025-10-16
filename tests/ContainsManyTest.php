@@ -161,11 +161,11 @@ class ContainsManyTest extends TestCase
 
         // test expression fields
         $v = $i->lines->load(4);
-        self::assertSame(50 * 3 * (1 + 15 / 100), $v->total_gross);
+        self::assertSame(50 * 3 * 1.15, $v->total_gross);
 
         // and what about calculated field?
         $i->reload(); // we need to reload invoice for changes in lines to be recalculated
-        self::assertSame(10 * 2 * (1 + 21 / 100) + 40 * 1 * (1 + 21 / 100) + 50 * 3 * (1 + 15 / 100), $i->total_gross); // = 245.1
+        self::assertSame(10 * 2 * 1.21 + 40 * 1 * 1.21 + 50 * 3 * 1.15, $i->total_gross); // = 245.1
     }
 
     public function testNestedContainsMany(): void
@@ -226,10 +226,10 @@ class ContainsManyTest extends TestCase
         ], $i->lines->load(1)->discounts->export());
 
         // is total_gross correctly calculated?
-        self::assertSame(10 * 2 * (1 + 21 / 100) + 15 * 5 * (1 + 15 / 100), $i->total_gross); // =110.45
+        self::assertSame(10 * 2 * 1.21 + 15 * 5 * 1.15, $i->total_gross); // =110.45
 
         // do we also correctly calculate discounts from nested containsMany?
-        self::assertSame(24.2 * 15 / 100 + 86.25 * 20 / 100, $i->discounts_total_sum); // =20.88
+        self::assertSame(24.2 * 0.15 + 86.25 * 0.2, $i->discounts_total_sum); // =20.88
 
         // let's test how it all looks in persistence without typecasting
         $exportLines = $i->getModel()->setOrder($i->fieldName()->id)
