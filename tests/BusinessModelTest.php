@@ -245,20 +245,20 @@ class BusinessModelTest extends TestCase
         $m = $m->createEntity();
 
         self::assertSame(1000, $m->get('salary'));
-        self::assertFalse($m->_isset('salary'));
+        self::assertFalse($m->isDirty('salary'));
 
         // next we load record from $db
         $dataRef = &$m->getDataRef();
         $dataRef = ['salary' => 2000];
         self::assertSame(2000, $m->get('salary'));
-        self::assertFalse($m->_isset('salary'));
+        self::assertFalse($m->isDirty('salary'));
 
         $m->set('salary', 3000);
         self::assertSame(3000, $m->get('salary'));
-        self::assertTrue($m->_isset('salary'));
+        self::assertTrue($m->isDirty('salary'));
 
         $m->_unset('salary');
         self::assertSame(2000, $m->get('salary'));
-        self::assertFalse($m->_isset('salary'));
+        self::assertFalse($m->isDirty('salary'));
     }
 }

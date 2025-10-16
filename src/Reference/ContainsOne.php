@@ -10,6 +10,12 @@ use Atk4\Data\Persistence;
 class ContainsOne extends ContainsBase
 {
     #[\Override]
+    public function isOneToOne(): bool
+    {
+        return true;
+    }
+
+    #[\Override]
     public function ref(Model $ourModelOrEntity, array $defaults = []): Model
     {
         $this->assertOurModelOrEntity($ourModelOrEntity);
@@ -35,7 +41,7 @@ class ContainsOne extends ContainsBase
                 $rows = $persistence->getRawDataByTable($theirEntity->getModel(), $this->tableAlias); // @phpstan-ignore method.deprecated
                 assert(count($rows) <= 1);
                 $ourEntity->save([$this->getOurFieldName() => $rows !== [] ? array_first($rows) : null]);
-            }, [], self::EARLY_HOOK_PRIORITY);
+            }, [], self::HOOK_PRIORITY_EARLY);
         }
 
         if ($ourModelOrEntity->isEntity()) {

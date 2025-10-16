@@ -678,11 +678,8 @@ class Model implements \IteratorAggregate
         $this->getModel()->assertOnlyField($field);
 
         $dirtyRef = &$this->getDirtyRef();
-        if (array_key_exists($field, $dirtyRef)) {
-            return true;
-        }
 
-        return false;
+        return array_key_exists($field, $dirtyRef);
     }
 
     /**
@@ -937,18 +934,6 @@ class Model implements \IteratorAggregate
         }
 
         return $this->getField($name)->compare($value, $value2);
-    }
-
-    /**
-     * Does field exist?
-     */
-    public function _isset(string $name): bool
-    {
-        $this->getModel()->assertOnlyField($name);
-
-        $dirtyRef = &$this->getDirtyRef();
-
-        return array_key_exists($name, $dirtyRef);
     }
 
     /**
@@ -1613,7 +1598,7 @@ class Model implements \IteratorAggregate
                 }
                 $this->validateEntityScope();
                 $this->getModel()->getPersistence()->update($this->getModel(), $this->getId(), $data);
-                $this->hook(self::HOOK_AFTER_UPDATE, [&$data]);
+                $this->hook(self::HOOK_AFTER_UPDATE, [$data]);
             }
 
             $dirtyRef = &$this->getDirtyRef();

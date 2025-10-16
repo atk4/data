@@ -9,7 +9,7 @@ use Atk4\Data\Field;
 use Atk4\Data\Model;
 
 /**
- * Evaluate php expression after load.
+ * Evaluate PHP expression after load.
  */
 class CallbackField extends Field
 {

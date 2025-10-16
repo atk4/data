@@ -254,6 +254,14 @@ class Reference
     }
 
     /**
+     * Whenever the reference returns an entity after entity traversal.
+     */
+    public function isOneToOne(): bool
+    {
+        return false;
+    }
+
+    /**
      * @param array<string, mixed> $defaults
      */
     protected function createTheirModelBeforeInit(array $defaults): Model
