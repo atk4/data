@@ -937,18 +937,6 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Does field exist?
-     */
-    public function _isset(string $name): bool
-    {
-        $this->getModel()->assertOnlyField($name);
-
-        $dirtyRef = &$this->getDirtyRef();
-
-        return array_key_exists($name, $dirtyRef);
-    }
-
-    /**
      * Remove current field value and use default.
      *
      * @return $this

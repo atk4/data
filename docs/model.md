@@ -611,21 +611,17 @@ Returns one of the following:
 - returns null.
 :::
 
-:::{php:method} isset
+:::{php:method} isDirty
 Return true if field contains unsaved changes (dirty):
 
 ```
-$m->_isset('name'); // returns false
+$m->isDirty('name'); // returns false
 $m->set('name', 'Other Name');
-$m->_isset('name'); // returns true
+$m->isDirty('name'); // returns true
 ```
-:::
-
-:::{php:method} isDirty
-Return true if one or multiple fields contain unsaved changes (dirty):
 
 ```
-if ($m->isDirty(['name', 'surname'])) {
+if ($m->isDirty('name') || $m->isDirty('surname')) {
     $m->set('full_name', $m->get('name') . ' ' . $m->get('surname'));
 }
 ```
@@ -656,30 +652,30 @@ $m = new Model_User($db, 'user');
 // fields can be added after model is created
 $m->addField('salary', ['default' => 1000]);
 
-echo $m->_isset('salary'); // false
+echo $m->isDirty('salary'); // false
 echo $m->get('salary'); // 1000
 
 // next we load record from $db
 $m = $m->load(1);
 
 echo $m->get('salary'); // 2000 (from db)
-echo $m->_isset('salary'); // false, was not changed
+echo $m->isDirty('salary'); // false, was not changed
 
 $m->set('salary', 3000);
 
 echo $m->get('salary'); // 3000 (changed)
-echo $m->_isset('salary'); // true
+echo $m->isDirty('salary'); // true
 
 $m->_unset('salary'); // return to original value
 
 echo $m->get('salary'); // 2000
-echo $m->_isset('salary'); // false
+echo $m->isDirty('salary'); // false
 
 $m->set('salary', 3000);
 $m->save();
 
 echo $m->get('salary'); // 3000 (now in db)
-echo $m->_isset('salary'); // false
+echo $m->isDirty('salary'); // false
 ```
 
 :::{php:method} protected normalizeFieldName

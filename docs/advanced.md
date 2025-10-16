@@ -623,17 +623,17 @@ persistence layer to load or save anything. Next I need a beforeSave handler:
 
 ```
 $this->onHookShort(Model::HOOK_BEFORE_SAVE, function () {
-    if ($this->_isset('client_code') && !$this->_isset('client_id')) {
+    if ($this->isDirty('client_code') && !$this->isDirty('client_id')) {
         $client = $this->ref('client_id');
         $this->set('client_id', $client->getId());
     }
 
-    if ($this->_isset('client_name') && !$this->_isset('client_id')) {
+    if ($this->isDirty('client_name') && !$this->isDirty('client_id')) {
         $client = $this->ref('client_id');
         $this->set('client_id', $client->getId());
     }
 
-    if ($this->_isset('category') && !$this->_isset('category_id')) {
+    if ($this->isDirty('category') && !$this->isDirty('category_id')) {
         $category = $this->ref('category_id');
         $this->set('category_id', $category->getId());
     }
@@ -681,11 +681,11 @@ so:
 
 ```
 $this->onHookShort(Model::HOOK_AFTER_SAVE, function (bool $isUpdate) {
-    if ($this->_isset('payment')) {
+    if ($this->isDirty('payment')) {
         $this->ref('Payment')->insert($this->get('payment'));
     }
 
-    if ($this->_isset('lines')) {
+    if ($this->isDirty('lines')) {
         $this->ref('Line')->import($this->get('lines'));
     }
 });
