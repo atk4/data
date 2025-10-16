@@ -6,13 +6,11 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Reference;
 use Atk4\Data\Schema\TestCase;
 use Atk4\Data\Tests\ContainsMany\Invoice;
 use Atk4\Data\Tests\ContainsMany\Line;
 use Atk4\Data\Tests\ContainsMany\VatRate;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
 
 /**
  * Model structure:.
@@ -365,11 +363,7 @@ class ContainsManyTest extends TestCase
         ], $log);
 
         $log = [];
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform && !MysqlConnection::isServerMariaDb($this->getConnection()) && version_compare($this->getConnection()->getServerVersion(), '8.0') < 0) {
-            $line = $i->lines->loadBy($i->lines->fieldName()->id, 1);
-        } else {
-            $line = $i->lines->loadBy($i->lines->fieldName()->price, 5.0);
-        }
+        $line = $i->lines->loadBy($i->lines->fieldName()->price, 5.0);
         $line->price = 8;
         self::assertSame([], $log);
         $line->save();
@@ -431,11 +425,7 @@ class ContainsManyTest extends TestCase
         $i = $this->createInvoiceEntityWithLogger($log);
 
         $log = [];
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform && !MysqlConnection::isServerMariaDb($this->getConnection()) && version_compare($this->getConnection()->getServerVersion(), '8.0') < 0) {
-            $i->lines->loadBy($i->lines->fieldName()->id, 1)->delete();
-        } else {
-            $i->lines->loadBy($i->lines->fieldName()->price, 5.0)->delete();
-        }
+        $i->lines->loadBy($i->lines->fieldName()->price, 5.0)->delete();
 
         $expectedLog = [
             [Line::class, Model::HOOK_BEFORE_DELETE, '>'],

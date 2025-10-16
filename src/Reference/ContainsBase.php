@@ -8,7 +8,9 @@ use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Reference;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
 
 abstract class ContainsBase extends Reference
 {
@@ -80,6 +82,33 @@ abstract class ContainsBase extends Reference
                 throw new Exception('Contained model data cannot be modified directly');
             }
         }, [], \PHP_INT_MIN);
+
+        // fix load by float value and dirty for MySQL v5.7.8 - v8.0.3
+        // https://bugs.mysql.com/bug.php?id=88230
+        $ourModelConnection = $this->getOurModel()->getPersistence() instanceof Persistence\Sql && $this->getOurModel()->getPersistence()->getDatabasePlatform() instanceof MySQLPlatform
+            ? $this->getOurModel()->getPersistence()->getConnection()
+            : null;
+        if ($ourModelConnection !== null && !MysqlConnection::isServerMariaDb($ourModelConnection) && version_compare($ourModelConnection->getServerVersion(), '5.7.8') >= 0 && version_compare($ourModelConnection->getServerVersion(), '8.0.3') <= 0) {
+            $this->onHookToOurModel(Model::HOOK_AFTER_LOAD, function (Model $ourEntity) {
+                $value = &$ourEntity->getDataRef()[$this->getOurFieldName()];
+
+                $theirModel = $this->createTheirModel();
+                foreach ($this->isOneToOne() ? [$value] : ($value ?? []) as $i => $row) {
+                    foreach ($theirModel->getFields() as $f) {
+                        if ($f->type === 'float' || $f->type === 'atk4_money') {
+                            $v = $row[$f->getPersistenceName()] ?? null;
+                            if (is_int($v)) {
+                                if ($this->isOneToOne()) {
+                                    $value[$f->getPersistenceName()] = (float) $v;
+                                } else {
+                                    $value[$i][$f->getPersistenceName()] = (float) $v;
+                                }
+                            }
+                        }
+                    }
+                }
+            }, [], self::HOOK_PRIORITY_EARLY);
+        }
 
         $this->onHookToOurModel(Model::HOOK_BEFORE_DELETE, function (Model $ourEntity) {
             $this->deleteTheirEntities($ourEntity);
