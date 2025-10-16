@@ -384,6 +384,15 @@ class ContainsManyTest extends TestCase
             [Invoice::class, Model::HOOK_AFTER_SAVE, '<'],
             [Line::class, Model::HOOK_AFTER_SAVE, '<'],
         ], $log);
+
+        $log = [];
+        $line->save();
+        self::assertSame([
+            [Line::class, Model::HOOK_BEFORE_SAVE, '>'],
+            [Line::class, Model::HOOK_BEFORE_SAVE, '<'],
+            [Line::class, Model::HOOK_AFTER_SAVE, '>'],
+            [Line::class, Model::HOOK_AFTER_SAVE, '<'],
+        ], $log);
     }
 
     public function testDeleteHooksOnOwnerDelete(): void

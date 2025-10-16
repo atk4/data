@@ -278,6 +278,15 @@ class ContainsOneTest extends TestCase
         $address->save();
 
         self::assertSame($expectedLog, $log);
+
+        $log = [];
+        $address->save();
+        self::assertSame([
+            [Address::class, Model::HOOK_BEFORE_SAVE, '>'],
+            [Address::class, Model::HOOK_BEFORE_SAVE, '<'],
+            [Address::class, Model::HOOK_AFTER_SAVE, '>'],
+            [Address::class, Model::HOOK_AFTER_SAVE, '<'],
+        ], $log);
     }
 
     public function testDeleteHooksOnOwnerDelete(): void
