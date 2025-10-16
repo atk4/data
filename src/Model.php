@@ -678,11 +678,8 @@ class Model implements \IteratorAggregate
         $this->getModel()->assertOnlyField($field);
 
         $dirtyRef = &$this->getDirtyRef();
-        if (array_key_exists($field, $dirtyRef)) {
-            return true;
-        }
 
-        return false;
+        return array_key_exists($field, $dirtyRef);
     }
 
     /**
