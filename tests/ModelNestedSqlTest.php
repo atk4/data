@@ -216,6 +216,7 @@ class ModelNestedSqlTest extends TestCase
             ['main', '>>>'],
             ['main', Model::HOOK_VALIDATE, ['save']],
             ['main', Model::HOOK_BEFORE_SAVE, [true]],
+            ['main', Model::HOOK_AFTER_SAVE, [true]],
             ['main', '<<<'],
 
             ['main', '>>>'],

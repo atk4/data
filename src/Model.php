@@ -1552,6 +1552,8 @@ class Model implements \IteratorAggregate
                 return $this;
             }
 
+            $noChanges = false;
+
             if (!$isUpdate) {
                 $data = [];
                 foreach ($this->get() as $name => $value) {
@@ -1595,23 +1597,22 @@ class Model implements \IteratorAggregate
                     }
                 }
 
-                // no save needed, nothing was changed
-                if (count($data) === 0 && !$dirtyJoin) {
-                    return $this;
+                if ($data === [] && !$dirtyJoin) {
+                    $noChanges = true;
+                } else {
+                    if ($this->hook(self::HOOK_BEFORE_UPDATE, [&$data]) === false) {
+                        return $this;
+                    }
+                    $this->validateEntityScope();
+                    $this->getModel()->getPersistence()->update($this->getModel(), $this->getId(), $data);
+                    $this->hook(self::HOOK_AFTER_UPDATE, [$data]);
                 }
-
-                if ($this->hook(self::HOOK_BEFORE_UPDATE, [&$data]) === false) {
-                    return $this;
-                }
-                $this->validateEntityScope();
-                $this->getModel()->getPersistence()->update($this->getModel(), $this->getId(), $data);
-                $this->hook(self::HOOK_AFTER_UPDATE, [$data]);
             }
 
             $dirtyRef = &$this->getDirtyRef();
             $dirtyRef = [];
 
-            if ($this->idField && $this->getModel()->reloadAfterSave) {
+            if ($this->idField && $this->getModel()->reloadAfterSave && !$noChanges) {
                 $this->reload();
             }
 
