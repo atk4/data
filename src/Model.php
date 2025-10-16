@@ -670,9 +670,6 @@ class Model implements \IteratorAggregate
         }
     }
 
-    /**
-     * Will return true if specified field is dirty.
-     */
     public function isDirty(string $field): bool
     {
         $this->getModel()->assertOnlyField($field);
@@ -680,6 +677,16 @@ class Model implements \IteratorAggregate
         $dirtyRef = &$this->getDirtyRef();
 
         return array_key_exists($field, $dirtyRef);
+    }
+
+    public function assertNotDirty(string $field): void
+    {
+        if ($this->isDirty($field)) {
+            throw (new Exception('Field is required to be not dirty'))
+                ->addMoreInfo('field', $field)
+                ->addMoreInfo('valueLoaded', $this->getDirtyRef()[$field])
+                ->addMoreInfo('valueNew', $this->getDataRef()[$field]);
+        }
     }
 
     /**

@@ -322,6 +322,20 @@ class ContainsOneTest extends TestCase
         ], $log);
     }
 
+    public function testDirtyException(): void
+    {
+        $i = new Invoice($this->db);
+        $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
+
+        $i->getDirtyRef()[$i->fieldName()->addr] = [];
+
+        $theirEntity = $i->getField($i->fieldName()->addr)->getReference()->ref($i);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Field is required to be not dirty');
+        $theirEntity->save();
+    }
+
     public function testUnmanagedDataModificationException(): void
     {
         $i = new Invoice($this->db);

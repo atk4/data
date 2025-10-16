@@ -24,7 +24,7 @@ class FieldTest extends TestCase
         self::assertSame('abc', $m->get('withdefault'));
     }
 
-    public function testDirty(): void
+    public function testIsDirty(): void
     {
         $m = new Model();
         $m->addField('foo', ['default' => 'abc']);
@@ -53,6 +53,24 @@ class FieldTest extends TestCase
 
         $m->set('foo', 'xx');
         self::assertFalse($m->isDirty('foo'));
+    }
+
+    public function testAssertNotDirtyException(): void
+    {
+        $m = new Model();
+        $m->addField('foo', ['default' => 'abc']);
+        $m = $m->createEntity();
+
+        $m->assertNotDirty('foo');
+
+        $m->set('foo', 'abc');
+        $m->assertNotDirty('foo');
+
+        $m->set('foo', 'bar');
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Field is required to be not dirty');
+        $m->assertNotDirty('foo');
     }
 
     public function testCompare(): void

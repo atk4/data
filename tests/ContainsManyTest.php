@@ -446,6 +446,26 @@ class ContainsManyTest extends TestCase
         self::assertSame($expectedLog, $log);
     }
 
+    public function testDirtyException(): void
+    {
+        $i = new Invoice($this->db);
+        $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
+
+        $i->getDirtyRef()[$i->fieldName()->lines] = [];
+
+        $theirEntity = $i->getField($i->fieldName()->lines)->getReference()->ref($i)->createEntity();
+
+        $newData = [
+            $i->lines->fieldName()->vat_rate_id => $i->lines->vat_rate_id->load(1)->id,
+            $i->lines->fieldName()->price => 5,
+            $i->lines->fieldName()->qty => 10,
+        ];
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Field is required to be not dirty');
+        $theirEntity->save($newData);
+    }
+
     public function testUnmanagedDataModificationException(): void
     {
         $i = new Invoice($this->db);
