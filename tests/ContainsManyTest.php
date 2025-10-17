@@ -363,7 +363,7 @@ class ContainsManyTest extends TestCase
         ], $log);
 
         $log = [];
-        $line = $i->lines->loadBy($i->lines->fieldName()->price, 5.0);
+        $line = $i->lines->loadBy($i->lines->fieldName()->price, 5);
         $line->price = 8;
         self::assertSame([], $log);
         $line->save();
@@ -425,7 +425,7 @@ class ContainsManyTest extends TestCase
         $i = $this->createInvoiceEntityWithLogger($log);
 
         $log = [];
-        $i->lines->loadBy($i->lines->fieldName()->price, 5.0)->delete();
+        $i->lines->loadBy($i->lines->fieldName()->price, 5)->delete();
 
         $expectedLog = [
             [Line::class, Model::HOOK_BEFORE_DELETE, '>'],
