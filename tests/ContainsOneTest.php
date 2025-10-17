@@ -278,6 +278,15 @@ class ContainsOneTest extends TestCase
         $address->save();
 
         self::assertSame($expectedLog, $log);
+
+        $log = [];
+        $address->save();
+        self::assertSame([
+            [Address::class, Model::HOOK_BEFORE_SAVE, '>'],
+            [Address::class, Model::HOOK_BEFORE_SAVE, '<'],
+            [Address::class, Model::HOOK_AFTER_SAVE, '>'],
+            [Address::class, Model::HOOK_AFTER_SAVE, '<'],
+        ], $log);
     }
 
     public function testDeleteHooksOnOwnerDelete(): void
@@ -320,6 +329,20 @@ class ContainsOneTest extends TestCase
             [Invoice::class, Model::HOOK_AFTER_SAVE, '<'],
             [Address::class, Model::HOOK_AFTER_DELETE, '<'],
         ], $log);
+    }
+
+    public function testDirtyException(): void
+    {
+        $i = new Invoice($this->db);
+        $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
+
+        $i->getDirtyRef()[$i->fieldName()->addr] = [];
+
+        $theirEntity = $i->getField($i->fieldName()->addr)->getReference()->ref($i);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Field is required to be not dirty');
+        $theirEntity->save();
     }
 
     public function testUnmanagedDataModificationException(): void

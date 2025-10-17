@@ -6,13 +6,11 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Reference;
 use Atk4\Data\Schema\TestCase;
 use Atk4\Data\Tests\ContainsMany\Invoice;
 use Atk4\Data\Tests\ContainsMany\Line;
 use Atk4\Data\Tests\ContainsMany\VatRate;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
 
 /**
  * Model structure:.
@@ -163,11 +161,11 @@ class ContainsManyTest extends TestCase
 
         // test expression fields
         $v = $i->lines->load(4);
-        self::assertSame(50 * 3 * (1 + 15 / 100), $v->total_gross);
+        self::assertSame(50 * 3 * 1.15, $v->total_gross);
 
         // and what about calculated field?
         $i->reload(); // we need to reload invoice for changes in lines to be recalculated
-        self::assertSame(10 * 2 * (1 + 21 / 100) + 40 * 1 * (1 + 21 / 100) + 50 * 3 * (1 + 15 / 100), $i->total_gross); // = 245.1
+        self::assertSame(10 * 2 * 1.21 + 40 * 1 * 1.21 + 50 * 3 * 1.15, $i->total_gross); // = 245.1
     }
 
     public function testNestedContainsMany(): void
@@ -228,10 +226,10 @@ class ContainsManyTest extends TestCase
         ], $i->lines->load(1)->discounts->export());
 
         // is total_gross correctly calculated?
-        self::assertSame(10 * 2 * (1 + 21 / 100) + 15 * 5 * (1 + 15 / 100), $i->total_gross); // =110.45
+        self::assertSame(10 * 2 * 1.21 + 15 * 5 * 1.15, $i->total_gross); // =110.45
 
         // do we also correctly calculate discounts from nested containsMany?
-        self::assertSame(24.2 * 15 / 100 + 86.25 * 20 / 100, $i->discounts_total_sum); // =20.88
+        self::assertSame(24.2 * 0.15 + 86.25 * 0.2, $i->discounts_total_sum); // =20.88
 
         // let's test how it all looks in persistence without typecasting
         $exportLines = $i->getModel()->setOrder($i->fieldName()->id)
@@ -365,11 +363,7 @@ class ContainsManyTest extends TestCase
         ], $log);
 
         $log = [];
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform && !MysqlConnection::isServerMariaDb($this->getConnection()) && version_compare($this->getConnection()->getServerVersion(), '8.0') < 0) {
-            $line = $i->lines->loadBy($i->lines->fieldName()->id, 1);
-        } else {
-            $line = $i->lines->loadBy($i->lines->fieldName()->price, 5.0);
-        }
+        $line = $i->lines->loadBy($i->lines->fieldName()->price, 5);
         $line->price = 8;
         self::assertSame([], $log);
         $line->save();
@@ -382,6 +376,15 @@ class ContainsManyTest extends TestCase
             [Invoice::class, Model::HOOK_BEFORE_SAVE, '<'],
             [Invoice::class, Model::HOOK_AFTER_SAVE, '>'],
             [Invoice::class, Model::HOOK_AFTER_SAVE, '<'],
+            [Line::class, Model::HOOK_AFTER_SAVE, '<'],
+        ], $log);
+
+        $log = [];
+        $line->save();
+        self::assertSame([
+            [Line::class, Model::HOOK_BEFORE_SAVE, '>'],
+            [Line::class, Model::HOOK_BEFORE_SAVE, '<'],
+            [Line::class, Model::HOOK_AFTER_SAVE, '>'],
             [Line::class, Model::HOOK_AFTER_SAVE, '<'],
         ], $log);
     }
@@ -422,11 +425,7 @@ class ContainsManyTest extends TestCase
         $i = $this->createInvoiceEntityWithLogger($log);
 
         $log = [];
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform && !MysqlConnection::isServerMariaDb($this->getConnection()) && version_compare($this->getConnection()->getServerVersion(), '8.0') < 0) {
-            $i->lines->loadBy($i->lines->fieldName()->id, 1)->delete();
-        } else {
-            $i->lines->loadBy($i->lines->fieldName()->price, 5.0)->delete();
-        }
+        $i->lines->loadBy($i->lines->fieldName()->price, 5)->delete();
 
         $expectedLog = [
             [Line::class, Model::HOOK_BEFORE_DELETE, '>'],
@@ -444,6 +443,26 @@ class ContainsManyTest extends TestCase
         $i->lines->loadOne()->delete();
 
         self::assertSame($expectedLog, $log);
+    }
+
+    public function testDirtyException(): void
+    {
+        $i = new Invoice($this->db);
+        $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
+
+        $i->getDirtyRef()[$i->fieldName()->lines] = [];
+
+        $theirEntity = $i->getField($i->fieldName()->lines)->getReference()->ref($i)->createEntity();
+
+        $newData = [
+            $i->lines->fieldName()->vat_rate_id => $i->lines->vat_rate_id->load(1)->id,
+            $i->lines->fieldName()->price => 5,
+            $i->lines->fieldName()->qty => 10,
+        ];
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Field is required to be not dirty');
+        $theirEntity->save($newData);
     }
 
     public function testUnmanagedDataModificationException(): void
