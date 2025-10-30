@@ -7,6 +7,7 @@ namespace Atk4\Data\Tests\Persistence;
 use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
+use Atk4\Data\Model\Scope;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Array_\Action;
 use Atk4\Data\Tests\Model\Female;
@@ -610,6 +611,105 @@ class ArrayTest extends TestCase
             $dbDataCountries[8],
             $dbDataCountries[9],
         ], $m->action('select')->getRows());
+    }
+
+    public function testConditionEmptyScope(): void
+    {
+        $dbData = [
+            1 => ['code' => 2],
+            ['code' => 3],
+            ['code' => 4],
+        ];
+
+        $p = new Persistence\Array_($dbData);
+        $m = new Model($p);
+        $m->addField('code', ['type' => 'integer']);
+
+        $m->scope()->clear();
+        $m->addCondition(Scope::createOr());
+        self::assertSame([
+            ['id' => 1, 'code' => 2],
+            ['id' => 2, 'code' => 3],
+            ['id' => 3, 'code' => 4],
+        ], $m->export());
+
+        $m->scope()->clear();
+        $m->addCondition(Scope::createAnd());
+        self::assertSame([
+            ['id' => 1, 'code' => 2],
+            ['id' => 2, 'code' => 3],
+            ['id' => 3, 'code' => 4],
+        ], $m->export());
+    }
+
+    public function testConditionOrScope(): void
+    {
+        $dbData = [
+            1 => ['code' => 2],
+            ['code' => 3],
+            ['code' => 4],
+        ];
+
+        $p = new Persistence\Array_($dbData);
+        $m = new Model($p);
+        $m->addField('code', ['type' => 'integer']);
+
+        $m->scope()->clear();
+        $m->addCondition(Scope::createOr(['code', 3], ['code', 4]));
+        self::assertSame([
+            ['id' => 2, 'code' => 3],
+            ['id' => 3, 'code' => 4],
+        ], $m->export());
+
+        $m->scope()->clear();
+        $m->addCondition(Scope::createOr(['code', 5], ['code', 4]));
+        self::assertSame([
+            ['id' => 3, 'code' => 4],
+        ], $m->export());
+
+        $m->scope()->clear();
+        $m->addCondition(Scope::createOr(['code', 3], ['code', 5]));
+        self::assertSame([
+            ['id' => 2, 'code' => 3],
+        ], $m->export());
+
+        $m->scope()->clear();
+        $m->addCondition(Scope::createOr(['code', 5], ['code', 6]));
+        self::assertSame([], $m->export());
+    }
+
+    public function testConditionShortCircuit(): void
+    {
+        $dbData = [
+            1 => ['code' => 2],
+            ['code' => 3],
+            ['code' => 4],
+        ];
+
+        $conditionWithUnsupportedOperator = new Scope\Condition('code', 4);
+        $conditionWithUnsupportedOperator->operator = 'xx';
+
+        $p = new Persistence\Array_($dbData);
+        $m = new Model($p);
+        $m->addField('code', ['type' => 'integer']);
+
+        $m->scope()->clear();
+        $m->addCondition(Scope::createOr(['code', '>', 1], clone $conditionWithUnsupportedOperator));
+        self::assertSame([
+            ['id' => 1, 'code' => 2],
+            ['id' => 2, 'code' => 3],
+            ['id' => 3, 'code' => 4],
+        ], $m->export());
+
+        $m->scope()->clear();
+        $m->addCondition(Scope::createAnd(['code', '<', 2], clone $conditionWithUnsupportedOperator));
+        self::assertSame([], $m->export());
+
+        $m->scope()->clear();
+        $m->addCondition(Scope::createOr(['code', '>', 2], clone $conditionWithUnsupportedOperator));
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unsupported operator');
+        $m->export();
     }
 
     public function testConditionNoScalarException(): void
