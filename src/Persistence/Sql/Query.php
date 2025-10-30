@@ -1248,7 +1248,8 @@ abstract class Query extends Expression
             return null;
         }
 
-        assert(preg_match('~^((?:\.(")?((?(2)[^"\\\]+|[^.["\\\ (]+))(?(2)")|\[(\d+|\*)\])((?1)?))$~', $path, $matches, \PREG_UNMATCHED_AS_NULL));
+        $matched = preg_match('~^((?:\.(")?((?(2)[^"\\\]+|[^.["\\\ (]+))(?(2)")|\[(\d+|\*)\])((?1)?))$~', $path, $matches, \PREG_UNMATCHED_AS_NULL) === 1;
+        assert($matched);
 
         $k = $matches[3] ?? $matches[4];
         $remainingPath = $matches[5];

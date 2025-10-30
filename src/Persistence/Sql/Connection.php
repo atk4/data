@@ -434,7 +434,8 @@ abstract class Connection
             $this->serverVersionRaw = $this->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore method.deprecated, method.notFound
         }
 
-        assert(preg_match('~(\d+)\.(\d+)(?:\.(\d+))?~', $this->serverVersionRaw, $matches) === 1);
+        $matched = preg_match('~(\d+)\.(\d+)(?:\.(\d+))?~', $this->serverVersionRaw, $matches) === 1;
+        assert($matched);
 
         $version = [
             (int) $matches[1],
