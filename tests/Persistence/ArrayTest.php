@@ -352,6 +352,16 @@ class ArrayTest extends TestCase
         ], $m->export(['surname']));
     }
 
+    public function testExportEmpty(): void
+    {
+        $p = new Persistence\Array_();
+        $m = new Model($p, ['table' => 'user']);
+        $m->addField('name');
+
+        self::assertSame([], $m->export());
+        self::assertSame([], $m->export(['name']));
+    }
+
     public function testActionCount(): void
     {
         $p = new Persistence\Array_([
