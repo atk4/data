@@ -59,13 +59,14 @@ class Array_ extends Persistence
         }
 
         $this->data[$tableName] = new Table($tableName);
+        $table = $this->data[$tableName];
 
         $rows = $this->seedData[$tableName] ?? [];
         unset($this->seedData[$tableName]);
 
         if ($rows === []) {
             // initialize with at least 1 column
-            $this->data[$tableName]->addColumn($model->getIdField()->getPersistenceName());
+            $table->addColumn($model->getIdField()->getPersistenceName());
         } else {
             foreach ($rows as $idRaw => $row) {
                 $this->saveRow($model, $row, $idRaw, false);
