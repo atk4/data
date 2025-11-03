@@ -79,6 +79,12 @@ class Array_ extends Persistence
         $rows = $this->seedData[$tableName] ?? [];
         unset($this->seedData[$tableName]);
         foreach ($rows as $idRaw => $row) {
+            foreach ($row as $columnName => $svalue) {
+                if (!$table->hasColumn($columnName)) {
+                    $table->addColumn($columnName);
+                }
+            }
+
             $this->saveRow($model, $row, $idRaw, false);
         }
 
