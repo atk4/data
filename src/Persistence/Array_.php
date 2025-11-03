@@ -54,23 +54,32 @@ class Array_ extends Persistence
     private function seedData(Model $model): void
     {
         $tableName = $model->table;
-        if (isset($this->data[$tableName])) {
+
+        $newTable = !isset($this->data[$tableName]);
+        if ($newTable) {
+            $this->data[$tableName] = new Table($tableName);
+        }
+        $table = $this->data[$tableName];
+
+        foreach ($model->getFields() as $field) {
+            if (!$field->neverPersist && !$field->hasJoin()) {
+                $columnName = $field->getPersistenceName();
+                if (!$table->hasColumn($columnName)) {
+                    $table->addColumn($columnName);
+                }
+            }
+        }
+
+        if (!$newTable) {
             return;
         }
 
-        $this->data[$tableName] = new Table($tableName);
-        $table = $this->data[$tableName];
+        assert(count($table->getColumnNames()) > 0);
 
         $rows = $this->seedData[$tableName] ?? [];
         unset($this->seedData[$tableName]);
-
-        if ($rows === []) {
-            // initialize with at least 1 column
-            $table->addColumn($model->getIdField()->getPersistenceName());
-        } else {
-            foreach ($rows as $idRaw => $row) {
-                $this->saveRow($model, $row, $idRaw, false);
-            }
+        foreach ($rows as $idRaw => $row) {
+            $this->saveRow($model, $row, $idRaw, false);
         }
 
         // for array persistence join which accept table directly (without model initialization)
