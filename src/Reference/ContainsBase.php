@@ -121,7 +121,7 @@ abstract class ContainsBase extends Reference
                     $theirKeysOrder = array_flip(array_values(array_map(static fn ($v) => $v->getPersistenceName(), $theirModel->getFields())));
 
                     $reorderDataFx = static function (&$data) use ($theirKeysOrder) {
-                        uksort($data, static fn ($a, $b) => $theirKeysOrder[$a] <=> $theirKeysOrder[$b]);
+                        uksort($data, static fn ($a, $b) => ($theirKeysOrder[$a] ?? \PHP_INT_MAX) <=> ($theirKeysOrder[$b] ?? \PHP_INT_MAX));
                     };
 
                     if ($this->isOneToOne()) {
