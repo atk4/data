@@ -85,10 +85,10 @@ abstract class ContainsBase extends Reference
 
         // fix load by float value and dirty for MySQL v5.7.8 - v8.0.3
         // https://bugs.mysql.com/bug.php?id=88230
-        $ourModelConnection = $this->getOurModel()->getPersistence() instanceof Persistence\Sql && $this->getOurModel()->getPersistence()->getDatabasePlatform() instanceof MySQLPlatform
+        $ourMysqlConnection = $this->getOurModel()->getPersistence() instanceof Persistence\Sql && $this->getOurModel()->getPersistence()->getDatabasePlatform() instanceof MySQLPlatform
             ? $this->getOurModel()->getPersistence()->getConnection()
             : null;
-        if ($ourModelConnection !== null && !MysqlConnection::isServerMariaDb($ourModelConnection) && version_compare($ourModelConnection->getServerVersion(), '5.7.8') >= 0 && version_compare($ourModelConnection->getServerVersion(), '8.0.3') <= 0) {
+        if ($ourMysqlConnection !== null && !MysqlConnection::isServerMariaDb($ourMysqlConnection) && version_compare($ourMysqlConnection->getServerVersion(), '5.7.8') >= 0 && version_compare($ourMysqlConnection->getServerVersion(), '8.0.3') <= 0) {
             $this->onHookToOurModel(Model::HOOK_AFTER_LOAD, function (Model $ourEntity) {
                 $value = &$ourEntity->getDataRef()[$this->getOurFieldName()];
 
@@ -104,6 +104,31 @@ abstract class ContainsBase extends Reference
                                     $value[$i][$f->getPersistenceName()] = (float) $v;
                                 }
                             }
+                        }
+                    }
+                }
+            }, [], self::HOOK_PRIORITY_EARLY);
+        }
+
+        // fix JSON object reordered by MySQL
+        // https://bugs.mysql.com/bug.php?id=100974
+        if ($ourMysqlConnection !== null && !MysqlConnection::isServerMariaDb($ourMysqlConnection)) {
+            $this->onHookToOurModel(Model::HOOK_AFTER_LOAD, function (Model $ourEntity) {
+                $value = &$ourEntity->getDataRef()[$this->getOurFieldName()];
+
+                if ($value !== null) {
+                    $theirModel = $this->createTheirModel();
+                    $theirKeysOrder = array_flip(array_values(array_map(static fn ($v) => $v->getPersistenceName(), $theirModel->getFields())));
+
+                    $reorderDataFx = static function (&$data) use ($theirKeysOrder) {
+                        uksort($data, static fn ($a, $b) => $theirKeysOrder[$a] <=> $theirKeysOrder[$b]);
+                    };
+
+                    if ($this->isOneToOne()) {
+                        $reorderDataFx($value);
+                    } else {
+                        foreach (array_keys($value) as $k) {
+                            $reorderDataFx($value[$k]);
                         }
                     }
                 }
