@@ -83,35 +83,11 @@ abstract class ContainsBase extends Reference
             }
         }, [], \PHP_INT_MIN);
 
-        // fix load by float value and dirty for MySQL v5.7.8 - v8.0.3
-        // https://bugs.mysql.com/bug.php?id=88230
+        // fix JSON object reordered by MySQL
+        // https://bugs.mysql.com/bug.php?id=100974
         $ourMysqlConnection = $this->getOurModel()->getPersistence() instanceof Persistence\Sql && $this->getOurModel()->getPersistence()->getDatabasePlatform() instanceof MySQLPlatform
             ? $this->getOurModel()->getPersistence()->getConnection()
             : null;
-        if ($ourMysqlConnection !== null && !MysqlConnection::isServerMariaDb($ourMysqlConnection) && version_compare($ourMysqlConnection->getServerVersion(), '5.7.8') >= 0 && version_compare($ourMysqlConnection->getServerVersion(), '8.0.3') <= 0) {
-            $this->onHookToOurModel(Model::HOOK_AFTER_LOAD, function (Model $ourEntity) {
-                $value = &$ourEntity->getDataRef()[$this->getOurFieldName()];
-
-                $theirModel = $this->createTheirModel();
-                foreach ($this->isOneToOne() ? [$value] : ($value ?? []) as $i => $row) {
-                    foreach ($theirModel->getFields() as $f) {
-                        if ($f->type === 'float' || $f->type === 'atk4_money') {
-                            $v = $row[$f->getPersistenceName()] ?? null;
-                            if (is_int($v)) {
-                                if ($this->isOneToOne()) {
-                                    $value[$f->getPersistenceName()] = (float) $v;
-                                } else {
-                                    $value[$i][$f->getPersistenceName()] = (float) $v;
-                                }
-                            }
-                        }
-                    }
-                }
-            }, [], self::HOOK_PRIORITY_EARLY);
-        }
-
-        // fix JSON object reordered by MySQL
-        // https://bugs.mysql.com/bug.php?id=100974
         if ($ourMysqlConnection !== null && !MysqlConnection::isServerMariaDb($ourMysqlConnection)) {
             $this->onHookToOurModel(Model::HOOK_AFTER_LOAD, function (Model $ourEntity) {
                 $value = &$ourEntity->getDataRef()[$this->getOurFieldName()];
@@ -129,6 +105,30 @@ abstract class ContainsBase extends Reference
                     } else {
                         foreach (array_keys($value) as $k) {
                             $reorderDataFx($value[$k]);
+                        }
+                    }
+                }
+            }, [], self::HOOK_PRIORITY_EARLY);
+        }
+
+        // fix load by float value and dirty for MySQL v5.7.8 - v8.0.3
+        // https://bugs.mysql.com/bug.php?id=88230
+        if ($ourMysqlConnection !== null && !MysqlConnection::isServerMariaDb($ourMysqlConnection) && version_compare($ourMysqlConnection->getServerVersion(), '5.7.8') >= 0 && version_compare($ourMysqlConnection->getServerVersion(), '8.0.3') <= 0) {
+            $this->onHookToOurModel(Model::HOOK_AFTER_LOAD, function (Model $ourEntity) {
+                $value = &$ourEntity->getDataRef()[$this->getOurFieldName()];
+
+                $theirModel = $this->createTheirModel();
+                foreach ($this->isOneToOne() ? [$value] : ($value ?? []) as $i => $row) {
+                    foreach ($theirModel->getFields() as $f) {
+                        if ($f->type === 'float' || $f->type === 'atk4_money') {
+                            $v = $row[$f->getPersistenceName()] ?? null;
+                            if (is_int($v)) {
+                                if ($this->isOneToOne()) {
+                                    $value[$f->getPersistenceName()] = (float) $v;
+                                } else {
+                                    $value[$i][$f->getPersistenceName()] = (float) $v;
+                                }
+                            }
                         }
                     }
                 }
