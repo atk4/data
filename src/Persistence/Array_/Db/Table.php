@@ -141,12 +141,6 @@ class Table
      */
     public function addRow(string $rowClass, array $data): Row
     {
-        foreach ($data as $columnName => $value) {
-            if (!$this->hasColumn($columnName)) {
-                $this->addColumn($columnName);
-            }
-        }
-
         $thisTable = $this;
         $row = \Closure::bind(static fn () => new $rowClass($thisTable), null, Row::class)();
         $this->rows[$row->getRowIndex()] = $row;
