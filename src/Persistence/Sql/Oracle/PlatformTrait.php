@@ -40,7 +40,7 @@ trait PlatformTrait
         $lengthEncodedAscii = ($column['length'] ?? 255) * 2 + strlen("atk4_binary\ru5f8mzx4vsm8g2c9\r" . hash('crc32b', ''));
         $column['length'] = intdiv($lengthEncodedAscii + 3, 4);
 
-        return $this->getVarcharTypeDeclarationSQL($column);
+        return $this->getVarcharTypeDeclarationSQL($column); // @phpstan-ignore method.deprecated
     }
 
     #[\Override]

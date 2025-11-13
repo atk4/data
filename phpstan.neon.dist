@@ -30,13 +30,6 @@ parameters:
             message: '~^Parameter #1 \$key of method Atk4\\Data\\Reference\\WeakAnalysingMap<list<mixed>,Closure,Atk4\\Data\\Model\|Atk4\\Data\\Persistence>::(get|set)\(\) expects list<mixed>, array\{0: Atk4\\Data\\Reference\\WeakAnalysingMap<list<mixed>, Closure, Atk4\\Data\\Model\|Atk4\\Data\\Persistence>, 1: non-falsy-string, 2: class-string<object>\|null, 3\?: object\|null, 4\?: non-empty-array\} given\.$~'
             count: 2
 
-        # https://github.com/phpstan/phpstan-deprecation-rules/issues/75
-        -
-            path: 'src/Persistence/Sql/Oracle/PlatformTrait.php'
-            identifier: method.deprecated
-            message: '~^Call to deprecated method getVarcharTypeDeclarationSQL\(\) of class AnonymousClass\w+:\nUse \{@link getStringTypeDeclarationSQL\(\)\} instead\.$~'
-            count: 1
-
         # AbstractPlatform::getIdentitySequenceName() method is deprecated in DBAL 3.4+,
         # in DBAL 4.0 OraclePlatform::getIdentitySequenceName() is protected and
         # PostgreSQLPlatform::getIdentitySequenceName() is removed:
