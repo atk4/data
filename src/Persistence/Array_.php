@@ -87,20 +87,6 @@ class Array_ extends Persistence
 
             $this->saveRow($model, $row, $idRaw, false);
         }
-
-        // for array persistence join which accept table directly (without model initialization)
-        foreach ($model->getFields() as $field) {
-            if ($field->hasJoin()) {
-                $join = $field->getJoin();
-                $joinTableName = \Closure::bind(static function () use ($join) {
-                    return $join->foreignTable;
-                }, null, Array_\Join::class)();
-                if (isset($this->seedData[$joinTableName])) {
-                    $dummyJoinModel = new Model($this, ['table' => $joinTableName]);
-                    $dummyJoinModel->setPersistence($this);
-                }
-            }
-        }
     }
 
     private function seedDataAndGetTable(Model $model): Table
