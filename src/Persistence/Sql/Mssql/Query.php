@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Mssql;
 
+use Atk4\Data\Exception;
+use Atk4\Data\Field;
 use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 use Atk4\Data\Persistence\Sql\RawExpression;
@@ -17,9 +19,6 @@ class Query extends BaseQuery
 
     protected string $identifierEscapeChar = ']';
     protected string $expressionClass = Expression::class;
-
-    // https://devblogs.microsoft.com/azure-sql/introducing-regular-expression-regex-support-in-azure-sql-db/
-    protected array $supportedOperators = ['=', '!=', '<', '>', '<=', '>=', 'in', 'not in', 'like', 'not like'];
 
     protected string $templateInsert = <<<'EOF'
         begin try
@@ -134,6 +133,44 @@ class Query extends BaseQuery
             },
             true
         );
+    }
+
+    #[\Override]
+    protected function _renderConditionRegexpOperator(bool $negated, string $sqlLeft, string $sqlRight, bool $binary = false): string
+    {
+        return ($negated ? 'not ' : '') . $this->_renderConditionBinaryReuseBool(
+            $sqlLeft,
+            $sqlRight,
+            function ($sqlLeft, $sqlRight) use ($binary) {
+                $castToStringFx = static function ($sql) {
+                    return 'case when ' . $sql . ' is not null then '
+                        . 'concat(' . $sql . ', substring(char(' . ord('0') . '), 1, 0)) end';
+                };
+
+                return 'regexp_like(' . $castToStringFx($sqlLeft) . ', ' . $sqlRight
+                    . ', cast(' . $this->escapeStringLiteral(($binary ? '' : 'i') . 's') . ' as varchar))';
+            },
+            true
+        );
+    }
+
+    #[\Override]
+    protected function _subrenderCondition(array $row): string
+    {
+        if (count($row) !== 1) {
+            [$field, $operator, $value] = $row;
+            $operatorLc = strtolower($operator ?? '=');
+
+            if ($field instanceof Field && in_array($field->type, ['binary', 'blob'], true)
+                && in_array($operatorLc, ['regexp', 'not regexp'], true)
+            ) {
+                throw (new Exception('Unsupported binary field operator'))
+                    ->addMoreInfo('operator', $operator)
+                    ->addMoreInfo('type', $field->type);
+            }
+        }
+
+        return parent::_subrenderCondition($row);
     }
 
     #[\Override]

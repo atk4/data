@@ -715,12 +715,11 @@ class ConditionSqlTest extends TestCase
             return $res;
         };
 
-        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            // https://devblogs.microsoft.com/azure-sql/introducing-regular-expression-regex-support-in-azure-sql-db/
-            self::markTestIncomplete('MSSQL has no REGEXP support yet');
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform && version_compare($this->getConnection()->getServerVersion(), '17') < 0) {
+            self::markTestIncomplete('MSSQL 2022 or lower has no REGEXP support');
         }
 
-        if ($this->getDatabasePlatform() instanceof OraclePlatform && $isBinary) {
+        if (($this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) && $isBinary) {
             $this->expectException(Exception::class);
             $this->expectExceptionMessage('Unsupported binary field operator');
         }
@@ -818,8 +817,8 @@ class ConditionSqlTest extends TestCase
             self::assertSame([5, 6], $findIdsRegexFx('name', 'Sa\s'));
             self::assertSame([7, 8, 9, 10, 11, 12], $findIdsRegexFx('name', 'Sa\S'));
             self::assertSame([1, 3], $findIdsRegexFx('name', '\wo'));
-            self::assertSame($isBinary && !$this->getDatabasePlatform() instanceof OraclePlatform ? [] : [13], $findIdsRegexFx('name', 'hei\w$'));
-            self::assertSame($isBinary && !$this->getDatabasePlatform() instanceof OraclePlatform ? [] : [17], $findIdsRegexFx('name', '123\w$'));
+            self::assertSame(($isBinary && !$this->getDatabasePlatform() instanceof OraclePlatform) || $this->getDatabasePlatform() instanceof SQLServerPlatform ? [] : [13], $findIdsRegexFx('name', 'hei\w$'));
+            self::assertSame(($isBinary && !$this->getDatabasePlatform() instanceof OraclePlatform) || $this->getDatabasePlatform() instanceof SQLServerPlatform ? [] : [17], $findIdsRegexFx('name', '123\w$'));
             self::assertSame([10, 15], $findIdsRegexFx('name', '\W\\\\'));
             if ($type !== 'string' && !$this->getDatabasePlatform() instanceof OraclePlatform) {
                 self::assertSame([5], $findIdsRegexFx('name', '\x20'));
@@ -828,18 +827,18 @@ class ConditionSqlTest extends TestCase
             }
         }
 
-        if (!$this->getDatabasePlatform() instanceof MySQLPlatform || $isMariadb) {
+        if ((!$this->getDatabasePlatform() instanceof MySQLPlatform || $isMariadb) && !$this->getDatabasePlatform() instanceof SQLServerPlatform) {
             self::assertSame([2, 5, 6, 7, 8, 9, 10, 11, 12], $findIdsRegexFx('name', '([ae]).+\1'));
         }
 
-        if ((!$this->getDatabasePlatform() instanceof MySQLPlatform || !$isMysql5x) && !$this->getDatabasePlatform() instanceof OraclePlatform) {
+        if ((!$this->getDatabasePlatform() instanceof MySQLPlatform || !$isMysql5x) && !$this->getDatabasePlatform() instanceof SQLServerPlatform && !$this->getDatabasePlatform() instanceof OraclePlatform) {
             self::assertSame([11], $findIdsRegexFx('name', 'Sa(?=~).r'));
             self::assertSame([5, 6, 7, 8, 9, 12], $findIdsRegexFx('name', 'Sa(?!~).r'));
             self::assertSame([11], $findIdsRegexFx('name', 'a.(?<=~)ra'));
             self::assertSame([5, 6, 7, 8, 9, 12], $findIdsRegexFx('name', 'a.(?<!~)ra'));
         }
 
-        $hugeList = array_map(static fn ($i) => 'foo' . $i, range(0, $this->getDatabasePlatform() instanceof OraclePlatform ? 19 : 2_000));
+        $hugeList = array_map(static fn ($i) => 'foo' . $i, range(0, $this->getDatabasePlatform() instanceof SQLServerPlatform ? 455 : ($this->getDatabasePlatform() instanceof OraclePlatform ? 19 : 2_000)));
         self::assertSame([1], $findIdsRegexFx('name', implode('|', $hugeList) . '|John'));
         if (!$this->getDatabasePlatform() instanceof PostgreSQLPlatform) { // very slow on PostgreSQL 14 or lower, on PostgreSQL 15 and 16 the queries are still slow (~10 seconds)
             self::assertSame([1], $findIdsRegexFx('name', str_repeat('(', 99) . implode('|', $hugeList) . '|John' . str_repeat(')', 99)));
@@ -856,9 +855,8 @@ class ConditionSqlTest extends TestCase
     #[DataProvider('provideNullLikeRegexpConditionCases')]
     public function testNullLikeRegexpCondition(string $operator, ?bool $expectedResult, ?string $value, ?string $pattern, bool $negated): void
     {
-        if ($this->getDatabasePlatform() instanceof SQLServerPlatform && $operator === 'regexp') {
-            // https://devblogs.microsoft.com/azure-sql/introducing-regular-expression-regex-support-in-azure-sql-db/
-            self::markTestIncomplete('MSSQL has no REGEXP support yet');
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform && version_compare($this->getConnection()->getServerVersion(), '17') < 0) {
+            self::markTestIncomplete('MSSQL 2022 or lower has no REGEXP support');
         }
 
         // TODO Oracle always converts empty string to null
