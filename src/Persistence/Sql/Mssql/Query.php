@@ -183,7 +183,7 @@ class Query extends BaseQuery
             return parent::fxJsonArray($values);
         }
 
-        return $this->expr('json_array(' . implode(', ', array_fill(0, count($values), '[]')) . ' null on null)', [
+        return $this->expr('json_array(' . implode(', ', array_fill(0, count($values), '[]')) . ($values !== [] ? ' null on null' : '') . ')', [
             ...$values,
         ]);
     }
