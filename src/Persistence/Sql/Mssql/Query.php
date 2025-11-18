@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Mssql;
 
+use Atk4\Data\Exception;
+use Atk4\Data\Field;
 use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 use Atk4\Data\Persistence\Sql\RawExpression;
@@ -150,6 +152,25 @@ class Query extends BaseQuery
             },
             true
         );
+    }
+
+    #[\Override]
+    protected function _subrenderCondition(array $row): string
+    {
+        if (count($row) !== 1) {
+            [$field, $operator, $value] = $row;
+            $operatorLc = strtolower($operator ?? '=');
+
+            if ($field instanceof Field && in_array($field->type, ['binary', 'blob'], true)
+                && in_array($operatorLc, ['regexp', 'not regexp'], true)
+            ) {
+                throw (new Exception('Unsupported binary field operator'))
+                    ->addMoreInfo('operator', $operator)
+                    ->addMoreInfo('type', $field->type);
+            }
+        }
+
+        return parent::_subrenderCondition($row);
     }
 
     #[\Override]
