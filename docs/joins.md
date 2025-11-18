@@ -110,7 +110,7 @@ $jCreditCard = $user->join('credit_card', [
     'prefix' => 'cc_',
     'masterField' => 'default_credit_card_id',
 ]);
-$jCreditCard->addField('bigint'); // creates cc_number
+$jCreditCard->addField('number'); // creates cc_number
 $jCreditCard->addField('name'); // creates cc_name
 ```
 
