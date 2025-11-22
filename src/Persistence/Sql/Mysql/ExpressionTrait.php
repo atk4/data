@@ -64,12 +64,16 @@ trait ExpressionTrait
                 // https://bugs.mysql.com/bug.php?id=119444
                 // https://jira.mariadb.org/browse/MDEV-38153
                 if (is_string($value) && strlen($value) >= 64 * 1024) {
-                    $needle = !Connection::isServerMariaDb($this->connection)
-                            && version_compare($this->connection->getServerVersion(), '8.0.22') >= 0
-                            && version_compare($this->connection->getServerVersion(), '8.0.26') <= 0
-                        ? 'bWnNbJDvHwa7TjuCyBgUafgmeRJUZN0gVbK6k2pya5w7bKQRZuE8hUsaTS6sb1Gt'
-                        : '';
-                    $sql = 'replace(' . $sql . ', ' . $this->escapeStringLiteral($needle) . ', ' . $this->escapeStringLiteral('mysql-119444' . $needle) . ')';
+                    if (!Connection::isServerMariaDb($this->connection) && version_compare($this->connection->getServerVersion(), '5.7') <= 0) {
+                        $sql = 'cast(' . $sql . ' as char(' . min(strlen($value), 4 * 1024 * 1024 - 1) . '))';
+                    } else {
+                        $needle = !Connection::isServerMariaDb($this->connection)
+                                && version_compare($this->connection->getServerVersion(), '8.0.22') >= 0
+                                && version_compare($this->connection->getServerVersion(), '8.0.26') <= 0
+                            ? 'bWnNbJDvHwa7TjuCyBgUafgmeRJUZN0gVbK6k2pya5w7bKQRZuE8hUsaTS6sb1Gt'
+                            : '';
+                        $sql = 'replace(' . $sql . ', ' . $this->escapeStringLiteral($needle) . ', ' . $this->escapeStringLiteral('mysql-119444' . $needle) . ')';
+                    }
                 }
 
                 return $sql;
