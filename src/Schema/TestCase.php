@@ -465,7 +465,7 @@ abstract class TestCase extends BaseTestCase
             || (version_compare($this->getConnection()->getServerVersion(), '11.3') >= 0 && version_compare($this->getConnection()->getServerVersion(), '11.4.3') <= 0)
             || (version_compare($this->getConnection()->getServerVersion(), '11.5') >= 0 && version_compare($this->getConnection()->getServerVersion(), '11.6') < 0)
         )) {
-            $value = str_replace(['/', '"', "\n"], ['\/', '\"', '\n'], $value);
+            $value = str_replace(['"', "\n"], ['\"', '\n'], $value);
         }
 
         return $value;
