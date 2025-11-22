@@ -145,9 +145,13 @@ class SelectTest extends TestCase
         }
     }
 
-    public function testSelectUnionBindLongString(): void
+    /**
+     * @dataProvider provideSelectUnionBindLongStringCases
+     */
+    #[DataProvider('provideSelectUnionBindLongStringCases')]
+    public function testSelectUnionBindLongString(int $length): void
     {
-        $str = str_repeat('x', 256 * 1024);
+        $str = str_repeat('x', $length);
         $str2 = 'y' . $str;
 
         $tableExpr = $this->e(
@@ -170,6 +174,18 @@ class SelectTest extends TestCase
             ['v' => $str],
             ['v' => $str2],
         ], $res);
+    }
+
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideSelectUnionBindLongStringCases(): iterable
+    {
+        yield [64 * 1024 - 2];
+        yield [64 * 1024 - 1];
+        yield [64 * 1024];
+        yield [64 * 1024 + 1];
+        yield [256 * 1024];
     }
 
     public function testOtherQueries(): void
