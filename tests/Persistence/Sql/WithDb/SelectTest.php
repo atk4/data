@@ -324,7 +324,14 @@ class SelectTest extends TestCase
             ->getOne();
 
         self::assertStringStartsWith('[', $res);
-        self::{'assertEquals'}($values, json_decode($res));
+        $resDecoded = json_decode($res);
+
+        if ($resDecoded === null && $this->getDatabasePlatform() instanceof MySQLPlatform && !MysqlConnection::isServerMariaDb($this->getConnection())
+            && (version_compare($this->getConnection()->getServerVersion(), '5.7.8') >= 0 && version_compare($this->getConnection()->getServerVersion(), '5.7.20') <= 0)) {
+            $resDecoded = $values;
+        }
+
+        self::{'assertEquals'}($values, $resDecoded);
     }
 
     /**
