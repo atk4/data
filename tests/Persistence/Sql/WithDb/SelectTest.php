@@ -145,7 +145,7 @@ class SelectTest extends TestCase
         }
     }
 
-    public function testSelectUnionLongString(): void
+    public function testSelectUnionBindLongString(): void
     {
         $str = str_repeat('x', 256 * 1024);
         $str2 = 'y' . $str;
