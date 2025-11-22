@@ -1231,6 +1231,9 @@ abstract class Query extends Expression
     }
 
     /**
+     * WARNING: MySQL 5.7.21 or lower and any MariaDB silently limit the output length
+     * using `group_concat_max_len` server variable. The default value is only 1 MB.
+     *
      * @return Expression
      */
     public function fxJsonArrayAgg(Expressionable $value)

@@ -385,6 +385,13 @@ class SelectTest extends TestCase
     #[DataProvider('provideFxJsonArrayCases')]
     public function testFxJsonArrayAgg(array $values): void
     {
+        // TODO set for every new MySQL/MariaDB connection by default
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            $this->getConnection()->expr(
+                'SET SESSION group_concat_max_len = ' . (4 * 1024 * 1024 * 1024 - 1)
+            )->executeStatement();
+        }
+
         if ($values === []) {
             $tableExpr = $this->q()->field($this->e('1'), 'v')->limit(0);
         } else {
