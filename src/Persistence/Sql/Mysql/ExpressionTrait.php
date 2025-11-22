@@ -65,7 +65,7 @@ trait ExpressionTrait
                 // https://jira.mariadb.org/browse/MDEV-38153
                 if (is_string($value) && strlen($value) >= 64 * 1024) {
                     if (!Connection::isServerMariaDb($this->connection) && version_compare($this->connection->getServerVersion(), '5.7') <= 0) {
-                        $sql = 'concat(' . $sql . ', ' . $this->escapeStringLiteral('') . ')';
+                        $sql = 'substring(' . $sql . ', 1)';
                     } else {
                         $needle = !Connection::isServerMariaDb($this->connection)
                                 && version_compare($this->connection->getServerVersion(), '8.0.22') >= 0
