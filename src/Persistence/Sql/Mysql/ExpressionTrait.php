@@ -46,7 +46,7 @@ trait ExpressionTrait
 
         $sql = preg_replace_callback(
             '~' . self::QUOTED_TOKEN_REGEX . '\K|:\w+~',
-            static function ($matches) use ($params) {
+            function ($matches) use ($params) {
                 if ($matches[0] === '') {
                     return '';
                 }
@@ -58,6 +58,13 @@ trait ExpressionTrait
                 // TODO open php-src feature request
                 if (is_float($value)) {
                     $sql = '(' . $sql . ' + 0e0)';
+                }
+
+                // workaround bind long string param silently cropped
+                // https://bugs.mysql.com/bug.php?id=119444
+                // https://jira.mariadb.org/browse/MDEV-38153
+                if (is_string($value) && strlen($value) >= 64 * 1024) {
+                    $sql = 'replace(' . $sql . ', ' . $this->escapeStringLiteral('') . ', ' . $this->escapeStringLiteral('mysql-119444') . ')';
                 }
 
                 return $sql;

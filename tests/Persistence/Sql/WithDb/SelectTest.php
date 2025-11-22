@@ -145,6 +145,33 @@ class SelectTest extends TestCase
         }
     }
 
+    public function testSelectUnionLongString(): void
+    {
+        $str = str_repeat('x', 256 * 1024);
+        $str2 = 'y' . $str;
+
+        $tableExpr = $this->e(
+            implode(' union all ', array_fill(0, 2, '[]')),
+            array_map(function ($v) {
+                $q = $this->q()->field($this->e('[]', [$v]), 'v');
+                $q->wrapInParentheses = false;
+
+                return $q;
+            }, [$str, $str2])
+        );
+        $tableExpr->wrapInParentheses = true;
+
+        $res = $this->q()
+            ->field('v')
+            ->table($tableExpr, 't')
+            ->getRows();
+
+        self::assertSame([
+            ['v' => $str],
+            ['v' => $str2],
+        ], $res);
+    }
+
     public function testOtherQueries(): void
     {
         $this->setupTables();
