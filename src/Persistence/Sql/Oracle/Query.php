@@ -224,6 +224,12 @@ class Query extends BaseQuery
         ]);
     }
 
+    #[\Override]
+    public function fxJsonArrayAgg(Expressionable $value)
+    {
+        return $this->expr('json_arrayagg([] null on null returning CLOB)', [$value]);
+    }
+
     private function makeReturningClauseType(string $type): string
     {
         return ['boolean' => 'NUMBER(1)', 'bigint' => 'NUMBER(20)', 'float' => 'NUMBER'][$type] ?? 'VARCHAR2';

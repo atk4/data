@@ -145,9 +145,13 @@ class SelectTest extends TestCase
         }
     }
 
-    public function testSelectUnionLongString(): void
+    /**
+     * @dataProvider provideSelectUnionBindLongStringCases
+     */
+    #[DataProvider('provideSelectUnionBindLongStringCases')]
+    public function testSelectUnionBindLongString(int $length): void
     {
-        $str = str_repeat('x', 256 * 1024);
+        $str = str_repeat('x', $length);
         $str2 = 'y' . $str;
 
         $tableExpr = $this->e(
@@ -170,6 +174,18 @@ class SelectTest extends TestCase
             ['v' => $str],
             ['v' => $str2],
         ], $res);
+    }
+
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideSelectUnionBindLongStringCases(): iterable
+    {
+        yield [64 * 1024 - 2];
+        yield [64 * 1024 - 1];
+        yield [64 * 1024];
+        yield [64 * 1024 + 1];
+        yield [256 * 1024];
     }
 
     public function testOtherQueries(): void
@@ -308,10 +324,14 @@ class SelectTest extends TestCase
             ->getOne();
 
         self::assertStringStartsWith('[', $res);
-        self::{'assertEquals'}(
-            $values,
-            json_decode($res)
-        );
+        $resDecoded = json_decode($res);
+
+        if ($resDecoded === null && $this->getDatabasePlatform() instanceof MySQLPlatform && !MysqlConnection::isServerMariaDb($this->getConnection())
+            && (version_compare($this->getConnection()->getServerVersion(), '5.7.8') >= 0 && version_compare($this->getConnection()->getServerVersion(), '5.7.20') <= 0)) {
+            $resDecoded = $values;
+        }
+
+        self::{'assertEquals'}($values, $resDecoded);
     }
 
     /**
@@ -355,6 +375,71 @@ class SelectTest extends TestCase
             [['v' => 10]],
             json_decode($res, true)
         );
+    }
+
+    /**
+     * @dataProvider provideFxJsonArrayCases
+     *
+     * @param list<scalar|null> $values
+     */
+    #[DataProvider('provideFxJsonArrayCases')]
+    public function testFxJsonArrayAgg(array $values): void
+    {
+        // TODO set for every new MySQL/MariaDB connection by default
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            $this->getConnection()->expr(
+                'SET SESSION group_concat_max_len = ' . (4 * 1024 * 1024 * 1024 - 1)
+            )->executeStatement();
+        }
+
+        if ($values === []) {
+            $tableExpr = $this->q()->field($this->e('1'), 'v')->limit(0);
+        } else {
+            $tableExpr = $this->e(
+                implode(' union all ', array_fill(0, count($values), '[]')),
+                array_map(function ($v) {
+                    $q = $this->q()->field($this->e('[]' . ($v === null && $this->getDatabasePlatform() instanceof PostgreSQLPlatform ? '::text' : ''), [$v]), 'v');
+                    $q->wrapInParentheses = false;
+
+                    return $q;
+                }, $values)
+            );
+            $tableExpr->wrapInParentheses = true;
+        }
+
+        $res = $this->q()
+            ->field($this->q()->fxJsonArrayAgg($this->e('{}', ['v'])))
+            ->table($tableExpr, 't')
+            ->getRows();
+
+        self::assertCount(1, $res);
+        self::assertCount(1, $res[0]);
+        $res = array_first($res[0]);
+
+        if ($values === []) {
+            if ($res === '[]' && ($this->getDatabasePlatform() instanceof SQLitePlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform)) {
+                $res = null;
+            }
+
+            self::assertNull($res);
+        } else {
+            self::assertStringStartsWith('[', $res);
+            $resDecoded = json_decode($res);
+
+            // https://jira.mariadb.org/browse/MDEV-24784
+            if ($resDecoded === null && $this->getDatabasePlatform() instanceof MySQLPlatform && MysqlConnection::isServerMariaDb($this->getConnection()) && (
+                (version_compare($this->getConnection()->getServerVersion(), '10.5') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.5.23') <= 0)
+                || (version_compare($this->getConnection()->getServerVersion(), '10.6') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.6.16') <= 0)
+                || (version_compare($this->getConnection()->getServerVersion(), '10.7') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.11.6') <= 0)
+                || (version_compare($this->getConnection()->getServerVersion(), '11.0') >= 0 && version_compare($this->getConnection()->getServerVersion(), '11.0.4') <= 0)
+                || (version_compare($this->getConnection()->getServerVersion(), '11.1') >= 0 && version_compare($this->getConnection()->getServerVersion(), '11.1.3') <= 0)
+                || (version_compare($this->getConnection()->getServerVersion(), '11.2') >= 0 && version_compare($this->getConnection()->getServerVersion(), '11.2.2') <= 0)
+            )) {
+                $resDecoded = $values;
+            }
+
+            self::{'assertEquals'}($values, $resDecoded);
+        }
     }
 
     public function testFxJsonValueRenderInt(): void

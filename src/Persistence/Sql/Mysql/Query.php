@@ -87,6 +87,16 @@ class Query extends BaseQuery
         ]);
     }
 
+    #[\Override]
+    public function fxJsonArrayAgg(Expressionable $value)
+    {
+        if (version_compare($this->connection->getServerVersion(), Connection::isServerMariaDb($this->connection) ? '10.5' : '5.7.22') < 0) {
+            return parent::fxJsonArrayAgg($value);
+        }
+
+        return $this->expr('json_arrayagg([])', [$value]);
+    }
+
     /**
      * @return ($forJsonValue is true ? array{string, string, string|null} : string)
      */
