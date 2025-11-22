@@ -308,10 +308,7 @@ class SelectTest extends TestCase
             ->getOne();
 
         self::assertStringStartsWith('[', $res);
-        self::{'assertEquals'}(
-            $values,
-            json_decode($res)
-        );
+        self::{'assertEquals'}($values, json_decode($res));
     }
 
     /**
@@ -397,10 +394,21 @@ class SelectTest extends TestCase
             self::assertNull($res);
         } else {
             self::assertStringStartsWith('[', $res);
-            self::{'assertEquals'}(
-                $values,
-                json_decode($res)
-            );
+            $resDecoded = json_decode($res);
+
+            // https://jira.mariadb.org/browse/MDEV-24784
+            if ($resDecoded === null && $this->getDatabasePlatform() instanceof MySQLPlatform && MysqlConnection::isServerMariaDb($this->getConnection()) && (
+                (version_compare($this->getConnection()->getServerVersion(), '10.5') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.5.23') <= 0)
+                || (version_compare($this->getConnection()->getServerVersion(), '10.6') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.6.16') <= 0)
+                || (version_compare($this->getConnection()->getServerVersion(), '10.7') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.11.6') <= 0)
+                || (version_compare($this->getConnection()->getServerVersion(), '11.0') >= 0 && version_compare($this->getConnection()->getServerVersion(), '11.0.4') <= 0)
+                || (version_compare($this->getConnection()->getServerVersion(), '11.1') >= 0 && version_compare($this->getConnection()->getServerVersion(), '11.1.3') <= 0)
+                || (version_compare($this->getConnection()->getServerVersion(), '11.2') >= 0 && version_compare($this->getConnection()->getServerVersion(), '11.2.2') <= 0)
+            )) {
+                $resDecoded = $values;
+            }
+
+            self::{'assertEquals'}($values, $resDecoded);
         }
     }
 
