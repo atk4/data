@@ -38,7 +38,7 @@ jobs:
           curl -sSLf https://packages.microsoft.com/config/debian/12/prod.list >/etc/apt/sources.list.d/mssql-release.list
           apt-get update
           ACCEPT_EULA=Y apt-get install -qy --no-install-recommends msodbcsql18
-          install-php-extensions pdo_sqlsrv
+          install-php-extensions microsoft/msphpsql@bad3c5e005
 
       - name: Install PHP dependencies
         run: |
