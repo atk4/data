@@ -30,9 +30,15 @@ jobs:
         run: |
           php --version
 
-      - name: "Install MSSQL"
+      - name: "Install MSSQL driver"
         run: |
           apt-get update
+          apt-get install -qy --no-install-recommends gnupg
+          curl -sSLf https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor --yes --output /usr/share/keyrings/microsoft-prod.gpg
+          curl -sSLf https://packages.microsoft.com/config/debian/12/prod.list >/etc/apt/sources.list.d/mssql-release.list
+          apt-get update
+          ACCEPT_EULA=Y apt-get install -qy --no-install-recommends msodbcsql18
+          install-php-extensions pdo_sqlsrv
 
       - name: Install PHP dependencies
         run: |
