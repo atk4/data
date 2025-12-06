@@ -38,7 +38,7 @@ class TestSqlPersistence extends Persistence\Sql
                         {
                             // log transaction savepoint operations only once
                             // https://github.com/doctrine/dbal/blob/3.6.7/src/Connection.php#L1365
-                            if (preg_match('~^(?:SAVEPOINT|RELEASE SAVEPOINT|ROLLBACK TO SAVEPOINT|SAVE TRANSACTION|ROLLBACK TRANSACTION) DOCTRINE2_SAVEPOINT_\d+;?$~', $sql)) {
+                            if (preg_match('~^(?:SAVEPOINT|RELEASE SAVEPOINT|ROLLBACK TO SAVEPOINT|SAVE TRANSACTION|ROLLBACK TRANSACTION) DOCTRINE(?:2_SAVEPOINT)?_\d+;?$~', $sql)) {
                                 return;
                             }
 
