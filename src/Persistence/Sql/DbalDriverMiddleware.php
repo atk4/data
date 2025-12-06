@@ -68,11 +68,11 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
     public function getSchemaManager(DbalConnection $connection, AbstractPlatform $platform): AbstractSchemaManager
     {
         if ($platform instanceof SQLitePlatform) {
-            return new class($connection, $platform) extends SQLiteSchemaManager { // @phpstan-ignore return.type
+            return new class($connection, $platform) extends SQLiteSchemaManager {
                 use Sqlite\SchemaManagerTrait;
             };
         } elseif ($platform instanceof OraclePlatform) {
-            return new class($connection, $platform) extends OracleSchemaManager { // @phpstan-ignore return.type
+            return new class($connection, $platform) extends OracleSchemaManager {
                 use Oracle\SchemaManagerTrait;
             };
         }
