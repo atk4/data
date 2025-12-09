@@ -76,7 +76,9 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
     #[\Override]
     public function getSchemaManager(DbalConnection $connection, AbstractPlatform $platform): AbstractSchemaManager
     {
-        return (new DbalSchemaManagerFactory())->createSchemaManager($connection);
+        return Connection::isDbal35() // @phpstan-ignore staticMethod.deprecated
+            ? (new DbalSchemaManagerFactory())->createSchemaManager($connection)
+            : parent::getSchemaManager($connection, $platform);
     }
 
     /**
