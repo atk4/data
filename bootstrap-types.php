@@ -13,8 +13,11 @@ use Doctrine\DBAL\Types as DbalTypes;
 
 // force SQLitePlatform and SQLiteSchemaManager classes load as in DBAL 3.x they are named with a different case
 // remove once DBAL 3.x support is dropped
-new \ReflectionClass(SqlitePlatform::class);
-new \ReflectionClass(SqliteSchemaManager::class);
+try {
+    new SqlitePlatform(); // @phpstan-ignore new.resultUnused
+    new SqliteSchemaManager(); // @phpstan-ignore arguments.count
+} catch (\Error $e) {
+}
 
 DbalTypes\Type::addType(Types::LOCAL_OBJECT, LocalObjectType::class);
 DbalTypes\Type::addType(Types::MONEY, MoneyType::class);

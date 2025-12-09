@@ -626,10 +626,11 @@ abstract class Expression implements Expressionable, \ArrayAccess
                         ->addMoreInfo('type', gettype($val));
                 }
 
-                $bindResult = $statement->bindValue($key, $val, $type);
-                if (!$bindResult) {
+                try {
+                    $statement->bindValue($key, $val, $type);
+                } catch (DbalException $e) {
                     throw (new Exception('Unable to bind parameter'))
-                        ->addMoreInfo('param', $key)
+                        ->addMoreInfo('key', $key)
                         ->addMoreInfo('value', $val)
                         ->addMoreInfo('type', $type);
                 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Sqlite;
 
+use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\PlatformFixColumnCommentTypeHintTrait;
 use Doctrine\DBAL\Schema\ForeignKeyConstraint;
 use Doctrine\DBAL\Schema\TableDiff;
@@ -20,7 +21,9 @@ trait PlatformTrait
 
     public function __construct()
     {
-        $this->disableSchemaEmulation(); // @phpstan-ignore method.deprecated
+        if (Connection::isDbal3x()) {
+            $this->disableSchemaEmulation(); // @phpstan-ignore method.deprecated
+        }
     }
 
     #[\Override]

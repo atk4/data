@@ -64,6 +64,19 @@ abstract class Connection
         return $this->_connection;
     }
 
+    final public static function isDbal3x(): bool
+    {
+        return (new \ReflectionClass(AbstractPlatform::class))->hasMethod('getName');
+    }
+
+    /**
+     * @deprecated remove once DBAL 3.5 support is dropped
+     */
+    final public static function isDbal35(): bool
+    {
+        return !(new \ReflectionClass(Configuration::class))->hasMethod('getSchemaManagerFactory');
+    }
+
     /**
      * Normalize DSN connection string or DBAL connection params described in:
      * https://www.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/configuration.html .
@@ -187,7 +200,7 @@ abstract class Connection
     public static function connect($dsn, $user = null, $password = null, $defaults = []): self
     {
         if ($dsn instanceof DbalConnection) {
-            $driverName = self::getDriverNameFromDbalDriverConnection($dsn->getWrappedConnection()); // @phpstan-ignore method.deprecated (https://github.com/doctrine/dbal/issues/5199)
+            $driverName = self::getDriverNameFromDbalDriverConnection($dsn);
             $connectionClass = self::resolveConnectionClass($driverName);
             $dbalConnection = $dsn;
         } elseif ($dsn instanceof DbalDriverConnection) {
@@ -210,9 +223,11 @@ abstract class Connection
     }
 
     /**
+     * @param DbalConnection|DbalDriverConnection $connection
+     *
      * @return 'pdo_sqlite'|'pdo_mysql'|'pdo_pgsql'|'pdo_sqlsrv'|'pdo_oci'|'mysqli'|'oci8'
      */
-    private static function getDriverNameFromDbalDriverConnection(DbalDriverConnection $connection): string
+    private static function getDriverNameFromDbalDriverConnection($connection): string
     {
         $driver = $connection->getNativeConnection();
 
@@ -239,6 +254,9 @@ abstract class Connection
                 }
             },
         ]);
+        if (!self::isDbal35()) { // @phpstan-ignore staticMethod.deprecated
+            $configuration->setSchemaManagerFactory(new DbalSchemaManagerFactory());
+        }
 
         return $configuration;
     }
@@ -260,7 +278,9 @@ abstract class Connection
             (static::class)::createDbalConfiguration()
         );
 
-        return $dbalConnection->getWrappedConnection(); // @phpstan-ignore method.deprecated (https://github.com/doctrine/dbal/issues/5199)
+        return self::isDbal3x()
+            ? $dbalConnection->getWrappedConnection() // @phpstan-ignore method.deprecated (https://github.com/doctrine/dbal/issues/5199)
+            : \Closure::bind(static fn () => $dbalConnection->connect(), null, DbalConnection::class)(); // @phpstan-ignore method.internal
     }
 
     protected static function connectFromDbalDriverConnection(DbalDriverConnection $dbalDriverConnection): DbalConnection

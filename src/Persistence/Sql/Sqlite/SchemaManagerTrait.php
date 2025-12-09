@@ -16,13 +16,13 @@ trait SchemaManagerTrait
     {
         $hadForeignKeysEnabled = (bool) $this->_conn->executeQuery('PRAGMA foreign_keys')->fetchOne();
         if ($hadForeignKeysEnabled) {
-            $this->_execSql('PRAGMA foreign_keys = 0'); // @phpstan-ignore method.internal
+            $this->_conn->executeStatement('PRAGMA foreign_keys = 0'); // @phpstan-ignore method.internal
         }
 
         parent::alterTable($tableDiff);
 
         if ($hadForeignKeysEnabled) {
-            $this->_execSql('PRAGMA foreign_keys = 1'); // @phpstan-ignore method.internal
+            $this->_conn->executeStatement('PRAGMA foreign_keys = 1'); // @phpstan-ignore method.internal
 
             $rows = $this->_conn->executeQuery('PRAGMA foreign_key_check')->fetchAllAssociative();
             if (count($rows) > 0) {
