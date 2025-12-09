@@ -21,8 +21,6 @@ use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Query as DbalQuery;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
-use Doctrine\DBAL\Schema\OracleSchemaManager;
-use Doctrine\DBAL\Schema\SQLiteSchemaManager;
 
 class DbalDriverMiddleware extends AbstractDriverMiddleware
 {
@@ -63,21 +61,13 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
 
     /**
      * @return AbstractSchemaManager<AbstractPlatform>
+     *
+     * @deprecated remove once DBAL 3.5 support is dropped
      */
     #[\Override]
     public function getSchemaManager(DbalConnection $connection, AbstractPlatform $platform): AbstractSchemaManager
     {
-        if ($platform instanceof SQLitePlatform) {
-            return new class($connection, $platform) extends SQLiteSchemaManager {
-                use Sqlite\SchemaManagerTrait;
-            };
-        } elseif ($platform instanceof OraclePlatform) {
-            return new class($connection, $platform) extends OracleSchemaManager {
-                use Oracle\SchemaManagerTrait;
-            };
-        }
-
-        return parent::getSchemaManager($connection, $platform);
+        return (new DbalSchemaManagerFactory())->createSchemaManager($connection);
     }
 
     /**
