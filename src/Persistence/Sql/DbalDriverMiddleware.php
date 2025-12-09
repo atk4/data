@@ -21,6 +21,7 @@ use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Query as DbalQuery;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
+use Doctrine\DBAL\ServerVersionProvider;
 
 class DbalDriverMiddleware extends AbstractDriverMiddleware
 {
@@ -48,12 +49,20 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
     }
 
     #[\Override]
-    public function getDatabasePlatform(): AbstractPlatform
+    public function getDatabasePlatform(?ServerVersionProvider $versionProvider = null): AbstractPlatform
     {
-        return $this->replaceDatabasePlatform(parent::getDatabasePlatform());
+        if (Connection::isDbal3x()) {
+            return $this->replaceDatabasePlatform(parent::getDatabasePlatform());
+        }
+
+        assert($versionProvider !== null);
+
+        return $this->replaceDatabasePlatform(parent::getDatabasePlatform($versionProvider));
     }
 
-    #[\Override]
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     public function createDatabasePlatformForVersion($version): AbstractPlatform
     {
         return $this->replaceDatabasePlatform(parent::createDatabasePlatformForVersion($version));
