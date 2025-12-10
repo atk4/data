@@ -69,8 +69,9 @@ class TestCaseTest extends TestCase
                 "START TRANSACTION";
 
 
-                SAVEPOINT DOCTRINE_2;
-                EOF . "\n\n"
+
+                EOF
+            . ($this->getDatabasePlatform() instanceof SQLServerPlatform ? 'SAVE TRANSACTION' : 'SAVEPOINT') . " DOCTRINE_2;\n\n"
             . ($this->getDatabasePlatform() instanceof SQLServerPlatform
                 ? <<<'EOF'
 
