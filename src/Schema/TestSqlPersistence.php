@@ -53,12 +53,7 @@ class TestSqlPersistence extends Persistence\Sql
     protected function wrapDeepestDbalDriverConnection($connection, string $middlewareClass): ?AbstractConnectionMiddleware
     {
         if ($connection instanceof DbalConnection) {
-            $reflProp = new \ReflectionProperty(
-                DbalConnection::class,
-                Connection::isDbal3x()
-                    ? '_conn'
-                    : 'connection'
-            );
+            $reflProp = new \ReflectionProperty(DbalConnection::class, '_conn');
             if (\PHP_VERSION_ID < 8_01_00) {
                 $reflProp->setAccessible(true);
             }
