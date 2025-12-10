@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Atk4\Data\Schema;
 
 use Atk4\Data\Persistence;
-use Doctrine\DBAL\Logging\SQLLogger;
+use Atk4\Data\Persistence\Sql\Connection;
+use Doctrine\DBAL\Connection as DbalConnection;
+use Doctrine\DBAL\Driver\Connection as DbalDriverConnection;
+use Doctrine\DBAL\Driver\Middleware\AbstractConnectionMiddleware;
+use Doctrine\DBAL\Driver\PDO\SQLSrv\Connection as DbalDriverPdoMssqlConnection;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 
 /**
@@ -18,7 +22,7 @@ class TestSqlPersistence extends Persistence\Sql
     public function __construct() {} // @phpstan-ignore constructor.missingParentCall
 
     #[\Override]
-    public function getConnection(): Persistence\Sql\Connection
+    public function getConnection(): Connection
     {
         \Closure::bind(function () {
             if (($this->_connection ?? null) === null) {
@@ -30,34 +34,59 @@ class TestSqlPersistence extends Persistence\Sql
                     )->executeStatement();
                 }
 
-                $this->getConnection()->getConnection()->getConfiguration()->setSQLLogger( // @phpstan-ignore method.deprecated
-                    // @phpstan-ignore class.implementsDeprecatedInterface (TODO PHP CS Fixer should allow comment on the same line)
-                    new class implements SQLLogger {
-                        #[\Override]
-                        public function startQuery($sql, ?array $params = null, ?array $types = null): void
-                        {
-                            // log transaction savepoint operations only once
-                            // https://github.com/doctrine/dbal/blob/3.6.7/src/Connection.php#L1365
-                            if (preg_match('~^(?:SAVEPOINT|RELEASE SAVEPOINT|ROLLBACK TO SAVEPOINT|SAVE TRANSACTION|ROLLBACK TRANSACTION) DOCTRINE(?:2_SAVEPOINT)?_\d+;?$~', $sql)) {
-                                return;
-                            }
-
-                            // fix https://github.com/doctrine/dbal/issues/5525
-                            if ($params !== null && $params !== [] && array_is_list($params)) {
-                                $params = array_combine(range(1, count($params)), $params);
-                            }
-
-                            $test = TestCase::getTestFromBacktrace();
-                            \Closure::bind(static fn () => $test->logQuery($sql, $params ?? [], $types ?? []), null, TestCase::class)(); // @phpstan-ignore argument.type
-                        }
-
-                        #[\Override]
-                        public function stopQuery(): void {}
-                    }
+                $this->wrapDeepestDbalDriverConnection( // @phpstan-ignore method.notFound
+                    $this->_connection->getConnection(),
+                    TestLogConnectionMiddleware::class
                 );
             }
         }, $this, Persistence\Sql::class)();
 
         return parent::getConnection();
+    }
+
+    /**
+     * @param DbalConnection|DbalDriverConnection        $connection
+     * @param class-string<AbstractConnectionMiddleware> $middlewareClass
+     *
+     * @return ($connection is DbalConnection ? null : AbstractConnectionMiddleware)
+     */
+    protected function wrapDeepestDbalDriverConnection($connection, string $middlewareClass): ?AbstractConnectionMiddleware
+    {
+        if ($connection instanceof DbalConnection) {
+            $reflProp = new \ReflectionProperty(
+                DbalConnection::class,
+                Connection::isDbal3x()
+                    ? '_conn'
+                    : 'connection'
+            );
+            if (\PHP_VERSION_ID < 8_01_00) {
+                $reflProp->setAccessible(true);
+            }
+
+            $newMiddleware = $this->wrapDeepestDbalDriverConnection(
+                $reflProp->getValue($connection),
+                $middlewareClass
+            );
+
+            $reflProp->setValue($connection, $newMiddleware);
+
+            return null;
+        }
+
+        if ($connection instanceof AbstractConnectionMiddleware && !$connection instanceof DbalDriverPdoMssqlConnection) {
+            $reflProp = new \ReflectionProperty(AbstractConnectionMiddleware::class, 'wrappedConnection');
+            if (\PHP_VERSION_ID < 8_01_00) {
+                $reflProp->setAccessible(true);
+            }
+
+            $newMiddleware = $this->wrapDeepestDbalDriverConnection(
+                $reflProp->getValue($connection),
+                $middlewareClass
+            );
+
+            return new $connection($newMiddleware);
+        }
+
+        return new $middlewareClass($connection);
     }
 }

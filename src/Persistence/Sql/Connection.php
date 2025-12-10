@@ -214,7 +214,9 @@ abstract class Connection
             $dbalConnection = $connectionClass::connectFromDbalDriverConnection($dbalDriverConnection);
         }
 
-        $dbalConnection->setNestTransactionsWithSavepoints(true); // remove once DBAL 3.x support is dropped
+        if (self::isDbal3x()) {
+            $dbalConnection->setNestTransactionsWithSavepoints(true);
+        }
 
         $connection = new $connectionClass($defaults);
         $connection->_connection = $dbalConnection;

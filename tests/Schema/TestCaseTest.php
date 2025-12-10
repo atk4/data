@@ -69,8 +69,9 @@ class TestCaseTest extends TestCase
                 "START TRANSACTION";
 
 
-                "SAVEPOINT";
-                EOF . "\n\n"
+
+                EOF
+            . ($this->getDatabasePlatform() instanceof SQLServerPlatform ? 'SAVE TRANSACTION' : 'SAVEPOINT') . " DOCTRINE_2;\n\n"
             . ($this->getDatabasePlatform() instanceof SQLServerPlatform
                 ? <<<'EOF'
 
@@ -120,7 +121,7 @@ class TestCaseTest extends TestCase
 
 
                     EOF
-                : ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "\n\"SAVEPOINT\";\n\n" : '')
+                : ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "\nSAVEPOINT DOCTRINE_3;\n\n" : '')
                 . <<<'EOF'
 
                     insert into `t` (
@@ -145,7 +146,7 @@ class TestCaseTest extends TestCase
                     ? "atk4_binary\ru5f8mzx4vsm8g2c9\r287e8d9e78202079"
                     : 'x  y') . "', 1, 1.0,\n    1, NULL, '2020-10-20', '[\"z\"]'")
                 . "\n  );\n\n"
-                . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "\n\"RELEASE SAVEPOINT\";\n\n" : ''))
+                . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "\nRELEASE SAVEPOINT DOCTRINE_3;\n\n" : ''))
             . ($this->getDatabasePlatform() instanceof OraclePlatform ? <<<'EOF'
 
                 select
@@ -175,7 +176,7 @@ class TestCaseTest extends TestCase
                 EOF
             . $makeLimitSqlFx(2)
             . ";\n\n"
-            . ($this->getDatabasePlatform()->supportsReleaseSavepoints() ? "\n\"RELEASE SAVEPOINT\";\n\n" : '')
+            . ($this->getDatabasePlatform()->supportsReleaseSavepoints() ? "\nRELEASE SAVEPOINT DOCTRINE_2;\n\n" : '')
             . <<<'EOF'
 
                 "COMMIT";
