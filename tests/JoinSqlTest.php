@@ -12,7 +12,7 @@ use Atk4\Data\Reference;
 use Atk4\Data\Schema\Migrator;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 
 class JoinSqlTest extends TestCase
 {
@@ -779,7 +779,7 @@ class JoinSqlTest extends TestCase
         // TODO improve Migrator so this hack is not needed
         $userForeignIdFieldName = 'uid';
         $contactForeignIdFieldName = 'cid';
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
             $userForeignIdFieldName = 'user_id';
             $contactForeignIdFieldName = 'contact_id';
         }

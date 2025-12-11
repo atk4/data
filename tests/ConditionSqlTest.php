@@ -12,7 +12,7 @@ use Atk4\Data\Persistence\Sql\RawExpression;
 use Atk4\Data\Schema\TestCase;
 use Atk4\Data\Tests\Schema\MigratorTest;
 use Atk4\Data\ValidationException;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
@@ -604,7 +604,7 @@ class ConditionSqlTest extends TestCase
         self::assertSame([5, 6, 7], $findIdsLikeFx('name', '%ro%li%'));
         self::assertSame([5], $findIdsLikeFx('name', '%ro\%li%'));
 
-        $isMariadb102To103 = $this->getDatabasePlatform() instanceof MySQLPlatform && MysqlConnection::isServerMariaDb($this->getConnection()) && (
+        $isMariadb102To103 = $this->getDatabasePlatform() instanceof AbstractMySQLPlatform && MysqlConnection::isServerMariaDb($this->getConnection()) && (
             version_compare($this->getConnection()->getServerVersion(), '10.2.18') <= 0
             || (version_compare($this->getConnection()->getServerVersion(), '10.3') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.3.10') <= 0)
         );
@@ -724,9 +724,9 @@ class ConditionSqlTest extends TestCase
             $this->expectExceptionMessage('Unsupported binary field operator');
         }
 
-        $isMariadb = $this->getDatabasePlatform() instanceof MySQLPlatform
+        $isMariadb = $this->getDatabasePlatform() instanceof AbstractMySQLPlatform
             && MysqlConnection::isServerMariaDb($this->getConnection());
-        $isMysql5x = $this->getDatabasePlatform() instanceof MySQLPlatform && !$isMariadb
+        $isMysql5x = $this->getDatabasePlatform() instanceof AbstractMySQLPlatform && !$isMariadb
             && version_compare($this->getConnection()->getServerVersion(), '6.0') < 0;
 
         $this->markTestIncompleteOnMySQL8xPlatformAsBinaryLikeIsBroken($isBinary);
@@ -809,7 +809,7 @@ class ConditionSqlTest extends TestCase
         self::assertSame([], $findIdsRegexFx('c', '20{4,4}'));
         self::assertSame([2], $findIdsRegexFx('c', '20{2,}$'));
 
-        if (!$this->getDatabasePlatform() instanceof MySQLPlatform || !$isMysql5x) {
+        if (!$this->getDatabasePlatform() instanceof AbstractMySQLPlatform || !$isMysql5x) {
             self::assertSame($this->getDatabasePlatform() instanceof PostgreSQLPlatform && $isBinary ? [13, 14, 15, 16, 17] : [16, 17], $findIdsRegexFx('name', '\d'));
             self::assertSame([2, 3], $findIdsRegexFx('c', '\d0'));
             self::assertSame([1], $findIdsRegexFx('c', '^\d$'));
@@ -827,11 +827,11 @@ class ConditionSqlTest extends TestCase
             }
         }
 
-        if ((!$this->getDatabasePlatform() instanceof MySQLPlatform || $isMariadb) && !$this->getDatabasePlatform() instanceof SQLServerPlatform) {
+        if ((!$this->getDatabasePlatform() instanceof AbstractMySQLPlatform || $isMariadb) && !$this->getDatabasePlatform() instanceof SQLServerPlatform) {
             self::assertSame([2, 5, 6, 7, 8, 9, 10, 11, 12], $findIdsRegexFx('name', '([ae]).+\1'));
         }
 
-        if ((!$this->getDatabasePlatform() instanceof MySQLPlatform || !$isMysql5x) && !$this->getDatabasePlatform() instanceof SQLServerPlatform && !$this->getDatabasePlatform() instanceof OraclePlatform) {
+        if ((!$this->getDatabasePlatform() instanceof AbstractMySQLPlatform || !$isMysql5x) && !$this->getDatabasePlatform() instanceof SQLServerPlatform && !$this->getDatabasePlatform() instanceof OraclePlatform) {
             self::assertSame([11], $findIdsRegexFx('name', 'Sa(?=~).r'));
             self::assertSame([5, 6, 7, 8, 9, 12], $findIdsRegexFx('name', 'Sa(?!~).r'));
             self::assertSame([11], $findIdsRegexFx('name', 'a.(?<=~)ra'));

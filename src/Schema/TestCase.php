@@ -12,8 +12,8 @@ use Atk4\Data\Persistence\Sql\RawExpression;
 use Atk4\Data\Persistence\Sql\Sqlite\Expression as SqliteExpression;
 use Atk4\Data\Reference;
 use Doctrine\DBAL\ParameterType;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
@@ -422,7 +422,7 @@ abstract class TestCase extends BaseTestCase
 
     protected function markTestIncompleteOnMySQL5xPlatformAsWithClauseIsNotSupported(): void
     {
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform
             && !MysqlConnection::isServerMariaDb($this->getConnection())
             && version_compare($this->getConnection()->getServerVersion(), '6.0') < 0
         ) {
@@ -432,7 +432,7 @@ abstract class TestCase extends BaseTestCase
 
     protected function markTestIncompleteOnMySQL56PlatformAsCreateUniqueStringIndexHasLengthLimit(): void
     {
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform
             && !MysqlConnection::isServerMariaDb($this->getConnection())
             && version_compare($this->getConnection()->getServerVersion(), '5.7') < 0
         ) {
@@ -442,7 +442,7 @@ abstract class TestCase extends BaseTestCase
 
     protected function markTestIncompleteOnMySQL8xPlatformAsBinaryLikeIsBroken(bool $isBinary): void
     {
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform && $isBinary
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform && $isBinary
             && !MysqlConnection::isServerMariaDb($this->getConnection())
             && version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0
         ) {
@@ -460,7 +460,7 @@ abstract class TestCase extends BaseTestCase
      */
     protected function fixExpectedJsonValueUnquoteForMariadb106To115(string $value): string
     {
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform && MysqlConnection::isServerMariaDb($this->getConnection()) && (
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform && MysqlConnection::isServerMariaDb($this->getConnection()) && (
             (version_compare($this->getConnection()->getServerVersion(), '10.6') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.6.19') <= 0)
             || (version_compare($this->getConnection()->getServerVersion(), '10.7') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.11.9') <= 0)
             || (version_compare($this->getConnection()->getServerVersion(), '11.0') >= 0 && version_compare($this->getConnection()->getServerVersion(), '11.2.5') <= 0)

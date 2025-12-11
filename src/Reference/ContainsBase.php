@@ -10,7 +10,7 @@ use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Reference;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 
 abstract class ContainsBase extends Reference
 {
@@ -85,7 +85,7 @@ abstract class ContainsBase extends Reference
 
         // fix JSON object reordered by MySQL
         // https://bugs.mysql.com/bug.php?id=100974
-        $ourMysqlConnection = $this->getOurModel()->getPersistence() instanceof Persistence\Sql && $this->getOurModel()->getPersistence()->getDatabasePlatform() instanceof MySQLPlatform
+        $ourMysqlConnection = $this->getOurModel()->getPersistence() instanceof Persistence\Sql && $this->getOurModel()->getPersistence()->getDatabasePlatform() instanceof AbstractMySQLPlatform
             ? $this->getOurModel()->getPersistence()->getConnection()
             : null;
         if ($ourMysqlConnection !== null && !MysqlConnection::isServerMariaDb($ourMysqlConnection)) {

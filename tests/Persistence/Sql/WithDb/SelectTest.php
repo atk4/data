@@ -12,7 +12,7 @@ use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Persistence\Sql\Sqlite\Connection as SqliteConnection;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
@@ -281,7 +281,7 @@ class SelectTest extends TestCase
             return $v;
         };
 
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
             if (!MysqlConnection::isServerMariaDb($this->getConnection()) && version_compare($this->getConnection()->getServerVersion(), '5.7.8') < 0) {
                 self::assertSameSql('concat(\'[\', case when `u` + :a is not null then concat(\'"\', ' . $makeReplaceControlCharsFx('replace(replace(replace(`u` + :b, \'"\', \'\"\'), \'\\\', \'\\\\\'), \'\\\"\', \'\"\')') . ', \'"\') else \'null\' end, \']\')', $expr->render()[0]);
                 self::assertSame([':a' => 10, ':b' => 10], $expr->render()[1]);
@@ -326,7 +326,7 @@ class SelectTest extends TestCase
         self::assertStringStartsWith('[', $res);
         $resDecoded = json_decode($res);
 
-        if ($resDecoded === null && $this->getDatabasePlatform() instanceof MySQLPlatform && !MysqlConnection::isServerMariaDb($this->getConnection())
+        if ($resDecoded === null && $this->getDatabasePlatform() instanceof AbstractMySQLPlatform && !MysqlConnection::isServerMariaDb($this->getConnection())
             && (version_compare($this->getConnection()->getServerVersion(), '5.7.8') >= 0 && version_compare($this->getConnection()->getServerVersion(), '5.7.20') <= 0)) {
             $resDecoded = $values;
         }
@@ -355,7 +355,7 @@ class SelectTest extends TestCase
 
     public function testFxJsonArrayJson(): void
     {
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform && version_compare($this->getConnection()->getServerVersion(), MysqlConnection::isServerMariaDb($this->getConnection()) ? '10.6' : '8.0') < 0
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform && version_compare($this->getConnection()->getServerVersion(), MysqlConnection::isServerMariaDb($this->getConnection()) ? '10.6' : '8.0') < 0
             || $this->getDatabasePlatform() instanceof SQLServerPlatform && version_compare($this->getConnection()->getServerVersion(), '16') < 0
             || $this->getDatabasePlatform() instanceof OraclePlatform && version_compare($this->getConnection()->getServerVersion(), '21.0') < 0
         ) {
@@ -386,7 +386,7 @@ class SelectTest extends TestCase
     public function testFxJsonArrayAgg(array $values): void
     {
         // TODO set for every new MySQL/MariaDB connection by default
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
             $this->getConnection()->expr(
                 'SET SESSION group_concat_max_len = ' . (4 * 1024 * 1024 * 1024 - 1)
             )->executeStatement();
@@ -427,7 +427,7 @@ class SelectTest extends TestCase
             $resDecoded = json_decode($res);
 
             // https://jira.mariadb.org/browse/MDEV-24784
-            if ($resDecoded === null && $this->getDatabasePlatform() instanceof MySQLPlatform && MysqlConnection::isServerMariaDb($this->getConnection()) && (
+            if ($resDecoded === null && $this->getDatabasePlatform() instanceof AbstractMySQLPlatform && MysqlConnection::isServerMariaDb($this->getConnection()) && (
                 (version_compare($this->getConnection()->getServerVersion(), '10.5') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.5.23') <= 0)
                 || (version_compare($this->getConnection()->getServerVersion(), '10.6') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.6.16') <= 0)
                 || (version_compare($this->getConnection()->getServerVersion(), '10.7') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.11.6') <= 0)
@@ -449,7 +449,7 @@ class SelectTest extends TestCase
         if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
             self::assertSameSql('case when json_type(:a, \'$.v\') not in(\'array\', \'object\') then json_extract(:b, \'$.v\') end', $expr->render()[0]);
             self::assertSame([':a' => '{"v":10}', ':b' => '{"v":10}'], $expr->render()[1]);
-        } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform && (MysqlConnection::isServerMariaDb($this->getConnection()) || version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0)) {
+        } elseif ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform && (MysqlConnection::isServerMariaDb($this->getConnection()) || version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0)) {
             if (MysqlConnection::isServerMariaDb($this->getConnection())) {
                 self::assertSameSql('cast(json_value(:a, \'$.v\') as SIGNED)', $expr->render()[0]);
             } else {
@@ -487,7 +487,7 @@ class SelectTest extends TestCase
         if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
             self::assertSameSql('case json_type(:a, \'$.v\') when \'text\' then json_quote(json_extract(:b, \'$.v\')) when \'false\' then \'false\' when \'true\' then \'true\' else json_extract(:c, \'$.v\') end', $expr->render()[0]);
             self::assertSame([':a' => '{"v":10}', ':b' => '{"v":10}', ':c' => '{"v":10}'], $expr->render()[1]);
-        } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform && (MysqlConnection::isServerMariaDb($this->getConnection()) || version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0)) {
+        } elseif ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform && (MysqlConnection::isServerMariaDb($this->getConnection()) || version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0)) {
             if (MysqlConnection::isServerMariaDb($this->getConnection())) {
                 self::assertSameSql('case when json_type(json_extract(:a, \'$.v\')) != \'NULL\' then json_extract(:b, \'$.v\') end', $expr->render()[0]);
             } else {
@@ -520,7 +520,7 @@ class SelectTest extends TestCase
 
     private function fixExpectedJsonUsingPlatform(string $json, bool $forJsonValue): string
     {
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform && (
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform && (
             MysqlConnection::isServerMariaDb($this->getConnection())
                 ? $forJsonValue
                 : version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0
@@ -548,7 +548,7 @@ class SelectTest extends TestCase
     public function testFxJsonValue(string $json, string $path, string $type, $expectedValue): void
     {
         if ($json === '10' && $path === '$[0]' && $expectedValue === null && (
-            ($this->getDatabasePlatform() instanceof MySQLPlatform && (
+            ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform && (
                 MysqlConnection::isServerMariaDb($this->getConnection())
                 || version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0
             ))
@@ -558,7 +558,7 @@ class SelectTest extends TestCase
         }
 
         // https://jira.mariadb.org/browse/MDEV-37428
-        if ($json === '""' && $path === '$' && $expectedValue === '' && $this->getDatabasePlatform() instanceof MySQLPlatform
+        if ($json === '""' && $path === '$' && $expectedValue === '' && $this->getDatabasePlatform() instanceof AbstractMySQLPlatform
             && MysqlConnection::isServerMariaDb($this->getConnection())
             && in_array($this->getConnection()->getServerVersion(), ['10.11.14', '11.4.8', '11.8.3', '12.0.2'], true)) {
             $expectedValue = null;
@@ -566,7 +566,7 @@ class SelectTest extends TestCase
 
         // https://jira.mariadb.org/browse/MDEV-27151
         if (($json === 'null' && $path === '$' || $json === '[null]' && $path === '$[0]') && $type !== 'json' && $expectedValue === null
-            && $this->getDatabasePlatform() instanceof MySQLPlatform && MysqlConnection::isServerMariaDb($this->getConnection()) && (
+            && $this->getDatabasePlatform() instanceof AbstractMySQLPlatform && MysqlConnection::isServerMariaDb($this->getConnection()) && (
                 version_compare($this->getConnection()->getServerVersion(), '10.3.36') <= 0
                 || (version_compare($this->getConnection()->getServerVersion(), '10.4') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.4.26') <= 0)
                 || (version_compare($this->getConnection()->getServerVersion(), '10.5') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.5.17') <= 0)
@@ -581,7 +581,7 @@ class SelectTest extends TestCase
         }
 
         // https://jira.mariadb.org/browse/MDEV-15905
-        if ($json === 'true' && $path === '$' && $expectedValue === '1' && $this->getDatabasePlatform() instanceof MySQLPlatform
+        if ($json === 'true' && $path === '$' && $expectedValue === '1' && $this->getDatabasePlatform() instanceof AbstractMySQLPlatform
             && MysqlConnection::isServerMariaDb($this->getConnection()) && (
                 version_compare($this->getConnection()->getServerVersion(), '10.2.15') <= 0
                 || (version_compare($this->getConnection()->getServerVersion(), '10.3') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.3.7') <= 0)
@@ -694,7 +694,7 @@ class SelectTest extends TestCase
     public function testJsonTable(string $json, ?string $rowsPath, array $columns, array $expectedRows): void
     {
         if ($json === '[[10],20]' && $expectedRows === [['foo' => '10'], ['foo' => null]] && (
-            ($this->getDatabasePlatform() instanceof MySQLPlatform && (
+            ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform && (
                 MysqlConnection::isServerMariaDb($this->getConnection())
                     ? version_compare($this->getConnection()->getServerVersion(), '10.6') >= 0
                     : version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0
@@ -983,13 +983,13 @@ class SelectTest extends TestCase
         }
 
         $queryWhere = $this->q()->field($this->e('1'), 'v');
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
             $queryWhere->table('(select 1)', 'dual'); // needed for MySQL 5.x when WHERE or HAVING is specified
         }
         $queryWhere->where($this->e(...$exprLeft), $operator, $this->e(...$exprRight));
 
         $queryHaving = $this->q()->field($this->e('1'), 'v');
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
             $queryHaving->table('(select 1)', 'dual'); // needed for MySQL 5.x when WHERE or HAVING is specified
         }
         if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
@@ -1002,7 +1002,7 @@ class SelectTest extends TestCase
         $queryWhereSub->where('a', $operator, $this->e('{}', ['b']));
 
         $queryWhereIn = $this->q()->field($this->e('1'), 'v');
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
             $queryWhereIn->table('(select 1)', 'dual'); // needed for MySQL 5.x when WHERE or HAVING is specified
         }
         if ($operator === '=' || $operator === '!=') {
@@ -1125,7 +1125,7 @@ class SelectTest extends TestCase
             ->field('age')
             ->field($this->q()->groupConcat('name', ','));
 
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
             self::assertSame([
                 'select `age`, group_concat(`name` separator \',\') from `people` group by `age`',
                 [],
@@ -1185,7 +1185,7 @@ class SelectTest extends TestCase
         try {
             $q->getOne();
         } catch (ExecuteException $e) {
-            if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
                 $expectedErrorCode = 1146; // SQLSTATE[42S02]: Base table or view not found: 1146 Table 'non_existing_table' doesn't exist
             } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
                 $expectedErrorCode = 7; // SQLSTATE[42P01]: Undefined table: 7 ERROR: relation "non_existing_table" does not exist
@@ -1211,7 +1211,7 @@ class SelectTest extends TestCase
     {
         $hasCommentCarriageReturnSupport = $this->getDatabasePlatform() instanceof PostgreSQLPlatform
             || $this->getDatabasePlatform() instanceof SQLServerPlatform;
-        $hasBackslashSupport = $this->getDatabasePlatform() instanceof MySQLPlatform;
+        $hasBackslashSupport = $this->getDatabasePlatform() instanceof AbstractMySQLPlatform;
 
         self::assertSame(
             '(?:(?sx)' . "\n"
@@ -1220,7 +1220,7 @@ class SelectTest extends TestCase
                 . '    |`(?:[^`]+|``)*+`' . "\n"
                 . '    |\[(?:[^\]]+|\]\])*+\]' . "\n"
                 . '    |(?:--' . (
-                    $this->getDatabasePlatform() instanceof MySQLPlatform
+                    $this->getDatabasePlatform() instanceof AbstractMySQLPlatform
                         ? '(?=$|[\x01-\x21\x7f])'
                         : ''
                 ) . '|\#)[^' . ($hasCommentCarriageReturnSupport ? '\r' : '') . '\n]*+' . "\n"
@@ -1249,7 +1249,7 @@ class SelectTest extends TestCase
             }
 
             $replaceFx = static fn ($v) => str_replace('\'', $chr, $v);
-            $needsExplicitAs = $chr === '"' && $this->getDatabasePlatform() instanceof MySQLPlatform;
+            $needsExplicitAs = $chr === '"' && $this->getDatabasePlatform() instanceof AbstractMySQLPlatform;
 
             if ($chr !== '"' || !$this->getDatabasePlatform() instanceof OraclePlatform) {
                 $query = $this->q()->field($this->e('\'x\' ' . ($needsExplicitAs ? 'as ' : '') . $replaceFx($sqlTwoEscape)));
@@ -1260,7 +1260,7 @@ class SelectTest extends TestCase
             self::assertSame([$hasBackslashSupport && $chr === '"' ? $chr . '-- ' : '\\' => 'x'], $query->getRow());
         }
 
-        if (!($this->getDatabasePlatform() instanceof MySQLPlatform || $this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof OraclePlatform)) {
+        if (!($this->getDatabasePlatform() instanceof AbstractMySQLPlatform || $this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof OraclePlatform)) {
             $query = $this->q()->field($this->e('\'x\' [a*b]'));
             self::assertSame(['a*b' => 'x'], $query->getRow());
 
@@ -1379,7 +1379,7 @@ class SelectTest extends TestCase
                 continue;
             } elseif (($v === '\\' || $v === '\\\\\\') && ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof OraclePlatform)) { // https://github.com/php/php-src/issues/13958
                 continue;
-            } elseif (($v === '?' || $v === ':x' || $v === ':1' || $v === '--') && $this->getDatabasePlatform() instanceof MySQLPlatform) { // TODO pdo_mysql only https://dbfiddle.uk/cEbLp3M4
+            } elseif (($v === '?' || $v === ':x' || $v === ':1' || $v === '--') && $this->getDatabasePlatform() instanceof AbstractMySQLPlatform) { // TODO pdo_mysql only https://dbfiddle.uk/cEbLp3M4
                 continue;
             } elseif (($v === ':x' || $v === ':1') && $this->getDatabasePlatform() instanceof SQLServerPlatform) { // TODO https://dbfiddle.uk/4pDZnwWq
                 continue;
@@ -1413,13 +1413,13 @@ class SelectTest extends TestCase
         // remove once https://jira.mariadb.org/browse/MDEV-27050 is fixed
         $columnAlias = '❤';
         $tableAlias = '🚀';
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform && MysqlConnection::isServerMariaDb($this->getConnection())) {
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform && MysqlConnection::isServerMariaDb($this->getConnection())) {
             $columnAlias = '仮';
             $tableAlias = '名';
         }
 
         self::assertSame(
-            $this->getDatabasePlatform() instanceof MySQLPlatform && !MysqlConnection::isServerMariaDb($this->getConnection()) && $this->getConnection()->getServerVersion() === '8.0.32'
+            $this->getDatabasePlatform() instanceof AbstractMySQLPlatform && !MysqlConnection::isServerMariaDb($this->getConnection()) && $this->getConnection()->getServerVersion() === '8.0.32'
                 ? null
                 : [$columnAlias => 'žlutý_😀'],
             $this->q(
@@ -1463,7 +1463,7 @@ class SelectTest extends TestCase
         $getLastAiFx = function (): int {
             $table = 'test';
             $pk = 'myid';
-            if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
                 self::assertFalse($this->getConnection()->inTransaction());
                 $this->e('analyze table {}', [$table])->executeStatement();
                 $query = $this->q()->table('INFORMATION_SCHEMA.TABLES')

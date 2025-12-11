@@ -8,8 +8,8 @@ use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
@@ -413,7 +413,7 @@ class TypecastingTest extends TestCase
 
         self::assertSame(1, $mm->getId());
         self::assertSame(1, $mm->get('id'));
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform // TODO create DBAL PR to create DB column with microseconds support by default https://github.com/doctrine/dbal/blob/4.0.2/src/Platforms/AbstractMySQLPlatform.php#L171
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform // TODO create DBAL PR to create DB column with microseconds support by default https://github.com/doctrine/dbal/blob/4.0.2/src/Platforms/AbstractMySQLPlatform.php#L171
             || $this->getDatabasePlatform() instanceof PostgreSQLPlatform
             || $this->getDatabasePlatform() instanceof SQLServerPlatform
             || $this->getDatabasePlatform() instanceof OraclePlatform

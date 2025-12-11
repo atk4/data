@@ -10,7 +10,7 @@ use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Driver\Connection as DbalDriverConnection;
 use Doctrine\DBAL\Driver\Middleware\AbstractConnectionMiddleware;
 use Doctrine\DBAL\Driver\PDO\SQLSrv\Connection as DbalDriverPdoMssqlConnection;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 
 /**
  * SQL persistence with lazy connect and SQL logger.
@@ -28,7 +28,7 @@ class TestSqlPersistence extends Persistence\Sql
             if (($this->_connection ?? null) === null) {
                 $this->_connection = Persistence::connect($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD'])->_connection; // @phpstan-ignore property.notFound
 
-                if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+                if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
                     $this->getConnection()->expr(
                         'SET SESSION auto_increment_increment = 1, SESSION auto_increment_offset = 1'
                     )->executeStatement();

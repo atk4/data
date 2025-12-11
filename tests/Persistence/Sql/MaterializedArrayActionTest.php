@@ -10,7 +10,7 @@ use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\MaterializedArrayAction;
 use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
@@ -35,14 +35,14 @@ class MaterializedArrayActionTest extends TestCase
 
     private function isServerMysql5x(): bool
     {
-        return $this->getDatabasePlatform() instanceof MySQLPlatform
+        return $this->getDatabasePlatform() instanceof AbstractMySQLPlatform
             && !MysqlConnection::isServerMariaDb($this->getConnection())
             && version_compare($this->getConnection()->getServerVersion(), '6.0') < 0;
     }
 
     private function isServerMariadb105OrLower(): bool
     {
-        return $this->getDatabasePlatform() instanceof MySQLPlatform
+        return $this->getDatabasePlatform() instanceof AbstractMySQLPlatform
             && MysqlConnection::isServerMariaDb($this->getConnection())
             && version_compare($this->getConnection()->getServerVersion(), '10.6') < 0;
     }
@@ -61,7 +61,7 @@ class MaterializedArrayActionTest extends TestCase
         $render = $this->renderQuery($query);
         if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
             self::assertSame([':a' => '[]'], $render[1]);
-        } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform && !$this->isServerMysql5x() && !$this->isServerMariadb105OrLower()) {
+        } elseif ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform && !$this->isServerMysql5x() && !$this->isServerMariadb105OrLower()) {
             self::assertSame([':a' => '[]'], $render[1]);
         } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             self::assertSame($this->isServerPostgreSQL16OrLower() ? [':a' => '<t></t>'] : [':a' => '[]'], $render[1]);
@@ -87,7 +87,7 @@ class MaterializedArrayActionTest extends TestCase
         $render = $this->renderQuery($query);
         if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
             self::assertSame([':a' => '[[false,0,0.0,"Mark"]]'], $render[1]);
-        } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform && !$this->isServerMysql5x() && !$this->isServerMariadb105OrLower()) {
+        } elseif ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform && !$this->isServerMysql5x() && !$this->isServerMariadb105OrLower()) {
             self::assertSame([':a' => '[[false,0,0.0,"Mark"]]'], $render[1]);
         } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             self::assertSame($this->isServerPostgreSQL16OrLower() ? [':a' => '<t><r c0="0" c1="0" c2="0.0" c3="Mark"/></t>'] : [':a' => '[[false,0,0.0,"Mark"]]'], $render[1]);
@@ -117,7 +117,7 @@ class MaterializedArrayActionTest extends TestCase
         if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
             self::assertSameSql('select case when json_type(`value`, \'$[0]\') not in(\'array\', \'object\') then json_extract(`value`, \'$[0]\') end `bool`, case when json_type(`value`, \'$[1]\') not in(\'array\', \'object\') then json_extract(`value`, \'$[1]\') end `int`, case when json_type(`value`, \'$[2]\') not in(\'array\', \'object\') then json_extract(`value`, \'$[2]\') end `float`, case when json_type(`value`, \'$[3]\') not in(\'array\', \'object\') then json_extract(`value`, \'$[3]\') end `string` from json_each(:a, \'$\') where `key` is not null', $render[0]);
             self::assertSame([':a' => '[[true,-9223372036854775808,-1.0e-20,""],[null,9223372036854775807,1.0123456789123e+50," <foo>&\"\'🔥\n"]]'], $render[1]);
-        } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform && !$this->isServerMysql5x() && !$this->isServerMariadb105OrLower()) {
+        } elseif ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform && !$this->isServerMysql5x() && !$this->isServerMariadb105OrLower()) {
             self::assertSameSql('select `c0` `bool`, `c1` `int`, `c2` `float`, `c3` `string` from json_table(:a, \'$[*]\' columns (`c0` TINYINT(1) path \'$[0]\', `c1` BIGINT path \'$[1]\', `c2` DOUBLE PRECISION path \'$[2]\', `c3` VARCHAR(255) COLLATE `utf8mb4_unicode_ci` path \'$[3]\')) `t`', $render[0]);
             self::assertSame([':a' => '[[true,-9223372036854775808,-1.0e-20,""],[null,9223372036854775807,1.0123456789123e+50," <foo>&\"\'🔥\n"]]'], $render[1]);
         } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
