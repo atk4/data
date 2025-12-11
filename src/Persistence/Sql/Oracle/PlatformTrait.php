@@ -78,7 +78,7 @@ trait PlatformTrait
     // Sqlite or MySQL does, unify the behavior
 
     #[\Override]
-    public function getCreateSequenceSQL(Sequence $sequence)
+    public function getCreateSequenceSQL(Sequence $sequence): string
     {
         $sequence->setCache(1);
 
@@ -86,7 +86,7 @@ trait PlatformTrait
     }
 
     #[\Override]
-    public function getCreateAutoincrementSql($name, $table, $start = 1)
+    public function getCreateAutoincrementSql($name, $table, $start = 1): array
     {
         $sqls = parent::getCreateAutoincrementSql($name, $table, $start); // @phpstan-ignore method.internal
 
@@ -135,7 +135,7 @@ trait PlatformTrait
     }
 
     #[\Override]
-    public function getCreateIndexSQL(Index $index, $table)
+    public function getCreateIndexSQL(Index $index, $table): string
     {
         // workaround https://github.com/doctrine/dbal/issues/5508
         // no side effect on multiple null values or DBAL index list observed
