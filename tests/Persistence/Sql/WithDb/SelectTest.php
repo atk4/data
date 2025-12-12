@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests\Persistence\Sql\WithDb;
 
 use Atk4\Data\Model;
+use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Exception;
 use Atk4\Data\Persistence\Sql\ExecuteException;
 use Atk4\Data\Persistence\Sql\Expression;
@@ -12,6 +13,7 @@ use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Persistence\Sql\Sqlite\Connection as SqliteConnection;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Platforms;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
@@ -958,6 +960,25 @@ class SelectTest extends TestCase
     {
         self::assertTrue(version_compare($this->getConnection()->getServerVersion(), '2.0') > 0);
         self::assertTrue(version_compare($this->getConnection()->getServerVersion(), '1000.0') < 0);
+    }
+
+    public function testMysqlConnectionIsServerMariaDb(): void
+    {
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
+            if (MysqlConnection::isServerMariaDb($this->getConnection())) {
+                if (Connection::isDbal3x()) {
+                    self::assertInstanceOf(Platforms\MySQLPlatform::class, $this->getDatabasePlatform());
+                } else {
+                    self::assertNotInstanceOf(Platforms\MySQLPlatform::class, $this->getDatabasePlatform());
+                }
+                self::assertInstanceOf(Platforms\MariaDBPlatform::class, $this->getDatabasePlatform());
+            } else {
+                self::assertInstanceOf(Platforms\MySQLPlatform::class, $this->getDatabasePlatform());
+                self::assertNotInstanceOf(Platforms\MariaDBPlatform::class, $this->getDatabasePlatform());
+            }
+        } else {
+            self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
+        }
     }
 
     public function testWhereExpression(): void
