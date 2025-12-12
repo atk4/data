@@ -13,6 +13,7 @@ use Doctrine\DBAL\Exception\DatabaseObjectNotFoundException;
 use Doctrine\DBAL\Exception\DriverException as DbalDriverConvertedException;
 use Doctrine\DBAL\Exception\TableNotFoundException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
@@ -23,11 +24,18 @@ use Doctrine\DBAL\ServerVersionProvider;
 
 class DbalDriverMiddleware extends AbstractDriverMiddleware
 {
-    protected function replaceDatabasePlatform(AbstractPlatform $platform): AbstractPlatform
+    protected function replaceDatabasePlatform(AbstractPlatform $platform, ?string $version): AbstractPlatform
     {
         if ($platform instanceof SQLitePlatform) {
             $platform = new class extends SQLitePlatform {
                 use Sqlite\PlatformTrait;
+            };
+        } elseif ($platform instanceof MySQLPlatform && !Connection::isDbal3x() && $version !== null && version_compare($version, '5.7.8') < 0) {
+            $platform = new class extends MySQLPlatform {
+                public function getJsonTypeDeclarationSQL(array $column): string
+                {
+                    return 'TEXT';
+                }
             };
         } elseif ($platform instanceof PostgreSQLPlatform) {
             $platform = new class extends PostgreSQLPlatform {
@@ -50,12 +58,12 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
     public function getDatabasePlatform(?ServerVersionProvider $versionProvider = null): AbstractPlatform // @phpstan-ignore class.notFound
     {
         if (Connection::isDbal3x()) {
-            return $this->replaceDatabasePlatform(parent::getDatabasePlatform());
+            return $this->replaceDatabasePlatform(parent::getDatabasePlatform(), null);
         }
 
         assert($versionProvider !== null);
 
-        return $this->replaceDatabasePlatform(parent::getDatabasePlatform($versionProvider)); // @phpstan-ignore arguments.count
+        return $this->replaceDatabasePlatform(parent::getDatabasePlatform($versionProvider), $versionProvider->getServerVersion()); // @phpstan-ignore arguments.count
     }
 
     /**
@@ -63,7 +71,7 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
      */
     public function createDatabasePlatformForVersion($version): AbstractPlatform // @phpstan-ignore method.missingOverride
     {
-        return $this->replaceDatabasePlatform(parent::createDatabasePlatformForVersion($version));
+        return $this->replaceDatabasePlatform(parent::createDatabasePlatformForVersion($version), $version);
     }
 
     /**
