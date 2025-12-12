@@ -23,7 +23,7 @@ trait PlatformTrait
         $column['length'] = ($column['length'] ?? 255) * 4;
 
         return Connection::isDbal3x()
-            ? parent::getVarcharTypeDeclarationSQL($column)
+            ? parent::getVarcharTypeDeclarationSQL($column) // @phpstan-ignore method.deprecated
             : parent::getStringTypeDeclarationSQL($column);
     }
 
