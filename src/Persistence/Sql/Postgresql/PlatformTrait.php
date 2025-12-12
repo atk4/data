@@ -37,13 +37,13 @@ trait PlatformTrait
     }
 
     #[\Override]
-    protected function getVarcharTypeDeclarationSQLSnippet($length, $fixed)
+    protected function getVarcharTypeDeclarationSQLSnippet($length, $fixed): string
     {
         return $fixed ? 'ATK4__CICHAR' : 'ATK4__CIVARCHAR';
     }
 
     #[\Override]
-    public function getClobTypeDeclarationSQL(array $column)
+    public function getClobTypeDeclarationSQL(array $column): string
     {
         return 'CITEXT';
     }

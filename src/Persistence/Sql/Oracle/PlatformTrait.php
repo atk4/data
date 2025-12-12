@@ -44,7 +44,7 @@ trait PlatformTrait
     // workaround by using a standard non-binary column with custom encoding/typecast
 
     #[\Override]
-    public function getBinaryTypeDeclarationSQL(array $column)
+    public function getBinaryTypeDeclarationSQL(array $column): string
     {
         $lengthEncodedAscii = ($column['length'] ?? 255) * 2 + strlen("atk4_binary\ru5f8mzx4vsm8g2c9\r" . hash('crc32b', ''));
         $column['length'] = intdiv($lengthEncodedAscii + 3, 4);
@@ -53,21 +53,21 @@ trait PlatformTrait
     }
 
     #[\Override]
-    public function getBlobTypeDeclarationSQL(array $column)
+    public function getBlobTypeDeclarationSQL(array $column): string
     {
         return $this->getClobTypeDeclarationSQL($column);
     }
 
     // TODO create DBAL PR
     #[\Override]
-    public function getFloatDeclarationSQL(array $column)
+    public function getFloatDeclarationSQL(array $column): string
     {
         return 'BINARY_DOUBLE';
     }
 
     // TODO create DBAL PR
     #[\Override]
-    public function getTimeTypeDeclarationSQL(array $column)
+    public function getTimeTypeDeclarationSQL(array $column): string
     {
         $column['length'] = 26;
 

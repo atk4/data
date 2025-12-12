@@ -36,7 +36,7 @@ trait PlatformTrait
 
     // remove once https://github.com/doctrine/dbal/pull/4987 is fixed
     #[\Override]
-    public function getClobTypeDeclarationSQL(array $column)
+    public function getClobTypeDeclarationSQL(array $column): string
     {
         $res = parent::getClobTypeDeclarationSQL($column);
 
