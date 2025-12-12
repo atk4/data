@@ -49,7 +49,7 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
     }
 
     #[\Override]
-    public function getDatabasePlatform(?ServerVersionProvider $versionProvider = null): AbstractPlatform
+    public function getDatabasePlatform(?ServerVersionProvider $versionProvider = null): AbstractPlatform // @phpstan-ignore class.notFound
     {
         if (Connection::isDbal3x()) {
             return $this->replaceDatabasePlatform(parent::getDatabasePlatform());
@@ -57,13 +57,13 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
 
         assert($versionProvider !== null);
 
-        return $this->replaceDatabasePlatform(parent::getDatabasePlatform($versionProvider));
+        return $this->replaceDatabasePlatform(parent::getDatabasePlatform($versionProvider)); // @phpstan-ignore arguments.count
     }
 
     /**
      * @deprecated remove once DBAL 3.x support is dropped
      */
-    public function createDatabasePlatformForVersion($version): AbstractPlatform
+    public function createDatabasePlatformForVersion($version): AbstractPlatform // @phpstan-ignore method.missingOverride
     {
         return $this->replaceDatabasePlatform(parent::createDatabasePlatformForVersion($version));
     }
@@ -76,7 +76,7 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
     #[\Override]
     public function getSchemaManager(DbalConnection $connection, AbstractPlatform $platform): AbstractSchemaManager
     {
-        return Connection::isDbal35() // @phpstan-ignore staticMethod.deprecated
+        return Connection::isDbal35()
             ? (new DbalSchemaManagerFactory())->createSchemaManager($connection)
             : parent::getSchemaManager($connection, $platform);
     }

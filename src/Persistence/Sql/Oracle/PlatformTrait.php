@@ -38,7 +38,7 @@ trait PlatformTrait
      *
      * @deprecated remove once DBAL 3.x support is dropped
      */
-    public function getVarcharTypeDeclarationSQL(array $column): string
+    public function getVarcharTypeDeclarationSQL(array $column): string // @phpstan-ignore method.childParameterType
     {
         return $this->getStringTypeDeclarationSQL($column);
     }
