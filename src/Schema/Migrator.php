@@ -237,7 +237,11 @@ class Migrator
         $refType = $options['ref_type'] ?? self::REF_TYPE_NONE;
         unset($options['ref_type']);
 
-        $column = $this->table->addColumn($this->getDatabasePlatform()->quoteSingleIdentifier($fieldName), $type);
+        $column = $this->table->addColumn(
+            $this->getDatabasePlatform()->quoteSingleIdentifier($fieldName),
+            $type,
+            $this->getConnection()->makeImplicitColumnOptions($type)
+        );
 
         if (($options['nullable'] ?? true) && $refType !== self::REF_TYPE_PRIMARY) {
             $column->setNotnull(false);
