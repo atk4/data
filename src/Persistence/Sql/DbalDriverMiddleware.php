@@ -21,6 +21,7 @@ use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Query as DbalQuery;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
+use Doctrine\DBAL\ServerVersionProvider;
 
 class DbalDriverMiddleware extends AbstractDriverMiddleware
 {
@@ -48,13 +49,21 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
     }
 
     #[\Override]
-    public function getDatabasePlatform(): AbstractPlatform
+    public function getDatabasePlatform(?ServerVersionProvider $versionProvider = null): AbstractPlatform // @phpstan-ignore class.notFound
     {
-        return $this->replaceDatabasePlatform(parent::getDatabasePlatform());
+        if (Connection::isDbal3x()) {
+            return $this->replaceDatabasePlatform(parent::getDatabasePlatform());
+        }
+
+        assert($versionProvider !== null);
+
+        return $this->replaceDatabasePlatform(parent::getDatabasePlatform($versionProvider)); // @phpstan-ignore arguments.count
     }
 
-    #[\Override]
-    public function createDatabasePlatformForVersion($version): AbstractPlatform
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
+    public function createDatabasePlatformForVersion($version): AbstractPlatform // @phpstan-ignore method.missingOverride
     {
         return $this->replaceDatabasePlatform(parent::createDatabasePlatformForVersion($version));
     }
@@ -67,7 +76,9 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
     #[\Override]
     public function getSchemaManager(DbalConnection $connection, AbstractPlatform $platform): AbstractSchemaManager
     {
-        return (new DbalSchemaManagerFactory())->createSchemaManager($connection);
+        return Connection::isDbal35()
+            ? (new DbalSchemaManagerFactory())->createSchemaManager($connection)
+            : parent::getSchemaManager($connection, $platform);
     }
 
     /**

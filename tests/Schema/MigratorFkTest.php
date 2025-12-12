@@ -11,7 +11,7 @@ use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Schema\ForeignKeyConstraint;
 use Doctrine\DBAL\Schema\Index;
@@ -230,7 +230,7 @@ class MigratorFkTest extends TestCase
         $client->insert(['name' => 'Leos', 'country_id' => 10]);
 
         // https://jira.mariadb.org/browse/MDEV-34892
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform && MysqlConnection::isServerMariaDb($this->getConnection()) && in_array($this->getConnection()->getServerVersion(), ['10.11.9', '11.1.6', '11.2.5', '11.4.3', '11.5.2'], true)) {
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform && MysqlConnection::isServerMariaDb($this->getConnection()) && in_array($this->getConnection()->getServerVersion(), ['10.11.9', '11.1.6', '11.2.5', '11.4.3', '11.5.2'], true)) {
             self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
         } else {
             $this->expectException(DbalException::class);

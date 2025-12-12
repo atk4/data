@@ -10,7 +10,7 @@ use Atk4\Data\Model\Scope;
 use Atk4\Data\Model\Scope\Condition;
 use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
@@ -193,7 +193,7 @@ class ScopeTest extends TestCase
         $condition = new Condition('country_id', 2);
         self::assertSame('Country ID is equal to 2 (\'Latvia\')', $condition->toWords($user));
 
-        if ($this->getDatabasePlatform() instanceof SQLitePlatform || $this->getDatabasePlatform() instanceof MySQLPlatform) {
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform || $this->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
             $condition = new Condition('name', $user->expr('[surname]'));
             self::assertSame('Name is equal to expression \'`user`.`surname`\'', $condition->toWords($user));
         }
@@ -604,7 +604,7 @@ class ScopeTest extends TestCase
         $modelIn = clone $model;
         $modelIn->addCondition('name', 'IN', [$value]);
 
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform
             && !MysqlConnection::isServerMariaDb($this->getConnection())
             && version_compare($this->getConnection()->getServerVersion(), '5.7') >= 0
         ) {

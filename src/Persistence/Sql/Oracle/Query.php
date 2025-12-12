@@ -268,7 +268,7 @@ class Query extends BaseQuery
             ? $this->replaceNullJsonToNull($this->expr('json_query([], [] returning [])', [
                 $json,
                 new RawExpression($this->escapeStringLiteral($path)),
-                new RawExpression(Type::getType($type)->getSQLDeclaration([], $this->connection->getDatabasePlatform())),
+                new RawExpression(Type::getType($type)->getSQLDeclaration($this->connection->makeDefaultColumnOptions($type), $this->connection->getDatabasePlatform())),
             ]))
             : $this->expr('json_value([], [] returning [])', [
                 $json,

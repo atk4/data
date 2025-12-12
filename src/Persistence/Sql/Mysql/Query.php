@@ -102,7 +102,7 @@ class Query extends BaseQuery
      */
     private function makeReturningClauseType(string $type, bool $forJsonValue = false)
     {
-        $defType = Type::getType($type)->getSQLDeclaration([], $this->connection->getDatabasePlatform());
+        $defType = Type::getType($type)->getSQLDeclaration($this->connection->makeDefaultColumnOptions($type), $this->connection->getDatabasePlatform());
         if ($type === 'json' && Connection::isServerMariaDb($this->connection)) { // TODO remove once DBAL 3.x support is dropped
             $defType = 'JSON';
         }

@@ -16,8 +16,8 @@ use Atk4\Data\Reference\HasMany;
 use Atk4\Data\Reference\HasOne;
 use Doctrine\DBAL\Exception\DatabaseObjectNotFoundException;
 use Doctrine\DBAL\Exception\TableNotFoundException;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
@@ -124,7 +124,7 @@ class Migrator
     public function table(string $tableName): self
     {
         $table = $this->fixAbstractAssetName(new Table('0.0'), $tableName);
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
             $table->addOption('charset', 'utf8mb4');
         }
 
@@ -237,7 +237,11 @@ class Migrator
         $refType = $options['ref_type'] ?? self::REF_TYPE_NONE;
         unset($options['ref_type']);
 
-        $column = $this->table->addColumn($this->getDatabasePlatform()->quoteSingleIdentifier($fieldName), $type);
+        $column = $this->table->addColumn(
+            $this->getDatabasePlatform()->quoteSingleIdentifier($fieldName),
+            $type,
+            $this->getConnection()->makeDefaultColumnOptions($type)
+        );
 
         if (($options['nullable'] ?? true) && $refType !== self::REF_TYPE_PRIMARY) {
             $column->setNotnull(false);
@@ -416,7 +420,7 @@ class Migrator
 
         $platform = $this->getDatabasePlatform();
         if ($platform instanceof SQLitePlatform // TODO related with https://github.com/doctrine/dbal/issues/6129
-            || $platform instanceof MySQLPlatform
+            || $platform instanceof AbstractMySQLPlatform
             || $platform instanceof SQLServerPlatform
         ) {
             return $tableName;

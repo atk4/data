@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Persistence\Sql;
 
 use Atk4\Core\DiContainerTrait;
+use Atk4\Data\Type\Types;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\ConnectionException as DbalConnectionException;
@@ -485,5 +486,19 @@ abstract class Connection
     public function createSchemaManager(): AbstractSchemaManager
     {
         return $this->getConnection()->createSchemaManager();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function makeDefaultColumnOptions(string $type): array
+    {
+        $options = [];
+
+        if (in_array($type, ['string', 'binary', Types::LOCAL_OBJECT], true)) {
+            $options['length'] = 255;
+        }
+
+        return $options;
     }
 }
