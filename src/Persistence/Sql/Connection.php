@@ -491,7 +491,7 @@ abstract class Connection
     /**
      * @return array<string, mixed>
      */
-    public function makeImplicitColumnOptions(string $type): array
+    public function makeDefaultColumnOptions(string $type): array
     {
         $options = [];
 

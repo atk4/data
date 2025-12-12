@@ -240,7 +240,7 @@ class Migrator
         $column = $this->table->addColumn(
             $this->getDatabasePlatform()->quoteSingleIdentifier($fieldName),
             $type,
-            $this->getConnection()->makeImplicitColumnOptions($type)
+            $this->getConnection()->makeDefaultColumnOptions($type)
         );
 
         if (($options['nullable'] ?? true) && $refType !== self::REF_TYPE_PRIMARY) {

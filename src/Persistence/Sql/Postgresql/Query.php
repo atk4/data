@@ -154,12 +154,12 @@ class Query extends BaseQuery
             ? $this->replaceNullJsonToNull($this->expr('json_query([], [] returning [])', [
                 $json,
                 new RawExpression($this->escapeStringLiteral('strict ' . $path)),
-                new RawExpression(Type::getType($type)->getSQLDeclaration($this->connection->makeImplicitColumnOptions($type), $this->connection->getDatabasePlatform())),
+                new RawExpression(Type::getType($type)->getSQLDeclaration($this->connection->makeDefaultColumnOptions($type), $this->connection->getDatabasePlatform())),
             ]))
             : $this->expr('json_value([], [] returning [])', [
                 $json,
                 new RawExpression($this->escapeStringLiteral('strict ' . $path)),
-                new RawExpression(Type::getType($type)->getSQLDeclaration($this->connection->makeImplicitColumnOptions($type), $this->connection->getDatabasePlatform())),
+                new RawExpression(Type::getType($type)->getSQLDeclaration($this->connection->makeDefaultColumnOptions($type), $this->connection->getDatabasePlatform())),
             ]);
     }
 
@@ -179,7 +179,7 @@ class Query extends BaseQuery
             }
             $query->field($v, $k);
 
-            $defTemplates[] = '{} ' . Type::getType($column['type'])->getSQLDeclaration($this->connection->makeImplicitColumnOptions($column['type']), $this->connection->getDatabasePlatform()) . ' path []';
+            $defTemplates[] = '{} ' . Type::getType($column['type'])->getSQLDeclaration($this->connection->makeDefaultColumnOptions($column['type']), $this->connection->getDatabasePlatform()) . ' path []';
             $defParams[] = 'c' . $i;
             $defParams[] = new RawExpression($this->escapeStringLiteral($asXml ? '@c' . $i : 'strict ' . $column['path']));
 
