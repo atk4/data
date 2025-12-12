@@ -23,12 +23,21 @@ trait PlatformTrait
         'time',
     ];
 
-    #[\Override]
-    public function getVarcharTypeDeclarationSQL(array $column)
+    public function getStringTypeDeclarationSQL(array $column): string
     {
         $column['length'] = ($column['length'] ?? 255) * 4;
 
-        return parent::getVarcharTypeDeclarationSQL($column);
+        return parent::getStringTypeDeclarationSQL($column);
+    }
+
+    /**
+     * @param array<string, mixed> $column
+     *
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
+    public function getVarcharTypeDeclarationSQL(array $column): string
+    {
+        return $this->getStringTypeDeclarationSQL($column);
     }
 
     // Oracle database requires explicit conversion when using binary column,
@@ -40,7 +49,7 @@ trait PlatformTrait
         $lengthEncodedAscii = ($column['length'] ?? 255) * 2 + strlen("atk4_binary\ru5f8mzx4vsm8g2c9\r" . hash('crc32b', ''));
         $column['length'] = intdiv($lengthEncodedAscii + 3, 4);
 
-        return $this->getVarcharTypeDeclarationSQL($column); // @phpstan-ignore method.deprecated
+        return $this->getStringTypeDeclarationSQL($column);
     }
 
     #[\Override]
