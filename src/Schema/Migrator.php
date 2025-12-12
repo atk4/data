@@ -170,7 +170,12 @@ class Migrator
                         $foreignKey = $foreignKey->getQuotedName($this->getDatabasePlatform());
                     }
 
-                    $schemaManager->dropForeignKey($foreignKey, $this->getDatabasePlatform()->quoteIdentifier($tableName));
+                    $schemaManager->dropForeignKey(
+                        $foreignKey,
+                        !Connection::isDbal3x() && ($this->getDatabasePlatform() instanceof OraclePlatform || $this->getDatabasePlatform() instanceof PostgreSQLPlatform)
+                            ? $tableName // TODO probably a bug in DBAL
+                            : $this->getDatabasePlatform()->quoteIdentifier($tableName)
+                    );
                 }
             }
         }
