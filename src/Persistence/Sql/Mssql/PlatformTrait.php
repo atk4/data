@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Mssql;
 
+use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\PlatformFixColumnCommentTypeHintTrait;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\Index;
@@ -21,7 +22,9 @@ trait PlatformTrait
     {
         $column['length'] = ($column['length'] ?? 255) * 4;
 
-        return parent::getStringTypeDeclarationSQL($column);
+        return Connection::isDbal3x()
+            ? parent::getVarcharTypeDeclarationSQL($column)
+            : parent::getStringTypeDeclarationSQL($column);
     }
 
     /**
