@@ -339,7 +339,9 @@ class MigratorTest extends TestCase
         $migrator = $this->createMigrator($model);
 
         $modelFields = array_keys($model->getFields());
-        $migratorFields = array_keys($migrator->table->getColumns());
+        $migratorFields = Connection::isDbal3x()
+            ? array_keys($migrator->table->getColumns())
+            : array_map(static fn ($v) => $v->getName(), $migrator->table->getColumns());
 
         self::assertSame(['role_name'], array_values(array_diff($modelFields, $migratorFields)));
         self::assertSame([], array_values(array_diff($migratorFields, $modelFields)));

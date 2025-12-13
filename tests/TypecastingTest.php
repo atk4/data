@@ -7,6 +7,7 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
+use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
@@ -492,7 +493,11 @@ class TypecastingTest extends TestCase
         $dbData[] = &$dbData;
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Could not convert PHP type \'array\' to \'json\', as an \'Recursion detected\'');
+        $this->expectExceptionMessage(
+            Connection::isDbal3x()
+                ? 'Could not convert PHP type \'array\' to \'json\', as an \'Recursion detected\''
+                : 'Could not convert PHP type "array" to "json". An error was triggered by the serialization: Recursion detected'
+        );
         $this->db->typecastSaveRow($m, ['data' => ['foo' => 'bar', 'recursive' => $dbData]]);
     }
 

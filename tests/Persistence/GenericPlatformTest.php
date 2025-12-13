@@ -6,6 +6,7 @@ namespace Atk4\Data\Tests\Persistence;
 
 use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Persistence\GenericPlatform;
+use Atk4\Data\Persistence\Sql\Connection;
 use Doctrine\DBAL\Exception as DbalException;
 use PHPUnit\Framework\Attributes\DataProvider;
 
@@ -34,7 +35,7 @@ class GenericPlatformTest extends TestCase
         $genericPlatform = new GenericPlatform();
 
         $this->expectException(DbalException::class);
-        $this->expectExceptionMessage('Operation \'SQL\' is not supported by platform.');
+        $this->expectExceptionMessage('Operation ' . (Connection::isDbal3x() ? '\'SQL\'' : '"SQL"') . ' is not supported by platform.');
         \Closure::bind(static fn () => $genericPlatform->{$methodName}(...$args), null, GenericPlatform::class)();
     }
 
