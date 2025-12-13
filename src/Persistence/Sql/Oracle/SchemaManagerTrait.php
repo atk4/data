@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Oracle;
 
+use Atk4\Data\Persistence\Sql\Connection;
 use Doctrine\DBAL\Result as DbalResult;
 
 trait SchemaManagerTrait
@@ -11,6 +12,10 @@ trait SchemaManagerTrait
     #[\Override]
     protected function selectTableNames(string $databaseName): DbalResult
     {
+        $connection = Connection::isDbal3x()
+            ? $this->_conn
+            : $this->connection;
+
         // ignore Oracle maintained tables, improve tests performance
         // self::selectTableColumns() impl. once needed or wait for https://github.com/doctrine/dbal/issues/5764
         $sql = <<<'EOF'
@@ -22,6 +27,6 @@ trait SchemaManagerTrait
             ORDER BY all_tables.table_name
             EOF;
 
-        return $this->_conn->executeQuery($sql, ['OWNER' => $databaseName]);
+        return $connection->executeQuery($sql, ['OWNER' => $databaseName]);
     }
 }

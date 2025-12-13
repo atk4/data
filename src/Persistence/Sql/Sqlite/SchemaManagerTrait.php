@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Sqlite;
 
+use Atk4\Data\Persistence\Sql\Connection;
+use Doctrine\DBAL\Driver\AbstractException as AbstractDriverException;
 use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\Schema\Identifier;
 use Doctrine\DBAL\Schema\Table;
@@ -14,19 +16,25 @@ trait SchemaManagerTrait
     #[\Override]
     public function alterTable(TableDiff $tableDiff): void
     {
-        $hadForeignKeysEnabled = (bool) $this->_conn->executeQuery('PRAGMA foreign_keys')->fetchOne();
+        $connection = Connection::isDbal3x()
+            ? $this->_conn
+            : $this->connection;
+
+        $hadForeignKeysEnabled = (bool) $connection->executeQuery('PRAGMA foreign_keys')->fetchOne();
         if ($hadForeignKeysEnabled) {
-            $this->_conn->executeStatement('PRAGMA foreign_keys = 0'); // @phpstan-ignore method.internal
+            $connection->executeStatement('PRAGMA foreign_keys = 0'); // @phpstan-ignore method.internal
         }
 
         parent::alterTable($tableDiff);
 
         if ($hadForeignKeysEnabled) {
-            $this->_conn->executeStatement('PRAGMA foreign_keys = 1'); // @phpstan-ignore method.internal
+            $connection->executeStatement('PRAGMA foreign_keys = 1'); // @phpstan-ignore method.internal
 
-            $rows = $this->_conn->executeQuery('PRAGMA foreign_key_check')->fetchAllAssociative();
+            $rows = $connection->executeQuery('PRAGMA foreign_key_check')->fetchAllAssociative();
             if (count($rows) > 0) {
-                throw new DbalException('Foreign key constraints are violated');
+                throw Connection::isDbal3x()
+                    ? new DbalException('Foreign key constraints are violated')
+                    : new class('Foreign key constraints are violated') extends AbstractDriverException {};
             }
         }
     }
