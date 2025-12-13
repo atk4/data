@@ -17,7 +17,9 @@ use Doctrine\DBAL\Types\Type;
  */
 trait PlatformFixColumnCommentTypeHintTrait
 {
-    #[\Override]
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     protected function getColumnComment(Column $column): ?string
     {
         $tmpType = new class extends Type { // @phpstan-ignore method.internal
@@ -37,13 +39,17 @@ trait PlatformFixColumnCommentTypeHintTrait
                 return $this->type->getSQLDeclaration($column, $platform);
             }
 
-            #[\Override]
+            /**
+             * @deprecated remove once DBAL 3.x support is dropped
+             */
             public function getName(): string
             {
                 return $this->type->getName();
             }
 
-            #[\Override]
+            /**
+             * @deprecated remove once DBAL 3.x support is dropped
+             */
             public function requiresSQLCommentHint(AbstractPlatform $platform): bool
             {
                 if ($this->requireCommentHint) {

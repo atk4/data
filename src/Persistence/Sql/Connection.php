@@ -454,7 +454,9 @@ abstract class Connection
     public function getServerVersion(bool $raw = false): string
     {
         if (($this->serverVersionRaw ?? null) === null) {
-            $this->serverVersionRaw = $this->getConnection()->getWrappedConnection()->getServerVersion();
+            $this->serverVersionRaw = self::isDbal3x()
+                ? $this->getConnection()->getWrappedConnection()->getServerVersion()
+                : $this->getConnection()->getServerVersion();
         }
 
         $matched = preg_match('~(\d+)\.(\d+)(?:\.(\d+))?~', $this->serverVersionRaw, $matches) === 1;

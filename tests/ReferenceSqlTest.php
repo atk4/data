@@ -314,7 +314,6 @@ class ReferenceSqlTest extends TestCase
             /**
              * @deprecated remove once DBAL 3.x support is dropped
              */
-            #[\Override]
             public function getName(): string
             {
                 return self::class;
