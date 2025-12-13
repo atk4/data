@@ -166,6 +166,10 @@ class Migrator
             }
             foreach ($foreignKeysByTableToDrop as $tableName => $foreignKeys) {
                 foreach ($foreignKeys as $foreignKey) {
+                    if (!Connection::isDbal3x()) {
+                        $foreignKey = $foreignKey->getQuotedName($this->getDatabasePlatform());
+                    }
+
                     $schemaManager->dropForeignKey($foreignKey, $this->getDatabasePlatform()->quoteIdentifier($tableName));
                 }
             }
