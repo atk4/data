@@ -4,14 +4,61 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Schema;
 
+use Atk4\Data\Persistence\Sql\Connection;
 use Doctrine\DBAL\Driver\Exception as DbalDriverException;
 use Doctrine\DBAL\Driver\Middleware\AbstractConnectionMiddleware;
 use Doctrine\DBAL\Driver\Result;
 use Doctrine\DBAL\Driver\Statement;
 use Doctrine\DBAL\ParameterType;
 
+if (!Connection::isDbal3x()) {
+    trait TestLogConnectionMiddlewareTrait
+    {
+        #[\Override]
+        public function beginTransaction(): void
+        {
+            $this->_beginTransaction();
+        }
+
+        #[\Override]
+        public function commit(): void
+        {
+            $this->_commit();
+        }
+
+        #[\Override]
+        public function rollBack(): void
+        {
+            $this->_rollBack();
+        }
+    }
+} else {
+    trait TestLogConnectionMiddlewareTrait
+    {
+        #[\Override]
+        public function beginTransaction(): bool
+        {
+            return $this->_beginTransaction();
+        }
+
+        #[\Override]
+        public function commit(): bool
+        {
+            return $this->_commit();
+        }
+
+        #[\Override]
+        public function rollBack(): bool
+        {
+            return $this->_rollBack();
+        }
+    }
+}
+
 class TestLogConnectionMiddleware extends AbstractConnectionMiddleware
 {
+    use TestLogConnectionMiddlewareTrait;
+
     #[\Override]
     public function exec(string $sql): int
     {
@@ -40,28 +87,25 @@ class TestLogConnectionMiddleware extends AbstractConnectionMiddleware
         }
     }
 
-    #[\Override]
-    public function beginTransaction(): bool
+    protected function _beginTransaction(): ?bool
     {
         $this->logStartQuery('"START TRANSACTION"');
 
-        return parent::beginTransaction();
+        return parent::beginTransaction(); // @phpstan-ignore staticMethod.void (https://github.com/phpstan/phpstan/issues/13899)
     }
 
-    #[\Override]
-    public function commit(): bool
+    protected function _commit(): ?bool
     {
         $this->logStartQuery('"COMMIT"');
 
-        return parent::commit();
+        return parent::commit(); // @phpstan-ignore staticMethod.void (https://github.com/phpstan/phpstan/issues/13899)
     }
 
-    #[\Override]
-    public function rollBack(): bool
+    protected function _rollBack(): ?bool
     {
         $this->logStartQuery('"ROLLBACK"');
 
-        return parent::rollBack();
+        return parent::rollBack(); // @phpstan-ignore staticMethod.void (https://github.com/phpstan/phpstan/issues/13899)
     }
 
     /**

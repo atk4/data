@@ -35,7 +35,7 @@ trait SchemaManagerTrait
     // https://github.com/doctrine/dbal/issues/6129
 
     #[\Override]
-    protected function _getPortableTableColumnList($table, $database, $tableColumns)
+    protected function _getPortableTableColumnList($table, $database, $tableColumns): array
     {
         $res = parent::_getPortableTableColumnList($table, $database, $tableColumns);
         foreach ($res as $column) {

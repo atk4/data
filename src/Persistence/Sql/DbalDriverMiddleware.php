@@ -14,10 +14,8 @@ use Doctrine\DBAL\Exception\DriverException as DbalDriverConvertedException;
 use Doctrine\DBAL\Exception\TableNotFoundException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
-use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Query as DbalQuery;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
@@ -32,11 +30,11 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
                 use Sqlite\PlatformTrait;
             };
         } elseif ($platform instanceof PostgreSQLPlatform) {
-            $platform = new class extends PostgreSQL94Platform { // @phpstan-ignore class.extendsDeprecatedClass
+            $platform = new class extends PostgreSQLPlatform {
                 use Postgresql\PlatformTrait;
             };
         } elseif ($platform instanceof SQLServerPlatform) {
-            $platform = new class extends SQLServer2012Platform { // @phpstan-ignore class.extendsDeprecatedClass
+            $platform = new class extends SQLServerPlatform {
                 use Mssql\PlatformTrait;
             };
         } elseif ($platform instanceof OraclePlatform) {
@@ -73,7 +71,6 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
      *
      * @deprecated remove once DBAL 3.5 support is dropped
      */
-    #[\Override]
     public function getSchemaManager(DbalConnection $connection, AbstractPlatform $platform): AbstractSchemaManager
     {
         return Connection::isDbal35()

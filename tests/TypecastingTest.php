@@ -304,12 +304,31 @@ class TypecastingTest extends TestCase
 
     public function testSaveFieldUnexpectedScalarException(): void
     {
-        // @phpstan-ignore method.internal
-        $this->executeFxWithTemporaryType('bad-datetime', new class extends DbalTypes\DateTimeType {
-            #[\Override] // @phpstan-ignore method.childReturnType (https://github.com/phpstan/phpstan/issues/10210)
-            public function convertToDatabaseValue($value, AbstractPlatform $platform): \DateTime
+        $this->executeFxWithTemporaryType('bad-datetime', new class extends DbalTypes\Type {
+            /**
+             * @deprecated remove once DBAL 3.x support is dropped
+             */
+            public function getName(): string
+            {
+                return self::class;
+            }
+
+            #[\Override]
+            public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform): string
+            {
+                return '';
+            }
+
+            #[\Override]
+            public function convertToDatabaseValue($value, AbstractPlatform $platform): ?\DateTime
             {
                 return $value;
+            }
+
+            #[\Override]
+            public function convertToPHPValue($value, AbstractPlatform $platform): ?\DateTime
+            {
+                return null;
             }
         }, function () {
             $this->expectException(\TypeError::class);
@@ -330,7 +349,7 @@ class TypecastingTest extends TestCase
         // @phpstan-ignore method.internal
         $this->executeFxWithTemporaryType('with-warning', new class extends DbalTypes\IntegerType {
             #[\Override]
-            public function convertToDatabaseValue($value, AbstractPlatform $platform)
+            public function convertToDatabaseValue($value, AbstractPlatform $platform): ?int
             {
                 throw new \ErrorException('Converted PHP warning');
             }
@@ -346,7 +365,7 @@ class TypecastingTest extends TestCase
         // @phpstan-ignore method.internal
         $this->executeFxWithTemporaryType('with-warning', new class extends DbalTypes\IntegerType {
             #[\Override]
-            public function convertToPHPValue($value, AbstractPlatform $platform)
+            public function convertToPHPValue($value, AbstractPlatform $platform): ?int
             {
                 throw new \ErrorException('Converted PHP warning');
             }
@@ -362,7 +381,7 @@ class TypecastingTest extends TestCase
         // @phpstan-ignore method.internal
         $this->executeFxWithTemporaryType('with-warning', new class extends DbalTypes\IntegerType {
             #[\Override]
-            public function convertToDatabaseValue($value, AbstractPlatform $platform)
+            public function convertToDatabaseValue($value, AbstractPlatform $platform): ?int
             {
                 throw new \ErrorException('Converted PHP warning');
             }

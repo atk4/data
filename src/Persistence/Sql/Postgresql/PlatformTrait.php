@@ -4,11 +4,34 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Postgresql;
 
+use Atk4\Data\Persistence\Sql\Connection;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\Table;
 
+if (!Connection::isDbal3x()) {
+    trait PlatformTraitTrait
+    {
+        #[\Override]
+        public function convertBooleansToDatabaseValue($item): mixed
+        {
+            return $this->_convertBooleansToDatabaseValue($item);
+        }
+    }
+} else {
+    trait PlatformTraitTrait
+    {
+        #[\Override]
+        public function convertBooleansToDatabaseValue($item)
+        {
+            return $this->_convertBooleansToDatabaseValue($item);
+        }
+    }
+}
+
 trait PlatformTrait
 {
+    use PlatformTraitTrait;
+
     // standard PostgreSQL character types are case sensitive, unify the behavior with other databases
     // with custom case insensitive types
 
@@ -36,10 +59,20 @@ trait PlatformTrait
         return $sqls;
     }
 
-    #[\Override]
-    protected function getVarcharTypeDeclarationSQLSnippet($length, $fixed): string
+    protected function getCharTypeDeclarationSQLSnippet($length): string
     {
-        return $fixed ? 'ATK4__CICHAR' : 'ATK4__CIVARCHAR';
+        return 'ATK4__CICHAR';
+    }
+
+    /**
+     * @param bool $fixed
+     */
+    #[\Override]
+    protected function getVarcharTypeDeclarationSQLSnippet($length, $fixed = false): string
+    {
+        return $fixed
+            ? $this->getCharTypeDeclarationSQLSnippet($length)
+            : 'ATK4__CIVARCHAR';
     }
 
     #[\Override]
@@ -70,8 +103,7 @@ trait PlatformTrait
         return parent::getCurrentDatabaseExpression();
     }
 
-    #[\Override]
-    public function convertBooleansToDatabaseValue($item)
+    protected function _convertBooleansToDatabaseValue($item)
     {
         return $item;
     }
@@ -145,7 +177,7 @@ trait PlatformTrait
     }
 
     #[\Override]
-    public function getCreateTableSQL(Table $table, $createFlags = self::CREATE_INDEXES)
+    public function getCreateTableSQL(Table $table, $createFlags = self::CREATE_INDEXES): array
     {
         $sqls = array_merge(
             $this->getCreateCaseInsensitiveDomainsSql(),

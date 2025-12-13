@@ -18,7 +18,7 @@ use Doctrine\DBAL\Types\Type;
 trait PlatformFixColumnCommentTypeHintTrait
 {
     #[\Override]
-    protected function getColumnComment(Column $column)
+    protected function getColumnComment(Column $column): ?string
     {
         $tmpType = new class extends Type { // @phpstan-ignore method.internal
             private Type $type;

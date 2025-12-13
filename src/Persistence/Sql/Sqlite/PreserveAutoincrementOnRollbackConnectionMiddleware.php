@@ -4,11 +4,34 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Sqlite;
 
+use Atk4\Data\Persistence\Sql\Connection as BaseConnection;
 use Atk4\Data\Persistence\Sql\Exception;
 use Doctrine\DBAL\Driver\Middleware\AbstractConnectionMiddleware;
 
+if (!BaseConnection::isDbal3x()) {
+    trait PreserveAutoincrementOnRollbackConnectionMiddlewareTrait
+    {
+        #[\Override]
+        public function rollBack(): void
+        {
+            $this->_rollBack();
+        }
+    }
+} else {
+    trait PreserveAutoincrementOnRollbackConnectionMiddlewareTrait
+    {
+        #[\Override]
+        public function rollBack(): bool
+        {
+            return $this->_rollBack();
+        }
+    }
+}
+
 class PreserveAutoincrementOnRollbackConnectionMiddleware extends AbstractConnectionMiddleware
 {
+    use PreserveAutoincrementOnRollbackConnectionMiddlewareTrait;
+
     private function createExpressionFromStringLiteral(string $value): Expression
     {
         return new Expression(
@@ -133,8 +156,7 @@ class PreserveAutoincrementOnRollbackConnectionMiddleware extends AbstractConnec
         return $res;
     }
 
-    #[\Override]
-    public function rollBack()
+    protected function _rollBack(): ?bool
     {
         $beforeRollbackSequences = $this->listSequences();
 

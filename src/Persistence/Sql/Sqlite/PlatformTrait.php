@@ -28,10 +28,18 @@ trait PlatformTrait
         }
     }
 
-    #[\Override]
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     public function getIdentifierQuoteCharacter(): string
     {
         return '`';
+    }
+
+    #[\Override]
+    public function quoteSingleIdentifier($str): string
+    {
+        return '`' . str_replace('`', '``', $str) . '`';
     }
 
     #[\Override]

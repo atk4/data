@@ -57,7 +57,7 @@ trait PlatformTrait
     }
 
     #[\Override]
-    public function getCreateIndexSQL(Index $index, $table)
+    public function getCreateIndexSQL(Index $index, $table): string
     {
         // workaround https://github.com/doctrine/dbal/issues/5507
         // no side effect on DBAL index list observed, but multiple null values cannot be inserted
@@ -80,7 +80,7 @@ trait PlatformTrait
     }
 
     #[\Override]
-    protected function getCreateColumnCommentSQL($tableName, $columnName, $comment)
+    protected function getCreateColumnCommentSQL($tableName, $columnName, $comment): string
     {
         if (str_contains($tableName, '.')) {
             [$schemaName, $tableName] = explode('.', $tableName);
@@ -101,7 +101,7 @@ trait PlatformTrait
     }
 
     #[\Override]
-    protected function getAlterColumnCommentSQL($tableName, $columnName, $comment)
+    protected function getAlterColumnCommentSQL($tableName, $columnName, $comment): string
     {
         if (str_contains($tableName, '.')) {
             [$schemaName, $tableName] = explode('.', $tableName);
@@ -122,7 +122,7 @@ trait PlatformTrait
     }
 
     #[\Override]
-    protected function getDropColumnCommentSQL($tableName, $columnName)
+    protected function getDropColumnCommentSQL($tableName, $columnName): string
     {
         if (str_contains($tableName, '.')) {
             [$schemaName, $tableName] = explode('.', $tableName);
