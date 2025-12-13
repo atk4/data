@@ -347,7 +347,6 @@ class TypecastingTest extends TestCase
 
     public function testSaveFieldConvertedWarningNotWrappedException(): void
     {
-        // @phpstan-ignore method.internal
         $this->executeFxWithTemporaryType('with-warning', new class extends DbalTypes\IntegerType {
             #[\Override]
             public function convertToDatabaseValue($value, AbstractPlatform $platform): ?int
@@ -363,7 +362,6 @@ class TypecastingTest extends TestCase
 
     public function testLoadFieldConvertedWarningNotWrappedException(): void
     {
-        // @phpstan-ignore method.internal
         $this->executeFxWithTemporaryType('with-warning', new class extends DbalTypes\IntegerType {
             #[\Override]
             public function convertToPHPValue($value, AbstractPlatform $platform): ?int
@@ -379,7 +377,6 @@ class TypecastingTest extends TestCase
 
     public function testNormalizeConvertedWarningNotWrappedException(): void
     {
-        // @phpstan-ignore method.internal
         $this->executeFxWithTemporaryType('with-warning', new class extends DbalTypes\IntegerType {
             #[\Override]
             public function convertToDatabaseValue($value, AbstractPlatform $platform): ?int

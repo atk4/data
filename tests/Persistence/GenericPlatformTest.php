@@ -15,7 +15,7 @@ class GenericPlatformTest extends TestCase
     public function testGetName(): void
     {
         $genericPlatform = new GenericPlatform();
-        self::assertSame('atk4_data_generic', $genericPlatform->getName()); // @phpstan-ignore method.deprecated
+        self::assertSame('atk4_data_generic', $genericPlatform->getName());
     }
 
     public function testInitializeDoctrineTypeMappings(): void

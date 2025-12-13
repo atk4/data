@@ -55,7 +55,7 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
     }
 
     #[\Override]
-    public function getDatabasePlatform(?ServerVersionProvider $versionProvider = null): AbstractPlatform // @phpstan-ignore class.notFound
+    public function getDatabasePlatform(?ServerVersionProvider $versionProvider = null): AbstractPlatform
     {
         if (Connection::isDbal3x()) {
             return $this->replaceDatabasePlatform(parent::getDatabasePlatform(), null);
@@ -63,13 +63,15 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
 
         assert($versionProvider !== null);
 
-        return $this->replaceDatabasePlatform(parent::getDatabasePlatform($versionProvider), $versionProvider->getServerVersion()); // @phpstan-ignore arguments.count
+        return $this->replaceDatabasePlatform(parent::getDatabasePlatform($versionProvider), $versionProvider->getServerVersion());
     }
 
     /**
+     * @param string $version
+     *
      * @deprecated remove once DBAL 3.x support is dropped
      */
-    public function createDatabasePlatformForVersion($version): AbstractPlatform // @phpstan-ignore method.missingOverride
+    public function createDatabasePlatformForVersion($version): AbstractPlatform
     {
         return $this->replaceDatabasePlatform(parent::createDatabasePlatformForVersion($version), $version);
     }
@@ -137,7 +139,7 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
                         $exception = self::getUnconvertedException($convertedException);
                         $exceptionMessageLc = strtolower($exception->getMessage());
                         if (str_contains($exceptionMessageLc, 'cannot drop the table') && !$convertedException instanceof TableNotFoundException) {
-                            return new TableNotFoundException($exception, $query); // @phpstan-ignore method.internal
+                            return new TableNotFoundException($exception, $query);
                         }
                     }
 

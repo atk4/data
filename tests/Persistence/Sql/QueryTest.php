@@ -785,7 +785,7 @@ class QueryTest extends TestCase
         $dbalConnection = new class($serverVersion) extends DbalConnection {
             private string $serverVersion;
 
-            public function __construct(string $serverVersion) // @phpstan-ignore method.childParameterType, parameter.missing, parameter.missing, parameter.missing, constructor.missingParentCall
+            public function __construct(string $serverVersion) // @phpstan-ignore method.childParameterType, parameter.missing, parameter.missing, constructor.missingParentCall
             {
                 $this->serverVersion = $serverVersion;
             }
