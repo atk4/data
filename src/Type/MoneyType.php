@@ -9,7 +9,9 @@ use Doctrine\DBAL\Types as DbalTypes;
 
 class MoneyType extends DbalTypes\Type
 {
-    #[\Override]
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     public function getName(): string
     {
         return Types::MONEY;
@@ -37,7 +39,9 @@ class MoneyType extends DbalTypes\Type
         return $this->convertToDatabaseValue($value, $platform);
     }
 
-    #[\Override]
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     public function requiresSQLCommentHint(AbstractPlatform $platform): bool
     {
         return true;
