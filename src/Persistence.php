@@ -374,7 +374,6 @@ abstract class Persistence
                     case 'datetime':
                     case 'date':
                     case 'time':
-                    case 'object':
                         $value = null;
 
                         break;

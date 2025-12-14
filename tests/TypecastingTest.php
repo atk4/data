@@ -162,7 +162,6 @@ class TypecastingTest extends TestCase
                     'float' => '',
                     'decimal' => '',
                     'json' => '',
-                    'object' => '',
                     'local-object' => '',
                 ],
             ],
@@ -185,7 +184,6 @@ class TypecastingTest extends TestCase
         $m->addField('float', ['type' => 'float']);
         $m->addField('decimal', ['type' => 'decimal']);
         $m->addField('json', ['type' => 'json']);
-        $m->addField('object', ['type' => 'object']);
         $m->addField('local-object', ['type' => 'atk4_local_object']);
         $mm = $m->load(1);
 
@@ -202,7 +200,6 @@ class TypecastingTest extends TestCase
         self::assertNull($mm->get('float'));
         self::assertNull($mm->get('decimal'));
         self::assertNull($mm->get('json'));
-        self::assertNull($mm->get('object'));
         self::assertNull($mm->get('local-object'));
 
         unset($row['id']);
@@ -223,7 +220,6 @@ class TypecastingTest extends TestCase
         self::assertNull($mm->get('float'));
         self::assertNull($mm->get('decimal'));
         self::assertNull($mm->get('json'));
-        self::assertNull($mm->get('object'));
         self::assertNull($mm->get('local-object'));
 
         self::assertSame([], $mm->getDirtyRef());
@@ -250,7 +246,6 @@ class TypecastingTest extends TestCase
             'float' => null,
             'decimal' => null,
             'json' => null,
-            'object' => null,
             'local-object' => null,
         ];
         self::assertSame($fixEmptyStringForOracleFx($dbData['types']), $m->export(null, null, false));
@@ -436,6 +431,50 @@ class TypecastingTest extends TestCase
         $dbData['types'][2] = array_merge(['id' => 2], $row);
 
         self::{'assertEquals'}($dbData, $this->getDb());
+    }
+
+    public function testJsonSerialize(): void
+    {
+        $m = new Model($this->db, ['table' => 'job']);
+        $m->addField('data', ['type' => 'json']);
+
+        self::assertSame(
+            ['data' => ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "atk4_explicit_cast\ru5f8mzx4vsm8g2c9\rjson\r" : '') . '{"foo":"bar"}'],
+            $this->db->typecastSaveRow(
+                $m,
+                ['data' => ['foo' => 'bar']]
+            )
+        );
+        self::assertSame(
+            ['data' => ['foo' => 'bar']],
+            $this->db->typecastLoadRow(
+                $m,
+                ['data' => '{"foo":"bar"}']
+            )
+        );
+    }
+
+    public function testJsonSerializeException(): void
+    {
+        $m = new Model($this->db, ['table' => 'job']);
+        $m->addField('data', ['type' => 'json']);
+
+        $this->expectException(Exception::class);
+        $this->db->typecastLoadRow($m, ['data' => '{"foo":"bar" OPS']);
+    }
+
+    public function testJsonSerializeException2(): void
+    {
+        $m = new Model($this->db, ['table' => 'job']);
+        $m->addField('data', ['type' => 'json']);
+
+        // recursive array - json can't encode that
+        $dbData = [];
+        $dbData[] = &$dbData;
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Could not convert PHP type \'array\' to \'json\', as an \'Recursion detected\'');
+        $this->db->typecastSaveRow($m, ['data' => ['foo' => 'bar', 'recursive' => $dbData]]);
     }
 
     public function testLoad(): void

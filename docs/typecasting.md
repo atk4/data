@@ -119,24 +119,10 @@ UI framework such as Agile Toolkit will typically rely on field type information
 to properly present data for views (forms and tables) without you having to
 explicitly specify the `ui` property.
 
-## Serialization
-
-Some types cannot be stored natively. For example, generic objects and arrays
-have no native type in SQL database. This is where serialization feature is used.
-
-Field may use serialization to further encode field value for the storage purpose:
-
-```
-$this->addField('private_key', [
-    'type' => 'object',
-    'system' => true,
-]);
-```
-
 ### Array and Object types
 
-Some types may require serialization for some persistencies, for instance types
-'json' and 'object' cannot be stored in SQL natively. `json` type can be used
+Some types may require serialization for some persistencies, for instance
+'array' and 'object' types cannot be stored in SQL natively. `json` type can be used
 to store these in JSON.
 
 This is handy when mapping JSON data into native PHP structures.
