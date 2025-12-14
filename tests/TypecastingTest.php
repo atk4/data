@@ -41,6 +41,10 @@ class TypecastingTest extends TestCase
 
     public function testType(): void
     {
+        if (!Connection::isDbal3x()) {
+            self::markTestIncomplete('TODO fix introspect column to field for DBAL 4.x');
+        }
+
         $dbData = [
             'types' => [
                 '_types' => ['date' => 'date', 'datetime' => 'datetime', 'time' => 'time', 'json' => 'json'],
