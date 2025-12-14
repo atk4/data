@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests\Schema;
 
 use Atk4\Data\Model;
+use Atk4\Data\Persistence\Sql\ExecuteException;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
@@ -45,6 +47,11 @@ class TestCaseTest extends TestCase
             });
 
             self::assertSame(1, $m->loadAny()->getId());
+
+            try {
+                $this->getConnection()->expr('WRONG_SELECT \'')->executeStatement();
+            } catch (ExecuteException $e) {
+            }
 
             $output = ob_get_contents();
         } finally {
@@ -198,7 +205,11 @@ class TestCaseTest extends TestCase
                   `int` > -1
                 EOF
             . $makeLimitSqlFx(1)
-            . ";\n\n",
+            . ";\n\n"
+            . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "\n\"START TRANSACTION\";\n\n" : '')
+            . (($this->getDatabasePlatform() instanceof AbstractMySQLPlatform && $this->getConnection()->getConnection()->getNativeConnection() instanceof \PDO) || $this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform ? '' : "\n-- ### PREPARE ERROR ###")
+            . "\nWRONG_SELECT ';\n\n"
+            . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "\n\"ROLLBACK\";\n\n" : ''),
             $this->getDatabasePlatform() instanceof SQLServerPlatform
                 ? str_replace(
                     ['\'Ewa\', \'x  y\'', '\'2020-10-20\', \'["z"]\''],

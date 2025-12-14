@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Schema;
 
+use Doctrine\DBAL\Driver\Exception as DbalDriverException;
 use Doctrine\DBAL\Driver\Middleware\AbstractConnectionMiddleware;
 use Doctrine\DBAL\Driver\Result;
 use Doctrine\DBAL\Driver\Statement;
@@ -30,7 +31,13 @@ class TestLogConnectionMiddleware extends AbstractConnectionMiddleware
     #[\Override]
     public function prepare(string $sql): Statement
     {
-        return new TestLogStatementMiddleware(parent::prepare($sql), $this, $sql);
+        try {
+            return new TestLogStatementMiddleware(parent::prepare($sql), $this, $sql);
+        } catch (DbalDriverException $e) {
+            $this->logStartQuery('-- ### PREPARE ERROR ###' . "\n" . $sql);
+
+            throw $e;
+        }
     }
 
     #[\Override]
