@@ -46,18 +46,22 @@ trait PlatformTrait
     public function getAlterTableSQL(TableDiff $diff): array
     {
         // fix https://github.com/doctrine/dbal/pull/5501
-        $diff = clone $diff;
-        $diff->fromTable = clone $diff->fromTable; // @phpstan-ignore property.internal, property.internal
-        foreach ($diff->fromTable->getForeignKeys() as $foreignKey) { // @phpstan-ignore property.internal
-            \Closure::bind(static function () use ($foreignKey) {
-                $foreignKey->_localColumnNames = $foreignKey->createIdentifierMap($foreignKey->getUnquotedLocalColumns());
-            }, null, ForeignKeyConstraint::class)();
+        if (Connection::isDbal3x()) { // needed probably for DBAL 4.x too, but there are no tests
+            $diff = clone $diff;
+            $diff->fromTable = clone $diff->getOldTable(); // @phpstan-ignore property.internal
+            foreach ($diff->getOldTable()->getForeignKeys() as $foreignKey) {
+                \Closure::bind(static function () use ($foreignKey) {
+                    $foreignKey->_localColumnNames = $foreignKey->createIdentifierMap($foreignKey->getUnquotedLocalColumns());
+                }, null, ForeignKeyConstraint::class)();
+            }
         }
 
         // fix no indexes, alter table drops and recreates the table newly, so indexes must be recreated as well
         // https://github.com/doctrine/dbal/pull/5486#issuecomment-1184957078
-        $diff = clone $diff;
-        $diff->addedIndexes = array_merge($diff->addedIndexes, $diff->fromTable->getIndexes()); // @phpstan-ignore property.internal, property.internal, property.internal
+        if (Connection::isDbal3x()) { // needed probably for DBAL 4.x too, but there are no tests
+            $diff = clone $diff;
+            $diff->addedIndexes = array_merge($diff->addedIndexes, $diff->getOldTable()->getIndexes()); // @phpstan-ignore property.internal, property.internal
+        }
 
         return parent::getAlterTableSQL($diff);
     }
