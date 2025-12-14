@@ -8,6 +8,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\DateIntervalUnit;
+use Doctrine\DBAL\Platforms\Exception\NotSupported;
 use Doctrine\DBAL\Platforms\Keywords\KeywordList;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\TableDiff;
@@ -92,7 +93,9 @@ class GenericPlatform extends AbstractPlatform
 
     private function createNotSupportedException(): \Exception
     {
-        return DbalException::notSupported('SQL');
+        return Sql\Connection::isDbal3x()
+            ? DbalException::notSupported('SQL') // @phpstan-ignore staticMethod.notFound
+            : NotSupported::new('SQL');
     }
 
     /**
