@@ -34,7 +34,7 @@ class TestLogConnectionMiddleware extends AbstractConnectionMiddleware
         try {
             return new TestLogStatementMiddleware(parent::prepare($sql), $this, $sql);
         } catch (DbalDriverException $e) {
-            $this->logStartQuery('"PREPARE ERROR": ' . $sql);
+            $this->logStartQuery('-- ### PREPARE ERROR ###' . "\n" . $sql);
 
             throw $e;
         }

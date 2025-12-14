@@ -204,7 +204,7 @@ class TestCaseTest extends TestCase
                 EOF
             . $makeLimitSqlFx(1)
             . ";\n\n"
-            . "\n\"PREPARE ERROR\" : WRONG_STATEMENT;\n\n",
+            . "\n-- ### PREPARE ERROR ###\nWRONG_STATEMENT;\n\n",
             $this->getDatabasePlatform() instanceof SQLServerPlatform
                 ? str_replace(
                     ['\'Ewa\', \'x  y\'', '\'2020-10-20\', \'["z"]\''],
