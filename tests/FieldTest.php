@@ -641,7 +641,6 @@ class FieldTest extends TestCase
         $m->addField('datetime', ['type' => 'datetime']);
         $m->addField('time', ['type' => 'time']);
         $m->addField('json', ['type' => 'json']);
-        $m->addField('object', ['type' => 'object']);
         $m = $m->createEntity();
 
         // string
@@ -808,17 +807,6 @@ class FieldTest extends TestCase
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Must be an array');
-        $m->set('foo', 'ABC');
-    }
-
-    public function testNormalizeObjectException(): void
-    {
-        $m = new Model();
-        $m->addField('foo', ['type' => 'object']);
-        $m = $m->createEntity();
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be an object');
         $m->set('foo', 'ABC');
     }
 

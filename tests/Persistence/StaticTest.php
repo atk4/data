@@ -142,7 +142,6 @@ class StaticTest extends TestCase
             'test_float' => 123.45,
             // 'test_date' => new \DateTime(),
             // 'test_array' => ['a', 'b', 'c'],
-            // 'test_object' => new \DateInterval('P1Y'),
             'test_str_1' => 'abc',
             'test_str_2' => '123',
             'test_str_3' => '123.45',
@@ -154,7 +153,6 @@ class StaticTest extends TestCase
         self::assertSame('float', $m->getField('test_float')->type);
         // self::assertSame('datetime', $m->getField('test_date')->type);
         // self::assertSame('json', $m->getField('test_array')->type);
-        // self::assertSame('object', $m->getField('test_object')->type);
 
         // string is default type
         self::assertSame('string', $m->getField('name')->type);

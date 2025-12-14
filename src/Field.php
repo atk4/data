@@ -203,12 +203,6 @@ class Field implements Expressionable
                     }
 
                     break;
-                case 'object':
-                    if (!is_object($value)) {
-                        throw new Exception('Must be an object');
-                    }
-
-                    break;
             }
 
             if ($this->enum) {

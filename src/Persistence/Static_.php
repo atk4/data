@@ -49,10 +49,10 @@ class Static_ extends Array_
                     $type = 'bigint';
                 } elseif (is_float($v)) {
                     $type = 'float';
-                } elseif ($v instanceof \DateTimeInterface) {
-                    $type = 'datetime';
                 } elseif (is_array($v)) {
                     $type = 'json';
+                } elseif ($v instanceof \DateTimeInterface) {
+                    $type = 'datetime';
                 } elseif (is_object($v)) {
                     $type = 'object';
                 } elseif ($v !== null) {
