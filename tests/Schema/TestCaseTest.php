@@ -46,6 +46,11 @@ class TestCaseTest extends TestCase
 
             self::assertSame(1, $m->loadAny()->getId());
 
+            try {
+                $this->getConnection()->expr('WRONG_STATEMENT')->executeStatement();
+            } catch (\Exception $e) {
+            }
+
             $output = ob_get_contents();
         } finally {
             ob_end_clean();
@@ -198,7 +203,8 @@ class TestCaseTest extends TestCase
                   `int` > -1
                 EOF
             . $makeLimitSqlFx(1)
-            . ";\n\n",
+            . ";\n\n"
+            . "\n\"PREPARE ERROR\" : WRONG_STATEMENT;\n\n",
             $this->getDatabasePlatform() instanceof SQLServerPlatform
                 ? str_replace(
                     ['\'Ewa\', \'x  y\'', '\'2020-10-20\', \'["z"]\''],
