@@ -13,6 +13,7 @@ use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 use Atk4\Data\Persistence\Sql\RawExpression;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Exception\DatabaseObjectNotFoundException;
+use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Types\Type;
 
 class Query extends BaseQuery
@@ -325,7 +326,7 @@ class Query extends BaseQuery
         // TODO submit PR to DBAL to handle this using DB trigger
         if ($this->mode === 'truncate' && $connection instanceof DbalConnection && $this->template === $this->templateTruncate && preg_match('~^truncate table ((?:"[^"]+"\.)?"[^"]+")$~i', $this->render()[0], $matches)) {
             $platform = $connection->getDatabasePlatform();
-            $pkSequenceName = str_replace('"', '', $platform->getIdentitySequenceName($matches[1], '')); // @phpstan-ignore method.notFound
+            $pkSequenceName = str_replace('"', '', \Closure::bind(static fn () => $platform->getIdentitySequenceName($matches[1], ''), null, OraclePlatform::class)()); // @phpstan-ignore method.deprecated
 
             $resetAutoincrementQuery = $this->expr('alter sequence {} restart', [$pkSequenceName]);
 

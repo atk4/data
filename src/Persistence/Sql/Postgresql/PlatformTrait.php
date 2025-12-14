@@ -191,4 +191,13 @@ trait PlatformTrait
 
         return $sqls;
     }
+
+    /**
+     * @param string $tableName
+     * @param string $columnName
+     */
+    public function getIdentitySequenceName($tableName, $columnName): string
+    {
+        return $tableName . '_' . $columnName . '_seq';
+    }
 }
