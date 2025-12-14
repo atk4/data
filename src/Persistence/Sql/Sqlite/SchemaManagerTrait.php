@@ -64,10 +64,13 @@ trait SchemaManagerTrait
         return (new Identifier($tableName))->getName();
     }
 
-    #[\Override]
     public function listTableDetails($name): Table
     {
-        return parent::listTableDetails($this->unquoteTableIdentifier($name));
+        return parent::listTableDetails(
+            Connection::isDbal3x()
+                ? $this->unquoteTableIdentifier($name)
+                : $name
+        );
     }
 
     #[\Override]
@@ -80,5 +83,14 @@ trait SchemaManagerTrait
     public function listTableForeignKeys($table, $database = null): array
     {
         return parent::listTableForeignKeys($this->unquoteTableIdentifier($table), $database);
+    }
+
+    public function introspectTable($name): Table
+    {
+        return parent::introspectTable(
+            Connection::isDbal3x()
+                ? $name
+                : $this->unquoteTableIdentifier($name)
+        );
     }
 }
