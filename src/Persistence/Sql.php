@@ -745,7 +745,7 @@ class Sql extends Persistence
         // use default name if not set explicitly
         $sequenceName = null;
         if ($this->getConnection()->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            $sequenceName = $this->getConnection()->getDatabasePlatform()->getIdentitySequenceName(
+            $sequenceName = $this->getConnection()->getDatabasePlatform()->getIdentitySequenceName( // @phpstan-ignore method.notFound
                 $model->table,
                 $model->getIdField()->getPersistenceName()
             );

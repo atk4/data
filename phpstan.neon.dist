@@ -30,6 +30,60 @@ parameters:
             message: '~^Parameter #1 \$key of method Atk4\\Data\\Reference\\WeakAnalysingMap<list<mixed>,Closure,Atk4\\Data\\Model\|Atk4\\Data\\Persistence>::(get|set)\(\) expects list<mixed>, array\{0: Atk4\\Data\\Reference\\WeakAnalysingMap<list<mixed>, Closure, Atk4\\Data\\Model\|Atk4\\Data\\Persistence>, 1: non-falsy-string, 2: class-string<object>\|null, 3\?: object\|null, 4\?: non-empty-array\} given\.$~'
             count: 2
 
+        # TODO report to phpstan, errors cannot be ignore inline
+        -
+            path: 'src/Persistence/Sql/Postgresql/PlatformTrait.php'
+            identifier: classConstant.deprecated
+            message: '~^Fetching deprecated class constant CREATE_INDEXES of class Doctrine\\DBAL\\Platforms\\AbstractPlatform\.$~'
+            count: 1
+        -
+            path: 'src/Persistence/Sql/Postgresql/PlatformTrait.php'
+            identifier: arguments.count
+            message: '~^Method Doctrine\\DBAL\\Platforms\\AbstractPlatform::getCreateTableSQL\(\) invoked with 2 parameters, 1 required\.$~'
+            count: 1
+
+        # TODO once DBAL 3.x is dropped
+        -
+            path: '*'
+            identifier: method.deprecated
+            message: '~^.*\\DBAL\\~'
+        -
+            path: '*'
+            identifier: property.deprecated
+            message: '~^.*\\DBAL\\~'
+        -
+            path: '*'
+            identifier: method.internal
+            message: '~^.*\\DBAL\\~'
+        -
+            path: '*'
+            identifier: method.internalClass
+            message: '~^.*\\DBAL\\~'
+        -
+            path: '*'
+            identifier: property.internalClass
+            message: '~^.*\\DBAL\\~'
+        -
+            path: '*'
+            identifier: classConstant.internalClass
+            message: '~^.*\\DBAL\\~'
+        -
+            path: '*'
+            identifier: parameter.internalClass
+            message: '~^.*\\DBAL\\~'
+        -
+            path: '*'
+            identifier: return.internalClass
+            message: '~^.*\\DBAL\\~'
+        -
+            path: '*'
+            identifier: new.internalClass
+            message: '~^.*\\DBAL\\~'
+        -
+            path: '*'
+            identifier: generics.internalClassBound
+            message: '~^.*\\DBAL\\~'
+
         # remove once https://github.com/phpstan/phpstan/issues/11488 is fixed
         -
             path: 'src/Persistence/Sql/Mssql/Query.php'

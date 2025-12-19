@@ -13,7 +13,7 @@ trait SchemaManagerTrait
     protected function selectTableNames(string $databaseName): DbalResult
     {
         $connection = Connection::isDbal3x()
-            ? $this->_conn
+            ? $this->_conn // @phpstan-ignore property.notFound
             : $this->connection;
 
         // ignore Oracle maintained tables, improve tests performance

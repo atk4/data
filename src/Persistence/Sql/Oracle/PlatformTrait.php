@@ -29,7 +29,7 @@ trait PlatformTrait
         $column['length'] = ($column['length'] ?? 255) * 4;
 
         return Connection::isDbal3x()
-            ? parent::getVarcharTypeDeclarationSQL($column) // @phpstan-ignore method.deprecated
+            ? parent::getVarcharTypeDeclarationSQL($column) // @phpstan-ignore staticMethod.notFound
             : parent::getStringTypeDeclarationSQL($column);
     }
 
@@ -88,6 +88,11 @@ trait PlatformTrait
         return parent::getCreateSequenceSQL($sequence);
     }
 
+    /**
+     * @param string $name
+     * @param string $table
+     * @param int    $start
+     */
     #[\Override]
     public function getCreateAutoincrementSql($name, $table, $start = 1): array
     {
@@ -101,7 +106,7 @@ trait PlatformTrait
         $tableIdentifier = \Closure::bind(fn () => $this->normalizeIdentifier($table), $this, OraclePlatform::class)();
         $nameIdentifier = \Closure::bind(fn () => $this->normalizeIdentifier($name), $this, OraclePlatform::class)();
         $aiTriggerName = \Closure::bind(fn () => $this->getAutoincrementIdentifierName($tableIdentifier), $this, OraclePlatform::class)();
-        $aiSequenceName = $this->getIdentitySequenceName($tableIdentifier->getQuotedName($this), $nameIdentifier->getQuotedName($this)); // @phpstan-ignore method.internal
+        $aiSequenceName = $this->getIdentitySequenceName($tableIdentifier->getQuotedName($this), $nameIdentifier->getQuotedName($this)); // @phpstan-ignore method.internal, arguments.count
         assert(str_starts_with($sqls[array_key_last($sqls)], 'CREATE TRIGGER ' . $aiTriggerName . "\n"));
 
         $pkSeq = \Closure::bind(fn () => $this->normalizeIdentifier($aiSequenceName), $this, OraclePlatform::class)()->getName();
@@ -137,6 +142,9 @@ trait PlatformTrait
         return $sqls;
     }
 
+    /**
+     * @param string|Table $table
+     */
     #[\Override]
     public function getCreateIndexSQL(Index $index, $table): string
     {

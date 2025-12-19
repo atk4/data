@@ -103,6 +103,11 @@ trait PlatformTrait
         return parent::getCurrentDatabaseExpression();
     }
 
+    /**
+     * @param mixed $item
+     *
+     * @return mixed
+     */
     protected function _convertBooleansToDatabaseValue($item)
     {
         return $item;
@@ -176,6 +181,9 @@ trait PlatformTrait
         return $sqls;
     }
 
+    /**
+     * @param 1|2 $createFlags
+     */
     #[\Override]
     public function getCreateTableSQL(Table $table, $createFlags = self::CREATE_INDEXES): array
     {

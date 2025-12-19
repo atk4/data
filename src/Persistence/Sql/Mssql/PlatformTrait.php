@@ -8,6 +8,7 @@ use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\PlatformFixColumnCommentTypeHintTrait;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\Index;
+use Doctrine\DBAL\Schema\Table;
 
 trait PlatformTrait
 {
@@ -23,7 +24,7 @@ trait PlatformTrait
         $column['length'] = ($column['length'] ?? 255) * 4;
 
         return Connection::isDbal3x()
-            ? parent::getVarcharTypeDeclarationSQL($column) // @phpstan-ignore method.deprecated
+            ? parent::getVarcharTypeDeclarationSQL($column) // @phpstan-ignore staticMethod.notFound
             : parent::getStringTypeDeclarationSQL($column);
     }
 
@@ -56,6 +57,9 @@ trait PlatformTrait
         return parent::getCurrentDatabaseExpression();
     }
 
+    /**
+     * @param string|Table $table
+     */
     #[\Override]
     public function getCreateIndexSQL(Index $index, $table): string
     {

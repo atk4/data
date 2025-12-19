@@ -160,7 +160,7 @@ class PreserveAutoincrementOnRollbackConnectionMiddleware extends AbstractConnec
     {
         $beforeRollbackSequences = $this->listSequences();
 
-        $res = parent::rollBack();
+        $res = parent::rollBack(); // @phpstan-ignore staticMethod.void
 
         $this->restoreSequencesIfDecremented($beforeRollbackSequences);
 

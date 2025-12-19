@@ -17,7 +17,7 @@ trait SchemaManagerTrait
     public function alterTable(TableDiff $tableDiff): void
     {
         $connection = Connection::isDbal3x()
-            ? $this->_conn
+            ? $this->_conn // @phpstan-ignore property.notFound
             : $this->connection;
 
         $hadForeignKeysEnabled = (bool) $connection->executeQuery('PRAGMA foreign_keys')->fetchOne();
@@ -33,7 +33,7 @@ trait SchemaManagerTrait
             $rows = $connection->executeQuery('PRAGMA foreign_key_check')->fetchAllAssociative();
             if (count($rows) > 0) {
                 throw Connection::isDbal3x()
-                    ? new DbalException('Foreign key constraints are violated')
+                    ? new DbalException('Foreign key constraints are violated') // @phpstan-ignore new.interface
                     : new class('Foreign key constraints are violated') extends AbstractDriverException {};
             }
         }
@@ -42,6 +42,10 @@ trait SchemaManagerTrait
     // fix collations unescape for SQLiteSchemaManager::parseColumnCollationFromSQL() method
     // https://github.com/doctrine/dbal/issues/6129
 
+    /**
+     * @param string $table
+     * @param string $database
+     */
     #[\Override]
     protected function _getPortableTableColumnList($table, $database, $tableColumns): array
     {
@@ -64,27 +68,42 @@ trait SchemaManagerTrait
         return (new Identifier($tableName))->getName();
     }
 
+    /**
+     * @param string $name
+     *
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     public function listTableDetails($name): Table
     {
-        return parent::listTableDetails(
+        return parent::listTableDetails( // @phpstan-ignore staticMethod.notFound
             Connection::isDbal3x()
                 ? $this->unquoteTableIdentifier($name)
                 : $name
         );
     }
 
+    /**
+     * @param string $table
+     */
     #[\Override]
     public function listTableIndexes($table): array
     {
         return parent::listTableIndexes($this->unquoteTableIdentifier($table));
     }
 
+    /**
+     * @param string $table
+     * @param string $database
+     */
     #[\Override]
     public function listTableForeignKeys($table, $database = null): array
     {
-        return parent::listTableForeignKeys($this->unquoteTableIdentifier($table), $database);
+        return parent::listTableForeignKeys($this->unquoteTableIdentifier($table), $database); // @phpstan-ignore arguments.count
     }
 
+    /**
+     * @param string $name
+     */
     public function introspectTable($name): Table
     {
         return parent::introspectTable(

@@ -44,7 +44,7 @@ trait PlatformFixColumnCommentTypeHintTrait
              */
             public function getName(): string
             {
-                return $this->type->getName();
+                return $this->type->getName(); // @phpstan-ignore method.notFound
             }
 
             /**
@@ -56,17 +56,17 @@ trait PlatformFixColumnCommentTypeHintTrait
                     return true;
                 }
 
-                return $this->type->requiresSQLCommentHint($platform);
+                return $this->type->requiresSQLCommentHint($platform); // @phpstan-ignore method.notFound
             }
         };
         $tmpType->setData(
             $column->getType(),
-            in_array($column->getType()->getName(), $this->requireCommentHintTypes, true)
+            in_array($column->getType()->getName(), $this->requireCommentHintTypes, true) // @phpstan-ignore method.notFound
         );
 
         $columnWithTmpType = clone $column;
         $columnWithTmpType->setType($tmpType);
 
-        return parent::getColumnComment($columnWithTmpType);
+        return parent::getColumnComment($columnWithTmpType); // @phpstan-ignore staticMethod.notFound
     }
 }

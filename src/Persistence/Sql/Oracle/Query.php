@@ -326,7 +326,7 @@ class Query extends BaseQuery
         // TODO submit PR to DBAL to handle this using DB trigger
         if ($this->mode === 'truncate' && $connection instanceof DbalConnection && $this->template === $this->templateTruncate && preg_match('~^truncate table ((?:"[^"]+"\.)?"[^"]+")$~i', $this->render()[0], $matches)) {
             $platform = $connection->getDatabasePlatform();
-            $pkSequenceName = str_replace('"', '', \Closure::bind(static fn () => $platform->getIdentitySequenceName($matches[1], ''), null, OraclePlatform::class)()); // @phpstan-ignore method.deprecated
+            $pkSequenceName = str_replace('"', '', \Closure::bind(static fn () => $platform->getIdentitySequenceName($matches[1], ''), null, OraclePlatform::class)()); // @phpstan-ignore method.notFound
 
             $resetAutoincrementQuery = $this->expr('alter sequence {} restart', [$pkSequenceName]);
 

@@ -443,7 +443,7 @@ abstract class Connection
      */
     public function lastInsertId(?string $sequence = null): string
     {
-        $res = $this->getConnection()->lastInsertId($sequence);
+        $res = $this->getConnection()->lastInsertId($sequence); // @phpstan-ignore arguments.count
 
         return is_int($res) ? (string) $res : $res;
     }
@@ -455,7 +455,7 @@ abstract class Connection
     {
         if (($this->serverVersionRaw ?? null) === null) {
             $this->serverVersionRaw = self::isDbal3x()
-                ? $this->getConnection()->getWrappedConnection()->getServerVersion()
+                ? $this->getConnection()->getWrappedConnection()->getServerVersion() // @phpstan-ignore method.notFound
                 : $this->getConnection()->getServerVersion();
         }
 
