@@ -18,7 +18,9 @@ use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Persistence\Sql\Sqlite\Connection as SqliteConnection;
 use Atk4\Data\Persistence\Sql\Sqlite\Query as SqliteQuery;
 use Doctrine\DBAL\Connection as DbalConnection;
+use Doctrine\DBAL\Driver\Connection as DbalDriverConnection;
 use Doctrine\DBAL\Driver\Middleware\AbstractConnectionMiddleware;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
@@ -790,8 +792,10 @@ class QueryTest extends TestCase
                 $this->serverVersion = $serverVersion;
             }
 
-            #[\Override]
-            public function getWrappedConnection()
+            /**
+             * @deprecated remove once DBAL 3.x support is dropped
+             */
+            public function getWrappedConnection(): DbalDriverConnection
             {
                 return new class($this->serverVersion) extends AbstractConnectionMiddleware {
                     private string $serverVersion;
@@ -802,15 +806,20 @@ class QueryTest extends TestCase
                     }
 
                     #[\Override]
-                    public function getServerVersion()
+                    public function getServerVersion(): string
                     {
                         return $this->serverVersion;
                     }
                 };
             }
 
+            public function getServerVersion(): string // @phpstan-ignore method.missingOverride
+            {
+                return $this->serverVersion;
+            }
+
             #[\Override]
-            public function getDatabasePlatform()
+            public function getDatabasePlatform(): AbstractPlatform
             {
                 return new MySQLPlatform();
             }
