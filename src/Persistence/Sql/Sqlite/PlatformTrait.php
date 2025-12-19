@@ -23,7 +23,7 @@ trait PlatformTrait
     {
         if (Connection::isDbal3x()) {
             $this->disableSchemaEmulation(); // @phpstan-ignore method.notFound
-        } elseif (method_exists(parent::class, '__construct')) { // DBAL v3.5 or higher
+        } elseif (method_exists(parent::class, '__construct')) { // DBAL v4.3 or higher
             parent::__construct();
         }
     }

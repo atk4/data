@@ -236,6 +236,7 @@ class MigratorFkTest extends TestCase
         if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform && MysqlConnection::isServerMariaDb($this->getConnection()) && in_array($this->getConnection()->getServerVersion(), ['10.11.9', '11.1.6', '11.2.5', '11.4.3', '11.5.2'], true)) {
             self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
         } else {
+            // TODO DbalException should be thrown in all cases from Sqlite\SchemaManagerTrait
             $this->expectException(!Connection::isDbal3x() && $this->getDatabasePlatform() instanceof SQLitePlatform ? AbstractDriverException::class : DbalException::class);
             if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
                 $this->expectExceptionMessage('Foreign key constraints are violated');
