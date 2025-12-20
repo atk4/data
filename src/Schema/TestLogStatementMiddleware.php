@@ -4,13 +4,56 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Schema;
 
+use Atk4\Data\Persistence\Sql\Connection;
 use Doctrine\DBAL\Driver\Middleware\AbstractStatementMiddleware;
 use Doctrine\DBAL\Driver\Result;
 use Doctrine\DBAL\Driver\Statement;
 use Doctrine\DBAL\ParameterType;
 
+if (!Connection::isDbal3x()) {
+    trait TestLogStatementMiddlewareTrait
+    {
+        #[\Override]
+        public function bindValue($param, $value, ParameterType $type): void
+        {
+            $this->_bindValue($param, $value, $type);
+        }
+
+        #[\Override]
+        public function execute(): Result
+        {
+            return $this->_execute();
+        }
+    }
+} else {
+    trait TestLogStatementMiddlewareTrait
+    {
+        #[\Override]
+        public function bindValue($param, $value, $type = ParameterType::STRING): bool
+        {
+            return $this->_bindValue($param, $value, $type);
+        }
+
+        #[\Override]
+        public function bindParam($param, &$variable, $type = ParameterType::STRING, $length = null): bool
+        {
+            return $this->_bindParam($param, $variable, $type, $length);
+        }
+
+        #[\Override]
+        public function execute($params = null): Result
+        {
+            assert($params === null);
+
+            return $this->_execute();
+        }
+    }
+}
+
 class TestLogStatementMiddleware extends AbstractStatementMiddleware
 {
+    use TestLogStatementMiddlewareTrait;
+
     /** @var \WeakReference<TestLogConnectionMiddleware> */
     private \WeakReference $weakLogConnectionMiddleware;
 
@@ -27,20 +70,31 @@ class TestLogStatementMiddleware extends AbstractStatementMiddleware
         $this->sql = $sql;
     }
 
-    #[\Override]
-    public function bindValue($param, $value, $type = ParameterType::STRING)
+    /**
+     * @param int|string                     $param
+     * @param mixed                          $value
+     * @param ParameterType|ParameterType::* $type
+     */
+    protected function _bindValue($param, $value, $type = ParameterType::STRING): ?bool
     {
-        $this->setLogParam($param, $type, $value); // @phpstan-ignore argument.type
+        $this->setLogParam($param, $type, $value);
 
-        return parent::bindValue($param, $value, $type);
+        return parent::bindValue($param, $value, $type); // @phpstan-ignore staticMethod.void (https://github.com/phpstan/phpstan/issues/13899)
     }
 
-    #[\Override]
-    public function bindParam($param, &$variable, $type = ParameterType::STRING, $length = null)
+    /**
+     * @param int|string       $param
+     * @param mixed            $variable
+     * @param ParameterType::* $type
+     * @param int|null         $length
+     *
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
+    protected function _bindParam($param, &$variable, $type = ParameterType::STRING, $length = null): bool
     {
-        $this->setLogParam($param, $type, $variable); // @phpstan-ignore argument.type
+        $this->setLogParam($param, $type, $variable);
 
-        return parent::bindParam($param, $variable, $type, $length);
+        return parent::bindParam($param, $variable, $type, $length); // @phpstan-ignore staticMethod.notFound
     }
 
     /**
@@ -53,11 +107,8 @@ class TestLogStatementMiddleware extends AbstractStatementMiddleware
         $this->params[$param] = [$type, $value];
     }
 
-    #[\Override]
-    public function execute($params = null): Result
+    protected function _execute(): Result
     {
-        assert($params === null);
-
         $this->weakLogConnectionMiddleware->get()->logStartQuery($this->sql, $this->params);
 
         return parent::execute();

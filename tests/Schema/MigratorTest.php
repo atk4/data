@@ -7,6 +7,7 @@ namespace Atk4\Data\Tests\Schema;
 use Atk4\Data\Exception;
 use Atk4\Data\Field\PasswordField;
 use Atk4\Data\Model;
+use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Schema\Migrator;
 use Atk4\Data\Schema\TestCase;
@@ -339,7 +340,9 @@ class MigratorTest extends TestCase
         $migrator = $this->createMigrator($model);
 
         $modelFields = array_keys($model->getFields());
-        $migratorFields = array_keys($migrator->table->getColumns());
+        $migratorFields = Connection::isDbal3x()
+            ? array_keys($migrator->table->getColumns())
+            : array_map(static fn ($v) => $v->getName(), $migrator->table->getColumns());
 
         self::assertSame(['role_name'], array_values(array_diff($modelFields, $migratorFields)));
         self::assertSame([], array_values(array_diff($migratorFields, $modelFields)));
@@ -364,6 +367,18 @@ class MigratorTest extends TestCase
                 'type' => $field->type,
                 'nullable' => $field->nullable && !$field->required,
             ];
+        }
+
+        if (!Connection::isDbal3x()) {
+            $expectedFields['mn']['type'] = 'float';
+            $expectedFields['lobj']['type'] = 'string';
+
+            if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
+                $expectedFields['id']['type'] = 'integer'; // TODO https://github.com/doctrine/dbal/pull/6411
+                $expectedFields['json']['type'] = 'text';
+            } else {
+                self::markTestIncomplete('TODO fix introspect column to field for DBAL 4.x');
+            }
         }
 
         // TODO fix DBAL column comment type hint

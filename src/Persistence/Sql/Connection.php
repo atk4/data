@@ -282,8 +282,8 @@ abstract class Connection
         );
 
         return self::isDbal3x()
-            ? $dbalConnection->getWrappedConnection() // @phpstan-ignore method.deprecated (https://github.com/doctrine/dbal/issues/5199)
-            : \Closure::bind(static fn () => $dbalConnection->connect(), null, DbalConnection::class)(); // @phpstan-ignore method.internal
+            ? $dbalConnection->getWrappedConnection() // @phpstan-ignore method.notFound
+            : \Closure::bind(static fn () => $dbalConnection->connect(), null, DbalConnection::class)();
     }
 
     protected static function connectFromDbalDriverConnection(DbalDriverConnection $dbalDriverConnection): DbalConnection
@@ -443,7 +443,7 @@ abstract class Connection
      */
     public function lastInsertId(?string $sequence = null): string
     {
-        $res = $this->getConnection()->lastInsertId($sequence);
+        $res = $this->getConnection()->lastInsertId($sequence); // @phpstan-ignore arguments.count
 
         return is_int($res) ? (string) $res : $res;
     }
@@ -454,7 +454,9 @@ abstract class Connection
     public function getServerVersion(bool $raw = false): string
     {
         if (($this->serverVersionRaw ?? null) === null) {
-            $this->serverVersionRaw = $this->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore method.deprecated, method.notFound
+            $this->serverVersionRaw = self::isDbal3x()
+                ? $this->getConnection()->getWrappedConnection()->getServerVersion() // @phpstan-ignore method.notFound
+                : $this->getConnection()->getServerVersion();
         }
 
         $matched = preg_match('~(\d+)\.(\d+)(?:\.(\d+))?~', $this->serverVersionRaw, $matches) === 1;

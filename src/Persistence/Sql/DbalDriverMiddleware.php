@@ -13,11 +13,10 @@ use Doctrine\DBAL\Exception\DatabaseObjectNotFoundException;
 use Doctrine\DBAL\Exception\DriverException as DbalDriverConvertedException;
 use Doctrine\DBAL\Exception\TableNotFoundException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
-use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Query as DbalQuery;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
@@ -25,19 +24,27 @@ use Doctrine\DBAL\ServerVersionProvider;
 
 class DbalDriverMiddleware extends AbstractDriverMiddleware
 {
-    protected function replaceDatabasePlatform(AbstractPlatform $platform): AbstractPlatform
+    protected function replaceDatabasePlatform(AbstractPlatform $platform, ?string $version): AbstractPlatform
     {
         if ($platform instanceof SQLitePlatform) {
             $platform = new class extends SQLitePlatform {
                 use Sqlite\PlatformTrait;
             };
+        } elseif ($platform instanceof MySQLPlatform && !Connection::isDbal3x() && $version !== null && version_compare($version, '5.7.8') < 0) {
+            $platform = new class extends MySQLPlatform {
+                #[\Override]
+                public function getJsonTypeDeclarationSQL(array $column): string
+                {
+                    return 'TEXT';
+                }
+            };
         } elseif ($platform instanceof PostgreSQLPlatform) {
-            $platform = new class extends PostgreSQL94Platform { // @phpstan-ignore class.extendsDeprecatedClass
+            $platform = new class extends PostgreSQLPlatform {
                 use Postgresql\PlatformTrait;
             };
         } elseif ($platform instanceof SQLServerPlatform) {
-            $platform = new class extends SQLServer2012Platform { // @phpstan-ignore class.extendsDeprecatedClass
-                use Mssql\PlatformTrait;
+            $platform = new class extends SQLServerPlatform {
+                use Mssql\PlatformTrait; // @phpstan-ignore method.notFound, method.notFound, method.notFound (https://github.com/phpstan/phpstan/issues/11030)
             };
         } elseif ($platform instanceof OraclePlatform) {
             $platform = new class extends OraclePlatform {
@@ -49,23 +56,25 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
     }
 
     #[\Override]
-    public function getDatabasePlatform(?ServerVersionProvider $versionProvider = null): AbstractPlatform // @phpstan-ignore class.notFound
+    public function getDatabasePlatform(?ServerVersionProvider $versionProvider = null): AbstractPlatform // @phpstan-ignore method.notFound, method.notFound, method.notFound (https://github.com/phpstan/phpstan/issues/11030)
     {
         if (Connection::isDbal3x()) {
-            return $this->replaceDatabasePlatform(parent::getDatabasePlatform());
+            return $this->replaceDatabasePlatform(parent::getDatabasePlatform(), null); // @phpstan-ignore arguments.count
         }
 
         assert($versionProvider !== null);
 
-        return $this->replaceDatabasePlatform(parent::getDatabasePlatform($versionProvider)); // @phpstan-ignore arguments.count
+        return $this->replaceDatabasePlatform(parent::getDatabasePlatform($versionProvider), $versionProvider->getServerVersion());
     }
 
     /**
+     * @param string $version
+     *
      * @deprecated remove once DBAL 3.x support is dropped
      */
-    public function createDatabasePlatformForVersion($version): AbstractPlatform // @phpstan-ignore method.missingOverride
+    public function createDatabasePlatformForVersion($version): AbstractPlatform
     {
-        return $this->replaceDatabasePlatform(parent::createDatabasePlatformForVersion($version));
+        return $this->replaceDatabasePlatform(parent::createDatabasePlatformForVersion($version), $version); // @phpstan-ignore staticMethod.notFound
     }
 
     /**
@@ -73,12 +82,11 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
      *
      * @deprecated remove once DBAL 3.5 support is dropped
      */
-    #[\Override]
     public function getSchemaManager(DbalConnection $connection, AbstractPlatform $platform): AbstractSchemaManager
     {
         return Connection::isDbal35()
             ? (new DbalSchemaManagerFactory())->createSchemaManager($connection)
-            : parent::getSchemaManager($connection, $platform);
+            : parent::getSchemaManager($connection, $platform); // @phpstan-ignore staticMethod.notFound
     }
 
     /**
@@ -132,7 +140,7 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
                         $exception = self::getUnconvertedException($convertedException);
                         $exceptionMessageLc = strtolower($exception->getMessage());
                         if (str_contains($exceptionMessageLc, 'cannot drop the table') && !$convertedException instanceof TableNotFoundException) {
-                            return new TableNotFoundException($exception, $query); // @phpstan-ignore method.internal
+                            return new TableNotFoundException($exception, $query);
                         }
                     }
 

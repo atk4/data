@@ -109,7 +109,6 @@ class Query extends BaseQuery
         $defCollation = preg_match('~char|text~i', $defType)
             // https://github.com/atk4/data/blob/6.0.0/src/Schema/Migrator.php#L128
             // https://github.com/doctrine/dbal/blob/3.10.2/src/Platforms/AbstractMySQLPlatform.php#L597
-            // TODO DBAL 4.0 https://github.com/doctrine/dbal/pull/4644
             ? 'utf8mb4_unicode_ci'
             : null;
 

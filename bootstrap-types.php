@@ -14,8 +14,8 @@ use Doctrine\DBAL\Types as DbalTypes;
 // force SQLitePlatform and SQLiteSchemaManager classes load as in DBAL 3.x they are named with a different case
 // remove once DBAL 3.x support is dropped
 try {
-    new SqlitePlatform(); // @phpstan-ignore new.resultUnused
-    new SqliteSchemaManager(); // @phpstan-ignore arguments.count
+    new SqlitePlatform(); // @phpstan-ignore class.notFound
+    new SqliteSchemaManager(); // @phpstan-ignore class.notFound
 } catch (\Error $e) {
 }
 

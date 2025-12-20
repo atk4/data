@@ -310,12 +310,10 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
-        // @phpstan-ignore method.internal
         $integerWrappedType = new class extends DbalTypes\Type {
             /**
-             * TODO: Remove once DBAL 3.x support is dropped.
+             * @deprecated remove once DBAL 3.x support is dropped
              */
-            #[\Override]
             public function getName(): string
             {
                 return self::class;

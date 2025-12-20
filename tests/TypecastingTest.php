@@ -7,6 +7,7 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
+use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
@@ -40,6 +41,10 @@ class TypecastingTest extends TestCase
 
     public function testType(): void
     {
+        if (!Connection::isDbal3x()) {
+            self::markTestIncomplete('TODO fix introspect column to field for DBAL 4.x');
+        }
+
         $dbData = [
             'types' => [
                 '_types' => ['date' => 'date', 'datetime' => 'datetime', 'time' => 'time', 'json' => 'json'],
@@ -304,12 +309,31 @@ class TypecastingTest extends TestCase
 
     public function testSaveFieldUnexpectedScalarException(): void
     {
-        // @phpstan-ignore method.internal
-        $this->executeFxWithTemporaryType('bad-datetime', new class extends DbalTypes\DateTimeType {
-            #[\Override] // @phpstan-ignore method.childReturnType (https://github.com/phpstan/phpstan/issues/10210)
-            public function convertToDatabaseValue($value, AbstractPlatform $platform): \DateTime
+        $this->executeFxWithTemporaryType('bad-datetime', new class extends DbalTypes\Type {
+            /**
+             * @deprecated remove once DBAL 3.x support is dropped
+             */
+            public function getName(): string
+            {
+                return self::class;
+            }
+
+            #[\Override]
+            public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform): string
+            {
+                return '';
+            }
+
+            #[\Override]
+            public function convertToDatabaseValue($value, AbstractPlatform $platform): ?\DateTime
             {
                 return $value;
+            }
+
+            #[\Override]
+            public function convertToPHPValue($value, AbstractPlatform $platform): ?\DateTime
+            {
+                return null;
             }
         }, function () {
             $this->expectException(\TypeError::class);
@@ -327,10 +351,9 @@ class TypecastingTest extends TestCase
 
     public function testSaveFieldConvertedWarningNotWrappedException(): void
     {
-        // @phpstan-ignore method.internal
         $this->executeFxWithTemporaryType('with-warning', new class extends DbalTypes\IntegerType {
             #[\Override]
-            public function convertToDatabaseValue($value, AbstractPlatform $platform)
+            public function convertToDatabaseValue($value, AbstractPlatform $platform): ?int
             {
                 throw new \ErrorException('Converted PHP warning');
             }
@@ -343,10 +366,9 @@ class TypecastingTest extends TestCase
 
     public function testLoadFieldConvertedWarningNotWrappedException(): void
     {
-        // @phpstan-ignore method.internal
         $this->executeFxWithTemporaryType('with-warning', new class extends DbalTypes\IntegerType {
             #[\Override]
-            public function convertToPHPValue($value, AbstractPlatform $platform)
+            public function convertToPHPValue($value, AbstractPlatform $platform): ?int
             {
                 throw new \ErrorException('Converted PHP warning');
             }
@@ -359,10 +381,9 @@ class TypecastingTest extends TestCase
 
     public function testNormalizeConvertedWarningNotWrappedException(): void
     {
-        // @phpstan-ignore method.internal
         $this->executeFxWithTemporaryType('with-warning', new class extends DbalTypes\IntegerType {
             #[\Override]
-            public function convertToDatabaseValue($value, AbstractPlatform $platform)
+            public function convertToDatabaseValue($value, AbstractPlatform $platform): ?int
             {
                 throw new \ErrorException('Converted PHP warning');
             }
@@ -473,7 +494,11 @@ class TypecastingTest extends TestCase
         $dbData[] = &$dbData;
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Could not convert PHP type \'array\' to \'json\', as an \'Recursion detected\'');
+        $this->expectExceptionMessage(
+            Connection::isDbal3x()
+                ? 'Could not convert PHP type \'array\' to \'json\', as an \'Recursion detected\''
+                : 'Could not convert PHP type "array" to "json". An error was triggered by the serialization: Recursion detected'
+        );
         $this->db->typecastSaveRow($m, ['data' => ['foo' => 'bar', 'recursive' => $dbData]]);
     }
 

@@ -126,6 +126,9 @@ class Migrator
         $table = $this->fixAbstractAssetName(new Table('0.0'), $tableName);
         if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
             $table->addOption('charset', 'utf8mb4');
+            if (!Connection::isDbal3x()) { // https://github.com/doctrine/dbal/pull/4644
+                $table->addOption('collation', 'utf8mb4_unicode_ci');
+            }
         }
 
         $this->table = $table;
@@ -166,7 +169,16 @@ class Migrator
             }
             foreach ($foreignKeysByTableToDrop as $tableName => $foreignKeys) {
                 foreach ($foreignKeys as $foreignKey) {
-                    $schemaManager->dropForeignKey($foreignKey, $this->getDatabasePlatform()->quoteIdentifier($tableName));
+                    if (!Connection::isDbal3x()) {
+                        $foreignKey = $foreignKey->getQuotedName($this->getDatabasePlatform());
+                    }
+
+                    $schemaManager->dropForeignKey(
+                        $foreignKey,
+                        !Connection::isDbal3x() && ($this->getDatabasePlatform() instanceof OraclePlatform || $this->getDatabasePlatform() instanceof PostgreSQLPlatform)
+                            ? $tableName // TODO probably a bug in DBAL
+                            : $this->getDatabasePlatform()->quoteIdentifier($tableName)
+                    );
                 }
             }
         }

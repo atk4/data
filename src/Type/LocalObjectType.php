@@ -41,7 +41,9 @@ class LocalObjectType extends DbalTypes\Type
         $this->handlesIndex = [];
     }
 
-    #[\Override]
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     public function getName(): string
     {
         return Types::LOCAL_OBJECT;
@@ -112,7 +114,9 @@ class LocalObjectType extends DbalTypes\Type
         return $res;
     }
 
-    #[\Override]
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
     public function requiresSQLCommentHint(AbstractPlatform $platform): bool
     {
         return true;
