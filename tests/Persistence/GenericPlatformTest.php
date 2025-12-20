@@ -7,7 +7,11 @@ namespace Atk4\Data\Tests\Persistence;
 use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Persistence\GenericPlatform;
 use Atk4\Data\Persistence\Sql\Connection;
+use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Exception as DbalException;
+use Doctrine\DBAL\Platforms\DateIntervalUnit;
+use Doctrine\DBAL\Schema\TableDiff;
+use Doctrine\DBAL\TransactionIsolationLevel;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 class GenericPlatformTest extends TestCase
@@ -44,13 +48,26 @@ class GenericPlatformTest extends TestCase
      */
     public static function provideNotSupportedExceptionCases(): iterable
     {
-        yield ['_getCommonIntegerTypeDeclarationSQL', [[]]];
-        yield ['getBigIntTypeDeclarationSQL', [[]]];
-        yield ['getBlobTypeDeclarationSQL', [[]]];
         yield ['getBooleanTypeDeclarationSQL', [[]]];
-        yield ['getClobTypeDeclarationSQL', [[]]];
         yield ['getIntegerTypeDeclarationSQL', [[]]];
+        yield ['getBigIntTypeDeclarationSQL', [[]]];
         yield ['getSmallIntTypeDeclarationSQL', [[]]];
+        yield ['_getCommonIntegerTypeDeclarationSQL', [[]]];
+        yield ['getClobTypeDeclarationSQL', [[]]];
+        yield ['getBlobTypeDeclarationSQL', [[]]];
         yield ['getCurrentDatabaseExpression', []];
+        if (!Connection::isDbal3x()) {
+            yield ['getLocateExpression', ['', '']];
+            yield ['getDateDiffExpression', ['', '']];
+            yield ['getDateArithmeticIntervalExpression', ['', '', '', DateIntervalUnit::SECOND]];
+            yield ['getAlterTableSQL', [(new \ReflectionClass(TableDiff::class))->newInstanceWithoutConstructor()]];
+            yield ['getListViewsSQL', ['']];
+            yield ['getSetTransactionIsolationSQL', [TransactionIsolationLevel::READ_COMMITTED]];
+            yield ['getDateTimeTypeDeclarationSQL', [[]]];
+            yield ['getDateTypeDeclarationSQL', [[]]];
+            yield ['getTimeTypeDeclarationSQL', [[]]];
+            yield ['createReservedKeywordsList', []];
+            yield ['createSchemaManager', [(new \ReflectionClass(DbalConnection::class))->newInstanceWithoutConstructor()]];
+        }
     }
 }
