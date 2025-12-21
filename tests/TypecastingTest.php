@@ -41,10 +41,6 @@ class TypecastingTest extends TestCase
 
     public function testType(): void
     {
-        if (!Connection::isDbal3x()) {
-            self::markTestIncomplete('TODO fix introspect column to field for DBAL 4.x');
-        }
-
         $dbData = [
             'types' => [
                 '_types' => ['date' => 'date', 'datetime' => 'datetime', 'time' => 'time', 'json' => 'json'],
@@ -117,7 +113,18 @@ class TypecastingTest extends TestCase
                 ],
             ],
         ];
-        self::assertSameExportUnordered($dbData, $this->getDb());
+        $dbActual = $this->getDb();
+        if (!$this->createMigrator()->canIntrospectJsonType()) {
+            foreach ($dbActual['types'] as $k => $v) {
+                $dbActual['types'][$k]['json'] = json_decode($v['json'], true);
+            }
+        }
+        if (!Connection::isDbal3x() && $this->getDatabasePlatform() instanceof OraclePlatform) {
+            foreach ($dbActual['types'] as $k => $v) {
+                $dbActual['types'][$k]['time'] = new \DateTime('1970-1-1 ' . $v['time'] . ' UTC');
+            }
+        }
+        self::assertSameExportUnordered($dbData, $dbActual);
 
         [$first, $duplicate] = $m->export();
 

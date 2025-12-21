@@ -11,6 +11,7 @@ use Atk4\Data\Model;
 use Atk4\Data\Model\Join;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Connection;
+use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Reference;
 use Atk4\Data\Reference\HasMany;
 use Atk4\Data\Reference\HasOne;
@@ -471,6 +472,18 @@ class Migrator
         }
 
         return $model;
+    }
+
+    /**
+     * @internal
+     */
+    public function canIntrospectJsonType(): bool
+    {
+        return Connection::isDbal3x()
+            || ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform && version_compare($this->getConnection()->getServerVersion(), MysqlConnection::isServerMariaDb($this->getConnection()) ? '10.4' : '5.7.8') >= 0)
+            || $this->getDatabasePlatform() instanceof PostgreSQLPlatform
+            // https://github.com/doctrine/dbal/issues/7263
+        ; // https://github.com/doctrine/dbal/issues/7262
     }
 
     /**
