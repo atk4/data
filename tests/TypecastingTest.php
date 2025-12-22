@@ -43,7 +43,12 @@ class TypecastingTest extends TestCase
     {
         $dbData = [
             'types' => [
-                '_types' => ['date' => 'date', 'datetime' => 'datetime', 'time' => 'time', 'json' => 'json'],
+                '_types' => [
+                    'date' => 'date',
+                    'datetime' => 'datetime',
+                    'time' => 'time',
+                    'json' => 'json',
+                ],
                 [
                     'string' => 'foo',
                     'date' => new \DateTime('2013-02-20 UTC'),
@@ -93,34 +98,8 @@ class TypecastingTest extends TestCase
 
         $dbData = [
             'types' => [
-                1 => [
-                    'id' => 1,
-                    'string' => 'foo',
-                    'date' => new \DateTime('2013-02-20 UTC'),
-                    'datetime' => new \DateTime('2013-02-20 20:00:12 UTC'),
-                    'time' => new \DateTime('1970-01-01 12:00:50 UTC'),
-                    'boolean' => true,
-                    'integer' => 2940,
-                    'integer2' => \PHP_INT_MAX,
-                    'integer3' => \PHP_INT_MIN,
-                    'money' => 8.2,
-                    'float' => 8.20234376757473,
-                    'json' => [1, 2, 3],
-                ],
-                [
-                    'id' => 2,
-                    'string' => 'foo',
-                    'date' => new \DateTime('2013-02-20 UTC'),
-                    'datetime' => new \DateTime('2013-02-20 20:00:12 UTC'),
-                    'time' => new \DateTime('1970-01-01 12:00:50 UTC'),
-                    'boolean' => true,
-                    'integer' => 2940,
-                    'integer2' => \PHP_INT_MAX,
-                    'integer3' => \PHP_INT_MIN,
-                    'money' => 8.2,
-                    'float' => 8.20234376757473,
-                    'json' => [1, 2, 3],
-                ],
+                1 => array_merge(['id' => 1], $dbData['types'][0]),
+                array_merge(['id' => 2], $dbData['types'][0], ['datetime' => clone $dbData['types'][0]['datetime']]),
             ],
         ];
         $dbActual = $this->getDb();
