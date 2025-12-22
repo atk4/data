@@ -51,6 +51,8 @@ class TypecastingTest extends TestCase
                     'time' => new \DateTime('1970-01-01 12:00:50 UTC'),
                     'boolean' => true,
                     'integer' => 2940,
+                    'integer2' => \PHP_INT_MAX,
+                    'integer3' => \PHP_INT_MIN,
                     'money' => 8.2,
                     'float' => 8.20234376757473,
                     'json' => [1, 2, 3],
@@ -70,6 +72,8 @@ class TypecastingTest extends TestCase
         $m->addField('money', ['type' => 'atk4_money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('integer', ['type' => 'integer']);
+        $m->addField('integer2', ['type' => 'bigint']);
+        $m->addField('integer3', ['type' => 'bigint']);
         $m->addField('json', ['type' => 'json']);
         $mm = $m->load(1);
 
@@ -80,6 +84,8 @@ class TypecastingTest extends TestCase
         self::{'assertEquals'}(new \DateTime('2013-02-20 20:00:12 UTC'), $mm->get('datetime'));
         self::{'assertEquals'}(new \DateTime('1970-01-01 12:00:50 UTC'), $mm->get('time'));
         self::assertSame(2940, $mm->get('integer'));
+        self::assertSame(\PHP_INT_MAX, $mm->get('integer2'));
+        self::assertSame(\PHP_INT_MIN, $mm->get('integer3'));
         self::assertSame([1, 2, 3], $mm->get('json'));
         self::assertSame(8.20234376757473, $mm->get('float'));
 
@@ -95,6 +101,8 @@ class TypecastingTest extends TestCase
                     'time' => new \DateTime('1970-01-01 12:00:50 UTC'),
                     'boolean' => true,
                     'integer' => 2940,
+                    'integer2' => \PHP_INT_MAX,
+                    'integer3' => \PHP_INT_MIN,
                     'money' => 8.2,
                     'float' => 8.20234376757473,
                     'json' => [1, 2, 3],
@@ -107,6 +115,8 @@ class TypecastingTest extends TestCase
                     'time' => new \DateTime('1970-01-01 12:00:50 UTC'),
                     'boolean' => true,
                     'integer' => 2940,
+                    'integer2' => \PHP_INT_MAX,
+                    'integer3' => \PHP_INT_MIN,
                     'money' => 8.2,
                     'float' => 8.20234376757473,
                     'json' => [1, 2, 3],
