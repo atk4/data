@@ -45,6 +45,7 @@ class TypecastingTest extends TestCase
             'types' => [
                 '_types' => [
                     'string_l' => 'text',
+                    'string_b' => 'binary',
                     'date' => 'date',
                     'datetime' => 'datetime',
                     'time' => 'time',
@@ -53,6 +54,7 @@ class TypecastingTest extends TestCase
                 [
                     'string' => 'foo',
                     'string_l' => str_repeat('kůň 2', 1_000),
+                    'string_b' => "\xff ",
                     'date' => new \DateTime('2013-02-20 UTC'),
                     'datetime' => new \DateTime('2013-02-20 20:00:12 UTC'),
                     'time' => new \DateTime('1970-01-01 12:00:50 UTC'),
@@ -73,6 +75,7 @@ class TypecastingTest extends TestCase
         $m = new Model($this->db, ['table' => 'types']);
         $m->addField('string', ['type' => 'string']);
         $m->addField('string_l', ['type' => 'text']);
+        $m->addField('string_b', ['type' => 'binary']);
         $m->addField('date', ['type' => 'date']);
         $m->addField('datetime', ['type' => 'datetime']);
         $m->addField('time', ['type' => 'time']);
@@ -87,6 +90,7 @@ class TypecastingTest extends TestCase
 
         self::assertSame('foo', $mm->get('string'));
         self::assertSame($dbData['types'][0]['string_l'], $mm->get('string_l'));
+        self::assertSame($dbData['types'][0]['string_b'], $mm->get('string_b'));
         self::assertTrue($mm->get('boolean'));
         self::assertSame(8.20, $mm->get('money'));
         self::{'assertEquals'}(new \DateTime('2013-02-20 UTC'), $mm->get('date'));
