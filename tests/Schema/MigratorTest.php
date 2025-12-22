@@ -371,13 +371,20 @@ class MigratorTest extends TestCase
 
         if (!Connection::isDbal3x()) {
             $expectedFields['mn']['type'] = 'float';
+            if (!$this->createMigrator()->canIntrospectJsonType()) {
+                $expectedFields['json']['type'] = 'text';
+            }
             $expectedFields['lobj']['type'] = 'string';
 
             if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
                 $expectedFields['id']['type'] = 'integer'; // TODO https://github.com/doctrine/dbal/pull/6411
-                $expectedFields['json']['type'] = 'text';
-            } else {
-                self::markTestIncomplete('TODO fix introspect column to field for DBAL 4.x');
+            } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+                $expectedFields['baz']['type'] = 'string'; // https://github.com/doctrine/dbal/issues/7264
+                $expectedFields['json']['type'] = 'string';
+            } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
+                $expectedFields['bin1']['type'] = 'string';
+                $expectedFields['bin2']['type'] = 'text';
+                $expectedFields['tm']['type'] = 'string';
             }
         }
 

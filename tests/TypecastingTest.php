@@ -41,20 +41,30 @@ class TypecastingTest extends TestCase
 
     public function testType(): void
     {
-        if (!Connection::isDbal3x()) {
-            self::markTestIncomplete('TODO fix introspect column to field for DBAL 4.x');
-        }
-
         $dbData = [
             'types' => [
-                '_types' => ['date' => 'date', 'datetime' => 'datetime', 'time' => 'time', 'json' => 'json'],
+                '_types' => [
+                    'string_l' => 'text',
+                    'string_b' => 'binary',
+                    'string_lb' => 'blob',
+                    'date' => 'date',
+                    'datetime' => 'datetime',
+                    'time' => 'time',
+                    'json' => 'json',
+                ],
                 [
                     'string' => 'foo',
+                    'string_l' => str_repeat('kůň 2', 1_000),
+                    'string_b' => "\xff ",
+                    'string_lb' => str_repeat('kůň ' . "\xff", 1_000),
+                    'string - %' => 'bar',
                     'date' => new \DateTime('2013-02-20 UTC'),
                     'datetime' => new \DateTime('2013-02-20 20:00:12 UTC'),
                     'time' => new \DateTime('1970-01-01 12:00:50 UTC'),
                     'boolean' => true,
                     'integer' => 2940,
+                    'integer2' => \PHP_INT_MAX,
+                    'integer3' => \PHP_INT_MIN,
                     'money' => 8.2,
                     'float' => 8.20234376757473,
                     'json' => [1, 2, 3],
@@ -67,6 +77,10 @@ class TypecastingTest extends TestCase
 
         $m = new Model($this->db, ['table' => 'types']);
         $m->addField('string', ['type' => 'string']);
+        $m->addField('string_l', ['type' => 'text']);
+        $m->addField('string_b', ['type' => 'binary']);
+        $m->addField('string_lb', ['type' => 'blob']);
+        $m->addField('string - %', ['type' => 'string']);
         $m->addField('date', ['type' => 'date']);
         $m->addField('datetime', ['type' => 'datetime']);
         $m->addField('time', ['type' => 'time']);
@@ -74,16 +88,24 @@ class TypecastingTest extends TestCase
         $m->addField('money', ['type' => 'atk4_money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('integer', ['type' => 'integer']);
+        $m->addField('integer2', ['type' => 'bigint']);
+        $m->addField('integer3', ['type' => 'bigint']);
         $m->addField('json', ['type' => 'json']);
         $mm = $m->load(1);
 
         self::assertSame('foo', $mm->get('string'));
+        self::assertSame($dbData['types'][0]['string_l'], $mm->get('string_l'));
+        self::assertSame($dbData['types'][0]['string_b'], $mm->get('string_b'));
+        self::assertSame($dbData['types'][0]['string_lb'], $mm->get('string_lb'));
+        self::assertSame($dbData['types'][0]['string - %'], $mm->get('string - %'));
         self::assertTrue($mm->get('boolean'));
         self::assertSame(8.20, $mm->get('money'));
         self::{'assertEquals'}(new \DateTime('2013-02-20 UTC'), $mm->get('date'));
         self::{'assertEquals'}(new \DateTime('2013-02-20 20:00:12 UTC'), $mm->get('datetime'));
         self::{'assertEquals'}(new \DateTime('1970-01-01 12:00:50 UTC'), $mm->get('time'));
         self::assertSame(2940, $mm->get('integer'));
+        self::assertSame(\PHP_INT_MAX, $mm->get('integer2'));
+        self::assertSame(\PHP_INT_MIN, $mm->get('integer3'));
         self::assertSame([1, 2, 3], $mm->get('json'));
         self::assertSame(8.20234376757473, $mm->get('float'));
 
@@ -91,33 +113,26 @@ class TypecastingTest extends TestCase
 
         $dbData = [
             'types' => [
-                1 => [
-                    'id' => 1,
-                    'string' => 'foo',
-                    'date' => new \DateTime('2013-02-20 UTC'),
-                    'datetime' => new \DateTime('2013-02-20 20:00:12 UTC'),
-                    'time' => new \DateTime('1970-01-01 12:00:50 UTC'),
-                    'boolean' => true,
-                    'integer' => 2940,
-                    'money' => 8.2,
-                    'float' => 8.20234376757473,
-                    'json' => [1, 2, 3],
-                ],
-                [
-                    'id' => 2,
-                    'string' => 'foo',
-                    'date' => new \DateTime('2013-02-20 UTC'),
-                    'datetime' => new \DateTime('2013-02-20 20:00:12 UTC'),
-                    'time' => new \DateTime('1970-01-01 12:00:50 UTC'),
-                    'boolean' => true,
-                    'integer' => 2940,
-                    'money' => 8.2,
-                    'float' => 8.20234376757473,
-                    'json' => [1, 2, 3],
-                ],
+                1 => array_merge(['id' => 1], $dbData['types'][0]),
+                array_merge(['id' => 2], $dbData['types'][0], ['datetime' => clone $dbData['types'][0]['datetime']]),
             ],
         ];
-        self::assertSameExportUnordered($dbData, $this->getDb());
+        $dbActual = $this->getDb();
+        if (!$this->createMigrator()->canIntrospectJsonType()) {
+            foreach ($dbActual['types'] as $k => $v) {
+                $dbActual['types'][$k]['json'] = json_decode($v['json'], true);
+            }
+        }
+        if (!Connection::isDbal3x() && $this->getDatabasePlatform() instanceof OraclePlatform) {
+            foreach ($dbActual['types'] as $k => $v) {
+                $dbActual['types'][$k]['time'] = new \DateTime('1970-1-1 ' . $v['time'] . ' UTC');
+
+                // TODO fix Oracle binary/blob type introspection
+                $dbActual['types'][$k]['string_b'] = $dbData['types'][1]['string_b'];
+                $dbActual['types'][$k]['string_lb'] = $dbData['types'][1]['string_lb'];
+            }
+        }
+        self::assertSameExportUnordered($dbData, $dbActual);
 
         [$first, $duplicate] = $m->export();
 
