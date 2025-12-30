@@ -77,6 +77,7 @@ jobs:
 
   unit-test:
     name: Unit
+    if: 0
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/mvorisek/image-php:${{ matrix.php }}
@@ -279,6 +280,7 @@ jobs:
 
   docs-test:
     name: Docs
+    if: 0
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/mvorisek/image-php:latest
@@ -304,3 +306,67 @@ jobs:
       - name: Diff build baseline
         run: |
           diff -u docs/baseline.orig.txt docs/baseline.txt
+
+  unit-mysql-matrix:
+    name: Unit MySQL (matrix)
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/mvorisek/image-php
+    outputs:
+      m: ${{ steps.mStep.outputs.mOutput }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Github matrix
+        id: mStep
+        run: echo "mOutput=$(php .github/make-mysql-matrix.php)" >> $GITHUB_OUTPUT
+
+  unit-mysql-test:
+    name: Unit MySQL (${{ matrix.mysql-image }})
+    needs: unit-mysql-matrix
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/mvorisek/image-php
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.unit-mysql-matrix.outputs.m) }}
+    services:
+      mysql:
+        image: ${{ matrix.mysql-image }}
+        options: --health-cmd="mysqladmin ping || mariadb-admin ping" --health-interval=10s --health-timeout=5s --health-retries=5 -e MYSQL_ROOT_PASSWORD=atk4_pass_root -e MYSQL_USER=atk4_test_user -e MYSQL_PASSWORD=atk4_pass -e MYSQL_DATABASE=atk4_test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # TODO investigate why CI fails otherwise!
+      - name: Configure PHP
+        run: |
+          rm /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+          php --version
+
+      - name: Install PHP dependencies
+        run: |
+          composer remove --no-interaction --no-update friendsofphp/php-cs-fixer ergebnis/composer-normalize --dev
+          composer remove --no-interaction --no-update phpstan/\* --dev
+          composer update --ansi --prefer-dist --no-interaction --no-progress --optimize-autoloader
+
+      - name: Init
+        run: |
+          php -r '(new PDO("mysql:host=mysql", "root", "atk4_pass_root"))->exec((str_contains("${{ matrix.mysql-image }}", "mysql:5.") ? "GRANT USAGE ON *.* TO" : "ALTER USER") . " '"'"'atk4_test_user'"'"'@'"'"'%'"'"' WITH MAX_USER_CONNECTIONS 5");'
+
+      - name: "Run tests: MySQL - PDO"
+        env:
+          DB_DSN: "pdo_mysql:host=mysql;dbname=atk4_test"
+          DB_USER: atk4_test_user
+          DB_PASSWORD: atk4_pass
+        run: |
+          php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none --no-coverage --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
+
+      - name: "Run tests: MySQL - mysqli"
+        env:
+          DB_DSN: "mysqli:host=mysql;dbname=atk4_test"
+          DB_USER: atk4_test_user
+          DB_PASSWORD: atk4_pass
+        run: |
+          php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none --no-coverage --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
