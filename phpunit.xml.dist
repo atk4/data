@@ -7,6 +7,8 @@
     <testsuites>
         <testsuite name="tests">
             <directory>tests</directory>
+            <file>tests/Ssh/ForUpdateLocking/Test.php</file>
+            <exclude>tests/Ssh/ForUpdateLocking/Test.php</exclude>
         </testsuite>
     </testsuites>
     <extensions>

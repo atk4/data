@@ -326,24 +326,32 @@ jobs:
     name: Unit MySQL (${{ matrix.mysql-image }})
     needs: unit-mysql-matrix
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/mvorisek/image-php
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.unit-mysql-matrix.outputs.m) }}
-    services:
-      mysql:
-        image: ${{ matrix.mysql-image }}
-        options: --health-cmd="mysqladmin ping || mariadb-admin ping" --health-interval=10s --health-timeout=5s --health-retries=5 -e MYSQL_ROOT_PASSWORD=atk4_pass_root -e MYSQL_USER=atk4_test_user -e MYSQL_PASSWORD=atk4_pass -e MYSQL_DATABASE=atk4_test
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # TODO investigate why CI fails otherwise!
-      - name: Configure PHP
+      - name: Setup database server 1/2
         run: |
-          rm /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
-          php --version
+          mkdir mysqld-config
+          echo '[mysqld]' > mysqld-config/mysqld.cnf
+          echo 'max_connections = 100' >> mysqld-config/mysqld.cnf
+          echo 'sql_mode = ONLY_FULL_GROUP_BY,STRICT_ALL_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_DIR_IN_CREATE,NO_ENGINE_SUBSTITUTION' >> mysqld-config/mysqld.cnf
+          echo 'innodb_flush_method = O_DIRECT' >> mysqld-config/mysqld.cnf
+          echo "innodb_flush_log_at_trx_commit = $(php -r 'echo random_int(0, 2);')" >> mysqld-config/mysqld.cnf
+          cat mysqld-config/mysqld.cnf
+          echo ''
+          docker run -d --network=host -e MYSQL_ROOT_PASSWORD=r -e MYSQL_DATABASE=d -e MYSQL_TCP_PORT=4050 -v ${PWD}/mysqld-config:/etc/mysql/conf.d ${{ matrix.mysql-image }}
+
+      - name: Configure PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: none, curl, tokenizer, mbstring, iconv, dom, xml, xmlwriter, pdo_mysql, ssh2
+          ini-values: zend.assertions=1, error_reporting=-1, log_errors_max_len=0, display_errors=on
+          tools: none, composer
 
       - name: Install PHP dependencies
         run: |
@@ -351,22 +359,22 @@ jobs:
           composer remove --no-interaction --no-update phpstan/\* --dev
           composer update --ansi --prefer-dist --no-interaction --no-progress --optimize-autoloader
 
-      - name: Init
+      - name: Setup database server 2/2
         run: |
-          php -r '(new PDO("mysql:host=mysql", "root", "atk4_pass_root"))->exec((str_contains("${{ matrix.mysql-image }}", "mysql:5.") ? "GRANT USAGE ON *.* TO" : "ALTER USER") . " '"'"'atk4_test_user'"'"'@'"'"'%'"'"' WITH MAX_USER_CONNECTIONS 5");'
+          ci_wait_until () { timeout 30 sh -c "until { $1 2> /dev/null; }; do sleep 0.02; done" || timeout 15 sh -c "$1" || { echo "health timeout: $1"; exit 1; }; }
+          ci_wait_until 'nc -w 1 127.0.0.1 ${{ (startsWith(matrix.mysql-image, 'mariadb:10.2.') || startsWith(matrix.mysql-image, 'mariadb:10.3.') || startsWith(matrix.mysql-image, 'mariadb:10.4.') || matrix.mysql-image == 'mariadb:10.5.1' || matrix.mysql-image == 'mariadb:10.5.2' || matrix.mysql-image == 'mariadb:10.5.3') && 3306 || 4050 }}'
+          php -r '(new PDO("mysql:host=127.0.0.1;port=${{ (startsWith(matrix.mysql-image, 'mariadb:10.2.') || startsWith(matrix.mysql-image, 'mariadb:10.3.') || startsWith(matrix.mysql-image, 'mariadb:10.4.') || matrix.mysql-image == 'mariadb:10.5.1' || matrix.mysql-image == 'mariadb:10.5.2' || matrix.mysql-image == 'mariadb:10.5.3') && 3306 || 4050 }}", "root", "r"))->exec((str_contains("${{ matrix.mysql-image }}", "mysql:5.") ? "GRANT USAGE ON *.* TO" : "ALTER USER") . " '"'"'root'"'"'@'"'"'%'"'"' WITH MAX_USER_CONNECTIONS 10");'
+          php -r '(new PDO("mysql:host=127.0.0.1;port=${{ (startsWith(matrix.mysql-image, 'mariadb:10.2.') || startsWith(matrix.mysql-image, 'mariadb:10.3.') || startsWith(matrix.mysql-image, 'mariadb:10.4.') || matrix.mysql-image == 'mariadb:10.5.1' || matrix.mysql-image == 'mariadb:10.5.2' || matrix.mysql-image == 'mariadb:10.5.3') && 3306 || 4050 }}", "root", "r"))->exec((str_contains("${{ matrix.mysql-image }}", "mysql:5.") ? "GRANT USAGE ON *.* TO" : "ALTER USER") . " '"'"'root'"'"'@'"'"'localhost'"'"' WITH MAX_USER_CONNECTIONS 10");'
 
-      - name: "Run tests: MySQL - PDO"
+      - name: "Run SSH tests"
         env:
-          DB_DSN: "pdo_mysql:host=mysql;dbname=atk4_test"
-          DB_USER: atk4_test_user
-          DB_PASSWORD: atk4_pass
+          SSH_HOST: "exec"
+          SSH_USER: "exec"
+          DB_HOST: "127.0.0.1"
+          DB_PORT: "${{ (startsWith(matrix.mysql-image, 'mariadb:10.2.') || startsWith(matrix.mysql-image, 'mariadb:10.3.') || startsWith(matrix.mysql-image, 'mariadb:10.4.') || matrix.mysql-image == 'mariadb:10.5.1' || matrix.mysql-image == 'mariadb:10.5.2' || matrix.mysql-image == 'mariadb:10.5.3') && 3306 || 4050 }}"
+          DB_USER: "root"
+          DB_PASSWORD: "r"
+          DB_DATABASE: "d"
         run: |
-          php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none --no-coverage --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
-
-      - name: "Run tests: MySQL - mysqli"
-        env:
-          DB_DSN: "mysqli:host=mysql;dbname=atk4_test"
-          DB_USER: atk4_test_user
-          DB_PASSWORD: atk4_pass
-        run: |
-          php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none --no-coverage --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
+          php vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi) \
+          --filter Ssh

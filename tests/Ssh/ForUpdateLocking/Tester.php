@@ -1,0 +1,129 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Atk4\Data\Tests\Ssh\ForUpdateLocking;
+
+use Atk4\Data\Exception;
+
+class Tester
+{
+    /** @var list<ConnectionWithValue> */
+    protected array $conns = [];
+
+    /**
+     * @param \Closure(): ConnectionWithValue $connectionFactoryFx
+     * @param positive-int                    $connCount
+     */
+    public function __construct(\Closure $connectionFactoryFx, int $connCount)
+    {
+        $iniConn = $connectionFactoryFx();
+
+        $iniConn->sendQuery(<<<'EOD'
+            CREATE TABLE for_update (
+              `name` varchar(50) CHARACTER SET ascii NOT NULL,
+              `value` bigint UNSIGNED NOT NULL,
+              PRIMARY KEY (`name`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            EOD);
+        $iniConn->readResult();
+
+        $iniConn->sendQuery('insert into for_update values (\'a\', 100), (\'b\', 100)');
+        $iniConn->readResult();
+
+        for ($i = 0; $i < $connCount; ++$i) {
+            $this->conns[] = $connectionFactoryFx();
+        }
+    }
+
+    /**
+     * @template T
+     *
+     * @param list<T> $values
+     *
+     * @return T
+     */
+    public function pick(array $values)
+    {
+        $i = random_int(0, count($values) - 1);
+
+        return $values[$i];
+    }
+
+    public function run(float $maxTime): void
+    {
+        $startTs = microtime(true);
+        $lastDumpTs = 0;
+        $queryCount = 0;
+
+        while (true) {
+            $ts = microtime(true);
+            if ($ts >= $startTs + $maxTime) {
+                return;
+            } elseif ($ts > $lastDumpTs + 1) {
+                $lastDumpTs = $ts;
+                echo "\n*** elapsed: " . date('H:i:s', (int) ($ts - $startTs)) . ', total queries: ' . $queryCount . " ***\n";
+            }
+
+            $conn = $this->pick($this->conns);
+
+            if ($conn->inQuerySinceTs !== null) {
+                if ($ts > $conn->inQuerySinceTs + 100) {
+                    throw new Exception('Detected connection without any activity for too long');
+                }
+
+                if ($conn->hasMoreData()) {
+                    $conn->readResult();
+                }
+
+                continue;
+            }
+
+            $possibleQueries = [];
+            if (!$conn->inTransaction) {
+                $possibleQueries[] = 'SET SESSION TRANSACTION ISOLATION LEVEL SERIALIZABLE';
+                $possibleQueries[] = 'SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ';
+                $possibleQueries[] = 'SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED';
+                $possibleQueries[] = 'SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED';
+                $possibleQueries[] = 'start transaction';
+            } else {
+                if (random_int(0, 5) === 0) {
+                    $possibleQueries[] = 'commit';
+                } elseif (random_int(0, 10) === 0) {
+                    $possibleQueries[] = 'rollback';
+                }
+            }
+
+            if ($conn->inTransaction || random_int(0, 10) === 0) {
+                $possibleQueries[] = 'update for_update set value = $XXX';
+                $possibleQueries[] = 'update for_update set value = $XXX where name = \'a\'';
+                $possibleQueries[] = 'update for_update set value = $XXX where name = \'b\'';
+                $possibleQueries[] = 'update for_update set value = $XXX where name != \'b\'';
+                $possibleQueries[] = 'update for_update set value = value + $XXX';
+                $possibleQueries[] = 'update for_update set value = value + $XXX where name = \'a\'';
+                $possibleQueries[] = 'update for_update set value = value + $XXX where name = \'b\'';
+                $possibleQueries[] = 'update for_update set value = value + $XXX where name != \'b\'';
+
+                // TODO !
+                foreach ([
+                    //   'select * from for_update',
+                    'select * from for_update where name = \'a\'',
+                    'select * from for_update where name = \'b\'',
+                    'select * from for_update where name != \'b\'',
+                    //    'select * from for_update where value > 50',
+                ] as $q) {
+                    if (random_int(0, 5) === 0) {
+                        $possibleQueries[] = $q;
+                        $possibleQueries[] = $q . ' lock in share mode';
+                    }
+                    $possibleQueries[] = $q . ' for update';
+                }
+            }
+
+            $sql = $this->pick($possibleQueries);
+
+            $conn->sendQuery($sql);
+            ++$queryCount;
+        }
+    }
+}
