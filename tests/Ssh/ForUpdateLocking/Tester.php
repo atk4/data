@@ -20,7 +20,7 @@ class Tester
         $iniConn = $connectionFactoryFx();
 
         $iniConn->sendQuery(<<<'EOD'
-            CREATE TABLE for_update (
+            CREATE TABLE $TTT (
               `name` varchar(50) CHARACTER SET ascii NOT NULL,
               `value` bigint UNSIGNED NOT NULL,
               PRIMARY KEY (`name`)
@@ -28,7 +28,7 @@ class Tester
             EOD);
         $iniConn->readResult();
 
-        $iniConn->sendQuery('insert into for_update values (\'a\', 100), (\'b\', 100)');
+        $iniConn->sendQuery('insert into $TTT values (\'a\', 100), (\'b\', 100)');
         $iniConn->readResult();
 
         for ($i = 0; $i < $connCount; ++$i) {
@@ -95,22 +95,22 @@ class Tester
             }
 
             if ($conn->inTransaction || random_int(0, 10) === 0) {
-                $possibleQueries[] = 'update for_update set value = $XXX';
-                $possibleQueries[] = 'update for_update set value = $XXX where name = \'a\'';
-                $possibleQueries[] = 'update for_update set value = $XXX where name = \'b\'';
-                $possibleQueries[] = 'update for_update set value = $XXX where name != \'b\'';
-                $possibleQueries[] = 'update for_update set value = value + $XXX';
-                $possibleQueries[] = 'update for_update set value = value + $XXX where name = \'a\'';
-                $possibleQueries[] = 'update for_update set value = value + $XXX where name = \'b\'';
-                $possibleQueries[] = 'update for_update set value = value + $XXX where name != \'b\'';
+                $possibleQueries[] = 'update $TTT set value = $XXX';
+                $possibleQueries[] = 'update $TTT set value = $XXX where name = \'a\'';
+                $possibleQueries[] = 'update $TTT set value = $XXX where name = \'b\'';
+                $possibleQueries[] = 'update $TTT set value = $XXX where name != \'b\'';
+                $possibleQueries[] = 'update $TTT set value = value + $XXX';
+                $possibleQueries[] = 'update $TTT set value = value + $XXX where name = \'a\'';
+                $possibleQueries[] = 'update $TTT set value = value + $XXX where name = \'b\'';
+                $possibleQueries[] = 'update $TTT set value = value + $XXX where name != \'b\'';
 
                 // TODO !
                 foreach ([
-                    //   'select * from for_update',
-                    'select * from for_update where name = \'a\'',
-                    'select * from for_update where name = \'b\'',
-                    'select * from for_update where name != \'b\'',
-                    //    'select * from for_update where value > 50',
+                    //   'select * from $TTT',
+                    'select * from $TTT where name = \'a\'',
+                    'select * from $TTT where name = \'b\'',
+                    'select * from $TTT where name != \'b\'',
+                    //    'select * from $TTT where value > 50',
                 ] as $q) {
                     if (random_int(0, 5) === 0) {
                         $possibleQueries[] = $q;

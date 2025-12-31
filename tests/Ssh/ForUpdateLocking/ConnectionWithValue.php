@@ -10,11 +10,15 @@ use Atk4\Data\Ssh\MysqlResult;
 
 class ConnectionWithValue extends MysqlConnectionWithState
 {
+    public string $table;
+
     public ?int $lockedValue = null;
 
-    public function __construct(string $sshHost, string $sshUser, string $dbHost, int $dbPort, string $dbUser, string $dbPassword, string $dbDatabase)
+    public function __construct(string $sshHost, string $sshUser, string $dbHost, int $dbPort, string $dbUser, string $dbPassword, string $dbDatabase, string $table)
     {
         parent::__construct($sshHost, $sshUser, $dbHost, $dbPort, $dbUser, $dbPassword, $dbDatabase);
+
+        $this->table = $table;
 
         // recover from deadlocks as fast as possible
         $this->sendQuery('SET SESSION innodb_lock_wait_timeout = 1');
@@ -24,6 +28,10 @@ class ConnectionWithValue extends MysqlConnectionWithState
     #[\Override]
     public function sendQuery(string $sql): void
     {
+        if (str_contains($sql, '$TTT')) {
+            $sql = str_replace('$TTT', $this->table, $sql);
+        }
+
         if (str_contains($sql, '$XXX')) {
             $sql = str_replace('$XXX', (string) random_int(0, 1000), $sql);
         }
@@ -50,7 +58,7 @@ class ConnectionWithValue extends MysqlConnectionWithState
         $sqlLower = trim(preg_replace('~\s+~', ' ', strtolower($this->lastQuery)));
 
         if (str_starts_with($sqlLower, 'update')) {
-            if (!preg_match('~^update for_update set value = (?:(\d+)|value \+ (\d+))(?: where name (=|!=) \'(a|b)\')?$~i', $sqlLower, $matches)) {
+            if (!preg_match('~^update tt_\w+ set value = (?:(\d+)|value \+ (\d+))(?: where name (=|!=) \'(a|b)\')?$~i', $sqlLower, $matches)) {
                 throw (new Exception('Failed to parse update query'))
                     ->addMoreInfo('sql', $this->lastQuery);
             }

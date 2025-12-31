@@ -6,16 +6,42 @@ namespace Atk4\Data\Ssh;
 
 use Atk4\Data\Exception;
 
-class MysqlConnectionWithState extends MysqlConnection
+class MysqlConnectionWithState extends MysqliAsyncConnection
 {
     public const ISOLATION_LEVEL_SERIALIZABLE = 'SERIALIZABLE';
     public const ISOLATION_LEVEL_REPEATABLE_READ = 'REPEATABLE READ';
     public const ISOLATION_LEVEL_READ_COMMITTED = 'READ COMMITTED';
     public const ISOLATION_LEVEL_READ_UNCOMMITTED = 'READ UNCOMMITTED';
 
+    /** @var array<string, array{bool, string}> */
+    private static array $serverVersionCache;
+
     public ?string $lastQuery = null;
 
     public ?float $inQuerySinceTs = null;
+
+    public bool $serverIsMariaDB;
+
+    public string $serverVersion;
+
+    public function __construct(string $sshHost, string $sshUser, string $dbHost, int $dbPort, string $dbUser, string $dbPassword, string $dbDatabase)
+    {
+        parent::__construct($sshHost, $sshUser, $dbHost, $dbPort, $dbUser, $dbPassword, $dbDatabase);
+
+        $serverVersionCacheKey = $dbHost . ':' . $dbPort;
+        if (!isset(self::$serverVersionCache[$serverVersionCacheKey])) {
+            $this->sendQuery('select version()');
+            $res = $this->readResult();
+            assert($res->error === null);
+            assert(preg_match('~(\d+\.\d+\.\d+)(.*MariaDB)?~i', reset($res->rows[0]), $matches));
+            self::$serverVersionCache[$serverVersionCacheKey] = [
+                ($matches[2] ?? '') !== '',
+                $matches[1],
+            ];
+        }
+
+        [$this->serverIsMariaDB, $this->serverVersion] = self::$serverVersionCache[$serverVersionCacheKey];
+    }
 
     /** @var self::ISOLATION_LEVEL_* */
     public ?string $isolationLevel = null;
@@ -121,7 +147,8 @@ class MysqlConnectionWithState extends MysqlConnection
 
             parent::sendQuery('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE');
             $res = parent::readResult();
-            if ($res->error !== null && str_contains($res->error, '')) {
+            // ERROR 1568 (25001): Transaction isolation level can't be changed while a transaction is in progress"
+            if ($res->error !== null && str_contains($res->error, 'ERROR 1568 (')) {
                 return true;
             }
             assert($res->error === null);

@@ -178,7 +178,7 @@ class MysqlConnection
 
         if ($this->enableDebugPrint) {
             echo "\n\n";
-            $this->printDebugMessage('query: ' . $sql);
+            $this->printDebugMessage(($this instanceof MysqlConnectionWithState ? '(' . ($this->inTransaction ? 'T' : '-') . ') ' : '') . 'query: ' . $sql);
         }
         fwrite($this->stdin, $sql . "\n");
 
@@ -224,6 +224,9 @@ class MysqlConnection
             $lastLine = array_pop($lines);
         } elseif (count($lines) === 0) {
             $res->error = $lastLine;
+            if ($this->enableDebugPrint) {
+                echo '    query error: ' . $res->error . "\n";
+            }
 
             return $res;
         }
@@ -240,7 +243,7 @@ class MysqlConnection
         }
 
         $res->error = null;
-        $res->elapsed = (int) $matches[4];
+        $res->elapsed = (float) $matches[4];
 
         if ($matches[1] !== '') {
             $res->affectedRows = (int) $matches[1];

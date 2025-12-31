@@ -17,12 +17,13 @@ class MysqlConnectionWithStateTest extends TestCase
 {
     protected function createConnection(): MysqlConnectionWithState
     {
-        return new MysqlConnectionWithState(...MysqlConnectionTest::getSshConfig(), ...MysqlConnectionTest::getMysqlConfig());
+        return new MysqlConnectionWithState(...MysqliAsyncConnectionTest::getSshConfig(), ...MysqlConnectionTest::getMysqlConfig());
     }
 
     public function testLastQuery(): void
     {
         $conn = $this->createConnection();
+        $conn = $this->createConnection(); // make sure server version is always loaded from cache
 
         self::assertNull($conn->lastQuery);
 
