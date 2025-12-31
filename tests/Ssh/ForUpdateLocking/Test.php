@@ -11,15 +11,15 @@ use Atk4\Data\Ssh\MysqlConnectionWithState;
 use Atk4\Data\Tests\Ssh\MysqlConnectionTest;
 use Atk4\Data\Tests\Ssh\MysqliAsyncConnectionTest;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 
-/**
- * @requires extension ssh2
- */
-#[RequiresPhpExtension('ssh2')]
 class Test extends TestCase
 {
     private int $obLevel;
+
+    private function isMvorisekLocal(): bool
+    {
+        return strtoupper(substr(\PHP_OS, 0, 3)) === 'WIN';
+    }
 
     #[\Override]
     protected function setUp(): void
@@ -30,6 +30,10 @@ class Test extends TestCase
 
         for ($i = 0; $i < $this->obLevel; ++$i) {
             ob_end_flush();
+        }
+
+        if (!$this->isMvorisekLocal() && !extension_loaded('ssh2')) {
+            self::markTestSkipped('SSH TEST');
         }
 
         \Closure::bind(static function () {
@@ -54,7 +58,7 @@ class Test extends TestCase
 
         $conn = new ConnectionWithValue(
             ...($usingMysqli ? MysqliAsyncConnectionTest::class : MysqlConnectionTest::class)::getSshConfig(),
-            ...MysqlConnectionTest::getMysqlConfig(),
+            ...($this->isMvorisekLocal() ? ['10.8.128.25', 4050, 'root', 'r', 'd'] : MysqlConnectionTest::getMysqlConfig()),
             ...[$table]
         );
         $conn->enableDebugPrint = true;
