@@ -24,6 +24,13 @@ class MysqlConnectionWithState extends MysqliAsyncConnection
 
     public string $serverVersion;
 
+    /** @var self::ISOLATION_LEVEL_* */
+    public ?string $isolationLevel = null;
+
+    public bool $inTransaction = false;
+
+    private int $startTransactionCounter = 0;
+
     public bool $enableAssertInTransactionUsingQuery = false;
 
     public function __construct(string $sshHost, string $sshUser, string $dbHost, int $dbPort, string $dbUser, string $dbPassword, string $dbDatabase)
@@ -44,13 +51,6 @@ class MysqlConnectionWithState extends MysqliAsyncConnection
 
         [$this->serverIsMariaDB, $this->serverVersion] = self::$serverVersionCache[$serverVersionCacheKey];
     }
-
-    /** @var self::ISOLATION_LEVEL_* */
-    public ?string $isolationLevel = null;
-
-    public bool $inTransaction = false;
-
-    private int $startTransactionCounter = 0;
 
     private function assertInTransactionIsCorrect(): void
     {

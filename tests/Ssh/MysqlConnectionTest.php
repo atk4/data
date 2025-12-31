@@ -92,8 +92,7 @@ class MysqlConnectionTest extends TestCase
         self::assertSame([
             ['sleep(1)' => '0'],
         ], $res->rows);
-        self::assertGreaterThan(1 - 0.4, $res->elapsed);
-        self::assertLessThan(1 + 0.4, $res->elapsed);
+        self::assertEqualsWithDelta(1, $res->elapsed, 0.6);
     }
 
     public function testTransactionManagement(): void

@@ -7,8 +7,10 @@ namespace Atk4\Data\Tests\Ssh\ForUpdateLocking;
 use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Exception;
 use Atk4\Data\Ssh\MysqlConnection;
+use Atk4\Data\Ssh\MysqlConnectionWithState;
 use Atk4\Data\Tests\Ssh\MysqlConnectionTest;
 use Atk4\Data\Tests\Ssh\MysqliAsyncConnectionTest;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 
 /**
@@ -79,7 +81,7 @@ class Test extends TestCase
             EOD);
         $conn->readResult();
 
-        $conn->sendQuery('insert into $TTT values (\'a\', 100), (\'b\', 100)');
+        $conn->sendQuery('insert into $TTT values (\'a\', 100), (\'b\', 200)');
         $conn->readResult();
     }
 
@@ -128,6 +130,9 @@ class Test extends TestCase
         $connA->readResult();
     }
 
+    /**
+     * Not reported yet. Retest once testIssueTransactionTemporaryTurnedOffAfterDeadlock test is fixed by MariaDB.
+     */
     public function testIssueTransactionTemporaryTurnedOffAfterLockInShareMode(): void
     {
         // fix test reliability (failure rate is about 1 % in Github Actions)
@@ -183,13 +188,238 @@ class Test extends TestCase
         $connA->readResult();
     }
 
+    /**
+     * @param MysqlConnectionWithState::ISOLATION_LEVEL_* $isolationLevel
+     *
+     * @dataProvider provideIsolationLevelCases
+     */
+    #[DataProvider('provideIsolationLevelCases')]
+    public function testSelectForUpdateWithNonEqualsCondition(string $isolationLevel): void
+    {
+        $table = $this->makeRandomTableName();
+        $this->createTestTable($table);
+        $connA = $this->createConnection($table);
+        $connA->enableDebugPrint = false;
+        $connB = $this->createConnection($table);
+        $connB->enableDebugPrint = false;
+
+        $connA->sendQuery('SET SESSION TRANSACTION ISOLATION LEVEL ' . $isolationLevel);
+        $connA->readResult();
+
+        $connB->sendQuery('SET SESSION TRANSACTION ISOLATION LEVEL ' . $isolationLevel);
+        $connB->readResult();
+
+        $connB->sendQuery('start transaction');
+        $connB->readResult();
+
+        $connB->sendQuery('update $TTT set value = 10');
+        $connB->readResult();
+
+        $connA->sendQuery('start transaction');
+        $connA->readResult();
+
+        $connA->sendQuery('select * from $TTT where name = \'b\'');
+        $res = $connA->readResult();
+        self::assertSame(
+            $isolationLevel === MysqlConnectionWithState::ISOLATION_LEVEL_SERIALIZABLE
+                ? []
+                : [['name' => 'b', 'value' => $isolationLevel === MysqlConnectionWithState::ISOLATION_LEVEL_READ_UNCOMMITTED ? '10' : '200']],
+            $res->rows
+        );
+
+        $connB->sendQuery('commit');
+        $connB->readResult();
+
+        for ($i = 0; $i < 2; ++$i) {
+            $isRepeatableReadMariaDb116 = $isolationLevel === MysqlConnectionWithState::ISOLATION_LEVEL_REPEATABLE_READ
+                && $connA->serverIsMariaDB && version_compare($connA->serverVersion, '11.6') >= 0;
+
+            $connA->sendQuery('select * from $TTT where name != \'b\' for update');
+            $res = $connA->readResult();
+            self::assertSame($isRepeatableReadMariaDb116 && $i === 0 ? [] : [['name' => 'a', 'value' => '10']], $res->rows);
+
+            $connA->sendQuery('select * from $TTT where name != \'b\'');
+            $res = $connA->readResult();
+            self::assertSame([['name' => 'a', 'value' => $isolationLevel === MysqlConnectionWithState::ISOLATION_LEVEL_REPEATABLE_READ && !$isRepeatableReadMariaDb116 ? '100' : '10']], $res->rows);
+        }
+    }
+
+    public function testLockedValueTracking(): void
+    {
+        $table = $this->makeRandomTableName();
+        $this->createTestTable($table);
+        $conn = $this->createConnection($table);
+        $conn->enableDebugPrint = false;
+
+        self::assertNull($conn->lockedValue);
+
+        $conn->sendQuery('start transaction');
+        $conn->readResult();
+        self::assertNull($conn->lockedValue);
+
+        $conn->sendQuery('update $TTT set value = 10 where name = \'a\'');
+        $conn->readResult();
+        self::assertSame(10, $conn->lockedValue);
+
+        $conn->sendQuery('update $TTT set value = value + 10 where name = \'a\'');
+        $conn->readResult();
+        self::assertSame(20, $conn->lockedValue);
+
+        $conn->sendQuery('update $TTT set value = value + 10 where name = \'b\'');
+        $conn->readResult();
+        self::assertSame(20, $conn->lockedValue);
+
+        $conn->sendQuery('update $TTT set value = value + 10 where name != \'b\'');
+        $conn->readResult();
+        self::assertSame(30, $conn->lockedValue);
+
+        $conn->sendQuery('update $TTT set value = value + 10');
+        $conn->readResult();
+        self::assertSame(40, $conn->lockedValue);
+
+        $conn->sendQuery('commit');
+        $conn->readResult();
+        self::assertNull($conn->lockedValue);
+
+        $conn->sendQuery('update $TTT set value = value + 10');
+        $conn->readResult();
+        self::assertNull($conn->lockedValue);
+
+        $conn->sendQuery('start transaction');
+        $conn->readResult();
+        self::assertNull($conn->lockedValue);
+
+        $conn->sendQuery('select * from $TTT');
+        $conn->readResult();
+        self::assertNull($conn->lockedValue);
+
+        $conn->sendQuery('select * from $TTT for update');
+        $conn->readResult();
+        self::assertSame(50, $conn->lockedValue);
+
+        $conn->sendQuery('select * from $TTT');
+        $conn->readResult();
+        self::assertSame(50, $conn->lockedValue);
+
+        $conn->sendQuery('update $TTT set value = value + 10');
+        $conn->readResult();
+        self::assertSame(60, $conn->lockedValue);
+
+        $conn->sendQuery('rollback');
+        $conn->readResult();
+        self::assertNull($conn->lockedValue);
+
+        $conn->sendQuery('select * from $TTT for update');
+        $conn->readResult();
+        self::assertNull($conn->lockedValue);
+
+        $conn->sendQuery('start transaction');
+        $conn->readResult();
+        self::assertNull($conn->lockedValue);
+
+        $conn->sendQuery('select * from $TTT for update');
+        $conn->readResult();
+        self::assertSame(50, $conn->lockedValue);
+    }
+
+    public function testLockedValueTrackingParseException(): void
+    {
+        $table = $this->makeRandomTableName();
+        $this->createTestTable($table);
+        $conn = $this->createConnection($table);
+        $conn->enableDebugPrint = false;
+
+        $conn->sendQuery('start transaction');
+        $conn->readResult();
+
+        $conn->sendQuery('update $TTT set value = value - 10');
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Failed to parse update query');
+        $conn->readResult();
+    }
+
+    public function testLockedValueTrackingValueMismatchException(): void
+    {
+        $table = $this->makeRandomTableName();
+        $this->createTestTable($table);
+        $conn = $this->createConnection($table);
+        $conn->enableDebugPrint = false;
+
+        $conn->sendQuery('start transaction');
+        $conn->readResult();
+        self::assertNull($conn->lockedValue);
+
+        $conn->lockedValue = 50;
+
+        $conn->sendQuery('select * from $TTT for update');
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Tracked locked value does not match actual value');
+        $conn->readResult();
+    }
+
+    /**
+     * @param MysqlConnectionWithState::ISOLATION_LEVEL_* $isolationLevel
+     *
+     * @dataProvider provideIsolationLevelCases
+     */
+    #[DataProvider('provideIsolationLevelCases')]
+    public function testLockedValueUpdateImpliesSelectForUpdateNoMatterIsolationLevel(string $isolationLevel): void
+    {
+        $table = $this->makeRandomTableName();
+        $this->createTestTable($table);
+        $conn = $this->createConnection($table);
+        $conn->enableDebugPrint = false;
+        $connOther = $this->createConnection($table);
+        $connOther->enableDebugPrint = false;
+
+        $conn->sendQuery('SET SESSION TRANSACTION ISOLATION LEVEL ' . $isolationLevel);
+        $conn->readResult();
+
+        $connOther->sendQuery('SET SESSION TRANSACTION ISOLATION LEVEL ' . $isolationLevel);
+        $connOther->readResult();
+
+        $conn->sendQuery('start transaction');
+        $conn->readResult();
+
+        $conn->sendQuery('update $TTT set value = 10 where name = \'a\'');
+        $conn->readResult();
+        self::assertSame(10, $conn->lockedValue);
+        self::assertNull($connOther->lockedValue);
+
+        $connOther->sendQuery('update $TTT set value = 20 where name = \'a\'');
+        $res = $connOther->readResult();
+        self::assertSame(10, $conn->lockedValue);
+        self::assertNull($connOther->lockedValue);
+        self::assertNotNull($res->error);
+        self::assertStringContainsString('ERROR 1205 (HY000): Lock wait timeout exceeded', $res->error);
+        if (version_compare($conn->serverVersion, $conn->serverIsMariaDB ? '10.6' : '8.0.28') < 0) { // https://jira.mariadb.org/browse/MDEV-36960
+            self::assertGreaterThan(1 - 0.6, $res->elapsed);
+            self::assertLessThan(1 + 2.5, $res->elapsed);
+        } else {
+            self::assertEqualsWithDelta(1.0, $res->elapsed, 0.6);
+        }
+    }
+
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideIsolationLevelCases(): iterable
+    {
+        yield [MysqlConnectionWithState::ISOLATION_LEVEL_SERIALIZABLE];
+        yield [MysqlConnectionWithState::ISOLATION_LEVEL_REPEATABLE_READ];
+        yield [MysqlConnectionWithState::ISOLATION_LEVEL_READ_COMMITTED];
+        yield [MysqlConnectionWithState::ISOLATION_LEVEL_READ_UNCOMMITTED];
+    }
+
     public function testRunForUpdateTester(): void
     {
         self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
 
-        $maxTime = 0.0;
+        $maxTime = 15.0;
         $startTs = microtime(true);
-        $lastDumpTs = 0;
+        $lastDumpTs = $startTs;
 
         for ($i = 1;; ++$i) {
             $ts = microtime(true);
@@ -202,6 +432,8 @@ class Test extends TestCase
             }, null, MysqlConnection::class)();
 
             $table = $this->makeRandomTableName();
+            $this->createTestTable($table);
+
             try {
                 ob_start();
 
@@ -215,7 +447,7 @@ class Test extends TestCase
                 throw $e;
             }
 
-            if ($ts > $lastDumpTs + 15) {
+            if ($ts > $lastDumpTs + 20) {
                 $lastDumpTs = $ts;
                 echo '==== ' . round($ts - $startTs, 2) . ' run ' . $i . ' ================' . "\n";
             }

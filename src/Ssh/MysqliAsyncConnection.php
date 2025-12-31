@@ -133,6 +133,7 @@ class MysqliAsyncConnection extends MysqlConnection
         }
 
         $queryRes = new MysqlResult();
+        $queryRes->elapsed = $elapsed;
 
         if ($mysqliRes === false) {
             $queryRes->error = 'ERROR ' . $this->mysqli->errno . ' (' . $this->mysqli->sqlstate . '): ' . $this->mysqli->error;
@@ -149,7 +150,6 @@ class MysqliAsyncConnection extends MysqlConnection
         } else {
             $queryRes->rows = $rows;
         }
-        $queryRes->elapsed = $elapsed;
 
         return $queryRes;
     }

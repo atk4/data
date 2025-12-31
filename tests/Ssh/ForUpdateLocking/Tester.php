@@ -17,20 +17,6 @@ class Tester
      */
     public function __construct(\Closure $connectionFactoryFx, int $connCount)
     {
-        $iniConn = $connectionFactoryFx();
-
-        $iniConn->sendQuery(<<<'EOD'
-            CREATE TABLE $TTT (
-              `name` varchar(50) CHARACTER SET ascii NOT NULL,
-              `value` bigint UNSIGNED NOT NULL,
-              PRIMARY KEY (`name`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-            EOD);
-        $iniConn->readResult();
-
-        $iniConn->sendQuery('insert into $TTT values (\'a\', 100), (\'b\', 100)');
-        $iniConn->readResult();
-
         for ($i = 0; $i < $connCount; ++$i) {
             $conn = $connectionFactoryFx();
 
@@ -116,7 +102,6 @@ class Tester
                 $possibleQueries[] = 'update $TTT set value = value + $XXX where name = \'b\'';
                 $possibleQueries[] = 'update $TTT set value = value + $XXX where name != \'b\'';
 
-                // TODO !
                 foreach ([
                     'select * from $TTT',
                     'select * from $TTT where name = \'a\'',
