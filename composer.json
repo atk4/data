@@ -65,9 +65,9 @@
     },
     "repositories": [
         {
+            "name": "doctrine/sql-formatter",
             "type": "git",
-            "url": "https://github.com/atk4/doctrine-sql-formatter.git",
-            "name": "doctrine/sql-formatter"
+            "url": "https://github.com/atk4/doctrine-sql-formatter.git"
         }
     ],
     "minimum-stability": "dev",
