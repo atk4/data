@@ -245,7 +245,7 @@ class Condition extends AbstractScope
             }
 
             // only expression contained in $field
-            if (!$operator) {
+            if ($operator === null) {
                 return [$field];
             }
 
@@ -332,7 +332,7 @@ class Condition extends AbstractScope
                 $words[] = 'where';
 
                 if ($field === '#') {
-                    $words[] = $this->operator
+                    $words[] = $this->operator !== null
                         ? 'number of records'
                         : 'any referenced record exists';
                 }
@@ -354,7 +354,7 @@ class Condition extends AbstractScope
 
     protected function operatorToWords(): string
     {
-        return $this->operator
+        return $this->operator !== null
             ? self::$operators[$this->operator]['label']
             : '';
     }
@@ -365,7 +365,7 @@ class Condition extends AbstractScope
     protected function valueToWords(Model $model, $value): string
     {
         if ($value === null) {
-            return $this->operator
+            return $this->operator !== null
                 ? 'empty'
                 : '';
         }
