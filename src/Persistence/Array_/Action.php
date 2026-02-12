@@ -207,8 +207,9 @@ class Action
     }
 
     /**
-     * @param mixed $v1
-     * @param mixed $v2
+     * @param mixed            $v1
+     * @param non-empty-string $operator
+     * @param mixed            $v2
      */
     protected function evaluateIf($v1, string $operator, $v2): bool
     {

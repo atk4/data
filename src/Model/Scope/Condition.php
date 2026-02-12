@@ -20,6 +20,7 @@ class Condition extends AbstractScope
     /** @var string|Field|Expressionable */
     public $field;
 
+    /** @var non-empty-string */
     public ?string $operator = null;
 
     /** @var mixed */
@@ -38,7 +39,7 @@ class Condition extends AbstractScope
     public const OPERATOR_REGEXP = 'REGEXP';
     public const OPERATOR_NOT_REGEXP = 'NOT REGEXP';
 
-    /** @var array<string, array<string, string>> */
+    /** @var array<non-empty-string, array{negate: non-empty-string, label: string}> */
     protected static array $operators = [
         self::OPERATOR_EQUALS => [
             'negate' => self::OPERATOR_DOESNOT_EQUAL,
@@ -91,9 +92,9 @@ class Condition extends AbstractScope
     ];
 
     /**
-     * @param string|Expressionable                 $field
-     * @param ($value is null ? mixed : string)     $operator
-     * @param ($operator is string ? mixed : never) $value
+     * @param string|Expressionable                       $field
+     * @param ($value is null ? mixed : non-empty-string) $operator
+     * @param ($operator is string ? mixed : never)       $value
      */
     public function __construct($field, $operator = null, $value = null)
     {
@@ -185,7 +186,7 @@ class Condition extends AbstractScope
     }
 
     /**
-     * @return array{mixed}|array{mixed, string|null, mixed}
+     * @return array{mixed}|array{mixed, non-empty-string|null, mixed}
      */
     public function toQueryArguments(): array
     {
