@@ -280,7 +280,7 @@ class Condition extends AbstractScope
     #[\Override]
     public function negate(): self
     {
-        if (isset(self::$operators[$this->operator]['negate'])) {
+        if ($this->operator !== null && isset(self::$operators[$this->operator]['negate'])) {
             $this->operator = self::$operators[$this->operator]['negate'];
         } else {
             throw (new Exception('Negation of condition is not supported for this operator'))
