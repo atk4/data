@@ -13,10 +13,6 @@ use Doctrine\DBAL\Schema\OracleSchemaManager;
 use Doctrine\DBAL\Schema\SchemaManagerFactory;
 use Doctrine\DBAL\Schema\SQLiteSchemaManager;
 
-if (Connection::isDbal35()) { // @phpstan-ignore staticMethod.deprecated
-    eval('namespace Doctrine\DBAL\Schema; interface SchemaManagerFactory { public function createSchemaManager(\\' . DbalConnection::class . ' $connection): \\' . AbstractSchemaManager::class . '; }');
-}
-
 class DbalSchemaManagerFactory implements SchemaManagerFactory
 {
     /**

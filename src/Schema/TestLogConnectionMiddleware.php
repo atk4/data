@@ -113,10 +113,6 @@ class TestLogConnectionMiddleware extends AbstractConnectionMiddleware
      */
     public function logStartQuery(string $sql, ?array $params = null): void
     {
-        // remove once DBAL 3.7 support is dropped
-        // https://github.com/doctrine/dbal/pull/6197
-        $sql = preg_replace('~^(?:SAVEPOINT|SAVE TRANSACTION|RELEASE SAVEPOINT|ROLLBACK TO SAVEPOINT) DOCTRINE\K2_SAVEPOINT(?=_\d+$)~', '', $sql);
-
         $test = TestCase::getTestFromBacktrace();
         \Closure::bind(static fn () => $test->logQuery($sql, $params ?? []), null, TestCase::class)();
     }

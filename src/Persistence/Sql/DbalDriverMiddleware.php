@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql;
 
-use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Driver\API\ExceptionConverter;
 use Doctrine\DBAL\Driver\API\SQLSrv\ExceptionConverter as SQLServerExceptionConverter;
 use Doctrine\DBAL\Driver\Exception as DbalDriverException;
@@ -19,7 +18,6 @@ use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Query as DbalQuery;
-use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\ServerVersionProvider;
 
 class DbalDriverMiddleware extends AbstractDriverMiddleware
@@ -75,18 +73,6 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
     public function createDatabasePlatformForVersion($version): AbstractPlatform
     {
         return $this->replaceDatabasePlatform(parent::createDatabasePlatformForVersion($version), $version); // @phpstan-ignore staticMethod.notFound
-    }
-
-    /**
-     * @return AbstractSchemaManager<AbstractPlatform>
-     *
-     * @deprecated remove once DBAL 3.5 support is dropped
-     */
-    public function getSchemaManager(DbalConnection $connection, AbstractPlatform $platform): AbstractSchemaManager
-    {
-        return Connection::isDbal35()
-            ? (new DbalSchemaManagerFactory())->createSchemaManager($connection)
-            : parent::getSchemaManager($connection, $platform); // @phpstan-ignore staticMethod.notFound
     }
 
     /**
