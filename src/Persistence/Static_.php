@@ -130,20 +130,7 @@ class Static_ extends Array_
     {
         if ($model->idField && !$model->hasField($model->idField)) {
             // init model, but prevent array persistence data seeding, id field with correct type must be setup first
-            \Closure::bind(function () use ($model, $defaults) {
-                $hadData = true;
-                if (!isset($this->data[$model->table])) {
-                    $hadData = false;
-                    $this->data[$model->table] = true;
-                }
-                try {
-                    parent::add($model, $defaults);
-                } finally {
-                    if (!$hadData) {
-                        unset($this->data[$model->table]);
-                    }
-                }
-            }, $this, Array_::class)();
+            get_parent_class(parent::class)::add($model, $defaults);
             \Closure::bind(static function () use ($model) {
                 $model->_persistence = null;
             }, null, Model::class)();
