@@ -26,7 +26,7 @@ class CreateRegexpReplaceFunctionMiddleware implements Middleware
                 $nativeConnection = $connection->getNativeConnection();
                 assert($nativeConnection instanceof \PDO);
 
-                $nativeConnection->sqliteCreateFunction('regexp_replace', static function ($value, ?string $pattern, ?string $replacement, string $flags = ''): ?string {
+                $fx = static function ($value, ?string $pattern, ?string $replacement, string $flags = ''): ?string {
                     if ($value === null || $pattern === null || $replacement === null) {
                         return null;
                     }
@@ -50,7 +50,13 @@ class CreateRegexpReplaceFunctionMiddleware implements Middleware
                         . $flags . ($binary ? '' : 'u');
 
                     return preg_replace($pregPattern, $replacement, $value);
-                }, -1, \PHP_VERSION_ID < 8_04_00 ? \PDO::SQLITE_DETERMINISTIC : Sqlite::DETERMINISTIC);
+                };
+                if (\PHP_VERSION_ID < 8_04_00) {
+                    $nativeConnection->sqliteCreateFunction('regexp_replace', $fx, -1, \PDO::SQLITE_DETERMINISTIC);
+                } else {
+                    assert($nativeConnection instanceof Sqlite);
+                    $nativeConnection->createFunction('regexp_replace', $fx, -1, Sqlite::DETERMINISTIC);
+                }
 
                 return $connection;
             }

@@ -29,14 +29,20 @@ class CreateConcatFunctionMiddleware implements Middleware
                 $nativeConnection = $connection->getNativeConnection();
                 assert($nativeConnection instanceof \PDO);
 
-                $nativeConnection->sqliteCreateFunction('concat', static function ($value, ...$values): string {
+                $fx = static function ($value, ...$values): string {
                     $res = CreateRegexpLikeFunctionMiddleware::castScalarToString($value) ?? '';
                     foreach ($values as $v) {
                         $res .= CreateRegexpLikeFunctionMiddleware::castScalarToString($v);
                     }
 
                     return $res;
-                }, -1, \PHP_VERSION_ID < 8_04_00 ? \PDO::SQLITE_DETERMINISTIC : Sqlite::DETERMINISTIC);
+                };
+                if (\PHP_VERSION_ID < 8_04_00) {
+                    $nativeConnection->sqliteCreateFunction('concat', $fx, -1, \PDO::SQLITE_DETERMINISTIC);
+                } else {
+                    assert($nativeConnection instanceof Sqlite);
+                    $nativeConnection->createFunction('concat', $fx, -1, Sqlite::DETERMINISTIC);
+                }
 
                 return $connection;
             }

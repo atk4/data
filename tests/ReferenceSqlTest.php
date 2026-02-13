@@ -287,9 +287,7 @@ class ReferenceSqlTest extends TestCase
             $fx();
         } finally {
             \Closure::bind(static function () use ($typeRegistry, $name) {
-                if (property_exists($typeRegistry, 'instancesReverseIndex')) { // remove once DBAL 3.6 support is dropped @phpstan-ignore function.alreadyNarrowedType
-                    unset($typeRegistry->instancesReverseIndex[spl_object_id($typeRegistry->instances[$name])]);
-                }
+                unset($typeRegistry->instancesReverseIndex[spl_object_id($typeRegistry->instances[$name])]);
                 unset($typeRegistry->instances[$name]);
             }, null, DbalTypes\TypeRegistry::class)();
         }

@@ -71,14 +71,6 @@ abstract class Connection
     }
 
     /**
-     * @deprecated remove once DBAL 3.5 support is dropped
-     */
-    final public static function isDbal35(): bool
-    {
-        return !(new \ReflectionClass(Configuration::class))->hasMethod('getSchemaManagerFactory');
-    }
-
-    /**
      * Normalize DSN connection string or DBAL connection params described in:
      * https://www.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/configuration.html .
      *
@@ -257,9 +249,7 @@ abstract class Connection
                 }
             },
         ]);
-        if (!self::isDbal35()) { // @phpstan-ignore staticMethod.deprecated
-            $configuration->setSchemaManagerFactory(new DbalSchemaManagerFactory());
-        }
+        $configuration->setSchemaManagerFactory(new DbalSchemaManagerFactory());
 
         return $configuration;
     }
