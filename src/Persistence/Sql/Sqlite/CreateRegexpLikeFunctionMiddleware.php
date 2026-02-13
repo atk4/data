@@ -26,7 +26,7 @@ class CreateRegexpLikeFunctionMiddleware implements Middleware
                 $nativeConnection = $connection->getNativeConnection();
                 assert($nativeConnection instanceof \PDO);
 
-                $nativeConnection->sqliteCreateFunction('regexp_like', static function ($value, ?string $pattern, string $flags = ''): ?int {
+                $fx = static function ($value, ?string $pattern, string $flags = ''): ?int {
                     if ($value === null || $pattern === null) {
                         return null;
                     }
@@ -48,7 +48,13 @@ class CreateRegexpLikeFunctionMiddleware implements Middleware
                         . $flags . ($binary ? '' : 'u');
 
                     return preg_match($pregPattern, $value) ? 1 : 0;
-                }, -1, \PHP_VERSION_ID < 8_04_00 ? \PDO::SQLITE_DETERMINISTIC : Sqlite::DETERMINISTIC);
+                };
+                if (\PHP_VERSION_ID < 8_04_00) {
+                    $nativeConnection->sqliteCreateFunction('regexp_like', $fx, -1, \PDO::SQLITE_DETERMINISTIC);
+                } else {
+                    assert($nativeConnection instanceof Sqlite);
+                    $nativeConnection->createFunction('regexp_like', $fx, -1, Sqlite::DETERMINISTIC);
+                }
 
                 return $connection;
             }
