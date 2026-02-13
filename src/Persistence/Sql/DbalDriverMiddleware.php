@@ -42,9 +42,9 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
             };
         } elseif ($platform instanceof SQLServerPlatform) {
             $platform = new class extends SQLServerPlatform {
-                use Mssql\PlatformTrait; // @phpstan-ignore method.notFound, method.notFound, method.notFound (https://github.com/phpstan/phpstan/issues/11030)
+                use Mssql\PlatformTrait;
             };
-        } elseif ($platform instanceof OraclePlatform) {
+        } elseif ($platform instanceof OraclePlatform) { // @phpstan-ignore method.notFound, method.notFound, method.notFound (https://github.com/phpstan/phpstan/issues/11030)
             $platform = new class extends OraclePlatform {
                 use Oracle\PlatformTrait;
             };
@@ -54,9 +54,9 @@ class DbalDriverMiddleware extends AbstractDriverMiddleware
     }
 
     #[\Override]
-    public function getDatabasePlatform(?ServerVersionProvider $versionProvider = null): AbstractPlatform // @phpstan-ignore method.notFound, method.notFound, method.notFound (https://github.com/phpstan/phpstan/issues/11030)
+    public function getDatabasePlatform(?ServerVersionProvider $versionProvider = null): AbstractPlatform
     {
-        if (Connection::isDbal3x()) {
+        if (Connection::isDbal3x()) { // @phpstan-ignore method.notFound, method.notFound, method.notFound (https://github.com/phpstan/phpstan/issues/11030)
             return $this->replaceDatabasePlatform(parent::getDatabasePlatform(), null); // @phpstan-ignore arguments.count
         }
 
