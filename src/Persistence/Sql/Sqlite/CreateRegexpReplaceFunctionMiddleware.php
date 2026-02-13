@@ -8,6 +8,7 @@ use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Driver\Connection;
 use Doctrine\DBAL\Driver\Middleware;
 use Doctrine\DBAL\Driver\Middleware\AbstractDriverMiddleware;
+use Pdo\Sqlite;
 
 class CreateRegexpReplaceFunctionMiddleware implements Middleware
 {
@@ -49,7 +50,7 @@ class CreateRegexpReplaceFunctionMiddleware implements Middleware
                         . $flags . ($binary ? '' : 'u');
 
                     return preg_replace($pregPattern, $replacement, $value);
-                }, -1, \PDO::SQLITE_DETERMINISTIC);
+                }, -1, \PHP_VERSION_ID < 8_04_00 ? \PDO::SQLITE_DETERMINISTIC : Sqlite::DETERMINISTIC);
 
                 return $connection;
             }

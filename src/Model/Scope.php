@@ -68,7 +68,7 @@ class Scope extends AbstractScope
 
     /**
      * @param AbstractScope|array<int, AbstractScope|Expressionable|array{string|Expressionable, 1?: mixed, 2?: mixed}>|string|Expressionable $field
-     * @param ($field is string|Expressionable ? ($value is null ? mixed : string) : never)                                                   $operator
+     * @param ($field is string|Expressionable ? ($value is null ? mixed : non-empty-string) : never)                                         $operator
      * @param ($operator is string ? mixed : never)                                                                                           $value
      *
      * @return $this

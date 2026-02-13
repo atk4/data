@@ -367,12 +367,12 @@ class Field implements Expressionable
     /**
      * Returns arguments to be used for query on this field based on the condition.
      *
-     * @param string|null $operator one of Scope\Condition operators
-     * @param mixed       $value    the condition value to be handled
+     * @param non-empty-string|null $operator one of Scope\Condition operators
+     * @param mixed                 $value    the condition value to be handled
      *
-     * @return array{$this, string|null, mixed}
+     * @return array{$this, non-empty-string|null, mixed}
      */
-    public function getQueryArguments($operator, $value): array
+    public function getQueryArguments(?string $operator, $value): array
     {
         $typecastField = $this;
         if (in_array($operator, [

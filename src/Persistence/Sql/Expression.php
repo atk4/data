@@ -677,7 +677,9 @@ abstract class Expression implements Expressionable, \ArrayAccess
         $precisionBackup = ini_get('precision');
         ini_set('precision', '-1');
         try {
-            $valueStr = (string) $value;
+            $valueStr = is_nan($value)
+                ? 'NAN'
+                : (string) $value;
 
             return is_finite($value) && !str_contains($valueStr, '.')
                 ? $valueStr . '.0'

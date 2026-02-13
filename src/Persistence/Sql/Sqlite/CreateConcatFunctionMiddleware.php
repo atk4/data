@@ -8,6 +8,7 @@ use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Driver\Connection;
 use Doctrine\DBAL\Driver\Middleware;
 use Doctrine\DBAL\Driver\Middleware\AbstractDriverMiddleware;
+use Pdo\Sqlite;
 
 /**
  * Remove once SQLite v3.43 support is dropped.
@@ -35,7 +36,7 @@ class CreateConcatFunctionMiddleware implements Middleware
                     }
 
                     return $res;
-                }, -1, \PDO::SQLITE_DETERMINISTIC);
+                }, -1, \PHP_VERSION_ID < 8_04_00 ? \PDO::SQLITE_DETERMINISTIC : Sqlite::DETERMINISTIC);
 
                 return $connection;
             }
