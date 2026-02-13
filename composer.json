@@ -55,7 +55,7 @@
         "phpstan/phpstan": "^2.0",
         "phpstan/phpstan-deprecation-rules": "^2.0",
         "phpstan/phpstan-strict-rules": "^2.0",
-        "phpunit/phpunit": "^9.5.25 || ^10.0 || ^11.0 || ^12.0"
+        "phpunit/phpunit": "^9.5.25 || ^10.0 || ^11.0 || ^12.0 || ^13.0"
     },
     "conflict": {
         "doctrine/sql-formatter": "<1.5 || >=2.0"
