@@ -6,7 +6,7 @@
     </php>
     <testsuites>
         <testsuite name="tests">
-            <file>tests/Persistence/Sql/WithDb/SelectTest.php</file>
+            <directory>tests</directory>
         </testsuite>
     </testsuites>
     <extensions>
