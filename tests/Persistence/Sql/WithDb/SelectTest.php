@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests\Persistence\Sql\WithDb;
 
 use Atk4\Data\Model;
+use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Exception;
 use Atk4\Data\Persistence\Sql\ExecuteException;
 use Atk4\Data\Persistence\Sql\Expression;
@@ -12,6 +13,7 @@ use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Persistence\Sql\Sqlite\Connection as SqliteConnection;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Platforms;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
@@ -59,6 +61,68 @@ class SelectTest extends TestCase
     protected function e($template = [], array $arguments = []): Expression
     {
         return $this->getConnection()->expr($template, $arguments);
+    }
+
+    public function testBasicQueries(): void
+    {
+        $this->setupTables();
+
+        self::assertCount(4, $this->q('employee')->getRows());
+
+        self::assertSame(
+            ['name' => 'Oliver', 'surname' => 'Smith'],
+            $this->q('employee')->field('name')->field('surname')->order('id')->getRow()
+        );
+
+        self::assertSameExportUnordered(
+            [['surname' => 'Williams'], ['surname' => 'Taylor']],
+            $this->q('employee')->field('surname')->where('retired', true)->getRows()
+        );
+
+        self::assertSame(
+            '4',
+            $this->q()->field($this->e('2 + 2'))->getOne()
+        );
+
+        self::assertSame(
+            '4',
+            $this->q('employee')->field($this->e('count(*)'))->getOne()
+        );
+
+        $names = [];
+        foreach ($this->q('employee')->order('name')->where('retired', false)->getRowsIterator() as $row) {
+            $names[] = $row['name'];
+        }
+
+        self::assertSame(
+            ['Charlie', 'Oliver'],
+            $names
+        );
+
+        self::assertSame(
+            [['now' => '4']],
+            $this->q()->field($this->e('2 + 2'), 'now')->getRows()
+        );
+
+        // PostgreSQL needs to have values cast, to make the query work.
+        // But CAST(.. AS int) does not work in Mysql. So we use two different tests..
+        // (CAST(.. AS int) will work on MariaDB, whereas Mysql needs it to be CAST(.. AS signed))
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            self::assertSame(
+                [['now' => '6']],
+                $this->q()->field($this->e('CAST([] AS int) + CAST([] AS int)', [3, 3]), 'now')->getRows()
+            );
+        } else {
+            self::{'assertEquals'}(
+                [['now' => 6]],
+                $this->q()->field($this->e('[] + []', [3, 3]), 'now')->getRows()
+            );
+        }
+
+        self::assertSame(
+            '5',
+            $this->q()->field($this->e('COALESCE([], \'5\')', [null]), 'null_test')->getOne()
+        );
     }
 
     public function testExpression(): void
