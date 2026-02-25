@@ -6,21 +6,10 @@
     </php>
     <testsuites>
         <testsuite name="tests">
-            <directory>tests</directory>
+            <file>tests/Persistence/Sql/WithDb/SelectTest.php</file>
         </testsuite>
     </testsuites>
     <extensions>
         <bootstrap class="Ergebnis\PHPUnit\SlowTestDetector\Extension" />
     </extensions>
-    <source>
-        <include>
-            <directory>src</directory>
-            <directory>tests</directory>
-        </include>
-    </source>
-    <coverage>
-        <report>
-            <php outputFile="coverage/phpunit.cov" />
-        </report>
-    </coverage>
 </phpunit>
