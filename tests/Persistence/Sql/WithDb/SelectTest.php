@@ -892,6 +892,31 @@ class SelectTest extends TestCase
         self::{'assertEquals'}($values, $res);
     }
 
+    public function testConnectionGetServerVersion(): void
+    {
+        self::assertTrue(version_compare($this->getConnection()->getServerVersion(), '2.0') > 0);
+        self::assertTrue(version_compare($this->getConnection()->getServerVersion(), '1000.0') < 0);
+    }
+
+    public function testMysqlConnectionIsServerMariaDb(): void
+    {
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
+            if (MysqlConnection::isServerMariaDb($this->getConnection())) {
+                if (Connection::isDbal3x()) {
+                    self::assertInstanceOf(Platforms\MySQLPlatform::class, $this->getDatabasePlatform());
+                } else {
+                    self::assertNotInstanceOf(Platforms\MySQLPlatform::class, $this->getDatabasePlatform());
+                }
+                self::assertInstanceOf(Platforms\MariaDBPlatform::class, $this->getDatabasePlatform());
+            } else {
+                self::assertInstanceOf(Platforms\MySQLPlatform::class, $this->getDatabasePlatform());
+                self::assertNotInstanceOf(Platforms\MariaDBPlatform::class, $this->getDatabasePlatform());
+            }
+        } else {
+            self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
+        }
+    }
+
     public function testWhereExpression(): void
     {
         $this->setupTables();
