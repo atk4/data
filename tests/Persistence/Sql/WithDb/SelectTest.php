@@ -83,6 +83,49 @@ class SelectTest extends TestCase
         }
     }
 
+    /**
+     * @dataProvider provideSelectUnionBindLongStringCases
+     */
+    #[DataProvider('provideSelectUnionBindLongStringCases')]
+    public function testSelectUnionBindLongString(int $length): void
+    {
+        $str = str_repeat('x', $length);
+        $str2 = 'y' . $str;
+
+        $tableExpr = $this->e(
+            implode(' union all ', array_fill(0, 2, '[]')),
+            array_map(function ($v) {
+                $q = $this->q()->field($this->e('[]', [$v]), 'v');
+                $q->wrapInParentheses = false;
+
+                return $q;
+            }, [$str, $str2])
+        );
+        $tableExpr->wrapInParentheses = true;
+
+        $res = $this->q()
+            ->field('v')
+            ->table($tableExpr, 't')
+            ->getRows();
+
+        self::assertSame([
+            ['v' => $str],
+            ['v' => $str2],
+        ], $res);
+    }
+
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideSelectUnionBindLongStringCases(): iterable
+    {
+        yield [64 * 1024 - 2];
+        yield [64 * 1024 - 1];
+        yield [64 * 1024];
+        yield [64 * 1024 + 1];
+        yield [256 * 1024];
+    }
+
     public function testOtherQueries(): void
     {
         $this->setupTables();
