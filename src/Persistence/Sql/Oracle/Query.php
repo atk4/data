@@ -207,7 +207,7 @@ class Query extends BaseQuery
                 return 'TO_CLOB([])';
             }
 
-            return 'concat(' . implode(', ', $values) . ')'; // @phpstan-ignore argument.type
+            return 'concat(' . implode(', ', $values) . ')';
         });
 
         return $this->expr($sql, $sqlArgs);
