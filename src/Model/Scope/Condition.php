@@ -116,9 +116,11 @@ class Condition extends AbstractScope
 
         if ($operator === null) {
             // at least MSSQL database always requires an operator
-            if (!$field instanceof Expressionable || $value !== null) {
+            if (!$field instanceof Expressionable) {
                 throw new Exception('Operator must be specified');
             }
+
+            assert($value === null); // @phpstan-ignore identical.alwaysFalse, function.impossibleType
         } else {
             $this->operator = strtoupper($operator);
 

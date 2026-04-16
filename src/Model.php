@@ -1825,7 +1825,10 @@ class Model implements \IteratorAggregate
         $this->assertIsModel();
 
         $scopeOrig = null;
-        if ((!is_array($field) || count($field) > 0) || $operator !== null || $value !== null) {
+        if ($field === []) {
+            assert($operator === null); // @phpstan-ignore identical.alwaysFalse, function.impossibleType
+            assert($value === null); // @phpstan-ignore identical.alwaysFalse, function.impossibleType
+        } else {
             $scopeOrig = $this->scope;
             $fieldsBackup = $this->temporaryMutateScopeFieldsBackup();
             $this->scope = clone $this->scope;

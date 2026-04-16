@@ -167,8 +167,7 @@ class ModelIteratorTest extends TestCase
             2 => ['total_net' => 20],
         ], array_map(static fn (Model $m) => $m->get(), iterator_to_array($i->createIteratorBy('total_net', 20))));
 
-        self::assertSame([
-        ], array_map(static fn (Model $m) => $m->get(), iterator_to_array($i->createIteratorBy('total_net', '<', 10))));
+        self::assertSame([], array_map(static fn (Model $m) => $m->get(), iterator_to_array($i->createIteratorBy('total_net', '<', 10))));
 
         self::assertSame([
             1 => ['total_net' => 10],
