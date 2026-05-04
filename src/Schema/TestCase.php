@@ -226,7 +226,7 @@ abstract class TestCase extends BaseTestCase
         }
 
         if (is_object($a)) {
-            $cmp = gettype($a) <=> gettype($b);
+            $cmp = get_class($a) <=> get_class($b);
             if ($cmp !== 0) {
                 return $cmp;
             }
