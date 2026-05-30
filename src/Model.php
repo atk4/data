@@ -137,7 +137,7 @@ class Model implements \IteratorAggregate
     /** @var array<int, array{string|Persistence\Sql\Expressionable, 'asc'|'desc'}> */
     public array $order = [];
 
-    /** @var array<string, array{'model': Model, 'recursive': bool}> */
+    /** @var array<string, array{model: Model, recursive: bool}> */
     public array $cteModels = [];
 
     /**
@@ -1974,7 +1974,7 @@ class Model implements \IteratorAggregate
     /**
      * Add expression field.
      *
-     * @param array{'expr': mixed} $seed
+     * @param array{expr: mixed, ...<mixed>} $seed
      *
      * @return CallbackField|SqlExpressionField
      */
@@ -1991,7 +1991,7 @@ class Model implements \IteratorAggregate
     /**
      * Add expression field which will calculate its value by using callback.
      *
-     * @param array{'expr': \Closure<T of self>(T): mixed} $seed
+     * @param array{expr: \Closure<T of self>(T): mixed, ...<mixed>} $seed
      *
      * @return CallbackField
      */

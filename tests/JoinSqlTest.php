@@ -865,7 +865,7 @@ class JoinSqlTest extends TestCase
     /**
      * @param array<string, mixed> $joinDefaults
      *
-     * @return array{ Model, Model, Model }
+     * @return array{Model, Model, Model}
      */
     protected function setupJoinWithNonDefaultForeignIdField(array $joinDefaults = []): array
     {
