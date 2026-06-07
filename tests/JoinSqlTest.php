@@ -86,7 +86,7 @@ class JoinSqlTest extends TestCase
         self::assertFalse($m->hasJoin('contact8'));
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Reverse join with non-ID master field is not implemented yet');
+        $this->expectExceptionMessageIs('Reverse join with non-ID master field is not implemented yet');
         $j4 = $m->join('contact4.foo_id', ['masterField' => 'test_id', 'reverse' => true]);
         // self::assertTrue($j4->reverse);
         // self::assertSame('test_id', $this->getProtected($j4, 'masterField'));
@@ -426,7 +426,7 @@ class JoinSqlTest extends TestCase
         $user = $user->getModel()->load(1);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unable to delete due to query error');
+        $this->expectExceptionMessageIs('Unable to delete due to query error');
         try {
             $user->delete();
         } catch (Exception $e) {
@@ -447,7 +447,7 @@ class JoinSqlTest extends TestCase
         $user2->set('phone', '+555');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Model is read-only');
+        $this->expectExceptionMessageIs('Model is read-only');
         $user2->save();
     }
 

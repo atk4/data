@@ -94,7 +94,7 @@ class StaticTest extends TestCase
         $p = new Persistence\Static_(['hello', 'world']);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Must not be a zero');
+        $this->expectExceptionMessageIs('Must not be a zero');
         new Model($p);
     }
 

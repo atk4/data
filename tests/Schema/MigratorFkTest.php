@@ -70,7 +70,7 @@ class MigratorFkTest extends TestCase
         $client = new Model($this->db, ['table' => 'client']);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Table does not exist');
+        $this->expectExceptionMessageIs('Table does not exist');
         $this->createMigrator()->isIndexExists([$client->getField('id')]);
     }
 
@@ -136,7 +136,7 @@ class MigratorFkTest extends TestCase
         ], $client->export());
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unable to execute insert query');
+        $this->expectExceptionMessageIs('Unable to execute insert query');
         try {
             $client->insert(['name' => 'Michael']);
         } catch (Exception $e) {
@@ -207,7 +207,7 @@ class MigratorFkTest extends TestCase
         $client->insert(['name' => 'Ewa', 'created_by_client_id' => $clientId]);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unable to execute insert query');
+        $this->expectExceptionMessageIs('Unable to execute insert query');
         try {
             $invoice->insert(['client_id' => 50]);
         } catch (Exception $e) {
@@ -239,7 +239,7 @@ class MigratorFkTest extends TestCase
             // TODO DbalException should be thrown in all cases from Sqlite\SchemaManagerTrait
             $this->expectException(!Connection::isDbal3x() && $this->getDatabasePlatform() instanceof SQLitePlatform ? AbstractDriverException::class : DbalException::class);
             if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
-                $this->expectExceptionMessage('Foreign key constraints are violated');
+                $this->expectExceptionMessageIs('Foreign key constraints are violated');
             }
         }
         $this->createMigrator()->createForeignKey($client->getReference('country_id'));
@@ -290,7 +290,7 @@ class MigratorFkTest extends TestCase
         }
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unable to execute insert query');
+        $this->expectExceptionMessageIs('Unable to execute insert query');
         try {
             $price->insert(['amount' => 5, 'currency' => 'JPY']);
         } catch (Exception $e) {

@@ -296,7 +296,7 @@ class DeepCopyTest extends TestCase
         $dc = new DeepCopy();
 
         $this->expectException(DeepCopyException::class);
-        $this->expectExceptionMessage('Model copy failed');
+        $this->expectExceptionMessageIs('Model copy failed');
         try {
             $invoice = $dc
                 ->from($quote)
@@ -325,7 +325,7 @@ class DeepCopyTest extends TestCase
         $dc = new DeepCopy();
 
         $this->expectException(DeepCopyException::class);
-        $this->expectExceptionMessage('Model copy failed');
+        $this->expectExceptionMessageIs('Model copy failed');
         try {
             $invoice = $dc
                 ->from($quote)
@@ -361,7 +361,7 @@ class DeepCopyTest extends TestCase
         $dc = new DeepCopy();
 
         $this->expectException(DeepCopyException::class);
-        $this->expectExceptionMessage('Model copy failed');
+        $this->expectExceptionMessageIs('Model copy failed');
         try {
             $invoice = $dc
                 ->from($quote)

@@ -42,7 +42,7 @@ class JoinTest extends TestCase
         self::assertSame('id', $this->getProtected($j, 'foreignField'));
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Reverse join with non-ID master field is not implemented yet');
+        $this->expectExceptionMessageIs('Reverse join with non-ID master field is not implemented yet');
         $j = $m->join('contact4.foo_id', ['masterField' => 'test_id', 'reverse' => true]);
         // self::assertTrue($j->reverse);
         // self::assertSame('test_id', $this->getProtected($j, 'masterField'));
@@ -55,7 +55,7 @@ class JoinTest extends TestCase
         $m = new Model($db, ['table' => 'user']);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Reverse join with non-ID master field is not implemented yet');
+        $this->expectExceptionMessageIs('Reverse join with non-ID master field is not implemented yet');
         $m->join('contact.foo_id', ['masterField' => 'test_id']);
     }
 
@@ -67,7 +67,7 @@ class JoinTest extends TestCase
         $m->join('foo');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Join with such name already exists');
+        $this->expectExceptionMessageIs('Join with such name already exists');
         $m->join('foo');
     }
 
@@ -81,7 +81,7 @@ class JoinTest extends TestCase
         $order->addCteModel('user', $user);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Join reference type mismatch');
+        $this->expectExceptionMessageIs('Join reference type mismatch');
         $order->join('user', ['masterField' => 'placed_by_user_id']);
     }
 

@@ -341,7 +341,7 @@ class ContainsOneTest extends TestCase
         $theirEntity = $i->getField($i->fieldName()->addr)->getReference()->ref($i);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Field is required to be not dirty');
+        $this->expectExceptionMessageIs('Field is required to be not dirty');
         $theirEntity->save();
     }
 
@@ -353,7 +353,7 @@ class ContainsOneTest extends TestCase
         $i->getField($i->fieldName()->addr)->normalize([]);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Contained model data cannot be modified directly');
+        $this->expectExceptionMessageIs('Contained model data cannot be modified directly');
         $i->set($i->fieldName()->addr, [0]);
     }
 
@@ -368,7 +368,7 @@ class ContainsOneTest extends TestCase
         self::assertSame('foo', $i->addr->address);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Contained model data cannot be modified directly');
+        $this->expectExceptionMessageIs('Contained model data cannot be modified directly');
         $i->setNull($i->fieldName()->addr);
     }
 }

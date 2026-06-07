@@ -47,7 +47,7 @@ class ExpressionTest extends TestCase
     public function testConstructorNoTemplateException(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Template is not defined');
+        $this->expectExceptionMessageIs('Template is not defined');
         $this->e()->render();
     }
 
@@ -367,7 +367,7 @@ class ExpressionTest extends TestCase
     public function testConsumeUnsupportedEscapeModeException(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unexpected escape mode');
+        $this->expectExceptionMessageIs('Unexpected escape mode');
         $this->callProtected($this->e(), 'consume', 123, 'blahblah');
     }
 
@@ -385,7 +385,7 @@ class ExpressionTest extends TestCase
         $c1->expr('[]', [$c1->expr('foo')])->render();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Connection instance does not match');
+        $this->expectExceptionMessageIs('Connection instance does not match');
         $c1->expr('[]', [$c2->expr('foo')])->render();
     }
 
@@ -394,7 +394,7 @@ class ExpressionTest extends TestCase
         $e = $this->e('hello, [world]');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Expression could not render tag');
+        $this->expectExceptionMessageIs('Expression could not render tag');
         try {
             $e->render();
         } catch (Exception $e) {

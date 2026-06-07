@@ -33,7 +33,7 @@ class EmailFieldTest extends TestCase
 
         // no domain - go to hell :)
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('does not have domain');
+        $this->expectExceptionMessageIs('does not have domain');
         $entity->set('email', 'xx');
     }
 
@@ -53,7 +53,7 @@ class EmailFieldTest extends TestCase
         self::assertSame('test@háčkyčárky.cz', $entity->get('email'));
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('domain does not exist');
+        $this->expectExceptionMessageIs('domain does not exist');
         $entity->set('email', 'test@háčkyčárky2.cz');
     }
 
@@ -68,7 +68,7 @@ class EmailFieldTest extends TestCase
         self::assertSame('Žlutý Kůň <me3@❤.com>', $entity->get('email_name'));
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('format is invalid');
+        $this->expectExceptionMessageIs('format is invalid');
         $entity->set('email', 'Romans <me@gmail.com>');
     }
 
@@ -79,7 +79,7 @@ class EmailFieldTest extends TestCase
         $entity = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('format is invalid');
+        $this->expectExceptionMessageIs('format is invalid');
         $entity->set('email', 'foo@exampe.com, bar@example.com');
     }
 }

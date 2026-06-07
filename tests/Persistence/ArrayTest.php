@@ -283,7 +283,7 @@ class ArrayTest extends TestCase
         $m->addField('name');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Row to insert has ID that already exists');
+        $this->expectExceptionMessageIs('Row to insert has ID that already exists');
         $m->createEntity()->save(['id' => 1]);
     }
 
@@ -300,7 +300,7 @@ class ArrayTest extends TestCase
         $m->load(1)->delete();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Row to update does not exist');
+        $this->expectExceptionMessageIs('Row to update does not exist');
         $entity->save(['name' => 'Ava']);
     }
 
@@ -427,7 +427,7 @@ class ArrayTest extends TestCase
         $m->addCondition('code', '>', null);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unsupported operator for null value');
+        $this->expectExceptionMessageIs('Unsupported operator for null value');
         $m->export();
     }
 
@@ -718,7 +718,7 @@ class ArrayTest extends TestCase
         $m->scope()->clear();
         $m->addCondition(Scope::createOr(['code', '>', 2], clone $conditionWithUnsupportedOperator));
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unsupported operator');
+        $this->expectExceptionMessageIs('Unsupported operator');
         $m->export();
     }
 
@@ -735,7 +735,7 @@ class ArrayTest extends TestCase
         $m->addCondition('code', '>', new Action([['a' => new \DateTime()]], ['a']));
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Only scalar values can be compared');
+        $this->expectExceptionMessageIs('Only scalar values can be compared');
         $m->action('select')->getRows();
     }
 
@@ -752,7 +752,7 @@ class ArrayTest extends TestCase
         $m->addCondition('code', '>', new Action([['a' => 11], ['a' => 12]], ['a']));
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unable to get value from table with more than 1 row');
+        $this->expectExceptionMessageIs('Unable to get value from table with more than 1 row');
         $m->action('select')->getRows();
     }
 
@@ -769,7 +769,7 @@ class ArrayTest extends TestCase
         $m->addCondition('code', '>', new Action([['a' => 11, 'b' => 12]], ['a', 'b']));
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unable to get value from table with more than 1 column');
+        $this->expectExceptionMessageIs('Unable to get value from table with more than 1 column');
         $m->action('select')->getRows();
     }
 
@@ -778,7 +778,7 @@ class ArrayTest extends TestCase
         $action = new Action([['a' => 1]], ['b']);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Column names mismatch');
+        $this->expectExceptionMessageIs('Column names mismatch');
         $action->getRows();
     }
 
@@ -922,7 +922,7 @@ class ArrayTest extends TestCase
         ]);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Must not be a zero');
+        $this->expectExceptionMessageIs('Must not be a zero');
         new Model($p);
     }
 
@@ -1063,7 +1063,7 @@ class ArrayTest extends TestCase
         $m->addField('name');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unsupported action mode');
+        $this->expectExceptionMessageIs('Unsupported action mode');
         $m->action('foo');
     }
 
@@ -1074,7 +1074,7 @@ class ArrayTest extends TestCase
         $m->addField('name');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Array persistence driver action unsupported format');
+        $this->expectExceptionMessageIs('Array persistence driver action unsupported format');
         $m->action('fx', ['UNSUPPORTED', 'name']);
     }
 
@@ -1084,7 +1084,7 @@ class ArrayTest extends TestCase
         $m->addField('name');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Operator must be specified');
+        $this->expectExceptionMessageIs('Operator must be specified');
         $m->addCondition('name');
     }
 
@@ -1093,7 +1093,7 @@ class ArrayTest extends TestCase
         $m = new Model();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Field must be a string or an instance of Expressionable');
+        $this->expectExceptionMessageIs('Field must be a string or an instance of Expressionable');
         $m->addCondition(new Model(), 'like', '%o%'); // @phpstan-ignore argument.type, argument.type
     }
 
@@ -1181,7 +1181,7 @@ class ArrayTest extends TestCase
         $m->addField('name');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('No record was found');
+        $this->expectExceptionMessageIs('No record was found');
         $m->loadAny();
     }
 

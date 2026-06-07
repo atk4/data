@@ -234,7 +234,7 @@ class QueryTest extends TestCase
     public function testFieldDuplicateAliasException(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Alias must be unique');
+        $this->expectExceptionMessageIs('Alias must be unique');
         $this->q()->field('name', 'a')->field('surname', 'a');
     }
 
@@ -250,14 +250,14 @@ class QueryTest extends TestCase
     public function testTableNoAliasQueryException(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Table alias is required when table is set as subquery');
+        $this->expectExceptionMessageIs('Table alias is required when table is set as subquery');
         $this->q()->table($this->q()->table('test'));
     }
 
     public function testTableAliasNotUniqueException(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Alias must be unique');
+        $this->expectExceptionMessageIs('Alias must be unique');
         $this->q()
             ->table('foo', 'a')
             ->table('bar', 'a');
@@ -266,7 +266,7 @@ class QueryTest extends TestCase
     public function testTableAliasNotUniqueException2(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Alias must be unique');
+        $this->expectExceptionMessageIs('Alias must be unique');
         $this->q()
             ->table('foo', 'bar')
             ->table('bar');
@@ -275,7 +275,7 @@ class QueryTest extends TestCase
     public function testTableAliasNotUniqueException3(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Alias must be unique');
+        $this->expectExceptionMessageIs('Alias must be unique');
         $this->q()
             ->table('foo')
             ->table('foo');
@@ -284,7 +284,7 @@ class QueryTest extends TestCase
     public function testTableAliasNotUniqueException4(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Alias must be unique');
+        $this->expectExceptionMessageIs('Alias must be unique');
         $this->q()
             ->table($this->q()->table('test'), 'foo')
             ->table('foo');
@@ -293,7 +293,7 @@ class QueryTest extends TestCase
     public function testTableAliasNotUniqueException5(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Alias must be unique');
+        $this->expectExceptionMessageIs('Alias must be unique');
         $this->q()
             ->table('foo')
             ->table($this->q()->table('test'), 'foo');
@@ -302,7 +302,7 @@ class QueryTest extends TestCase
     public function testTableAliasIntStringException(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Alias must be not int-string');
+        $this->expectExceptionMessageIs('Alias must be not int-string');
         $this->q()->table('foo', '10');
     }
 
@@ -730,7 +730,7 @@ class QueryTest extends TestCase
         $q = $this->q('[where]')->where('a', [1, 2]);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unsupported operator for array value');
+        $this->expectExceptionMessageIs('Unsupported operator for array value');
         $q->render();
     }
 
@@ -745,7 +745,7 @@ class QueryTest extends TestCase
         $q = $this->q('[where]')->where('x', $operator, $value);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unsupported operator');
+        $this->expectExceptionMessageIs('Unsupported operator');
         $q->render();
     }
 
@@ -879,7 +879,7 @@ class QueryTest extends TestCase
         $q = $this->q('[where]')->where('x', 'in', ['a', null, 'b']);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Null value in IN operator is not supported');
+        $this->expectExceptionMessageIs('Null value in IN operator is not supported');
         $q->render();
     }
 
@@ -1162,7 +1162,7 @@ class QueryTest extends TestCase
     public function testOrderException(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('If first argument is array, second argument must not be used');
+        $this->expectExceptionMessageIs('If first argument is array, second argument must not be used');
         $this->q('[order]')->order(['name', 'surname'], 'desc'); // @phpstan-ignore argument.type
     }
 

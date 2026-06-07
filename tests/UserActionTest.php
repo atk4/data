@@ -119,7 +119,7 @@ class UserActionTest extends TestCase
         self::assertSame($clientEntity->getUserAction('sendReminder'), $actlEntity);
 
         $this->expectException(\TypeError::class);
-        $this->expectExceptionMessage('Model instance does not match');
+        $this->expectExceptionMessageIs('Model instance does not match');
         $actl->getActionForEntity((clone $client)->load(1));
     }
 
@@ -130,7 +130,7 @@ class UserActionTest extends TestCase
         $client = $client->load(1);
 
         $this->expectException(\Error::class);
-        $this->expectExceptionMessage('Call to undefined method');
+        $this->expectExceptionMessageIs('Call to undefined method');
         $client->executeUserAction('new_client');
     }
 
@@ -165,7 +165,7 @@ class UserActionTest extends TestCase
         $m->addUserAction('foo', static fn () => 1);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('User action with such name already exists');
+        $this->expectExceptionMessageIs('User action with such name already exists');
         $m->addUserAction('foo', static fn () => 1);
     }
 
@@ -174,7 +174,7 @@ class UserActionTest extends TestCase
         $client = new UaClient($this->pers);
 
         $this->expectException(\TypeError::class);
-        $this->expectExceptionMessage('Expected entity, but instance is a model');
+        $this->expectExceptionMessageIs('Expected entity, but instance is a model');
         $client->executeUserAction('sendReminder');
     }
 
@@ -184,7 +184,7 @@ class UserActionTest extends TestCase
         $client = $client->load(1);
 
         $this->expectException(\TypeError::class);
-        $this->expectExceptionMessage('Expected model, but instance is an entity');
+        $this->expectExceptionMessageIs('Expected model, but instance is an entity');
         $client->executeUserAction('backupClients');
     }
 
@@ -194,7 +194,7 @@ class UserActionTest extends TestCase
         $client = $client->createEntity();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('User action can be executed on loaded entity only');
+        $this->expectExceptionMessageIs('User action can be executed on loaded entity only');
         $client->executeUserAction('sendReminder');
     }
 
@@ -205,7 +205,7 @@ class UserActionTest extends TestCase
         $client = $client->load(1);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('User action can be executed on new entity only');
+        $this->expectExceptionMessageIs('User action can be executed on new entity only');
         $client->executeUserAction('new_client');
     }
 
@@ -214,7 +214,7 @@ class UserActionTest extends TestCase
         $client = new UaClient($this->pers);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('User action is not defined');
+        $this->expectExceptionMessageIs('User action is not defined');
         $client->getUserAction('non_existent_action');
     }
 
@@ -226,7 +226,7 @@ class UserActionTest extends TestCase
         $client->getUserAction('sendReminder')->enabled = false;
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('User action is disabled');
+        $this->expectExceptionMessageIs('User action is disabled');
         $client->getUserAction('sendReminder')->execute();
     }
 
@@ -245,7 +245,7 @@ class UserActionTest extends TestCase
         };
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('User action is disabled');
+        $this->expectExceptionMessageIs('User action is disabled');
         $client->getUserAction('sendReminder')->execute();
     }
 
@@ -274,7 +274,7 @@ class UserActionTest extends TestCase
         $client->set('reminder_sent', true);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('User action cannot be executed when unrelated fields are dirty');
+        $this->expectExceptionMessageIs('User action cannot be executed when unrelated fields are dirty');
         $client->getUserAction('change_details')->execute();
     }
 

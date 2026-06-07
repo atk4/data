@@ -896,7 +896,7 @@ class SelectTest extends TestCase
         $q = $this->q('employee')->field('name');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unable to fetch single cell of data');
+        $this->expectExceptionMessageIs('Unable to fetch single cell of data');
         $q->getOne();
     }
 
@@ -907,7 +907,7 @@ class SelectTest extends TestCase
         $q = $this->q('employee')->field('Sqlite must use backticks for identifier escape');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('An exception occurred while executing a query: ');
+        $this->expectExceptionMessageIs('An exception occurred while executing a query: ');
         $q->executeStatement();
     }
 
@@ -1202,7 +1202,7 @@ class SelectTest extends TestCase
         $q = $this->q('non_existing_table')->field('non_existing_field');
 
         $this->expectException(ExecuteException::class);
-        $this->expectExceptionMessage('An exception occurred while executing a query: ');
+        $this->expectExceptionMessageIs('An exception occurred while executing a query: ');
         try {
             $q->getOne();
         } catch (ExecuteException $e) {
@@ -1360,7 +1360,7 @@ class SelectTest extends TestCase
             $query = $this->q()->field($this->e($strSql));
 
             $this->expectException(ExecuteException::class);
-            $this->expectExceptionMessage('Character not in repertoire');
+            $this->expectExceptionMessageIs('Character not in repertoire');
             $query->getOne();
         }
     }
