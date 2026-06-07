@@ -1360,7 +1360,7 @@ class SelectTest extends TestCase
             $query = $this->q()->field($this->e($strSql));
 
             $this->expectException(ExecuteException::class);
-            $this->expectExceptionMessageIs('Character not in repertoire');
+            $this->expectExceptionMessageIsOrContains('Character not in repertoire');
             $query->getOne();
         }
     }

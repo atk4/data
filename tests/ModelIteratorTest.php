@@ -196,7 +196,7 @@ class ModelIteratorTest extends TestCase
         }
 
         $this->expectException(\TypeError::class);
-        $this->expectExceptionMessageIs('Only arrays and Traversables can be unpacked');
+        $this->expectExceptionMessageIs('Only arrays and Traversables can be unpacked' . (\PHP_VERSION_ID < 8_04_00 ? '' : ', string given'));
         iterator_to_array($i->createIteratorBy(['total_net', 10])); // @phpstan-ignore argument.type
     }
 
