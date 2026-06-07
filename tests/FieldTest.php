@@ -733,7 +733,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessageIsMatches('~^Must not be bool type$~');
+        $this->expectExceptionMessageIs('Must not be bool type');
         $m->set('foo', false);
     }
 
