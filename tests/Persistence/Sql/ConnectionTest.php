@@ -128,7 +128,7 @@ class ConnectionTest extends TestCase
     public function testConnectInvalidHostException(): void
     {
         $this->expectException(\Exception::class);
-        $this->expectExceptionMessageIs('An exception occurred in the driver: php_network_getaddresses');
+        $this->expectExceptionMessageIsOrContains('An exception occurred in the driver: php_network_getaddresses: ');
         Connection::connect('mysql:host=256.256.256.256');
     }
 

@@ -907,7 +907,7 @@ class SelectTest extends TestCase
         $q = $this->q('employee')->field('Sqlite must use backticks for identifier escape');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessageIs('An exception occurred while executing a query: ');
+        $this->expectExceptionMessageIsOrContains('An exception occurred while executing a query: ');
         $q->executeStatement();
     }
 
@@ -1202,7 +1202,7 @@ class SelectTest extends TestCase
         $q = $this->q('non_existing_table')->field('non_existing_field');
 
         $this->expectException(ExecuteException::class);
-        $this->expectExceptionMessageIs('An exception occurred while executing a query: ');
+        $this->expectExceptionMessageIsOrContains('An exception occurred while executing a query: ');
         try {
             $q->getOne();
         } catch (ExecuteException $e) {

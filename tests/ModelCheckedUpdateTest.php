@@ -43,7 +43,7 @@ class ModelCheckedUpdateTest extends TestCase
         $m->insert(['name' => 'John']);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessageIs('not found');
+        $this->expectExceptionMessageIs('Record with specified ID was not found');
         try {
             $m->insert(['name' => 'Benjamin']);
         } finally {
@@ -63,7 +63,7 @@ class ModelCheckedUpdateTest extends TestCase
         $m->insert(['name' => 'John']);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessageIs('not found');
+        $this->expectExceptionMessageIs('Record with specified ID was not found');
         try {
             $m->insert(['name' => 'John']);
         } finally {
@@ -83,7 +83,7 @@ class ModelCheckedUpdateTest extends TestCase
         $entity3->save(['name' => 'John']);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessageIs('not found');
+        $this->expectExceptionMessageIs('Record with specified ID was not found');
         try {
             $entity3->save(['name' => 'Benjamin']);
         } finally {
@@ -103,7 +103,7 @@ class ModelCheckedUpdateTest extends TestCase
         $entity3->save(['name' => 'John']);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessageIs('not found');
+        $this->expectExceptionMessageIs('Record with specified ID was not found');
         try {
             $entity3->save(['name' => 'James']);
         } finally {
@@ -123,7 +123,7 @@ class ModelCheckedUpdateTest extends TestCase
         $m->addCondition('id', '<', 3);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessageIs('not found');
+        $this->expectExceptionMessageIs('Record with specified ID was not found');
         try {
             $entity3->save(['name' => 'Jan']);
         } finally {
@@ -173,7 +173,7 @@ class ModelCheckedUpdateTest extends TestCase
         $m->delete(3);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessageIs('not found');
+        $this->expectExceptionMessageIs('Record with specified ID was not found');
         try {
             $m->delete(3);
         } finally {
@@ -193,7 +193,7 @@ class ModelCheckedUpdateTest extends TestCase
         self::assertTrue($entity3->isLoaded());
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessageIs('not found');
+        $this->expectExceptionMessageIs('Record with specified ID was not found');
         try {
             $entity3->delete();
         } finally {
@@ -212,7 +212,7 @@ class ModelCheckedUpdateTest extends TestCase
         self::assertTrue($entity3->isLoaded());
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessageIs('not found');
+        $this->expectExceptionMessageIs('Record with specified ID was not found');
         try {
             $entity3->delete();
         } finally {

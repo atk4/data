@@ -507,9 +507,9 @@ class TypecastingTest extends TestCase
         $dbData[] = &$dbData;
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessageIs(
+        $this->expectExceptionMessageIsOrContains(
             Connection::isDbal3x()
-                ? 'Could not convert PHP type \'array\' to \'json\', as an \'Recursion detected\''
+                ? 'Could not convert PHP type \'array\' to \'json\', as an \'Recursion detected\' error'
                 : 'Could not convert PHP type "array" to "json". An error was triggered by the serialization: Recursion detected'
         );
         $this->db->typecastSaveRow($m, ['data' => ['foo' => 'bar', 'recursive' => $dbData]]);

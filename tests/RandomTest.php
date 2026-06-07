@@ -228,7 +228,7 @@ class RandomTest extends TestCase
         $m = new Model(null, ['table' => 'user']);
 
         $this->expectException(\Error::class);
-        $this->expectExceptionMessageIs('Persistence::add() cannot be called directly');
+        $this->expectExceptionMessageIs('Persistence::add() cannot be called directly, use Model::setPersistence() instead');
         $this->db->add($m);
     }
 

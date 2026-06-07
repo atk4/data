@@ -740,12 +740,12 @@ class QueryTest extends TestCase
      * @dataProvider provideWhereUnsupportedOperatorCases
      */
     #[DataProvider('provideWhereUnsupportedOperatorCases')]
-    public function testWhereUnsupportedOperator(string $operator, $value): void
+    public function testWhereUnsupportedOperator(string $operator, $value, ?string $expectedExceptionMessageReason = null): void
     {
         $q = $this->q('[where]')->where('x', $operator, $value);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessageIs('Unsupported operator');
+        $this->expectExceptionMessageIs('Unsupported operator' . ($expectedExceptionMessageReason !== null ? ' ' . $expectedExceptionMessageReason : ''));
         $q->render();
     }
 
@@ -767,16 +767,16 @@ class QueryTest extends TestCase
         yield ['not', [1, 2]];
 
         // unsupported operators with specific value type
-        yield ['>', null];
-        yield ['=', [1, 2]];
-        yield ['!=', [1, 2]];
-        yield ['=', []];
-        yield ['!=', []];
-        yield ['in', '1'];
-        yield ['in', '1,2'];
-        yield ['in', '1, 2'];
-        yield ['not in', '1;2'];
-        yield ['in', null];
+        yield ['>', null, 'for null value'];
+        yield ['=', [1, 2], 'for array value'];
+        yield ['!=', [1, 2], 'for array value'];
+        yield ['=', [], 'for array value'];
+        yield ['!=', [], 'for array value'];
+        yield ['in', '1', 'for non-array value'];
+        yield ['in', '1,2', 'for non-array value'];
+        yield ['in', '1, 2', 'for non-array value'];
+        yield ['not in', '1;2', 'for non-array value'];
+        yield ['in', null, 'for null value'];
     }
 
     /**

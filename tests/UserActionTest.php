@@ -130,7 +130,7 @@ class UserActionTest extends TestCase
         $client = $client->load(1);
 
         $this->expectException(\Error::class);
-        $this->expectExceptionMessageIs('Call to undefined method');
+        $this->expectExceptionMessageIs('Call to undefined method ' . UaClient::class . '::new_client()');
         $client->executeUserAction('new_client');
     }
 
