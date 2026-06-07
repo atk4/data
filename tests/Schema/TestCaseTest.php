@@ -241,7 +241,7 @@ class TestCaseTest extends TestCase
         ]);
 
         $this->expectException(ExpectationFailedException::class);
-        $this->expectExceptionMessage('Failed asserting that two arrays are identical.');
+        $this->expectExceptionMessageIs('Failed asserting that two arrays are identical.');
         self::assertSameExportUnordered([
             $this->createAssertSameExportUnorderedTestRow(1),
         ], [
@@ -260,7 +260,7 @@ class TestCaseTest extends TestCase
         ]);
 
         $this->expectException(ExpectationFailedException::class);
-        $this->expectExceptionMessage('Failed asserting that two arrays are identical.');
+        $this->expectExceptionMessageIs('Failed asserting that two arrays are identical.');
         self::assertSameExportUnordered([
             1 => $this->createAssertSameExportUnorderedTestRow(1),
         ], [

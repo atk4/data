@@ -350,7 +350,7 @@ class TypecastingTest extends TestCase
             }
         }, function () {
             $this->expectException(\TypeError::class);
-            $this->expectExceptionMessage('Unexpected non-scalar value');
+            $this->expectExceptionMessageIs('Unexpected non-scalar value');
             $this->db->typecastSaveField(new Field(['type' => 'bad-datetime']), new \DateTime());
         });
     }
@@ -358,7 +358,7 @@ class TypecastingTest extends TestCase
     public function testLoadFieldUnexpectedScalarException(): void
     {
         $this->expectException(\TypeError::class);
-        $this->expectExceptionMessage('Unexpected non-scalar value');
+        $this->expectExceptionMessageIs('Unexpected non-scalar value');
         $this->db->typecastLoadField(new Field(['type' => 'datetime']), new \DateTime()); // @phpstan-ignore argument.type
     }
 
@@ -372,7 +372,7 @@ class TypecastingTest extends TestCase
             }
         }, function () {
             $this->expectException(\ErrorException::class);
-            $this->expectExceptionMessage('Converted PHP warning');
+            $this->expectExceptionMessageIs('Converted PHP warning');
             $this->db->typecastSaveField(new Field(['type' => 'with-warning']), 1);
         });
     }
@@ -387,7 +387,7 @@ class TypecastingTest extends TestCase
             }
         }, function () {
             $this->expectException(\ErrorException::class);
-            $this->expectExceptionMessage('Converted PHP warning');
+            $this->expectExceptionMessageIs('Converted PHP warning');
             $this->db->typecastLoadField(new Field(['type' => 'with-warning']), 1);
         });
     }
@@ -402,7 +402,7 @@ class TypecastingTest extends TestCase
             }
         }, function () {
             $this->expectException(\ErrorException::class);
-            $this->expectExceptionMessage('Converted PHP warning');
+            $this->expectExceptionMessageIs('Converted PHP warning');
             (new Field(['type' => 'with-warning']))->normalize(1);
         });
     }
@@ -507,9 +507,9 @@ class TypecastingTest extends TestCase
         $dbData[] = &$dbData;
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage(
+        $this->expectExceptionMessageIsOrContains(
             Connection::isDbal3x()
-                ? 'Could not convert PHP type \'array\' to \'json\', as an \'Recursion detected\''
+                ? 'Could not convert PHP type \'array\' to \'json\', as an \'Recursion detected\' error'
                 : 'Could not convert PHP type "array" to "json". An error was triggered by the serialization: Recursion detected'
         );
         $this->db->typecastSaveRow($m, ['data' => ['foo' => 'bar', 'recursive' => $dbData]]);
@@ -603,7 +603,7 @@ class TypecastingTest extends TestCase
         $m->addField('dt', ['type' => 'datetime']);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Typecast parse error');
+        $this->expectExceptionMessageIs('Typecast parse error');
         $m->loadOne();
     }
 

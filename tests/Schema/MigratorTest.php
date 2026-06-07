@@ -311,7 +311,7 @@ class MigratorTest extends TestCase
         self::assertFalse($this->createMigrator()->isTableExists('t'));
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Table does not exist');
+        $this->expectExceptionMessageIs('Table does not exist');
         $this->createMigrator()->assertTableExists('t');
     }
 
@@ -402,7 +402,7 @@ class MigratorTest extends TestCase
     public function testIntrospectTableToModelTableDoesNotExistException(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Table does not exist');
+        $this->expectExceptionMessageIs('Table does not exist');
         $this->createMigrator()->introspectTableToModel('t');
     }
 
@@ -429,7 +429,7 @@ class MigratorTest extends TestCase
             ->create();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Table must contain exactly one primary key');
+        $this->expectExceptionMessageIs('Table must contain exactly one primary key');
         $this->createMigrator()->introspectTableToModel('t');
     }
 

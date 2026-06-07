@@ -126,7 +126,7 @@ class RandomTest extends TestCase
         self::assertTrue(isset($entity->idField)); // @phpstan-ignore isset.property, staticMethod.alreadyNarrowedType
 
         $this->expectException(\TypeError::class);
-        $this->expectExceptionMessage('Expected model, but instance is an entity');
+        $this->expectExceptionMessageIs('Expected model, but instance is an entity');
         isset($entity->table); // @phpstan-ignore isset.property, expr.resultUnused
     }
 
@@ -140,7 +140,7 @@ class RandomTest extends TestCase
         self::assertSame('id', $entity->idField);
 
         $this->expectException(\TypeError::class);
-        $this->expectExceptionMessage('Expected model, but instance is an entity');
+        $this->expectExceptionMessageIs('Expected model, but instance is an entity');
         $entity->table; // @phpstan-ignore expr.resultUnused
     }
 
@@ -219,7 +219,7 @@ class RandomTest extends TestCase
         self::assertSame(1, $hookCalled);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Persistence is already set');
+        $this->expectExceptionMessageIs('Persistence is already set');
         $m->setPersistence($p);
     }
 
@@ -228,7 +228,7 @@ class RandomTest extends TestCase
         $m = new Model(null, ['table' => 'user']);
 
         $this->expectException(\Error::class);
-        $this->expectExceptionMessage('Persistence::add() cannot be called directly');
+        $this->expectExceptionMessageIs('Persistence::add() cannot be called directly, use Model::setPersistence() instead');
         $this->db->add($m);
     }
 
@@ -361,7 +361,7 @@ class RandomTest extends TestCase
         $r = $m->hasOne('foo', ['model' => [Model_Item::class]]);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Field with such name already exists');
+        $this->expectExceptionMessageIs('Field with such name already exists');
         $r->addTitle();
     }
 
@@ -419,7 +419,7 @@ class RandomTest extends TestCase
         self::assertSame('2', $mm->getTitle()); // loaded returns id value
 
         $this->expectException(\TypeError::class);
-        $this->expectExceptionMessage('Expected model, but instance is an entity');
+        $this->expectExceptionMessageIs('Expected model, but instance is an entity');
         $mm->getTitles();
     }
 
@@ -562,21 +562,21 @@ class RandomTest extends TestCase
     public function testNoWriteActionInsert(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unsupported action mode');
+        $this->expectExceptionMessageIs('Unsupported action mode');
         $this->db->action(new Model(), 'insert');
     }
 
     public function testNoWriteActionUpdate(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unsupported action mode');
+        $this->expectExceptionMessageIs('Unsupported action mode');
         $this->db->action(new Model(), 'update');
     }
 
     public function testNoWriteActionDelete(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unsupported action mode');
+        $this->expectExceptionMessageIs('Unsupported action mode');
         $this->db->action(new Model(), 'delete');
     }
 

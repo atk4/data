@@ -55,7 +55,7 @@ class ModelWithoutIdTest extends TestCase
     public function testGetIdFieldException(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('ID field is not defined');
+        $this->expectExceptionMessageIs('ID field is not defined');
         $this->m->getIdField();
     }
 
@@ -64,7 +64,7 @@ class ModelWithoutIdTest extends TestCase
         $m = $this->m->loadAny();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('ID field is not defined');
+        $this->expectExceptionMessageIs('ID field is not defined');
         $m->getId();
     }
 
@@ -73,14 +73,14 @@ class ModelWithoutIdTest extends TestCase
         $m = $this->m->createEntity();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('ID field is not defined');
+        $this->expectExceptionMessageIs('ID field is not defined');
         $m->setId(1);
     }
 
     public function testFail1(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unable to load by "id" when Model->idField is not defined');
+        $this->expectExceptionMessageIs('Unable to load by "id" when Model->idField is not defined');
         $this->m->load(1);
     }
 
@@ -143,7 +143,7 @@ class ModelWithoutIdTest extends TestCase
     public function testFailDelete1(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unable to load by "id" when Model->idField is not defined');
+        $this->expectExceptionMessageIs('Unable to load by "id" when Model->idField is not defined');
         $this->m->delete(4);
     }
 }

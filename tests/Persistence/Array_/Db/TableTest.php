@@ -14,7 +14,7 @@ class TableTest extends TestCase
     public function testTableNameNumericException(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Name must be a non-empty and non-numeric');
+        $this->expectExceptionMessageIs('Name must be a non-empty and non-numeric');
         new Table('10');
     }
 
@@ -23,7 +23,7 @@ class TableTest extends TestCase
         $table = new Table('t');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Name must be a non-empty and non-numeric');
+        $this->expectExceptionMessageIs('Name must be a non-empty and non-numeric');
         $table->addColumn('');
     }
 
@@ -32,7 +32,7 @@ class TableTest extends TestCase
         $table = new Table('t');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Name must be a non-empty and non-numeric');
+        $this->expectExceptionMessageIs('Name must be a non-empty and non-numeric');
         $table->addColumn('10.0');
     }
 
@@ -43,7 +43,7 @@ class TableTest extends TestCase
         $table->addColumn('foo');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Column name already exists');
+        $this->expectExceptionMessageIs('Column name already exists');
         $table->addColumn('foo');
     }
 
@@ -170,7 +170,7 @@ class TableTest extends TestCase
         self::assertSame($rowC, $table->getRowUsingIndex('foo', '1'));
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Index is not unique, more than one row was found');
+        $this->expectExceptionMessageIs('Index is not unique, more than one row was found');
         $table->getRowUsingIndex('foo', 1);
     }
 }

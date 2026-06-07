@@ -69,7 +69,7 @@ class FieldTest extends TestCase
         $m->set('foo', 'bar');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Field is required to be not dirty');
+        $this->expectExceptionMessageIs('Field is required to be not dirty');
         $m->assertNotDirty('foo');
     }
 
@@ -96,7 +96,7 @@ class FieldTest extends TestCase
         $m->set('foo', '');
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must not be null');
+        $this->expectExceptionMessageIs('Must not be null');
         $m->set('foo', null);
     }
 
@@ -107,7 +107,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must not be empty');
+        $this->expectExceptionMessageIs('Must not be empty');
         $m->set('foo', null);
     }
 
@@ -118,7 +118,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must not be empty');
+        $this->expectExceptionMessageIs('Must not be empty');
         $m->set('foo', null);
     }
 
@@ -129,7 +129,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must not be empty');
+        $this->expectExceptionMessageIs('Must not be empty');
         $m->set('foo', '');
     }
 
@@ -142,7 +142,7 @@ class FieldTest extends TestCase
         $m->set('foo', '0');
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must not be empty');
+        $this->expectExceptionMessageIs('Must not be empty');
         $m->set('foo', '');
     }
 
@@ -153,7 +153,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must not be empty');
+        $this->expectExceptionMessageIs('Must not be empty');
         $m->set('foo', '0');
     }
 
@@ -168,7 +168,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must not be a zero');
+        $this->expectExceptionMessageIs('Must not be a zero');
         $m->set('foo', 0);
     }
 
@@ -192,7 +192,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be true');
+        $this->expectExceptionMessageIs('Must be true');
         $m->set('foo', 0);
     }
 
@@ -209,7 +209,7 @@ class FieldTest extends TestCase
         $m->addField('surname');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Must not be null');
+        $this->expectExceptionMessageIs('Must not be null');
         $m->insert(['surname' => 'qq']);
     }
 
@@ -226,7 +226,7 @@ class FieldTest extends TestCase
         $m->addField('surname');
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must not be empty');
+        $this->expectExceptionMessageIs('Must not be empty');
         $m->insert(['surname' => 'qq', 'name' => '']);
     }
 
@@ -244,7 +244,7 @@ class FieldTest extends TestCase
         $m = $m->load(1);
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must not be null');
+        $this->expectExceptionMessageIs('Must not be null');
         $m->save(['name' => null]);
     }
 
@@ -322,7 +322,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Attempting to change read-only field');
+        $this->expectExceptionMessageIs('Attempting to change read-only field');
         $m->set('foo', 'bar');
     }
 
@@ -342,7 +342,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Value is not one of the allowed values: foo, bar');
+        $this->expectExceptionMessageIs('Value is not one of the allowed values: foo, bar');
         $m->set('foo', 'xx');
     }
 
@@ -379,7 +379,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must not be bool type');
+        $this->expectExceptionMessageIs('Must not be bool type');
         $m->set('foo', true);
     }
 
@@ -400,7 +400,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Value is not one of the allowed values: 0, 1');
+        $this->expectExceptionMessageIs('Value is not one of the allowed values: 0, 1');
         $m->set('foo', 4);
     }
 
@@ -424,7 +424,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Value is not one of the allowed values: 1');
+        $this->expectExceptionMessageIs('Value is not one of the allowed values: 1');
         $m->set('foo', 'bar');
     }
 
@@ -541,7 +541,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Field is not defined');
+        $this->expectExceptionMessageIs('Field is not defined');
         $m->set('baz', 'bar');
     }
 
@@ -693,7 +693,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be scalar');
+        $this->expectExceptionMessageIs('Must be scalar');
         $m->set('foo', []);
     }
 
@@ -708,7 +708,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be scalar');
+        $this->expectExceptionMessageIs('Must be scalar');
         $m->set('foo', []);
     }
 
@@ -733,7 +733,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessageMatches('~^Must not be bool type$~');
+        $this->expectExceptionMessageIs('Must not be bool type');
         $m->set('foo', false);
     }
 
@@ -748,7 +748,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be numeric');
+        $this->expectExceptionMessageIs('Must be numeric');
         $m->set('foo', '1x');
     }
 
@@ -773,7 +773,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be instance of DateTimeInterface');
+        $this->expectExceptionMessageIs('Must be instance of DateTimeInterface');
         $m->set('foo', '2000-01-01');
     }
 
@@ -784,7 +784,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be instance of DateTimeInterface');
+        $this->expectExceptionMessageIs('Must be instance of DateTimeInterface');
         $m->set('foo', '20:00:00');
     }
 
@@ -795,7 +795,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be instance of DateTimeInterface');
+        $this->expectExceptionMessageIs('Must be instance of DateTimeInterface');
         $m->set('foo', '2000-01-01 20:00:00');
     }
 
@@ -806,7 +806,7 @@ class FieldTest extends TestCase
         $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be an array');
+        $this->expectExceptionMessageIs('Must be an array');
         $m->set('foo', 'ABC');
     }
 
@@ -816,7 +816,7 @@ class FieldTest extends TestCase
         $m->addField('foo');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Field with such name already exists');
+        $this->expectExceptionMessageIs('Field with such name already exists');
         $m->addField('foo');
     }
 
@@ -825,7 +825,7 @@ class FieldTest extends TestCase
         $model = new Model();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Field can be added using addField() method only');
+        $this->expectExceptionMessageIs('Field can be added using addField() method only');
         $model->add(new Field());
     }
 
@@ -856,7 +856,7 @@ class FieldTest extends TestCase
         self::assertSame(['visible', 'not_editable'], array_keys($model->getFields('visible')));
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Field filter is not supported');
+        $this->expectExceptionMessageIs('Field filter is not supported');
         $model->getFields('foo');
     }
 
@@ -891,7 +891,7 @@ class FieldTest extends TestCase
         self::assertNull($m->get('c'));
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must not be empty');
+        $this->expectExceptionMessageIs('Must not be empty');
         $m->set('c', null);
     }
 
@@ -939,7 +939,7 @@ class FieldTest extends TestCase
         self::assertNull($entityBarField->get());
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Must not be null');
+        $this->expectExceptionMessageIs('Must not be null');
         $entityBarField->set(null);
     }
 

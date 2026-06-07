@@ -461,7 +461,7 @@ class ContainsManyTest extends TestCase
         ];
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Field is required to be not dirty');
+        $this->expectExceptionMessageIs('Field is required to be not dirty');
         $theirEntity->save($newData);
     }
 
@@ -473,7 +473,7 @@ class ContainsManyTest extends TestCase
         $i->getField($i->fieldName()->lines)->normalize([]);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Contained model data cannot be modified directly');
+        $this->expectExceptionMessageIs('Contained model data cannot be modified directly');
         $i->set($i->fieldName()->lines, [0]);
     }
 }

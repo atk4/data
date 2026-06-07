@@ -631,7 +631,7 @@ class ReferenceSqlTest extends TestCase
         $userEntity = $user->createEntity();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unable to traverse on null value');
+        $this->expectExceptionMessageIs('Unable to traverse on null value');
         $userEntity->ref('Company');
     }
 
@@ -641,7 +641,7 @@ class ReferenceSqlTest extends TestCase
         $companyEntity = $user->ref('Company')->createEntity();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unable to traverse on null value');
+        $this->expectExceptionMessageIs('Unable to traverse on null value');
         $companyEntity->ref('Orders');
     }
 
@@ -913,7 +913,7 @@ class ReferenceSqlTest extends TestCase
         $o->set('user_id', 3);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Imported field was changed to an unexpected value');
+        $this->expectExceptionMessageIs('Imported field was changed to an unexpected value');
         $o->save();
     }
 

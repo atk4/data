@@ -151,7 +151,7 @@ class MaterializedArrayActionTest extends TestCase
         $query = new MaterializedArrayAction($action);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Column consists of more than one type');
+        $this->expectExceptionMessageIs('Column consists of more than one type');
         $this->renderQuery($query);
     }
 

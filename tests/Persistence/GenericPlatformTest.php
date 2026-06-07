@@ -39,7 +39,7 @@ class GenericPlatformTest extends TestCase
         $genericPlatform = new GenericPlatform();
 
         $this->expectException(DbalException::class);
-        $this->expectExceptionMessage('Operation ' . (Connection::isDbal3x() ? '\'SQL\'' : '"SQL"') . ' is not supported by platform.');
+        $this->expectExceptionMessageIs('Operation ' . (Connection::isDbal3x() ? '\'SQL\'' : '"SQL"') . ' is not supported by platform.');
         \Closure::bind(static fn () => $genericPlatform->{$methodName}(...$args), null, GenericPlatform::class)();
     }
 

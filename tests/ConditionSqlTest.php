@@ -61,7 +61,7 @@ class ConditionSqlTest extends TestCase
         self::assertSame($scope, $m->createEntity()->getModel()->scope());
 
         $this->expectException(\TypeError::class);
-        $this->expectExceptionMessage('Expected model, but instance is an entity');
+        $this->expectExceptionMessageIs('Expected model, but instance is an entity');
         $m->createEntity()->scope();
     }
 
@@ -85,7 +85,7 @@ class ConditionSqlTest extends TestCase
         }, null, Model::class)();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Model instance is an entity, ID cannot be changed to a different one');
+        $this->expectExceptionMessageIs('Model instance is an entity, ID cannot be changed to a different one');
         $m->reload();
     }
 
@@ -152,7 +152,7 @@ class ConditionSqlTest extends TestCase
         $m->addCondition('name', 'in', [null]);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unable to load due to query error');
+        $this->expectExceptionMessageIs('Unable to load due to query error');
         try {
             $m->loadOne();
         } catch (Exception $e) {
@@ -388,7 +388,7 @@ class ConditionSqlTest extends TestCase
         $m->addField('name');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Operator is not supported for array condition value');
+        $this->expectExceptionMessageIs('Operator is not supported for array condition value');
         $m->addCondition('name', ['John', 'Doe']);
     }
 
@@ -399,7 +399,7 @@ class ConditionSqlTest extends TestCase
         $m->addCondition('name', 'not in', 'John');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unsupported operator for non-array value');
+        $this->expectExceptionMessageIs('Unsupported operator for non-array value');
         $m->export();
     }
 
@@ -454,7 +454,7 @@ class ConditionSqlTest extends TestCase
         $m->addField('date', ['type' => 'date']);
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be scalar');
+        $this->expectExceptionMessageIs('Must be scalar');
         $m->tryLoadBy('name', new \DateTime('1982-12-08'));
     }
 
@@ -721,7 +721,7 @@ class ConditionSqlTest extends TestCase
 
         if (($this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) && $isBinary) {
             $this->expectException(Exception::class);
-            $this->expectExceptionMessage('Unsupported binary field operator');
+            $this->expectExceptionMessageIs('Unsupported binary field operator');
         }
 
         $isMariadb = $this->getDatabasePlatform() instanceof AbstractMySQLPlatform

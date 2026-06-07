@@ -18,7 +18,7 @@ class ModelIteratorTest extends TestCase
         $m->addField('salary');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('If first argument is array, second argument must not be used');
+        $this->expectExceptionMessageIs('If first argument is array, second argument must not be used');
         $m->setOrder(['name', 'salary'], 'desc'); // @phpstan-ignore argument.type
     }
 
@@ -27,7 +27,7 @@ class ModelIteratorTest extends TestCase
         $m = new Model();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Model is not associated with a persistence');
+        $this->expectExceptionMessageIs('Model is not associated with a persistence');
         $m->tryLoad(1);
     }
 
@@ -36,7 +36,7 @@ class ModelIteratorTest extends TestCase
         $m = new Model();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Model is not associated with a persistence');
+        $this->expectExceptionMessageIs('Model is not associated with a persistence');
         $m->load(1);
     }
 
@@ -45,7 +45,7 @@ class ModelIteratorTest extends TestCase
         $m = new Model();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Model is not associated with a persistence');
+        $this->expectExceptionMessageIs('Model is not associated with a persistence');
         $m->tryLoadAny();
     }
 
@@ -54,7 +54,7 @@ class ModelIteratorTest extends TestCase
         $m = new Model();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Model is not associated with a persistence');
+        $this->expectExceptionMessageIs('Model is not associated with a persistence');
         $m->createEntity()->save();
     }
 
@@ -63,7 +63,7 @@ class ModelIteratorTest extends TestCase
         $m = new Model();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Model is not associated with a persistence');
+        $this->expectExceptionMessageIs('Model is not associated with a persistence');
         $m->action('count');
     }
 
@@ -196,7 +196,7 @@ class ModelIteratorTest extends TestCase
         }
 
         $this->expectException(\TypeError::class);
-        $this->expectExceptionMessage('Only arrays and Traversables can be unpacked');
+        $this->expectExceptionMessageIs('Only arrays and Traversables can be unpacked' . (\PHP_VERSION_ID < 8_04_00 ? '' : ', string given'));
         iterator_to_array($i->createIteratorBy(['total_net', 10])); // @phpstan-ignore argument.type
     }
 
@@ -206,7 +206,7 @@ class ModelIteratorTest extends TestCase
         $i->addField('total_net', ['type' => 'integer']);
 
         $this->expectException(\Error::class);
-        $this->expectExceptionMessage(\PHP_MAJOR_VERSION === 7 ? 'Cannot unpack array with string keys' : 'Unknown named parameter $total_net');
+        $this->expectExceptionMessageIs(\PHP_MAJOR_VERSION === 7 ? 'Cannot unpack array with string keys' : 'Unknown named parameter $total_net');
         iterator_to_array($i->createIteratorBy([['total_net' => 10]])); // @phpstan-ignore argument.type
     }
 }
