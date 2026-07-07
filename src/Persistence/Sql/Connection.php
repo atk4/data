@@ -131,6 +131,10 @@ abstract class Connection
                     [$dsn['host'], $port] = explode(':', $dsn['host'], 2);
                     $dsn['port'] = $port;
                 }
+                if (isset($dsn['port'])) {
+                    assert(ctype_digit($dsn['port']));
+                    $dsn['port'] = (int) $dsn['port'];
+                }
             }
         }
 

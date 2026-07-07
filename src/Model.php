@@ -1084,7 +1084,7 @@ class Model implements \IteratorAggregate
         }
 
         $direction = strtolower($direction);
-        if (!in_array($direction, ['asc', 'desc'], true)) {
+        if (!in_array($direction, ['asc', 'desc'], true)) { // @phpstan-ignore function.alreadyNarrowedType
             throw (new Exception('Invalid order direction, direction can be only "asc" or "desc"'))
                 ->addMoreInfo('field', $field)
                 ->addMoreInfo('direction', $direction);
