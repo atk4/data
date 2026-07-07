@@ -132,6 +132,7 @@ abstract class Connection
                     $dsn['port'] = $port;
                 }
                 if (isset($dsn['port'])) {
+                    assert(ctype_digit($dsn['port']);
                     $dsn['port'] = (int) $dsn['port'];
                 }
             }
