@@ -132,7 +132,7 @@ abstract class Connection
                     $dsn['port'] = $port;
                 }
                 if (isset($dsn['port'])) {
-                    $dsn['port'] = (int)$dsn['port'];
+                    $dsn['port'] = (int) $dsn['port'];
                 }
             }
         }
