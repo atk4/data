@@ -321,8 +321,7 @@ class ContainsManyTest extends TestCase
 
             return $line;
         };
-        \Closure::bind(static fn() => $invoice->getField($invoice->fieldName()->lines)->getReference()->model = $createTheirModelFx, null, Reference::class)();
-
+        \Closure::bind(static fn () => $invoice->getField($invoice->fieldName()->lines)->getReference()->model = $createTheirModelFx, null, Reference::class)();
         $invoiceEntity = $invoice->loadBy($invoice->fieldName()->ref_no, 'A1');
 
         $invoice->getField($invoice->fieldName()->lines)
