@@ -507,10 +507,16 @@ class ContainsManyTest extends TestCase
             $l->fieldName()->price => 15,
             $l->fieldName()->qty => 3,
         ]);
+        $l->insert([
+            $l->fieldName()->id => 5,
+            $l->fieldName()->vat_rate_id => 1,
+            $l->fieldName()->price => 9,
+            $l->fieldName()->qty => 2,
+        ]);
 
-        $expectedSortOrder = [3, 1, 4, 3];
+        $expectedSortOrder = [5, 3, 1, 4, 3];
         $ids = [];
-        foreach ($l->lines->setOrder(['price' => 'ASC', 'qty' => 'ASC']) as $line) {
+        foreach ($i->lines->setOrder(['price' => 'ASC', 'qty' => 'ASC']) as $line) {
             $ids[] = $line->id;
         }
         self::assertSame($expectedSortOrder, $ids);
