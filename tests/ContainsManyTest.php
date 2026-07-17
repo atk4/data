@@ -321,7 +321,7 @@ class ContainsManyTest extends TestCase
 
             return $line;
         };
-        \Closure::bind(static fn () => $invoice->getField($invoice->fieldName()->lines)->getReference()->model = $createTheirModelFx, null, Reference::class)();
+        \Closure::bind(static fn() => $invoice->getField($invoice->fieldName()->lines)->getReference()->model = $createTheirModelFx, null, Reference::class)();
 
         $invoiceEntity = $invoice->loadBy($invoice->fieldName()->ref_no, 'A1');
 
@@ -475,5 +475,40 @@ class ContainsManyTest extends TestCase
         $this->expectException(Exception::class);
         $this->expectExceptionMessageIs('Contained model data cannot be modified directly');
         $i->set($i->fieldName()->lines, [0]);
+    }
+
+    public function testSortOrder(): void
+    {
+        $i = new Invoice($this->db);
+        $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
+        $l = $i->lines;
+
+        $l->insert([
+            $l->fieldName()->id => 1,
+            $l->fieldName()->price => 10,
+            $l->fieldName()->qty => 2,
+        ]);
+        $l->insert([
+            $l->fieldName()->id => 2,
+            $l->fieldName()->price => 15,
+            $l->fieldName()->qty => 5,
+        ]);
+        $l->insert([
+            $l->fieldName()->id => 3,
+            $l->fieldName()->price => 5,
+            $l->fieldName()->qty => 6,
+        ]);
+        $l->insert([
+            $l->fieldName()->id => 4,
+            $l->fieldName()->price => 15,
+            $l->fieldName()->qty => 3,
+        ]);
+
+        $expectedSorOrder = [3, 1, 4, 3];
+        $ids = [];
+        foreach ($l->lines->setOrder(['price' => 'ASC', 'qty' => 'ASC']) as $line) {
+            $ids[] = $line->id;
+        }
+        self::assertSame($expectedSorOrder, $ids);
     }
 }
