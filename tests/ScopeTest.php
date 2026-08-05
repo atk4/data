@@ -554,6 +554,11 @@ class ScopeTest extends TestCase
         $model->addField('name', ['type' => 'datetime']);
 
         $this->createMigrator($model)->create();
+
+        if ($this->getDatabasePlatform() instanceof OraclePlatform && version_compare($this->getConnection()->getServerVersion(), '23.26.2') >= 0) {
+            self::markTestIncomplete('Oracle 23.26.2 breaks consequent ScopeTest::testJsonArray test');
+        }
+
         $model->import([
             ['name' => null],
             ['name' => new \DateTime()],
