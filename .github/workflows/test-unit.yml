@@ -243,6 +243,27 @@ jobs:
           php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
           if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-mssql.cov; fi
 
+      - name: Oracle diagnostics
+        if: success() || failure()
+        run: |
+          echo "PHP:"
+          php --version
+
+          echo "OCI8:"
+          php --ri oci8 || true
+
+          echo "Oracle processes:"
+          php -r '
+          $dsn = "oci8:dbname=oracle/free";
+          $c = new PDO($dsn, "system", "atk4_pass");
+          foreach ($c->query("
+              SELECT resource_name, current_utilization, max_utilization, limit_value
+              FROM v\$resource_limit
+              WHERE resource_name IN ('\''processes'\'', '\''sessions'\'')
+          ") as $r) {
+              print_r($r);
+          }
+          '
       - name: "Run tests: Oracle - PDO (only for coverage or cron)"
         if: (success() || failure()) && (env.LOG_COVERAGE || github.event_name == 'schedule')
         env:
