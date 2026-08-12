@@ -273,21 +273,21 @@ jobs:
         run: |
           php <<'PHP'
           <?php
-          $c = oci_connect("system", "atk4_pass", "oracle:1521/XE");
+          $c = oci_connect('system', 'atk4_pass', 'oracle:1521/XE');
 
           if (!$c) {
               print_r(oci_error());
               exit(1);
           }
 
-          $sql = "
+          $sql = '
               SELECT resource_name,
                      current_utilization,
                      max_utilization,
                      limit_value
               FROM v$resource_limit
-              WHERE resource_name IN ('processes', 'sessions')
-          ";
+              WHERE resource_name IN (\'processes\', \'sessions\')
+          ';
 
           $s = oci_parse($c, $sql);
           oci_execute($s);
@@ -298,11 +298,11 @@ jobs:
 
           echo "\nSessions:\n";
 
-          $s = oci_parse($c, "
+          $s = oci_parse($c, '
               SELECT status, COUNT(*) cnt
               FROM v$session
               GROUP BY status
-          ");
+          ');
           oci_execute($s);
 
           while ($r = oci_fetch_assoc($s)) {
@@ -315,21 +315,21 @@ jobs:
         run: |
           php <<'PHP'
           <?php
-          $c = oci_connect("system", "atk4_pass", "oracle:1521/FREE");
+          $c = oci_connect('system', 'atk4_pass', 'oracle:1521/FREE');
 
           if (!$c) {
               print_r(oci_error());
               exit(1);
           }
 
-          $sql = "
+          $sql = '
               SELECT resource_name,
                      current_utilization,
                      max_utilization,
                      limit_value
               FROM v$resource_limit
-              WHERE resource_name IN ('processes', 'sessions')
-          ";
+              WHERE resource_name IN (\'processes\', \'sessions\')
+          ';
 
           $s = oci_parse($c, $sql);
           oci_execute($s);
@@ -340,11 +340,11 @@ jobs:
 
           echo "\nSessions:\n";
 
-          $s = oci_parse($c, "
+          $s = oci_parse($c, '
               SELECT status, COUNT(*) cnt
               FROM v$session
               GROUP BY status
-          ");
+          ');
           oci_execute($s);
 
           while ($r = oci_fetch_assoc($s)) {
