@@ -120,9 +120,8 @@ jobs:
         image: gvenzl/${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}
         env:
           ORACLE_PASSWORD: atk4_pass
-          #ORACLE_RANDOM_PASSWORD: true
-          #APP_USER: atk4_test_user
-          #APP_USER_PASSWORD: atk4_pass
+          APP_USER: atk4_test_user
+          APP_USER_PASSWORD: atk4_user_pass
         # Provide healthcheck script options for startup
         options: >-
           --health-cmd healthcheck.sh
@@ -256,55 +255,92 @@ jobs:
         run: |
           php <<'PHP'
           <?php
+
           $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
           echo "Using $image\n";
 
           $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREE' || 'XE' }}";
-          $c = oci_connect('system', 'atk4_pass', 'oracle:1521/'.$db);
+          echo "Using service: $db\n";
+
+          $c = @oci_connect('system', 'atk4_pass', 'oracle:1521/' . $db);
 
           if (!$c) {
+              echo "Connection failed:\n";
               print_r(oci_error());
               exit(1);
           }
 
-          echo "\nResource limits:\n";
-          $sql = '
+          echo "Connected successfully\n";
+
+          function runQuery($c, string $sql): void
+          {
+              $s = oci_parse($c, $sql);
+
+              if (!$s) {
+                  echo "oci_parse() failed:\n";
+                  print_r(oci_error($c));
+                  exit(1);
+              }
+
+              if (!oci_execute($s)) {
+                  echo "oci_execute() failed for:\n$sql\n";
+                  print_r(oci_error($s));
+                  exit(1);
+              }
+
+              while ($r = oci_fetch_assoc($s)) {
+                  print_r($r);
+              }
+
+              oci_free_statement($s);
+          }
+
+          echo "\n=== Resource limits ===\n";
+
+          runQuery($c, "
               SELECT resource_name,
                      current_utilization,
                      max_utilization,
                      limit_value
-              FROM v$resource_limit
-              WHERE resource_name IN (\'processes\', \'sessions\')
-          ';
+              FROM v\$resource_limit
+              WHERE resource_name IN ('processes', 'sessions')
+              ORDER BY resource_name
+          ");
 
-          $s = oci_parse($c, $sql);
-          oci_execute($s);
+          echo "\n=== All resource limits ===\n";
 
-          while ($r = oci_fetch_assoc($s)) {
-              print_r($r);
-          }
+          runQuery($c, "
+              SELECT resource_name,
+                     current_utilization,
+                     max_utilization,
+                     initial_allocation,
+                     limit_value
+              FROM v\$resource_limit
+              ORDER BY resource_name
+          ");
 
+          echo "\n=== Sessions by user/status ===\n";
 
-          echo "\nResource limits:\n";
-          $sql = 'SELECT * FROM v$resource_limit';
-          $s = oci_parse($c, $sql);
-          oci_execute($s);
-          while ($r = oci_fetch_assoc($s)) {
-              print_r($r);
-          }
+          runQuery($c, "
+              SELECT username,
+                     status,
+                     COUNT(*) cnt
+              FROM v\$session
+              GROUP BY username, status
+              ORDER BY username, status
+          ");
 
+          echo "\n=== Sessions by user/program/status ===\n";
 
-          echo "\nSessions:\n";
-          $s = oci_parse($c, '
-              SELECT status, COUNT(*) cnt
-              FROM v$session
-              GROUP BY status
-          ');
-          oci_execute($s);
-
-          while ($r = oci_fetch_assoc($s)) {
-              print_r($r);
-          }
+          runQuery($c, "
+              SELECT username,
+                     program,
+                     status,
+                     COUNT(*) cnt
+              FROM v\$session
+              GROUP BY username, program, status
+              ORDER BY cnt DESC
+          ");
 
           oci_close($c);
           PHP
@@ -323,9 +359,10 @@ jobs:
       - name: "Run tests: Oracle - OCI8"
         if: success() || failure()
         env:
+          # connection to portable database
           DB_DSN: "oci8:dbname=oracle/${{ matrix.type == 'Phpunit Lowest' && 'freepdb1' || 'xepdb1' }}"
-          DB_USER: system
-          DB_PASSWORD: atk4_pass
+          DB_USER: atk4_test_user
+          DB_PASSWORD: atk4_user_pass
           NLS_LANG: AMERICAN_AMERICA.AL32UTF8
         run: |
           php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
@@ -335,55 +372,92 @@ jobs:
         run: |
           php <<'PHP'
           <?php
+
           $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
           echo "Using $image\n";
 
-          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREEPDB1' || 'XEPDB1' }}";
-          $c = oci_connect('system', 'atk4_pass', 'oracle:1521/'.$db);
+          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREE' || 'XE' }}";
+          echo "Using service: $db\n";
+
+          $c = @oci_connect('system', 'atk4_pass', 'oracle:1521/' . $db);
 
           if (!$c) {
+              echo "Connection failed:\n";
               print_r(oci_error());
               exit(1);
           }
 
-          echo "\nResource limits:\n";
-          $sql = '
+          echo "Connected successfully\n";
+
+          function runQuery($c, string $sql): void
+          {
+              $s = oci_parse($c, $sql);
+
+              if (!$s) {
+                  echo "oci_parse() failed:\n";
+                  print_r(oci_error($c));
+                  exit(1);
+              }
+
+              if (!oci_execute($s)) {
+                  echo "oci_execute() failed for:\n$sql\n";
+                  print_r(oci_error($s));
+                  exit(1);
+              }
+
+              while ($r = oci_fetch_assoc($s)) {
+                  print_r($r);
+              }
+
+              oci_free_statement($s);
+          }
+
+          echo "\n=== Resource limits ===\n";
+
+          runQuery($c, "
               SELECT resource_name,
                      current_utilization,
                      max_utilization,
                      limit_value
-              FROM v$resource_limit
-              WHERE resource_name IN (\'processes\', \'sessions\')
-          ';
+              FROM v\$resource_limit
+              WHERE resource_name IN ('processes', 'sessions')
+              ORDER BY resource_name
+          ");
 
-          $s = oci_parse($c, $sql);
-          oci_execute($s);
+          echo "\n=== All resource limits ===\n";
 
-          while ($r = oci_fetch_assoc($s)) {
-              print_r($r);
-          }
+          runQuery($c, "
+              SELECT resource_name,
+                     current_utilization,
+                     max_utilization,
+                     initial_allocation,
+                     limit_value
+              FROM v\$resource_limit
+              ORDER BY resource_name
+          ");
 
+          echo "\n=== Sessions by user/status ===\n";
 
-          echo "\nResource limits:\n";
-          $sql = 'SELECT * FROM v$resource_limit';
-          $s = oci_parse($c, $sql);
-          oci_execute($s);
-          while ($r = oci_fetch_assoc($s)) {
-              print_r($r);
-          }
+          runQuery($c, "
+              SELECT username,
+                     status,
+                     COUNT(*) cnt
+              FROM v\$session
+              GROUP BY username, status
+              ORDER BY username, status
+          ");
 
+          echo "\n=== Sessions by user/program/status ===\n";
 
-          echo "\nSessions:\n";
-          $s = oci_parse($c, '
-              SELECT status, COUNT(*) cnt
-              FROM v$session
-              GROUP BY status
-          ');
-          oci_execute($s);
-
-          while ($r = oci_fetch_assoc($s)) {
-              print_r($r);
-          }
+          runQuery($c, "
+              SELECT username,
+                     program,
+                     status,
+                     COUNT(*) cnt
+              FROM v\$session
+              GROUP BY username, program, status
+              ORDER BY cnt DESC
+          ");
 
           oci_close($c);
           PHP
