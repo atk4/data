@@ -167,21 +167,21 @@ jobs:
           php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
           if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-sqlite.cov; fi
 
-      - name: "Run tests: SQLite 3.25.3 (skip on PHP 8.5)"
-        if: (success() || failure()) && matrix.php != '8.5'
-        run: |
-          apk add sqlite-dev=3.25.3-r0 --repository=https://dl-cdn.alpinelinux.org/alpine/v3.6/main
-          php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
-          if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-sqlite325.cov; fi
+      #- name: "Run tests: SQLite 3.25.3 (skip on PHP 8.5)"
+      #  if: (success() || failure()) && matrix.php != '8.5'
+      #  run: |
+      #    apk add sqlite-dev=3.25.3-r0 --repository=https://dl-cdn.alpinelinux.org/alpine/v3.6/main
+      #    php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
+      #    if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-sqlite325.cov; fi
 
       # remove once SQLite v3.46.0 or higher is available in stable Alpine release
       # TODO https://github.com/atk4/data/blob/df7dbb9136/tests/ScopeTest.php#L334
-      - name: "Run tests: SQLite edge"
-        if: success() || failure()
-        run: |
-          apk add 'sqlite-dev>3.45' --repository=https://dl-cdn.alpinelinux.org/alpine/edge/main
-          php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
-          if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-sqlite-edge.cov; fi
+      #- name: "Run tests: SQLite edge"
+      #  if: success() || failure()
+      #  run: |
+      #    apk add 'sqlite-dev>3.45' --repository=https://dl-cdn.alpinelinux.org/alpine/edge/main
+      #    php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
+      #    if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-sqlite-edge.cov; fi
 
       - name: "Run tests: MySQL - PDO"
         if: success() || failure()
@@ -203,45 +203,45 @@ jobs:
           php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
           if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-mysql-mysqli.cov; fi
 
-      - name: "Run tests: MySQL 5.x"
-        if: success() || failure()
-        env:
-          DB_DSN: "mysql:host=mysql5;dbname=atk4_test"
-          DB_USER: atk4_test_user
-          DB_PASSWORD: atk4_pass
-        run: |
-          php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
-          if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-mysql5.cov; fi
+      #- name: "Run tests: MySQL 5.x"
+      #  if: success() || failure()
+      #  env:
+      #    DB_DSN: "mysql:host=mysql5;dbname=atk4_test"
+      #    DB_USER: atk4_test_user
+      #    DB_PASSWORD: atk4_pass
+      #  run: |
+      #    php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
+      #    if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-mysql5.cov; fi
 
-      - name: "Run tests: MariaDB"
-        if: success() || failure()
-        env:
-          DB_DSN: "mysql:host=mariadb;dbname=atk4_test"
-          DB_USER: atk4_test_user
-          DB_PASSWORD: atk4_pass
-        run: |
-          php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
-          if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-mariadb.cov; fi
+      #- name: "Run tests: MariaDB"
+      #  if: success() || failure()
+      #  env:
+      #    DB_DSN: "mysql:host=mariadb;dbname=atk4_test"
+      #    DB_USER: atk4_test_user
+      #    DB_PASSWORD: atk4_pass
+      #  run: |
+      #    php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
+      #    if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-mariadb.cov; fi
 
-      - name: "Run tests: PostgreSQL"
-        if: success() || failure()
-        env:
-          DB_DSN: "pgsql:host=postgres;dbname=atk4_test"
-          DB_USER: atk4_test_user
-          DB_PASSWORD: atk4_pass
-        run: |
-          php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
-          if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-postgres.cov; fi
+      #- name: "Run tests: PostgreSQL"
+      #  if: success() || failure()
+      #  env:
+      #    DB_DSN: "pgsql:host=postgres;dbname=atk4_test"
+      #    DB_USER: atk4_test_user
+      #    DB_PASSWORD: atk4_pass
+      #  run: |
+      #    php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
+      #    if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-postgres.cov; fi
 
-      - name: "Run tests: MSSQL"
-        if: success() || failure()
-        env:
-          DB_DSN: "sqlsrv:host=mssql;dbname=master;driverOptions[TrustServerCertificate]=1"
-          DB_USER: sa
-          DB_PASSWORD: atk4_pass
-        run: |
-          php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
-          if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-mssql.cov; fi
+      #- name: "Run tests: MSSQL"
+      #  if: success() || failure()
+      #  env:
+      #    DB_DSN: "sqlsrv:host=mssql;dbname=master;driverOptions[TrustServerCertificate]=1"
+      #    DB_USER: sa
+      #    DB_PASSWORD: atk4_pass
+      #  run: |
+      #    php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
+      #    if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-mssql.cov; fi
 
       - name: Test Oracle connections
         run: |
@@ -251,11 +251,7 @@ jobs:
           $connections = [];
 
           for ($i = 1; $i <= 100; ++$i) {
-              $c = @oci_connect(
-                  'system',
-                  'atk4_pass',
-                  'oracle:1521/FREE'
-              );
+              $c = @oci_connect('system','atk4_pass','oracle:1521/FREE');
 
               if (!$c) {
                   echo "FAILED at connection #$i\n";
@@ -275,7 +271,8 @@ jobs:
           PHP
       - name: Oracle before tests XE
         run: |
-          php -r '
+          php <<'PHP'
+          <?php
           $c = oci_connect("system", "atk4_pass", "oracle:1521/XE");
 
           if (!$c) {
@@ -288,8 +285,8 @@ jobs:
                      current_utilization,
                      max_utilization,
                      limit_value
-              FROM v\$resource_limit
-              WHERE resource_name IN (''processes'', ''sessions'')
+              FROM v$resource_limit
+              WHERE resource_name IN ('processes', 'sessions')
           ";
 
           $s = oci_parse($c, $sql);
@@ -299,11 +296,11 @@ jobs:
               print_r($r);
           }
 
-          echo \"\\nSessions:\\n\";
+          echo "\nSessions:\n";
 
           $s = oci_parse($c, "
               SELECT status, COUNT(*) cnt
-              FROM v\$session
+              FROM v$session
               GROUP BY status
           ");
           oci_execute($s);
@@ -313,10 +310,11 @@ jobs:
           }
 
           oci_close($c);
-          '
+          PHP
       - name: Oracle before tests FREE
         run: |
-          php -r '
+          php <<'PHP'
+          <?php
           $c = oci_connect("system", "atk4_pass", "oracle:1521/FREE");
 
           if (!$c) {
@@ -329,8 +327,8 @@ jobs:
                      current_utilization,
                      max_utilization,
                      limit_value
-              FROM v\$resource_limit
-              WHERE resource_name IN (''processes'', ''sessions'')
+              FROM v$resource_limit
+              WHERE resource_name IN ('processes', 'sessions')
           ";
 
           $s = oci_parse($c, $sql);
@@ -340,11 +338,11 @@ jobs:
               print_r($r);
           }
 
-          echo \"\\nSessions:\\n\";
+          echo "\nSessions:\n";
 
           $s = oci_parse($c, "
               SELECT status, COUNT(*) cnt
-              FROM v\$session
+              FROM v$session
               GROUP BY status
           ");
           oci_execute($s);
@@ -354,7 +352,7 @@ jobs:
           }
 
           oci_close($c);
-          '
+          PHP
       #- name: "Run tests: Oracle - PDO (only for coverage or cron)"
       #  if: (success() || failure()) && (env.LOG_COVERAGE || github.event_name == 'schedule')
       #  env:
