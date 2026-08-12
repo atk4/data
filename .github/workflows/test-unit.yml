@@ -121,8 +121,8 @@ jobs:
         env:
           ORACLE_PASSWORD: atk4_pass
           #ORACLE_RANDOM_PASSWORD: true
-          APP_USER: atk4_test_user
-          APP_USER_PASSWORD: atk4_pass
+          #APP_USER: atk4_test_user
+          #APP_USER_PASSWORD: atk4_pass
         # Provide healthcheck script options for startup
         options: >-
           --health-cmd healthcheck.sh
@@ -392,7 +392,7 @@ jobs:
         if: success() || failure()
         env:
           DB_DSN: "oci8:dbname=oracle/freepdb1"
-          DB_USER: atk4_test_user
+          DB_USER: system
           DB_PASSWORD: atk4_pass
           NLS_LANG: AMERICAN_AMERICA.AL32UTF8
         run: |
