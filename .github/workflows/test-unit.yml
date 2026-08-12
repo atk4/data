@@ -117,7 +117,7 @@ jobs:
           ACCEPT_EULA: Y
           SA_PASSWORD: atk4_pass
       oracle:
-        image: gvenzl/${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:latest-slim-faststart' || 'oracle-xe:18-slim-faststart' }}
+        image: gvenzl/${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}
         env:
           #ORACLE_PASSWORD: atk4_pass
           ORACLE_RANDOM_PASSWORD: true
@@ -256,10 +256,10 @@ jobs:
         run: |
           php <<'PHP'
           <?php
-          $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:latest-slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
+          $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
           echo "Using $image\n";
 
-          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREEPDB1' || 'XE' }}";
+          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREEPDB1' || 'XEPDB1' }}";
           $c = oci_connect('atk4_test_user', 'atk4_pass', 'oracle:1521/'.$db);
 
           if (!$c) {
@@ -304,7 +304,7 @@ jobs:
           php <<'PHP'
           <?php
 
-          $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:latest-slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
+          $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
           echo "Using $image\n";
 
           $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREEPDB1' || 'XE' }}";
@@ -334,7 +334,7 @@ jobs:
         run: |
           php <<'PHP'
           <?php
-          $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:latest-slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
+          $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
           echo "Using $image\n";
 
           $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREEPDB1' || 'XE' }}";
@@ -403,7 +403,7 @@ jobs:
         run: |
           php <<'PHP'
           <?php
-          $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:latest-slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
+          $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
           echo "Using $image\n";
 
           $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREEPDB1' || 'XE' }}";
