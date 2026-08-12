@@ -252,6 +252,7 @@ jobs:
       #    if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-mssql.cov; fi
 
       - name: Oracle stats before tests
+        if: success() || failure()
         run: |
           php <<'PHP'
           <?php
@@ -345,6 +346,7 @@ jobs:
           if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-oracle-oci8.cov; fi
 
       - name: Oracle stats after tests
+        if: success() || failure()
         run: |
           php <<'PHP'
           <?php
