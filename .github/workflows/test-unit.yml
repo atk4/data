@@ -243,37 +243,15 @@ jobs:
       #    php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
       #    if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-mssql.cov; fi
 
-      - name: Test Oracle connections
+      - name: Oracle stats before tests
         run: |
           php <<'PHP'
           <?php
+          $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
+          echo "Using $image\n";
 
-          $connections = [];
-
-          for ($i = 1; $i <= 100; ++$i) {
-              $c = @oci_connect('system','atk4_pass','oracle:1521/FREE');
-
-              if (!$c) {
-                  echo "FAILED at connection #$i\n";
-                  print_r(oci_error());
-                  break;
-              }
-
-              $connections[] = $c;
-              echo "Connection #$i OK\n";
-          }
-
-          echo "Successful connections: " . count($connections) . "\n";
-
-          foreach ($connections as $c) {
-              oci_close($c);
-          }
-          PHP
-      - name: Oracle before tests XE
-        run: |
-          php <<'PHP'
-          <?php
-          $c = oci_connect('system', 'atk4_pass', 'oracle:1521/XE');
+          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREE' || 'XE' }}";
+          $c = oci_connect('system', 'atk4_pass', 'oracle:1521/'.$db);
 
           if (!$c) {
               print_r(oci_error());
@@ -311,11 +289,41 @@ jobs:
 
           oci_close($c);
           PHP
-      - name: Oracle before tests FREE
+      - name: Test Oracle connections
         run: |
           php <<'PHP'
           <?php
-          $c = oci_connect('system', 'atk4_pass', 'oracle:1521/FREE');
+
+          $connections = [];
+
+          for ($i = 1; $i <= 100; ++$i) {
+              $c = @oci_connect('system','atk4_pass','oracle:1521/FREE');
+
+              if (!$c) {
+                  echo "FAILED at connection #$i\n";
+                  print_r(oci_error());
+                  break;
+              }
+
+              $connections[] = $c;
+              echo "Connection #$i OK\n";
+          }
+
+          echo "Successful connections: " . count($connections) . "\n";
+
+          foreach ($connections as $c) {
+              oci_close($c);
+          }
+          PHP
+      - name: Oracle stats before tests 2
+        run: |
+          php <<'PHP'
+          <?php
+          $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
+          echo "Using $image\n";
+
+          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREE' || 'XE' }}";
+          $c = oci_connect('system', 'atk4_pass', 'oracle:1521/'.$db);
 
           if (!$c) {
               print_r(oci_error());
