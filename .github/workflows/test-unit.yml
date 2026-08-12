@@ -299,84 +299,6 @@ jobs:
           oci_close($c);
           PHP
 
-      - name: Test Oracle connections
-        run: |
-          php <<'PHP'
-          <?php
-
-          $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
-          echo "Using $image\n";
-
-          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREEPDB1' || 'XEPDB1' }}";
-
-          $connections = [];
-          for ($i = 1; $i <= 100; ++$i) {
-              $c = @oci_connect('system','atk4_pass','oracle:1521/'.$db);
-
-              if (!$c) {
-                  echo "FAILED at connection #$i\n";
-                  print_r(oci_error());
-                  break;
-              }
-
-              $connections[] = $c;
-              echo "Connection #$i OK\n";
-          }
-
-          echo "Successful connections: " . count($connections) . "\n";
-
-          foreach ($connections as $c) {
-              oci_close($c);
-          }
-          PHP
-
-      - name: Oracle stats before tests 2
-        run: |
-          php <<'PHP'
-          <?php
-          $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
-          echo "Using $image\n";
-
-          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREEPDB1' || 'XEPDB1' }}";
-          $c = oci_connect('system', 'atk4_pass', 'oracle:1521/'.$db);
-
-          if (!$c) {
-              print_r(oci_error());
-              exit(1);
-          }
-
-          $sql = '
-              SELECT resource_name,
-                     current_utilization,
-                     max_utilization,
-                     limit_value
-              FROM v$resource_limit
-              WHERE resource_name IN (\'processes\', \'sessions\')
-          ';
-
-          $s = oci_parse($c, $sql);
-          oci_execute($s);
-
-          while ($r = oci_fetch_assoc($s)) {
-              print_r($r);
-          }
-
-          echo "\nSessions:\n";
-
-          $s = oci_parse($c, '
-              SELECT status, COUNT(*) cnt
-              FROM v$session
-              GROUP BY status
-          ');
-          oci_execute($s);
-
-          while ($r = oci_fetch_assoc($s)) {
-              print_r($r);
-          }
-
-          oci_close($c);
-          PHP
-
       #- name: "Run tests: Oracle - PDO (only for coverage or cron)"
       #  if: (success() || failure()) && (env.LOG_COVERAGE || github.event_name == 'schedule')
       #  env:
@@ -391,7 +313,7 @@ jobs:
       - name: "Run tests: Oracle - OCI8"
         if: success() || failure()
         env:
-          DB_DSN: "oci8:dbname=oracle/freepdb1"
+          DB_DSN: "oci8:dbname=oracle/${{ matrix.type == 'Phpunit Lowest' && 'freepdb1' || 'xepdb1' }}"
           DB_USER: system
           DB_PASSWORD: atk4_pass
           NLS_LANG: AMERICAN_AMERICA.AL32UTF8

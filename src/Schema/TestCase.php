@@ -48,7 +48,7 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-        $this->db = new TestSqlPersistence();
+        $this->db ??= new TestSqlPersistence();
     }
 
     #[\Override]
