@@ -267,6 +267,7 @@ jobs:
               exit(1);
           }
 
+          echo "\nResource limits:\n";
           $sql = '
               SELECT resource_name,
                      current_utilization,
@@ -284,7 +285,6 @@ jobs:
           }
 
           echo "\nSessions:\n";
-
           $s = oci_parse($c, '
               SELECT status, COUNT(*) cnt
               FROM v$session
@@ -336,6 +336,7 @@ jobs:
               exit(1);
           }
 
+          echo "\nResource limits:\n";
           $sql = '
               SELECT resource_name,
                      current_utilization,
@@ -353,7 +354,6 @@ jobs:
           }
 
           echo "\nSessions:\n";
-
           $s = oci_parse($c, '
               SELECT status, COUNT(*) cnt
               FROM v$session
