@@ -260,7 +260,7 @@ jobs:
           echo "Using $image\n";
 
           $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREEPDB1' || 'XEPDB1' }}";
-          $c = oci_connect('atk4_test_user', 'atk4_pass', 'oracle:1521/'.$db);
+          $c = oci_connect('system', 'atk4_pass', 'oracle:1521/'.$db);
 
           if (!$c) {
               print_r(oci_error());
@@ -307,7 +307,7 @@ jobs:
           $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
           echo "Using $image\n";
 
-          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREEPDB1' || 'XE' }}";
+          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREEPDB1' || 'XEPDB1' }}";
 
           $connections = [];
           for ($i = 1; $i <= 100; ++$i) {
@@ -337,7 +337,7 @@ jobs:
           $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
           echo "Using $image\n";
 
-          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREEPDB1' || 'XE' }}";
+          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREEPDB1' || 'XEPDB1' }}";
           $c = oci_connect('system', 'atk4_pass', 'oracle:1521/'.$db);
 
           if (!$c) {
@@ -406,7 +406,7 @@ jobs:
           $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
           echo "Using $image\n";
 
-          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREEPDB1' || 'XE' }}";
+          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREEPDB1' || 'XEPDB1' }}";
           $c = oci_connect('system', 'atk4_pass', 'oracle:1521/'.$db);
 
           if (!$c) {
