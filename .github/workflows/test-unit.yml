@@ -307,18 +307,6 @@ jobs:
               ORDER BY resource_name
           ");
 
-          echo "\n=== All resource limits ===\n";
-
-          runQuery($c, "
-              SELECT resource_name,
-                     current_utilization,
-                     max_utilization,
-                     initial_allocation,
-                     limit_value
-              FROM v\$resource_limit
-              ORDER BY resource_name
-          ");
-
           echo "\n=== Sessions by user/status ===\n";
 
           runQuery($c, "
@@ -330,27 +318,15 @@ jobs:
               ORDER BY username, status
           ");
 
-          echo "\n=== Sessions by user/program/status ===\n";
-
-          runQuery($c, "
-              SELECT username,
-                     program,
-                     status,
-                     COUNT(*) cnt
-              FROM v\$session
-              GROUP BY username, program, status
-              ORDER BY cnt DESC
-          ");
-
           oci_close($c);
           PHP
 
       #- name: "Run tests: Oracle - PDO (only for coverage or cron)"
       #  if: (success() || failure()) && (env.LOG_COVERAGE || github.event_name == 'schedule')
       #  env:
-      #    DB_DSN: "pdo_oci:dbname=oracle/freepdb1"
-      #    DB_USER: system
-      #    DB_PASSWORD: atk4_pass
+      #    DB_DSN: "pdo_oci:dbname=oracle/${{ matrix.type == 'Phpunit Lowest' && 'freepdb1' || 'xepdb1' }}"
+      #    DB_USER: atk4_test_user
+      #    DB_PASSWORD: atk4_user_pass
       #    NLS_LANG: AMERICAN_AMERICA.AL32UTF8
       #  run: |
       #    php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
@@ -424,18 +400,6 @@ jobs:
               ORDER BY resource_name
           ");
 
-          echo "\n=== All resource limits ===\n";
-
-          runQuery($c, "
-              SELECT resource_name,
-                     current_utilization,
-                     max_utilization,
-                     initial_allocation,
-                     limit_value
-              FROM v\$resource_limit
-              ORDER BY resource_name
-          ");
-
           echo "\n=== Sessions by user/status ===\n";
 
           runQuery($c, "
@@ -445,18 +409,6 @@ jobs:
               FROM v\$session
               GROUP BY username, status
               ORDER BY username, status
-          ");
-
-          echo "\n=== Sessions by user/program/status ===\n";
-
-          runQuery($c, "
-              SELECT username,
-                     program,
-                     status,
-                     COUNT(*) cnt
-              FROM v\$session
-              GROUP BY username, program, status
-              ORDER BY cnt DESC
           ");
 
           oci_close($c);
