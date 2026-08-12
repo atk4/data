@@ -259,7 +259,7 @@ jobs:
           $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
           echo "Using $image\n";
 
-          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREEPDB1' || 'XEPDB1' }}";
+          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREE' || 'XE' }}";
           $c = oci_connect('system', 'atk4_pass', 'oracle:1521/'.$db);
 
           if (!$c) {
@@ -283,6 +283,15 @@ jobs:
           while ($r = oci_fetch_assoc($s)) {
               print_r($r);
           }
+
+
+          $sql = 'SELECT * FROM v$resource_limit';
+          $s = oci_parse($c, $sql);
+          oci_execute($s);
+          while ($r = oci_fetch_assoc($s)) {
+              print_r($r);
+          }
+
 
           echo "\nSessions:\n";
           $s = oci_parse($c, '
