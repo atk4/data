@@ -289,15 +289,20 @@ jobs:
 
           oci_close($c);
           PHP
+
       - name: Test Oracle connections
         run: |
           php <<'PHP'
           <?php
 
-          $connections = [];
+          $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
+          echo "Using $image\n";
 
+          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREE' || 'XE' }}";
+
+          $connections = [];
           for ($i = 1; $i <= 100; ++$i) {
-              $c = @oci_connect('system','atk4_pass','oracle:1521/FREE');
+              $c = @oci_connect('system','atk4_pass','oracle:1521/'.$db);
 
               if (!$c) {
                   echo "FAILED at connection #$i\n";
@@ -315,6 +320,7 @@ jobs:
               oci_close($c);
           }
           PHP
+
       - name: Oracle stats before tests 2
         run: |
           php <<'PHP'
@@ -361,6 +367,7 @@ jobs:
 
           oci_close($c);
           PHP
+
       #- name: "Run tests: Oracle - PDO (only for coverage or cron)"
       #  if: (success() || failure()) && (env.LOG_COVERAGE || github.event_name == 'schedule')
       #  env:
@@ -382,6 +389,53 @@ jobs:
       #  run: |
       #    php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
       #    if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-oracle-oci8.cov; fi
+
+      - name: Oracle stats after tests
+        run: |
+          php <<'PHP'
+          <?php
+          $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
+          echo "Using $image\n";
+
+          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREE' || 'XE' }}";
+          $c = oci_connect('system', 'atk4_pass', 'oracle:1521/'.$db);
+
+          if (!$c) {
+              print_r(oci_error());
+              exit(1);
+          }
+
+          $sql = '
+              SELECT resource_name,
+                     current_utilization,
+                     max_utilization,
+                     limit_value
+              FROM v$resource_limit
+              WHERE resource_name IN (\'processes\', \'sessions\')
+          ';
+
+          $s = oci_parse($c, $sql);
+          oci_execute($s);
+
+          while ($r = oci_fetch_assoc($s)) {
+              print_r($r);
+          }
+
+          echo "\nSessions:\n";
+
+          $s = oci_parse($c, '
+              SELECT status, COUNT(*) cnt
+              FROM v$session
+              GROUP BY status
+          ');
+          oci_execute($s);
+
+          while ($r = oci_fetch_assoc($s)) {
+              print_r($r);
+          }
+
+          oci_close($c);
+          PHP
 
       - name: Upload coverage logs 1/2 (only for coverage)
         if: env.LOG_COVERAGE
