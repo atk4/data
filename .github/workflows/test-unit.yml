@@ -285,6 +285,7 @@ jobs:
           }
 
 
+          echo "\nResource limits:\n";
           $sql = 'SELECT * FROM v$resource_limit';
           $s = oci_parse($c, $sql);
           oci_execute($s);
@@ -361,6 +362,16 @@ jobs:
           while ($r = oci_fetch_assoc($s)) {
               print_r($r);
           }
+
+
+          echo "\nResource limits:\n";
+          $sql = 'SELECT * FROM v$resource_limit';
+          $s = oci_parse($c, $sql);
+          oci_execute($s);
+          while ($r = oci_fetch_assoc($s)) {
+              print_r($r);
+          }
+
 
           echo "\nSessions:\n";
           $s = oci_parse($c, '

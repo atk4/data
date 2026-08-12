@@ -74,10 +74,6 @@ abstract class TestCase extends BaseTestCase
             }, null, Reference::class)();
         }
 
-// testing
-$this->db = null;
-gc_collect_cycles();
-
         parent::tearDown();
     }
 
