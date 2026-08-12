@@ -117,9 +117,18 @@ jobs:
           ACCEPT_EULA: Y
           SA_PASSWORD: atk4_pass
       oracle:
-        image: gvenzl/${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}
+        image: gvenzl/${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:latest-slim-faststart' || 'oracle-xe:18-slim-faststart' }}
         env:
-          ORACLE_PASSWORD: atk4_pass
+          #ORACLE_PASSWORD: atk4_pass
+          ORACLE_RANDOM_PASSWORD: true
+          APP_USER: atk4_test_user
+          APP_USER_PASSWORD: atk4_pass
+        # Provide healthcheck script options for startup
+        options: >-
+          --health-cmd healthcheck.sh
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -247,11 +256,11 @@ jobs:
         run: |
           php <<'PHP'
           <?php
-          $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
+          $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:latest-slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
           echo "Using $image\n";
 
-          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREE' || 'XE' }}";
-          $c = oci_connect('system', 'atk4_pass', 'oracle:1521/'.$db);
+          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREEPDB1' || 'XE' }}";
+          $c = oci_connect('atk4_test_user', 'atk4_pass', 'oracle:1521/'.$db);
 
           if (!$c) {
               print_r(oci_error());
@@ -295,10 +304,10 @@ jobs:
           php <<'PHP'
           <?php
 
-          $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
+          $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:latest-slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
           echo "Using $image\n";
 
-          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREE' || 'XE' }}";
+          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREEPDB1' || 'XE' }}";
 
           $connections = [];
           for ($i = 1; $i <= 100; ++$i) {
@@ -325,10 +334,10 @@ jobs:
         run: |
           php <<'PHP'
           <?php
-          $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
+          $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:latest-slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
           echo "Using $image\n";
 
-          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREE' || 'XE' }}";
+          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREEPDB1' || 'XE' }}";
           $c = oci_connect('system', 'atk4_pass', 'oracle:1521/'.$db);
 
           if (!$c) {
@@ -371,7 +380,7 @@ jobs:
       #- name: "Run tests: Oracle - PDO (only for coverage or cron)"
       #  if: (success() || failure()) && (env.LOG_COVERAGE || github.event_name == 'schedule')
       #  env:
-      #    DB_DSN: "pdo_oci:dbname=oracle/free"
+      #    DB_DSN: "pdo_oci:dbname=oracle/freepdb1"
       #    DB_USER: system
       #    DB_PASSWORD: atk4_pass
       #    NLS_LANG: AMERICAN_AMERICA.AL32UTF8
@@ -382,8 +391,8 @@ jobs:
       - name: "Run tests: Oracle - OCI8"
         if: success() || failure()
         env:
-          DB_DSN: "oci8:dbname=oracle/free"
-          DB_USER: system
+          DB_DSN: "oci8:dbname=oracle/freepdb1"
+          DB_USER: atk4_test_user
           DB_PASSWORD: atk4_pass
           NLS_LANG: AMERICAN_AMERICA.AL32UTF8
         run: |
@@ -394,10 +403,10 @@ jobs:
         run: |
           php <<'PHP'
           <?php
-          $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
+          $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:latest-slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
           echo "Using $image\n";
 
-          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREE' || 'XE' }}";
+          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREEPDB1' || 'XE' }}";
           $c = oci_connect('system', 'atk4_pass', 'oracle:1521/'.$db);
 
           if (!$c) {
