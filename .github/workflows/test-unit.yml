@@ -119,8 +119,8 @@ jobs:
       oracle:
         image: gvenzl/${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}
         env:
-          #ORACLE_PASSWORD: atk4_pass
-          ORACLE_RANDOM_PASSWORD: true
+          ORACLE_PASSWORD: atk4_pass
+          #ORACLE_RANDOM_PASSWORD: true
           APP_USER: atk4_test_user
           APP_USER_PASSWORD: atk4_pass
         # Provide healthcheck script options for startup
