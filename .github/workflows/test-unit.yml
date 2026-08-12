@@ -159,7 +159,6 @@ jobs:
           php -r '(new PDO("mysql:host=mysql5", "root", "atk4_pass_root"))->exec("GRANT USAGE ON *.* TO '"'"'atk4_test_user'"'"'@'"'"'%'"'"' WITH MAX_USER_CONNECTIONS 5");'
           php -r '(new PDO("mysql:host=mariadb", "root", "atk4_pass_root"))->exec("ALTER USER '"'"'atk4_test_user'"'"'@'"'"'%'"'"' WITH MAX_USER_CONNECTIONS 5");'
           php -r '(new PDO("pgsql:host=postgres;dbname=atk4_test", "atk4_test_user", "atk4_pass"))->exec("ALTER ROLE atk4_test_user CONNECTION LIMIT 1");'
-          cat /usr/lib/oracle/setup.sh
           /usr/lib/oracle/setup.sh
           if [ -n "$LOG_COVERAGE" ]; then mkdir coverage; echo "memory_limit = 192M" > /usr/local/etc/php/conf.d/custom-memory-limit.ini; fi
 
@@ -274,26 +273,87 @@ jobs:
               oci_close($c);
           }
           PHP
-      - name: Oracle diagnostics
-        if: success() || failure()
+      - name: Oracle before tests XE
         run: |
-          echo "PHP:"
-          php --version
-
-          echo "OCI8:"
-          php --ri oci8 || true
-
-          echo "Oracle processes:"
           php -r '
-          $dsn = "oci8:dbname=oracle/free";
-          $c = new PDO($dsn, "system", "atk4_pass");
-          foreach ($c->query("
-              SELECT resource_name, current_utilization, max_utilization, limit_value
+          $c = oci_connect("system", "atk4_pass", "oracle:1521/XE");
+
+          if (!$c) {
+              print_r(oci_error());
+              exit(1);
+          }
+
+          $sql = "
+              SELECT resource_name,
+                     current_utilization,
+                     max_utilization,
+                     limit_value
               FROM v\$resource_limit
-              WHERE resource_name IN ('\''processes'\'', '\''sessions'\'')
-          ") as $r) {
+              WHERE resource_name IN (''processes'', ''sessions'')
+          ";
+
+          $s = oci_parse($c, $sql);
+          oci_execute($s);
+
+          while ($r = oci_fetch_assoc($s)) {
               print_r($r);
           }
+
+          echo \"\\nSessions:\\n\";
+
+          $s = oci_parse($c, "
+              SELECT status, COUNT(*) cnt
+              FROM v\$session
+              GROUP BY status
+          ");
+          oci_execute($s);
+
+          while ($r = oci_fetch_assoc($s)) {
+              print_r($r);
+          }
+
+          oci_close($c);
+          '
+      - name: Oracle before tests FREE
+        run: |
+          php -r '
+          $c = oci_connect("system", "atk4_pass", "oracle:1521/FREE");
+
+          if (!$c) {
+              print_r(oci_error());
+              exit(1);
+          }
+
+          $sql = "
+              SELECT resource_name,
+                     current_utilization,
+                     max_utilization,
+                     limit_value
+              FROM v\$resource_limit
+              WHERE resource_name IN (''processes'', ''sessions'')
+          ";
+
+          $s = oci_parse($c, $sql);
+          oci_execute($s);
+
+          while ($r = oci_fetch_assoc($s)) {
+              print_r($r);
+          }
+
+          echo \"\\nSessions:\\n\";
+
+          $s = oci_parse($c, "
+              SELECT status, COUNT(*) cnt
+              FROM v\$session
+              GROUP BY status
+          ");
+          oci_execute($s);
+
+          while ($r = oci_fetch_assoc($s)) {
+              print_r($r);
+          }
+
+          oci_close($c);
           '
       #- name: "Run tests: Oracle - PDO (only for coverage or cron)"
       #  if: (success() || failure()) && (env.LOG_COVERAGE || github.event_name == 'schedule')
