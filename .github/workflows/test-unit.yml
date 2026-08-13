@@ -259,14 +259,15 @@ jobs:
           <?php
 
           // config
-          $iterations = 50_000;
-          $retry_interval = 10; // miliseconds (1s = 1000ms)
-          $retry_retries = 100; // number of retries
+          $iterations = 10_000;
+          $retry_interval_base = 5; // miliseconds
+          $retry_interval_max = 1000; // miliseconds
+          $retry_retries = 10; // number of retries
 
           $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREEPDB1' || 'XEPDB1' }}";
 
           function getConnection($i) {
-            global $db, $retry_interval, $retry_retries;
+            global $db, $retry_interval_base, $retry_interval_max, $retry_retries;
 
             $c = null;
             for ($r = 1; $r <= $retry_retries; $r++) {
@@ -283,8 +284,9 @@ jobs:
               print_r(oci_error());
 
               if ($r < $retry_retries) {
-                usleep($retry_interval * 1000);
-                echo "Retry [$r]\n";
+                $timeoutMs = min($retry_interval_base << ($r - 1), $retry_interval_max);
+                usleep($timeoutMs * 1000); // exponential
+                echo "Retry [$r, timeout $timeoutMs ms]\n";
               } else {
                 echo "Giving up after $r retries\n";
               }
