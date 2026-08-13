@@ -399,6 +399,36 @@ jobs:
           php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
           if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-oracle-oci8.cov; fi
 
+      - name: Test FREEPDB1 connection after Oracle tests
+        if: always()
+        run: |
+          php <<'PHP'
+          <?php
+          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREEPDB1' || 'XEPDB1' }}";
+          echo "Connecting to $db...\n";
+
+          $c = @oci_connect(
+              "system",
+              "atk4_pass",
+              "oracle:1521/".$db
+          );
+
+          if (!$c) {
+              echo "FAILED:\n";
+              print_r(oci_error());
+              exit(1);
+          }
+
+          echo "SUCCESS\n";
+
+          $s = oci_parse($c, "SELECT sys_context('USERENV', 'SERVICE_NAME') FROM dual");
+          oci_execute($s);
+
+          var_dump(oci_fetch_array($s));
+
+          oci_close($c);
+          PHP
+
       - name: Oracle stats after tests
         if: success() || failure()
         run: |
