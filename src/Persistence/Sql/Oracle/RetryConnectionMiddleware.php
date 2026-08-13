@@ -37,7 +37,7 @@ class RetryConnectionMiddleware implements Middleware
                 for ($attempt = 0;; ++$attempt) {
                     try {
                         return parent::connect($params);
-                    } catch (ConnectionFailed $e) {
+                    } catch (ConnectionFailed $e) { // @phpstan-ignore catch.internalClass
                         if (
                             !in_array($e->getCode(), self::RETRY_ERROR_CODES, true)
                             || $attempt >= self::RETRY_COUNT
