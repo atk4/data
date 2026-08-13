@@ -319,12 +319,15 @@ jobs:
               oci_free_statement($s);
 
               $success_cnt++;
-              if ($success_cnt%100 == 0) echo "Successful connections: " . $success_cnt . "\n";
+              if ($success_cnt%200 == 0) echo "Successful connections: " . $success_cnt . "\n";
 
               oci_close($c);
           }
 
-          echo "Successful connections: " . $success_cnt . "\n";
+          echo "Total successful connections: " . $success_cnt . "\n";
+          if ($success_cnt < $iterations) {
+            exit(1);
+          }
 
           PHP
 
