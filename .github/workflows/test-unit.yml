@@ -265,7 +265,9 @@ jobs:
 
           $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREEPDB1' || 'XEPDB1' }}";
 
-          function getConnection() {
+          function getConnection($i) {
+            global $db, $retry_interval, $retry_retries;
+
             $c = null;
             for ($r = 1; $r <= $retry_retries; $r++) {
               $c = @oci_connect(
@@ -277,7 +279,7 @@ jobs:
                 break;
               }
 
-              echo "Failed to get connection [$r]:\n";
+              echo "Failed to get connection for iteration $i [try $r]:\n";
               print_r(oci_error());
 
               if ($r < $retry_retries) {
@@ -295,6 +297,9 @@ jobs:
 
           for ($i = 1; $i <= $iterations; ++$i) {
               $c = getConnection($i);
+              if (!$c) {
+                break;
+              }
 
               // select something
               $s = oci_parse($c, 'SELECT 1 FROM dual');
