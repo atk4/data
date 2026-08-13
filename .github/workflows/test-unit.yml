@@ -399,6 +399,12 @@ jobs:
           php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
           if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-oracle-oci8.cov; fi
 
+      - name: Get Oracle Listener / Container Logs
+        run: |
+          # Use the official GitHub service context to fetch logs directly
+          docker logs "${{ job.services.oracle.id }}" > ./oracle_container_logs.log
+          cat ./oracle_container_logs.log
+
       - name: Test FREEPDB1 connection after Oracle tests
         if: always()
         run: |
