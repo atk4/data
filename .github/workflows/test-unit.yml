@@ -331,144 +331,144 @@ jobs:
 
       #     PHP
 
-      - name: Oracle stats before tests
-        if: success() || failure()
+      # - name: Oracle stats before tests
+      #   if: success() || failure()
+      #   run: |
+      #     php <<'PHP'
+      #     <?php
+
+      #     $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
+      #     echo "Using $image\n";
+
+      #     $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREE' || 'XE' }}";
+      #     echo "Using service: $db\n";
+
+      #     $c = @oci_connect('system', 'atk4_pass', 'oracle:1521/' . $db);
+
+      #     if (!$c) {
+      #         echo "Connection failed:\n";
+      #         print_r(oci_error());
+      #         exit(1);
+      #     }
+
+      #     echo "Connected successfully\n";
+
+      #     function runQuery($c, string $sql): void
+      #     {
+      #         $s = oci_parse($c, $sql);
+
+      #         if (!$s) {
+      #             echo "oci_parse() failed:\n";
+      #             print_r(oci_error($c));
+      #             exit(1);
+      #         }
+
+      #         if (!oci_execute($s)) {
+      #             echo "oci_execute() failed for:\n$sql\n";
+      #             print_r(oci_error($s));
+      #             exit(1);
+      #         }
+
+      #         while ($r = oci_fetch_assoc($s)) {
+      #             print_r($r);
+      #         }
+
+      #         oci_free_statement($s);
+      #     }
+
+      #     echo "\n=== Resource limits ===\n";
+
+      #     runQuery($c, "
+      #         SELECT resource_name,
+      #                current_utilization,
+      #                max_utilization,
+      #                limit_value
+      #         FROM v\$resource_limit
+      #         WHERE resource_name IN ('processes', 'sessions')
+      #         ORDER BY resource_name
+      #     ");
+
+      #     echo "\n=== Services ===\n";
+
+      #     runQuery($c, "
+      #         SELECT
+      #             name,
+      #             network_name,
+      #             creation_date
+      #         FROM v\$services
+      #         ORDER BY name
+      #     ");
+
+      #     echo "\n=== Instances ===\n";
+
+      #     runQuery($c, "
+      #         SELECT
+      #             inst_id,
+      #             instance_name,
+      #             host_name,
+      #             status
+      #         FROM gv\$instance
+      #     ");
+
+      #     echo "\n=== Service sessions ===\n";
+
+      #     runQuery($c, "
+      #         SELECT
+      #             s.service_name,
+      #             s.status,
+      #             s.type,
+      #             s.server,
+      #             COUNT(*) AS cnt
+      #         FROM gv\$session s
+      #         GROUP BY
+      #             s.service_name,
+      #             s.status,
+      #             s.type,
+      #             s.server
+      #         ORDER BY
+      #             s.service_name,
+      #             s.status,
+      #             s.type,
+      #             s.server
+      #     ");
+
+      #     echo "\n=== PDB state ===\n";
+
+      #     runQuery($c, "
+      #         SELECT
+      #             name,
+      #             open_mode,
+      #             restricted
+      #         FROM v\$pdbs
+      #     ");
+
+      #     echo "\n=== Sessions by user/status ===\n";
+
+      #     runQuery($c, "
+      #         SELECT username,
+      #                status,
+      #                COUNT(*) cnt
+      #         FROM v\$session
+      #         GROUP BY username, status
+      #         ORDER BY username, status
+      #     ");
+
+      #     echo "\n=== Logons cumulative ===\n";
+      #     runQuery($c, "SELECT value FROM v\$sysstat WHERE name = 'logons cumulative'");
+
+      #     oci_close($c);
+      #     PHP
+
+      - name: "Run tests: Oracle - PDO (only for coverage or cron)"
+        if: (success() || failure()) && (env.LOG_COVERAGE || github.event_name == 'schedule')
+        env:
+          DB_DSN: "pdo_oci:dbname=oracle/${{ matrix.type == 'Phpunit Lowest' && 'freepdb1' || 'xepdb1' }}"
+          DB_USER: atk4_test_user
+          DB_PASSWORD: atk4_user_pass
+          NLS_LANG: AMERICAN_AMERICA.AL32UTF8
         run: |
-          php <<'PHP'
-          <?php
-
-          $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
-          echo "Using $image\n";
-
-          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREE' || 'XE' }}";
-          echo "Using service: $db\n";
-
-          $c = @oci_connect('system', 'atk4_pass', 'oracle:1521/' . $db);
-
-          if (!$c) {
-              echo "Connection failed:\n";
-              print_r(oci_error());
-              exit(1);
-          }
-
-          echo "Connected successfully\n";
-
-          function runQuery($c, string $sql): void
-          {
-              $s = oci_parse($c, $sql);
-
-              if (!$s) {
-                  echo "oci_parse() failed:\n";
-                  print_r(oci_error($c));
-                  exit(1);
-              }
-
-              if (!oci_execute($s)) {
-                  echo "oci_execute() failed for:\n$sql\n";
-                  print_r(oci_error($s));
-                  exit(1);
-              }
-
-              while ($r = oci_fetch_assoc($s)) {
-                  print_r($r);
-              }
-
-              oci_free_statement($s);
-          }
-
-          echo "\n=== Resource limits ===\n";
-
-          runQuery($c, "
-              SELECT resource_name,
-                     current_utilization,
-                     max_utilization,
-                     limit_value
-              FROM v\$resource_limit
-              WHERE resource_name IN ('processes', 'sessions')
-              ORDER BY resource_name
-          ");
-
-          echo "\n=== Services ===\n";
-
-          runQuery($c, "
-              SELECT
-                  name,
-                  network_name,
-                  creation_date
-              FROM v\$services
-              ORDER BY name
-          ");
-
-          echo "\n=== Instances ===\n";
-
-          runQuery($c, "
-              SELECT
-                  inst_id,
-                  instance_name,
-                  host_name,
-                  status
-              FROM gv\$instance
-          ");
-
-          echo "\n=== Service sessions ===\n";
-
-          runQuery($c, "
-              SELECT
-                  s.service_name,
-                  s.status,
-                  s.type,
-                  s.server,
-                  COUNT(*) AS cnt
-              FROM gv\$session s
-              GROUP BY
-                  s.service_name,
-                  s.status,
-                  s.type,
-                  s.server
-              ORDER BY
-                  s.service_name,
-                  s.status,
-                  s.type,
-                  s.server
-          ");
-
-          echo "\n=== PDB state ===\n";
-
-          runQuery($c, "
-              SELECT
-                  name,
-                  open_mode,
-                  restricted
-              FROM v\$pdbs
-          ");
-
-          echo "\n=== Sessions by user/status ===\n";
-
-          runQuery($c, "
-              SELECT username,
-                     status,
-                     COUNT(*) cnt
-              FROM v\$session
-              GROUP BY username, status
-              ORDER BY username, status
-          ");
-
-          echo "\n=== Logons cumulative ===\n";
-          runQuery($c, "SELECT value FROM v\$sysstat WHERE name = 'logons cumulative'");
-
-          oci_close($c);
-          PHP
-
-      #- name: "Run tests: Oracle - PDO (only for coverage or cron)"
-      #  if: (success() || failure()) && (env.LOG_COVERAGE || github.event_name == 'schedule')
-      #  env:
-      #    DB_DSN: "pdo_oci:dbname=oracle/${{ matrix.type == 'Phpunit Lowest' && 'freepdb1' || 'xepdb1' }}"
-      #    DB_USER: atk4_test_user
-      #    DB_PASSWORD: atk4_user_pass
-      #    NLS_LANG: AMERICAN_AMERICA.AL32UTF8
-      #  run: |
-      #    php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
-      #    if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-oracle-pdo.cov; fi
+          php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
+          if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-oracle-pdo.cov; fi
 
       - name: "Run tests: Oracle - OCI8"
         if: success() || failure()
@@ -482,133 +482,133 @@ jobs:
           php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
           if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-oracle-oci8.cov; fi
 
-      - name: Oracle stats after tests
-        if: success() || failure()
-        run: |
-          php <<'PHP'
-          <?php
+      # - name: Oracle stats after tests
+      #   if: success() || failure()
+      #   run: |
+      #     php <<'PHP'
+      #     <?php
 
-          $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
-          echo "Using $image\n";
+      #     $image = "${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}";
+      #     echo "Using $image\n";
 
-          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREE' || 'XE' }}";
-          echo "Using service: $db\n";
+      #     $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREE' || 'XE' }}";
+      #     echo "Using service: $db\n";
 
-          $c = @oci_connect('system', 'atk4_pass', 'oracle:1521/' . $db);
+      #     $c = @oci_connect('system', 'atk4_pass', 'oracle:1521/' . $db);
 
-          if (!$c) {
-              echo "Connection failed:\n";
-              print_r(oci_error());
-              exit(1);
-          }
+      #     if (!$c) {
+      #         echo "Connection failed:\n";
+      #         print_r(oci_error());
+      #         exit(1);
+      #     }
 
-          echo "Connected successfully\n";
+      #     echo "Connected successfully\n";
 
-          function runQuery($c, string $sql): void
-          {
-              $s = oci_parse($c, $sql);
+      #     function runQuery($c, string $sql): void
+      #     {
+      #         $s = oci_parse($c, $sql);
 
-              if (!$s) {
-                  echo "oci_parse() failed:\n";
-                  print_r(oci_error($c));
-                  exit(1);
-              }
+      #         if (!$s) {
+      #             echo "oci_parse() failed:\n";
+      #             print_r(oci_error($c));
+      #             exit(1);
+      #         }
 
-              if (!oci_execute($s)) {
-                  echo "oci_execute() failed for:\n$sql\n";
-                  print_r(oci_error($s));
-                  exit(1);
-              }
+      #         if (!oci_execute($s)) {
+      #             echo "oci_execute() failed for:\n$sql\n";
+      #             print_r(oci_error($s));
+      #             exit(1);
+      #         }
 
-              while ($r = oci_fetch_assoc($s)) {
-                  print_r($r);
-              }
+      #         while ($r = oci_fetch_assoc($s)) {
+      #             print_r($r);
+      #         }
 
-              oci_free_statement($s);
-          }
+      #         oci_free_statement($s);
+      #     }
 
-          echo "\n=== Resource limits ===\n";
+      #     echo "\n=== Resource limits ===\n";
 
-          runQuery($c, "
-              SELECT resource_name,
-                     current_utilization,
-                     max_utilization,
-                     limit_value
-              FROM v\$resource_limit
-              WHERE resource_name IN ('processes', 'sessions')
-              ORDER BY resource_name
-          ");
+      #     runQuery($c, "
+      #         SELECT resource_name,
+      #                current_utilization,
+      #                max_utilization,
+      #                limit_value
+      #         FROM v\$resource_limit
+      #         WHERE resource_name IN ('processes', 'sessions')
+      #         ORDER BY resource_name
+      #     ");
 
-          echo "\n=== Services ===\n";
+      #     echo "\n=== Services ===\n";
 
-          runQuery($c, "
-              SELECT
-                  name,
-                  network_name,
-                  creation_date
-              FROM v\$services
-              ORDER BY name
-          ");
+      #     runQuery($c, "
+      #         SELECT
+      #             name,
+      #             network_name,
+      #             creation_date
+      #         FROM v\$services
+      #         ORDER BY name
+      #     ");
 
-          echo "\n=== Instances ===\n";
+      #     echo "\n=== Instances ===\n";
 
-          runQuery($c, "
-              SELECT
-                  inst_id,
-                  instance_name,
-                  host_name,
-                  status
-              FROM gv\$instance
-          ");
+      #     runQuery($c, "
+      #         SELECT
+      #             inst_id,
+      #             instance_name,
+      #             host_name,
+      #             status
+      #         FROM gv\$instance
+      #     ");
 
-          echo "\n=== Service sessions ===\n";
+      #     echo "\n=== Service sessions ===\n";
 
-          runQuery($c, "
-              SELECT
-                  s.service_name,
-                  s.status,
-                  s.type,
-                  s.server,
-                  COUNT(*) AS cnt
-              FROM gv\$session s
-              GROUP BY
-                  s.service_name,
-                  s.status,
-                  s.type,
-                  s.server
-              ORDER BY
-                  s.service_name,
-                  s.status,
-                  s.type,
-                  s.server
-          ");
+      #     runQuery($c, "
+      #         SELECT
+      #             s.service_name,
+      #             s.status,
+      #             s.type,
+      #             s.server,
+      #             COUNT(*) AS cnt
+      #         FROM gv\$session s
+      #         GROUP BY
+      #             s.service_name,
+      #             s.status,
+      #             s.type,
+      #             s.server
+      #         ORDER BY
+      #             s.service_name,
+      #             s.status,
+      #             s.type,
+      #             s.server
+      #     ");
 
-          echo "\n=== PDB state ===\n";
+      #     echo "\n=== PDB state ===\n";
 
-          runQuery($c, "
-              SELECT
-                  name,
-                  open_mode,
-                  restricted
-              FROM v\$pdbs
-          ");
+      #     runQuery($c, "
+      #         SELECT
+      #             name,
+      #             open_mode,
+      #             restricted
+      #         FROM v\$pdbs
+      #     ");
 
-          echo "\n=== Sessions by user/status ===\n";
+      #     echo "\n=== Sessions by user/status ===\n";
 
-          runQuery($c, "
-              SELECT username,
-                     status,
-                     COUNT(*) cnt
-              FROM v\$session
-              GROUP BY username, status
-              ORDER BY username, status
-          ");
+      #     runQuery($c, "
+      #         SELECT username,
+      #                status,
+      #                COUNT(*) cnt
+      #         FROM v\$session
+      #         GROUP BY username, status
+      #         ORDER BY username, status
+      #     ");
 
-          echo "\n=== Logons cumulative ===\n";
-          runQuery($c, "SELECT value FROM v\$sysstat WHERE name = 'logons cumulative'");
+      #     echo "\n=== Logons cumulative ===\n";
+      #     runQuery($c, "SELECT value FROM v\$sysstat WHERE name = 'logons cumulative'");
 
-          oci_close($c);
-          PHP
+      #     oci_close($c);
+      #     PHP
 
       - name: Upload coverage logs 1/2 (only for coverage)
         if: env.LOG_COVERAGE

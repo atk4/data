@@ -23,7 +23,6 @@ class RetryConnectionMiddleware implements Middleware
     public function wrap(Driver $driver): Driver
     {
         return new class($driver) extends AbstractDriverMiddleware {
-
             // ORA-12516: TNS:listener could not find available handler with matching protocol stack
             private const RETRY_ERROR_CODES = [12516];
             private const RETRY_COUNT = 8;
@@ -35,7 +34,7 @@ class RetryConnectionMiddleware implements Middleware
                 #[\SensitiveParameter]
                 array $params
             ): Connection {
-                for ($attempt = 0; ; ++$attempt) {
+                for ($attempt = 0;; ++$attempt) {
                     try {
                         return parent::connect($params);
                     } catch (ConnectionFailed $e) {
@@ -45,8 +44,6 @@ class RetryConnectionMiddleware implements Middleware
                         ) {
                             throw $e;
                         }
-
-                        echo "\n\n\nGOING TO RETRY CONNECTION $attempt ...\n\n\n";//..
 
                         $timeoutMs = min(
                             self::RETRY_INTERVAL_BASE_MS * (2 ** $attempt),
