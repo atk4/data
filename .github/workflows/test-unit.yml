@@ -334,13 +334,22 @@ jobs:
 
           runQuery($c, "
               SELECT
-                  service_name,
-                  instance_name,
-                  status,
+                  s.service_name,
+                  s.status,
+                  s.type,
+                  s.server,
                   COUNT(*) AS cnt
-              FROM gv\$session
-              GROUP BY service_name, instance_name, status
-              ORDER BY service_name, instance_name, status
+              FROM gv\$session s
+              GROUP BY
+                  s.service_name,
+                  s.status,
+                  s.type,
+                  s.server
+              ORDER BY
+                  s.service_name,
+                  s.status,
+                  s.type,
+                  s.server
           ");
 
           echo "\n=== PDB state ===\n";
@@ -473,13 +482,22 @@ jobs:
 
           runQuery($c, "
               SELECT
-                  service_name,
-                  instance_name,
-                  status,
+                  s.service_name,
+                  s.status,
+                  s.type,
+                  s.server,
                   COUNT(*) AS cnt
-              FROM gv\$session
-              GROUP BY service_name, instance_name, status
-              ORDER BY service_name, instance_name, status
+              FROM gv\$session s
+              GROUP BY
+                  s.service_name,
+                  s.status,
+                  s.type,
+                  s.server
+              ORDER BY
+                  s.service_name,
+                  s.status,
+                  s.type,
+                  s.server
           ");
 
           echo "\n=== PDB state ===\n";
