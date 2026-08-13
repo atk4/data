@@ -374,7 +374,7 @@ jobs:
           ");
 
           echo "\n=== Logons cumulative ===\n";
-          runQuery($c, "SELECT value FROM v$sysstat WHERE name = 'logons cumulative'");
+          runQuery($c, "SELECT value FROM v\$sysstat WHERE name = 'logons cumulative'");
 
           oci_close($c);
           PHP
@@ -525,7 +525,7 @@ jobs:
           ");
 
           echo "\n=== Logons cumulative ===\n";
-          runQuery($c, "SELECT value FROM v$sysstat WHERE name = 'logons cumulative'");
+          runQuery($c, "SELECT value FROM v\$sysstat WHERE name = 'logons cumulative'");
 
           oci_close($c);
           PHP
