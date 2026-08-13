@@ -251,6 +251,60 @@ jobs:
       #    php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
       #    if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-mssql.cov; fi
 
+      # Testing Oracle listener:
+      # The listener occasionally cannot service a new connection during a very high-rate sequence of short-lived connections.
+      - name: Test Oracle connections
+        run: |
+          php <<'PHP'
+          <?php
+
+          $iterations = 10_000;
+          $success = 0;
+
+          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREEPDB1' || 'XEPDB1' }}";
+
+          for ($i = 1; $i <= $iterations; ++$i) {
+              $c = @oci_connect(
+                  'atk4_test_user',
+                  'atk4_user_pass',
+                  'oracle:1521/'.$db
+              );
+
+              if (!$c) {
+                  echo "FAILED at connection #$i\n";
+                  print_r(oci_error());
+                  break;
+              }
+
+              // select something
+              $s = oci_parse($c, 'SELECT 1 FROM dual');
+              if (!$s) {
+                  echo "oci_parse() failed:\n";
+                  print_r(oci_error($c));
+                  break;
+              }
+              if (!oci_execute($s)) {
+                  echo "oci_execute() failed:\n";
+                  print_r(oci_error($s));
+                  break;
+              }
+
+              while ($r = oci_fetch_assoc($s)) {
+                  //print_r($r);
+              }
+
+              oci_free_statement($s);
+
+              echo "Connection #$i OK\n";
+              $success++;
+
+              oci_close($c);
+          }
+
+          echo "Successful connections: " . $success . "\n";
+
+          PHP
+
       - name: Oracle stats before tests
         if: success() || failure()
         run: |
