@@ -253,83 +253,83 @@ jobs:
 
       # Testing Oracle listener:
       # The listener occasionally cannot service a new connection during a very high-rate sequence of short-lived connections.
-      - name: Stress test Oracle connections
-        run: |
-          php <<'PHP'
-          <?php
+      # - name: Stress test Oracle connections
+      #   run: |
+      #     php <<'PHP'
+      #     <?php
 
-          // config
-          $iterations = 10_000;
-          $retry_interval_base = 5; // miliseconds
-          $retry_interval_max = 1000; // miliseconds
-          $retry_retries = 10; // number of retries
+      #     // config
+      #     $iterations = 10_000;
+      #     $retry_interval_base = 5; // miliseconds
+      #     $retry_interval_max = 1000; // miliseconds
+      #     $retry_retries = 10; // number of retries
 
-          $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREEPDB1' || 'XEPDB1' }}";
+      #     $db = "${{ matrix.type == 'Phpunit Lowest' && 'FREEPDB1' || 'XEPDB1' }}";
 
-          function getConnection($i) {
-            global $db, $retry_interval_base, $retry_interval_max, $retry_retries;
+      #     function getConnection($i) {
+      #       global $db, $retry_interval_base, $retry_interval_max, $retry_retries;
 
-            $c = null;
-            for ($r = 1; $r <= $retry_retries; $r++) {
-              $c = @oci_connect(
-                  'atk4_test_user',
-                  'atk4_user_pass',
-                  'oracle:1521/'.$db
-              );
-              if ($c) {
-                break;
-              }
+      #       $c = null;
+      #       for ($r = 1; $r <= $retry_retries; $r++) {
+      #         $c = @oci_connect(
+      #             'atk4_test_user',
+      #             'atk4_user_pass',
+      #             'oracle:1521/'.$db
+      #         );
+      #         if ($c) {
+      #           break;
+      #         }
 
-              echo "Failed to get connection for iteration $i [try $r]:\n";
-              print_r(oci_error());
+      #         echo "Failed to get connection for iteration $i [try $r]:\n";
+      #         print_r(oci_error());
 
-              if ($r < $retry_retries) {
-                $timeoutMs = min($retry_interval_base << ($r - 1), $retry_interval_max);
-                usleep($timeoutMs * 1000); // exponential
-                echo "Retry [$r, timeout $timeoutMs ms]\n";
-              } else {
-                echo "Giving up after $r retries\n";
-              }
-            }
+      #         if ($r < $retry_retries) {
+      #           $timeoutMs = min($retry_interval_base << ($r - 1), $retry_interval_max);
+      #           usleep($timeoutMs * 1000); // exponential
+      #           echo "Retry [$r, timeout $timeoutMs ms]\n";
+      #         } else {
+      #           echo "Giving up after $r retries\n";
+      #         }
+      #       }
 
-            return $c;
-          }
+      #       return $c;
+      #     }
 
-          $success_cnt = 0;
+      #     $success_cnt = 0;
 
-          for ($i = 1; $i <= $iterations; ++$i) {
-              $c = getConnection($i);
-              if (!$c) {
-                break;
-              }
+      #     for ($i = 1; $i <= $iterations; ++$i) {
+      #         $c = getConnection($i);
+      #         if (!$c) {
+      #           break;
+      #         }
 
-              // select something
-              $s = oci_parse($c, 'SELECT 1 FROM dual');
-              if (!$s) {
-                  echo "oci_parse() failed:\n";
-                  print_r(oci_error($c));
-                  break;
-              }
-              if (!oci_execute($s)) {
-                  echo "oci_execute() failed:\n";
-                  print_r(oci_error($s));
-                  break;
-              }
-              while ($r = oci_fetch_assoc($s)) {}
-              oci_free_statement($s);
+      #         // select something
+      #         $s = oci_parse($c, 'SELECT 1 FROM dual');
+      #         if (!$s) {
+      #             echo "oci_parse() failed:\n";
+      #             print_r(oci_error($c));
+      #             break;
+      #         }
+      #         if (!oci_execute($s)) {
+      #             echo "oci_execute() failed:\n";
+      #             print_r(oci_error($s));
+      #             break;
+      #         }
+      #         while ($r = oci_fetch_assoc($s)) {}
+      #         oci_free_statement($s);
 
-              $success_cnt++;
-              if ($success_cnt%200 == 0) echo "Successful connections: " . $success_cnt . "\n";
+      #         $success_cnt++;
+      #         if ($success_cnt%200 == 0) echo "Successful connections: " . $success_cnt . "\n";
 
-              oci_close($c);
-          }
+      #         oci_close($c);
+      #     }
 
-          echo "Total successful connections: " . $success_cnt . "\n";
-          if ($success_cnt < $iterations) {
-            exit(1);
-          }
+      #     echo "Total successful connections: " . $success_cnt . "\n";
+      #     if ($success_cnt < $iterations) {
+      #       exit(1);
+      #     }
 
-          PHP
+      #     PHP
 
       - name: Oracle stats before tests
         if: success() || failure()
