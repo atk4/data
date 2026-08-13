@@ -46,7 +46,7 @@ class RetryConnectionMiddleware implements Middleware
                             throw $e;
                         }
 
-                        throw new \Exception('Going to retry connection!!!');//...
+                        throw new \Exception('Going to retry connection!!!');//....
 
                         $timeoutMs = min(
                             self::RETRY_INTERVAL_BASE_MS * (2 ** $attempt),
