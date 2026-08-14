@@ -19,6 +19,7 @@ class Connection extends BaseConnection
 
         $configuration->setMiddlewares([
             ...$configuration->getMiddlewares(),
+            new RetryConnectionMiddleware(),
             new InitializeSessionMiddleware(),
         ]);
 
