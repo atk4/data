@@ -117,10 +117,10 @@ jobs:
           ACCEPT_EULA: Y
           SA_PASSWORD: atk4_pass
         options: >-
-          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'atk4_pass' -C -Q 'SELECT 1'"
-          --health-interval 10s
+          --health-cmd "${{ matrix.type == 'Phpunit Lowest' && '/opt/mssql-tools18/bin/sqlcmd -C' || '/opt/mssql-tools/bin/sqlcmd' }} -S localhost -U sa -P 'atk4_pass' -Q 'SELECT 1' -b"
+          --health-interval 5s
           --health-timeout 5s
-          --health-retries 10
+          --health-retries 30
           --health-start-period 30s
       oracle:
         image: gvenzl/${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}
