@@ -120,6 +120,11 @@ jobs:
         image: gvenzl/${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}
         env:
           ORACLE_PASSWORD: atk4_pass
+        options: >-
+          --health-cmd healthcheck.sh
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
