@@ -34,9 +34,12 @@ class RetryConnectionMiddleware implements Middleware
                 #[\SensitiveParameter]
                 array $params
             ): Connection {
+                $start = microtime(true);
+                $c = null;
                 for ($attempt = 0;; ++$attempt) {
                     try {
-                        return parent::connect($params);
+                        $c = parent::connect($params);
+                        break;
                     } catch (ConnectionFailed $e) { // @phpstan-ignore catch.internalClass
                         if (
                             !in_array($e->getCode(), self::RETRY_ERROR_CODES, true)
@@ -53,6 +56,16 @@ class RetryConnectionMiddleware implements Middleware
                         usleep($timeoutMs * 1000);
                     }
                 }
+
+                if ($c) {
+                    global $_dur, $_cnt;
+
+                    $duration = microtime(true) - $start;
+                    $_dur = ($_dur??0) + $duration;
+                    $_cnt = ($_cnt??0) + 1;
+                    echo "$_cnt [$_dur]\n";
+                }
+                return $c;
             }
         };
     }
