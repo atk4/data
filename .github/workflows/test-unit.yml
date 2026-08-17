@@ -67,8 +67,9 @@ jobs:
           if [ -n "$LOG_COVERAGE" ]; then mkdir coverage; echo "memory_limit = 192M" > /usr/local/etc/php/conf.d/custom-memory-limit.ini; fi
 
       - name: "Wait for Oracle"
+        shell: bash
         run: |
-          for i in {1..60}; do
+          for ((i=1; i<=100; i++)); do
             if php -r '
               $conn = @oci_connect("atk4_test_user", "atk4_pass", "//oracle/freepdb1");
               if ($conn) {
@@ -82,7 +83,7 @@ jobs:
               exit 0
             fi
 
-            echo "Waiting for Oracle... ($i/60)"
+            echo "Waiting for Oracle... ($i/100)"
             sleep 2
           done
 
