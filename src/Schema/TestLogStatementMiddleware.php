@@ -116,7 +116,7 @@ class TestLogStatementMiddleware extends AbstractStatementMiddleware
         try {
             return parent::execute();
         } finally {
-            OracleConnectionStats::recordQuery(hrtime(true) - $start);
+            OracleConnectionStats::recordExecute(hrtime(true) - $start);
         }
     }
 }

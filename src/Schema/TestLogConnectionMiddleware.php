@@ -69,7 +69,7 @@ class TestLogConnectionMiddleware extends AbstractConnectionMiddleware
         try {
             return parent::exec($sql);
         } finally {
-            OracleConnectionStats::recordQuery(hrtime(true) - $start);
+            OracleConnectionStats::recordExecute(hrtime(true) - $start);
         }
     }
 
@@ -83,20 +83,37 @@ class TestLogConnectionMiddleware extends AbstractConnectionMiddleware
         try {
             return parent::query($sql);
         } finally {
-            OracleConnectionStats::recordQuery(hrtime(true) - $start);
+            OracleConnectionStats::recordExecute(hrtime(true) - $start);
         }
     }
 
     #[\Override]
     public function prepare(string $sql): Statement
     {
+        $this->logStartQuery($sql);
+
+        $start = hrtime(true);
+
         try {
+            $statement = parent::prepare($sql);
+        } finally {
+            OracleConnectionStats::recordPrepare(hrtime(true) - $start);
+        }
+
+        return new TestLogStatementMiddleware(
+            $statement,
+            $this,
+            $sql
+        );
+        /*
+       try {
             return new TestLogStatementMiddleware(parent::prepare($sql), $this, $sql);
         } catch (DbalDriverException $e) {
             $this->logStartQuery('-- ### PREPARE ERROR ###' . "\n" . $sql);
 
             throw $e;
         }
+        */
     }
 
     protected function _beginTransaction(): ?bool
@@ -108,7 +125,7 @@ class TestLogConnectionMiddleware extends AbstractConnectionMiddleware
         try {
             return parent::beginTransaction(); // @phpstan-ignore staticMethod.void (https://github.com/phpstan/phpstan/issues/13899)
         } finally {
-            OracleConnectionStats::recordQuery(hrtime(true) - $start);
+            OracleConnectionStats::recordExecute(hrtime(true) - $start);
         }
     }
 
@@ -121,7 +138,7 @@ class TestLogConnectionMiddleware extends AbstractConnectionMiddleware
         try {
             return parent::commit(); // @phpstan-ignore staticMethod.void (https://github.com/phpstan/phpstan/issues/13899)
         } finally {
-            OracleConnectionStats::recordQuery(hrtime(true) - $start);
+            OracleConnectionStats::recordExecute(hrtime(true) - $start);
         }
     }
 
@@ -134,7 +151,7 @@ class TestLogConnectionMiddleware extends AbstractConnectionMiddleware
         try {
             return parent::rollBack(); // @phpstan-ignore staticMethod.void (https://github.com/phpstan/phpstan/issues/13899)
         } finally {
-            OracleConnectionStats::recordQuery(hrtime(true) - $start);
+            OracleConnectionStats::recordExecute(hrtime(true) - $start);
         }
     }
 

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Atk4\Data\Schema;
 
 /**
- * Collects Oracle connection establishment statistics during PHPUnit tests.
+ * Collects Oracle connection and SQL timing statistics during PHPUnit tests.
  *
- * Statistics are aggregated by the source file of the current TestCase and
- * globally for the whole PHP process.
+ * Statistics are aggregated by TestCase source file and globally for the
+ * whole PHP process.
  *
  * @internal
  */
@@ -24,20 +24,22 @@ final class OracleConnectionStats
      *     maxNs: int
      * }>
      */
-    private static array $byFile = [];
+    private static array $connectionsByFile = [];
 
     private static int $connections = 0;
-    private static int $attempts = 0;
-    private static int $retries = 0;
-    private static int $totalNs = 0;
-    private static int $minNs = PHP_INT_MAX;
-    private static int $maxNs = 0;
-
-    private static ?string $currentFile = null;
-
-    private static bool $shutdownRegistered = false;
+    private static int $connectionAttempts = 0;
+    private static int $connectionRetries = 0;
+    private static int $connectionTotalNs = 0;
+    private static int $connectionMinNs = PHP_INT_MAX;
+    private static int $connectionMaxNs = 0;
 
     /**
+     * Total SQL execution statistics.
+     *
+     * This is the time spent inside the DBAL driver's execute()/query()/exec()
+     * call. It is NOT necessarily the time spent executing SQL on the Oracle
+     * server.
+     *
      * @var array<string, array{
      *     queries: int,
      *     totalNs: int,
@@ -45,17 +47,36 @@ final class OracleConnectionStats
      *     maxNs: int
      * }>
      */
-    private static array $sqlByFile = [];
+    private static array $executeByFile = [];
 
-    private static int $sqlQueries = 0;
-    private static int $sqlTotalNs = 0;
-    private static int $sqlMinNs = PHP_INT_MAX;
-    private static int $sqlMaxNs = 0;
+    private static int $executeQueries = 0;
+    private static int $executeTotalNs = 0;
+    private static int $executeMinNs = PHP_INT_MAX;
+    private static int $executeMaxNs = 0;
 
     /**
-     * Register the PHP shutdown handler.
+     * SQL prepare statistics.
      *
-     * The report is printed once after PHPUnit has finished all tests.
+     * @var array<string, array{
+     *     queries: int,
+     *     totalNs: int,
+     *     minNs: int,
+     *     maxNs: int
+     * }>
+     */
+    private static array $prepareByFile = [];
+
+    private static int $prepareQueries = 0;
+    private static int $prepareTotalNs = 0;
+    private static int $prepareMinNs = PHP_INT_MAX;
+    private static int $prepareMaxNs = 0;
+
+    private static ?string $currentFile = null;
+
+    private static bool $shutdownRegistered = false;
+
+    /**
+     * Register the shutdown handler that prints the final statistics.
      */
     public static function registerShutdownHandler(): void
     {
@@ -71,7 +92,7 @@ final class OracleConnectionStats
     }
 
     /**
-     * Set the source file of the currently executing TestCase.
+     * Set the source file of the currently running PHPUnit TestCase.
      */
     public static function setCurrentTest(string $class): void
     {
@@ -82,7 +103,7 @@ final class OracleConnectionStats
     }
 
     /**
-     * Clear the current TestCase.
+     * Clear the currently running TestCase.
      */
     public static function clearCurrentTest(): void
     {
@@ -92,18 +113,26 @@ final class OracleConnectionStats
     /**
      * Record one successfully established Oracle connection.
      *
-     * @param int $durationNs Connection establishment duration in nanoseconds.
-     * @param int $attempts Number of calls to the underlying connect() method.
+     * @param int $durationNs Connection establishment time in nanoseconds.
+     * @param int $attempts Number of underlying connection attempts.
      */
-    public static function record(int $durationNs, int $attempts): void
-    {
+    public static function recordConnection(
+        int $durationNs,
+        int $attempts
+    ): void {
         ++self::$connections;
-        self::$attempts += $attempts;
-        self::$retries += max(0, $attempts - 1);
+        self::$connectionAttempts += $attempts;
+        self::$connectionRetries += max(0, $attempts - 1);
 
-        self::$totalNs += $durationNs;
-        self::$minNs = min(self::$minNs, $durationNs);
-        self::$maxNs = max(self::$maxNs, $durationNs);
+        self::$connectionTotalNs += $durationNs;
+        self::$connectionMinNs = min(
+            self::$connectionMinNs,
+            $durationNs
+        );
+        self::$connectionMaxNs = max(
+            self::$connectionMaxNs,
+            $durationNs
+        );
 
         if (self::$currentFile === null) {
             return;
@@ -111,7 +140,7 @@ final class OracleConnectionStats
 
         $file = self::$currentFile;
 
-        $stats = self::$byFile[$file] ?? [
+        $stats = self::$connectionsByFile[$file] ?? [
             'connections' => 0,
             'attempts' => 0,
             'retries' => 0,
@@ -128,23 +157,87 @@ final class OracleConnectionStats
         $stats['minNs'] = min($stats['minNs'], $durationNs);
         $stats['maxNs'] = max($stats['maxNs'], $durationNs);
 
-        self::$byFile[$file] = $stats;
+        self::$connectionsByFile[$file] = $stats;
     }
 
-    public static function recordQuery(int $durationNs): void
-    {
-        ++self::$sqlQueries;
-        self::$sqlTotalNs += $durationNs;
-        self::$sqlMinNs = min(self::$sqlMinNs, $durationNs);
-        self::$sqlMaxNs = max(self::$sqlMaxNs, $durationNs);
+    /**
+     * Backwards-compatible alias if the current RetryConnectionMiddleware
+     * already calls record().
+     */
+    public static function record(
+        int $durationNs,
+        int $attempts
+    ): void {
+        self::recordConnection($durationNs, $attempts);
+    }
 
+    /**
+     * Record time spent inside a DBAL execute/query/exec operation.
+     *
+     * @param int $durationNs Duration in nanoseconds.
+     */
+    public static function recordExecute(int $durationNs): void
+    {
+        ++self::$executeQueries;
+        self::$executeTotalNs += $durationNs;
+        self::$executeMinNs = min(
+            self::$executeMinNs,
+            $durationNs
+        );
+        self::$executeMaxNs = max(
+            self::$executeMaxNs,
+            $durationNs
+        );
+
+        self::recordByFile(
+            self::$executeByFile,
+            $durationNs
+        );
+    }
+
+    /**
+     * Record time spent preparing a DBAL statement.
+     *
+     * @param int $durationNs Duration in nanoseconds.
+     */
+    public static function recordPrepare(int $durationNs): void
+    {
+        ++self::$prepareQueries;
+        self::$prepareTotalNs += $durationNs;
+        self::$prepareMinNs = min(
+            self::$prepareMinNs,
+            $durationNs
+        );
+        self::$prepareMaxNs = max(
+            self::$prepareMaxNs,
+            $durationNs
+        );
+
+        self::recordByFile(
+            self::$prepareByFile,
+            $durationNs
+        );
+    }
+
+    /**
+     * @param array<string, array{
+     *     queries: int,
+     *     totalNs: int,
+     *     minNs: int,
+     *     maxNs: int
+     * }> $collection
+     */
+    private static function recordByFile(
+        array &$collection,
+        int $durationNs
+    ): void {
         if (self::$currentFile === null) {
             return;
         }
 
         $file = self::$currentFile;
 
-        $stats = self::$sqlByFile[$file] ?? [
+        $stats = $collection[$file] ?? [
             'queries' => 0,
             'totalNs' => 0,
             'minNs' => PHP_INT_MAX,
@@ -153,16 +246,48 @@ final class OracleConnectionStats
 
         ++$stats['queries'];
         $stats['totalNs'] += $durationNs;
-        $stats['minNs'] = min($stats['minNs'], $durationNs);
-        $stats['maxNs'] = max($stats['maxNs'], $durationNs);
+        $stats['minNs'] = min(
+            $stats['minNs'],
+            $durationNs
+        );
+        $stats['maxNs'] = max(
+            $stats['maxNs'],
+            $durationNs
+        );
 
-        self::$sqlByFile[$file] = $stats;
+        $collection[$file] = $stats;
     }
 
     /**
-     * Print the collected statistics.
+     * Print all collected statistics.
      */
     public static function dump(): void
+    {
+        self::dumpConnectionStatistics();
+
+        self::dumpSqlStatistics(
+            'Oracle PREPARE statistics',
+            self::$prepareByFile,
+            self::$prepareQueries,
+            self::$prepareTotalNs,
+            self::$prepareMinNs,
+            self::$prepareMaxNs
+        );
+
+        self::dumpSqlStatistics(
+            'Oracle EXECUTE statistics',
+            self::$executeByFile,
+            self::$executeQueries,
+            self::$executeTotalNs,
+            self::$executeMinNs,
+            self::$executeMaxNs
+        );
+    }
+
+    /**
+     * Print connection statistics.
+     */
+    private static function dumpConnectionStatistics(): void
     {
         if (self::$connections === 0) {
             return;
@@ -173,62 +298,137 @@ final class OracleConnectionStats
         echo "Oracle connection statistics\n";
         echo "============================================================\n";
 
-        $files = self::$byFile;
+        $files = self::$connectionsByFile;
 
         uasort(
             $files,
-            static function (array $a, array $b): int {
-                return $b['totalNs'] <=> $a['totalNs'];
-            }
+            static fn (array $a, array $b): int =>
+                $b['totalNs'] <=> $a['totalNs']
         );
 
         foreach ($files as $file => $stats) {
-            self::dumpStats($file, $stats);
+            self::dumpConnectionStats($file, $stats);
         }
 
         echo "------------------------------------------------------------\n";
 
-        self::dumpStats(
+        self::dumpConnectionStats(
             'TOTAL',
             [
                 'connections' => self::$connections,
-                'attempts' => self::$attempts,
-                'retries' => self::$retries,
-                'totalNs' => self::$totalNs,
-                'minNs' => self::$minNs,
-                'maxNs' => self::$maxNs,
+                'attempts' => self::$connectionAttempts,
+                'retries' => self::$connectionRetries,
+                'totalNs' => self::$connectionTotalNs,
+                'minNs' => self::$connectionMinNs,
+                'maxNs' => self::$connectionMaxNs,
             ]
         );
 
         echo "============================================================\n";
+    }
+
+    /**
+     * @param array{
+     *     connections: int,
+     *     attempts: int,
+     *     retries: int,
+     *     totalNs: int,
+     *     minNs: int,
+     *     maxNs: int
+     * } $stats
+     */
+    private static function dumpConnectionStats(
+        string $name,
+        array $stats
+    ): void {
+        $totalMs = $stats['totalNs'] / 1_000_000;
+        $minMs = $stats['minNs'] / 1_000_000;
+        $maxMs = $stats['maxNs'] / 1_000_000;
+
+        $averageMs = $stats['connections'] > 0
+            ? $totalMs / $stats['connections']
+            : 0.0;
+
+        echo "\n";
+        echo $name . "\n";
+        echo str_repeat(
+            '-',
+            min(60, max(1, strlen($name)))
+        ) . "\n";
+
+        echo 'connections:  '
+            . number_format($stats['connections'])
+            . "\n";
+
+        echo 'attempts:     '
+            . number_format($stats['attempts'])
+            . "\n";
+
+        echo 'retries:      '
+            . number_format($stats['retries'])
+            . "\n";
+
+        echo 'total:        '
+            . number_format($totalMs, 3)
+            . " ms\n";
+
+        echo 'average:      '
+            . number_format($averageMs, 3)
+            . " ms\n";
+
+        echo 'min:          '
+            . number_format($minMs, 3)
+            . " ms\n";
+
+        echo 'max:          '
+            . number_format($maxMs, 3)
+            . " ms\n";
+    }
+
+    /**
+     * @param array<string, array{
+     *     queries: int,
+     *     totalNs: int,
+     *     minNs: int,
+     *     maxNs: int
+     * }> $byFile
+     */
+    private static function dumpSqlStatistics(
+        string $title,
+        array $byFile,
+        int $queries,
+        int $totalNs,
+        int $minNs,
+        int $maxNs
+    ): void {
+        if ($queries === 0) {
+            return;
+        }
 
         echo "\n";
         echo "============================================================\n";
-        echo "Oracle SQL execution statistics\n";
+        echo $title . "\n";
         echo "============================================================\n";
 
-        $files = self::$sqlByFile;
-
         uasort(
-            $files,
-            static function (array $a, array $b): int {
-                return $b['totalNs'] <=> $a['totalNs'];
-            }
+            $byFile,
+            static fn (array $a, array $b): int =>
+                $b['totalNs'] <=> $a['totalNs']
         );
 
-        foreach ($files as $file => $stats) {
-            self::dumpQueryStats($file, $stats);
+        foreach ($byFile as $file => $stats) {
+            self::dumpSqlStats($file, $stats);
         }
 
         echo "------------------------------------------------------------\n";
 
-        self::dumpQueryStats(
+        self::dumpSqlStats(
             'TOTAL',
             [
-                'queries' => self::$sqlQueries,
-                'totalNs' => self::$sqlTotalNs,
-                'minNs' => self::$sqlMinNs,
-                'maxNs' => self::$sqlMaxNs,
+                'queries' => $queries,
+                'totalNs' => $totalNs,
+                'minNs' => $minNs,
+                'maxNs' => $maxNs,
             ]
         );
 
@@ -243,8 +443,10 @@ final class OracleConnectionStats
      *     maxNs: int
      * } $stats
      */
-    private static function dumpQueryStats(string $name, array $stats): void
-    {
+    private static function dumpSqlStats(
+        string $name,
+        array $stats
+    ): void {
         $totalMs = $stats['totalNs'] / 1_000_000;
         $minMs = $stats['minNs'] / 1_000_000;
         $maxMs = $stats['maxNs'] / 1_000_000;
@@ -255,43 +457,29 @@ final class OracleConnectionStats
 
         echo "\n";
         echo $name . "\n";
-        echo str_repeat('-', min(60, max(1, strlen($name)))) . "\n";
-        echo 'queries:      ' . number_format($stats['queries']) . "\n";
-        echo 'total:        ' . number_format($totalMs, 3) . " ms\n";
-        echo 'average:      ' . number_format($averageMs, 3) . " ms\n";
-        echo 'min:          ' . number_format($minMs, 3) . " ms\n";
-        echo 'max:          ' . number_format($maxMs, 3) . " ms\n";
-    }
+        echo str_repeat(
+            '-',
+            min(60, max(1, strlen($name)))
+        ) . "\n";
 
-    /**
-     * @param array{
-     *     connections: int,
-     *     attempts: int,
-     *     retries: int,
-     *     totalNs: int,
-     *     minNs: int,
-     *     maxNs: int
-     * } $stats
-     */
-    private static function dumpStats(string $name, array $stats): void
-    {
-        $totalMs = $stats['totalNs'] / 1_000_000;
-        $minMs = $stats['minNs'] / 1_000_000;
-        $maxMs = $stats['maxNs'] / 1_000_000;
+        echo 'queries:      '
+            . number_format($stats['queries'])
+            . "\n";
 
-        $averageMs = $stats['connections'] > 0
-            ? $totalMs / $stats['connections']
-            : 0.0;
+        echo 'total:        '
+            . number_format($totalMs, 3)
+            . " ms\n";
 
-        echo "\n";
-        echo $name . "\n";
-        echo str_repeat('-', min(60, max(1, strlen($name)))) . "\n";
-        echo 'connections:  ' . number_format($stats['connections']) . "\n";
-        echo 'attempts:     ' . number_format($stats['attempts']) . "\n";
-        echo 'retries:      ' . number_format($stats['retries']) . "\n";
-        echo 'total:        ' . number_format($totalMs, 3) . " ms\n";
-        echo 'average:      ' . number_format($averageMs, 3) . " ms\n";
-        echo 'min:          ' . number_format($minMs, 3) . " ms\n";
-        echo 'max:          ' . number_format($maxMs, 3) . " ms\n";
+        echo 'average:      '
+            . number_format($averageMs, 3)
+            . " ms\n";
+
+        echo 'min:          '
+            . number_format($minMs, 3)
+            . " ms\n";
+
+        echo 'max:          '
+            . number_format($maxMs, 3)
+            . " ms\n";
     }
 }

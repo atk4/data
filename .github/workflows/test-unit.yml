@@ -561,4 +561,4 @@ jobs:
         with:
           name: oracle-stats-${{ matrix.type }}
           path: oracle-stats/
-          retention-days: 7
+          retention-days: 3
