@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Oracle;
 
+use Atk4\Data\Schema\OracleConnectionStats;
 use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Driver\Connection;
 use Doctrine\DBAL\Driver\Middleware;
@@ -23,10 +24,14 @@ class RetryConnectionMiddleware implements Middleware
     public function wrap(Driver $driver): Driver
     {
         return new class($driver) extends AbstractDriverMiddleware {
-            // ORA-12516: TNS:listener could not find available handler with matching protocol stack
+            // ORA-12516: TNS:listener could not find available handler
+            // with matching protocol stack.
             private const RETRY_ERROR_CODES = [12516];
+
             private const RETRY_COUNT = 8;
+
             private const RETRY_INTERVAL_BASE_MS = 10;
+
             private const RETRY_INTERVAL_MAX_MS = 1000;
 
             #[\Override]
@@ -34,22 +39,30 @@ class RetryConnectionMiddleware implements Middleware
                 #[\SensitiveParameter]
                 array $params
             ): Connection {
-                $start = microtime(true);
-                $c = null;
-                for ($attempt = 0;; ++$attempt) {
+                $start = hrtime(true);
+
+                $connection = null;
+                $attempts = 0;
+
+                for (;;) {
+                    ++$attempts;
+
                     try {
-                        $c = parent::connect($params);
+                        $connection = parent::connect($params);
+
                         break;
                     } catch (ConnectionFailed $e) { // @phpstan-ignore catch.internalClass
                         if (
                             !in_array($e->getCode(), self::RETRY_ERROR_CODES, true)
-                            || $attempt >= self::RETRY_COUNT
+                            || $attempts > self::RETRY_COUNT
                         ) {
                             throw $e;
                         }
 
+                        $retryNumber = $attempts - 1;
+
                         $timeoutMs = min(
-                            self::RETRY_INTERVAL_BASE_MS * (2 ** $attempt),
+                            self::RETRY_INTERVAL_BASE_MS * (2 ** $retryNumber),
                             self::RETRY_INTERVAL_MAX_MS
                         );
 
@@ -57,18 +70,12 @@ class RetryConnectionMiddleware implements Middleware
                     }
                 }
 
-                if ($c) {
-                    global $_stats;
+                OracleConnectionStats::record(
+                    hrtime(true) - $start,
+                    $attempts
+                );
 
-                    $duration = microtime(true) - $start;
-                    $_stats['duration'] = ($_stats['duration']??0) + $duration;
-                    $_stats['cnt'] = ($_stats['cnt']??0) + 1;
-                    $_stats['min'] = min($_stats['min']??1000000, $duration);
-                    $_stats['max'] = max($_stats['max']??0, $duration);
-
-                    //echo $_stats['cnt'] . " [" . $_stats['duration'] . "]\n";
-                }
-                return $c;
+                return $connection;
             }
         };
     }

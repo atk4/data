@@ -48,6 +48,9 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
+        OracleConnectionStats::registerShutdownHandler();
+        OracleConnectionStats::setCurrentTest(static::class);
+
         $this->db = new TestSqlPersistence();
     }
 
@@ -55,6 +58,7 @@ abstract class TestCase extends BaseTestCase
     protected function tearDown(): void
     {
         $debugOrig = $this->debug;
+
         try {
             $this->debug = false;
             $this->dropCreatedDb();
@@ -68,16 +72,16 @@ abstract class TestCase extends BaseTestCase
                 if ((Reference::$analysingClosureMap ?? null) !== null) {
                     Reference::$analysingClosureMap = new Reference\WeakAnalysingMap();
                 }
+
                 if ((Reference::$analysingTheirModelMap ?? null) !== null) {
                     Reference::$analysingTheirModelMap = new Reference\WeakAnalysingMap();
                 }
             }, null, Reference::class)();
         }
 
-        parent::tearDown();
+        OracleConnectionStats::clearCurrentTest();
 
-        global $_stats;
-        var_dump($_stats??null);
+        parent::tearDown();
     }
 
     protected function getConnection(): Persistence\Sql\Connection
