@@ -87,6 +87,7 @@ jobs:
         php: ['8.0', '8.5']
         type: ['Phpunit', 'Phpunit Lowest']
         oracle: ['23', '18']
+        i: [0, 1, 2, 3, 4, 5, 6, 7]
     env:
       LOG_COVERAGE: ""
     services:
