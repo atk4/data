@@ -306,6 +306,50 @@ jobs:
             ),
           ];
 
+          $topSqlPlans = [];
+
+          foreach (array_slice($data['top_sql_cpu'], 0, 10) as $row) {
+              $sqlId = $row['SQL_ID'];
+
+              try {
+                  $stmt = oci_parse(
+                      $conn,
+                      <<<'SQL'
+                      SELECT plan_table_output
+                      FROM TABLE(
+                          DBMS_XPLAN.DISPLAY_CURSOR(
+                              :sql_id,
+                              NULL,
+                              'ALLSTATS LAST'
+                          )
+                      )
+                      SQL
+                  );
+
+                  oci_bind_by_name($stmt, ':sql_id', $sqlId);
+
+                  if (!oci_execute($stmt)) {
+                      continue;
+                  }
+
+                  $plan = [];
+
+                  while (($planRow = oci_fetch_assoc($stmt)) !== false) {
+                      $plan[] = $planRow['PLAN_TABLE_OUTPUT'];
+                  }
+
+                  oci_free_statement($stmt);
+
+                  $topSqlPlans[$sqlId] = $plan;
+              } catch (\Throwable $e) {
+                  $topSqlPlans[$sqlId] = [
+                      'ERROR: ' . $e->getMessage(),
+                  ];
+              }
+          }
+
+          $data['top_sql_plans'] = $topSqlPlans;
+
           file_put_contents(
               $outputFile,
               json_encode(
@@ -453,4 +497,4 @@ jobs:
         with:
           name: oracle-stats-${{ matrix.type }}
           path: oracle-stats/
-          retention-days: 3
+          retention-days: 1
