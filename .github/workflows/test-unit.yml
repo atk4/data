@@ -95,6 +95,11 @@ jobs:
           ORACLE_PASSWORD: atk4_pass_root
           APP_USER: atk4_test_user
           APP_USER_PASSWORD: atk4_pass
+        options: >-
+          --health-cmd healthcheck.sh
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
