@@ -38,6 +38,21 @@ final class OracleConnectionStats
     private static bool $shutdownRegistered = false;
 
     /**
+     * @var array<string, array{
+     *     queries: int,
+     *     totalNs: int,
+     *     minNs: int,
+     *     maxNs: int
+     * }>
+     */
+    private static array $sqlByFile = [];
+
+    private static int $sqlQueries = 0;
+    private static int $sqlTotalNs = 0;
+    private static int $sqlMinNs = PHP_INT_MAX;
+    private static int $sqlMaxNs = 0;
+
+    /**
      * Register the PHP shutdown handler.
      *
      * The report is printed once after PHPUnit has finished all tests.
@@ -116,6 +131,34 @@ final class OracleConnectionStats
         self::$byFile[$file] = $stats;
     }
 
+    public static function recordQuery(int $durationNs): void
+    {
+        ++self::$sqlQueries;
+        self::$sqlTotalNs += $durationNs;
+        self::$sqlMinNs = min(self::$sqlMinNs, $durationNs);
+        self::$sqlMaxNs = max(self::$sqlMaxNs, $durationNs);
+
+        if (self::$currentFile === null) {
+            return;
+        }
+
+        $file = self::$currentFile;
+
+        $stats = self::$sqlByFile[$file] ?? [
+            'queries' => 0,
+            'totalNs' => 0,
+            'minNs' => PHP_INT_MAX,
+            'maxNs' => 0,
+        ];
+
+        ++$stats['queries'];
+        $stats['totalNs'] += $durationNs;
+        $stats['minNs'] = min($stats['minNs'], $durationNs);
+        $stats['maxNs'] = max($stats['maxNs'], $durationNs);
+
+        self::$sqlByFile[$file] = $stats;
+    }
+
     /**
      * Print the collected statistics.
      */
@@ -158,6 +201,66 @@ final class OracleConnectionStats
         );
 
         echo "============================================================\n";
+
+        echo "\n";
+        echo "============================================================\n";
+        echo "Oracle SQL execution statistics\n";
+        echo "============================================================\n";
+
+        $files = self::$sqlByFile;
+
+        uasort(
+            $files,
+            static function (array $a, array $b): int {
+                return $b['totalNs'] <=> $a['totalNs'];
+            }
+        );
+
+        foreach ($files as $file => $stats) {
+            self::dumpQueryStats($file, $stats);
+        }
+
+        echo "------------------------------------------------------------\n";
+
+        self::dumpQueryStats(
+            'TOTAL',
+            [
+                'queries' => self::$sqlQueries,
+                'totalNs' => self::$sqlTotalNs,
+                'minNs' => self::$sqlMinNs,
+                'maxNs' => self::$sqlMaxNs,
+            ]
+        );
+
+        echo "============================================================\n";
+    }
+
+    /**
+     * @param array{
+     *     queries: int,
+     *     totalNs: int,
+     *     minNs: int,
+     *     maxNs: int
+     * } $stats
+     */
+    private static function dumpQueryStats(string $name, array $stats): void
+    {
+        $totalMs = $stats['totalNs'] / 1_000_000;
+        $minMs = $stats['minNs'] / 1_000_000;
+        $maxMs = $stats['maxNs'] / 1_000_000;
+
+        $averageMs = $stats['queries'] > 0
+            ? $totalMs / $stats['queries']
+            : 0.0;
+
+        echo "\n";
+        echo $name . "\n";
+        echo str_repeat('-', min(60, max(1, strlen($name)))) . "\n";
+        echo 'queries:      ' . number_format($stats['queries']) . "\n";
+        echo 'total:        ' . number_format($totalMs, 3) . " ms\n";
+        echo 'average:      ' . number_format($averageMs, 3) . " ms\n";
+        echo 'min:          ' . number_format($minMs, 3) . " ms\n";
+        echo 'max:          ' . number_format($maxMs, 3) . " ms\n";
     }
 
     /**

@@ -111,6 +111,12 @@ class TestLogStatementMiddleware extends AbstractStatementMiddleware
     {
         $this->weakLogConnectionMiddleware->get()->logStartQuery($this->sql, $this->params);
 
-        return parent::execute();
+        $start = hrtime(true);
+
+        try {
+            return parent::execute();
+        } finally {
+            OracleConnectionStats::recordQuery(hrtime(true) - $start);
+        }
     }
 }

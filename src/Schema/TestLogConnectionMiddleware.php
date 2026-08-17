@@ -64,7 +64,13 @@ class TestLogConnectionMiddleware extends AbstractConnectionMiddleware
     {
         $this->logStartQuery($sql);
 
-        return parent::exec($sql);
+        $start = hrtime(true);
+
+        try {
+            return parent::exec($sql);
+        } finally {
+            OracleConnectionStats::recordQuery(hrtime(true) - $start);
+        }
     }
 
     #[\Override]
@@ -72,7 +78,13 @@ class TestLogConnectionMiddleware extends AbstractConnectionMiddleware
     {
         $this->logStartQuery($sql);
 
-        return parent::query($sql);
+        $start = hrtime(true);
+
+        try {
+            return parent::query($sql);
+        } finally {
+            OracleConnectionStats::recordQuery(hrtime(true) - $start);
+        }
     }
 
     #[\Override]
@@ -91,21 +103,39 @@ class TestLogConnectionMiddleware extends AbstractConnectionMiddleware
     {
         $this->logStartQuery('"START TRANSACTION"');
 
-        return parent::beginTransaction(); // @phpstan-ignore staticMethod.void (https://github.com/phpstan/phpstan/issues/13899)
+        $start = hrtime(true);
+
+        try {
+            return parent::beginTransaction(); // @phpstan-ignore staticMethod.void (https://github.com/phpstan/phpstan/issues/13899)
+        } finally {
+            OracleConnectionStats::recordQuery(hrtime(true) - $start);
+        }
     }
 
     protected function _commit(): ?bool
     {
         $this->logStartQuery('"COMMIT"');
 
-        return parent::commit(); // @phpstan-ignore staticMethod.void (https://github.com/phpstan/phpstan/issues/13899)
+        $start = hrtime(true);
+
+        try {
+            return parent::commit(); // @phpstan-ignore staticMethod.void (https://github.com/phpstan/phpstan/issues/13899)
+        } finally {
+            OracleConnectionStats::recordQuery(hrtime(true) - $start);
+        }
     }
 
     protected function _rollBack(): ?bool
     {
         $this->logStartQuery('"ROLLBACK"');
 
-        return parent::rollBack(); // @phpstan-ignore staticMethod.void (https://github.com/phpstan/phpstan/issues/13899)
+        $start = hrtime(true);
+
+        try {
+            return parent::rollBack(); // @phpstan-ignore staticMethod.void (https://github.com/phpstan/phpstan/issues/13899)
+        } finally {
+            OracleConnectionStats::recordQuery(hrtime(true) - $start);
+        }
     }
 
     /**
