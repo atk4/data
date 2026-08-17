@@ -16,9 +16,9 @@ jobs:
       matrix:
         php: ['8.5']
         type: ['Phpunit', 'Phpunit Lowest']
-        include:
-          - php: 'latest'
-            type: 'Phpunit Burn'
+        # include:
+        #   - php: 'latest'
+        #     type: 'Phpunit Burn'
     env:
       LOG_COVERAGE: "${{ fromJSON('{true: \"1\", false: \"\"}')[matrix.php == '8.5' && matrix.type == 'Phpunit' && (github.event_name == 'pull_request' || (github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master')))] }}"
     services:

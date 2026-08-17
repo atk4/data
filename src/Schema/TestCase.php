@@ -75,6 +75,9 @@ abstract class TestCase extends BaseTestCase
         }
 
         parent::tearDown();
+
+        global $_stats;
+        var_dump($_stats??null);
     }
 
     protected function getConnection(): Persistence\Sql\Connection

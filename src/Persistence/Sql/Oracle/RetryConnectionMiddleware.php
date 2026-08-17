@@ -58,12 +58,15 @@ class RetryConnectionMiddleware implements Middleware
                 }
 
                 if ($c) {
-                    global $_dur, $_cnt;
+                    global $_stats;
 
                     $duration = microtime(true) - $start;
-                    $_dur = ($_dur??0) + $duration;
-                    $_cnt = ($_cnt??0) + 1;
-                    echo "$_cnt [$_dur]\n";
+                    $_stats['duration'] = ($_stats['duration']??0) + $duration;
+                    $_stats['cnt'] = ($_stats['cnt']??0) + 1;
+                    $_stats['min'] = min($_stats['min']??1000000, $duration);
+                    $_stats['max'] = max($_stats['max']??0, $duration);
+
+                    //echo $_stats['cnt'] . " [" . $_stats['duration'] . "]\n";
                 }
                 return $c;
             }
