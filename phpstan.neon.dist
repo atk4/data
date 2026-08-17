@@ -16,13 +16,6 @@ parameters:
         - '~^Only booleans are allowed in .+, .+ given( on the (left|right) side)?\.$~'
         - '~^Variable (static )?(property access|method call) on .+\.$~'
 
-        # assign to generic callable property is broken https://github.com/phpstan/phpstan/issues/8964
-        -
-            path: '*'
-            identifier: assign.propertyType
-            message: '~^Property Atk4\\Data\\Model\\UserAction::\$(enabled|preview) .*Closure<.+ does not accept .*Closure\(.+\.$~'
-            count: 3
-
         # https://github.com/phpstan/phpstan/issues/11718
         -
             path: 'src/Reference.php'
@@ -85,10 +78,6 @@ parameters:
             message: '~^.*\\DBAL\\~'
 
         # TODO these rules are generated, this ignores should be fixed in the code
-        # for src/Schema/TestCase.php
-        -
-            identifier: method.notFound
-            message: '~^Call to an undefined method Atk4\\Data\\Persistence::dsql\(\)\.$~'
         # for src/Field/SqlExpressionField.php
         -
             identifier: method.notFound
@@ -107,22 +96,3 @@ parameters:
         -
             identifier: method.notFound
             message: '~^Call to an undefined method Atk4\\Data\\Reference::refLink\(\)\.$~'
-        # for tests/FieldTest.php
-        -
-            identifier: method.notFound
-            message: '~^Call to an undefined method Atk4\\Data\\Reference\\HasOne::addTitle\(\)\.$~'
-        # for tests/JoinSqlTest.php
-        -
-            identifier: method.notFound
-            message: '~^Call to an undefined method Atk4\\Data\\Reference\\HasOne::addField\(\)\.$~'
-        # for tests/ReferenceSqlTest.php
-        -
-            identifier: method.notFound
-            message: '~^Call to an undefined method Atk4\\Data\\Reference\\HasOne::addFields\(\)\.$~'
-        -
-            identifier: method.notFound
-            message: '~^Call to an undefined method Atk4\\Data\\Reference::addTitle\(\)\.$~'
-        # for tests/ScopeTest.php
-        -
-            identifier: method.notFound
-            message: '~^Call to an undefined method Atk4\\Data\\Tests\\SUser::expr\(\)\.$~'
