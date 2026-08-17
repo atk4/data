@@ -119,9 +119,9 @@ jobs:
       oracle:
         image: gvenzl/${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}
         env:
-          ORACLE_PASSWORD: atk4_pass
+          ORACLE_PASSWORD: atk4_pass_root
           APP_USER: atk4_test_user
-          APP_USER_PASSWORD: atk4_user_pass
+          APP_USER_PASSWORD: atk4_pass
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -248,10 +248,9 @@ jobs:
       - name: "Run tests: Oracle - PDO (only for coverage or cron)"
         if: (success() || failure()) && (env.LOG_COVERAGE || github.event_name == 'schedule')
         env:
-          # connection to portable database
-          DB_DSN: "pdo_oci:dbname=oracle/${{ matrix.type == 'Phpunit Lowest' && 'freepdb1' || 'xepdb1' }}"
+          DB_DSN: "pdo_oci:dbname=oracle/free"
           DB_USER: atk4_test_user
-          DB_PASSWORD: atk4_user_pass
+          DB_PASSWORD: atk4_pass
           NLS_LANG: AMERICAN_AMERICA.AL32UTF8
         run: |
           php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
@@ -260,10 +259,9 @@ jobs:
       - name: "Run tests: Oracle - OCI8"
         if: success() || failure()
         env:
-          # connection to portable database
-          DB_DSN: "oci8:dbname=oracle/${{ matrix.type == 'Phpunit Lowest' && 'freepdb1' || 'xepdb1' }}"
+          DB_DSN: "oci8:dbname=oracle/free"
           DB_USER: atk4_test_user
-          DB_PASSWORD: atk4_user_pass
+          DB_PASSWORD: atk4_pass
           NLS_LANG: AMERICAN_AMERICA.AL32UTF8
         run: |
           php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
