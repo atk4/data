@@ -260,6 +260,7 @@ jobs:
                 <<<'SQL'
                 SELECT
                     sql_id,
+                    plan_hash_value,
                     executions,
                     parse_calls,
                     loads,
@@ -286,6 +287,7 @@ jobs:
                 <<<'SQL'
                 SELECT
                     sql_id,
+                    plan_hash_value,
                     executions,
                     parse_calls,
                     loads,
@@ -319,130 +321,6 @@ jobs:
           }
 
           oci_close($conn);
-          PHP
-
-      - name: "Oracle stats: before PDO"
-        if: (success() || failure()) && (env.LOG_COVERAGE || github.event_name == 'schedule')
-        env:
-          ORACLE_ADMIN_PASSWORD: atk4_pass_root
-        run: |
-          php /tmp/oracle-stats.php oracle-stats/pdo-before.json
-
-      - name: "Run tests: Oracle - PDO (only for coverage or cron)"
-        if: (success() || failure()) && (env.LOG_COVERAGE || github.event_name == 'schedule')
-        env:
-          DB_DSN: "pdo_oci:dbname=oracle/freepdb1"
-          DB_USER: atk4_test_user
-          DB_PASSWORD: atk4_pass
-          NLS_LANG: AMERICAN_AMERICA.AL32UTF8
-        run: |
-          php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
-          if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-oracle-pdo.cov; fi
-
-      - name: "Oracle stats: after PDO"
-        if: (success() || failure()) && (env.LOG_COVERAGE || github.event_name == 'schedule')
-        env:
-          ORACLE_ADMIN_PASSWORD: atk4_pass_root
-        run: |
-          php /tmp/oracle-stats.php oracle-stats/pdo-after.json
-
-          php <<'PHP'
-          <?php
-
-          function loadStats(string $file): array
-          {
-              return json_decode(
-                  file_get_contents($file),
-                  true,
-                  512,
-                  JSON_THROW_ON_ERROR
-              );
-          }
-
-          $before = loadStats('oracle-stats/pdo-before.json');
-          $after = loadStats('oracle-stats/pdo-after.json');
-
-          echo "\n";
-          echo "============================================================\n";
-          echo "Oracle PDO statistics delta\n";
-          echo "============================================================\n";
-
-          $beforeStats = [];
-
-          foreach ($before['sysstat'] as $row) {
-              $beforeStats[$row['NAME']] = (float) $row['VALUE'];
-          }
-
-          foreach ($after['sysstat'] as $row) {
-              $name = $row['NAME'];
-              $value = (float) $row['VALUE'];
-              $delta = $value - ($beforeStats[$name] ?? 0);
-
-              printf(
-                  "%-45s %15.3f\n",
-                  $name,
-                  $delta
-              );
-          }
-
-          echo "\n";
-          echo "Wait event deltas:\n";
-          echo "------------------------------------------------------------\n";
-
-          $beforeWaits = [];
-
-          foreach ($before['wait_events'] as $row) {
-              $beforeWaits[$row['EVENT']] = [
-                  'total_waits' => (float) $row['TOTAL_WAITS'],
-                  'total_timeouts' => (float) $row['TOTAL_TIMEOUTS'],
-                  'time_waited_micro' => (float) $row['TIME_WAITED_MICRO'],
-                  'wait_class' => $row['WAIT_CLASS'],
-              ];
-          }
-
-          $waitDeltas = [];
-
-          foreach ($after['wait_events'] as $row) {
-              $event = $row['EVENT'];
-
-              $old = $beforeWaits[$event] ?? [
-                  'total_waits' => 0,
-                  'total_timeouts' => 0,
-                  'time_waited_micro' => 0,
-                  'wait_class' => $row['WAIT_CLASS'],
-              ];
-
-              $waits = (float) $row['TOTAL_WAITS'] - $old['total_waits'];
-              $timeouts = (float) $row['TOTAL_TIMEOUTS'] - $old['total_timeouts'];
-              $time = (float) $row['TIME_WAITED_MICRO'] - $old['time_waited_micro'];
-
-              if ($waits > 0 || $time > 0) {
-                  $waitDeltas[$event] = [
-                      'wait_class' => $row['WAIT_CLASS'],
-                      'waits' => $waits,
-                      'timeouts' => $timeouts,
-                      'seconds' => $time / 1_000_000,
-                  ];
-              }
-          }
-
-          uasort(
-              $waitDeltas,
-              static fn (array $a, array $b): int =>
-                  $b['seconds'] <=> $a['seconds']
-          );
-
-          foreach ($waitDeltas as $event => $stats) {
-              printf(
-                  "%-50s %12.3f s  %10.0f waits  %s\n",
-                  $event,
-                  $stats['seconds'],
-                  $stats['waits'],
-                  $stats['wait_class']
-              );
-          }
-
-          echo "============================================================\n";
           PHP
 
       - name: "Oracle stats: before OCI8"
