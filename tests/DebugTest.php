@@ -55,6 +55,8 @@ class DebugTest extends TestCase
             fwrite(\STDERR, 'p>');
             $this->testExpression();
             fwrite(\STDERR, ".\n");
+
+            gc_collect_cycles();
         }
     }
 
@@ -71,6 +73,8 @@ class DebugTest extends TestCase
             if (($i % 100) === 0) {
                 fwrite(\STDERR, ".\n");
             }
+
+            gc_collect_cycles();
         }
     }
 }
