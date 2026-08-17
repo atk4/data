@@ -134,7 +134,7 @@ jobs:
         run: |
           /usr/lib/oracle/setup.sh
           php -r '$t = microtime(true); while (microtime(true) - $t < 300) { try { (new PDO("oci:host=oracle;dbname=oracle/freepdb1", "system", "atk4_pass_root")); exit; } catch (Exception $e) {} sleep(1); } exit(2);'
-          php -r '(new PDO("oci:host=oracle;dbname=oracle/freepdb1", "system", "atk4_pass_root"))->exec("ALTER PROFILE default LIMIT SESSIONS_PER_USER 5");'
+          php -r '(new PDO("oci:host=oracle;dbname=oracle/freepdb1", "system", "atk4_pass_root"))->exec("ALTER PROFILE default LIMIT SESSIONS_PER_USER 20");'
 
       - name: "Run tests: Oracle - PDO"
         if: success() || failure()
