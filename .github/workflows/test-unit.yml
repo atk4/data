@@ -137,7 +137,7 @@ jobs:
       - name: Init
         run: |
           /usr/lib/oracle/setup.sh
-          php -r '(new PDO("oci:host=oracle;dbname=oracle/freepdb1", "system", "atk4_pass_root"))->exec("ALTER PROFILE default LIMIT SESSIONS_PER_USER 5");'
+          php -r '(new PDO("oci:host=oracle;dbname=oracle/freepdb1", "system", "atk4_pass_root"))->exec("ALTER PROFILE default LIMIT SESSIONS_PER_USER 20");'
           if [ -n "$LOG_COVERAGE" ]; then mkdir coverage; echo "memory_limit = 192M" > /usr/local/etc/php/conf.d/custom-memory-limit.ini; fi
 
       - name: "Run tests: Oracle - PDO"
