@@ -120,7 +120,9 @@ jobs:
       oracle:
         image: gvenzl/${{ matrix.type == 'Phpunit Lowest' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}
         env:
-          ORACLE_PASSWORD: atk4_pass
+          ORACLE_PASSWORD: atk4_pass_root
+          APP_USER: atk4_test_user
+          APP_USER_PASSWORD: atk4_pass
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -247,8 +249,8 @@ jobs:
       - name: "Run tests: Oracle - PDO (only for coverage or cron)"
         if: (success() || failure()) && (env.LOG_COVERAGE || github.event_name == 'schedule')
         env:
-          DB_DSN: "pdo_oci:dbname=oracle/free"
-          DB_USER: system
+          DB_DSN: "pdo_oci:dbname=oracle/freepdb1"
+          DB_USER: atk4_test_user
           DB_PASSWORD: atk4_pass
           NLS_LANG: AMERICAN_AMERICA.AL32UTF8
         run: |
@@ -258,8 +260,8 @@ jobs:
       - name: "Run tests: Oracle - OCI8"
         if: success() || failure()
         env:
-          DB_DSN: "oci8:dbname=oracle/free"
-          DB_USER: system
+          DB_DSN: "oci8:dbname=oracle/freepdb1"
+          DB_USER: atk4_test_user
           DB_PASSWORD: atk4_pass
           NLS_LANG: AMERICAN_AMERICA.AL32UTF8
         run: |
