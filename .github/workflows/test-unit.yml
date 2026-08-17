@@ -92,7 +92,7 @@ jobs:
       LOG_COVERAGE: ""
     services:
       oracle:
-        image: gvenzl/${{ matrix.oracle == '23' && 'oracle-free:slim-faststart' || 'oracle-xe:18-slim-faststart' }}
+        image: gvenzl/${{ matrix.oracle == '23' && 'oracle-free:slim-faststart' || 'oracle-free:23.2-slim-faststart' }}
         env:
           ORACLE_PASSWORD: atk4_pass_root
           APP_USER: atk4_test_user
