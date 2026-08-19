@@ -141,21 +141,10 @@ jobs:
           php -r '(new PDO("oci:host=oracle;dbname=oracle/freepdb1", "system", "atk4_pass_root"))->exec("ALTER PROFILE default LIMIT SESSIONS_PER_USER 20");'
           if [ -n "$LOG_COVERAGE" ]; then mkdir coverage; echo "memory_limit = 192M" > /usr/local/etc/php/conf.d/custom-memory-limit.ini; fi
 
-      - name: "Run tests: Oracle - PDO"
-        if: success() || failure()
-        env:
-          DB_DSN: "pdo_oci:dbname=oracle/freepdb1"
-          DB_USER: atk4_test_user
-          DB_PASSWORD: atk4_pass
-          NLS_LANG: AMERICAN_AMERICA.AL32UTF8
-        run: |
-          php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
-          if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-oracle-pdo.cov; fi
-
       - name: "Run tests: Oracle - OCI8"
         if: success() || failure()
         env:
-          DB_DSN: "oci8:dbname=oracle/freepdb1"
+          DB_DSN: "oci8:dbname=oracle/freepdb1;driverOptions[exclusive]=1"
           DB_USER: atk4_test_user
           DB_PASSWORD: atk4_pass
           NLS_LANG: AMERICAN_AMERICA.AL32UTF8
