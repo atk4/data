@@ -513,7 +513,7 @@ class ContainsManyTest extends TestCase
             $l->fieldName()->qty => 2,
         ]);
 
-        $expectedSortOrder = [5, 3, 1, 4, 3];
+        $expectedSortOrder = [3, 5, 1, 4, 2];
         $ids = [];
         foreach ($i->lines->setOrder(['price' => 'ASC', 'qty' => 'ASC']) as $line) {
             $ids[] = $line->id;
