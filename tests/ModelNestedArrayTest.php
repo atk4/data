@@ -136,7 +136,7 @@ class ModelNestedArrayTest extends TestCase
             ['inner', Model::HOOK_BEFORE_SAVE, [false]],
             ['inner', Model::HOOK_BEFORE_INSERT, [['uid' => null, 'name' => 'Karl', 'y' => \DateTime::class]]],
             ['inner', Model::HOOK_AFTER_INSERT, []],
-            ['inner', Model::HOOK_AFTER_SAVE, [false]],
+            ['inner', Model::HOOK_AFTER_SAVE, [false, false]],
             ['inner', '<<<'],
             ['main', Model::HOOK_AFTER_INSERT, []],
             ['main', Model::HOOK_BEFORE_UNLOAD, []],
