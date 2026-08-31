@@ -175,7 +175,7 @@ class ModelNestedSqlTest extends TestCase
             ['inner', Persistence\Sql::HOOK_BEFORE_INSERT_QUERY, [Query::class]],
             ['inner', Persistence\Sql::HOOK_AFTER_INSERT_QUERY, [Query::class]],
             ['inner', Model::HOOK_AFTER_INSERT, []],
-            ['inner', Model::HOOK_AFTER_SAVE, [false]],
+            ['inner', Model::HOOK_AFTER_SAVE, [false, false]],
             ['inner', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['inner', '<<<'],
             ['main', Model::HOOK_AFTER_INSERT, []],
@@ -185,7 +185,7 @@ class ModelNestedSqlTest extends TestCase
             ['inner', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['main', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['main', Model::HOOK_AFTER_LOAD, []],
-            ['main', Model::HOOK_AFTER_SAVE, [false]],
+            ['main', Model::HOOK_AFTER_SAVE, [false, false]],
             ['main', '<<<'],
         ], $this->hookLogs);
 
@@ -216,7 +216,7 @@ class ModelNestedSqlTest extends TestCase
             ['main', '>>>'],
             ['main', Model::HOOK_VALIDATE, ['save']],
             ['main', Model::HOOK_BEFORE_SAVE, [true]],
-            ['main', Model::HOOK_AFTER_SAVE, [true]],
+            ['main', Model::HOOK_AFTER_SAVE, [true, true]],
             ['main', '<<<'],
 
             ['main', '>>>'],
@@ -234,7 +234,7 @@ class ModelNestedSqlTest extends TestCase
             ['inner', Persistence\Sql::HOOK_BEFORE_UPDATE_QUERY, [Query::class]],
             ['inner', Persistence\Sql::HOOK_AFTER_UPDATE_QUERY, [Query::class]],
             ['inner', Model::HOOK_AFTER_UPDATE, [['name' => 'Susan']]],
-            ['inner', Model::HOOK_AFTER_SAVE, [true]],
+            ['inner', Model::HOOK_AFTER_SAVE, [true, false]],
             ['inner', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['inner', '<<<'],
             ['inner', Model::HOOK_BEFORE_UNLOAD, []],
@@ -248,7 +248,7 @@ class ModelNestedSqlTest extends TestCase
             ['main', Persistence\Sql::HOOK_INIT_SELECT_QUERY, [Query::class, 'select']],
             ['main', Model::HOOK_AFTER_LOAD, []],
 
-            ['main', Model::HOOK_AFTER_SAVE, [true]],
+            ['main', Model::HOOK_AFTER_SAVE, [true, false]],
             ['main', '<<<'],
         ], $this->hookLogs);
 
