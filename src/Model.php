@@ -1616,7 +1616,7 @@ class Model implements \IteratorAggregate
                 $this->reload();
             }
 
-            $this->hook(self::HOOK_AFTER_SAVE, [$isUpdate]);
+            $this->hook(self::HOOK_AFTER_SAVE, [$isUpdate, $noChanges]);
 
             if ($this->idField) {
                 $this->validateEntityScope();
