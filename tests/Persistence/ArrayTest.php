@@ -905,12 +905,12 @@ class ArrayTest extends TestCase
         $m->setOrder('f2', 'desc');
         $d = $this->_getRows($m, ['f1', 'f2', 'id']);
         self::assertSame([
-            ['id' => 5, 'f1' => 'E', 'f2' => 'A'],
             ['id' => 3, 'f1' => 'D', 'f2' => 'C'],
-            ['id' => 2, 'f1' => 'D', 'f2' => 'A'],
-            ['id' => 6, 'f1' => 'C', 'f2' => 'A'],
             ['id' => 4, 'f1' => 'A', 'f2' => 'C'],
             ['id' => 1, 'f1' => 'A', 'f2' => 'B'],
+            ['id' => 5, 'f1' => 'E', 'f2' => 'A'],
+            ['id' => 2, 'f1' => 'D', 'f2' => 'A'],
+            ['id' => 6, 'f1' => 'C', 'f2' => 'A'],
         ], $d);
         self::assertSame($d, $m->export(['f1', 'f2', 'id']));
     }

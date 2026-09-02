@@ -455,7 +455,7 @@ class Array_ extends Persistence
     {
         // first order by
         if (count($model->order) > 0) {
-            $action->order(array_reverse($model->order));
+            $action->order($model->order);
         }
 
         // then set limit
