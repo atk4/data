@@ -11,20 +11,17 @@ use Doctrine\DBAL\Driver\Middleware\AbstractDriverMiddleware;
 use Doctrine\DBAL\Driver\OCI8\Exception\ConnectionFailed;
 
 /**
- * Retries transient Oracle listener failures during connection establishment.
+ * Oracle listener may temporarily return ORA-12516 when connecting and when the listener has not yet
+ * fully released previous connections.
  *
- * Oracle may temporarily return ORA-12516 when the listener has not yet
- * released a handler after a connection has been closed. Retrying after
- * a short delay allows the listener to refresh its handler state.
+ * Needed for reliable connecting for Oracle v23.4 or higher (at least v23.26.3).
  */
-class RetryConnectionMiddleware implements Middleware
+class RetryListenerConnectionMiddleware implements Middleware
 {
     #[\Override]
     public function wrap(Driver $driver): Driver
     {
         return new class($driver) extends AbstractDriverMiddleware {
-            // ORA-12516: TNS:listener could not find available handler with matching protocol stack
-            private const RETRY_ERROR_CODES = [12516];
             private const RETRY_COUNT = 8;
             private const RETRY_INTERVAL_BASE_MS = 10;
             private const RETRY_INTERVAL_MAX_MS = 1000;
@@ -38,10 +35,7 @@ class RetryConnectionMiddleware implements Middleware
                     try {
                         return parent::connect($params);
                     } catch (ConnectionFailed $e) { // @phpstan-ignore catch.internalClass
-                        if (
-                            !in_array($e->getCode(), self::RETRY_ERROR_CODES, true)
-                            || $attempt >= self::RETRY_COUNT
-                        ) {
+                        if ($e->getCode() !== 12516 || $attempt >= self::RETRY_COUNT) {
                             throw $e;
                         }
 
