@@ -1069,8 +1069,8 @@ class Model implements \IteratorAggregate
                 if (is_int($k)) {
                     if (is_array($v)) {
                         // format [field, direction]
-                        assert(array_keys($v) === [0] || array_keys($v) === [0, 1]);
-                        assert(!is_array($v[0]));
+                        assert(array_keys($v) === [0] || array_keys($v) === [0, 1]); // @phpstan-ignore function.alreadyNarrowedType, identical.alwaysTrue, booleanOr.alwaysTrue
+                        assert(!is_array($v[0])); // @phpstan-ignore function.alreadyNarrowedType, function.impossibleType
                         $this->setOrder(...$v);
                     } else {
                         // format "field"
