@@ -246,28 +246,10 @@ jobs:
           php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) --fail-on-warning --fail-on-risky $(if vendor/bin/phpunit --version | grep -q '^PHPUnit 9\.'; then echo -v; else echo --fail-on-notice --fail-on-deprecation --display-notices --display-deprecations --display-warnings --display-errors --display-incomplete --display-skipped; fi)
           if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-mssql.cov; fi
 
-      - name: "Wait for Oracle"
+      - name: "Wait for healthy Oracle"
+        if: success() || failure()
         run: |
-          for i in {1..60}; do
-            if php -r '
-              $conn = @oci_connect("atk4_test_user", "atk4_pass", "//oracle/freepdb1");
-              if ($conn) {
-                oci_close($conn);
-                exit(0);
-              }
-              exit(1);
-            '
-            then
-              echo "Oracle is ready"
-              exit 0
-            fi
-
-            echo "Waiting for Oracle... ($i/60)"
-            sleep 2
-          done
-
-          echo "Oracle did not become ready"
-          exit 1
+          php -r '$t = microtime(true); while (microtime(true) - $t < 300) { try { (new PDO("oci:host=oracle;dbname=oracle/freepdb1", "system", "atk4_pass_root")); exit; } catch (Exception $e) {} sleep(1); } exit(2);'
 
       - name: "Run tests: Oracle - PDO (only for coverage or cron)"
         if: (success() || failure()) && (env.LOG_COVERAGE || github.event_name == 'schedule')
