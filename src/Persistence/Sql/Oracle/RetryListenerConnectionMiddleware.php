@@ -23,8 +23,8 @@ class RetryListenerConnectionMiddleware implements Middleware
     {
         return new class($driver) extends AbstractDriverMiddleware {
             private const RETRY_COUNT = 8;
-            private const RETRY_INTERVAL_BASE_MS = 10;
-            private const RETRY_INTERVAL_MAX_MS = 1000;
+            private const RETRY_INTERVAL_BASE_SECONDS = 0.01;
+            private const RETRY_INTERVAL_MAX_SECONDS = 1.0;
 
             #[\Override]
             public function connect(
@@ -39,12 +39,12 @@ class RetryListenerConnectionMiddleware implements Middleware
                             throw $e;
                         }
 
-                        $timeoutMs = min(
-                            self::RETRY_INTERVAL_BASE_MS * (2 ** $attempt),
-                            self::RETRY_INTERVAL_MAX_MS
+                        $timeout = min(
+                            self::RETRY_INTERVAL_BASE_SECONDS * (2 ** $attempt),
+                            self::RETRY_INTERVAL_MAX_SECONDS
                         );
 
-                        usleep($timeoutMs * 1000);
+                        usleep((int) round($timeout * 1_000_000));
                     }
                 }
             }
