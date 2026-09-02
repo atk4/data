@@ -136,14 +136,14 @@ class ModelNestedArrayTest extends TestCase
             ['inner', Model::HOOK_BEFORE_SAVE, [false]],
             ['inner', Model::HOOK_BEFORE_INSERT, [['uid' => null, 'name' => 'Karl', 'y' => \DateTime::class]]],
             ['inner', Model::HOOK_AFTER_INSERT, []],
-            ['inner', Model::HOOK_AFTER_SAVE, [false]],
+            ['inner', Model::HOOK_AFTER_SAVE, [false, false]],
             ['inner', '<<<'],
             ['main', Model::HOOK_AFTER_INSERT, []],
             ['main', Model::HOOK_BEFORE_UNLOAD, []],
             ['main', Model::HOOK_AFTER_UNLOAD, []],
             ['main', Model::HOOK_BEFORE_LOAD, [\DateTime::class]],
             ['main', Model::HOOK_AFTER_LOAD, []],
-            ['main', Model::HOOK_AFTER_SAVE, [false]],
+            ['main', Model::HOOK_AFTER_SAVE, [false, false]],
             ['main', '<<<'],
         ], $this->hookLogs);
 
@@ -172,7 +172,7 @@ class ModelNestedArrayTest extends TestCase
             ['main', '>>>'],
             ['main', Model::HOOK_VALIDATE, ['save']],
             ['main', Model::HOOK_BEFORE_SAVE, [true]],
-            ['main', Model::HOOK_AFTER_SAVE, [true]],
+            ['main', Model::HOOK_AFTER_SAVE, [true, true]],
             ['main', '<<<'],
 
             ['main', '>>>'],
@@ -186,7 +186,7 @@ class ModelNestedArrayTest extends TestCase
             ['inner', Model::HOOK_BEFORE_SAVE, [true]],
             ['inner', Model::HOOK_BEFORE_UPDATE, [['name' => 'Susan']]],
             ['inner', Model::HOOK_AFTER_UPDATE, [['name' => 'Susan']]],
-            ['inner', Model::HOOK_AFTER_SAVE, [true]],
+            ['inner', Model::HOOK_AFTER_SAVE, [true, false]],
             ['inner', '<<<'],
             ['inner', Model::HOOK_BEFORE_UNLOAD, []],
             ['inner', Model::HOOK_AFTER_UNLOAD, []],
@@ -197,7 +197,7 @@ class ModelNestedArrayTest extends TestCase
             ['main', Model::HOOK_BEFORE_LOAD, [\DateTime::class]],
             ['main', Model::HOOK_AFTER_LOAD, []],
 
-            ['main', Model::HOOK_AFTER_SAVE, [true]],
+            ['main', Model::HOOK_AFTER_SAVE, [true, false]],
             ['main', '<<<'],
         ], $this->hookLogs);
 

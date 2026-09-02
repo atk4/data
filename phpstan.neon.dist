@@ -23,13 +23,6 @@ parameters:
             message: '~^Property Atk4\\Data\\Model\\UserAction::\$(enabled|preview) .*Closure<.+ does not accept .*Closure\(.+\.$~'
             count: 3
 
-        # https://github.com/phpstan/phpstan/issues/11718
-        -
-            path: 'src/Reference.php'
-            identifier: argument.type
-            message: '~^Parameter #1 \$key of method Atk4\\Data\\Reference\\WeakAnalysingMap<list<mixed>,Closure,Atk4\\Data\\Model\|Atk4\\Data\\Persistence>::(get|set)\(\) expects list<mixed>, array\{0: Atk4\\Data\\Reference\\WeakAnalysingMap<list<mixed>, Closure, Atk4\\Data\\Model\|Atk4\\Data\\Persistence>, 1: non-falsy-string, 2: class-string<object>\|null, 3\?: object\|null, 4\?: non-empty-array\} given\.$~'
-            count: 2
-
         # TODO report to phpstan, errors cannot be ignore inline
         -
             path: 'src/Persistence/Sql/Postgresql/PlatformTrait.php'
