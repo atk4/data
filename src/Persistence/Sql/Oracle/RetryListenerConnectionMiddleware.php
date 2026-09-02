@@ -6,9 +6,9 @@ namespace Atk4\Data\Persistence\Sql\Oracle;
 
 use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Driver\Connection;
+use Doctrine\DBAL\Driver\Exception as DbalDriverException;
 use Doctrine\DBAL\Driver\Middleware;
 use Doctrine\DBAL\Driver\Middleware\AbstractDriverMiddleware;
-use Doctrine\DBAL\Driver\OCI8\Exception\ConnectionFailed;
 
 /**
  * Oracle listener may temporarily return ORA-12516 when connecting and when the listener has not yet
@@ -34,7 +34,7 @@ class RetryListenerConnectionMiddleware implements Middleware
                 for ($attempt = 0;; ++$attempt) {
                     try {
                         return parent::connect($params);
-                    } catch (ConnectionFailed $e) { // @phpstan-ignore catch.internalClass
+                    } catch (DbalDriverException $e) {
                         if ($e->getCode() !== 12516 || $attempt >= self::RETRY_COUNT) {
                             throw $e;
                         }
