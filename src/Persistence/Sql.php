@@ -305,7 +305,7 @@ class Sql extends Persistence
         foreach (array_reverse($model->order) as $order) {
             $isDesc = strtolower($order[1]) === 'desc';
             if (!$isDesc) {
-                assert(strtolower($order[1]) === 'asc');
+                assert(strtolower($order[1]) === 'asc'); // @phpstan-ignore function.alreadyNarrowedType, identical.alwaysTrue
             }
 
             if ($order[0] instanceof Expressionable) {
