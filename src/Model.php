@@ -1090,7 +1090,7 @@ class Model implements \IteratorAggregate
                 ->addMoreInfo('direction', $direction);
         }
 
-        $this->order[] = [$field, $direction];
+        array_unshift($this->order, [$field, $direction]);
 
         return $this;
     }

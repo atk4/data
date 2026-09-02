@@ -302,7 +302,7 @@ class Sql extends Persistence
         }
 
         // set order
-        foreach ($model->order as $order) {
+        foreach (array_reverse($model->order) as $order) {
             $isDesc = strtolower($order[1]) === 'desc';
 
             if ($order[0] instanceof Expressionable) {
