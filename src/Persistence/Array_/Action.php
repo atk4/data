@@ -326,6 +326,9 @@ class Action
         foreach ($fields as [$field, $direction]) {
             $multisortArgs[] = array_column($data, $field);
             $multisortArgs[] = strtolower($direction) === 'desc' ? \SORT_DESC : \SORT_ASC;
+            if (array_last($multisortArgs) === \SORT_ASC) {
+                assert(strtolower($direction) === 'asc');
+            }
         }
 
         array_multisort(...$multisortArgs, ...[&$data]);
