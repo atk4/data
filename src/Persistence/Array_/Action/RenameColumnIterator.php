@@ -9,7 +9,7 @@ use Atk4\Data\Exception;
 /**
  * @internal
  *
- * @phpstan-extends \IteratorIterator<int, array<string, mixed>, \Traversable<array<string, mixed>>>
+ * @phpstan-extends \IteratorIterator<int, array<string, mixed>, \Traversable<int, array<string, mixed>>>
  */
 class RenameColumnIterator extends \IteratorIterator
 {
