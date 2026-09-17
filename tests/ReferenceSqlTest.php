@@ -1031,4 +1031,144 @@ class ReferenceSqlTest extends TestCase
         $orderUserRef->addField('some_other_number', null, ['type' => 'string']);
         self::assertSame('string', $order->getField('some_other_number')->type);
     }
+
+    public function testJsonAggregateField(): void
+    {
+        $this->setDb([
+            'author' => [
+                ['id' => 1, 'name' => 'John'],
+                ['id' => 2, 'name' => 'Jane'],
+            ],
+            'book' => [
+                ['id' => 1, 'author_id' => 1, 'title' => 'Book 1', 'year' => 2020],
+                ['id' => 2, 'author_id' => 1, 'title' => 'Book 2', 'year' => 2021],
+                ['id' => 3, 'author_id' => 2, 'title' => 'Book 3', 'year' => 2019],
+            ],
+        ]);
+
+        $author = new Model($this->db, ['table' => 'author']);
+        $author->addField('name');
+
+        $book = new Model($this->db, ['table' => 'book']);
+        $book->addField('author_id', ['type' => 'bigint']);
+        $book->addField('title');
+        $book->addField('year', ['type' => 'integer']);
+
+        // Model instance works when not using joins
+        $author->hasMany('Books', ['model' => $book])
+            ->addField('books_json', [
+                'aggregate' => 'json',
+                'fields' => ['id', 'title', 'year'],
+                'type' => 'json',
+            ]);
+
+        $john = $author->load(1);
+        self::assertSame([
+            ['id' => 1, 'title' => 'Book 1', 'year' => 2020],
+            ['id' => 2, 'title' => 'Book 2', 'year' => 2021],
+        ], $john->get('books_json'));
+
+        $jane = $author->load(2);
+        self::assertSame([
+            ['id' => 3, 'title' => 'Book 3', 'year' => 2019],
+        ], $jane->get('books_json'));
+    }
+
+    public function testJsonAggregateWithJoins(): void
+    {
+        $this->setDb([
+            'author' => [
+                ['id' => 1, 'name' => 'John', 'country' => 'US'],
+                ['id' => 2, 'name' => 'Jane', 'country' => 'UK'],
+            ],
+            'book' => [
+                ['id' => 1, 'author_id' => 1, 'title' => 'Book 1'],
+                ['id' => 2, 'author_id' => 1, 'title' => 'Book 2'],
+            ],
+        ]);
+
+        $author = new Model($this->db, ['table' => 'author']);
+        $author->addField('name');
+        $author->addField('country');
+
+        // Closure allows aggregation on joined tables
+        $author->hasMany('Books', ['model' => static function ($persistence) {
+            $book = new Model($persistence, ['table' => 'book']);
+            $book->addField('author_id', ['type' => 'bigint']);
+            $book->addField('title');
+            $book->join('author');
+            // Json aggregation with dot notation allows skipping addField() calls for joined tables.
+            // Without dot notation, you must add all fields required in the aggregation,
+            // doing the same job twice. This is prone to errors and not low-code.
+
+            return $book;
+        }])
+            ->addField('books_with_author_json', [
+                'aggregate' => 'json',
+                'fields' => [
+                    'book_id' => 'id',       // Field from book table: new_field_name => original_field_name
+                    'book_title' => 'title', // Field from book table
+                    'author.name',           // Dot notation: reference joined field without addField(), shortened to 'name'
+                    'author.country',        // Dot notation: same, shortened to 'country'
+                ],
+                'type' => 'json',
+            ]);
+
+        $john = $author->load(1);
+        self::assertSame([
+            ['book_id' => 1, 'book_title' => 'Book 1', 'name' => 'John', 'country' => 'US'],
+            ['book_id' => 2, 'book_title' => 'Book 2', 'name' => 'John', 'country' => 'US'],
+        ], $john->get('books_with_author_json'));
+    }
+
+    public function testJsonAggregateExpressionTypes(): void
+    {
+        $this->setDb([
+            'author' => [
+                ['id' => 1, 'name' => 'John'],
+            ],
+            'book' => [
+                ['id' => 1, 'author_id' => 1, 'title' => 'Book A'],
+            ],
+        ]);
+
+        $author = new Model($this->db, ['table' => 'author']);
+        $author->addField('name');
+
+        $bookModel = static function ($persistence) {
+            $book = new Model($persistence, ['table' => 'book']);
+            $book->addField('author_id', ['type' => 'bigint']);
+            $book->addField('title');
+            $book->join('author');
+
+            return $book;
+        };
+
+        $author->hasMany('Books1', ['model' => $bookModel])
+            ->addField('books_expr', [
+                'aggregate' => 'json',
+                'fields' => ['info' => ['expr' => "CONCAT([], ' by ', [])", 'args' => ['title', 'author.name']]],
+                'type' => 'json',
+            ]);
+
+        $author->hasMany('Books2', ['model' => $bookModel])
+            ->addField('books_callable', [
+                'aggregate' => 'json',
+                'fields' => ['info' => static fn ($q, $r) => $q->fxConcat($r('title'), ' by ', $r('author.name'))],
+                'type' => 'json',
+            ]);
+
+        $author->hasMany('Books3', ['model' => $bookModel])
+            ->addField('books_callable_array', [
+                'aggregate' => 'json',
+                'fields' => ['info' => ['expr' => static fn ($q, $r) => $q->fxConcat($r('title'), ' by ', $r('author.name'))]],
+                'type' => 'json',
+            ]);
+
+        $author = $author->loadAny();
+
+        self::assertSame([['info' => 'Book A by John']], $author->get('books_expr'));
+        self::assertSame([['info' => 'Book A by John']], $author->get('books_callable'));
+        self::assertSame([['info' => 'Book A by John']], $author->get('books_callable_array'));
+    }
 }

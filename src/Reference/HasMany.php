@@ -8,6 +8,8 @@ use Atk4\Core\Factory;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
+use Atk4\Data\Model\Join;
+use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Reference;
 
 class HasMany extends Reference
@@ -154,6 +156,90 @@ class HasMany extends Reference
         } elseif (in_array($defaults['aggregate'], ['sum', 'avg', 'min', 'max', 'count'], true)) {
             $fx = function () use ($defaults, $field) {
                 return $this->refLink()->action('fx0', [$defaults['aggregate'], $field]);
+            };
+        } elseif ($defaults['aggregate'] === 'json') {
+            if (!isset($defaults['fields'])) {
+                throw new Exception('JSON aggregate requires "fields" parameter with array of field names');
+            }
+
+            $jsonFields = $defaults['fields'];
+            unset($defaults['fields']); // Remove from field defaults
+
+            $fx = function () use ($jsonFields) {
+                $theirModel = $this->refLink();
+                $query = $theirModel->action('select', [[]]);
+
+                // Helper to resolve field reference with dot notation support
+                $resolveField = static function ($fieldRef) use ($theirModel, $query) {
+                    if (is_string($fieldRef) && str_contains($fieldRef, '.')) {
+                        // Dot notation: 'join.field' - resolve from join
+                        [$joinName, $fieldName] = explode('.', $fieldRef, 2);
+
+                        // Find the join by iterating through model's joins
+                        $join = null;
+                        foreach ($theirModel->elements as $element) {
+                            if ($element instanceof Join) {
+                                if ($element->getForeignTable() === $joinName) {
+                                    $join = $element;
+
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (!$join) {
+                            throw (new Exception('Join not found for field reference'))
+                                ->addMoreInfo('field', $fieldRef)
+                                ->addMoreInfo('join', $joinName);
+                        }
+
+                        // Get field from join's foreign table
+                        // The field is qualified as joinAlias.fieldName in the query
+                        $joinAlias = $join->foreignAlias ?? ('_' . $joinName);
+
+                        return $query->expr($joinAlias . '.' . $fieldName);
+                    }
+
+                    // Regular field reference
+                    return $theirModel->getField($fieldRef);
+                };
+
+                $jsonPairs = [];
+                foreach ($jsonFields as $key => $fieldSpec) {
+                    // Determine output key name
+                    if (is_int($key)) {
+                        // No custom name - auto-generate from field spec
+                        if (is_string($fieldSpec) && str_contains($fieldSpec, '.')) {
+                            // Strip join prefix: 'person.first_name' -> 'first_name'
+                            $jsonKey = explode('.', $fieldSpec, 2)[1];
+                        } else {
+                            $jsonKey = is_string($fieldSpec) ? $fieldSpec : $key;
+                        }
+                    } else {
+                        // Custom name provided
+                        $jsonKey = $key;
+                    }
+
+                    if (is_string($fieldSpec)) {
+                        $jsonPairs[$jsonKey] = $resolveField($fieldSpec);
+                    } elseif ($fieldSpec instanceof Expressionable) {
+                        $jsonPairs[$jsonKey] = $fieldSpec;
+                    } elseif (is_callable($fieldSpec)) {
+                        $jsonPairs[$jsonKey] = $fieldSpec($query, $resolveField);
+                    } elseif (is_array($fieldSpec) && isset($fieldSpec['expr'])) {
+                        if (is_callable($fieldSpec['expr'])) {
+                            $jsonPairs[$jsonKey] = $fieldSpec['expr']($query, $resolveField);
+                        } else {
+                            $resolvedArgs = array_map($resolveField, $fieldSpec['args'] ?? []);
+                            $jsonPairs[$jsonKey] = $query->expr($fieldSpec['expr'], $resolvedArgs);
+                        }
+                    }
+                }
+
+                $jsonObj = $query->fxJsonObject($jsonPairs);
+                $jsonAgg = $query->jsonArrayAgg($jsonObj);
+
+                return $theirModel->action('field', [$jsonAgg]);
             };
         } else {
             $fx = function () use ($defaults, $field) {
