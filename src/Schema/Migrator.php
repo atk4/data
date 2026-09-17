@@ -180,6 +180,11 @@ class Migrator
             $tableDiff = new TableDiff(
                 $existingTable->getName(),
                 $addedColumns,
+                [],
+                [],
+                [],
+                [],
+                [],
                 $existingTable,
             );
         } else {
