@@ -179,13 +179,13 @@ class Migrator
         if (Connection::isDbal3x()) {
             $tableDiff = new TableDiff(
                 $existingTable->getName(),
-                addedColumns: $addedColumns,
-                fromTable: $existingTable,
+                $addedColumns,
+                $existingTable,
             );
         } else {
             $tableDiff = new TableDiff(
                 $existingTable,
-                addedColumns: $addedColumns,
+                $addedColumns,
             );
         }
 

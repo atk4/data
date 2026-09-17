@@ -449,7 +449,7 @@ class MigratorTest extends TestCase
         self::assertTrue($model->issetPersistence());
         self::assertSame(['id', 'a'], array_keys($model->getFields()));
     }
-    
+
     public function testAlterTable(): void
     {
         $this->createMigrator()
