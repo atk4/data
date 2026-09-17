@@ -153,6 +153,54 @@ class Migrator
         return $this;
     }
 
+    /**
+     * Currently only supports adding new columns as we don't want to risk with destructive actions.
+     */
+    public function alter(): self
+    {
+        $schemaManager = $this->createSchemaManager();
+
+        $tableName = $this->fixTableNameForListMethod($this->table->getName());
+        $existingTable = $schemaManager->introspectTable($tableName);
+
+        $desiredTable = clone $existingTable;
+
+        foreach ($this->table->getColumns() as $column) {
+            if ($desiredTable->hasColumn($column->getName())) {
+                continue;
+            }
+
+            $platformOptions = $column->getPlatformOptions();
+
+            $options = $column->toArray();
+            unset($options['name'], $options['type']);
+
+            foreach ($platformOptions as $optionName => $optionValue) {
+                unset($options[$optionName]);
+            }
+
+            $newColumn = $desiredTable->addColumn(
+                $column->getName(),
+                Type::getTypeRegistry()->lookupName($column->getType()),
+                $options,
+            );
+
+            foreach ($platformOptions as $optionName => $optionValue) {
+                $newColumn->setPlatformOption($optionName, $optionValue);
+            }
+        }
+
+        $tableDiff = $schemaManager
+            ->createComparator()
+            ->compareTables($existingTable, $desiredTable);
+
+        if (!$tableDiff->isEmpty()) {
+            $schemaManager->alterTable($tableDiff);
+        }
+
+        return $this;
+    }
+
     public function drop(bool $dropForeignKeysFirst = false): self
     {
         $schemaManager = $this->createSchemaManager();
