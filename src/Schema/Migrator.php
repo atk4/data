@@ -29,6 +29,7 @@ use Doctrine\DBAL\Schema\ForeignKeyConstraint;
 use Doctrine\DBAL\Schema\Identifier;
 use Doctrine\DBAL\Schema\Index;
 use Doctrine\DBAL\Schema\Table;
+use Doctrine\DBAL\Schema\TableDiff;
 use Doctrine\DBAL\Types\Type;
 
 class Migrator
@@ -149,6 +150,46 @@ class Migrator
     {
         $this->createSchemaManager()->createTable($this->table);
         $this->createdTableNames[] = $this->table->getName();
+
+        return $this;
+    }
+
+    /**
+     * Note - currently only supports adding new columns.
+     */
+    public function alter(): self
+    {
+        $schemaManager = $this->createSchemaManager();
+
+        $tableName = $this->fixTableNameForListMethod($this->table->getName());
+        $existingTable = $schemaManager->introspectTable($tableName);
+
+        $addedColumns = [];
+
+        foreach ($this->table->getColumns() as $column) {
+            if (!$existingTable->hasColumn($column->getName())) {
+                $addedColumns[] = $column;
+            }
+        }
+
+        if ($addedColumns === []) {
+            return $this;
+        }
+
+        if (Connection::isDbal3x()) {
+            $tableDiff = new TableDiff(
+                $existingTable->getName(),
+                addedColumns: $addedColumns,
+                fromTable: $existingTable,
+            );
+        } else {
+            $tableDiff = new TableDiff(
+                $existingTable,
+                addedColumns: $addedColumns,
+            );
+        }
+
+        $schemaManager->alterTable($tableDiff);
 
         return $this;
     }

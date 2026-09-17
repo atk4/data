@@ -449,6 +449,26 @@ class MigratorTest extends TestCase
         self::assertTrue($model->issetPersistence());
         self::assertSame(['id', 'a'], array_keys($model->getFields()));
     }
+    
+    public function testAlterTable(): void
+    {
+        $this->createMigrator()
+            ->table('t')
+            ->id()
+            ->field('a')
+            ->create();
+
+        $model = (new Migrator($this->getConnection()))->introspectTableToModel('t');
+        self::assertSame(['id', 'a'], array_keys($model->getFields()));
+
+        $this->createMigrator()
+            ->table('t')
+            ->field('b')
+            ->alter();
+
+        $model = (new Migrator($this->getConnection()))->introspectTableToModel('t');
+        self::assertSame(['id', 'a', 'b'], array_keys($model->getFields()));
+    }
 }
 
 class TestUser extends Model
