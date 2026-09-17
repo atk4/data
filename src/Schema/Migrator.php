@@ -29,7 +29,6 @@ use Doctrine\DBAL\Schema\ForeignKeyConstraint;
 use Doctrine\DBAL\Schema\Identifier;
 use Doctrine\DBAL\Schema\Index;
 use Doctrine\DBAL\Schema\Table;
-use Doctrine\DBAL\Schema\TableDiff;
 use Doctrine\DBAL\Types\Type;
 
 class Migrator
@@ -155,7 +154,7 @@ class Migrator
     }
 
     /**
-     * Note - currently only supports adding new columns.
+     * Currently only supports adding new columns as we don't want to risk with destructive actions.
      */
     public function alter(): self
     {
@@ -164,37 +163,33 @@ class Migrator
         $tableName = $this->fixTableNameForListMethod($this->table->getName());
         $existingTable = $schemaManager->introspectTable($tableName);
 
-        $addedColumns = [];
+        // Create the desired table from the actual database table.
+        // This is important: we want an ADD-only migration, so existing
+        // columns/indexes/PK/FKs must remain part of the desired definition.
+        $desiredTable = clone $existingTable;
 
         foreach ($this->table->getColumns() as $column) {
-            if (!$existingTable->hasColumn($column->getName())) {
-                $addedColumns[] = $column;
+            if ($desiredTable->hasColumn($column->getName())) {
+                continue;
             }
-        }
 
-        if ($addedColumns === []) {
-            return $this;
-        }
+            $options = $column->toArray();
+            unset($options['name'], $options['type']);
 
-        if (Connection::isDbal3x()) {
-            $tableDiff = new TableDiff(
-                $existingTable->getName(),
-                $addedColumns,
-                [],
-                [],
-                [],
-                [],
-                [],
-                $existingTable,
-            );
-        } else {
-            $tableDiff = new TableDiff(
-                $existingTable,
-                $addedColumns,
+            $desiredTable->addColumn(
+                $column->getName(),
+                Type::getTypeRegistry()->lookupName($column->getType()),
+                $options,
             );
         }
 
-        $schemaManager->alterTable($tableDiff);
+        $tableDiff = $schemaManager
+            ->createComparator()
+            ->compareTables($existingTable, $desiredTable);
+
+        if (!$tableDiff->isEmpty()) {
+            $schemaManager->alterTable($tableDiff);
+        }
 
         return $this;
     }
