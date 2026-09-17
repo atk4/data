@@ -463,11 +463,27 @@ class MigratorTest extends TestCase
 
         $this->createMigrator()
             ->table('t')
-            ->field('b')
+            ->field('b', ['type'=>'string'])
             ->alter();
 
+        // Oracle desperately wants to use uppercase for field names
+        if ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            $expected = ['id', 'a', 'B'];
+        } else {
+            $expected = ['id', 'a', 'b'];
+        }
         $model = (new Migrator($this->getConnection()))->introspectTableToModel('t');
-        self::assertSame(['id', 'a', 'b'], array_keys($model->getFields()));
+        self::assertSame($expected, array_keys($model->getFields()));
+
+        // SQLite preserves platform collation option
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
+            $this->assertSame(
+                'NOCASE',
+                (new Migrator($this->getConnection()))->getConnection()->createSchemaManager()->introspectTable($model->table)
+                    ->getColumn('b')
+                    ->getPlatformOption('collation')
+            );
+        }
     }
 }
 

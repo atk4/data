@@ -163,9 +163,6 @@ class Migrator
         $tableName = $this->fixTableNameForListMethod($this->table->getName());
         $existingTable = $schemaManager->introspectTable($tableName);
 
-        // Create the desired table from the actual database table.
-        // This is important: we want an ADD-only migration, so existing
-        // columns/indexes/PK/FKs must remain part of the desired definition.
         $desiredTable = clone $existingTable;
 
         foreach ($this->table->getColumns() as $column) {
@@ -173,14 +170,24 @@ class Migrator
                 continue;
             }
 
+            $platformOptions = $column->getPlatformOptions();
+
             $options = $column->toArray();
             unset($options['name'], $options['type']);
 
-            $desiredTable->addColumn(
+            foreach ($platformOptions as $optionName => $optionValue) {
+                unset($options[$optionName]);
+            }
+
+            $newColumn = $desiredTable->addColumn(
                 $column->getName(),
                 Type::getTypeRegistry()->lookupName($column->getType()),
                 $options,
             );
+
+            foreach ($platformOptions as $optionName => $optionValue) {
+                $newColumn->setPlatformOption($optionName, $optionValue);
+            }
         }
 
         $tableDiff = $schemaManager
