@@ -34,7 +34,7 @@ class RetryListenerConnectionMiddleware implements Middleware
                 for ($attempt = 0;; ++$attempt) {
                     try {
                         return parent::connect($params);
-                        // @codeCoverageIgnoreEnd
+                        // @codeCoverageIgnoreStart
                     } catch (DbalDriverException $e) {
                         if ($e->getCode() !== 12516 || $attempt >= self::RETRY_COUNT) {
                             throw $e;
