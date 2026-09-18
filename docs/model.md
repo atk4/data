@@ -764,9 +764,9 @@ $m->setOrder('name, salary desc');
 $m->setOrder(['name', 'salary desc']);
 $m->setOrder(['name', 'salary' => true]);
 $m->setOrder(['name' => false, 'salary' => true]);
-$m->setOrder([ ['name'], ['salary', 'desc'] ]);
-$m->setOrder([ ['name'], ['salary', true] ]);
-$m->setOrder([ ['name'], ['salary desc'] ]);
+$m->setOrder([['name'], ['salary', 'desc']]);
+$m->setOrder([['name'], ['salary', true]]);
+$m->setOrder([['name'], ['salary desc']]);
 // and there can be many more similar combinations how to call this
 ```
 
