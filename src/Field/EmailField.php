@@ -71,7 +71,9 @@ class EmailField extends Field
 
             $records = @dns_get_record($domain . '.', $dnsConsts[$t]);
             if ($records === false) { // retry once on failure
+                // @codeCoverageIgnoreStart
                 $records = dns_get_record($domain . '.', $dnsConsts[$t]);
+                // @codeCoverageIgnoreEnd
             }
             if ($records !== false && count($records) > 0) {
                 return true;
