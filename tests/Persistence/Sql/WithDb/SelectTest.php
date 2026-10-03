@@ -608,7 +608,7 @@ class SelectTest extends TestCase
             $expectedValue = null;
         }
 
-        if ($type === 'json' && $expectedValue === null && $this->getDatabasePlatform() instanceof OraclePlatform && version_compare($this->getConnection()->getServerVersion(), '23.9') < 0) {
+        if ($type === 'json' && $expectedValue === null && $this->getDatabasePlatform() instanceof OraclePlatform && version_compare($this->getConnection()->getServerVersion(), '23.9') < 0 && version_compare($this->getConnection()->getServerVersion(), '21.0') >= 0) {
             $expectedValue = 'null';
         }
 
@@ -726,7 +726,7 @@ class SelectTest extends TestCase
             }
         }
 
-        if ($this->getDatabasePlatform() instanceof OraclePlatform && version_compare($this->getConnection()->getServerVersion(), '23.9') < 0) {
+        if ($this->getDatabasePlatform() instanceof OraclePlatform && version_compare($this->getConnection()->getServerVersion(), '23.9') < 0 && version_compare($this->getConnection()->getServerVersion(), '21.0') >= 0) {
             foreach ($columns as $k => $column) {
                 if ($column['type'] === 'json') {
                     $expectedRows = array_map(static fn ($row) => array_map(static fn ($v) => $v === null ? 'null' : $v, $row), $expectedRows);
