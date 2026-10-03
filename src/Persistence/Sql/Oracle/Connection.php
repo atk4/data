@@ -45,11 +45,10 @@ class Connection extends BaseConnection
 
         if (!$serverVersionRawRefl->isInitialized($this)) {
             // https://github.com/php/pecl-database-pdo_oci/issues/43
-            $rowRaw = $this->getConnection()->executeQuery('SELECT version, version_full FROM sys.product_component_version WHERE product LIKE \'Oracle %Database%\'')->fetchNumeric();
-            assert($rowRaw !== false);
-            assert($rowRaw[0] === parent::getServerVersion(true));
+            $columnRaw = $this->getConnection()->executeQuery('SELECT version_full FROM sys.product_component_version WHERE product LIKE \'Oracle %Database%\'')->fetchFirstColumn();
+            assert(count($columnRaw) === 1);
 
-            $serverVersionRawRefl->setValue($this, $rowRaw[1]);
+            $serverVersionRawRefl->setValue($this, $columnRaw[0]);
         }
 
         return parent::getServerVersion($raw);
