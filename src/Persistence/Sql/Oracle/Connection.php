@@ -34,4 +34,24 @@ class Connection extends BaseConnection
 
         return parent::lastInsertId($sequence);
     }
+
+    #[\Override]
+    public function getServerVersion(bool $raw = false): string
+    {
+        $serverVersionRawRefl = new \ReflectionProperty(parent::class, 'serverVersionRaw');
+        if (\PHP_VERSION_ID < 8_01_00) {
+            $serverVersionRawRefl->setAccessible(true);
+        }
+
+        if (!$serverVersionRawRefl->isInitialized($this)) {
+            // https://github.com/php/pecl-database-pdo_oci/issues/43
+            $rowRaw = $this->getConnection()->executeQuery('SELECT version, version_full FROM sys.product_component_version WHERE product LIKE \'Oracle %Database%\'')->fetchNumeric();
+            assert($rowRaw !== false);
+            assert($rowRaw[0] === parent::getServerVersion(true));
+
+            $serverVersionRawRefl->setValue($this, $rowRaw[1]);
+        }
+
+        return parent::getServerVersion($raw);
+    }
 }
