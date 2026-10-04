@@ -608,6 +608,10 @@ class SelectTest extends TestCase
             $expectedValue = null;
         }
 
+        if ($type === 'json' && $expectedValue === null && $this->getDatabasePlatform() instanceof OraclePlatform && version_compare($this->getConnection()->getServerVersion(), '23.9') < 0 && version_compare($this->getConnection()->getServerVersion(), '21.0') >= 0) {
+            $expectedValue = 'null';
+        }
+
         self::assertSame(
             $expectedValue,
             $this->q()
@@ -718,6 +722,14 @@ class SelectTest extends TestCase
             foreach ($columns as $k => $column) {
                 if ($column['type'] === 'json') {
                     $expectedRows = array_map(static fn ($row) => array_map(static fn ($v) => is_scalar(json_decode($v ?? '[]', true)) ? null : $v, $row), $expectedRows);
+                }
+            }
+        }
+
+        if ($this->getDatabasePlatform() instanceof OraclePlatform && version_compare($this->getConnection()->getServerVersion(), '23.9') < 0 && version_compare($this->getConnection()->getServerVersion(), '21.0') >= 0) {
+            foreach ($columns as $k => $column) {
+                if ($column['type'] === 'json') {
+                    $expectedRows = array_map(static fn ($row) => array_map(static fn ($v) => $v === null ? 'null' : $v, $row), $expectedRows);
                 }
             }
         }
