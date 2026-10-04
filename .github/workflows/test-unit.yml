@@ -81,13 +81,13 @@ jobs:
       matrix:
         php: ['8.0', '8.5']
         type: ['Phpunit', 'Phpunit Lowest']
-        oracle: ['23.26.2', '23.26.1', '23.26.0', '23.9', '23.8', '23.7', '23.6', '23.5', '23.4', '23.3']
+        oracle: ['23.26.2', '23.26.1', '23.26.0', '23.9', '23.8', '23.7', '23.6', '23.5', '23.4', '23.3', '23.2', '18', '21']
         i: [0, 1, 2, 3, 4]
     env:
       LOG_COVERAGE: ""
     services:
       oracle:
-        image: gvenzl/oracle-free:${{ matrix.oracle }}-slim-faststart
+        image: gvenzl/oracle-${{ (matrix.oracle == '18' || matrix.oracle == '21') && 'xe' || 'free' }}:${{ matrix.oracle }}-slim-faststart
         env:
           ORACLE_PASSWORD: atk4_pass_root
           APP_USER: atk4_test_user
