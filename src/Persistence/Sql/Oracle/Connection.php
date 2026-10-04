@@ -45,7 +45,8 @@ class Connection extends BaseConnection
 
         if (!$serverVersionRawRefl->isInitialized($this)) {
             // https://github.com/php/pecl-database-pdo_oci/issues/43
-            $columnRaw = $this->getConnection()->executeQuery('SELECT version_full FROM sys.product_component_version WHERE product LIKE \'Oracle %Database%\'')->fetchFirstColumn();
+            // GROUP BY needed for Oracle v23.2
+            $columnRaw = $this->getConnection()->executeQuery('SELECT version_full FROM sys.product_component_version WHERE product LIKE \'Oracle% Database %\' GROUP BY version_full')->fetchFirstColumn();
             assert(count($columnRaw) === 1);
 
             $serverVersionRawRefl->setValue($this, $columnRaw[0]);
