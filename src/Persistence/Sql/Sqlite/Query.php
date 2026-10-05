@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Atk4\Data\Persistence\Sql\Sqlite;
 
 use Atk4\Data\Persistence\Sql\ExecuteException;
-use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Expression as BaseExpression;
+use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 use Atk4\Data\Persistence\Sql\RawExpression;
 use Doctrine\DBAL\Connection as DbalConnection;
