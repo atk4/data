@@ -255,4 +255,11 @@ class Query extends BaseQuery
 
         return parent::_execute($connection, $fromExecuteStatement);
     }
+
+
+    #[\Override]
+    public function exprNow(?int $precision = null): Expression
+    {
+        return $this->expr('current_timestamp');
+    }
 }
