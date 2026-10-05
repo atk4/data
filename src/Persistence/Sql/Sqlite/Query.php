@@ -6,6 +6,7 @@ namespace Atk4\Data\Persistence\Sql\Sqlite;
 
 use Atk4\Data\Persistence\Sql\ExecuteException;
 use Atk4\Data\Persistence\Sql\Expressionable;
+use Atk4\Data\Persistence\Sql\Expression as BaseExpression;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 use Atk4\Data\Persistence\Sql\RawExpression;
 use Doctrine\DBAL\Connection as DbalConnection;
@@ -256,9 +257,8 @@ class Query extends BaseQuery
         return parent::_execute($connection, $fromExecuteStatement);
     }
 
-
     #[\Override]
-    public function exprNow(?int $precision = null): Expression
+    public function exprNow(?int $precision = null): BaseExpression
     {
         return $this->expr('current_timestamp');
     }
