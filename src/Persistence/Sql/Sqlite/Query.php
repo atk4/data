@@ -260,6 +260,10 @@ class Query extends BaseQuery
     #[\Override]
     public function exprNow(?int $precision = null): BaseExpression
     {
-        return $this->expr('current_timestamp');
+        if (version_compare(Connection::getDriverVersion(), '3.42') < 0) {
+            return $this->expr('strftime([],[],[])', ['%Y-%m-%d %H:%M:%f', 'now', 'localtime']);
+        }
+
+        return $this->expr('datetime([],[],[])', ['now', 'subsec', 'localtime']);
     }
 }
