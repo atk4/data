@@ -260,9 +260,10 @@ class Query extends BaseQuery
     #[\Override]
     public function exprNow(?int $precision = null): BaseExpression
     {
-        // $pad = max(0, ($precision ?? 0) - 3); // SQLite only supports miliseconds
+        // SQLite always use 3 digit fractional seconds (miliseconds), so we simulate precision a bit
+        // old versions used strftime()
         if (version_compare(Connection::getDriverVersion(), '3.42') < 0) {
-            return $this->expr('substr(concat(strftime([], [], []), [padding]), 1, 19 + CASE WHEN [precision] > 0 THEN [precision] + 1 ELSE 0 END', [
+            return $this->expr('substr(concat(strftime([], [], []), [padding]), 1, 19 + CASE WHEN [precision] > 0 THEN [precision] + 1 ELSE 0 END)', [
                 '%Y-%m-%d %H:%M:%f',
                 'now',
                 'localtime',
@@ -271,6 +272,7 @@ class Query extends BaseQuery
             ]);
         }
 
+        // newer versions have datetime()
         return $this->expr('substr(concat(datetime([], [], []), [padding]), 1, 19 + CASE WHEN [precision] > 0 THEN [precision] + 1 ELSE 0 END)', [
             'now',
             'subsec',

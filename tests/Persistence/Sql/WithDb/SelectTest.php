@@ -53,6 +53,7 @@ class SelectTest extends TestCase
     /**
      * @dataProvider provideExprNowPrecisions
      */
+    #[DataProvider('provideExprNowPrecisions')]
     public function testExprNow(int $precision): void
     {
         /*
