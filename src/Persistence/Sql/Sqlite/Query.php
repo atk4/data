@@ -278,14 +278,5 @@ class Query extends BaseQuery
             'padding' => str_repeat('0', $precision ?? 0),
             'precision' => $precision ?? 0,
         ]);
-
-
-substr(
-    datetime(:a, :b, :c) || '000',
-    1,
-    19 + CASE WHEN :precision > 0 THEN :precision + 1 ELSE 0 END
-)
-
-
     }
 }
