@@ -260,11 +260,32 @@ class Query extends BaseQuery
     #[\Override]
     public function exprNow(?int $precision = null): BaseExpression
     {
-        $pad = max(0, ($precision ?? 0) - 3); // SQLite only supports miliseconds
+        // $pad = max(0, ($precision ?? 0) - 3); // SQLite only supports miliseconds
         if (version_compare(Connection::getDriverVersion(), '3.42') < 0) {
-            return $this->expr('concat(strftime([], [], []), [])', ['%Y-%m-%d %H:%M:%f', 'now', 'localtime', str_repeat('0', $pad)]);
+            return $this->expr('substr(concat(strftime([], [], []), [padding]), 1, 19 + CASE WHEN [precision] > 0 THEN [precision] + 1 ELSE 0 END', [
+                '%Y-%m-%d %H:%M:%f',
+                'now',
+                'localtime',
+                'padding' => str_repeat('0', $precision ?? 0),
+                'precision' => $precision ?? 0,
+            ]);
         }
 
-        return $this->expr('concat(datetime([], [], []), [])', ['now', 'subsec', 'localtime', str_repeat('0', $pad)]);
+        return $this->expr('substr(concat(datetime([], [], []), [padding]), 1, 19 + CASE WHEN [precision] > 0 THEN [precision] + 1 ELSE 0 END)', [
+            'now',
+            'subsec',
+            'localtime',
+            'padding' => str_repeat('0', $precision ?? 0),
+            'precision' => $precision ?? 0,
+        ]);
+
+
+substr(
+    datetime(:a, :b, :c) || '000',
+    1,
+    19 + CASE WHEN :precision > 0 THEN :precision + 1 ELSE 0 END
+)
+
+
     }
 }
