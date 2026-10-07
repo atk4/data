@@ -47,6 +47,7 @@ class SelectTest extends TestCase
         $model->addField('event_time', ['type' => 'datetime']);
         $this->createMigrator($model)->create();
         
+        var_dump($this->db->exprNow(6));
         $model->import([
             ['id' => 1, 'event_time' => $this->db->exprNow(6)],
         ]);
