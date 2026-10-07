@@ -41,19 +41,9 @@ class SelectTest extends TestCase
     }
     
     /**
-     * @return iterable<list<mixed>>
+     * @dataProvider provideExprNowCases
      */
-    public static function provideExprNowPrecisions(): iterable
-    {
-        foreach (range(0, 6) as $precision) {
-            yield [$precision];
-        }
-    }
-
-    /**
-     * @dataProvider provideExprNowPrecisions
-     */
-    #[DataProvider('provideExprNowPrecisions')]
+    #[DataProvider('provideExprNowCases')]
     public function testExprNow(int $precision): void
     {
         /*
@@ -82,6 +72,10 @@ class SelectTest extends TestCase
         $pos = strrpos($nowValue, '.');
         self::assertSame($precision, $pos === false ? 0 : strlen(substr($nowValue, $pos + 1)));
 
+        // PostGre - do not add trailing zeros and adds +00 timezone
+        // MSSQL - always have 7 digit precision
+        // Oracle - because of our NLS settings always have 6 digit precision (but can fill with zeros) +00:00 timezone
+
         /*
         $r = $nowExpr->render();
 
@@ -107,6 +101,16 @@ class SelectTest extends TestCase
         self::assertSame($sql, $r[0]);
         self::assertSame($args, $r[1]);
         */
+    }
+
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideExprNowCases(): iterable
+    {
+        foreach (range(0, 6) as $precision) {
+            yield [$precision];
+        }
     }
 
     /**
