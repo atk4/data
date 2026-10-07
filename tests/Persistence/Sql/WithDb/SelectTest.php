@@ -59,8 +59,10 @@ class SelectTest extends TestCase
         self::assertNotSame('000000', $entity->get('event_time')->format('u'));
         */
 
+        var_dump($this->q()->field($this->q()->exprNow(6), 'now')->getRows());
+
+
         $r = $this->q()->exprNow(6)->render();
-        var_dump($r);
 
         if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
             $sql = 'current_timestamp';
