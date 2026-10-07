@@ -39,6 +39,23 @@ class SelectTest extends TestCase
             ['id' => 4, 'name' => 'Charlie', 'surname' => 'Lee', 'retired' => false],
         ]);
     }
+    
+    public function testExprNow(): void
+    {
+        $model = new Model($this->db, ['table' => 'exprtest']);
+        $model->addField('create_time', ['type' => 'datetime', 'default' => $this->db->exprNow(6)]);
+        $model->addField('event_time', ['type' => 'datetime']);
+        $this->createMigrator($model)->create();
+        
+        $model->import([
+            ['id' => 1, 'event_time' => $this->db->exprNow(6)],
+        ]);
+        var_dump($model->export()); // testing, remove it
+        $entity = $model->load(1);
+        
+        self::assertNotSame('000000', $entity->get('create_time')->format('u'));
+        self::assertNotSame('000000', $entity->get('event_time')->format('u'));
+    }
 
     /**
      * @param string|Expression                 $table
