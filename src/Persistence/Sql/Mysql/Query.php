@@ -200,4 +200,23 @@ class Query extends BaseQuery
 
         return $query;
     }
+
+    /**
+     * Returns Expression object for NOW() or CURRENT_TIMESTAMP() method.
+     */
+    public function exprNow(?int $precision = null): Expression
+    {
+        if (
+            (!Connection::isServerMariaDb($this->connection) && version_compare($this->connection->getServerVersion(), '5.6.4') >= 0)
+            ||
+            (Connection::isServerMariaDb($this->connection) && version_compare($this->connection->getServerVersion(), '5.3') >= 0)
+        ) {
+            return $this->expr(
+                'current_timestamp(' . ($precision !== null ? '[]' : '') . ')',
+                $precision !== null ? [$precision] : []
+            );
+        }
+
+        return $this->expr('current_timestamp()');
+    }
 }
