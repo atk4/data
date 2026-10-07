@@ -72,7 +72,7 @@ class SelectTest extends TestCase
         self::assertNotSame('000000', $entity->get('event_time')->format('u'));
         */
 
-        $nowExpr = $this->q->exprNow($precision);
+        $nowExpr = $this->q()->exprNow($precision);
         $nowValue = $this->q()->field($nowExpr, 'now')->getOne();
 
         var_dump($nowValue, $nowExpr->render());
