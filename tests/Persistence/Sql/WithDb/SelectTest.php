@@ -75,11 +75,11 @@ class SelectTest extends TestCase
         $nowExpr = $this->q()->exprNow($precision);
         $nowValue = $this->q()->field($nowExpr, 'now')->getOne();
 
-        var_dump($nowValue, $nowExpr->render());
+        var_dump($precision,$nowValue, $nowExpr->render());
 
         // should have exactly the same number of digits after last dot
         $pos = strrpos($nowValue, '.');
-        self::assertSame($precision, $pos === false ? 0 : strlen(substr($nowValue, $pos)));
+        self::assertSame($precision, $pos === false ? 0 : strlen(substr($nowValue, $pos + 1)));
 
         /*
         $r = $nowExpr->render();

@@ -260,7 +260,7 @@ class Query extends BaseQuery
     #[\Override]
     public function exprNow(?int $precision = null): BaseExpression
     {
-        $pad = ($precision ?? 0) - 3; // SQLite only supports miliseconds
+        $pad = max(0, ($precision ?? 0) - 3); // SQLite only supports miliseconds
         if (version_compare(Connection::getDriverVersion(), '3.42') < 0) {
             return $this->expr('concat(strftime([], [], []), [])', ['%Y-%m-%d %H:%M:%f', 'now', 'localtime', str_repeat('0', $pad)]);
         }
