@@ -59,10 +59,30 @@ class SelectTest extends TestCase
         self::assertNotSame('000000', $entity->get('event_time')->format('u'));
         */
 
-        var_dump($this->q()->exprNow(6)->render());
+        $r = $this->q()->exprNow(6)->render();
+        var_dump($r);
 
-
-
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
+            $sql = 'current_timestamp';
+            $args = [];
+        }
+        elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+            $sql = 'sqldatetime()';
+            $args = [];
+        }
+        elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            $sql = 'current_timestamp(:a)';
+            $args = [':a' => 6];
+        }
+        elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            $sql = 'current_timestamp(:xxaaaa)';
+            $args = [':xxaaaa' => 6];
+        } else {
+            $sql = 'current_timestamp(:a)';
+            $args = [':a' => 6];
+        }
+        self::assertSame($sql, $r[0]);
+        self::assertSame($args, $r[1]);
     }
 
     /**

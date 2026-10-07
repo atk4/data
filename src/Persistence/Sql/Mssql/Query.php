@@ -280,4 +280,11 @@ class Query extends BaseQuery
             $this->dsql()->expr('case when exists[] then 1 else 0 end', [$this])
         );
     }
+
+    #[\Override]
+    public function exprNow(?int $precision = null): BaseExpression
+    {
+        // uses precision=7 always
+        return $this->expr('sysdatetime()'); // or sysutcdatetime ?
+    }
 }
