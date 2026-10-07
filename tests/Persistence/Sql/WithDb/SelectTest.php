@@ -41,79 +41,6 @@ class SelectTest extends TestCase
     }
     
     /**
-     * @dataProvider provideExprNowCases
-     */
-    #[DataProvider('provideExprNowCases')]
-    public function testExprNow(int $precision): void
-    {
-        /*
-        $model = new Model($this->db, ['table' => 'exprtest']);
-        $model->addField('create_time', ['type' => 'datetime', 'default' => $this->db->exprNow(6)]);
-        $model->addField('event_time', ['type' => 'datetime']);
-        $this->createMigrator($model)->create();
-        
-        var_dump($this->db->exprNow(6));
-        $model->import([
-            ['id' => 1, 'event_time' => $this->db->exprNow(6)],
-        ]);
-        var_dump($model->export()); // testing, remove it
-        $entity = $model->load(1);
-        
-        self::assertNotSame('000000', $entity->get('create_time')->format('u'));
-        self::assertNotSame('000000', $entity->get('event_time')->format('u'));
-        */
-
-        $nowExpr = $this->q()->exprNow($precision);
-        $nowValue = $this->q()->field($nowExpr, 'now')->getOne();
-
-        var_dump($precision,$nowValue, $nowExpr->render());
-
-        // should have exactly the same number of digits after last dot
-        $pos = strrpos($nowValue, '.');
-        self::assertSame($precision, $pos === false ? 0 : strlen(substr($nowValue, $pos + 1)));
-
-        // PostGre - do not add trailing zeros and adds +00 timezone
-        // MSSQL - always have 7 digit precision
-        // Oracle - because of our NLS settings always have 6 digit precision (but can fill with zeros) +00:00 timezone
-
-        /*
-        $r = $nowExpr->render();
-
-        if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
-            $sql = 'current_timestamp';
-            $args = [];
-        }
-        elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            $sql = 'sqldatetime()';
-            $args = [];
-        }
-        elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            $sql = 'current_timestamp(:a)';
-            $args = [':a' => $precision];
-        }
-        elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            $sql = 'current_timestamp(:xxaaaa)';
-            $args = [':xxaaaa' => $precision];
-        } else {
-            $sql = 'current_timestamp(:a)';
-            $args = [':a' => $precision];
-        }
-        self::assertSame($sql, $r[0]);
-        self::assertSame($args, $r[1]);
-        */
-    }
-
-    /**
-     * @return iterable<list<mixed>>
-     */
-    public static function provideExprNowCases(): iterable
-    {
-        foreach (range(0, 6) as $precision) {
-            yield [$precision];
-        }
-    }
-
-    /**
      * @param string|Expression                 $table
      * @param ($table is null ? never : string) $alias
      */
@@ -1786,5 +1713,78 @@ class SelectTest extends TestCase
         );
 
         self::assertSame([['surname', 'desc']], $subQuery->args['order']);
+    }
+
+    /**
+     * @dataProvider provideExprNowCases
+     */
+    #[DataProvider('provideExprNowCases')]
+    public function testExprNow(int $precision): void
+    {
+        /*
+        $model = new Model($this->db, ['table' => 'exprtest']);
+        $model->addField('create_time', ['type' => 'datetime', 'default' => $this->db->exprNow(6)]);
+        $model->addField('event_time', ['type' => 'datetime']);
+        $this->createMigrator($model)->create();
+
+        var_dump($this->db->exprNow(6));
+        $model->import([
+            ['id' => 1, 'event_time' => $this->db->exprNow(6)],
+        ]);
+        var_dump($model->export()); // testing, remove it
+        $entity = $model->load(1);
+
+        self::assertNotSame('000000', $entity->get('create_time')->format('u'));
+        self::assertNotSame('000000', $entity->get('event_time')->format('u'));
+        */
+
+        $nowExpr = $this->q()->exprNow($precision);
+        $nowValue = $this->q()->field($nowExpr, 'now')->getOne();
+
+        var_dump($precision,$nowValue, $nowExpr->render());
+
+        // should have exactly the same number of digits after last dot
+        $pos = strrpos($nowValue, '.');
+        self::assertSame($precision, $pos === false ? 0 : strlen(substr($nowValue, $pos + 1)));
+
+        // PostGre - do not add trailing zeros and adds +00 timezone
+        // MSSQL - always have 7 digit precision
+        // Oracle - because of our NLS settings always have 6 digit precision (but can fill with zeros) +00:00 timezone
+
+        /*
+        $r = $nowExpr->render();
+
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
+            $sql = 'current_timestamp';
+            $args = [];
+        }
+        elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+            $sql = 'sqldatetime()';
+            $args = [];
+        }
+        elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            $sql = 'current_timestamp(:a)';
+            $args = [':a' => $precision];
+        }
+        elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            $sql = 'current_timestamp(:xxaaaa)';
+            $args = [':xxaaaa' => $precision];
+        } else {
+            $sql = 'current_timestamp(:a)';
+            $args = [':a' => $precision];
+        }
+        self::assertSame($sql, $r[0]);
+        self::assertSame($args, $r[1]);
+        */
+    }
+
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideExprNowCases(): iterable
+    {
+        foreach (range(0, 6) as $precision) {
+            yield [$precision];
+        }
     }
 }
