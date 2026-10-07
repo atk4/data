@@ -1742,11 +1742,7 @@ class SelectTest extends TestCase
 
         $nowExpr = $this->q()->exprNow($precision);
         $nowValue = $this->q()->field($nowExpr, 'now')->getOne();
-
-        // PostGre - do not add trailing zeros and adds +00 timezone
-        // MSSQL - always have 7 digit precision
-        // Oracle - because of our NLS settings always have 6 digit precision (but can fill with zeros) +00:00 timezone
-        var_dump($precision, $nowValue, $nowExpr->render());
+        // var_dump($precision, $nowValue, $nowExpr->render());
 
         // some platforms attach timezone at the end - get rid of it
         if (
@@ -1759,7 +1755,7 @@ class SelectTest extends TestCase
             }
         }
 
-        // should have exactly the same number of digits after last dot
+        // check how many digits there are after the dot
         $pos = strrpos($nowValue, '.');
         $digits = $pos === false ? 0 : strlen(substr($nowValue, $pos + 1));
 
@@ -1775,6 +1771,7 @@ class SelectTest extends TestCase
         elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             self:assertLessThanOrEqual($precision, $digits);
         }
+        // others are good
         else {
             self::assertSame($precision, $digits);
         }
