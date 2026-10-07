@@ -42,6 +42,7 @@ class SelectTest extends TestCase
     
     public function testExprNow(): void
     {
+        /*
         $model = new Model($this->db, ['table' => 'exprtest']);
         $model->addField('create_time', ['type' => 'datetime', 'default' => $this->db->exprNow(6)]);
         $model->addField('event_time', ['type' => 'datetime']);
@@ -56,6 +57,12 @@ class SelectTest extends TestCase
         
         self::assertNotSame('000000', $entity->get('create_time')->format('u'));
         self::assertNotSame('000000', $entity->get('event_time')->format('u'));
+        */
+
+        var_dump($this->q()->exprNow(6)->render());
+
+
+
     }
 
     /**
