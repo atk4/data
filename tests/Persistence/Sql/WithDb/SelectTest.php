@@ -21,8 +21,6 @@ use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use PHPUnit\Framework\Attributes\DataProvider;
 
-use function PHPUnit\Framework\assertLessThanOrEqual;
-
 class SelectTest extends TestCase
 {
     protected function setupTables(): void
@@ -1769,7 +1767,7 @@ class SelectTest extends TestCase
         }
         // PostgreSQL do not add trailing zeros
         elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            self:assertLessThanOrEqual($precision, $digits);
+            self::assertLessThanOrEqual($precision, $digits);
         }
         // others are good
         else {
