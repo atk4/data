@@ -40,7 +40,24 @@ class SelectTest extends TestCase
         ]);
     }
     
-    public function testExprNow(): void
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideExprNowPrecisions(): iterable
+    {
+        yield 0;
+        yield 1;
+        yield 2;
+        yield 3;
+        yield 4;
+        yield 5;
+        yield 6;
+    }
+
+    /**
+     * @dataProvider provideExprNowPrecisions
+     */
+    public function testExprNow(int $precision): void
     {
         /*
         $model = new Model($this->db, ['table' => 'exprtest']);
@@ -59,10 +76,17 @@ class SelectTest extends TestCase
         self::assertNotSame('000000', $entity->get('event_time')->format('u'));
         */
 
-        var_dump($this->q()->field($this->q()->exprNow(6), 'now')->getRows());
+        $nowExpr = $this->q->exprNow($precision);
+        $nowValue = $this->q()->field($nowExpr, 'now')->getOne();
 
+        var_dump($nowValue, $nowExpr->render());
 
-        $r = $this->q()->exprNow(6)->render();
+        // should have exactly the same number of digits after last dot
+        $pos = strrpos($nowValue, '.');
+        self::assertSame($precision, $pos === false ? 0 : strlen(substr($nowValue, $pos)));
+
+        /*
+        $r = $nowExpr->render();
 
         if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
             $sql = 'current_timestamp';
@@ -74,17 +98,18 @@ class SelectTest extends TestCase
         }
         elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             $sql = 'current_timestamp(:a)';
-            $args = [':a' => 6];
+            $args = [':a' => $precision];
         }
         elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
             $sql = 'current_timestamp(:xxaaaa)';
-            $args = [':xxaaaa' => 6];
+            $args = [':xxaaaa' => $precision];
         } else {
             $sql = 'current_timestamp(:a)';
-            $args = [':a' => 6];
+            $args = [':a' => $precision];
         }
         self::assertSame($sql, $r[0]);
         self::assertSame($args, $r[1]);
+        */
     }
 
     /**
