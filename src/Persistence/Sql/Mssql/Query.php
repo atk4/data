@@ -7,6 +7,7 @@ namespace Atk4\Data\Persistence\Sql\Mssql;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Persistence\Sql\Expressionable;
+use Atk4\Data\Persistence\Sql\Expression as BaseExpression;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 use Atk4\Data\Persistence\Sql\RawExpression;
 use Doctrine\DBAL\Types\Type;
