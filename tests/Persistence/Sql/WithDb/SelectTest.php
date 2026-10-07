@@ -21,6 +21,8 @@ use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use PHPUnit\Framework\Attributes\DataProvider;
 
+use function PHPUnit\Framework\assertLessThanOrEqual;
+
 class SelectTest extends TestCase
 {
     protected function setupTables(): void
@@ -39,7 +41,7 @@ class SelectTest extends TestCase
             ['id' => 4, 'name' => 'Charlie', 'surname' => 'Lee', 'retired' => false],
         ]);
     }
-    
+
     /**
      * @param string|Expression                 $table
      * @param ($table is null ? never : string) $alias
@@ -1741,41 +1743,41 @@ class SelectTest extends TestCase
         $nowExpr = $this->q()->exprNow($precision);
         $nowValue = $this->q()->field($nowExpr, 'now')->getOne();
 
-        var_dump($precision,$nowValue, $nowExpr->render());
-
-        // should have exactly the same number of digits after last dot
-        $pos = strrpos($nowValue, '.');
-        self::assertSame($precision, $pos === false ? 0 : strlen(substr($nowValue, $pos + 1)));
-
         // PostGre - do not add trailing zeros and adds +00 timezone
         // MSSQL - always have 7 digit precision
         // Oracle - because of our NLS settings always have 6 digit precision (but can fill with zeros) +00:00 timezone
+        var_dump($precision, $nowValue, $nowExpr->render());
 
-        /*
-        $r = $nowExpr->render();
+        // some platforms attach timezone at the end - get rid of it
+        if (
+            $this->getDatabasePlatform() instanceof PostgreSQLPlatform
+            || $this->getDatabasePlatform() instanceof OraclePlatform
+        ) {
+            $pos = strrpos($nowValue, '+');
+            if ($pos !== false) {
+                $nowValue = rtrim(substr($nowValue, 0, $pos));
+            }
+        }
 
-        if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
-            $sql = 'current_timestamp';
-            $args = [];
+        // should have exactly the same number of digits after last dot
+        $pos = strrpos($nowValue, '.');
+        $digits = $pos === false ? 0 : strlen(substr($nowValue, $pos + 1));
+
+        // MSSQL always have 7 digit precision
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+            self::assertSame(7, $digits);
         }
-        elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            $sql = 'sqldatetime()';
-            $args = [];
-        }
-        elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            $sql = 'current_timestamp(:a)';
-            $args = [':a' => $precision];
-        }
+        // Oracle always pad result with zeros to 6 digit precision
         elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            $sql = 'current_timestamp(:xxaaaa)';
-            $args = [':xxaaaa' => $precision];
-        } else {
-            $sql = 'current_timestamp(:a)';
-            $args = [':a' => $precision];
+            self::assertSame(6, $digits);
         }
-        self::assertSame($sql, $r[0]);
-        self::assertSame($args, $r[1]);
-        */
+        // PostgreSQL do not add trailing zeros
+        elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            self:assertLessThanOrEqual($precision, $digits);
+        }
+        else {
+            self::assertSame($precision, $digits);
+        }
     }
 
     /**
