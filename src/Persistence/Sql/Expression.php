@@ -496,7 +496,6 @@ abstract class Expression implements Expressionable, \ArrayAccess
     public function __debugInfo(): array
     {
         $arr = [
-            'R' => 'n/a',
             'R_params' => 'n/a',
             'template' => $this->template,
             'templateArgs' => $this->args,

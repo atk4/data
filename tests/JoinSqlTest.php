@@ -87,7 +87,7 @@ class JoinSqlTest extends TestCase
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessageIs('Reverse join with non-ID master field is not implemented yet');
-        $j4 = $m->join('contact4.foo_id', ['masterField' => 'test_id', 'reverse' => true]);
+        $j4 = $m->join('contact4.foo_id', ['masterField' => 'test_id', 'reverse' => true]); // @phpstan-ignore variable.unused
         // self::assertTrue($j4->reverse);
         // self::assertSame('test_id', $this->getProtected($j4, 'masterField'));
         // self::assertSame('foo_id', $this->getProtected($j4, 'foreignField'));
@@ -736,7 +736,7 @@ class JoinSqlTest extends TestCase
         self::assertSame(['id' => 20, 'name' => 'Mark', 'notes' => '2nd note'], $m->get());
 
         // insert new record
-        $m = $user->createEntity()->save(['name' => 'Emily', 'notes' => '3rd note']);
+        $user->createEntity()->save(['name' => 'Emily', 'notes' => '3rd note']);
         $m = $user->load(21);
         self::assertTrue($m->isLoaded());
         self::assertSame(['id' => 21, 'name' => 'Emily', 'notes' => '3rd note'], $m->get());
@@ -752,7 +752,7 @@ class JoinSqlTest extends TestCase
 
         // insert new record
         $j->allowDangerousForeignTableUpdate = true;
-        $m = $user->createEntity()->save(['name' => 'Olaf', 'notes' => '4th note']);
+        $user->createEntity()->save(['name' => 'Olaf', 'notes' => '4th note']);
         $m = $user->load(22);
         self::assertSame(['id' => 22, 'name' => 'Olaf', 'notes' => '4th note'], $m->get());
 
@@ -768,7 +768,7 @@ class JoinSqlTest extends TestCase
 
         // insert new record
         $j->allowDangerousForeignTableUpdate = true;
-        $m = $user->createEntity()->save(['name' => 'Chris', 'notes' => '5th note']);
+        $user->createEntity()->save(['name' => 'Chris', 'notes' => '5th note']);
         $m = $user->load(23);
         self::assertSame(['id' => 23, 'name' => 'Chris', 'notes' => '5th note'], $m->get());
     }

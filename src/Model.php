@@ -1353,7 +1353,7 @@ class Model implements \IteratorAggregate
     public function reload()
     {
         $id = $this->getId();
-        $data = $this->getDataRef(); // keep weakly persisted objects referenced
+        $data = $this->getDataRef(); // keep weakly persisted objects referenced @phpstan-ignore variable.unused
         $this->unload();
 
         $res = $this->_load(true, false, $id);
@@ -1826,10 +1826,10 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsModel();
 
-        $scopeOrig = null;
         if ($field === []) {
             assert($operator === null); // @phpstan-ignore identical.alwaysFalse, function.impossibleType
             assert($value === null); // @phpstan-ignore identical.alwaysFalse, function.impossibleType
+            $scopeOrig = null;
         } else {
             $scopeOrig = $this->scope;
             $fieldsBackup = $this->temporaryMutateScopeFieldsBackup();
@@ -1874,7 +1874,6 @@ class Model implements \IteratorAggregate
         } finally {
             if ($scopeOrig !== null) {
                 $this->scope = $scopeOrig;
-                $scopeOrig = null;
                 $this->temporaryMutateScopeFieldsRestore($fieldsBackup); // @phpstan-ignore variable.undefined (https://github.com/phpstan/phpstan/issues/9685)
             }
         }

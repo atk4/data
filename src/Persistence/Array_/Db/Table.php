@@ -163,7 +163,7 @@ class Table
      */
     protected function beforeUpdateRow(Row $row, $newData): void
     {
-        foreach ($newData as $columnName => $newValue) {
+        foreach ($newData as $newValue) {
             $this->assertValidValue($newValue);
         }
     }

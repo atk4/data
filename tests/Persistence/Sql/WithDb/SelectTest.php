@@ -710,7 +710,7 @@ class SelectTest extends TestCase
             $expectedRows = [['foo' => '10'], ['foo' => '20']];
         }
 
-        foreach ($columns as $k => $column) {
+        foreach ($columns as $column) {
             if ($column['type'] === 'json') {
                 $expectedRows = array_map(fn ($row) => array_map(fn ($v) => $v !== null ? $this->fixExpectedJsonUsingPlatform($v, false) : null, $row), $expectedRows);
             }
@@ -719,7 +719,7 @@ class SelectTest extends TestCase
         if ($this->getDatabasePlatform() instanceof SQLServerPlatform // TODO
             || ($this->getDatabasePlatform() instanceof OraclePlatform && version_compare($this->getConnection()->getServerVersion(), '21.0') < 0)
         ) {
-            foreach ($columns as $k => $column) {
+            foreach ($columns as $column) {
                 if ($column['type'] === 'json') {
                     $expectedRows = array_map(static fn ($row) => array_map(static fn ($v) => is_scalar(json_decode($v ?? '[]', true)) ? null : $v, $row), $expectedRows);
                 }
@@ -727,7 +727,7 @@ class SelectTest extends TestCase
         }
 
         if ($this->getDatabasePlatform() instanceof OraclePlatform && version_compare($this->getConnection()->getServerVersion(), '23.9') < 0 && version_compare($this->getConnection()->getServerVersion(), '21.0') >= 0) {
-            foreach ($columns as $k => $column) {
+            foreach ($columns as $column) {
                 if ($column['type'] === 'json') {
                     $expectedRows = array_map(static fn ($row) => array_map(static fn ($v) => $v === null ? 'null' : $v, $row), $expectedRows);
                 }
@@ -1582,7 +1582,6 @@ class SelectTest extends TestCase
 
         // auto increment ID after rollback must not be reused
         $invokeInAtomicAndThrowFx = static function (\Closure $fx) use ($m) {
-            $e = null;
             $eExpected = new Exception();
             try {
                 $m->atomic(static function () use ($fx, $eExpected) {

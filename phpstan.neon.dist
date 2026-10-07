@@ -30,6 +30,13 @@ parameters:
             message: '~^Property Atk4\\Data\\Model\\UserAction::\$(enabled|preview) .*Closure<.+ does not accept .*Closure\(.+\.$~'
             count: 3
 
+        # https://github.com/phpstan/phpstan/issues/15434
+        -
+            path: 'tests/Reference/WeakAnalysingMapTest.php'
+            identifier: argument.type
+            message: '~^Parameter #3 \$owner of method Atk4\\Data\\Reference\\WeakAnalysingMap<.*>::set\(\) expects .*, .* given\.$~'
+            count: 2
+
         # TODO report to phpstan, errors cannot be ignored inline
         -
             path: 'src/Persistence/Sql/Postgresql/PlatformTrait.php'

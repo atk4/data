@@ -168,7 +168,7 @@ class TypecastingTest extends TestCase
         $dbData = [
             'types' => [
                 1 => $row = [
-                    'id' => 1,
+                    'id' => 1, // @phpstan-ignore array.unusedOffset
                     'string' => '',
                     'text' => '',
                     'date' => '',
@@ -181,8 +181,8 @@ class TypecastingTest extends TestCase
                     'money' => '',
                     'float' => '',
                     'decimal' => '',
-                    'json' => '',
-                    'local-object' => '',
+                    'json' => '', // @phpstan-ignore array.offsetOverwritten
+                    'local-object' => '', // @phpstan-ignore array.offsetOverwritten
                 ],
             ],
         ];
@@ -275,7 +275,7 @@ class TypecastingTest extends TestCase
     {
         $dbData = [
             'test' => [
-                1 => $row = ['id' => 1, 'a' => '1', 'b' => '', 'c' => null],
+                1 => $row = ['id' => 1, 'a' => '1', 'b' => '', 'c' => null], // @phpstan-ignore array.unusedOffset
             ],
         ];
         $this->setDb($dbData);
@@ -461,7 +461,6 @@ class TypecastingTest extends TestCase
 
         unset($dbData['types']['_types']);
         unset($dbData['types'][0]);
-        $row['money'] = 8.2;
         $dbData['types'][2] = array_merge(['id' => 2], $row);
 
         self::{'assertEquals'}($dbData, $this->getDb());
