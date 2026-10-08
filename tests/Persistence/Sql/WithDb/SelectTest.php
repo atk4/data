@@ -1780,6 +1780,8 @@ class SelectTest extends TestCase
      */
     public static function provideExprNowCases(): iterable
     {
+        yield [null];
+
         foreach (range(0, 6) as $precision) {
             yield [$precision];
         }
