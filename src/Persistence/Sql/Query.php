@@ -1119,7 +1119,9 @@ abstract class Query extends Expression
 
     /**
      * Returns Expression object for NOW() or CURRENT_TIMESTAMP() method.
-     */
+    * 
+    * @param int<0, 6> $precision
+    */
     public function exprNow(?int $precision = null): Expression
     {
         return $this->expr(
