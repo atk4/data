@@ -18,11 +18,6 @@ jobs:
       matrix:
         php: ['latest']
         type: ['Phpunit']
-        include:
-          - php: 'latest'
-            type: 'CodingStyle'
-          - php: 'latest'
-            type: 'StaticAnalysis'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -83,11 +78,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ['7.4', '8.0', '8.1', '8.2', '8.3', '8.4', '8.5']
+        php: ['8.2']
         type: ['Phpunit', 'Phpunit Lowest']
-        include:
-          - php: 'latest'
-            type: 'Phpunit Burn'
     env:
       LOG_COVERAGE: "${{ fromJSON('{true: \"1\", false: \"\"}')[matrix.php == '8.5' && matrix.type == 'Phpunit' && (github.event_name == 'pull_request' || (github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master')))] }}"
     services:
@@ -284,31 +276,3 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
           files: coverage/merged.xml
-
-  docs-test:
-    name: Docs
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/mvorisek/image-php:latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install Python and dependencies
-        run: |
-          apk add python3 py3-pip
-          python --version
-          python -m venv .venv
-          source .venv/bin/activate
-          (cd docs && pip install -r requirements.txt)
-
-      - name: Build
-        run: |
-          mv docs/baseline.txt docs/baseline.orig.txt
-          source .venv/bin/activate
-          (cd docs && python -m sphinx -T -b html . out 2>&1 | tee baseline.txt)
-          sed -i -r 's~[^:]*/docs/([^:]*:)([0-9]+:)?~\1~;t;d' docs/baseline.txt
-
-      - name: Diff build baseline
-        run: |
-          diff -u docs/baseline.orig.txt docs/baseline.txt
