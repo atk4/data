@@ -285,14 +285,14 @@ class Query extends BaseQuery
     #[\Override]
     public function exprNow(?int $precision = null): BaseExpression
     {
-        // uses precision=7 always
+        // always uses precision=7
         return $this->expr('sysdatetime()');
     }
 
     #[\Override]
     public function exprNowUTC(?int $precision = null): BaseExpression
     {
-        // uses precision=7 always
+        // always uses precision=7
         return $this->expr('sysutcdatetime()');
     }
 }

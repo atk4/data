@@ -13,8 +13,8 @@ use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Persistence\Sql\Sqlite\Connection as SqliteConnection;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
+use Doctrine\DBAL\Platforms\MariaDBPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
@@ -980,14 +980,14 @@ class SelectTest extends TestCase
         if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
             if (MysqlConnection::isServerMariaDb($this->getConnection())) {
                 if (Connection::isDbal3x()) {
-                    self::assertInstanceOf(Platforms\MySQLPlatform::class, $this->getDatabasePlatform());
+                    self::assertInstanceOf(MySQLPlatform::class, $this->getDatabasePlatform());
                 } else {
-                    self::assertNotInstanceOf(Platforms\MySQLPlatform::class, $this->getDatabasePlatform());
+                    self::assertNotInstanceOf(MySQLPlatform::class, $this->getDatabasePlatform());
                 }
-                self::assertInstanceOf(Platforms\MariaDBPlatform::class, $this->getDatabasePlatform());
+                self::assertInstanceOf(MariaDBPlatform::class, $this->getDatabasePlatform());
             } else {
-                self::assertInstanceOf(Platforms\MySQLPlatform::class, $this->getDatabasePlatform());
-                self::assertNotInstanceOf(Platforms\MariaDBPlatform::class, $this->getDatabasePlatform());
+                self::assertInstanceOf(MySQLPlatform::class, $this->getDatabasePlatform());
+                self::assertNotInstanceOf(MariaDBPlatform::class, $this->getDatabasePlatform());
             }
         } else {
             self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
@@ -1783,7 +1783,6 @@ class SelectTest extends TestCase
         elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
             self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{6} .*~', $nowValue);
         }
-
 
         /*
         // some platforms attach timezone at the end - get rid of it

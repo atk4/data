@@ -345,12 +345,16 @@ class Query extends BaseQuery
     #[\Override]
     public function exprNow(?int $precision = null): BaseExpression
     {
-        return $this->expr('systimestamp(' . ($precision ?? '') . ')');
+        return $this->expr(
+            'systimestamp' . (($precision ?? 0) === 0 ? '' : '(' . $precision . ')')
+        );
     }
 
     #[\Override]
     public function exprNowUTC(?int $precision = null): BaseExpression
     {
-        return $this->expr('systimestamp(' . ($precision ?? '') . ') at time zone \'UTC\'');
+        return $this->expr(
+            'systimestamp' . (($precision ?? 0) === 0 ? '' : '(' . $precision . ')') . ' at time zone \'UTC\''
+        );
     }
 }
