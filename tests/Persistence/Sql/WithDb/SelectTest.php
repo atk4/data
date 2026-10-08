@@ -1740,7 +1740,7 @@ class SelectTest extends TestCase
 
         $nowExpr = $this->q()->exprNow($precision);
         $nowValue = $this->q()->field($nowExpr, 'now')->getOne();
-        // var_dump($precision, $nowValue, $nowExpr->render());
+        var_dump($precision, $nowValue, $nowExpr->render());
 
         // some platforms attach timezone at the end - get rid of it
         if (

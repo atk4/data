@@ -1118,16 +1118,30 @@ abstract class Query extends Expression
     }
 
     /**
-     * Returns Expression object for NOW() or CURRENT_TIMESTAMP() method.
-    * 
-    * @param int<0, 6> $precision
-    */
+     * Returns Expression object for DB time in servers timezone.
+     *
+     * @param int<0, 6> $precision
+     */
     public function exprNow(?int $precision = null): Expression
     {
         return $this->expr(
             'current_timestamp(' . ($precision ?? '') . ')'
         );
     }
+
+    /**
+     * Returns Expression object for DB time in UTC timezone.
+     *
+     * @param int<0, 6> $precision
+     */
+    /*
+    public function exprNowUTC(?int $precision = null): Expression
+    {
+        return $this->expr(
+            'utc_timestamp(' . ($precision ?? '') . ')'
+        );
+    }
+    */
 
     /**
      * Returns new Query object of [or] expression.
