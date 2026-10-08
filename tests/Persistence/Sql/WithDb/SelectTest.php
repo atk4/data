@@ -1749,29 +1749,12 @@ class SelectTest extends TestCase
 
         $precision ??= 0;
 
-        // all platforms should have correct date and at least required precision fraction digits
-        if ($precision === 0) {
-            self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}~', $nowValue);
-        } else {
-            self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{' . $precision . '}~', $nowValue);
-        }
-
-        if (
-            $this->getDatabasePlatform() instanceof SQLitePlatform
-            || $this->getDatabasePlatform() instanceof MySQLPlatform
-        ) {
+        // Postgre always adds 2 digit timezone and strips trailing zeros even if precision requires them
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             if ($precision === 0) {
-                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$~', $nowValue);
+                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{1,6}+\d{2}$~', $nowValue);
             } else {
-                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{' . $precision . '}$~', $nowValue);
-            }
-        }
-        // Postgre always adds 2 digit timezone
-        elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            if ($precision === 0) {
-                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}+\d{2}$~', $nowValue);
-            } else {
-                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{' . $precision . '}+\d{2}$~', $nowValue);
+                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{1,' . $precision . '}+\d{2}$~', $nowValue);
             }
         }
         // MSSQL always adds 7 digit fraction
@@ -1783,40 +1766,14 @@ class SelectTest extends TestCase
         elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
             self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{6} .*~', $nowValue);
         }
-
-        /*
-        // some platforms attach timezone at the end - get rid of it
-        if (
-            $this->getDatabasePlatform() instanceof PostgreSQLPlatform
-            || $this->getDatabasePlatform() instanceof OraclePlatform
-        ) {
-            $pos = strrpos($nowValue, '+');
-            if ($pos !== false) {
-                $nowValue = rtrim(substr($nowValue, 0, $pos));
+        // Other platforms are good
+        else {
+            if ($precision === 0) {
+                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$~', $nowValue);
+            } else {
+                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{' . $precision . '}$~', $nowValue);
             }
         }
-
-        // check how many digits there are after the dot
-        $pos = strrpos($nowValue, '.');
-        $digits = $pos === false ? 0 : strlen(substr($nowValue, $pos + 1));
-
-        // MSSQL always have 7 digit precision
-        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            self::assertSame(7, $digits);
-        }
-        // Oracle always pad result with zeros to 6 digit precision
-        elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            self::assertSame(6, $digits);
-        }
-        // PostgreSQL do not add trailing zeros
-        elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            self::assertLessThanOrEqual($precision, $digits);
-        }
-        // others are good
-        else {
-            self::assertSame($precision, $digits);
-        }
-        */
     }
 
     /**
