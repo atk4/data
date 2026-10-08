@@ -92,7 +92,6 @@ class PreserveAutoincrementOnRollbackConnectionMiddleware extends AbstractConnec
                     ->render()[0];
             }, $schemas));
 
-            $res = [];
             foreach ($this->query($listSequencesSql)->fetchAllAssociative() as $row) {
                 $value = (int) $row['value'];
                 if (!is_int($row['value']) && (string) $value !== $row['value']) {

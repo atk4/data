@@ -43,7 +43,7 @@ class JoinTest extends TestCase
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessageIs('Reverse join with non-ID master field is not implemented yet');
-        $j = $m->join('contact4.foo_id', ['masterField' => 'test_id', 'reverse' => true]);
+        $j = $m->join('contact4.foo_id', ['masterField' => 'test_id', 'reverse' => true]); // @phpstan-ignore assign.unused
         // self::assertTrue($j->reverse);
         // self::assertSame('test_id', $this->getProtected($j, 'masterField'));
         // self::assertSame('foo_id', $this->getProtected($j, 'foreignField'));

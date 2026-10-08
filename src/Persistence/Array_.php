@@ -186,7 +186,7 @@ class Array_ extends Persistence
         } else {
             assert(!$update);
 
-            $row = $table->addRow(Row::class, $rowData);
+            $row = $table->addRow(Row::class, $rowData); // @phpstan-ignore assign.unused
         }
     }
 

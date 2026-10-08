@@ -278,7 +278,7 @@ class Sql extends Persistence
                 }
             }
         } else {
-            foreach ($model->getFields() as $fieldName => $field) {
+            foreach ($model->getFields() as $field) {
                 if ($field->neverPersist) {
                     continue;
                 }

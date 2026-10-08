@@ -158,7 +158,7 @@ class Query extends BaseQuery
     protected function _subrenderCondition(array $row): string
     {
         if (count($row) !== 1) {
-            [$field, $operator, $value] = $row;
+            [$field, $operator, $value] = $row; // @phpstan-ignore variable.unused
             $operatorLc = strtolower($operator ?? '=');
 
             if ($field instanceof Field && in_array($field->type, ['binary', 'blob'], true)
