@@ -1134,14 +1134,12 @@ abstract class Query extends Expression
      *
      * @param int<0, 6> $precision
      */
-    /*
     public function exprNowUTC(?int $precision = null): Expression
     {
         return $this->expr(
             'utc_timestamp(' . ($precision ?? '') . ')'
         );
     }
-    */
 
     /**
      * Returns new Query object of [or] expression.

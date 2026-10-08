@@ -341,4 +341,16 @@ class Query extends BaseQuery
 
         return $res;
     }
+
+    #[\Override]
+    public function exprNow(?int $precision = null): BaseExpression
+    {
+        return $this->expr('systimestamp(' . ($precision ?? '') . ')');
+    }
+
+    #[\Override]
+    public function exprNowUTC(?int $precision = null): BaseExpression
+    {
+        return $this->expr('systimestamp(' . ($precision ?? '') . ') at time zone \'UTC\'');
+    }
 }

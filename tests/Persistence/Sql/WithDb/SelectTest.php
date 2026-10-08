@@ -1743,7 +1743,18 @@ class SelectTest extends TestCase
         $nowValue = $this->q()->field($nowExpr, 'now')->getOne();
         var_dump($precision, $nowValue, $nowExpr->render());
 
+        $nowExprUtc = $this->q()->exprNow($precision);
+        $nowValueUtc = $this->q()->field($nowExprUtc, 'now')->getOne();
+        var_dump($precision, $nowValueUtc, $nowExprUtc->render());
+
         $precision ??= 0;
+
+        // all platforms should have correct date and at least required precision fraction digits
+        if ($precision === 0) {
+            self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}~', $nowValue);
+        } else {
+            self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{' . $precision . '}~', $nowValue);
+        }
 
         if (
             $this->getDatabasePlatform() instanceof SQLitePlatform
@@ -1752,7 +1763,7 @@ class SelectTest extends TestCase
             if ($precision === 0) {
                 self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$~', $nowValue);
             } else {
-                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{' . $precision . '}$~', $nowValue);
+                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{' . $precision . '}$~', $nowValue);
             }
         }
         // Postgre always adds 2 digit timezone
@@ -1760,17 +1771,17 @@ class SelectTest extends TestCase
             if ($precision === 0) {
                 self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}+\d{2}$~', $nowValue);
             } else {
-                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{' . $precision . '}+\d{2}$~', $nowValue);
+                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{' . $precision . '}+\d{2}$~', $nowValue);
             }
         }
         // MSSQL always adds 7 digit fraction
         elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{7}$~', $nowValue);
+            self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{7}$~', $nowValue);
         }
         // Oracle format is set in our Atk4\Data\Persistence\Sql\Oracle\InitializeSessionMiddleware class
         // It always has 6 digit fraction (padded with zeros) and timezone
         elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6} .*~', $nowValue);
+            self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{6} .*~', $nowValue);
         }
 
 
