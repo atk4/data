@@ -1117,7 +1117,9 @@ abstract class Query extends Expression
     }
 
     /**
-     * Returns Expression object for NOW() or CURRENT_TIMESTAMP() method.
+     * Returns expression for current DB datetime in UTC time zone.
+     *
+     * @param int<0, 6> $precision
      */
     public function exprNow(?int $precision = null): Expression
     {
