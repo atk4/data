@@ -1729,21 +1729,18 @@ class SelectTest extends TestCase
         $precision ??= 0;
 
         // Postgre strips trailing zeros even if precision requires them
+        // So if we have precision=3, then it can give .12 or .1 or even no fraction part at all, but will not return .120 or .100
         if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             if ($precision === 0) {
-                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\$~', $nowValue);
+                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$~', $nowValue);
             } else {
-                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{1,' . $precision . '}$~', $nowValue);
+                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{0,' . $precision . '}$~', $nowValue);
             }
         }
-        // MSSQL always adds 7 digit fraction
-        // elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-        //     self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{7}$~', $nowValue);
-        // }
         // Oracle format is set in our Atk4\Data\Persistence\Sql\Oracle\InitializeSessionMiddleware class
-        // It always has 6 digit fraction (padded with zeros) and timezone
+        // It always has 6 digit fraction (padded with zeros)
         elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{6} .*~', $nowValue);
+            self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{6}$~', $nowValue);
         }
         // Other platforms are good
         else {
