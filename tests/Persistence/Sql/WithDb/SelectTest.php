@@ -1734,7 +1734,7 @@ class SelectTest extends TestCase
         // Postgre always adds 2 digit timezone and strips trailing zeros even if precision requires them
         if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             if ($precision === 0) {
-                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{1,6}\+\d{2}$~', $nowValue);
+                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\+\d{2}$~', $nowValue);
             } else {
                 self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{1,' . $precision . '}\+\d{2}$~', $nowValue);
             }
