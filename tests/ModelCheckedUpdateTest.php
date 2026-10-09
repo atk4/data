@@ -6,6 +6,7 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
+use Atk4\Data\Persistence\Sql;
 use Atk4\Data\Schema\TestCase;
 
 class ModelCheckedUpdateTest extends TestCase
@@ -92,6 +93,28 @@ class ModelCheckedUpdateTest extends TestCase
                 ['id' => 3, 'name' => 'John'],
             ], $m->export());
         }
+    }
+
+    public function testUpdateWithNoChangeExpr(): void
+    {
+        $m = $this->setupModelWithNameStartsWithJCondition();
+
+        $entity3 = $m->load(3);
+
+        $counter = 0;
+        $m->onHook(Sql::HOOK_AFTER_UPDATE_QUERY, static function () use (&$counter) {
+            ++$counter;
+        });
+
+        $name = 'Jennifer';
+
+        $entity3->save(['name' => $name]);
+        self::assertSame($name, $entity3->get('name'));
+        self::assertSame(0, $counter);
+
+        $entity3->save(['name' => $this->getConnection()->expr('[]', [$name])]);
+        self::assertSame($name, $entity3->get('name'));
+        self::assertSame(1, $counter);
     }
 
     public function testUpdateWithDependentCondition(): void
