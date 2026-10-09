@@ -270,18 +270,18 @@ class SelectTest extends TestCase
                 : ($precision === 0 ? 'datetime(\'now\')' : 'datetime(\'now\', \'subsec\')');
 
             if ($precision === 0) {
-                self::assertSameSql('concat(' . $base . ', \'Z\')', $exprRender);
+                self::assertSameSql($base, $exprRender);
             } elseif ($precision === 1) {
-                self::assertSameSql('concat(substr(' . $base . ', 1, 21), \'Z\')', $exprRender);
+                self::assertSameSql('substr(' . $base . ', 1, 21)', $exprRender);
             } else {
-                self::assertSameSql('concat(substr(concat(' . $base . ', \'' . str_repeat('0', $precision - 1) . '\'), 1, ' . (20 + $precision) . '), \'Z\')', $exprRender);
+                self::assertSameSql('substr(concat(' . $base . ', \'' . str_repeat('0', $precision - 1) . '\'), 1, ' . (20 + $precision) . ')', $exprRender);
             }
         } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            self::assertSameSql('cast(clock_timestamp() at time zone \'UTC\' as timestamp(' . $precision . ') with time zone)', $exprRender);
+            self::assertSameSql('cast(clock_timestamp() at time zone \'UTC\' as timestamp(' . $precision . '))', $exprRender);
         } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             self::assertSameSql('cast(sysutcdatetime() as datetime2(' . $precision . '))', $exprRender);
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            self::assertSameSql('cast(systimestamp at time zone \'UTC\' as timestamp(' . $precision . ') with time zone)', $exprRender);
+            self::assertSameSql('cast(systimestamp at time zone \'UTC\' as timestamp(' . $precision . '))', $exprRender);
         } else {
             self::assertSameSql('utc_timestamp(' . $precision . ')', $exprRender);
         }
@@ -308,12 +308,10 @@ class SelectTest extends TestCase
             : '';
         $regexFractionalSeconds6Digits = '\.\d{' . $precision . '}0{' . (6 - $precision) . '}';
 
-        if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
-            self::assertMatchesRegularExpression('~^' . $expectedRegexBase . $regexFractionalSecondsSameDigitCount . 'Z$~', $value);
-        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            self::assertMatchesRegularExpression('~^' . $expectedRegexBase . $regexFractionalSecondsZeroUpToDigitCount . '\+00$~', $value);
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            self::assertMatchesRegularExpression('~^' . $expectedRegexBase . $regexFractionalSecondsZeroUpToDigitCount . '$~', $value);
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            self::assertMatchesRegularExpression('~^' . $expectedRegexBase . $regexFractionalSeconds6Digits . ' \+00:00$~', $value);
+            self::assertMatchesRegularExpression('~^' . $expectedRegexBase . $regexFractionalSeconds6Digits . '$~', $value);
         } else {
             self::assertMatchesRegularExpression('~^' . $expectedRegexBase . $regexFractionalSecondsSameDigitCount . '$~', $value);
         }

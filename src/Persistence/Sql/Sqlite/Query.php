@@ -185,10 +185,7 @@ class Query extends BaseQuery
             ]);
         }
 
-        return $this->expr('concat([], [])', [
-            $expr,
-            new RawExpression($this->escapeStringLiteral('Z')),
-        ]);
+        return $expr;
     }
 
     #[\Override]
