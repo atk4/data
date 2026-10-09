@@ -253,6 +253,32 @@ class SelectTest extends TestCase
         ], $this->q('employee')->field('id')->field('name')->getRows());
     }
 
+    /**
+     * @dataProvider provideExprNowRenderCases
+     */
+    #[DataProvider('provideExprNowRenderCases')]
+    public function testExprNowRender(?int $precision = null): void
+    {
+        $expr = $this->q()->exprNow($precision);
+
+        $exprRender = $expr->render()[0];
+        self::assertSame([], $expr->render()[1]); // for column DEFAULT there must be no bound parameters
+
+        self::assertSameSql('current_timestamp(' . $precision . ')', $exprRender);
+    }
+
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideExprNowRenderCases(): iterable
+    {
+        yield [null];
+
+        foreach (range(0, 6) as $v) {
+            yield [$v];
+        }
+    }
+
     public function testFxConcat(): void
     {
         $parts = [];
