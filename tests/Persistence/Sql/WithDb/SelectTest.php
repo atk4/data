@@ -293,8 +293,6 @@ class SelectTest extends TestCase
     #[DataProvider('provideExprNowCases')]
     public function testExprNow(int $precision): void
     {
-        $this->debug = true; // TODO remove before merge
-
         $value = $this->q()
             ->field($this->q()->exprNow($precision))
             ->getOne();
