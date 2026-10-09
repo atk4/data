@@ -238,14 +238,6 @@ class Query extends BaseQuery
     public function exprNow(?int $precision = null): Expression
     {
         return $this->expr(
-            'current_timestamp(' . ($precision ?? 0) . ')'
-        );
-    }
-
-    #[\Override]
-    public function exprNowUTC(?int $precision = null): Expression
-    {
-        return $this->expr(
             'current_timestamp(' . ($precision ?? 0) . ') at time zone \'UTC\''
         );
     }

@@ -208,21 +208,6 @@ class Query extends BaseQuery
             (!Connection::isServerMariaDb($this->connection) && version_compare($this->connection->getServerVersion(), '5.6.4') < 0)
             || (Connection::isServerMariaDb($this->connection) && version_compare($this->connection->getServerVersion(), '5.3') < 0)
         ) {
-            return $this->expr('current_timestamp()');
-        }
-
-        return $this->expr(
-            'current_timestamp' . (($precision ?? 0) === 0 ? '' : '(' . $precision . ')')
-        );
-    }
-
-    #[\Override]
-    public function exprNowUTC(?int $precision = null): Expression
-    {
-        if (
-            (!Connection::isServerMariaDb($this->connection) && version_compare($this->connection->getServerVersion(), '5.6.4') < 0)
-            || (Connection::isServerMariaDb($this->connection) && version_compare($this->connection->getServerVersion(), '5.3') < 0)
-        ) {
             return $this->expr('utc_timestamp()');
         }
 

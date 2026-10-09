@@ -1117,7 +1117,7 @@ abstract class Query extends Expression
     }
 
     /**
-     * Returns Expression object for DB time in servers timezone.
+     * Returns Expression object for DB time in UTC timezone without timezone notation.
      *
      * @param int<0, 6> $precision
      */
@@ -1126,16 +1126,6 @@ abstract class Query extends Expression
         return $this->expr(
             'current_timestamp' . (($precision ?? 0) === 0 ? '' : '(' . $precision . ')')
         );
-    }
-
-    /**
-     * Returns Expression object for DB time in UTC timezone.
-     *
-     * @param int<0, 6> $precision
-     */
-    public function exprNowUTC(?int $precision = null): Expression
-    {
-        return $this->exprNow($precision);
     }
 
     /**

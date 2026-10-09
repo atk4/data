@@ -1724,19 +1724,16 @@ class SelectTest extends TestCase
         $nowExpr = $this->q()->exprNow($precision);
         $nowValue = $this->q()->field($nowExpr, 'now')->getOne();
 
-        $nowExprUtc = $this->q()->exprNowUtc($precision);
-        $nowValueUtc = $this->q()->field($nowExprUtc, 'now')->getOne();
-
-        var_dump($precision, $nowValue, $nowExpr->render(), $nowValueUtc, $nowExprUtc->render());
+        var_dump($precision, $nowValue, $nowExpr->render());
 
         $precision ??= 0;
 
-        // Postgre always adds 2 digit timezone and strips trailing zeros even if precision requires them
+        // Postgre strips trailing zeros even if precision requires them
         if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             if ($precision === 0) {
-                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\+\d{2}$~', $nowValue);
+                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\$~', $nowValue);
             } else {
-                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{1,' . $precision . '}\+\d{2}$~', $nowValue);
+                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{1,' . $precision . '}$~', $nowValue);
             }
         }
         // MSSQL always adds 7 digit fraction

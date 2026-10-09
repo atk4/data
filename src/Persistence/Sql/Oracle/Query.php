@@ -345,18 +345,8 @@ class Query extends BaseQuery
     #[\Override]
     public function exprNow(?int $precision = null): BaseExpression
     {
-        // or cast(systimestamp as timestamp(precision)) which removes tz
         return $this->expr(
-            'systimestamp' . (($precision ?? 0) === 0 ? '' : '(' . $precision . ')')
-        );
-    }
-
-    #[\Override]
-    public function exprNowUTC(?int $precision = null): BaseExpression
-    {
-        // or cast(systimestamp at time zone 'UTC' as timestamp(precision)) which cnovert to UTC and remove tz
-        return $this->expr(
-            'systimestamp' . (($precision ?? 0) === 0 ? '' : '(' . $precision . ')') . ' at time zone \'UTC\''
+            'cast(systimestamp at time zone \'UTC\' as timestamp(' . ($precision ?? 0) . '))'
         );
     }
 }
