@@ -6,6 +6,7 @@ namespace Atk4\Data\Persistence\Sql\Mssql;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
+use Atk4\Data\Persistence\Sql\Expression as BaseExpression;
 use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 use Atk4\Data\Persistence\Sql\RawExpression;
@@ -271,6 +272,25 @@ class Query extends BaseQuery
         ), 't');
 
         return $query;
+    }
+
+    /**
+     * @param array<string, Expressionable> $keyValuePairs
+     */
+    public function fxJsonObject(array $keyValuePairs): BaseExpression
+    {
+        $parts = [];
+        foreach ($keyValuePairs as $key => $value) {
+            $parts[] = new RawExpression($this->escapeStringLiteral($key));
+            $parts[] = $value;
+        }
+
+        return $this->expr('json_object(' . implode(', ', array_fill(0, count($parts), '[]')) . ')', $parts);
+    }
+
+    public function jsonArrayAgg(Expressionable $expr): BaseExpression
+    {
+        return $this->expr('json_array([])', [$expr]);
     }
 
     #[\Override]
