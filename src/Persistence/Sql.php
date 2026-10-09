@@ -173,7 +173,7 @@ class Sql extends Persistence
     }
 
     /**
-     * Creates new Expression object with current datetime.
+     * Creates new Expression object with current DB datetime in UTC time zone.
      *
      * @param int<0, 6> $precision
      */
