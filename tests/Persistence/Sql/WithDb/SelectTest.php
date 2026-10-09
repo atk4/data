@@ -1765,7 +1765,6 @@ class SelectTest extends TestCase
         }
     }
 
-
     public function testExprNowInModel(): void
     {
         // create test model
@@ -1800,7 +1799,7 @@ class SelectTest extends TestCase
         self::assertInstanceOf(\DateTime::class, $entity->get('f_normal_6'));
 
         $interval = 600; // +/-10 minutes
-        $now_ts = (new \DateTime)->getTimestamp();
+        $now_ts = (new \DateTime())->getTimestamp();
         self::assertLessThan($interval, abs($entity->get('f_default')->getTimestamp() - $now_ts));
         self::assertLessThan($interval, abs($entity->get('f_default_2')->getTimestamp() - $now_ts));
         self::assertLessThan($interval, abs($entity->get('f_default_6')->getTimestamp() - $now_ts));

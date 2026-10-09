@@ -202,7 +202,7 @@ class Query extends BaseQuery
     }
 
     #[\Override]
-    public function exprNow(?int $precision = null): Expression
+    public function exprNow(?int $precision = null): BaseExpression
     {
         if (
             (!Connection::isServerMariaDb($this->connection) && version_compare($this->connection->getServerVersion(), '5.6.4') < 0)

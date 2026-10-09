@@ -258,7 +258,7 @@ class Query extends BaseQuery
     }
 
     #[\Override]
-    public function exprNow(?int $precision = null): Expression
+    public function exprNow(?int $precision = null): BaseExpression
     {
         // SQLite always use 3 digit fractional seconds (miliseconds), so we simulate precision a bit
         // old versions used strftime()
