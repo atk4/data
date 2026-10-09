@@ -641,7 +641,18 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
-        $this->assertExactlyOneRecordUpdated($model, $idRaw, $c, 'update');
+        $allowZeroAffectedRows = false;
+        foreach ($dataRaw as $vRaw) {
+            if ($vRaw instanceof Expressionable) {
+                $allowZeroAffectedRows = true;
+
+                break;
+            }
+        }
+
+        if ($c !== 0 || !$allowZeroAffectedRows) {
+            $this->assertExactlyOneRecordUpdated($model, $idRaw, $c, 'update');
+        }
 
         $model->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update]);
     }
