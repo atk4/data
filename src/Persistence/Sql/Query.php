@@ -1123,7 +1123,7 @@ abstract class Query extends Expression
      */
     public function exprNow(?int $precision = null): Expression
     {
-        return $this->expr('current_timestamp(' . $precision . ')');
+        return $this->expr('current_timestamp(' . ($precision ?? 0) . ')');
     }
 
     /**
