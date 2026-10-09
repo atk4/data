@@ -1730,11 +1730,12 @@ class SelectTest extends TestCase
 
         // Postgre strips trailing zeros even if precision requires them
         // So if we have precision=3, then it can give .12 or .1 or even no fraction part at all, but will not return .120 or .100
+        // So fractional part is even optional no matter what precision is set
         if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             if ($precision === 0) {
                 self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$~', $nowValue);
             } else {
-                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{0,' . $precision . '}$~', $nowValue);
+                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d{1,' . $precision . '})?$~', $nowValue);
             }
         }
         // Oracle format is set in our Atk4\Data\Persistence\Sql\Oracle\InitializeSessionMiddleware class
@@ -1764,20 +1765,47 @@ class SelectTest extends TestCase
         }
     }
 
-    /*
+
+    public function testExprNowInModel(): void
+    {
+        // create test model
         $model = new Model($this->db, ['table' => 'exprtest']);
-        $model->addField('create_time', ['type' => 'datetime', 'default' => $this->db->exprNow(6)]);
-        $model->addField('event_time', ['type' => 'datetime']);
+        $model->addField('f_default', ['type' => 'datetime', 'default' => $this->db->exprNow()]);
+        $model->addField('f_default_2', ['type' => 'datetime', 'default' => $this->db->exprNow(2)]);
+        $model->addField('f_default_6', ['type' => 'datetime', 'default' => $this->db->exprNow(6)]);
+        $model->addField('f_normal', ['type' => 'datetime']);
+        $model->addField('f_normal_2', ['type' => 'datetime']);
+        $model->addField('f_normal_6', ['type' => 'datetime']);
         $this->createMigrator($model)->create();
 
-        var_dump($this->db->exprNow(6));
+        // import test data
         $model->import([
-            ['id' => 1, 'event_time' => $this->db->exprNow(6)],
+            [
+                'id' => 1,
+                'f_normal' => $this->db->exprNow(),
+                'f_normal_2' => $this->db->exprNow(2),
+                'f_normal_6' => $this->db->exprNow(6),
+            ],
         ]);
         var_dump($model->export()); // testing, remove it
+
+        // now test values
         $entity = $model->load(1);
 
-        self::assertNotSame('000000', $entity->get('create_time')->format('u'));
-        self::assertNotSame('000000', $entity->get('event_time')->format('u'));
-    */
+        self::assertInstanceOf(\DateTime::class, $entity->get('f_default'));
+        self::assertInstanceOf(\DateTime::class, $entity->get('f_default_2'));
+        self::assertInstanceOf(\DateTime::class, $entity->get('f_default_6'));
+        self::assertInstanceOf(\DateTime::class, $entity->get('f_normal'));
+        self::assertInstanceOf(\DateTime::class, $entity->get('f_normal_2'));
+        self::assertInstanceOf(\DateTime::class, $entity->get('f_normal_6'));
+
+        $interval = 600; // +/-10 minutes
+        $now_ts = (new \DateTime)->getTimestamp();
+        self::assertLessThan($interval, abs($entity->get('f_default')->getTimestamp() - $now_ts));
+        self::assertLessThan($interval, abs($entity->get('f_default_2')->getTimestamp() - $now_ts));
+        self::assertLessThan($interval, abs($entity->get('f_default_6')->getTimestamp() - $now_ts));
+        self::assertLessThan($interval, abs($entity->get('f_normal')->getTimestamp() - $now_ts));
+        self::assertLessThan($interval, abs($entity->get('f_normal_2')->getTimestamp() - $now_ts));
+        self::assertLessThan($interval, abs($entity->get('f_normal_6')->getTimestamp() - $now_ts));
+    }
 }

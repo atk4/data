@@ -283,7 +283,7 @@ class Query extends BaseQuery
     }
 
     #[\Override]
-    public function exprNow(?int $precision = null): BaseExpression
+    public function exprNow(?int $precision = null): Expression
     {
         return $this->expr('cast(sysutcdatetime() as datetime2(' . ($precision ?? 0) . '))');
     }
