@@ -1117,7 +1117,7 @@ abstract class Query extends Expression
     }
 
     /**
-     * Returns expression for current DB datetime in UTC time zone.
+     * Returns expression for current DB datetime.
      *
      * @param int<0, 6> $precision
      */
