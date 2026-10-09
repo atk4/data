@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests\Persistence\Sql\WithDb;
 
 use Atk4\Data\Model;
+use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Exception;
 use Atk4\Data\Persistence\Sql\ExecuteException;
@@ -1767,11 +1768,14 @@ class SelectTest extends TestCase
 
     public function testExprNowInModel(): void
     {
+        /** @var Persistence\Sql $db */
+        $db = $this->db;
+
         // create test model
         $model = new Model($this->db, ['table' => 'exprtest']);
-        $model->addField('f_default', ['type' => 'datetime', 'default' => $this->db->exprNow()]);
-        $model->addField('f_default_2', ['type' => 'datetime', 'default' => $this->db->exprNow(2)]);
-        $model->addField('f_default_6', ['type' => 'datetime', 'default' => $this->db->exprNow(6)]);
+        $model->addField('f_default', ['type' => 'datetime', 'default' => $db->exprNow()]);
+        $model->addField('f_default_2', ['type' => 'datetime', 'default' => $db->exprNow(2)]);
+        $model->addField('f_default_6', ['type' => 'datetime', 'default' => $db->exprNow(6)]);
         $model->addField('f_normal', ['type' => 'datetime']);
         $model->addField('f_normal_2', ['type' => 'datetime']);
         $model->addField('f_normal_6', ['type' => 'datetime']);
@@ -1781,9 +1785,9 @@ class SelectTest extends TestCase
         $model->import([
             [
                 'id' => 1,
-                'f_normal' => $this->db->exprNow(),
-                'f_normal_2' => $this->db->exprNow(2),
-                'f_normal_6' => $this->db->exprNow(6),
+                'f_normal' => $db->exprNow(),
+                'f_normal_2' => $db->exprNow(2),
+                'f_normal_6' => $db->exprNow(6),
             ],
         ]);
         var_dump($model->export()); // testing, remove it
@@ -1798,7 +1802,7 @@ class SelectTest extends TestCase
         self::assertInstanceOf(\DateTime::class, $entity->get('f_normal_2'));
         self::assertInstanceOf(\DateTime::class, $entity->get('f_normal_6'));
 
-        $interval = 600; // +/-10 minutes
+        $interval = 180; // +/- 3 minutes
         $now_ts = (new \DateTime())->getTimestamp();
         self::assertLessThan($interval, abs($entity->get('f_default')->getTimestamp() - $now_ts));
         self::assertLessThan($interval, abs($entity->get('f_default_2')->getTimestamp() - $now_ts));
@@ -1806,5 +1810,39 @@ class SelectTest extends TestCase
         self::assertLessThan($interval, abs($entity->get('f_normal')->getTimestamp() - $now_ts));
         self::assertLessThan($interval, abs($entity->get('f_normal_2')->getTimestamp() - $now_ts));
         self::assertLessThan($interval, abs($entity->get('f_normal_6')->getTimestamp() - $now_ts));
+
+        // @todo would be nice to add some test to see if it actually stored fraction seconds in DB or not.
+        // Because of DBAL migrator using data type without fractions, they are not stored in
+        // MySQL, PostgreSQL and Oracle.
+        // (new \DateTime())->getMicrosecond() !== 0, but sometimes it actually could be 0;
+
+        /*
+        In DBAL Only SQLServerPlatform have this custom format with miliseconds
+        public function getDateTimeFormatString(): string
+        {
+            return 'Y-m-d H:i:s.u';
+        }
+        others use default
+        public function getDateTimeFormatString(): string
+        {
+            return 'Y-m-d H:i:s';
+        }
+
+        Also SQLServerPlatform have nice custom date type with miliseconds for migrator which works
+        public function getDateTimeTypeDeclarationSQL(array $column): string
+        {
+            // 3 - microseconds precision length
+            // http://msdn.microsoft.com/en-us/library/ms187819.aspx
+            return 'DATETIME2(6)';
+        }
+        but others use simple datetime types so if we create table with migrator, it simply do not create correct table column and miliseconds are lost when saving
+        SQLite - DATETIME
+        PostgreSQL - TIMESTAMP(0) WITHOUT TIME ZONE
+        Oracle - TIMESTAMP(0)
+        DB2 - TIMESTAMP(0)
+        MySQL - DATETIME
+
+        I'm not that good in DBAL to understand easily how to customize all this.
+        */
     }
 }

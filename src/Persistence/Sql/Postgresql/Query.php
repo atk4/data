@@ -235,7 +235,7 @@ class Query extends BaseQuery
     }
 
     #[\Override]
-    public function exprNow(?int $precision = null): Expression
+    public function exprNow(?int $precision = null): BaseExpression
     {
         return $this->expr(
             'current_timestamp(' . ($precision ?? 0) . ') at time zone \'UTC\''
