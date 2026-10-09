@@ -180,9 +180,8 @@ class Query extends BaseQuery
                 ]);
             }
 
-            $expr = $this->expr('substr([], 1, [])', [
+            $expr = $this->expr('substr([], 1, ' . (20 + $precision) . ')', [
                 $expr,
-                new RawExpression((string) (20 + $precision)),
             ]);
         }
 

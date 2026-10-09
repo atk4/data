@@ -1117,13 +1117,13 @@ abstract class Query extends Expression
     }
 
     /**
-     * Returns expression for current DB datetime.
+     * Returns expression for current DB datetime in UTC optionally with explicit time zone.
      *
      * @param int<0, 6> $precision
      */
     public function exprNow(int $precision = 6): Expression
     {
-        return $this->expr('current_timestamp(' . $precision . ')');
+        return $this->expr('utc_timestamp(' . $precision . ')');
     }
 
     /**

@@ -794,7 +794,7 @@ corresponding Expression class for this query.
 :::
 
 :::{php:method} exprNow(int $precision = 6)
-Method will return "current_timestamp(precision)" Expression.
+Method will return "utc_timestamp(precision)" Expression.
 :::
 
 :::{php:method} option($option, $mode)

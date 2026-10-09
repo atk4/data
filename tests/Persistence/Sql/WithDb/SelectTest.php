@@ -277,11 +277,13 @@ class SelectTest extends TestCase
                 self::assertSameSql('concat(substr(concat(' . $base . ', \'' . str_repeat('0', $precision - 1) . '\'), 1, ' . (20 + $precision) . '), \'Z\')', $exprRender);
             }
         } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            self::assertSameSql('cast(clock_timestamp() as timestamp(' . $precision . ') with time zone)', $exprRender);
+            self::assertSameSql('cast(clock_timestamp() at time zone \'UTC\' as timestamp(' . $precision . ') with time zone)', $exprRender);
         } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            self::assertSameSql('cast(sysdatetime() as datetime2(' . $precision . '))', $exprRender);
+            self::assertSameSql('cast(sysutcdatetime() as datetime2(' . $precision . '))', $exprRender);
+        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            self::assertSameSql('cast(systimestamp at time zone \'UTC\' as timestamp(' . $precision . ') with time zone)', $exprRender);
         } else {
-            self::assertSameSql('current_timestamp(' . $precision . ')', $exprRender);
+            self::assertSameSql('utc_timestamp(' . $precision . ')', $exprRender);
         }
     }
 
@@ -313,7 +315,7 @@ class SelectTest extends TestCase
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
             self::assertMatchesRegularExpression('~^' . $expectedRegexBase . $regexFractionalSeconds6Digits . ' \+00:00$~', $value);
         } else {
-            self::assertMatchesRegularExpression('~^' . $expectedRegexBase . $regexFractionalSecondsSameDigitCount . '$~', $value); // TODO explicit TZ
+            self::assertMatchesRegularExpression('~^' . $expectedRegexBase . $regexFractionalSecondsSameDigitCount . '$~', $value);
         }
     }
 
