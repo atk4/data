@@ -696,8 +696,7 @@ class TypecastingTest extends TestCase
         $m->addField('dt', ['type' => 'datetime']);
 
         $entity = $m->createEntity();
-        $entity->save(['dt' => $this->db->exprNow()]);
-
+        $entity->save(['dt' => $this->getConnection()->dsql()->exprNow()]);
         self::assertInstanceOf(\DateTime::class, $entity->get('dt'));
 
         $tenMinutesSeconds = 10 * 60;
@@ -705,7 +704,8 @@ class TypecastingTest extends TestCase
         self::assertGreaterThan(-$tenMinutesSeconds, $diffSeconds);
         self::assertLessThan($tenMinutesSeconds, $diffSeconds);
 
-        $entity->save(['dt' => $this->db->exprNow()]);
+        $entity->save(['dt' => $this->getConnection()->dsql()->exprNow()]);
+        self::assertInstanceOf(\DateTime::class, $entity->get('dt'));
     }
 
     public function testDirtyTime(): void
