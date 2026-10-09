@@ -201,9 +201,7 @@ class Query extends BaseQuery
         return $query;
     }
 
-    /**
-     * Returns Expression object for NOW() or CURRENT_TIMESTAMP() method.
-     */
+    #[\Override]
     public function exprNow(?int $precision = null): Expression
     {
         if (
@@ -213,6 +211,23 @@ class Query extends BaseQuery
             return $this->expr('current_timestamp()');
         }
 
-        return parent::exprNow($precision);
+        return $this->expr(
+            'current_timestamp' . (($precision ?? 0) === 0 ? '' : '(' . $precision . ')')
+        );
+    }
+
+    #[\Override]
+    public function exprNowUTC(?int $precision = null): Expression
+    {
+        if (
+            (!Connection::isServerMariaDb($this->connection) && version_compare($this->connection->getServerVersion(), '5.6.4') < 0)
+            || (Connection::isServerMariaDb($this->connection) && version_compare($this->connection->getServerVersion(), '5.3') < 0)
+        ) {
+            return $this->expr('utc_timestamp()');
+        }
+
+        return $this->expr(
+            'utc_timestamp' . (($precision ?? 0) === 0 ? '' : '(' . $precision . ')')
+        );
     }
 }
