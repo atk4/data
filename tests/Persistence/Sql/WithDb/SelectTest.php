@@ -1724,7 +1724,7 @@ class SelectTest extends TestCase
         $nowExpr = $this->q()->exprNow($precision);
         $nowValue = $this->q()->field($nowExpr, 'now')->getOne();
 
-        $nowExprUtc = $this->q()->exprNow($precision);
+        $nowExprUtc = $this->q()->exprNowUtc($precision);
         $nowValueUtc = $this->q()->field($nowExprUtc, 'now')->getOne();
 
         var_dump($precision, $nowValue, $nowExpr->render(), $nowValueUtc, $nowExprUtc->render());
