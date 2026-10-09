@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Persistence\Sql\Sqlite;
 
 use Atk4\Data\Persistence\Sql\ExecuteException;
+use Atk4\Data\Persistence\Sql\Expression as BaseExpression;
 use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 use Atk4\Data\Persistence\Sql\RawExpression;
@@ -156,6 +157,41 @@ class Query extends BaseQuery
             true,
             false
         );
+    }
+
+    #[\Override]
+    public function exprNow(?int $precision = null): BaseExpression
+    {
+        $noFractionalSeconds = ($precision ?? 0) === 0;
+
+        $expr = version_compare(Connection::getDriverVersion(), '3.42') < 0
+            ? $this->expr('strftime([], [])', [
+                new RawExpression($this->escapeStringLiteral('%Y-%m-%d %H:%M:%' . ($noFractionalSeconds ? 'S' : 'f'))),
+                new RawExpression($this->escapeStringLiteral('now')), // implies UTC
+            ])
+            : $this->expr('datetime([]' . ($noFractionalSeconds ? '' : ', []') . ')', [
+                new RawExpression($this->escapeStringLiteral('now')), // implies UTC
+                ...($noFractionalSeconds ? [] : [new RawExpression($this->escapeStringLiteral('subsec'))]),
+            ]);
+
+        if (!$noFractionalSeconds) {
+            if ($precision !== 1) {
+                $expr = $this->expr('concat([], [])', [
+                    $expr,
+                    new RawExpression($this->escapeStringLiteral(str_repeat('0', $precision - 1))),
+                ]);
+            }
+
+            $expr = $this->expr('substr([], 1, [])', [
+                $expr,
+                new RawExpression((string) (20 + $precision)),
+            ]);
+        }
+
+        return $this->expr('concat([], [])', [
+            $expr,
+            new RawExpression($this->escapeStringLiteral('Z')),
+        ]);
     }
 
     #[\Override]

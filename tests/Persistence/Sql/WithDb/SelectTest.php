@@ -254,9 +254,9 @@ class SelectTest extends TestCase
     }
 
     /**
-     * @dataProvider provideExprNowRenderCases
+     * @dataProvider provideExprNowCases
      */
-    #[DataProvider('provideExprNowRenderCases')]
+    #[DataProvider('provideExprNowCases')]
     public function testExprNowRender(?int $precision = null): void
     {
         $expr = $this->q()->exprNow($precision);
@@ -264,13 +264,47 @@ class SelectTest extends TestCase
         $exprRender = $expr->render()[0];
         self::assertSame([], $expr->render()[1]); // for column DEFAULT there must be no bound parameters
 
-        self::assertSameSql('current_timestamp(' . $precision . ')', $exprRender);
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
+            $base = version_compare(SqliteConnection::getDriverVersion(), '3.42') < 0
+                ? (($precision ?? 0) === 0 ? 'strftime(\'%Y-%m-%d %H:%M:%S\', \'now\')' : 'strftime(\'%Y-%m-%d %H:%M:%f\', \'now\')')
+                : (($precision ?? 0) === 0 ? 'datetime(\'now\')' : 'datetime(\'now\', \'subsec\')');
+
+            if (($precision ?? 0) === 0) {
+                self::assertSameSql('concat(' . $base . ', \'Z\')', $exprRender);
+            } elseif ($precision === 1) {
+                self::assertSameSql('concat(substr(' . $base . ', 1, 21), \'Z\')', $exprRender);
+            } else {
+                self::assertSameSql('concat(substr(concat(' . $base . ', \'' . str_repeat('0', $precision - 1) . '\'), 1, ' . (20 + $precision) . '), \'Z\')', $exprRender);
+            }
+        } else {
+            self::assertSameSql('current_timestamp(' . $precision . ')', $exprRender);
+        }
+    }
+
+    /**
+     * @dataProvider provideExprNowCases
+     */
+    #[DataProvider('provideExprNowCases')]
+    public function testExprNow(?int $precision = null): void
+    {
+        $this->debug = true; // TODO remove before merge
+
+        $value = $this->q()
+            ->field($this->q()->exprNow($precision))
+            ->getOne();
+
+        $expectedRegexBase = '\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}';
+        $regexFractionalSecondsSameDigitCount = $precision > 0
+            ? '\.\d{' . $precision . '}'
+            : '';
+
+        self::assertMatchesRegularExpression('~^' . $expectedRegexBase . $regexFractionalSecondsSameDigitCount . 'Z$~', $value);
     }
 
     /**
      * @return iterable<list<mixed>>
      */
-    public static function provideExprNowRenderCases(): iterable
+    public static function provideExprNowCases(): iterable
     {
         yield [null];
 
