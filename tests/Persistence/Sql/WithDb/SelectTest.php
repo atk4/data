@@ -276,6 +276,8 @@ class SelectTest extends TestCase
             } else {
                 self::assertSameSql('concat(substr(concat(' . $base . ', \'' . str_repeat('0', $precision - 1) . '\'), 1, ' . (20 + $precision) . '), \'Z\')', $exprRender);
             }
+        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            self::assertSameSql('cast(clock_timestamp() as timestamp(' . $precision . ') with time zone)', $exprRender);
         } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             self::assertSameSql('cast(sysdatetime() as datetime2(' . $precision . '))', $exprRender);
         } else {
@@ -313,6 +315,20 @@ class SelectTest extends TestCase
         } else {
             self::assertMatchesRegularExpression('~^' . $expectedRegexBase . $regexFractionalSecondsSameDigitCount . '$~', $value); // TODO explicit TZ
         }
+    }
+
+    public function testExprNowChangeInSingleTransaction(): void
+    {
+        $this->getConnection()->atomic(function() {
+            $expr = $this->q()
+                ->field($this->q()->exprNow());
+
+            $value1 = $expr->getOne();
+            usleep(20_000);
+            $value2 = $expr->getOne();
+
+            self::assertNotSame($value1, $value2);
+        });
     }
 
     /**
