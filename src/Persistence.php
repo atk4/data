@@ -10,7 +10,7 @@ use Atk4\Core\DynamicMethodTrait;
 use Atk4\Core\Factory;
 use Atk4\Core\HookTrait;
 use Atk4\Core\NameTrait;
-use Doctrine\DBAL\Platforms;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
 
 abstract class Persistence
@@ -109,7 +109,7 @@ abstract class Persistence
         return $fx();
     }
 
-    public function getDatabasePlatform(): Platforms\AbstractPlatform
+    public function getDatabasePlatform(): AbstractPlatform
     {
         return new Persistence\GenericPlatform();
     }
