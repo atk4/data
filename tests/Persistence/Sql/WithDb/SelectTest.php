@@ -313,6 +313,11 @@ class SelectTest extends TestCase
         } else {
             self::assertMatchesRegularExpression('~^' . $expectedRegexBase . $regexFractionalSecondsSameDigitCount . '$~', $value);
         }
+
+        $tenMinutesSeconds = 10 * 60;
+        $diffSeconds = (new \DateTime($value . ' UTC'))->getTimestamp() - microtime(true);
+        self::assertGreaterThan(-$tenMinutesSeconds, $diffSeconds);
+        self::assertLessThan($tenMinutesSeconds, $diffSeconds);
     }
 
     public function testExprNowChangeInSingleTransaction(): void
