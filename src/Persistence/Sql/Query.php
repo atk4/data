@@ -1123,10 +1123,9 @@ abstract class Query extends Expression
      */
     public function exprNow(?int $precision = null): Expression
     {
-        throw new Exception('Implement exprNow in extended class');
-        // return $this->expr(
-        //     'current_timestamp' . (($precision ?? 0) === 0 ? '' : '(' . $precision . ')')
-        // );
+        return $this->expr(
+            'current_timestamp' . (($precision ?? 0) === 0 ? '' : '(' . $precision . ')')
+        );
     }
 
     /**
@@ -1136,8 +1135,7 @@ abstract class Query extends Expression
      */
     public function exprNowUTC(?int $precision = null): Expression
     {
-        throw new Exception('Implement exprNowUTC in extended class');
-        // return $this->exprNow($precision);
+        return $this->exprNow($precision);
     }
 
     /**
