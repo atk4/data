@@ -6,7 +6,6 @@ namespace Atk4\Data\Persistence\Sql\Mssql;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
-use Atk4\Data\Persistence\Sql\Expression as BaseExpression;
 use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 use Atk4\Data\Persistence\Sql\RawExpression;
@@ -280,11 +279,5 @@ class Query extends BaseQuery
         return $this->dsql()->mode('select')->field(
             $this->dsql()->expr('case when exists[] then 1 else 0 end', [$this])
         );
-    }
-
-    #[\Override]
-    public function exprNow(?int $precision = null): BaseExpression
-    {
-        return $this->expr('cast(sysutcdatetime() as datetime2(' . ($precision ?? 0) . '))');
     }
 }

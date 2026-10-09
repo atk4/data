@@ -341,12 +341,4 @@ class Query extends BaseQuery
 
         return $res;
     }
-
-    #[\Override]
-    public function exprNow(?int $precision = null): BaseExpression
-    {
-        return $this->expr(
-            'cast(systimestamp at time zone \'UTC\' as timestamp(' . ($precision ?? 0) . '))'
-        );
-    }
 }

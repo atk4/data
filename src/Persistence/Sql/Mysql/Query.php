@@ -200,19 +200,4 @@ class Query extends BaseQuery
 
         return $query;
     }
-
-    #[\Override]
-    public function exprNow(?int $precision = null): BaseExpression
-    {
-        if (
-            (!Connection::isServerMariaDb($this->connection) && version_compare($this->connection->getServerVersion(), '5.6.4') < 0)
-            || (Connection::isServerMariaDb($this->connection) && version_compare($this->connection->getServerVersion(), '5.3') < 0)
-        ) {
-            return $this->expr('utc_timestamp()');
-        }
-
-        return $this->expr(
-            'utc_timestamp' . (($precision ?? 0) === 0 ? '' : '(' . $precision . ')')
-        );
-    }
 }

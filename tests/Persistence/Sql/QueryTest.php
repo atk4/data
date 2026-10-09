@@ -1651,7 +1651,7 @@ class QueryTest extends TestCase
     public function testExprNow(): void
     {
         self::assertSame(
-            'update "employee" set "hired"=current_timestamp',
+            'update "employee" set "hired"=current_timestamp()',
             $this->q()
                 ->table('employee')->set('hired', $this->q()->exprNow())
                 ->mode('update')
@@ -1659,7 +1659,7 @@ class QueryTest extends TestCase
         );
 
         self::assertSame(
-            'update "employee" set "hired"=current_timestamp(2)',
+            'update "employee" set "hired"=current_timestamp(:a)',
             $this->q()
                 ->table('employee')->set('hired', $this->q()->exprNow(2))
                 ->mode('update')

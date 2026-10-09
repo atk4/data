@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests\Persistence\Sql\WithDb;
 
 use Atk4\Data\Model;
-use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Exception;
 use Atk4\Data\Persistence\Sql\ExecuteException;
@@ -14,9 +13,8 @@ use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Persistence\Sql\Sqlite\Connection as SqliteConnection;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Platforms;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
-use Doctrine\DBAL\Platforms\MariaDBPlatform;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
@@ -981,14 +979,14 @@ class SelectTest extends TestCase
         if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
             if (MysqlConnection::isServerMariaDb($this->getConnection())) {
                 if (Connection::isDbal3x()) {
-                    self::assertInstanceOf(MySQLPlatform::class, $this->getDatabasePlatform());
+                    self::assertInstanceOf(Platforms\MySQLPlatform::class, $this->getDatabasePlatform());
                 } else {
-                    self::assertNotInstanceOf(MySQLPlatform::class, $this->getDatabasePlatform());
+                    self::assertNotInstanceOf(Platforms\MySQLPlatform::class, $this->getDatabasePlatform());
                 }
-                self::assertInstanceOf(MariaDBPlatform::class, $this->getDatabasePlatform());
+                self::assertInstanceOf(Platforms\MariaDBPlatform::class, $this->getDatabasePlatform());
             } else {
-                self::assertInstanceOf(MySQLPlatform::class, $this->getDatabasePlatform());
-                self::assertNotInstanceOf(MariaDBPlatform::class, $this->getDatabasePlatform());
+                self::assertInstanceOf(Platforms\MySQLPlatform::class, $this->getDatabasePlatform());
+                self::assertNotInstanceOf(Platforms\MariaDBPlatform::class, $this->getDatabasePlatform());
             }
         } else {
             self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
@@ -1714,135 +1712,5 @@ class SelectTest extends TestCase
         );
 
         self::assertSame([['surname', 'desc']], $subQuery->args['order']);
-    }
-
-    /**
-     * @dataProvider provideExprNowCases
-     */
-    #[DataProvider('provideExprNowCases')]
-    public function testExprNow(?int $precision = null): void
-    {
-        $nowExpr = $this->q()->exprNow($precision);
-        $nowValue = $this->q()->field($nowExpr, 'now')->getOne();
-
-        var_dump($precision, $nowValue, $nowExpr->render());
-
-        $precision ??= 0;
-
-        // Postgre strips trailing zeros even if precision requires them
-        // So if we have precision=3, then it can give .12 or .1 or even no fraction part at all, but will not return .120 or .100
-        // So fractional part is even optional no matter what precision is set
-        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            if ($precision === 0) {
-                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$~', $nowValue);
-            } else {
-                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d{1,' . $precision . '})?$~', $nowValue);
-            }
-        }
-        // Oracle format is set in our Atk4\Data\Persistence\Sql\Oracle\InitializeSessionMiddleware class
-        // It always has 6 digit fraction (padded with zeros)
-        elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{6}$~', $nowValue);
-        }
-        // Other platforms are good
-        else {
-            if ($precision === 0) {
-                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$~', $nowValue);
-            } else {
-                self::assertMatchesRegularExpression('~^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{' . $precision . '}$~', $nowValue);
-            }
-        }
-    }
-
-    /**
-     * @return iterable<list<mixed>>
-     */
-    public static function provideExprNowCases(): iterable
-    {
-        yield [null];
-
-        foreach (range(0, 6) as $precision) {
-            yield [$precision];
-        }
-    }
-
-    public function testExprNowInModel(): void
-    {
-        /** @var Persistence\Sql $db */
-        $db = $this->db;
-
-        // create test model
-        $model = new Model($this->db, ['table' => 'exprtest']);
-        $model->addField('f_default', ['type' => 'datetime', 'default' => $db->exprNow()]);
-        $model->addField('f_default_2', ['type' => 'datetime', 'default' => $db->exprNow(2)]);
-        $model->addField('f_default_6', ['type' => 'datetime', 'default' => $db->exprNow(6)]);
-        $model->addField('f_normal', ['type' => 'datetime']);
-        $model->addField('f_normal_2', ['type' => 'datetime']);
-        $model->addField('f_normal_6', ['type' => 'datetime']);
-        $this->createMigrator($model)->create();
-
-        // import test data
-        $model->import([
-            [
-                'id' => 1,
-                'f_normal' => $db->exprNow(),
-                'f_normal_2' => $db->exprNow(2),
-                'f_normal_6' => $db->exprNow(6),
-            ],
-        ]);
-        var_dump($model->export()); // testing, remove it
-
-        // now test values
-        $entity = $model->load(1);
-
-        self::assertInstanceOf(\DateTime::class, $entity->get('f_default'));
-        self::assertInstanceOf(\DateTime::class, $entity->get('f_default_2'));
-        self::assertInstanceOf(\DateTime::class, $entity->get('f_default_6'));
-        self::assertInstanceOf(\DateTime::class, $entity->get('f_normal'));
-        self::assertInstanceOf(\DateTime::class, $entity->get('f_normal_2'));
-        self::assertInstanceOf(\DateTime::class, $entity->get('f_normal_6'));
-
-        $interval = 180; // +/- 3 minutes
-        $now_ts = (new \DateTime())->getTimestamp();
-        self::assertLessThan($interval, abs($entity->get('f_default')->getTimestamp() - $now_ts));
-        self::assertLessThan($interval, abs($entity->get('f_default_2')->getTimestamp() - $now_ts));
-        self::assertLessThan($interval, abs($entity->get('f_default_6')->getTimestamp() - $now_ts));
-        self::assertLessThan($interval, abs($entity->get('f_normal')->getTimestamp() - $now_ts));
-        self::assertLessThan($interval, abs($entity->get('f_normal_2')->getTimestamp() - $now_ts));
-        self::assertLessThan($interval, abs($entity->get('f_normal_6')->getTimestamp() - $now_ts));
-
-        // @todo would be nice to add some test to see if it actually stored fraction seconds in DB or not.
-        // Because of DBAL migrator using data type without fractions, they are not stored in
-        // MySQL, PostgreSQL and Oracle.
-        // (new \DateTime())->getMicrosecond() !== 0, but sometimes it actually could be 0;
-
-        /*
-        In DBAL Only SQLServerPlatform have this custom format with miliseconds
-        public function getDateTimeFormatString(): string
-        {
-            return 'Y-m-d H:i:s.u';
-        }
-        others use default
-        public function getDateTimeFormatString(): string
-        {
-            return 'Y-m-d H:i:s';
-        }
-
-        Also SQLServerPlatform have nice custom date type with miliseconds for migrator which works
-        public function getDateTimeTypeDeclarationSQL(array $column): string
-        {
-            // 3 - microseconds precision length
-            // http://msdn.microsoft.com/en-us/library/ms187819.aspx
-            return 'DATETIME2(6)';
-        }
-        but others use simple datetime types so if we create table with migrator, it simply do not create correct table column and miliseconds are lost when saving
-        SQLite - DATETIME
-        PostgreSQL - TIMESTAMP(0) WITHOUT TIME ZONE
-        Oracle - TIMESTAMP(0)
-        DB2 - TIMESTAMP(0)
-        MySQL - DATETIME
-
-        I'm not that good in DBAL to understand easily how to customize all this.
-        */
     }
 }

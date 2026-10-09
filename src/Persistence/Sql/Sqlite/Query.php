@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Atk4\Data\Persistence\Sql\Sqlite;
 
 use Atk4\Data\Persistence\Sql\ExecuteException;
-use Atk4\Data\Persistence\Sql\Expression as BaseExpression;
 use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 use Atk4\Data\Persistence\Sql\RawExpression;
@@ -255,28 +254,5 @@ class Query extends BaseQuery
         }
 
         return parent::_execute($connection, $fromExecuteStatement);
-    }
-
-    #[\Override]
-    public function exprNow(?int $precision = null): BaseExpression
-    {
-        // SQLite always use 3 digit fractional seconds (miliseconds), so we simulate precision a bit
-        // old versions used strftime()
-        if (version_compare(Connection::getDriverVersion(), '3.42') < 0) {
-            return $this->expr('substr(concat(strftime([], []), [padding]), 1, 19 + CASE WHEN [precision] > 0 THEN [precision] + 1 ELSE 0 END)', [
-                '%Y-%m-%d %H:%M:%f',
-                'now',
-                'padding' => str_repeat('0', $precision ?? 0),
-                'precision' => $precision ?? 0,
-            ]);
-        }
-
-        // newer versions have datetime()
-        return $this->expr('substr(concat(datetime([], []), [padding]), 1, 19 + CASE WHEN [precision] > 0 THEN [precision] + 1 ELSE 0 END)', [
-            'now',
-            'subsec',
-            'padding' => str_repeat('0', $precision ?? 0),
-            'precision' => $precision ?? 0,
-        ]);
     }
 }
