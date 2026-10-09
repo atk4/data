@@ -75,7 +75,6 @@ trait ExpressionTrait
 
             if (strlen($buffer) <= $lengthBytes) {
                 $res[] = $buffer;
-                $buffer = '';
 
                 break;
             }

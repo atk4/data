@@ -253,7 +253,7 @@ class ReferenceSqlTest extends TestCase
                 ['total_net' => ($n = 30), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 1],
                 ['total_net' => ($n = 100), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 2],
                 ['total_net' => ($n = 25), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 3],
-                ['total_net' => ($n = 25), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 3],
+                ['total_net' => $n, 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 3],
             ],
         ]);
 
@@ -446,7 +446,7 @@ class ReferenceSqlTest extends TestCase
                 ['total_net' => ($n = 30), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 1],
                 ['total_net' => ($n = 100), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 2],
                 ['total_net' => ($n = 25), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 3],
-                ['total_net' => ($n = 25), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 3],
+                ['total_net' => $n, 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 3],
             ],
         ]);
 
@@ -492,15 +492,13 @@ class ReferenceSqlTest extends TestCase
         ]);
         $i->reload();
 
-        self::assertSame($n = 43.0, (float) $i->get('total_net'));
+        self::assertSame($n, (float) $i->get('total_net'));
         self::assertSame($n * $vat, $i->get('total_vat'));
         self::assertSame($n * ($vat + 1) + 1, $i->get('total_gross'));
     }
 
     public function testOtherAggregates(): void
     {
-        $vat = 0.23;
-
         $this->setDb([
             'list' => [
                 1 => ['id' => 1, 'name' => 'Meat'],

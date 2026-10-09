@@ -606,7 +606,7 @@ class FieldTest extends TestCase
         self::assertSame(38.0, $mm->get('total'));
 
         $d = $m->export(); // in export calculated fields are not included
-        self::assertFalse(array_key_exists('total', $d[0]));
+        self::assertArrayNotHasKey('total', $d[0]);
     }
 
     public function testSystem1(): void

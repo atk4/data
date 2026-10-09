@@ -153,7 +153,7 @@ class CsvTest extends TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $mm = $m->loadAny();
+        $m->loadAny();
         $mm = $m->loadAny();
 
         self::assertSame('Sarah', $mm->get('name'));

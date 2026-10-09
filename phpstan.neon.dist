@@ -16,6 +16,13 @@ parameters:
         - '~^Only booleans are allowed in .+, .+ given( on the (left|right) side)?\.$~'
         - '~^Variable (static )?(property access|method call) on .+\.$~'
 
+        # @return $this is not inferred as impure https://github.com/phpstan/phpstan/issues/15320
+        -
+            path: '*'
+            identifier: staticMethod.alreadyNarrowedType
+            message: '~^Call to static method PHPUnit\\Framework\\Assert::assert\w+\(\) .* and .* will always evaluate to true\.$~'
+            count: 23
+
         # assign to generic callable property is broken https://github.com/phpstan/phpstan/issues/8964
         -
             path: '*'
@@ -23,7 +30,14 @@ parameters:
             message: '~^Property Atk4\\Data\\Model\\UserAction::\$(enabled|preview) .*Closure<.+ does not accept .*Closure\(.+\.$~'
             count: 3
 
-        # TODO report to phpstan, errors cannot be ignore inline
+        # https://github.com/phpstan/phpstan/issues/15434
+        -
+            path: 'tests/Reference/WeakAnalysingMapTest.php'
+            identifier: argument.type
+            message: '~^Parameter #3 \$owner of method Atk4\\Data\\Reference\\WeakAnalysingMap<.*>::set\(\) expects .*, .* given\.$~'
+            count: 2
+
+        # TODO report to phpstan, errors cannot be ignored inline
         -
             path: 'src/Persistence/Sql/Postgresql/PlatformTrait.php'
             identifier: classConstant.deprecated

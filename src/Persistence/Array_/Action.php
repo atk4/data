@@ -82,7 +82,6 @@ class Action
      */
     public function aggregate(string $fx, string $field, bool $coalesce = false)
     {
-        $res = 0;
         $column = array_column($this->getRows(), $field);
 
         switch (strtoupper($fx)) {

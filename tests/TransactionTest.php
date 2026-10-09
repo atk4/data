@@ -135,7 +135,6 @@ class TransactionTest extends TestCase
         // test insert
         $m = new Model($this->db, ['table' => 'item']);
         $m->addField('name');
-        $testCase = $this;
         $m->onHookShort(Model::HOOK_BEFORE_SAVE, static function (bool $isUpdate) {
             self::assertFalse($isUpdate);
         });
@@ -161,7 +160,6 @@ class TransactionTest extends TestCase
         // test insert
         $m = new Model($this->db, ['table' => 'item']);
         $m->addField('name');
-        $testCase = $this;
         $m->onHookShort(Model::HOOK_AFTER_SAVE, static function (bool $isUpdate) {
             self::assertFalse($isUpdate);
         });

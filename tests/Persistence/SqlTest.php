@@ -91,7 +91,7 @@ class SqlTest extends TestCase
         $m->addField('surname');
 
         $ids = [];
-        foreach ($dbData['user'] as $id => $row) {
+        foreach ($dbData['user'] as $row) {
             $ids[] = $this->db->insert($m, $row);
         }
 
@@ -125,7 +125,7 @@ class SqlTest extends TestCase
         $m->addField('surname');
 
         $ms = [];
-        foreach ($dbData['user'] as $id => $row) {
+        foreach ($dbData['user'] as $row) {
             $ms[] = $m->insert($row);
         }
 
@@ -195,7 +195,7 @@ class SqlTest extends TestCase
         $m->addField('surname');
 
         $ids = [];
-        foreach ($dbData['user'] as $id => $row) {
+        foreach ($dbData['user'] as $row) {
             $ids[] = $this->db->insert($m, $row);
         }
 

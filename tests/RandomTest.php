@@ -193,9 +193,9 @@ class RandomTest extends TestCase
         ], $m->export());
 
         $m = $m->load(2);
-        self::assertTrue(is_float($m->get('salary')));
-        self::assertTrue(is_float($m->get('tax')));
-        self::assertTrue(is_float($m->get('vat')));
+        self::assertIsFloat($m->get('salary'));
+        self::assertIsFloat($m->get('tax'));
+        self::assertIsFloat($m->get('vat'));
         self::assertInstanceOf(CustomField::class, $m->getField('salary'));
     }
 

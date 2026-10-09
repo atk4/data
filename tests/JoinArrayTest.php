@@ -176,7 +176,7 @@ class JoinArrayTest extends TestCase
         $user->addField('code');
         $this->expectException(Exception::class);
         $this->expectExceptionMessageIs('Reverse join with non-ID master field is not implemented yet');
-        $j = $user->join('contact.code', ['masterField' => 'code']);
+        $j = $user->join('contact.code', ['masterField' => 'code']); // @phpstan-ignore variable.unused
         /* $j->addField('contact_phone');
 
         $user = $user->createEntity();

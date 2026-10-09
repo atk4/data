@@ -207,7 +207,7 @@ class WeakAnalysingMap
 
         foreach ($this->keyByIndexByHash[$hash] ?? [] as $index => $k) {
             if ($this->unboxValue($k->get()) === $key) {
-                $value = $this->unboxValue($this->valueWithOwnerCountByIndex[$index][0]->get());
+                $value = $this->unboxValue($this->valueWithOwnerCountByIndex[$index][0]->get()); // https://github.com/phpstan/phpstan/issues/15431 @phpstan-ignore argument.templateType
 
                 $this->addKeyOwner($owner, $hash, $index);
 
@@ -227,7 +227,7 @@ class WeakAnalysingMap
     {
         $hash = $this->makeHashFromKey($key);
 
-        foreach ($this->keyByIndexByHash[$hash] ?? [] as $index => $k) {
+        foreach ($this->keyByIndexByHash[$hash] ?? [] as $k) {
             if ($this->unboxValue($k->get()) === $key) {
                 throw (new Exception('Analysing key already exists'))
                     ->addMoreInfo('key', $key);

@@ -1009,7 +1009,6 @@ abstract class Query extends Expression
     {
         $arr = [
             // 'mode' => $this->mode,
-            'R' => 'n/a',
             'R_params' => 'n/a',
             // 'template' => $this->template,
             // 'templateArgs' => $this->args,
