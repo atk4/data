@@ -173,9 +173,11 @@ class Sql extends Persistence
     }
 
     /**
-     * Creates new Query object with current time expression.
+     * Creates new Expression object with current datetime.
+     *
+     * @param int<0, 6> $precision
      */
-    public function exprNow(?int $precision = null): Expression
+    public function exprNow(int $precision = 6): Expression
     {
         return $this->getConnection()->dsql()->exprNow($precision);
     }

@@ -257,7 +257,7 @@ class SelectTest extends TestCase
      * @dataProvider provideExprNowCases
      */
     #[DataProvider('provideExprNowCases')]
-    public function testExprNowRender(?int $precision = null): void
+    public function testExprNowRender(int $precision): void
     {
         $expr = $this->q()->exprNow($precision);
 
@@ -266,10 +266,10 @@ class SelectTest extends TestCase
 
         if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
             $base = version_compare(SqliteConnection::getDriverVersion(), '3.42') < 0
-                ? (($precision ?? 0) === 0 ? 'strftime(\'%Y-%m-%d %H:%M:%S\', \'now\')' : 'strftime(\'%Y-%m-%d %H:%M:%f\', \'now\')')
-                : (($precision ?? 0) === 0 ? 'datetime(\'now\')' : 'datetime(\'now\', \'subsec\')');
+                ? ($precision === 0 ? 'strftime(\'%Y-%m-%d %H:%M:%S\', \'now\')' : 'strftime(\'%Y-%m-%d %H:%M:%f\', \'now\')')
+                : ($precision === 0 ? 'datetime(\'now\')' : 'datetime(\'now\', \'subsec\')');
 
-            if (($precision ?? 0) === 0) {
+            if ($precision === 0) {
                 self::assertSameSql('concat(' . $base . ', \'Z\')', $exprRender);
             } elseif ($precision === 1) {
                 self::assertSameSql('concat(substr(' . $base . ', 1, 21), \'Z\')', $exprRender);
@@ -277,9 +277,9 @@ class SelectTest extends TestCase
                 self::assertSameSql('concat(substr(concat(' . $base . ', \'' . str_repeat('0', $precision - 1) . '\'), 1, ' . (20 + $precision) . '), \'Z\')', $exprRender);
             }
         } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            self::assertSameSql('cast(sysdatetime() as datetime2(' . ($precision ?? 0) . '))', $exprRender);
+            self::assertSameSql('cast(sysdatetime() as datetime2(' . $precision . '))', $exprRender);
         } else {
-            self::assertSameSql('current_timestamp(' . ($precision ?? 0) . ')', $exprRender);
+            self::assertSameSql('current_timestamp(' . $precision . ')', $exprRender);
         }
     }
 
@@ -287,7 +287,7 @@ class SelectTest extends TestCase
      * @dataProvider provideExprNowCases
      */
     #[DataProvider('provideExprNowCases')]
-    public function testExprNow(?int $precision = null): void
+    public function testExprNow(int $precision): void
     {
         $this->debug = true; // TODO remove before merge
 
@@ -296,10 +296,10 @@ class SelectTest extends TestCase
             ->getOne();
 
         $expectedRegexBase = '\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}';
-        $regexFractionalSecondsSameDigitCount = $precision > 0
+        $regexFractionalSecondsSameDigitCount = $precision !== 0
             ? '\.\d{' . $precision . '}'
             : '';
-        $regexFractionalSecondsZeroUpToDigitCount = $precision > 0
+        $regexFractionalSecondsZeroUpToDigitCount = $precision !== 0
             ? '(?:|\.\d{1,' . $precision . '}(?<!0))'
             : '';
         $regexFractionalSeconds6Digits = '\.\d{' . $precision . '}0{' . (6 - $precision) . '}';
@@ -320,8 +320,6 @@ class SelectTest extends TestCase
      */
     public static function provideExprNowCases(): iterable
     {
-        yield [null];
-
         foreach (range(0, 6) as $v) {
             yield [$v];
         }

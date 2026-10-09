@@ -160,21 +160,19 @@ class Query extends BaseQuery
     }
 
     #[\Override]
-    public function exprNow(?int $precision = null): BaseExpression
+    public function exprNow(int $precision = 6): BaseExpression
     {
-        $noFractionalSeconds = ($precision ?? 0) === 0;
-
         $expr = version_compare(Connection::getDriverVersion(), '3.42') < 0
             ? $this->expr('strftime([], [])', [
-                new RawExpression($this->escapeStringLiteral('%Y-%m-%d %H:%M:%' . ($noFractionalSeconds ? 'S' : 'f'))),
+                new RawExpression($this->escapeStringLiteral('%Y-%m-%d %H:%M:%' . ($precision === 0 ? 'S' : 'f'))),
                 new RawExpression($this->escapeStringLiteral('now')), // implies UTC
             ])
-            : $this->expr('datetime([]' . ($noFractionalSeconds ? '' : ', []') . ')', [
+            : $this->expr('datetime([]' . ($precision === 0 ? '' : ', []') . ')', [
                 new RawExpression($this->escapeStringLiteral('now')), // implies UTC
-                ...($noFractionalSeconds ? [] : [new RawExpression($this->escapeStringLiteral('subsec'))]),
+                ...($precision === 0 ? [] : [new RawExpression($this->escapeStringLiteral('subsec'))]),
             ]);
 
-        if (!$noFractionalSeconds) {
+        if ($precision !== 0) {
             if ($precision !== 1) {
                 $expr = $this->expr('concat([], [])', [
                     $expr,
