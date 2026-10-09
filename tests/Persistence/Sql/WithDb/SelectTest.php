@@ -320,9 +320,19 @@ class SelectTest extends TestCase
         self::assertLessThan($tenMinutesSeconds, $diffSeconds);
     }
 
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideExprNowCases(): iterable
+    {
+        foreach (range(0, 6) as $v) {
+            yield [$v];
+        }
+    }
+
     public function testExprNowChangeInSingleTransaction(): void
     {
-        $this->getConnection()->atomic(function() {
+        $this->getConnection()->atomic(function () {
             $expr = $this->q()
                 ->field($this->q()->exprNow());
 
@@ -332,16 +342,6 @@ class SelectTest extends TestCase
 
             self::assertNotSame($value1, $value2);
         });
-    }
-
-    /**
-     * @return iterable<list<mixed>>
-     */
-    public static function provideExprNowCases(): iterable
-    {
-        foreach (range(0, 6) as $v) {
-            yield [$v];
-        }
     }
 
     public function testFxConcat(): void
