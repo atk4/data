@@ -276,8 +276,10 @@ class SelectTest extends TestCase
             } else {
                 self::assertSameSql('concat(substr(concat(' . $base . ', \'' . str_repeat('0', $precision - 1) . '\'), 1, ' . (20 + $precision) . '), \'Z\')', $exprRender);
             }
+        } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+            self::assertSameSql('cast(sysdatetime() as datetime2(' . ($precision ?? 0) . '))', $exprRender);
         } else {
-            self::assertSameSql('current_timestamp(' . $precision . ')', $exprRender);
+            self::assertSameSql('current_timestamp(' . ($precision ?? 0) . ')', $exprRender);
         }
     }
 
@@ -297,8 +299,20 @@ class SelectTest extends TestCase
         $regexFractionalSecondsSameDigitCount = $precision > 0
             ? '\.\d{' . $precision . '}'
             : '';
+        $regexFractionalSecondsZeroUpToDigitCount = $precision > 0
+            ? '(?:|\.\d{1,' . $precision . '}(?<!0))'
+            : '';
+        $regexFractionalSeconds6Digits = '\.\d{' . $precision . '}0{' . (6 - $precision) . '}';
 
-        self::assertMatchesRegularExpression('~^' . $expectedRegexBase . $regexFractionalSecondsSameDigitCount . 'Z$~', $value);
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
+            self::assertMatchesRegularExpression('~^' . $expectedRegexBase . $regexFractionalSecondsSameDigitCount . 'Z$~', $value);
+        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            self::assertMatchesRegularExpression('~^' . $expectedRegexBase . $regexFractionalSecondsZeroUpToDigitCount . '\+00$~', $value);
+        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            self::assertMatchesRegularExpression('~^' . $expectedRegexBase . $regexFractionalSeconds6Digits . ' \+00:00$~', $value);
+        } else {
+            self::assertMatchesRegularExpression('~^' . $expectedRegexBase . $regexFractionalSecondsSameDigitCount . '$~', $value); // TODO explicit TZ
+        }
     }
 
     /**
