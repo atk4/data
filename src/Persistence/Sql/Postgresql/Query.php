@@ -116,6 +116,14 @@ class Query extends BaseQuery
     }
 
     #[\Override]
+    public function exprNow(int $precision = 6): BaseExpression
+    {
+        return $this->expr('cast(clock_timestamp() at time zone [] as timestamp(' . $precision . '))', [
+            new RawExpression($this->escapeStringLiteral('UTC')),
+        ]);
+    }
+
+    #[\Override]
     public function groupConcat($field, string $separator = ','): BaseExpression
     {
         return $this->expr('string_agg({}, [])', [$field, $separator]);

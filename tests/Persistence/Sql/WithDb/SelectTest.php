@@ -253,6 +253,97 @@ class SelectTest extends TestCase
         ], $this->q('employee')->field('id')->field('name')->getRows());
     }
 
+    /**
+     * @dataProvider provideExprNowCases
+     */
+    #[DataProvider('provideExprNowCases')]
+    public function testExprNowRender(int $precision): void
+    {
+        $expr = $this->q()->exprNow($precision);
+
+        $exprRender = $expr->render()[0];
+        self::assertSame([], $expr->render()[1]); // for column DEFAULT there must be no bound parameters
+
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
+            $base = version_compare(SqliteConnection::getDriverVersion(), '3.42') < 0
+                ? ($precision === 0 ? 'strftime(\'%Y-%m-%d %H:%M:%S\', \'now\')' : 'strftime(\'%Y-%m-%d %H:%M:%f\', \'now\')')
+                : ($precision === 0 ? 'datetime(\'now\')' : 'datetime(\'now\', \'subsec\')');
+
+            if ($precision === 0) {
+                self::assertSameSql($base, $exprRender);
+            } elseif ($precision === 1) {
+                self::assertSameSql('substr(' . $base . ', 1, 21)', $exprRender);
+            } else {
+                self::assertSameSql('substr(concat(' . $base . ', \'' . str_repeat('0', $precision - 1) . '\'), 1, ' . (20 + $precision) . ')', $exprRender);
+            }
+        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            self::assertSameSql('cast(clock_timestamp() at time zone \'UTC\' as timestamp(' . $precision . '))', $exprRender);
+        } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+            self::assertSameSql('cast(sysutcdatetime() as datetime2(' . $precision . '))', $exprRender);
+        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            self::assertSameSql('cast(systimestamp at time zone \'UTC\' as timestamp(' . $precision . '))', $exprRender);
+        } else {
+            self::assertSameSql('utc_timestamp(' . $precision . ')', $exprRender);
+        }
+    }
+
+    /**
+     * @dataProvider provideExprNowCases
+     */
+    #[DataProvider('provideExprNowCases')]
+    public function testExprNow(int $precision): void
+    {
+        $value = $this->q()
+            ->field($this->q()->exprNow($precision))
+            ->getOne();
+
+        $expectedRegexBase = '\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}';
+        $regexFractionalSecondsSameDigitCount = $precision !== 0
+            ? '\.\d{' . $precision . '}'
+            : '';
+        $regexFractionalSecondsZeroUpToDigitCount = $precision !== 0
+            ? '(?:|\.\d{1,' . $precision . '}(?<!0))'
+            : '';
+        $regexFractionalSeconds6Digits = '\.\d{' . $precision . '}0{' . (6 - $precision) . '}';
+
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            self::assertMatchesRegularExpression('~^' . $expectedRegexBase . $regexFractionalSecondsZeroUpToDigitCount . '$~', $value);
+        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            self::assertMatchesRegularExpression('~^' . $expectedRegexBase . $regexFractionalSeconds6Digits . '$~', $value);
+        } else {
+            self::assertMatchesRegularExpression('~^' . $expectedRegexBase . $regexFractionalSecondsSameDigitCount . '$~', $value);
+        }
+
+        $tenMinutesSeconds = 10 * 60;
+        $diffSeconds = (new \DateTime($value . ' UTC'))->getTimestamp() - microtime(true);
+        self::assertGreaterThan(-$tenMinutesSeconds, $diffSeconds);
+        self::assertLessThan($tenMinutesSeconds, $diffSeconds);
+    }
+
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideExprNowCases(): iterable
+    {
+        foreach (range(0, 6) as $v) {
+            yield [$v];
+        }
+    }
+
+    public function testExprNowChangeInSingleTransaction(): void
+    {
+        $this->getConnection()->atomic(function () {
+            $expr = $this->q()
+                ->field($this->q()->exprNow());
+
+            $value1 = $expr->getOne();
+            usleep(20_000);
+            $value2 = $expr->getOne();
+
+            self::assertNotSame($value1, $value2);
+        });
+    }
+
     public function testFxConcat(): void
     {
         $parts = [];

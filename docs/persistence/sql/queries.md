@@ -793,8 +793,8 @@ Method very similar to {php:meth}`Connection::expr` but will return a
 corresponding Expression class for this query.
 :::
 
-:::{php:method} exprNow($precision)
-Method will return current_timestamp(precision) sub-query.
+:::{php:method} exprNow(int $precision = 6)
+Method will return "utc_timestamp(precision)" Expression.
 :::
 
 :::{php:method} option($option, $mode)

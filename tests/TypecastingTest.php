@@ -684,6 +684,30 @@ class TypecastingTest extends TestCase
         self::assertSame([], $m->getDirtyRef());
     }
 
+    public function testExprNowSave(): void
+    {
+        $this->setDb([
+            'types' => [
+                '_types' => ['dt' => 'datetime'],
+            ],
+        ]);
+
+        $m = new Model($this->db, ['table' => 'types']);
+        $m->addField('dt', ['type' => 'datetime']);
+
+        $entity = $m->createEntity();
+        $entity->save(['dt' => $this->getConnection()->dsql()->exprNow()]);
+        self::assertInstanceOf(\DateTime::class, $entity->get('dt'));
+
+        $tenMinutesSeconds = 10 * 60;
+        $diffSeconds = $entity->get('dt')->getTimestamp() - microtime(true);
+        self::assertGreaterThan(-$tenMinutesSeconds, $diffSeconds);
+        self::assertLessThan($tenMinutesSeconds, $diffSeconds);
+
+        $entity->save(['dt' => $this->getConnection()->dsql()->exprNow()]);
+        self::assertInstanceOf(\DateTime::class, $entity->get('dt'));
+    }
+
     public function testDirtyTime(): void
     {
         $sqlTime = new \DateTime('11:44:08 GMT');

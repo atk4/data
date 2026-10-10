@@ -6,6 +6,7 @@ namespace Atk4\Data\Persistence\Sql\Mssql;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
+use Atk4\Data\Persistence\Sql\Expression as BaseExpression;
 use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 use Atk4\Data\Persistence\Sql\RawExpression;
@@ -205,6 +206,12 @@ class Query extends BaseQuery
         return (!isset($this->args['order']) ? ' order by (select null)' : '')
             . ' offset ' . $shift . ' rows'
             . ' fetch next ' . $cnt . ' rows only';
+    }
+
+    #[\Override]
+    public function exprNow(int $precision = 6): BaseExpression
+    {
+        return $this->expr('cast(sysutcdatetime() as datetime2(' . $precision . '))');
     }
 
     #[\Override]
