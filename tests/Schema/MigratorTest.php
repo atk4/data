@@ -103,6 +103,31 @@ class MigratorTest extends TestCase
         $this->createMigrator()->table('user')->dropIfExists();
     }
 
+    public function testCreateWithNowDefault(): void
+    {$this->debug = true;
+        $migrator = $this->createDemoMigrator('user');
+        $migrator->table->getColumn('dttm')->setDefault($this->db->exprNow());
+        $migrator->create();
+
+        $this->db->dsql()
+            ->mode('insert')
+            ->table('user')
+            ->setMulti([
+                'id' => 1,
+                'bar' => 123,
+            ])->executeStatement();
+
+        $dtRaw = $this->db->dsql()
+            ->field('dttm')
+            ->table('user')
+            ->getOne();
+
+        $tenMinutesSeconds = 10 * 60;
+        $diffSeconds = (new \DateTime($dtRaw . ' UTC'))->getTimestamp() - microtime(true);
+        self::assertGreaterThan(-$tenMinutesSeconds, $diffSeconds);
+        self::assertLessThan($tenMinutesSeconds, $diffSeconds);
+    }
+
     /**
      * @dataProvider provideCharacterTypeFieldCaseSensitivityCases
      */
