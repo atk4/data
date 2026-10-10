@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Persistence\Sql\Sqlite;
 
 use Atk4\Data\Persistence\Sql\Connection;
+use Atk4\Data\Persistence\Sql\Expression as BaseExpression;
 use Atk4\Data\Persistence\Sql\PlatformFixColumnCommentTypeHintTrait;
 use Doctrine\DBAL\Schema\ForeignKeyConstraint;
 use Doctrine\DBAL\Schema\TableDiff;
@@ -64,5 +65,18 @@ trait PlatformTrait
         }
 
         return parent::getAlterTableSQL($diff);
+    }
+
+    #[\Override]
+    public function getDefaultValueDeclarationSQL($column): string
+    {
+        if (($column['default'] ?? null) instanceof BaseExpression) {
+            $exprRender = $column['default']->render();
+            assert($exprRender[1] === []);
+
+            return ' DEFAULT (' . $exprRender[0] . ')';
+        }
+
+        return parent::getDefaultValueDeclarationSQL($column);
     }
 }
