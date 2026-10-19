@@ -22,30 +22,28 @@ class RetryListenerConnectionMiddleware implements Middleware
     public function wrap(Driver $driver): Driver
     {
         return new class($driver) extends AbstractDriverMiddleware {
-            private const RETRY_COUNT = 8;
-            private const RETRY_INTERVAL_BASE_SECONDS = 0.01;
-            private const RETRY_INTERVAL_MAX_SECONDS = 1.0;
+            private const RETRY_MAX_SECONDS = 10.0;
+            private const RETRY_INTERVAL_SECONDS = 0.02;
 
             #[\Override]
             public function connect(
                 #[\SensitiveParameter]
                 array $params
             ): Connection {
-                for ($attempt = 0;; ++$attempt) {
+                $sleepSecondsSum = 0;
+                while (true) {
                     try {
                         return parent::connect($params);
                         // @codeCoverageIgnoreStart
                     } catch (DbalDriverException $e) {
-                        if ($e->getCode() !== 12516 || $attempt >= self::RETRY_COUNT) {
+                        $sleepSeconds = self::RETRY_INTERVAL_SECONDS;
+                        $sleepSecondsSum += $sleepSeconds;
+
+                        if ($e->getCode() !== 12516 || $sleepSecondsSum > self::RETRY_MAX_SECONDS) {
                             throw $e;
                         }
 
-                        $timeout = min(
-                            self::RETRY_INTERVAL_BASE_SECONDS * (2 ** $attempt),
-                            self::RETRY_INTERVAL_MAX_SECONDS
-                        );
-
-                        usleep((int) round($timeout * 1_000_000));
+                        usleep((int) round($sleepSeconds * 1_000_000));
                         // @codeCoverageIgnoreEnd
                     }
                 }
