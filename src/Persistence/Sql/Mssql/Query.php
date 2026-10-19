@@ -280,6 +280,25 @@ class Query extends BaseQuery
         return $query;
     }
 
+    /**
+     * @param array<string, Expressionable> $keyValuePairs
+     */
+    public function fxJsonObject(array $keyValuePairs): BaseExpression
+    {
+        $parts = [];
+        foreach ($keyValuePairs as $key => $value) {
+            $parts[] = new RawExpression($this->escapeStringLiteral($key));
+            $parts[] = $value;
+        }
+
+        return $this->expr('json_object(' . implode(', ', array_fill(0, count($parts), '[]')) . ')', $parts);
+    }
+
+    public function jsonArrayAgg(Expressionable $expr): BaseExpression
+    {
+        return $this->expr('json_array([])', [$expr]);
+    }
+
     #[\Override]
     public function exists()
     {
