@@ -8,6 +8,7 @@ parameters:
         - .
     excludePaths:
         - vendor
+        - src/Persistence/Sql/Sqlite/debug-attach
 
     ignoreErrors:
         - '~^Unsafe usage of new static\(\)\.$~'

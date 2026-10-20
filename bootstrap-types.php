@@ -11,6 +11,9 @@ use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Schema\SQLiteSchemaManager;
 use Doctrine\DBAL\Types as DbalTypes;
 
+require_once __DIR__ . '/src/Persistence/Sql/Sqlite/debug-attach/SqliteSchemaManager.php';
+require_once __DIR__ . '/src/Persistence/Sql/Sqlite/debug-attach/SqlitePlatform.php';
+
 // force SQLitePlatform and SQLiteSchemaManager classes load as in DBAL 3.x they are named with a different case
 // remove once DBAL 3.x support is dropped
 (static function () {
