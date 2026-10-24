@@ -21,7 +21,121 @@ jobs:
         i: [0, 1, 2, 3, 4, 5]
         j: [0, 1, 2]
     services:
-      mssql:
+      mssql1:
+        image: mcr.microsoft.com/mssql/server:${{ matrix.type == 'Phpunit Lowest' && 'latest' || '2017-latest' }}
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: atk4_pass
+        options: --user root --health-cmd="/opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1' || /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1'" --health-interval=60s --health-timeout=30s --health-retries=10
+      mssql2:
+        image: mcr.microsoft.com/mssql/server:${{ matrix.type == 'Phpunit Lowest' && 'latest' || '2017-latest' }}
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: atk4_pass
+        options: --user root --health-cmd="/opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1' || /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1'" --health-interval=60s --health-timeout=30s --health-retries=10
+      mssql3:
+        image: mcr.microsoft.com/mssql/server:${{ matrix.type == 'Phpunit Lowest' && 'latest' || '2017-latest' }}
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: atk4_pass
+        options: --user root --health-cmd="/opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1' || /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1'" --health-interval=60s --health-timeout=30s --health-retries=10
+      mssql4:
+        image: mcr.microsoft.com/mssql/server:${{ matrix.type == 'Phpunit Lowest' && 'latest' || '2017-latest' }}
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: atk4_pass
+        options: --user root --health-cmd="/opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1' || /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1'" --health-interval=60s --health-timeout=30s --health-retries=10
+      mssql5:
+        image: mcr.microsoft.com/mssql/server:${{ matrix.type == 'Phpunit Lowest' && 'latest' || '2017-latest' }}
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: atk4_pass
+        options: --user root --health-cmd="/opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1' || /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1'" --health-interval=60s --health-timeout=30s --health-retries=10
+      mssql6:
+        image: mcr.microsoft.com/mssql/server:${{ matrix.type == 'Phpunit Lowest' && 'latest' || '2017-latest' }}
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: atk4_pass
+        options: --user root --health-cmd="/opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1' || /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1'" --health-interval=60s --health-timeout=30s --health-retries=10
+      mssql7:
+        image: mcr.microsoft.com/mssql/server:${{ matrix.type == 'Phpunit Lowest' && 'latest' || '2017-latest' }}
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: atk4_pass
+        options: --user root --health-cmd="/opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1' || /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1'" --health-interval=60s --health-timeout=30s --health-retries=10
+      mssql8:
+        image: mcr.microsoft.com/mssql/server:${{ matrix.type == 'Phpunit Lowest' && 'latest' || '2017-latest' }}
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: atk4_pass
+        options: --user root --health-cmd="/opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1' || /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1'" --health-interval=60s --health-timeout=30s --health-retries=10
+      mssql9:
+        image: mcr.microsoft.com/mssql/server:${{ matrix.type == 'Phpunit Lowest' && 'latest' || '2017-latest' }}
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: atk4_pass
+        options: --user root --health-cmd="/opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1' || /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1'" --health-interval=60s --health-timeout=30s --health-retries=10
+      mssql10:
+        image: mcr.microsoft.com/mssql/server:${{ matrix.type == 'Phpunit Lowest' && 'latest' || '2017-latest' }}
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: atk4_pass
+        options: --user root --health-cmd="/opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1' || /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1'" --health-interval=60s --health-timeout=30s --health-retries=10
+      mssql11:
+        image: mcr.microsoft.com/mssql/server:${{ matrix.type == 'Phpunit Lowest' && 'latest' || '2017-latest' }}
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: atk4_pass
+        options: --user root --health-cmd="/opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1' || /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1'" --health-interval=60s --health-timeout=30s --health-retries=10
+      mssql12:
+        image: mcr.microsoft.com/mssql/server:${{ matrix.type == 'Phpunit Lowest' && 'latest' || '2017-latest' }}
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: atk4_pass
+        options: --user root --health-cmd="/opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1' || /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1'" --health-interval=60s --health-timeout=30s --health-retries=10
+      mssql13:
+        image: mcr.microsoft.com/mssql/server:${{ matrix.type == 'Phpunit Lowest' && 'latest' || '2017-latest' }}
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: atk4_pass
+        options: --user root --health-cmd="/opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1' || /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1'" --health-interval=60s --health-timeout=30s --health-retries=10
+      mssql14:
+        image: mcr.microsoft.com/mssql/server:${{ matrix.type == 'Phpunit Lowest' && 'latest' || '2017-latest' }}
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: atk4_pass
+        options: --user root --health-cmd="/opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1' || /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1'" --health-interval=60s --health-timeout=30s --health-retries=10
+      mssql15:
+        image: mcr.microsoft.com/mssql/server:${{ matrix.type == 'Phpunit Lowest' && 'latest' || '2017-latest' }}
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: atk4_pass
+        options: --user root --health-cmd="/opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1' || /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1'" --health-interval=60s --health-timeout=30s --health-retries=10
+      mssql16:
+        image: mcr.microsoft.com/mssql/server:${{ matrix.type == 'Phpunit Lowest' && 'latest' || '2017-latest' }}
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: atk4_pass
+        options: --user root --health-cmd="/opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1' || /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1'" --health-interval=60s --health-timeout=30s --health-retries=10
+      mssql17:
+        image: mcr.microsoft.com/mssql/server:${{ matrix.type == 'Phpunit Lowest' && 'latest' || '2017-latest' }}
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: atk4_pass
+        options: --user root --health-cmd="/opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1' || /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1'" --health-interval=60s --health-timeout=30s --health-retries=10
+      mssql18:
+        image: mcr.microsoft.com/mssql/server:${{ matrix.type == 'Phpunit Lowest' && 'latest' || '2017-latest' }}
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: atk4_pass
+        options: --user root --health-cmd="/opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1' || /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1'" --health-interval=60s --health-timeout=30s --health-retries=10
+      mssql19:
+        image: mcr.microsoft.com/mssql/server:${{ matrix.type == 'Phpunit Lowest' && 'latest' || '2017-latest' }}
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: atk4_pass
+        options: --user root --health-cmd="/opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1' || /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -C -U sa -P atk4_pass -b -Q 'SELECT 1'" --health-interval=60s --health-timeout=30s --health-retries=10
+      mssql20:
         image: mcr.microsoft.com/mssql/server:${{ matrix.type == 'Phpunit Lowest' && 'latest' || '2017-latest' }}
         env:
           ACCEPT_EULA: Y
