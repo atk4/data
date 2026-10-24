@@ -22,7 +22,7 @@ jobs:
         j: [0, 1, 2]
     services:
       mssql:
-        image: mcr.microsoft.com/mssql/server:${{ matrix.type == 'Phpunit Lowest' && '2025-CU9-GDR1-ubuntu-22.04' || '2017-latest' }}
+        image: mcr.microsoft.com/mssql/server:${{ matrix.type == 'Phpunit Lowest' && 'latest' || '2017-latest' }}
         env:
           ACCEPT_EULA: Y
           SA_PASSWORD: atk4_pass
