@@ -84,12 +84,12 @@ class Action
     {
         $column = array_column($this->getRows(), $field);
 
-        switch (strtoupper($fx)) {
-            case 'SUM':
+        switch (strtolower($fx)) {
+            case 'sum':
                 $res = array_sum($column);
 
                 break;
-            case 'AVG':
+            case 'avg':
                 if (!$coalesce) { // TODO add tests and verify against SQL
                     $column = array_filter($column, static fn ($v) => $v !== null);
                 }
@@ -97,16 +97,16 @@ class Action
                 $res = array_sum($column) / count($column);
 
                 break;
-            case 'MAX':
+            case 'max':
                 $res = max($column);
 
                 break;
-            case 'MIN':
+            case 'min':
                 $res = min($column);
 
                 break;
             default:
-                throw (new Exception('Array persistence driver action unsupported format'))
+                throw (new Exception('Array persistence unsupported aggregate function'))
                     ->addMoreInfo('action', $fx);
         }
 

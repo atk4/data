@@ -1074,8 +1074,8 @@ class ArrayTest extends TestCase
         $m->addField('name');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessageIs('Array persistence driver action unsupported format');
-        $m->action('fx', ['UNSUPPORTED', 'name']);
+        $this->expectExceptionMessageIs('Array persistence unsupported aggregate function');
+        $m->action('fx', ['my_mode', 'name']);
     }
 
     public function testConditionNoOperatorException(): void
