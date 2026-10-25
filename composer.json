@@ -16,7 +16,7 @@
         "oracle",
         "postgresql"
     ],
-    "version": "6.0.x-dev",
+    "version": "dev-develop",
     "authors": [
         {
             "name": "Romans Malinovskis",
