@@ -237,7 +237,7 @@ class HasMany extends Reference
                 }
 
                 $jsonObj = $query->fxJsonObject($jsonPairs);
-                $jsonAgg = $query->jsonArrayAgg($jsonObj);
+                $jsonAgg = $query->fxJsonArrayAgg($jsonObj);
 
                 return $theirModel->action('field', [$jsonAgg]);
             };

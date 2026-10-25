@@ -255,9 +255,4 @@ class Query extends BaseQuery
 
         return $this->expr('json_build_object(' . implode(', ', array_fill(0, count($parts), '[]')) . ')', $parts);
     }
-
-    public function jsonArrayAgg(Expressionable $expr): BaseExpression
-    {
-        return $this->expr('json_agg([])', [$expr]);
-    }
 }

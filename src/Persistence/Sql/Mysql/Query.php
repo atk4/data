@@ -115,15 +115,6 @@ class Query extends BaseQuery
         return $this->expr('json_object(' . implode(', ', array_fill(0, count($parts), '[]')) . ')', $parts);
     }
 
-    public function jsonArrayAgg(Expressionable $expr): BaseExpression
-    {
-        if (!Connection::isServerMariaDb($this->connection) && version_compare($this->connection->getServerVersion(), '5.7.8') < 0) {
-            throw new \Exception('JSON_ARRAYAGG requires MySQL 5.7.8+');
-        }
-
-        return $this->expr('json_arrayagg([])', [$expr]);
-    }
-
     /**
      * @return ($forJsonValue is true ? array{string, string, string|null} : string)
      */

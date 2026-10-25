@@ -8,7 +8,6 @@ namespace Atk4\Data\Persistence\Sql;
  * Perform query operation on SQL server (such as select, insert, delete, etc).
  *
  * @method Expression fxJsonObject(array<string, Expressionable> $keyValuePairs)
- * @method Expression jsonArrayAgg(Expressionable $expr)
  */
 abstract class Query extends Expression
 {
