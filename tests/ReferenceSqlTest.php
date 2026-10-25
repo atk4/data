@@ -253,7 +253,7 @@ class ReferenceSqlTest extends TestCase
                 ['total_net' => ($n = 30), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 1],
                 ['total_net' => ($n = 100), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 2],
                 ['total_net' => ($n = 25), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 3],
-                ['total_net' => ($n = 25), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 3],
+                ['total_net' => $n, 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 3],
             ],
         ]);
 
@@ -287,6 +287,7 @@ class ReferenceSqlTest extends TestCase
             $fx();
         } finally {
             \Closure::bind(static function () use ($typeRegistry, $name) {
+                unset($typeRegistry->instancesReverseIndex[spl_object_id($typeRegistry->instances[$name])]);
                 unset($typeRegistry->instances[$name]);
             }, null, DbalTypes\TypeRegistry::class)();
         }
@@ -307,12 +308,10 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
-        // @phpstan-ignore method.internal
         $integerWrappedType = new class extends DbalTypes\Type {
             /**
-             * TODO: Remove once DBAL 3.x support is dropped.
+             * @deprecated remove once DBAL 3.x support is dropped
              */
-            #[\Override]
             public function getName(): string
             {
                 return self::class;
@@ -447,7 +446,7 @@ class ReferenceSqlTest extends TestCase
                 ['total_net' => ($n = 30), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 1],
                 ['total_net' => ($n = 100), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 2],
                 ['total_net' => ($n = 25), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 3],
-                ['total_net' => ($n = 25), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 3],
+                ['total_net' => $n, 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 3],
             ],
         ]);
 
@@ -493,15 +492,13 @@ class ReferenceSqlTest extends TestCase
         ]);
         $i->reload();
 
-        self::assertSame($n = 43.0, (float) $i->get('total_net'));
+        self::assertSame($n, (float) $i->get('total_net'));
         self::assertSame($n * $vat, $i->get('total_vat'));
         self::assertSame($n * ($vat + 1) + 1, $i->get('total_gross'));
     }
 
     public function testOtherAggregates(): void
     {
-        $vat = 0.23;
-
         $this->setDb([
             'list' => [
                 1 => ['id' => 1, 'name' => 'Meat'],
@@ -632,7 +629,7 @@ class ReferenceSqlTest extends TestCase
         $userEntity = $user->createEntity();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unable to traverse on null value');
+        $this->expectExceptionMessageIs('Unable to traverse on null value');
         $userEntity->ref('Company');
     }
 
@@ -642,7 +639,7 @@ class ReferenceSqlTest extends TestCase
         $companyEntity = $user->ref('Company')->createEntity();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unable to traverse on null value');
+        $this->expectExceptionMessageIs('Unable to traverse on null value');
         $companyEntity->ref('Orders');
     }
 
@@ -914,7 +911,7 @@ class ReferenceSqlTest extends TestCase
         $o->set('user_id', 3);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Imported field was changed to an unexpected value');
+        $this->expectExceptionMessageIs('Imported field was changed to an unexpected value');
         $o->save();
     }
 

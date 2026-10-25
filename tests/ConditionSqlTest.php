@@ -12,7 +12,7 @@ use Atk4\Data\Persistence\Sql\RawExpression;
 use Atk4\Data\Schema\TestCase;
 use Atk4\Data\Tests\Schema\MigratorTest;
 use Atk4\Data\ValidationException;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
@@ -61,7 +61,7 @@ class ConditionSqlTest extends TestCase
         self::assertSame($scope, $m->createEntity()->getModel()->scope());
 
         $this->expectException(\TypeError::class);
-        $this->expectExceptionMessage('Expected model, but instance is an entity');
+        $this->expectExceptionMessageIs('Expected model, but instance is an entity');
         $m->createEntity()->scope();
     }
 
@@ -85,7 +85,7 @@ class ConditionSqlTest extends TestCase
         }, null, Model::class)();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Model instance is an entity, ID cannot be changed to a different one');
+        $this->expectExceptionMessageIs('Model instance is an entity, ID cannot be changed to a different one');
         $m->reload();
     }
 
@@ -152,7 +152,7 @@ class ConditionSqlTest extends TestCase
         $m->addCondition('name', 'in', [null]);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unable to load due to query error');
+        $this->expectExceptionMessageIs('Unable to load due to query error');
         try {
             $m->loadOne();
         } catch (Exception $e) {
@@ -388,7 +388,7 @@ class ConditionSqlTest extends TestCase
         $m->addField('name');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Operator is not supported for array condition value');
+        $this->expectExceptionMessageIs('Operator is not supported for array condition value');
         $m->addCondition('name', ['John', 'Doe']);
     }
 
@@ -399,7 +399,7 @@ class ConditionSqlTest extends TestCase
         $m->addCondition('name', 'not in', 'John');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unsupported operator for non-array value');
+        $this->expectExceptionMessageIs('Unsupported operator for non-array value');
         $m->export();
     }
 
@@ -454,7 +454,7 @@ class ConditionSqlTest extends TestCase
         $m->addField('date', ['type' => 'date']);
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Must be scalar');
+        $this->expectExceptionMessageIs('Must be scalar');
         $m->tryLoadBy('name', new \DateTime('1982-12-08'));
     }
 
@@ -604,7 +604,7 @@ class ConditionSqlTest extends TestCase
         self::assertSame([5, 6, 7], $findIdsLikeFx('name', '%ro%li%'));
         self::assertSame([5], $findIdsLikeFx('name', '%ro\%li%'));
 
-        $isMariadb102To103 = $this->getDatabasePlatform() instanceof MySQLPlatform && MysqlConnection::isServerMariaDb($this->getConnection()) && (
+        $isMariadb102To103 = $this->getDatabasePlatform() instanceof AbstractMySQLPlatform && MysqlConnection::isServerMariaDb($this->getConnection()) && (
             version_compare($this->getConnection()->getServerVersion(), '10.2.18') <= 0
             || (version_compare($this->getConnection()->getServerVersion(), '10.3') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.3.10') <= 0)
         );
@@ -721,12 +721,12 @@ class ConditionSqlTest extends TestCase
 
         if (($this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) && $isBinary) {
             $this->expectException(Exception::class);
-            $this->expectExceptionMessage('Unsupported binary field operator');
+            $this->expectExceptionMessageIs('Unsupported binary field operator');
         }
 
-        $isMariadb = $this->getDatabasePlatform() instanceof MySQLPlatform
+        $isMariadb = $this->getDatabasePlatform() instanceof AbstractMySQLPlatform
             && MysqlConnection::isServerMariaDb($this->getConnection());
-        $isMysql5x = $this->getDatabasePlatform() instanceof MySQLPlatform && !$isMariadb
+        $isMysql5x = $this->getDatabasePlatform() instanceof AbstractMySQLPlatform && !$isMariadb
             && version_compare($this->getConnection()->getServerVersion(), '6.0') < 0;
 
         $this->markTestIncompleteOnMySQL8xPlatformAsBinaryLikeIsBroken($isBinary);
@@ -809,7 +809,7 @@ class ConditionSqlTest extends TestCase
         self::assertSame([], $findIdsRegexFx('c', '20{4,4}'));
         self::assertSame([2], $findIdsRegexFx('c', '20{2,}$'));
 
-        if (!$this->getDatabasePlatform() instanceof MySQLPlatform || !$isMysql5x) {
+        if (!$this->getDatabasePlatform() instanceof AbstractMySQLPlatform || !$isMysql5x) {
             self::assertSame($this->getDatabasePlatform() instanceof PostgreSQLPlatform && $isBinary ? [13, 14, 15, 16, 17] : [16, 17], $findIdsRegexFx('name', '\d'));
             self::assertSame([2, 3], $findIdsRegexFx('c', '\d0'));
             self::assertSame([1], $findIdsRegexFx('c', '^\d$'));
@@ -827,18 +827,18 @@ class ConditionSqlTest extends TestCase
             }
         }
 
-        if ((!$this->getDatabasePlatform() instanceof MySQLPlatform || $isMariadb) && !$this->getDatabasePlatform() instanceof SQLServerPlatform) {
+        if ((!$this->getDatabasePlatform() instanceof AbstractMySQLPlatform || $isMariadb) && !$this->getDatabasePlatform() instanceof SQLServerPlatform) {
             self::assertSame([2, 5, 6, 7, 8, 9, 10, 11, 12], $findIdsRegexFx('name', '([ae]).+\1'));
         }
 
-        if ((!$this->getDatabasePlatform() instanceof MySQLPlatform || !$isMysql5x) && !$this->getDatabasePlatform() instanceof SQLServerPlatform && !$this->getDatabasePlatform() instanceof OraclePlatform) {
+        if ((!$this->getDatabasePlatform() instanceof AbstractMySQLPlatform || !$isMysql5x) && !$this->getDatabasePlatform() instanceof SQLServerPlatform && !$this->getDatabasePlatform() instanceof OraclePlatform) {
             self::assertSame([11], $findIdsRegexFx('name', 'Sa(?=~).r'));
             self::assertSame([5, 6, 7, 8, 9, 12], $findIdsRegexFx('name', 'Sa(?!~).r'));
             self::assertSame([11], $findIdsRegexFx('name', 'a.(?<=~)ra'));
             self::assertSame([5, 6, 7, 8, 9, 12], $findIdsRegexFx('name', 'a.(?<!~)ra'));
         }
 
-        $hugeList = array_map(static fn ($i) => 'foo' . $i, range(0, $this->getDatabasePlatform() instanceof SQLServerPlatform ? 455 : ($this->getDatabasePlatform() instanceof OraclePlatform ? 19 : 2_000)));
+        $hugeList = array_map(static fn ($i) => 'foo' . $i, range(0, $this->getDatabasePlatform() instanceof SQLServerPlatform ? 455 : ($this->getDatabasePlatform() instanceof OraclePlatform ? 18 : 2_000)));
         self::assertSame([1], $findIdsRegexFx('name', implode('|', $hugeList) . '|John'));
         if (!$this->getDatabasePlatform() instanceof PostgreSQLPlatform) { // very slow on PostgreSQL 14 or lower, on PostgreSQL 15 and 16 the queries are still slow (~10 seconds)
             self::assertSame([1], $findIdsRegexFx('name', str_repeat('(', 99) . implode('|', $hugeList) . '|John' . str_repeat(')', 99)));

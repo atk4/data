@@ -87,6 +87,16 @@ class Query extends BaseQuery
         ]);
     }
 
+    #[\Override]
+    public function fxJsonArrayAgg(Expressionable $value)
+    {
+        if (version_compare($this->connection->getServerVersion(), Connection::isServerMariaDb($this->connection) ? '10.5' : '5.7.22') < 0) {
+            return parent::fxJsonArrayAgg($value);
+        }
+
+        return $this->expr('json_arrayagg([])', [$value]);
+    }
+
     /**
      * @param array<string, Expressionable> $keyValuePairs
      */
@@ -119,14 +129,13 @@ class Query extends BaseQuery
      */
     private function makeReturningClauseType(string $type, bool $forJsonValue = false)
     {
-        $defType = Type::getType($type)->getSQLDeclaration([], $this->connection->getDatabasePlatform());
+        $defType = Type::getType($type)->getSQLDeclaration($this->connection->makeDefaultColumnOptions($type), $this->connection->getDatabasePlatform());
         if ($type === 'json' && Connection::isServerMariaDb($this->connection)) { // TODO remove once DBAL 3.x support is dropped
             $defType = 'JSON';
         }
         $defCollation = preg_match('~char|text~i', $defType)
             // https://github.com/atk4/data/blob/6.0.0/src/Schema/Migrator.php#L128
             // https://github.com/doctrine/dbal/blob/3.10.2/src/Platforms/AbstractMySQLPlatform.php#L597
-            // TODO DBAL 4.0 https://github.com/doctrine/dbal/pull/4644
             ? 'utf8mb4_unicode_ci'
             : null;
 

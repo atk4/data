@@ -419,12 +419,12 @@ abstract class Query extends Expression
      * To specify OR conditions:
      *  $q->where($q->orExpr()->where('a', 1)->where('b', 1));
      *
-     * @param string|Expressionable                      $field    Field or Expression
-     * @param ($value is null ? mixed : string|null)     $operator Condition such as '=', '>' or 'not like'
-     * @param ($operator is string|null ? mixed : never) $value    Value. Will be quoted unless you pass expression
-     * @param 'where'|'having'                           $kind     Do not use directly. Use having()
-     * @param int                                        $numArgs  when $kind is passed, we can't determine number of
-     *                                                             actual arguments, so this argument must be specified
+     * @param string|Expressionable                            $field    Field or Expression
+     * @param ($value is null ? mixed : non-empty-string|null) $operator Condition such as '=', '>' or 'not like'
+     * @param ($operator is string|null ? mixed : never)       $value    Value. Will be quoted unless you pass expression
+     * @param 'where'|'having'                                 $kind     Do not use directly. Use having()
+     * @param int                                              $numArgs  when $kind is passed, we can't determine number of
+     *                                                                   actual arguments, so this argument must be specified
      *
      * @return $this
      */
@@ -473,9 +473,9 @@ abstract class Query extends Expression
     /**
      * Same syntax as where().
      *
-     * @param string|Expressionable                      $field    Field or Expression
-     * @param ($value is null ? mixed : string|null)     $operator Condition such as '=', '>' or 'not like'
-     * @param ($operator is string|null ? mixed : never) $value    Value. Will be quoted unless you pass expression
+     * @param string|Expressionable                            $field    Field or Expression
+     * @param ($value is null ? mixed : non-empty-string|null) $operator Condition such as '=', '>' or 'not like'
+     * @param ($operator is string|null ? mixed : never)       $value    Value. Will be quoted unless you pass expression
      *
      * @return $this
      */
@@ -554,6 +554,7 @@ abstract class Query extends Expression
     }
 
     /**
+     * @param non-empty-string                                                     $operator
      * @param string|($operator is 'in'|'not in' ? non-empty-list<string> : never) $sqlRight
      */
     protected function _renderConditionBinary(string $operator, string $sqlLeft, $sqlRight): string
@@ -580,7 +581,7 @@ abstract class Query extends Expression
     }
 
     /**
-     * @param array{mixed}|array{mixed, string|null, mixed} $row
+     * @param array{mixed}|array{mixed, non-empty-string|null, mixed} $row
      */
     protected function _subrenderCondition(array $row): string
     {
@@ -1011,7 +1012,6 @@ abstract class Query extends Expression
     {
         $arr = [
             // 'mode' => $this->mode,
-            'R' => 'n/a',
             'R_params' => 'n/a',
             // 'template' => $this->template,
             // 'templateArgs' => $this->args,
@@ -1120,14 +1120,13 @@ abstract class Query extends Expression
     }
 
     /**
-     * Returns Expression object for NOW() or CURRENT_TIMESTAMP() method.
+     * Returns expression for current DB datetime in UTC time zone.
+     *
+     * @param int<0, 6> $precision
      */
-    public function exprNow(?int $precision = null): Expression
+    public function exprNow(int $precision = 6): Expression
     {
-        return $this->expr(
-            'current_timestamp(' . ($precision !== null ? '[]' : '') . ')',
-            $precision !== null ? [$precision] : []
-        );
+        return $this->expr('utc_timestamp(' . $precision . ')');
     }
 
     /**
@@ -1230,6 +1229,27 @@ abstract class Query extends Expression
             new RawExpression($this->escapeStringLiteral('[')),
             ...$parts,
             ...[new RawExpression($this->escapeStringLiteral(']'))]
+        );
+    }
+
+    /**
+     * WARNING: MySQL 5.7.21 or lower and any MariaDB silently limit the output length
+     * using `group_concat_max_len` server variable. The default value is only 1 MB.
+     *
+     * @return Expression
+     */
+    public function fxJsonArrayAgg(Expressionable $value)
+    {
+        $jsonExpr = $this->valueToJson($value);
+
+        return $this->fxConcat(
+            new RawExpression($this->escapeStringLiteral('[')),
+            $this->expr('replace([], [], [])', [
+                $this->groupConcat($jsonExpr, '-""-'),
+                new RawExpression($this->escapeStringLiteral('-""-')),
+                new RawExpression($this->escapeStringLiteral(', ')),
+            ]),
+            new RawExpression($this->escapeStringLiteral(']'))
         );
     }
 

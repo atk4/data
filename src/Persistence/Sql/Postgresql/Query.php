@@ -116,6 +116,14 @@ class Query extends BaseQuery
     }
 
     #[\Override]
+    public function exprNow(int $precision = 6): BaseExpression
+    {
+        return $this->expr('cast(clock_timestamp() at time zone [] as timestamp(' . $precision . '))', [
+            new RawExpression($this->escapeStringLiteral('UTC')),
+        ]);
+    }
+
+    #[\Override]
     public function groupConcat($field, string $separator = ','): BaseExpression
     {
         return $this->expr('string_agg({}, [])', [$field, $separator]);
@@ -127,6 +135,12 @@ class Query extends BaseQuery
         return $this->expr('json_build_array(' . implode(', ', array_fill(0, count($values), '[]')) . ')', [
             ...$values,
         ]);
+    }
+
+    #[\Override]
+    public function fxJsonArrayAgg(Expressionable $value)
+    {
+        return $this->expr('json_agg([])', [$value]);
     }
 
     private function replaceNullJsonToNull(BaseExpression $v): BaseExpression
@@ -148,12 +162,12 @@ class Query extends BaseQuery
             ? $this->replaceNullJsonToNull($this->expr('json_query([], [] returning [])', [
                 $json,
                 new RawExpression($this->escapeStringLiteral('strict ' . $path)),
-                new RawExpression(Type::getType($type)->getSQLDeclaration([], $this->connection->getDatabasePlatform())),
+                new RawExpression(Type::getType($type)->getSQLDeclaration($this->connection->makeDefaultColumnOptions($type), $this->connection->getDatabasePlatform())),
             ]))
             : $this->expr('json_value([], [] returning [])', [
                 $json,
                 new RawExpression($this->escapeStringLiteral('strict ' . $path)),
-                new RawExpression(Type::getType($type)->getSQLDeclaration([], $this->connection->getDatabasePlatform())),
+                new RawExpression(Type::getType($type)->getSQLDeclaration($this->connection->makeDefaultColumnOptions($type), $this->connection->getDatabasePlatform())),
             ]);
     }
 
@@ -173,7 +187,7 @@ class Query extends BaseQuery
             }
             $query->field($v, $k);
 
-            $defTemplates[] = '{} ' . Type::getType($column['type'])->getSQLDeclaration([], $this->connection->getDatabasePlatform()) . ' path []';
+            $defTemplates[] = '{} ' . Type::getType($column['type'])->getSQLDeclaration($this->connection->makeDefaultColumnOptions($column['type']), $this->connection->getDatabasePlatform()) . ' path []';
             $defParams[] = 'c' . $i;
             $defParams[] = new RawExpression($this->escapeStringLiteral($asXml ? '@c' . $i : 'strict ' . $column['path']));
 

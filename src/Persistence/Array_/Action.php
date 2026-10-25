@@ -82,7 +82,6 @@ class Action
      */
     public function aggregate(string $fx, string $field, bool $coalesce = false)
     {
-        $res = 0;
         $column = array_column($this->getRows(), $field);
 
         switch (strtoupper($fx)) {
@@ -207,8 +206,9 @@ class Action
     }
 
     /**
-     * @param mixed $v1
-     * @param mixed $v2
+     * @param mixed            $v1
+     * @param non-empty-string $operator
+     * @param mixed            $v2
      */
     protected function evaluateIf($v1, string $operator, $v2): bool
     {
@@ -325,6 +325,9 @@ class Action
         foreach ($fields as [$field, $direction]) {
             $multisortArgs[] = array_column($data, $field);
             $multisortArgs[] = strtolower($direction) === 'desc' ? \SORT_DESC : \SORT_ASC;
+            if (array_last($multisortArgs) === \SORT_ASC) {
+                assert(strtolower($direction) === 'asc');
+            }
         }
 
         array_multisort(...$multisortArgs, ...[&$data]);

@@ -54,7 +54,7 @@ class Query extends BaseQuery
      * https://dba.stackexchange.com/questions/332585/sqlite-comparison-of-the-same-operand-types-behaves-differently
      * https://sqlite.org/forum/info/5f1135146fbc37ab .
      */
-    #[\Override] // @phpstan-ignore method.childParameterType (https://github.com/phpstan/phpstan/issues/10942)
+    #[\Override]
     protected function _renderConditionBinary(string $operator, string $sqlLeft, $sqlRight): string
     {
         if (in_array($operator, ['in', 'not in'], true)) {
@@ -160,6 +160,35 @@ class Query extends BaseQuery
     }
 
     #[\Override]
+    public function exprNow(int $precision = 6): BaseExpression
+    {
+        $expr = version_compare(Connection::getDriverVersion(), '3.42') < 0
+            ? $this->expr('strftime([], [])', [
+                new RawExpression($this->escapeStringLiteral('%Y-%m-%d %H:%M:%' . ($precision === 0 ? 'S' : 'f'))),
+                new RawExpression($this->escapeStringLiteral('now')), // implies UTC
+            ])
+            : $this->expr('datetime([]' . ($precision === 0 ? '' : ', []') . ')', [
+                new RawExpression($this->escapeStringLiteral('now')), // implies UTC
+                ...($precision === 0 ? [] : [new RawExpression($this->escapeStringLiteral('subsec'))]),
+            ]);
+
+        if ($precision !== 0) {
+            if ($precision !== 1) {
+                $expr = $this->expr('concat([], [])', [
+                    $expr,
+                    new RawExpression($this->escapeStringLiteral(str_repeat('0', $precision - 1))),
+                ]);
+            }
+
+            $expr = $this->expr('substr([], 1, ' . (20 + $precision) . ')', [
+                $expr,
+            ]);
+        }
+
+        return $expr;
+    }
+
+    #[\Override]
     public function groupConcat($field, string $separator = ',')
     {
         return $this->expr('group_concat({}, [])', [$field, $separator]);
@@ -190,6 +219,12 @@ class Query extends BaseQuery
     public function jsonArrayAgg(Expressionable $expr): BaseExpression
     {
         return $this->expr('json_group_array([])', [$expr]);
+    }
+
+    #[\Override]
+    public function fxJsonArrayAgg(Expressionable $value)
+    {
+        return $this->expr('json_group_array([])', [$value]);
     }
 
     #[\Override]

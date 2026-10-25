@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests\Schema;
 
 use Atk4\Data\Model;
+use Atk4\Data\Persistence\Sql\ExecuteException;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
@@ -46,6 +48,11 @@ class TestCaseTest extends TestCase
 
             self::assertSame(1, $m->loadAny()->getId());
 
+            try {
+                $this->getConnection()->expr('WRONG_SELECT \'')->executeStatement();
+            } catch (ExecuteException $e) {
+            }
+
             $output = ob_get_contents();
         } finally {
             ob_end_clean();
@@ -69,8 +76,9 @@ class TestCaseTest extends TestCase
                 "START TRANSACTION";
 
 
-                "SAVEPOINT";
-                EOF . "\n\n"
+
+                EOF
+            . ($this->getDatabasePlatform() instanceof SQLServerPlatform ? 'SAVE TRANSACTION' : 'SAVEPOINT') . " DOCTRINE_2;\n\n"
             . ($this->getDatabasePlatform() instanceof SQLServerPlatform
                 ? <<<'EOF'
 
@@ -120,7 +128,7 @@ class TestCaseTest extends TestCase
 
 
                     EOF
-                : ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "\n\"SAVEPOINT\";\n\n" : '')
+                : ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "\nSAVEPOINT DOCTRINE_3;\n\n" : '')
                 . <<<'EOF'
 
                     insert into `t` (
@@ -145,7 +153,7 @@ class TestCaseTest extends TestCase
                     ? "atk4_binary\ru5f8mzx4vsm8g2c9\r287e8d9e78202079"
                     : 'x  y') . "', 1, 1.0,\n    1, NULL, '2020-10-20', '[\"z\"]'")
                 . "\n  );\n\n"
-                . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "\n\"RELEASE SAVEPOINT\";\n\n" : ''))
+                . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "\nRELEASE SAVEPOINT DOCTRINE_3;\n\n" : ''))
             . ($this->getDatabasePlatform() instanceof OraclePlatform ? <<<'EOF'
 
                 select
@@ -175,7 +183,7 @@ class TestCaseTest extends TestCase
                 EOF
             . $makeLimitSqlFx(2)
             . ";\n\n"
-            . ($this->getDatabasePlatform()->supportsReleaseSavepoints() ? "\n\"RELEASE SAVEPOINT\";\n\n" : '')
+            . ($this->getDatabasePlatform()->supportsReleaseSavepoints() ? "\nRELEASE SAVEPOINT DOCTRINE_2;\n\n" : '')
             . <<<'EOF'
 
                 "COMMIT";
@@ -197,7 +205,11 @@ class TestCaseTest extends TestCase
                   `int` > -1
                 EOF
             . $makeLimitSqlFx(1)
-            . ";\n\n",
+            . ";\n\n"
+            . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "\n\"START TRANSACTION\";\n\n" : '')
+            . (($this->getDatabasePlatform() instanceof AbstractMySQLPlatform && $this->getConnection()->getConnection()->getNativeConnection() instanceof \PDO) || $this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform ? '' : "\n-- ### PREPARE ERROR ###")
+            . "\nWRONG_SELECT ';\n\n"
+            . ($this->getDatabasePlatform() instanceof PostgreSQLPlatform ? "\n\"ROLLBACK\";\n\n" : ''),
             $this->getDatabasePlatform() instanceof SQLServerPlatform
                 ? str_replace(
                     ['\'Ewa\', \'x  y\'', '\'2020-10-20\', \'["z"]\''],
@@ -229,7 +241,7 @@ class TestCaseTest extends TestCase
         ]);
 
         $this->expectException(ExpectationFailedException::class);
-        $this->expectExceptionMessage('Failed asserting that two arrays are identical.');
+        $this->expectExceptionMessageIs('Failed asserting that two arrays are identical.');
         self::assertSameExportUnordered([
             $this->createAssertSameExportUnorderedTestRow(1),
         ], [
@@ -248,7 +260,7 @@ class TestCaseTest extends TestCase
         ]);
 
         $this->expectException(ExpectationFailedException::class);
-        $this->expectExceptionMessage('Failed asserting that two arrays are identical.');
+        $this->expectExceptionMessageIs('Failed asserting that two arrays are identical.');
         self::assertSameExportUnordered([
             1 => $this->createAssertSameExportUnorderedTestRow(1),
         ], [

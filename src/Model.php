@@ -137,7 +137,7 @@ class Model implements \IteratorAggregate
     /** @var array<int, array{string|Persistence\Sql\Expressionable, 'asc'|'desc'}> */
     public array $order = [];
 
-    /** @var array<string, array{'model': Model, 'recursive': bool}> */
+    /** @var array<string, array{model: Model, recursive: bool}> */
     public array $cteModels = [];
 
     /**
@@ -1011,7 +1011,7 @@ class Model implements \IteratorAggregate
      * persistence driver.
      *
      * @param AbstractScope|array<int, AbstractScope|Persistence\Sql\Expressionable|array{string|Persistence\Sql\Expressionable, 1?: mixed, 2?: mixed}>|string|Persistence\Sql\Expressionable $field
-     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never)                                                                                   $operator
+     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : non-empty-string) : never)                                                                         $operator
      * @param ($operator is string ? mixed : never)                                                                                                                                           $value
      *
      * @return $this
@@ -1069,6 +1069,8 @@ class Model implements \IteratorAggregate
                 if (is_int($k)) {
                     if (is_array($v)) {
                         // format [field, direction]
+                        assert(array_keys($v) === [0] || array_keys($v) === [0, 1]); // @phpstan-ignore function.alreadyNarrowedType, identical.alwaysTrue, booleanOr.alwaysTrue
+                        assert(!is_array($v[0])); // @phpstan-ignore function.alreadyNarrowedType, function.impossibleType
                         $this->setOrder(...$v);
                     } else {
                         // format "field"
@@ -1084,13 +1086,13 @@ class Model implements \IteratorAggregate
         }
 
         $direction = strtolower($direction);
-        if (!in_array($direction, ['asc', 'desc'], true)) {
+        if (!in_array($direction, ['asc', 'desc'], true)) { // @phpstan-ignore function.alreadyNarrowedType
             throw (new Exception('Invalid order direction, direction can be only "asc" or "desc"'))
                 ->addMoreInfo('field', $field)
                 ->addMoreInfo('direction', $direction);
         }
 
-        $this->order[] = [$field, $direction];
+        array_unshift($this->order, [$field, $direction]);
 
         return $this;
     }
@@ -1351,7 +1353,7 @@ class Model implements \IteratorAggregate
     public function reload()
     {
         $id = $this->getId();
-        $data = $this->getDataRef(); // keep weakly persisted objects referenced
+        $data = $this->getDataRef(); // keep weakly persisted objects referenced @phpstan-ignore variable.unused
         $this->unload();
 
         $res = $this->_load(true, false, $id);
@@ -1464,7 +1466,7 @@ class Model implements \IteratorAggregate
 
     /**
      * @param AbstractScope|array<int, AbstractScope|Persistence\Sql\Expressionable|array{string|Persistence\Sql\Expressionable, 1?: mixed, 2?: mixed}>|string|Persistence\Sql\Expressionable $field
-     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never)                                                                                   $operator
+     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : non-empty-string) : never)                                                                         $operator
      * @param ($operator is string ? mixed : never)                                                                                                                                           $value
      *
      * @return ($fromTryLoad is true ? static|null : static)
@@ -1490,7 +1492,7 @@ class Model implements \IteratorAggregate
      * Load one record by additional condition. Will throw if more than one record exists.
      *
      * @param AbstractScope|array<int, AbstractScope|Persistence\Sql\Expressionable|array{string|Persistence\Sql\Expressionable, 1?: mixed, 2?: mixed}>|string|Persistence\Sql\Expressionable $field
-     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never)                                                                                   $operator
+     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : non-empty-string) : never)                                                                         $operator
      * @param ($operator is string ? mixed : never)                                                                                                                                           $value
      *
      * @return static
@@ -1504,7 +1506,7 @@ class Model implements \IteratorAggregate
      * Try to load one record by additional condition. Will throw if more than one record exists, but not if there is no record.
      *
      * @param AbstractScope|array<int, AbstractScope|Persistence\Sql\Expressionable|array{string|Persistence\Sql\Expressionable, 1?: mixed, 2?: mixed}>|string|Persistence\Sql\Expressionable $field
-     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never)                                                                                   $operator
+     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : non-empty-string) : never)                                                                         $operator
      * @param ($operator is string ? mixed : never)                                                                                                                                           $value
      *
      * @return static|null
@@ -1616,7 +1618,7 @@ class Model implements \IteratorAggregate
                 $this->reload();
             }
 
-            $this->hook(self::HOOK_AFTER_SAVE, [$isUpdate]);
+            $this->hook(self::HOOK_AFTER_SAVE, [$isUpdate, $noChanges]);
 
             if ($this->idField) {
                 $this->validateEntityScope();
@@ -1815,7 +1817,7 @@ class Model implements \IteratorAggregate
      * Create iterator (yield values) by additional condition.
      *
      * @param AbstractScope|array<int, AbstractScope|Persistence\Sql\Expressionable|array{string|Persistence\Sql\Expressionable, 1?: mixed, 2?: mixed}>|string|Persistence\Sql\Expressionable $field
-     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : string) : never)                                                                                   $operator
+     * @param ($field is string|Persistence\Sql\Expressionable ? ($value is null ? mixed : non-empty-string) : never)                                                                         $operator
      * @param ($operator is string ? mixed : never)                                                                                                                                           $value
      *
      * @return \Traversable<static>
@@ -1824,8 +1826,11 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsModel();
 
-        $scopeOrig = null;
-        if ((!is_array($field) || count($field) > 0) || $operator !== null || $value !== null) {
+        if ($field === []) {
+            assert($operator === null); // @phpstan-ignore identical.alwaysFalse, function.impossibleType
+            assert($value === null); // @phpstan-ignore identical.alwaysFalse, function.impossibleType
+            $scopeOrig = null;
+        } else {
             $scopeOrig = $this->scope;
             $fieldsBackup = $this->temporaryMutateScopeFieldsBackup();
             $this->scope = clone $this->scope;
@@ -1839,7 +1844,7 @@ class Model implements \IteratorAggregate
                 if ($scopeOrig !== null) {
                     $this->scope = $scopeOrig;
                     $scopeOrig = null;
-                    $this->temporaryMutateScopeFieldsRestore($fieldsBackup); // @phpstan-ignore variable.undefined (https://github.com/phpstan/phpstan/issues/9685)
+                    $this->temporaryMutateScopeFieldsRestore($fieldsBackup);
                 }
 
                 $entity = $this->createEntity();
@@ -1869,7 +1874,6 @@ class Model implements \IteratorAggregate
         } finally {
             if ($scopeOrig !== null) {
                 $this->scope = $scopeOrig;
-                $scopeOrig = null;
                 $this->temporaryMutateScopeFieldsRestore($fieldsBackup); // @phpstan-ignore variable.undefined (https://github.com/phpstan/phpstan/issues/9685)
             }
         }
@@ -1971,7 +1975,7 @@ class Model implements \IteratorAggregate
     /**
      * Add expression field.
      *
-     * @param array{'expr': mixed} $seed
+     * @param array{expr: mixed, ...<mixed>} $seed
      *
      * @return CallbackField|SqlExpressionField
      */
@@ -1988,7 +1992,7 @@ class Model implements \IteratorAggregate
     /**
      * Add expression field which will calculate its value by using callback.
      *
-     * @param array{'expr': \Closure<T of self>(T): mixed} $seed
+     * @param array{expr: \Closure<T of self>(T): mixed, ...<mixed>} $seed
      *
      * @return CallbackField
      */

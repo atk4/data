@@ -81,7 +81,7 @@ class ValidationTest extends TestCase
         $m->set('name', 'Python');
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Snakes are not allowed on this plane');
+        $this->expectExceptionMessageIs('Snakes are not allowed on this plane');
         $m->save();
     }
 
@@ -92,7 +92,7 @@ class ValidationTest extends TestCase
         $m->set('domain', 'example.com');
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Multiple validation errors');
+        $this->expectExceptionMessageIs('Multiple validation errors');
         $m->save();
     }
 

@@ -12,8 +12,8 @@ use Atk4\Data\Persistence\Sql\RawExpression;
 use Atk4\Data\Persistence\Sql\Sqlite\Expression as SqliteExpression;
 use Atk4\Data\Reference;
 use Doctrine\DBAL\ParameterType;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
@@ -88,10 +88,9 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * @param array<int|string, scalar|null>      $params
-     * @param array<int|string, ParameterType::*> $types
+     * @param array<int|string, array{ParameterType::*, mixed}> $params
      */
-    protected function logQuery(string $sql, array $params, array $types): void
+    protected function logQuery(string $sql, array $params): void
     {
         if (!$this->debug) {
             return;
@@ -102,7 +101,7 @@ abstract class TestCase extends BaseTestCase
         $quotedTokenRegex = $this->getConnection()->expr()::QUOTED_TOKEN_REGEX;
         $sql = preg_replace_callback(
             '~' . $quotedTokenRegex . '\K|(\?)|cast\((\?|:\w+) as (BOOLEAN|INTEGER|BIGINT|DOUBLE PRECISION|BINARY_DOUBLE|citext|bytea|unknown)\)|\((\?|:\w+) \+ 0e0\)~',
-            static function ($matches) use (&$types, &$params, &$i) {
+            static function ($matches) use (&$params, &$i) {
                 if ($matches[0] === '') {
                     return '';
                 }
@@ -117,25 +116,28 @@ abstract class TestCase extends BaseTestCase
                     ? ($matches[4] === '?' ? ++$i : $matches[4])
                     : ($matches[2] === '?' ? ++$i : $matches[2]);
 
-                if ($matches[3] === 'BOOLEAN' && ($types[$k] === ParameterType::BOOLEAN || $types[$k] === ParameterType::INTEGER)
-                    && (is_bool($params[$k]) || $params[$k] === '0' || $params[$k] === '1')
+                $paramType = $params[$k][0];
+                $paramValue = $params[$k][1];
+
+                if ($matches[3] === 'BOOLEAN' && ($paramType === ParameterType::BOOLEAN || $paramType === ParameterType::INTEGER)
+                    && (is_bool($paramValue) || $paramValue === '0' || $paramValue === '1')
                 ) {
-                    $types[$k] = ParameterType::BOOLEAN;
-                    $params[$k] = (bool) $params[$k];
+                    $params[$k][0] = ParameterType::BOOLEAN;
+                    $params[$k][1] = (bool) $paramValue;
 
                     return $matches[4] ?? $matches[2];
-                } elseif (($matches[3] === 'INTEGER' || $matches[3] === 'BIGINT') && $types[$k] === ParameterType::INTEGER && is_int($params[$k])) {
+                } elseif (($matches[3] === 'INTEGER' || $matches[3] === 'BIGINT') && $paramType === ParameterType::INTEGER && is_int($paramValue)) {
                     return $matches[4] ?? $matches[2];
                 } elseif (($matches[3] === 'DOUBLE PRECISION' || $matches[3] === 'BINARY_DOUBLE' || isset($matches[4]))
-                    && $types[$k] === ParameterType::STRING && is_string($params[$k]) && is_numeric($params[$k])
+                    && $paramType === ParameterType::STRING && is_string($paramValue) && is_numeric($paramValue)
                 ) {
-                    // $types[$k] = ParameterType::FLOAT; is not supported yet by DBAL
-                    $params[$k] = (float) $params[$k];
+                    // $params[$k][0] = ParameterType::FLOAT; is not supported yet by DBAL
+                    $params[$k][1] = (float) $paramValue;
 
                     return $matches[4] ?? $matches[2];
-                } elseif (($matches[3] === 'citext' || $matches[3] === 'bytea') && is_string($params[$k])) {
+                } elseif (($matches[3] === 'citext' || $matches[3] === 'bytea') && is_string($paramValue)) {
                     return $matches[2];
-                } elseif ($matches[3] === 'unknown' && $params[$k] === null) {
+                } elseif ($matches[3] === 'unknown' && $paramValue === null) {
                     return $matches[2];
                 }
 
@@ -147,7 +149,7 @@ abstract class TestCase extends BaseTestCase
         $sqlWithParams = (new RawExpression([
             'template' => $sql,
             'connection' => $this->getConnection(),
-        ], $params))->getDebugQuery();
+        ], array_map(static fn ($v) => $v[1], $params)))->getDebugQuery();
 
         if (substr($sqlWithParams, -1) !== ';') {
             $sqlWithParams .= ';';
@@ -224,7 +226,7 @@ abstract class TestCase extends BaseTestCase
         }
 
         if (is_object($a)) {
-            $cmp = gettype($a) <=> gettype($b);
+            $cmp = get_class($a) <=> get_class($b);
             if ($cmp !== 0) {
                 return $cmp;
             }
@@ -420,7 +422,7 @@ abstract class TestCase extends BaseTestCase
 
     protected function markTestIncompleteOnMySQL5xPlatformAsWithClauseIsNotSupported(): void
     {
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform
             && !MysqlConnection::isServerMariaDb($this->getConnection())
             && version_compare($this->getConnection()->getServerVersion(), '6.0') < 0
         ) {
@@ -430,7 +432,7 @@ abstract class TestCase extends BaseTestCase
 
     protected function markTestIncompleteOnMySQL56PlatformAsCreateUniqueStringIndexHasLengthLimit(): void
     {
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform
             && !MysqlConnection::isServerMariaDb($this->getConnection())
             && version_compare($this->getConnection()->getServerVersion(), '5.7') < 0
         ) {
@@ -440,7 +442,7 @@ abstract class TestCase extends BaseTestCase
 
     protected function markTestIncompleteOnMySQL8xPlatformAsBinaryLikeIsBroken(bool $isBinary): void
     {
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform && $isBinary
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform && $isBinary
             && !MysqlConnection::isServerMariaDb($this->getConnection())
             && version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0
         ) {
@@ -458,14 +460,14 @@ abstract class TestCase extends BaseTestCase
      */
     protected function fixExpectedJsonValueUnquoteForMariadb106To115(string $value): string
     {
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform && MysqlConnection::isServerMariaDb($this->getConnection()) && (
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform && MysqlConnection::isServerMariaDb($this->getConnection()) && (
             (version_compare($this->getConnection()->getServerVersion(), '10.6') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.6.19') <= 0)
             || (version_compare($this->getConnection()->getServerVersion(), '10.7') >= 0 && version_compare($this->getConnection()->getServerVersion(), '10.11.9') <= 0)
             || (version_compare($this->getConnection()->getServerVersion(), '11.0') >= 0 && version_compare($this->getConnection()->getServerVersion(), '11.2.5') <= 0)
             || (version_compare($this->getConnection()->getServerVersion(), '11.3') >= 0 && version_compare($this->getConnection()->getServerVersion(), '11.4.3') <= 0)
             || (version_compare($this->getConnection()->getServerVersion(), '11.5') >= 0 && version_compare($this->getConnection()->getServerVersion(), '11.6') < 0)
         )) {
-            $value = str_replace(['/', '"', "\n"], ['\/', '\"', '\n'], $value);
+            $value = str_replace(['"', "\n"], ['\"', '\n'], $value);
         }
 
         return $value;

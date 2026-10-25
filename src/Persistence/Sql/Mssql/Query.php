@@ -159,7 +159,7 @@ class Query extends BaseQuery
     protected function _subrenderCondition(array $row): string
     {
         if (count($row) !== 1) {
-            [$field, $operator, $value] = $row;
+            [$field, $operator] = $row;
             $operatorLc = strtolower($operator ?? '=');
 
             if ($field instanceof Field && in_array($field->type, ['binary', 'blob'], true)
@@ -209,6 +209,12 @@ class Query extends BaseQuery
     }
 
     #[\Override]
+    public function exprNow(int $precision = 6): BaseExpression
+    {
+        return $this->expr('cast(sysutcdatetime() as datetime2(' . $precision . '))');
+    }
+
+    #[\Override]
     public function groupConcat($field, string $separator = ',')
     {
         return $this->expr('string_agg({}, ' . $this->escapeStringLiteral($separator) . ')', [$field]);
@@ -227,6 +233,16 @@ class Query extends BaseQuery
     }
 
     #[\Override]
+    public function fxJsonArrayAgg(Expressionable $value)
+    {
+        if (version_compare($this->connection->getServerVersion(), '17') < 0) {
+            return parent::fxJsonArrayAgg($value);
+        }
+
+        return $this->expr('json_arrayagg([] null on null)', [$value]);
+    }
+
+    #[\Override]
     public function jsonTable(Expressionable $json, array $columns, string $rowsPath = '$[*]')
     {
         assert(str_starts_with($rowsPath, '$'));
@@ -242,7 +258,7 @@ class Query extends BaseQuery
         foreach ($columns as $k => $column) {
             $query->field($query->expr('{}', ['c' . $i]), $k);
 
-            $defTemplates[] = '{} ' . Type::getType($column['type'])->getSQLDeclaration([], $this->connection->getDatabasePlatform()) . ' []'
+            $defTemplates[] = '{} ' . Type::getType($column['type'])->getSQLDeclaration($this->connection->makeDefaultColumnOptions($column['type']), $this->connection->getDatabasePlatform()) . ' []'
                 . ($column['type'] === 'json' ? ' as json' : '');
             $defParams[] = 'c' . $i;
             $defParams[] = new RawExpression($this->escapeStringLiteral($column['path']));

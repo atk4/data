@@ -12,7 +12,7 @@ use Atk4\Data\Reference;
 use Atk4\Data\Schema\Migrator;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 
 class JoinSqlTest extends TestCase
 {
@@ -86,8 +86,8 @@ class JoinSqlTest extends TestCase
         self::assertFalse($m->hasJoin('contact8'));
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Reverse join with non-ID master field is not implemented yet');
-        $j4 = $m->join('contact4.foo_id', ['masterField' => 'test_id', 'reverse' => true]);
+        $this->expectExceptionMessageIs('Reverse join with non-ID master field is not implemented yet');
+        $j4 = $m->join('contact4.foo_id', ['masterField' => 'test_id', 'reverse' => true]); // @phpstan-ignore variable.unused
         // self::assertTrue($j4->reverse);
         // self::assertSame('test_id', $this->getProtected($j4, 'masterField'));
         // self::assertSame('foo_id', $this->getProtected($j4, 'foreignField'));
@@ -426,7 +426,7 @@ class JoinSqlTest extends TestCase
         $user = $user->getModel()->load(1);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unable to delete due to query error');
+        $this->expectExceptionMessageIs('Unable to delete due to query error');
         try {
             $user->delete();
         } catch (Exception $e) {
@@ -447,7 +447,7 @@ class JoinSqlTest extends TestCase
         $user2->set('phone', '+555');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Model is read-only');
+        $this->expectExceptionMessageIs('Model is read-only');
         $user2->save();
     }
 
@@ -736,7 +736,7 @@ class JoinSqlTest extends TestCase
         self::assertSame(['id' => 20, 'name' => 'Mark', 'notes' => '2nd note'], $m->get());
 
         // insert new record
-        $m = $user->createEntity()->save(['name' => 'Emily', 'notes' => '3rd note']);
+        $user->createEntity()->save(['name' => 'Emily', 'notes' => '3rd note']);
         $m = $user->load(21);
         self::assertTrue($m->isLoaded());
         self::assertSame(['id' => 21, 'name' => 'Emily', 'notes' => '3rd note'], $m->get());
@@ -752,7 +752,7 @@ class JoinSqlTest extends TestCase
 
         // insert new record
         $j->allowDangerousForeignTableUpdate = true;
-        $m = $user->createEntity()->save(['name' => 'Olaf', 'notes' => '4th note']);
+        $user->createEntity()->save(['name' => 'Olaf', 'notes' => '4th note']);
         $m = $user->load(22);
         self::assertSame(['id' => 22, 'name' => 'Olaf', 'notes' => '4th note'], $m->get());
 
@@ -768,7 +768,7 @@ class JoinSqlTest extends TestCase
 
         // insert new record
         $j->allowDangerousForeignTableUpdate = true;
-        $m = $user->createEntity()->save(['name' => 'Chris', 'notes' => '5th note']);
+        $user->createEntity()->save(['name' => 'Chris', 'notes' => '5th note']);
         $m = $user->load(23);
         self::assertSame(['id' => 23, 'name' => 'Chris', 'notes' => '5th note'], $m->get());
     }
@@ -779,7 +779,7 @@ class JoinSqlTest extends TestCase
         // TODO improve Migrator so this hack is not needed
         $userForeignIdFieldName = 'uid';
         $contactForeignIdFieldName = 'cid';
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
             $userForeignIdFieldName = 'user_id';
             $contactForeignIdFieldName = 'contact_id';
         }
@@ -865,7 +865,7 @@ class JoinSqlTest extends TestCase
     /**
      * @param array<string, mixed> $joinDefaults
      *
-     * @return array{ Model, Model, Model }
+     * @return array{Model, Model, Model}
      */
     protected function setupJoinWithNonDefaultForeignIdField(array $joinDefaults = []): array
     {

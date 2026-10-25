@@ -13,6 +13,7 @@ use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 use Atk4\Data\Persistence\Sql\RawExpression;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Exception\DatabaseObjectNotFoundException;
+use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Types\Type;
 
 class Query extends BaseQuery
@@ -190,6 +191,14 @@ class Query extends BaseQuery
     }
 
     #[\Override]
+    public function exprNow(int $precision = 6): BaseExpression
+    {
+        return $this->expr('cast(systimestamp at time zone [] as timestamp(' . $precision . '))', [
+            new RawExpression($this->escapeStringLiteral('UTC')),
+        ]);
+    }
+
+    #[\Override]
     public function groupConcat($field, string $separator = ',')
     {
         return $this->expr('listagg({field}, []) within group (order by {field})', ['field' => $field, $separator]);
@@ -206,7 +215,7 @@ class Query extends BaseQuery
                 return 'TO_CLOB([])';
             }
 
-            return 'concat(' . implode(', ', $values) . ')'; // @phpstan-ignore argument.type
+            return 'concat(' . implode(', ', $values) . ')';
         });
 
         return $this->expr($sql, $sqlArgs);
@@ -222,6 +231,12 @@ class Query extends BaseQuery
         return $this->expr('json_array(' . implode(', ', array_fill(0, count($values), '[]')) . ' null on null returning CLOB)', [
             ...$values,
         ]);
+    }
+
+    #[\Override]
+    public function fxJsonArrayAgg(Expressionable $value)
+    {
+        return $this->expr('json_arrayagg([] null on null returning CLOB)', [$value]);
     }
 
     private function makeReturningClauseType(string $type): string
@@ -262,7 +277,7 @@ class Query extends BaseQuery
             ? $this->replaceNullJsonToNull($this->expr('json_query([], [] returning [])', [
                 $json,
                 new RawExpression($this->escapeStringLiteral($path)),
-                new RawExpression(Type::getType($type)->getSQLDeclaration([], $this->connection->getDatabasePlatform())),
+                new RawExpression(Type::getType($type)->getSQLDeclaration($this->connection->makeDefaultColumnOptions($type), $this->connection->getDatabasePlatform())),
             ]))
             : $this->expr('json_value([], [] returning [])', [
                 $json,
@@ -338,7 +353,7 @@ class Query extends BaseQuery
         // TODO submit PR to DBAL to handle this using DB trigger
         if ($this->mode === 'truncate' && $connection instanceof DbalConnection && $this->template === $this->templateTruncate && preg_match('~^truncate table ((?:"[^"]+"\.)?"[^"]+")$~i', $this->render()[0], $matches)) {
             $platform = $connection->getDatabasePlatform();
-            $pkSequenceName = str_replace('"', '', $platform->getIdentitySequenceName($matches[1], '')); // @phpstan-ignore method.deprecated
+            $pkSequenceName = str_replace('"', '', \Closure::bind(static fn () => $platform->getIdentitySequenceName($matches[1], ''), null, OraclePlatform::class)()); // @phpstan-ignore method.notFound
 
             $resetAutoincrementQuery = $this->expr('alter sequence {} restart', [$pkSequenceName]);
 

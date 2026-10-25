@@ -173,9 +173,11 @@ class Sql extends Persistence
     }
 
     /**
-     * Creates new Query object with current time expression.
+     * Creates new Expression object with current DB datetime in UTC time zone.
+     *
+     * @param int<0, 6> $precision
      */
-    public function exprNow(?int $precision = null): Expression
+    public function exprNow(int $precision = 6): Expression
     {
         return $this->getConnection()->dsql()->exprNow($precision);
     }
@@ -278,7 +280,7 @@ class Sql extends Persistence
                 }
             }
         } else {
-            foreach ($model->getFields() as $fieldName => $field) {
+            foreach ($model->getFields() as $field) {
                 if ($field->neverPersist) {
                     continue;
                 }
@@ -302,14 +304,18 @@ class Sql extends Persistence
         }
 
         // set order
-        foreach ($model->order as $order) {
+        foreach (array_reverse($model->order) as $order) {
             $isDesc = strtolower($order[1]) === 'desc';
-
-            if ($order[0] instanceof Expressionable) {
-                $query->order($order[0], $isDesc);
-            } else {
-                $query->order($model->getField($order[0]), $isDesc);
+            if (!$isDesc) {
+                assert(strtolower($order[1]) === 'asc'); // @phpstan-ignore function.alreadyNarrowedType, identical.alwaysTrue
             }
+
+            $query->order(
+                $order[0] instanceof Expressionable
+                    ? $order[0]
+                    : $model->getField($order[0]),
+                $isDesc
+            );
         }
     }
 
@@ -637,7 +643,18 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
-        $this->assertExactlyOneRecordUpdated($model, $idRaw, $c, 'update');
+        $allowZeroAffectedRows = false;
+        foreach ($dataRaw as $vRaw) {
+            if ($vRaw instanceof Expressionable) {
+                $allowZeroAffectedRows = true;
+
+                break;
+            }
+        }
+
+        if ($c !== 0 || !$allowZeroAffectedRows) {
+            $this->assertExactlyOneRecordUpdated($model, $idRaw, $c, 'update');
+        }
 
         $model->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update]);
     }
@@ -745,7 +762,7 @@ class Sql extends Persistence
         // use default name if not set explicitly
         $sequenceName = null;
         if ($this->getConnection()->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            $sequenceName = $this->getConnection()->getDatabasePlatform()->getIdentitySequenceName(
+            $sequenceName = $this->getConnection()->getDatabasePlatform()->getIdentitySequenceName( // @phpstan-ignore method.notFound
                 $model->table,
                 $model->getIdField()->getPersistenceName()
             );

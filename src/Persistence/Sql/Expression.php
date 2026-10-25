@@ -496,7 +496,6 @@ abstract class Expression implements Expressionable, \ArrayAccess
     public function __debugInfo(): array
     {
         $arr = [
-            'R' => 'n/a',
             'R_params' => 'n/a',
             'template' => $this->template,
             'templateArgs' => $this->args,
@@ -626,10 +625,11 @@ abstract class Expression implements Expressionable, \ArrayAccess
                         ->addMoreInfo('type', gettype($val));
                 }
 
-                $bindResult = $statement->bindValue($key, $val, $type);
-                if (!$bindResult) {
+                try {
+                    $statement->bindValue($key, $val, $type);
+                } catch (DbalException $e) {
                     throw (new Exception('Unable to bind parameter'))
-                        ->addMoreInfo('param', $key)
+                        ->addMoreInfo('key', $key)
                         ->addMoreInfo('value', $val)
                         ->addMoreInfo('type', $type);
                 }
@@ -676,7 +676,9 @@ abstract class Expression implements Expressionable, \ArrayAccess
         $precisionBackup = ini_get('precision');
         ini_set('precision', '-1');
         try {
-            $valueStr = (string) $value;
+            $valueStr = is_nan($value)
+                ? 'NAN'
+                : (string) $value;
 
             return is_finite($value) && !str_contains($valueStr, '.')
                 ? $valueStr . '.0'

@@ -156,7 +156,7 @@ class LimitOrderTest extends TestCase
         ], $i->export());
 
         // order by expression not defined as separate expression field in model
-        $i->order = []; // reset
+        $i->order = [];
         $i->setOrder($i->expr('[net] * [vat]'));
         $i->setOnlyFields(['code']);
         self::assertSame([
@@ -166,7 +166,7 @@ class LimitOrderTest extends TestCase
         ], $i->export());
 
         // "desc" as part of expression string
-        $i->order = []; // reset
+        $i->order = [];
         $i->setOrder($i->expr('[net] * [vat] desc'));
         $i->setOnlyFields(['code']);
         self::assertSame([
@@ -176,7 +176,7 @@ class LimitOrderTest extends TestCase
         ], $i->export());
 
         // "desc" as 2nd parameter
-        $i->order = []; // reset
+        $i->order = [];
         $i->setOrder($i->expr('[net] * [vat]'), 'desc');
         $i->setOnlyFields(['code']);
         self::assertSame([
@@ -186,7 +186,7 @@ class LimitOrderTest extends TestCase
         ], $i->export());
 
         // order by mixed array of expressions and field names
-        $i->order = []; // reset
+        $i->order = [];
         $i->setOrder(['vat', $i->expr('[net] * [vat]')]);
         $i->setOnlyFields(['code']);
         self::assertSame([

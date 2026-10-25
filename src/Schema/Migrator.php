@@ -11,13 +11,14 @@ use Atk4\Data\Model;
 use Atk4\Data\Model\Join;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Connection;
+use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Reference;
 use Atk4\Data\Reference\HasMany;
 use Atk4\Data\Reference\HasOne;
 use Doctrine\DBAL\Exception\DatabaseObjectNotFoundException;
 use Doctrine\DBAL\Exception\TableNotFoundException;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
@@ -124,8 +125,11 @@ class Migrator
     public function table(string $tableName): self
     {
         $table = $this->fixAbstractAssetName(new Table('0.0'), $tableName);
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
             $table->addOption('charset', 'utf8mb4');
+            if (!Connection::isDbal3x()) { // https://github.com/doctrine/dbal/pull/4644
+                $table->addOption('collation', 'utf8mb4_unicode_ci');
+            }
         }
 
         $this->table = $table;
@@ -166,7 +170,16 @@ class Migrator
             }
             foreach ($foreignKeysByTableToDrop as $tableName => $foreignKeys) {
                 foreach ($foreignKeys as $foreignKey) {
-                    $schemaManager->dropForeignKey($foreignKey, $this->getDatabasePlatform()->quoteIdentifier($tableName));
+                    if (!Connection::isDbal3x()) {
+                        $foreignKey = $foreignKey->getQuotedName($this->getDatabasePlatform());
+                    }
+
+                    $schemaManager->dropForeignKey(
+                        $foreignKey,
+                        !Connection::isDbal3x() && ($this->getDatabasePlatform() instanceof OraclePlatform || $this->getDatabasePlatform() instanceof PostgreSQLPlatform)
+                            ? $tableName // TODO probably a bug in DBAL
+                            : $this->getDatabasePlatform()->quoteIdentifier($tableName)
+                    );
                 }
             }
         }
@@ -191,13 +204,10 @@ class Migrator
         // but if AI trigger is not present, AI sequence is not dropped
         // https://github.com/doctrine/dbal/issues/4997
         if ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            $schemaManager = $this->createSchemaManager();
             $dropTriggerSql = $this->getDatabasePlatform() // @phpstan-ignore method.internal
                 ->getDropAutoincrementSql($this->table->getQuotedName($this->getDatabasePlatform()))[1];
             try {
-                \Closure::bind(static function () use ($schemaManager, $dropTriggerSql) {
-                    $schemaManager->_execSql($dropTriggerSql); // @phpstan-ignore method.internal
-                }, null, AbstractSchemaManager::class)();
+                $this->getConnection()->getConnection()->executeStatement($dropTriggerSql);
             } catch (DatabaseObjectNotFoundException $e) {
             }
         }
@@ -240,7 +250,11 @@ class Migrator
         $refType = $options['ref_type'] ?? self::REF_TYPE_NONE;
         unset($options['ref_type']);
 
-        $column = $this->table->addColumn($this->getDatabasePlatform()->quoteSingleIdentifier($fieldName), $type);
+        $column = $this->table->addColumn(
+            $this->getDatabasePlatform()->quoteSingleIdentifier($fieldName),
+            $type,
+            $this->getConnection()->makeDefaultColumnOptions($type)
+        );
 
         if (($options['nullable'] ?? true) && $refType !== self::REF_TYPE_PRIMARY) {
             $column->setNotnull(false);
@@ -419,7 +433,7 @@ class Migrator
 
         $platform = $this->getDatabasePlatform();
         if ($platform instanceof SQLitePlatform // TODO related with https://github.com/doctrine/dbal/issues/6129
-            || $platform instanceof MySQLPlatform
+            || $platform instanceof AbstractMySQLPlatform
             || $platform instanceof SQLServerPlatform
         ) {
             return $tableName;
@@ -458,6 +472,18 @@ class Migrator
         }
 
         return $model;
+    }
+
+    /**
+     * @internal
+     */
+    public function canIntrospectJsonType(): bool
+    {
+        return Connection::isDbal3x()
+            || ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform && version_compare($this->getConnection()->getServerVersion(), MysqlConnection::isServerMariaDb($this->getConnection()) ? '10.4' : '5.7.8') >= 0)
+            || $this->getDatabasePlatform() instanceof PostgreSQLPlatform
+            // https://github.com/doctrine/dbal/issues/7263
+        ; // https://github.com/doctrine/dbal/issues/7262
     }
 
     /**

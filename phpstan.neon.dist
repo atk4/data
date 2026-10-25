@@ -16,6 +16,13 @@ parameters:
         - '~^Only booleans are allowed in .+, .+ given( on the (left|right) side)?\.$~'
         - '~^Variable (static )?(property access|method call) on .+\.$~'
 
+        # @return $this is not inferred as impure https://github.com/phpstan/phpstan/issues/15320
+        -
+            path: '*'
+            identifier: staticMethod.alreadyNarrowedType
+            message: '~^Call to static method PHPUnit\\Framework\\Assert::assert\w+\(\) .* and .* will always evaluate to true\.$~'
+            count: 23
+
         # assign to generic callable property is broken https://github.com/phpstan/phpstan/issues/8964
         -
             path: '*'
@@ -23,72 +30,66 @@ parameters:
             message: '~^Property Atk4\\Data\\Model\\UserAction::\$(enabled|preview) .*Closure<.+ does not accept .*Closure\(.+\.$~'
             count: 3
 
-        # https://github.com/phpstan/phpstan/issues/11718
+        # https://github.com/phpstan/phpstan/issues/15434
         -
-            path: 'src/Reference.php'
+            path: 'tests/Reference/WeakAnalysingMapTest.php'
             identifier: argument.type
-            message: '~^Parameter #1 \$key of method Atk4\\Data\\Reference\\WeakAnalysingMap<list<mixed>,Closure,Atk4\\Data\\Model\|Atk4\\Data\\Persistence>::(get|set)\(\) expects list<mixed>, array\{0: Atk4\\Data\\Reference\\WeakAnalysingMap<list<mixed>, Closure, Atk4\\Data\\Model\|Atk4\\Data\\Persistence>, 1: non-falsy-string, 2: class-string<object>\|null, 3\?: object\|null, 4\?: non-empty-array\} given\.$~'
+            message: '~^Parameter #3 \$owner of method Atk4\\Data\\Reference\\WeakAnalysingMap<.*>::set\(\) expects .*, .* given\.$~'
             count: 2
 
-        # AbstractPlatform::getIdentitySequenceName() method is deprecated in DBAL 3.4+,
-        # in DBAL 4.0 OraclePlatform::getIdentitySequenceName() is protected and
-        # PostgreSQLPlatform::getIdentitySequenceName() is removed:
-        # https://github.com/doctrine/dbal/blob/3.5.1/src/Platforms/PostgreSQLPlatform.php#L611
-        # https://github.com/doctrine/dbal/blob/4.0.0-beta1/src/Platforms/PostgreSQLPlatform.php#L297
+        # TODO report to phpstan, errors cannot be ignored inline
+        -
+            path: 'src/Persistence/Sql/Postgresql/PlatformTrait.php'
+            identifier: classConstant.deprecated
+            message: '~^Fetching deprecated class constant CREATE_INDEXES of class Doctrine\\DBAL\\Platforms\\AbstractPlatform\.$~'
+            count: 1
+        -
+            path: 'src/Persistence/Sql/Postgresql/PlatformTrait.php'
+            identifier: arguments.count
+            message: '~^Method Doctrine\\DBAL\\Platforms\\AbstractPlatform::getCreateTableSQL\(\) invoked with 2 parameters, 1 required\.$~'
+            count: 1
+
+        # TODO once DBAL 3.x is dropped
         -
             path: '*'
             identifier: method.deprecated
-            message: '~^Call to deprecated method getIdentitySequenceName\(\) of class Doctrine\\DBAL\\Platforms\\(PostgreSQLPlatform|OraclePlatform)\.$~'
-            count: 3
-
-        # FC for DBAL 4.0, remove once DBAL 3.x support is dropped
+            message: '~^.*\\DBAL\\~'
         -
             path: '*'
-            identifier: class.nameCase
-            message: '~^Class Doctrine\\DBAL\\(Platforms\\SqlitePlatform|Schema\\SqliteSchemaManager) referenced with incorrect case: Doctrine\\DBAL\\(Platforms\\SQLitePlatform|Schema\\SQLiteSchemaManager)\.$~'
-            count: 32
-
-        # remove once https://github.com/phpstan/phpstan/issues/11488 is fixed
+            identifier: property.deprecated
+            message: '~^.*\\DBAL\\~'
         -
-            path: 'src/Persistence/Sql/Mssql/Query.php'
-            identifier: nullCoalesce.variable
-            message: '~^Variable \$operator on left side of \?\? is never defined\.$~'
-            count: 1
+            path: '*'
+            identifier: method.internal
+            message: '~^.*\\DBAL\\~'
         -
-            path: 'src/Persistence/Sql/Mssql/Query.php'
-            identifier: instanceof.alwaysFalse
-            message: '~^Instanceof between \*NEVER\* and Atk4\\Data\\Field will always evaluate to false\.$~'
-            count: 1
+            path: '*'
+            identifier: method.internalClass
+            message: '~^.*\\DBAL\\~'
         -
-            path: 'src/Persistence/Sql/Mssql/Query.php'
-            identifier: booleanAnd.alwaysFalse
-            message: '~^Result of && is always false\.$~'
-            count: 2
+            path: '*'
+            identifier: property.internalClass
+            message: '~^.*\\DBAL\\~'
         -
-            path: 'src/Persistence/Sql/Oracle/Query.php'
-            identifier: nullCoalesce.variable
-            message: '~^Variable \$operator on left side of \?\? is never defined\.$~'
-            count: 1
+            path: '*'
+            identifier: classConstant.internalClass
+            message: '~^.*\\DBAL\\~'
         -
-            path: 'src/Persistence/Sql/Oracle/Query.php'
-            identifier: instanceof.alwaysFalse
-            message: '~^Instanceof between \*NEVER\* and Atk4\\Data\\Field will always evaluate to false\.$~'
-            count: 2
+            path: '*'
+            identifier: parameter.internalClass
+            message: '~^.*\\DBAL\\~'
         -
-            path: 'src/Persistence/Sql/Oracle/Query.php'
-            identifier: booleanAnd.alwaysFalse
-            message: '~^Result of && is always false\.$~'
-            count: 3
+            path: '*'
+            identifier: return.internalClass
+            message: '~^.*\\DBAL\\~'
         -
-            path: 'src/Persistence/Sql/Query.php'
-            identifier: identical.alwaysFalse
-            message: '~^Strict comparison using === between \*NEVER\* and 3 will always evaluate to false\.$~'
-            count: 1
+            path: '*'
+            identifier: new.internalClass
+            message: '~^.*\\DBAL\\~'
         -
-            path: 'src/Persistence/Sql/Query.php'
-            identifier: variable.undefined
-            message: '~^(Undefined variable: \$(operator|value)|Variable \$value might not be defined\.)$~'
-            count: 2
+            path: '*'
+            identifier: generics.internalClassBound
+            message: '~^.*\\DBAL\\~'
 
         # TODO these rules are generated, this ignores should be fixed in the code
         # for src/Schema/TestCase.php

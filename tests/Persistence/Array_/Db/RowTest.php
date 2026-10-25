@@ -20,7 +20,7 @@ class RowTest extends TestCase
         $row->updateValues(['foo' => 1]);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Column name does not exist');
+        $this->expectExceptionMessageIs('Column name does not exist');
         $row->updateValues(['bar' => 1]);
     }
 }

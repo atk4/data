@@ -6,6 +6,7 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
+use Atk4\Data\Persistence\Sql;
 use Atk4\Data\Schema\TestCase;
 
 class ModelCheckedUpdateTest extends TestCase
@@ -43,7 +44,7 @@ class ModelCheckedUpdateTest extends TestCase
         $m->insert(['name' => 'John']);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('not found');
+        $this->expectExceptionMessageIs('Record with specified ID was not found');
         try {
             $m->insert(['name' => 'Benjamin']);
         } finally {
@@ -63,7 +64,7 @@ class ModelCheckedUpdateTest extends TestCase
         $m->insert(['name' => 'John']);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('not found');
+        $this->expectExceptionMessageIs('Record with specified ID was not found');
         try {
             $m->insert(['name' => 'John']);
         } finally {
@@ -83,7 +84,7 @@ class ModelCheckedUpdateTest extends TestCase
         $entity3->save(['name' => 'John']);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('not found');
+        $this->expectExceptionMessageIs('Record with specified ID was not found');
         try {
             $entity3->save(['name' => 'Benjamin']);
         } finally {
@@ -92,6 +93,28 @@ class ModelCheckedUpdateTest extends TestCase
                 ['id' => 3, 'name' => 'John'],
             ], $m->export());
         }
+    }
+
+    public function testUpdateWithNoChangeExpr(): void
+    {
+        $m = $this->setupModelWithNameStartsWithJCondition();
+
+        $entity3 = $m->load(3);
+
+        $counter = 0;
+        $m->onHook(Sql::HOOK_AFTER_UPDATE_QUERY, static function () use (&$counter) {
+            ++$counter;
+        });
+
+        $name = 'Jennifer';
+
+        $entity3->save(['name' => $name]);
+        self::assertSame($name, $entity3->get('name'));
+        self::assertSame(0, $counter);
+
+        $entity3->save(['name' => $this->getConnection()->expr('[]', [$name])]);
+        self::assertSame($name, $entity3->get('name'));
+        self::assertSame(1, $counter);
     }
 
     public function testUpdateWithDependentCondition(): void
@@ -103,7 +126,7 @@ class ModelCheckedUpdateTest extends TestCase
         $entity3->save(['name' => 'John']);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('not found');
+        $this->expectExceptionMessageIs('Record with specified ID was not found');
         try {
             $entity3->save(['name' => 'James']);
         } finally {
@@ -123,7 +146,7 @@ class ModelCheckedUpdateTest extends TestCase
         $m->addCondition('id', '<', 3);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('not found');
+        $this->expectExceptionMessageIs('Record with specified ID was not found');
         try {
             $entity3->save(['name' => 'Jan']);
         } finally {
@@ -154,7 +177,7 @@ class ModelCheckedUpdateTest extends TestCase
         $entity3 = $m->load(3);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Update failed, exactly 1 row was expected to be affected');
+        $this->expectExceptionMessageIs('Update failed, exactly 1 row was expected to be affected');
         try {
             $entity3->save(['name' => 'Jan']);
         } finally {
@@ -173,7 +196,7 @@ class ModelCheckedUpdateTest extends TestCase
         $m->delete(3);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('not found');
+        $this->expectExceptionMessageIs('Record with specified ID was not found');
         try {
             $m->delete(3);
         } finally {
@@ -193,7 +216,7 @@ class ModelCheckedUpdateTest extends TestCase
         self::assertTrue($entity3->isLoaded());
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('not found');
+        $this->expectExceptionMessageIs('Record with specified ID was not found');
         try {
             $entity3->delete();
         } finally {
@@ -212,7 +235,7 @@ class ModelCheckedUpdateTest extends TestCase
         self::assertTrue($entity3->isLoaded());
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('not found');
+        $this->expectExceptionMessageIs('Record with specified ID was not found');
         try {
             $entity3->delete();
         } finally {
@@ -244,7 +267,7 @@ class ModelCheckedUpdateTest extends TestCase
         $entity3 = $m->load(3);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Delete failed, exactly 1 row was expected to be affected');
+        $this->expectExceptionMessageIs('Delete failed, exactly 1 row was expected to be affected');
         try {
             $entity3->delete();
         } finally {

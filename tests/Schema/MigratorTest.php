@@ -7,6 +7,7 @@ namespace Atk4\Data\Tests\Schema;
 use Atk4\Data\Exception;
 use Atk4\Data\Field\PasswordField;
 use Atk4\Data\Model;
+use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Schema\Migrator;
 use Atk4\Data\Schema\TestCase;
@@ -310,7 +311,7 @@ class MigratorTest extends TestCase
         self::assertFalse($this->createMigrator()->isTableExists('t'));
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Table does not exist');
+        $this->expectExceptionMessageIs('Table does not exist');
         $this->createMigrator()->assertTableExists('t');
     }
 
@@ -339,7 +340,9 @@ class MigratorTest extends TestCase
         $migrator = $this->createMigrator($model);
 
         $modelFields = array_keys($model->getFields());
-        $migratorFields = array_keys($migrator->table->getColumns());
+        $migratorFields = Connection::isDbal3x()
+            ? array_keys($migrator->table->getColumns())
+            : array_map(static fn ($v) => $v->getName(), $migrator->table->getColumns());
 
         self::assertSame(['role_name'], array_values(array_diff($modelFields, $migratorFields)));
         self::assertSame([], array_values(array_diff($migratorFields, $modelFields)));
@@ -366,6 +369,25 @@ class MigratorTest extends TestCase
             ];
         }
 
+        if (!Connection::isDbal3x()) {
+            $expectedFields['mn']['type'] = 'float';
+            if (!$this->createMigrator()->canIntrospectJsonType()) {
+                $expectedFields['json']['type'] = 'text';
+            }
+            $expectedFields['lobj']['type'] = 'string';
+
+            if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
+                $expectedFields['id']['type'] = 'integer'; // TODO https://github.com/doctrine/dbal/pull/6411
+            } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+                $expectedFields['baz']['type'] = 'string'; // https://github.com/doctrine/dbal/issues/7264
+                $expectedFields['json']['type'] = 'string';
+            } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
+                $expectedFields['bin1']['type'] = 'string';
+                $expectedFields['bin2']['type'] = 'text';
+                $expectedFields['tm']['type'] = 'string';
+            }
+        }
+
         // TODO fix DBAL column comment type hint
         // see PlatformFixColumnCommentTypeHintTrait trait used for MSSQL and Oracle platforms
         if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
@@ -380,7 +402,7 @@ class MigratorTest extends TestCase
     public function testIntrospectTableToModelTableDoesNotExistException(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Table does not exist');
+        $this->expectExceptionMessageIs('Table does not exist');
         $this->createMigrator()->introspectTableToModel('t');
     }
 
@@ -407,7 +429,7 @@ class MigratorTest extends TestCase
             ->create();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Table must contain exactly one primary key');
+        $this->expectExceptionMessageIs('Table must contain exactly one primary key');
         $this->createMigrator()->introspectTableToModel('t');
     }
 

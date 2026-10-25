@@ -60,7 +60,7 @@ class ModelWithCteTest extends TestCase
         $m2 = new Model();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('CTE model with given name already exist');
+        $this->expectExceptionMessageIs('CTE model with given name already exist');
         $m1->addCteModel('t', $m2);
     }
 
@@ -70,7 +70,7 @@ class ModelWithCteTest extends TestCase
         $m2 = new Model();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('CTE model with given name already exist');
+        $this->expectExceptionMessageIs('CTE model with given name already exist');
         $m1->addCteModel('t', $m2);
     }
 
@@ -81,7 +81,7 @@ class ModelWithCteTest extends TestCase
         $m1->addCteModel('t', $m2);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('CTE model with given name already exist');
+        $this->expectExceptionMessageIs('CTE model with given name already exist');
         $m1->addCteModel('t', $m2);
     }
 }

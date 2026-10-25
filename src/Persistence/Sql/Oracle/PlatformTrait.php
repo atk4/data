@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Oracle;
 
+use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\PlatformFixColumnCommentTypeHintTrait;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Schema\AbstractAsset;
@@ -23,42 +24,53 @@ trait PlatformTrait
         'time',
     ];
 
-    #[\Override]
-    public function getVarcharTypeDeclarationSQL(array $column)
+    public function getStringTypeDeclarationSQL(array $column): string
     {
         $column['length'] = ($column['length'] ?? 255) * 4;
 
-        return parent::getVarcharTypeDeclarationSQL($column);
+        return Connection::isDbal3x()
+            ? parent::getVarcharTypeDeclarationSQL($column) // @phpstan-ignore staticMethod.notFound
+            : parent::getStringTypeDeclarationSQL($column);
+    }
+
+    /**
+     * @param array<string, mixed> $column
+     *
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
+    public function getVarcharTypeDeclarationSQL(array $column): string // @phpstan-ignore method.childParameterType
+    {
+        return $this->getStringTypeDeclarationSQL($column);
     }
 
     // Oracle database requires explicit conversion when using binary column,
     // workaround by using a standard non-binary column with custom encoding/typecast
 
     #[\Override]
-    public function getBinaryTypeDeclarationSQL(array $column)
+    public function getBinaryTypeDeclarationSQL(array $column): string
     {
         $lengthEncodedAscii = ($column['length'] ?? 255) * 2 + strlen("atk4_binary\ru5f8mzx4vsm8g2c9\r" . hash('crc32b', ''));
         $column['length'] = intdiv($lengthEncodedAscii + 3, 4);
 
-        return $this->getVarcharTypeDeclarationSQL($column); // @phpstan-ignore method.deprecated
+        return $this->getStringTypeDeclarationSQL($column);
     }
 
     #[\Override]
-    public function getBlobTypeDeclarationSQL(array $column)
+    public function getBlobTypeDeclarationSQL(array $column): string
     {
         return $this->getClobTypeDeclarationSQL($column);
     }
 
     // TODO create DBAL PR
     #[\Override]
-    public function getFloatDeclarationSQL(array $column)
+    public function getFloatDeclarationSQL(array $column): string
     {
         return 'BINARY_DOUBLE';
     }
 
     // TODO create DBAL PR
     #[\Override]
-    public function getTimeTypeDeclarationSQL(array $column)
+    public function getTimeTypeDeclarationSQL(array $column): string
     {
         $column['length'] = 26;
 
@@ -69,15 +81,20 @@ trait PlatformTrait
     // Sqlite or MySQL does, unify the behavior
 
     #[\Override]
-    public function getCreateSequenceSQL(Sequence $sequence)
+    public function getCreateSequenceSQL(Sequence $sequence): string
     {
         $sequence->setCache(1);
 
         return parent::getCreateSequenceSQL($sequence);
     }
 
+    /**
+     * @param string $name
+     * @param string $table
+     * @param int    $start
+     */
     #[\Override]
-    public function getCreateAutoincrementSql($name, $table, $start = 1)
+    public function getCreateAutoincrementSql($name, $table, $start = 1): array
     {
         $sqls = parent::getCreateAutoincrementSql($name, $table, $start); // @phpstan-ignore method.internal
 
@@ -89,7 +106,7 @@ trait PlatformTrait
         $tableIdentifier = \Closure::bind(fn () => $this->normalizeIdentifier($table), $this, OraclePlatform::class)();
         $nameIdentifier = \Closure::bind(fn () => $this->normalizeIdentifier($name), $this, OraclePlatform::class)();
         $aiTriggerName = \Closure::bind(fn () => $this->getAutoincrementIdentifierName($tableIdentifier), $this, OraclePlatform::class)();
-        $aiSequenceName = $this->getIdentitySequenceName($tableIdentifier->getQuotedName($this), $nameIdentifier->getQuotedName($this)); // @phpstan-ignore method.internal
+        $aiSequenceName = $this->getIdentitySequenceName($tableIdentifier->getQuotedName($this), $nameIdentifier->getQuotedName($this)); // @phpstan-ignore method.internal, arguments.count
         assert(str_starts_with($sqls[array_key_last($sqls)], 'CREATE TRIGGER ' . $aiTriggerName . "\n"));
 
         $pkSeq = \Closure::bind(fn () => $this->normalizeIdentifier($aiSequenceName), $this, OraclePlatform::class)()->getName();
@@ -125,8 +142,11 @@ trait PlatformTrait
         return $sqls;
     }
 
+    /**
+     * @param string|Table $table
+     */
     #[\Override]
-    public function getCreateIndexSQL(Index $index, $table)
+    public function getCreateIndexSQL(Index $index, $table): string
     {
         // workaround https://github.com/doctrine/dbal/issues/5508
         // no side effect on multiple null values or DBAL index list observed

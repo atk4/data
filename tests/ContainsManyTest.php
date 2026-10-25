@@ -235,7 +235,7 @@ class ContainsManyTest extends TestCase
         $exportLines = $i->getModel()->setOrder($i->fieldName()->id)
             ->export(null, null, false)[0][$i->fieldName()->lines];
         $formatDtForCompareFx = static function (\DateTimeInterface $dt): string {
-            $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC')); // @phpstan-ignore method.notFound
+            $dt = (clone $dt)->setTimezone(new \DateTimeZone('UTC'));
 
             return $dt->format('Y-m-d H:i:s.u');
         };
@@ -461,7 +461,7 @@ class ContainsManyTest extends TestCase
         ];
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Field is required to be not dirty');
+        $this->expectExceptionMessageIs('Field is required to be not dirty');
         $theirEntity->save($newData);
     }
 
@@ -473,7 +473,7 @@ class ContainsManyTest extends TestCase
         $i->getField($i->fieldName()->lines)->normalize([]);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Contained model data cannot be modified directly');
+        $this->expectExceptionMessageIs('Contained model data cannot be modified directly');
         $i->set($i->fieldName()->lines, [0]);
     }
 }

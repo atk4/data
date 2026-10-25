@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Persistence\Sql;
 
 use Atk4\Core\DiContainerTrait;
+use Atk4\Data\Type\Types;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\ConnectionException as DbalConnectionException;
@@ -62,6 +63,11 @@ abstract class Connection
     public function getConnection(): DbalConnection
     {
         return $this->_connection;
+    }
+
+    final public static function isDbal3x(): bool
+    {
+        return (new \ReflectionClass(AbstractPlatform::class))->hasMethod('getName');
     }
 
     /**
@@ -125,6 +131,10 @@ abstract class Connection
                     [$dsn['host'], $port] = explode(':', $dsn['host'], 2);
                     $dsn['port'] = $port;
                 }
+                if (isset($dsn['port'])) {
+                    assert(ctype_digit($dsn['port']));
+                    $dsn['port'] = (int) $dsn['port'];
+                }
             }
         }
 
@@ -187,7 +197,7 @@ abstract class Connection
     public static function connect($dsn, $user = null, $password = null, $defaults = []): self
     {
         if ($dsn instanceof DbalConnection) {
-            $driverName = self::getDriverNameFromDbalDriverConnection($dsn->getWrappedConnection()); // @phpstan-ignore method.deprecated (https://github.com/doctrine/dbal/issues/5199)
+            $driverName = self::getDriverNameFromDbalDriverConnection($dsn);
             $connectionClass = self::resolveConnectionClass($driverName);
             $dbalConnection = $dsn;
         } elseif ($dsn instanceof DbalDriverConnection) {
@@ -201,7 +211,9 @@ abstract class Connection
             $dbalConnection = $connectionClass::connectFromDbalDriverConnection($dbalDriverConnection);
         }
 
-        $dbalConnection->setNestTransactionsWithSavepoints(true); // remove once DBAL 3.x support is dropped
+        if (self::isDbal3x()) {
+            $dbalConnection->setNestTransactionsWithSavepoints(true);
+        }
 
         $connection = new $connectionClass($defaults);
         $connection->_connection = $dbalConnection;
@@ -210,9 +222,11 @@ abstract class Connection
     }
 
     /**
+     * @param DbalConnection|DbalDriverConnection $connection
+     *
      * @return 'pdo_sqlite'|'pdo_mysql'|'pdo_pgsql'|'pdo_sqlsrv'|'pdo_oci'|'mysqli'|'oci8'
      */
-    private static function getDriverNameFromDbalDriverConnection(DbalDriverConnection $connection): string
+    private static function getDriverNameFromDbalDriverConnection($connection): string
     {
         $driver = $connection->getNativeConnection();
 
@@ -239,6 +253,7 @@ abstract class Connection
                 }
             },
         ]);
+        $configuration->setSchemaManagerFactory(new DbalSchemaManagerFactory());
 
         return $configuration;
     }
@@ -260,7 +275,9 @@ abstract class Connection
             (static::class)::createDbalConfiguration()
         );
 
-        return $dbalConnection->getWrappedConnection(); // @phpstan-ignore method.deprecated (https://github.com/doctrine/dbal/issues/5199)
+        return self::isDbal3x()
+            ? $dbalConnection->getWrappedConnection() // @phpstan-ignore method.notFound
+            : \Closure::bind(static fn () => $dbalConnection->connect(), null, DbalConnection::class)();
     }
 
     protected static function connectFromDbalDriverConnection(DbalDriverConnection $dbalDriverConnection): DbalConnection
@@ -420,7 +437,7 @@ abstract class Connection
      */
     public function lastInsertId(?string $sequence = null): string
     {
-        $res = $this->getConnection()->lastInsertId($sequence);
+        $res = $this->getConnection()->lastInsertId($sequence); // @phpstan-ignore arguments.count
 
         return is_int($res) ? (string) $res : $res;
     }
@@ -431,7 +448,9 @@ abstract class Connection
     public function getServerVersion(bool $raw = false): string
     {
         if (($this->serverVersionRaw ?? null) === null) {
-            $this->serverVersionRaw = $this->getConnection()->getWrappedConnection()->getServerVersion(); // @phpstan-ignore method.deprecated, method.notFound
+            $this->serverVersionRaw = self::isDbal3x()
+                ? $this->getConnection()->getWrappedConnection()->getServerVersion() // @phpstan-ignore method.notFound
+                : $this->getConnection()->getServerVersion();
         }
 
         $matched = preg_match('~(\d+)\.(\d+)(?:\.(\d+))?~', $this->serverVersionRaw, $matches) === 1;
@@ -463,5 +482,19 @@ abstract class Connection
     public function createSchemaManager(): AbstractSchemaManager
     {
         return $this->getConnection()->createSchemaManager();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function makeDefaultColumnOptions(string $type): array
+    {
+        $options = [];
+
+        if (in_array($type, ['string', 'binary', Types::LOCAL_OBJECT], true)) {
+            $options['length'] = 255;
+        }
+
+        return $options;
     }
 }

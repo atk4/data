@@ -31,7 +31,7 @@ class TransactionTest extends TestCase
     public function testCommitUnopenedTransactionException(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Commit failed');
+        $this->expectExceptionMessageIs('Commit failed');
         $this->getConnection()->commit();
     }
 
@@ -41,14 +41,14 @@ class TransactionTest extends TestCase
         $this->getConnection()->commit();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Commit failed');
+        $this->expectExceptionMessageIs('Commit failed');
         $this->getConnection()->commit();
     }
 
     public function testRollbackUnopenedTransactionException(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Rollback failed');
+        $this->expectExceptionMessageIs('Rollback failed');
         $this->getConnection()->rollBack();
     }
 
@@ -58,7 +58,7 @@ class TransactionTest extends TestCase
         $this->getConnection()->rollBack();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Rollback failed');
+        $this->expectExceptionMessageIs('Rollback failed');
         $this->getConnection()->rollBack();
     }
 

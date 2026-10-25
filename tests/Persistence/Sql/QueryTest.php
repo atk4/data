@@ -18,7 +18,9 @@ use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Persistence\Sql\Sqlite\Connection as SqliteConnection;
 use Atk4\Data\Persistence\Sql\Sqlite\Query as SqliteQuery;
 use Doctrine\DBAL\Connection as DbalConnection;
+use Doctrine\DBAL\Driver\Connection as DbalDriverConnection;
 use Doctrine\DBAL\Driver\Middleware\AbstractConnectionMiddleware;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
@@ -232,7 +234,7 @@ class QueryTest extends TestCase
     public function testFieldDuplicateAliasException(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Alias must be unique');
+        $this->expectExceptionMessageIs('Alias must be unique');
         $this->q()->field('name', 'a')->field('surname', 'a');
     }
 
@@ -248,14 +250,14 @@ class QueryTest extends TestCase
     public function testTableNoAliasQueryException(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Table alias is required when table is set as subquery');
+        $this->expectExceptionMessageIs('Table alias is required when table is set as subquery');
         $this->q()->table($this->q()->table('test'));
     }
 
     public function testTableAliasNotUniqueException(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Alias must be unique');
+        $this->expectExceptionMessageIs('Alias must be unique');
         $this->q()
             ->table('foo', 'a')
             ->table('bar', 'a');
@@ -264,7 +266,7 @@ class QueryTest extends TestCase
     public function testTableAliasNotUniqueException2(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Alias must be unique');
+        $this->expectExceptionMessageIs('Alias must be unique');
         $this->q()
             ->table('foo', 'bar')
             ->table('bar');
@@ -273,7 +275,7 @@ class QueryTest extends TestCase
     public function testTableAliasNotUniqueException3(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Alias must be unique');
+        $this->expectExceptionMessageIs('Alias must be unique');
         $this->q()
             ->table('foo')
             ->table('foo');
@@ -282,7 +284,7 @@ class QueryTest extends TestCase
     public function testTableAliasNotUniqueException4(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Alias must be unique');
+        $this->expectExceptionMessageIs('Alias must be unique');
         $this->q()
             ->table($this->q()->table('test'), 'foo')
             ->table('foo');
@@ -291,7 +293,7 @@ class QueryTest extends TestCase
     public function testTableAliasNotUniqueException5(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Alias must be unique');
+        $this->expectExceptionMessageIs('Alias must be unique');
         $this->q()
             ->table('foo')
             ->table($this->q()->table('test'), 'foo');
@@ -300,7 +302,7 @@ class QueryTest extends TestCase
     public function testTableAliasIntStringException(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Alias must be not int-string');
+        $this->expectExceptionMessageIs('Alias must be not int-string');
         $this->q()->table('foo', '10');
     }
 
@@ -728,7 +730,7 @@ class QueryTest extends TestCase
         $q = $this->q('[where]')->where('a', [1, 2]);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unsupported operator for array value');
+        $this->expectExceptionMessageIs('Unsupported operator for array value');
         $q->render();
     }
 
@@ -738,12 +740,12 @@ class QueryTest extends TestCase
      * @dataProvider provideWhereUnsupportedOperatorCases
      */
     #[DataProvider('provideWhereUnsupportedOperatorCases')]
-    public function testWhereUnsupportedOperator(string $operator, $value): void
+    public function testWhereUnsupportedOperator(string $operator, $value, ?string $expectedExceptionMessageReason = null): void
     {
         $q = $this->q('[where]')->where('x', $operator, $value);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unsupported operator');
+        $this->expectExceptionMessageIs('Unsupported operator' . ($expectedExceptionMessageReason !== null ? ' ' . $expectedExceptionMessageReason : ''));
         $q->render();
     }
 
@@ -765,16 +767,16 @@ class QueryTest extends TestCase
         yield ['not', [1, 2]];
 
         // unsupported operators with specific value type
-        yield ['>', null];
-        yield ['=', [1, 2]];
-        yield ['!=', [1, 2]];
-        yield ['=', []];
-        yield ['!=', []];
-        yield ['in', '1'];
-        yield ['in', '1,2'];
-        yield ['in', '1, 2'];
-        yield ['not in', '1;2'];
-        yield ['in', null];
+        yield ['>', null, 'for null value'];
+        yield ['=', [1, 2], 'for array value'];
+        yield ['!=', [1, 2], 'for array value'];
+        yield ['=', [], 'for array value'];
+        yield ['!=', [], 'for array value'];
+        yield ['in', '1', 'for non-array value'];
+        yield ['in', '1,2', 'for non-array value'];
+        yield ['in', '1, 2', 'for non-array value'];
+        yield ['not in', '1;2', 'for non-array value'];
+        yield ['in', null, 'for null value'];
     }
 
     /**
@@ -785,13 +787,15 @@ class QueryTest extends TestCase
         $dbalConnection = new class($serverVersion) extends DbalConnection {
             private string $serverVersion;
 
-            public function __construct(string $serverVersion) // @phpstan-ignore method.childParameterType, parameter.missing, parameter.missing, parameter.missing, constructor.missingParentCall
+            public function __construct(string $serverVersion) // @phpstan-ignore method.childParameterType, parameter.missing, parameter.missing, constructor.missingParentCall
             {
                 $this->serverVersion = $serverVersion;
             }
 
-            #[\Override]
-            public function getWrappedConnection()
+            /**
+             * @deprecated remove once DBAL 3.x support is dropped
+             */
+            public function getWrappedConnection(): DbalDriverConnection
             {
                 return new class($this->serverVersion) extends AbstractConnectionMiddleware {
                     private string $serverVersion;
@@ -802,15 +806,20 @@ class QueryTest extends TestCase
                     }
 
                     #[\Override]
-                    public function getServerVersion()
+                    public function getServerVersion(): string
                     {
                         return $this->serverVersion;
                     }
                 };
             }
 
+            public function getServerVersion(): string // @phpstan-ignore method.missingOverride
+            {
+                return $this->serverVersion;
+            }
+
             #[\Override]
-            public function getDatabasePlatform()
+            public function getDatabasePlatform(): AbstractPlatform
             {
                 return new MySQLPlatform();
             }
@@ -870,7 +879,7 @@ class QueryTest extends TestCase
         $q = $this->q('[where]')->where('x', 'in', ['a', null, 'b']);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Null value in IN operator is not supported');
+        $this->expectExceptionMessageIs('Null value in IN operator is not supported');
         $q->render();
     }
 
@@ -1153,7 +1162,7 @@ class QueryTest extends TestCase
     public function testOrderException(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('If first argument is array, second argument must not be used');
+        $this->expectExceptionMessageIs('If first argument is array, second argument must not be used');
         $this->q('[order]')->order(['name', 'surname'], 'desc'); // @phpstan-ignore argument.type
     }
 
@@ -1642,7 +1651,7 @@ class QueryTest extends TestCase
     public function testExprNow(): void
     {
         self::assertSame(
-            'update "employee" set "hired"=current_timestamp()',
+            'update "employee" set "hired"=utc_timestamp(6)',
             $this->q()
                 ->table('employee')->set('hired', $this->q()->exprNow())
                 ->mode('update')
@@ -1650,7 +1659,15 @@ class QueryTest extends TestCase
         );
 
         self::assertSame(
-            'update "employee" set "hired"=current_timestamp(:a)',
+            'update "employee" set "hired"=utc_timestamp(0)',
+            $this->q()
+                ->table('employee')->set('hired', $this->q()->exprNow(0))
+                ->mode('update')
+                ->render()[0]
+        );
+
+        self::assertSame(
+            'update "employee" set "hired"=utc_timestamp(2)',
             $this->q()
                 ->table('employee')->set('hired', $this->q()->exprNow(2))
                 ->mode('update')

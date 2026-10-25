@@ -17,8 +17,10 @@ use Doctrine\DBAL\Types\Type;
  */
 trait PlatformFixColumnCommentTypeHintTrait
 {
-    #[\Override]
-    protected function getColumnComment(Column $column)
+    /**
+     * @deprecated remove once DBAL 3.x support is dropped
+     */
+    protected function getColumnComment(Column $column): ?string
     {
         $tmpType = new class extends Type { // @phpstan-ignore method.internal
             private Type $type;
@@ -37,30 +39,34 @@ trait PlatformFixColumnCommentTypeHintTrait
                 return $this->type->getSQLDeclaration($column, $platform);
             }
 
-            #[\Override]
+            /**
+             * @deprecated remove once DBAL 3.x support is dropped
+             */
             public function getName(): string
             {
-                return $this->type->getName();
+                return $this->type->getName(); // @phpstan-ignore method.notFound
             }
 
-            #[\Override]
+            /**
+             * @deprecated remove once DBAL 3.x support is dropped
+             */
             public function requiresSQLCommentHint(AbstractPlatform $platform): bool
             {
                 if ($this->requireCommentHint) {
                     return true;
                 }
 
-                return $this->type->requiresSQLCommentHint($platform);
+                return $this->type->requiresSQLCommentHint($platform); // @phpstan-ignore method.notFound
             }
         };
         $tmpType->setData(
             $column->getType(),
-            in_array($column->getType()->getName(), $this->requireCommentHintTypes, true)
+            in_array($column->getType()->getName(), $this->requireCommentHintTypes, true) // @phpstan-ignore method.notFound
         );
 
         $columnWithTmpType = clone $column;
         $columnWithTmpType->setType($tmpType);
 
-        return parent::getColumnComment($columnWithTmpType);
+        return parent::getColumnComment($columnWithTmpType); // @phpstan-ignore staticMethod.notFound
     }
 }

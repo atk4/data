@@ -6,12 +6,15 @@ namespace Atk4\Data\Tests\Schema;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
+use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Driver\AbstractException as AbstractDriverException;
 use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Schema\ForeignKeyConstraint;
 use Doctrine\DBAL\Schema\Index;
@@ -67,7 +70,7 @@ class MigratorFkTest extends TestCase
         $client = new Model($this->db, ['table' => 'client']);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Table does not exist');
+        $this->expectExceptionMessageIs('Table does not exist');
         $this->createMigrator()->isIndexExists([$client->getField('id')]);
     }
 
@@ -133,7 +136,7 @@ class MigratorFkTest extends TestCase
         ], $client->export());
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unable to execute insert query');
+        $this->expectExceptionMessageIs('Unable to execute insert query');
         try {
             $client->insert(['name' => 'Michael']);
         } catch (Exception $e) {
@@ -204,7 +207,7 @@ class MigratorFkTest extends TestCase
         $client->insert(['name' => 'Ewa', 'created_by_client_id' => $clientId]);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unable to execute insert query');
+        $this->expectExceptionMessageIs('Unable to execute insert query');
         try {
             $invoice->insert(['client_id' => 50]);
         } catch (Exception $e) {
@@ -230,10 +233,14 @@ class MigratorFkTest extends TestCase
         $client->insert(['name' => 'Leos', 'country_id' => 10]);
 
         // https://jira.mariadb.org/browse/MDEV-34892
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform && MysqlConnection::isServerMariaDb($this->getConnection()) && in_array($this->getConnection()->getServerVersion(), ['10.11.9', '11.1.6', '11.2.5', '11.4.3', '11.5.2'], true)) {
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform && MysqlConnection::isServerMariaDb($this->getConnection()) && in_array($this->getConnection()->getServerVersion(), ['10.11.9', '11.1.6', '11.2.5', '11.4.3', '11.5.2'], true)) {
             self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
         } else {
-            $this->expectException(DbalException::class);
+            // TODO DbalException should be thrown in all cases from Sqlite\SchemaManagerTrait
+            $this->expectException(!Connection::isDbal3x() && $this->getDatabasePlatform() instanceof SQLitePlatform ? AbstractDriverException::class : DbalException::class);
+            if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
+                $this->expectExceptionMessageIs('Foreign key constraints are violated');
+            }
         }
         $this->createMigrator()->createForeignKey($client->getReference('country_id'));
     }
@@ -283,7 +290,7 @@ class MigratorFkTest extends TestCase
         }
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unable to execute insert query');
+        $this->expectExceptionMessageIs('Unable to execute insert query');
         try {
             $price->insert(['amount' => 5, 'currency' => 'JPY']);
         } catch (Exception $e) {

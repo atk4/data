@@ -84,7 +84,7 @@ class ReferenceTest extends TestCase
         $user = $user->createEntity();
 
         $this->expectException(\TypeError::class);
-        $this->expectExceptionMessage('Expected model, but instance is an entity');
+        $this->expectExceptionMessageIs('Expected model, but instance is an entity');
         $user->refLink('order');
     }
 
@@ -97,19 +97,18 @@ class ReferenceTest extends TestCase
         $user->hasMany('Orders', ['model' => $order]);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Reference with such name already exists');
+        $this->expectExceptionMessageIs('Reference with such name already exists');
         $user->hasMany('Orders', ['model' => $order]);
     }
 
     public function testHasOneDuplicateNameException(): void
     {
-        $order = new Model(null, ['table' => 'order']);
         $user = new Model($this->db, ['table' => 'user']);
 
         $user->hasOne('user_id', ['model' => $user]);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Reference with such name already exists');
+        $this->expectExceptionMessageIs('Reference with such name already exists');
         $user->hasOne('user_id', ['model' => $user]);
     }
 
@@ -142,7 +141,7 @@ class ReferenceTest extends TestCase
         $order->hasOne('placed_by', ['model' => $user, 'ourField' => 'placed_by_user_id']);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Reference type mismatch');
+        $this->expectExceptionMessageIs('Reference type mismatch');
         $order->ref('placed_by');
     }
 
@@ -155,7 +154,7 @@ class ReferenceTest extends TestCase
         $user->hasMany('orders', ['model' => $order, 'theirField' => 'placed_by_user_id']);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Reference type mismatch');
+        $this->expectExceptionMessageIs('Reference type mismatch');
         $user->ref('orders');
     }
 
@@ -207,7 +206,7 @@ class ReferenceTest extends TestCase
         $m = new Model($this->db, ['table' => 'user']);
 
         $this->expectException(CoreException::class);
-        $this->expectExceptionMessage('Seed must be an array or an object');
+        $this->expectExceptionMessageIs('Seed must be an array or an object');
         $m->hasOne('foo', []);
     }
 
@@ -216,7 +215,7 @@ class ReferenceTest extends TestCase
         $m = new Model($this->db, ['table' => 'user']);
 
         $this->expectException(CoreException::class);
-        $this->expectExceptionMessage('Seed must be an array or an object');
+        $this->expectExceptionMessageIs('Seed must be an array or an object');
         $m->hasOne('foo', ['model' => Model::class]);
     }
 
@@ -446,11 +445,11 @@ class ReferenceTest extends TestCase
         });
         self::assertSame([], $modelClass::$logs);
 
-        $m = new $modelClass($this->db);
+        new $modelClass($this->db);
         self::assertSame(['main', 's', 's_2', 's_use', 'bound'], $modelClass::$logs);
         $modelClass::$logs = [];
 
-        $m2 = new $modelClass(clone $this->db);
+        new $modelClass(clone $this->db);
         self::assertSame(['main', 's', 's_2', 's_use', 'bound'], $modelClass::$logs);
         $modelClass::$logs = [];
 
@@ -463,7 +462,7 @@ class ReferenceTest extends TestCase
             unset($m);
             gc_collect_cycles();
             self::assertNull($weakM->get());
-            $m = new $modelClass($this->db);
+            new $modelClass($this->db);
             self::assertSame(['main', 's_use', 'bound'], $modelClass::$logs);
             $modelClass::$logs = [];
         }
@@ -495,7 +494,7 @@ class ReferenceTest extends TestCase
         self::assertSame('from init', $e);
 
         $this->expectException(CoreException::class);
-        $this->expectExceptionMessage('Object was not initialized');
+        $this->expectExceptionMessageIs('Object was not initialized');
         $m->hasOne('foo', ['model' => $createModelFx]);
     }
 

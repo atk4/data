@@ -10,7 +10,7 @@ use Atk4\Data\Model\Scope;
 use Atk4\Data\Model\Scope\Condition;
 use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
@@ -133,7 +133,7 @@ class ScopeTest extends TestCase
         $m->addField('name');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Field is not defined');
+        $this->expectExceptionMessageIs('Field is not defined');
         $m->addCondition('last_name', 'Smith');
     }
 
@@ -193,7 +193,7 @@ class ScopeTest extends TestCase
         $condition = new Condition('country_id', 2);
         self::assertSame('Country ID is equal to 2 (\'Latvia\')', $condition->toWords($user));
 
-        if ($this->getDatabasePlatform() instanceof SQLitePlatform || $this->getDatabasePlatform() instanceof MySQLPlatform) {
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform || $this->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
             $condition = new Condition('name', $user->expr('[surname]'));
             self::assertSame('Name is equal to expression \'`user`.`surname`\'', $condition->toWords($user));
         }
@@ -220,7 +220,7 @@ class ScopeTest extends TestCase
         $condition = new Condition('name', 'abc');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Condition must be associated with model to convert to words');
+        $this->expectExceptionMessageIs('Condition must be associated with model to convert to words');
         $condition->toWords();
     }
 
@@ -229,7 +229,7 @@ class ScopeTest extends TestCase
         $country = new SCountry($this->db);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Operator is not supported');
+        $this->expectExceptionMessageIs('Operator is not supported');
         $country->addCondition('name', '==', 'abc');
     }
 
@@ -238,7 +238,7 @@ class ScopeTest extends TestCase
         $country = new SCountry($this->db);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Operator is not supported for array condition value');
+        $this->expectExceptionMessageIs('Operator is not supported for array condition value');
         $country->addCondition('name', '>', ['a', 'b']);
     }
 
@@ -247,14 +247,14 @@ class ScopeTest extends TestCase
         $country = new SCountry($this->db);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Multi-dimensional array as condition value is not supported');
+        $this->expectExceptionMessageIs('Multi-dimensional array as condition value is not supported');
         $country->addCondition('name', ['a', 'b' => ['c']]);
     }
 
     public function testConditionNestedException(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Only Scope can contain another conditions');
+        $this->expectExceptionMessageIs('Only Scope can contain another conditions');
         new Condition(new Condition('foo', 1)); // @phpstan-ignore argument.type
     }
 
@@ -263,7 +263,7 @@ class ScopeTest extends TestCase
         $condition = new Condition('foo', 1);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Condition does not support clear operation');
+        $this->expectExceptionMessageIs('Condition does not support clear operation');
         $condition->clear();
     }
 
@@ -272,7 +272,7 @@ class ScopeTest extends TestCase
         $condition = new Condition($this->getConnection()->expr('1 = 1'));
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Negation of condition is not supported for this operator');
+        $this->expectExceptionMessageIs('Negation of condition is not supported for this operator');
         $condition->negate();
     }
 
@@ -281,7 +281,7 @@ class ScopeTest extends TestCase
         $country = new SCountry($this->db);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Model root scope cannot be negated');
+        $this->expectExceptionMessageIs('Model root scope cannot be negated');
         $country->scope()->negate();
     }
 
@@ -433,7 +433,7 @@ class ScopeTest extends TestCase
         $scope = Scope::createAnd();
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Scope can only be added as element to scope');
+        $this->expectExceptionMessageIs('Scope can only be added as element to scope');
         $scope->setOwner(new Model()); // @phpstan-ignore argument.type
     }
 
@@ -491,7 +491,7 @@ class ScopeTest extends TestCase
     public function testUnsupportedJunctionException(): void
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unsupported compound condition junction');
+        $this->expectExceptionMessageIs('Unsupported compound condition junction');
         new Scope([], '&&');
     }
 
@@ -554,6 +554,11 @@ class ScopeTest extends TestCase
         $model->addField('name', ['type' => 'datetime']);
 
         $this->createMigrator($model)->create();
+
+        if ($this->getDatabasePlatform() instanceof OraclePlatform && version_compare($this->getConnection()->getServerVersion(), '23.26.2') >= 0) {
+            self::markTestIncomplete('Oracle 23.26.2 breaks consequent ScopeTest::testJsonArray test');
+        }
+
         $model->import([
             ['name' => null],
             ['name' => new \DateTime()],
@@ -604,7 +609,7 @@ class ScopeTest extends TestCase
         $modelIn = clone $model;
         $modelIn->addCondition('name', 'IN', [$value]);
 
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform
+        if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform
             && !MysqlConnection::isServerMariaDb($this->getConnection())
             && version_compare($this->getConnection()->getServerVersion(), '5.7') >= 0
         ) {

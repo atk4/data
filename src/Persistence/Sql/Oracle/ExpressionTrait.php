@@ -75,7 +75,6 @@ trait ExpressionTrait
 
             if (strlen($buffer) <= $lengthBytes) {
                 $res[] = $buffer;
-                $buffer = '';
 
                 break;
             }
@@ -139,7 +138,7 @@ trait ExpressionTrait
                             }
 
                             $name = ':' . $newParamBase;
-                            ++$newParamBase;
+                            $newParamBase = str_increment($newParamBase);
                             $newParams[$name] = $exprParams[$matches[0]];
 
                             return $name;
@@ -148,7 +147,7 @@ trait ExpressionTrait
                     );
                 } else {
                     $sql = ':' . $newParamBase;
-                    ++$newParamBase;
+                    $newParamBase = str_increment($newParamBase);
 
                     $newParams[$sql] = $value;
 
