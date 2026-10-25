@@ -486,7 +486,7 @@ Method can be executed several times on the same Query object.
 
 ### Concatenate group of values
 
-:::{php:method} groupConcat($field, $separator = ',')
+:::{php:method} fxGroupConcat($field, $separator = ',')
 Quite often when you use `group by` in your queries you also would like to
 concatenate group of values.
 
@@ -501,7 +501,7 @@ In MySQL it's group_concat(), in Oracle it's listagg, but in PgSQL it's string_a
 That's why we have this method which will take care of this.
 
 ```
-$q->groupConcat('phone', ';');
+$q->fxGroupConcat('phone', ';');
 
 // group_concat('phone', ';')
 ```

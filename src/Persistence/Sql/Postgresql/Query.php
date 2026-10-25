@@ -124,7 +124,7 @@ class Query extends BaseQuery
     }
 
     #[\Override]
-    public function groupConcat($field, string $separator = ',')
+    public function fxGroupConcat($field, string $separator = ',')
     {
         return $this->expr('string_agg({}, [])', [$field, $separator]);
     }

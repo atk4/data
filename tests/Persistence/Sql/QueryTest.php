@@ -1208,11 +1208,12 @@ class QueryTest extends TestCase
         );
     }
 
-    public function testGroupConcatException(): void
+    public function testFxGroupConcatException(): void
     {
-        // doesn't support groupConcat by default
+        // doesn't support fxGroupConcat by default
         $this->expectException(Exception::class);
-        $this->q()->groupConcat('foo');
+        $this->expectExceptionMessageIs('Query::fxGroupConcat() is SQL-dependent, so use a correct class');
+        $this->q()->fxGroupConcat('foo');
     }
 
     public function testJoin(): void

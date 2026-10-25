@@ -1242,13 +1242,13 @@ class SelectTest extends TestCase
         yield [['2 + 2.5'], '=', ['[]', ['4.5']], true];
     }
 
-    public function testGroupConcat(): void
+    public function testFxGroupConcatRender(): void
     {
         $q = $this->q()
             ->table('people')
             ->group('age')
             ->field('age')
-            ->field($this->q()->groupConcat('name', ','));
+            ->field($this->q()->fxGroupConcat('name', ','));
 
         if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
             self::assertSame([

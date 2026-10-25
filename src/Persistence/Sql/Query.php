@@ -1147,19 +1147,6 @@ abstract class Query extends Expression
     }
 
     /**
-     * Returns a query for a function, which can be used as part of the GROUP
-     * query which would concatenate all matching fields.
-     *
-     * @param string|Expressionable $field
-     *
-     * @return Expression
-     */
-    public function groupConcat($field, string $separator = ',')
-    {
-        throw new Exception('groupConcat() is SQL-dependent, so use a correct class');
-    }
-
-    /**
      * @param string|Expressionable ...$values
      *
      * @return Expression
@@ -1170,6 +1157,18 @@ abstract class Query extends Expression
             'concat(' . implode(', ', array_fill(0, count($values), '[]')) . ')',
             $values
         );
+    }
+
+    /**
+     * Returns an expression which can be used as part of the GROUP BY query which would concatenate all matching fields.
+     *
+     * @param string|Expressionable $field
+     *
+     * @return Expression
+     */
+    public function fxGroupConcat($field, string $separator = ',')
+    {
+        throw new Exception('Query::fxGroupConcat() is SQL-dependent, so use a correct class');
     }
 
     private function valueToJson(Expressionable $value): Expressionable
@@ -1242,7 +1241,7 @@ abstract class Query extends Expression
         return $this->fxConcat(
             new RawExpression($this->escapeStringLiteral('[')),
             $this->expr('replace([], [], [])', [
-                $this->groupConcat($jsonExpr, '-""-'),
+                $this->fxGroupConcat($jsonExpr, '-""-'),
                 new RawExpression($this->escapeStringLiteral('-""-')),
                 new RawExpression($this->escapeStringLiteral(', ')),
             ]),
