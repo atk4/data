@@ -199,12 +199,6 @@ class Query extends BaseQuery
     }
 
     #[\Override]
-    public function groupConcat($field, string $separator = ',')
-    {
-        return $this->expr('listagg({field}, []) within group (order by {field})', ['field' => $field, $separator]);
-    }
-
-    #[\Override]
     public function fxConcat(...$values)
     {
         $sqlArgs = [];
@@ -219,6 +213,12 @@ class Query extends BaseQuery
         });
 
         return $this->expr($sql, $sqlArgs);
+    }
+
+    #[\Override]
+    public function fxGroupConcat($field, string $separator = ',')
+    {
+        return $this->expr('listagg({field}, []) within group (order by {field})', ['field' => $field, $separator]);
     }
 
     #[\Override]

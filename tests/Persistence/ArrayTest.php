@@ -794,17 +794,35 @@ class ArrayTest extends TestCase
             ['number' => 'ABC3', 'items' => 17, 'active' => 0],
             ['number' => 'ABC2', 'items' => 18, 'active' => 1],
             ['items' => 19, 'active' => 1],
+            ['items' => -1, 'active' => 1],
             ['items' => 0, 'active' => 1],
             ['items' => null, 'active' => 1],
         ]]);
         $m = new Model($p, ['table' => 'invoices']);
         $m->addField('items', ['type' => 'integer']);
 
-        self::assertSame(13.5, $m->action('fx', ['avg', 'items'])->getOne());
-        self::assertSame(12.272727272727273, $m->action('fx0', ['avg', 'items'])->getOne());
-        self::assertSame(0, $m->action('fx', ['min', 'items'])->getOne());
-        self::assertSame(19, $m->action('fx', ['max', 'items'])->getOne());
-        self::assertSame(135, $m->action('fx', ['sum', 'items'])->getOne());
+        self::assertNull($m->action('fx', ['count', 'items'])->getOne());
+        self::assertSame(11, $m->action('fx0', ['count', 'items'])->getOne());
+        self::assertNull($m->action('fx', ['sum', 'items'])->getOne());
+        self::assertSame(134, $m->action('fx0', ['sum', 'items'])->getOne());
+        self::assertNull($m->action('fx', ['avg', 'items'])->getOne());
+        self::assertSame(12.181818181818182, $m->action('fx0', ['avg', 'items'])->getOne());
+        self::assertNull($m->action('fx', ['min', 'items'])->getOne());
+        self::assertSame(-1, $m->action('fx0', ['min', 'items'])->getOne());
+        self::assertNull($m->action('fx', ['max', 'items'])->getOne());
+        self::assertSame(19, $m->action('fx0', ['max', 'items'])->getOne());
+
+        $m->addCondition('items', null);
+        self::assertNull($m->action('fx', ['count', 'items'])->getOne());
+        self::assertSame(0, $m->action('fx0', ['count', 'items'])->getOne());
+        self::assertNull($m->action('fx', ['sum', 'items'])->getOne());
+        self::assertSame(0, $m->action('fx0', ['sum', 'items'])->getOne());
+        self::assertNull($m->action('fx', ['avg', 'items'])->getOne());
+        self::assertSame(0, $m->action('fx0', ['avg', 'items'])->getOne());
+        self::assertNull($m->action('fx', ['min', 'items'])->getOne());
+        self::assertSame(0, $m->action('fx0', ['min', 'items'])->getOne());
+        self::assertNull($m->action('fx', ['max', 'items'])->getOne());
+        self::assertSame(0, $m->action('fx0', ['max', 'items'])->getOne());
     }
 
     public function testExists(): void
@@ -1074,8 +1092,8 @@ class ArrayTest extends TestCase
         $m->addField('name');
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessageIs('Array persistence driver action unsupported format');
-        $m->action('fx', ['UNSUPPORTED', 'name']);
+        $this->expectExceptionMessageIs('Array persistence unsupported aggregate function');
+        $m->action('fx', ['my_mode', 'name']);
     }
 
     public function testConditionNoOperatorException(): void
