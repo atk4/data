@@ -76,33 +76,42 @@ class Action
     }
 
     /**
+     * @param scalar|null $value
+     */
+    private function setScalarResult($value): void
+    {
+        $this->generator = new \ArrayIterator([['v' => $value]]);
+        $this->columns = ['v'];
+    }
+
+    /**
      * Calculates SUM|AVG|MIN|MAX aggregate values for $field.
      *
      * @return $this
      */
     public function aggregate(string $fx, string $field, bool $coalesce = false)
     {
-        $column = array_column($this->getRows(), $field);
+        $values = array_column($this->getRows(), $field);
 
         switch (strtolower($fx)) {
             case 'sum':
-                $res = array_sum($column);
+                $res = array_sum($values);
 
                 break;
             case 'avg':
                 if (!$coalesce) { // TODO add tests and verify against SQL
-                    $column = array_filter($column, static fn ($v) => $v !== null);
+                    $values = array_filter($values, static fn ($v) => $v !== null);
                 }
 
-                $res = array_sum($column) / count($column);
+                $res = array_sum($values) / count($values);
 
                 break;
             case 'max':
-                $res = max($column);
+                $res = max($values);
 
                 break;
             case 'min':
-                $res = min($column);
+                $res = min($values);
 
                 break;
             default:
@@ -110,8 +119,7 @@ class Action
                     ->addMoreInfo('action', $fx);
         }
 
-        $this->generator = new \ArrayIterator([['v' => $res]]);
-        $this->columns = ['v'];
+        $this->setScalarResult($res);
 
         return $this;
     }
@@ -356,8 +364,7 @@ class Action
      */
     public function count()
     {
-        $this->generator = new \ArrayIterator([['v' => iterator_count($this->generator)]]);
-        $this->columns = ['v'];
+        $this->setScalarResult(iterator_count($this->generator));
 
         return $this;
     }
@@ -370,8 +377,7 @@ class Action
     public function exists()
     {
         $this->generator->rewind();
-        $this->generator = new \ArrayIterator([['v' => $this->generator->valid() ? 1 : 0]]);
-        $this->columns = ['v'];
+        $this->setScalarResult($this->generator->valid() ? 1 : 0);
 
         return $this;
     }
