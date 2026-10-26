@@ -820,7 +820,7 @@ class ArrayTest extends TestCase
         self::assertSame(6.735253251633257, $m->action('fx0', ['stddev_samp', 'items'])->getOne());
 
         $m2 = clone $m;
-        $m2->addCondition(Model\Scope::createOr(
+        $m2->addCondition(Scope::createOr(
             ['items', 12],
             ['items', null],
         ));

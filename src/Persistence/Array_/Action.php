@@ -139,7 +139,7 @@ class Action
                 $sum = 0;
                 $avg = array_sum($values) / count($values);
                 foreach ($values as $v) {
-                    $sum += pow($v - $avg, 2);
+                    $sum += ($v - $avg) ** 2;
                 }
                 $resSquared = $sum / (count($values) - ($fx === 'stddev_samp' ? 1 : 0));
                 $res = sqrt($resSquared);
