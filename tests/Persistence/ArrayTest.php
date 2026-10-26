@@ -796,13 +796,14 @@ class ArrayTest extends TestCase
             ['items' => 19, 'active' => 1],
             ['items' => -1, 'active' => 1],
             ['items' => 0, 'active' => 1],
-            ['items' => null, 'active' => 1],
+            ['number' => 'ABCN', 'items' => null, 'active' => 1],
         ]]);
         $m = new Model($p, ['table' => 'invoices']);
         $m->addField('items', ['type' => 'integer']);
 
         self::assertNull($m->action('fx', ['count', 'items'])->getOne());
         self::assertSame(11, $m->action('fx0', ['count', 'items'])->getOne());
+        self::assertSame(12, $m->action('count')->getOne());
         self::assertNull($m->action('fx', ['sum', 'items'])->getOne());
         self::assertSame(134, $m->action('fx0', ['sum', 'items'])->getOne());
         self::assertNull($m->action('fx', ['avg', 'items'])->getOne());
@@ -815,6 +816,7 @@ class ArrayTest extends TestCase
         $m->addCondition('items', null);
         self::assertNull($m->action('fx', ['count', 'items'])->getOne());
         self::assertSame(0, $m->action('fx0', ['count', 'items'])->getOne());
+        self::assertSame(1, $m->action('count')->getOne());
         self::assertNull($m->action('fx', ['sum', 'items'])->getOne());
         self::assertSame(0, $m->action('fx0', ['sum', 'items'])->getOne());
         self::assertNull($m->action('fx', ['avg', 'items'])->getOne());
@@ -823,6 +825,10 @@ class ArrayTest extends TestCase
         self::assertSame(0, $m->action('fx0', ['min', 'items'])->getOne());
         self::assertNull($m->action('fx', ['max', 'items'])->getOne());
         self::assertSame(0, $m->action('fx0', ['max', 'items'])->getOne());
+
+        $m->addField('number');
+        self::assertSame(1, $m->action('fx', ['count', 'number'])->getOne());
+        self::assertSame(1, $m->action('fx0', ['count', 'number'])->getOne());
     }
 
     public function testExists(): void
