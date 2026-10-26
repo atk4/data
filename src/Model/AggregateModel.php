@@ -84,11 +84,10 @@ class AggregateModel extends Model
         }
 
         foreach ($aggregateExpressions as $name => $seed) {
-            $exprArgs = [];
             // if field is defined in the parent model then it can be used in expression
-            if ($this->table->hasField($name)) {
-                $exprArgs = [$this->table->getField($name)];
-            }
+            $exprArgs = $this->table->hasField($name)
+                ? [$this->table->getField($name)]
+                : [];
 
             $seed['expr'] = $this->table->expr($seed['expr'], $exprArgs);
 
