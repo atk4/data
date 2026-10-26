@@ -1394,12 +1394,21 @@ class SelectTest extends TestCase
     {
         $expr = $this->q()->fxStdev('foo', $sample);
 
-        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
+            if (version_compare(SqliteConnection::getDriverVersion(), '3.45') < 0) {
+                self::assertSameSql('(select sqrt(sum(power(__atk4_aggr_t2__.value - (select avg(value) from json_each(__atk4_aggr_t1__.value)), 2)) / (select ' . ($sample ? 'case when count(value) > 1 then count(value) - 1 end' : 'count(value)') . ' from json_each(__atk4_aggr_t1__.value))) from json_each(\'[\' || json_group_array(:a) || \']\') __atk4_aggr_t1__, json_each(json_group_array(:b)) __atk4_aggr_t2__)', $expr->render()[0]);
+                self::assertSame([':a' => 'foo', ':b' => 'foo'], $expr->render()[1]);
+            } else {
+                self::assertSameSql('(select sqrt(sum(power(__atk4_aggr_t2__.value - (select avg(value) from json_each(__atk4_aggr_t1__.value)), 2)) / (select ' . ($sample ? 'case when count(value) > 1 then count(value) - 1 end' : 'count(value)') . ' from json_each(__atk4_aggr_t1__.value))) from (select json_group_array(:a) value) __atk4_aggr_t1__, json_each(__atk4_aggr_t1__.value) __atk4_aggr_t2__)', $expr->render()[0]);
+                self::assertSame([':a' => 'foo'], $expr->render()[1]);
+            }
+        } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             self::assertSameSql(($sample ? 'stdev' : 'stdevp') . '(:a)', $expr->render()[0]);
+            self::assertSame([':a' => 'foo'], $expr->render()[1]);
         } else {
             self::assertSameSql(($sample ? 'stddev_samp' : 'stddev_pop') . '(:a)', $expr->render()[0]);
+            self::assertSame([':a' => 'foo'], $expr->render()[1]);
         }
-        self::assertSame([':a' => 'foo'], $expr->render()[1]);
     }
 
     /**
