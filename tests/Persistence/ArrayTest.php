@@ -812,6 +812,24 @@ class ArrayTest extends TestCase
         self::assertSame(-1, $m->action('fx0', ['min', 'items'])->getOne());
         self::assertNull($m->action('fx', ['max', 'items'])->getOne());
         self::assertSame(19, $m->action('fx0', ['max', 'items'])->getOne());
+        self::assertNull($m->action('fx', ['median', 'items'])->getOne());
+        self::assertSame(14, $m->action('fx0', ['median', 'items'])->getOne());
+        self::assertNull($m->action('fx', ['stddev_pop', 'items'])->getOne());
+        self::assertSame(6.42181200452704, $m->action('fx0', ['stddev_pop', 'items'])->getOne());
+        self::assertNull($m->action('fx', ['stddev_samp', 'items'])->getOne());
+        self::assertSame(6.735253251633257, $m->action('fx0', ['stddev_samp', 'items'])->getOne());
+
+        $m2 = clone $m;
+        $m2->addCondition(Scope::createOr(
+            ['items', 12],
+            ['items', null],
+        ));
+        self::assertNull($m2->action('fx', ['count', 'items'])->getOne());
+        self::assertSame(1, $m2->action('fx0', ['count', 'items'])->getOne());
+        self::assertNull($m2->action('fx', ['stddev_pop', 'items'])->getOne());
+        self::assertSame(0, $m2->action('fx0', ['stddev_pop', 'items'])->getOne());
+        self::assertNull($m2->action('fx', ['stddev_samp', 'items'])->getOne());
+        self::assertSame(0, $m2->action('fx0', ['stddev_samp', 'items'])->getOne());
 
         $m->addCondition('items', null);
         self::assertNull($m->action('fx', ['count', 'items'])->getOne());
@@ -825,6 +843,12 @@ class ArrayTest extends TestCase
         self::assertSame(0, $m->action('fx0', ['min', 'items'])->getOne());
         self::assertNull($m->action('fx', ['max', 'items'])->getOne());
         self::assertSame(0, $m->action('fx0', ['max', 'items'])->getOne());
+        self::assertNull($m->action('fx', ['median', 'items'])->getOne());
+        self::assertSame(0, $m->action('fx0', ['median', 'items'])->getOne());
+        self::assertNull($m->action('fx', ['stddev_pop', 'items'])->getOne());
+        self::assertSame(0, $m->action('fx0', ['stddev_pop', 'items'])->getOne());
+        self::assertNull($m->action('fx', ['stddev_samp', 'items'])->getOne());
+        self::assertSame(0, $m->action('fx0', ['stddev_samp', 'items'])->getOne());
 
         $m->addField('number');
         self::assertSame(1, $m->action('fx', ['count', 'number'])->getOne());

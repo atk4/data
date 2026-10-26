@@ -215,12 +215,6 @@ class Query extends BaseQuery
     }
 
     #[\Override]
-    public function fxGroupConcat($field, string $separator = ',')
-    {
-        return $this->expr('string_agg({}, ' . $this->escapeStringLiteral($separator) . ')', [$field]);
-    }
-
-    #[\Override]
     public function fxJsonArray(array $values)
     {
         if (version_compare($this->connection->getServerVersion(), '16') < 0) {

@@ -191,7 +191,9 @@ class Query extends BaseQuery
     #[\Override]
     public function fxGroupConcat($field, string $separator = ',')
     {
-        return $this->expr('group_concat({}, [])', [$field, $separator]);
+        return version_compare(Connection::getDriverVersion(), '3.44') < 0
+            ? $this->expr('group_concat({}, ' . $this->escapeStringLiteral($separator) . ')', [$field])
+            : parent::fxGroupConcat($field, $separator);
     }
 
     #[\Override]

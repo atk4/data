@@ -91,8 +91,14 @@ class Action
      */
     public function aggregate(string $fx, string $field, bool $nullAsZero = false)
     {
+        $fx = strtolower($fx);
+
         $valuesAll = array_column($this->getRows(), $field);
         $values = array_values(array_filter($valuesAll, static fn ($v) => $v !== null));
+
+        if (count($values) === 1 && $fx === 'stddev_samp') {
+            $values = [];
+        }
 
         if (count($values) === 0 || ($values !== $valuesAll && !$nullAsZero)) {
             $this->setScalarResult($nullAsZero ? 0 : null);
@@ -100,7 +106,7 @@ class Action
             return $this;
         }
 
-        switch (strtolower($fx)) {
+        switch ($fx) {
             case 'count':
                 $res = count($values);
 
@@ -119,6 +125,27 @@ class Action
                 break;
             case 'max':
                 $res = max($values);
+
+                break;
+            case 'median':
+                sort($values);
+                $i = (int) floor((count($values) - 1) / 2);
+                $j = (int) floor(count($values) / 2);
+                $res = ($values[$i] + $values[$j]) / 2;
+
+                break;
+            case 'stddev_pop':
+            case 'stddev_samp':
+                $sum = 0;
+                $avg = array_sum($values) / count($values);
+                foreach ($values as $v) {
+                    $sum += ($v - $avg) ** 2;
+                }
+                $resSquared = $sum / (count($values) - ($fx === 'stddev_samp' ? 1 : 0));
+                $res = sqrt($resSquared);
+                if ($resSquared === (int) $res * (int) $res) {
+                    $res = (int) $res;
+                }
 
                 break;
             default:

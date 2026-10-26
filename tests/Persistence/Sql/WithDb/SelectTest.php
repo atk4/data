@@ -1255,26 +1255,19 @@ class SelectTest extends TestCase
                 'select `age`, group_concat(`name` separator \',\') from `people` group by `age`',
                 [],
             ], $q->render());
-        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            self::assertSame([
-                'select "age", string_agg("name", :a) from "people" group by "age"',
-                [':a' => ','],
-            ], $q->render());
-        } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            self::assertSame([
-                'select [age], string_agg([name], N\',\') from [people] group by [age]',
-                [],
-            ], $q->render());
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
             self::assertSame([
                 'select "age", listagg("name", :xxaaaa) within group (order by "name") from "people" group by "age"',
                 [':xxaaaa' => ','],
             ], $q->render());
-        } else {
+        } elseif ($this->getDatabasePlatform() instanceof SQLitePlatform && version_compare(SqliteConnection::getDriverVersion(), '3.44') < 0) {
             self::assertSame([
-                'select `age`, group_concat(`name`, :a) from `people` group by `age`',
-                [':a' => ','],
+                'select `age`, group_concat(`name`, \',\') from `people` group by `age`',
+                [],
             ], $q->render());
+        } else {
+            self::assertSameSql('select `age`, string_agg(`name`, \',\') from `people` group by `age`', $q->render()[0]);
+            self::assertSame([], $q->render()[1]);
         }
     }
 
