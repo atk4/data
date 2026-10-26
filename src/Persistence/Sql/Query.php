@@ -1168,7 +1168,7 @@ abstract class Query extends Expression
      */
     public function fxGroupConcat($field, string $separator = ',')
     {
-        throw new Exception('Query::fxGroupConcat() is SQL-dependent, so use a correct class');
+        return $this->expr('string_agg({}, ' . $this->escapeStringLiteral($separator) . ')', [$field]);
     }
 
     private function valueToJson(Expressionable $value): Expressionable

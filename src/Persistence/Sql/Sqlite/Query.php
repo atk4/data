@@ -189,12 +189,6 @@ class Query extends BaseQuery
     }
 
     #[\Override]
-    public function fxGroupConcat($field, string $separator = ',')
-    {
-        return $this->expr('group_concat({}, [])', [$field, $separator]);
-    }
-
-    #[\Override]
     public function fxJsonArray(array $values)
     {
         return $this->expr('json_array(' . implode(', ', array_fill(0, count($values), '[]')) . ')', [

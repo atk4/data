@@ -1255,26 +1255,14 @@ class SelectTest extends TestCase
                 'select `age`, group_concat(`name` separator \',\') from `people` group by `age`',
                 [],
             ], $q->render());
-        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            self::assertSame([
-                'select "age", string_agg("name", :a) from "people" group by "age"',
-                [':a' => ','],
-            ], $q->render());
-        } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            self::assertSame([
-                'select [age], string_agg([name], N\',\') from [people] group by [age]',
-                [],
-            ], $q->render());
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
             self::assertSame([
                 'select "age", listagg("name", :xxaaaa) within group (order by "name") from "people" group by "age"',
                 [':xxaaaa' => ','],
             ], $q->render());
         } else {
-            self::assertSame([
-                'select `age`, group_concat(`name`, :a) from `people` group by `age`',
-                [':a' => ','],
-            ], $q->render());
+            self::assertSameSql('select `age`, string_agg(`name`, \',\') from `people` group by `age`', $q->render()[0]);
+            self::assertSame([], $q->render()[1]);
         }
     }
 
