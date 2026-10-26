@@ -92,7 +92,6 @@ class Action
     public function aggregate(string $fx, string $field, bool $nullAsZero = false)
     {
         $valuesAll = array_column($this->getRows(), $field);
-
         $values = array_values(array_filter($valuesAll, static fn ($v) => $v !== null));
 
         if (count($values) === 0 || ($values !== $valuesAll && !$nullAsZero)) {
@@ -155,7 +154,7 @@ class Action
                     ->addMoreInfo('condition', $condition);
             }
 
-            return $this->evaluateIf($row[$field->shortName] ?? null, $operator, $value);
+            return $this->evaluateIf($row[$field->shortName], $operator, $value);
         } elseif ($condition instanceof Model\Scope) { // nested conditions
             $isOr = $condition->isOr();
             $nestedConditions = $condition->getNestedConditions();
