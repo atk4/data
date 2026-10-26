@@ -153,14 +153,14 @@ class HasMany extends Reference
             };
         } else {
             $fx = function () use ($defaults, $field) {
-                $noAsZero = in_array($defaults['aggregate'], ['sum', 'avg', 'min', 'max', 'count'], true);
+                $nullAsZero = $defaults['aggregate'] === 'sum';
 
                 $args = [$defaults['aggregate'], $field];
                 if ($defaults['aggregate'] === 'concat') {
                     $args['concatSeparator'] = $defaults['concatSeparator'];
                 }
 
-                return $this->refLink()->action($noAsZero ? 'fx0' : 'fx', $args);
+                return $this->refLink()->action($nullAsZero ? 'fx0' : 'fx', $args);
             };
         }
 

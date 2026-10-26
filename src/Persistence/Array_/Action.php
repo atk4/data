@@ -89,29 +89,37 @@ class Action
      *
      * @return $this
      */
-    public function aggregate(string $fx, string $field, bool $coalesce = false)
+    public function aggregate(string $fx, string $field, bool $nullAsZero = false)
     {
-        $values = array_column($this->getRows(), $field);
+        $valuesAll = array_column($this->getRows(), $field);
+
+        $values = array_values(array_filter($valuesAll, static fn ($v) => $v !== null));
+
+        if (count($values) === 0 || ($values !== $valuesAll && !$nullAsZero)) {
+            $this->setScalarResult($nullAsZero ? 0 : null);
+
+            return $this;
+        }
 
         switch (strtolower($fx)) {
+            case 'count':
+                $res = count($values);
+
+                break;
             case 'sum':
                 $res = array_sum($values);
 
                 break;
             case 'avg':
-                if (!$coalesce) { // TODO add tests and verify against SQL
-                    $values = array_filter($values, static fn ($v) => $v !== null);
-                }
-
                 $res = array_sum($values) / count($values);
-
-                break;
-            case 'max':
-                $res = max($values);
 
                 break;
             case 'min':
                 $res = min($values);
+
+                break;
+            case 'max':
+                $res = max($values);
 
                 break;
             default:
