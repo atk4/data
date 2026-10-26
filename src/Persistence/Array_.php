@@ -409,10 +409,8 @@ class Array_ extends Persistence
 
     /**
      * Typecast data and return Action of data array.
-     *
-     * @param list<string>|null $fields
      */
-    public function initAction(Model $model, ?array $fields = null): Action
+    protected function initAction(Model $model): Action
     {
         if (is_object($model->table)) {
             $tableAction = $this->action($model->table, 'select');
@@ -436,14 +434,27 @@ class Array_ extends Persistence
 
         $columns = array_keys($this->remapLoadRow($model, $this->filterRowDataOnlyModelFields($model, array_flip($columns))));
 
-        if ($fields !== null) {
-            $rows = array_map(static function (array $row) use ($fields) {
-                return array_intersect_key($row, array_flip($fields));
-            }, $rows);
+        return new Action($rows, $columns);
+    }
 
-            $columns = array_values(array_intersect($columns, $fields));
-            assert(count($columns) === count($fields));
+    /**
+     * @param list<string> $fields
+     */
+    protected function filterColumns(Action $action, ?array $fields = null): Action
+    {
+        if ($fields === null) {
+            return $action;
         }
+
+        $rows = $action->getRows();
+        $columns = $action->getColumns();
+
+        $rows = array_map(static function (array $row) use ($fields) {
+            return array_intersect_key($row, array_flip($fields));
+        }, $rows);
+
+        $columns = array_values(array_intersect($columns, $fields));
+        assert(count($columns) === count($fields));
 
         return new Action($rows, $columns);
     }
@@ -491,20 +502,23 @@ class Array_ extends Persistence
     {
         switch ($type) {
             case 'select':
-                $action = $this->initAction($model, $args[0] ?? null);
+                $action = $this->initAction($model);
                 $this->applyScope($model, $action);
+                $action = $this->filterColumns($action, $args[0] ?? null);
                 $this->setLimitOrder($model, $action);
 
                 return $action;
             case 'count':
-                $action = $this->initAction($model, $args[0] ?? null);
+                $action = $this->initAction($model);
                 $this->applyScope($model, $action);
+                $action = $this->filterColumns($action, $args[0] ?? null);
                 $this->setLimitOrder($model, $action);
 
                 return $action->count();
             case 'exists':
-                $action = $this->initAction($model, $args[0] ?? null);
+                $action = $this->initAction($model);
                 $this->applyScope($model, $action);
+                $action = $this->filterColumns($action, $args[0] ?? null);
 
                 return $action->exists();
             case 'field':
@@ -515,8 +529,9 @@ class Array_ extends Persistence
 
                 $field = is_string($args[0]) ? $args[0] : $args[0][0];
 
-                $action = $this->initAction($model, [$field]);
+                $action = $this->initAction($model);
                 $this->applyScope($model, $action);
+                $action = $this->filterColumns($action, [$field]);
                 $this->setLimitOrder($model, $action);
 
                 if (isset($args['alias'])) {
@@ -536,8 +551,9 @@ class Array_ extends Persistence
 
                 [$fx, $field] = $args;
 
-                $action = $this->initAction($model, [$field]);
+                $action = $this->initAction($model);
                 $this->applyScope($model, $action);
+                $action = $this->filterColumns($action, [$field]);
                 $this->setLimitOrder($model, $action);
 
                 return $action->aggregate($fx, $field, $type === 'fx0');
