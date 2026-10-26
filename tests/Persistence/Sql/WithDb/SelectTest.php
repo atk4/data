@@ -1260,6 +1260,11 @@ class SelectTest extends TestCase
                 'select "age", listagg("name", :xxaaaa) within group (order by "name") from "people" group by "age"',
                 [':xxaaaa' => ','],
             ], $q->render());
+        } elseif ($this->getDatabasePlatform() instanceof SQLitePlatform && version_compare(SqliteConnection::getDriverVersion(), '3.44') < 0) {
+            self::assertSame([
+                'select `age`, group_concat(`name`, \',\') from `people` group by `age`',
+                [],
+            ], $q->render());
         } else {
             self::assertSameSql('select `age`, string_agg(`name`, \',\') from `people` group by `age`', $q->render()[0]);
             self::assertSame([], $q->render()[1]);
