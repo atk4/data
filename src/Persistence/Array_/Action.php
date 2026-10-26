@@ -121,6 +121,13 @@ class Action
                 $res = max($values);
 
                 break;
+            case 'median':
+                sort($values);
+                $i = (int) floor((count($values) - 1) / 2);
+                $j = (int) floor(count($values) / 2);
+                $res = ($values[$i] + $values[$j]) / 2;
+
+                break;
             default:
                 throw (new Exception('Array persistence unsupported aggregate function'))
                     ->addMoreInfo('action', $fx);

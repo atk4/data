@@ -812,6 +812,8 @@ class ArrayTest extends TestCase
         self::assertSame(-1, $m->action('fx0', ['min', 'items'])->getOne());
         self::assertNull($m->action('fx', ['max', 'items'])->getOne());
         self::assertSame(19, $m->action('fx0', ['max', 'items'])->getOne());
+        self::assertNull($m->action('fx', ['median', 'items'])->getOne());
+        self::assertSame(14, $m->action('fx0', ['median', 'items'])->getOne());
 
         $m->addCondition('items', null);
         self::assertNull($m->action('fx', ['count', 'items'])->getOne());
@@ -825,6 +827,8 @@ class ArrayTest extends TestCase
         self::assertSame(0, $m->action('fx0', ['min', 'items'])->getOne());
         self::assertNull($m->action('fx', ['max', 'items'])->getOne());
         self::assertSame(0, $m->action('fx0', ['max', 'items'])->getOne());
+        self::assertNull($m->action('fx', ['median', 'items'])->getOne());
+        self::assertSame(0, $m->action('fx0', ['median', 'items'])->getOne());
 
         $m->addField('number');
         self::assertSame(1, $m->action('fx', ['count', 'number'])->getOne());
