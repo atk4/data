@@ -92,7 +92,6 @@ class Action
     public function aggregate(string $fx, string $field, bool $nullAsZero = false)
     {
         $valuesAll = array_column($this->getRows(), $field);
-
         $values = array_values(array_filter($valuesAll, static fn ($v) => $v !== null));
 
         if (count($values) === 0 || ($values !== $valuesAll && !$nullAsZero)) {
