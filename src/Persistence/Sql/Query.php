@@ -1187,6 +1187,26 @@ abstract class Query extends Expression
      *
      * @return Expression
      */
+    public function fxMedian($field)
+    {
+        return $this->expr('median([])', [$field]);
+    }
+
+    /**
+     * @param string|Expressionable $field
+     *
+     * @return Expression
+     */
+    public function fxPercentile($field, float $percentile)
+    {
+        return $this->expr('percentile_cont([], [])', [$field, $percentile]);
+    }
+
+    /**
+     * @param string|Expressionable $field
+     *
+     * @return Expression
+     */
     public function fxStdev($field, bool $sample = true)
     {
         return $this->expr(

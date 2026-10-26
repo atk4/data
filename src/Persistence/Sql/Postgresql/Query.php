@@ -124,6 +124,18 @@ class Query extends BaseQuery
     }
 
     #[\Override]
+    public function fxMedian($field)
+    {
+        return $this->fxPercentile($field, 0.5);
+    }
+
+    #[\Override]
+    public function fxPercentile($field, float $percentile)
+    {
+        return $this->expr('percentile_cont([]) within group (order by [])', [$percentile, $field]);
+    }
+
+    #[\Override]
     public function fxJsonArray(array $values)
     {
         return $this->expr('json_build_array(' . implode(', ', array_fill(0, count($values), '[]')) . ')', [
