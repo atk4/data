@@ -31,7 +31,6 @@ class CreateMathFunctionsMiddleware implements Middleware
                 assert(str_contains($e->getMessage(), 'no such function'));
                 self::$needed = true;
             }
-
         }
 
         return self::$needed;
