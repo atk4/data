@@ -1160,6 +1160,17 @@ abstract class Query extends Expression
     }
 
     /**
+     * @param string|Expressionable $base
+     * @param string|Expressionable $exponent
+     *
+     * @return Expression
+     */
+    public function fxPow($base, $exponent)
+    {
+        return $this->expr('power([], [])', [$base, $exponent]);
+    }
+
+    /**
      * Returns an expression which can be used as part of the GROUP BY query which would concatenate all matching fields.
      *
      * @param string|Expressionable $field
