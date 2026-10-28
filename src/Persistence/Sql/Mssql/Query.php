@@ -215,6 +215,12 @@ class Query extends BaseQuery
     }
 
     #[\Override]
+    public function fxPow($base, $exponent)
+    {
+        return $this->expr('power(cast([] as float), [])', [$base, $exponent]);
+    }
+
+    #[\Override]
     public function fxJsonArray(array $values)
     {
         if (version_compare($this->connection->getServerVersion(), '16') < 0) {
