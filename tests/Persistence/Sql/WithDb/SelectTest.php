@@ -12,6 +12,7 @@ use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Persistence\Sql\Sqlite\Connection as SqliteConnection;
+use Atk4\Data\Persistence\Sql\Sqlite\CreateMathFunctionsMiddleware;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\MariaDBPlatform;
@@ -376,6 +377,11 @@ class SelectTest extends TestCase
             $expected = round($expected, 14 + (int) floor(log10($expected)));
         }
 
+        // https://github.com/php/php-src/issues/25021
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform && CreateMathFunctionsMiddleware::isNeeded() && $base >= (2 ** 31)) {
+            $expected = 0;
+        }
+
         self::{'assertEquals'}(
             [
                 'a' => $expected,
@@ -405,8 +411,8 @@ class SelectTest extends TestCase
         yield [0, 2];
         yield [-2, 0];
         yield [0, 0];
-        yield [5, 50];
-        yield [8_589_934_600, 3];
+        yield [4, 59];
+        yield [4_294_967_296, 3];
     }
 
     /**
@@ -423,6 +429,11 @@ class SelectTest extends TestCase
         // fixed since PHP 8.1, but if converted in SQL to string explicitly, the result is still rounded to 15 significant digits
         if ($this->getDatabasePlatform() instanceof SQLitePlatform && \PHP_VERSION_ID < 8_01_00) {
             $expected = round($expected, 14 + (int) floor(log10($expected)));
+        }
+
+        // https://github.com/php/php-src/issues/25021
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform && CreateMathFunctionsMiddleware::isNeeded() && $value >= (2 ** 31)) {
+            $expected = 0;
         }
 
         self::{'assertEquals'}(
