@@ -409,6 +409,49 @@ class SelectTest extends TestCase
         yield [1_234_000_000_000, 3];
     }
 
+    /**
+     * @dataProvider provideFxSqrtCases
+     *
+     * @param int|float $value
+     */
+    #[DataProvider('provideFxSqrtCases')]
+    public function testFxSqrt($value): void
+    {
+        $expected = sqrt($value);
+
+        // pdo_sqlite in truncating float, see https://github.com/php/php-src/issues/8510
+        // fixed since PHP 8.1, but if converted in SQL to string explicitly, the result is still rounded to 15 significant digits
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform && \PHP_VERSION_ID < 8_01_00) {
+            $expected = round($expected, 14 + (int) floor(log10($expected)));
+        }
+
+        self::{'assertEquals'}(
+            [
+                'a' => $expected,
+                'b' => null,
+                'c' => $expected,
+            ],
+            $this->q()
+                ->field($this->e('sqrt([])', [$value]), 'a')
+                ->field($this->e('sqrt([])', [null]), 'b')
+                ->field($this->q()->fxPow($this->e('[]', [$value]), $this->e('[]', [0.5])), 'c')
+                ->getRow()
+        );
+    }
+
+
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideFxSqrtCases(): iterable
+    {
+        foreach (self::provideFxPowCases() as [$base]) {
+            if ($base >= 0) {
+                yield [$base];
+            }
+        }
+    }
+
     public function testFxJsonArrayRender(): void
     {
         $expr = $this->q()->fxJsonArray([$this->e('{} + []', ['u', 10])]);
