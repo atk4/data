@@ -372,8 +372,8 @@ class SelectTest extends TestCase
         $expected = $base ** $exponent;
 
         // pdo_sqlite in truncating float, see https://github.com/php/php-src/issues/8510
-        // fixed since PHP 8.1, but if converted in SQL to string explicitly, the result is still rounded to 15 significant digits
-        if ($this->getDatabasePlatform() instanceof SQLitePlatform && \PHP_VERSION_ID < 8_01_00) {
+        // fixed since PHP 8.1 or SQLite v3.53, but if converted in SQL to string explicitly, the result is still rounded to 15 significant digits
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform && \PHP_VERSION_ID < 8_01_00 && version_compare(SqliteConnection::getDriverVersion(), '3.53') < 0) {
             $expected = round($expected, 14 + (int) floor(log10($expected)));
         }
 
@@ -426,8 +426,8 @@ class SelectTest extends TestCase
         $expected = sqrt($value);
 
         // pdo_sqlite in truncating float, see https://github.com/php/php-src/issues/8510
-        // fixed since PHP 8.1, but if converted in SQL to string explicitly, the result is still rounded to 15 significant digits
-        if ($this->getDatabasePlatform() instanceof SQLitePlatform && \PHP_VERSION_ID < 8_01_00) {
+        // fixed since PHP 8.1 or SQLite v3.53, but if converted in SQL to string explicitly, the result is still rounded to 15 significant digits
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform && \PHP_VERSION_ID < 8_01_00 && version_compare(SqliteConnection::getDriverVersion(), '3.53') < 0) {
             $expected = round($expected, 14 + (int) floor(log10($expected)));
         }
 
@@ -449,7 +449,6 @@ class SelectTest extends TestCase
                 ->getRow()
         );
     }
-
 
     /**
      * @return iterable<list<mixed>>

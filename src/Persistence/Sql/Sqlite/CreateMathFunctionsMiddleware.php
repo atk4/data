@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Sqlite;
 
+use Atk4\Data\Persistence\Sql;
 use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Driver\Connection;
 use Doctrine\DBAL\Driver\Middleware;
@@ -12,9 +13,6 @@ use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception\DriverException;
 use Pdo\Sqlite;
 
-/**
- * Remove once SQLite v3.34 support is dropped.
- */
 class CreateMathFunctionsMiddleware implements Middleware
 {
     private static ?bool $needed = null;
@@ -22,14 +20,19 @@ class CreateMathFunctionsMiddleware implements Middleware
     public static function isNeeded(): bool
     {
         if (self::$needed === null) {
-            try {
-                $connection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true]);
-                $res = $connection->executeQuery('select power(0.7, 2.5), sqrt(null)')->fetchNumeric();
-                assert((float) $res[0] === (0.7 ** 2.5));
-                self::$needed = $res[1] !== null;
-            } catch (DriverException $e) {
-                assert(str_contains($e->getMessage(), 'no such function'));
+            if (Sql\Connection::isDbal3x()) { // https://github.com/doctrine/dbal/commit/7959ea48546244ce8184771123da0e4d85f96f26
                 self::$needed = true;
+            } else {
+                try {
+                    $connection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true]);
+                    $res = $connection->executeQuery('select power(0.7, 2.5), sqrt(null)')->fetchNumeric();
+                    assert((float) $res[0] === (0.7 ** 2.5));
+                    assert($res[1] === null);
+                    self::$needed = false;
+                } catch (DriverException $e) {
+                    assert(str_contains($e->getMessage(), 'no such function'));
+                    self::$needed = true;
+                }
             }
         }
 
