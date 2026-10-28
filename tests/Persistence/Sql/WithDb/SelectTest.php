@@ -406,7 +406,7 @@ class SelectTest extends TestCase
         yield [-2, 0];
         yield [0, 0];
         yield [5, 50];
-        yield [1_234_000_000_000, 3];
+        yield [8_589_934_600, 3];
     }
 
     /**
