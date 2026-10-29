@@ -365,11 +365,16 @@ class SelectTest extends TestCase
         $expr = $this->q()->fxPow('foo', 'bar');
 
         if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            self::assertSameSql('power(cast(:a as float), :b)', $expr->render()[0]);
+            self::assertSameSqlRender([
+                'power(cast(:a as float), :b)',
+                [':a' => 'foo', ':b' => 'bar'],
+            ], $expr->render());
         } else {
-            self::assertSameSql('power(:a, :b)', $expr->render()[0]);
+            self::assertSameSqlRender([
+                'power(:a, :b)',
+                [':a' => 'foo', ':b' => 'bar'],
+            ], $expr->render());
         }
-        self::assertSame([':a' => 'foo', ':b' => 'bar'], $expr->render()[1]);
     }
 
     /**
@@ -1396,18 +1401,26 @@ class SelectTest extends TestCase
 
         if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
             if (version_compare(SqliteConnection::getDriverVersion(), '3.45') < 0) {
-                self::assertSameSql('(select sqrt(sum(power(__atk4_aggr_t2__.value - (select avg(value) from json_each(__atk4_aggr_t1__.value)), 2)) / (select ' . ($sample ? 'case when count(value) > 1 then count(value) - 1 end' : 'count(value)') . ' from json_each(__atk4_aggr_t1__.value))) from json_each(\'[\' || json_group_array(:a) || \']\') __atk4_aggr_t1__, json_each(json_group_array(:b)) __atk4_aggr_t2__)', $expr->render()[0]);
-                self::assertSame([':a' => 'foo', ':b' => 'foo'], $expr->render()[1]);
+                self::assertSameSqlRender([
+                    '(select sqrt(sum(power(__atk4_aggr_t2__.value - (select avg(value) from json_each(__atk4_aggr_t1__.value)), 2)) / (select ' . ($sample ? 'case when count(value) > 1 then count(value) - 1 end' : 'count(value)') . ' from json_each(__atk4_aggr_t1__.value))) from json_each(\'[\' || json_group_array(:a) || \']\') __atk4_aggr_t1__, json_each(json_group_array(:b)) __atk4_aggr_t2__)',
+                    [':a' => 'foo', ':b' => 'foo'],
+                ], $expr->render());
             } else {
-                self::assertSameSql('(select sqrt(sum(power(__atk4_aggr_t2__.value - (select avg(value) from json_each(__atk4_aggr_t1__.value)), 2)) / (select ' . ($sample ? 'case when count(value) > 1 then count(value) - 1 end' : 'count(value)') . ' from json_each(__atk4_aggr_t1__.value))) from (select json_group_array(:a) value) __atk4_aggr_t1__, json_each(__atk4_aggr_t1__.value) __atk4_aggr_t2__)', $expr->render()[0]);
-                self::assertSame([':a' => 'foo'], $expr->render()[1]);
+                self::assertSameSqlRender([
+                    '(select sqrt(sum(power(__atk4_aggr_t2__.value - (select avg(value) from json_each(__atk4_aggr_t1__.value)), 2)) / (select ' . ($sample ? 'case when count(value) > 1 then count(value) - 1 end' : 'count(value)') . ' from json_each(__atk4_aggr_t1__.value))) from (select json_group_array(:a) value) __atk4_aggr_t1__, json_each(__atk4_aggr_t1__.value) __atk4_aggr_t2__)',
+                    [':a' => 'foo'],
+                ], $expr->render());
             }
         } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            self::assertSameSql(($sample ? 'stdev' : 'stdevp') . '(:a)', $expr->render()[0]);
-            self::assertSame([':a' => 'foo'], $expr->render()[1]);
+            self::assertSameSqlRender([
+                ($sample ? 'stdev' : 'stdevp') . '(:a)',
+                [':a' => 'foo'],
+            ], $expr->render());
         } else {
-            self::assertSameSql(($sample ? 'stddev_samp' : 'stddev_pop') . '(:a)', $expr->render()[0]);
-            self::assertSame([':a' => 'foo'], $expr->render()[1]);
+            self::assertSameSqlRender([
+                ($sample ? 'stddev_samp' : 'stddev_pop') . '(:a)',
+                [':a' => 'foo'],
+            ], $expr->render());
         }
     }
 
