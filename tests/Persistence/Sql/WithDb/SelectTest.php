@@ -1402,10 +1402,10 @@ class SelectTest extends TestCase
     }
 
     /**
-     * @dataProvider provideFxStdevCases
+     * @dataProvider provideFxStdevRenderCases
      */
-    #[DataProvider('provideFxStdevCases')]
-    public function testFxStdev(bool $sample): void
+    #[DataProvider('provideFxStdevRenderCases')]
+    public function testFxStdevRender(bool $sample): void
     {
         $expr = $this->q()->fxStdev('foo', $sample);
 
@@ -1437,7 +1437,7 @@ class SelectTest extends TestCase
     /**
      * @return iterable<list<mixed>>
      */
-    public static function provideFxStdevCases(): iterable
+    public static function provideFxStdevRenderCases(): iterable
     {
         yield [false];
         yield [true];
