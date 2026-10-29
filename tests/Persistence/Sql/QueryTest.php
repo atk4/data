@@ -1037,7 +1037,14 @@ class QueryTest extends TestCase
             (new PostgresqlQuery('[where]'))->where($this->e('sum({})', ['a']), 'not regexp', $this->e('sum({})', ['b']))->render()[0]
         );
 
-        // TODO test MssqlQuery here once REGEXP is supported https://devblogs.microsoft.com/azure-sql/introducing-regular-expression-regex-support-in-azure-sql-db/
+        self::assertSame(
+            'where regexp_like(case when [name] is not null then concat([name], substring(char(48), 1, 0)) end, :a, cast(N\'is\' as varchar))',
+            (new MssqlQuery('[where]'))->where('name', 'regexp', 'foo')->render()[0]
+        );
+        self::assertSame(
+            'where not (select iif(not(regexp_like(case when [__atk4_reuse_left__] is not null then concat([__atk4_reuse_left__], substring(char(48), 1, 0)) end, [__atk4_reuse_right__], cast(N\'is\' as varchar))), 0, iif([__atk4_reuse_left__] is not null and [__atk4_reuse_right__] is not null, 1, null)) from (select sum("a") [__atk4_reuse_left__], sum("b") [__atk4_reuse_right__]) [__atk4_reuse_tmp__]) = 1',
+            (new MssqlQuery('[where]'))->where($this->e('sum({})', ['a']), 'not regexp', $this->e('sum({})', ['b']))->render()[0]
+        );
 
         self::assertSame(
             'where regexp_like("name", :xxaaaa, \'in\')',
