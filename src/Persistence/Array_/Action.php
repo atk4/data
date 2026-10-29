@@ -96,12 +96,8 @@ class Action
         $valuesAll = array_column($this->getRows(), $field);
         $values = array_values(array_filter($valuesAll, static fn ($v) => $v !== null));
 
-        if (count($values) === 1 && $fx === 'stddev_samp') {
-            $values = [];
-        }
-
-        if (count($values) === 0 || ($values !== $valuesAll && !$nullAsZero)) {
-            $this->setScalarResult($nullAsZero ? 0 : null);
+        if (count($values) === 0 || ($values !== $valuesAll && $fx !== 'json-array' && !$nullAsZero)) {
+            $this->setScalarResult($nullAsZero ? ($fx === 'json-array' ? '[]' : 0) : null);
 
             return $this;
         }

@@ -818,6 +818,8 @@ class ArrayTest extends TestCase
         self::assertSame(6.42181200452704, $m->action('fx0', ['stddev_pop', 'items'])->getOne());
         self::assertNull($m->action('fx', ['stddev_samp', 'items'])->getOne());
         self::assertSame(6.735253251633257, $m->action('fx0', ['stddev_samp', 'items'])->getOne());
+        self::assertSame('[11,12,13,14,15,16,17,18,19,-1,0]', $m->action('fx', ['json-array', 'items'])->getOne());
+        self::assertSame('[11,12,13,14,15,16,17,18,19,-1,0]', $m->action('fx0', ['json-array', 'items'])->getOne());
 
         $m2 = clone $m;
         $m2->addCondition(Scope::createOr(
@@ -849,10 +851,15 @@ class ArrayTest extends TestCase
         self::assertSame(0, $m->action('fx0', ['stddev_pop', 'items'])->getOne());
         self::assertNull($m->action('fx', ['stddev_samp', 'items'])->getOne());
         self::assertSame(0, $m->action('fx0', ['stddev_samp', 'items'])->getOne());
+        self::assertSame(null, $m->action('fx', ['json-array', 'items'])->getOne());
+        self::assertSame('[]', $m->action('fx0', ['json-array', 'items'])->getOne());
 
         $m->addField('number');
         self::assertSame(1, $m->action('fx', ['count', 'number'])->getOne());
         self::assertSame(1, $m->action('fx0', ['count', 'number'])->getOne());
+        $m->addField('number');print_r($m->action('select')->getRows());
+        self::assertSame('["ABCN"]', $m->action('fx', ['json-array', 'number'])->getOne());
+        self::assertSame('["ABCN"]', $m->action('fx0', ['json-array', 'number'])->getOne());
     }
 
     public function testExists(): void
