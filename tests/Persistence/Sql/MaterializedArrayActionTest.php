@@ -70,8 +70,10 @@ class MaterializedArrayActionTest extends TestCase
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
             self::assertSame([':xxaaaa' => '[]'], $render[1]);
         } else {
-            self::assertSameSql('select :a `bool`, :b `int`, :c `float`, :d `string` limit 0, 0', $render[0]);
-            self::assertSame([':a' => null, ':b' => null, ':c' => null, ':d' => null], $render[1]);
+            self::assertSameSqlRender([
+                'select :a `bool`, :b `int`, :c `float`, :d `string` limit 0, 0',
+                [':a' => null, ':b' => null, ':c' => null, ':d' => null],
+            ], $render);
         }
 
         self::assertSame([], $query->getDsqlExpression($this->getConnection()->expr())->getRows());
@@ -96,8 +98,10 @@ class MaterializedArrayActionTest extends TestCase
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
             self::assertSame([':xxaaaa' => '[[false,0,0.0,"Mark"]]'], $render[1]);
         } else {
-            self::assertSameSql('select :a `bool`, :b `int`, :c `float`, :d `string`', $render[0]);
-            self::assertSame([':a' => false, ':b' => 0, ':c' => 0.0, ':d' => 'Mark'], $render[1]);
+            self::assertSameSqlRender([
+                'select :a `bool`, :b `int`, :c `float`, :d `string`',
+                [':a' => false, ':b' => 0, ':c' => 0.0, ':d' => 'Mark'],
+            ], $render);
         }
 
         self::{'assertEquals'}([
