@@ -157,7 +157,7 @@ class TypecastingTest extends TestCase
             self::assertSame(8.202343767574732, $m->load(2)->get('float'));
         }
 
-        // https://sqlite.org/forum/forumpost/f55b6644b9
+        // https://sqlite.org/forum/forumpost/f55b6644b94d7b57
         $m->load(2)->set('float2', \INF)->save();
         $m->load(2)->set('float3', -\INF)->save();
         self::assertSame(0.0, $m->load(2)->get('float2'));

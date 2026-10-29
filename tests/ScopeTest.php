@@ -370,7 +370,7 @@ class ScopeTest extends TestCase
         $user->addCondition('Tickets/user/country_id/Users/#', '>=', 2);
         $user->addCondition('Tickets/user/country_id/Users/country_id/Users/#', '>', 1);
         if (!$this->getDatabasePlatform() instanceof SQLitePlatform || version_compare(SqliteConnection::getDriverVersion(), '3.46') >= 0) {
-            // https://sqlite.org/forum/info/a2f5a952679c0fc5
+            // https://sqlite.org/forum/forumpost/a2f5a952679c0fc5
             // https://github.com/sqlite/sqlite/commit/7659ce22c5
             $user->addCondition('Tickets/user/country_id/Users/country_id/Users/name', '!=', null); // should be always true
         }

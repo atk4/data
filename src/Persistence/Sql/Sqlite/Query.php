@@ -28,7 +28,7 @@ class Query extends BaseQuery
         bool $allowReuseRight = true,
         string $internalIdentifier = 'reuse'
     ): string {
-        // https://sqlite.org/forum/info/c9970a37edf11cd1
+        // https://sqlite.org/forum/forumpost/c9970a37edf11cd1
         if (version_compare(Connection::getDriverVersion(), '3.45') < 0) {
             $allowReuseLeft = false;
             $allowReuseRight = false;
@@ -52,7 +52,7 @@ class Query extends BaseQuery
 
     /**
      * https://dba.stackexchange.com/questions/332585/sqlite-comparison-of-the-same-operand-types-behaves-differently
-     * https://sqlite.org/forum/info/5f1135146fbc37ab .
+     * https://sqlite.org/forum/forumpost/5f1135146fbc37ab .
      */
     #[\Override]
     protected function _renderConditionBinary(string $operator, string $sqlLeft, $sqlRight): string
@@ -260,7 +260,7 @@ class Query extends BaseQuery
     #[\Override]
     protected function _execute(?object $connection, bool $fromExecuteStatement)
     {
-        // workaround https://sqlite.org/forum/forumpost/e434490a01
+        // workaround https://sqlite.org/forum/forumpost/e434490a01a3ef48
         if ($this->mode === 'truncate' && $connection instanceof DbalConnection && $this->template === $this->templateTruncate && preg_match('~^truncate table (?:`([^`]+)`\.)?`([^`]+)`$~i', $this->render()[0], $matches)) {
             $this->template = 'delete [from] [tableNoalias]';
             try {
