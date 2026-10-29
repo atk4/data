@@ -12,6 +12,7 @@ use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
 use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Persistence\Sql\Sqlite\Connection as SqliteConnection;
+use Atk4\Data\Persistence\Sql\Sqlite\CreateMathFunctionsMiddleware;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\MariaDBPlatform;
@@ -357,6 +358,108 @@ class SelectTest extends TestCase
                 ->field($this->q()->fxConcat(...$parts))
                 ->getOne()
         );
+    }
+
+    /**
+     * @dataProvider provideFxPowCases
+     *
+     * @param int|float $base
+     * @param int|float $exponent
+     */
+    #[DataProvider('provideFxPowCases')]
+    public function testFxPow($base, $exponent): void
+    {
+        $expected = $base ** $exponent;
+
+        // pdo_sqlite in truncating float, see https://github.com/php/php-src/issues/8510
+        // fixed since PHP 8.1 or SQLite v3.53, but if converted in SQL to string explicitly, the result is still rounded to 15 significant digits
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform && \PHP_VERSION_ID < 8_01_00 && version_compare(SqliteConnection::getDriverVersion(), '3.53') < 0) {
+            $expected = round($expected, 14 + (int) floor(log10($expected)));
+        }
+
+        // https://github.com/php/php-src/issues/25021
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform && CreateMathFunctionsMiddleware::isNeeded() && $base >= (2 ** 31)) {
+            $expected = 0;
+        }
+
+        self::{'assertEquals'}(
+            [
+                'a' => $expected,
+                'b' => null,
+                'c' => null,
+                'd' => null,
+            ],
+            $this->q()
+                ->field($this->q()->fxPow($this->e('[]', [$base]), $this->e('[]', [$exponent])), 'a')
+                ->field($this->q()->fxPow($this->e('[]', [null]), $this->e('[]', [$exponent])), 'b')
+                ->field($this->q()->fxPow($this->e('[]', [$base]), $this->e('[]', [null])), 'c')
+                ->field($this->q()->fxPow($this->e('[]', [null]), $this->e('[]', [null])), 'd')
+                ->getRow()
+        );
+    }
+
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideFxPowCases(): iterable
+    {
+        yield [5, 2];
+        yield [2, 8];
+        yield [2, 0.5];
+        yield [1.5, 2.5];
+        yield [-2, 3];
+        yield [0, 2];
+        yield [-2, 0];
+        yield [0, 0];
+        yield [4, 59];
+        yield [4_294_967_296, 3];
+    }
+
+    /**
+     * @dataProvider provideFxSqrtCases
+     *
+     * @param int|float $value
+     */
+    #[DataProvider('provideFxSqrtCases')]
+    public function testFxSqrt($value): void
+    {
+        $expected = sqrt($value);
+
+        // pdo_sqlite in truncating float, see https://github.com/php/php-src/issues/8510
+        // fixed since PHP 8.1 or SQLite v3.53, but if converted in SQL to string explicitly, the result is still rounded to 15 significant digits
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform && \PHP_VERSION_ID < 8_01_00 && version_compare(SqliteConnection::getDriverVersion(), '3.53') < 0) {
+            $expected = round($expected, 14 + (int) floor(log10($expected)));
+        }
+
+        // https://github.com/php/php-src/issues/25021
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform && CreateMathFunctionsMiddleware::isNeeded() && $value >= (2 ** 31)) {
+            $expected = 0;
+        }
+
+        self::{'assertEquals'}(
+            [
+                'a' => $expected,
+                'b' => null,
+                'c' => $expected,
+            ],
+            $this->q()
+                ->field($this->e('sqrt([])', [$value]), 'a')
+                ->field($this->e('sqrt([])', [null]), 'b')
+                ->field($this->q()->fxPow($this->e('[]', [$value]), $this->e('[]', [0.5])), 'c')
+                ->getRow()
+        );
+    }
+
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideFxSqrtCases(): iterable
+    {
+        foreach (self::provideFxPowCases() as [$base]) {
+            if ($base >= 0) {
+                yield [$base];
+            }
+        }
     }
 
     public function testFxJsonArrayRender(): void

@@ -8,6 +8,7 @@ use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence\Sql\Connection;
+use Atk4\Data\Persistence\Sql\Sqlite\Connection as SqliteConnection;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
@@ -67,6 +68,8 @@ class TypecastingTest extends TestCase
                     'integer3' => \PHP_INT_MIN,
                     'money' => 8.2,
                     'float' => 8.20234376757473,
+                    'float2' => 1.2e307,
+                    'float3' => -1.5e-307,
                     'json' => [1, 2, 3],
                 ],
             ],
@@ -87,6 +90,8 @@ class TypecastingTest extends TestCase
         $m->addField('boolean', ['type' => 'boolean']);
         $m->addField('money', ['type' => 'atk4_money']);
         $m->addField('float', ['type' => 'float']);
+        $m->addField('float2', ['type' => 'float']);
+        $m->addField('float3', ['type' => 'float']);
         $m->addField('integer', ['type' => 'integer']);
         $m->addField('integer2', ['type' => 'bigint']);
         $m->addField('integer3', ['type' => 'bigint']);
@@ -108,6 +113,8 @@ class TypecastingTest extends TestCase
         self::assertSame(\PHP_INT_MIN, $mm->get('integer3'));
         self::assertSame([1, 2, 3], $mm->get('json'));
         self::assertSame(8.20234376757473, $mm->get('float'));
+        self::assertSame(1.2e307, $mm->get('float2'));
+        self::assertSame(-1.5e-307, $mm->get('float3'));
 
         $m->createEntity()->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
 
@@ -145,10 +152,16 @@ class TypecastingTest extends TestCase
         self::assertSame(8.20234376757474, $m->load(2)->get('float'));
         $m->load(2)->set('float', 8.202343767574732)->save();
         // pdo_sqlite in truncating float, see https://github.com/php/php-src/issues/8510
-        // fixed since PHP 8.1, but if converted in SQL to string explicitly, the result is still rounded to 15 significant digits
-        if (!$this->getDatabasePlatform() instanceof SQLitePlatform || \PHP_VERSION_ID >= 8_01_00) {
+        // fixed since PHP 8.1 or SQLite v3.53, but if converted in SQL to string explicitly, the result is still rounded to 15 significant digits
+        if (!$this->getDatabasePlatform() instanceof SQLitePlatform || \PHP_VERSION_ID >= 8_01_00 || version_compare(SqliteConnection::getDriverVersion(), '3.53') >= 0) {
             self::assertSame(8.202343767574732, $m->load(2)->get('float'));
         }
+
+        // https://sqlite.org/forum/forumpost/f55b6644b9
+        $m->load(2)->set('float2', \INF)->save();
+        $m->load(2)->set('float3', -\INF)->save();
+        self::assertSame(0.0, $m->load(2)->get('float2'));
+        self::assertSame(0.0, $m->load(2)->get('float3'));
     }
 
     public function testEmptyValues(): void
