@@ -113,8 +113,8 @@ class ModelAggregateTest extends TestCase
             'min' => ['expr' => 'min([amount])', 'type' => 'atk4_money'],
             'max' => ['expr' => 'max([amount])', 'type' => 'atk4_money'],
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'], // same as `s`, but reuse name `amount`
-            'stdev_pop' => ['expr' => 'stddev_pop([amount])', 'type' => 'atk4_money'],
-            'stdev_samp' => ['expr' => 'stddev_samp([amount])', 'type' => 'atk4_money'],
+            'stdev_pop' => ['expr' => $this->getConnection()->dsql()->fxStdev($aggregate->table->getField('amount'), false), 'type' => 'atk4_money'],
+            'stdev_samp' => ['expr' => $this->getConnection()->dsql()->fxStdev($aggregate->table->getField('amount')), 'type' => 'atk4_money'],
         ]);
         self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 

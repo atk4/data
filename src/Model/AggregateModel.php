@@ -89,7 +89,9 @@ class AggregateModel extends Model
                 ? [$this->table->getField($name)]
                 : [];
 
-            $seed['expr'] = $this->table->expr($seed['expr'], $exprArgs);
+            if (!$seed['expr'] instanceof Expression) { // to support Query::fxStdev()
+                $seed['expr'] = $this->table->expr($seed['expr'], $exprArgs);
+            }
 
             // convert base model fields to aliases, they are always already materialized as the base model is SQL inner table
             foreach ($seed['expr']->args['custom'] as $argK => $argV) {

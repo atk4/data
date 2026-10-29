@@ -221,6 +221,15 @@ class Query extends BaseQuery
     }
 
     #[\Override]
+    public function fxStdev($field, bool $sample = true)
+    {
+        return $this->expr(
+            ($sample ? 'stdev' : 'stdevp') . '([])',
+            [$field]
+        );
+    }
+
+    #[\Override]
     public function fxJsonArray(array $values)
     {
         if (version_compare($this->connection->getServerVersion(), '16') < 0) {
