@@ -54,6 +54,8 @@ class CreateMathFunctionsMiddleware implements Middleware
                 assert($nativeConnection instanceof \PDO);
 
                 foreach ([
+                    'floor' => static fn (float $v) => floor($v),
+                    'ceil' => static fn (float $v) => ceil($v),
                     'power' => static fn (float $v, float $exp) => $v ** $exp,
                     'sqrt' => static fn (float $v) => sqrt($v),
                 ] as $name => $fxInner) {
