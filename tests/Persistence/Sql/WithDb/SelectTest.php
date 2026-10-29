@@ -1371,23 +1371,25 @@ class SelectTest extends TestCase
             ->field($this->q()->fxGroupConcat('name', ','));
 
         if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
-            self::assertSame([
+            self::assertSameSqlRender([
                 'select `age`, group_concat(`name` separator \',\') from `people` group by `age`',
                 [],
             ], $q->render());
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            self::assertSame([
-                'select "age", listagg("name", :xxaaaa) within group (order by "name") from "people" group by "age"',
-                [':xxaaaa' => ','],
+            self::assertSameSqlRender([
+                'select `age`, listagg(`name`, :a) within group (order by `name`) from `people` group by `age`',
+                [':a' => ','],
             ], $q->render());
         } elseif ($this->getDatabasePlatform() instanceof SQLitePlatform && version_compare(SqliteConnection::getDriverVersion(), '3.44') < 0) {
-            self::assertSame([
+            self::assertSameSqlRender([
                 'select `age`, group_concat(`name`, \',\') from `people` group by `age`',
                 [],
             ], $q->render());
         } else {
-            self::assertSameSql('select `age`, string_agg(`name`, \',\') from `people` group by `age`', $q->render()[0]);
-            self::assertSame([], $q->render()[1]);
+            self::assertSameSqlRender([
+                'select `age`, string_agg(`name`, \',\') from `people` group by `age`',
+                [],
+            ], $q->render());
         }
     }
 
@@ -1441,18 +1443,20 @@ class SelectTest extends TestCase
             ->exists();
 
         if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            self::assertSame([
-                'select case when exists(select * from [contacts] where [first_name] = :a) then 1 else 0 end',
+            self::assertSameSqlRender([
+                'select case when exists(select * from `contacts` where `first_name` = :a) then 1 else 0 end',
                 [':a' => 'John'],
             ], $q->render());
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            self::assertSame([
-                'select case when exists(select * from "contacts" where "first_name" = :xxaaaa) then 1 else 0 end from "DUAL"',
-                [':xxaaaa' => 'John'],
+            self::assertSameSqlRender([
+                'select case when exists(select * from `contacts` where `first_name` = :a) then 1 else 0 end from `DUAL`',
+                [':a' => 'John'],
             ], $q->render());
         } else {
-            self::assertSameSql('select exists (select * from `contacts` where `first_name` = :a)', $q->render()[0]);
-            self::assertSame([':a' => 'John'], $q->render()[1]);
+            self::assertSameSqlRender([
+                'select exists (select * from `contacts` where `first_name` = :a)',
+                [':a' => 'John'],
+            ], $q->render());
         }
     }
 
