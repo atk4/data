@@ -1386,6 +1386,31 @@ class SelectTest extends TestCase
         }
     }
 
+    /**
+     * @dataProvider provideFxStdevCases
+     */
+    #[DataProvider('provideFxStdevCases')]
+    public function testFxStdev(bool $sample): void
+    {
+        $expr = $this->q()->fxStdev('foo', $sample);
+
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+            self::assertSameSql(($sample ? 'stdev' : 'stdevp') . '(:a)', $expr->render()[0]);
+        } else {
+            self::assertSameSql(($sample ? 'stddev_samp' : 'stddev_pop') . '(:a)', $expr->render()[0]);
+        }
+        self::assertSame([':a' => 'foo'], $expr->render()[1]);
+    }
+
+    /**
+     * @return iterable<list<mixed>>
+     */
+    public static function provideFxStdevCases(): iterable
+    {
+        yield [false];
+        yield [true];
+    }
+
     public function testExists(): void
     {
         $q = $this->q()
