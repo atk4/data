@@ -211,6 +211,36 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
+     * @param array<string, mixed> $params
+     *
+     * @return array<string, mixed>
+     */
+    private function convertSqlRenderParamsFromSqlite(array $params): array
+    {
+        if ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            foreach ($params as $k => $v) {
+                assert(str_starts_with($k, ':'));
+                $newK = ':xx' . str_pad(substr($k, 1), 4, 'a', \STR_PAD_LEFT);
+                assert(!array_key_exists($newK, $params));
+                $params[$newK] = $v;
+                unset($params[$k]);
+            }
+        }
+
+        return $params;
+    }
+
+    /**
+     * @param array{string, array<string, mixed>} $expectedSqliteRender
+     * @param array{string, array<string, mixed>} $actualRender
+     */
+    protected function assertSameSqlRender(array $expectedSqliteRender, array $actualRender, string $message = ''): void
+    {
+        self::assertSameSql($expectedSqliteRender[0], $actualRender[0], $message);
+        self::assertSame($this->convertSqlRenderParamsFromSqlite($expectedSqliteRender[1]), $actualRender[1], $message);
+    }
+
+    /**
      * @param mixed $a
      * @param mixed $b
      */

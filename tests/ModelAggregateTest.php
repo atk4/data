@@ -113,12 +113,14 @@ class ModelAggregateTest extends TestCase
             'min' => ['expr' => 'min([amount])', 'type' => 'atk4_money'],
             'max' => ['expr' => 'max([amount])', 'type' => 'atk4_money'],
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'], // same as `s`, but reuse name `amount`
+            'stdev_pop' => ['expr' => $this->getConnection()->dsql()->fxStdev($aggregate->table->getField('amount'), false), 'type' => 'atk4_money'],
+            'stdev_samp' => ['expr' => $this->getConnection()->dsql()->fxStdev($aggregate->table->getField('amount')), 'type' => 'atk4_money'],
         ]);
         self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
         self::assertSameExportUnordered([
-            ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'avg' => 9.5, 'min' => 4.0, 'max' => 15.0, 'amount' => 19.0],
-            ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'avg' => 4.0, 'min' => 4.0, 'max' => 4.0, 'amount' => 4.0],
+            ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'avg' => 9.5, 'min' => 4.0, 'max' => 15.0, 'amount' => 19.0, 'stdev_pop' => 5.5, 'stdev_samp' => 7.7782],
+            ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'avg' => 4.0, 'min' => 4.0, 'max' => 4.0, 'amount' => 4.0, 'stdev_pop' => 0.0, 'stdev_samp' => null],
         ], $aggregate->export());
     }
 

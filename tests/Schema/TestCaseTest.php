@@ -220,6 +220,27 @@ class TestCaseTest extends TestCase
         );
     }
 
+    public function testAssertSameSql(): void
+    {
+        $this->expectException(ExpectationFailedException::class);
+        $this->expectExceptionMessageIs('Failed asserting that two strings are identical.');
+        self::assertSameSql('x', 'y');
+    }
+
+    public function testAssertSameSqlRenderSql(): void
+    {
+        $this->expectException(ExpectationFailedException::class);
+        $this->expectExceptionMessageIs('Failed asserting that two strings are identical.');
+        self::assertSameSqlRender(['x', []], ['y', []]);
+    }
+
+    public function testAssertSameSqlRenderParams(): void
+    {
+        $this->expectException(ExpectationFailedException::class);
+        $this->expectExceptionMessageIs('Failed asserting that two arrays are identical.');
+        self::assertSameSqlRender(['x', [':a' => 2]], ['x', [':a' => '2']]);
+    }
+
     /**
      * @param int<1, 12> $month
      *

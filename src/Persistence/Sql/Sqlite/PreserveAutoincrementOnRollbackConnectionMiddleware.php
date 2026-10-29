@@ -120,7 +120,7 @@ class PreserveAutoincrementOnRollbackConnectionMiddleware extends AbstractConnec
                     continue;
                 }
 
-                if ($afterRollbackValue === null) { // https://sqlite.org/forum/info/3e7cc380f0a159c6
+                if ($afterRollbackValue === null) { // https://sqlite.org/forum/forumpost/3e7cc380f0a159c6
                     $query = (new Query())
                         ->mode('insert')
                         ->set('name', $this->createExpressionFromStringLiteral($table));

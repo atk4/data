@@ -1182,6 +1182,19 @@ abstract class Query extends Expression
         return $this->expr('string_agg({}, ' . $this->escapeStringLiteral($separator) . ')', [$field]);
     }
 
+    /**
+     * @param string|Expressionable $field
+     *
+     * @return Expression
+     */
+    public function fxStdev($field, bool $sample = true)
+    {
+        return $this->expr(
+            ($sample ? 'stddev_samp' : 'stddev_pop') . '([])',
+            [$field]
+        );
+    }
+
     private function valueToJson(Expressionable $value): Expressionable
     {
         $makeReplaceFx = function ($v, $from, $to) {
