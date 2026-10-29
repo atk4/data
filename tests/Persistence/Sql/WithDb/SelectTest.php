@@ -360,6 +360,18 @@ class SelectTest extends TestCase
         );
     }
 
+    public function testFxPowRender(): void
+    {
+        $expr = $this->q()->fxPow('foo', 'bar');
+
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+            self::assertSameSql('power(cast(:a as float), :b)', $expr->render()[0]);
+        } else {
+            self::assertSameSql('power(:a, :b)', $expr->render()[0]);
+        }
+        self::assertSame([':a' => 'foo', ':b' => 'bar'], $expr->render()[1]);
+    }
+
     /**
      * @dataProvider provideFxPowCases
      *
