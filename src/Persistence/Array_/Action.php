@@ -148,6 +148,10 @@ class Action
                 }
 
                 break;
+            case 'json-array':
+                $res = json_encode($values, \JSON_PRESERVE_ZERO_FRACTION | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
+
+                break;
             default:
                 throw (new Exception('Array persistence unsupported aggregate function'))
                     ->addMoreInfo('action', $fx);

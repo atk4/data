@@ -455,6 +455,8 @@ class Sql extends Persistence
 
                 if ($fx === 'concat') {
                     $expr = $query->fxGroupConcat($field, $args['concatSeparator']);
+                } elseif ($fx === 'json-array') {
+                    $expr = $query->fxJsonArrayAgg($field);
                 } else {
                     $expr = $query->expr(
                         $type === 'fx'
