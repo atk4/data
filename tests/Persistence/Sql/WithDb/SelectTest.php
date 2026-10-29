@@ -497,29 +497,43 @@ class SelectTest extends TestCase
 
         if ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
             if (!MysqlConnection::isServerMariaDb($this->getConnection()) && version_compare($this->getConnection()->getServerVersion(), '5.7.8') < 0) {
-                self::assertSameSql('concat(\'[\', case when `u` + :a is not null then concat(\'"\', ' . $makeReplaceControlCharsFx('replace(replace(replace(`u` + :b, \'"\', \'\"\'), \'\\\', \'\\\\\'), \'\\\"\', \'\"\')') . ', \'"\') else \'null\' end, \']\')', $expr->render()[0]);
-                self::assertSame([':a' => 10, ':b' => 10], $expr->render()[1]);
+                self::assertSameSqlRender([
+                    'concat(\'[\', case when `u` + :a is not null then concat(\'"\', ' . $makeReplaceControlCharsFx('replace(replace(replace(`u` + :b, \'"\', \'\"\'), \'\\\', \'\\\\\'), \'\\\"\', \'\"\')') . ', \'"\') else \'null\' end, \']\')',
+                    [':a' => 10, ':b' => 10],
+                ], $expr->render());
             } else {
-                self::assertSameSql('json_array(`u` + :a)', $expr->render()[0]);
-                self::assertSame([':a' => 10], $expr->render()[1]);
+                self::assertSameSqlRender([
+                    'json_array(`u` + :a)',
+                    [':a' => 10],
+                ], $expr->render());
             }
         } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            self::assertSameSql('json_build_array(`u` + :a)', $expr->render()[0]);
-            self::assertSame([':a' => 10], $expr->render()[1]);
+            self::assertSameSqlRender([
+                'json_build_array(`u` + :a)',
+                [':a' => 10],
+            ], $expr->render());
         } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             if (version_compare($this->getConnection()->getServerVersion(), '16') < 0) {
-                self::assertSameSql('concat(\'[\', case when `u` + :a is not null then concat(\'"\', ' . $makeReplaceControlCharsFx('replace(replace(replace(`u` + :b, \'"\', \'\"\'), \'\\\', \'\\\\\'), \'\\\"\', \'\"\')') . ', \'"\') else \'null\' end, \']\')', $expr->render()[0]);
-                self::assertSame([':a' => 10, ':b' => 10], $expr->render()[1]);
+                self::assertSameSqlRender([
+                    'concat(\'[\', case when `u` + :a is not null then concat(\'"\', ' . $makeReplaceControlCharsFx('replace(replace(replace(`u` + :b, \'"\', \'\"\'), \'\\\', \'\\\\\'), \'\\\"\', \'\"\')') . ', \'"\') else \'null\' end, \']\')',
+                    [':a' => 10, ':b' => 10],
+                ], $expr->render());
             } else {
-                self::assertSameSql('json_array(`u` + :a null on null)', $expr->render()[0]);
-                self::assertSame([':a' => 10], $expr->render()[1]);
+                self::assertSameSqlRender([
+                    'json_array(`u` + :a null on null)',
+                    [':a' => 10],
+                ], $expr->render());
             }
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            self::assertSameSql('json_array(`u` + :a null on null returning CLOB)', $expr->render()[0]);
-            self::assertSame([':xxaaaa' => 10], $expr->render()[1]);
+            self::assertSameSqlRender([
+                'json_array(`u` + :a null on null returning CLOB)',
+                [':a' => 10],
+            ], $expr->render());
         } else {
-            self::assertSameSql('json_array(`u` + :a)', $expr->render()[0]);
-            self::assertSame([':a' => 10], $expr->render()[1]);
+            self::assertSameSqlRender([
+                'json_array(`u` + :a)',
+                [':a' => 10],
+            ], $expr->render());
         }
     }
 
@@ -661,36 +675,46 @@ class SelectTest extends TestCase
         $expr = $this->q()->fxJsonValue($this->e('[]', ['{"v":10}']), '$.v', 'bigint');
 
         if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
-            self::assertSameSql('case when json_type(:a, \'$.v\') not in(\'array\', \'object\') then json_extract(:b, \'$.v\') end', $expr->render()[0]);
-            self::assertSame([':a' => '{"v":10}', ':b' => '{"v":10}'], $expr->render()[1]);
+            self::assertSameSqlRender([
+                'case when json_type(:a, \'$.v\') not in(\'array\', \'object\') then json_extract(:b, \'$.v\') end',
+                [':a' => '{"v":10}', ':b' => '{"v":10}'],
+            ], $expr->render());
         } elseif ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform && (MysqlConnection::isServerMariaDb($this->getConnection()) || version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0)) {
-            if (MysqlConnection::isServerMariaDb($this->getConnection())) {
-                self::assertSameSql('cast(json_value(:a, \'$.v\') as SIGNED)', $expr->render()[0]);
-            } else {
-                self::assertSameSql('json_value(cast(:a as JSON), \'$.v\' returning SIGNED)', $expr->render()[0]);
-            }
-            self::assertSame([':a' => '{"v":10}'], $expr->render()[1]);
+            self::assertSameSqlRender([
+                MysqlConnection::isServerMariaDb($this->getConnection())
+                    ? 'cast(json_value(:a, \'$.v\') as SIGNED)'
+                    : 'json_value(cast(:a as JSON), \'$.v\' returning SIGNED)',
+                [':a' => '{"v":10}'],
+            ], $expr->render());
         } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             if (version_compare($this->getConnection()->getServerVersion(), '17.0') < 0) {
-                self::assertSameSql('select `c0` `cv` from xmltable(\'/t/r\' passing xmlparse(document :a) columns `c0` BIGINT path \'@c0\') `t`', $expr->render()[0]);
-                self::assertSame([':a' => '<t><r c0="10"/></t>'], $expr->render()[1]);
+                self::assertSameSqlRender([
+                    'select `c0` `cv` from xmltable(\'/t/r\' passing xmlparse(document :a) columns `c0` BIGINT path \'@c0\') `t`',
+                    [':a' => '<t><r c0="10"/></t>'],
+                ], $expr->render());
             } else {
-                self::assertSameSql('json_value(:a, \'strict $.v\' returning BIGINT)', $expr->render()[0]);
-                self::assertSame([':a' => '{"v":10}'], $expr->render()[1]);
+                self::assertSameSqlRender([
+                    'json_value(:a, \'strict $.v\' returning BIGINT)',
+                    [':a' => '{"v":10}'],
+                ], $expr->render());
             }
         } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            self::assertSameSql('select `c0` `cv` from openjson(concat(\'[\', concat(\'[\', :a, \']\'), \']\'), \'$[0]\') with (`c0` BIGINT \'$.v\') `t`', $expr->render()[0]);
-            self::assertSame([':a' => '{"v":10}'], $expr->render()[1]);
+            self::assertSameSqlRender([
+                'select `c0` `cv` from openjson(concat(\'[\', concat(\'[\', :a, \']\'), \']\'), \'$[0]\') with (`c0` BIGINT \'$.v\') `t`',
+                [':a' => '{"v":10}'],
+            ], $expr->render());
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            if (version_compare($this->getConnection()->getServerVersion(), '21.0') < 0) {
-                self::assertSameSql('json_value(concat(concat(TO_CLOB(\'[\'), TO_CLOB(:a)), TO_CLOB(\']\')), \'$[0].v\' returning NUMBER(20))', $expr->render()[0]);
-            } else {
-                self::assertSameSql('json_value(:a, \'$.v\' returning NUMBER(20))', $expr->render()[0]);
-            }
-            self::assertSame([':xxaaaa' => '{"v":10}'], $expr->render()[1]);
+            self::assertSameSqlRender([
+                version_compare($this->getConnection()->getServerVersion(), '21.0') < 0
+                    ? 'json_value(concat(concat(TO_CLOB(\'[\'), TO_CLOB(:a)), TO_CLOB(\']\')), \'$[0].v\' returning NUMBER(20))'
+                    : 'json_value(:a, \'$.v\' returning NUMBER(20))',
+                [':a' => '{"v":10}'],
+            ], $expr->render());
         } else {
-            self::assertSameSql('select :a `cv`', $expr->render()[0]);
-            self::assertSame([':a' => 10], $expr->render()[1]);
+            self::assertSameSqlRender([
+                'select :a `cv`',
+                [':a' => 10],
+            ], $expr->render());
         }
     }
 
@@ -699,8 +723,10 @@ class SelectTest extends TestCase
         $expr = $this->q()->fxJsonValue($this->e('[]', ['{"v":10}']), '$.v', 'json');
 
         if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
-            self::assertSameSql('case json_type(:a, \'$.v\') when \'text\' then json_quote(json_extract(:b, \'$.v\')) when \'false\' then \'false\' when \'true\' then \'true\' else json_extract(:c, \'$.v\') end', $expr->render()[0]);
-            self::assertSame([':a' => '{"v":10}', ':b' => '{"v":10}', ':c' => '{"v":10}'], $expr->render()[1]);
+            self::assertSameSqlRender([
+                'case json_type(:a, \'$.v\') when \'text\' then json_quote(json_extract(:b, \'$.v\')) when \'false\' then \'false\' when \'true\' then \'true\' else json_extract(:c, \'$.v\') end',
+                [':a' => '{"v":10}', ':b' => '{"v":10}', ':c' => '{"v":10}'],
+            ], $expr->render());
         } elseif ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform && (MysqlConnection::isServerMariaDb($this->getConnection()) || version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0)) {
             self::assertSameSqlRender([
                 MysqlConnection::isServerMariaDb($this->getConnection())
