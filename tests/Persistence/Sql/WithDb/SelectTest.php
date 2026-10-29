@@ -702,33 +702,41 @@ class SelectTest extends TestCase
             self::assertSameSql('case json_type(:a, \'$.v\') when \'text\' then json_quote(json_extract(:b, \'$.v\')) when \'false\' then \'false\' when \'true\' then \'true\' else json_extract(:c, \'$.v\') end', $expr->render()[0]);
             self::assertSame([':a' => '{"v":10}', ':b' => '{"v":10}', ':c' => '{"v":10}'], $expr->render()[1]);
         } elseif ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform && (MysqlConnection::isServerMariaDb($this->getConnection()) || version_compare($this->getConnection()->getServerVersion(), '8.0') >= 0)) {
-            if (MysqlConnection::isServerMariaDb($this->getConnection())) {
-                self::assertSameSql('case when json_type(json_extract(:a, \'$.v\')) != \'NULL\' then json_extract(:b, \'$.v\') end', $expr->render()[0]);
-            } else {
-                self::assertSameSql('case when json_type(json_extract(cast(:a as JSON), \'$.v\')) != \'NULL\' then json_extract(cast(:b as JSON), \'$.v\') end', $expr->render()[0]);
-            }
-            self::assertSame([':a' => '{"v":10}', ':b' => '{"v":10}'], $expr->render()[1]);
+            self::assertSameSqlRender([
+                MysqlConnection::isServerMariaDb($this->getConnection())
+                    ? 'case when json_type(json_extract(:a, \'$.v\')) != \'NULL\' then json_extract(:b, \'$.v\') end'
+                    : 'case when json_type(json_extract(cast(:a as JSON), \'$.v\')) != \'NULL\' then json_extract(cast(:b as JSON), \'$.v\') end',
+                [':a' => '{"v":10}', ':b' => '{"v":10}'],
+            ], $expr->render());
         } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             if (version_compare($this->getConnection()->getServerVersion(), '17.0') < 0) {
-                self::assertSameSql('select `c0` `cv` from xmltable(\'/t/r\' passing xmlparse(document :a) columns `c0` JSON path \'@c0\') `t`', $expr->render()[0]);
-                self::assertSame([':a' => '<t><r c0="10"/></t>'], $expr->render()[1]);
+                self::assertSameSqlRender([
+                    'select `c0` `cv` from xmltable(\'/t/r\' passing xmlparse(document :a) columns `c0` JSON path \'@c0\') `t`',
+                    [':a' => '<t><r c0="10"/></t>'],
+                ], $expr->render());
             } else {
-                self::assertSameSql('case when json_typeof(json_query(:a, \'strict $.v\' returning JSON)) != \'null\' then json_query(:b, \'strict $.v\' returning JSON) end', $expr->render()[0]);
-                self::assertSame([':a' => '{"v":10}', ':b' => '{"v":10}'], $expr->render()[1]);
+                self::assertSameSqlRender([
+                    'case when json_typeof(json_query(:a, \'strict $.v\' returning JSON)) != \'null\' then json_query(:b, \'strict $.v\' returning JSON) end',
+                    [':a' => '{"v":10}', ':b' => '{"v":10}'],
+                ], $expr->render());
             }
         } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            self::assertSameSql('select `c0` `cv` from openjson(concat(\'[\', concat(\'[\', :a, \']\'), \']\'), \'$[0]\') with (`c0` NVARCHAR(MAX) \'$.v\' as json) `t`', $expr->render()[0]);
-            self::assertSame([':a' => '{"v":10}'], $expr->render()[1]);
+            self::assertSameSqlRender([
+                'select `c0` `cv` from openjson(concat(\'[\', concat(\'[\', :a, \']\'), \']\'), \'$[0]\') with (`c0` NVARCHAR(MAX) \'$.v\' as json) `t`',
+                [':a' => '{"v":10}'],
+            ], $expr->render());
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            if (version_compare($this->getConnection()->getServerVersion(), '21.0') < 0) {
-                self::assertSameSql('case when not json_equal(json_query(concat(concat(TO_CLOB(\'[\'), TO_CLOB(:a)), TO_CLOB(\']\')), \'$[0].v\' returning CLOB), \'null\') then json_query(concat(concat(TO_CLOB(\'[\'), TO_CLOB(:b)), TO_CLOB(\']\')), \'$[0].v\' returning CLOB) end', $expr->render()[0]);
-            } else {
-                self::assertSameSql('case when not json_equal(json_query(:a, \'$.v\' returning CLOB), \'null\') then json_query(:b, \'$.v\' returning CLOB) end', $expr->render()[0]);
-            }
-            self::assertSame([':xxaaaa' => '{"v":10}', ':xxaaab' => '{"v":10}'], $expr->render()[1]);
+            self::assertSameSqlRender([
+                version_compare($this->getConnection()->getServerVersion(), '21.0') < 0
+                    ? 'case when not json_equal(json_query(concat(concat(TO_CLOB(\'[\'), TO_CLOB(:a)), TO_CLOB(\']\')), \'$[0].v\' returning CLOB), \'null\') then json_query(concat(concat(TO_CLOB(\'[\'), TO_CLOB(:b)), TO_CLOB(\']\')), \'$[0].v\' returning CLOB) end'
+                    : 'case when not json_equal(json_query(:a, \'$.v\' returning CLOB), \'null\') then json_query(:b, \'$.v\' returning CLOB) end',
+                [':a' => '{"v":10}', ':b' => '{"v":10}'],
+            ], $expr->render());
         } else {
-            self::assertSameSql('select :a `cv`', $expr->render()[0]);
-            self::assertSame([':a' => '10'], $expr->render()[1]);
+            self::assertSameSqlRender([
+                'select :a `cv`',
+                [':a' => '10'],
+            ], $expr->render());
         }
     }
 
