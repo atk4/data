@@ -219,8 +219,8 @@ class Query extends BaseQuery
 
         return $this->expr(
             '(select sum((select'
-                . ' (1 - (rn - floor(rn))) * (select value from (select value, row_number() over (order by value) - 1 i from ' . $fromNotNullSql . ') where i = cast(floor(rn) as integer))'
-                . ' + (rn - floor(rn)) * (select value from (select value, row_number() over (order by value) - 1 i from ' . $fromNotNullSql . ') where i = cast(ceil(rn) as integer))'
+                . ' (1 - (rn - floor(rn))) * (select value from (select value, row_number() over (order by value) - 1 i from ' . $fromNotNullSql . ') where i = floor(rn))'
+                . ' + (rn - floor(rn)) * (select value from (select value, row_number() over (order by value) - 1 i from ' . $fromNotNullSql . ') where i = ceil(rn))'
                 . ' from (select ' . parent::castFloatToString($percentile) . ' * (count(value) - 1) rn from ' . $fromNotNullSql . ')'
                . ')) from ' . $fromSql . ')',
             ['v' => $field]
