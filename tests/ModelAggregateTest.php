@@ -110,7 +110,7 @@ class ModelAggregateTest extends TestCase
         $aggregate->addField('client');
 
         // TODO find a way how to support MySQL/MariaDB and MSSQL
-        // https://dbfiddle.uk/UIURIBTy
+        // https://dbfiddle.uk/90lzz4Sv
         $skipPercentileTest = $this->getDatabasePlatform() instanceof AbstractMySQLPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform;
 
         $aggregate->setGroupBy(['client_id'], [

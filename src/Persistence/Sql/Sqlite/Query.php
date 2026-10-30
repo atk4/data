@@ -200,12 +200,20 @@ class Query extends BaseQuery
     #[\Override]
     public function fxMedian($field)
     {
+        if (CreateMathFunctionsMiddleware::nativePercentileSupport()) {
+            return parent::fxMedian($field);
+        }
+
         return $this->fxPercentile($field, 0.5);
     }
 
     #[\Override]
     public function fxPercentile($field, float $percentile)
     {
+        if (CreateMathFunctionsMiddleware::nativePercentileSupport()) {
+            return $this->expr('percentile_cont([], [])', [$field, $percentile]);
+        }
+
         // TODO make SELECT subqueries using ->dsql() once supported by AggregateModel
         // https://github.com/atk4/data/blob/c007602c66f502b847bc768b319b7bc71c98e42d/src/Model/AggregateModel.php#L97
 
@@ -214,16 +222,16 @@ class Query extends BaseQuery
         // https://sqlite.org/forum/forumpost/c9970a37edf11cd1
         // https://github.com/sqlite/sqlite/commit/5e4233a9e48b124d4d342b757b34e4ae849f5cf8
         $fromSql = version_compare(Connection::getDriverVersion(), '3.45') < 0
-            ? 'json_each(\'[\' || json_group_array([v]) || \']\') __atk4_aggr_t1__'
-            : '(select json_group_array([v]) value) __atk4_aggr_t1__';
+            ? 'json_each(\'[\' || json_group_array([]) || \']\') __atk4_aggr_t1__'
+            : '(select json_group_array([]) value) __atk4_aggr_t1__';
 
         return $this->expr(
             '(select sum((select'
                 . ' (1 - (rn - floor(rn))) * (select value from (select value, row_number() over (order by value) - 1 i from ' . $fromNotNullSql . ') where i = floor(rn))'
                 . ' + (rn - floor(rn)) * (select value from (select value, row_number() over (order by value) - 1 i from ' . $fromNotNullSql . ') where i = ceil(rn))'
-                . ' from (select ' . parent::castFloatToString($percentile) . ' * (count(value) - 1) rn from ' . $fromNotNullSql . ')'
+                . ' from (select [] * (count(value) - 1) rn from ' . $fromNotNullSql . ')'
                . ')) from ' . $fromSql . ')',
-            ['v' => $field]
+            [$percentile, $field]
         );
     }
 
