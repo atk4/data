@@ -1199,7 +1199,7 @@ abstract class Query extends Expression
      */
     public function fxPercentile($field, float $percentile)
     {
-        return $this->expr('percentile_cont([], [])', [$field, $percentile]);
+        return $this->expr('percentile_cont([]) within group (order by [])', [$percentile, $field]);
     }
 
     /**
