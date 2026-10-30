@@ -31,7 +31,7 @@ class Connection extends BaseConnection
                     : []
             ),
             ...(
-                CreateMathFunctionsMiddleware::isNeeded()
+                !CreateMathFunctionsMiddleware::nativeMathSupport()
                     ? [new CreateMathFunctionsMiddleware()]
                     : []
             ),

@@ -395,7 +395,7 @@ class SelectTest extends TestCase
         }
 
         // https://github.com/php/php-src/issues/25021
-        if ($this->getDatabasePlatform() instanceof SQLitePlatform && CreateMathFunctionsMiddleware::isNeeded() && $base >= (2 ** 31)) {
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform && !CreateMathFunctionsMiddleware::nativeMathSupport() && $base >= (2 ** 31)) {
             $expected = 0;
         }
 
@@ -449,7 +449,7 @@ class SelectTest extends TestCase
         }
 
         // https://github.com/php/php-src/issues/25021
-        if ($this->getDatabasePlatform() instanceof SQLitePlatform && CreateMathFunctionsMiddleware::isNeeded() && $value >= (2 ** 31)) {
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform && !CreateMathFunctionsMiddleware::nativeMathSupport() && $value >= (2 ** 31)) {
             $expected = 0;
         }
 
@@ -1424,6 +1424,64 @@ class SelectTest extends TestCase
                 'select `age`, string_agg(`name`, \',\') from `people` group by `age`',
                 [],
             ], $q->render());
+        }
+    }
+
+    public function testFxMedianRender(): void
+    {
+        $expr = $this->q()->fxMedian('foo');
+
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform && !CreateMathFunctionsMiddleware::nativePercentileSupport()) {
+            if (version_compare(SqliteConnection::getDriverVersion(), '3.45') < 0) {
+                self::assertSameSqlRender([
+                    '(select sum((select (1 - (rn - floor(rn))) * (select value from (select value, row_number() over (order by value) - 1 i from json_each(__atk4_aggr_t1__.value) where value is not null) where i = floor(rn)) + (rn - floor(rn)) * (select value from (select value, row_number() over (order by value) - 1 i from json_each(__atk4_aggr_t1__.value) where value is not null) where i = ceil(rn)) from (select :a * (count(value) - 1) rn from json_each(__atk4_aggr_t1__.value) where value is not null))) from json_each(\'[\' || json_group_array(:b) || \']\') __atk4_aggr_t1__)',
+                    [':a' => 0.5, ':b' => 'foo'],
+                ], $expr->render());
+            } else {
+                self::assertSameSqlRender([
+                    '(select sum((select (1 - (rn - floor(rn))) * (select value from (select value, row_number() over (order by value) - 1 i from json_each(__atk4_aggr_t1__.value) where value is not null) where i = floor(rn)) + (rn - floor(rn)) * (select value from (select value, row_number() over (order by value) - 1 i from json_each(__atk4_aggr_t1__.value) where value is not null) where i = ceil(rn)) from (select :a * (count(value) - 1) rn from json_each(__atk4_aggr_t1__.value) where value is not null))) from (select json_group_array(:b) value) __atk4_aggr_t1__)',
+                    [':a' => 0.5, ':b' => 'foo'],
+                ], $expr->render());
+            }
+        } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            self::assertSameSqlRender([
+                'percentile_cont(:a) within group (order by :b)',
+                [':a' => 0.5, ':b' => 'foo'],
+            ], $expr->render());
+        } else {
+            self::assertSameSqlRender([
+                'median(:a)',
+                [':a' => 'foo'],
+            ], $expr->render());
+        }
+    }
+
+    public function testFxPercentileRender(): void
+    {
+        $expr = $this->q()->fxPercentile('foo', 0.12345678);
+
+        if ($this->getDatabasePlatform() instanceof SQLitePlatform) {
+            if (CreateMathFunctionsMiddleware::nativePercentileSupport()) {
+                self::assertSameSqlRender([
+                    'percentile_cont(:a, :b)',
+                    [':a' => 'foo', ':b' => 0.12345678],
+                ], $expr->render());
+            } elseif (version_compare(SqliteConnection::getDriverVersion(), '3.45') < 0) {
+                self::assertSameSqlRender([
+                    '(select sum((select (1 - (rn - floor(rn))) * (select value from (select value, row_number() over (order by value) - 1 i from json_each(__atk4_aggr_t1__.value) where value is not null) where i = floor(rn)) + (rn - floor(rn)) * (select value from (select value, row_number() over (order by value) - 1 i from json_each(__atk4_aggr_t1__.value) where value is not null) where i = ceil(rn)) from (select :a * (count(value) - 1) rn from json_each(__atk4_aggr_t1__.value) where value is not null))) from json_each(\'[\' || json_group_array(:b) || \']\') __atk4_aggr_t1__)',
+                    [':a' => 0.12345678, ':b' => 'foo'],
+                ], $expr->render());
+            } else {
+                self::assertSameSqlRender([
+                    '(select sum((select (1 - (rn - floor(rn))) * (select value from (select value, row_number() over (order by value) - 1 i from json_each(__atk4_aggr_t1__.value) where value is not null) where i = floor(rn)) + (rn - floor(rn)) * (select value from (select value, row_number() over (order by value) - 1 i from json_each(__atk4_aggr_t1__.value) where value is not null) where i = ceil(rn)) from (select :a * (count(value) - 1) rn from json_each(__atk4_aggr_t1__.value) where value is not null))) from (select json_group_array(:b) value) __atk4_aggr_t1__)',
+                    [':a' => 0.12345678, ':b' => 'foo'],
+                ], $expr->render());
+            }
+        } else {
+            self::assertSameSqlRender([
+                'percentile_cont(:a) within group (order by :b)',
+                [':a' => 0.12345678, ':b' => 'foo'],
+            ], $expr->render());
         }
     }
 
