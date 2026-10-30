@@ -1149,19 +1149,6 @@ abstract class Query extends Expression
     }
 
     /**
-     * Returns a query for a function, which can be used as part of the GROUP
-     * query which would concatenate all matching fields.
-     *
-     * @param string|Expressionable $field
-     *
-     * @return Expression
-     */
-    public function groupConcat($field, string $separator = ',')
-    {
-        throw new Exception('groupConcat() is SQL-dependent, so use a correct class');
-    }
-
-    /**
      * @param string|Expressionable ...$values
      *
      * @return Expression
@@ -1171,6 +1158,62 @@ abstract class Query extends Expression
         return $this->expr(
             'concat(' . implode(', ', array_fill(0, count($values), '[]')) . ')',
             $values
+        );
+    }
+
+    /**
+     * @param string|Expressionable $base
+     * @param string|Expressionable $exponent
+     *
+     * @return Expression
+     */
+    public function fxPow($base, $exponent)
+    {
+        return $this->expr('power([], [])', [$base, $exponent]);
+    }
+
+    /**
+     * Returns an expression which can be used as part of the GROUP BY query which would concatenate all matching fields.
+     *
+     * @param string|Expressionable $field
+     *
+     * @return Expression
+     */
+    public function fxGroupConcat($field, string $separator = ',')
+    {
+        return $this->expr('string_agg({}, ' . $this->escapeStringLiteral($separator) . ')', [$field]);
+    }
+
+    /**
+     * @param string|Expressionable $field
+     *
+     * @return Expression
+     */
+    public function fxMedian($field)
+    {
+        return $this->expr('median([])', [$field]);
+    }
+
+    /**
+     * @param string|Expressionable $field
+     *
+     * @return Expression
+     */
+    public function fxPercentile($field, float $percentile)
+    {
+        return $this->expr('percentile_cont([]) within group (order by [])', [$percentile, $field]);
+    }
+
+    /**
+     * @param string|Expressionable $field
+     *
+     * @return Expression
+     */
+    public function fxStdev($field, bool $sample = true)
+    {
+        return $this->expr(
+            ($sample ? 'stddev_samp' : 'stddev_pop') . '([])',
+            [$field]
         );
     }
 
@@ -1244,7 +1287,7 @@ abstract class Query extends Expression
         return $this->fxConcat(
             new RawExpression($this->escapeStringLiteral('[')),
             $this->expr('replace([], [], [])', [
-                $this->groupConcat($jsonExpr, '-""-'),
+                $this->fxGroupConcat($jsonExpr, '-""-'),
                 new RawExpression($this->escapeStringLiteral('-""-')),
                 new RawExpression($this->escapeStringLiteral(', ')),
             ]),

@@ -124,9 +124,9 @@ class Query extends BaseQuery
     }
 
     #[\Override]
-    public function groupConcat($field, string $separator = ','): BaseExpression
+    public function fxMedian($field)
     {
-        return $this->expr('string_agg({}, [])', [$field, $separator]);
+        return $this->fxPercentile($field, 0.5);
     }
 
     #[\Override]

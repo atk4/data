@@ -59,14 +59,14 @@ class EmailField extends Field
     /**
      * @param list<string> $types
      */
-    private function hasAnyDnsRecord(string $domain, array $types = ['MX', 'A', 'AAAA', 'CNAME']): bool
+    private function hasAnyDnsRecord(string $domain, array $types = ['mx', 'a', 'aaaa', 'cname']): bool
     {
-        foreach (array_unique(array_map('strtoupper', $types)) as $t) {
+        foreach (array_unique(array_map('strtolower', $types)) as $t) {
             $dnsConsts = [
-                'MX' => \DNS_MX,
-                'A' => \DNS_A,
-                'AAAA' => \DNS_AAAA,
-                'CNAME' => \DNS_CNAME,
+                'mx' => \DNS_MX,
+                'a' => \DNS_A,
+                'aaaa' => \DNS_AAAA,
+                'cname' => \DNS_CNAME,
             ];
 
             $records = @dns_get_record($domain . '.', $dnsConsts[$t]);

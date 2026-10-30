@@ -30,6 +30,11 @@ class Connection extends BaseConnection
                     ? [new CreateConcatFunctionMiddleware()]
                     : []
             ),
+            ...(
+                !CreateMathFunctionsMiddleware::nativeMathSupport()
+                    ? [new CreateMathFunctionsMiddleware()]
+                    : []
+            ),
             new CreateRegexpLikeFunctionMiddleware(),
             new CreateRegexpReplaceFunctionMiddleware(),
         ]);

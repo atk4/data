@@ -215,9 +215,18 @@ class Query extends BaseQuery
     }
 
     #[\Override]
-    public function groupConcat($field, string $separator = ',')
+    public function fxPow($base, $exponent)
     {
-        return $this->expr('string_agg({}, ' . $this->escapeStringLiteral($separator) . ')', [$field]);
+        return $this->expr('power(cast([] as float), [])', [$base, $exponent]);
+    }
+
+    #[\Override]
+    public function fxStdev($field, bool $sample = true)
+    {
+        return $this->expr(
+            ($sample ? 'stdev' : 'stdevp') . '([])',
+            [$field]
+        );
     }
 
     #[\Override]

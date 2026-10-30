@@ -70,7 +70,7 @@ class Query extends BaseQuery
     }
 
     #[\Override]
-    public function groupConcat($field, string $separator = ',')
+    public function fxGroupConcat($field, string $separator = ',')
     {
         return $this->expr('group_concat({} separator ' . $this->escapeStringLiteral($separator) . ')', [$field]);
     }

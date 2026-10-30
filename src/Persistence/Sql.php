@@ -454,7 +454,7 @@ class Sql extends Persistence
                 $query = $this->action($model, 'select', [[]]);
 
                 if ($fx === 'concat') {
-                    $expr = $query->groupConcat($field, $args['concatSeparator']);
+                    $expr = $query->fxGroupConcat($field, $args['concatSeparator']);
                 } else {
                     $expr = $query->expr(
                         $type === 'fx'

@@ -9,6 +9,7 @@ use Atk4\Data\Model;
 use Atk4\Data\Model\Scope;
 use Atk4\Data\Model\Scope\Condition;
 use Atk4\Data\Persistence\Sql\Mysql\Connection as MysqlConnection;
+use Atk4\Data\Persistence\Sql\Sqlite\Connection as SqliteConnection;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
@@ -368,11 +369,9 @@ class ScopeTest extends TestCase
         $user->addCondition('Tickets/user/country_id/Users/#', '>', 1);
         $user->addCondition('Tickets/user/country_id/Users/#', '>=', 2);
         $user->addCondition('Tickets/user/country_id/Users/country_id/Users/#', '>', 1);
-        if (!$this->getDatabasePlatform() instanceof SQLitePlatform) {
-            // TODO limitation of Sqlite parser stack has been lifted
-            // https://sqlite.org/forum/info/a2f5a952679c0fc5
+        if (!$this->getDatabasePlatform() instanceof SQLitePlatform || version_compare(SqliteConnection::getDriverVersion(), '3.46') >= 0) {
+            // https://sqlite.org/forum/forumpost/a2f5a952679c0fc5
             // https://github.com/sqlite/sqlite/commit/7659ce22c5
-            // expected to be supported since SQLite v3.46.0
             $user->addCondition('Tickets/user/country_id/Users/country_id/Users/name', '!=', null); // should be always true
         }
 

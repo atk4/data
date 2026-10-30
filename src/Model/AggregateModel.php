@@ -84,16 +84,21 @@ class AggregateModel extends Model
         }
 
         foreach ($aggregateExpressions as $name => $seed) {
-            $exprArgs = [];
             // if field is defined in the parent model then it can be used in expression
-            if ($this->table->hasField($name)) {
-                $exprArgs = [$this->table->getField($name)];
-            }
+            $exprArgs = $this->table->hasField($name)
+                ? [$this->table->getField($name)]
+                : [];
 
-            $seed['expr'] = $this->table->expr($seed['expr'], $exprArgs);
+            if (!$seed['expr'] instanceof Expression) { // to support Query::fxStdev()
+                $seed['expr'] = $this->table->expr($seed['expr'], $exprArgs);
+            }
 
             // convert base model fields to aliases, they are always already materialized as the base model is SQL inner table
             foreach ($seed['expr']->args['custom'] as $argK => $argV) {
+                if (is_int($argV) || is_float($argV)) { // to support Query::fxPercentile()
+                    continue;
+                }
+
                 // restore field with original model cloned in "TODO horrible hack to render the field with a table prefix" in Persistence\Sql::expr()
                 assert($argV instanceof Field);
                 if ($argV->getOwner() !== $this->table && $argV->getOwner()->table === $this->table->table && $argV->getOwner()->tableAlias === $this->table->tableAlias) {

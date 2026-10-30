@@ -153,10 +153,6 @@ class HasMany extends Reference
             $fx = function () use ($alias) {
                 return $this->refLink()->action('count', ['alias' => $alias]);
             };
-        } elseif (in_array($defaults['aggregate'], ['sum', 'avg', 'min', 'max', 'count'], true)) {
-            $fx = function () use ($defaults, $field) {
-                return $this->refLink()->action('fx0', [$defaults['aggregate'], $field]);
-            };
         } elseif ($defaults['aggregate'] === 'json') {
             if (!isset($defaults['fields'])) {
                 throw new Exception('JSON aggregate requires "fields" parameter with array of field names');
@@ -243,12 +239,14 @@ class HasMany extends Reference
             };
         } else {
             $fx = function () use ($defaults, $field) {
+                $nullAsZero = $defaults['aggregate'] === 'sum';
+
                 $args = [$defaults['aggregate'], $field];
                 if ($defaults['aggregate'] === 'concat') {
                     $args['concatSeparator'] = $defaults['concatSeparator'];
                 }
 
-                return $this->refLink()->action('fx', $args);
+                return $this->refLink()->action($nullAsZero ? 'fx0' : 'fx', $args);
             };
         }
 

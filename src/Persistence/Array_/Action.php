@@ -76,42 +76,84 @@ class Action
     }
 
     /**
+     * @param scalar|null $value
+     */
+    private function setScalarResult($value): void
+    {
+        $this->generator = new \ArrayIterator([['v' => $value]]);
+        $this->columns = ['v'];
+    }
+
+    /**
      * Calculates SUM|AVG|MIN|MAX aggregate values for $field.
      *
      * @return $this
      */
-    public function aggregate(string $fx, string $field, bool $coalesce = false)
+    public function aggregate(string $fx, string $field, bool $nullAsZero = false)
     {
-        $column = array_column($this->getRows(), $field);
+        $fx = strtolower($fx);
 
-        switch (strtoupper($fx)) {
-            case 'SUM':
-                $res = array_sum($column);
+        $valuesAll = array_column($this->getRows(), $field);
+        $values = array_values(array_filter($valuesAll, static fn ($v) => $v !== null));
+
+        if (count($values) === 1 && $fx === 'stddev_samp') {
+            $values = [];
+        }
+
+        if (count($values) === 0 || ($values !== $valuesAll && !$nullAsZero)) {
+            $this->setScalarResult($nullAsZero ? 0 : null);
+
+            return $this;
+        }
+
+        switch ($fx) {
+            case 'count':
+                $res = count($values);
 
                 break;
-            case 'AVG':
-                if (!$coalesce) { // TODO add tests and verify against SQL
-                    $column = array_filter($column, static fn ($v) => $v !== null);
+            case 'sum':
+                $res = array_sum($values);
+
+                break;
+            case 'avg':
+                $res = array_sum($values) / count($values);
+
+                break;
+            case 'min':
+                $res = min($values);
+
+                break;
+            case 'max':
+                $res = max($values);
+
+                break;
+            case 'median':
+                sort($values);
+                $i = (int) floor((count($values) - 1) / 2);
+                $j = (int) floor(count($values) / 2);
+                $res = ($values[$i] + $values[$j]) / 2;
+
+                break;
+            case 'stddev_pop':
+            case 'stddev_samp':
+                $sum = 0;
+                $avg = array_sum($values) / count($values);
+                foreach ($values as $v) {
+                    $sum += ($v - $avg) ** 2;
                 }
-
-                $res = array_sum($column) / count($column);
-
-                break;
-            case 'MAX':
-                $res = max($column);
-
-                break;
-            case 'MIN':
-                $res = min($column);
+                $resSquared = $sum / (count($values) - ($fx === 'stddev_samp' ? 1 : 0));
+                $res = sqrt($resSquared);
+                if ($resSquared === (int) $res * (int) $res) {
+                    $res = (int) $res;
+                }
 
                 break;
             default:
-                throw (new Exception('Array persistence driver action unsupported format'))
+                throw (new Exception('Array persistence unsupported aggregate function'))
                     ->addMoreInfo('action', $fx);
         }
 
-        $this->generator = new \ArrayIterator([['v' => $res]]);
-        $this->columns = ['v'];
+        $this->setScalarResult($res);
 
         return $this;
     }
@@ -139,7 +181,7 @@ class Action
                     ->addMoreInfo('condition', $condition);
             }
 
-            return $this->evaluateIf($row[$field->shortName] ?? null, $operator, $value);
+            return $this->evaluateIf($row[$field->shortName], $operator, $value);
         } elseif ($condition instanceof Model\Scope) { // nested conditions
             $isOr = $condition->isOr();
             $nestedConditions = $condition->getNestedConditions();
@@ -356,8 +398,7 @@ class Action
      */
     public function count()
     {
-        $this->generator = new \ArrayIterator([['v' => iterator_count($this->generator)]]);
-        $this->columns = ['v'];
+        $this->setScalarResult(iterator_count($this->generator));
 
         return $this;
     }
@@ -370,8 +411,7 @@ class Action
     public function exists()
     {
         $this->generator->rewind();
-        $this->generator = new \ArrayIterator([['v' => $this->generator->valid() ? 1 : 0]]);
-        $this->columns = ['v'];
+        $this->setScalarResult($this->generator->valid() ? 1 : 0);
 
         return $this;
     }

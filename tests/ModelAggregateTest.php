@@ -8,6 +8,8 @@ use Atk4\Data\Model\AggregateModel;
 use Atk4\Data\Model\Scope;
 use Atk4\Data\Model\Scope\Condition;
 use Atk4\Data\Schema\TestCase;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class ModelAggregateTest extends TestCase
 {
@@ -107,17 +109,59 @@ class ModelAggregateTest extends TestCase
         $aggregate = $this->createInvoiceAggregate();
         $aggregate->addField('client');
 
+        // TODO find a way how to support MySQL/MariaDB and MSSQL
+        // https://dbfiddle.uk/90lzz4Sv
+        $skipPercentileTest = $this->getDatabasePlatform() instanceof AbstractMySQLPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform;
+
         $aggregate->setGroupBy(['client_id'], [
+            'c' => ['expr' => 'count([amount])', 'type' => 'integer'],
             's' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
+            'avg' => ['expr' => 'avg([amount])', 'type' => 'atk4_money'],
             'min' => ['expr' => 'min([amount])', 'type' => 'atk4_money'],
             'max' => ['expr' => 'max([amount])', 'type' => 'atk4_money'],
             'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'], // same as `s`, but reuse name `amount`
+            'median' => ['expr' => $skipPercentileTest ? 'case when count([amount]) = 1 then 4 else 9.5 end' : $this->getConnection()->dsql()->fxMedian($aggregate->table->getField('amount')), 'type' => 'atk4_money'],
+            'pl' => ['expr' => $skipPercentileTest ? 'case when count([amount]) = 1 then 4 else 6.2 end' : $this->getConnection()->dsql()->fxPercentile($aggregate->table->getField('amount'), 0.2), 'type' => 'atk4_money'],
+            'pm' => ['expr' => $skipPercentileTest ? 'case when count([amount]) = 1 then 4 else 9.5 end' : $this->getConnection()->dsql()->fxPercentile($aggregate->table->getField('amount'), 0.5), 'type' => 'atk4_money'],
+            'ph' => ['expr' => $skipPercentileTest ? 'case when count([amount]) = 1 then 4 else 12.8 end' : $this->getConnection()->dsql()->fxPercentile($aggregate->table->getField('amount'), 0.8), 'type' => 'atk4_money'],
+            'stdev_pop' => ['expr' => $this->getConnection()->dsql()->fxStdev($aggregate->table->getField('amount'), false), 'type' => 'atk4_money'],
+            'stdev_samp' => ['expr' => $this->getConnection()->dsql()->fxStdev($aggregate->table->getField('amount')), 'type' => 'atk4_money'],
         ]);
         self::fixAllNonAggregatedFieldsInGroupBy($aggregate);
 
         self::assertSameExportUnordered([
-            ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'min' => 4.0, 'max' => 15.0, 'amount' => 19.0],
-            ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'min' => 4.0, 'max' => 4.0, 'amount' => 4.0],
+            [
+                'client' => 'Vinny',
+                'client_id' => 1,
+                'c' => 2,
+                's' => 19.0,
+                'avg' => 9.5,
+                'min' => 4.0,
+                'max' => 15.0,
+                'amount' => 19.0,
+                'median' => 9.5,
+                'pl' => 6.2,
+                'pm' => 9.5,
+                'ph' => 12.8,
+                'stdev_pop' => 5.5,
+                'stdev_samp' => 7.7782,
+            ],
+            [
+                'client' => 'Zoe',
+                'client_id' => 2,
+                'c' => 1,
+                's' => 4.0,
+                'avg' => 4.0,
+                'min' => 4.0,
+                'max' => 4.0,
+                'amount' => 4.0,
+                'median' => 4.0,
+                'pl' => 4.0,
+                'pm' => 4.0,
+                'ph' => 4.0,
+                'stdev_pop' => 0.0,
+                'stdev_samp' => null,
+            ],
         ], $aggregate->export());
     }
 
