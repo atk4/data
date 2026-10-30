@@ -214,9 +214,6 @@ class Query extends BaseQuery
             return $this->expr('percentile_cont([], [])', [$field, $percentile]);
         }
 
-        // TODO make SELECT subqueries using ->dsql() once supported by AggregateModel
-        // https://github.com/atk4/data/blob/c007602c66f502b847bc768b319b7bc71c98e42d/src/Model/AggregateModel.php#L97
-
         $fromNotNullSql = 'json_each(__atk4_aggr_t1__.value) where value is not null';
 
         // https://sqlite.org/forum/forumpost/c9970a37edf11cd1
