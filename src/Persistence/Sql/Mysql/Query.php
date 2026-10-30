@@ -98,6 +98,24 @@ class Query extends BaseQuery
     }
 
     /**
+     * @param array<string, Expressionable> $keyValuePairs
+     */
+    public function fxJsonObject(array $keyValuePairs): BaseExpression
+    {
+        if (!Connection::isServerMariaDb($this->connection) && version_compare($this->connection->getServerVersion(), '5.7.8') < 0) {
+            throw new \Exception('JSON_OBJECT requires MySQL 5.7.8+');
+        }
+
+        $parts = [];
+        foreach ($keyValuePairs as $key => $value) {
+            $parts[] = new RawExpression($this->escapeStringLiteral($key));
+            $parts[] = $value;
+        }
+
+        return $this->expr('json_object(' . implode(', ', array_fill(0, count($parts), '[]')) . ')', $parts);
+    }
+
+    /**
      * @return ($forJsonValue is true ? array{string, string, string|null} : string)
      */
     private function makeReturningClauseType(string $type, bool $forJsonValue = false)
