@@ -191,7 +191,7 @@ class SubTypesTest extends TestCase
         $current->deposit(50);
         $current->deposit(50);
         self::assertInstanceOf(StTransaction_Deposit::class, $current->ref('Transactions')->load(5));
-        self::assertInstanceOf(StTransaction_Deposit::class, $current->ref('Transactions')->load(5));
+        self::assertInstanceOf(StTransaction_Deposit::class, $current->ref('Transactions')->load(5)); // @phpstan-ignore staticMethod.alreadyNarrowedType
 
         $assertClassesFx([
             StTransaction_TransferIn::class,

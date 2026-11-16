@@ -368,7 +368,7 @@ class ReferenceTest extends TestCase
 
         $refC = $m->hasMany('c', ['model' => $refASeed, 'theirField' => 'id']);
         $refD = $m->hasMany('d', ['model' => $refBSeed, 'theirField' => 'id']);
-        self::assertSame(['bar', 'foo', 'bar'], $theirModelClass::$logs);
+        self::assertSame(['bar', 'foo', 'bar'], $theirModelClass::$logs); // @phpstan-ignore staticMethod.alreadyNarrowedType
 
         self::assertSame('foo', $refC->createAnalysingTheirModel()->table);
         self::assertSame('bar', $refD->createAnalysingTheirModel()->table);
@@ -450,7 +450,7 @@ class ReferenceTest extends TestCase
         $modelClass::$logs = [];
 
         new $modelClass(clone $this->db);
-        self::assertSame(['main', 's', 's_2', 's_use', 'bound'], $modelClass::$logs);
+        self::assertSame(['main', 's', 's_2', 's_use', 'bound'], $modelClass::$logs); // @phpstan-ignore staticMethod.alreadyNarrowedType
         $modelClass::$logs = [];
 
         $m = new $modelClass($this->db);

@@ -71,6 +71,8 @@ class TableTest extends TestCase
 
             /**
              * @return list<array{'before'|'after', Row, array<string, mixed>, 3?: array<string, mixed>}>
+             *
+             * @phpstan-impure
              */
             public function getAndClearLog(): array
             {
