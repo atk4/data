@@ -111,6 +111,15 @@ abstract class Join
     }
 
     /**
+     * Used internally for JSON aggregate field resolution with dot notation
+     * We need this to prevent using slow ReflectionClass.
+     */
+    public function getForeignTable(): string
+    {
+        return $this->foreignTable;
+    }
+
+    /**
      * @internal should be not used outside atk4/data, for Migrator only
      */
     public function getMasterField(): Field
