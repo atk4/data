@@ -221,6 +221,31 @@ class Query extends BaseQuery
     }
 
     #[\Override]
+    public function fxMedian($field)
+    {
+        return $this->fxPercentile($field, 0.5);
+    }
+
+    #[\Override]
+    public function fxPercentile($field, float $percentile)
+    {
+        $fromNotNullSql = 'openjson(__atk4_aggr_t1__.value) with (value float \'$\') where value is not null';
+
+        $fromSql = version_compare($this->connection->getServerVersion(), '17') < 0
+            ? 'openjson(concat(\'[[\', string_agg([], \',\'), \']]\')) __atk4_aggr_t1__'
+            : 'openjson(concat(\'[\', json_arrayagg([] null on null), \']\')) __atk4_aggr_t1__';
+
+        return $this->expr(
+            '(select (select'
+                . ' (1 - (rn - floor(rn))) * (select value from (select value, row_number() over (order by value) - 1 i from ' . $fromNotNullSql . ') t where i = floor(rn))'
+                . ' + (rn - floor(rn)) * (select value from (select value, row_number() over (order by value) - 1 i from ' . $fromNotNullSql . ') t where i = ceiling(rn))'
+                . ' from (select [] * (count(value) - 1) rn from ' . $fromNotNullSql . ') t'
+               . ') from ' . $fromSql . ')',
+            [$percentile, $field]
+        );
+    }
+
+    #[\Override]
     public function fxStdev($field, bool $sample = true)
     {
         return $this->expr(

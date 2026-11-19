@@ -76,6 +76,35 @@ class Query extends BaseQuery
     }
 
     #[\Override]
+    public function fxMedian($field)
+    {
+        return $this->fxPercentile($field, 0.5);
+    }
+
+    #[\Override]
+    public function fxPercentile($field, float $percentile)
+    {
+        $fromNotNullSql = 'json_table(__atk4_aggr_t1__.value, \'$[*]\' columns (value double path \'$\')) t where value is not null';
+
+        if (Connection::isServerMariaDb($this->connection)) {
+            $fromRnSql = 'json_table(concat(\'[\', (select [] * (count(value) - 1) from ' . $fromNotNullSql . '), \']\'), \'$[*]\' columns (rn double path \'$\')) t';
+            $fromSql = 'json_table(concat(\'[\', json_arrayagg([]), \']\'), \'$[*]\' columns (value json path \'$\')) __atk4_aggr_t1__';
+        } else {
+            $fromRnSql = '(select [] * (count(value) - 1) rn from ' . $fromNotNullSql . ') t';
+            $fromSql = '(select json_arrayagg([]) value) __atk4_aggr_t1__';
+        }
+
+        return $this->expr(
+            '(select sum((select'
+                . ' (1 - (rn - floor(rn))) * (select value from ' . $fromNotNullSql . ' order by row_number() over (order by value) - 1 = floor(rn) desc limit 1)'
+                . ' + (rn - floor(rn)) * (select value from ' . $fromNotNullSql . ' order by row_number() over (order by value) - 1 = ceil(rn) desc limit 1)'
+                . ' from ' . $fromRnSql
+               . ')) from ' . $fromSql . ')',
+            [$percentile, $field]
+        );
+    }
+
+    #[\Override]
     public function fxJsonArray(array $values)
     {
         if (!Connection::isServerMariaDb($this->connection) && version_compare($this->connection->getServerVersion(), '5.7.8') < 0) {

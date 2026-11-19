@@ -1443,11 +1443,35 @@ class SelectTest extends TestCase
                     [':a' => 0.5, ':b' => 'foo'],
                 ], $expr->render());
             }
+        } elseif ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
+            if (MysqlConnection::isServerMariaDb($this->getConnection())) {
+                self::assertSameSqlRender([
+                    '(select sum((select (1 - (rn - floor(rn))) * (select value from json_table(__atk4_aggr_t1__.value, \'$[*]\' columns (value double path \'$\')) t where value is not null order by row_number() over (order by value) - 1 = floor(rn) desc limit 1) + (rn - floor(rn)) * (select value from json_table(__atk4_aggr_t1__.value, \'$[*]\' columns (value double path \'$\')) t where value is not null order by row_number() over (order by value) - 1 = ceil(rn) desc limit 1) from json_table(concat(\'[\', (select :a * (count(value) - 1) from json_table(__atk4_aggr_t1__.value, \'$[*]\' columns (value double path \'$\')) t where value is not null), \']\'), \'$[*]\' columns (rn double path \'$\')) t)) from json_table(concat(\'[\', json_arrayagg(:b), \']\'), \'$[*]\' columns (value json path \'$\')) __atk4_aggr_t1__)',
+                    [':a' => 0.5, ':b' => 'foo'],
+                ], $expr->render());
+            } else {
+                self::assertSameSqlRender([
+                    '(select sum((select (1 - (rn - floor(rn))) * (select value from json_table(__atk4_aggr_t1__.value, \'$[*]\' columns (value double path \'$\')) t where value is not null order by row_number() over (order by value) - 1 = floor(rn) desc limit 1) + (rn - floor(rn)) * (select value from json_table(__atk4_aggr_t1__.value, \'$[*]\' columns (value double path \'$\')) t where value is not null order by row_number() over (order by value) - 1 = ceil(rn) desc limit 1) from (select :a * (count(value) - 1) rn from json_table(__atk4_aggr_t1__.value, \'$[*]\' columns (value double path \'$\')) t where value is not null) t)) from (select json_arrayagg(:b) value) __atk4_aggr_t1__)',
+                    [':a' => 0.5, ':b' => 'foo'],
+                ], $expr->render());
+            }
         } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             self::assertSameSqlRender([
                 'percentile_cont(:a) within group (order by :b)',
                 [':a' => 0.5, ':b' => 'foo'],
             ], $expr->render());
+        } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+            if (version_compare($this->getConnection()->getServerVersion(), '17') < 0) {
+                self::assertSameSqlRender([
+                    '(select (select (1 - (rn - floor(rn))) * (select value from (select value, row_number() over (order by value) - 1 i from openjson(__atk4_aggr_t1__.value) with (value float \'$\') where value is not null) t where i = floor(rn)) + (rn - floor(rn)) * (select value from (select value, row_number() over (order by value) - 1 i from openjson(__atk4_aggr_t1__.value) with (value float \'$\') where value is not null) t where i = ceiling(rn)) from (select :a * (count(value) - 1) rn from openjson(__atk4_aggr_t1__.value) with (value float \'$\') where value is not null) t) from openjson(concat(\'[[\', string_agg(:b, \',\'), \']]\')) __atk4_aggr_t1__)',
+                    [':a' => 0.5, ':b' => 'foo'],
+                ], $expr->render());
+            } else {
+                self::assertSameSqlRender([
+                    '(select (select (1 - (rn - floor(rn))) * (select value from (select value, row_number() over (order by value) - 1 i from openjson(__atk4_aggr_t1__.value) with (value float \'$\') where value is not null) t where i = floor(rn)) + (rn - floor(rn)) * (select value from (select value, row_number() over (order by value) - 1 i from openjson(__atk4_aggr_t1__.value) with (value float \'$\') where value is not null) t where i = ceiling(rn)) from (select :a * (count(value) - 1) rn from openjson(__atk4_aggr_t1__.value) with (value float \'$\') where value is not null) t) from openjson(concat(\'[\', json_arrayagg(:b null on null), \']\')) __atk4_aggr_t1__)',
+                    [':a' => 0.5, ':b' => 'foo'],
+                ], $expr->render());
+            }
         } else {
             self::assertSameSqlRender([
                 'median(:a)',
@@ -1474,6 +1498,30 @@ class SelectTest extends TestCase
             } else {
                 self::assertSameSqlRender([
                     '(select sum((select (1 - (rn - floor(rn))) * (select value from (select value, row_number() over (order by value) - 1 i from json_each(__atk4_aggr_t1__.value) where value is not null) where i = floor(rn)) + (rn - floor(rn)) * (select value from (select value, row_number() over (order by value) - 1 i from json_each(__atk4_aggr_t1__.value) where value is not null) where i = ceil(rn)) from (select :a * (count(value) - 1) rn from json_each(__atk4_aggr_t1__.value) where value is not null))) from (select json_group_array(:b) value) __atk4_aggr_t1__)',
+                    [':a' => 0.12345678, ':b' => 'foo'],
+                ], $expr->render());
+            }
+        } elseif ($this->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
+            if (MysqlConnection::isServerMariaDb($this->getConnection())) {
+                self::assertSameSqlRender([
+                    '(select sum((select (1 - (rn - floor(rn))) * (select value from json_table(__atk4_aggr_t1__.value, \'$[*]\' columns (value double path \'$\')) t where value is not null order by row_number() over (order by value) - 1 = floor(rn) desc limit 1) + (rn - floor(rn)) * (select value from json_table(__atk4_aggr_t1__.value, \'$[*]\' columns (value double path \'$\')) t where value is not null order by row_number() over (order by value) - 1 = ceil(rn) desc limit 1) from json_table(concat(\'[\', (select :a * (count(value) - 1) from json_table(__atk4_aggr_t1__.value, \'$[*]\' columns (value double path \'$\')) t where value is not null), \']\'), \'$[*]\' columns (rn double path \'$\')) t)) from json_table(concat(\'[\', json_arrayagg(:b), \']\'), \'$[*]\' columns (value json path \'$\')) __atk4_aggr_t1__)',
+                    [':a' => 0.12345678, ':b' => 'foo'],
+                ], $expr->render());
+            } else {
+                self::assertSameSqlRender([
+                    '(select sum((select (1 - (rn - floor(rn))) * (select value from json_table(__atk4_aggr_t1__.value, \'$[*]\' columns (value double path \'$\')) t where value is not null order by row_number() over (order by value) - 1 = floor(rn) desc limit 1) + (rn - floor(rn)) * (select value from json_table(__atk4_aggr_t1__.value, \'$[*]\' columns (value double path \'$\')) t where value is not null order by row_number() over (order by value) - 1 = ceil(rn) desc limit 1) from (select :a * (count(value) - 1) rn from json_table(__atk4_aggr_t1__.value, \'$[*]\' columns (value double path \'$\')) t where value is not null) t)) from (select json_arrayagg(:b) value) __atk4_aggr_t1__)',
+                    [':a' => 0.12345678, ':b' => 'foo'],
+                ], $expr->render());
+            }
+        } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+            if (version_compare($this->getConnection()->getServerVersion(), '17') < 0) {
+                self::assertSameSqlRender([
+                    '(select (select (1 - (rn - floor(rn))) * (select value from (select value, row_number() over (order by value) - 1 i from openjson(__atk4_aggr_t1__.value) with (value float \'$\') where value is not null) t where i = floor(rn)) + (rn - floor(rn)) * (select value from (select value, row_number() over (order by value) - 1 i from openjson(__atk4_aggr_t1__.value) with (value float \'$\') where value is not null) t where i = ceiling(rn)) from (select :a * (count(value) - 1) rn from openjson(__atk4_aggr_t1__.value) with (value float \'$\') where value is not null) t) from openjson(concat(\'[[\', string_agg(:b, \',\'), \']]\')) __atk4_aggr_t1__)',
+                    [':a' => 0.12345678, ':b' => 'foo'],
+                ], $expr->render());
+            } else {
+                self::assertSameSqlRender([
+                    '(select (select (1 - (rn - floor(rn))) * (select value from (select value, row_number() over (order by value) - 1 i from openjson(__atk4_aggr_t1__.value) with (value float \'$\') where value is not null) t where i = floor(rn)) + (rn - floor(rn)) * (select value from (select value, row_number() over (order by value) - 1 i from openjson(__atk4_aggr_t1__.value) with (value float \'$\') where value is not null) t where i = ceiling(rn)) from (select :a * (count(value) - 1) rn from openjson(__atk4_aggr_t1__.value) with (value float \'$\') where value is not null) t) from openjson(concat(\'[\', json_arrayagg(:b null on null), \']\')) __atk4_aggr_t1__)',
                     [':a' => 0.12345678, ':b' => 'foo'],
                 ], $expr->render());
             }
